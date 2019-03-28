@@ -34,6 +34,13 @@
 
         <discriminator column="preference_type" type="java.lang.Integer"/>
         
+        <property
+            name="label"
+            column="label"
+            type="string"
+            not-null="false"
+            length="60"/>
+        
         <many-to-one
             name="courseRequest"
             class="CourseRequest"

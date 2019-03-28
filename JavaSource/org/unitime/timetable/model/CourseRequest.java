@@ -197,6 +197,7 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
 				scp.setCourseRequest(this);
 				scp.setRequired(p.isRequired());
 				scp.setClazz(clazz);
+				scp.setLabel(clazz.getClassPrefLabel(getCourseOffering()));
 				getPreferences().add(scp);
 				changed = true;
 			}
@@ -222,6 +223,7 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
 				imp.setCourseRequest(this);
 				imp.setRequired(p.isRequired());
 				imp.setInstructionalMethod(im);
+				imp.setLabel(im.getLabel());
 				getPreferences().add(imp);
 				changed = true;
 			}

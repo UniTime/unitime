@@ -53,6 +53,7 @@ import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
@@ -956,30 +957,85 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			}
 			
 			if ("prefer".equals(attr)) {
-				for (StudentSectioningPref p: request().getPreferences()) {
-					if (p instanceof StudentInstrMthPref) {
-						StudentInstrMthPref im = (StudentInstrMthPref)p;
-						if (eq(im.getInstructionalMethod().getLabel(), term)) return true;
+				if (eq("Any Preference", term)) return !request().getPreferences().isEmpty();
+				if (eq("Met Preference", term) || eq("Unmet Preference", term)) {
+					if (enrollment() == null || enrollment().isEmpty()) {
+						if (eq("Unmet Preference", term)) return !request().getPreferences().isEmpty();
+						return false;
 					}
-					if (p instanceof StudentClassPref) {
-						StudentClassPref c = (StudentClassPref)p;
-						if (eq(c.getClazz().getClassSuffix(), term)) return true;
+					boolean hasPref = false, hasIm = false, im = false;
+					Set<String> allSubpart = new HashSet<String>();
+					Set<String> selectedSubparts = new HashSet<String>();
+					for (StudentSectioningPref p: request().getPreferences()) {
+						hasPref = true;
+						if (p instanceof StudentInstrMthPref) {
+							hasIm = true;
+							StudentInstrMthPref imp = (StudentInstrMthPref)p;
+							InstructionalMethod method = enrollment().get(0).getClazz().getSchedulingSubpart().getInstrOfferingConfig().getEffectiveInstructionalMethod();
+							if (method != null && method.equals(imp.getInstructionalMethod())) { im = true; }
+						}
+						if (p instanceof StudentClassPref) {
+							StudentClassPref scp = (StudentClassPref)p;
+							allSubpart.add(scp.getClazz().getSchedulingSubpart().getItypeDesc());
+							for (StudentClassEnrollment section: enrollment()) {
+								if (scp.getClazz().equals(section.getClazz()))
+									selectedSubparts.add(scp.getClazz().getSchedulingSubpart().getItypeDesc());
+							}
+						}
 					}
+					if (eq("Met Preference", term))
+						return hasPref && (hasIm == im) && (selectedSubparts.size() == allSubpart.size());
+					else
+						return hasPref && (hasIm != im || selectedSubparts.size() != allSubpart.size());
 				}
+				for (StudentSectioningPref p: request().getPreferences())
+					if (eq(p.getLabel(), term)) return true;
 				return false;
 			}
 			
 			if ("require".equals(attr)) {
+				if (eq("Any Requirement", term)) {
+					for (StudentSectioningPref p: request().getPreferences()) {
+						if (!p.isRequired()) continue;
+						return true;
+					}
+					return false;
+				}
+				if (eq("Met Requirement", term)) {
+					if (enrollment() == null || enrollment().isEmpty()) return false;
+					boolean hasPref = false, hasIm = false, im = false;
+					Set<String> allSubpart = new HashSet<String>();
+					Set<String> selectedSubparts = new HashSet<String>();
+					for (StudentSectioningPref p: request().getPreferences()) {
+						if (!p.isRequired()) continue;
+						hasPref = true;
+						if (p instanceof StudentInstrMthPref) {
+							hasIm = true;
+							StudentInstrMthPref imp = (StudentInstrMthPref)p;
+							InstructionalMethod method = enrollment().get(0).getClazz().getSchedulingSubpart().getInstrOfferingConfig().getEffectiveInstructionalMethod();
+							if (method != null && method.equals(imp.getInstructionalMethod())) { im = true; }
+						}
+						if (p instanceof StudentClassPref) {
+							StudentClassPref scp = (StudentClassPref)p;
+							allSubpart.add(scp.getClazz().getSchedulingSubpart().getItypeDesc());
+							for (StudentClassEnrollment section: enrollment()) {
+								if (scp.getClazz().equals(section.getClazz()))
+									selectedSubparts.add(scp.getClazz().getSchedulingSubpart().getItypeDesc());
+							}
+						}
+					}
+					return hasPref && (hasIm == im) && (selectedSubparts.size() == allSubpart.size());
+				}
+				if (eq("Unmet Requirement", term)) {
+					if (enrollment() != null) return false;
+					for (StudentSectioningPref p: request().getPreferences()) {
+						if (p.isRequired()) return true;
+					}
+					return false;
+				}
 				for (StudentSectioningPref p: request().getPreferences()) {
 					if (!p.isRequired()) continue;
-					if (p instanceof StudentInstrMthPref) {
-						StudentInstrMthPref im = (StudentInstrMthPref)p;
-						if (eq(im.getInstructionalMethod().getLabel(), term)) return true;
-					}
-					if (p instanceof StudentClassPref) {
-						StudentClassPref c = (StudentClassPref)p;
-						if (eq(c.getClazz().getClassSuffix(), term)) return true;
-					}
+					if (eq(p.getLabel(), term)) return true;
 				}
 				return false;
 			}
@@ -1326,49 +1382,6 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				for (CourseDemand cd: student().getCourseDemands()) {
 					for (CourseRequest cr: cd.getCourseRequests()) {
 						if (cr.getOverrideStatus() != null && cr.getOverrideStatus() == status.ordinal()) return true;
-					}
-				}
-				return false;
-			} else if ("prefer".equals(attr)) {
-				for (CourseDemand cd: student().getCourseDemands()) {
-					for (CourseRequest cr: cd.getCourseRequests()) {
-						for (StudentSectioningPref p: cr.getPreferences()) {
-							if (p instanceof StudentInstrMthPref) {
-								StudentInstrMthPref im = (StudentInstrMthPref)p;
-								if (eq(im.getInstructionalMethod().getLabel(), term)) return true;
-							}
-							if (p instanceof StudentClassPref) {
-								StudentClassPref c = (StudentClassPref)p;
-								String l = c.getClazz().getClassSuffix(cr.getCourseOffering());
-								if (l == null)
-									l = c.getClazz().getSchedulingSubpart().getItypeDesc().trim() + " " + c.getClazz().getSectionNumberString();
-								else if (l.length() <= 4)
-									l = c.getClazz().getSchedulingSubpart().getItypeDesc().trim() + " " + l;
-								if (eq(l, term)) return true;
-							}
-						}
-					}
-				}
-				return false;
-			} else if ("require".equals(attr)) {
-				for (CourseDemand cd: student().getCourseDemands()) {
-					for (CourseRequest cr: cd.getCourseRequests()) {
-						for (StudentSectioningPref p: cr.getPreferences()) {
-							if (!p.isRequired()) continue;
-							if (p instanceof StudentInstrMthPref) {
-								StudentInstrMthPref im = (StudentInstrMthPref)p;
-								if (eq(im.getInstructionalMethod().getLabel(), term)) return true;
-							}
-							if (p instanceof StudentClassPref) {
-								StudentClassPref c = (StudentClassPref)p;
-								String l = c.getClazz().getClassSuffix(cr.getCourseOffering());
-								if (l == null)
-									l = c.getClazz().getSchedulingSubpart().getItypeDesc().trim() + " " + c.getClazz().getSectionNumberString();
-								else if (l.length() <= 4)
-									l = c.getClazz().getSchedulingSubpart().getItypeDesc().trim() + " " + l;
-								if (eq(l, term)) return true;
-							}
-						}
 					}
 				}
 				return false;

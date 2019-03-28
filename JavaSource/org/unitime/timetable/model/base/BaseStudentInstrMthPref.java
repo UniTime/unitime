@@ -61,13 +61,14 @@ public abstract class BaseStudentInstrMthPref extends StudentSectioningPref impl
 	}
 
 	public String toString() {
-		return "StudentInstrMthPref["+getUniqueId()+"]";
+		return "StudentInstrMthPref["+getUniqueId()+" "+getLabel()+"]";
 	}
 
 	public String toDebugString() {
 		return "StudentInstrMthPref[" +
 			"\n	CourseRequest: " + getCourseRequest() +
 			"\n	InstructionalMethod: " + getInstructionalMethod() +
+			"\n	Label: " + getLabel() +
 			"\n	Required: " + getRequired() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";

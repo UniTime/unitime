@@ -70,6 +70,7 @@ public abstract class StudentSectioningPref extends BaseStudentSectioningPref {
     								imp.setCourseRequest(cr);
     								imp.setRequired(required);
     								imp.setInstructionalMethod(im);
+    								imp.setLabel(im.getReference());
     								cr.getPreferences().add(imp);
     							}
     						}
@@ -83,6 +84,7 @@ public abstract class StudentSectioningPref extends BaseStudentSectioningPref {
     								scp.setCourseRequest(cr);
     								scp.setRequired(required);
     								scp.setClazz(clazz);
+    								scp.setLabel(clazz.getClassPrefLabel(cr.getCourseOffering()));
     								cr.getPreferences().add(scp);
     							}
     						}
@@ -90,6 +92,14 @@ public abstract class StudentSectioningPref extends BaseStudentSectioningPref {
                     }
 				} catch (Exception e) {}
 				hibSession.update(cr);
+			}
+			for (StudentInstrMthPref p: (List<StudentInstrMthPref>)hibSession.createQuery("from StudentInstrMthPref where label is null and instructionalMethod.label is not null").list()) {
+				p.setLabel(p.getInstructionalMethod().getLabel());
+				hibSession.update(p);
+			}
+			for (StudentClassPref p: (List<StudentClassPref>)hibSession.createQuery("from StudentClassPref where label is null").list()) {
+				p.setLabel(p.getClazz().getClassPrefLabel(p.getCourseRequest().getCourseOffering()));
+				hibSession.update(p);
 			}
 			tx.commit();
 		} catch (Exception e) {

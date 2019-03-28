@@ -256,8 +256,13 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 			}
 		});
 		
-		addFilter(new FilterBox.StaticSimpleFilter("prefer", GWT_MESSAGES.tagPrefer()));
-		addFilter(new FilterBox.StaticSimpleFilter("require", GWT_MESSAGES.tagRequire()));
+		FilterBox.StaticSimpleFilter pref = new FilterBox.StaticSimpleFilter("prefer", GWT_MESSAGES.tagPrefer());
+		pref.setVisible(false); 
+		addFilter(pref);
+		
+		FilterBox.StaticSimpleFilter req = new FilterBox.StaticSimpleFilter("require", GWT_MESSAGES.tagRequire());
+		req.setVisible(false); 
+		addFilter(req);
 		
 		addFilter(new FilterBox.CustomFilter("Other", GWT_MESSAGES.tagOther(), courseLab, iCourse, studentLab, iStudent) {
 			@Override

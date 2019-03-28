@@ -2148,4 +2148,22 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("{0} ... {1}")
 	String pageRange(int first, int last);
+	
+	@DefaultMessage("Any Preference")
+	String termAnyPreference();
+	
+	@DefaultMessage("Met Preference")
+	String termMetPreference();
+	
+	@DefaultMessage("Unmet Preference")
+	String termUnmetPreference();
+	
+	@DefaultMessage("Any Requirement")
+	String termAnyRequirement();
+	
+	@DefaultMessage("Met Requirement")
+	String termMetRequirement();
+	
+	@DefaultMessage("Unmet Requirement")
+	String termUnmetRequirement();
 }

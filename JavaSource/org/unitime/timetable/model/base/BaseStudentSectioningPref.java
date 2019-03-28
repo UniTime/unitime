@@ -32,11 +32,13 @@ public abstract class BaseStudentSectioningPref implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Long iUniqueId;
+	private String iLabel;
 	private Boolean iRequired;
 
 	private CourseRequest iCourseRequest;
 
 	public static String PROP_UNIQUEID = "uniqueId";
+	public static String PROP_LABEL = "label";
 	public static String PROP_REQUIRED = "required";
 
 	public BaseStudentSectioningPref() {
@@ -52,6 +54,9 @@ public abstract class BaseStudentSectioningPref implements Serializable {
 
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public String getLabel() { return iLabel; }
+	public void setLabel(String label) { iLabel = label; }
 
 	public Boolean isRequired() { return iRequired; }
 	public Boolean getRequired() { return iRequired; }
@@ -72,12 +77,13 @@ public abstract class BaseStudentSectioningPref implements Serializable {
 	}
 
 	public String toString() {
-		return "StudentSectioningPref["+getUniqueId()+"]";
+		return "StudentSectioningPref["+getUniqueId()+" "+getLabel()+"]";
 	}
 
 	public String toDebugString() {
 		return "StudentSectioningPref[" +
 			"\n	CourseRequest: " + getCourseRequest() +
+			"\n	Label: " + getLabel() +
 			"\n	Required: " + getRequired() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";

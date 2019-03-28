@@ -660,11 +660,7 @@ public class XCourseRequest extends XRequest {
 			if (p instanceof StudentClassPref) {
 				StudentClassPref scp = (StudentClassPref)p;
 				iId = scp.getClazz().getUniqueId();
-				iLabel = scp.getClazz().getClassSuffix(cr.getCourseOffering());
-				if (iLabel == null)
-					iLabel = scp.getClazz().getSchedulingSubpart().getItypeDesc().trim() + " " + scp.getClazz().getSectionNumberString();
-				else if (iLabel.length() <= 4)
-					iLabel = scp.getClazz().getSchedulingSubpart().getItypeDesc().trim() + " " + iLabel;
+				iLabel = scp.getClazz().getClassPrefLabel(cr.getCourseOffering());
 				iType = XPreferenceType.SECTION;
 			} else {
 				StudentInstrMthPref imp = (StudentInstrMthPref)p;

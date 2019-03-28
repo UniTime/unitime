@@ -382,7 +382,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 							}
 						}
 						if (hasIm) {
-							s.setTotalPrefSectionConflict(s.getTotalPrefSectionConflict() + 1);
+							s.setTotalPrefInstrMethConflict(s.getTotalPrefInstrMethConflict() + 1);
 							gtPIM++;
 							if (im) {
 								s.setPrefInstrMethConflict(s.getPrefInstrMethConflict() + 1);

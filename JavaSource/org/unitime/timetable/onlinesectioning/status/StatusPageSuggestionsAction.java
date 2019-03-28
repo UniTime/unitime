@@ -23,8 +23,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -891,6 +893,43 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			if ("prefer".equals(attr)) {
 				List<XPreference> prefs = request().getPreferences(info());
 				if (prefs == null) return false;
+				if (eq("Any Preference", term)) return !prefs.isEmpty();
+				if (eq("Met Preference", term) || eq("Unmet Preference", term)) {
+					if (enrollment() == null) {
+						if (eq("Unmet Preference", term)) return !prefs.isEmpty();
+						return false;
+					}
+					XOffering o = server().getOffering(enrollment().getOfferingId());
+					XConfig g = (o == null ? null : o.getConfig(enrollment().getConfigId()));
+					if (g == null) return false;
+					boolean hasIm = false;
+					boolean im = false;
+					Set<String> allSubparts = new HashSet<String>();
+					Set<String> selectedSubparts = new HashSet<String>();
+					for (XPreference p: prefs) {
+						switch (p.getType()) {
+						case INSTR_METHOD:
+							hasIm = true;
+							if (g.getInstructionalMethod() != null && g.getInstructionalMethod().getUniqueId().equals(p.getUniqueId()))
+								im = true;
+							break;
+						case SECTION:
+							XSection ps = o.getSection(p.getUniqueId());
+							if (ps != null) {
+								allSubparts.add(ps.getSubpartName());
+								for (XSection section: o.getSections(enrollment())) {
+									if (section.getSectionId().equals(p.getUniqueId()))
+										selectedSubparts.add(section.getSubpartName());
+								}
+							}
+							break;
+						}
+					}
+					if (eq("Met Preference", term))
+						return !prefs.isEmpty() && (hasIm == im) && (selectedSubparts.size() == allSubparts.size());
+					else
+						return !prefs.isEmpty() && (hasIm != im || selectedSubparts.size() != allSubparts.size());
+				}
 				for (XPreference p: prefs) {
 					if (eq(p.getLabel(), term)) return true;
 				}
@@ -900,6 +939,52 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			if ("require".equals(attr)) {
 				List<XPreference> prefs = request().getPreferences(info());
 				if (prefs == null) return false;
+				if (eq("Any Requirement", term)) {
+					for (XPreference p: prefs) {
+						if (p.isRequired()) return true;
+					}
+					return false;
+				}
+				if (eq("Met Requirement", term)) {
+					if (enrollment() == null) return false;
+					XOffering o = server().getOffering(enrollment().getOfferingId());
+					XConfig g = (o == null ? null : o.getConfig(enrollment().getConfigId()));
+					if (g == null) return false;
+					boolean hasIm = false;
+					boolean im = false;
+					Set<String> allSubparts = new HashSet<String>();
+					Set<String> selectedSubparts = new HashSet<String>();
+					boolean hasPref = false;
+					for (XPreference p: prefs) {
+						if (!p.isRequired()) continue;
+						hasPref = true;
+						switch (p.getType()) {
+						case INSTR_METHOD:
+							hasIm = true;
+							if (g.getInstructionalMethod() != null && g.getInstructionalMethod().getUniqueId().equals(p.getUniqueId()))
+								im = true;
+							break;
+						case SECTION:
+							XSection ps = o.getSection(p.getUniqueId());
+							if (ps != null) {
+								allSubparts.add(ps.getSubpartName());
+								for (XSection section: o.getSections(enrollment())) {
+									if (section.getSectionId().equals(p.getUniqueId()))
+										selectedSubparts.add(section.getSubpartName());
+								}
+							}
+							break;
+						}
+					}
+					return hasPref && (hasIm == im) && (selectedSubparts.size() == allSubparts.size());
+				}
+				if (eq("Unmet Requirement", term)) {
+					if (enrollment() != null) return false;
+					for (XPreference p: prefs) {
+						if (p.isRequired()) return true;
+					}
+					return false;
+				}
 				for (XPreference p: prefs) {
 					if (p.isRequired() && eq(p.getLabel(), term)) return true;
 				}
@@ -1295,34 +1380,6 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					return iMyStudent;
 				}
 				return true;
-			} else if ("prefer".equals(attr)) {
-				for (XRequest request: student().getRequests()) {
-					if (request instanceof XCourseRequest) {
-						XCourseRequest cr = (XCourseRequest)request;
-						for (XCourseId course: cr.getCourseIds()) {
-							List<XPreference> prefs = cr.getPreferences(course);
-							if (prefs == null) continue;
-							for (XPreference p: prefs) {
-								if (eq(p.getLabel(), term)) return true;
-							}
-						}
-					}
-				}
-				return false;
-			} else if ("require".equals(attr)) {
-				for (XRequest request: student().getRequests()) {
-					if (request instanceof XCourseRequest) {
-						XCourseRequest cr = (XCourseRequest)request;
-						for (XCourseId course: cr.getCourseIds()) {
-							List<XPreference> prefs = cr.getPreferences(course);
-							if (prefs == null) continue;
-							for (XPreference p: prefs) {
-								if (p.isRequired() && eq(p.getLabel(), term)) return true;
-							}
-						}
-					}
-				}
-				return false;
 			} else if (attr != null) {
 				for (XStudent.XGroup group: student().getGroups())
 					if (eq(group.getType(), attr.replace('_', ' ')) && eq(group.getAbbreviation(), term)) return true;

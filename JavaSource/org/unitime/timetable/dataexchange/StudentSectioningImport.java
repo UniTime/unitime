@@ -1011,6 +1011,7 @@ public class StudentSectioningImport extends BaseImport {
 			StudentClassPref scp = new StudentClassPref();
 			scp.setCourseRequest(cr);
 			scp.setClazz(clazz);
+			scp.setLabel(clazz.getClassPrefLabel(cr.getCourseOffering()));
 			scp.setRequired(false);
 			cr.getPreferences().add(scp);
 		}
@@ -1018,6 +1019,7 @@ public class StudentSectioningImport extends BaseImport {
 			StudentClassPref scp = new StudentClassPref();
 			scp.setCourseRequest(cr);
 			scp.setClazz(clazz);
+			scp.setLabel(clazz.getClassPrefLabel(cr.getCourseOffering()));
 			scp.setRequired(true);
 			cr.getPreferences().add(scp);
 		}
@@ -1052,6 +1054,7 @@ public class StudentSectioningImport extends BaseImport {
 			imp.setCourseRequest(cr);
 			imp.setRequired(false);
 			imp.setInstructionalMethod(meth);
+			imp.setLabel(meth.getLabel());
 			cr.getPreferences().add(imp);
 		}
 		for (InstructionalMethod meth: requiredIMs) {
@@ -1059,6 +1062,7 @@ public class StudentSectioningImport extends BaseImport {
 			imp.setCourseRequest(cr);
 			imp.setRequired(true);
 			imp.setInstructionalMethod(meth);
+			imp.setLabel(meth.getLabel());
 			cr.getPreferences().add(imp);
 		}
 	}

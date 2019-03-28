@@ -13544,4 +13544,10 @@
 	    <plsql>alter table %SCHEMA%.sct_solution_log modify info varchar2(4000 char)</plsql>
 	    <mysql>alter table %SCHEMA%.sct_solution_log modify info varchar(4000) not null</mysql>
 	</update>
+	<update version="219" date="28-Mar-2019" comment="Student Sectioning Preference Label">
+	    <mysql>alter table %SCHEMA%.sect_pref add label varchar(60) binary null</mysql>
+	    <plsql>alter table %SCHEMA%.sect_pref add label varchar2(60 char)</plsql>
+		<mysql>create index idx_sect_pref_label on %SCHEMA%.sect_pref(label, required)</mysql>
+		<plsql>create index %SCHEMA%.idx_sect_pref_label on %SCHEMA%.sect_pref(label, required)</plsql>
+	</update>
 </dbupdate>

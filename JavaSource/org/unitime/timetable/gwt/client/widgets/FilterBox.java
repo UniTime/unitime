@@ -951,6 +951,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		private String iCommand;
 		private String iLabel;
 		private boolean iMultiple = true;
+		private boolean iVisible = true;
 		
 		public SimpleFilter(String command, String label) {
 			iCommand = command;
@@ -969,6 +970,9 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		public String getLabel() {
 			return iLabel == null || iLabel.isEmpty() ? iCommand.replace('_', ' ') : iLabel;
 		}
+		
+		public boolean isVisible() { return iVisible; }
+		public void setVisible(boolean visible) { iVisible = visible; }
 		
 		public abstract void getValues(List<Chip> chips, String text, AsyncCallback<Collection<Chip>> callback);
 		
@@ -1017,6 +1021,10 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 
 		@Override
 		public void getPopupWidget(final FilterBox box, final AsyncCallback<Widget> callback) {
+			if (!isVisible()) {
+				callback.onSuccess(null);
+				return;
+			}
 			getValues(box.getChips(null), box.getText(), new AsyncCallback<Collection<Chip>>() {
 				@Override
 				public void onFailure(Throwable caught) {

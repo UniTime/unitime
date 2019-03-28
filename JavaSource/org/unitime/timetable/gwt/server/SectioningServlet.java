@@ -2186,12 +2186,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							for (StudentSectioningPref ssp: course.getPreferences()) {
 								if (ssp instanceof StudentClassPref) {
 									StudentClassPref scp = (StudentClassPref)ssp;
-									String suffix = scp.getClazz().getClassSuffix(course.getCourseOffering());
-									if (suffix == null)
-										suffix = scp.getClazz().getSchedulingSubpart().getItypeDesc().trim() + " " + scp.getClazz().getSectionNumberString();
-									else if (suffix.length() <= 4)
-										suffix = scp.getClazz().getSchedulingSubpart().getItypeDesc().trim() + " " + suffix;
-									rc.setSelectedClass(scp.getClazz().getUniqueId(), suffix, scp.isRequired(), true);
+									rc.setSelectedClass(scp.getClazz().getUniqueId(), scp.getClazz().getClassPrefLabel(course.getCourseOffering()), scp.isRequired(), true);
 								} else if (ssp instanceof StudentInstrMthPref) {
 									StudentInstrMthPref imp = (StudentInstrMthPref)ssp;
 									rc.setSelectedIntructionalMethod(imp.getInstructionalMethod().getUniqueId(), imp.getInstructionalMethod().getLabel(), imp.isRequired(), true);

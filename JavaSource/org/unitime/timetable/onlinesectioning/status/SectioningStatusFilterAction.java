@@ -271,6 +271,19 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				response.add("mode", modes);
 		}
 		
+
+		List<Entity> preferences = new ArrayList<Entity>();
+		preferences.add(new Entity(0l, "Any Preference", MESSAGES.termAnyPreference(), "translated-value", MESSAGES.termAnyPreference()));
+		preferences.add(new Entity(1l, "Met Preference", MESSAGES.termMetPreference(), "translated-value", MESSAGES.termMetPreference()));
+		preferences.add(new Entity(2l, "Unmet Preference", MESSAGES.termUnmetPreference(), "translated-value", MESSAGES.termUnmetPreference()));
+		response.add("prefer", preferences);
+		
+		List<Entity> requires = new ArrayList<Entity>();
+		requires.add(new Entity(0l, "Any Requirement", MESSAGES.termAnyRequirement(), "translated-value", MESSAGES.termAnyRequirement()));
+		requires.add(new Entity(1l, "Met Requirement", MESSAGES.termMetRequirement(), "translated-value", MESSAGES.termMetRequirement()));
+		requires.add(new Entity(2l, "Unmet Requirement", MESSAGES.termUnmetRequirement(), "translated-value", MESSAGES.termUnmetRequirement()));
+		response.add("require", requires);
+		
 		return response;
 	}
 	
@@ -411,21 +424,25 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		}
 		
 		if (iRequest.getText().length() > 1 && (response.getSuggestions() == null || response.getSuggestions().size() < 20)) {
-			StudentQuery.QueryInstance instance = query.select("distinct c").exclude("prefer").exclude("require")
+			StudentQuery.QueryInstance instance = query.select("distinct c, pcr.courseOffering").exclude("prefer").exclude("require")
 					.from("inner join s.courseDemands pcd inner join pcd.courseRequests pcr inner join pcr.preferences pp inner join pp.clazz c")
-					.where("lower(c.classSuffix) like :q || '%' or lower(c.classSuffix) like :q || '%'").set("q", iRequest.getText().toLowerCase());
-			for (Class_ c: (List<Class_>)instance.limit(20).query(helper.getHibSession()).list()) {
-				response.addSuggestion(c.getClassLabel(true), c.getClassSuffix(), "Prefer", "prefer", true);
+					.where("lower(pp.label) like :q || '%'").set("q", iRequest.getText().toLowerCase());
+			for (Object[] o: (List<Object[]>)instance.limit(20).query(helper.getHibSession()).list()) {
+				Class_ c = (Class_)o[0];
+				CourseOffering co = (CourseOffering)o[1];
+				response.addSuggestion(c.getClassLabel(co, true), c.getClassPrefLabel(co), "Prefer", "prefer", true);
 			}
 		}
 		
 		if (iRequest.getText().length() > 1 && (response.getSuggestions() == null || response.getSuggestions().size() < 20)) {
-			StudentQuery.QueryInstance instance = query.select("distinct c").exclude("prefer").exclude("require")
+			StudentQuery.QueryInstance instance = query.select("distinct c, pcr.courseOffering").exclude("prefer").exclude("require")
 					.from("inner join s.courseDemands pcd inner join pcd.courseRequests pcr inner join pcr.preferences pp inner join pp.clazz c")
-					.where("lower(c.classSuffix) like :q || '%' or lower(c.classSuffix) like :q || '%'")
+					.where("lower(pp.label) like :q || '%'")
 					.where("pp.required = true").set("q", iRequest.getText().toLowerCase());
-			for (Class_ c: (List<Class_>)instance.limit(20).query(helper.getHibSession()).list()) {
-				response.addSuggestion(c.getClassLabel(true), c.getClassSuffix(), "Require", "require", true);
+			for (Object[] o: (List<Object[]>)instance.limit(20).query(helper.getHibSession()).list()) {
+				Class_ c = (Class_)o[0];
+				CourseOffering co = (CourseOffering)o[1];
+				response.addSuggestion(c.getClassLabel(co, true), c.getClassPrefLabel(co), "Require", "require", true);
 			}
 		}
 		
@@ -676,24 +693,28 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			String where = "";
 			int id = 0;
 			for (String p: request.getOptions("prefer")) {
+				if ("Any Preference".equalsIgnoreCase(p) || "Met Preference".equalsIgnoreCase(p) || "Unmet Preference".equalsIgnoreCase(p)) continue;
 				where += (where.isEmpty() ? "" : ",") + ":Xprf" + id;
 				query.addParameter("prefer", "Xprf" + id, p);
 				id++;
 			}
-			query.addFrom("prefer", "inner join s.courseDemands pcd inner join pcd.courseRequests pcr inner join pcr.preferences pp left outer join pp.clazz pc left outer join pp.instructionalMethod pim");
-			query.addWhere("prefer", "(pc is not null and pc.classSuffix in (" + where + ")) or (pim is not null and pim.label in ("+where+"))");
+			query.addFrom("prefer", "inner join s.courseDemands pcd inner join pcd.courseRequests pcr inner join pcr.preferences pp");
+			if (id > 0)
+				query.addWhere("prefer", "pp.label in (" + where + ")");
 		}
 		
 		if (request.hasOptions("require")) {
 			String where = "";
 			int id = 0;
 			for (String p: request.getOptions("require")) {
+				if ("Any Requirement".equalsIgnoreCase(p) || "Met Requirement".equalsIgnoreCase(p) || "Unmet Requirement".equalsIgnoreCase(p)) continue;
 				where += (where.isEmpty() ? "" : ",") + ":Xprf" + id;
 				query.addParameter("require", "Xprf" + id, p);
 				id++;
 			}
-			query.addFrom("require", "inner join s.courseDemands rcd inner join rcd.courseRequests rcr inner join rcr.preferences rp left outer join rp.clazz rc left outer join rp.instructionalMethod rim");
-			query.addWhere("require", "((rc is not null and rc.classSuffix in (" + where + ")) or (rim is not null and rim.label in ("+where+"))) and rp.required = true");
+			query.addFrom("require", "inner join s.courseDemands rcd inner join rcd.courseRequests rcr inner join rcr.preferences rp");
+			if (id > 0)
+				query.addWhere("require", "rp.label in (" + where + ") and rp.required = true");
 		}
 		
 		return query;
@@ -733,7 +754,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				iWhere.put(option, where);
 		}
 
-		protected void addParameter(String option, String name, Object value) {
+		public void addParameter(String option, String name, Object value) {
 			Map<String, Object> params = iParams.get(option);
 			if (params == null) { params = new HashMap<String, Object>(); iParams.put(option, params); }
 			if (value == null)
@@ -878,11 +899,11 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		}
 		
 		if (request.hasOptions("prefer")) {
-			query.addFrom("prefer", "inner join cr.preferences pp left outer join pp.clazz pc left outer join pp.instructionalMethod pim");
+			query.addFrom("prefer", "inner join cr.preferences pp");
 		}
 		
 		if (request.hasOptions("require")) {
-			query.addFrom("require", "inner join cr.preferences rp left outer join rp.clazz rc left outer join rp.instructionalMethod rim");
+			query.addFrom("require", "inner join cr.preferences rp");
 		}
 
 		return query;

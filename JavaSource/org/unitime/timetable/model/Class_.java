@@ -1886,4 +1886,14 @@ public class Class_ extends BaseClass_ {
 			}
 		return totalLoad / instructors;
 	}
+	
+	public String getClassPrefLabel(CourseOffering co) {
+		String label = getClassSuffix(co);
+		if (label == null) {
+			label = getSchedulingSubpart().getItypeDesc().trim() + " " + getSectionNumberString();
+		} else if (label.length() <= 4) {
+			label = getSchedulingSubpart().getItypeDesc().trim() + " " + label;
+		}
+		return label;
+	}
 }
