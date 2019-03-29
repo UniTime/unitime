@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.action;
 
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -32,6 +34,7 @@ import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.form.SponsoringOrgEditForm;
+import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.SponsoringOrganization;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -140,6 +143,11 @@ public class SponsoringOrgEditAction extends Action {
             try {
     			Session hibSession = new _RootDAO().getSession();
             	tx = hibSession.beginTransaction();
+            	
+            	for (Event event: (List<Event>)hibSession.createQuery("from Event where sponsoringOrganization.uniqueId = :orgId").setLong("orgId", myForm.getId()).list()) {
+            		event.setSponsoringOrganization(null);
+            		hibSession.update(event);
+            	}
             	
                 SponsoringOrganization spor = myForm.getOrg();
                	hibSession.delete(spor);
