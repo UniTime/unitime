@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.gwt.shared;
 
+import java.util.Date;
+
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -44,19 +46,21 @@ public interface AcademicSessionProvider {
 	
 	public void selectSession(Long sessionId, AsyncCallback<Boolean> callback);
 	
-	public static class AcademicSessionInfo implements IsSerializable {
+	public static class AcademicSessionInfo implements IsSerializable, Comparable<AcademicSessionInfo> {
 		private Long iSessionId;
 		private String iYear, iTerm, iCampus, iName;
 		private String iExternalTerm, iExternalCampus;
+		private Date iStartDate;
 		
 		public AcademicSessionInfo() {}
 		
-		public AcademicSessionInfo(Long sessionId, String year, String term, String campus, String name) {
+		public AcademicSessionInfo(Long sessionId, String year, String term, String campus, String name, Date sessionStartDate) {
 			iSessionId = sessionId;
 			iTerm = term;
 			iYear = year;
 			iCampus = campus;
 			iName = name;
+			iStartDate = sessionStartDate;
 		}
 		
 		public Long getSessionId() { return iSessionId; }
@@ -82,6 +86,10 @@ public interface AcademicSessionProvider {
 		public boolean hasExternalTerm() { return iExternalTerm != null && !iExternalTerm.isEmpty(); }
 		public AcademicSessionInfo setExternalTerm(String extTerm) { iExternalTerm = extTerm; return this; }
 		
+		public boolean hasStartDate() { return iStartDate != null; }
+		public Date getStartDate() { return iStartDate; }
+		public void setStartDate(Date startDate) { iStartDate = startDate; }
+		
 		@Override
 		public String toString() {
 			return getName();
@@ -91,6 +99,15 @@ public interface AcademicSessionProvider {
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof AcademicSessionInfo)) return false;
 			return getSessionId().equals(((AcademicSessionInfo)o).getSessionId());
+		}
+
+		@Override
+		public int compareTo(AcademicSessionInfo s) {
+			int cmp = s.getStartDate().compareTo(getStartDate());
+			if (cmp != 0) return cmp;
+			cmp = getName().compareTo(s.getName());
+			if (cmp != 0) return cmp;
+			return getSessionId().compareTo(s.getSessionId());
 		}
 	}
 	

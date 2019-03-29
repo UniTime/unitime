@@ -82,7 +82,7 @@ public class TaskOptionsBackend implements GwtRpcImplementation<GetTaskOptionsRp
 		
 		Session session = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId());
 		if (session != null) {
-			options.setSession(new AcademicSessionInfo(session.getUniqueId(), session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(), session.getLabel()));
+			options.setSession(new AcademicSessionInfo(session.getUniqueId(), session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(), session.getLabel(), session.getSessionBeginDateTime()));
 			options.setSessionMonth(DateSelectorBackend.listMonths(session, context.hasPermission(Right.EventDateMappings), new SimplePastOrOutside(session),
 					ApplicationProperty.DatePatternNrExessMonth.intValue(), false));
 		} else {
