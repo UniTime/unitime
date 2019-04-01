@@ -158,6 +158,10 @@ public class SessionBackup implements SessionBackupInterface {
     		avoid.add(DistributionType.class.getName() + ".departments");
     		avoid.add(LastLikeCourseDemand.class.getName() + ".student");
     		avoid.add(Student.class.getName() + ".lastLikeCourseDemands");
+    		String pAvoid = ApplicationProperty.SessionBackupAvoid.value();
+    		if (pAvoid != null && !pAvoid.isEmpty())
+    			for (String av: pAvoid.split("[\n,;]"))
+    				if (!av.isEmpty()) avoid.add(av.trim());
     		
     		Set<String> disallowedNotNullRelations = new HashSet<String>();
     		disallowedNotNullRelations.add(Assignment.class.getName() + ".datePattern");
@@ -176,6 +180,10 @@ public class SessionBackup implements SessionBackupInterface {
         		disallowedNotNullRelations.add(PitDepartmentalInstructor.class.getName() + ".department");
         		disallowedNotNullRelations.add(PitCourseOffering.class.getName() + ".subjectArea");
     		}
+    		String pDisallowed = ApplicationProperty.SessionBackupDisallowed.value();
+    		if (pDisallowed != null && !pDisallowed.isEmpty())
+    			for (String dis: pDisallowed.split("[\n,;]"))
+    				if (!dis.isEmpty()) disallowedNotNullRelations.add(dis.trim());
     		
     		Map<String, List<QueueItem>> data = new HashMap<String, List<QueueItem>>();
     		List<QueueItem> sessions = new ArrayList<QueueItem>();

@@ -2013,6 +2013,14 @@ public enum ApplicationProperty {
 	@DefaultValue("org.unitime.timetable.backup.SessionBackup")
 	@Description("Implementation of the session backup interface.")
 	SessionBackupInterface("unitime.session_backup.class"),
+	
+	@Type(String.class)
+	@Description("Academic session backup: semicolon separated list of relations that are to be avoided")
+	SessionBackupAvoid("unitime.session_backup.avoid"),
+	
+	@Type(String.class)
+	@Description("Academic session backup: semicolon separated list of disallowed not-null relations")
+	SessionBackupDisallowed("unitime.session_backup.disallowed"),
 
 	@Type(Class.class)
 	@Implements(org.unitime.timetable.backup.SessionRestoreInterface.class)
