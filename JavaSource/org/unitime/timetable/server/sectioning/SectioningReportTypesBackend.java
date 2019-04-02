@@ -36,6 +36,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.reports.studentsct.CriticalCoursesReport;
 import org.unitime.timetable.reports.studentsct.IndividualStudentTimeOverlaps;
 import org.unitime.timetable.reports.studentsct.PerturbationsReport;
 import org.unitime.timetable.reports.studentsct.StudentAvailabilityConflicts;
@@ -76,6 +77,7 @@ public class SectioningReportTypesBackend implements GwtRpcImplementation<Sectio
 		COURSE_REQUESTS(SCT_MSG.reportCourseRequestsWithPriorities(), RequestPriorityTable.class.getName(), "pritify", "false"),
 		TABLEAU_REPORT(SCT_MSG.reportTableauReport(), TableauReport.class.getName(), "pritify", "false"),
 		TABLEAU_SIMPLE(SCT_MSG.reportTableauSimpleReport(), TableauReport.class.getName(), "pritify", "false", "simple", "true"),
+		CRITICAL(SCT_MSG.reportCriticalCoursesReport(), CriticalCoursesReport.class.getName(), "pritify", "false"),
 		;
 		
 		String iName, iImplementation;

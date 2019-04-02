@@ -1812,6 +1812,27 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Requested")
 	String reportRequestedPriority();
 	
+	@DefaultMessage("Critical Courses")
+	String reportCriticalCoursesReport();
+	
+	@DefaultMessage("Priority")
+	String reportPriority();
+	
+	@DefaultMessage("Course")
+	String reportCourse();
+	
+	@DefaultMessage("1st Alt")
+	String report1stAlt();
+	
+	@DefaultMessage("2nd Alt")
+	String report2ndAlt();
+	
+	@DefaultMessage("Enrolled\nCourse")
+	String reportEnrolledCourse();
+	
+	@DefaultMessage("Enrolled\nChoice")
+	String reportEnrolledChoice();
+	
 	@DefaultMessage("{0} (TA)")
 	String teachingAssignment(String className);
 	
