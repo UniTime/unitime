@@ -35,6 +35,7 @@ import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.solver.Solver;
 import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
@@ -42,6 +43,7 @@ import org.cpsolver.studentsct.StudentSectioningSaver;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.hibernate.CacheMode;
@@ -74,6 +76,7 @@ import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.solver.studentsct.InMemoryReport;
 import org.unitime.timetable.solver.studentsct.StudentSolver;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 
 import com.google.gson.Gson;
@@ -109,6 +112,8 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 	private Set<String> iAllowedOverrides = new HashSet<String>();
 	private int iNrThreads = 1;
 	private boolean iCanContinue = true;
+	private boolean iTimeConflictsIgnoreBreakTimes = false;
+	private boolean iAutoTimeOverrides = false;
 	
 	private Hashtable<Long,CourseOffering> iCourses = null;
     private Hashtable<Long,Class_> iClasses = null;
@@ -140,6 +145,8 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		String allowedOverrides = solver.getProperties().getProperty("Save.XE.AllowedOverrides", null);
 		if (allowedOverrides != null && !allowedOverrides.isEmpty())
 			iAllowedOverrides = new HashSet<String>(Arrays.asList(allowedOverrides.split(",")));
+		iAutoTimeOverrides = solver.getProperties().getPropertyBoolean("Save.XE.AutoTimeOverrides", iAutoOverrides && iAllowedOverrides.contains("TIME-CNFLT"));
+		iTimeConflictsIgnoreBreakTimes = solver.getProperties().getPropertyBoolean("Save.XE.TimeConflictsIgnoreBreakTimes", false);
 		iNrThreads = solver.getProperties().getPropertyInt("Save.XE.NrSaveThreads", 10);
 		iCSV = new InMemoryReport("XE", "Last XE Enrollment Results (" + Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP_SHORT).format(new Date()) + ")");
 		((StudentSolver)solver).setReport(iCSV);
@@ -341,6 +348,63 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		return crns;
 	}
 	
+	protected String getCrn(Enrollment enrollment, Section section) {
+		CourseOffering course = iCourses.get(enrollment.getCourse().getId());
+		Class_ clazz = iClasses.get(section.getId());
+		if (clazz != null && course != null) clazz.getExternalId(course);
+		return null;
+	}
+	
+	protected boolean shareHoursIgnoreBreakTime(TimeLocation t1, TimeLocation t2) {
+    	int s1 = t1.getStartSlot() * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+    	int e1 = (t1.getStartSlot() + t1.getLength()) * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN - t1.getBreakTime();
+    	int s2 = t2.getStartSlot() * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+    	int e2 = (t2.getStartSlot() + t2.getLength()) * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN - t2.getBreakTime();
+    	return e1 > s2 && e2 > s1;
+    }
+    
+	protected boolean inConflict(SctAssignment a1, SctAssignment a2) {
+        if (a1.getTime() == null || a2.getTime() == null) return false;
+        if (iTimeConflictsIgnoreBreakTimes) {
+        	TimeLocation t1 = a1.getTime();
+        	TimeLocation t2 = a2.getTime();
+        	return t1.shareDays(t2) && shareHoursIgnoreBreakTime(t1, t2) && t1.shareWeeks(t2);
+        } else {
+        	return a1.getTime().hasIntersection(a2.getTime());
+        }
+    }
+    
+	
+	protected Set<String> getTimeConflicts(Student student) {
+		Set<String> crns = new TreeSet<String>();
+		for (int i1 = 0; i1 < student.getRequests().size(); i1++) {
+			Request r1 = student.getRequests().get(i1);
+			Enrollment e1 = getAssignment().getValue(r1);
+			if (e1 != null && e1.isCourseRequest()) {
+				for (int i2 = i1 + 1; i2 < student.getRequests().size(); i2++) {
+					Request r2 = student.getRequests().get(i2);
+					Enrollment e2 = getAssignment().getValue(r2);
+					if (e2 != null && e2.isCourseRequest()) {
+						for (Section s1 : e1.getSections()) {
+				            for (Section s2 : e2.getSections()) {
+				                if (inConflict(s1, s2)) {
+				                	if (s1.isAllowOverlap()) {
+				                		String crn = getCrn(e1, s1);
+				                		if (crn != null) crns.add(crn);
+				                	} else if (s2.isAllowOverlap()) {
+				                		String crn = getCrn(e2, s2);
+				                		if (crn != null) crns.add(crn);
+				                	}
+				                }
+				            }
+						}	
+					}
+				}
+			}
+		}
+		return crns;
+	}
+	
 	protected Gson getGson() {
 		GsonBuilder builder = new GsonBuilder()
 		.registerTypeAdapter(DateTime.class, new JsonSerializer<DateTime>() {
@@ -478,6 +542,11 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 				}
 			}
 			Map<String, Set<String>> appliedOverrides = new HashMap<String, Set<String>>();
+			
+			if (iAutoTimeOverrides) {
+				for (String crn: getTimeConflicts(student))
+					addOverride(student, req, crn, "TIME-CNFLT", appliedOverrides);
+			}
 			
 			action.addOptionBuilder().setKey("request").setValue(gson.toJson(req));
 			long t1 = System.currentTimeMillis();
