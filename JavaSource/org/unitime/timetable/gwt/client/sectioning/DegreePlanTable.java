@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.unitime.timetable.gwt.client.sectioning.DegreePlanDialog.AssignmentProvider;
 import org.unitime.timetable.gwt.client.widgets.P;
+import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
@@ -88,7 +89,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		header.add(hCredit);
 		UniTimeTableHeader hNote = new UniTimeTableHeader(MESSAGES.colNote());
 		header.add(hNote);
-		UniTimeTableHeader hReq = new UniTimeTableHeader(MESSAGES.colRequestPriority(), 2);
+		UniTimeTableHeader hReq = new UniTimeTableHeader(MESSAGES.colRequestPriority(), 3);
 		header.add(hReq);
 		addRow(null, header);
 	}
@@ -253,6 +254,10 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 			} else {
 				row.add(new GroupTitleCell(group.toString(MESSAGES), false));
 			}
+			if (group.isCritical())
+				row.add(new CriticalCell(group));
+			else
+				row.add(new Label());
 			addRow(group, row);
 		}
 		if (group.hasCourses()) {
@@ -273,6 +278,10 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 					}
 					row.add(new TitleLabel(course.getTitle() == null ? "" : course.getTitle()));
 					row.add(new CourseNotOfferedLabel(MESSAGES.plannedCourseNotOffered(MESSAGES.course(course.getSubject(), course.getCourse()))));
+					if (course.isCritical())
+						row.add(new Image(RESOURCES.requestsCritical()));
+					else
+						row.add(new Label());
 					addRow(course, row);
 				} else if (course.getCourses().size() > 1 && !group.isChoice()) {
 					List<Widget> row = new ArrayList<Widget>();
@@ -289,6 +298,10 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 					} else {
 						row.add(new GroupTitleCell(course.hasTitle() ? MESSAGES.courseNameWithTitle(course.getSubject(), course.getCourse(), course.getTitle()) : MESSAGES.course(course.getSubject(), course.getCourse()), false));
 					}
+					if (group.isCritical())
+						row.add(new CriticalCell(course));
+					else
+						row.add(new Label());
 					addRow(course, row);
 				}
 				if (course.hasCourses()) {
@@ -338,6 +351,10 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 							icon.addStyleName("icon");
 							row.add(icon);
 						} else
+							row.add(new Label());
+						if (course.isCritical() && !(course.getCourses().size() > 1 && !group.isChoice()))
+							row.add(new CriticalCell(course));
+						else
 							row.add(new Label());
 						addRow(ca, row);
 					}
@@ -422,7 +439,35 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		}
 
 		@Override
-		public int getColSpan() { return 8; }
+		public int getColSpan() { return 9; }
+	}
+	
+	public static class CriticalCell extends Image {
+		public CriticalCell(final DegreeCourseInterface course) {
+			super(RESOURCES.degreePlanCritical());
+			setTitle(MESSAGES.hintCriticalCourse(course.getCourseName()));
+			setAltText(MESSAGES.hintCriticalCourse(course.getCourseName()));
+			addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					event.stopPropagation();
+					UniTimeConfirmationDialog.info(MESSAGES.hintCriticalCourse(course.getCourseName()));
+				}
+			});
+		}
+		
+		public CriticalCell(final DegreeGroupInterface group) {
+			super(RESOURCES.degreePlanCritical());
+			setTitle(MESSAGES.hintCriticalGroup(group.isPlaceHolder() ? group.getDescription() : group.toString(MESSAGES)));
+			setAltText(MESSAGES.hintCriticalGroup(group.isPlaceHolder() ? group.getDescription() : group.toString(MESSAGES)));
+			addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					event.stopPropagation();
+					UniTimeConfirmationDialog.info(MESSAGES.hintCriticalGroup(group.isPlaceHolder() ? group.getDescription() : group.toString(MESSAGES)));
+				}
+			});
+		}
 	}
 	
 	public class ChoiceButton extends RadioButton {

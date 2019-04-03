@@ -114,7 +114,7 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Credit")
 	String colCredit();
-
+	
 	@DefaultMessage("Year")
 	String colYear();
 	
@@ -2187,4 +2187,10 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Unmet Requirement")
 	String termUnmetRequirement();
+	
+	@DefaultMessage("Course {0} is marked as critical.")
+	String hintCriticalCourse(String courseOrGroup);
+	
+	@DefaultMessage("Elective {0} is marked as critical.")
+	String hintCriticalGroup(String courseOrGroup);
 }

@@ -129,6 +129,7 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 		List<DegreePlaceHolderInterface> iPlaceHolders = null;
 		private Boolean iSelected = null;
 		private String iDescription = null;
+		private Boolean iCritical = null;
 		
 		public DegreeGroupInterface() {}
 		
@@ -187,6 +188,11 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 		public boolean hasSelected() { return iSelected != null; }
 		public boolean isSelected() { return iSelected == null || iSelected.booleanValue(); }
 		public void setSelected(boolean selected) { iSelected = selected; }
+		
+		public boolean hasCritical() { return iCritical != null; }
+		public boolean isCritical() { return iCritical != null && iCritical.booleanValue(); }
+		public void setCritical(boolean critical) { iCritical = critical; }
+		
 		public boolean hasDescription() { return iDescription != null && !iDescription.isEmpty(); }
 		public String getDescription() { return hasDescription() ? iDescription : toString(); }
 		public void setDescription(String description) { iDescription = description; }
@@ -419,6 +425,7 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 		private String iSubject, iCourse, iTitle;
 		private Boolean iSelected = null;
 		private List<CourseAssignment> iCourses;
+		private Boolean iCritical = null;
 		
 		public DegreeCourseInterface() {}
 		
@@ -434,6 +441,9 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 		public void setSelected(boolean selected) { iSelected = selected; }
 		public Long getCourseId() { return iCourseId; }
 		public void setCourseId(Long courseId) { iCourseId = courseId; }
+		public boolean hasCritical() { return iCritical != null; }
+		public boolean isCritical() { return iCritical != null && iCritical.booleanValue(); }
+		public void setCritical(boolean critical) { iCritical = critical; }
 		
 		public String getCourseName() {
 			return (getSubject() == null ? "" : getSubject() + " ") + getCourse();

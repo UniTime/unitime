@@ -490,6 +490,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		DegreePlanInterface.DegreeGroupInterface group = new DegreePlanInterface.DegreeGroupInterface();
 		group.setChoice(g.groupType != null && "CH".equals(g.groupType.code));
 		group.setDescription(g.summaryDescription);
+		group.setCritical(g.isCritical);
 		group.setId(g.id);
 		if (g.plannedClasses != null)
 			for (XEInterface.Course c: g.plannedClasses) {
@@ -501,6 +502,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				course.setCourse(c.courseNumber);
 				course.setTitle(c.title);
 				course.setId(c.id);
+				course.setCritical(c.isCritical);
 				Collection<? extends XCourseId> ids = server.findCourses(c.courseDiscipline + " " + c.courseNumber, -1, null);
 				if (ids != null) {
 					for (XCourseId id: ids) {

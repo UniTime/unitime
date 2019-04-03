@@ -238,4 +238,7 @@ public interface StudentSectioningResources extends ClientBundle {
 
 	@Source("org/unitime/timetable/gwt/resources/icons/cross.png")
 	ImageResource off();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/star.png")
+	ImageResource degreePlanCritical();
 }
