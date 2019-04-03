@@ -179,9 +179,10 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 	}
 	
 	protected static boolean isCritical(boolean alternative, List<CourseOffering> courses, CriticalCourses critical) {
-		if (critical == null) return false;
+		if (critical == null || alternative) return false;
 		for (CourseOffering co: courses) {
 			if (critical.isCritical(co)) return true;
+			break;
 		}
 		return false;
 	}

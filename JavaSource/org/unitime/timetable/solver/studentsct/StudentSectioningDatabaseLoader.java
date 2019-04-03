@@ -2292,9 +2292,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     }
     
     protected boolean isCritical(CourseDemand cd, CriticalCourses critical) {
-		if (critical == null) return false;
+		if (critical == null || cd.isAlternative()) return false;
 		for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests()) {
-			if (critical.isCritical(cr.getCourseOffering())) return true;
+			if (cr.getOrder() == 0 && critical.isCritical(cr.getCourseOffering())) return true;
 		}
 		return false;
 	}
