@@ -2024,10 +2024,10 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Your time window is {0}.")
 	String messageTimeWindow(String effectivePeriod);
 	
-	@DefaultMessage("The request to increase the maximum credit hours has been denied.\nYou must remove some course requests in order to submit your registration request.")
+	@DefaultMessage("The request to increase the maximum credit hours has been denied.\nYou may not be able to get a full schedule.")
 	String creditStatusDenied();
 	
-	@DefaultMessage("You must remove some course requests in order to submit your registration request.")
+	@DefaultMessage("You may not be able to get a full schedule.")
 	String creditStatusTooHigh();
 	
 	@DefaultMessage("A max credit hours override has been requested.\nWaiting for approval...")
