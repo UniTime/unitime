@@ -76,7 +76,11 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 	}
 	
 	protected String getPlaceHolderRegExp() {
-		return ApplicationProperties.getProperty("banner.ucc.placeholder", "UCC: ([^-]*[^- ]+)([ ]?-.*)?");
+		return ApplicationProperties.getProperty("banner.ucc.placeholder.regExp", " ?UCC:? ?([^-]*[^- ]+)( ?-.*)?");
+	}
+	
+	protected String getPlaceHolderRenames() {
+		return ApplicationProperties.getProperty("banner.ucc.placeholder.replacements", "(?i:Behavioral/Social Science)|Behavior/Social Science\n(?i:Science,? Tech \\& Society( Selective)?)|Science, Tech & Society");
 	}
 
 	@Override
@@ -89,6 +93,17 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 			Matcher m = Pattern.compile(regExp).matcher(query);
 			if (m.matches())
 				query = m.group(1);
+		}
+		String replacements = getPlaceHolderRenames();
+		if (replacements != null && !replacements.isEmpty()) {
+			for (String rep: replacements.split("\n")) {
+				int idx = rep.indexOf('|');
+				if (idx <= 0) continue;
+				if (query.matches(rep.substring(0, idx))) {
+					query = rep.substring(idx + 1);
+					break;
+				}
+			}
 		}
 		List<XCourseId> ret = new ArrayList<XCourseId>();
 		for (Object courseId: helper.getHibSession().createSQLQuery(getCourseLookupSQL())
@@ -117,6 +132,17 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 			Matcher m = Pattern.compile(regExp).matcher(query);
 			if (m.matches())
 				query = m.group(1);
+		}
+		String replacements = getPlaceHolderRenames();
+		if (replacements != null && !replacements.isEmpty()) {
+			for (String rep: replacements.split("\n")) {
+				int idx = rep.indexOf('|');
+				if (idx <= 0) continue;
+				if (query.matches(rep.substring(0, idx))) {
+					query = rep.substring(idx + 1);
+					break;
+				}
+			}
 		}
 
 		List courseIds = hibSession.createSQLQuery(getCourseLookupSQL())
