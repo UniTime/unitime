@@ -30,9 +30,145 @@
 	<category>
 		<title>Student Scheduling</title>
 		<item>
-			<name>Various Improvements</name>
+			<name>Published Schedule Runs</name>
 			<description>
-				<line>A number of improvements, especially in the student scheduling component, are planned for UniTime 4.4.</line>
+				<line>Added an ability to publish results of solver runs for the advisors and schedule deputies to see.</line>
+				<line>Published solver runs are stored in the database. It is possible to get back to a particular run.</line>
+				<line>It is now possible to start a test run automatically, e.g., on a nightly basis.</line>
+			</description>
+		</item>
+		<item>
+			<name>Reporting</name>
+			<description>
+				<line>Additional solver reports have been added on the Student Sectioning Solver Reports and the Online Student Scheduling Reports pages.
+					<line>Tableau report providing information for further processing (requested / enrolled courses by individual students and their properties).</line>
+					<line>Critical course requests and their assignments.</line>
+				</line>
+				<line>There is a new API that can be used to download a solver report of the last published run.</line>
+			</description>
+		</item>
+		<item>
+			<name>Credit Checking</name>
+			<description>
+				<line>Improved handling of maximum credits of a student: a student cannot get more than max credit, it is no longer needed to move course requests that are over the max credit to alternates.</line>
+				<line>Added ability to maximize the number of students that have at least a minimum number of credits.</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Schedule Quality</name>
+			<description>
+				<line>Added an ability to optimize the following criteria:
+					<line>Avoid early morning and late evening times</line>
+					<line>Have time for lunch</line>
+					<line>Minimize overall travel</line>
+					<line>Avoid holes in the schedule (prefer back-to-back)</line>
+					<line>Avoid long days (aka work-day constraint)</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Preferences and Requirements</name>
+			<description>
+				<line>Improved performance of the solver (added ability to swap students in order to improve Selection preference).</line>
+				<line>It is now possible to put a preference on the default (not-set) instructional method.</line>
+				<line>It is now possible to require certain sections or instructional methods.</line>
+				<line>It is possible to define who can set required preferences (student by status, admin/advisor by permissions).</line>
+				<line>It is possible to filter by preferences or requirements on the dashboard.
+					<line>By individual method or section</line>
+					<line>Any, all met or all unmet preferences or requirements</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling Dashboard</name>
+			<description>
+				<line>Added pagination when showing too many students (over 500).</line>
+				<line>Enrollment counts: exclude requests that are pending, canceled, and/or rejected (depending on the override filter).</line>
+				<line>Student groups have been split by type (there is a column for each type, they are grouped by type in the filter as well).</line>
+				<line>Added ability to select multiple courses in the filter.</line>
+				<line>Corrected computation of available space on disabled (no-print) sections.</line>
+				<line>Various performance improvements.</line>
+			</description>
+		</item>
+		<item>
+			<name>Reservations</name>
+			<description>
+				<line>Course requests that have matching (individual or student group) reservations may not be removed by the student.
+					<line>Such course requests may not be allowed to be changed in priority, or no alternatives can be added to them.</line>
+				</line>
+				<line>Added more customizable individual and student group override reservations.</line>
+				<line>Reservations can be edited without locking the offering when wait-listing is disabled.</line>
+				<line>Created Learning Community reservations combining course and student group reservations.</line>
+				<line>Various improvements on the Reservations page (e.g., it is now possible to filter by override type).</line>
+			</description>
+		</item>
+		<item>
+			<name>Critical Courses</name>
+			<description>
+				<line>Some course requests may be identified as critical.</line>
+				<line>Critical course requests should take precedence (assign critical courses first, do not unassing critical course demands).</line>
+				<line>Critical courses are identified by a custom class implementing the CriticalCoursesProvider interface/</line>
+			</description>
+		</item>
+		<item>
+			<name>Other Improvements</name>
+			<description>
+				<line>Student Status: Added session-dependent student statuses.</line>
+				<line>Batch Solver: do not put students into classes that already started (added General.ClassesFixedDate solver parameter).</line>
+				<line>Course Requests: Alternate Course Requests renamed to Substitute Course Requests.</line>
+				<line>Course Requests: Added ability to select multiple courses in the Course Finder dialog and filter by UCC course attributes.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Event Management</title>
+		<item>
+			<name>Permissions</name>
+			<description>
+				<line>Finer control over who can see unpublished class events.
+					<line>When unitime.events.hasRole.checkSessionStatusForClasses is set to true (departmental managers cannot see unpublished class events of other departments).</line>
+					<line>Allow some department-dependent roles to see all class events with the new EventCanSeeUnpublishedEvents permission.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Approval</name>
+			<description>
+				<line>When new meetings of a Special or Course-Related event are automatically approved (either due to the Approve New Meetings toggle or the event status), also add Approve action into the event notes.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Data Exchange</name>
+			<description>
+				<line>CSV Exports: Added ability to export CSVs with custom delimiter and quotation characters.
+					<line>Using csvDelimiter and csvQuatation parameters, for example: &amp;csvDelimiter=%7c&amp;csvQuotation= will add | as delimiter and no quotation marks.</line>
+				</line>
+				<line>Course Offering Export: export class.managingDept when a class is externally managed.</line>
+				<line>Academic Session Import: Corrected import of automated tasks (do not create a script if it already exists, do not limit script length to 255 chars).</line>
+				<line>Solver Load: Added ability to load solver XML in using the Data Exchange page.
+					<line>No data are updated, but the appropriate solver is created and loaded in using the given XML file.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Dependencies</name>
+			<description>
+				<line>Spring Framework upgraded to 4.3.18 (was 3.2.14)</line>
+				<line>spring Security upgraded to 4.2.9 (was 3.2.8)</line>
+				<line>Spring Integration upgraded to 4.3.17 (was 3.0.7)</line>
+				<line>Appache Commons FileUpload updated to version 1.3.3 (was 1.3.1)</line>
+				<line>Restlet Framework upgraded to 2.3.12 (was 2.3.4)</line>
+				<line>Added jaxen 1.1.6 to ensure that scripts are able to create XML files (this fixes an issue ClassNotFoundException: org.jaxen.VariableContext).</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>Sponsoring Organizations: Avoid a Hibernate cache exception when deleting a sponsoring organization that is being used.</line>
+				<line>Date Patterns: Avoid throwing an error when the date pattern starts before the first month (just ignore the dates before instead).</line>
 			</description>
 		</item>
 	</category>
