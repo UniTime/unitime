@@ -678,15 +678,15 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		if (ret.hasErrors() && resp.overrides != null) {
 			for (ErrorMessage error: ret.getErrors()) {
 				if (!resp.overrides.contains(error.getCode())) {
-					ret.setMessage((ret.hasMessage() ? ret.getMessage() + "\n" : "") + "No overrides are allowed for " + error + ".");
+					ret.setMessage((ret.hasMessage() ? ret.getMessage() + "\n" : "") + "No approvals are allowed for " + error + ".");
 					ret.setCanSubmit(false);
-					denied.add(new ErrorMessage(error.getCourse(), "", error.getCode(), "Overrides are not allowed for: " + error.getMessage()));
+					denied.add(new ErrorMessage(error.getCourse(), "", error.getCode(), "Approvals are not allowed for: " + error.getMessage()));
 				} else {
 					XCourse course = courses.get(error.getCourse());
 					if (course != null && !course.isOverrideEnabled(error.getCode())) {
-						ret.setMessage((ret.hasMessage() ? ret.getMessage() + "\n" : "") + course.getCourseName() + " does not allow overrides for " + error + ".");
+						ret.setMessage((ret.hasMessage() ? ret.getMessage() + "\n" : "") + course.getCourseName() + " does not allow approvals for " + error + ".");
 						ret.setCanSubmit(false);
-						denied.add(new ErrorMessage(course.getCourseName(), "", error.getCode(), "Overrides are not allowed for: " + error.getMessage()));
+						denied.add(new ErrorMessage(course.getCourseName(), "", error.getCode(), "Approvals are not allowed for: " + error.getMessage()));
 					}
 				}
 			}

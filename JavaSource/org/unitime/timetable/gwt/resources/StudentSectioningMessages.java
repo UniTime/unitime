@@ -430,7 +430,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("<u>S</u>ubmit Schedule")
 	String buttonEnroll();
 	
-	@DefaultMessage("Submit Override Requests")
+	@DefaultMessage("Submit Approval Requests")
 	String buttonSubmitSpecReg();
 	
 	@DefaultMessage("Register for the above schedule.")
@@ -469,12 +469,6 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Discard all changes and go back to your current registration.")
 	String hintStartOver();
 	
-	@DefaultMessage("Override Requests")
-	String buttonGetSpecRegs();
-	
-	@DefaultMessage("Select one of the override requests.")
-	String hintGetSpecRegs();
-	
 	@DefaultMessage("<u>C</u>ourse Requests")
 	String tabRequests();
 
@@ -493,16 +487,16 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Unable to store requests: {0}")
 	String saveRequestsFail(String reason);
 	
-	@DefaultMessage("Unable to retrieve override requests: {0}")
+	@DefaultMessage("Unable to retrieve approval requests: {0}")
 	String requestSpecialRegistrationFail(String reason);
 	
 	@DefaultMessage("Special registration failed: {0}")
 	String submitSpecialRegistrationFail(String reason);
 	
-	@DefaultMessage("Failed to cancel override request: {0}")
+	@DefaultMessage("Failed to cancel approval request: {0}")
 	String cancelSpecialRegistrationFail(String reason);
 	
-	@DefaultMessage("Failed to load override requests: {0}")
+	@DefaultMessage("Failed to load approval requests: {0}")
 	String retrieveAllSpecialRegistrationsFail(String reason);
 
 	@DefaultMessage("Success!")
@@ -1004,7 +998,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Checking eligibility...")
 	String waitEligibilityCheck();
 	
-	@DefaultMessage("Checking overrides...")
+	@DefaultMessage("Checking approvals...")
 	String waitOverridesCheck();
 	
 	@DefaultMessage("Filter assignments of the selected class by name, day, start time, date, room or instructor." +
@@ -1464,7 +1458,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("You have made some changes in your course requests. Please click the Submit Requests button to update your submission.")
 	String warnRequestsChangedOnCourseRequest();
 	
-	@DefaultMessage("You have made some changes in your schedule. Please click the Submit Override Requests button to validate your changes and request overrides if needed.")
+	@DefaultMessage("You have made some changes in your schedule. Please click the Submit Approval Requests button to validate your changes and request approvals if needed.")
 	String warnSpecialRegistrationChanged();
 		
 	@DefaultMessage("There are unsaved changes in your schedule. Do you really want to discard these changes without updating your registration?")
@@ -1569,7 +1563,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("There are multiple degree plans available, please select one to continue...")
 	String dialogSelectDegreePlan();
 	
-	@DefaultMessage("Override Requests")
+	@DefaultMessage("Approval Requests")
 	String dialogSpecialRegistrations();
 	
 	@DefaultMessage("Degree Plan: {0}")
@@ -1638,7 +1632,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("No degree plan is available.")
 	String failedNoDegreePlans();
 	
-	@DefaultMessage("No override requests are available.")
+	@DefaultMessage("No approval requests are available.")
 	String failedNoSpecialRegistrations();
 	
 	@DefaultMessage("Failed to load degree plan: {0}")
@@ -1650,25 +1644,25 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("This plan is active.")
 	String hintActivePlan();
 	
-	@DefaultMessage("The override request has been approved.")
+	@DefaultMessage("The approval request has been approved.")
 	String hintSpecRegApproved();
 	
-	@DefaultMessage("This override request has been fully approved. Click on this request to apply it to your current schedule and then click Submit Schedule button to update your registration.")
+	@DefaultMessage("This approval request has been fully approved. Click on this request to apply it to your current schedule and then click Submit Schedule button to update your registration.")
 	String hintSpecRegApprovedNoteApply();
 	
-	@DefaultMessage("The override request has been cancelled.")
+	@DefaultMessage("The approval request has been cancelled.")
 	String hintSpecRegCancelled();
 	
-	@DefaultMessage("The override request has been submitted for processing. Waiting for approval...")
+	@DefaultMessage("The approval request has been submitted for processing. Waiting for approval...")
 	String hintSpecRegPending();
 	
-	@DefaultMessage("The override request has been submitted for processing. It can still be edited.")
+	@DefaultMessage("The approval request has been submitted for processing. It can still be edited.")
 	String hintSpecRegDraft();
 	
 	@DefaultMessage("One or more of the registration errors have been denied.")
 	String hintSpecRegRejected();
 	
-	@DefaultMessage("The override request has been already applied.")
+	@DefaultMessage("The approval request has been already applied.")
 	String hintSpecRegApplied();
 	
 	@DefaultMessage("{0}, {1}")
@@ -1865,9 +1859,6 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course request is critical.")
 	String descriptionRequestCritical();
 	
-	@DefaultMessage("Do you want to request overrides for these errors?")
-	String questionRequestOverrides();
-	
 	@DefaultMessage("Enrolled")
 	String reqStatusEnrolled();
 
@@ -2042,13 +2033,13 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Instructional Method Preference:")
 	String labelInstructionalMethodPreference();
 	
-	@DefaultMessage("Request Overrides")
+	@DefaultMessage("Request Approvals")
 	String dialogRequestOverrides();
 	
-	@DefaultMessage("Request Overrides")
+	@DefaultMessage("Request Approvals")
 	String buttonRequestOverrides();
 	
-	@DefaultMessage("Request overrides for the above registration errors")
+	@DefaultMessage("Request approvals for the above registration errors")
 	String titleRequestOverrides();
 	
 	@DefaultMessage("Cancel Request")
@@ -2061,7 +2052,7 @@ public interface StudentSectioningMessages extends Messages {
 	String messageRegistrationErrorsDetected();
 	
 	@DefaultMessage(
-			"\nPlease, select <b>Request Overrides</b> to request registration overrides or other approvals required to register " +
+			"\nPlease, select <b>Request Approvals</b> to request registration overrides or other approvals required to register " +
 			"for the courses listed above. " +
 			"Click <b>Cancel Request</b> to cancel this request and go back to explore other scheduling options.")
 	String messageRequestOverridesOptions();
@@ -2081,19 +2072,19 @@ public interface StudentSectioningMessages extends Messages {
 			"registration deadlines.")
 	String messageRequestOverridesDisclaimerMessage();
 	
-	@DefaultMessage("\n<span class='text-red'>If you proceed, the following pending override requests will be canceled/replaced:</span>")
+	@DefaultMessage("\n<span class='text-red'>If you proceed, the following pending approval requests will be canceled/replaced:</span>")
 	String messageRequestOverridesCancel();
 	
-	@DefaultMessage("There are no registration errors for which an override can be requested.")
+	@DefaultMessage("There are no registration errors for which an approval can be requested.")
 	String errorNoRegistrationErrorsDetected();
 	
-	@DefaultMessage("No overrides can be requested at this time.")
+	@DefaultMessage("No approvals can be requested at this time.")
 	String errorRegistrationErrorsBadResponse();
 	
-	@DefaultMessage("Do you want to cancel this override request?")
+	@DefaultMessage("Do you want to cancel this approval request?")
 	String confirmOverrideRequestCancel();
 	
-	@DefaultMessage("If you proceed, the following pending overrides will be canceled:")
+	@DefaultMessage("If you proceed, the following pending approvals will be canceled:")
 	String confirmOverrideRequestCancelCancelledErrors();
 	
 	@DefaultMessage("Registration Errors")
@@ -2106,50 +2097,50 @@ public interface StudentSectioningMessages extends Messages {
 			"Some of the changes have been denied due to the following registration errors:")
 	String messageEnrollmentSucceededWithErrors();
 	
-	@DefaultMessage("Checking overrides ...\nClick <b>Close Dialog</b> to hide this dialog without requesting any overrides.")
+	@DefaultMessage("Checking approvals ...\nClick <b>Close Dialog</b> to hide this dialog without requesting any approvals.")
 	String messageCheckingOverrides();
 	
-	@DefaultMessage("Request Overrides")
+	@DefaultMessage("Request Approvals")
 	String buttonEnrollmentRequestOverrides();
 	
-	@DefaultMessage("Review and request overrides for the above registration errrors.")
+	@DefaultMessage("Review and request approvals for the above registration errrors.")
 	String titleEnrollmentRequestOverrides();
 	
 	@DefaultMessage("Close Dialog")
 	String buttonEnrollmentHideConfirmation();
 	
-	@DefaultMessage("Hide the Registration Errors dialog without requesting any overrides.")
+	@DefaultMessage("Hide the Registration Errors dialog without requesting any approvals.")
 	String titleEnrollmentHideConfirmation();
 	
-	@DefaultMessage("Overrides cannot be requested: {0}\nClick <b>Close Dialog</b> to hide this dialog without requesting any overrides.")
+	@DefaultMessage("Approvals cannot be requested: {0}\nClick <b>Close Dialog</b> to hide this dialog without requesting any approvals.")
 	String messageCannotRequestOverrides(String message);
 	
-	@DefaultMessage("Overrides cannot be requested due to the following registration errors:")
+	@DefaultMessage("Approvals cannot be requested due to the following registration errors:")
 	String messageCannotRequestOverridesErrors();
 	
-	@DefaultMessage("Click <b>Close Dialog</b> to hide this dialog without requesting any overrides.")
+	@DefaultMessage("Click <b>Close Dialog</b> to hide this dialog without requesting any approvals.")
 	String messageCannotRequestOverridesErrorsBottom();
 	
-	@DefaultMessage("It is possible to request overrides for all of the above registration errors.\n"+
-			"If you have already discussed these courses with your advisor and were advised to request registration in them, please select <b>Request Overrides</b>. "+
+	@DefaultMessage("It is possible to request approvals for all of the above registration errors.\n"+
+			"If you have already discussed these courses with your advisor and were advised to request registration in them, please select <b>Request Approvals</b>. "+
 			"If you aren’t sure, click <b>Close Dialog</b> and consult with your advisor before registering for these courses.")
 	String messageCanRequestOverridesAll();
 	
-	@DefaultMessage("It is possible to request overrides for some of the above registration errors.\n"+
-			"If you have already discussed these courses with your advisor and were advised to request registration in them, please select <b>Request Overrides</b>. "+
+	@DefaultMessage("It is possible to request approvals for some of the above registration errors.\n"+
+			"If you have already discussed these courses with your advisor and were advised to request registration in them, please select <b>Request Approvals</b>. "+
 			"If you aren’t sure, click <b>Close Dialog</b> and consult with your advisor before registering for these courses.")
 	String messageCanRequestOverridesSome();
 	
 	@DefaultMessage("Show all changes")
 	String checkOverridesShowAllChanges();
 	
-	@DefaultMessage("You are trying to drop {0} as part of this override request. Once this request is fully approved, click on this request to apply it to your current schedule and then click Submit Schedule button to update your registration.")
+	@DefaultMessage("You are trying to drop {0} as part of this approval request. Once this request is fully approved, click on this request to apply it to your current schedule and then click Submit Schedule button to update your registration.")
 	String specRegUnassignment(String clazz);
 
-	@DefaultMessage("You are trying to add {0} as part of this override request. Once this request is fully approved, click on this request to apply it to your current schedule and then click Submit Schedule button to update your registration.")
+	@DefaultMessage("You are trying to add {0} as part of this approval request. Once this request is fully approved, click on this request to apply it to your current schedule and then click Submit Schedule button to update your registration.")
 	String specRegAssignment(String clazz);
 	
-	@DefaultMessage("One or more of your override requests have been fully approved. \nPlease click on the approved request to apply it to your current schedule, review the new schedule, and then click Submit Schedule button to update your registration.")
+	@DefaultMessage("One or more of your approval requests have been fully approved. \nPlease click on the approved request to apply it to your current schedule, review the new schedule, and then click Submit Schedule button to update your registration.")
 	String statusOneOrMoreFullyApprovedRequestsNotYetApplied();
 	
 	@DefaultMessage("Maximum of {0,number,0.#} credit hours exceeded.")
