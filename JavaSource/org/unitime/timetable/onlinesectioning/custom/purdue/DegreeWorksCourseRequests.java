@@ -424,15 +424,19 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 													@Override
 													public int compare(XCourse c1, XCourse c2) {
 														int av1 = 4 * c1.getLimit();
-														for (XCourseRequest r: server.getRequests(c1.getOfferingId())) {
-															if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(c1.getCourseId())) av1-=3;
-															if (!r.isAlternative() && r.getEnrollment() == null && r.getCourseIds().get(0).equals(c1)) av1--;
-														}
+														Collection<XCourseRequest> r1 = server.getRequests(c1.getOfferingId());
+														if (r1 != null)
+															for (XCourseRequest r: r1) {
+																if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(c1.getCourseId())) av1-=3;
+																if (!r.isAlternative() && r.getEnrollment() == null && r.getCourseIds().get(0).equals(c1)) av1--;
+															}
 														int av2 = 4 * c2.getLimit();
-														for (XCourseRequest r: server.getRequests(c2.getOfferingId())) {
-															if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(c2.getCourseId())) av2-=3;
-															if (!r.isAlternative() && r.getEnrollment() == null && r.getCourseIds().get(0).equals(c2)) av2--;
-														}
+														Collection<XCourseRequest> r2 = server.getRequests(c2.getOfferingId());
+														if (r2 != null)
+															for (XCourseRequest r: r2) {
+																if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(c2.getCourseId())) av2-=3;
+																if (!r.isAlternative() && r.getEnrollment() == null && r.getCourseIds().get(0).equals(c2)) av2--;
+															}
 														return av1 > av2 ? -1 : av2 > av1 ? 1 : c1.compareTo(c2);
 													}
 												});
@@ -519,15 +523,14 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 						ca.setTitle(xc.getTitle());
 						ca.setHasUniqueName(xc.hasUniqueName());
 						ca.setLimit(xc.getLimit());
-						//XOffering offering = server.getOffering(id.getOfferingId());
-						//if (offering != null)
-						//	ca.setAvailability(offering.getCourseAvailability(server.getRequests(id.getOfferingId()), xc));
 						int firstChoiceReqs = 0;
 						int enrl = 0;
-						for (XCourseRequest r: server.getRequests(id.getOfferingId())) {
-							if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(id.getCourseId())) enrl ++;
-							if (!r.isAlternative() && r.getEnrollment() == null && r.getCourseIds().get(0).equals(id)) firstChoiceReqs ++;
-						}
+						Collection<XCourseRequest> requests = server.getRequests(id.getOfferingId());
+						if (requests != null)
+							for (XCourseRequest r: requests) {
+								if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(id.getCourseId())) enrl ++;
+								if (!r.isAlternative() && r.getEnrollment() == null && r.getCourseIds().get(0).equals(id)) firstChoiceReqs ++;
+							}
 						ca.setEnrollment(enrl);
 						ca.setProjected(firstChoiceReqs);
 						course.addCourse(ca);
@@ -576,15 +579,14 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 						ca.setTitle(xc.getTitle());
 						ca.setHasUniqueName(xc.hasUniqueName());
 						ca.setLimit(xc.getLimit());
-						//XOffering offering = server.getOffering(id.getOfferingId());
-						//if (offering != null)
-						//	ca.setAvailability(offering.getCourseAvailability(server.getRequests(id.getOfferingId()), xc));
 						int firstChoiceReqs = 0;
 						int enrl = 0;
-						for (XCourseRequest r: server.getRequests(id.getOfferingId())) {
-							if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(id.getCourseId())) enrl ++;
-							if (!r.isAlternative() && r.getEnrollment() == null && r.getCourseIds().get(0).equals(id)) firstChoiceReqs ++;
-						}
+						Collection<XCourseRequest> requests = server.getRequests(id.getOfferingId());
+						if (requests != null)
+							for (XCourseRequest r: requests) {
+								if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(id.getCourseId())) enrl ++;
+								if (!r.isAlternative() && r.getEnrollment() == null && r.getCourseIds().get(0).equals(id)) firstChoiceReqs ++;
+							}
 						ca.setEnrollment(enrl);
 						ca.setProjected(firstChoiceReqs);
 						course.addCourse(ca);
