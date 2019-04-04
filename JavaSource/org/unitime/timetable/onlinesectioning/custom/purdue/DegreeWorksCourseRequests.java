@@ -230,7 +230,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					for (XEInterface.Course other: group.plannedClasses) {
 						if (!other.isGroupSelection) {
 							XCourseId ocid = getCourse(server, other);
-							if (ocid == null) continue;
+							if (ocid == null || ocid.getCourseId() == null) continue;
 							RequestedCourse orc = new RequestedCourse();
 							orc.setCourseId(ocid.getCourseId());
 							orc.setCourseName(ocid.getCourseName());
@@ -256,7 +256,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					for (XEInterface.Course other: group.plannedClasses) {
 						if (!other.isGroupSelection) {
 							XCourseId ocid = getCourse(server, other);
-							if (ocid == null) continue;
+							if (ocid == null || ocid.getCourseId() == null) continue;
 							RequestedCourse orc = new RequestedCourse();
 							orc.setCourseId(ocid.getCourseId());
 							orc.setCourseName(ocid.getCourseName());
@@ -290,7 +290,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				OnlineSectioningLog.Request.Builder b = OnlineSectioningLog.Request.newBuilder().setPriority(request.getCourses().size()).setAlternative(false);
 				for (XEInterface.Course course: group.plannedClasses) {
 					XCourseId cid = getCourse(server, course);
-					if (cid == null) continue;
+					if (cid == null || cid.getCourseId() == null) continue;
 					RequestedCourse rc = new RequestedCourse();
 					rc.setCourseId(cid.getCourseId());
 					rc.setCourseName(cid.getCourseName());
