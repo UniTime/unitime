@@ -201,7 +201,7 @@ public class StudentSectioningSolverService implements SolverService<StudentSolv
 				oldSolver.dispose();
 			
 			DataProperties config = new DataProperties(properties.toMap());
-			String host = config.getProperty("General.Host");
+			String host = solverServerService.getHost(ApplicationProperty.OnlineSchedulingPublishHost.value());
 			config.setProperty("StudentSct.Published", String.valueOf((new Date()).getTime()));
 			config.setProperty("StudentSct.PublishId", id == null ? null : id.toString());
 			config.setProperty("General.OwnerPuid", "PUBLISHED_" + config.getProperty("General.SessionId"));

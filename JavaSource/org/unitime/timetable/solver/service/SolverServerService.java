@@ -280,4 +280,12 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 	public QueueProcessor getQueueProcessor() {
 		return iServer.getQueueProcessor();
 	}
+	
+
+	public String getHost(String regExp) {
+		if (regExp == null || regExp.isEmpty()) return null;
+		for (SolverServer server: iServer.getServers(true))
+    		if (server.getHost().matches(regExp)) return server.getHost();
+		return null;
+	}
 }

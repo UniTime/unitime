@@ -118,6 +118,7 @@ public class PublishedSectioningSolutionsBackend implements GwtRpcImplementation
         	if (mySolver != null && mySolver.isWorking()) throw new GwtRpcException(MESSAGES.warnSolverIsWorking());
         	mySolverProperties = getConfig(solution.getData());
         	mySolverProperties.setProperty("StudentSct.PublishId", solution.getUniqueId().toString());
+        	mySolverProperties.remove("General.Host");
         	mySolver = studentSectioningSolverService.createSolver(mySolverProperties, solution.getData());
         	mySolverId = solution.getUniqueId();
         	break;

@@ -634,6 +634,10 @@ public enum ApplicationProperty {
 	@Description("Student Scheduling: provide default alternatice course when there is no alternative provided by student")
 	@Since(4.2)
 	StudentSchedulingAlternativeCourse("unitime.sectioning.alternativeCourse"),
+	
+	@Type(String.class)
+	@Description("Online Student Scheduling: default publish server (provide regular expression mathing available server name)")
+	OnlineSchedulingPublishHost("unitime.enrollment.publish.host"),
 
 	/**
 	 * Room availability. By default, use the included event management system.
