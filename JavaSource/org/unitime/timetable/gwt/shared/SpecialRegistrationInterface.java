@@ -71,7 +71,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public boolean hasRequestId() { return iSpecRegRequestId != null; }
 		public String getRequestId() { return iSpecRegRequestId; }
 		public void setRequestId(String id) { iSpecRegRequestId = id; }
-		public boolean isCanSubmit() { return iSpecRegStatus == null || iSpecRegStatus == SpecialRegistrationStatus.Draft || iSpecRegStatus == SpecialRegistrationStatus.Pending; }
+		public boolean isCanSubmit() { return true; }
 		public boolean isDisclaimerAccepted() { return iSpecRegDisclaimerAccepted; }
 		public void setDisclaimerAccepted(boolean accepted) { iSpecRegDisclaimerAccepted = accepted; }
 		public boolean areTimeConflictsAllowed() { return iSpecRegTimeConfs; }
