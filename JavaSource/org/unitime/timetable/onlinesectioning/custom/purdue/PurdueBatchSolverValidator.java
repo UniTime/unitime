@@ -284,7 +284,7 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 	}
 	
 	protected String getSpecialRegistrationApiValidationSite() {
-		return ApplicationProperties.getProperty("purdue.specreg.site.validation", getSpecialRegistrationApiSite() + "/checkRestrictionsForSTAR");
+		return ApplicationProperties.getProperty("purdue.specreg.site.validation", getSpecialRegistrationApiSite() + "/checkRestrictions");
 	}
 	
 	protected String getSpecialRegistrationApiKey() {
