@@ -143,7 +143,19 @@ public class StudentSectioningSolverService implements SolverService<StudentSolv
         } else if ("Publish and Unload".equals(properties.getProperty("StudentSctBasic.WhenFinished"))) {
             properties.setProperty("General.Publish","true");
             properties.setProperty("General.Unload","true");
+        } else if ("Validate".equals(properties.getProperty("StudentSctBasic.WhenFinished"))) {
+            properties.setProperty("General.Validate","true");
+            properties.setProperty("General.Unload","false");
+        } else if ("Validate and Publish".equals(properties.getProperty("StudentSctBasic.WhenFinished"))) {
+        	properties.setProperty("General.Validate","true");
+            properties.setProperty("General.Publish","true");
+            properties.setProperty("General.Unload","false");
+        } else if ("Validate Publish and Unload".equals(properties.getProperty("StudentSctBasic.WhenFinished"))) {
+        	properties.setProperty("General.Validate","true");
+            properties.setProperty("General.Publish","true");
+            properties.setProperty("General.Unload","true");
         }
+        
         
         // XML save/load properties
         properties.setProperty("Xml.ShowNames", "true");

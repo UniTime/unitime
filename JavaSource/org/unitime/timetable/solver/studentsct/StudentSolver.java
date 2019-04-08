@@ -1013,6 +1013,18 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	
 	@Override
     protected void finishBeforeSave() {
+		if (getProperties().getPropertyBoolean("General.Validate",false) && isCanValidate()) {
+			ProblemSaver<Request, Enrollment, StudentSectioningModel> saver = getCustomValidator(this); 
+			java.util.concurrent.locks.Lock lock = currentSolution().getLock().readLock();
+            lock.lock();
+            try {
+                saver.save();
+            } catch (Exception e) {
+            	sLog.error("Failed to validate the problem: " + e.getMessage(), e);
+            } finally {
+            	lock.unlock();
+            }
+		}
 		if (getProperties().getPropertyBoolean("General.Publish",false)) {
 			byte[] data = backupXml();
         	SectioningSolutionLog log = new SectioningSolutionLog();
