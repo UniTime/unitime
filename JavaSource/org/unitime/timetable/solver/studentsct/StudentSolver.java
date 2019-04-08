@@ -22,6 +22,8 @@ package org.unitime.timetable.solver.studentsct;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.lang.reflect.Type;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -31,6 +33,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -72,6 +75,8 @@ import org.cpsolver.studentsct.online.expectations.NeverOverExpected;
 import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
 import org.cpsolver.studentsct.report.StudentSectioningReport;
 import org.dom4j.Document;
+import org.dom4j.Element;
+import org.dom4j.dom.DOMCDATA;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
@@ -210,6 +215,8 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
             getProperties().setProperty("Xml.ShowNames", "true");
         }
         
+        saveReports(document);
+        
         return document;
 	}
 
@@ -220,6 +227,8 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
         getProperties().setProperty("Xml.LoadCurrent", "true");
 
         new StudentSectioningXMLLoader((StudentSectioningModel)currentSolution().getModel(), currentSolution().getAssignment()).load(document);
+        
+        readReports(document);
 	}
 
 	@Override
@@ -1025,5 +1034,30 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
     				solver.dispose();
         	}
 		}
+    }
+	
+    protected void saveReports(Document document) {
+    	Element reports = document.getRootElement().addElement("reports");
+    	for (InMemoryReport r: iReports.values()) {
+    		try {
+    			StringWriter sw = new StringWriter();
+    			r.save(sw);
+    			reports.addElement("report").addAttribute("reference", r.getReference()).addAttribute("name", r.getName()).add(new DOMCDATA(sw.toString()));
+    		} catch (Exception ex) {}
+    	}
+    }
+    
+    protected void readReports(Document document) {
+    	iReports.clear();
+    	Element reports = document.getRootElement().element("reports");
+    	if (reports != null)
+    		for (Iterator i = reports.elementIterator("report"); i.hasNext(); ) {
+    			Element e = (Element)i.next();
+    			InMemoryReport r = new InMemoryReport(e.attributeValue("reference"), e.attributeValue("name"));
+    			try {
+    				r.load(new StringReader(e.getText()));
+        			iReports.put(r.getReference(), r);
+    			} catch (Exception ex) {}
+    		}
     }
 }
