@@ -21,8 +21,11 @@ package org.unitime.timetable.gwt.client.widgets;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaSuggestBox;
@@ -39,6 +42,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
@@ -75,6 +79,7 @@ import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.TakesValue;
@@ -952,6 +957,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		private String iLabel;
 		private boolean iMultiple = true;
 		private boolean iVisible = true;
+		private Carrot iCarrot = new Carrot();
 		
 		public SimpleFilter(String command, String label) {
 			iCommand = command;
@@ -1037,16 +1043,29 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 						callback.onSuccess(null);
 						return;
 					}
-					AbsolutePanel popup = new AbsolutePanel();
-					if (getLabel() != null && !getLabel().isEmpty()) {
-						Label label = new Label(getLabel(), false);
-						label.addStyleName("command");
-						popup.add(label);
+					final AbsolutePanel popup = new AbsolutePanel();
+					final HTML label = new HTML(getLabel() != null && !getLabel().isEmpty() ? getLabel() : getCommand().replace('_', ' '), false);
+					if (values.size() >= 10) {
+						if (iCarrot.getValue() == null) iCarrot.setValue(getCarrotCookie().hasCarot(getCommand()));
+						label.setHTML(iCarrot + (getLabel() != null && !getLabel().isEmpty() ? getLabel() : getCommand().replace('_', ' ')));
+						label.addMouseDownHandler(new MouseDownHandler() {
+							@Override
+							public void onMouseDown(MouseDownEvent event) {
+								iCarrot.setValue(!iCarrot.getValue());
+								getCarrotCookie().setCarrot(getCommand(), iCarrot.getValue());
+								label.setHTML(iCarrot + (getLabel() != null && !getLabel().isEmpty() ? getLabel() : getCommand().replace('_', ' ')));
+								for (int i = 1; i < popup.getWidgetCount(); i++)
+									popup.getWidget(i).setVisible(iCarrot.getValue());
+								event.getNativeEvent().stopPropagation();
+								event.getNativeEvent().preventDefault();
+							}
+						});
+						label.getElement().getStyle().setCursor(Cursor.POINTER);
 					} else {
-						Label label = new Label(getCommand().replace('_', ' '), false);
-						label.addStyleName("command");
-						popup.add(label);
+						iCarrot.setValue(null);
 					}
+					label.addStyleName("command");
+					popup.add(label);
 					for (final Chip value: values) {
 						String html = SafeHtmlUtils.htmlEscape(value.getLabel());
 						if (value.hasCount())
@@ -1076,6 +1095,8 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 								event.getNativeEvent().preventDefault();
 							}
 						});
+						if (iCarrot.getValue() != null)
+							item.setVisible(iCarrot.getValue());
 						popup.add(item);
 					}
 					callback.onSuccess(popup);
@@ -1618,5 +1639,60 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	
 	public ValueBoxBase<String> getValueBox() {
 		return iFilter;
+	}
+	
+	protected static class Carrot implements TakesValue<Boolean>{
+		private Boolean iValue = null;
+
+		@Override
+		public Boolean getValue() { return iValue; }
+
+		@Override
+		public void setValue(Boolean value) { iValue = value; }
+		
+		@Override
+		public String toString() {
+			return (iValue == null ? "" : iValue.booleanValue() ? "&#9662;" : "&#9656;");
+		}
+	}
+
+	protected static CarrotCookie sCarrotCookie;
+	protected static CarrotCookie getCarrotCookie() {
+		if (sCarrotCookie == null) sCarrotCookie = new CarrotCookie();
+		return sCarrotCookie;
+	}
+	
+	protected static class CarrotCookie {
+		private Set<String> iCommands = new HashSet<String>();
+		
+		private CarrotCookie() {
+			try {
+				String cookie = Cookies.getCookie("UniTime:FilterCarrots");
+				if (cookie != null)
+					for (String cmd: cookie.split("\\|"))
+						iCommands.add(cmd);
+			} catch (Exception e) {
+			}
+		}
+		
+		private void save() {
+			String cookie = "";
+			for (String cmd: iCommands)
+				cookie += (cookie.isEmpty() ? "" : "|") + cmd;
+			Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
+			Cookies.setCookie("UniTime:FilterCarrots", cookie, expires);
+		}
+		
+		public boolean hasCarot(String command) {
+			return iCommands.contains(command);
+		}
+		
+		public void setCarrot(String command, boolean value) {
+			if (value)
+				iCommands.add(command);
+			else
+				iCommands.remove(command);
+			save();
+		}
 	}
 }
