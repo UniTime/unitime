@@ -565,7 +565,7 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 			for (FilterBox.Filter filter: iFilter.getWidget().getFilters()) {
 				if (filter.getCommand().equals(type)) continue types;
 			}
-			iFilter.getWidget().getFilters().add(iFilter.getWidget().getFilters().size() - 10, new FilterBox.StaticSimpleFilter(type, null));
+			iFilter.getWidget().getFilters().add(iFilter.getWidget().getFilters().size() - 10, new FilterBox.StaticSimpleFilter(type, result.getTypeLabel(type)));
 			added = true;
 		}
 		if (added) setValue(getValue(), false);

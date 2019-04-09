@@ -168,6 +168,8 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				groupsOfThisType.add(c);
 			}
 			response.add(type.getReference().replace(' ', '_'), groupsOfThisType);
+			if (type.getLabel() != null)
+				response.setTypeLabel(type.getReference().replace(' ', '_'), type.getLabel());
 		}
 		
 		List<Entity> acc = new ArrayList<Entity>();

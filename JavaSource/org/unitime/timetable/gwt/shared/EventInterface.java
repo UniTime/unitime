@@ -1671,6 +1671,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	public static class FilterRpcResponse implements GwtRpcResponse, Serializable {
 		private static final long serialVersionUID = 1L;
 		private HashMap<String, ArrayList<Entity>> iEntities = null;
+		private HashMap<String, String> iTypeLabels = null;
 		
 		public FilterRpcResponse() {}
 		
@@ -1731,6 +1732,17 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public boolean hasSuggestions() { return hasEntities("suggestion"); }
 		
 		public List<Entity> getSuggestions() { return getEntities("suggestion"); }
+		
+		public void setTypeLabel(String type, String label) {
+			if (iTypeLabels == null) iTypeLabels = new HashMap<String, String>();
+			iTypeLabels.put(type, label);
+		}
+		
+		public String getTypeLabel(String type) {
+			if (iTypeLabels == null) return type;
+			String label = iTypeLabels.get(type);
+			return (label == null ? type : label);
+		}
 		
 		public static class Entity implements IsSerializable, Comparable<Entity>, Serializable {
 			private static final long serialVersionUID = 1L;
