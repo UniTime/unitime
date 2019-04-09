@@ -321,6 +321,11 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 				}
 			}
 		}
+		if (req.changes == null) {
+			action.addOptionBuilder().setKey("validation_request").setValue(getGson().toJson(req));
+			action.setResult(OnlineSectioningLog.Action.ResultType.NULL);
+			return;
+		}
 		
 		CheckRestrictionsResponse resp = null;
 		ClientResource resource = null;
