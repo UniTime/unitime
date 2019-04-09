@@ -153,8 +153,8 @@ public class TimetableGridInterface implements GwtRpcResponse {
 		public int getNrDateLines(int day, int date, int minLines) {
 			int lines = minLines;
 			for (TimetableGridCell cell: getCells())
-				if (cell.getDay() == day && cell.getIndex() + cell.getNrLines() > lines && cell.hasDate(date))
-					lines = cell.getIndex() + cell.getNrLines();
+				if (cell.getDay() == day && cell.getIndex(date) + cell.getNrLines(date) > lines && cell.hasDate(date))
+					lines = cell.getIndex(date) + cell.getNrLines(date);
 			return lines;
 		}
 		
@@ -198,6 +198,7 @@ public class TimetableGridInterface implements GwtRpcResponse {
 		private boolean iCommitted = false;
 		private Map<Integer, String> iProperties = null;
 		private String iDays;
+		private Map<Integer, Integer> iNrLinesPerDate = null, iIndexPerDate = null;
 		
 		public static enum Type implements IsSerializable {
 			Class,
@@ -434,6 +435,31 @@ public class TimetableGridInterface implements GwtRpcResponse {
 		public void setNrLines(int lines) { iNrLines = lines; }
 		public int getIndex() { return (iIndex == null ? 0 : iIndex.intValue()); }
 		public void setIndex(int index) { iIndex = index; }
+		
+		public int getNrLines(int date) {
+			if (iNrLinesPerDate != null) {
+				Integer lines = iNrLinesPerDate.get(date);
+				if (lines != null) return lines;
+			}
+			return (iNrLines == null ? 0 : iNrLines.intValue());
+		}
+		public void setNrLines(int date, int lines) {
+			if (iNrLinesPerDate == null) iNrLinesPerDate = new HashMap<Integer, Integer>();
+			iNrLinesPerDate.put(date, lines);
+			iNrLines = lines;
+		}
+		public int getIndex(int date) {
+			if (iIndexPerDate != null) {
+				Integer lines = iIndexPerDate.get(date);
+				if (lines != null) return lines;
+			}
+			return (iIndex == null ? 0 : iIndex.intValue());
+		}
+		public void setIndex(int date, int index) {
+			if (iIndexPerDate == null) iIndexPerDate = new HashMap<Integer, Integer>();
+			iIndexPerDate.put(date, index);
+			iIndex = index;
+		}
 		
 		public boolean isItalics() { return iItalics; }
 		public void setItalics(boolean italics) { iItalics = italics; }

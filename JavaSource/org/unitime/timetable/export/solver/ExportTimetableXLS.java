@@ -801,13 +801,13 @@ public class ExportTimetableXLS extends TableExporter {
 						if (cell.getDay() == day && cell.hasDate(date)) {
 				        	Meeting m = new Meeting(cell, showRoom, showInstructors, showTimes, showPreferences, showDate);
 				        	iMeetings.add(m);
-					        m.setHeight(cell.getNrLines());
+					        m.setHeight(cell.getNrLines(date));
 					        int start = cell.getSlot();
 					        int stop = cell.getSlot() + cell.getLength();
 					        if (start < startSlot) start = startSlot;
 					        if (stop  > endSlot) stop = endSlot;
 					        m.setWidth(stop - start);
-					        panel.add(m, start - startSlot, dayIndex[d] + cell.getIndex());						
+					        panel.add(m, start - startSlot, dayIndex[d] + cell.getIndex(date));
 						}
 		        	}
 		        }

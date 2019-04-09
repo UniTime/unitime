@@ -635,13 +635,13 @@ public class TimetableGrid extends Composite {
 					if (cell.getDay() == day && cell.hasDate(date)) {
 			        	Meeting m = new Meeting(cell, showRoom, showInstructors, showTimes, showPreferences, showDate);
 			        	iMeetings.add(m);
-				        m.getElement().getStyle().setHeight(1 + cell.getNrLines() * sLineHeight, Unit.PX);
+				        m.getElement().getStyle().setHeight(1 + cell.getNrLines(date) * sLineHeight, Unit.PX);
 				        int start = cell.getSlot();
 				        int stop = cell.getSlot() + cell.getLength();
 				        if (start < startSlot) start = startSlot;
 				        if (stop  > endSlot) stop = endSlot;
 				        m.getElement().getStyle().setWidth(1 + (stop - startSlot) * iCellWidth / step - (start - startSlot) * iCellWidth / step, Unit.PX);
-				        panel.add(m, (start - startSlot) * iCellWidth / step, (dayIndex[d] + cell.getIndex()) * sLineHeight);						
+				        panel.add(m, (start - startSlot) * iCellWidth / step, (dayIndex[d] + cell.getIndex(date)) * sLineHeight);
 					}
 	        	}
 	        }

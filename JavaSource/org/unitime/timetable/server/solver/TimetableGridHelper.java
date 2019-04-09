@@ -360,10 +360,11 @@ public class TimetableGridHelper {
 					int date = d + model.getFirstSessionDay();
 					int day = d % 7;
 					if (day == cell.getDay() && cell.hasDate(date))
-						addCell(weekData, date, cell.getSlot(), cell.getLength(), cell);
+						addCell(weekData, d, cell.getSlot(), cell.getLength(), cell);
 				}
 			}
 			for (int d = 0; d < 365; d++) {
+				int date = d + model.getFirstSessionDay();
 				int length = 0;
 				for (int s = 0; s < 288; s++)
 					if (weekData[d][s] != null && weekData[d][s].length > length) length = weekData[d][s].length;
@@ -379,7 +380,7 @@ public class TimetableGridHelper {
 					for (int s = 0; s < 288; s++) {
 						TimetableGridCell c = getCell(weekData, d, s, idx);
 						if (c != null) {
-							c.setNrLines(maxLines[idx]); c.setIndex(index);
+							c.setNrLines(date, maxLines[idx]); c.setIndex(date, index);
 						}
 					}
 					index += maxLines[idx];
@@ -394,7 +395,7 @@ public class TimetableGridHelper {
 									int lines = maxLines[idx];
 									for (int i = 1; i <= empty; i++)
 										lines += maxLines[idx + i];
-									c.setNrLines(lines);
+									c.setNrLines(date, lines);
 								}
 							}
 						}
