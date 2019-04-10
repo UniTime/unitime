@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -33,6 +34,7 @@ import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -1116,9 +1118,9 @@ public class EnrollmentTable extends Composite {
 			if (hasMajor)
 				line.add(new HTML(enrollment.getStudent().getMajor("<br>"), false));
 			if (hasGroup)
-				line.add(new HTML(enrollment.getStudent().getGroup("<br>"), false));
+				line.add(new Groups(enrollment.getStudent().getGroups()));
 			for (String type: groupTypes)
-				line.add(new HTML(enrollment.getStudent().getGroup(type, "<br>"), false));
+				line.add(new Groups(enrollment.getStudent().getGroups(type)));
 			if (hasAcmd)
 				line.add(new HTML(enrollment.getStudent().getAccommodation("<br>"), false));
 			if (hasReservation)
@@ -1405,6 +1407,18 @@ public class EnrollmentTable extends Composite {
 			return "text-gray";
 		}
 		
+	}
+	
+	private static class Groups extends P {
+		private Groups(Collection<ClassAssignmentInterface.Group> groups) {
+			if (groups != null && !groups.isEmpty()) {
+				for (ClassAssignmentInterface.Group group: groups) {
+					P g = new P(); g.setText(group.getName());
+					if (group.hasTitle()) g.setTitle(group.getTitle());
+					add(g);
+				}
+			}
+		}
 	}
 	
 	private static class FilterRow extends HorizontalPanel implements SetColSpan, HasStyleName {

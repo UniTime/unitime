@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
-import org.springframework.web.util.HtmlUtils;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
@@ -125,9 +124,9 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 			}
 			for (StudentGroup gr: student.getGroups()) {
 				if (gr.getType() == null)
-					st.addGroup(gr.getGroupAbbreviation(), HtmlUtils.htmlEscape(gr.getGroupName()));
+					st.addGroup(gr.getGroupAbbreviation(), gr.getGroupName());
 				else
-					st.addGroup(gr.getType().getReference(), gr.getGroupAbbreviation(), HtmlUtils.htmlEscape(gr.getGroupName()));
+					st.addGroup(gr.getType().getReference(), gr.getGroupAbbreviation(), gr.getGroupName());
 			}
 			
 			ClassAssignmentInterface.Enrollment e = new ClassAssignmentInterface.Enrollment();

@@ -43,7 +43,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.util.HtmlUtils;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.SecurityMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -1276,9 +1275,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							}
 							for (StudentGroup g: enrollment.getStudent().getGroups()) {
 								if (g.getType() == null)
-									st.addGroup(g.getGroupAbbreviation(), HtmlUtils.htmlEscape(g.getGroupName()));
+									st.addGroup(g.getGroupAbbreviation(), g.getGroupName());
 								else
-									st.addGroup(g.getType().getReference(), g.getGroupAbbreviation(), HtmlUtils.htmlEscape(g.getGroupName()));
+									st.addGroup(g.getType().getReference(), g.getGroupAbbreviation(), g.getGroupName());
 							}
 			    			for (StudentAccomodation a: enrollment.getStudent().getAccomodations()) {
 			    				st.addAccommodation(a.getAbbreviation());
@@ -1378,9 +1377,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							}
 							for (StudentGroup g: request.getCourseDemand().getStudent().getGroups()) {
 								if (g.getType() == null)
-									st.addGroup(g.getGroupAbbreviation(), HtmlUtils.htmlEscape(g.getGroupName()));
+									st.addGroup(g.getGroupAbbreviation(), g.getGroupName());
 								else
-									st.addGroup(g.getType().getReference(), g.getGroupAbbreviation(), HtmlUtils.htmlEscape(g.getGroupName()));
+									st.addGroup(g.getType().getReference(), g.getGroupAbbreviation(), g.getGroupName());
 							}
 			    			for (StudentAccomodation a: request.getCourseDemand().getStudent().getAccomodations()) {
 			    				st.addAccommodation(a.getAbbreviation());
@@ -2881,9 +2880,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 		for (StudentGroup g: student.getGroups()) {
 			if (g.getType() == null)
-				st.addGroup(g.getGroupAbbreviation(), HtmlUtils.htmlEscape(g.getGroupName()));
+				st.addGroup(g.getGroupAbbreviation(), g.getGroupName());
 			else
-				st.addGroup(g.getType().getReference(), g.getGroupAbbreviation(), HtmlUtils.htmlEscape(g.getGroupName()));
+				st.addGroup(g.getType().getReference(), g.getGroupAbbreviation(), g.getGroupName());
 		}
 		for (StudentAccomodation a: student.getAccomodations()) {
 			st.addAccommodation(a.getAbbreviation());
@@ -2987,9 +2986,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 		for (StudentGroup g: student.getGroups()) {
 			if (g.getType() == null)
-				st.addGroup(g.getGroupAbbreviation(), HtmlUtils.htmlEscape(g.getGroupName()));
+				st.addGroup(g.getGroupAbbreviation(), g.getGroupName());
 			else
-				st.addGroup(g.getType().getReference(), g.getGroupAbbreviation(), HtmlUtils.htmlEscape(g.getGroupName()));
+				st.addGroup(g.getType().getReference(), g.getGroupAbbreviation(), g.getGroupName());
 		}
 		for (StudentAccomodation a: student.getAccomodations()) {
 			st.addAccommodation(a.getAbbreviation());

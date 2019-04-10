@@ -45,7 +45,6 @@ import org.cpsolver.studentsct.model.FreeTimeRequest;
 import org.cpsolver.studentsct.model.Request;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
-import org.springframework.web.util.HtmlUtils;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Student;
@@ -462,13 +461,13 @@ public class XStudent extends XStudentId implements Externalizable {
 		public XGroup(StudentGroup g) {
 			iType = (g.getType() == null ? null: g.getType().getReference());
 			iAbbreaviation = g.getGroupAbbreviation();
-			iTitle = (g.getGroupName() == null ? null : HtmlUtils.htmlEscape(g.getGroupName()));
+			iTitle = (g.getGroupName() == null ? null : g.getGroupName());
 		}
 		
 		public XGroup(AcademicAreaCode g) {
 			iType = (g.getArea() == null || g.getArea().isEmpty() ? null : g.getArea());
 			iAbbreaviation = g.getCode();
-			iTitle = (g.getLabel() == null ? null : HtmlUtils.htmlEscape(g.getLabel()));
+			iTitle = (g.getLabel() == null ? null : g.getLabel());
 		}
 		
 		public XGroup(ObjectInput in) throws IOException, ClassNotFoundException {

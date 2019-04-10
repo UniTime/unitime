@@ -818,7 +818,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public String getGroup(String delim) { return getGroup(null, delim); }
 		public void addGroup(String group, String title) { addGroup(null, group, title); }
 		public void removeGroup(String group) { removeGroup(null, group); }
-		public List<String> getGroups() { return getGroups(null); }
+		public List<Group> getGroups() { return getGroups(null); }
 		public boolean hasGroup(String group) {
 			if (iGroups == null) return false;
 			for (Group g: iGroups) {
@@ -840,15 +840,15 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 				if (g.sameType(type) && g.getName().equals(group)) { i.remove(); }
 			}
 		}
-		public List<String> getGroups(String type) {
+		public List<Group> getGroups(String type) {
 			if (iGroups == null) return null;
-			List<String> names = new ArrayList<String>();
+			List<Group> groups = new ArrayList<Group>();
 			for (Group g: iGroups) {
 				if (g.sameType(type)) {
-					names.add(g.getName());
+					groups.add(g);
 				}
 			}
-			return names;
+			return groups;
 		}
 		public Set<String> getGroupTypes() {
 			if (iGroups == null) return null;

@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -64,6 +65,7 @@ import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Group;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.StudentInfo;
@@ -103,10 +105,10 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -1689,13 +1691,13 @@ public class SectioningStatusPage extends Composite {
 											if (i != null && i.getStudent() != null) {
 												Widget w = iStudentTable.getWidget(row, 0);
 												if (w instanceof CheckBox && ((CheckBox)w).getValue()) {
-													i.getStudent().addGroup(g.getType(), g.getReference(), SafeHtmlUtils.htmlEscape(g.getLabel()));
+													i.getStudent().addGroup(g.getType(), g.getReference(), g.getLabel());
 													if (g.hasType()) {
 														Integer col = iGroupsColumn.get(g.getType());
 														if (col != null)
-															((HTML)iStudentTable.getWidget(row, col)).setHTML(i.getStudent().getGroup(g.getType(), "<br>"));
+															((Groups)iStudentTable.getWidget(row, col)).setValue(i.getStudent().getGroups(g.getType()));
 													} else if (iGroupColumn >= 0)
-														((HTML)iStudentTable.getWidget(row, iGroupColumn)).setHTML(i.getStudent().getGroup("<br>"));
+														((Groups)iStudentTable.getWidget(row, iGroupColumn)).setValue(i.getStudent().getGroups());
 												}
 											}
 										}
@@ -1778,9 +1780,9 @@ public class SectioningStatusPage extends Composite {
 													if (g.hasType()) {
 														Integer col = iGroupsColumn.get(g.getType());
 														if (col != null)
-															((HTML)iStudentTable.getWidget(row, col)).setHTML(i.getStudent().getGroup(g.getType(), "<br>"));
+															((Groups)iStudentTable.getWidget(row, col)).setValue(i.getStudent().getGroups(g.getType()));
 													} else if (iGroupColumn >= 0)
-														((HTML)iStudentTable.getWidget(row, iGroupColumn)).setHTML(i.getStudent().getGroup("<br>"));
+														((Groups)iStudentTable.getWidget(row, iGroupColumn)).setValue(i.getStudent().getGroups());
 												}
 											}
 										}
@@ -2126,9 +2128,9 @@ public class SectioningStatusPage extends Composite {
 			if (iStudentInfoVisibleColumns.hasMajor)
 				line.add(new HTML(info.getStudent().getMajor("<br>"), false));
 			if (iStudentInfoVisibleColumns.hasGroup)
-				line.add(new HTML(info.getStudent().getGroup("<br>"), false));
+				line.add(new Groups(info.getStudent().getGroups()));
 			for (String type: iStudentInfoVisibleColumns.groupTypes)
-				line.add(new HTML(info.getStudent().getGroup(type, "<br>"), false));
+				line.add(new Groups(info.getStudent().getGroups(type)));
 			if (iStudentInfoVisibleColumns.hasAcmd)
 				line.add(new HTML(info.getStudent().getAccommodation("<br>"), false));
 			line.add(new HTML(info.getStatus(), false));
@@ -3164,5 +3166,29 @@ public class SectioningStatusPage extends Composite {
 				if (e.getStudent() != null && e.getStudent().isCanShowExternalId()) { hasExtId = true; break; }
 			}
 		}
+	}
+	
+	private static class Groups extends P implements TakesValue<Collection<ClassAssignmentInterface.Group>> {
+		private Collection<ClassAssignmentInterface.Group> iGroups = null;
+		
+		private Groups(Collection<ClassAssignmentInterface.Group> groups) {
+			setValue(groups);
+		}
+
+		@Override
+		public void setValue(Collection<Group> value) {
+			iGroups = value;
+			clear();
+			if (iGroups != null && !iGroups.isEmpty()) {
+				for (ClassAssignmentInterface.Group group: iGroups) {
+					P g = new P(); g.setText(group.getName());
+					if (group.hasTitle()) g.setTitle(group.getTitle());
+					add(g);
+				}
+			}
+		}
+
+		@Override
+		public Collection<Group> getValue() { return iGroups; }
 	}
 }

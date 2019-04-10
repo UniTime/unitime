@@ -33,7 +33,6 @@ import org.cpsolver.coursett.Constants;
 import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.util.DistanceMetric;
-import org.springframework.web.util.HtmlUtils;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.StudentInfo;
 import org.unitime.timetable.model.Assignment;
@@ -139,9 +138,9 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					}
 					for (StudentGroup gr: student.getGroups()) {
 						if (gr.getType() == null)
-							st.addGroup(gr.getGroupAbbreviation(), HtmlUtils.htmlEscape(gr.getGroupName()));
+							st.addGroup(gr.getGroupAbbreviation(), gr.getGroupName());
 						else
-							st.addGroup(gr.getType().getReference(), gr.getGroupAbbreviation(), HtmlUtils.htmlEscape(gr.getGroupName()));
+							st.addGroup(gr.getType().getReference(), gr.getGroupAbbreviation(), gr.getGroupName());
 					}
 					int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0, tUnasg = 0, tOvrNeed = 0, ovrNeed = 0;
 					float tCred = 0f;
@@ -501,9 +500,9 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 				}
 				for (StudentGroup gr: student.getGroups()) {
 					if (gr.getType() == null)
-						st.addGroup(gr.getGroupAbbreviation(), HtmlUtils.htmlEscape(gr.getGroupName()));
+						st.addGroup(gr.getGroupAbbreviation(), gr.getGroupName());
 					else
-						st.addGroup(gr.getType().getReference(), gr.getGroupAbbreviation(), HtmlUtils.htmlEscape(gr.getGroupName()));
+						st.addGroup(gr.getType().getReference(), gr.getGroupAbbreviation(), gr.getGroupName());
 				}
 				s.setStatus(student.getSectioningStatus() == null ? session.getDefaultSectioningStatus() : student.getSectioningStatus().getReference());
 				s.setEmailDate(student.getScheduleEmailedDate() == null ? null : student.getScheduleEmailedDate());
