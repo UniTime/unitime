@@ -103,6 +103,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.History;
@@ -1688,7 +1689,7 @@ public class SectioningStatusPage extends Composite {
 											if (i != null && i.getStudent() != null) {
 												Widget w = iStudentTable.getWidget(row, 0);
 												if (w instanceof CheckBox && ((CheckBox)w).getValue()) {
-													i.getStudent().addGroup(g.getType(), g.getReference());
+													i.getStudent().addGroup(g.getType(), g.getReference(), SafeHtmlUtils.htmlEscape(g.getLabel()));
 													if (g.hasType()) {
 														Integer col = iGroupsColumn.get(g.getType());
 														if (col != null)

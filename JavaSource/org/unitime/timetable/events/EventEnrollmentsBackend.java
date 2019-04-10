@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
+import org.springframework.web.util.HtmlUtils;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
@@ -518,9 +519,9 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
     			}
     			for (StudentGroup g: enrollment.getStudent().getGroups()) {
     				if (g.getType() == null)
-    					st.addGroup(g.getGroupAbbreviation());
+    					st.addGroup(g.getGroupAbbreviation(), HtmlUtils.htmlEscape(g.getGroupName()));
     				else
-    					st.addGroup(g.getType().getReference(), g.getGroupAbbreviation());
+    					st.addGroup(g.getType().getReference(), g.getGroupAbbreviation(), HtmlUtils.htmlEscape(g.getGroupName()));
     			}
     			for (StudentAccomodation a: enrollment.getStudent().getAccomodations()) {
     				st.addAccommodation(a.getAbbreviation());

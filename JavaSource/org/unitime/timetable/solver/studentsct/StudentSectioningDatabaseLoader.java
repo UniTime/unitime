@@ -1608,10 +1608,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	student.getAreaClassificationMajors().add(new AreaClassificationMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode()));
         }
         for (StudentGroup g: s.getGroups()) {
-        	student.getMinors().add(new AcademicAreaCode(g.getType() == null ? "" : g.getType().getReference(), g.getGroupAbbreviation()));
+        	student.getMinors().add(new AcademicAreaCode(g.getType() == null ? "" : g.getType().getReference(), g.getGroupAbbreviation(), g.getGroupName()));
         }
         for (StudentAccomodation a: s.getAccomodations())
-        	student.getMinors().add(new AcademicAreaCode("A", a.getAbbreviation()));
+        	student.getMinors().add(new AcademicAreaCode("A", a.getAbbreviation(), a.getName()));
     }
     
     public void loadRequestGroups(Student student, org.unitime.timetable.model.Student s) {

@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -686,13 +688,52 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public void setSpecRegOperation(SpecialRegistrationOperation operation) { iSpecRegOperation = operation; }
 	}
 	
+	public static class Group implements IsSerializable, Serializable, Comparable<Group> {
+		private static final long serialVersionUID = 1L;
+		private String iType;
+		private String iName;
+		private String iTitle;
+		
+		public Group() {}
+		public Group(String type, String name, String title) {
+			iType = type; iName = name; iTitle = title;
+		}
+		public Group(String name, String title) {
+			this(null, name, title);
+		}
+		
+		public String getType() { return iType; }
+		public void setType(String type) { iType = type;}
+		public boolean hasType() { return iType != null && !iType.isEmpty(); }
+		public String getTypeNotNull() { return iType == null ? "" : iType; }
+		public boolean sameType(String type) {
+			if (!hasType())
+				return type == null || type.isEmpty();
+			else 
+				return getType().equals(type); 
+		}
+		
+		public String getName() { return iName; }
+		public void setName(String name) { iName = name; }
+		
+		public String getTitle() { return iTitle; }
+		public void setTitle(String title) { iTitle = title; }
+		public boolean hasTitle() { return iTitle != null && !iTitle.isEmpty(); }
+		@Override
+		public int compareTo(Group g) {
+			int cmp = getTypeNotNull().compareTo(g.getTypeNotNull());
+			if (cmp != 0) return cmp;
+			return getName().compareTo(g.getName());
+		}
+	}
+	
 	public static class Student implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private long iId;
 		private Long iSessionId = null;
 		private String iExternalId, iName, iEmail;
-		private List<String> iArea, iClassification, iMajor, iGroup, iAccommodation;
-		private Map<String, List<String>> iGroups;
+		private List<String> iArea, iClassification, iMajor, iAccommodation;
+		private Set<Group> iGroups;
 		private boolean iCanShowExternalId = false, iCanSelect = false;
 		private boolean iCanUseAssitant = false, iCanRegister = false;
 		
@@ -773,82 +814,65 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		}
 		public List<String> getMajors() { return iMajor; }
 		
-		public boolean hasGroup() { return iGroup != null && !iGroup.isEmpty(); }
-		public String getGroup(String delim) { 
-			if (iGroup == null) return "";
-			String ret = "";
-			for (String group: iGroup) {
-				if (!ret.isEmpty()) ret += delim;
-				ret += group;
-			}
-			return ret;
-		}
-		public void addGroup(String group) {
-			if (iGroup == null) iGroup = new ArrayList<String>();
-			if (!iGroup.contains(group)) iGroup.add(group);
-		}
-		public void removeGroup(String group) {
-			if (iGroup != null) iGroup.remove(group);
-		}
-		public List<String> getGroups() { return iGroup; }
+		public boolean hasGroup() { return hasGroups(null); }
+		public String getGroup(String delim) { return getGroup(null, delim); }
+		public void addGroup(String group, String title) { addGroup(null, group, title); }
+		public void removeGroup(String group) { removeGroup(null, group); }
+		public List<String> getGroups() { return getGroups(null); }
 		public boolean hasGroup(String group) {
-			if (iGroup != null) {
-				if (iGroup.contains(group)) return true;
-			}
-			if (iGroups != null) {
-				for (List<String> groups: iGroups.values())
-					if (groups.contains(group)) return true;
+			if (iGroups == null) return false;
+			for (Group g: iGroups) {
+				if (g.getName().equals(group)) return true;
 			}
 			return false;
+			
 		}
 		
 		public boolean hasGroups() { return iGroups != null && !iGroups.isEmpty(); }
-		public void addGroup(String type, String group) {
-			if (type == null || type.isEmpty()) {
-				addGroup(group);
-			} else {
-				if (iGroups == null) iGroups = new HashMap<String, List<String>>();
-				List<String> groups = iGroups.get(type);
-				if (groups == null) {
-					groups = new ArrayList<String>();
-					iGroups.put(type, groups);
-				}
-				if (!groups.contains(group))
-					groups.add(group);
-			}
+		public void addGroup(String type, String group, String title) {
+			if (iGroups == null) iGroups = new TreeSet<Group>();
+			iGroups.add(new Group(type, group, title));
 		}
 		public void removeGroup(String type, String group) {
-			if (type == null || type.isEmpty()) {
-				removeGroup(group);
-			} else {
-				if (iGroups == null) return;
-				List<String> groups = iGroups.get(type);
-				if (groups != null)
-					groups.remove(group);
+			if (iGroups == null) return;
+			for (Iterator<Group> i = iGroups.iterator(); i.hasNext(); ) {
+				Group g = i.next();
+				if (g.sameType(type) && g.getName().equals(group)) { i.remove(); }
 			}
 		}
 		public List<String> getGroups(String type) {
-			if (type == null || type.isEmpty())
-				return getGroups();
 			if (iGroups == null) return null;
-			return iGroups.get(type);
+			List<String> names = new ArrayList<String>();
+			for (Group g: iGroups) {
+				if (g.sameType(type)) {
+					names.add(g.getName());
+				}
+			}
+			return names;
 		}
 		public Set<String> getGroupTypes() {
 			if (iGroups == null) return null;
-			return iGroups.keySet();
+			Set<String> types = new HashSet<String>();
+			for (Group g: iGroups)
+				if (g.hasType()) types.add(g.getType());
+			return types;
 		}
 		public boolean hasGroups(String type) {
-			return getGroups(type) != null;
+			if (iGroups == null || iGroups.isEmpty()) return false;
+			for (Group g: iGroups) {
+				if (g.sameType(type)) return true;
+			}
+			return false;
 		}
 		public String getGroup(String type, String delim) {
-			if (type == null || type.isEmpty())
-				return getGroup(delim);
-			List<String> groups = getGroups(type);
-			if (groups == null) return "";
+			if (iGroups == null) return "";
+			boolean html = "<br>".equalsIgnoreCase(delim);
 			String ret = "";
-			for (String group: groups) {
-				if (!ret.isEmpty()) ret += delim;
-				ret += group;
+			for (Group g: iGroups) {
+				if (g.sameType(type)) {
+					if (!ret.isEmpty()) ret += delim;
+					ret += (html && g.hasTitle() ? "<span title='" + g.getTitle() + "'>" + g.getName() + "</span>" : g.getName());
+				}
 			}
 			return ret;
 		}

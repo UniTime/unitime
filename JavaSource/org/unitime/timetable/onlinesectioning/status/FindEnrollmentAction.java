@@ -191,7 +191,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 				st.addMajor(acm.getMajor());
 			}
 			for (XStudent.XGroup gr: student.getGroups()) {
-				st.addGroup(gr.getType(), gr.getAbbreviation());
+				st.addGroup(gr.getType(), gr.getAbbreviation(), gr.getTitle());
 			}
 			for (String acc: student.getAccomodations()) {
 				st.addAccommodation(acc);

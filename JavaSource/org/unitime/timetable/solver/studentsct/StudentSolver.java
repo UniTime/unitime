@@ -439,7 +439,8 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 			iCourseInfoCache = new Hashtable<Long, XCourse>();
 			for (Offering offering: getModel().getOfferings())
 				for (Course course: offering.getCourses())
-					iCourseInfoCache.put(course.getId(), new XCourse(course));
+					if (course != null)
+						iCourseInfoCache.put(course.getId(), new XCourse(course));
 		}
 		return iCourseInfoCache;
 	}

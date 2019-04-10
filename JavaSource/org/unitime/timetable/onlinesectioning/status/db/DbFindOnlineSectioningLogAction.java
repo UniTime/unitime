@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.springframework.web.util.HtmlUtils;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
@@ -106,9 +107,9 @@ public class DbFindOnlineSectioningLogAction extends FindOnlineSectioningLogActi
 					}
 					for (StudentGroup gr: student.getGroups()) {
 						if (gr.getType() == null)
-							st.addGroup(gr.getGroupAbbreviation());
+							st.addGroup(gr.getGroupAbbreviation(), HtmlUtils.htmlEscape(gr.getGroupName()));
 						else
-							st.addGroup(gr.getType().getReference(), gr.getGroupAbbreviation());
+							st.addGroup(gr.getType().getReference(), gr.getGroupAbbreviation(), HtmlUtils.htmlEscape(gr.getGroupName()));
 					}
 					
 					SectioningAction a = new SectioningAction();

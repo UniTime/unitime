@@ -134,7 +134,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 						st.addAccommodation(acc);
 					}
 					for (XStudent.XGroup gr: student.getGroups()) {
-						st.addGroup(gr.getType(), gr.getAbbreviation());
+						st.addGroup(gr.getType(), gr.getAbbreviation(), gr.getTitle());
 					}
 
 					SectioningAction a = new SectioningAction();
