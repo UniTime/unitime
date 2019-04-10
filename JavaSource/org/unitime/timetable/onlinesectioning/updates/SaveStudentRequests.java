@@ -108,8 +108,12 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 				if (student == null) throw new SectioningException(MSG.exceptionBadStudentId());
 				
 				CriticalCourses critical = null;
-				if (CustomCriticalCoursesHolder.hasProvider())
-					critical = CustomCriticalCoursesHolder.getProvider().getCriticalCourses(server, helper, new XStudentId(student, helper));
+				try {
+					if (CustomCriticalCoursesHolder.hasProvider())
+						critical = CustomCriticalCoursesHolder.getProvider().getCriticalCourses(server, helper, new XStudentId(student, helper));
+				} catch (Exception e) {
+					helper.warn("Failed to lookup critical courses: " + e.getMessage(), e);
+				}
 				
 				OnlineSectioningLog.Action.Builder action = helper.getAction();
 				

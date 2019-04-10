@@ -1137,8 +1137,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (student == null) throw new SectioningException(MSG.exceptionBadStudentId());
 				OnlineSectioningHelper helper = new OnlineSectioningHelper(hibSession, currentUser());
 				CriticalCourses critical = null;
-				if (CustomCriticalCoursesHolder.hasProvider())
-					critical = CustomCriticalCoursesHolder.getProvider().getCriticalCourses(getServerInstance(request.getAcademicSessionId(), true), helper, new XStudentId(student, helper));
+				try {
+					if (CustomCriticalCoursesHolder.hasProvider())
+						critical = CustomCriticalCoursesHolder.getProvider().getCriticalCourses(getServerInstance(request.getAcademicSessionId(), true), helper, new XStudentId(student, helper));
+				} catch (Exception e) {
+					helper.warn("Failed to lookup critical courses: " + e.getMessage(), e);
+				}
 				SaveStudentRequests.saveRequest(null, helper, student, request, true, critical);
 				hibSession.save(student);
 				hibSession.flush();
