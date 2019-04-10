@@ -513,6 +513,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		}
 		
 		if (SpecialRegistrationHelper.isEmpty(req)) return;
+		if (req.changes == null)
+			req.changes = new RestrictionsCheckRequest();
 		CheckRestrictionsResponse resp = null;
 		ClientResource resource = null;
 		try {
