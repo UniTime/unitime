@@ -107,6 +107,7 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Problem;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.RequestorRole;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ResponseStatus;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.RestrictionsCheckRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistration;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationMultipleStatusResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationResponseList;
@@ -1882,6 +1883,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				}
 			}
 		}
+		if (validationRequest.changes == null)
+			validationRequest.changes = new RestrictionsCheckRequest();
 		ClientResource resource = null;
 		try {
 			resource = new ClientResource(getSpecialRegistrationApiValidationSite());
