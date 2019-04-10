@@ -94,7 +94,8 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 			SectioningLogQueryFormatter formatter = new SectioningLogQueryFormatter(helper);
 			String join = "";
 			for (String t: formatter.getGroupTypes())
-				join += "left outer join s.groups G_" + t + " ";
+				if (getQuery().hasAttribute(t))
+					join += "left outer join s.groups G_" + t + " ";
 			
 			org.hibernate.Query q = helper.getHibSession().createQuery(
 					"select l, s.uniqueId from OnlineSectioningLog l, Student s " +
