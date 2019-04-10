@@ -624,6 +624,12 @@ public enum ApplicationProperty {
 
 	@Description("Online Student Scheduling Log: besides of the database, also log the actions in the given file (if set)")
 	OnlineSchedulingLogFile("unitime.sectioning.log.file"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Online Student Scheduling Log: is logging of the operation % enabled")
+	@Parameter("operation")
+	OnlineSchedulingLogOperation("unitime.sectioning.log.enabled.%"),
 
 	@Description("Online Student Scheduling: override for the solver parameter %")
 	@Parameter("solver parameter")
