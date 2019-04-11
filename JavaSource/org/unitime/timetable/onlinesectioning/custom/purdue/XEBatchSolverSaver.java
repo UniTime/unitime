@@ -351,7 +351,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 	protected String getCrn(Enrollment enrollment, Section section) {
 		CourseOffering course = iCourses.get(enrollment.getCourse().getId());
 		Class_ clazz = iClasses.get(section.getId());
-		if (clazz != null && course != null) clazz.getExternalId(course);
+		if (clazz != null && course != null) return clazz.getExternalId(course);
 		return null;
 	}
 	
