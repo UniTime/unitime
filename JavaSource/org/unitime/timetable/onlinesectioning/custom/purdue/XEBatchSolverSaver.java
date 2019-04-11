@@ -60,11 +60,13 @@ import org.restlet.resource.ResourceException;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.interfaces.ExternalClassLookupInterface;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -77,6 +79,7 @@ import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.solver.studentsct.InMemoryReport;
 import org.unitime.timetable.solver.studentsct.StudentSolver;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.DefaultExternalClassLookup;
 import org.unitime.timetable.util.Formats;
 
 import com.google.gson.Gson;
@@ -102,6 +105,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 
     private Client iClient;
 	private ExternalTermProvider iExternalTermProvider;
+	private ExternalClassLookupInterface iExternalClassLookup;
 	private AcademicSessionInfo iSession;
 	private String iHoldPassword = null;
 	private String iRegistrationDate = null;
@@ -135,6 +139,16 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		} catch (Exception e) {
 			sLog.error("Failed to create external term provider, using the default one instead.", e);
 			iExternalTermProvider = new BannerTermProvider();
+		}
+		try {
+			String clazz = ApplicationProperty.CustomizationExternalClassLookup.value();
+			if (clazz == null || clazz.isEmpty())
+				iExternalClassLookup = new DefaultExternalClassLookup();
+			else
+				iExternalClassLookup = (ExternalClassLookupInterface)Class.forName(clazz).getConstructor().newInstance();
+		} catch (Exception e) {
+			sLog.error("Failed to create external class lookup, using the default one instead.", e);
+			iExternalClassLookup = new DefaultExternalClassLookup();
 		}
 		iHoldPassword = solver.getProperties().getProperty("Save.XE.HoldPassword");
 		iRegistrationDate = solver.getProperties().getProperty("Save.XE.RegistrationDate");
@@ -518,7 +532,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 			for (String id: registered.keySet()) {
 				if (added.contains(id)) continue;
 				XEInterface.Registration reg = registered.get(id);
-				if (!campus.equals(reg.campus)) {
+				if (!campus.equals(reg.campus) && iExternalClassLookup.findCourseByExternalId(iSession.getUniqueId(), id) == null) {
 					if (added.add(id)) keep(req, id);
 				} else if (nodrop.contains(id)) {
 					csv.add(new CSVField[] {
@@ -984,22 +998,26 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		
 		@Override
 	    public void run() {
-			iProgress.debug(getName() + " has started.");
-			while (true) {
-				Student student = null;
-				synchronized (iStudents) {
-					if (!iCanContinue) {
-						iProgress.debug(getName() + " has stopped.");
-						return;
+			try {
+				iProgress.debug(getName() + " has started.");
+				while (true) {
+					Student student = null;
+					synchronized (iStudents) {
+						if (!iCanContinue) {
+							iProgress.debug(getName() + " has stopped.");
+							return;
+						}
+						if (!iStudents.hasNext()) break;
+						student = iStudents.next();
+						iProgress.incProgress();
 					}
-					if (!iStudents.hasNext()) break;
-					student = iStudents.next();
-					iProgress.incProgress();
+					if (!student.isDummy())
+						saveStudent(student);
 				}
-				if (!student.isDummy())
-					saveStudent(student);
+				iProgress.debug(getName() + " has finished.");
+			} finally {
+				_RootDAO.closeCurrentThreadSessions();
 			}
-			iProgress.debug(getName() + " has finished.");
 		}
 	}
 }
