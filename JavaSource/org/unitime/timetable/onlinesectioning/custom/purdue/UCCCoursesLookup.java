@@ -34,6 +34,7 @@ import org.hibernate.Session;
 import org.hibernate.type.BigDecimalType;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
@@ -72,14 +73,49 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 		return iExternalTermProvider.getExternalTerm(session);
 	}
 	
-	protected String getCourseLookupSQL() {
-		return ApplicationProperties.getProperty("banner.ucc.lookupSQL",
+	protected String getCourseLookupFullSQL() {
+		return ApplicationProperties.getProperty("banner.ucc.lookupSQLfull",
 				"select distinct co.uniqueid " +
 				"from timetable.szv_utm_attr a, course_offering co, instructional_offering io, subject_area sa " +
 				"where a.term_start <= :term and a.term_end >= :term and " +
-				"(lower(a.attribute_description) like concat(concat('uc-', :query), '%') or lower(a.attribute_description) like concat(concat('% ', :query), '%') or lower(a.course_attribute) = :query) and "+
+				"(lower(a.attribute_description) = concat('uc-', :query) or lower(a.course_attribute) = :query) and "+
 				"co.instr_offr_id = io.uniqueid and co.subject_area_id = sa.uniqueid and io.session_id = :sessionId and " +
 				"io.not_offered = 0 and sa.subject_area_abbreviation = a.subject and co.course_nbr like concat(a.course_number, '%')"
+				);
+	}
+	
+	protected String getCourseLookupPartialSQL() {
+		return ApplicationProperties.getProperty("banner.ucc.lookupSQLpartial",
+				"select distinct co.uniqueid " +
+				"from timetable.szv_utm_attr a, course_offering co, instructional_offering io, subject_area sa " +
+				"where a.term_start <= :term and a.term_end >= :term and " +
+				"(lower(a.attribute_description) like concat(concat('uc-', :query), '%') or lower(a.attribute_description) like concat(concat('% ', :query), '%')) and "+
+				"co.instr_offr_id = io.uniqueid and co.subject_area_id = sa.uniqueid and io.session_id = :sessionId and " +
+				"io.not_offered = 0 and sa.subject_area_abbreviation = a.subject and co.course_nbr like concat(a.course_number, '%')"
+				);
+	}
+	
+	protected String getCourseNamesFullSQL() {
+		return ApplicationProperties.getProperty("banner.ucc.coursesSQLfull",
+				"select a.subject, a.course_number " +
+				"from timetable.szv_utm_attr a where a.term_start <= :term and a.term_end >= :term and " +
+				"(lower(a.attribute_description) = concat('uc-', :query) or lower(a.course_attribute) = :query)"
+				);
+	}
+	
+	protected String getCourseNamesPartialSQL() {
+		return ApplicationProperties.getProperty("banner.ucc.coursesSQLpartial",
+				"select a.subject, a.course_number " +
+				"from timetable.szv_utm_attr a where a.term_start <= :term and a.term_end >= :term and " +
+				"(lower(a.attribute_description) like concat(concat('uc-', :query), '%') or lower(a.attribute_description) like concat(concat('% ', :query), '%'))"
+				);
+	}
+	
+	protected String getSuggestionSQL() {
+		return ApplicationProperties.getProperty("banner.ucc.suggestionsSQL",
+				"select distinct a.course_attribute, a.attribute_description " +
+				"from timetable.szv_utm_attr a where a.term_start <= :term and a.term_end >= :term and " +
+				"(lower(a.attribute_description) like concat(concat('uc-', :query), '%') or lower(a.attribute_description) like concat(concat('% ', :query), '%') or lower(a.course_attribute) = :query)"
 				);
 	}
 	
@@ -133,9 +169,8 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 		}
 		return iCache;
 	}
-
-	@Override
-	public List<XCourseId> getCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, String query) {
+	
+	protected String fixQuery(String query) {
 		if ("oc".equalsIgnoreCase(query)) query = "oral communication";
 		if ("wc".equalsIgnoreCase(query)) query = "written communication";
 		if (query == null || query.length() <= 2) return null;
@@ -156,10 +191,16 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 				}
 			}
 		}
+		return query.toLowerCase();
+	}
+
+	@Override
+	public List<XCourseId> getCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, String query) {
+		String q = fixQuery(query);
+		if (q == null) return null;
 		List<XCourseId> ret = new ArrayList<XCourseId>();
 		if (useCache()) {
 			String term = getBannerTerm(server.getAcademicSession());
-			String q = query.toLowerCase();
 			boolean fullMatch = false;
 			for (CourseAttribute ca: getCourseAttributes()) {
 				if (ca.isFullMatch(q)) {
@@ -182,13 +223,23 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 				}
 			}
 		} else {
-			for (Object courseId: helper.getHibSession().createSQLQuery(getCourseLookupSQL())
+			for (Object courseId: helper.getHibSession().createSQLQuery(getCourseLookupFullSQL())
 					.setLong("sessionId", server.getAcademicSession().getUniqueId())
 					.setString("term", getBannerTerm(server.getAcademicSession()))
-					.setString("query", query.toLowerCase()).list()) {
+					.setString("query", q).list()) {
 				XCourse course = server.getCourse(((Number)courseId).longValue());
 				if (course != null)
 					ret.add(course);
+			}
+			if (ret.isEmpty()) {
+				for (Object courseId: helper.getHibSession().createSQLQuery(getCourseLookupPartialSQL())
+						.setLong("sessionId", server.getAcademicSession().getUniqueId())
+						.setString("term", getBannerTerm(server.getAcademicSession()))
+						.setString("query", q).list()) {
+					XCourse course = server.getCourse(((Number)courseId).longValue());
+					if (course != null)
+						ret.add(course);
+				}
 			}
 		}
 		Collections.sort(ret);
@@ -201,30 +252,10 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 
 	@Override
 	public List<CourseOffering> getCourses(AcademicSessionInfo session, Session hibSession, String query) {
-		if ("oc".equalsIgnoreCase(query)) query = "oral communication";
-		if ("wc".equalsIgnoreCase(query)) query = "written communication";
-		if (query == null || query.length() <= 2) return null;
-		String regExp = getPlaceHolderRegExp();
-		if (regExp != null && !regExp.isEmpty()) {
-			Matcher m = Pattern.compile(regExp).matcher(query);
-			if (m.matches())
-				query = m.group(1);
-		}
-		String replacements = getPlaceHolderRenames();
-		if (replacements != null && !replacements.isEmpty()) {
-			for (String rep: replacements.split("\n")) {
-				int idx = rep.indexOf('|');
-				if (idx <= 0) continue;
-				if (query.matches(rep.substring(0, idx))) {
-					query = rep.substring(idx + 1);
-					break;
-				}
-			}
-		}
-
+		String q = fixQuery(query);
+		if (q == null) return null;
 		if (useCache()) {
 			String term = getBannerTerm(session);
-			String q = query.toLowerCase();
 			List<CourseOffering> courses = new ArrayList<CourseOffering>();
 			boolean fullMatch = false;
 			for (CourseAttribute ca: getCourseAttributes()) {
@@ -261,10 +292,16 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 			}
 			return courses;
 		} else {
-			List courseIds = hibSession.createSQLQuery(getCourseLookupSQL())
+			List courseIds = hibSession.createSQLQuery(getCourseLookupFullSQL())
 					.setLong("sessionId", session.getUniqueId())
 					.setString("term", getBannerTerm(session))
-					.setString("query", query.toLowerCase()).list();
+					.setString("query", q).list();
+			if (courseIds == null || courseIds.isEmpty()) {
+				courseIds = hibSession.createSQLQuery(getCourseLookupPartialSQL())
+						.setLong("sessionId", session.getUniqueId())
+						.setString("term", getBannerTerm(session))
+						.setString("query", q).list();
+			}
 			if (courseIds == null || courseIds.isEmpty()) return null;
 			return (List<CourseOffering>)hibSession.createQuery("from CourseOffering where uniqueId in :courseIds order by subjectAreaAbbv, courseNbr")
 					.setParameterList("courseIds", courseIds, BigDecimalType.INSTANCE).setCacheable(true).list();
@@ -296,23 +333,32 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 	}
 
 	private static class CourseAttribute implements Comparable<CourseAttribute> {
-		String iCourseAttribute, iAttributeDescription;
+		String iCourseAttribute, iAttributeDescription, iAttributeDescriptionLowCase;
 		List<Course> iCourses = new ArrayList<Course>();
 
 		private CourseAttribute(String courseAttribute, String attributeDescription) {
 			iCourseAttribute = courseAttribute;
-			iAttributeDescription = attributeDescription.toLowerCase();
+			iAttributeDescription = attributeDescription;
+			iAttributeDescriptionLowCase = attributeDescription.toLowerCase();
 		}
 		
 		void addCourse(Course course) { iCourses.add(course); }
 		List<Course> getCourses() { return iCourses; }
 		
 		public boolean isFullMatch(String query) {
-			return iCourseAttribute.equalsIgnoreCase(query) || iAttributeDescription.equals("uc-" + query);
+			return iCourseAttribute.equalsIgnoreCase(query) || iAttributeDescription.equalsIgnoreCase("uc-" + query);
 		}
 
 		public boolean isPartialMatch(String query) {
-			return	iAttributeDescription.startsWith("uc-" + query) || iAttributeDescription.contains(" " + query);
+			return	iAttributeDescriptionLowCase.startsWith("uc-" + query) || iAttributeDescriptionLowCase.contains(" " + query);
+		}
+		
+		public String getCourseAttribute() {
+			return iCourseAttribute;
+		}
+		
+		public String getAttributeDescription() {
+			return iAttributeDescription;
 		}
 		
 		@Override
@@ -335,5 +381,72 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 			if (o == null || !(o instanceof CourseAttribute)) return false;
 			return iCourseAttribute.equals(((CourseAttribute)o).iCourseAttribute);
 		}
+	}
+
+	@Override
+	public void addSuggestions(OnlineSectioningServer server, OnlineSectioningHelper helper, String query, FilterRpcResponse filter) {
+		String q = fixQuery(query);
+		if (q == null) return;
+		if (useCache()) {
+			for (CourseAttribute ca: getCourseAttributes()) {
+				if (ca.isFullMatch(q) ||  ca.isPartialMatch(q)) {
+					filter.addSuggestion(ca.getAttributeDescription(), ca.getCourseAttribute(), "UCC Attribute", "lookup", true);
+				}
+			}
+		} else {
+			for (Object[] data: (List<Object[]>)helper.getHibSession().createSQLQuery(getSuggestionSQL())
+					.setString("term", getBannerTerm(server.getAcademicSession()))
+					.setString("query", q).list()) {
+				String course_attribute = (String)data[0];
+				String attribute_description = (String)data[1];
+				filter.addSuggestion(attribute_description, course_attribute, "UCC Attribute", "lookup", true);
+			}
+		}
+		
+	}
+
+	@Override
+	public List<String> getCourses(AcademicSessionInfo session, String query) {
+		String q = fixQuery(query);
+		if (q == null) return null;
+		List<String> ret = new ArrayList<String>();
+		if (useCache()) {
+			String term = getBannerTerm(session);
+			boolean fullMatch = false;
+			for (CourseAttribute ca: getCourseAttributes()) {
+				if (ca.isFullMatch(q)) {
+					if (!fullMatch) { fullMatch = true; ret.clear(); }
+					for (Course c: ca.getCourses()) {
+						if (c.isApplicable(term))
+							ret.add(c.getSubjectArea() + " " + c.getCourseNumber());
+					}
+				} else if (!fullMatch && ca.isPartialMatch(q)) {
+					for (Course c: ca.getCourses()) {
+						if (c.isApplicable(term))
+							ret.add(c.getSubjectArea() + " " + c.getCourseNumber());
+					}
+				}
+			}
+		} else {
+			org.hibernate.Session hibSession = new _RootDAO().createNewSession();
+			try {
+				for (Object[] course: (List<Object[]>)hibSession.createSQLQuery(getCourseNamesFullSQL())
+						.setString("term", getBannerTerm(session))
+						.setString("query", q).list()) {
+					ret.add(((String)course[0]) + " " + ((String)course[1]));
+				}
+				if (ret.isEmpty()) {
+					for (Object[] course: (List<Object[]>)hibSession.createSQLQuery(getCourseNamesPartialSQL())
+							.setString("term", getBannerTerm(session))
+							.setString("query", q).list()) {
+						ret.add(((String)course[0]) + " " + ((String)course[1]));
+					}	
+				}
+			} finally {
+				hibSession.close();
+			}
+		}
+		Collections.sort(ret);
+		return ret;
 	}
 }

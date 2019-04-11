@@ -5726,6 +5726,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("require")
 	String tagRequire();
 	
+	@DefaultMessage("lookup")
+	String tagLookup();
+	
 	@DefaultMessage("All Sessions")
 	String attrFlagAllSessions();
 	

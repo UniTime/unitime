@@ -56,6 +56,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.status.FindStudentInfoAction;
 import org.unitime.timetable.onlinesectioning.status.SectioningStatusFilterAction;
+import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseLookup;
 import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbCourseRequestMatcher;
 import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbFindStudentInfoMatcher;
 
@@ -91,6 +92,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		Set<Long> unassigned = new HashSet<Long>();
 		Set<Long> assignedRequests = new HashSet<Long>();
 		AcademicSessionInfo session = server.getAcademicSession();
+		CourseLookup lookup = new CourseLookup(session);
 		DistanceMetric dm = server.getDistanceMetric();
 		
 		DbFindStudentInfoMatcher sm = new DbFindStudentInfoMatcher(session, iQuery, helper.getStudentNameFormat(), iMyStudents); sm.setServer(server);
@@ -99,7 +101,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		for (CourseRequest cr: (List<CourseRequest>)SectioningStatusFilterAction.getCourseQuery(iFilter, server, helper).select("distinct cr").query(helper.getHibSession()).list()) {
 			if (!hasMatchingSubjectArea(cr.getCourseOffering().getSubjectAreaAbbv())) continue;
 			if (!isCourseVisible(cr.getCourseOffering().getUniqueId())) continue;			
-			if (!query().match(new DbCourseRequestMatcher(session, cr, isConsentToDoCourse(cr.getCourseOffering()), isMyStudent(cr.getCourseDemand().getStudent()), helper.getStudentNameFormat()))) continue;
+			if (!query().match(new DbCourseRequestMatcher(session, cr, isConsentToDoCourse(cr.getCourseOffering()), isMyStudent(cr.getCourseDemand().getStudent()), helper.getStudentNameFormat(), lookup))) continue;
 			List<CourseRequest> list = requests.get(cr.getCourseOffering());
 			if (list == null) {
 				list = new ArrayList<CourseRequest>();
@@ -162,7 +164,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 									if (maxTot == null || maxTot < c.getMaxCredit()) maxTot = c.getMaxCredit();
 								}
 								if (r.isRequestPending()) { tOvrNeed ++; gtOvrNeed ++ ; }
-								if (query().match(new DbCourseRequestMatcher(session, r, isConsentToDoCourse(r.getCourseOffering()), isMyStudent(student), helper.getStudentNameFormat()))) {
+								if (query().match(new DbCourseRequestMatcher(session, r, isConsentToDoCourse(r.getCourseOffering()), isMyStudent(student), helper.getStudentNameFormat(), lookup))) {
 									if (c != null) {
 										if (min == null || min > c.getMinCredit()) min = c.getMinCredit();
 										if (max == null || max < c.getMaxCredit()) max = c.getMaxCredit();
@@ -192,7 +194,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 								for (CourseRequest r: demand.getCourseRequests()) {
 									if (first == null || r.getOrder() < first.getOrder()) first = r;
 								}
-								DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, first, isConsentToDoCourse(first.getCourseOffering()), isMyStudent(student), helper.getStudentNameFormat());
+								DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, first, isConsentToDoCourse(first.getCourseOffering()), isMyStudent(student), helper.getStudentNameFormat(), lookup);
 								if (crm.canAssign()) {
 									tUnasg ++; gtUnasg ++;
 									if (demand.isWaitlist()) {
@@ -201,7 +203,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 								}
 							} else {
 								tEnrl ++; gtEnrl ++;
-								DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, assigned, isConsentToDoCourse(assigned.getCourseOffering()), isMyStudent(student), helper.getStudentNameFormat());
+								DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, assigned, isConsentToDoCourse(assigned.getCourseOffering()), isMyStudent(student), helper.getStudentNameFormat(), lookup);
 								if (crm.reservation() != null) {
 									tRes ++; gtRes ++;
 								}
@@ -317,7 +319,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 						if (note == null || note.compareTo(n) > 0) note = n;
 					if (note != null) s.setNote(note.getTextNote());
 				}
-				DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(student), helper.getStudentNameFormat());
+				DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(student), helper.getStudentNameFormat(), lookup);
 				if (!crm.enrollment().isEmpty()) {
 					if (assignedRequests.add(crm.request().getCourseDemand().getUniqueId())) {
 						s.setEnrollment(s.getEnrollment() + 1); gEnrl ++;
@@ -411,7 +413,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 							}
 							if (assignment.getTimeLocation().hasIntersection(otherAssignment.getTimeLocation()) && !section.getClazz().isToIgnoreStudentConflictsWith(otherSection.getClazz())) {
 								if (section.getClazz().getUniqueId() < otherSection.getClazz().getUniqueId() ||
-									!query().match(new DbCourseRequestMatcher(session, otherSection.getCourseRequest(), isConsentToDoCourse(otherSection.getCourseOffering()), isMyStudent(student), helper.getStudentNameFormat()))) {
+									!query().match(new DbCourseRequestMatcher(session, otherSection.getCourseRequest(), isConsentToDoCourse(otherSection.getCourseOffering()), isMyStudent(student), helper.getStudentNameFormat(), lookup))) {
 									int sh = assignment.getTimeLocation().nrSharedDays(otherAssignment.getTimeLocation()) * assignment.getTimeLocation().nrSharedHours(otherAssignment.getTimeLocation()) * Constants.SLOT_LENGTH_MIN;
 									s.setOverlappingMinutes(s.getOverlappingMinutes() + sh);
 									gShr += sh;

@@ -50,6 +50,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.custom.CustomCourseLookupHolder;
 import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.util.Constants;
@@ -91,7 +92,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 			NumberFormat nf = Localization.getNumberFormat(CONST.executionTimeFormat());
 			AcademicSessionInfo session = server.getAcademicSession();
 			
-			SectioningLogQueryFormatter formatter = new SectioningLogQueryFormatter(helper);
+			SectioningLogQueryFormatter formatter = new SectioningLogQueryFormatter(session, helper);
 			String join = "";
 			for (String t: formatter.getGroupTypes())
 				if (getQuery().hasAttribute(t))
@@ -103,7 +104,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					(getQuery().hasAttribute("minor") ? "left outer join s.areaClasfMinors n " : "") + 
 					(getQuery().hasAttribute("group") ? "left outer join s.groups g " : "") + 
 					(getQuery().hasAttribute("accommodation") ? "left outer join s.accomodations a " : "") +
-					(getQuery().hasAttribute("course") ? "left outer join s.courseDemands cd left outer join cd.courseRequests cr " : "") + join +
+					(getQuery().hasAttribute("course") || getQuery().hasAttribute("lookup") ? "left outer join s.courseDemands cd left outer join cd.courseRequests cr " : "") + join +
 					"where l.session.uniqueId = :sessionId and l.session = s.session and l.student = s.externalUniqueId " +
 					"and (" + getQuery().toString(formatter) + ") " +
 					"and (l.result is not null or l.operation not in ('reload-offering', 'check-offering')) order by l.timeStamp desc, l.uniqueId desc");
@@ -355,8 +356,10 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 
 	public static class SectioningLogQueryFormatter implements QueryFormatter {
 		Set<String> iGroupTypes = new HashSet<String>();
+		AcademicSessionInfo iSession = null;
 		
-		public SectioningLogQueryFormatter(OnlineSectioningHelper helper) {
+		public SectioningLogQueryFormatter(AcademicSessionInfo session, OnlineSectioningHelper helper) {
+			iSession = session;
 			for (StudentGroupType type: StudentGroupTypeDAO.getInstance().findAll(helper.getHibSession()))
 				iGroupTypes.add(type.getReference().replace(' ', '_').toLowerCase());
 		}
@@ -440,6 +443,18 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 				}
 			} else if ("course".equalsIgnoreCase(attr)) {
 				return "cr.courseOffering.subjectAreaAbbv = '" + body + "' or (cr.courseOffering.subjectAreaAbbv || ' ' || cr.courseOffering.courseNbr) = '" + body + "'";
+			} else if ("lookup".equalsIgnoreCase(attr)) {
+				if (CustomCourseLookupHolder.hasProvider()) {
+					List<String> courses = CustomCourseLookupHolder.getProvider().getCourses(iSession, body);
+					if (courses != null && !courses.isEmpty()) {
+						String ret = "";
+						for (String course: courses) {
+							ret += (ret.isEmpty() ? "" : " or ") + "(cr.courseOffering.subjectAreaAbbv || ' ' || cr.courseOffering.courseNbr like '" + course + "%')"; 
+						}
+						return ret;
+					}
+				}
+				return "1 = 1";
 			} else if (attr == null && !body.isEmpty()) {
 				return "lower(s.firstName || ' ' || s.middleName || ' ' || s.lastName) like '%" + body.toLowerCase() + "%'";
 			} else {

@@ -62,6 +62,7 @@ import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.onlinesectioning.status.FindEnrollmentInfoAction.FindEnrollmentInfoCourseMatcher;
+import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseLookup;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseRequestMatcher;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
 import org.unitime.timetable.solver.studentsct.StudentSolver;
@@ -146,6 +147,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		Set<Long> unassigned = new HashSet<Long>();
 		Set<Long> assigned = new HashSet<Long>();
 		AcademicSessionInfo session = server.getAcademicSession();
+		CourseLookup lookup = new CourseLookup(session);
 		Set<String> regStates = new HashSet<String>();
 		Set<String> assStates = new HashSet<String>();
 		Session dbSession = SessionDAO.getInstance().get(session.getUniqueId());
@@ -158,7 +160,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		Set<Long> studentIds = null;
 		if (!solver)
 			studentIds = (iFilter == null ? null : server.createAction(SectioningStatusFilterAction.class).forRequest(iFilter).getStudentIds(server, helper));
-		for (XCourseId info: findCourses(server, helper)) {
+		for (XCourseId info: findCourses(server, helper, lookup)) {
 			XOffering offering = server.getOffering(info.getOfferingId());
 			if (offering == null) continue;
 			XCourse course = offering.getCourse(info.getCourseId());
@@ -172,7 +174,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 				if (studentIds != null && !studentIds.contains(request.getStudentId())) continue;
 				XStudent student = server.getStudent(request.getStudentId());
 				if (student == null) continue;
-				CourseRequestMatcher m = new CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse, isMyStudent(student), server);
+				CourseRequestMatcher m = new CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse, isMyStudent(student), lookup, server);
 				if (query().match(m)) {
 					StudentInfo s = students.get(request.getStudentId());
 					if (s == null) {
@@ -220,7 +222,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 										if (maxTot == null || maxTot < c.getMaxCredit()) maxTot = c.getMaxCredit();
 									}
 									if (cr.isOverridePending(c)) { gtOvrNeed ++; tOvrNeed ++; }
-									if (query().match(new CourseRequestMatcher(session, c, student, server.getOffering(c.getOfferingId()), cr, isConsentToDoCourse(c), isMyStudent(student), server))) {
+									if (query().match(new CourseRequestMatcher(session, c, student, server.getOffering(c.getOfferingId()), cr, isConsentToDoCourse(c), isMyStudent(student), lookup, server))) {
 										if (c != null && c.hasCredit()) { 
 											if (min == null || min > c.getMinCredit()) min = c.getMinCredit();
 											if (max == null || max < c.getMaxCredit()) max = c.getMaxCredit();
@@ -437,7 +439,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 													if (d > gDist) gDist = d;
 												}
 												if (section.getTime().hasIntersection(otherSection.getTime()) && !section.isToIgnoreStudentConflictsWith(o.getDistributions(), otherSection.getSectionId())) {
-													if (section.getSectionId() < otherSection.getSectionId() || !query().match(new CourseRequestMatcher(session, otherCourse, student, otherOffering, (XCourseRequest)q, isConsentToDoCourse(otherCourse), isMyStudent(student), server))) {
+													if (section.getSectionId() < otherSection.getSectionId() || !query().match(new CourseRequestMatcher(session, otherCourse, student, otherOffering, (XCourseRequest)q, isConsentToDoCourse(otherCourse), isMyStudent(student), lookup, server))) {
 														s.setOverlappingMinutes(s.getOverlappingMinutes() + section.getTime().share(otherSection.getTime()));
 														gShr += section.getTime().share(otherSection.getTime());
 													}
@@ -628,15 +630,15 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		return ret;
 	}
 	
-	protected Collection<? extends XCourseId> findCourses(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
+	protected Collection<? extends XCourseId> findCourses(final OnlineSectioningServer server, final OnlineSectioningHelper helper, CourseLookup lookup) {
 		if (iFilter != null && server instanceof DatabaseServer) {
 			List<XCourseId> courses = new ArrayList<XCourseId>();
-			FindEnrollmentInfoCourseMatcher m = new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery);
+			FindEnrollmentInfoCourseMatcher m = new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery, lookup);
 			for (XCourse course :server.createAction(SectioningStatusFilterAction.class).forRequest(iFilter).getCourses(server, helper))
 				if (m.match(course)) courses.add(course);
 			return courses;
 		} else {
-			 return server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas,iQuery));
+			 return server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery, lookup));
 		}
 	}
 

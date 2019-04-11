@@ -65,6 +65,7 @@ import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
+import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseLookup;
 import org.unitime.timetable.solver.studentsct.StudentSolver;
 
 /**
@@ -136,6 +137,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 		XExpectations expectations = server.getExpectations(offering.getOfferingId());
 		OverExpectedCriterion overExp = server.getOverExpectedCriterion();
 		AcademicSessionInfo session = server.getAcademicSession();
+		CourseLookup lookup = new CourseLookup(session);
 		boolean solver = (server instanceof StudentSolver);
 		Set<Long> studentIds = null;
 		if (!solver)
@@ -156,7 +158,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 			XStudent student = server.getStudent(request.getStudentId());
 			if (student == null) continue;
 			if (request.getEnrollment() == null && !student.canAssign(request)) continue;
-			if (!query().match(new StatusPageSuggestionsAction.CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse(), isMyStudent(student), server))) continue;
+			if (!query().match(new StatusPageSuggestionsAction.CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse(), isMyStudent(student), lookup, server))) continue;
 			if (classId() != null && request.getEnrollment() == null) {
 				boolean hasEnrollment = false;
 				Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();

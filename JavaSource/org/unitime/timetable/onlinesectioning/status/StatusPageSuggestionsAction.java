@@ -23,9 +23,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -66,6 +68,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.custom.CustomCourseLookupHolder;
 import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
@@ -555,14 +558,37 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		}
 	}
 	
+	public static class CourseLookup implements Serializable {
+		private static final long serialVersionUID = 1L;
+		private AcademicSessionInfo iSession;
+		private Map<String, List<String>> iLookups = new HashMap<String, List<String>>();
+		
+		public CourseLookup(AcademicSessionInfo session) {
+			iSession = session;
+		}
+		
+		public List<String> getCourses(String term) {
+			List<String> courses = iLookups.get(term);
+			if (courses == null && CustomCourseLookupHolder.hasProvider()) {
+				courses = CustomCourseLookupHolder.getProvider().getCourses(iSession, term);
+				if (courses == null) { courses = new ArrayList<String>(); }
+				iLookups.put(term, courses);
+			}
+			return courses;
+		}
+		
+	}
+	
 	public static class CourseInfoMatcher implements TermMatcher, Serializable {
 		private static final long serialVersionUID = 1L;
 		private XCourse iInfo;
 		private boolean iConsentToDoCourse;
+		private CourseLookup iLookup;
 		
-		public CourseInfoMatcher(XCourse course, boolean isConsentToDoCourse) {
+		public CourseInfoMatcher(XCourse course, boolean isConsentToDoCourse, CourseLookup lookup) {
 			iInfo = course;
 			iConsentToDoCourse = isConsentToDoCourse;
+			iLookup = lookup;
 		}
 		
 		public XCourse info() { return iInfo; }
@@ -573,6 +599,13 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		public boolean match(String attr, String term) {
 			if (term.isEmpty()) return true;
 			if ("limit".equals(attr)) return true;
+			if ("lookup".equals(attr)) {
+				List<String> courses = iLookup.getCourses(term);
+				if (courses != null)
+					for (String course: courses)
+						if ((info().getSubjectArea() + " " + info().getCourseNumber()).startsWith(course)) return true;
+				return false;
+			}
 			if (attr == null || "name".equals(attr) || "course".equals(attr)) {
 				return info().getSubjectArea().equalsIgnoreCase(term) || info().getCourseNumber().equalsIgnoreCase(term) || (info().getSubjectArea() + " " + info().getCourseNumber()).equalsIgnoreCase(term);
 			}
@@ -620,8 +653,8 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		private OnlineSectioningServer iServer;
 		private boolean iMyStudent;
 		
-		public CourseRequestMatcher(AcademicSessionInfo session, XCourse info, XStudent student, XOffering offering, XCourseRequest request, boolean isConsentToDoCourse, boolean isMyStudent, OnlineSectioningServer server) {
-			super(info, isConsentToDoCourse);
+		public CourseRequestMatcher(AcademicSessionInfo session, XCourse info, XStudent student, XOffering offering, XCourseRequest request, boolean isConsentToDoCourse, boolean isMyStudent, CourseLookup lookup, OnlineSectioningServer server) {
+			super(info, isConsentToDoCourse, lookup);
 			iFirstDate = session.getDatePatternFirstDate();
 			iStudent = student;
 			iRequest = request;
@@ -648,7 +681,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 
 		@Override
 		public boolean match(String attr, String term) {
-			if (attr == null || "name".equals(attr) || "title".equals(attr) || "subject".equals(attr) || "number".equals(attr) || "course".equals(attr) || "department".equals(attr) || "registered".equals(attr))
+			if (attr == null || "name".equals(attr) || "title".equals(attr) || "subject".equals(attr) || "number".equals(attr) || "course".equals(attr) || "lookup".equals(attr) || "department".equals(attr) || "registered".equals(attr))
 				return super.match(attr, term);
 			
 			if ("limit".equals(attr)) return true;

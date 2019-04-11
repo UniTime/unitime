@@ -21,6 +21,7 @@ package org.unitime.timetable.onlinesectioning.custom;
 
 import java.util.List;
 
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -34,6 +35,8 @@ public interface CustomCourseLookup {
 	
 	public List<XCourseId> getCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, String query);
 	public List<CourseOffering> getCourses(AcademicSessionInfo session, org.hibernate.Session hibSession, String query);
+	public List<String> getCourses(AcademicSessionInfo session, String query);
+	public void addSuggestions(OnlineSectioningServer server, OnlineSectioningHelper helper, String query, FilterRpcResponse filter);
 	
 	public void dispose();
 

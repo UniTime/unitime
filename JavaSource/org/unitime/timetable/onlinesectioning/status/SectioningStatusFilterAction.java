@@ -57,6 +57,7 @@ import org.unitime.timetable.model.dao.StudentGroupTypeDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.custom.CustomCourseLookupHolder;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
@@ -101,7 +102,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		List<Entity> areas = new ArrayList<Entity>();
 		for (Object[] o: (List<Object[]>)query.select("aac.academicArea.uniqueId, aac.academicArea.academicAreaAbbreviation, aac.academicArea.title, count(distinct s.uniqueId)")
 				.order("aac.academicArea.academicAreaAbbreviation, aac.academicArea.title").group("aac.academicArea.uniqueId, aac.academicArea.academicAreaAbbreviation, aac.academicArea.title")
-				.exclude("area").exclude("major").exclude("course").exclude("prefer").exclude("require").query(helper.getHibSession()).list()) {
+				.exclude("area").exclude("major").exclude("course").exclude("lookup").exclude("prefer").exclude("require").query(helper.getHibSession()).list()) {
 			Entity a = new Entity(
 					(Long)o[0],
 					(String)o[1],
@@ -115,7 +116,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			List<Entity> majors = new ArrayList<Entity>();
 			for (Object[] o: (List<Object[]>)query.select("aac.major.uniqueId, aac.major.code, aac.major.name, count(distinct s)")
 					.order("aac.major.code, aac.major.name").group("aac.major.uniqueId, aac.major.code, aac.major.name")
-					.exclude("major").exclude("course").exclude("prefer").exclude("require").query(helper.getHibSession()).list()) {
+					.exclude("major").exclude("course").exclude("lookup").exclude("prefer").exclude("require").query(helper.getHibSession()).list()) {
 				Entity m = new Entity(
 						(Long)o[0],
 						(String)o[1],
@@ -129,7 +130,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		List<Entity> classifications = new ArrayList<Entity>();
 		for (Object[] o: (List<Object[]>)query.select("aac.academicClassification.uniqueId, aac.academicClassification.code, aac.academicClassification.name, count(distinct s)")
 				.order("aac.academicClassification.code, aac.academicClassification.name").group("aac.academicClassification.uniqueId, aac.academicClassification.code, aac.academicClassification.name")
-				.exclude("classification").exclude("course").exclude("prefer").exclude("require").query(helper.getHibSession()).list()) {
+				.exclude("classification").exclude("course").exclude("lookup").exclude("prefer").exclude("require").query(helper.getHibSession()).list()) {
 			Entity c = new Entity(
 					(Long)o[0],
 					(String)o[1],
@@ -143,7 +144,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		for (Object[] o: (List<Object[]>)query.select("g.uniqueId, g.groupAbbreviation, g.groupName, count(distinct s)")
 				.from("StudentGroup g").where("g in elements(s.groups) and g.type is null")
 				.order("g.groupAbbreviation, g.groupName").group("g.uniqueId, g.groupAbbreviation, g.groupName")
-				.exclude("group").exclude("course").exclude("prefer").exclude("require").query(helper.getHibSession()).list()) {
+				.exclude("group").exclude("course").exclude("lookup").exclude("prefer").exclude("require").query(helper.getHibSession()).list()) {
 			Entity c = new Entity(
 					(Long)o[0],
 					(String)o[1],
@@ -159,7 +160,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 					.from("StudentGroup gt").where("gt in elements(s.groups) and gt.type = :groupTypeId")
 					.set("groupTypeId", type.getUniqueId())
 					.order("gt.groupAbbreviation, gt.groupName").group("gt.uniqueId, gt.groupAbbreviation, gt.groupName")
-					.exclude(type.getReference().replace(' ', '_')).exclude("course").exclude("prefer").exclude("require").query(helper.getHibSession()).list()) {
+					.exclude(type.getReference().replace(' ', '_')).exclude("course").exclude("lookup").exclude("prefer").exclude("require").query(helper.getHibSession()).list()) {
 				Entity c = new Entity(
 						(Long)o[0],
 						(String)o[1],
@@ -176,7 +177,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		for (Object[] o: (List<Object[]>)query.select("a.uniqueId, a.abbreviation, a.name, count(distinct s)")
 				.from("StudentAccomodation a").where("a in elements(s.accomodations)")
 				.order("a.abbreviation, a.name").group("a.uniqueId, a.abbreviation, a.name")
-				.exclude("accommodation").exclude("course").exclude("prefer").exclude("require").query(helper.getHibSession()).list()) {
+				.exclude("accommodation").exclude("course").exclude("lookup").exclude("prefer").exclude("require").query(helper.getHibSession()).list()) {
 			Entity c = new Entity(
 					(Long)o[0],
 					(String)o[1],
@@ -291,6 +292,12 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 	
 	public FilterRpcResponse suggestions(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		FilterRpcResponse response = new FilterRpcResponse();
+
+		if (CustomCourseLookupHolder.hasProvider() && !iRequest.getText().isEmpty() && (response.getSuggestions() == null || response.getSuggestions().size() < 20)) {
+			try {
+				CustomCourseLookupHolder.getProvider().addSuggestions(server, helper, iRequest.getText(), response);
+			} catch (Exception e) {}
+		}
 		
 		String studentIdPattern = ApplicationProperty.OnlineSchedulingStudentIdPattern.value();
 		boolean studentIdMatch = (studentIdPattern != null && !studentIdPattern.isEmpty() && iRequest.getText().trim().matches(studentIdPattern));
@@ -471,6 +478,42 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		
 		if (request.getText() != null && !request.getText().isEmpty()) {
 			// ?
+		}
+		
+		if (request.hasOption("lookup") && CustomCourseLookupHolder.hasProvider()) {
+			try {
+				List<XCourseId> courseIds = CustomCourseLookupHolder.getProvider().getCourses(server, helper, request.getOption("lookup"));
+				if (courseIds != null && !courseIds.isEmpty()) {
+					String course = "";
+					int id = 0;
+					for (XCourseId c: courseIds) {
+						course += (course.isEmpty() ? "" : ",") + ":Xcx" + id;
+						query.addParameter("lookup", "Xcx" + id, c.getCourseId());
+						id++;
+					}
+					query.addWhere("lookup", "co.uniqueId in (" + course + ")");
+					query.addFrom("lookup", "inner join s.courseDemands cd inner join cd.courseRequests cr inner join cr.courseOffering co");					
+				}
+			} catch (Exception e) {}
+		} else if (request.hasOptions("lookup") && CustomCourseLookupHolder.hasProvider()) {
+			try {
+				String course = "";
+				int id = 0;
+				for (String lookup: request.getOptions("lookup")) {
+					List<XCourseId> courseIds = CustomCourseLookupHolder.getProvider().getCourses(server, helper, lookup);
+					if (courseIds != null && !courseIds.isEmpty()) {
+						for (XCourseId c: courseIds) {
+							course += (course.isEmpty() ? "" : ",") + ":Xcx" + id;
+							query.addParameter("lookup", "Xcx" + id, c.getCourseId());
+							id++;
+						}
+					}
+				}
+				if (id > 0) {
+					query.addWhere("lookup", "co.uniqueId in (" + course + ")");
+					query.addFrom("lookup", "inner join s.courseDemands cd inner join cd.courseRequests cr inner join cr.courseOffering co");					
+				}
+			} catch (Exception e) {}
 		}
 		
 		if (request.hasOptions("area")) {
@@ -883,6 +926,10 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 	
 	public static CourseQuery getCourseQuery(FilterRpcRequest request, OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		CourseQuery query = new CourseQuery(getQuery(request, server, helper));
+		
+		if (request.hasOptions("lookup") && CustomCourseLookupHolder.hasProvider()) {
+			query.addFrom("lookup", null);
+		}
 		
 		if (request.hasOption("course")) {
 			query.addParameter("course", "Xco", request.getOption("course"));

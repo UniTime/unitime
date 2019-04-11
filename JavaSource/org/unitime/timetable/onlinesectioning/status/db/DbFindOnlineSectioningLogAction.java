@@ -62,7 +62,7 @@ public class DbFindOnlineSectioningLogAction extends FindOnlineSectioningLogActi
 			NumberFormat nf = Localization.getNumberFormat(CONST.executionTimeFormat());
 			AcademicSessionInfo session = server.getAcademicSession();
 			
-			SectioningLogQueryFormatter formatter = new SectioningLogQueryFormatter(helper);
+			SectioningLogQueryFormatter formatter = new SectioningLogQueryFormatter(session, helper);
 			String join = "";
 			for (String t: formatter.getGroupTypes())
 				if (getQuery().hasAttribute(t))
@@ -74,7 +74,7 @@ public class DbFindOnlineSectioningLogAction extends FindOnlineSectioningLogActi
 					(getQuery().hasAttribute("minor") ? "left outer join s.areaClasfMinors n " : "") + 
 					(getQuery().hasAttribute("group") ? "left outer join s.groups g " : "") + 
 					(getQuery().hasAttribute("accommodation") ? "left outer join s.accomodations a " : "") + 
-					(getQuery().hasAttribute("course") ? "left outer join s.courseDemands cd left outer join cd.courseRequests cr " : "") + join +
+					(getQuery().hasAttribute("course") || getQuery().hasAttribute("lookup") ? "left outer join s.courseDemands cd left outer join cd.courseRequests cr " : "") + join +
 					"where l.session.uniqueId = :sessionId and l.session = s.session and l.student = s.externalUniqueId " +
 					"and (" + getQuery().toString(formatter) + ") " +
 					"and (l.result is not null or l.operation not in ('reload-offering', 'check-offering')) order by l.timeStamp desc, l.uniqueId desc");

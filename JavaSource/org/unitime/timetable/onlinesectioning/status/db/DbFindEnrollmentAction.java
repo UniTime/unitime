@@ -54,6 +54,7 @@ import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.status.FindEnrollmentAction;
+import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseLookup;
 import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbCourseRequestMatcher;
 
 /**
@@ -81,6 +82,7 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 		List<ClassAssignmentInterface.Enrollment> ret = new ArrayList<ClassAssignmentInterface.Enrollment>();
 		
 		AcademicSessionInfo session = server.getAcademicSession();
+		CourseLookup lookup = new CourseLookup(session);
 		OverExpectedCriterion overExp = server.getOverExpectedCriterion();
 		
 		CourseOffering course = CourseOfferingDAO.getInstance().get(courseId(), helper.getHibSession());
@@ -91,7 +93,7 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 		for (CourseRequest request: (List<CourseRequest>)helper.getHibSession().createQuery(
 				"from CourseRequest where courseOffering.uniqueId = :courseId"
 				).setLong("courseId", course.getUniqueId()).setCacheable(true).list()) {
-			DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse(), isMyStudent(request.getCourseDemand().getStudent()), helper.getStudentNameFormat());
+			DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse(), isMyStudent(request.getCourseDemand().getStudent()), helper.getStudentNameFormat(), lookup);
 			if (classId() != null) {
 				boolean match = false;
 				for (StudentClassEnrollment e: crm.enrollment()) {

@@ -75,6 +75,7 @@ import org.unitime.timetable.onlinesectioning.status.FindEnrollmentInfoAction;
 import org.unitime.timetable.onlinesectioning.status.SectioningStatusFilterAction;
 import org.unitime.timetable.onlinesectioning.status.FindStudentInfoAction.FindStudentInfoMatcher;
 import org.unitime.timetable.onlinesectioning.status.SectioningStatusFilterAction.Credit;
+import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseLookup;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.NameFormat;
@@ -96,6 +97,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 		
 		List<EnrollmentInfo> ret = new ArrayList<EnrollmentInfo>();
 		AcademicSessionInfo session = server.getAcademicSession();
+		CourseLookup lookup = new CourseLookup(server.getAcademicSession());
 		if (courseId() == null) {
 			Set<Long> students = new HashSet<Long>();
 			Set<Long> matchingStudents = new HashSet<Long>();
@@ -105,7 +107,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0, gtUnasgPrim = 0;
 			int gConNeed = 0, gtConNeed = 0, gOvrNeed = 0, gtOvrNeed = 0;
 			
-			DbFindEnrollmentInfoCourseMatcher m = new DbFindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery);
+			DbFindEnrollmentInfoCourseMatcher m = new DbFindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery, lookup);
 			
 			Map<CourseOffering, List<CourseRequest>> requests = new HashMap<CourseOffering, List<CourseRequest>>();
 			for (CourseRequest cr: (List<CourseRequest>)SectioningStatusFilterAction.getCourseQuery(iFilter, server, helper).select("distinct cr").query(helper.getHibSession()).list()) {
@@ -143,7 +145,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					
 					if (checkOverrides && !request.isRequestApproved() && request.getClassEnrollments().isEmpty()) continue;
 					
-					DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(request.getCourseDemand().getStudent()), helper.getStudentNameFormat());
+					DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(request.getCourseDemand().getStudent()), helper.getStudentNameFormat(), lookup);
 					if (!query().match(crm)) {
 						allStudents.add(crm.student().getUniqueId());
 						if (!crm.enrollment().isEmpty()) {
@@ -170,7 +172,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					if (students.add(student.getUniqueId()))
 						addedStudents.add(student.getUniqueId());
 					
-					DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(student), helper.getStudentNameFormat());
+					DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(student), helper.getStudentNameFormat(), lookup);
 					if (query().match(crm)) {
 						matchingStudents.add(student.getUniqueId());
 						match++;
@@ -437,7 +439,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				int other = 0;
 
 				for (CourseRequest request: requests) {
-					DbCourseRequestMatcher m = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(request.getCourseDemand().getStudent()), helper.getStudentNameFormat());
+					DbCourseRequestMatcher m = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(request.getCourseDemand().getStudent()), helper.getStudentNameFormat(), lookup);
 					boolean contains = false;
 					for (StudentClassEnrollment x: m.enrollment()) {
 						if (x.getClazz().equals(section)) { contains = true; break; }
@@ -457,7 +459,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				}
 
 				for (CourseRequest request: requests) {
-					DbCourseRequestMatcher m = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(request.getCourseDemand().getStudent()), helper.getStudentNameFormat());
+					DbCourseRequestMatcher m = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(request.getCourseDemand().getStudent()), helper.getStudentNameFormat(), lookup);
 					if (!m.enrollment().isEmpty() || !request.getCourseOffering().equals(course)) continue;
 					if (!m.canAssign()) continue;
 					if (checkOverrides && !request.isRequestApproved()) continue;
@@ -565,8 +567,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 	public static class DbFindEnrollmentInfoCourseMatcher extends FindEnrollmentInfoCourseMatcher {
 		private static final long serialVersionUID = 1L;
 		
-		public DbFindEnrollmentInfoCourseMatcher(Set<Long> coursesIcoordinate, Set<Long> coursesIcanApprove, Set<String> subjects, Query query) {
-			super(coursesIcoordinate, coursesIcanApprove, subjects, query);
+		public DbFindEnrollmentInfoCourseMatcher(Set<Long> coursesIcoordinate, Set<Long> coursesIcanApprove, Set<String> subjects, Query query, CourseLookup lookup) {
+			super(coursesIcoordinate, coursesIcanApprove, subjects, query, lookup);
 		}
 		
 		public boolean isConsentToDoCourse(CourseOffering co) {
@@ -574,7 +576,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 		}
 		
 		public boolean match(CourseOffering co) {
-			return co != null && isCourseVisible(co.getUniqueId()) && hasMatchingSubjectArea(co.getSubjectAreaAbbv()) && iQuery.match(new DbCourseInfoMatcher(co, isConsentToDoCourse(co)));
+			return co != null && isCourseVisible(co.getUniqueId()) && hasMatchingSubjectArea(co.getSubjectAreaAbbv()) && iQuery.match(new DbCourseInfoMatcher(co, isConsentToDoCourse(co), iLookup));
 		}
 		
 	}
@@ -583,10 +585,12 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 		private static final long serialVersionUID = 1L;
 		private CourseOffering iCourse;
 		private boolean iConsentToDoCourse;
+		private CourseLookup iLookup;
 		
-		public DbCourseInfoMatcher(CourseOffering course, boolean isConsentToDoCourse) {
+		public DbCourseInfoMatcher(CourseOffering course, boolean isConsentToDoCourse, CourseLookup lookup) {
 			iCourse = course;
 			iConsentToDoCourse = isConsentToDoCourse;
+			iLookup = lookup;
 		}
 		
 		public CourseOffering course() { return iCourse; }
@@ -597,6 +601,13 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 		public boolean match(String attr, String term) {
 			if (term.isEmpty()) return true;
 			if ("limit".equals(attr)) return true;
+			if ("lookup".equals(attr)) {
+				List<String> courses = iLookup.getCourses(term);
+				if (courses != null)
+					for (String course: courses)
+						if ((course().getSubjectAreaAbbv() + " " + course().getCourseNbr()).startsWith(course)) return true;
+				return false;
+			}
 			if (attr == null || "name".equals(attr) || "course".equals(attr)) {
 				return course().getSubjectAreaAbbv().equalsIgnoreCase(term) || course().getCourseNbr().equalsIgnoreCase(term) || (course().getSubjectAreaAbbv() + " " + course().getCourseNbr()).equalsIgnoreCase(term);
 			}
@@ -636,6 +647,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 	
 	public static class DbCourseRequestMatcher extends DbCourseInfoMatcher {
 		private static final long serialVersionUID = 1L;
+		private AcademicSessionInfo iSession;
 		private Student iStudent;
 		private CourseRequest iRequest;
 		private InstructionalOffering iOffering;
@@ -646,8 +658,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 		private boolean iReservationGuessed = false;
 		private boolean iMyStudent = false;
 		
-		public DbCourseRequestMatcher(AcademicSessionInfo session, CourseRequest request, boolean isConsentToDoCourse, boolean myStudent, NameFormat format) {
-			super(request.getCourseOffering(), isConsentToDoCourse);
+		public DbCourseRequestMatcher(AcademicSessionInfo session, CourseRequest request, boolean isConsentToDoCourse, boolean myStudent, NameFormat format, CourseLookup lookup) {
+			super(request.getCourseOffering(), isConsentToDoCourse, lookup);
 			iStudent = request.getCourseDemand().getStudent();
 			iRequest = request;
 			iDefaultStatus = session.getDefaultSectioningStatus();
@@ -656,6 +668,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			iMyStudent = myStudent;
 		}
 		
+		public AcademicSessionInfo session() { return iSession; }
 		public CourseRequest request() { return iRequest; }
 		public List<StudentClassEnrollment> enrollment() {
 			if (iEnrollment == null)
@@ -729,7 +742,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 		
 		@Override
 		public boolean match(String attr, String term) {
-			if (attr == null || "name".equals(attr) || "title".equals(attr) || "subject".equals(attr) || "number".equals(attr) || "course".equals(attr) || "department".equals(attr) || "registered".equals(attr))
+			if (attr == null || "name".equals(attr) || "title".equals(attr) || "subject".equals(attr) || "number".equals(attr) || "course".equals(attr) || "lookup".equals(attr) || "department".equals(attr) || "registered".equals(attr))
 				return super.match(attr, term);
 			
 			if ("limit".equals(attr)) return true;
