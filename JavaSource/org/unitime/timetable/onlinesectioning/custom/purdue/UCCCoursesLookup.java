@@ -22,11 +22,14 @@ package org.unitime.timetable.onlinesectioning.custom.purdue;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
 import org.hibernate.type.BigDecimalType;
 import org.unitime.timetable.ApplicationProperties;
@@ -104,18 +107,29 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 	
 	protected synchronized List<CourseAttribute> getCourseAttributes() {
 		if (iCache == null || (System.currentTimeMillis() - iCacheTS) > getCourseAttributesTTL()) {
-			iCache = new ArrayList<CourseAttribute>();
-			iCacheTS = System.currentTimeMillis();
+			Map<String, CourseAttribute> attributes = new HashMap<String, CourseAttribute>();
 			org.hibernate.Session hibSession = new _RootDAO().createNewSession();
 			try {
 				for (Object[] data: (List<Object[]>)hibSession.createSQLQuery(getListAttributesSQL()).list()) {
-					iCache.add(new CourseAttribute(
-							(String)data[0], (String)data[1], (String)data[2],
-							(String)data[3], (String)data[4], (String)data[5]));
+					String subject = (String)data[0];
+					String course_number = (String)data[1];
+					String course_attribute = (String)data[2];
+					String attribute_description = (String)data[3];
+					String term_start = (String)data[4];
+					String term_end = (String)data[5];
+					CourseAttribute att = attributes.get(course_attribute);
+					if (att == null) {
+						att = new CourseAttribute(course_attribute, attribute_description);
+						attributes.put(course_attribute, att);
+					}
+					att.addCourse(new Course(subject, course_number, term_start, term_end));
 				}
 			} finally {
 				hibSession.close();
 			}
+			iCache = new ArrayList<CourseAttribute>(attributes.values());
+			iCacheTS = System.currentTimeMillis();
+			sLog.info("UCC Cache: " + ToolBox.col2string(iCache, 2));
 		}
 		return iCache;
 	}
@@ -146,11 +160,25 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 		if (useCache()) {
 			String term = getBannerTerm(server.getAcademicSession());
 			String q = query.toLowerCase();
+			boolean fullMatch = false;
 			for (CourseAttribute ca: getCourseAttributes()) {
-				if (ca.isApplicable(term) && ca.isMatching(q)) {
-					Collection<? extends XCourseId> courses = server.findCourses(ca.getSubjectArea() + " " + ca.getCourseNumber(), -1, null);
-					if (courses != null)
-						ret.addAll(courses);
+				if (ca.isFullMatch(q)) {
+					if (!fullMatch) { fullMatch = true; ret.clear(); }
+					for (Course c: ca.getCourses()) {
+						if (c.isApplicable(term)) {
+							Collection<? extends XCourseId> courses = server.findCourses(c.getSubjectArea() + " " + c.getCourseNumber(), -1, null);
+							if (courses != null)
+								ret.addAll(courses);
+						}
+					}
+				} else if (!fullMatch && ca.isPartialMatch(q)) {
+					for (Course c: ca.getCourses()) {
+						if (c.isApplicable(term)) {
+							Collection<? extends XCourseId> courses = server.findCourses(c.getSubjectArea() + " " + c.getCourseNumber(), -1, null);
+							if (courses != null)
+								ret.addAll(courses);
+						}
+					}
 				}
 			}
 		} else {
@@ -198,17 +226,37 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 			String term = getBannerTerm(session);
 			String q = query.toLowerCase();
 			List<CourseOffering> courses = new ArrayList<CourseOffering>();
+			boolean fullMatch = false;
 			for (CourseAttribute ca: getCourseAttributes()) {
-				if (ca.isApplicable(term) && ca.isMatching(q)) {
-					courses.addAll(
-							hibSession.createQuery(
-									"select co from CourseOffering co where " +
-									"co.instructionalOffering.session = :sessionId and co.instructionalOffering.notOffered = false and " +
-									"co.subjectAreaAbbv = :subject and co.courseNbr like :course"
-							).setLong("sessionId", session.getUniqueId())
-							.setString("subject", ca.getSubjectArea())
-							.setString("course", ca.getCourseNumber() + "%")
-							.setCacheable(true).list());
+				if (ca.isFullMatch(q)) {
+					if (!fullMatch) { fullMatch = true; courses.clear(); }
+					for (Course c: ca.getCourses()) {
+						if (c.isApplicable(term)) {
+							courses.addAll(
+									hibSession.createQuery(
+											"select co from CourseOffering co where " +
+											"co.instructionalOffering.session = :sessionId and co.instructionalOffering.notOffered = false and " +
+											"co.subjectAreaAbbv = :subject and co.courseNbr like :course"
+									).setLong("sessionId", session.getUniqueId())
+									.setString("subject", c.getSubjectArea())
+									.setString("course", c.getCourseNumber() + "%")
+									.setCacheable(true).list());
+						}
+					}
+				} else if (!fullMatch && ca.isPartialMatch(q)) {
+					for (Course c: ca.getCourses()) {
+						if (c.isApplicable(term)) {
+							courses.addAll(
+									hibSession.createQuery(
+											"select co from CourseOffering co where " +
+											"co.instructionalOffering.session = :sessionId and co.instructionalOffering.notOffered = false and " +
+											"co.subjectAreaAbbv = :subject and co.courseNbr like :course"
+									).setLong("sessionId", session.getUniqueId())
+									.setString("subject", c.getSubjectArea())
+									.setString("course", c.getCourseNumber() + "%")
+									.setCacheable(true).list());
+						}
+					}
 				}
 			}
 			return courses;
@@ -222,30 +270,70 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 					.setParameterList("courseIds", courseIds, BigDecimalType.INSTANCE).setCacheable(true).list();
 		}
 	}
-
-	private static class CourseAttribute {
+	
+	private static class Course {
 		String iSubjectArea, iCourseNumber;
-		String iCourseAttribute, iAttributeDescription;
 		String iStartTerm, iEndTerm;
 
-		private  CourseAttribute(String subject, String courseNumber, String courseAttribute, String attributeDescription, String startTerm, String endTerm) {
+		private Course(String subject, String courseNumber, String startTerm, String endTerm) {
 			iSubjectArea = subject;
 			iCourseNumber = courseNumber;
-			iCourseAttribute = courseAttribute;
-			iAttributeDescription = attributeDescription.toLowerCase();
 			iStartTerm = startTerm;
 			iEndTerm = endTerm;
 		}
-
+		
 		public String getSubjectArea() { return iSubjectArea; }
 		public String getCourseNumber() { return iCourseNumber; }
+
 		public boolean isApplicable(String term) {
 			return iStartTerm.compareTo(term) <= 0 && term.compareTo(iEndTerm) <= 0;
 		}
-		public boolean isMatching(String query) {
-			return	iAttributeDescription.startsWith("uc-" + query) ||
-					iAttributeDescription.contains(" " + query) ||
-					iCourseAttribute.equalsIgnoreCase(query);
+		
+		@Override
+		public String toString() {
+			return iSubjectArea + " " + iCourseNumber;
+		}
+	}
+
+	private static class CourseAttribute implements Comparable<CourseAttribute> {
+		String iCourseAttribute, iAttributeDescription;
+		List<Course> iCourses = new ArrayList<Course>();
+
+		private CourseAttribute(String courseAttribute, String attributeDescription) {
+			iCourseAttribute = courseAttribute;
+			iAttributeDescription = attributeDescription.toLowerCase();
+		}
+		
+		void addCourse(Course course) { iCourses.add(course); }
+		List<Course> getCourses() { return iCourses; }
+		
+		public boolean isFullMatch(String query) {
+			return iCourseAttribute.equalsIgnoreCase(query) || iAttributeDescription.equals("uc-" + query);
+		}
+
+		public boolean isPartialMatch(String query) {
+			return	iAttributeDescription.startsWith("uc-" + query) || iAttributeDescription.contains(" " + query);
+		}
+		
+		@Override
+		public String toString() {
+			return iCourseAttribute + " - " + iAttributeDescription + ": " + iCourses.size() + "/" + iCourses;
+		}
+
+		@Override
+		public int compareTo(CourseAttribute ca) {
+			return iCourseAttribute.compareTo(ca.iCourseAttribute);
+		}
+		
+		@Override
+		public int hashCode() {
+			return iCourseAttribute.hashCode();
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof CourseAttribute)) return false;
+			return iCourseAttribute.equals(((CourseAttribute)o).iCourseAttribute);
 		}
 	}
 }
