@@ -20,6 +20,7 @@
 package org.unitime.timetable.onlinesectioning.custom.purdue;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -31,6 +32,7 @@ import org.hibernate.type.BigDecimalType;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -46,6 +48,9 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 	private static Logger sLog = Logger.getLogger(UCCCoursesLookup.class);
 	
 	private ExternalTermProvider iExternalTermProvider;
+	
+	private List<CourseAttribute> iCache = null;
+	private Long iCacheTS = null;
 	
 	public UCCCoursesLookup() {
 		try {
@@ -82,6 +87,38 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 	protected String getPlaceHolderRenames() {
 		return ApplicationProperties.getProperty("banner.ucc.placeholder.replacements", "(?i:Behavioral/Social Science)|Behavior/Social Science\n(?i:Science,? Tech \\& Society( Selective)?)|Science, Tech & Society");
 	}
+	
+	protected String getListAttributesSQL() {
+		return ApplicationProperties.getProperty("banner.ucc.cachedSQL",
+				"select subject, course_number, course_attribute, attribute_description, term_start, term_end from timetable.szv_utm_attr"
+				);
+	}
+	
+	protected boolean useCache() {
+		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.ucc.useCache", "false"));
+	}
+	
+	protected long getCourseAttributesTTL() {
+		return 1000l * Long.valueOf(ApplicationProperties.getProperty("banner.ucc.ttlSeconds", "900"));
+	}
+	
+	protected synchronized List<CourseAttribute> getCourseAttributes() {
+		if (iCache == null || (System.currentTimeMillis() - iCacheTS) > getCourseAttributesTTL()) {
+			iCache = new ArrayList<CourseAttribute>();
+			iCacheTS = System.currentTimeMillis();
+			org.hibernate.Session hibSession = new _RootDAO().createNewSession();
+			try {
+				for (Object[] data: (List<Object[]>)hibSession.createSQLQuery(getListAttributesSQL()).list()) {
+					iCache.add(new CourseAttribute(
+							(String)data[0], (String)data[1], (String)data[2],
+							(String)data[3], (String)data[4], (String)data[5]));
+				}
+			} finally {
+				hibSession.close();
+			}
+		}
+		return iCache;
+	}
 
 	@Override
 	public List<XCourseId> getCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, String query) {
@@ -106,13 +143,25 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 			}
 		}
 		List<XCourseId> ret = new ArrayList<XCourseId>();
-		for (Object courseId: helper.getHibSession().createSQLQuery(getCourseLookupSQL())
-				.setLong("sessionId", server.getAcademicSession().getUniqueId())
-				.setString("term", getBannerTerm(server.getAcademicSession()))
-				.setString("query", query.toLowerCase()).list()) {
-			XCourse course = server.getCourse(((Number)courseId).longValue());
-			if (course != null)
-				ret.add(course);
+		if (useCache()) {
+			String term = getBannerTerm(server.getAcademicSession());
+			String q = query.toLowerCase();
+			for (CourseAttribute ca: getCourseAttributes()) {
+				if (ca.isApplicable(term) && ca.isMatching(q)) {
+					Collection<? extends XCourseId> courses = server.findCourses(ca.getSubjectArea() + " " + ca.getCourseNumber(), -1, null);
+					if (courses != null)
+						ret.addAll(courses);
+				}
+			}
+		} else {
+			for (Object courseId: helper.getHibSession().createSQLQuery(getCourseLookupSQL())
+					.setLong("sessionId", server.getAcademicSession().getUniqueId())
+					.setString("term", getBannerTerm(server.getAcademicSession()))
+					.setString("query", query.toLowerCase()).list()) {
+				XCourse course = server.getCourse(((Number)courseId).longValue());
+				if (course != null)
+					ret.add(course);
+			}
 		}
 		Collections.sort(ret);
 		return ret;
@@ -145,12 +194,58 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 			}
 		}
 
-		List courseIds = hibSession.createSQLQuery(getCourseLookupSQL())
-				.setLong("sessionId", session.getUniqueId())
-				.setString("term", getBannerTerm(session))
-				.setString("query", query.toLowerCase()).list();
-		if (courseIds == null || courseIds.isEmpty()) return null;
-		return (List<CourseOffering>)hibSession.createQuery("from CourseOffering where uniqueId in :courseIds order by subjectAreaAbbv, courseNbr")
-				.setParameterList("courseIds", courseIds, BigDecimalType.INSTANCE).setCacheable(true).list();
+		if (useCache()) {
+			String term = getBannerTerm(session);
+			String q = query.toLowerCase();
+			List<CourseOffering> courses = new ArrayList<CourseOffering>();
+			for (CourseAttribute ca: getCourseAttributes()) {
+				if (ca.isApplicable(term) && ca.isMatching(q)) {
+					courses.addAll(
+							hibSession.createQuery(
+									"select co from CourseOffering co where " +
+									"co.instructionalOffering.session = :sessionId and co.instructionalOffering.notOffered = false and " +
+									"co.subjectAreaAbbv = :subject and co.courseNbr like :course"
+							).setLong("sessionId", session.getUniqueId())
+							.setString("subject", ca.getSubjectArea())
+							.setString("course", ca.getCourseNumber() + "%")
+							.setCacheable(true).list());
+				}
+			}
+			return courses;
+		} else {
+			List courseIds = hibSession.createSQLQuery(getCourseLookupSQL())
+					.setLong("sessionId", session.getUniqueId())
+					.setString("term", getBannerTerm(session))
+					.setString("query", query.toLowerCase()).list();
+			if (courseIds == null || courseIds.isEmpty()) return null;
+			return (List<CourseOffering>)hibSession.createQuery("from CourseOffering where uniqueId in :courseIds order by subjectAreaAbbv, courseNbr")
+					.setParameterList("courseIds", courseIds, BigDecimalType.INSTANCE).setCacheable(true).list();
+		}
+	}
+
+	private static class CourseAttribute {
+		String iSubjectArea, iCourseNumber;
+		String iCourseAttribute, iAttributeDescription;
+		String iStartTerm, iEndTerm;
+
+		private  CourseAttribute(String subject, String courseNumber, String courseAttribute, String attributeDescription, String startTerm, String endTerm) {
+			iSubjectArea = subject;
+			iCourseNumber = courseNumber;
+			iCourseAttribute = courseAttribute;
+			iAttributeDescription = attributeDescription.toLowerCase();
+			iStartTerm = startTerm;
+			iEndTerm = endTerm;
+		}
+
+		public String getSubjectArea() { return iSubjectArea; }
+		public String getCourseNumber() { return iCourseNumber; }
+		public boolean isApplicable(String term) {
+			return iStartTerm.compareTo(term) <= 0 && term.compareTo(iEndTerm) <= 0;
+		}
+		public boolean isMatching(String query) {
+			return	iAttributeDescription.startsWith("uc-" + query) ||
+					iAttributeDescription.contains(" " + query) ||
+					iCourseAttribute.equalsIgnoreCase(query);
+		}
 	}
 }
