@@ -299,6 +299,10 @@ public class StudentSectioningImport extends BaseImport {
 		            student.setAreaClasfMinors(new HashSet<StudentAreaClassificationMinor>());
 		            student.setGroups(new HashSet<StudentGroup>());
 		            student.setAccomodations(new HashSet<StudentAccomodation>());
+		        	String minCred = demographicsElement.attributeValue("minCredit");
+		        	student.setMinCredit(minCred == null ? null : Float.valueOf(minCred));
+		            String maxCred = demographicsElement.attributeValue("maxCredit");
+		            student.setMaxCredit(maxCred == null ? null : Float.valueOf(maxCred));
             	} else if (demographicsElement != null) {
 		            Element name = demographicsElement.element("name");
 		            if (name!=null) {
@@ -323,6 +327,16 @@ public class StudentSectioningImport extends BaseImport {
 		            	student.setEmail(email.attributeValue("value"));
 		            	updatedStudents.add(student.getUniqueId());
 		            }
+		        	String minCred = demographicsElement.attributeValue("minCredit");
+		            if (!eq(minCred == null ? null : Float.valueOf(minCred), student.getMinCredit())) {
+		        		student.setMinCredit(minCred == null ? null : Float.valueOf(minCred));
+		        		updatedStudents.add(student.getUniqueId());
+		        	}
+		            String maxCred = demographicsElement.attributeValue("maxCredit");
+		        	if (!eq(maxCred == null ? null : Float.valueOf(maxCred), student.getMaxCredit())) {
+		        		student.setMaxCredit(maxCred == null ? null : Float.valueOf(maxCred));
+		        		updatedStudents.add(student.getUniqueId());
+		        	}
             	}
             	if (demographicsElement != null) {
                 	Map<String, StudentAreaClassificationMajor> sMajors = new Hashtable<String, StudentAreaClassificationMajor>();
@@ -582,6 +596,7 @@ public class StudentSectioningImport extends BaseImport {
                         Element requestElement = (Element)i.next();
                         String waitList = requestElement.attributeValue("waitlist");
                         String alternative = requestElement.attributeValue("alternative");
+                        String critical = requestElement.attributeValue("critical");
                         if (requestElement.getName().equals("courseOffering")) {
                         	List<CourseOffering> courses = new ArrayList<CourseOffering>();
                         	List<Integer> credits = new ArrayList<Integer>();
@@ -637,6 +652,7 @@ public class StudentSectioningImport extends BaseImport {
         					cd.setAlternative("true".equals(alternative));
         					cd.setPriority(priority);
         					cd.setWaitlist("true".equals(waitList));
+        					cd.setCritical(critical == null ? null : new Boolean("true".equals(critical)));
                             
             				Iterator<CourseRequest> requests = new TreeSet<CourseRequest>(cd.getCourseRequests()).iterator();
             				int order = 0;
@@ -963,6 +979,10 @@ public class StudentSectioningImport extends BaseImport {
     }
     
 	private boolean eq(String a, String b) {
+		return (a == null ? b == null : a.equals(b));
+	}
+	
+	private boolean eq(Float a, Float b) {
 		return (a == null ? b == null : a.equals(b));
 	}
 	

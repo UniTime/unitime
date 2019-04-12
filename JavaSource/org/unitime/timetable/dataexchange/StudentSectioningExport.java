@@ -19,7 +19,10 @@
 */
 package org.unitime.timetable.dataexchange;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.TreeSet;
 
@@ -43,6 +46,7 @@ import org.unitime.timetable.util.Formats;
 
 public class StudentSectioningExport extends BaseExport {
 	protected static Formats.Format<Number> sTwoNumbersDF = Formats.getNumberFormat("00");
+	protected DecimalFormat iCreditDF = new DecimalFormat("0.0", new DecimalFormatSymbols(Locale.US));
 	
 	@Override
 	public void saveXml(Document document, Session session, Properties parameters) throws Exception {
@@ -89,6 +93,10 @@ public class StudentSectioningExport extends BaseExport {
 	        		demographicsEl.addElement("groupAffiliation").addAttribute("code", group.getGroupAbbreviation());
 	        	for (StudentAccomodation acc: student.getAccomodations())
 	        		demographicsEl.addElement("disability").addAttribute("code", acc.getAbbreviation());
+	        	if (student.getMinCredit() != null)
+	        		demographicsEl.addAttribute("minCredit", iCreditDF.format(student.getMinCredit()));
+	        	if (student.getMaxCredit() != null)
+	        		demographicsEl.addAttribute("maxCredit", iCreditDF.format(student.getMaxCredit()));
 	        	
 	        	// Course requests
 	        	Element requestsEl = studentEl.addElement("updateCourseRequests").addAttribute("commit", "true");
@@ -117,6 +125,8 @@ public class StudentSectioningExport extends BaseExport {
 	        					courseOfferingEl.addAttribute("waitlist", "true");
 	        				if (first && cd.isAlternative())
 	        					courseOfferingEl.addAttribute("alternative", "true");
+	        				if (first && cd.getCritical() != null)
+	        					courseOfferingEl.addAttribute("critical", cd.isCritical() ? "true" : "false");
 	        				if (cr.getCredit() != null && cr.getCredit() != 0)
 	        					courseOfferingEl.addAttribute("credit", String.valueOf(cr.getCredit()));
 	        				for (StudentClassEnrollment enrollment: cr.getClassEnrollments()) {

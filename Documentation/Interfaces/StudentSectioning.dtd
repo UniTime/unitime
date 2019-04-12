@@ -60,6 +60,7 @@
 <!ATTLIST class externalId CDATA #IMPLIED >
 <!ATTLIST class type CDATA #IMPLIED >
 <!ATTLIST class suffix CDATA #IMPLIED >
+<!ATTLIST class required ( false | true ) #IMPLIED >
 
 <!ELEMENT courseOffering ( alternative | class | preferences)* >
 <!ATTLIST courseOffering alternative ( false | true ) #IMPLIED >
@@ -68,6 +69,7 @@
 <!ATTLIST courseOffering subjectArea CDATA #REQUIRED >
 <!ATTLIST courseOffering title CDATA #IMPLIED >
 <!ATTLIST courseOffering waitlist ( false | true ) #IMPLIED >
+<!ATTLIST courseOffering critical ( false | true ) #IMPLIED >
 
 <!ELEMENT courseRequests ( courseOffering | freeTime )* >
 <!ATTLIST courseRequests distribution ( dense | spread ) #IMPLIED >
@@ -145,9 +147,12 @@
 <!ELEMENT dropCourseRequests ( courseOffering | freeTime )* >
 
 <!ELEMENT updateDemographics ( name, email?, acadArea+, major*, minor*, disability*, groupAffiliation* ) >
+<!ATTLIST updateDemographics minCredit NMTOKEN #IMPLIED >
+<!ATTLIST updateDemographics maxCredit NMTOKEN #IMPLIED >
 
 <!ELEMENT preferences ( class | instructional-method )*>
 
 <!ELEMENT instructional-method EMPTY>
 <!ATTLIST instructional-method externalId CDATA #IMPLIED >
 <!ATTLIST instructional-method name CDATA #IMPLIED >
+<!ATTLIST instructional-method required ( false | true ) #IMPLIED >
