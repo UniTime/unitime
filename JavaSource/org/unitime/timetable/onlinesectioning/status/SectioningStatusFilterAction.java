@@ -482,13 +482,13 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		
 		if (request.hasOption("lookup") && CustomCourseLookupHolder.hasProvider()) {
 			try {
-				List<XCourseId> courseIds = CustomCourseLookupHolder.getProvider().getCourses(server, helper, request.getOption("lookup"));
+				Set<Long> courseIds = CustomCourseLookupHolder.getProvider().getCourseIds(server.getAcademicSession(), helper.getHibSession(), request.getOption("lookup"));
 				if (courseIds != null && !courseIds.isEmpty()) {
 					String course = "";
 					int id = 0;
-					for (XCourseId c: courseIds) {
+					for (Long c: courseIds) {
 						course += (course.isEmpty() ? "" : ",") + ":Xcx" + id;
-						query.addParameter("lookup", "Xcx" + id, c.getCourseId());
+						query.addParameter("lookup", "Xcx" + id, c);
 						id++;
 					}
 					query.addWhere("lookup", "co.uniqueId in (" + course + ")");
@@ -500,11 +500,11 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				String course = "";
 				int id = 0;
 				for (String lookup: request.getOptions("lookup")) {
-					List<XCourseId> courseIds = CustomCourseLookupHolder.getProvider().getCourses(server, helper, lookup);
+					Set<Long> courseIds = CustomCourseLookupHolder.getProvider().getCourseIds(server.getAcademicSession(), helper.getHibSession(), lookup);
 					if (courseIds != null && !courseIds.isEmpty()) {
-						for (XCourseId c: courseIds) {
+						for (Long c: courseIds) {
 							course += (course.isEmpty() ? "" : ",") + ":Xcx" + id;
-							query.addParameter("lookup", "Xcx" + id, c.getCourseId());
+							query.addParameter("lookup", "Xcx" + id, c);
 							id++;
 						}
 					}

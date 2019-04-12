@@ -602,11 +602,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			if (term.isEmpty()) return true;
 			if ("limit".equals(attr)) return true;
 			if ("lookup".equals(attr)) {
-				List<String> courses = iLookup.getCourses(term);
-				if (courses != null)
-					for (String course: courses)
-						if ((course().getSubjectAreaAbbv() + " " + course().getCourseNbr()).startsWith(course)) return true;
-				return false;
+				Set<Long> courseIds = iLookup.getCourses(term);
+				return (courseIds != null && courseIds.contains(course().getUniqueId()));
 			}
 			if (attr == null || "name".equals(attr) || "course".equals(attr)) {
 				return course().getSubjectAreaAbbv().equalsIgnoreCase(term) || course().getCourseNbr().equalsIgnoreCase(term) || (course().getSubjectAreaAbbv() + " " + course().getCourseNbr()).equalsIgnoreCase(term);

@@ -561,17 +561,17 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 	public static class CourseLookup implements Serializable {
 		private static final long serialVersionUID = 1L;
 		private AcademicSessionInfo iSession;
-		private Map<String, List<String>> iLookups = new HashMap<String, List<String>>();
+		private Map<String, Set<Long>> iLookups = new HashMap<String, Set<Long>>();
 		
 		public CourseLookup(AcademicSessionInfo session) {
 			iSession = session;
 		}
 		
-		public List<String> getCourses(String term) {
-			List<String> courses = iLookups.get(term);
+		public Set<Long> getCourses(String term) {
+			Set<Long> courses = iLookups.get(term);
 			if (courses == null && CustomCourseLookupHolder.hasProvider()) {
-				courses = CustomCourseLookupHolder.getProvider().getCourses(iSession, term);
-				if (courses == null) { courses = new ArrayList<String>(); }
+				courses = CustomCourseLookupHolder.getProvider().getCourseIds(iSession, null, term);
+				if (courses == null) { courses = new HashSet<Long>(); }
 				iLookups.put(term, courses);
 			}
 			return courses;
@@ -600,11 +600,8 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			if (term.isEmpty()) return true;
 			if ("limit".equals(attr)) return true;
 			if ("lookup".equals(attr)) {
-				List<String> courses = iLookup.getCourses(term);
-				if (courses != null)
-					for (String course: courses)
-						if ((info().getSubjectArea() + " " + info().getCourseNumber()).startsWith(course)) return true;
-				return false;
+				Set<Long> courseIds = iLookup.getCourses(term);
+				return (courseIds != null && courseIds.contains(info().getCourseId()));
 			}
 			if (attr == null || "name".equals(attr) || "course".equals(attr)) {
 				return info().getSubjectArea().equalsIgnoreCase(term) || info().getCourseNumber().equalsIgnoreCase(term) || (info().getSubjectArea() + " " + info().getCourseNumber()).equalsIgnoreCase(term);

@@ -357,9 +357,11 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 	public static class SectioningLogQueryFormatter implements QueryFormatter {
 		Set<String> iGroupTypes = new HashSet<String>();
 		AcademicSessionInfo iSession = null;
+		OnlineSectioningHelper iHelper = null;
 		
 		public SectioningLogQueryFormatter(AcademicSessionInfo session, OnlineSectioningHelper helper) {
 			iSession = session;
+			iHelper = helper;
 			for (StudentGroupType type: StudentGroupTypeDAO.getInstance().findAll(helper.getHibSession()))
 				iGroupTypes.add(type.getReference().replace(' ', '_').toLowerCase());
 		}
@@ -445,13 +447,13 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 				return "cr.courseOffering.subjectAreaAbbv = '" + body + "' or (cr.courseOffering.subjectAreaAbbv || ' ' || cr.courseOffering.courseNbr) = '" + body + "'";
 			} else if ("lookup".equalsIgnoreCase(attr)) {
 				if (CustomCourseLookupHolder.hasProvider()) {
-					List<String> courses = CustomCourseLookupHolder.getProvider().getCourses(iSession, body);
-					if (courses != null && !courses.isEmpty()) {
+					Set<Long> courseIds = CustomCourseLookupHolder.getProvider().getCourseIds(iSession, iHelper.getHibSession(), body);
+					if (courseIds != null && !courseIds.isEmpty()) {
 						String ret = "";
-						for (String course: courses) {
-							ret += (ret.isEmpty() ? "" : " or ") + "(cr.courseOffering.subjectAreaAbbv || ' ' || cr.courseOffering.courseNbr like '" + course + "%')"; 
+						for (Long courseId: courseIds) {
+							ret += (ret.isEmpty() ? "" : ",") + courseId; 
 						}
-						return ret;
+						return "cr.courseOffering.uniqueId in (" + ret + ")";
 					}
 				}
 				return "1 = 1";
