@@ -176,6 +176,8 @@ public class StudentImport extends BaseImport {
     	String mName = element.attributeValue("middleName");
     	String lName = element.attributeValue("lastName", "Unknown");
     	String email = element.attributeValue("email");
+    	String maxCred = element.attributeValue("maxCredit");
+    	String minCred = element.attributeValue("minCredit");
 
     	Student student = students.remove(externalId);
     	if (student == null) {
@@ -194,6 +196,8 @@ public class StudentImport extends BaseImport {
             student.setAreaClasfMinors(new HashSet<StudentAreaClassificationMinor>());
             student.setGroups(new HashSet<StudentGroup>());
             student.setAccomodations(new HashSet<StudentAccomodation>());
+            student.setMinCredit(minCred == null ? null : Float.valueOf(minCred));
+            student.setMaxCredit(maxCred == null ? null : Float.valueOf(maxCred));
     	} else {
         	if (!eq(fName, student.getFirstName())) {
         		student.setFirstName(fName);
@@ -209,6 +213,14 @@ public class StudentImport extends BaseImport {
         	}
         	if (!eq(email, student.getEmail())) {
         		student.setEmail(email);
+        		updatedStudents.add(student.getUniqueId());
+        	}
+        	if (!eq(minCred == null ? null : Float.valueOf(minCred), student.getMinCredit())) {
+        		student.setMinCredit(minCred == null ? null : Float.valueOf(minCred));
+        		updatedStudents.add(student.getUniqueId());
+        	}
+        	if (!eq(maxCred == null ? null : Float.valueOf(maxCred), student.getMaxCredit())) {
+        		student.setMaxCredit(maxCred == null ? null : Float.valueOf(maxCred));
         		updatedStudents.add(student.getUniqueId());
         	}
     	}
@@ -507,6 +519,10 @@ public class StudentImport extends BaseImport {
 	}
 	
 	protected boolean eq(String a, String b) {
+		return (a == null ? b == null : a.equals(b));
+	}
+	
+	protected boolean eq(Float a, Float b) {
 		return (a == null ? b == null : a.equals(b));
 	}
 }

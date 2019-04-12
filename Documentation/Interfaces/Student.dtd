@@ -47,6 +47,8 @@
 <!ATTLIST student lastName CDATA #REQUIRED >
 <!ATTLIST student middleName CDATA #IMPLIED >
 <!ATTLIST student email CDATA #IMPLIED >
+<!ATTLIST student minCredit NMTOKEN #IMPLIED >
+<!ATTLIST student maxCredit NMTOKEN #IMPLIED >
 
 <!ELEMENT studentAcadAreaClass ( acadAreaClass+ ) >
 

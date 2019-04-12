@@ -19,8 +19,11 @@
 */
 package org.unitime.timetable.dataexchange;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
 
@@ -37,6 +40,7 @@ import org.unitime.timetable.model.StudentGroup;
  * @author Tomas Muller
  */
 public class StudentExport extends BaseExport {
+	protected DecimalFormat iCreditDF = new DecimalFormat("0.0", new DecimalFormatSymbols(Locale.US));
 	
 	@Override
 	public void saveXml(Document document, Session session, Properties parameters) throws Exception {
@@ -127,7 +131,13 @@ public class StudentExport extends BaseExport {
         	for (StudentAccomodation accomodation: student.getAccomodations()) {
         		e.addElement("studentAccomodation").addAttribute("accomodation", accomodation.getAbbreviation());
         	}
-    	}		
+    	}
+
+    	if (student.getMinCredit() != null)
+    		studentEl.addAttribute("minCredit", iCreditDF.format(student.getMinCredit()));
+
+    	if (student.getMaxCredit() != null)
+    		studentEl.addAttribute("maxCredit", iCreditDF.format(student.getMaxCredit()));
 	}
 
 }
