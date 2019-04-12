@@ -161,7 +161,7 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 	protected String fixQuery(String query) {
 		if ("oc".equalsIgnoreCase(query)) query = "oral communication";
 		if ("wc".equalsIgnoreCase(query)) query = "written communication";
-		if (query == null || query.length() <= 2) return null;
+		if (query == null || query.length() <= 3) return null;
 		String regExp = getPlaceHolderRegExp();
 		if (regExp != null && !regExp.isEmpty()) {
 			Matcher m = Pattern.compile(regExp).matcher(query);
