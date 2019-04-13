@@ -287,6 +287,31 @@ public class ExaminationEnrollmentsBackend implements GwtRpcImplementation<Exami
             	}
             }
         }
+        // exam events of different type
+        for (int t1 = 0; t1 < ExamOwner.sOwnerTypes.length; t1++) {
+            for (int t2 = 0; t2 < ExamOwner.sOwnerTypes.length; t2++) {
+            	for (Object[] o: (List<Object[]>)hibSession.createQuery(
+            			"select s1.student.uniqueId, m1" +
+            			" from StudentClassEnrollment s1, ExamEvent e1 inner join e1.meetings m1 inner join e1.exam.owners o1, Exam e2 inner join e2.owners o2, StudentClassEnrollment s2" +
+            			" where e2.uniqueId = :examId and s1.student = s2.student and e1.exam.examType.uniqueId != :examTypeId " +
+            			where(t1, 1) + where(t2, 2) +
+            			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod and m1.approvalStatus = 1")
+            			.setLong("examId", examId)
+            			.setDate("meetingDate", period.getStartDate())
+            			.setInteger("startSlot", period.getStartSlot() - nrTravelSlotsCourseEvent)
+            			.setInteger("endSlot", period.getEndSlot() + nrTravelSlotsCourseEvent)
+            			.setLong("examTypeId", period.getExamType().getUniqueId())
+            			.list()) {
+            		Long studentId = (Long)o[0];
+            		Meeting meeting = (Meeting)o[1];
+            		List<Meeting> meetings = conflicts.get(studentId);
+            		if (meetings == null) {
+            			meetings = new ArrayList<Meeting>(); conflicts.put(studentId, meetings);
+            		}
+            		meetings.add(meeting);
+            	}
+            }
+        }
     	
     	return conflicts;
 	}

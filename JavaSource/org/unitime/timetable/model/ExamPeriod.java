@@ -436,6 +436,174 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         return ret;
     } 
     
+    public Hashtable<Meeting,Set<Long>> findOverlappingExamMeetingsOfDifferentProblem(Set<Long> studentIds) {
+        return findOverlappingExamMeetingsOfDifferentProblem(studentIds, ApplicationProperty.ExaminationTravelTimeCourse.intValue());
+    }
+
+    public Hashtable<Meeting,Set<Long>> findOverlappingExamMeetingsOfDifferentProblem(Set<Long> studentIds, int nrTravelSlots) {
+        Hashtable<Meeting,Set<Long>> ret = new Hashtable();
+        if (studentIds==null || studentIds.isEmpty()) return ret;
+
+        String students = "";
+        int nrStudents = 0;
+        
+        for (Long studentId: studentIds) {
+            students += (students.length()==0?"":",")+studentId;
+            nrStudents++;
+            if (nrStudents==1000) {
+                for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+                        "select m, s.student.uniqueId from "+
+                        "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId!=:examTypeId and m.approvalStatus = 1 and "+
+                        "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
+                        "o.ownerType=:classType and s.clazz.uniqueId=o.ownerId")
+                        .setDate("meetingDate", getStartDate())
+                        .setInteger("startSlot", getStartSlot()-nrTravelSlots)
+                        .setInteger("endSlot", getEndSlot()+nrTravelSlots)
+                        .setInteger("classType", ExamOwner.sOwnerTypeClass)
+                        .setLong("examTypeId", getExamType().getUniqueId())
+                        .setCacheable(true).list().iterator();i.hasNext();) {
+                    Object[] o = (Object[])i.next();
+                    Meeting meeting = (Meeting)o[0];
+                    long xstudentId = (Long)o[1];
+                    Set<Long> conf = ret.get(meeting);
+                    if (conf==null) { conf = new HashSet(); ret.put(meeting, conf); }
+                    conf.add(xstudentId);
+                }
+                for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+                        "select m, s.student.uniqueId from "+
+                        "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId!=:examTypeId and m.approvalStatus = 1 and "+
+                        "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
+                        "o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId")
+                        .setDate("meetingDate", getStartDate())
+                        .setInteger("startSlot", getStartSlot()-nrTravelSlots)
+                        .setInteger("endSlot", getEndSlot()+nrTravelSlots)
+                        .setInteger("configType", ExamOwner.sOwnerTypeConfig)
+                        .setLong("examTypeId", getExamType().getUniqueId())
+                        .setCacheable(true).list().iterator();i.hasNext();) {
+                    Object[] o = (Object[])i.next();
+                    Meeting meeting = (Meeting)o[0];
+                    long xstudentId = (Long)o[1];
+                    Set<Long> conf = ret.get(meeting);
+                    if (conf==null) { conf = new HashSet(); ret.put(meeting, conf); }
+                    conf.add(xstudentId);
+                }
+                for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+                        "select m, s.student.uniqueId from "+
+                        "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId!=:examTypeId and m.approvalStatus = 1 and "+
+                        "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
+                        "o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId")
+                        .setDate("meetingDate", getStartDate())
+                        .setInteger("startSlot", getStartSlot()-nrTravelSlots)
+                        .setInteger("endSlot", getEndSlot()+nrTravelSlots)
+                        .setInteger("courseType", ExamOwner.sOwnerTypeCourse)
+                        .setLong("examTypeId", getExamType().getUniqueId())
+                        .setCacheable(true).list().iterator();i.hasNext();) {
+                    Object[] o = (Object[])i.next();
+                    Meeting meeting = (Meeting)o[0];
+                    long xstudentId = (Long)o[1];
+                    Set<Long> conf = ret.get(meeting);
+                    if (conf==null) { conf = new HashSet(); ret.put(meeting, conf); }
+                    conf.add(xstudentId);
+                }
+                for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+                        "select m, s.student.uniqueId from "+
+                        "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId!=:examTypeId and m.approvalStatus = 1 and "+
+                        "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
+                        "o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId")
+                        .setDate("meetingDate", getStartDate())
+                        .setInteger("startSlot", getStartSlot()-nrTravelSlots)
+                        .setInteger("endSlot", getEndSlot()+nrTravelSlots)
+                        .setInteger("offeringType", ExamOwner.sOwnerTypeOffering)
+                        .setLong("examTypeId", getExamType().getUniqueId())
+                        .setCacheable(true).list().iterator();i.hasNext();) {
+                    Object[] o = (Object[])i.next();
+                    Meeting meeting = (Meeting)o[0];
+                    long xstudentId = (Long)o[1];
+                    Set<Long> conf = ret.get(meeting);
+                    if (conf==null) { conf = new HashSet(); ret.put(meeting, conf); }
+                    conf.add(xstudentId);
+                }
+                students = ""; nrStudents = 0;
+            }
+        }
+
+        if (nrStudents > 0 && students.trim().length() > 0) {
+            for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+                    "select m, s.student.uniqueId from "+
+                    "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId!=:examTypeId and m.approvalStatus = 1 and "+
+                    "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
+                    "o.ownerType=:classType and s.clazz.uniqueId=o.ownerId")
+                    .setDate("meetingDate", getStartDate())
+                    .setInteger("startSlot", getStartSlot()-nrTravelSlots)
+                    .setInteger("endSlot", getEndSlot()+nrTravelSlots)
+                    .setInteger("classType", ExamOwner.sOwnerTypeClass)
+                    .setLong("examTypeId", getExamType().getUniqueId())
+                    .setCacheable(true).list().iterator();i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Meeting meeting = (Meeting)o[0];
+                long xstudentId = (Long)o[1];
+                Set<Long> conf = ret.get(meeting);
+                if (conf==null) { conf = new HashSet(); ret.put(meeting, conf); }
+                conf.add(xstudentId);
+            }
+            for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+                    "select m, s.student.uniqueId from "+
+                    "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId!=:examTypeId and m.approvalStatus = 1 and "+
+                    "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
+                    "o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId")
+                    .setDate("meetingDate", getStartDate())
+                    .setInteger("startSlot", getStartSlot()-nrTravelSlots)
+                    .setInteger("endSlot", getEndSlot()+nrTravelSlots)
+                    .setInteger("configType", ExamOwner.sOwnerTypeConfig)
+                    .setLong("examTypeId", getExamType().getUniqueId())
+                    .setCacheable(true).list().iterator();i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Meeting meeting = (Meeting)o[0];
+                long xstudentId = (Long)o[1];
+                Set<Long> conf = ret.get(meeting);
+                if (conf==null) { conf = new HashSet(); ret.put(meeting, conf); }
+                conf.add(xstudentId);
+            }
+            for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+                    "select m, s.student.uniqueId from "+
+                    "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId!=:examTypeId and m.approvalStatus = 1 and "+
+                    "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
+                    "o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId")
+                    .setDate("meetingDate", getStartDate())
+                    .setInteger("startSlot", getStartSlot()-nrTravelSlots)
+                    .setInteger("endSlot", getEndSlot()+nrTravelSlots)
+                    .setInteger("courseType", ExamOwner.sOwnerTypeCourse)
+                    .setLong("examTypeId", getExamType().getUniqueId())
+                    .setCacheable(true).list().iterator();i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Meeting meeting = (Meeting)o[0];
+                long xstudentId = (Long)o[1];
+                Set<Long> conf = ret.get(meeting);
+                if (conf==null) { conf = new HashSet(); ret.put(meeting, conf); }
+                conf.add(xstudentId);
+            }
+            for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+                    "select m, s.student.uniqueId from "+
+                    "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId!=:examTypeId and m.approvalStatus = 1 and "+
+                    "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
+                    "o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId")
+                    .setDate("meetingDate", getStartDate())
+                    .setInteger("startSlot", getStartSlot()-nrTravelSlots)
+                    .setInteger("endSlot", getEndSlot()+nrTravelSlots)
+                    .setInteger("offeringType", ExamOwner.sOwnerTypeOffering)
+                    .setLong("examTypeId", getExamType().getUniqueId())
+                    .setCacheable(true).list().iterator();i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Meeting meeting = (Meeting)o[0];
+                long xstudentId = (Long)o[1];
+                Set<Long> conf = ret.get(meeting);
+                if (conf==null) { conf = new HashSet(); ret.put(meeting, conf); }
+                conf.add(xstudentId);
+            }
+        }
+        return ret;
+    } 
+    
     public int getIndex() {
         int index = 0;
         for (Iterator i=findAll(getSession().getUniqueId(), getExamType()).iterator();i.hasNext();) {

@@ -982,6 +982,23 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                 }
                 meetings.add(meeting);
             }
+            sLog.info("  Loading overlapping examinations of different problems...");
+            for (Iterator i=new ExamDAO().getSession().createQuery(
+                    "select p.uniqueId, m from ExamEvent ce inner join ce.meetings m, ExamPeriod p " +
+                    "where ce.exam.examType.uniqueId != :examTypeId and m.approvalStatus = 1 and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
+                    HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId")
+                    .setInteger("travelTime", ApplicationProperty.ExaminationTravelTimeCourse.intValue())
+                    .setLong("sessionId", sessionId).setLong("examTypeId", examTypeId)
+                    .setCacheable(true).list().iterator(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long periodId = (Long)o[0];
+                Meeting meeting = (Meeting)o[1];
+                Set<Meeting> meetings  = period2meetings.get(periodId);
+                if (meetings==null) {
+                    meetings = new HashSet(); period2meetings.put(periodId, meetings);
+                }
+                meetings.add(meeting);
+            }
         }
         Parameters p = new Parameters(sessionId, examTypeId);
         sLog.info("  Creating exam assignments...");

@@ -229,6 +229,25 @@ public class ExaminationScheduleBackend implements GwtRpcImplementation<Examinat
 		            }
 		        }
 		        
+		    	// exam events of different type
+		        for (int t1 = 0; t1 < ExamOwner.sOwnerTypes.length; t1++) {
+		            for (int t2 = 0; t2 < ExamOwner.sOwnerTypes.length; t2++) {
+		            	events.addAll(hibSession.createQuery(
+		            			"select distinct m1.event" +
+		            			" from StudentClassEnrollment s1, ExamEvent e1 inner join e1.meetings m1 inner join e1.exam.owners o1, Exam e2 inner join e2.owners o2, StudentClassEnrollment s2" +
+		            			" where e2.uniqueId = :examId and s1.student = s2.student and s1.student.uniqueId = :studentId" +
+		            			ExaminationEnrollmentsBackend.where(t1, 1) + ExaminationEnrollmentsBackend.where(t2, 2) +
+		            			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod and e1.exam.examType.uniqueId != :examTypeId and m1.approvalStatus = 1")
+		            			.setLong("examId", x.getUniqueId())
+		        			.setLong("studentId", request.getStudentId())
+		            			.setDate("meetingDate", period.getStartDate())
+		            			.setInteger("startSlot", period.getStartSlot() - nrTravelSlotsCourseEvent)
+		            			.setInteger("endSlot", period.getEndSlot() + nrTravelSlotsCourseEvent)
+		            			.setLong("examTypeId", period.getExamType().getUniqueId())
+		            			.list());
+		            }
+		        }
+		        
 				for (Event e: events)
 					conflicts += (conflicts.isEmpty() ? "" : "<br>") +
 							"<span class='dc' title='" + HtmlUtils.htmlEscape(e.getEventTypeAbbv() + " " + e.getEventName()) + "'>" + HtmlUtils.htmlEscape(e.getEventName()) + "</span>";

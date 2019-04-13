@@ -283,11 +283,11 @@ public class EventEnrollmentExport implements Exporter {
 					String name = "", type = "", date = "", time = "", room = "";
 					for (Conflict conflict: enrollment.getConflicts()) {
 						if (!name.isEmpty()) { name += "\n"; type += "\n"; date += "\n"; time += "\n"; room += "\n"; }
-						name += conflict.getName();
-						type += conflict.getType();
-						date += conflict.getDate();
-						time += conflict.getTime();
-						room += conflict.getRoom();
+						name += conflict.getName().replace("<br>", "\n");;
+						type += conflict.getType().replace("<br>", "\n");;
+						date += conflict.getDate().replace("<br>", "\n");;
+						time += conflict.getTime().replace("<br>", "\n");;
+						room += conflict.getRoom().replace("<br>", "\n");
 					}
 					line.add(type);
 					line.add(name);

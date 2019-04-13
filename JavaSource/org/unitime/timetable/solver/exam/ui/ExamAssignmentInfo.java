@@ -414,6 +414,16 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             }
             iDirects.add(new DirectConflict(entry.getKey(), entry.getValue()));
         }
+        meetings: for (Map.Entry<Meeting, Set<Long>> entry : ExamPeriodDAO.getInstance().get(periodId).findOverlappingExamMeetingsOfDifferentProblem(getStudentIds()).entrySet()) {
+            for (Iterator i=iDirects.iterator();i.hasNext();) {
+                DirectConflict dc = (DirectConflict)i.next();
+                if (entry.getKey().getEvent().getUniqueId().equals(dc.getOtherEventId())) {
+                    dc.addMeeting(entry.getKey());
+                    continue meetings;
+                }
+            }
+            iDirects.add(new DirectConflict(entry.getKey(), entry.getValue()));
+        }
     }
     
     private void computeUnavailablility(DepartmentalInstructor instructor, ExamPeriod period, Hashtable<Long, Set<Meeting>> period2meetings) {
@@ -1612,6 +1622,26 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                         .setInteger("configType", ExamOwner.sOwnerTypeConfig)
                         .setInteger("courseType", ExamOwner.sOwnerTypeCourse)
                         .setInteger("offeringType", ExamOwner.sOwnerTypeOffering)
+                        .setCacheable(true).list().iterator();i.hasNext();) {
+            		iDirects.add(new DirectConflict((Meeting)i.next(), studentIds));
+            	}
+            	for (Iterator i=ExamDAO.getInstance().getSession().createQuery(
+                        "select m from "+
+                        "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId != :examTypeId and m.approvalStatus = 1 and "+
+                        "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId=:studentId and ("+
+                        "(o.ownerType=:classType and s.clazz.uniqueId=o.ownerId) or "+
+                        "(o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId) or "+
+                        "(o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId) or "+
+                        "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))")
+                        .setLong("studentId", student.getUniqueId())
+                        .setDate("meetingDate", getPeriod().getStartDate())
+                        .setInteger("startSlot", getPeriod().getStartSlot()-nrTravelSlots)
+                        .setInteger("endSlot", getPeriod().getEndSlot()+nrTravelSlots)
+                        .setInteger("classType", ExamOwner.sOwnerTypeClass)
+                        .setInteger("configType", ExamOwner.sOwnerTypeConfig)
+                        .setInteger("courseType", ExamOwner.sOwnerTypeCourse)
+                        .setInteger("offeringType", ExamOwner.sOwnerTypeOffering)
+                        .setLong("examTypeId", getPeriod().getExamType().getUniqueId())
                         .setCacheable(true).list().iterator();i.hasNext();) {
             		iDirects.add(new DirectConflict((Meeting)i.next(), studentIds));
             	}
