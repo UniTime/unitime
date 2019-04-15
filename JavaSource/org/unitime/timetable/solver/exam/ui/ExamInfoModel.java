@@ -45,13 +45,11 @@ import org.cpsolver.coursett.preference.SumPreferenceCombination;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.ExamInfoForm;
-import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
-import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Room;
@@ -708,7 +706,7 @@ public class ExamInfoModel implements Serializable {
                 Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(
                         room.getUniqueId(),
                         period.getStartTime(), period.getEndTime(), 
-                        period.getExamType().getType() == ExamType.sExamTypeFinal ? RoomAvailabilityInterface.sFinalExamType : RoomAvailabilityInterface.sMidtermExamType);
+                        period.getExamType().getReference());
                 if (times!=null) for (TimeBlock time : times) {
                     if (period.overlap(time)) {
                         sLog.info("Room "+room.getLabel()+" is not avaiable due to "+time);

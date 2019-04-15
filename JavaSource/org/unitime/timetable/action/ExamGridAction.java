@@ -33,7 +33,6 @@ import org.apache.struts.action.ActionMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.form.ExamGridForm;
-import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamType;
@@ -91,7 +90,7 @@ public class ExamGridAction extends Action {
         if (RoomAvailability.getInstance()!=null && myForm.getExamType() != null) {
             Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
             Date[] bounds = ExamPeriod.getBounds(session, myForm.getExamType());
-            String exclude = ExamTypeDAO.getInstance().get(myForm.getExamType()).getType() == ExamType.sExamTypeFinal ? RoomAvailabilityInterface.sFinalExamType : RoomAvailabilityInterface.sMidtermExamType;
+            String exclude = ExamTypeDAO.getInstance().get(myForm.getExamType()).getReference();
             if (bounds != null) {
             	RoomAvailability.getInstance().activate(session,bounds[0],bounds[1],exclude,false);
             	RoomAvailability.setAvailabilityWarning(request, session, myForm.getExamType(), true, false);

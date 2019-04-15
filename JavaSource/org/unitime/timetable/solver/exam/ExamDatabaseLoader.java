@@ -1039,7 +1039,7 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
         Set periods = org.unitime.timetable.model.ExamPeriod.findAll(iSessionId, iExamTypeId);
         Date[] bounds = org.unitime.timetable.model.ExamPeriod.getBounds(new SessionDAO().get(iSessionId), iExamTypeId);
         ExamType type = ExamTypeDAO.getInstance().get(iExamTypeId);
-        String exclude = (type.getType() == ExamType.sExamTypeFinal ? RoomAvailabilityInterface.sFinalExamType : RoomAvailabilityInterface.sMidtermExamType);
+        String exclude = type.getReference();
         roomAvailabilityActivate(availability, bounds[0],bounds[1],exclude);
         iProgress.setPhase("Loading room availability...", iAllRooms.size());
         for (Iterator i=iAllRooms.iterator();i.hasNext();) {
@@ -1053,7 +1053,10 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
                 for (Iterator j=periods.iterator();j.hasNext();) {
                     org.unitime.timetable.model.ExamPeriod period = (org.unitime.timetable.model.ExamPeriod)j.next();
                     ExamPeriod periodEx = iPeriods.get(period.getUniqueId());
-                    if (periodEx!=null && period.overlap(time)) roomEx.setAvailable(periodEx, false);
+                    if (periodEx!=null && period.overlap(time)) {
+                    	iProgress.debug(roomEx.getName() + " not available during " + period.getName() + " due to " + time);
+                    	roomEx.setAvailable(periodEx, false);
+                    }
                 }
             }
         }

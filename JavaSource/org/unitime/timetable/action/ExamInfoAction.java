@@ -31,9 +31,7 @@ import org.apache.struts.action.ActionMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.form.ExamInfoForm;
-import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.ExamPeriod;
-import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -107,7 +105,7 @@ public class ExamInfoAction extends Action {
         if (RoomAvailability.getInstance()!=null && op==null) {
             Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
             Date[] bounds = ExamPeriod.getBounds(session, model.getExam().getExamType().getUniqueId());
-            String exclude = (model.getExam().getExamType().getType() == ExamType.sExamTypeFinal ? RoomAvailabilityInterface.sFinalExamType : RoomAvailabilityInterface.sMidtermExamType);
+            String exclude = model.getExam().getExamType().getReference();
             RoomAvailability.getInstance().activate(session,bounds[0],bounds[1],exclude,false);
             RoomAvailability.setAvailabilityWarning(request, session, model.getExam().getExamType().getUniqueId(), true, true);
         }

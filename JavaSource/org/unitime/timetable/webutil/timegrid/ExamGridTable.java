@@ -36,12 +36,10 @@ import javax.servlet.jsp.JspWriter;
 
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ExamGridForm;
-import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
-import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SubjectArea;
@@ -861,7 +859,7 @@ public class ExamGridTable {
 	    public void addAssignments(Collection<ExamAssignmentInfo> assignments) {
             for (Iterator i=assignments.iterator();i.hasNext();) {
                 ExamAssignmentInfo exam = (ExamAssignmentInfo)i.next();
-                Vector<ExamAssignmentInfo> a = iAssignments.get(exam.getPeriodId());
+                Vector<ExamAssignmentInfo> a = iAssignments.get(exam.getPeriod());
                 if (a==null) {
                     a = new Vector<ExamAssignmentInfo>();
                     iAssignments.put(exam.getPeriod(), a);
@@ -1072,7 +1070,7 @@ public class ExamGridTable {
 	            iUnavailabilities = RoomAvailability.getInstance().getRoomAvailability(
 	                    location.getUniqueId(), 
 	                    bounds[0], bounds[1], 
-                        (ExamTypeDAO.getInstance().get(iForm.getExamType()).getType()==ExamType.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType));
+                        ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference());
 	        }
 	    }
 	    

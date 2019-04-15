@@ -37,6 +37,7 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventDateMapping;
 import org.unitime.timetable.model.ExamEvent;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.FinalExamEvent;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
@@ -76,6 +77,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
             if (cache!=null) return cache.get(location.getPermanentId(), excludeType);
             TreeSet<TimeBlock> ret = new TreeSet<TimeBlock>();
             Class<? extends Event> exclude = null;
+            ExamType examType = null;
             if (excludeType!=null) {
                 if (sFinalExamType.equals(excludeType))
                     exclude = FinalExamEvent.class;
@@ -83,13 +85,18 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                     exclude = MidtermExamEvent.class;
                 else if (sClassType.equals(excludeType))
                     exclude = ClassEvent.class;
+                else {
+                	exclude = ExamEvent.class;
+                	examType = ExamType.findByReference(excludeType);
+                }
             }
             for (Meeting m: (List<Meeting>)LocationDAO.getInstance().getSession().createQuery(
                     "select m from Meeting m where m.locationPermanentId=:locPermId and "+
                     "m.approvalStatus = 1 and "+
                     "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                     "m.startPeriod<:endSlot and m.stopPeriod>:startSlot"+
-                    (exclude != null ? " and m.event.class!=" + exclude.getSimpleName() : ""))
+                    (examType != null ? " and m.event.uniqueId not in (select x.uniqueId from ExamEvent x where x.exam.examType = " + examType.getUniqueId() + ")" :
+                    exclude != null ? " and m.event.class!=" + exclude.getSimpleName() : ""))
                     .setLong("locPermId", location.getPermanentId())
                     .setDate("startDate", time.getStartDate())
                     .setDate("endDate", time.getEndDate())
@@ -123,7 +130,8 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                             "select m from " + exclude.getSimpleName() + " e inner join e.meetings m where m.locationPermanentId=:locPermId and "+
                             "m.approvalStatus = 1 and e.exam.session.uniqueId != :sessionId and "+
                             "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
-                            "m.startPeriod<:endSlot and m.stopPeriod>:startSlot")
+                            "m.startPeriod<:endSlot and m.stopPeriod>:startSlot"+
+                            (examType != null ? " and e.exam.examType = " + examType.getUniqueId() : ""))
                             .setLong("locPermId", location.getPermanentId())
                             .setLong("sessionId", location.getSession().getUniqueId())
                             .setDate("startDate", time.getStartDate())
@@ -209,20 +217,26 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
         	iAvailability.clear();
         	iInstructorAvailability.clear();
             Class<? extends Event> exclude = null;
+            ExamType examType = null;
             if (iExcludeType!=null) {
                 if (sFinalExamType.equals(iExcludeType))
                     exclude = FinalExamEvent.class;
                 else if (sMidtermExamType.equals(iExcludeType))
                     exclude = MidtermExamEvent.class;
                 else if (sClassType.equals(iExcludeType))
-                    exclude = ClassEvent.class;	
+                    exclude = ClassEvent.class;
+                else {
+                	exclude = ExamEvent.class;
+                	examType = ExamType.findByReference(iExcludeType);
+                }
             }
             addAll(LocationDAO.getInstance().getSession().createQuery(
                     "select m from Meeting m where m.locationPermanentId!=null and "+
                     "m.approvalStatus = 1 and "+
                     "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
-                    "m.startPeriod<:endSlot and m.stopPeriod>:startSlot" + 
-                    (exclude == null ? "" : " and m.event.class!=" + exclude.getSimpleName()))
+                    "m.startPeriod<:endSlot and m.stopPeriod>:startSlot" +
+                    (examType != null ? " and m.event.uniqueId not in (select x.uniqueId from ExamEvent x where x.exam.examType = " + examType.getUniqueId() + ")" :
+                    	exclude == null ? "" : " and m.event.class!=" + exclude.getSimpleName()))
                     .setDate("startDate", iTime.getStartDate())
                     .setDate("endDate", iTime.getEndDate())
                     .setInteger("startSlot", iTime.getStartSlot())
@@ -247,7 +261,8 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                             "select m from " + exclude.getSimpleName() + " e inner join e.meetings m where m.locationPermanentId in (select l.permanentId from Location l where l.session = :sessionId) and "+
                             "m.approvalStatus = 1 and e.exam.session.uniqueId != :sessionId and "+
                             "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
-                            "m.startPeriod<:endSlot and m.stopPeriod>:startSlot")
+                            "m.startPeriod<:endSlot and m.stopPeriod>:startSlot" +
+                            (examType != null ? " and e.exam.examType = " + examType.getUniqueId() : ""))
                             .setLong("sessionId", sessionId)
                             .setDate("startDate", iTime.getStartDate())
                             .setDate("endDate", iTime.getEndDate())
@@ -264,7 +279,8 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                          "m.approvalStatus = 1 and "+
                          "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                          "m.startPeriod<:endSlot and m.stopPeriod>:startSlot"+
-                         (exclude!=null?" and m.event.class!="+exclude.getSimpleName():""))
+                         (examType != null ? " and m.event.uniqueId not in (select x.uniqueId from ExamEvent x where x.exam.examType = " + examType.getUniqueId() + ")" :
+                        	 exclude!=null?" and m.event.class!="+exclude.getSimpleName():""))
                          .setDate("startDate", iTime.getStartDate())
                          .setDate("endDate", iTime.getEndDate())
                          .setLong("sessionId", sessionId)
@@ -289,7 +305,8 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                                 "select m, di.externalUniqueId from " + exclude.getSimpleName() + " e inner join e.meetings m inner join e.exam.instructors di where  "+
                                 "m.approvalStatus = 1 and e.exam.session.uniqueId != :sessionId and "+
                                 "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
-                                "m.startPeriod<:endSlot and m.stopPeriod>:startSlot")
+                                "m.startPeriod<:endSlot and m.stopPeriod>:startSlot" +
+                                (examType != null ? " and e.exam.examType = " + examType.getUniqueId() : ""))
                                 .setLong("sessionId", sessionId)
                                 .setDate("startDate", iTime.getStartDate())
                                 .setDate("endDate", iTime.getEndDate())
@@ -427,6 +444,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
             if (cache!=null) return cache.get(instructor.getExternalUniqueId(), excludeType);
             TreeSet<TimeBlock> ret = new TreeSet<TimeBlock>();
             Class<? extends Event> exclude = null;
+            ExamType examType = null;
             if (excludeType!=null) {
                 if (sFinalExamType.equals(excludeType))
                     exclude = FinalExamEvent.class;
@@ -434,6 +452,10 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                     exclude = MidtermExamEvent.class;
                 else if (sClassType.equals(excludeType))
                     exclude = ClassEvent.class;
+                else {
+                	exclude = ExamEvent.class;
+                	examType = ExamType.findByReference(excludeType);
+                }
             }
             for (Meeting m: (List<Meeting>)LocationDAO.getInstance().getSession().createQuery(
             		"select m from Meeting m left outer join m.event.additionalContacts c where " +
@@ -441,7 +463,8 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
             		"m.approvalStatus = 1 and "+
                     "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                     "m.startPeriod<:endSlot and m.stopPeriod>:startSlot"+
-                    (exclude != null ? " and m.event.class!=" + exclude.getSimpleName() : ""))
+                    (examType != null ? " and m.event.uniqueId not in (select x.uniqueId from ExamEvent x where x.exam.examType = " + examType.getUniqueId() + ")" :
+                    	exclude != null ? " and m.event.class!=" + exclude.getSimpleName() : ""))
                     .setString("user", instructor.getExternalUniqueId())
                     .setDate("startDate", time.getStartDate())
                     .setDate("endDate", time.getEndDate())
@@ -477,7 +500,8 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                             "di.externalUniqueId = :user and "+
                             "m.approvalStatus = 1 and e.exam.session.uniqueId != :sessionId and "+
                             "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
-                            "m.startPeriod<:endSlot and m.stopPeriod>:startSlot")
+                            "m.startPeriod<:endSlot and m.stopPeriod>:startSlot" + 
+                            (examType != null ? " and e.exam.examType = " + examType.getUniqueId() : ""))
             				.setString("user", instructor.getExternalUniqueId())
                             .setLong("sessionId", instructor.getDepartment().getSession().getUniqueId())
                             .setDate("startDate", time.getStartDate())
