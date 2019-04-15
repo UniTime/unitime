@@ -773,6 +773,11 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 
 	@Override
 	public CriticalCourses getCriticalCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudentId student) {
+		return getCriticalCourses(server, helper, student, helper.getAction());
+	}
+	
+	@Override
+	public CriticalCourses getCriticalCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudentId student, OnlineSectioningLog.Action.Builder action) {
 		try {
 			String term = getBannerTerm(server.getAcademicSession());
 			String studentId = getBannerId(student);
@@ -780,8 +785,8 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 			String criticalTerms = getCriticalTerms(term);
 			
 			if (effectiveOnly != null)
-				helper.getAction().addOptionBuilder().setKey("effectiveOnly").setValue(effectiveOnly);
-			helper.getAction().addOptionBuilder().setKey("criticalTerms").setValue(criticalTerms);
+				action.addOptionBuilder().setKey("effectiveOnly").setValue(effectiveOnly);
+			action.addOptionBuilder().setKey("criticalTerms").setValue(criticalTerms);
 			
 			List<XEInterface.DegreePlan> current = null;
 			try {
@@ -793,17 +798,17 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 			try {
 				current = getDegreePlans(criticalTerms, studentId, effectiveOnly, getDegreeWorksNrAttempts());
 			} catch (SectioningException e) {
-				if (!helper.getAction().hasApiException())
-					helper.getAction().setApiException(e.getMessage());
+				if (!action.hasApiException())
+					action.setApiException(e.getMessage());
 				throw e;
 			} finally {
-				if (!helper.getAction().hasApiGetTime())
-					helper.getAction().setApiGetTime(System.currentTimeMillis() - t0);
+				if (!action.hasApiGetTime())
+					action.setApiGetTime(System.currentTimeMillis() - t0);
 			}
 			if (current == null || current.isEmpty())
 				return null;
 
-			helper.getAction().addOptionBuilder().setKey("plans").setValue(getGson(helper).toJson(current));
+			action.addOptionBuilder().setKey("plans").setValue(getGson(helper).toJson(current));
 			
 			CriticalCoursesImpl courses = new CriticalCoursesImpl();
 			for (XEInterface.DegreePlan p: current) {
@@ -814,8 +819,9 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 							for (XEInterface.Term t: y.terms) {
 								if (t.group != null && t.group.plannedClasses != null)
 									for (XEInterface.Course c: t.group.plannedClasses)
-										if (c.isCritical != null && c.isCritical)
+										if (c.isCritical != null && c.isCritical) {
 											courses.add(c);
+										}
 								if (t.group != null && t.group.groups != null)
 									for (XEInterface.Group g: t.group.groups)
 										if (g.isCritical != null && g.isCritical) {
@@ -826,8 +832,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 												for (XEInterface.Group h: g.groups)
 													if (h.plannedClasses != null)
 														for (XEInterface.Course c: h.plannedClasses)
-															if (courses.add(c))
-																helper.info(student.getExternalId() + ": " + c.courseDiscipline + " " + c.courseNumber + " marked as critical");
+															courses.add(c);
 										}
 								if (t.group != null && t.group.plannedPlaceholders != null)
 									for (XEInterface.PlaceHolder ph: t.group.plannedPlaceholders)
@@ -840,16 +845,19 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 			if (!courses.isEmpty()) {
 				String sql = getCreditSQL();
 				if (sql != null && !sql.isEmpty()) {
-					for (Object[] o: (List<Object[]>)helper.getHibSession().createSQLQuery(sql).setString("puid", studentId).list()) {
-						String subjectArea = (String)o[0];
-						String courseNbr = (String)o[1];
-						if (courses.remove(subjectArea, courseNbr))
-							helper.info(student.getExternalId() + ": " + subjectArea + " " + courseNbr + " is not critical (" + o[2] + " graded " + o[3] + ")");
+					List<Object[]> credits = (List<Object[]>)helper.getHibSession().createSQLQuery(sql).setString("puid", studentId).list();
+					if (!credits.isEmpty()) {
+						action.addOptionBuilder().setKey("credits").setValue(getGson(helper).toJson(credits));
+						for (Object[] o: credits) {
+							String subjectArea = (String)o[0];
+							String courseNbr = (String)o[1];
+							courses.remove(subjectArea, courseNbr);
+						}
 					}
 				}
 			}
 			
-			helper.getAction().addOptionBuilder().setKey("critical").setValue(courses.toString());
+			action.addOptionBuilder().setKey("critical").setValue(courses.toString());
 			
 			return courses;
 		} catch (SectioningException e) {

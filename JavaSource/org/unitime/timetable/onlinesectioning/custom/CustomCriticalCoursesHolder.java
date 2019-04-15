@@ -19,10 +19,27 @@
 */
 package org.unitime.timetable.onlinesectioning.custom;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.model.CourseDemand;
+import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.CriticalCourses;
+import org.unitime.timetable.onlinesectioning.model.XStudentId;
+import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
+import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
 
 /**
  * @author Tomas Muller
@@ -53,4 +70,157 @@ public class CustomCriticalCoursesHolder {
 	public synchronized static boolean hasProvider() {
 		return sProvider != null || ApplicationProperty.CustomizationCriticalCourses.value() != null;
 	}
+	
+	public static class CheckCriticalCourses implements OnlineSectioningAction<Boolean> {
+		private static final long serialVersionUID = 1L;
+		private Collection<Long> iStudentIds = null;
+		
+		public CheckCriticalCourses forStudents(Long... studentIds) {
+			iStudentIds = new ArrayList<Long>();
+			for (Long studentId: studentIds)
+				iStudentIds.add(studentId);
+			return this;
+		}
+		
+		public CheckCriticalCourses forStudents(Collection<Long> studentIds) {
+			iStudentIds = studentIds;
+			return this;
+		}
+
+		
+		public Collection<Long> getStudentIds() { return iStudentIds; }
+		
+		@Override
+		public Boolean execute(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
+			if (!CustomCriticalCoursesHolder.hasProvider()) return false;
+			final List<Long> reloadIds = new ArrayList<Long>();
+			try {
+				int nrThreads = server.getConfig().getPropertyInt("CheckCriticalCourses.NrThreads", 10);
+				if (nrThreads <= 1 || getStudentIds().size() <= 1) {
+					for (Long studentId: getStudentIds()) {
+						if (recheckStudent(server, helper, studentId)) reloadIds.add(studentId);
+					}
+				} else {
+					List<Worker> workers = new ArrayList<Worker>();
+					Iterator<Long> studentIds = getStudentIds().iterator();
+					for (int i = 0; i < nrThreads; i++)
+						workers.add(new Worker(i, studentIds) {
+							@Override
+							protected void process(Long studentId) {
+								if (recheckStudent(server, new OnlineSectioningHelper(helper), studentId)) {
+									synchronized (reloadIds) {
+										reloadIds.add(studentId);
+									}
+								}
+							}
+						});
+					for (Worker worker: workers) worker.start();
+					for (Worker worker: workers) {
+						try {
+							worker.join();
+						} catch (InterruptedException e) {
+						}
+					}
+				}
+			} finally {
+				if (!reloadIds.isEmpty() && !(server instanceof DatabaseServer))
+					server.execute(server.createAction(ReloadStudent.class).forStudents(reloadIds), helper.getUser());
+			}
+			return !reloadIds.isEmpty();
+		}
+		
+		protected boolean isCritical(CourseDemand cd, CriticalCourses critical) {
+			if (critical == null || cd.isAlternative()) return false;
+			for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests()) {
+				if (cr.getOrder() == 0 && critical.isCritical(cr.getCourseOffering())) return true;
+			}
+			return false;
+		}
+		
+		protected boolean recheckStudent(OnlineSectioningServer server, OnlineSectioningHelper helper, Long studentId) {
+			helper.beginTransaction();
+			try {
+				Student student = StudentDAO.getInstance().get(studentId, helper.getHibSession());
+				
+				boolean changed = false;
+				if (student != null) {
+					OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
+					action.setStudent(OnlineSectioningLog.Entity.newBuilder()
+							.setUniqueId(studentId)
+							.setExternalId(student.getExternalUniqueId())
+							.setName(helper.getStudentNameFormat().format(student))
+							.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
+					long c0 = OnlineSectioningHelper.getCpuTime();
+					try {
+						CriticalCourses critical = CustomCriticalCoursesHolder.getProvider().getCriticalCourses(server, helper, new XStudentId(student, helper), action);
+						for (CourseDemand cd: student.getCourseDemands()) {
+							boolean crit = isCritical(cd, critical);
+							if (cd.isCritical() == null || cd.isCritical().booleanValue() != crit) {
+								cd.setCritical(crit); helper.getHibSession().update(cd); changed = true;
+							}
+						}
+						if (changed) {
+			        		action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
+			        	} else {
+			        		action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
+			        	}
+					} catch (SectioningException e) {
+						action.setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
+						if (e.getCause() != null) {
+							action.addMessage(OnlineSectioningLog.Message.newBuilder()
+									.setLevel(OnlineSectioningLog.Message.Level.FATAL)
+									.setText(e.getCause().getClass().getName() + ": " + e.getCause().getMessage()));
+						} else {
+							action.addMessage(OnlineSectioningLog.Message.newBuilder()
+									.setLevel(OnlineSectioningLog.Message.Level.FATAL)
+									.setText(e.getMessage() == null ? "null" : e.getMessage()));
+						}
+					} finally {
+						action.setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
+						action.setEndTime(System.currentTimeMillis());
+					}
+				}
+				helper.commitTransaction();
+				return changed;
+			} catch (Exception e) {
+				helper.rollbackTransaction();
+				if (e instanceof SectioningException)
+					throw (SectioningException)e;
+				throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
+			}
+		}
+
+		@Override
+		public String name() {
+			return "critical-courses";
+		}
+	}
+	
+	protected static abstract class Worker extends Thread {
+		private Iterator<Long> iStudentsIds;
+		
+		public Worker(int index, Iterator<Long> studentsIds) {
+			setName("CriticalCourses-" + (1 + index));
+			iStudentsIds = studentsIds;
+		}
+		
+		protected abstract void process(Long studentId);
+		
+		@Override
+	    public void run() {
+			try {
+				while (true) {
+					Long studentId = null;
+					synchronized (iStudentsIds) {
+						if (!iStudentsIds.hasNext()) break;
+						studentId = iStudentsIds.next();
+					}
+					process(studentId);
+				}
+			} finally {
+				_RootDAO.closeCurrentThreadSessions();
+			}
+		}
+	}
+
 }

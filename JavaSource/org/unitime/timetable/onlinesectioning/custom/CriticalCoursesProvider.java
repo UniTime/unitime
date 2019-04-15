@@ -21,6 +21,7 @@ package org.unitime.timetable.onlinesectioning.custom;
 
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 
@@ -30,6 +31,7 @@ import org.unitime.timetable.onlinesectioning.model.XStudentId;
 public interface CriticalCoursesProvider {
 	
 	public CriticalCourses getCriticalCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudentId student);
+	public CriticalCourses getCriticalCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudentId student, OnlineSectioningLog.Action.Builder action);
 	
 	public void dispose();
 	
