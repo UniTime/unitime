@@ -25,7 +25,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -554,6 +558,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					phg.setPlaceHolder(true);
 					phg.setDescription(ph.placeholderValue);
 					phg.setId(ph.id);
+					phg.setCritical(isCriticalPlaceholder(ph));
 					DegreePlanInterface.DegreeCourseInterface course = null;
 					for (XCourseId id: phc) {
 						XCourse xc = (id instanceof XCourse ? (XCourse) id : server.getCourse(id.getCourseId()));
@@ -756,6 +761,15 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		}
 		return bannerTerm;
 	}
+	
+	protected String getCriticalPlaceHolderRegExp() {
+		return ApplicationProperties.getProperty("banner.dgw.criticalPlaceHolderRegExp", " ?UCC:? ?.*\\* ?");
+	}
+	
+	protected boolean isCriticalPlaceholder(XEInterface.PlaceHolder ph) {
+		String regExp = getCriticalPlaceHolderRegExp();
+		return (regExp != null && !regExp.isEmpty() && ph.placeholderValue != null && ph.placeholderValue.matches(regExp));
+	}
 
 	@Override
 	public CriticalCourses getCriticalCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudentId student) {
@@ -815,6 +829,10 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 															if (courses.add(c))
 																helper.info(student.getExternalId() + ": " + c.courseDiscipline + " " + c.courseNumber + " marked as critical");
 										}
+								if (t.group != null && t.group.plannedPlaceholders != null)
+									for (XEInterface.PlaceHolder ph: t.group.plannedPlaceholders)
+										if (CustomCourseLookupHolder.hasProvider() && isCriticalPlaceholder(ph))
+											courses.add(CustomCourseLookupHolder.getProvider().getCourses(server, helper, ph.placeholderValue));
 							}
 					}
 			}
@@ -842,24 +860,47 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 	}
 	
 	protected static class CriticalCoursesImpl implements CriticalCourses {
-		private List<String> iCriticalCourses = new ArrayList<String>();
+		private Set<String> iCriticalCourses = new TreeSet<String>();
+		private Set<XCourseId> iCriticalCourseIds = null;
 		
 		public boolean add(XEInterface.Course c) { return iCriticalCourses.add(c.courseDiscipline + " " + c.courseNumber); }
 		
-		public boolean remove(String subjectArea, String courseNbr) { return iCriticalCourses.remove(subjectArea + " " + courseNbr); }
+		public void add(Collection<XCourseId> courseIds) {
+			if (courseIds == null || courseIds.isEmpty()) return;
+			if (iCriticalCourseIds == null) iCriticalCourseIds = new HashSet<XCourseId>();
+			iCriticalCourseIds.addAll(courseIds);
+		}
 		
-		public boolean isEmpty() { return iCriticalCourses.isEmpty(); }
+		public boolean remove(String subjectArea, String courseNbr) {
+			boolean removed = iCriticalCourses.remove(subjectArea + " " + courseNbr);
+			if (iCriticalCourseIds != null) {
+				for (Iterator<XCourseId> i = iCriticalCourseIds.iterator(); i.hasNext(); ) {
+					XCourseId c = i.next();
+					if (c.getCourseName().startsWith(subjectArea + " " + courseNbr)) {
+						i.remove(); removed = true;
+					}
+				}
+			}
+			return removed;
+		}
+		
+		public boolean isEmpty() { return iCriticalCourses.isEmpty() && (iCriticalCourseIds == null || iCriticalCourseIds.isEmpty()); }
 
 		@Override
 		public boolean isCritical(CourseOffering course) {
 			for (String c: iCriticalCourses)
 				if (course.getCourseName().startsWith(c)) return true;
+			if (iCriticalCourseIds != null && iCriticalCourseIds.contains(new XCourseId(course))) return true;
 			return false;
 		}
 		
 		@Override
 		public String toString() {
-			return iCriticalCourses.toString();
+			Set<String> courses = new TreeSet<String>(iCriticalCourses);
+			if (iCriticalCourseIds != null)
+				for (XCourseId c: iCriticalCourseIds)
+					courses.add(c.getCourseName());
+			return courses.toString();
 		}
 	}
 }
