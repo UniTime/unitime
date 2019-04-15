@@ -1491,6 +1491,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Validate Overrides")
 	String validateStudentOverrides();
 	
+	@DefaultMessage("Check Critical Courses")
+	String validateReCheckCriticalCourses();
+	
 	@DefaultMessage("Requesting student update...")
 	String requestingStudentUpdate();
 	
@@ -1499,6 +1502,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Validating student overrides...")
 	String validatingStudentOverrides();
+	
+	@DefaultMessage("Checking critical courses...")
+	String recheckingCriticalCourses();
 	
 	@DefaultMessage("Student update request not allowed.")
 	String exceptionRequestStudentUpdateNotAllowed();
@@ -1511,6 +1517,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Student overrides successfully validated.")
 	String validateStudentOverridesSuccess();
+	
+	@DefaultMessage("Critical courses successfully rechecked.")
+	String recheckCriticalCoursesSuccess();
 	
 	@DefaultMessage("Click to lock the class. Any course changes will not affect locked course.")
 	String hintUnlocked();

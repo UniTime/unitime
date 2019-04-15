@@ -131,6 +131,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private boolean iChangeLog = false;
 		private boolean iCheckStudentOverrides = false;
 		private boolean iValidateStudentOverrides = false;
+		private boolean iRecheckCriticalCourses = false;
 		private Set<StudentGroupInfo> iEditableGroups = null;
 		
 		public SectioningProperties() {
@@ -161,8 +162,11 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public void setCheckStudentOverrides(boolean checkOverrides) { iCheckStudentOverrides = checkOverrides; }
 		public boolean isCheckStudentOverrides() { return iCheckStudentOverrides; }
 		
-		public void setValidateStudentOverrides(boolean ValidateOverrides) { iValidateStudentOverrides = ValidateOverrides; }
+		public void setValidateStudentOverrides(boolean validateOverrides) { iValidateStudentOverrides = validateOverrides; }
 		public boolean isValidateStudentOverrides() { return iValidateStudentOverrides; }
+		
+		public void setRecheckCriticalCourses(boolean recheckCriticalCourses) { iRecheckCriticalCourses = recheckCriticalCourses; }
+		public boolean isRecheckCriticalCourses() { return iRecheckCriticalCourses; }
 		
 		public void setChangeLog(boolean changeLog) { iChangeLog = changeLog; }
 		public boolean isChangeLog() { return iChangeLog; }

@@ -1453,7 +1453,7 @@ public class SectioningStatusPage extends Composite {
 				}
 				@Override
 				public boolean hasSeparator() {
-					return !iProperties.isRequestUpdate() && !iProperties.isChangeStatus();
+					return !iProperties.isRequestUpdate() && !iProperties.isCheckStudentOverrides();
 				}
 				@Override
 				public boolean isApplicable() {
@@ -1474,6 +1474,39 @@ public class SectioningStatusPage extends Composite {
 						public void onSuccess(Boolean result) {
 							LoadingWidget.getInstance().hide();
 							UniTimeNotifications.info(MESSAGES.validateStudentOverridesSuccess());
+							loadData();
+						}
+					});
+				}
+			});
+			hSelect.addOperation(new Operation() {
+				@Override
+				public String getName() {
+					return MESSAGES.validateReCheckCriticalCourses();
+				}
+				@Override
+				public boolean hasSeparator() {
+					return !iProperties.isRequestUpdate() && !iProperties.isCheckStudentOverrides() && !iProperties.isValidateStudentOverrides();
+				}
+				@Override
+				public boolean isApplicable() {
+					return iSelectedStudentIds.size() > 0 && iProperties != null && iProperties.isRecheckCriticalCourses();
+				}
+				@Override
+				public void execute() {
+					List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
+					LoadingWidget.getInstance().show(MESSAGES.recheckingCriticalCourses());
+					iSectioningService.recheckCriticalCourses(studentIds, new AsyncCallback<Boolean>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+							UniTimeNotifications.error(caught);
+						}
+
+						@Override
+						public void onSuccess(Boolean result) {
+							LoadingWidget.getInstance().hide();
+							UniTimeNotifications.info(MESSAGES.recheckCriticalCoursesSuccess());
 							loadData();
 						}
 					});

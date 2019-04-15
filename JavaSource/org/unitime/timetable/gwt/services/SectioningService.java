@@ -94,6 +94,7 @@ public interface SectioningService extends RemoteService {
 	ClassAssignmentInterface.Student lookupStudent(boolean online, Long studentId) throws SectioningException, PageAccessException;
 	Boolean checkStudentOverrides(List<Long> studentIds) throws SectioningException, PageAccessException;
 	Boolean validateStudentOverrides(List<Long> studentIds) throws SectioningException, PageAccessException;
+	Boolean recheckCriticalCourses(List<Long> studentIds) throws SectioningException, PageAccessException;
 	
 	SubmitSpecialRegistrationResponse submitSpecialRequest(SubmitSpecialRegistrationRequest request) throws SectioningException, PageAccessException;
 	SpecialRegistrationEligibilityResponse checkSpecialRequestEligibility(SpecialRegistrationEligibilityRequest request) throws SectioningException, PageAccessException;

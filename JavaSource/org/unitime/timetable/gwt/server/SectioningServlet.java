@@ -2793,6 +2793,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			properties.setRequestUpdate(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingRequestStudentUpdate));
 			properties.setCheckStudentOverrides(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingCheckStudentOverrides));
 			properties.setValidateStudentOverrides(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingValidateStudentOverrides));
+			properties.setRecheckCriticalCourses(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingRecheckCriticalCourses));
 			if (getSessionContext().hasPermission(sessionId, Right.StudentSchedulingChangeStudentGroup))
 				for (StudentGroup g: (List<StudentGroup>)StudentGroupDAO.getInstance().getSession().createQuery(
 						"from StudentGroup g where g.type.advisorsCanSet = true and g.session = :sessionId order by g.groupAbbreviation"
@@ -2831,6 +2832,16 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		getSessionContext().checkPermission(server.getAcademicSession(), Right.StudentSchedulingValidateStudentOverrides);
 		
 		return server.execute(server.createAction(CustomCourseRequestsValidationHolder.Validate.class).forStudents(studentIds), currentUser());
+	}
+	
+	@Override
+	public Boolean recheckCriticalCourses(List<Long> studentIds) throws SectioningException, PageAccessException {
+		OnlineSectioningServer server = getServerInstance(getStatusPageSessionId(), true);
+		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+		
+		getSessionContext().checkPermission(server.getAcademicSession(), Right.StudentSchedulingRecheckCriticalCourses);
+		
+		return server.execute(server.createAction(CustomCriticalCoursesHolder.CheckCriticalCourses.class).forStudents(studentIds), currentUser());
 	}
 
 	@Override

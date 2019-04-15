@@ -303,6 +303,14 @@ public class StudentSchedulingPermissions {
 	@PermissionForRight(Right.StudentSchedulingValidateStudentOverrides)
 	public static class StudentSchedulingValidateStudentOverrides extends StudentSchedulingCheckStudentOverrides {}
 	
+	@PermissionForRight(Right.StudentSchedulingRecheckCriticalCourses)
+	public static class StudentSchedulingRecheckCriticalCourses extends SimpleSessionPermission {
+		@Override
+		public boolean check(UserContext user, Session source) {
+			return super.check(user, source) && source.getStatusType().can(Status.StudentsPreRegister) && ApplicationProperty.CustomizationCriticalCourses.value() != null;
+		}
+	}
+	
 	@PermissionForRight(Right.StudentSchedulingAdvisor)
 	public static class StudentSchedulingAdvisor extends StudentScheduling {}
 	

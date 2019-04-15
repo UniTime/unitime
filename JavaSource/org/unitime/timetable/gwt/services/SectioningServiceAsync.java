@@ -93,6 +93,7 @@ public interface SectioningServiceAsync {
 	void lookupStudent(boolean online, Long studentId, AsyncCallback<ClassAssignmentInterface.Student> callback) throws SectioningException, PageAccessException;
 	void checkStudentOverrides(List<Long> studentIds, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	void validateStudentOverrides(List<Long> studentIds, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
+	void recheckCriticalCourses(List<Long> studentIds, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	
 	void submitSpecialRequest(SubmitSpecialRegistrationRequest request, AsyncCallback<SubmitSpecialRegistrationResponse> callback) throws SectioningException, PageAccessException;
 	void checkSpecialRequestEligibility(SpecialRegistrationEligibilityRequest request, AsyncCallback<SpecialRegistrationEligibilityResponse> callback) throws SectioningException, PageAccessException;
