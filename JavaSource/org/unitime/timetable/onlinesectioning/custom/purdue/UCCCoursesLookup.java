@@ -107,11 +107,16 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 	}
 	
 	protected String getPlaceHolderRegExp() {
-		return ApplicationProperties.getProperty("banner.ucc.placeholder.regExp", " ?UCC:? ?([^-]*[^- ]+)( ?-.*)?");
+		return ApplicationProperties.getProperty("banner.ucc.placeholder.regExp", "( ?UCC:? ?)?([^-]*[^- ]+)( ?-.*)?");
 	}
 	
 	protected String getPlaceHolderRenames() {
-		return ApplicationProperties.getProperty("banner.ucc.placeholder.replacements", "(?i:Behavioral/Social Science)|Behavior/Social Science\n(?i:Science,? Tech \\& Society( Selective)?)|Science, Tech & Society");
+		return ApplicationProperties.getProperty("banner.ucc.placeholder.replacements",
+				"(?i:Behavioral/Social Science)|Behavior/Social Science\n" + 
+				"(?i:Science,? Tech \\& Society( Selective)?)|Science, Tech & Society\n" +
+				"(?i:Oral Communication)|Oral Communications\n" +
+				"(?i:Written Communications)|Written Communication"
+				);
 	}
 	
 	protected String getListAttributesSQL() {
@@ -159,14 +164,14 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 	}
 	
 	protected String fixQuery(String query) {
-		if ("oc".equalsIgnoreCase(query)) query = "oral communication";
+		if ("oc".equalsIgnoreCase(query)) query = "oral communications";
 		if ("wc".equalsIgnoreCase(query)) query = "written communication";
 		if (query == null || query.length() <= 3) return null;
 		String regExp = getPlaceHolderRegExp();
 		if (regExp != null && !regExp.isEmpty()) {
 			Matcher m = Pattern.compile(regExp).matcher(query);
 			if (m.matches())
-				query = m.group(1);
+				query = m.group(2);
 		}
 		String replacements = getPlaceHolderRenames();
 		if (replacements != null && !replacements.isEmpty()) {
@@ -183,7 +188,7 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 	}
 
 	@Override
-	public List<XCourseId> getCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, String query) {
+	public List<XCourseId> getCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, String query, boolean allowPartialMatch) {
 		String q = fixQuery(query);
 		if (q == null) return null;
 		List<XCourseId> ret = new ArrayList<XCourseId>();
@@ -197,7 +202,7 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 						if (course != null)
 							ret.add(course);
 					}
-				} else if (!fullMatch && ca.isPartialMatch(q)) {
+				} else if (allowPartialMatch && !fullMatch && ca.isPartialMatch(q)) {
 					for (Long courseId: ca.getCourseIds()) {
 						XCourse course = server.getCourse(courseId);
 						if (course != null)
@@ -214,7 +219,7 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 				if (course != null)
 					ret.add(course);
 			}
-			if (ret.isEmpty()) {
+			if (allowPartialMatch && ret.isEmpty()) {
 				for (Object courseId: helper.getHibSession().createSQLQuery(getCourseLookupPartialSQL())
 						.setLong("sessionId", server.getAcademicSession().getUniqueId())
 						.setString("term", getBannerTerm(server.getAcademicSession()))
@@ -234,7 +239,7 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 	}
 
 	@Override
-	public List<CourseOffering> getCourses(AcademicSessionInfo session, Session hibSession, String query) {
+	public List<CourseOffering> getCourses(AcademicSessionInfo session, Session hibSession, String query, boolean allowPartialMatch) {
 		String q = fixQuery(query);
 		if (q == null) return null;
 		if (useCache()) {
@@ -244,7 +249,7 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 				if (ca.isFullMatch(q)) {
 					if (!fullMatch) { fullMatch = true; courseIds.clear(); }
 					courseIds.addAll(ca.getCourseIds());
-				} else if (!fullMatch && ca.isPartialMatch(q)) {
+				} else if (allowPartialMatch && !fullMatch && ca.isPartialMatch(q)) {
 					courseIds.addAll(ca.getCourseIds());
 				}
 			}
@@ -256,7 +261,7 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 					.setLong("sessionId", session.getUniqueId())
 					.setString("term", getBannerTerm(session))
 					.setString("query", q).list();
-			if (courseIds == null || courseIds.isEmpty()) {
+			if (allowPartialMatch && (courseIds == null || courseIds.isEmpty())) {
 				courseIds = hibSession.createSQLQuery(getCourseLookupPartialSQL())
 						.setLong("sessionId", session.getUniqueId())
 						.setString("term", getBannerTerm(session))
@@ -269,7 +274,7 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 	}
 	
 	@Override
-	public Set<Long> getCourseIds(AcademicSessionInfo session, org.hibernate.Session hibSession, String query) {
+	public Set<Long> getCourseIds(AcademicSessionInfo session, org.hibernate.Session hibSession, String query, boolean allowPartialMatch) {
 		String q = fixQuery(query);
 		if (q == null) return null;
 		if (useCache()) {
@@ -279,7 +284,7 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 				if (ca.isFullMatch(q)) {
 					if (!fullMatch) { fullMatch = true; courseIds.clear(); }
 					courseIds.addAll(ca.getCourseIds());
-				} else if (!fullMatch && ca.isPartialMatch(q)) {
+				} else if (allowPartialMatch && !fullMatch && ca.isPartialMatch(q)) {
 					courseIds.addAll(ca.getCourseIds());
 				}
 			}
@@ -291,7 +296,7 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 					.setLong("sessionId", session.getUniqueId())
 					.setString("term", getBannerTerm(session))
 					.setString("query", q).list();
-			if (courseIds == null || courseIds.isEmpty()) {
+			if (allowPartialMatch && (courseIds == null || courseIds.isEmpty())) {
 				courseIds = hibSession.createSQLQuery(getCourseLookupPartialSQL())
 						.setLong("sessionId", session.getUniqueId())
 						.setString("term", getBannerTerm(session))

@@ -447,7 +447,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 				return "cr.courseOffering.subjectAreaAbbv = '" + body + "' or (cr.courseOffering.subjectAreaAbbv || ' ' || cr.courseOffering.courseNbr) = '" + body + "'";
 			} else if ("lookup".equalsIgnoreCase(attr)) {
 				if (CustomCourseLookupHolder.hasProvider()) {
-					Set<Long> courseIds = CustomCourseLookupHolder.getProvider().getCourseIds(iSession, iHelper.getHibSession(), body);
+					Set<Long> courseIds = CustomCourseLookupHolder.getProvider().getCourseIds(iSession, iHelper.getHibSession(), body, true);
 					if (courseIds != null && !courseIds.isEmpty()) {
 						String ret = "";
 						for (Long courseId: courseIds) {

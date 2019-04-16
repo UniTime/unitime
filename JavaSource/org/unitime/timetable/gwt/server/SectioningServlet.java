@@ -286,7 +286,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			if (query != null && !query.isEmpty() && CustomCourseLookupHolder.hasProvider()) {
 				try {
-					List<CourseOffering> courses = CustomCourseLookupHolder.getProvider().getCourses(new AcademicSessionInfo(SessionDAO.getInstance().get(sessionId, hibSession)), hibSession, query);
+					List<CourseOffering> courses = CustomCourseLookupHolder.getProvider().getCourses(new AcademicSessionInfo(SessionDAO.getInstance().get(sessionId, hibSession)), hibSession, query, true);
 					if (courses != null && !courses.isEmpty()) {
 						ArrayList<ClassAssignmentInterface.CourseAssignment> results = new ArrayList<ClassAssignmentInterface.CourseAssignment>();
 						for (CourseOffering c: courses) {

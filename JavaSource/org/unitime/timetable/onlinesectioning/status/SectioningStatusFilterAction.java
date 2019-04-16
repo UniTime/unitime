@@ -482,7 +482,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		
 		if (request.hasOption("lookup") && CustomCourseLookupHolder.hasProvider()) {
 			try {
-				Set<Long> courseIds = CustomCourseLookupHolder.getProvider().getCourseIds(server.getAcademicSession(), helper.getHibSession(), request.getOption("lookup"));
+				Set<Long> courseIds = CustomCourseLookupHolder.getProvider().getCourseIds(server.getAcademicSession(), helper.getHibSession(), request.getOption("lookup"), true);
 				if (courseIds != null && !courseIds.isEmpty()) {
 					String course = "";
 					int id = 0;
@@ -500,7 +500,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				String course = "";
 				int id = 0;
 				for (String lookup: request.getOptions("lookup")) {
-					Set<Long> courseIds = CustomCourseLookupHolder.getProvider().getCourseIds(server.getAcademicSession(), helper.getHibSession(), lookup);
+					Set<Long> courseIds = CustomCourseLookupHolder.getProvider().getCourseIds(server.getAcademicSession(), helper.getHibSession(), lookup, true);
 					if (courseIds != null && !courseIds.isEmpty()) {
 						for (Long c: courseIds) {
 							course += (course.isEmpty() ? "" : ",") + ":Xcx" + id;

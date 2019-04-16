@@ -84,7 +84,7 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 	protected List<CourseAssignment> customCourseLookup(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		try {
 			if (iQuery != null && !iQuery.isEmpty() && CustomCourseLookupHolder.hasProvider()) {
-				List<XCourseId> courses = CustomCourseLookupHolder.getProvider().getCourses(server, helper, iQuery);
+				List<XCourseId> courses = CustomCourseLookupHolder.getProvider().getCourses(server, helper, iQuery, true);
 				if (courses != null && !courses.isEmpty()) {
 					List<CourseAssignment> ret = new ArrayList<CourseAssignment>();
 					for (XCourseId c: courses) {

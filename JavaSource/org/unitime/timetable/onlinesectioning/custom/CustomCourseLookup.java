@@ -34,9 +34,9 @@ import org.unitime.timetable.onlinesectioning.model.XCourseId;
  */
 public interface CustomCourseLookup {
 	
-	public List<XCourseId> getCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, String query);
-	public List<CourseOffering> getCourses(AcademicSessionInfo session, org.hibernate.Session hibSession, String query);
-	public Set<Long> getCourseIds(AcademicSessionInfo session, org.hibernate.Session hibSession, String query);
+	public List<XCourseId> getCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, String query, boolean allowPartialMatch);
+	public List<CourseOffering> getCourses(AcademicSessionInfo session, org.hibernate.Session hibSession, String query, boolean allowPartialMatch);
+	public Set<Long> getCourseIds(AcademicSessionInfo session, org.hibernate.Session hibSession, String query, boolean allowPartialMatch);
 	public void addSuggestions(OnlineSectioningServer server, OnlineSectioningHelper helper, String query, FilterRpcResponse filter);
 	
 	public void dispose();

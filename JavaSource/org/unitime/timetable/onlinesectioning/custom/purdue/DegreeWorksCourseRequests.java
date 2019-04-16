@@ -404,9 +404,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 										request.setStudentId(student.getStudentId());
 										fillInRequests(server, helper, request, t.group);
 										for (PlaceHolder ph: t.group.plannedPlaceholders) {
-											List<XCourseId> phc = null;
-											if (CustomCourseLookupHolder.hasProvider())
-												phc = CustomCourseLookupHolder.getProvider().getCourses(server, helper, ph.placeholderValue);
+											List<XCourseId> phc = getPlaceHolderCourses(server, helper, ph);
 											List<XCourse> courses = null;
 											if (phc != null && !phc.isEmpty()) {
 												courses = new ArrayList<XCourse>();
@@ -516,6 +514,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					for (XCourseId id: ids) {
 						XCourse xc = (id instanceof XCourse ? (XCourse) id : server.getCourse(id.getCourseId()));
 						if (xc == null) continue;
+						if (!id.getCourseName().startsWith(c.courseDiscipline + " " + c.courseNumber)) continue;
 						CourseAssignment ca = new CourseAssignment();
 						ca.setCourseId(xc.getCourseId());
 						ca.setSubject(xc.getSubjectArea());
@@ -547,11 +546,20 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				}
 				group.addCourse(course);
 			}
+		if (g.groups != null)
+			for (XEInterface.Group ch: g.groups) {
+				DegreePlanInterface.DegreeGroupInterface childGroup = toGroup(server, helper, ch);
+				if (childGroup.countItems() <= 1 || childGroup.isChoice() == group.isChoice()) {
+					group.merge(childGroup);
+				} else {
+					if (group.isChoice())
+						childGroup.setSelected(hasSelection(ch));
+					group.addGroup(childGroup);
+				}
+			}
 		if (g.plannedPlaceholders != null)
 			for (XEInterface.PlaceHolder ph: g.plannedPlaceholders) {
-				List<XCourseId> phc = null;
-				if (CustomCourseLookupHolder.hasProvider())
-					phc = CustomCourseLookupHolder.getProvider().getCourses(server, helper, ph.placeholderValue);
+				List<XCourseId> phc = getPlaceHolderCourses(server, helper, ph);
 				if (phc != null && !phc.isEmpty()) {
 					DegreePlanInterface.DegreeGroupInterface phg = new DegreePlanInterface.DegreeGroupInterface();
 					phg.setChoice(true);
@@ -604,18 +612,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					placeHolder.setId(ph.id);
 					group.addPlaceHolder(placeHolder);
 				}
-			}
-		if (g.groups != null)
-			for (XEInterface.Group ch: g.groups) {
-				DegreePlanInterface.DegreeGroupInterface childGroup = toGroup(server, helper, ch);
-				if (childGroup.countItems() <= 1 || childGroup.isChoice() == group.isChoice()) {
-					group.merge(childGroup);
-				} else {
-					if (group.isChoice())
-						childGroup.setSelected(hasSelection(ch));
-					group.addGroup(childGroup);
-				}
-			}
+			}		
 		return group;
 	}
 	
@@ -763,12 +760,32 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 	}
 	
 	protected String getCriticalPlaceHolderRegExp() {
-		return ApplicationProperties.getProperty("banner.dgw.criticalPlaceHolderRegExp", " ?UCC:? ?.*\\* ?");
+		return ApplicationProperties.getProperty("banner.dgw.criticalPlaceHolderRegExp", ".* ?\\* ?");
+	}
+	
+	protected String getUccPlaceHolderType() {
+		return ApplicationProperties.getProperty("banner.dgw.uccPlaceHolderCodeRegExp", "UNIV-CORE");
+	}
+	
+	protected boolean getCriticalPlaceHolderAllowPartialMatch() {
+		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.placeHolderPartialMatch", "false"));
+	}
+	
+	protected List<XCourseId> getPlaceHolderCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, XEInterface.PlaceHolder ph) {
+		// check provider
+		if (!CustomCourseLookupHolder.hasProvider()) return null;
+		// check placeholder type code
+		if (ph == null || ph.placeholderType == null || ph.placeholderType.code == null || !ph.placeholderType.code.matches(getUccPlaceHolderType()))
+			return null;
+		return CustomCourseLookupHolder.getProvider().getCourses(server, helper, ph.placeholderValue, getCriticalPlaceHolderAllowPartialMatch());
 	}
 	
 	protected boolean isCriticalPlaceholder(XEInterface.PlaceHolder ph) {
-		String regExp = getCriticalPlaceHolderRegExp();
-		return (regExp != null && !regExp.isEmpty() && ph.placeholderValue != null && ph.placeholderValue.matches(regExp));
+		return ph.placeholderValue != null && ph.placeholderValue.matches(getCriticalPlaceHolderRegExp());
+	}
+	
+	protected List<XCourseId> getCriticalPlaceHolderCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, XEInterface.PlaceHolder ph) {
+		return (isCriticalPlaceholder(ph) ? getPlaceHolderCourses(server, helper, ph) : null);
 	}
 
 	@Override
@@ -836,8 +853,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 										}
 								if (t.group != null && t.group.plannedPlaceholders != null)
 									for (XEInterface.PlaceHolder ph: t.group.plannedPlaceholders)
-										if (CustomCourseLookupHolder.hasProvider() && isCriticalPlaceholder(ph))
-											courses.add(CustomCourseLookupHolder.getProvider().getCourses(server, helper, ph.placeholderValue));
+										courses.add(getCriticalPlaceHolderCourses(server, helper, ph));
 							}
 					}
 			}

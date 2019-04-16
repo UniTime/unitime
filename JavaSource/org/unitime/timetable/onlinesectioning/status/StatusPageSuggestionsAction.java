@@ -570,7 +570,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		public Set<Long> getCourses(String term) {
 			Set<Long> courses = iLookups.get(term);
 			if (courses == null && CustomCourseLookupHolder.hasProvider()) {
-				courses = CustomCourseLookupHolder.getProvider().getCourseIds(iSession, null, term);
+				courses = CustomCourseLookupHolder.getProvider().getCourseIds(iSession, null, term, true);
 				if (courses == null) { courses = new HashSet<Long>(); }
 				iLookups.put(term, courses);
 			}
