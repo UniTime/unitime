@@ -36,6 +36,7 @@ public class SpecialRegistrationInterface {
 		success, // call succeeded, data field is filled in
 		error, // there was an error, see message for details 
 		failure, //TODO: is this status used? 
+		Failed, // present in outJson.status when the validation failed
 		;
 	}
 	
@@ -344,6 +345,8 @@ public class SpecialRegistrationInterface {
 		public String term;
 		/** Computed credit hours */
 		public Float maxHoursCalc;
+		/** Error message */
+		public String message;
 	}
 	
 	/** Possible values for the includeReg parameter */

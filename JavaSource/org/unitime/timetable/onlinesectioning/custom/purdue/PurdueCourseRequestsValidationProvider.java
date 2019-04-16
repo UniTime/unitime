@@ -660,6 +660,14 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				problems.add(r.code);
 			}
 		
+		if (resp.outJson != null && resp.outJson.message != null && resp.outJson.status != null && resp.outJson.status != ResponseStatus.success) {
+			response.addError(null, null, "Failure", resp.outJson.message);
+			response.setErrorMessage(resp.outJson.message);
+		} else if (resp.outJsonAlternatives != null && resp.outJsonAlternatives.message != null && resp.outJsonAlternatives.status != null && resp.outJsonAlternatives.status != ResponseStatus.success) {
+			response.addError(null, null, "Failure", resp.outJsonAlternatives.message);
+			response.setErrorMessage(resp.outJsonAlternatives.message);
+		}
+		
 		if (resp.outJson != null && resp.outJson.problems != null)
 			for (Problem problem: resp.outJson.problems) {
 				if ("HOLD".equals(problem.code)) {
