@@ -75,7 +75,7 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 	
 	public List<DegreeCourseInterface> listSelected(boolean pickFirstWhenNoneSelected) {
 		List<DegreeCourseInterface> ret = new ArrayList<DegreeCourseInterface>();
-		if (iGroup != null) iGroup.listSelected(ret, pickFirstWhenNoneSelected);
+		if (iGroup != null) iGroup.listSelectedCriticalFirst(ret, pickFirstWhenNoneSelected);
 		return ret;
 	}
 	
@@ -268,6 +268,57 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 					}
 				}
 				return ret;
+			}
+		}
+		
+		protected void listSelectedCriticalFirst(List<DegreeCourseInterface> requested, boolean pickFirstWhenNoneSelected) {
+			boolean hasSelection = false;
+			if (hasCourses())
+				for (DegreeCourseInterface course: getCourses()) {
+					if (!course.isCritical()) continue;
+					if (!isChoice() || course.isSelected()) {
+						requested.add(course); hasSelection = true;
+					}
+				}
+			if (hasGroups())
+				for (DegreeGroupInterface g: getGroups()) {
+					if (!g.isCritical()) continue;
+					if (!isChoice() || g.isSelected()) {
+						g.listSelected(requested, pickFirstWhenNoneSelected); hasSelection = true;
+					}
+				}
+			if (hasCourses())
+				for (DegreeCourseInterface course: getCourses()) {
+					if (course.isCritical()) continue;
+					if (!isChoice() || course.isSelected()) {
+						requested.add(course); hasSelection = true;
+					}
+				}
+			if (hasGroups())
+				for (DegreeGroupInterface g: getGroups()) {
+					if (g.isCritical()) continue;
+					if (!isChoice() || g.isSelected()) {
+						g.listSelected(requested, pickFirstWhenNoneSelected); hasSelection = true;
+					}
+				}
+			if (isChoice() && !hasSelection && pickFirstWhenNoneSelected) {
+				if (isPlaceHolder() && hasDescription() && hasCourses() && getCourses().size() > 10) {
+					DegreeCourseInterface c = new DegreeCourseInterface();
+					c.setCourse(getDescription());
+					requested.add(c);
+				} else {
+					if (hasCourses())
+						requested.add(pickCourse());
+					else if (hasGroups())
+						getGroups().get(0).listSelected(requested, pickFirstWhenNoneSelected);
+				}
+			}
+			if (hasPlaceHolders() && pickFirstWhenNoneSelected) {
+				for (DegreePlaceHolderInterface h: getPlaceHolders()) {
+					DegreeCourseInterface c = new DegreeCourseInterface();
+					c.setCourse(h.getName());
+					requested.add(c);
+				}	
 			}
 		}
 		

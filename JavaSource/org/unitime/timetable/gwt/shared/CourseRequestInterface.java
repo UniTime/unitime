@@ -83,6 +83,16 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			return iAlternatives.get(index);
 		return null;
 	}
+	public void addCourseCriticalFirst(Request request) {
+		if (request.isCritical()) {
+			int lastCritical = -1;
+			for (int i = 0; i < getCourses().size(); i++)
+				if (getCourses().get(i).isCritical()) lastCritical = i;
+			getCourses().add(lastCritical + 1, request);
+		} else {
+			getCourses().add(request);
+		}
+	}
 	
 	public boolean isSaved() { return iSaved; }
 	public void setSaved(boolean saved) { iSaved = saved; }

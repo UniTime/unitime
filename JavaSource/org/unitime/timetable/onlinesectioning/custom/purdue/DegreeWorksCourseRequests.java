@@ -226,8 +226,10 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 						XCourse c = server.getCourse(cid.getCourseId());
 						if (c != null) rc.setCredit(c.getMinCredit(), c.getMaxCredit());
 					}
+					r.setCritical(group.isCritical);
+					if (group.isCritical != null) b.setCritical(group.isCritical);
 					r.addRequestedCourse(rc);
-					request.getCourses().add(r);
+					request.addCourseCriticalFirst(r);
 					hasSelection = true;
 					
 					// add other courses as alternatives
@@ -276,7 +278,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 							if (request.getCourses().isEmpty()) {
 								r = new CourseRequestInterface.Request();
 								b = helper.getAction().addRequestBuilder().setPriority(request.getCourses().size()).setAlternative(false);
-								request.getCourses().add(r);
+								request.addCourseCriticalFirst(r);
 							} else {
 								r = request.getCourses().get(request.getCourses().size() - 1);
 								b = helper.getAction().getRequestBuilder(helper.getAction().getRequestCount() - 1);
@@ -309,9 +311,12 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					b.addCourse(toEntity(course, cid));
 				}
 				
+				
 				if (r.hasRequestedCourse()) {
+					r.setCritical(group.isCritical);
+					if (group.isCritical != null) b.setCritical(group.isCritical);
 					helper.getAction().addRequest(b);
-					request.getCourses().add(r);
+					request.addCourseCriticalFirst(r);
 				}
 			}
 		} else {
@@ -320,7 +325,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				XCourseId cid = getCourse(server, course);
 				if (cid == null) continue;
 				
-				helper.getAction().addRequestBuilder()
+				OnlineSectioningLog.Request.Builder b = helper.getAction().addRequestBuilder()
 					.setPriority(request.getCourses().size())
 					.setAlternative(false)
 					.addCourse(toEntity(course, cid));
@@ -336,11 +341,75 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					XCourse c = server.getCourse(cid.getCourseId());
 					if (c != null) rc.setCredit(c.getMinCredit(), c.getMaxCredit());
 				}
+				r.setCritical(course.isCritical);
+				if (course.isCritical != null) b.setCritical(course.isCritical);
 				r.addRequestedCourse(rc);
-				request.getCourses().add(r);
+				request.addCourseCriticalFirst(r);
 			}
 			for (XEInterface.Group g: group.groups)
 				fillInRequests(server, helper, request, g);
+			for (PlaceHolder ph: group.plannedPlaceholders) {
+				List<XCourseId> phc = getPlaceHolderCourses(server, helper, ph);
+				List<XCourse> courses = null;
+				if (phc != null && !phc.isEmpty()) {
+					courses = new ArrayList<XCourse>();
+					String lastSubject = null, lastCourse = null;
+					for (XCourseId cid: phc) {
+						XCourse c = (cid instanceof XCourse ? (XCourse) cid : server.getCourse(cid.getCourseId()));
+						if (c == null) continue;
+						if (lastSubject != null && lastSubject.equals(c.getSubjectArea()) && lastCourse != null && c.getCourseNumber().startsWith(lastCourse)) continue;
+						courses.add(c);
+						lastSubject = iExternalTermProvider.getExternalSubject(server.getAcademicSession(), c.getSubjectArea(), c.getCourseNumber());
+						lastCourse = iExternalTermProvider.getExternalCourseNumber(server.getAcademicSession(), c.getSubjectArea(), c.getCourseNumber());
+					}
+				}
+				if (courses != null && !courses.isEmpty() && courses.size() <= CONST.degreePlanMaxAlternatives()) {
+					CourseRequestInterface.Request r = new CourseRequestInterface.Request();
+					r.setFilter(ph.placeholderValue);
+					OnlineSectioningLog.Request.Builder b = OnlineSectioningLog.Request.newBuilder().setPriority(request.getCourses().size()).setAlternative(false);
+					Collections.sort(courses, new Comparator<XCourse>() {
+						@Override
+						public int compare(XCourse c1, XCourse c2) {
+							int av1 = 4 * c1.getLimit();
+							Collection<XCourseRequest> r1 = server.getRequests(c1.getOfferingId());
+							if (r1 != null)
+								for (XCourseRequest r: r1) {
+									if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(c1.getCourseId())) av1-=3;
+									if (!r.isAlternative() && r.getEnrollment() == null && r.getCourseIds().get(0).equals(c1)) av1--;
+								}
+							int av2 = 4 * c2.getLimit();
+							Collection<XCourseRequest> r2 = server.getRequests(c2.getOfferingId());
+							if (r2 != null)
+								for (XCourseRequest r: r2) {
+									if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(c2.getCourseId())) av2-=3;
+									if (!r.isAlternative() && r.getEnrollment() == null && r.getCourseIds().get(0).equals(c2)) av2--;
+								}
+							return av1 > av2 ? -1 : av2 > av1 ? 1 : c1.compareTo(c2);
+						}
+					});
+					for (XCourse c: courses) {
+						RequestedCourse orc = new RequestedCourse();
+						orc.setCourseId(c.getCourseId());
+						orc.setCourseName(c.getCourseName());
+						orc.setCourseTitle(c.getTitle());
+						orc.setCredit(c.getMinCredit(), c.getMaxCredit());
+						r.addRequestedCourse(orc);
+						b.addCourse(toEntity(c));
+					}
+					if (isCriticalPlaceholder(ph)) {
+						r.setCritical(true);
+						b.setCritical(true);
+					}
+					helper.getAction().addRequest(b);
+					request.addCourseCriticalFirst(r);
+				} else if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.includePlaceHolders", "true"))) {
+					CourseRequestInterface.Request r = new CourseRequestInterface.Request();
+					RequestedCourse rc = new RequestedCourse();
+					rc.setCourseName(ph.placeholderValue.trim());
+					r.addRequestedCourse(rc);
+					request.addCourseCriticalFirst(r);
+				}
+			}
 		}
 	}
 	
@@ -403,64 +472,6 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 										request.setAcademicSessionId(server.getAcademicSession().getUniqueId());
 										request.setStudentId(student.getStudentId());
 										fillInRequests(server, helper, request, t.group);
-										for (PlaceHolder ph: t.group.plannedPlaceholders) {
-											List<XCourseId> phc = getPlaceHolderCourses(server, helper, ph);
-											List<XCourse> courses = null;
-											if (phc != null && !phc.isEmpty()) {
-												courses = new ArrayList<XCourse>();
-												String lastSubject = null, lastCourse = null;
-												for (XCourseId cid: phc) {
-													XCourse c = (cid instanceof XCourse ? (XCourse) cid : server.getCourse(cid.getCourseId()));
-													if (c == null) continue;
-													if (lastSubject != null && lastSubject.equals(c.getSubjectArea()) && lastCourse != null && c.getCourseNumber().startsWith(lastCourse)) continue;
-													courses.add(c);
-													lastSubject = iExternalTermProvider.getExternalSubject(server.getAcademicSession(), c.getSubjectArea(), c.getCourseNumber());
-													lastCourse = iExternalTermProvider.getExternalCourseNumber(server.getAcademicSession(), c.getSubjectArea(), c.getCourseNumber());
-												}
-											}
-											if (courses != null && !courses.isEmpty() && courses.size() <= CONST.degreePlanMaxAlternatives()) {
-												CourseRequestInterface.Request r = new CourseRequestInterface.Request();
-												r.setFilter(ph.placeholderValue);
-												OnlineSectioningLog.Request.Builder b = OnlineSectioningLog.Request.newBuilder().setPriority(request.getCourses().size()).setAlternative(false);
-												Collections.sort(courses, new Comparator<XCourse>() {
-													@Override
-													public int compare(XCourse c1, XCourse c2) {
-														int av1 = 4 * c1.getLimit();
-														Collection<XCourseRequest> r1 = server.getRequests(c1.getOfferingId());
-														if (r1 != null)
-															for (XCourseRequest r: r1) {
-																if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(c1.getCourseId())) av1-=3;
-																if (!r.isAlternative() && r.getEnrollment() == null && r.getCourseIds().get(0).equals(c1)) av1--;
-															}
-														int av2 = 4 * c2.getLimit();
-														Collection<XCourseRequest> r2 = server.getRequests(c2.getOfferingId());
-														if (r2 != null)
-															for (XCourseRequest r: r2) {
-																if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(c2.getCourseId())) av2-=3;
-																if (!r.isAlternative() && r.getEnrollment() == null && r.getCourseIds().get(0).equals(c2)) av2--;
-															}
-														return av1 > av2 ? -1 : av2 > av1 ? 1 : c1.compareTo(c2);
-													}
-												});
-												for (XCourse c: courses) {
-													RequestedCourse orc = new RequestedCourse();
-													orc.setCourseId(c.getCourseId());
-													orc.setCourseName(c.getCourseName());
-													orc.setCourseTitle(c.getTitle());
-													orc.setCredit(c.getMinCredit(), c.getMaxCredit());
-													r.addRequestedCourse(orc);
-													b.addCourse(toEntity(c));
-												}
-												helper.getAction().addRequest(b);
-												request.getCourses().add(r);
-											} else if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.includePlaceHolders", "true"))) {
-												CourseRequestInterface.Request r = new CourseRequestInterface.Request();
-												RequestedCourse rc = new RequestedCourse();
-												rc.setCourseName(ph.placeholderValue.trim());
-												r.addRequestedCourse(rc);
-												request.getCourses().add(r);
-											}
-										}
 										if (helper.isDebugEnabled())
 											helper.debug("Course Requests: " + request);
 										
@@ -768,7 +779,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 	}
 	
 	protected boolean getCriticalPlaceHolderAllowPartialMatch() {
-		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.placeHolderPartialMatch", "false"));
+		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.placeHolderPartialMatch", "true"));
 	}
 	
 	protected List<XCourseId> getPlaceHolderCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, XEInterface.PlaceHolder ph) {

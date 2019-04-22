@@ -115,7 +115,8 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 				"(?i:Behavioral/Social Science)|Behavior/Social Science\n" + 
 				"(?i:Science,? Tech \\& Society( Selective)?)|Science, Tech & Society\n" +
 				"(?i:Oral Communication)|Oral Communications\n" +
-				"(?i:Written Communications)|Written Communication"
+				"(?i:Written Communications)|Written Communication\n" +
+				"(?i:Oral/Written Communications)|Communication"
 				);
 	}
 	

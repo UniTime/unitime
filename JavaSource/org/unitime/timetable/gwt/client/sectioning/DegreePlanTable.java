@@ -238,6 +238,106 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 				fixSelection(requests, g, group);
 	}
 	
+	protected void addCourse(int depth, int maxDepth, CourseRequestInterface requests, DegreeGroupInterface group, DegreeCourseInterface course) {
+		if (!course.hasCourses()) {
+			List<Widget> row = new ArrayList<Widget>();
+			P indent = new P("indent");
+			for (int d = 1; d < depth; d++)
+				indent.add(new Image(RESOURCES.indentMiddleLine()));
+			for (int d = depth + 1; d <= maxDepth; d++)
+				indent.add(new Image(RESOURCES.indentBlankSpace()));
+			row.add(indent);
+			if (group.isChoice()) {
+				row.add(new ChoiceButton(group, course));
+				row.add(new CourseLabel(MESSAGES.course(course.getSubject(), course.getCourse()), true));
+			} else {
+				row.add(new CourseLabel(MESSAGES.course(course.getSubject(), course.getCourse()), false));
+			}
+			row.add(new TitleLabel(course.getTitle() == null ? "" : course.getTitle()));
+			row.add(new CourseNotOfferedLabel(MESSAGES.plannedCourseNotOffered(MESSAGES.course(course.getSubject(), course.getCourse()))));
+			if (course.isCritical())
+				row.add(new Image(RESOURCES.requestsCritical()));
+			else
+				row.add(new Label());
+			addRow(course, row);
+		} else if (course.getCourses().size() > 1 && !group.isChoice()) {
+			List<Widget> row = new ArrayList<Widget>();
+			P indent = new P("indent");
+			for (int d = 1; d < depth; d++)
+				indent.add(new Image(RESOURCES.indentMiddleLine()));
+			indent.add(new Image(RESOURCES.indentTopLine()));
+			for (int d = depth + 2; d <= maxDepth; d++)
+				indent.add(new Image(RESOURCES.indentTopSpace()));
+			row.add(indent);
+			if (group.isChoice() && !course.hasCourses()) {
+				row.add(new ChoiceButton(group, course));
+				row.add(new GroupTitleCell(course.hasTitle() ? MESSAGES.courseNameWithTitle(course.getSubject(), course.getCourse(), course.getTitle()) : MESSAGES.course(course.getSubject(), course.getCourse()), true));
+			} else {
+				row.add(new GroupTitleCell(course.hasTitle() ? MESSAGES.courseNameWithTitle(course.getSubject(), course.getCourse(), course.getTitle()) : MESSAGES.course(course.getSubject(), course.getCourse()), false));
+			}
+			if (group.isCritical())
+				row.add(new CriticalCell(course));
+			else
+				row.add(new Label());
+			addRow(course, row);
+		}
+		if (course.hasCourses()) {
+			for (Iterator<CourseAssignment> i = course.getCourses().iterator(); i.hasNext(); ) {
+				CourseAssignment ca = i.next();
+				List<Widget> row = new ArrayList<Widget>();
+				P indent = new P("indent");
+				for (int d = 1; d < depth; d++)
+					indent.add(new Image(RESOURCES.indentMiddleLine()));
+				if (course.getCourses().size() == 1 || group.isChoice())
+					indent.add(new Image(RESOURCES.indentBlankSpace()));
+				else if (i.hasNext())
+					indent.add(new Image(RESOURCES.indentMiddleLine()));
+				else
+					indent.add(new Image(RESOURCES.indentLastLine()));
+				for (int d = depth + 2; d <= maxDepth; d++)
+					indent.add(new Image(RESOURCES.indentBlankSpace()));
+				row.add(indent);
+				if (group.isChoice()) {
+					row.add(new ChoiceButton(group, course, ca));
+					row.add(new CourseLabel(MESSAGES.course(ca.getSubject(), ca.getCourseNbr()), true));
+				} else if (course.hasMultipleCourses()) {
+					row.add(new ChoiceButton(course, ca));
+					row.add(new CourseLabel(MESSAGES.course(ca.getSubject(), ca.getCourseNbr()), true));
+				} else {
+					row.add(new CourseLabel(MESSAGES.course(ca.getSubject(), ca.getCourseNbr()), false));
+				}
+				row.add(new TitleLabel(ca.getTitle() == null ? "" : ca.getTitle()));
+				row.add(new HTML(ca.getLimit() == null || ca.getLimit() == 0 || ca.getEnrollment() == null ? "" : ca.getLimit() < 0 ? "&infin;" : (ca.getLimit() - ca.getEnrollment()) + " / " + ca.getLimit(), false));
+				row.add(new Label(ca.hasCredit() ? ca.getCreditAbbv() : "", false));
+				row.add(new NoteCell(ca.getNote()));
+				row.add(new RequestPriorityCell(requests, ca));
+				Image icon = null;
+				if (isSaved(ca)) {
+					if (isLast(ca)) {
+						icon = new Image(RESOURCES.saved());
+						icon.setTitle(MESSAGES.saved(MESSAGES.course(ca.getSubject(), ca.getCourseNbr())));
+					} else {
+						icon = new Image(RESOURCES.unassignment());
+						icon.setTitle(MESSAGES.unassignment(MESSAGES.course(ca.getSubject(), ca.getCourseNbr())));
+					}
+				} else if (isLast(ca)) {
+					icon = new Image(RESOURCES.assignment());
+					icon.setTitle(MESSAGES.assignment(MESSAGES.course(ca.getSubject(), ca.getCourseNbr())));
+				}
+				if (icon != null) {
+					icon.addStyleName("icon");
+					row.add(icon);
+				} else
+					row.add(new Label());
+				if (course.isCritical() && !(course.getCourses().size() > 1 && !group.isChoice()))
+					row.add(new CriticalCell(course));
+				else
+					row.add(new Label());
+				addRow(ca, row);
+			}
+		}
+	}
+	
 	protected void addGroup(int depth, int maxDepth, CourseRequestInterface requests, DegreeGroupInterface group, DegreeGroupInterface parent) {
 		if (depth > 1) {
 			List<Widget> row = new ArrayList<Widget>();
@@ -262,108 +362,26 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		}
 		if (group.hasCourses()) {
 			for (DegreeCourseInterface course: group.getCourses()) {
-				if (!course.hasCourses()) {
-					List<Widget> row = new ArrayList<Widget>();
-					P indent = new P("indent");
-					for (int d = 1; d < depth; d++)
-						indent.add(new Image(RESOURCES.indentMiddleLine()));
-					for (int d = depth + 1; d <= maxDepth; d++)
-						indent.add(new Image(RESOURCES.indentBlankSpace()));
-					row.add(indent);
-					if (group.isChoice()) {
-						row.add(new ChoiceButton(group, course));
-						row.add(new CourseLabel(MESSAGES.course(course.getSubject(), course.getCourse()), true));
-					} else {
-						row.add(new CourseLabel(MESSAGES.course(course.getSubject(), course.getCourse()), false));
-					}
-					row.add(new TitleLabel(course.getTitle() == null ? "" : course.getTitle()));
-					row.add(new CourseNotOfferedLabel(MESSAGES.plannedCourseNotOffered(MESSAGES.course(course.getSubject(), course.getCourse()))));
-					if (course.isCritical())
-						row.add(new Image(RESOURCES.requestsCritical()));
-					else
-						row.add(new Label());
-					addRow(course, row);
-				} else if (course.getCourses().size() > 1 && !group.isChoice()) {
-					List<Widget> row = new ArrayList<Widget>();
-					P indent = new P("indent");
-					for (int d = 1; d < depth; d++)
-						indent.add(new Image(RESOURCES.indentMiddleLine()));
-					indent.add(new Image(RESOURCES.indentTopLine()));
-					for (int d = depth + 2; d <= maxDepth; d++)
-						indent.add(new Image(RESOURCES.indentTopSpace()));
-					row.add(indent);
-					if (group.isChoice() && !course.hasCourses()) {
-						row.add(new ChoiceButton(group, course));
-						row.add(new GroupTitleCell(course.hasTitle() ? MESSAGES.courseNameWithTitle(course.getSubject(), course.getCourse(), course.getTitle()) : MESSAGES.course(course.getSubject(), course.getCourse()), true));
-					} else {
-						row.add(new GroupTitleCell(course.hasTitle() ? MESSAGES.courseNameWithTitle(course.getSubject(), course.getCourse(), course.getTitle()) : MESSAGES.course(course.getSubject(), course.getCourse()), false));
-					}
-					if (group.isCritical())
-						row.add(new CriticalCell(course));
-					else
-						row.add(new Label());
-					addRow(course, row);
-				}
-				if (course.hasCourses()) {
-					for (Iterator<CourseAssignment> i = course.getCourses().iterator(); i.hasNext(); ) {
-						CourseAssignment ca = i.next();
-						List<Widget> row = new ArrayList<Widget>();
-						P indent = new P("indent");
-						for (int d = 1; d < depth; d++)
-							indent.add(new Image(RESOURCES.indentMiddleLine()));
-						if (course.getCourses().size() == 1 || group.isChoice())
-							indent.add(new Image(RESOURCES.indentBlankSpace()));
-						else if (i.hasNext())
-							indent.add(new Image(RESOURCES.indentMiddleLine()));
-						else
-							indent.add(new Image(RESOURCES.indentLastLine()));
-						for (int d = depth + 2; d <= maxDepth; d++)
-							indent.add(new Image(RESOURCES.indentBlankSpace()));
-						row.add(indent);
-						if (group.isChoice()) {
-							row.add(new ChoiceButton(group, course, ca));
-							row.add(new CourseLabel(MESSAGES.course(ca.getSubject(), ca.getCourseNbr()), true));
-						} else if (course.hasMultipleCourses()) {
-							row.add(new ChoiceButton(course, ca));
-							row.add(new CourseLabel(MESSAGES.course(ca.getSubject(), ca.getCourseNbr()), true));
-						} else {
-							row.add(new CourseLabel(MESSAGES.course(ca.getSubject(), ca.getCourseNbr()), false));
-						}
-						row.add(new TitleLabel(ca.getTitle() == null ? "" : ca.getTitle()));
-						row.add(new HTML(ca.getLimit() == null || ca.getLimit() == 0 || ca.getEnrollment() == null ? "" : ca.getLimit() < 0 ? "&infin;" : (ca.getLimit() - ca.getEnrollment()) + " / " + ca.getLimit(), false));
-						row.add(new Label(ca.hasCredit() ? ca.getCreditAbbv() : "", false));
-						row.add(new NoteCell(ca.getNote()));
-						row.add(new RequestPriorityCell(requests, ca));
-						Image icon = null;
-						if (isSaved(ca)) {
-							if (isLast(ca)) {
-								icon = new Image(RESOURCES.saved());
-								icon.setTitle(MESSAGES.saved(MESSAGES.course(ca.getSubject(), ca.getCourseNbr())));
-							} else {
-								icon = new Image(RESOURCES.unassignment());
-								icon.setTitle(MESSAGES.unassignment(MESSAGES.course(ca.getSubject(), ca.getCourseNbr())));
-							}
-						} else if (isLast(ca)) {
-							icon = new Image(RESOURCES.assignment());
-							icon.setTitle(MESSAGES.assignment(MESSAGES.course(ca.getSubject(), ca.getCourseNbr())));
-						}
-						if (icon != null) {
-							icon.addStyleName("icon");
-							row.add(icon);
-						} else
-							row.add(new Label());
-						if (course.isCritical() && !(course.getCourses().size() > 1 && !group.isChoice()))
-							row.add(new CriticalCell(course));
-						else
-							row.add(new Label());
-						addRow(ca, row);
-					}
-				}
+				if (course.isCritical())
+					addCourse(depth, maxDepth, requests, group, course);
 			}
 		}
 		if (group.hasGroups()) {
 			for (DegreeGroupInterface g: group.getGroups())
-				addGroup(depth + 1, maxDepth, requests, g, group);
+				if (g.isCritical() && depth == 1)
+					addGroup(depth + 1, maxDepth, requests, g, group);
+		}
+		
+		if (group.hasCourses()) {
+			for (DegreeCourseInterface course: group.getCourses()) {
+				if (!course.isCritical())
+					addCourse(depth, maxDepth, requests, group, course);
+			}
+		}
+		if (group.hasGroups()) {
+			for (DegreeGroupInterface g: group.getGroups())
+				if (!g.isCritical() || depth != 1)
+					addGroup(depth + 1, maxDepth, requests, g, group);
 		}
 		if (group.hasPlaceHolders()) {
 			for (DegreePlaceHolderInterface p: group.getPlaceHolders()) {
