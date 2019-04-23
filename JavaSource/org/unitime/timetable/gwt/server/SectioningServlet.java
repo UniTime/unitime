@@ -671,6 +671,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			throw new SectioningException(MSG.exceptionNoSuitableAcademicSessions());
 		}
 		Collections.sort(ret);
+		if (!sectioning) Collections.reverse(ret);
 		return ret;
 	}
 	
