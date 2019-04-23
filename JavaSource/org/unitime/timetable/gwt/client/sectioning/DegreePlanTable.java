@@ -20,7 +20,6 @@
 package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -42,6 +41,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestPriority;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreeCourseInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreeGroupInterface;
+import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreeMultiSelectionInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreePlaceHolderInterface;
 
 import com.google.gwt.core.client.GWT;
@@ -50,10 +50,10 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.TakesValue;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -64,13 +64,11 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 	protected static StudentSectioningResources RESOURCES = GWT.create(StudentSectioningResources.class);
 	protected static StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	
-	private StudentSectioningPage.Mode iMode;
 	private DegreePlanInterface iPlan;
 	private TakesValue<CourseRequestInterface> iRequests;
 	private AssignmentProvider iAssignments;
 	
 	public DegreePlanTable(StudentSectioningPage.Mode mode, TakesValue<CourseRequestInterface> requests, AssignmentProvider assignments) {
-		iMode = mode;
 		iRequests = requests;
 		iAssignments = assignments;
 		addStyleName("unitine-DegreePlanTable");
@@ -108,6 +106,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 			addGroup(1, plan.getGroup().getMaxDepth(), iRequests.getValue(), plan.getGroup(), null);
 		}
 		updateBackground();
+		refreshSelection();
 	}
 	
 	private int toScore(CourseRequestInterface requests, CourseRequestInterface.RequestPriority priority) {
@@ -298,10 +297,10 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 					indent.add(new Image(RESOURCES.indentBlankSpace()));
 				row.add(indent);
 				if (group.isChoice()) {
-					row.add(new ChoiceButton(group, course, ca));
+					row.add(new ChoiceButton(group, course, ca, requests));
 					row.add(new CourseLabel(MESSAGES.course(ca.getSubject(), ca.getCourseNbr()), true));
 				} else if (course.hasMultipleCourses()) {
-					row.add(new ChoiceButton(course, ca));
+					row.add(new ChoiceButton(course, ca, requests));
 					row.add(new CourseLabel(MESSAGES.course(ca.getSubject(), ca.getCourseNbr()), true));
 				} else {
 					row.add(new CourseLabel(MESSAGES.course(ca.getSubject(), ca.getCourseNbr()), false));
@@ -488,10 +487,29 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		}
 	}
 	
-	public class ChoiceButton extends RadioButton {
+	public static interface HasRefresh {
+		public void refresh();
+	}
+	
+	public void refreshSelection() {
+		for (int i = 0; i < getRowCount(); i++)
+			for (int j = 0; j < getCellCount(i); j++) {
+				Widget w = getWidget(i, j);
+				if (w != null && w instanceof HasRefresh)
+					((HasRefresh)w).refresh();
+			}
+	}
+	
+	public class ChoiceButton extends CheckBox implements HasRefresh {
+		private DegreeMultiSelectionInterface iParent;
+		private String iId;
+		
 		public ChoiceButton(final DegreeGroupInterface parent, final DegreeCourseInterface course) {
-			super(parent.getId(), "");
-			setValue(course.isSelected());
+			super("");
+			if (course.isSelected()) course.setSelected(false);
+			setEnabled(false);
+			iParent = parent; iId = course.getId();
+			refresh();
 			setTitle(MESSAGES.hintChoiceGroupSelection(MESSAGES.course(course.getSubject(), course.getCourse())));
 			addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
@@ -501,23 +519,36 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 			addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 				@Override
 				public void onValueChange(ValueChangeEvent<Boolean> event) {
-					if (parent.hasCourses()) {
-						for (DegreeCourseInterface c: parent.getCourses())
-							c.setSelected(course.getId().equals(c.getId()) ? event.getValue() : false);
-					}
-					if (parent.hasGroups()) {
-						for (DegreeGroupInterface g: parent.getGroups()) {
-							g.setSelected(false);
+					iParent.setMultiSelection(iId, event.getValue());
+					if (!iParent.hasMultiSelection() || iParent.getMultiSelection(iId) == 0) {
+						if (parent.hasCourses()) {
+							for (DegreeCourseInterface c: parent.getCourses())
+								c.setSelected(iId.equals(c.getId()) ? event.getValue() : false);
+						}
+						if (parent.hasGroups()) {
+							for (DegreeGroupInterface g: parent.getGroups()) {
+								g.setSelected(false);
+							}
 						}
 					}
 					updateBackground();
+					refreshSelection();
 				}
 			});
 		}
 		
 		public ChoiceButton(final DegreeGroupInterface parent, final DegreeGroupInterface group) {
-			super(parent.getId(), "");
-			setValue(group.isSelected());
+			super("");
+			setEnabled(false);
+			if (group.hasCourses())
+				for (DegreeCourseInterface course: group.getCourses())
+					if (course.hasCourses()) { setEnabled(true); break; }
+			iParent = parent; iId = group.getId();
+			if (!iParent.hasMultiSelection() && group.isSelected() && isEnabled())
+				iParent.setMultiSelection(iId, true);
+			if (!isEnabled() && group.isSelected())
+				group.setSelected(false);
+			refresh();
 			setTitle(MESSAGES.hintChoiceGroupSelection(group.toString(MESSAGES)));
 			addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
@@ -527,24 +558,37 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 			addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 				@Override
 				public void onValueChange(ValueChangeEvent<Boolean> event) {
-					if (parent.hasCourses()) {
-						for (DegreeCourseInterface c: parent.getCourses())
-							c.setSelected(false);
-					}
-					if (parent.hasGroups()) {
-						for (DegreeGroupInterface g: parent.getGroups()) {
-							g.setSelected(group.getId().equals(g.getId()) ? event.getValue() : false);
+					iParent.setMultiSelection(iId, event.getValue());
+					if (!iParent.hasMultiSelection() || iParent.getMultiSelection(iId) == 0) {
+						if (parent.hasCourses()) {
+							for (DegreeCourseInterface c: parent.getCourses())
+								c.setSelected(false);
+						}
+						if (parent.hasGroups()) {
+							for (DegreeGroupInterface g: parent.getGroups()) {
+								g.setSelected(iId.equals(g.getId()) ? event.getValue() : false);
+							}
 						}
 					}
 					updateBackground();
+					refreshSelection();
 				}
 			});
 		}
 		
-		public ChoiceButton(final DegreeCourseInterface parent, final CourseAssignment course) {
-			super(parent.getId(), "");
+		public ChoiceButton(final DegreeCourseInterface parent, final CourseAssignment course, CourseRequestInterface requests) {
+			super("");
+			iParent = parent; iId = parent.getId() + ":" + course.getCourseId();
+			if (!iParent.hasMultiSelection() && course.getCourseId().equals(parent.getCourseId())) {
+				iParent.setMultiSelection(iId, true);
+				RequestPriority p = requests.getRequestPriority(course);
+				if (p != null)
+					for (RequestedCourse rc: p.getRequest().getRequestedCourse()) {
+						if (parent.hasCourse(rc.getCourseId())) iParent.setMultiSelection(parent.getId() + ":" + rc.getCourseId(), true);
+					}
+			}
+			refresh();
 			setTitle(MESSAGES.hintChoiceGroupSelection(MESSAGES.course(course.getSubject(), course.getCourseNbr())));
-			setValue(course.getCourseId().equals(parent.getCourseId()));
 			addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
 					event.stopPropagation();
@@ -553,20 +597,34 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 			addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 				@Override
 				public void onValueChange(ValueChangeEvent<Boolean> event) {
-					if (event.getValue()) {
-						parent.setCourseId(course.getCourseId());
-					} else {
-						parent.setCourseId(null);
+					iParent.setMultiSelection(iId, event.getValue());
+					if (!iParent.hasMultiSelection() || iParent.getMultiSelection(iId) == 0) {
+						if (event.getValue()) {
+							parent.setCourseId(course.getCourseId());
+						} else {
+							parent.setCourseId(null);
+						}
 					}
 					updateBackground();
+					refreshSelection();
 				}
 			});
 		}
 		
-		public ChoiceButton(final DegreeGroupInterface group, final DegreeCourseInterface parent, final CourseAssignment course) {
-			super(group.getId(), "");
+		public ChoiceButton(final DegreeGroupInterface group, final DegreeCourseInterface parent, final CourseAssignment course, CourseRequestInterface requests) {
+			super("");
+			iParent = group; iId = parent.getId() + ":" + course.getCourseId();
+			if (!iParent.hasMultiSelection() && course.getCourseId().equals(parent.getCourseId())) {
+				iParent.setMultiSelection(iId, true);
+				RequestPriority p = requests.getRequestPriority(course);
+				if (p != null)
+					for (RequestedCourse rc: p.getRequest().getRequestedCourse()) {
+						DegreeCourseInterface c = group.getCourse(rc.getCourseId());
+						if (c != null) iParent.setMultiSelection(c.getId() + ":" + rc.getCourseId(), true);
+					}
+			}
+			refresh();
 			setTitle(MESSAGES.hintChoiceGroupSelection(MESSAGES.course(course.getSubject(), course.getCourseNbr())));
-			setValue(course.getCourseId().equals(parent.getCourseId()) && parent.isSelected());
 			addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
 					event.stopPropagation();
@@ -575,23 +633,34 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 			addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 				@Override
 				public void onValueChange(ValueChangeEvent<Boolean> event) {
-					if (event.getValue()) {
-						parent.setCourseId(course.getCourseId());
-					} else {
-						parent.setCourseId(null);
-					}
-					if (group.hasCourses()) {
-						for (DegreeCourseInterface c: group.getCourses())
-							c.setSelected(parent.getId().equals(c.getId()) ? event.getValue() : false);
-					}
-					if (group.hasGroups()) {
-						for (DegreeGroupInterface g: group.getGroups()) {
-							g.setSelected(false);
+					iParent.setMultiSelection(iId, event.getValue());
+					if (!iParent.hasMultiSelection() || iParent.getMultiSelection(iId) == 0) {
+						if (event.getValue()) {
+							parent.setCourseId(course.getCourseId());
+						} else {
+							parent.setCourseId(null);
+						}
+						if (group.hasCourses()) {
+							for (DegreeCourseInterface c: group.getCourses())
+								c.setSelected(parent.getId().equals(c.getId()) ? event.getValue() : false);
+						}
+						if (group.hasGroups()) {
+							for (DegreeGroupInterface g: group.getGroups()) {
+								g.setSelected(false);
+							}
 						}
 					}
 					updateBackground();
+					refreshSelection();
 				}
 			});
+		}
+
+		@Override
+		public void refresh() {
+			int selection = iParent.getMultiSelection(iId);
+			setValue(selection >= 0);
+			setText(selection < 0 ? "" : String.valueOf(1 + selection));
 		}
 	}
 	
@@ -668,7 +737,6 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 	
 	public CourseRequestInterface createRequests() {
 		CourseRequestInterface requests = iRequests.getValue();
-		boolean includeAlternatives = (iMode == StudentSectioningPage.Mode.REQUESTS);
 		// 1. delete all requests that are not assigned
 		for (Iterator<CourseRequestInterface.Request> i = requests.getCourses().iterator(); i.hasNext(); ) {
 			CourseRequestInterface.Request request = i.next();
@@ -678,7 +746,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 					RequestedCourse course = j.next();
 					if (isLast(course)) {
 						// Only drop the request if the student selected a different course (from a choice)
-						if (!includeAlternatives && iPlan.hasCourse(course) && !iPlan.isCourseSelected(course))
+						if (iPlan.hasCourse(course) && !iPlan.isCourseSelected(course))
 							j.remove();
 					} else {
 						j.remove();
@@ -703,64 +771,43 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 					}
 				}
 			}
-			if (!request.isEmpty())  requests.getCourses().add(request);
+			if (!request.isEmpty())	requests.getCourses().add(request);
 			i.remove();
 		}
 		// 3. put in all selected courses, skip those that are already in there
-		selected: for (DegreeCourseInterface course: iPlan.listSelected(includeAlternatives)) {
-			CourseAssignment ca = course.getSelectedCourse(includeAlternatives);
+		for (DegreeCourseInterface course: iPlan.listSelected(false)) {
+			CourseAssignment ca = course.getSelectedCourse(true);
 			if (ca != null) {
-				CourseRequestInterface.RequestPriority p = requests.getRequestPriority(ca);
-				if (p != null) continue selected;
-				
 				RequestedCourse rc = new RequestedCourse();
 				rc.setCourseId(ca.getCourseId());
 				rc.setCourseName(CONSTANTS.showCourseTitle() ? MESSAGES.courseNameWithTitle(ca.getSubject(), ca.getCourseNbr(), ca.getTitle()) : MESSAGES.course(ca.getSubject(), ca.getCourseNbr()));
 				rc.setCourseTitle(ca.getTitle());
 				rc.setCredit(ca.guessCreditRange());
 				
-				if (includeAlternatives) {
-					p = requests.getRequestPriority(course);
-					if (p != null) {
-						p.getRequest().getRequestedCourse().add(0, rc);
-						continue selected;
-					}
-					List<DegreeCourseInterface> alternatives = iPlan.listAlternatives(course);
-					Collections.sort(alternatives, new DegreePlanInterface.AvailabilityComparator());
-					for (DegreeCourseInterface alternative: alternatives) {
-						p = requests.getRequestPriority(alternative);
-						if (p != null) {
-							p.getRequest().getRequestedCourse().add(0, rc);
-							continue selected;
-						}
-					}
-					CourseRequestInterface.Request r = new CourseRequestInterface.Request();
-					r.addRequestedCourse(rc);
-					r.setFilter(iPlan.getPlaceHolder(course));
-					if (alternatives.size() < CONSTANTS.degreePlanMaxAlternatives())
-						for (DegreeCourseInterface alternative: alternatives) {
-							CourseAssignment altCa = alternative.getSelectedCourse(includeAlternatives);
-							if (altCa != null) {
-								RequestedCourse altRc = new RequestedCourse();
-								altRc.setCourseId(altCa.getCourseId());
-								altRc.setCourseName(CONSTANTS.showCourseTitle() ? MESSAGES.courseNameWithTitle(altCa.getSubject(), altCa.getCourseNbr(), altCa.getTitle()) : MESSAGES.course(altCa.getSubject(), altCa.getCourseNbr()));
-								altRc.setCourseTitle(altCa.getTitle());
-								altRc.setCredit(altCa.guessCreditRange());
-								r.addRequestedCourse(altRc);
-							}
-						}
-					requests.getCourses().add(r);
-				} else {
-					CourseRequestInterface.Request r = new CourseRequestInterface.Request();
-					r.addRequestedCourse(rc);
-					requests.getCourses().add(r);
-				}
-			} else if (includeAlternatives) {
-				RequestedCourse rc = new RequestedCourse();
-				rc.setCourseName(course.getCourseName());
+				CourseRequestInterface.RequestPriority p = requests.getRequestPriority(ca);
+				
+				List<CourseAssignment> alternatives = iPlan.listAlternatives(course);
+				
 				CourseRequestInterface.Request r = new CourseRequestInterface.Request();
 				r.addRequestedCourse(rc);
-				requests.getCourses().add(r);
+				if (p != null) {
+					r = p.getRequest();
+					if (r.isReadOnly()) continue;
+				} else {
+					requests.getCourses().add(r);
+				}
+				
+				r.setFilter(iPlan.getPlaceHolder(course));
+				for (CourseAssignment altCa: alternatives) {
+					p = requests.getRequestPriority(altCa);
+					if (p != null) continue;
+					RequestedCourse altRc = new RequestedCourse();
+					altRc.setCourseId(altCa.getCourseId());
+					altRc.setCourseName(CONSTANTS.showCourseTitle() ? MESSAGES.courseNameWithTitle(altCa.getSubject(), altCa.getCourseNbr(), altCa.getTitle()) : MESSAGES.course(altCa.getSubject(), altCa.getCourseNbr()));
+					altRc.setCourseTitle(altCa.getTitle());
+					altRc.setCredit(altCa.guessCreditRange());
+					r.addRequestedCourse(altRc);
+				}
 			}
 		}
 		
@@ -768,13 +815,15 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 	}
 	
 	public void updateBackground() {
-		boolean includeAlternatives = (iMode == StudentSectioningPage.Mode.REQUESTS);
 		CourseRequestInterface requests = iRequests.getValue();
 		Set<String> selectedCourses = new HashSet<String>();
 		Set<Long> selectedCourseIds = new HashSet<Long>();
 		for (DegreeCourseInterface course: iPlan.listSelected(false)) {
 			if (course.getId() != null) selectedCourses.add(course.getId());
 			if (course.getCourseId() != null) selectedCourseIds.add(course.getCourseId());
+			for (CourseAssignment ca: iPlan.listAlternatives(course)) {
+				selectedCourseIds.add(ca.getCourseId());
+			}
 		}
 		for (int row = 1; row < getRowCount(); row++) {
 			Object data = getData(row);
@@ -788,7 +837,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 					if (!requested)
 						color = "#D7FFD7"; // will be added if Apply is used
 				} else {
-					if (requested && !includeAlternatives)
+					if (requested && rp.getRequest().isCanDelete())
 						color = "#FFD7D7"; // will be removed, not enrolled
 				}
 				setBackGroundColor(row, color);

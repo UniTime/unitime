@@ -217,6 +217,8 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 		if (event.getTypeInt() == Event.ONKEYUP && (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_SPACE || event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER)) {
 			if (iDegreePlanTable.canChoose(iDegreePlanTable.getSelectedRow()))
 				iDegreePlanTable.chooseRow(iDegreePlanTable.getSelectedRow(), true);
+			event.getNativeEvent().preventDefault();
+			event.getNativeEvent().stopPropagation();
 		}
 	}
     

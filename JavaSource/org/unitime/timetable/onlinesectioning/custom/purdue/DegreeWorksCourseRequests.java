@@ -199,7 +199,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		}
 	}
 	
-	protected void fillInRequests(OnlineSectioningServer server, OnlineSectioningHelper helper, CourseRequestInterface request, XEInterface.Group group) {
+	protected void fillInRequests(final OnlineSectioningServer server, OnlineSectioningHelper helper, CourseRequestInterface request, XEInterface.Group group) {
 		if ("CH".equals(group.groupType.code)) {
 			// choice group -- pick (at least) one
 			
