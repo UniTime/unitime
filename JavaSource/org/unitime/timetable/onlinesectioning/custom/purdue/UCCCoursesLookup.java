@@ -176,7 +176,7 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 		}
 		String replacements = getPlaceHolderRenames();
 		if (replacements != null && !replacements.isEmpty()) {
-			for (String rep: replacements.split("\n")) {
+			for (String rep: replacements.split("[\r\n]")) {
 				int idx = rep.indexOf('|');
 				if (idx <= 0) continue;
 				if (query.matches(rep.substring(0, idx))) {
