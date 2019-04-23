@@ -41,7 +41,7 @@ public class Copyright extends BodyTagSupport {
     	// WARNING: Changing or removing the following copyright notice will violate the license terms.
     	// If you need a different licensing, please contact us at support@unitime.org
     	String body = 
-    		"<a class='unitime-FooterLink' href='http://www.unitime.org' tabIndex='-1'>&copy;&nbsp;2008&nbsp;-&nbsp;2018&nbsp;The&nbsp;Apereo&nbsp;Foundation</a>," + 
+    		"<a class='unitime-FooterLink' href='http://www.unitime.org' tabIndex='-1'>&copy;&nbsp;2008&nbsp;-&nbsp;2019&nbsp;The&nbsp;Apereo&nbsp;Foundation</a>," + 
     		(isBr() ? "<br>" : " ") + 
     		"<a class='unitime-FooterLink' href='http://www.unitime.org/uct_license.php' tabIndex='-1'>distributed&nbsp;under&nbsp;the&nbsp;Apache&nbsp;License,&nbsp;Version&nbsp;2.</a>";
         try {
