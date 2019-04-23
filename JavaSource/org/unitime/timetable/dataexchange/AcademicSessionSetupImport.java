@@ -720,7 +720,7 @@ public class AcademicSessionSetupImport extends BaseImport {
             Element element = (Element) it.next();
             
             String externalId = element.attributeValue("externalId");
-            String code = trim(element.attributeValue("code"), "code", 10);
+            String code = trim(element.attributeValue("code"), "code", 40);
             AcademicArea area = abbv2area.get(element.attributeValue("academicArea"));
             
             if (area == null) {
@@ -745,7 +745,7 @@ public class AcademicSessionSetupImport extends BaseImport {
             
             major.setExternalUniqueId(externalId);
             major.setCode(code);
-            major.setName(trim(element.attributeValue("name"), "name", 50));
+            major.setName(trim(element.attributeValue("name"), "name", 100));
             
             major.getAcademicAreas().clear();
             major.getAcademicAreas().add(area);
