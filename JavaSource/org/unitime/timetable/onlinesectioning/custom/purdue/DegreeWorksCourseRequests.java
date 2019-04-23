@@ -760,12 +760,14 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 	}
 	
 	public String getCriticalTerms(String bannerTerm) {
-		if (bannerTerm.endsWith("10")) {
-			return bannerTerm + "," + (Integer.parseInt(bannerTerm) + 10) + "," + (Integer.parseInt(bannerTerm) + 20);
-		} else if (bannerTerm.endsWith("20")) {
-			return bannerTerm + "," + (Integer.parseInt(bannerTerm) + 10) + "," + (Integer.parseInt(bannerTerm) + 90);
-		} else if (bannerTerm.endsWith("30")) {
-			return bannerTerm + "," + (Integer.parseInt(bannerTerm) + 80) + "," + (Integer.parseInt(bannerTerm) + 90);
+		if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.criticalIncludeFutureTerm", "true"))) {
+			if (bannerTerm.endsWith("10")) {
+				return bannerTerm + "," + (Integer.parseInt(bannerTerm) + 10) + "," + (Integer.parseInt(bannerTerm) + 20);
+			} else if (bannerTerm.endsWith("20")) {
+				return bannerTerm + "," + (Integer.parseInt(bannerTerm) + 10) + "," + (Integer.parseInt(bannerTerm) + 90);
+			} else if (bannerTerm.endsWith("30")) {
+				return bannerTerm + "," + (Integer.parseInt(bannerTerm) + 80) + "," + (Integer.parseInt(bannerTerm) + 90);
+			}
 		}
 		return bannerTerm;
 	}
