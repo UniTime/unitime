@@ -66,7 +66,7 @@
 		<TR>
 			<TD>Abbreviation:</TD>
 			<TD>
-				<html:text property="abbv" size="10" maxlength="100"/>
+				<html:text property="abbv" size="10" maxlength="10"/>
 				&nbsp;<html:errors property="abbv"/>
 			</TD>
 		</TR>
@@ -74,7 +74,7 @@
 		<TR>
 			<TD>Name:</TD>
 			<TD>
-				<html:text property="name" size="50" maxlength="100"/>
+				<html:text property="name" size="50" maxlength="50"/>
 				&nbsp;<html:errors property="name"/>
 			</TD>
 		</TR>
