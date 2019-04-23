@@ -171,7 +171,7 @@
 </logic:notEqual>
 <logic:equal name="applicationConfigForm" property="op" value="list">
 
-<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+<TABLE width="100%" border="0" cellspacing="0" cellpadding="3" class="unitime-ApplicationConfigTable">
 	<TR>
 		<TD colspan='3'>
 			<tt:section-header>

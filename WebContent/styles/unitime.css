@@ -6508,3 +6508,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-CourseFinderDialog .course-table .gwt-CheckBox {
 	white-space: nowrap;
 }
+
+.unitime-ApplicationConfigTable .unitime-LegacyWebTable td {
+	white-space: pre-wrap;
+}
