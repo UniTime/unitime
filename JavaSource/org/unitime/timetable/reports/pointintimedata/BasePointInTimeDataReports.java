@@ -70,8 +70,13 @@ public abstract class BasePointInTimeDataReports {
 		@SuppressWarnings("unchecked")
 		public Map<Long, String> getValues(UserContext user) {
 			Map<Long, String> ret = new Hashtable<Long, String>();
-			for (RefTableEntry ref: (List<RefTableEntry>)SessionDAO.getInstance().getSession().createCriteria(iReference).list())
-				ret.put(ref.getUniqueId(), ref.getLabel());
+			if (StudentSectioningStatus.class.equals(iReference)) {
+				for (StudentSectioningStatus ref: StudentSectioningStatus.findAll(user.getCurrentAcademicSessionId()))
+					ret.put(ref.getUniqueId(), ref.getLabel());
+			} else {
+				for (RefTableEntry ref: (List<RefTableEntry>)SessionDAO.getInstance().getSession().createCriteria(iReference).list())
+					ret.put(ref.getUniqueId(), ref.getLabel());
+			}
 			return ret;
 		}
 		@Override

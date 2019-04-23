@@ -72,14 +72,24 @@ public class SavedHQL extends BaseSavedHQL {
 		RefTableOptions(Class<? extends RefTableEntry> reference) { iReference = reference; }
 		public Map<Long, String> getValues(UserContext user) {
 			Map<Long, String> ret = new Hashtable<Long, String>();
-			for (RefTableEntry ref: (List<RefTableEntry>)SessionDAO.getInstance().getSession().createCriteria(iReference).setCacheable(true).list())
-				ret.put(ref.getUniqueId(), ref.getLabel());
+			if (StudentSectioningStatus.class.equals(iReference)) {
+				for (StudentSectioningStatus ref: StudentSectioningStatus.findAll(user.getCurrentAcademicSessionId()))
+					ret.put(ref.getUniqueId(), ref.getLabel());
+			} else {
+				for (RefTableEntry ref: (List<RefTableEntry>)SessionDAO.getInstance().getSession().createCriteria(iReference).setCacheable(true).list())
+					ret.put(ref.getUniqueId(), ref.getLabel());
+			}
 			return ret;
 		}
 		@Override
 		public Long lookupValue(UserContext user, String value) {
-			for (RefTableEntry ref: (List<RefTableEntry>)SessionDAO.getInstance().getSession().createCriteria(iReference).setCacheable(true).list())
-				if (value.equalsIgnoreCase(ref.getReference())) return ref.getUniqueId();
+			if (StudentSectioningStatus.class.equals(iReference)) {
+				for (StudentSectioningStatus ref: StudentSectioningStatus.findAll(user.getCurrentAcademicSessionId()))
+					if (value.equalsIgnoreCase(ref.getReference())) return ref.getUniqueId();
+			} else {
+				for (RefTableEntry ref: (List<RefTableEntry>)SessionDAO.getInstance().getSession().createCriteria(iReference).setCacheable(true).list())
+					if (value.equalsIgnoreCase(ref.getReference())) return ref.getUniqueId();
+			}
 			return null;
 		}
 		@Override

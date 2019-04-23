@@ -39,6 +39,7 @@ import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.SavedHQL;
 import org.unitime.timetable.model.Script;
 import org.unitime.timetable.model.ScriptParameter;
+import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.RefTableEntryDAO;
 import org.unitime.timetable.model.dao.ScriptDAO;
@@ -100,8 +101,13 @@ public class LoadAllScriptsBackend implements GwtRpcImplementation<LoadAllScript
 			} else if (p.getType().startsWith("reference(") && p.getType().endsWith(")")) {
 				try {
 					String clazz = p.getType().substring("reference(".length(), p.getType().length() - 1);
-					for (RefTableEntry entry: (List<RefTableEntry>)RefTableEntryDAO.getInstance().getSession().createQuery("from " + clazz).setCacheable(true).list()) {
-						parameter.addOption(entry.getReference(), entry.getLabel());
+					if ("StudentSectioningStatus".equals(clazz)) {
+						for (StudentSectioningStatus entry: StudentSectioningStatus.findAll(context.getUser().getCurrentAcademicSessionId()))
+							parameter.addOption(entry.getReference(), entry.getLabel());
+					} else {
+						for (RefTableEntry entry: (List<RefTableEntry>)RefTableEntryDAO.getInstance().getSession().createQuery("from " + clazz).setCacheable(true).list()) {
+							parameter.addOption(entry.getReference(), entry.getLabel());
+						}
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
