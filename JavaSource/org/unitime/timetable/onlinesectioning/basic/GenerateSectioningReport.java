@@ -51,7 +51,6 @@ import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Subpart;
 import org.cpsolver.studentsct.online.OnlineSectioningModel;
-import org.cpsolver.studentsct.report.SectionConflictTable;
 import org.cpsolver.studentsct.report.StudentSectioningReport;
 import org.cpsolver.studentsct.reservation.CourseReservation;
 import org.cpsolver.studentsct.reservation.CurriculumReservation;
@@ -88,6 +87,7 @@ import org.unitime.timetable.onlinesectioning.model.XReservation;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudent.XGroup;
+import org.unitime.timetable.server.sectioning.SectioningReportTypesBackend.ReportType;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 
@@ -328,7 +328,13 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 					model.addLinkedSections(linkedClassesMustBeUsed, linked);
 			}
 
-			String name = iParameters.getProperty("report", SectionConflictTable.class.getName());
+			String name = iParameters.getProperty("report", null);
+			if (name == null) {
+				String reference = iParameters.getProperty("name");
+				if (reference != null)
+					name = ReportType.valueOf(reference).getImplementation();
+			}
+			if (name == null || name.isEmpty()) return null;
 			Class<StudentSectioningReport> clazz = (Class<StudentSectioningReport>) Class.forName(name);
 			StudentSectioningReport report = clazz.getConstructor(StudentSectioningModel.class).newInstance(model);
 			
