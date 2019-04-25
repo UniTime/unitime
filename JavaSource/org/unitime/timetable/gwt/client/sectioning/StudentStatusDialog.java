@@ -185,12 +185,14 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 			}
 			if (status.hasEffectiveStart() || status.hasEffectiveStop()) {
 				if (!status.hasEffectiveStart())
-					iForm.addRow(MESSAGES.propEffectivePeriod(), new Label(MESSAGES.messageEffectivePeriodAfter(status.getEffectiveStop())));
+					iForm.addRow(MESSAGES.propEffectivePeriod(), new Label(MESSAGES.messageEffectivePeriodBefore(status.getEffectiveStop())));
 				else if (!status.hasEffectiveStop())
-					iForm.addRow(MESSAGES.propEffectivePeriod(), new Label(MESSAGES.messageEffectivePeriodBefore(status.getEffectiveStart())));
+					iForm.addRow(MESSAGES.propEffectivePeriod(), new Label(MESSAGES.messageEffectivePeriodAfter(status.getEffectiveStart())));
 				else
 					iForm.addRow(MESSAGES.propEffectivePeriod(), new Label(MESSAGES.messageEffectivePeriodBetween(status.getEffectiveStart(), status.getEffectiveStop())));
 			}
+			if (status.hasFallback())
+				iForm.addRow(MESSAGES.propFallbackStatus(), new Label(status.getFallback()));
 			if (status.hasCourseTypes())
 				iForm.addRow(MESSAGES.propCourseTypes(), new Label(status.getCourseTypes()));
 		}

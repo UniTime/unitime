@@ -6512,3 +6512,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-ApplicationConfigTable .unitime-LegacyWebTable td {
 	white-space: pre-wrap;
 }
+
+.unitime-StudentStatusDialog {
+	max-width: 800px;
+}

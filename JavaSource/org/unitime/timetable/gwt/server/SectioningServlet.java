@@ -2347,6 +2347,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		info.setCanRequire(status.hasOption(StudentSectioningStatus.Option.canreq));
 		info.setEmail(status.hasOption(StudentSectioningStatus.Option.email));
 		info.setMessage(status.getMessage());
+		if (status.getFallBackStatus() != null)
+			info.setFallback(status.getFallBackStatus().getLabel());
 		if (!status.hasOption(Option.notype)) { // all but
 			Set<String> prohibited = new TreeSet<String>();
 			for (CourseType type: types)

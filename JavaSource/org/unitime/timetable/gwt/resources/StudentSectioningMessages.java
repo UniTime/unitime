@@ -1431,6 +1431,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Message:")
 	String propStatusMessage();
 	
+	@DefaultMessage("Fallback Status:")
+	String propFallbackStatus();
+	
 	@DefaultMessage("Special Registration:")
 	String propSpecialRegistration();
 	

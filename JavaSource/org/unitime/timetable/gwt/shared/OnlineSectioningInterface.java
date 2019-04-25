@@ -239,6 +239,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private String iCourseTypes;
 		private String iEffectiveStart, iEffectiveStop;
 		private String iMessage;
+		private String iFallback;
 		
 		public StudentStatusInfo() {}
 		
@@ -304,6 +305,11 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public void setMessage(String message) { iMessage = message; }
 		public boolean hasMessage() { return iMessage != null && !iMessage.isEmpty(); }
 		public String getMessage() { return iMessage; }
+		
+		public void setFallback(String fallback) { iFallback = fallback; }
+		public boolean hasFallback() { return iFallback != null && !iFallback.isEmpty(); }
+		public String getFallback() { return iFallback; }
+
 		
 		@Override
 		public String toString() { return getReference(); }
