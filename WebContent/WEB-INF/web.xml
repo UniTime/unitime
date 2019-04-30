@@ -253,19 +253,6 @@
 	
 	<filter>
 		<filter-name>
-			Google Chrome Frame No Cache Filter
-		</filter-name>
-		<filter-class>
-			org.unitime.timetable.filter.NoCacheFilter
-		</filter-class>
-		<init-param>
-			<param-name>user-agent</param-name>
-			<param-value>chromeframe</param-value>
-		</init-param>
-	</filter>
-	
-	<filter>
-		<filter-name>
 			Locale Filter
 		</filter-name>
 		<filter-class>
@@ -278,8 +265,8 @@
 	</filter>
 	
 	<filter>
-		<filter-name>Cache Disabling Filter</filter-name>
-		<filter-class>org.unitime.timetable.filter.CacheDisablingFilter</filter-class>
+		<filter-name>JavaScript Cache Filter</filter-name>
+		<filter-class>org.unitime.timetable.filter.JavaScriptCacheFilter</filter-class>
 	</filter>
 	
 	<filter>
@@ -339,11 +326,6 @@
 	</filter-mapping>
 	
 	<filter-mapping>
-		<filter-name>Google Chrome Frame No Cache Filter</filter-name>
-		<url-pattern>*.do</url-pattern>
-	</filter-mapping>
-	
-	<filter-mapping>
 		<filter-name>Locale Filter</filter-name>
 		<url-pattern>*.do</url-pattern>
 	</filter-mapping>
@@ -369,10 +351,15 @@
 	</filter-mapping>
 	
 	<filter-mapping>
-		<filter-name>Cache Disabling Filter</filter-name>
-		<url-pattern>/unitime/unitime.nocache.js</url-pattern>
+		<filter-name>JavaScript Cache Filter</filter-name>
+		<url-pattern>*.js</url-pattern>
 	</filter-mapping>
 	
+	<filter-mapping>
+		<filter-name>JavaScript Cache Filter</filter-name>
+		<url-pattern>*.css</url-pattern>
+	</filter-mapping>
+
 	<filter-mapping>
 		<filter-name>Busy Sessions</filter-name>
 		<url-pattern>/*</url-pattern>
