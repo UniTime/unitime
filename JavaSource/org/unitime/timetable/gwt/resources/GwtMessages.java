@@ -6316,8 +6316,11 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Course<br>Requests")
 	String colAssignedCourseRequests();
 	
-	@DefaultMessage("Priority<br>Course")
+	@DefaultMessage("1st Choice<br>Assigned")
 	String colAssignedPriorityCourseRequests();
+	
+	@DefaultMessage("Critical<br>Assignments")
+	String colAssignedCriticalCourseRequests();
 	
 	@DefaultMessage("Complete<br>Schedule")
 	String colStudentsWithCompleteSchedule();

@@ -95,6 +95,7 @@ public class PublishedSectioningSolutionInterface implements IsSerializable {
 		OWNER,
 		COURSE_REQUESTS("Assigned course requests"),
 		PRIORITY_REQUESTS("Assigned priority course requests"),
+		CRITICAL("Assigned critical course requests"),
 		COMPLETE("Students with complete schedule"),
 		SELECTION("Selection"),
 		DISTANCE("Student distance conflicts"),

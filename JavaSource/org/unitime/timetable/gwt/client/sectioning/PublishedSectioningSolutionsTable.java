@@ -184,6 +184,7 @@ public class PublishedSectioningSolutionsTable extends UniTimeTable<PublishedSec
 		case OWNER: return MESSAGES.colOwner();
 		case COURSE_REQUESTS: return MESSAGES.colAssignedCourseRequests();
 		case PRIORITY_REQUESTS: return MESSAGES.colAssignedPriorityCourseRequests();
+		case CRITICAL: return MESSAGES.colAssignedCriticalCourseRequests();
 		case TIME: return MESSAGES.colTimeConflicts();
 		case DISTANCE: return MESSAGES.colDistanceConflicts();
 		case SELECTION: return MESSAGES.colSectioningSelection();
