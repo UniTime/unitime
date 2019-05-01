@@ -204,6 +204,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private boolean iCheckCriticalCourses = false;
 	private CriticalCoursesProvider iCriticalCoursesProvider = null;
 	private int iNrCheckCriticalThreads = 1;
+	private boolean iMoveCriticalCoursesUp = false;
     
     private Progress iProgress = null;
     
@@ -299,6 +300,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iMaxCreditChecking = model.getProperties().getPropertyBoolean("Load.MaxCreditChecking", iMaxCreditChecking);
         iMaxDefaultCredit = model.getProperties().getPropertyFloat("Load.DefaultMaxCredit", iMaxDefaultCredit);
         iMinDefaultCredit = model.getProperties().getPropertyFloat("Load.DefaultMinCredit", iMinDefaultCredit);
+        iMoveCriticalCoursesUp = model.getProperties().getPropertyBoolean("Load.MoveCriticalCoursesUp", iMoveCriticalCoursesUp);
         
         String classesFixedDate = getModel().getProperties().getProperty("General.ClassesFixedDate", "");
         if (!classesFixedDate.isEmpty()) {
@@ -1388,22 +1390,31 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     	}
     }
     
-    public void moveAssignedRequestsFirst(Student student) {
-    	int assigned = 0;
+    public void reorderStudentRequests(Student student) {
+    	int assigned = 0, critical = 0;
     	for (Request r: student.getRequests()) {
     		if (r instanceof CourseRequest) {
     			if (r.getInitialAssignment() != null && getAssignment().getValue(r) != null)
     				assigned ++;
+    			if (r.isCritical() && !r.isAlternative())
+    				critical ++;
     		}
     	}
-    	if (assigned > 0) {
+    	if ((getModel().isMPP() && getModel().getKeepInitialAssignments() && assigned > 0) || (iMoveCriticalCoursesUp && critical > 0)) {
 			Collections.sort(student.getRequests(), new Comparator<Request>() {
 				@Override
 				public int compare(Request r1, Request r2) {
 					if (r1.isAlternative() != r2.isAlternative()) return r1.isAlternative() ? 1 : -1;
-					boolean a1 = (r1 instanceof CourseRequest && r1.getInitialAssignment() != null && getAssignment().getValue(r1) != null);
-					boolean a2 = (r2 instanceof CourseRequest && r2.getInitialAssignment() != null && getAssignment().getValue(r2) != null);
-					if (a1 != a2) return a1 ? -1 : 1;
+					if (getModel().isMPP() && getModel().getKeepInitialAssignments()) {
+						boolean a1 = (r1 instanceof CourseRequest && r1.getInitialAssignment() != null && getAssignment().getValue(r1) != null);
+						boolean a2 = (r2 instanceof CourseRequest && r2.getInitialAssignment() != null && getAssignment().getValue(r2) != null);
+						if (a1 != a2) return a1 ? -1 : 1;
+					}
+					if (iMoveCriticalCoursesUp) {
+						boolean c1 = (r1 instanceof CourseRequest && r1.isCritical());
+						boolean c2 = (r2 instanceof CourseRequest && r2.isCritical());
+						if (c1 != c2) return c1 ? -1 : 1;
+					}
 					return r1.getPriority() < r2.getPriority() ? -1 : 1;
 				}
 			});
@@ -2039,7 +2050,13 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	setPhase("Moving assigned requests first...", getModel().getStudents().size());
             for (Student student: getModel().getStudents()) {
             	incProgress();
-            	moveAssignedRequestsFirst(student);
+            	reorderStudentRequests(student);
+            }
+        } else if (iMoveCriticalCoursesUp) {
+        	setPhase("Moving critical requests first...", getModel().getStudents().size());
+            for (Student student: getModel().getStudents()) {
+            	incProgress();
+            	reorderStudentRequests(student);
             }
         }
         
