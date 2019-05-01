@@ -64,13 +64,13 @@ public interface StudentSectioningConstants extends Constants {
 	@DoNotTranslate
 	String[] freeTimePeriods();
 	
-	@DefaultStringArrayValue({"Mon", "Tue", "Wed", "Thu", "Fri"})
+	@DefaultStringArrayValue({"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"})
 	String[] freeTimeDays();
 	
 	@DefaultStringArrayValue({"M", "T", "W", "R", "F", "S", "U"})
 	String[] freeTimeShortDays();
 	
-	@DefaultStringArrayValue({"Monday", "Tuesday", "Wednesday", "Thursday", "Friday"})
+	@DefaultStringArrayValue({"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"})
 	String[] freeTimeLongDays();
 
 	@DefaultStringArrayValue({"0", "2", "6", "8", "12", "14", "15", "16", "17", "18", "19", "20"})
