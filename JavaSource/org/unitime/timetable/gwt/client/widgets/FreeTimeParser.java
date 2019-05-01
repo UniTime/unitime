@@ -85,10 +85,21 @@ public class FreeTimeParser implements DataProvider<String, List<CourseRequestIn
 				}
 				for (int i=0; i<CONSTANTS.days().length; i++) {
 					if (token.toLowerCase().startsWith(CONSTANTS.days()[i].substring(0,2).toLowerCase())) {
-						days.add(i);
-						token = token.substring(2);
-						while (token.startsWith(" ")) token = token.substring(1);
-						found = true;
+						boolean first = false, second = false;
+						for (String d: CONSTANTS.shortDays()) {
+							if (token.substring(0, 1).equalsIgnoreCase(d)) first = true;
+							if (token.substring(1, 2).equalsIgnoreCase(d)) second = true;
+						}
+						for (String d: CONSTANTS.freeTimeShortDays()) {
+							if (token.substring(0, 1).equalsIgnoreCase(d)) first = true;
+							if (token.substring(1, 2).equalsIgnoreCase(d)) second = true;
+						}
+						if (!first || !second) {
+							days.add(i);
+							token = token.substring(2);
+							while (token.startsWith(" ")) token = token.substring(1);
+							found = true;
+						}
 					}
 				}
 				for (int i=0; i<CONSTANTS.shortDays().length; i++) {
