@@ -182,7 +182,7 @@ public class TaskDetail extends SimpleForm implements TakesValue<TaskInterface> 
 					} catch (Exception e) {}
 				}
 				if ("file".equalsIgnoreCase(parameter.getType()) && value != null) {
-					addRow(parameter.getLabel() + ":", new Anchor(value, GWT.getHostPageBaseURL() + "/taskfile?t=" + iTask.getId()));
+					addRow(parameter.getLabel() + ":", new Anchor(value, GWT.getHostPageBaseURL() + "taskfile?t=" + iTask.getId()));
 				} else {
 					addRow(parameter.getLabel() + ":", new HTML(value == null ? "<i>" + MESSAGES.notSet() + "</i>" : value));
 				}

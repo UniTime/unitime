@@ -194,7 +194,7 @@ public class TaskExecutionsTable extends UniTimeTable<TaskExecutionInterface> im
 				message.setTitle(e.getStatusMessage());
 			return message;
 		case OUTPUT:
-			if (e.getOutput() != null) return new Anchor(e.getOutput(), GWT.getHostPageBaseURL() + "/taskfile?e=" + e.getId());
+			if (e.getOutput() != null) return new Anchor(e.getOutput(), GWT.getHostPageBaseURL() + "taskfile?e=" + e.getId());
 			return new Label("");
 		default:
 			return null;
