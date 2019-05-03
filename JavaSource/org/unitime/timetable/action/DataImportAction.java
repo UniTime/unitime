@@ -206,6 +206,7 @@ public class DataImportAction extends Action {
 		String iUrl;
 		boolean iImport;
 		String iSessionName;
+		String iFileName = null;
 		
 		public DataExchangeQueueItem(Session session, UserContext owner, DataImportForm form, HttpServletRequest request, boolean isImport) {
 			super(session, owner);
@@ -213,6 +214,7 @@ public class DataImportAction extends Action {
 			iUrl = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath();
 			iImport = isImport;
 			iSessionName = session.getAcademicTerm() + session.getAcademicYear() + session.getAcademicInitiative();
+			if (iForm.getFile() != null) iFileName = iForm.getFile().getFileName();
 		}
 				
 		@Override
@@ -222,7 +224,7 @@ public class DataImportAction extends Action {
 		
 		@Override
 		public String name() {
-			return (iImport ? "Import of " + iForm.getFile().getFileName() : "Export of " + iForm.getExportType().getLabel());
+			return (iImport ? "Import of " + iFileName : "Export of " + iForm.getExportType().getLabel());
 		}
 		
 		public void println(String message) {
