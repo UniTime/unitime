@@ -1799,9 +1799,6 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					clazz.setSchedulePrintNote(scheduleNote);
 					clazz.setCancelled(cancelled);
 					clazz.setDisplayInstructor(new Boolean(true));
-					if (managingDept != null){
-						clazz.setManagingDept(managingDept);
-					}
 					if(parentClass != null){
 						clazz.setParentClass(parentClass);
 						parentClass.addTochildClasses(clazz);
@@ -1813,6 +1810,9 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 							ss.addToclasses(clazz);
 							break;
 						}
+					}
+					if (managingDept != null){
+						clazz.setManagingDept(managingDept);
 					}
 					clazz.setClassInstructors(new HashSet<ClassInstructor>());
 					addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' matching class not found adding new class");
