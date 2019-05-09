@@ -574,7 +574,7 @@ public class CurriculaServlet implements CurriculaService {
 						idx = classifications.get(clasfIfc.getAcademicClassification().getId());
 						Hashtable<Long, Integer> course2enrl = clasf2course2enrl.get(clasfIfc.getAcademicClassification().getId());
 						Hashtable<Long, Integer> course2req = clasf2course2req.get(clasfIfc.getAcademicClassification().getId());
-						Hashtable<String, Hashtable<Long, Integer>> major2course2ll = clasfMajor2course2ll.get(clasfIfc.getAcademicClassification().getId());
+						Hashtable<String, Hashtable<Long, Integer>> major2course2ll = clasfMajor2course2ll.get(clasfIfc.getAcademicClassification().getCode());
 						for (CourseInterface courseIfc: curriculumIfc.getCourses()) {
 							CurriculumCourseInterface curCourseIfc = courseIfc.getCurriculumCourse(idx);
 							if (curCourseIfc != null) {
@@ -1813,7 +1813,7 @@ public class CurriculaServlet implements CurriculaService {
 							Set<Long> e = (clasf2enrl == null ? null : clasf2enrl.get(clasf.getId()));
 							if (e != null) {
 								enrl += e.size();
-								clasf2enrl.remove(-1l);
+								clasf2enrl.remove(clasf.getId());
 							}
 						} else {
 							Set<Long> s = new HashSet<Long>();
@@ -1882,7 +1882,7 @@ public class CurriculaServlet implements CurriculaService {
 							Set<Long> e = (clasf2ll == null ? null : clasf2ll.get(clasf.getCode()));
 							if (e != null) {
 								lastLike += e.size();
-								clasf2ll.remove(-1l);
+								clasf2ll.remove(clasf.getCode());
 							}
 						} else {
 							Set<Long> s = new HashSet<Long>();
@@ -1898,7 +1898,7 @@ public class CurriculaServlet implements CurriculaService {
 										snapshotProj += getSnapshotProjection(snapshotRules, entry.getKey(),
 												clasf.getCode()) * add;
 									}
-									clasf2ll.remove(clasf.getId());
+									clasf2ll.remove(clasf.getCode());
 								}
 							}
 							lastLike += s.size();
