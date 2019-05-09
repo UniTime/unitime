@@ -121,6 +121,17 @@
 		</item>
 	</category>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Student Course Demands</name>
+			<description>
+				<line>Course Requests With Projected Last Likes: added ability to combine pre-registration (course requests) with projected last-like course enrollment data.
+					<line>Course Requests take precedence, Last-Likes are weighted to fill the remaining space based on the curriculum projection rules.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Event Management</title>
 		<item>
 			<name>Permissions</name>
