@@ -418,22 +418,22 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 	public static class CurriculumInfo implements IsSerializable, Serializable, Comparable<CurriculumInfo> {
 		private static final long serialVersionUID = 1L;
 		private String iName;
-		private int iNrStudents;
+		private double iNrStudents;
 		
 		public CurriculumInfo() {}
-		public CurriculumInfo(String name, int nrStudents) {
+		public CurriculumInfo(String name, double nrStudents) {
 			iName = name;
 			iNrStudents = nrStudents;
 		}
 		
 		public void setName(String name) { iName = name; }
 		public String getName() { return iName; }
-		public void setNrStudents(int nrStudents) { iNrStudents = nrStudents; }
-		public int getNrStudents() { return iNrStudents; }
+		public void setNrStudents(double nrStudents) { iNrStudents = nrStudents; }
+		public double getNrStudents() { return iNrStudents; }
 		
 		public int compareTo(CurriculumInfo i) {
 			if (getNrStudents() != i.getNrStudents())
-				return (i.getNrStudents() > getNrStudents() ? -1 : 1);
+				return (getNrStudents() > i.getNrStudents() ? -1 : 1);
 			return getName().compareTo(i.getName());
 		}
 	}

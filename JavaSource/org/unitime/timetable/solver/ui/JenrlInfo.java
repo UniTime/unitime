@@ -209,6 +209,7 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 		for (CurriculumInfo i: iCurriculum2nrStudents) {
 			double fraction = i.getNrStudents() / total;
 			if (top < 3) {
+				if (fraction < 0.01) break;
 				top++;
 				if (!ret.isEmpty()) ret += ", ";
 				ret += sDF.format(100.0 * fraction) + "% " + i.getName();

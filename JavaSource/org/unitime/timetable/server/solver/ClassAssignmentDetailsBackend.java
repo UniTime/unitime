@@ -433,7 +433,7 @@ public class ClassAssignmentDetailsBackend implements GwtRpcImplementation<Class
 		ret.setDistance(info.getDistance());
 		if (info.hasCurricula())
 			for (org.unitime.timetable.solver.ui.JenrlInfo.CurriculumInfo cur: info.getCurricula())
-				ret.addCurriculum(new CurriculumInfo(cur.getName(), (int)Math.round(cur.getNrStudents())));
+				ret.addCurriculum(new CurriculumInfo(cur.getName(), cur.getNrStudents()));
 		return ret;
 	}
 	

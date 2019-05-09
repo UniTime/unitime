@@ -226,6 +226,7 @@ public abstract class SuggestionsPageContext {
 			double fraction = i.getNrStudents() / total;
 			if (top < 3) {
 				top++;
+				if (fraction < 0.01) break;
 				if (!ret.isEmpty()) ret += CONSTANTS.itemSeparator();
 				ret += ((int)Math.round(100.0 * fraction)) + "% " + i.getName();
 				if (fraction == 1.0) return i.getName();
