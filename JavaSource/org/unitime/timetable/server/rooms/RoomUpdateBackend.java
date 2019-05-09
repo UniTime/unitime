@@ -996,7 +996,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				Set<RoomFeature> features = new HashSet<RoomFeature>(location.getFeatures());
 				for (FeatureInterface f: room.getFeatures()) {
 					RoomFeature feature = lookupFeature(hibSession, f, future, location.getSession().getUniqueId());
-					if (feature != null && !features.remove(feature.getUniqueId())) {
+					if (feature != null && !features.remove(feature)) {
 						if (feature instanceof GlobalRoomFeature && !editGlobalFeatures) continue;
 						if (feature instanceof DepartmentRoomFeature && !deptIndependent && !context.getUser().getCurrentAuthority().hasQualifier(((DepartmentRoomFeature)feature).getDepartment())) continue;
 						location.getFeatures().add(feature);

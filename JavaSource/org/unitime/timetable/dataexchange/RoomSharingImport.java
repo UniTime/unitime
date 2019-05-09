@@ -77,7 +77,7 @@ public class RoomSharingImport  extends BaseImport {
             Map<String, Location> id2location = new HashMap<String, Location>();
             Map<String, Location> name2location = new HashMap<String, Location>();
             for (Location location: (List<Location>)getHibSession().createQuery("from Location where session.uniqueId = :sessionId").setLong("sessionId", session.getUniqueId()).list()) {
-            	if (location.getExternalUniqueId() != null && !avoidRoomId.contains(avoidRoomId)) {
+            	if (location.getExternalUniqueId() != null && !avoidRoomId.contains(location.getExternalUniqueId())) {
             		Location old = id2location.put(location.getExternalUniqueId(), location);
             		if (old != null) {
             			warn("There are two or more rooms with the same external id " + location.getExternalUniqueId() + ": " + location.getLabel() + " and " + old.getLabel() + ".");

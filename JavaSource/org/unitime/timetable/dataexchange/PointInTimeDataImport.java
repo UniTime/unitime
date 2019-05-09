@@ -1607,11 +1607,11 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			pss.setStudentAllowOverlap(getRequiredBooleanAttribute(subpartElement, PointInTimeDataExport.sStudentAllowOverlapAttribute, PointInTimeDataExport.sSubpartElementName));
 			String creditTypeStr = getOptionalStringAttribute(subpartElement, PointInTimeDataExport.sCreditTypeAttribute);
 			if (creditTypeStr != null) {
-				pss.setCreditType(creditTypes.get(new Integer(creditTypeStr)));
+				pss.setCreditType(creditTypes.get(new Long(creditTypeStr)));
 			}
 			String creditUnitTypeStr = getOptionalStringAttribute(subpartElement, PointInTimeDataExport.sCreditUnitTypeAttribute);
 			if (creditUnitTypeStr != null) {
-				pss.setCreditUnitType(creditUnitTypes.get(new Integer(creditUnitTypeStr)));
+				pss.setCreditUnitType(creditUnitTypes.get(new Long(creditUnitTypeStr)));
 			}
 			String creditStr = getOptionalStringAttribute(subpartElement, PointInTimeDataExport.sCreditAttribute);
 			if (creditStr != null){

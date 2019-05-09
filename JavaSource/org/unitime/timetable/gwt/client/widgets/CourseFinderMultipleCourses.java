@@ -284,7 +284,7 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 						List<Widget> line = new ArrayList<Widget>();
 						CheckBox ch = new CheckBox();
 						ch.setValue(iCheckedCourses.contains(new RequestedCourse(record, CONSTANTS.showCourseTitle())));
-						ch.setText(ch.getValue() ? String.valueOf(iCheckedCourses.indexOf(record.getCourseId()) + 1) : "");
+						ch.setText(ch.getValue() ? String.valueOf(iCheckedCourses.indexOf(new RequestedCourse(record, CONSTANTS.showCourseTitle())) + 1) : "");
 						ch.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 							@Override
 							public void onValueChange(ValueChangeEvent<Boolean> event) {
