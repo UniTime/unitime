@@ -127,6 +127,11 @@
     	<servlet-class>org.unitime.timetable.api.ApiServlet</servlet-class>
     </servlet>
     
+    <servlet>
+    	<servlet-name>mapServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.server.rooms.StaticMapServlet</servlet-class>
+    </servlet>
+    
     <servlet-mapping>
         <servlet-name>gwt-dispatcher</servlet-name>
         <url-pattern>*.gwt</url-pattern>
@@ -175,6 +180,11 @@
     <servlet-mapping>
       <servlet-name>apiServlet</servlet-name>
       <url-pattern>/api/*</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+      <servlet-name>mapServlet</servlet-name>
+      <url-pattern>/maps</url-pattern>
     </servlet-mapping>
 
 	<!-- Servlet Mappings -->
