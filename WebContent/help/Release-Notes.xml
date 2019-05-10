@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <?xml-stylesheet type="text/css" href="Release-Notes.css"?>
 <!DOCTYPE release-history PUBLIC "-//UniTime//UniTime Release Notes DTD/EN" "Release-Notes.dtd">
-<!-- 
+<!--
  * Licensed to The Apereo Foundation under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
  * additional information regarding copyright ownership.
@@ -18,7 +18,7 @@
  *
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  -->
 
 <release-history>
@@ -127,6 +127,19 @@
 			<description>
 				<line>Course Requests With Projected Last Likes: added ability to combine pre-registration (course requests) with projected last-like course enrollment data.
 					<line>Course Requests take precedence, Last-Likes are weighted to fill the remaining space based on the curriculum projection rules.</line>
+				</line>
+				<line>Student Course Requests: Improved ability to consider course request alternatives.
+					<line>Alternatives are either ignored (when StudentCourseRequests.IncludeAlternatives is false).</line>
+					<line>Student weight is spread between the requested course and its alternatives, student conflicts between
+						alternatives are ignored (when StudentCourseRequests.IncludeAlternatives is true, which is the default).</line>
+				</line>
+				<line>Curricula Requests Course Demands: improved ability to consider course request alternatives.
+					<line>Alternatives are either ignored (when StudentCourseRequests.IncludeAlternatives is false).
+						Course requests are included in the curriculum problem.</line>
+					<line>Student weight is spread between the requested course and its alternatives, student conflicts between alternatives are
+						ignored (when StudentCourseRequests.IncludeAlternatives is true, which is the default).
+						While course requests (without alternatives) are included in the curriculum, true requests with alternatives
+						are used in the timetabling for students that are not made up.</line>
 				</line>
 			</description>
 		</item>

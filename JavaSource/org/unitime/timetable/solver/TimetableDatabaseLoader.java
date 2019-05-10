@@ -2431,6 +2431,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		incProgress();
     		if (courses == null) continue;
     		for (WeightedCourseOffering course: courses) {
+    			if (course.getPrimaryOfferingId() != null)
+    				student.addAlternatives(course.getPrimaryOfferingId(), course.getCourseOffering().getInstructionalOffering().getUniqueId());
     			if (offeringsToAvoid.contains(course.getCourseOffering().getInstructionalOffering().getUniqueId())) continue;
     			if (!somehowEnroll(student, course.getCourseOffering(), course.getWeight(), iStudentCourseDemands.getEnrollmentPriority(student.getId(), course.getCourseOfferingId())))
     				offeringsToAvoid.add(course.getCourseOffering().getInstructionalOffering().getUniqueId());
@@ -3036,6 +3038,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         					student.addGroup(group);
         				}
         			}
+        			if (studentId.getPrimaryOfferingId() != null)
+        				student.addAlternatives(studentId.getPrimaryOfferingId(), offering.getUniqueId());
         			student.addOffering(offering.getUniqueId(), weight * studentId.getWeight(), iStudentCourseDemands.getEnrollmentPriority(studentId.getStudentId(), course.getUniqueId()));
         			
                     Set<Student> students = iCourse2students.get(course);

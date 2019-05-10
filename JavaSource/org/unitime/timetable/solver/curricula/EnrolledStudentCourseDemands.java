@@ -63,7 +63,7 @@ public class EnrolledStudentCourseDemands implements StudentCourseDemands {
 			}
 			WeightedStudentId studentId = new WeightedStudentId(student);
 			students.add(studentId);
-			Set<WeightedCourseOffering> courses = iStudentRequests.get(studentId);
+			Set<WeightedCourseOffering> courses = iStudentRequests.get(student.getUniqueId());
 			if (courses == null) {
 				courses = new HashSet<WeightedCourseOffering>();
 				iStudentRequests.put(student.getUniqueId(), courses);

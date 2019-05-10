@@ -167,6 +167,7 @@ public interface StudentCourseDemands {
 		private Set<AreaClasfMajor> iMajors = new TreeSet<AreaClasfMajor>();
 		private Set<String> iCurricula = new TreeSet<String>();
 		private Set<Group> iGroups = new HashSet<Group>();
+		private Long iPrimaryOfferingId = null;
 		
 		public WeightedStudentId(WeightedStudentId student, float weight) {
 			iStudentId = student.iStudentId;
@@ -176,9 +177,9 @@ public interface StudentCourseDemands {
 			iGroups.addAll(student.iGroups);
 		}
 		
-		public WeightedStudentId(Student student, ProjectionsProvider projections) {
+		public WeightedStudentId(Student student, ProjectionsProvider projections, float weight) {
 			iStudentId = student.getUniqueId();
-			iWeight = 1.0f;
+			iWeight = weight;
 			float rule = 1.0f; int cnt = 0;
 			for (StudentAreaClassificationMajor acm: student.getAreaClasfMajors()) {
 				iMajors.add(new AreaClasfMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode()));
@@ -234,8 +235,16 @@ public interface StudentCourseDemands {
 			iWeight = 1.0f;
 		}
 		
+		public WeightedStudentId(Student student, ProjectionsProvider projections) {
+			this(student, projections, 1.0f);
+		}
+		
+		public WeightedStudentId(Student student, float weight) {
+			this(student, null, weight);
+		}
+		
 		public WeightedStudentId(Student student) {
-			this(student, null);
+			this(student, null, 1.0f);
 		}
 		
 		public WeightedStudentId(Long studentId, CurriculumClassification cc) {
@@ -257,6 +266,9 @@ public interface StudentCourseDemands {
 		public void setCurriculum(String curriculum) {
 			iCurricula.clear(); iCurricula.add(curriculum);
 		}
+		
+		public void setPrimaryOfferingId(Long offeringId) { iPrimaryOfferingId = offeringId; }
+		public Long getPrimaryOfferingId() { return iPrimaryOfferingId; }
 		
 		public Set<AreaClasfMajor> getMajors() { return iMajors; }
 		
@@ -351,6 +363,7 @@ public interface StudentCourseDemands {
 	public static class WeightedCourseOffering {
 		private transient CourseOffering iCourseOffering = null;
 		private long iCourseOfferingId;
+		private Long iPrimaryOfferingId;
 		private float iWeight = 1.0f;
 		
 		public WeightedCourseOffering(CourseOffering courseOffering) {
@@ -382,6 +395,9 @@ public interface StudentCourseDemands {
 		public float getWeight() {
 			return iWeight;
 		}
+		
+		public void setPrimaryOfferingId(Long offeringId) { iPrimaryOfferingId = offeringId; }
+		public Long getPrimaryOfferingId() { return iPrimaryOfferingId; }
 
 		@Override
 		public int hashCode() {

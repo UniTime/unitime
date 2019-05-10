@@ -176,7 +176,7 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands, Nee
 		List<Object[]> lines = null;
 		String select = "distinct co, s";
 		String from = "CourseRequest r inner join r.courseOffering co inner join r.courseDemand.student s inner join s.areaClasfMajors a";
-		String where = "s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :acadAreaId and a.academicClassification.uniqueId = :clasfId";
+		String where = "s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :acadAreaId and a.academicClassification.uniqueId = :clasfId and r.order = 0";
 		if (cc.getCurriculum().getMajors().isEmpty()) {
 			// students with no major
 			if (!cc.getCurriculum().isMultipleMajors())
@@ -462,7 +462,7 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands, Nee
 			for (CurriculumCourse course: courses) {
 				Set<WeightedStudentId> requests = (iCourseRequests == null ? null : iCourseRequests.get(course.getCourse()));
 				double size =
-						w * factor * (requests == null ? 0 : requests.size()) +
+						factor * (requests == null ? 0 : requests.size()) +
 						(1 - w) * nrStudents * course.getPercShare();
 				/*
 				if (factor > 1.0f)
@@ -551,6 +551,21 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands, Nee
 					student = iMadeUpStudents.get(idx++);
 				} else {
 					student = iStudentIds.get(s.getStudentId());
+				}
+				if (iStudentCourseRequests.isIncludeAlternatives() && s.getStudentId() > 0) {
+					Set<WeightedCourseOffering> studentCourses = iStudentCourseRequests.getCourses(s.getStudentId());
+					iStudentRequests.put(student.getStudentId(), studentCourses);
+					for (WeightedCourseOffering course: studentCourses) {
+						Set<WeightedStudentId> courseStudents = iDemands.get(course.getCourseOfferingId());
+						if (courseStudents == null) {
+							courseStudents = new HashSet<WeightedStudentId>();
+							iDemands.put(course.getCourseOfferingId(), courseStudents);
+						}
+						WeightedStudentId copy = new WeightedStudentId(student, course.getWeight() * student.getWeight());
+						copy.setPrimaryOfferingId(course.getPrimaryOfferingId());
+						courseStudents.add(copy);
+					}
+					continue;
 				}
 				Set<WeightedCourseOffering> studentCourses = new HashSet<WeightedCourseOffering>();
 				iStudentRequests.put(student.getStudentId(), studentCourses);
