@@ -1659,6 +1659,11 @@ public enum ApplicationProperty {
 	@Description("Rooms: use Leaflet maps to enter room / building coordinates")
 	RoomUseLeafletMap("unitime.coordinates.leafletmap"),
 	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Rooms: Laflet maps cache map tiles.")
+	RoomCacheLeafletMapTiles("unitime.coordinates.leafletmap.cacheTiles"),
+	
 	@Type(String.class)
 	@DefaultValue("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
 	@Description("Rooms: Laflet maps tiles url template.")

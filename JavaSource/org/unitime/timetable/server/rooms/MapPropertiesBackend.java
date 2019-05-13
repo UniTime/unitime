@@ -43,7 +43,7 @@ public class MapPropertiesBackend implements GwtRpcImplementation<MapPropertiesR
 		response.setGoogleMapApiKey(ApplicationProperty.GoogleMapsApiKey.value());
 		
 		response.setLeafletMap(!response.isGoogleMap() && ApplicationProperty.RoomUseLeafletMap.isTrue());
-		response.setLeafletMapTiles(ApplicationProperty.RoomUseLeafletMapTiles.value());
+		response.setLeafletMapTiles(ApplicationProperty.RoomCacheLeafletMapTiles.isTrue() ? "maps?tile={z},{x},{y}" : ApplicationProperty.RoomUseLeafletMapTiles.value());
 		response.setLeafletMapAttribution(ApplicationProperty.RoomUseLeafletMapAttribution.value());
 		
 		return response;

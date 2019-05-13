@@ -27,8 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
@@ -38,6 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.model.MapTileCache;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.context.HttpSessionContext;
 
@@ -48,53 +47,32 @@ public class StaticMapServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
 	private static int sTileSize = 256;
-	private Map<Integer,Map<Integer,Map<Integer,byte[]>>> iCache = new HashMap<Integer,Map<Integer,Map<Integer,byte[]>>>();
 	
 	protected SessionContext getSessionContext() {
 		return HttpSessionContext.getSessionContext(getServletContext());
 	}
 	
-	protected synchronized byte[] get(int zoom, int x, int y) {
-		Map<Integer,Map<Integer,byte[]>> xyCache = iCache.get(zoom);
-		if (xyCache == null) return null;
-		Map<Integer,byte[]> yCache = xyCache.get(x);
-		if (yCache == null) return null;
-		return yCache.get(y);
-	}
-	
-	protected synchronized void put(int zoom, int x, int y, byte[] cache) {
-		Map<Integer,Map<Integer,byte[]>> xyCache = iCache.get(zoom);
-		if (xyCache == null) {
-			xyCache = new HashMap<Integer,Map<Integer,byte[]>>();
-			iCache.put(zoom, xyCache);
-		}
-		Map<Integer,byte[]> yCache = xyCache.get(x);
-		if (yCache == null) {
-			yCache = new HashMap<Integer,byte[]>();
-			xyCache.put(x, yCache);
-		}
-		yCache.put(y, cache);
-	}
-	
 	protected BufferedImage fetchTile(int zoom, int x, int y) throws MalformedURLException, IOException {
-		byte[] cached = get(zoom, x, y);
-		if (cached == null) {
-			String tileURL =ApplicationProperty.RoomUseLeafletMapTiles.value().replace("{s}", String.valueOf((char)('a' + ToolBox.random(3)))).replace("{z}", String.valueOf(zoom)).replace("{x}", String.valueOf(x)).replace("{y}", String.valueOf(y));
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			InputStream in = null;
-			try {
-				in = new URL(tileURL).openStream();
-				byte[] byteChunk = new byte[4096];
-				int n;
-				while ((n = in.read(byteChunk)) > 0)
-					out.write(byteChunk, 0, n);
-			} finally {
-				in.close();
+		synchronized ((zoom + ":" + x + ":" + y).intern()) {
+			byte[] cached = MapTileCache.get(zoom, x, y);
+			if (cached == null) {
+				String tileURL =ApplicationProperty.RoomUseLeafletMapTiles.value().replace("{s}", String.valueOf((char)('a' + ToolBox.random(3)))).replace("{z}", String.valueOf(zoom)).replace("{x}", String.valueOf(x)).replace("{y}", String.valueOf(y));
+				ByteArrayOutputStream out = new ByteArrayOutputStream();
+				InputStream in = null;
+				try {
+					in = new URL(tileURL).openStream();
+					byte[] byteChunk = new byte[4096];
+					int n;
+					while ((n = in.read(byteChunk)) > 0)
+						out.write(byteChunk, 0, n);
+				} finally {
+					in.close();
+				}
+				cached = out.toByteArray();
+				MapTileCache.put(zoom, x, y, cached);	
 			}
-			cached = out.toByteArray();
-			put(zoom, x, y, cached);	
+			return ImageIO.read(new ByteArrayInputStream(cached));
 		}
-		return ImageIO.read(new ByteArrayInputStream(cached)); 
 	}
 	
 	protected double lonToTile(double lon, int zoom) {
@@ -143,6 +121,17 @@ public class StaticMapServlet extends HttpServlet {
 	
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String tile = request.getParameter("tile");
+		if (tile != null) {
+			String[] params = tile.split(",");
+			BufferedImage image = fetchTile(Integer.valueOf(params[0]), Integer.valueOf(params[1]), Integer.valueOf(params[2]));
+			response.setContentType("image/png");
+			response.setDateHeader("Date", System.currentTimeMillis());
+			response.setDateHeader("Expires", System.currentTimeMillis() + 604800000l);
+			response.setHeader("Cache-control", "public, max-age=604800");
+			ImageIO.write(image, "PNG", response.getOutputStream());
+			return;
+		}
 		String center = request.getParameter("center");
 		int zoom = Integer.parseInt(request.getParameter("zoom"));
 		String size = request.getParameter("size");

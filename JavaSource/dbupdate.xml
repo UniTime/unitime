@@ -13550,4 +13550,26 @@
 		<mysql>create index idx_sect_pref_label on %SCHEMA%.sect_pref(label, required)</mysql>
 		<plsql>create index %SCHEMA%.idx_sect_pref_label on %SCHEMA%.sect_pref(label, required)</plsql>
 	</update>
+	<update version="220" date="13-May-2019" comment="Room Map Tiles Cache">
+		<mysql>
+			create table %SCHEMA%.map_tiles (
+				z decimal(10,0) not null,
+				x decimal(10,0) not null,
+				y decimal(10,0) not null,
+				data longblob not null,
+				time_stamp datetime not null,
+				primary key (z, x, y)
+			) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.map_tiles (
+				z number(10,0) constraint nn_map_tiles_z not null,
+				x number(10,0) constraint nn_map_tiles_x not null,
+				y number(10,0) constraint nn_map_tiles_y not null,
+				data blob constraint nn_map_tiles_data not null,
+				time_stamp timestamp constraint nn_map_tiles_ts not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.map_tiles add constraint pk_map_tiles primary key (z, x, y)</plsql>
+	</update>
 </dbupdate>

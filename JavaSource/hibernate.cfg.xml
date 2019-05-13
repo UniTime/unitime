@@ -238,5 +238,6 @@
 	<mapping resource="Automation.hbm.xml"/>
 	<mapping resource="SctSolutionLog.hbm.xml"/>
 	<mapping resource="SectioningPreferences.hbm.xml"/>
+	<mapping resource="MapTileCache.hbm.xml"/>
 </session-factory>
 </hibernate-configuration>
