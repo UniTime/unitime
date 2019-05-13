@@ -128,6 +128,7 @@
 				<include name="*.dtd" />
 				<include name="**/*.properties" />
 				<include name="**/*.ftl" />
+				<include name="**/*.png" />
 			</fileset>
 			<manifest>
 				<attribute name="Main-Class" value="org.unitime.timetable.solver.jgroups.SolverServerImplementation" />
