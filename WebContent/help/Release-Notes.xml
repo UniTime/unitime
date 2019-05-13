@@ -189,6 +189,13 @@
 			</description>
 		</item>
 		<item>
+			<name>OpenStreetMap</name>
+			<description>
+				<line>Use OpenStreetMap as default on rooms and buildings.</line>
+				<line>Cache map tiles within UniTime.</line>
+			</description>
+		</item>
+		<item>
 			<name>Other</name>
 			<description>
 				<line>Sponsoring Organizations: Avoid a Hibernate cache exception when deleting a sponsoring organization that is being used.</line>

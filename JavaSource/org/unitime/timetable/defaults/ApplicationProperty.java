@@ -1623,7 +1623,7 @@ public enum ApplicationProperty {
 	 * <li>String %i is replaced by the room external id 
 	 * </ul>
 	 */
-	@DefaultValue("https://maps.googleapis.com/maps/api/staticmap?center=%x,%y&zoom=16&size=600x400&maptype=roadmap&sensor=false&markers=color:blue%7c%x,%y")
+	@DefaultValue("maps?center=%x,%y&zoom=16&size=600x400")
 	@Description("Rooms: Campus map image")
 	RoomMapStatic("unitime.minimap.url"),
 
@@ -1635,7 +1635,7 @@ public enum ApplicationProperty {
 	 * <li>String %i is replaced by the room external id 
 	 * </ul>
 	 */
-	@DefaultValue("https://maps.googleapis.com/maps/api/staticmap?center=%x,%y&zoom=15&size=300x200&maptype=roadmap&sensor=false&markers=color:blue%7c%x,%y")
+	@DefaultValue("maps?center=%x,%y&zoom=15&size=300x200")
 	@Description("Rooms: minimap to be used in location's tooltip (%x and %y are replaced by the room's coordinates)")
 	RoomHintMinimapUrl("unitime.minimap.hint"),
 	
@@ -1646,7 +1646,7 @@ public enum ApplicationProperty {
 	RoomMapStaticSecret("unitime.minimap.secret"),
 
 	@Type(Boolean.class)
-	@DefaultValue("true")
+	@DefaultValue("false")
 	@Description("Rooms: use Google maps to enter room / building coordinates")
 	RoomUseGoogleMap("unitime.coordinates.googlemap"),
 	
@@ -1655,7 +1655,7 @@ public enum ApplicationProperty {
 	GoogleMapsApiKey("unitime.coordinates.googlemap.apikey"),
 	
 	@Type(Boolean.class)
-	@DefaultValue("false")
+	@DefaultValue("true")
 	@Description("Rooms: use Leaflet maps to enter room / building coordinates")
 	RoomUseLeafletMap("unitime.coordinates.leafletmap"),
 	
