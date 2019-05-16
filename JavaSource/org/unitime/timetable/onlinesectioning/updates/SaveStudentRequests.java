@@ -155,6 +155,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 				
 				return getRequest();
 			} catch (Exception e) {
+				helper.error("Failed to save course requests: " + e.getMessage(), e);
 				helper.rollbackTransaction();
 				if (e instanceof SectioningException)
 					throw (SectioningException)e;
@@ -286,12 +287,12 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 						cr.setCourseDemand(cd);
 					}
 					RequestedCourse rc = rcs.get(co.getUniqueId());
-					cr.updatePreferences(rc, helper.getHibSession());
 					cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT, null);
 					cr.setAllowOverlap(false);
 					cr.setCredit(0);
 					cr.setOrder(order++);
 					cr.setCourseOffering(co);
+					cr.updatePreferences(rc, helper.getHibSession());
 					cr.setOverrideExternalId(rc == null ? null : rc.getOverrideExternalId());
 					cr.setOverrideTimeStamp(rc == null ? null : rc.getOverrideTimeStamp());
 					cr.setCourseRequestOverrideStatus(rc == null ? null :
@@ -404,12 +405,12 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 						cr.setCourseDemand(cd);
 					}
 					RequestedCourse rc = rcs.get(co.getUniqueId());
-					cr.updatePreferences(rc, helper.getHibSession());
 					cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT, null);
 					cr.setAllowOverlap(false);
 					cr.setCredit(0);
 					cr.setOrder(order++);
 					cr.setCourseOffering(co);
+					cr.updatePreferences(rc, helper.getHibSession());
 					cr.setOverrideExternalId(rc == null ? null : rc.getOverrideExternalId());
 					cr.setOverrideTimeStamp(rc == null ? null : rc.getOverrideTimeStamp());
 					cr.setCourseRequestOverrideStatus(rc == null ? null :

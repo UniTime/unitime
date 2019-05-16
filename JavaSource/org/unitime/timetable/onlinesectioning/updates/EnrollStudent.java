@@ -327,13 +327,13 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							cr.setCourseDemand(cd);
 							cr.setCourseRequestOptions(new HashSet<CourseRequestOption>());
 						}
-						cr.updatePreferences(r.getRequestedCourse(co.getCourseId()), helper.getHibSession());
 						cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT, options.get(co.getCourseId()));
 						cr.setAllowOverlap(false);
 						cr.setCredit(0);
 						cr.setOrder(order++);
 						if (cr.getCourseOffering() == null || !cr.getCourseOffering().getUniqueId().equals(co.getCourseId()))
 							cr.setCourseOffering(CourseOfferingDAO.getInstance().get(co.getCourseId(), helper.getHibSession()));
+						cr.updatePreferences(r.getRequestedCourse(co.getCourseId()), helper.getHibSession());
 						course2request.put(co.getCourseId(), cr);
 						
 						if (failures != null) {
@@ -453,13 +453,13 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							cd.getCourseRequests().add(cr);
 							cr.setCourseDemand(cd);
 						}
-						cr.updatePreferences(r.getRequestedCourse(co.getCourseId()), helper.getHibSession());
 						cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT, options.get(co.getCourseId()));
 						cr.setAllowOverlap(false);
 						cr.setCredit(0);
 						cr.setOrder(order++);
 						if (cr.getCourseOffering() == null || !cr.getCourseOffering().getUniqueId().equals(co.getCourseId()))
 							cr.setCourseOffering(CourseOfferingDAO.getInstance().get(co.getCourseId(), helper.getHibSession()));
+						cr.updatePreferences(r.getRequestedCourse(co.getCourseId()), helper.getHibSession());
 						course2request.put(co.getCourseId(), cr);
 					}
 					while (requests.hasNext()) {
