@@ -415,6 +415,8 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 	static int weekNumber(int year, int month) {
 		Date d = new Date(year - 1900, month - 1, 1);
 		while (d.getDay() != CalendarUtil.getStartingDayOfWeek()) d.setDate(d.getDate() - 1);
+		// ISO 8601: move to the next Thursday
+		while (d.getDay() != 4) d.setDate(d.getDate() + 1);
 		int y = d.getYear();
 		int week = 0;
 		while (d.getYear() == y) { d.setDate(d.getDate() - 7); week += 1; }
