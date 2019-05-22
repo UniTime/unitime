@@ -68,6 +68,10 @@ public class SuggestionsFilter implements SuggestionsBranchAndBound.SuggestionFi
 				if (iSection.getName(iCourse.getId()) != null && iSection.getName(iCourse.getId()).toLowerCase().startsWith(term.toLowerCase()))
 					return true;
 			}
+			if (attr == null || attr.equals("course")) {
+				if (iCourse.getName().toLowerCase().startsWith(term.toLowerCase()))
+					return true;
+			}
 			if (attr == null || attr.equals("day")) {
 				if (iSection.getTime() == null && term.equalsIgnoreCase("none")) return true;
 				if (iSection.getTime() != null) {
