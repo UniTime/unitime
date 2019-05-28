@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
@@ -34,6 +35,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.MapTileCache;
@@ -44,6 +47,7 @@ import org.unitime.timetable.security.context.HttpSessionContext;
  * @author Tomas Muller
  */
 public class StaticMapServlet extends HttpServlet {
+	protected static Log sLog = LogFactory.getLog(StaticMapServlet.class);
 	private static final long serialVersionUID = 1L;
 	
 	private static int sTileSize = 256;
@@ -52,27 +56,35 @@ public class StaticMapServlet extends HttpServlet {
 		return HttpSessionContext.getSessionContext(getServletContext());
 	}
 	
-	protected BufferedImage fetchTile(int zoom, int x, int y) throws MalformedURLException, IOException {
-		synchronized ((zoom + ":" + x + ":" + y).intern()) {
-			byte[] cached = MapTileCache.get(zoom, x, y);
-			if (cached == null) {
-				String tileURL =ApplicationProperty.RoomUseLeafletMapTiles.value().replace("{s}", String.valueOf((char)('a' + ToolBox.random(3)))).replace("{z}", String.valueOf(zoom)).replace("{x}", String.valueOf(x)).replace("{y}", String.valueOf(y));
-				ByteArrayOutputStream out = new ByteArrayOutputStream();
-				InputStream in = null;
-				try {
-					in = new URL(tileURL).openStream();
-					byte[] byteChunk = new byte[4096];
-					int n;
-					while ((n = in.read(byteChunk)) > 0)
-						out.write(byteChunk, 0, n);
-				} finally {
-					in.close();
-				}
-				cached = out.toByteArray();
-				MapTileCache.put(zoom, x, y, cached);	
+	protected synchronized BufferedImage fetchTile(int zoom, int x, int y, HttpServletRequest request) throws MalformedURLException, IOException {
+		byte[] cached = MapTileCache.get(zoom, x, y);
+		if (cached == null) {
+			String referer = ApplicationProperty.UniTimeUrl.value();
+			if (referer == null)
+				referer = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getRequestURI().substring(0, request.getRequestURI().lastIndexOf('/'));
+			String agent = request.getHeader("User-Agent");
+			String tileURL = ApplicationProperty.RoomUseLeafletMapTiles.value().replace("{s}", String.valueOf((char)('a' + ToolBox.random(3)))).replace("{z}", String.valueOf(zoom)).replace("{x}", String.valueOf(x)).replace("{y}", String.valueOf(y));
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			InputStream in = null;
+			try {
+				URLConnection con = new URL(tileURL).openConnection();
+				if (referer != null) con.setRequestProperty("REFERER", referer);
+				if (agent != null) con.setRequestProperty("User-Agent", agent);
+				in = con.getInputStream();
+				byte[] byteChunk = new byte[4096];
+				int n;
+				while ((n = in.read(byteChunk)) > 0)
+					out.write(byteChunk, 0, n);
+			} catch (Exception e) {
+				sLog.error("Failed to fetch tile " + tileURL + ": " + e.getMessage());
+				return null;
+			} finally {
+				if (in != null) in.close();
 			}
-			return ImageIO.read(new ByteArrayInputStream(cached));
+			cached = out.toByteArray();
+			MapTileCache.put(zoom, x, y, cached);	
 		}
+		return ImageIO.read(new ByteArrayInputStream(cached));
 	}
 	
 	protected double lonToTile(double lon, int zoom) {
@@ -83,7 +95,7 @@ public class StaticMapServlet extends HttpServlet {
 		return (1.0 - Math.log(Math.tan(lat * Math.PI / 180.0) + 1.0 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2.0 * Math.pow(2.0, zoom);
 	}
 	
-	protected BufferedImage createBaseMap(int width, int height, double lat, double lon, int zoom) throws MalformedURLException, IOException {
+	protected BufferedImage createBaseMap(int width, int height, double lat, double lon, int zoom, HttpServletRequest request) throws MalformedURLException, IOException {
 		double centerX = lonToTile(lon, zoom);
 		double centerY = latToTile(lat, zoom);
 		
@@ -104,7 +116,8 @@ public class StaticMapServlet extends HttpServlet {
 
         for (int x = startX; x <= endX; x++)
         	for (int y = startY; y <= endY; y++) {
-        		BufferedImage tile = fetchTile(zoom, x, y);
+        		BufferedImage tile = fetchTile(zoom, x, y, request);
+        		if (tile == null) continue;
         		int destX = (x - startX) * sTileSize + (int)offsetX;
         		int destY = (y - startY) * sTileSize + (int)offsetY;
         		g.drawImage(tile, destX, destY, null);
@@ -124,7 +137,11 @@ public class StaticMapServlet extends HttpServlet {
 		String tile = request.getParameter("tile");
 		if (tile != null) {
 			String[] params = tile.split(",");
-			BufferedImage image = fetchTile(Integer.valueOf(params[0]), Integer.valueOf(params[1]), Integer.valueOf(params[2]));
+			BufferedImage image = fetchTile(Integer.valueOf(params[0]), Integer.valueOf(params[1]), Integer.valueOf(params[2]), request);
+			if (image == null) {
+				response.sendError(500, "Failed to fetch a tile, please check the logs for more details.");
+				return;
+			}
 			response.setContentType("image/png");
 			response.setDateHeader("Date", System.currentTimeMillis());
 			response.setDateHeader("Expires", System.currentTimeMillis() + 604800000l);
@@ -139,7 +156,7 @@ public class StaticMapServlet extends HttpServlet {
 		double lon = Double.parseDouble(center.split(",")[1]);
 		int width = Integer.parseInt(size.split("[,x]")[0]);
 		int height = Integer.parseInt(size.split("[,x]")[1]);
-		BufferedImage image = createBaseMap(width, height, lat, lon, zoom);
+		BufferedImage image = createBaseMap(width, height, lat, lon, zoom, request);
 		response.setContentType("image/png");
 		response.setDateHeader("Date", System.currentTimeMillis());
 		response.setDateHeader("Expires", System.currentTimeMillis() + 604800000l);
