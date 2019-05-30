@@ -110,6 +110,30 @@ public class PreferencesImport  extends BaseImport {
                 	Element prefElement = (Element)j.next();
                 	Preference preference = createPreference(prefElement, group);
                 	if (preference == null) continue;
+                	// Move distribution preferences set on classes or subparts to the appropriate department
+                	if (preference instanceof DistributionPref) {
+                		DistributionPref dp = (DistributionPref)preference;
+                		if (group instanceof Class_) {
+                			for (DistributionObject o: dp.getDistributionObjects())
+                				o.setSequenceNumber(o.getSequenceNumber() + 1);
+                			DistributionObject obj = new DistributionObject();
+                			obj.setDistributionPref(dp);
+                			obj.setPrefGroup(group);
+                			obj.setSequenceNumber(1);
+                			dp.getDistributionObjects().add(obj);
+                			group = ((Class_)group).getManagingDept();
+                			
+                		} else if (group instanceof SchedulingSubpart) {
+                			for (DistributionObject o: dp.getDistributionObjects())
+                				o.setSequenceNumber(o.getSequenceNumber() + 1);
+                			DistributionObject obj = new DistributionObject();
+                			obj.setDistributionPref(dp);
+                			obj.setPrefGroup(group);
+                			obj.setSequenceNumber(1);
+                			dp.getDistributionObjects().add(obj);
+                			group = ((SchedulingSubpart)group).getManagingDept();
+                		}
+                	}
                 	preference.setOwner(group);
                 	group.getPreferences().add(preference);
                 }
@@ -498,12 +522,13 @@ public class PreferencesImport  extends BaseImport {
         			break;
             	} else {
             		int endSlot = startSlot + model.getSlotsPerMtg();
+            		if (startSlot == 0) endSlot = 288;
             		if (pe.attributeValue("stop") != null)
             			endSlot = parseTime(pe.attributeValue("stop"));
             		if (pe.attributeValue("end") != null)
             			endSlot = parseTime(pe.attributeValue("end"));
             		for (int d = 0; d < model.getNrDays(); d++)
-            			if (model.getDayCode(d) == dayCode)
+            			if (model.getDayCode(d) == dayCode || ((model.getDayCode(d) & dayCode) == model.getDayCode(d)))
             				for (int t = 0; t < model.getNrTimes(); t++)
             					if (model.getStartSlot(t) >= startSlot && model.getStartSlot(t) + model.getSlotsPerMtg() <= endSlot)
             						model.setPreference(d, t, level);
