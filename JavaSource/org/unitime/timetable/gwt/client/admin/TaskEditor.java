@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.client.admin.ScriptPage.DateTimeBox;
 import org.unitime.timetable.gwt.client.events.SessionDatesSelector;
 import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
+import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.TimeSelector;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
@@ -121,7 +122,7 @@ public class TaskEditor extends UniTimeDialogBox {
 			List<Date> dates = new ArrayList<Date>();
 			for (TaskExecutionInterface e: iTask.getExecutions()) {
 				if (e.getStatus() == ExecutionStatus.CREATED)
-					dates.add(e.getExecutionDate());
+					dates.add(ServerDateTimeFormat.toLocalDate(e.getExecutionDate()));
 			}
 			iDates.setValue(dates);
 		}
