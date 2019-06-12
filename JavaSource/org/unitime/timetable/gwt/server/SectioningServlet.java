@@ -63,6 +63,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseSt
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradingMode;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentGroupInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
@@ -1104,6 +1105,15 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (getStudentId(sessionId) == null)
 					ret.setCanEnroll(false);
 			}
+			
+			EligibilityCheck last = (EligibilityCheck)getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingEligibility);
+			if (ret != null && last != null && last.hasGradingModes())
+				for (CourseAssignment ca: ret.getCourseAssignments())
+					for (ClassAssignment a: ca.getClassAssignments()) {
+						GradingMode m = last.getGradingMode(a);
+						if (m != null) a.setGradingMode(m);
+					}
+			
 			if (!ret.getCourseAssignments().isEmpty()) return ret;
 			throw new SectioningException(MSG.exceptionNoSchedule());
 		} catch (PageAccessException e) {
@@ -1187,7 +1197,18 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		setLastSessionId(request.getAcademicSessionId());
 		setLastRequest(request);
 
-		return server.execute(server.createAction(EnrollStudent.class).forStudent(request.getStudentId()).withRequest(request).withAssignment(currentAssignment), currentUser());
+		ClassAssignmentInterface ret = server.execute(server.createAction(EnrollStudent.class).forStudent(request.getStudentId()).withRequest(request).withAssignment(currentAssignment), currentUser());
+		
+		EligibilityCheck last = (EligibilityCheck)getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingEligibility);
+		if (ret != null && last != null) {
+			for (CourseAssignment ca: ret.getCourseAssignments())
+				for (ClassAssignment a: ca.getClassAssignments()) {
+					if (a.getGradingMode() != null)
+						last.addGradingMode(a.getExternalId(), a.getGradingMode().getCode(), a.getGradingMode().getLabel());
+				}
+		}
+		
+		return ret;
 	}
 
 	public List<Long> canApprove(Long classOrOfferingId) throws SectioningException, PageAccessException {
@@ -2305,7 +2326,18 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	public ClassAssignmentInterface savedResult(boolean online, Long sessionId, Long studentId) throws SectioningException, PageAccessException {
 		if (online) {
 			OnlineSectioningServer server = getServerInstance(sessionId == null ? canEnroll(online, studentId) : sessionId, false);
-			return server.execute(server.createAction(GetAssignment.class).forStudent(studentId), currentUser());
+			ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(studentId), currentUser());
+			
+			EligibilityCheck last = (EligibilityCheck)getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingEligibility);
+			if (ret != null && last != null && last.hasGradingModes())
+				for (CourseAssignment ca: ret.getCourseAssignments())
+					for (ClassAssignment a: ca.getClassAssignments()) {
+						GradingMode m = last.getGradingMode(a);
+						if (m != null) a.setGradingMode(m);
+					}
+
+			
+			return ret;
 		} else {
 			OnlineSectioningServer server = getStudentSolver();
 			if (server == null) 
@@ -2314,6 +2346,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(studentId), currentUser());
 			if (ret != null)
 				ret.setCanEnroll(getStudentId(sessionId) != null);
+			
 			return ret;
 		}
 	}

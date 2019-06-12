@@ -21,9 +21,13 @@ package org.unitime.timetable.gwt.shared;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -41,6 +45,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private Long iSessionId = null, iStudentId = null;
 		private Set<String> iOverrides = null;
 		private String iOverrideRequestDisclaimer = null;
+		private GradingModes iGradingModes = null;
 		
 		public static enum EligibilityFlag implements IsSerializable {
 			IS_ADMIN, IS_ADVISOR, IS_GUEST,
@@ -119,6 +124,18 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		}
 		public void setOverrides(Collection<String> overrides) {
 			iOverrides = (overrides == null ? null : new HashSet<String>(overrides));
+		}
+		
+		public boolean hasGradingModes() {
+			return iGradingModes != null && iGradingModes.hasGradingModes();
+		}
+		public void addGradingMode(String sectionId, String code, String label) {
+			if (iGradingModes == null) iGradingModes = new GradingModes();
+			iGradingModes.add(sectionId, new GradingMode(code, label));
+		}
+		public GradingMode getGradingMode(ClassAssignment section) {
+			if (iGradingModes == null) return null;
+			return iGradingModes.get(section);
 		}
 	}
 	
@@ -326,6 +343,55 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof StudentStatusInfo)) return false;
 			return getUniqueId().equals(((StudentStatusInfo)o).getUniqueId());
+		}
+	}
+	
+	public static class GradingModes implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		Map<String, GradingMode> iModes = new HashMap<String, GradingMode>();
+		
+		public GradingModes() {}
+		
+		public boolean hasGradingModes() { return !iModes.isEmpty(); }
+		
+		public void add(String sectionId, GradingMode mode) {
+			iModes.put(sectionId, mode);
+		}
+		
+		public GradingMode get(ClassAssignment a) {
+			if (a.getExternalId() == null) return null;
+			if (a.getParentSection() != null && a.getParentSection().equals(a.getSection())) return null;
+			return iModes.get(a.getExternalId());
+		}
+	}
+	
+	public static class GradingMode implements IsSerializable, Serializable, Comparable<GradingMode> {
+		private static final long serialVersionUID = 1L;
+		private String iCode;
+		private String iLabel;
+		
+		public GradingMode() {}
+		public GradingMode(String code, String label) {
+			iCode = code; iLabel = label;
+		}
+		
+		public void setCode(String code) { iCode = code; }
+		public String getCode() { return iCode; }
+		public void setLabel(String label) { iLabel = label; }
+		public String getLabel() { return iLabel; }
+		
+		@Override
+		public int hashCode() { return getCode().hashCode(); }
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof GradingMode)) return false;
+			return getCode().equals(((GradingMode)o).getCode());
+		}
+
+		@Override
+		public int compareTo(GradingMode m) {
+			return getLabel().compareToIgnoreCase(m.getLabel());
 		}
 	}
 

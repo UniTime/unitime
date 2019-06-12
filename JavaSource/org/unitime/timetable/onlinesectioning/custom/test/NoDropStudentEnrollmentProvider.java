@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradingModes;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
@@ -48,7 +49,7 @@ public class NoDropStudentEnrollmentProvider implements StudentEnrollmentProvide
 	}
 
 	@Override
-	public List<EnrollmentFailure> enroll(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<EnrollmentRequest> enrollments, Set<Long> lockedCourses) throws SectioningException {
+	public List<EnrollmentFailure> enroll(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<EnrollmentRequest> enrollments, Set<Long> lockedCourses, GradingModes gradingModes) throws SectioningException {
 		Student dbStudent = StudentDAO.getInstance().get(student.getStudentId());
 		List<EnrollmentFailure> failures = new ArrayList<EnrollmentFailure>();
 		e: for (StudentClassEnrollment e: dbStudent.getClassEnrollments()) {

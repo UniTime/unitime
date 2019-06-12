@@ -563,6 +563,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				new WebTable.Cell(MESSAGES.colParent()),
 				new WebTable.Cell(MESSAGES.colNote()),
 				new WebTable.Cell(MESSAGES.colCredit()),
+				new WebTable.Cell(MESSAGES.colGradingMode()),
 				(iCalendar != null ? new WebTable.WidgetCell(iCalendar, MESSAGES.colIcons()) : new WebTable.Cell(MESSAGES.colIcons()))
 			));
 		iAssignments.setWidth("100%");
@@ -994,7 +995,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				for (ClassAssignmentInterface.ClassAssignment clazz: iLastResult) {
 					if (clazz != null && !clazz.isFreeTime() && !clazz.isTeachingAssignment() && !clazz.isSaved()) allSaved = false;
 				}
-				Widget w = iAssignments.getPrintWidget(0, 5, 15);
+				Widget w = iAssignments.getPrintWidget(0, 5, 16);
 				w.setWidth("100%");
 				ToolBox.print((allSaved && !isChanged() ? MESSAGES.studentSchedule() : MESSAGES.studentScheduleNotEnrolled()),
 						(CONSTANTS.printReportShowUserName() ? iUserAuthentication.getUser() : ""),
@@ -1180,6 +1181,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		String ftParam = "&ft=";
 		boolean hasError = false;
 		float totalCredit = 0f;
+		boolean hasGradingMode = false;
 		if (!result.getCourseAssignments().isEmpty() || CONSTANTS.allowEmptySchedule()) {
 			ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 			iAssignmentGrid.clear(true);
@@ -1244,6 +1246,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 
 						if (!clazz.isTeachingAssignment())
 							totalCredit += clazz.guessCreditCount();
+						if (clazz.getGradingMode() != null)
+							hasGradingMode = true;
 						if (clazz.isAssigned()) {
 							row = new WebTable.Row(
 								clazz.isDummy() || clazz.isTeachingAssignment() ? new WebTable.Cell(null) : new WebTable.LockCell(clazz.isPinned(), course.isFreeTime() ? ARIA.freeTimePin(clazz.getTimeStringAria(CONSTANTS.longDays(), CONSTANTS.useAmPm(), ARIA.arrangeHours())) : ARIA.classPin(MESSAGES.clazz(course.getSubject(), course.getCourseNbr(), clazz.getSubpart(), clazz.getSection())), MESSAGES.hintLocked(), MESSAGES.hintUnlocked()),
@@ -1261,6 +1265,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
 								new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
 								new WebTable.AbbvTextCell(clazz.getCredit()),
+								(clazz.getGradingMode() == null ? new WebTable.Cell("") : new WebTable.AbbvTextCell(clazz.getGradingMode().getCode(), clazz.getGradingMode().getLabel())),
 								icons);
 						} else {
 							row = new WebTable.Row(
@@ -1277,6 +1282,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
 									new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
 									new WebTable.AbbvTextCell(clazz.getCredit()),
+									(clazz.getGradingMode() == null ? new WebTable.Cell("") : new WebTable.AbbvTextCell(clazz.getGradingMode().getCode(), clazz.getGradingMode().getLabel())),
 									icons);
 						}
 						if (course.isFreeTime()) {
@@ -1394,6 +1400,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									new WebTable.Cell(unassignedMessage, 3, null),
 									new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
 									(waitList != null ? waitList : new WebTable.AbbvTextCell(clazz.getCredit())),
+									(clazz.getGradingMode() == null ? new WebTable.Cell("") : new WebTable.AbbvTextCell(clazz.getGradingMode().getCode(), clazz.getGradingMode().getLabel())),
 									icons);
 							if (course.isFreeTime())
 								row.setAriaLabel(ARIA.freeTimeUnassignment(clazz.getTimeStringAria(CONSTANTS.longDays(), CONSTANTS.useAmPm(), ARIA.arrangeHours()), unassignedMessage));
@@ -1412,6 +1419,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									new WebTable.Cell(unassignedMessage, 3, null),
 									new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
 									(waitList != null ? waitList : new WebTable.AbbvTextCell(clazz.getCredit())),
+									(clazz.getGradingMode() == null ? new WebTable.Cell("") : new WebTable.AbbvTextCell(clazz.getGradingMode().getCode(), clazz.getGradingMode().getLabel())),
 									icons);
 							if (course.isFreeTime())
 								row.setAriaLabel(ARIA.freeTimeUnassignment("", unassignedMessage));
@@ -1428,6 +1436,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									new WebTable.Cell(unassignedMessage, 7, null),
 									new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
 									(waitList != null ? waitList : new WebTable.AbbvTextCell(clazz.getCredit())),
+									(clazz.getGradingMode() == null ? new WebTable.Cell("") : new WebTable.AbbvTextCell(clazz.getGradingMode().getCode(), clazz.getGradingMode().getLabel())),
 									icons);
 							if (course.isFreeTime())
 								row.setAriaLabel(ARIA.freeTimeUnassignment("", unassignedMessage));
@@ -1446,6 +1455,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									new WebTable.Cell(course.getCourseNbr(CONSTANTS.showCourseTitle())),
 									new WebTable.Cell(unassignedMessage, 11, null),
 									waitList,
+									new WebTable.Cell(null),
 									icons);
 						} else {
 							row = new WebTable.Row(
@@ -1453,6 +1463,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									new WebTable.Cell(course.getSubject()),
 									new WebTable.Cell(course.getCourseNbr(CONSTANTS.showCourseTitle())),
 									new WebTable.Cell(unassignedMessage, 12, null),
+									new WebTable.Cell(null),
 									icons);
 						}
 						row.setId(course.getCourseId().toString());
@@ -1522,6 +1533,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 										new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
 										new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
 										new WebTable.AbbvTextCell(clazz.getCredit()),
+										(clazz.getGradingMode() == null ? new WebTable.Cell("") : new WebTable.AbbvTextCell(clazz.getGradingMode().getCode(), clazz.getGradingMode().getLabel())),
 										icons);								
 							} else {
 								row = new WebTable.Row(
@@ -1538,6 +1550,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 										new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
 										new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
 										new WebTable.AbbvTextCell(clazz.getCredit()),
+										(clazz.getGradingMode() == null ? new WebTable.Cell("") : new WebTable.AbbvTextCell(clazz.getGradingMode().getCode(), clazz.getGradingMode().getLabel())),
 										icons);
 							}
 							row.setAriaLabel(ARIA.previousAssignment(MESSAGES.clazz(course.getSubject(), course.getCourseNbr(), clazz.getSubpart(), clazz.getSection()),
@@ -1610,6 +1623,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
 									new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
 									new WebTable.AbbvTextCell(clazz.getCredit()),
+									(clazz.getGradingMode() == null ? new WebTable.Cell("") : new WebTable.AbbvTextCell(clazz.getGradingMode().getCode(), clazz.getGradingMode().getLabel())),
 									icons);
 						} else {
 							row = new WebTable.Row(
@@ -1626,6 +1640,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
 									new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
 									new WebTable.AbbvTextCell(clazz.getCredit()),
+									(clazz.getGradingMode() == null ? new WebTable.Cell("") : new WebTable.AbbvTextCell(clazz.getGradingMode().getCode(), clazz.getGradingMode().getLabel())),
 									icons);
 						}
 						row.setAriaLabel(ARIA.previousAssignment(MESSAGES.clazz(course.getSubject(), course.getCourseNbr(), clazz.getSubpart(), clazz.getSection()),
@@ -1663,6 +1678,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				iGridMessage.setVisible(false);
 			}
 			iAssignments.setData(rowArray);
+			iAssignments.setColumnVisible(15, hasGradingMode);
 			if (LoadingWidget.getInstance().isShowing())
 				LoadingWidget.getInstance().hide();
 			iPanel.remove(iCourseRequests);

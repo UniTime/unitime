@@ -42,9 +42,12 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradingMode;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradingModes;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.Class_;
@@ -156,6 +159,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 		
 		Set<ErrorMessage> checkErrors = (getRequest().areTimeConflictsAllowed() || getRequest().areSpaceConflictsAllowed() ? new TreeSet<ErrorMessage>() : null);
 		Lock lock = server.lockStudent(getStudentId(), offeringIds, name());
+		GradingModes gradingModes = new GradingModes();
 		try {
 			helper.beginTransaction();
 			try {
@@ -210,7 +214,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					.setName(oldStudent.getName());
 				
 				if (CustomStudentEnrollmentHolder.hasProvider()) {
-					failures = CustomStudentEnrollmentHolder.getProvider().enroll(server, helper, oldStudent, enrlCheck, lockedCourses);
+					failures = CustomStudentEnrollmentHolder.getProvider().enroll(server, helper, oldStudent, enrlCheck, lockedCourses, gradingModes);
 					for (Iterator<ClassAssignmentInterface.ClassAssignment> i = getAssignment().iterator(); i.hasNext(); ) {
 						ClassAssignmentInterface.ClassAssignment ca = i.next();
 						if (ca == null || ca.isFreeTime() || ca.getClassId() == null || ca.isDummy() || ca.isTeachingAssignment()) continue;
@@ -764,7 +768,15 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				includeRequestInTheReturnMessage = true;
 		}
 		
-		return server.execute(server.createAction(GetAssignment.class).forStudent(getStudentId()).withMessages(failures).withErrors(checkErrors).withRequest(includeRequestInTheReturnMessage), helper.getUser());
+		ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(getStudentId()).withMessages(failures).withErrors(checkErrors).withRequest(includeRequestInTheReturnMessage), helper.getUser());
+		if (ret != null && gradingModes.hasGradingModes()) {
+			for (CourseAssignment ca: ret.getCourseAssignments())
+				for (ClassAssignment a: ca.getClassAssignments()) {
+					GradingMode m = gradingModes.get(a);
+					if (m != null) a.setGradingMode(m);
+				}
+		}
+		return ret;
 	}
 	
 	public static int getLimit(Enrollment enrollment, Map<Long, XSection> sections) {

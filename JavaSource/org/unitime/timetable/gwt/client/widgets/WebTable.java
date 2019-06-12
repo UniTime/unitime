@@ -146,6 +146,7 @@ public class WebTable extends Composite implements HasMobileScroll {
 					col += cell.getColSpan();
 					if (newColSpan == 0) continue;
 					Cell c = new Cell(cell.getValue(), newColSpan, cell.getWidth());
+					c.setWordWrap(true);
 					c.setStyleName(cell.getStyleName());
 					cells.add(c);
 				}
@@ -155,6 +156,7 @@ public class WebTable extends Composite implements HasMobileScroll {
 		} else {
 			x.setEmptyMessage(iEmptyMessage);
 		}
+		x.setWidth("940px");
 		return x;
 	}
 	
@@ -171,7 +173,8 @@ public class WebTable extends Composite implements HasMobileScroll {
 					iTable.setWidget(i, j, cell.getWidget());
 				iTable.getFlexCellFormatter().setWordWrap(i, j, cell.getWordWrap());
 				iTable.getFlexCellFormatter().setStyleName(i, j, (cell.getStyleName() == null ? "unitime-TableHeader" : cell.getStyleName()));
-				iTable.getFlexCellFormatter().setWidth(i, j, (cell.getWidth() == null ? (100 / header.length) + "%" : cell.getWidth()));
+				if (cell.getWidth() != null)
+					iTable.getFlexCellFormatter().setWidth(i, j, cell.getWidth());
 				iTable.getFlexCellFormatter().setColSpan(i, j, cell.getColSpan());
 				iTable.getFlexCellFormatter().setVerticalAlignment(i, j, cell.getVerticalAlignment());
 				iTable.getFlexCellFormatter().setHorizontalAlignment(i, j, cell.getHorizontalAlignment());
@@ -786,6 +789,13 @@ public class WebTable extends Composite implements HasMobileScroll {
 				iNote.setHTML(text == null ? "" : text.replace("\n", "<br>"));
 				if (text != null) iNote.setTitle(text);
 			}
+		}
+		
+		public AbbvTextCell(String text, String title) {
+			super(null);
+			iNote = new P("unitime-Note");
+			iNote.setHTML(text == null ? "" : text.replace("\n", "<br>"));
+			if (title != null) iNote.setTitle(title);
 		}
 		
 		public String getValue() { return iNote.getHTML(); }
