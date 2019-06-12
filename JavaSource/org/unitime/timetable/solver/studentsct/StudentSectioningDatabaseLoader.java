@@ -562,6 +562,13 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     	iProgress.info("Class " + c.getClassLabel(iShowClassSuffix, iShowConfigName) + " " + p.getLongName(iUseAmPm) + " starts before the fixed date, it is marked as disabled for student scheduling.");
                     	section.setEnabled(false);
                     }
+                    if (iClassesFixedDateIndex > 0 && a == null && c.effectiveDatePattern() != null) {
+                    	int firstMeeting = c.effectiveDatePattern().getPatternBitSet().nextSetBit(0);
+                		if (firstMeeting >= 0 && firstMeeting < iClassesFixedDateIndex) {
+                			iProgress.info("Class " + c.getClassLabel(iShowClassSuffix, iShowConfigName) + " Arranged Hours " + c.effectiveDatePattern().getName() + " starts before the fixed date, it is marked as disabled for student scheduling.");
+                        	section.setEnabled(false);
+                		}
+                    }
                     for (CourseOffering course: io.getCourseOfferings()) {
                     	String suffix = c.getClassSuffix(course);
                     	if (suffix != null)
