@@ -115,8 +115,11 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Credit")
 	String colCredit();
 	
-	@DefaultMessage("Grd")
-	String colGradingMode();
+	@DefaultMessage("Gr Md")
+	String colGradeMode();
+	
+	@DefaultMessage("Grade Mode")
+	String colTitleGradeMode();
 	
 	@DefaultMessage("Year")
 	String colYear();

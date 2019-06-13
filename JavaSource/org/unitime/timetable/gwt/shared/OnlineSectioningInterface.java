@@ -45,7 +45,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private Long iSessionId = null, iStudentId = null;
 		private Set<String> iOverrides = null;
 		private String iOverrideRequestDisclaimer = null;
-		private GradingModes iGradingModes = null;
+		private GradeModes iGradeModes = null;
 		
 		public static enum EligibilityFlag implements IsSerializable {
 			IS_ADMIN, IS_ADVISOR, IS_GUEST,
@@ -126,16 +126,16 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			iOverrides = (overrides == null ? null : new HashSet<String>(overrides));
 		}
 		
-		public boolean hasGradingModes() {
-			return iGradingModes != null && iGradingModes.hasGradingModes();
+		public boolean hasGradeModes() {
+			return iGradeModes != null && iGradeModes.hasGradeModes();
 		}
-		public void addGradingMode(String sectionId, String code, String label) {
-			if (iGradingModes == null) iGradingModes = new GradingModes();
-			iGradingModes.add(sectionId, new GradingMode(code, label));
+		public void addGradeMode(String sectionId, String code, String label) {
+			if (iGradeModes == null) iGradeModes = new GradeModes();
+			iGradeModes.add(sectionId, new GradeMode(code, label));
 		}
-		public GradingMode getGradingMode(ClassAssignment section) {
-			if (iGradingModes == null) return null;
-			return iGradingModes.get(section);
+		public GradeMode getGradeMode(ClassAssignment section) {
+			if (iGradeModes == null) return null;
+			return iGradeModes.get(section);
 		}
 	}
 	
@@ -346,32 +346,32 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		}
 	}
 	
-	public static class GradingModes implements IsSerializable, Serializable {
+	public static class GradeModes implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
-		Map<String, GradingMode> iModes = new HashMap<String, GradingMode>();
+		Map<String, GradeMode> iModes = new HashMap<String, GradeMode>();
 		
-		public GradingModes() {}
+		public GradeModes() {}
 		
-		public boolean hasGradingModes() { return !iModes.isEmpty(); }
+		public boolean hasGradeModes() { return !iModes.isEmpty(); }
 		
-		public void add(String sectionId, GradingMode mode) {
+		public void add(String sectionId, GradeMode mode) {
 			iModes.put(sectionId, mode);
 		}
 		
-		public GradingMode get(ClassAssignment a) {
+		public GradeMode get(ClassAssignment a) {
 			if (a.getExternalId() == null) return null;
 			if (a.getParentSection() != null && a.getParentSection().equals(a.getSection())) return null;
 			return iModes.get(a.getExternalId());
 		}
 	}
 	
-	public static class GradingMode implements IsSerializable, Serializable, Comparable<GradingMode> {
+	public static class GradeMode implements IsSerializable, Serializable, Comparable<GradeMode> {
 		private static final long serialVersionUID = 1L;
 		private String iCode;
 		private String iLabel;
 		
-		public GradingMode() {}
-		public GradingMode(String code, String label) {
+		public GradeMode() {}
+		public GradeMode(String code, String label) {
 			iCode = code; iLabel = label;
 		}
 		
@@ -385,12 +385,12 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		
 		@Override
 		public boolean equals(Object o) {
-			if (o == null || !(o instanceof GradingMode)) return false;
-			return getCode().equals(((GradingMode)o).getCode());
+			if (o == null || !(o instanceof GradeMode)) return false;
+			return getCode().equals(((GradeMode)o).getCode());
 		}
 
 		@Override
-		public int compareTo(GradingMode m) {
+		public int compareTo(GradeMode m) {
 			return getLabel().compareToIgnoreCase(m.getLabel());
 		}
 	}

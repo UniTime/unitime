@@ -46,8 +46,8 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignmen
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
-import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradingMode;
-import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradingModes;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeModes;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.Class_;
@@ -159,7 +159,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 		
 		Set<ErrorMessage> checkErrors = (getRequest().areTimeConflictsAllowed() || getRequest().areSpaceConflictsAllowed() ? new TreeSet<ErrorMessage>() : null);
 		Lock lock = server.lockStudent(getStudentId(), offeringIds, name());
-		GradingModes gradingModes = new GradingModes();
+		GradeModes gradeModes = new GradeModes();
 		try {
 			helper.beginTransaction();
 			try {
@@ -214,7 +214,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					.setName(oldStudent.getName());
 				
 				if (CustomStudentEnrollmentHolder.hasProvider()) {
-					failures = CustomStudentEnrollmentHolder.getProvider().enroll(server, helper, oldStudent, enrlCheck, lockedCourses, gradingModes);
+					failures = CustomStudentEnrollmentHolder.getProvider().enroll(server, helper, oldStudent, enrlCheck, lockedCourses, gradeModes);
 					for (Iterator<ClassAssignmentInterface.ClassAssignment> i = getAssignment().iterator(); i.hasNext(); ) {
 						ClassAssignmentInterface.ClassAssignment ca = i.next();
 						if (ca == null || ca.isFreeTime() || ca.getClassId() == null || ca.isDummy() || ca.isTeachingAssignment()) continue;
@@ -769,11 +769,11 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 		}
 		
 		ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(getStudentId()).withMessages(failures).withErrors(checkErrors).withRequest(includeRequestInTheReturnMessage), helper.getUser());
-		if (ret != null && gradingModes.hasGradingModes()) {
+		if (ret != null && gradeModes.hasGradeModes()) {
 			for (CourseAssignment ca: ret.getCourseAssignments())
 				for (ClassAssignment a: ca.getClassAssignments()) {
-					GradingMode m = gradingModes.get(a);
-					if (m != null) a.setGradingMode(m);
+					GradeMode m = gradeModes.get(a);
+					if (m != null) a.setGradeMode(m);
 				}
 		}
 		return ret;

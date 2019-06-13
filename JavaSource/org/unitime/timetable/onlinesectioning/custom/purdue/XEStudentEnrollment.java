@@ -44,8 +44,8 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
-import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradingMode;
-import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradingModes;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeModes;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
@@ -373,7 +373,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 							if (reg.registrationStatusDate != null)
 								section.setTimeStamp(reg.registrationStatusDate.getMillis());
 							if (reg.gradingMode != null && !reg.gradingMode.isEmpty())
-								check.addGradingMode(reg.courseReferenceNumber, reg.gradingMode, reg.gradingModeDescription);
+								check.addGradeMode(reg.courseReferenceNumber, reg.gradingMode, reg.gradingModeDescription);
 						}
 					}
 				helper.getAction().addEnrollment(external);
@@ -410,7 +410,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 	}
 	
 	@Override
-	public List<EnrollmentFailure> enroll(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<EnrollmentRequest> enrollments, Set<Long> lockedCourses, GradingModes gradingModes) throws SectioningException {
+	public List<EnrollmentFailure> enroll(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<EnrollmentRequest> enrollments, Set<Long> lockedCourses, GradeModes gradeModes) throws SectioningException {
 		ClientResource resource = null;
 		try {
 			String pin = helper.getPin();
@@ -749,8 +749,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 							.setCourse(OnlineSectioningLog.Entity.newBuilder().setName(reg.subject + " " + reg.courseNumber))
 							.setSubpart(OnlineSectioningLog.Entity.newBuilder().setName(reg.scheduleType));
 						outcome.add(reg.courseReferenceNumber);
-						if (gradingModes != null && reg.gradingMode != null) {
-							gradingModes.add(reg.courseReferenceNumber, new GradingMode(reg.gradingMode, reg.gradingModeDescription));
+						if (gradeModes != null && reg.gradingMode != null) {
+							gradeModes.add(reg.courseReferenceNumber, new GradeMode(reg.gradingMode, reg.gradingModeDescription));
 						}
 						if (added.contains(id)) {
 							// skip successfully registered enrollments

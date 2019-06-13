@@ -529,6 +529,7 @@ public class WebTable extends Composite implements HasMobileScroll {
 		public void setWordWrap(boolean wrap) { iWrap = wrap; }
 		public void setTitle(String title) { iTitle = title; }
 		public String getTitle() { return iTitle; }
+		public Cell title(String title) { iTitle = title; return this; }
 		
 		@Override
 		public String toString() {

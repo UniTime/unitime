@@ -63,7 +63,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseSt
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
-import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradingMode;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentGroupInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
@@ -1107,11 +1107,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			}
 			
 			EligibilityCheck last = (EligibilityCheck)getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingEligibility);
-			if (ret != null && last != null && last.hasGradingModes())
+			if (ret != null && last != null && last.hasGradeModes())
 				for (CourseAssignment ca: ret.getCourseAssignments())
 					for (ClassAssignment a: ca.getClassAssignments()) {
-						GradingMode m = last.getGradingMode(a);
-						if (m != null) a.setGradingMode(m);
+						GradeMode m = last.getGradeMode(a);
+						if (m != null) a.setGradeMode(m);
 					}
 			
 			if (!ret.getCourseAssignments().isEmpty()) return ret;
@@ -1203,8 +1203,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (ret != null && last != null) {
 			for (CourseAssignment ca: ret.getCourseAssignments())
 				for (ClassAssignment a: ca.getClassAssignments()) {
-					if (a.getGradingMode() != null)
-						last.addGradingMode(a.getExternalId(), a.getGradingMode().getCode(), a.getGradingMode().getLabel());
+					if (a.getGradeMode() != null)
+						last.addGradeMode(a.getExternalId(), a.getGradeMode().getCode(), a.getGradeMode().getLabel());
 				}
 		}
 		
@@ -2329,11 +2329,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(studentId), currentUser());
 			
 			EligibilityCheck last = (EligibilityCheck)getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingEligibility);
-			if (ret != null && last != null && last.hasGradingModes())
+			if (ret != null && last != null && last.hasGradeModes())
 				for (CourseAssignment ca: ret.getCourseAssignments())
 					for (ClassAssignment a: ca.getClassAssignments()) {
-						GradingMode m = last.getGradingMode(a);
-						if (m != null) a.setGradingMode(m);
+						GradeMode m = last.getGradeMode(a);
+						if (m != null) a.setGradeMode(m);
 					}
 
 			
