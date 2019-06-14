@@ -46,6 +46,7 @@ import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.reservation.LearningCommunityReservation;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
@@ -118,6 +119,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 	private boolean iCanContinue = true;
 	private boolean iTimeConflictsIgnoreBreakTimes = false;
 	private boolean iAutoTimeOverrides = false;
+	private boolean iAutoLCOverrides = false;
 	
 	private Hashtable<Long,CourseOffering> iCourses = null;
     private Hashtable<Long,Class_> iClasses = null;
@@ -160,6 +162,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		if (allowedOverrides != null && !allowedOverrides.isEmpty())
 			iAllowedOverrides = new HashSet<String>(Arrays.asList(allowedOverrides.split(",")));
 		iAutoTimeOverrides = solver.getProperties().getPropertyBoolean("Save.XE.AutoTimeOverrides", iAutoOverrides && iAllowedOverrides.contains("TIME-CNFLT"));
+		iAutoLCOverrides = solver.getProperties().getPropertyBoolean("Save.XE.AutoLCOverrides", false);
 		iTimeConflictsIgnoreBreakTimes = solver.getProperties().getPropertyBoolean("Save.XE.TimeConflictsIgnoreBreakTimes", false);
 		iNrThreads = solver.getProperties().getPropertyInt("Save.XE.NrSaveThreads", 10);
 		iCSV = new InMemoryReport("XE", "Last XE Enrollment Results (" + Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP_SHORT).format(new Date()) + ")");
@@ -297,7 +300,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
     	action.addEnrollment(requested);
     	List<CSVField[]> csv = new ArrayList<CSVField[]>();
         try {
-        	enroll(student, getCrns(student), action, csv);
+        	enroll(student, getCrns(student), getLCCrns(student), action, csv);
         } catch (Exception e) {
         	if (e instanceof SectioningException) {
 				if (e.getCause() == null) {
@@ -352,6 +355,22 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		for (Request request: student.getRequests()) {
 			Enrollment enrollment = getAssignment().getValue(request);
 			if (enrollment != null && enrollment.isCourseRequest()) {
+				CourseOffering course = iCourses.get(enrollment.getCourse().getId());
+				for (Section section: enrollment.getSections()) {
+					Class_ clazz = iClasses.get(section.getId());
+					if (clazz != null && course != null) crns.add(clazz.getExternalId(course));
+				}
+			}
+		}
+		return crns;
+	}
+	
+	protected Set<String> getLCCrns(Student student) {
+		Set<String> crns = new TreeSet<String>();
+		if (!iAutoLCOverrides) return crns;
+		for (Request request: student.getRequests()) {
+			Enrollment enrollment = getAssignment().getValue(request);
+			if (enrollment != null && enrollment.isCourseRequest() && enrollment.getReservation() != null && enrollment.getReservation() instanceof LearningCommunityReservation) {
 				CourseOffering course = iCourses.get(enrollment.getCourse().getId());
 				for (Section section: enrollment.getSections()) {
 					Class_ clazz = iClasses.get(section.getId());
@@ -436,7 +455,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		return builder.create();
 	}
 	
-	protected void enroll(Student student, Set<String> crns, OnlineSectioningLog.Action.Builder action, List<CSVField[]> csv) throws IOException {
+	protected void enroll(Student student, Set<String> crns, Set<String> lcCrns, OnlineSectioningLog.Action.Builder action, List<CSVField[]> csv) throws IOException {
 		iProgress.info("[" + student.getExternalId() + "] " + student.getName() + " " + crns);
 		
 		ClientResource resource = null;
@@ -580,7 +599,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 					if (reg.crnErrors != null && "F".equals(reg.statusIndicator)) {
 						for (XEInterface.CrnError e: reg.crnErrors) {
 							String override = getDefaultOverride(student, id, e.messageType);
-							if (override != null && iAllowedOverrides.contains(override)) {
+							if (override != null && (iAllowedOverrides.contains(override) || lcCrns.contains(id))) {
 								if (addOverride(student, req, id, override, appliedOverrides)) { changed = true; break; }
 							}
 						}
