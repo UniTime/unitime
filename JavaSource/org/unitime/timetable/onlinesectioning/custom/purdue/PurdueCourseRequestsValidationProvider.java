@@ -213,6 +213,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		return ApiMode.valueOf(ApplicationProperties.getProperty("purdue.specreg.mode.validation", "PREREG"));
 	}
 	
+	protected boolean isIngoreLCRegistrationErrors() {
+		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.ignoreLCerrors", "false"));
+	}
+	
 	protected String getBannerId(XStudent student) {
 		String id = student.getExternalId();
 		while (id.length() < 9) id = "0" + id;
@@ -354,6 +358,9 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		// if (student.getRequests().isEmpty()) return;
 		for (CourseRequestInterface.Request c: request.getAlternatives())
 			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, hasAssignment);
+		Set<XCourseId> lcCourses = new HashSet<XCourseId>();
+		Set<XCourseId> fixedCourses = new HashSet<XCourseId>();
+		boolean ignoreLcCourses = isIngoreLCRegistrationErrors();
 		for (XRequest r: original.getRequests()) {
 			if (r instanceof XCourseRequest) {
 				XCourseRequest cr = (XCourseRequest)r;
@@ -372,6 +379,13 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 									preferredSections.put((CourseRequest)q, sections);
 							}
 						}
+				}
+				for (XCourseId course: cr.getCourseIds()) {
+					XOffering offering = server.getOffering(course.getOfferingId());
+					if (offering != null && offering.hasLearningCommunityReservation(original, course))
+						lcCourses.add(course);
+					if (offering != null && (offering.hasIndividualReservation(original, course) || offering.hasGroupReservation(original, course)))
+						fixedCourses.add(course);
 				}
 			}
 		}
@@ -670,13 +684,18 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				if ("TIME".equals(problem.code)) continue;
 				XCourseId course = crn2course.get(problem.crn);
 				if (course == null) continue;
+				if (ignoreLcCourses && lcCourses.contains(course)) continue;
 				String bc = course2banner.get(course);
 				Map<String, RequestedCourseStatus> problems = (bc == null ? null : overrides.get(bc));
 				Set<String> denied = (bc == null ? null : deniedOverrides.get(bc));
 				if (denied != null && denied.contains(problem.code)) {
-					response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
-					response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.deniedOverrideError",
-							"One or more courses require registration overrides which have been denied.\nYou must remove or replace these courses in order to submit your registration request."));
+					if (fixedCourses.contains(course)) {
+						response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message, CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
+					} else {
+						response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
+						response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.deniedOverrideError",
+								"One or more courses require registration overrides which have been denied.\nYou must remove or replace these courses in order to submit your registration request."));
+					}
 				} else {
 					RequestedCourseStatus status = (problems == null ? null : problems.get(problem.code));
 					response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, problem.message, status == null ? CONF_BANNER : CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_PENDING)
@@ -696,13 +715,18 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				if ("TIME".equals(problem.code)) continue;
 				XCourseId course = crn2course.get(problem.crn);
 				if (course == null) continue;
+				if (ignoreLcCourses && lcCourses.contains(course)) continue;
 				String bc = course2banner.get(course);
 				Map<String, RequestedCourseStatus> problems = (bc == null ? null : overrides.get(bc));
 				Set<String> denied = (bc == null ? null : deniedOverrides.get(bc));
 				if (denied != null && denied.contains(problem.code)) {
-					response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
-					response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.deniedOverrideError",
-							"One or more courses require registration overrides which have been denied.\nYou must remove or replace these courses in order to submit your registration request."));
+					if (fixedCourses.contains(course)) {
+						response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message, CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
+					} else {
+						response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
+						response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.deniedOverrideError",
+								"One or more courses require registration overrides which have been denied.\nYou must remove or replace these courses in order to submit your registration request."));
+					}
 				} else {
 					RequestedCourseStatus status = (problems == null ? null : problems.get(problem.code));
 					response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, problem.message, status == null ? CONF_BANNER : CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_PENDING)
@@ -1088,7 +1112,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					for (CourseRequestInterface.Request c: request.getCourses())
 						if (c.hasRequestedCourse()) {
 							for (CourseRequestInterface.RequestedCourse rc: c.getRequestedCourse()) {
-								if (rc.getStatus() != null) {
+								if (rc.getStatus() != null && rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED) {
 									rc.setStatus(null);
 									rc.setOverrideExternalId(null);
 									rc.setOverrideTimeStamp(null);
@@ -1116,7 +1140,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					for (CourseRequestInterface.Request c: request.getAlternatives())
 						if (c.hasRequestedCourse()) {
 							for (CourseRequestInterface.RequestedCourse rc: c.getRequestedCourse()) {
-								if (rc.getStatus() != null) {
+								if (rc.getStatus() != null && rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED) {
 									rc.setStatus(null);
 									rc.setOverrideExternalId(null);
 									rc.setOverrideTimeStamp(null);
@@ -1719,6 +1743,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		s.setAllowDisabled(original.isAllowDisabled());
 		Set<XDistribution> distributions = new HashSet<XDistribution>();
 		Hashtable<CourseRequest, Set<Section>> preferredSections = new Hashtable<CourseRequest, Set<Section>>();
+		Set<XCourseId> lcCourses = new HashSet<XCourseId>();
+		boolean ignoreLcCourses = isIngoreLCRegistrationErrors();
 		
 		for (XRequest r: original.getRequests()) {
 			action.addRequest(OnlineSectioningHelper.toProto(r));
@@ -1744,6 +1770,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							if (section != null) sections.add(section);
 						}
 					}
+					if (offering != null && offering.hasLearningCommunityReservation(original, c))
+						lcCourses.add(c);
 				}
 				CourseRequest clonnedRequest = new CourseRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), s, courses, cr.isWaitlist(), cr.getTimeStamp() == null ? null : cr.getTimeStamp().getTime());
 				if (!sections.isEmpty())
@@ -1943,6 +1971,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				if ("TIME".equals(problem.code)) continue;
 				Course course = crn2course.get(problem.crn);
 				if (course == null) continue;
+				if (ignoreLcCourses && lcCourses.contains(new XCourseId(course))) continue;
 				Change change = null;
 				for (Change ch: submitRequest.changes) {
 					if (ch.subject.equals(course.getSubjectArea()) && ch.courseNbr.equals(course.getCourseNumber())) { change = ch; break; }
@@ -1977,6 +2006,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				if ("TIME".equals(problem.code)) continue;
 				Course course = crn2course.get(problem.crn);
 				if (course == null) continue;
+				if (ignoreLcCourses && lcCourses.contains(new XCourseId(course))) continue;
 				Change change = null;
 				for (Change ch: submitRequest.changes) {
 					if (ch.subject.equals(course.getSubjectArea()) && ch.courseNbr.equals(course.getCourseNumber())) { change = ch; break; }

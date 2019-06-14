@@ -539,7 +539,7 @@ public class XOffering implements Serializable, Externalizable {
     	return null;
     }
     
-    public boolean hasIndividualReservation(XStudent student, XCourse course) {
+    public boolean hasIndividualReservation(XStudent student, XCourseId course) {
     	for (XReservation reservation: getReservations()) {
     		if (reservation instanceof XIndividualReservation && reservation.isApplicable(student, course) && reservation.mustBeUsed() && !reservation.isExpired())
     			return true;
@@ -547,10 +547,18 @@ public class XOffering implements Serializable, Externalizable {
     	return false;
     }
     
-    public boolean hasGroupReservation(XStudent student, XCourse course) {
+    public boolean hasGroupReservation(XStudent student, XCourseId course) {
     	for (XReservation reservation: getReservations()) {
     		if (reservation instanceof XGroupReservation && reservation.isApplicable(student, course) && reservation.mustBeUsed() && !reservation.isExpired())
     			return true;
+    		if (reservation instanceof XLearningCommunityReservation && reservation.isApplicable(student, course) && reservation.mustBeUsed() && !reservation.isExpired())
+    			return true;
+    	}
+    	return false;
+    }
+    
+    public boolean hasLearningCommunityReservation(XStudent student, XCourseId course) {
+    	for (XReservation reservation: getReservations()) {
     		if (reservation instanceof XLearningCommunityReservation && reservation.isApplicable(student, course) && reservation.mustBeUsed() && !reservation.isExpired())
     			return true;
     	}
