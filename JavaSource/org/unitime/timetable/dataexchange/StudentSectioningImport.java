@@ -673,9 +673,9 @@ public class StudentSectioningImport extends BaseImport {
             					}
             					cr.setAllowOverlap(false);
             					cr.setCredit(credits.get(order));
+            					cr.setCourseOffering(co);
             					importPreferences(cr, elements.get(order), co, course2extId2class.get(co.getUniqueId()), course2name2class.get(co.getUniqueId()), ref2im, name2im);
             					cr.setOrder(order++);
-            					cr.setCourseOffering(co);
             					course2request.put(co.getUniqueId(), cr);
             				}
             				while (requests.hasNext()) {
