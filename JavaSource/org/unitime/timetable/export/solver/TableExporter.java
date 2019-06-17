@@ -273,8 +273,8 @@ public abstract class TableExporter implements Exporter {
 							TableInterface.TableCellRooms rooms = (TableInterface.TableCellRooms)change.getSecond();
 							for (int j = 0; j < rooms.getNrRooms(); j++) {
 								if (j > 0) b.add(new PDFPrinter.A(CONSTANTS.itemSeparator()));
-								PDFPrinter.A c = new PDFPrinter.A(rooms.getName(i));
-								c.setColor(rooms.getColor(i));
+								PDFPrinter.A c = new PDFPrinter.A(rooms.getName(j));
+								c.setColor(rooms.getColor(j));
 								b.add(c);
 							}
 							if (rooms.getNrRooms() == 0)

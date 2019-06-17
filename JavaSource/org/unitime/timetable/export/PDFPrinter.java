@@ -249,6 +249,7 @@ public class PDFPrinter implements Printer {
 						}
 						if (g.hasChunks()) {
 							Paragraph parent = new Paragraph();
+							parent.setLeading(0f, underline ? 1.4f : 1.0f);
 							int width = 0;
 							for (A h: g.getChunks()) {
 								if (h.hasText()) {
