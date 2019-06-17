@@ -634,13 +634,17 @@ public class TimePatternModel implements RequiredTimeTableModel {
     
     public boolean changeProhibited2Required() {
     	if (isExactTime()) return false;
-    	boolean hasElseThanNeutralProhibited = false;
+    	boolean hasNeutral = false, hasProhibited = false;;
     	for (int d=0;d<getNrDays();d++)
     		for (int t=0;t<getNrTimes();t++)
-    			if (!PreferenceLevel.sProhibited.equals(iPreferences[d][t]) && !PreferenceLevel.sNeutral.equals(iPreferences[d][t])) {
-    				hasElseThanNeutralProhibited = true; break;
-    			}
-    	if (hasElseThanNeutralProhibited) return false;
+    			if (PreferenceLevel.sNeutral.equals(iPreferences[d][t])) {
+    				hasNeutral = true;
+    			} else if (PreferenceLevel.sProhibited.equals(iPreferences[d][t])) {
+    				hasProhibited = true;
+    			} else {
+    				return false;
+    			} 
+    	if (!hasNeutral || !hasProhibited) return false;
     	for (int d=0;d<getNrDays();d++)
     		for (int t=0;t<getNrTimes();t++)
     			iPreferences[d][t] = (PreferenceLevel.sProhibited.equals(iPreferences[d][t])?PreferenceLevel.sNeutral:PreferenceLevel.sRequired);
