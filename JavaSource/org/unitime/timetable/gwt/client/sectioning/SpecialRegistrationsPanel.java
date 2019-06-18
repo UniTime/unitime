@@ -44,6 +44,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationStatus;
@@ -381,7 +382,7 @@ public class SpecialRegistrationsPanel extends P {
 					int idx = iTable.addRow(reg, row);
 					if (reg.getStatus() == SpecialRegistrationStatus.Approved) {
 						iTable.setBackGroundColor(idx, "#D7FFD7");
-						if (!reg.isFullyApplied(saved) && !reg.isExtended())
+						if (!reg.isFullyApplied(saved) && !reg.isExtended() && !reg.isGradeModeChange())
 							iHasOneOrMoreFullyApproved = true;
 					}
 					if (reg.getRequestId().equals(iSpecReg.getRequestId()))
@@ -604,6 +605,17 @@ public class SpecialRegistrationsPanel extends P {
 					for (ClassAssignment ch: response.getChanges())
 						if (a.getCourseId().equals(ch.getCourseId()) && a.getSection().equals(ch.getSection()))
 							if (ch.hasError()) return ch.getError();
+			}
+		return null;
+	}
+	
+	public GradeMode getGradeMode(ClassAssignment a) {
+		if (iRegistrations != null && a.getClassId() != null)
+			for (RetrieveSpecialRegistrationResponse response: iRegistrations) {
+				if (response.hasChanges())
+					for (ClassAssignment ch: response.getChanges())
+						if (a.getCourseId().equals(ch.getCourseId()) && a.getClassId().equals(ch.getClassId()))
+							return ch.getGradeMode();
 			}
 		return null;
 	}

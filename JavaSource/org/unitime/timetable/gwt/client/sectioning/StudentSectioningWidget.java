@@ -59,6 +59,7 @@ import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.ChangeGradeModesResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAllSpecialRegistrationsRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
@@ -79,6 +80,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
 import org.unitime.timetable.gwt.shared.UserAuthenticationProvider;
 
@@ -145,7 +147,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	
 	private VerticalPanel iPanel;
 	private P iFooter, iHeader;
-	private AriaMultiButton iRequests, iReset, iSchedule, iEnroll, iPrint, iExport = null, iSave, iStartOver, iDegreePlan, iSubmitSpecReg;
+	private AriaMultiButton iRequests, iReset, iSchedule, iEnroll, iPrint, iExport = null, iSave, iStartOver, iDegreePlan, iSubmitSpecReg, iChangeGradeModes;
 	
 	private AriaTabBar iAssignmentTab;
 	private DockPanel iAssignmentDock;
@@ -183,6 +185,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private CheckBox iCustomCheckbox = null;
 	private DegreePlansSelectionDialog iDegreePlansSelectionDialog = null;
 	private DegreePlanDialog iDegreePlanDialog = null;
+	
+	private ChangeGradeModesDialog iChangeGradeModesDialog = null;
 
 	public StudentSectioningWidget(boolean online, AcademicSessionProvider sessionSelector, UserAuthenticationProvider userAuthentication, StudentSectioningPage.Mode mode, boolean history) {
 		iMode = mode;
@@ -377,6 +381,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iEnroll.setEnabled(false);
 		rightFooterPanel.add(iEnroll);
 		rightHeaderPanel.add(iEnroll.createClone());
+		
+		iChangeGradeModes = new AriaMultiButton(MESSAGES.buttonChangeGradeModes());
+		iChangeGradeModes.setTitle(MESSAGES.hintChangeGradeModes());
+		iChangeGradeModes.setVisible(false);
+		iChangeGradeModes.setEnabled(false);
+		rightFooterPanel.add(iChangeGradeModes);
+		rightHeaderPanel.add(iChangeGradeModes.createClone());
 		
 		iSubmitSpecReg = new AriaMultiButton(MESSAGES.buttonSubmitSpecReg());
 		iSubmitSpecReg.setTitle(MESSAGES.hintSpecialRegistration());
@@ -607,7 +618,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					iSpecRegCx.setStatus(specReg.getStatus());
 					iSpecRegCx.setNote(specReg.getNote());
 					iSpecialRegAssignment = null;
-					if (specReg.hasChanges()) {
+					if (specReg.hasChanges() && !specReg.isGradeModeChange()) {
 						final CourseRequestInterface courseRequests = iCourseRequests.getRequest();
 						courseRequests.setTimeConflictsAllowed(specReg.hasTimeConflict()); courseRequests.setSpaceConflictsAllowed(specReg.hasSpaceConflict());
 						Set<Long> specRegDrops = new HashSet<Long>();
@@ -991,6 +1002,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			}
 		});
 		
+		iChangeGradeModes.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				changeGradeModes(new ArrayList<ClassAssignmentInterface.ClassAssignment>(iLastResult));
+			}
+		});
+		
 		iPrint.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				boolean allSaved = true;
@@ -1209,9 +1227,12 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							icons.add(RESOURCES.unassignment(), MESSAGES.unassignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
 						else if (!clazz.isFreeTime() && result.isCanEnroll())
 							icons.add(RESOURCES.assignment(), MESSAGES.assignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
+						GradeMode gradeMode = clazz.getGradeMode();
 						SpecialRegistrationStatus specRegStatus = iSpecialRegistrationsPanel.getStatus(clazz);
 						if (specRegStatus != null) {
 							String error = iSpecialRegistrationsPanel.getError(clazz);
+							GradeMode gm = iSpecialRegistrationsPanel.getGradeMode(clazz);
+							if (gm != null && gradeMode != null) gradeMode = gm;
 							switch (specRegStatus) {
 							case Draft:
 								icons.add(RESOURCES.specRegDraft(), (error != null ? error + "\n" : "") + MESSAGES.hintSpecRegDraft(), true);
@@ -1248,7 +1269,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 
 						if (!clazz.isTeachingAssignment())
 							totalCredit += clazz.guessCreditCount();
-						if (clazz.getGradeMode() != null)
+						if (gradeMode != null)
 							hasGradeMode = true;
 						if (clazz.isAssigned()) {
 							row = new WebTable.Row(
@@ -1267,7 +1288,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
 								new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
 								new WebTable.AbbvTextCell(clazz.getCredit()),
-								(clazz.getGradeMode() == null ? new WebTable.Cell("") : new WebTable.Cell(clazz.getGradeMode().getCode()).title(clazz.getGradeMode().getLabel()).aria(clazz.getGradeMode().getLabel())),
+								(gradeMode == null ? new WebTable.Cell("") : new WebTable.Cell(gradeMode.getCode()).title(gradeMode.getLabel()).aria(gradeMode.getLabel())),
 								icons);
 						} else {
 							row = new WebTable.Row(
@@ -1284,7 +1305,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
 									new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
 									new WebTable.AbbvTextCell(clazz.getCredit()),
-									(clazz.getGradeMode() == null ? new WebTable.Cell("") : new WebTable.Cell(clazz.getGradeMode().getCode()).title(clazz.getGradeMode().getLabel()).aria(clazz.getGradeMode().getLabel())),
+									(gradeMode == null ? new WebTable.Cell("") : new WebTable.Cell(gradeMode.getCode()).title(gradeMode.getLabel()).aria(gradeMode.getLabel())),
 									icons);
 						}
 						if (course.isFreeTime()) {
@@ -1488,9 +1509,12 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							WebTable.Row row = null;
 							if (firstClazz && !rows.isEmpty()) style += " top-border-dashed";
 							WebTable.IconsCell icons = new WebTable.IconsCell();
+							GradeMode gradeMode = clazz.getGradeMode();
 							SpecialRegistrationStatus specRegStatus = iSpecialRegistrationsPanel.getStatus(clazz);
 							if (specRegStatus != null) {
 								String error = iSpecialRegistrationsPanel.getError(clazz);
+								GradeMode gm = iSpecialRegistrationsPanel.getGradeMode(clazz);
+								if (gm != null && gradeMode != null) gradeMode = gm;
 								switch (specRegStatus) {
 								case Draft:
 									icons.add(RESOURCES.specRegDraft(), (error != null ? error + "\n" : "") + MESSAGES.hintSpecRegDraft(), true);
@@ -1535,7 +1559,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 										new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
 										new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
 										new WebTable.AbbvTextCell(clazz.getCredit()),
-										(clazz.getGradeMode() == null ? new WebTable.Cell("") : new WebTable.Cell(clazz.getGradeMode().getCode()).title(clazz.getGradeMode().getLabel()).aria(clazz.getGradeMode().getLabel())),
+										(gradeMode == null ? new WebTable.Cell("") : new WebTable.Cell(gradeMode.getCode()).title(gradeMode.getLabel()).aria(gradeMode.getLabel())),
 										icons);								
 							} else {
 								row = new WebTable.Row(
@@ -1552,7 +1576,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 										new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
 										new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
 										new WebTable.AbbvTextCell(clazz.getCredit()),
-										(clazz.getGradeMode() == null ? new WebTable.Cell("") : new WebTable.Cell(clazz.getGradeMode().getCode()).title(clazz.getGradeMode().getLabel()).aria(clazz.getGradeMode().getLabel())),
+										(gradeMode == null ? new WebTable.Cell("") : new WebTable.Cell(gradeMode.getCode()).title(gradeMode.getLabel()).aria(gradeMode.getLabel())),
 										icons);
 							}
 							row.setAriaLabel(ARIA.previousAssignment(MESSAGES.clazz(course.getSubject(), course.getCourseNbr(), clazz.getSubpart(), clazz.getSection()),
@@ -1578,9 +1602,12 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						WebTable.Row row = null;
 						
 						WebTable.IconsCell icons = new WebTable.IconsCell();
+						GradeMode gradeMode = clazz.getGradeMode();
 						SpecialRegistrationStatus specRegStatus = iSpecialRegistrationsPanel.getStatus(clazz);
 						if (specRegStatus != null) {
 							String error = iSpecialRegistrationsPanel.getError(clazz);
+							GradeMode gm = iSpecialRegistrationsPanel.getGradeMode(clazz);
+							if (gm != null && gradeMode != null) gradeMode = gm;
 							switch (specRegStatus) {
 							case Draft:
 								icons.add(RESOURCES.specRegDraft(), (error != null ? error + "\n" : "") + MESSAGES.hintSpecRegDraft(), true);
@@ -1625,7 +1652,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
 									new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
 									new WebTable.AbbvTextCell(clazz.getCredit()),
-									(clazz.getGradeMode() == null ? new WebTable.Cell("") : new WebTable.Cell(clazz.getGradeMode().getCode()).title(clazz.getGradeMode().getLabel()).aria(clazz.getGradeMode().getLabel())),
+									(gradeMode == null ? new WebTable.Cell("") : new WebTable.Cell(gradeMode.getCode()).title(gradeMode.getLabel()).aria(gradeMode.getLabel())),
 									icons);
 						} else {
 							row = new WebTable.Row(
@@ -1642,7 +1669,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
 									new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
 									new WebTable.AbbvTextCell(clazz.getCredit()),
-									(clazz.getGradeMode() == null ? new WebTable.Cell("") : new WebTable.Cell(clazz.getGradeMode().getCode()).title(clazz.getGradeMode().getLabel()).aria(clazz.getGradeMode().getLabel())),
+									(gradeMode == null ? new WebTable.Cell("") : new WebTable.Cell(gradeMode.getCode()).title(gradeMode.getLabel()).aria(gradeMode.getLabel())),
 									icons);
 						}
 						row.setAriaLabel(ARIA.previousAssignment(MESSAGES.clazz(course.getSubject(), course.getCourseNbr(), clazz.getSubpart(), clazz.getSection()),
@@ -1691,6 +1718,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iEnroll.setVisible(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL));
 			iSubmitSpecReg.setVisible(result.isCanEnroll() && !iEnroll.isVisible() && iSpecRegCx.isCanSubmit() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
 			iSubmitSpecReg.setEnabled(result.isCanEnroll() && !iEnroll.isVisible() && iSpecRegCx.isCanSubmit() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
+			iChangeGradeModes.setEnabled(hasGradeMode && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_CHANGE_GRADE_MODE));
+			iChangeGradeModes.setVisible(hasGradeMode && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_CHANGE_GRADE_MODE));
 			if (iEligibilityCheck != null && iEligibilityCheck.hasCheckboxMessage()) {
 				if (iCustomCheckbox == null) {
 					iCustomCheckbox = new CheckBox(iEligibilityCheck.getCheckboxMessage(), true);
@@ -1758,6 +1787,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iReset.setVisible(false); iReset.setEnabled(false);
 		iQuickAdd.setVisible(false); iQuickAdd.setEnabled(false);
 		iEnroll.setVisible(false); iEnroll.setEnabled(false);
+		iChangeGradeModes.setVisible(false); iChangeGradeModes.setEnabled(false);
 		iSubmitSpecReg.setVisible(false); iSubmitSpecReg.setEnabled(false);
 		if (iCustomCheckbox != null) {
 			iCustomCheckbox.setVisible(false); iCustomCheckbox.setEnabled(false);
@@ -3005,5 +3035,34 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				iSessionSelector.getAcademicSessionName(),
 				requests//, credit
 				);
+	}
+	
+	protected void changeGradeModes(ArrayList<ClassAssignmentInterface.ClassAssignment> lastEnrollment) {
+		if (iChangeGradeModesDialog == null) {
+			iChangeGradeModesDialog = new ChangeGradeModesDialog(iStatus) {
+				protected void onChange(ChangeGradeModesResponse response) {
+					if (response.hasGradeModes()) {
+						for (CourseAssignment course: iSavedAssignment.getCourseAssignments())
+							for (ClassAssignment ca: course.getClassAssignments()) {
+								GradeMode mode = response.getGradeMode(ca);
+								if (mode != null) ca.setGradeMode(mode);
+							}
+					}
+					if (response.hasRequests()) {
+						List<RetrieveSpecialRegistrationResponse> requests = new ArrayList<RetrieveSpecialRegistrationResponse>(response.getRequests());
+						for (RetrieveSpecialRegistrationResponse r: iSpecialRegistrationsPanel.getRegistrations()) {
+							if (response.isToBeCancelled(r.getRequestId())) continue;
+							if (response.hasRequest(r.getRequestId())) continue;
+							requests.add(r);
+						}
+						Collections.sort(requests);
+						iSpecialRegistrationsPanel.populate(requests, iSavedAssignment);
+					}
+					fillIn(iSavedAssignment);
+					addHistory();
+				}
+			};
+		}
+		iChangeGradeModesDialog.changeGradeModes(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), lastEnrollment);
 	}
 }

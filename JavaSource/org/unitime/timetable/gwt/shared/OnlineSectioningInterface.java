@@ -64,7 +64,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			CAN_REGISTER,
 			NO_REQUEST_ARROWS,
 			CAN_SPECREG, HAS_SPECREG, SR_TIME_CONF, SR_LIMIT_CONF,
-			CAN_REQUIRE,
+			CAN_REQUIRE, CAN_CHANGE_GRADE_MODE,
 			;
 			
 			public int flag() { return 1 << ordinal(); }
@@ -137,6 +137,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			if (iGradeModes == null) return null;
 			return iGradeModes.get(section);
 		}
+		public GradeModes getGradeModes() { return iGradeModes; }
 	}
 	
 	public static class SectioningProperties implements IsSerializable, Serializable {
@@ -363,6 +364,8 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			if (a.getParentSection() != null && a.getParentSection().equals(a.getSection())) return null;
 			return iModes.get(a.getExternalId());
 		}
+		
+		public Map<String, GradeMode> toMap() { return iModes; }
 	}
 	
 	public static class GradeMode implements IsSerializable, Serializable, Comparable<GradeMode> {

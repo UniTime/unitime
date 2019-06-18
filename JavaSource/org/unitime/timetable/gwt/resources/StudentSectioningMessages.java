@@ -436,11 +436,17 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("<u>S</u>ubmit Schedule")
 	String buttonEnroll();
 	
+	@DefaultMessage("<u>G</u>rade Modes")
+	String buttonChangeGradeModes();
+	
 	@DefaultMessage("Submit Approval Requests")
 	String buttonSubmitSpecReg();
 	
 	@DefaultMessage("Register for the above schedule.")
 	String hintEnroll();
+	
+	@DefaultMessage("Change grade mode of one or more courses.")
+	String hintChangeGradeModes();
 	
 	@DefaultMessage("Sumbit the above enrollment changes to Special Registration.")
 	String hintSpecialRegistration();
@@ -2202,4 +2208,57 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Elective {0} is marked as critical.")
 	String hintCriticalGroup(String courseOrGroup);
+	
+	@DefaultMessage("Grade Modes")
+	String dialogChangeGradeMode();
+	
+	@DefaultMessage("Retrieving available grade modes...")
+	String waitRetrieveGradeModes();
+	
+	@DefaultMessage("Requesting grade mode changes...")
+	String waitChangeGradeModes();
+	
+	@DefaultMessage("Unable to get available grade modes: {0}")
+	String exceptionRetrieveGradeModes(String message);
+	
+	@DefaultMessage("Failed to request grade mode changes: {0}")
+	String exceptionChangeGradeModes(String message);
+	
+	@DefaultMessage("No grade mode changes are available.")
+	String statusNoGradeModeChangesAvailable();
+	
+	@DefaultMessage("No grade mode changes have been requested.")
+	String statusNoGradeModeChangesMade();
+	
+	@DefaultMessage("Grade mode changes have been successfully requested.")
+	String statusGradeModeChangesDone();
+	
+	@DefaultMessage("There are no courses with a grade mode.")
+	String emptyGradeChanges();
+	
+	@DefaultMessage("Submit Changes")
+	String buttonSubmitGradeModeChanges();
+	
+	@DefaultMessage("Close Dialog")
+	String buttonCloseGradeModeChanges();
+	
+	@DefaultMessage("The following grade mode changes are being requested:")
+	String gradeModeListChanges();
+	
+	@DefaultMessage("- No approval is needed.")
+	String gradeModeNoApprovalNeeded();
+	
+	@DefaultMessage("- {0} approval is needed.")
+	String gradeModeApprovalNeeded(String approvals);
+	
+	@DefaultMessage(
+			"\nPlease, select <b>Submit Changes</b> to apply for the selected grade mode changes. "
+			+ "The chosen grade mode changes will be submitted for the required approvals. "
+			+ "If no approval is necessary, grade mode will change immediately. "
+			+ "Click <b>Close Dialog</b> to cancel this request and go back to explore other scheduling options.")
+	String gradeModeChangeOptions();
+		
+	@DefaultMessage(
+			"<b>Request Note:</b>")
+	String gradeModeChangesNote();
 }

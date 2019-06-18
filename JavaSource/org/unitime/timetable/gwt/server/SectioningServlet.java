@@ -71,7 +71,11 @@ import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.ChangeGradeModesRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.ChangeGradeModesResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAllSpecialRegistrationsRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAvailableGradeModesRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAvailableGradeModesResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse;
@@ -156,8 +160,10 @@ import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.onlinesectioning.solver.ComputeSuggestionsAction;
 import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction;
 import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationCancel;
+import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationChangeGradeModes;
 import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationEligibility;
 import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationRetrieveAll;
+import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationRetrieveGradeModes;
 import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationSubmit;
 import org.unitime.timetable.onlinesectioning.status.FindEnrollmentAction;
 import org.unitime.timetable.onlinesectioning.status.FindEnrollmentInfoAction;
@@ -3092,5 +3098,60 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		setLastSessionId(request.getSessionId());
 
 		return server.execute(server.createAction(SpecialRegistrationCancel.class).withRequest(request), currentUser());
+	}
+
+	@Override
+	public RetrieveAvailableGradeModesResponse retrieveGradeModes(RetrieveAvailableGradeModesRequest request) throws SectioningException, PageAccessException {
+		if (request.getSessionId() == null) {
+			request.setSessionId(getLastSessionId());
+		}
+		if (request.getStudentId() == null) {
+			Long sessionId = request.getSessionId();
+			if (sessionId == null) sessionId = getLastSessionId();
+			if (sessionId != null) request.setStudentId(getStudentId(sessionId));
+		}
+		
+		if (request.getSessionId() == null) throw new SectioningException(MSG.exceptionNoAcademicSession());
+		if (request.getStudentId() == null) throw new SectioningException(MSG.exceptionNoStudent());
+		
+		OnlineSectioningServer server = getServerInstance(request.getSessionId(), false);
+		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+		if (!server.getAcademicSession().isSectioningEnabled() || !CustomSpecialRegistrationHolder.hasProvider())
+			throw new SectioningException(MSG.exceptionNotSupportedFeature());
+		
+		setLastSessionId(request.getSessionId());
+
+		return server.execute(server.createAction(SpecialRegistrationRetrieveGradeModes.class).withRequest(request), currentUser());
+	}
+
+	@Override
+	public ChangeGradeModesResponse changeGradeModes(ChangeGradeModesRequest request) throws SectioningException, PageAccessException {
+		if (request.getSessionId() == null) {
+			request.setSessionId(getLastSessionId());
+		}
+		if (request.getStudentId() == null) {
+			Long sessionId = request.getSessionId();
+			if (sessionId == null) sessionId = getLastSessionId();
+			if (sessionId != null) request.setStudentId(getStudentId(sessionId));
+		}
+		
+		if (request.getSessionId() == null) throw new SectioningException(MSG.exceptionNoAcademicSession());
+		if (request.getStudentId() == null) throw new SectioningException(MSG.exceptionNoStudent());
+		
+		OnlineSectioningServer server = getServerInstance(request.getSessionId(), false);
+		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+		if (!server.getAcademicSession().isSectioningEnabled() || !CustomSpecialRegistrationHolder.hasProvider())
+			throw new SectioningException(MSG.exceptionNotSupportedFeature());
+		
+		setLastSessionId(request.getSessionId());
+
+		ChangeGradeModesResponse ret = server.execute(server.createAction(SpecialRegistrationChangeGradeModes.class).withRequest(request), currentUser());
+		
+		EligibilityCheck last = (EligibilityCheck)getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingEligibility);
+		if (ret != null && ret.hasGradeModes() && last != null)
+			for (Map.Entry<String, GradeMode> e: ret.getGradeModes().toMap().entrySet())
+				last.addGradeMode(e.getKey(), e.getValue().getCode(), e.getValue().getLabel());
+		
+		return ret;
 	}
 }

@@ -6516,3 +6516,66 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-StudentStatusDialog {
 	max-width: 800px;
 }
+
+.unitime-ChangeGradeModesDialog .course-table {
+	display: table;
+	padding-top: 5px;
+	padding-left: 10px;
+	padding-bottom: 10px;
+}
+
+.unitime-ChangeGradeModesDialog .course-table .course-row {
+	display: table-row;
+}
+
+.unitime-ChangeGradeModesDialog .course-table .first-course-line .course-name {
+	padding-top: 5px;
+}
+
+.unitime-ChangeGradeModesDialog .course-table .first-course-line .section-name {
+	padding-top: 5px;
+}
+
+.unitime-ChangeGradeModesDialog .course-table .first-course-line .approval-message {
+	padding-top: 5px;
+}
+
+.unitime-ChangeGradeModesDialog .course-table .approval-message {
+	display: table-cell;
+	text-indent: -6pt;
+	padding-left: 6pt;
+	text-align: justify;
+}
+
+.unitime-ChangeGradeModesDialog .course-table .course-name {
+	display: table-cell;
+	vertical-align: top;
+	white-space: nowrap;
+	padding-right: 5px;
+	font-weight: bold;
+}
+
+.unitime-ChangeGradeModesDialog .course-table .section-name {
+	display: table-cell;
+	vertical-align: top;
+	white-space: nowrap;
+	padding-right: 5px;
+	font-weight: bold;
+}
+
+.unitime-ChangeGradeModesDialog .approval-panel {
+	max-width: 800px;
+	padding-top: 10px;
+}
+
+.unitime-ChangeGradeModesDialog .message {
+	display: block;
+	white-space: pre-wrap;
+	text-align: justify;
+}
+
+.unitime-ChangeGradeModesDialog .request-note {
+	display: block;
+	margin-top: 2px;
+	margin-left: 15px;
+}
