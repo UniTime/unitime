@@ -274,7 +274,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 			} else {
 				row.add(new GroupTitleCell(course.hasTitle() ? MESSAGES.courseNameWithTitle(course.getSubject(), course.getCourse(), course.getTitle()) : MESSAGES.course(course.getSubject(), course.getCourse()), false));
 			}
-			if (group.isCritical())
+			if (course.isCritical())
 				row.add(new CriticalCell(course));
 			else
 				row.add(new Label());
