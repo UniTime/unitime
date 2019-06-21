@@ -697,20 +697,20 @@ public class StudentSectioningImport extends BaseImport {
                                         Set<Class_> classes = null;
                                         
                                 		String classExternalId  = classElement.attributeValue("externalId");
-                                		if (classExternalId != null) {
+                                		if (classExternalId != null && extId2class != null) {
                                 			classes = extId2class.get(classExternalId);
                                 			if (classes == null)
                                 				classes = name2class.get(classExternalId);
                                 		}
                                 		
-                                		if (classes == null) {
+                                		if (classes == null && name2class != null) {
                                     		String type = classElement.attributeValue("type");
                                     		String suffix = classElement.attributeValue("suffix");
                                     		if (type != null && suffix != null)
                                     			classes = name2class.get(type.trim() + " " + suffix);
                                 		}
                                 		
-                                		if (classes == null) {
+                                		if (classes == null && co != null) {
                                 			warn(co.getCourseName() + ": Class " + (classExternalId != null ? classExternalId : classElement.attributeValue("type") + " " + classElement.attributeValue("suffix")) + " not found.");
                                 			continue;
                                 		}
@@ -1004,20 +1004,20 @@ public class StudentSectioningImport extends BaseImport {
 			Set<Class_> classes = null;
             
     		String classExternalId  = classElement.attributeValue("externalId");
-    		if (classExternalId != null) {
+    		if (classExternalId != null && extId2class != null) {
     			classes = extId2class.get(classExternalId);
     			if (classes == null)
     				classes = name2class.get(classExternalId);
     		}
     		
-    		if (classes == null) {
+    		if (classes == null && name2class != null) {
         		String type = classElement.attributeValue("type");
         		String suffix = classElement.attributeValue("suffix");
         		if (type != null && suffix != null)
         			classes = name2class.get(type.trim() + " " + suffix);
     		}
     		
-    		if (classes == null) {
+    		if (classes == null && course != null) {
     			warn(course.getCourseName() + ": Class " + (classExternalId != null ? classExternalId : classElement.attributeValue("type") + " " + classElement.attributeValue("suffix")) + " not found.");
     			continue;
     		}
