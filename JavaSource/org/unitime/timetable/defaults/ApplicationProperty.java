@@ -2341,6 +2341,18 @@ public enum ApplicationProperty {
 	@Description("Online Student Scheduling: hide up and down arrows in the Course Requests table")
 	@Since(4.1)
 	OnlineSchedulingNoRequestArrows("unitime.enrollment.hideCourseRequestArrows"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Student Solver Dashboard: allow Rearrange Schedule button)")
+	@Since(4.4)
+	SolverDashboardAllowScheduleReset("unitime.solverDashboard.allowScheduleReset"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Student Solver Dashboard: allow wait-listing toggle)")
+	@Since(4.4)
+	SolverDashboardAllowWaitList("unitime.solverDashboard.allowWaitList"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
