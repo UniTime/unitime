@@ -22,6 +22,7 @@ package org.unitime.timetable.onlinesectioning.custom;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -107,6 +108,7 @@ public interface StudentEnrollmentProvider {
 		public XCourse getCourse() { return iCourse; }
 		public XSection getSection() { return iSection; }
 		public String getMessage() { return iMessage; }
+		public void setMessage(String message) { iMessage = message; }
 		public boolean isEnrolled() { return iEnrolled; }
 		
 		public boolean hasErrors() { return iErrors != null && !iErrors.isEmpty(); }
@@ -126,6 +128,7 @@ public interface StudentEnrollmentProvider {
 		private static final long serialVersionUID = 1L;
 		private XCourse iCourse;
 		private List<XSection> iSections;
+		private Set<String> iGradeModes;
 		
 		public EnrollmentRequest(XCourse course, List<XSection> sections) {
 			iCourse = course; iSections = sections;
@@ -146,6 +149,15 @@ public interface StudentEnrollmentProvider {
 			if (getCourse().hasCredit()) return getCourse().getMinCredit();
 			return 0f;
 		}
+		
+		public String getGradeMode() { return (iGradeModes != null && iGradeModes.size() == 1 ? iGradeModes.iterator().next() : null); }
+		public void setGradeMode(String gm) {
+			if (gm != null && !gm.isEmpty())  {
+				if (iGradeModes == null) iGradeModes = new HashSet<String>();
+				iGradeModes.add(gm);
+			}
+		}
+		public boolean hasGradeMode() { return iGradeModes != null && iGradeModes.size() == 1; }
 		
 		public String toString() {
 			return getCourse().getCourseName() + ": " + ToolBox.col2string(getSections(), 2);
