@@ -24,7 +24,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.ChangeGradeModesRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.ChangeGradeModesResponse;
-import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationGradeMode;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationGradeModeChange;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -77,9 +77,9 @@ public class SpecialRegistrationChangeGradeModes implements OnlineSectioningActi
 					for (XSection section: offering.getSections(enrl)) {
 						OnlineSectioningLog.Section.Builder sct = OnlineSectioningHelper.toProto(section, enrl);
 						String ext = section.getExternalId(enrl.getCourseId());
-						SpecialRegistrationGradeMode mode = (ext == null ? null : getRequest().get(ext));
+						SpecialRegistrationGradeModeChange mode = (ext == null ? null : getRequest().getChange(ext));
 						if (mode != null)
-							sct.getClazzBuilder().addParameterBuilder().setKey("selectedGradeMode").setValue(mode.getCode());
+							sct.getClazzBuilder().addParameterBuilder().setKey("selectedGradeMode").setValue(mode.getSelectedGradeMode());
 						enrollment.addSection(sct);
 					}
 				}

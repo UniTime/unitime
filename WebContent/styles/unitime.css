@@ -6579,3 +6579,7 @@ unitime-RoomSharingWidget .legend .blank {
 	margin-top: 2px;
 	margin-left: 15px;
 }
+
+.unitime-ChangeGradeModesDialog .grade-mode-label {
+	padding-left: 9px;
+}

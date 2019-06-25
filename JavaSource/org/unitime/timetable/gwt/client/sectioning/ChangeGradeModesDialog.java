@@ -43,6 +43,7 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.ChangeGrade
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAvailableGradeModesRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAvailableGradeModesResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationGradeMode;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationGradeModeChange;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationGradeModeChanges;
 
 import com.google.gwt.core.client.GWT;
@@ -52,6 +53,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Focusable;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextArea;
@@ -157,6 +159,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 				iTable.clearData(true);
 				
 				Long lastCourseId = null;
+				GradeModeChange change = null;
 				for (ClassAssignmentInterface.ClassAssignment clazz: iEnrollment) {
 					SpecialRegistrationGradeModeChanges gradeMode = result.get(clazz);
 					if (gradeMode == null) continue;
@@ -164,10 +167,14 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 					if (clazz.isTeachingAssignment() || clazz.isDummy() || clazz.isFreeTime() || !clazz.isAssigned()) continue;
 					
 					boolean firstClazz = !clazz.getCourseId().equals(lastCourseId);
+					if (firstClazz) {
+						change = new GradeModeChange(clazz, gradeMode);
+						iChanges.add(change);
+					} else {
+						change.addClassAssignment(clazz, gradeMode);
+					}
 					lastCourseId = clazz.getCourseId();
 					String style = (firstClazz && !rows.isEmpty() ? "top-border-dashed": "");
-					GradeModeChange change = new GradeModeChange(clazz.getCourseName(), clazz.getSection(), clazz.getExternalId(), gradeMode);
-					iChanges.add(change);
 					WebTable.Row row = new WebTable.Row(
 							new WebTable.Cell(firstClazz ? clazz.getSubject() : "").aria(clazz.getSubject()),
 							new WebTable.Cell(firstClazz ? CONSTANTS.showCourseTitle() ? clazz.getCourseNameWithTitle() : clazz.getCourseName() : "").aria(CONSTANTS.showCourseTitle() ? clazz.getCourseNameWithTitle() : clazz.getCourseName()),
@@ -182,7 +189,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 							// new WebTable.InstructorCell(clazz.getInstructors(), null, ", "),
 							// new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
 							new WebTable.AbbvTextCell(clazz.getCredit()),
-							change
+							(firstClazz ? change : new GradeModeLabel(change, gradeMode))
 							);
 					for (WebTable.Cell cell: row.getCells())
 						cell.setStyleName(style);
@@ -211,29 +218,34 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 		iApproval.clear();
 		P ctab = new P("course-table");
 		boolean changes = false, approvals = false;
-		String last = null;
 		for (GradeModeChange cell: iChanges) {
 			SpecialRegistrationGradeMode change = cell.getChange();
 			if (change == null) continue;
 			changes = true;
-			P cn = new P("course-name");
-			if (last == null || !last.equals(cell.getCourse())) cn.setText(cell.getCourse());
-			P sn = new P("section-name");
-			sn.setText(cell.getSection());
-			P m = new P("approval-message");
-			if (change.hasApprovals()) {
-				m.setText(MESSAGES.gradeModeApprovalNeeded(ToolBox.toString(change.getApprovals())));
-				approvals = true;
-			} else {
-				m.setText(MESSAGES.gradeModeNoApprovalNeeded());
+			boolean first = true;
+			for (ClassAssignmentInterface.ClassAssignment ca: cell.getClassAssignments()) {
+				SpecialRegistrationGradeMode ch = cell.getChange(ca.getExternalId());
+				if (ch == null) continue;
+				if (ch.getOriginalGradeMode() != null && ch.getOriginalGradeMode().equals(change.getCode())) continue;
+				P cn = new P("course-name");
+				if (first) cn.setText(ca.getCourseName());
+				P sn = new P("section-name");
+				sn.setText(ca.getSection());
+				P m = new P("approval-message");
+				if (ch.hasApprovals()) {
+					m.setText(MESSAGES.gradeModeApprovalNeeded(ToolBox.toString(ch.getApprovals())));
+					approvals = true;
+				} else {
+					m.setText(MESSAGES.gradeModeNoApprovalNeeded());
+				}	
+				P crow = new P("course-row");
+				if (first) crow.addStyleName("first-course-line");
+				crow.add(cn);
+				crow.add(sn);
+				crow.add(m);
+				ctab.add(crow);
+				first = false;
 			}
-			P crow = new P("course-row");
-			if (last == null || !last.equals(cell.getCourse())) crow.addStyleName("first-course-line");
-			crow.add(cn);
-			crow.add(sn);
-			crow.add(m);
-			ctab.add(crow);
-			last = cell.getCourse();
 		}
 		if (changes) {
 			P m = new P("message"); m.setHTML(MESSAGES.gradeModeListChanges()); iApproval.add(m);
@@ -255,7 +267,22 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 		for (GradeModeChange cell: iChanges) {
 			SpecialRegistrationGradeMode change = cell.getChange();
 			if (change == null) continue;
-			request.add(cell.getSectionExternalId(), change);
+			SpecialRegistrationGradeModeChange ch = new SpecialRegistrationGradeModeChange();
+			ch.setOriginalGradeMode(cell.getGradeModes().get(0).getCurrentGradeMode() == null ? null : cell.getGradeModes().get(0).getCurrentGradeMode().getCode());
+			ch.setSelectedGradeMode(change.getCode());
+			ch.setSelectedGradeModeDescription(change.getLabel());
+			ch.setSubject(cell.getClassAssignments().get(0).getSubject());
+			ch.setCourse(cell.getClassAssignments().get(0).getCourseNbr());
+			ch.setCredit(cell.getClassAssignments().get(0).getCredit());
+			for (ClassAssignmentInterface.ClassAssignment ca: cell.getClassAssignments()) {
+				SpecialRegistrationGradeMode x = cell.getChange(ca.getExternalId());
+				if (x == null) continue;
+				if (x.getOriginalGradeMode() != null && x.getOriginalGradeMode().equals(change.getCode())) continue;
+				if (x.hasApprovals())
+					for (String app: x.getApprovals()) ch.addApproval(app);
+				ch.addCrn(ca.getExternalId());
+			}
+			request.addChange(ch);
 		}
 		if (request.hasGradeModeChanges()) {
 			LoadingWidget.getInstance().show(MESSAGES.waitChangeGradeModes());
@@ -280,42 +307,120 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 	}
 	
 	public class GradeModeChange extends Cell implements HasAriaLabel {
-		private ListBox iList = new ListBox();
-		private SpecialRegistrationGradeModeChanges iGradeMode;
-		private String iSectionExternalId;
-		private String iCourse, iSection;
+		private ListBox iList;
+		private List<SpecialRegistrationGradeModeChanges> iGradeMode;
+		private List<ClassAssignmentInterface.ClassAssignment> iClasses;
 		
-		public GradeModeChange(String course, String section, String sectionId, SpecialRegistrationGradeModeChanges gradeMode) {
+		public GradeModeChange(ClassAssignmentInterface.ClassAssignment ca, SpecialRegistrationGradeModeChanges gradeMode) {
 			super(null);
 			iList = new ListBox();
-			iList.addItem(gradeMode.getCurrentGradeMode().getLabel(), gradeMode.getCurrentGradeMode().getCode());
-			iList.setSelectedIndex(0);
-			iCourse = course; iSection = section;
-			iSectionExternalId = sectionId;
-			iGradeMode = gradeMode;
-			if (gradeMode.hasAvailableChanges()) {
-				for (SpecialRegistrationGradeMode mode: gradeMode.getAvailableChanges()) {
-					if (!mode.equals(gradeMode.getCurrentGradeMode()))
-						iList.addItem(mode.getLabel(), mode.getCode());
-				}
-			}
+			iList.addStyleName("grade-mode-list");
+			iClasses = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
+			iClasses.add(ca);
+			iGradeMode = new ArrayList<SpecialRegistrationGradeModeChanges>();
+			iGradeMode.add(gradeMode);
 			iList.addChangeHandler(new ChangeHandler() {
 				@Override
 				public void onChange(ChangeEvent event) {
 					formChanged();
 				}
 			});
+			setup();
+		}
+		
+		private void setup() {
+			iList.clear();
+			SpecialRegistrationGradeMode current = iGradeMode.get(0).getCurrentGradeMode();
+			boolean same = true;
+			for (SpecialRegistrationGradeModeChanges gm: iGradeMode) {
+				SpecialRegistrationGradeMode m = gm.getCurrentGradeMode();
+				if (current != null) {
+					if (m == null || !current.getCode().equals(m.getCode())) same = false;
+				} else {
+					if (m != null) same = false;
+				}
+			}
+			if (same) {
+				if (current != null) {
+					iList.addItem(current.getLabel(), current.getCode());
+					iList.setSelectedIndex(0);
+				} else {
+					iList.addItem(MESSAGES.gradeModeItemNotSet(), "");
+					iList.setSelectedIndex(0);
+				}
+			} else {
+				if (current != null) {
+					iList.addItem(MESSAGES.gradeModeItemNotSame(current.getLabel()), "");
+					iList.setSelectedIndex(0);
+				} else {
+					iList.addItem(MESSAGES.gradeModeItemNotSame(MESSAGES.gradeModeItemNotSet()), "");
+					iList.setSelectedIndex(0);
+				}
+			}
+			av: for (SpecialRegistrationGradeMode mode: iGradeMode.get(0).getAvailableChanges()) {
+				for (SpecialRegistrationGradeModeChanges gm: iGradeMode)
+					if (gm.getAvailableChange(mode.getCode()) == null) continue av;
+				if (same && current != null && current.getCode().equals(mode.getCode())) continue;
+				iList.addItem(mode.getLabel(), mode.getCode());
+			}
+		}
+		
+		public void addClassAssignment(ClassAssignmentInterface.ClassAssignment ca, SpecialRegistrationGradeModeChanges gm) {
+			iClasses.add(ca); iGradeMode.add(gm);
+			setup();
 		}
 		
 		public String getValue() { return iList.getValue(iList.getSelectedIndex()); }
 		public Widget getWidget() { return iList; }
 		public SpecialRegistrationGradeMode getChange() {
 			if (iList.getSelectedIndex() <= 0) return null;
-			return iGradeMode.getAvailableChange(iList.getValue(iList.getSelectedIndex()));
+			return iGradeMode.get(0).getAvailableChange(iList.getValue(iList.getSelectedIndex()));
 		}
-		public String getSectionExternalId() { return iSectionExternalId; }
-		public String getCourse() { return iCourse; }
-		public String getSection() { return iSection; }
+		public List<ClassAssignmentInterface.ClassAssignment> getClassAssignments() { return iClasses; }
+		public List<SpecialRegistrationGradeModeChanges> getGradeModes() { return iGradeMode; }
+		public SpecialRegistrationGradeMode getChange(String extId) {
+			if (iList.getSelectedIndex() <= 0) return null;
+			for (int i = 0; i < iClasses.size(); i++) {
+				if (extId.equals(iClasses.get(i).getExternalId()))
+					return iGradeMode.get(i).getAvailableChange(iList.getValue(iList.getSelectedIndex()));
+			}
+			return null;
+		}
+	}
+	
+	public static class GradeModeLabel extends Cell {
+		private Label iLabel;
+		private SpecialRegistrationGradeModeChanges iGradeMode;
+		
+		public GradeModeLabel(GradeModeChange change, SpecialRegistrationGradeModeChanges gradeMode) {
+			super(null);
+			iGradeMode = gradeMode;
+			iLabel = new Label();
+			iLabel.addStyleName("grade-mode-label");
+			iLabel.setText(iGradeMode.getCurrentGradeMode() == null ? "" : iGradeMode.getCurrentGradeMode().getLabel());
+			final ListBox box = (ListBox)change.getWidget(); 
+			box.addChangeHandler(new ChangeHandler() {
+				@Override
+				public void onChange(ChangeEvent event) {
+					if (box.getSelectedIndex() <= 0) {
+						iLabel.setText(iGradeMode.getCurrentGradeMode() == null ? "" : iGradeMode.getCurrentGradeMode().getLabel());
+					} else {
+						SpecialRegistrationGradeMode m = iGradeMode.getAvailableChange(box.getValue(box.getSelectedIndex()));
+						if (m == null) {
+							iLabel.setText(iGradeMode.getCurrentGradeMode() == null ? "" : iGradeMode.getCurrentGradeMode().getLabel());
+						} else {
+							iLabel.setText(m.getLabel());
+						}
+					}
+				}
+			});
+		}
+		
+		public String getValue() { return iLabel.getText(); }
+		public Widget getWidget() { return iLabel; }
+		public void setStyleName(String styleName) {
+			super.setStyleName(styleName);
+		}
 	}
 
 }

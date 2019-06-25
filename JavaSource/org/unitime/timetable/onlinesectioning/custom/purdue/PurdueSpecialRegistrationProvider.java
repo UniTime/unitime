@@ -78,6 +78,7 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationGradeMode;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationGradeModeChange;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationGradeModeChanges;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationOperation;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationStatus;
@@ -124,6 +125,7 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ValidationMode;
 import org.unitime.timetable.onlinesectioning.custom.purdue.XEInterface.CourseReferenceNumber;
 import org.unitime.timetable.onlinesectioning.custom.purdue.XEInterface.RegisterAction;
+import org.unitime.timetable.onlinesectioning.custom.purdue.XEInterface.RegistrationGradingMode;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -2177,12 +2179,18 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					for (XEInterface.Registration reg: original.registrations) {
 						if (reg.isRegistered()) {
 							req.courseReferenceNumbers.add(new CourseReferenceNumber(reg.courseReferenceNumber));
-							SpecialRegistrationGradeMode mode = request.get(reg.courseReferenceNumber);
+							SpecialRegistrationGradeModeChange mode = request.getChange(reg.courseReferenceNumber);
 							if (mode != null && !mode.hasApprovals()) {
+								boolean allowed = false;
+								if (reg.registrationGradingModes != null)
+									for (RegistrationGradingMode m: reg.registrationGradingModes)
+										if (mode.getSelectedGradeMode().equals(m.gradingMode)) { allowed = true; break; }
+								if (!allowed)
+									throw new SectioningException(mode.getSelectedGradeModeDescription() + " is not allowed for " + reg.courseReferenceNumber + ".");
 								RegisterAction action = new RegisterAction(reg.courseReferenceNumber);
-								action.selectedGradingMode = mode.getCode();
+								action.selectedGradingMode = mode.getSelectedGradeMode();
 								req.actionsAndOptions.add(action);
-								code2desc.put(mode.getCode(), mode.getLabel());
+								code2desc.put(mode.getSelectedGradeMode(), mode.getSelectedGradeModeDescription());
 							}
 						}
 					}
@@ -2272,6 +2280,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				req.studentId = getBannerId(student);
 				req.changes = new ArrayList<Change>();
 				
+				/*
 				Set<String> crns = new HashSet<String>();
 				for (XRequest r: student.getRequests()) {
 					if (r instanceof XCourseRequest) {
@@ -2284,7 +2293,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								XSection section = offering.getSection(cid);
 								String crn = section.getExternalId(en.getCourseId());
 								if (crn != null && crns.add(crn)) { 
-									SpecialRegistrationGradeMode m = request.get(crn);
+									SpecialRegistrationGradeModeChange m = request.getChange(crn);
 									if (m != null && m.hasApprovals()) {
 										Change ch = new Change();
 										ch.courseNbr = course.getCourseNumber();
@@ -2293,12 +2302,12 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 										ch.operation = ChangeOperation.CHGMODE;
 										ch.credit = course.getCreditAbbv();
 										ch.errors = new ArrayList<ChangeError>();
-										ch.selectedGradeMode = m.getCode();
-										ch.selectedGradeModeDescription = m.getLabel();
+										ch.selectedGradeMode = m.getSelectedGradeMode();
+										ch.selectedGradeModeDescription = m.getSelectedGradeModeDescription();
 										ch.currentGradeMode = m.getOriginalGradeMode();
 										ChangeError err = new ChangeError();
 										err.code = "GMODE";
-										err.message = "Grade Mode Change: " + m.getLabel();
+										err.message = "Grade Mode Change: " + m.getSelectedGradeModeDescription();
 										ch.errors.add(err);
 										req.changes.add(ch);
 									}
@@ -2306,6 +2315,33 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							}
 						}
 					}
+				}
+				*/
+				for (SpecialRegistrationGradeModeChange change: request.getChanges()) {
+					if (!change.hasApprovals()) continue;
+					String crns = null;
+					for (String crn: change.getCRNs())
+						if (crns == null)
+							crns = crn;
+						else
+							crns += "," + crn;
+					Change ch = new Change();
+					ch.courseNbr = change.getCourse();
+					ch.subject = change.getSubject();
+					ch.crn = crns;
+					ch.operation = ChangeOperation.CHGMODE;
+					ch.credit = change.getCredit();
+					if (ch.credit != null && ch.credit.indexOf('|') > 0)
+						ch.credit = ch.credit.substring(0, ch.credit.indexOf('|'));
+					ch.errors = new ArrayList<ChangeError>();
+					ch.selectedGradeMode = change.getSelectedGradeMode();
+					ch.selectedGradeModeDescription = change.getSelectedGradeModeDescription();
+					ch.currentGradeMode = change.getOriginalGradeMode();
+					ChangeError err = new ChangeError();
+					err.code = "GMODE";
+					err.message = "Grade Mode Change: " + change.getSelectedGradeModeDescription();
+					ch.errors.add(err);
+					req.changes.add(ch);
 				}
 
 				req.mode = getSpecialRegistrationMode(); 

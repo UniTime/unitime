@@ -2261,4 +2261,10 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage(
 			"<b>Request Note:</b>")
 	String gradeModeChangesNote();
+	
+	@DefaultMessage("Not Set")
+	String gradeModeItemNotSet();
+	
+	@DefaultMessage("{0} (Mixed)")
+	String gradeModeItemNotSame(String gm);
 }

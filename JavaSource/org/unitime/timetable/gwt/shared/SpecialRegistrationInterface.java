@@ -712,11 +712,57 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		}
 	}
 	
+	public static class SpecialRegistrationGradeModeChange implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		private String iSubject, iCourse, iCredit;
+		private Set<String> iCrn;
+		private Set<String> iApprovals = null;
+		private String iOriginalGradeMode = null;
+		private String iSelectedGradeMode = null;
+		private String iSelectedGradeModeDescription = null;
+		
+		
+		public SpecialRegistrationGradeModeChange() {}
+		
+		public String getSubject() { return iSubject; }
+		public void setSubject(String subject) { iSubject = subject; }
+		
+		public String getCourse() { return iCourse; }
+		public void setCourse(String course) { iCourse = course; }
+		
+		public String getCredit() { return iCredit; }
+		public void setCredit(String credit) { iCredit = credit; }
+		
+		public String getOriginalGradeMode() { return iOriginalGradeMode; }
+		public void setOriginalGradeMode(String gm) { iOriginalGradeMode = gm; }
+		
+		public String getSelectedGradeMode() { return iSelectedGradeMode; }
+		public void setSelectedGradeMode(String gm) { iSelectedGradeMode = gm; }
+		
+		public String getSelectedGradeModeDescription() { return iSelectedGradeModeDescription; }
+		public void setSelectedGradeModeDescription(String desc) { iSelectedGradeModeDescription = desc; }
+		
+		public boolean hasCRNs() { return iCrn != null && iCrn.isEmpty(); }
+		public void addCrn(String crn) {
+			if (iCrn == null) iCrn = new TreeSet<String>();
+			iCrn.add(crn);
+		}
+		public Set<String> getCRNs() { return iCrn; }
+		public boolean hasCRN(String extId) { return iCrn != null && iCrn.contains(extId); }
+		
+		public boolean hasApprovals() { return iApprovals != null && !iApprovals.isEmpty(); }
+		public void addApproval(String app) {
+			if (iApprovals == null) iApprovals = new TreeSet<String>();
+			iApprovals.add(app);
+		}
+		public Set<String> getApprovals() { return iApprovals; }
+	}
+	
 	public static class ChangeGradeModesRequest implements GwtRpcRequest<ChangeGradeModesResponse>, Serializable {
 		private static final long serialVersionUID = 1L;
 		private Long iSessionId;
 		private Long iStudentId;
-		Map<String, SpecialRegistrationGradeMode> iChanges = new HashMap<String, SpecialRegistrationGradeMode>();
+		List<SpecialRegistrationGradeModeChange> iChanges = new ArrayList<SpecialRegistrationGradeModeChange>();
 		private String iNote;
 		
 		public ChangeGradeModesRequest() {}
@@ -727,16 +773,22 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		
 		public boolean hasGradeModeChanges() { return !iChanges.isEmpty(); }
 		
-		public void add(String sectionId, SpecialRegistrationGradeMode modes) {
-			iChanges.put(sectionId, modes);
+		public void addChange(SpecialRegistrationGradeModeChange change) {
+			iChanges.add(change);
 		}
 		
-		public SpecialRegistrationGradeMode get(String sectionId) {
-			return iChanges.get(sectionId);
+		public SpecialRegistrationGradeModeChange getChange(String sectionId) {
+			for (SpecialRegistrationGradeModeChange ch: iChanges)
+				if (ch.hasCRN(sectionId)) return ch;
+			return null;
+		}
+		
+		public List<SpecialRegistrationGradeModeChange> getChanges() {
+			return iChanges;
 		}
 		
 		public boolean hasGradeModeChanges(boolean approval) {
-			for (SpecialRegistrationGradeMode change: iChanges.values()) {
+			for (SpecialRegistrationGradeModeChange change: iChanges) {
 				if (approval && change.hasApprovals()) return true;
 				if (!approval && !change.hasApprovals()) return true;
 			}
