@@ -591,7 +591,10 @@ public class SpecialRegistrationsPanel extends P {
 			for (RetrieveSpecialRegistrationResponse response: iRegistrations) {
 				if (response.hasChanges() && !response.isFullyApplied(iLastSaved) && !response.isApplied(a.getCourseId(), iLastSaved))
 					for (ClassAssignment ch: response.getChanges())
-						if (a.getCourseId().equals(ch.getCourseId()) && a.getSection().equals(ch.getSection()))
+						if (ch.getGradeMode() != null) {
+							if (a.getCourseId().equals(ch.getCourseId()) && a.getGradeMode() != null && !ch.getGradeMode().equals(a.getGradeMode()) && response.getRequestId().equals(iSpecReg.getRequestId()))
+								return ch.getSpecRegStatus();	
+						} else if (a.getCourseId().equals(ch.getCourseId()) && a.getSection().equals(ch.getSection()))
 							return ch.getSpecRegStatus();
 			}
 		return null;
@@ -603,7 +606,10 @@ public class SpecialRegistrationsPanel extends P {
 			for (RetrieveSpecialRegistrationResponse response: iRegistrations) {
 				if (response.hasChanges())
 					for (ClassAssignment ch: response.getChanges())
-						if (a.getCourseId().equals(ch.getCourseId()) && a.getSection().equals(ch.getSection()))
+						if (ch.getGradeMode() != null) {
+							if (a.getCourseId().equals(ch.getCourseId()) && a.getGradeMode() != null && !ch.getGradeMode().equals(a.getGradeMode()))
+								if (ch.hasError()) return ch.getError();
+						} else if (a.getCourseId().equals(ch.getCourseId()) && a.getSection().equals(ch.getSection()))
 							if (ch.hasError()) return ch.getError();
 			}
 		return null;
@@ -614,7 +620,7 @@ public class SpecialRegistrationsPanel extends P {
 			for (RetrieveSpecialRegistrationResponse response: iRegistrations) {
 				if (response.hasChanges())
 					for (ClassAssignment ch: response.getChanges())
-						if (a.getCourseId().equals(ch.getCourseId()) && a.getClassId().equals(ch.getClassId()))
+						if (a.getCourseId().equals(ch.getCourseId()))
 							return ch.getGradeMode();
 			}
 		return null;

@@ -349,7 +349,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 				if (ch.getSpecRegOperation() == SpecialRegistrationOperation.Keep) {
 					if (ch.getGradeMode() != null)
 						for (ClassAssignmentInterface.ClassAssignment ca: saved.getClassAssignments())
-							if (ca.isSaved() && ch.getClassId().equals(ca.getClassId()) && !ch.getGradeMode().equals(ca.getGradeMode()))
+							if (ca.isSaved() && ch.getCourseId().equals(ca.getCourseId()) && !ch.getGradeMode().equals(ca.getGradeMode()))
 								return false;
 					continue;
 				}
@@ -395,15 +395,27 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public boolean isApplied(Long courseId, ClassAssignmentInterface saved) {
 			if (courseId == null || saved == null) return false;
 			boolean hasDrop = false, hasAdd = false, hasKeep = false;
+			GradeMode gm = null;
 			for (ClassAssignmentInterface.ClassAssignment ca: iChanges)
 				if (courseId.equals(ca.getCourseId())) {
 					switch (ca.getSpecRegOperation()) {
 					case Add: hasAdd = true; break;
 					case Drop: hasDrop = true; break;
-					case Keep: hasKeep = true; break;
+					case Keep:
+						if (ca.getGradeMode() != null)
+							gm = ca.getGradeMode();
+						else
+							hasKeep = true;
+						break;
 					}
 				}
-			if (hasKeep) {
+			if (gm != null) {
+				for (ClassAssignmentInterface.ClassAssignment ca: saved.getClassAssignments())
+					if (ca.isSaved() && courseId.equals(ca.getCourseId())) {
+						if (ca.getGradeMode() != null && !ca.getGradeMode().equals(gm)) return false;
+					}
+				return true;
+			} else if (hasKeep) {
 				return false;
 			} else if (hasAdd && !hasDrop) {
 				// course is already added (ignore sections)
