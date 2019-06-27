@@ -28,6 +28,21 @@
 	<version>4.4.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Batch Student Scheduling</title>
+		<item>
+			<name>Database Load: Learning Community Reservations</name>
+			<description>
+				<line>Corrected a minor issue with a Learning Community reservation:
+					<line>
+						When a course is solely reserved for a single learning community,
+						and there are some students already enrolled that are not matching the provided student filter,
+						the reservation limit may be updated so that it is one student less than it should be.
+					</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>CPSolver updated to version 1.3.177 (was 1.3.176)</title>
 		<item>
 			<name>Student Scheduling: Enrollment</name>

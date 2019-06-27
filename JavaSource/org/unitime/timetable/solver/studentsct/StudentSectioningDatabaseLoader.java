@@ -805,7 +805,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     		
 			// Update reservation
     		if (reservation != null) {
-    			if (reservation instanceof GroupReservation) {
+    			if (reservation instanceof org.cpsolver.studentsct.reservation.LearningCommunityReservation) {
+    				org.cpsolver.studentsct.reservation.LearningCommunityReservation g = (org.cpsolver.studentsct.reservation.LearningCommunityReservation)reservation;
+    				g.getStudentIds().remove(s.getUniqueId());
+    				if (g.getReservationLimit() >= 1.0 && g.getReservationLimit() != g.getCourse().getLimit())
+    					g.setReservationLimit(g.getReservationLimit() - 1.0);
+    			} else if (reservation instanceof GroupReservation) {
 					GroupReservation g = (GroupReservation)reservation;
 					g.getStudentIds().remove(s.getUniqueId());
 					if (g.getReservationLimit() >= 1.0)
