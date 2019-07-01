@@ -237,6 +237,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.updateUniTimeStatuses", "true"));
 	}
 	
+	protected boolean isAllowClosedErrorForAvailableSections() {
+		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.allowClosedWhenAvailable", "false"));
+	}
+	
 	protected String getBannerTerm(AcademicSessionInfo session) {
 		return iExternalTermProvider.getExternalTerm(session);
 	}
@@ -572,6 +576,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		List<String> newCourses = new ArrayList<String>();
 		Set<String> adds = new HashSet<String>();
 		Map<String, XCourse> courses = new HashMap<String, XCourse>();
+		Map<String, List<XSection>> crn2sections = new HashMap<String, List<XSection>>();
 		for (XRequest r: student.getRequests())
 			if (r instanceof XCourseRequest) {
 				XCourseRequest cr = (XCourseRequest)r;
@@ -587,6 +592,12 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 						current.add(crn);
 						crn2course.put(crn, course.getCourseName());
 						courses.put(course.getCourseName(), course);
+						List<XSection> sections = crn2sections.get(crn);
+						if (sections == null) {
+							sections = new ArrayList<XSection>();
+							crn2sections.put(crn, sections);
+						}
+						sections.add(section);
 					}
 				}
 			}
@@ -611,6 +622,12 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 						newCourses.add(crn);
 					}
 				}
+				List<XSection> sections = crn2sections.get(crn);
+				if (sections == null) {
+					sections = new ArrayList<XSection>();
+					crn2sections.put(crn, sections);
+				}
+				sections.add(section);
 			}
 		for (String crn: current)
 			if (!keep.contains(crn))
@@ -675,6 +692,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		}
 		
 		SpecialRegistrationEligibilityResponse ret = new SpecialRegistrationEligibilityResponse(true, message);
+		Set<String> av = new HashSet<String>();
 		if (resp.outJson != null && resp.outJson.problems != null) {
 			Set<ErrorMessage> errors = new TreeSet<ErrorMessage>();
 			for (Problem problem: resp.outJson.problems) {
@@ -686,6 +704,19 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					errors.add(new ErrorMessage(crn2course.get(crn), crn, problem.code, problem.message));
 				} else {
 					errors.add(new ErrorMessage(crn2course.get(problem.crn), problem.crn, problem.code, problem.message));
+				}
+				if ("CLOS".equals(problem.code) && adds.contains(problem.crn) && isAllowClosedErrorForAvailableSections()) {
+					// CLOS error on a new section, check enrollment
+					XEnrollments enrollments = server.getEnrollments(courses.get(crn2course.get(problem.crn)).getOfferingId());
+					if (enrollments != null) {
+						boolean available = true;
+						for (XSection section: crn2sections.get(problem.crn)) {
+							if (section.getLimit() >= 0 && section.getLimit() <= enrollments.countEnrollmentsForSection(section.getSectionId())) {
+								available = false; break;
+							}
+						}
+						if (available) av.add(problem.crn);
+					}
 				}
 			}
 			ret.setErrors(errors);
@@ -701,6 +732,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					ret.setCanSubmit(false);
 					denied.add(new ErrorMessage(error.getCourse(), "", error.getCode(), "Approvals are not allowed for: " + error.getMessage()));
 				} else {
+					if ("CLOS".equals(error.getCode()) && av.contains(error.getSection())) continue;
 					XCourse course = courses.get(error.getCourse());
 					if (course != null && !course.isOverrideEnabled(error.getCode())) {
 						ret.setMessage((ret.hasMessage() ? ret.getMessage() + "\n" : "") + course.getCourseName() + " does not allow approvals for " + error + ".");
