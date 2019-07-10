@@ -38,13 +38,16 @@ import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.ChangeGradeModesRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.ChangeGradeModesResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAvailableGradeModesRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAvailableGradeModesResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationGradeMode;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationGradeModeChange;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationGradeModeChanges;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationStatus;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -75,6 +78,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 	private List<GradeModeChange> iChanges = new ArrayList<GradeModeChange>();
 	private ScheduleStatus iStatus;
 	private ArrayList<ClassAssignmentInterface.ClassAssignment> iEnrollment;
+	private List<RetrieveSpecialRegistrationResponse> iApprovals;
 	private P iApproval = null;
 	private TextArea iNote = null;
 	
@@ -101,7 +105,8 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 				// new WebTable.Cell(MESSAGES.colInstructor()),
 				// new WebTable.Cell(MESSAGES.colParent()),
 				new WebTable.Cell(MESSAGES.colCredit()),
-				new WebTable.Cell(MESSAGES.colTitleGradeMode())
+				new WebTable.Cell(MESSAGES.colTitleGradeMode()),
+				new WebTable.Cell(MESSAGES.colTitlePendingGradeMode())
 				));
 		iTable.setEmptyMessage(MESSAGES.emptyGradeChanges());
 		
@@ -139,12 +144,27 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 		
 	}
 	
-	public void changeGradeModes(Long sessionId, Long studentId, ArrayList<ClassAssignmentInterface.ClassAssignment> enrollment) {
+	protected GradeMode getPendingGradeMode(Long courseId) {
+		if (iApprovals == null) return null;
+		for (RetrieveSpecialRegistrationResponse approval: iApprovals) {
+			if (approval.getStatus() == SpecialRegistrationStatus.Pending && approval.hasChanges()) {
+				for (ClassAssignmentInterface.ClassAssignment clazz: approval.getChanges()) {
+					if (clazz.getGradeMode() != null && courseId.equals(clazz.getCourseId())) {
+						return clazz.getGradeMode();
+					}
+				}
+			}
+		}
+		return null;
+	}
+	
+	public void changeGradeModes(Long sessionId, Long studentId, ArrayList<ClassAssignmentInterface.ClassAssignment> enrollment, List<RetrieveSpecialRegistrationResponse> approvals) {
 		LoadingWidget.getInstance().show(MESSAGES.waitRetrieveGradeModes());
 		iChanges.clear();
 		iNote.setValue("");
 		iApproval.clear();
 		iEnrollment = enrollment;
+		iApprovals = approvals;
 		iSectioningService.retrieveGradeModes(new RetrieveAvailableGradeModesRequest(sessionId, studentId), new AsyncCallback<RetrieveAvailableGradeModesResponse>() {
 
 			@Override
@@ -160,6 +180,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 				
 				Long lastCourseId = null;
 				GradeModeChange change = null;
+				boolean hasPendingGradeMode = false;
 				for (ClassAssignmentInterface.ClassAssignment clazz: iEnrollment) {
 					SpecialRegistrationGradeModeChanges gradeMode = result.get(clazz);
 					if (gradeMode == null) continue;
@@ -174,6 +195,18 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 						change.addClassAssignment(clazz, gradeMode);
 					}
 					lastCourseId = clazz.getCourseId();
+					GradeMode pendingGradeMode = getPendingGradeMode(clazz.getCourseId());
+					if (pendingGradeMode != null) {
+						hasPendingGradeMode = true;
+						if (pendingGradeMode.getLabel() == null) {
+							SpecialRegistrationGradeMode m = gradeMode.getAvailableChange(pendingGradeMode.getCode());
+							if (m != null)
+								pendingGradeMode.setLabel(m.getLabel());
+							else
+								pendingGradeMode.setLabel(pendingGradeMode.getCode());
+						}
+					}
+					
 					String style = (firstClazz && !rows.isEmpty() ? "top-border-dashed": "");
 					WebTable.Row row = new WebTable.Row(
 							new WebTable.Cell(firstClazz ? clazz.getSubject() : "").aria(clazz.getSubject()),
@@ -189,7 +222,8 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 							// new WebTable.InstructorCell(clazz.getInstructors(), null, ", "),
 							// new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
 							new WebTable.AbbvTextCell(clazz.getCredit()),
-							(firstClazz ? change : new GradeModeLabel(change, gradeMode))
+							(firstClazz ? change : new GradeModeLabel(change, gradeMode)),
+							new WebTable.Cell(pendingGradeMode == null ? "" : pendingGradeMode.getLabel())
 							);
 					for (WebTable.Cell cell: row.getCells())
 						cell.setStyleName(style);
@@ -201,6 +235,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 				for (WebTable.Row row: rows) rowArray[idx++] = row;
 				
 				iTable.setData(rowArray);
+				iTable.setColumnVisible(11, hasPendingGradeMode);
 				
 				LoadingWidget.getInstance().hide();
 				if (rows.isEmpty()) {

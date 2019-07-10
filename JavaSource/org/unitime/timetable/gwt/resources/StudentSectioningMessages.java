@@ -118,6 +118,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Gr Md")
 	String colGradeMode();
 	
+	@DefaultMessage("Pending Change")
+	String colTitlePendingGradeMode();
+	
 	@DefaultMessage("Grade Mode")
 	String colTitleGradeMode();
 	

@@ -1005,7 +1005,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iChangeGradeModes.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				changeGradeModes(new ArrayList<ClassAssignmentInterface.ClassAssignment>(iLastResult));
+				changeGradeModes(new ArrayList<ClassAssignmentInterface.ClassAssignment>(iLastResult), iSpecialRegistrationsPanel.getRegistrations());
 			}
 		});
 		
@@ -3037,7 +3037,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				);
 	}
 	
-	protected void changeGradeModes(ArrayList<ClassAssignmentInterface.ClassAssignment> lastEnrollment) {
+	protected void changeGradeModes(ArrayList<ClassAssignmentInterface.ClassAssignment> lastEnrollment, List<RetrieveSpecialRegistrationResponse> approvals) {
 		if (iChangeGradeModesDialog == null) {
 			iChangeGradeModesDialog = new ChangeGradeModesDialog(iStatus) {
 				protected void onChange(ChangeGradeModesResponse response) {
@@ -3063,6 +3063,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				}
 			};
 		}
-		iChangeGradeModesDialog.changeGradeModes(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), lastEnrollment);
+		iChangeGradeModesDialog.changeGradeModes(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), lastEnrollment, approvals);
 	}
 }
