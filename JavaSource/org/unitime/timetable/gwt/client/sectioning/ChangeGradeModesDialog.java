@@ -96,14 +96,11 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 				new WebTable.Cell(MESSAGES.colCourse()),
 				new WebTable.Cell(MESSAGES.colSubpart()),
 				new WebTable.Cell(MESSAGES.colClass()),
-				//new WebTable.Cell(MESSAGES.colLimit()).aria(ARIA.colLimit()),
 				new WebTable.Cell(MESSAGES.colDays()),
 				new WebTable.Cell(MESSAGES.colStart()),
 				new WebTable.Cell(MESSAGES.colEnd()),
 				new WebTable.Cell(MESSAGES.colDate()),
 				new WebTable.Cell(MESSAGES.colRoom()),
-				// new WebTable.Cell(MESSAGES.colInstructor()),
-				// new WebTable.Cell(MESSAGES.colParent()),
 				new WebTable.Cell(MESSAGES.colCredit()),
 				new WebTable.Cell(MESSAGES.colTitleGradeMode()),
 				new WebTable.Cell(MESSAGES.colTitlePendingGradeMode())
@@ -185,7 +182,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 					SpecialRegistrationGradeModeChanges gradeMode = result.get(clazz);
 					if (gradeMode == null) continue;
 					if (clazz.getParentSection() != null && clazz.getParentSection().equals(clazz.getSection())) continue;
-					if (clazz.isTeachingAssignment() || clazz.isDummy() || clazz.isFreeTime() || !clazz.isAssigned()) continue;
+					if (clazz.isTeachingAssignment() || clazz.isDummy() || clazz.isFreeTime()) continue;
 					
 					boolean firstClazz = !clazz.getCourseId().equals(lastCourseId);
 					if (firstClazz) {
@@ -208,23 +205,36 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 					}
 					
 					String style = (firstClazz && !rows.isEmpty() ? "top-border-dashed": "");
-					WebTable.Row row = new WebTable.Row(
-							new WebTable.Cell(firstClazz ? clazz.getSubject() : "").aria(clazz.getSubject()),
-							new WebTable.Cell(firstClazz ? CONSTANTS.showCourseTitle() ? clazz.getCourseNameWithTitle() : clazz.getCourseName() : "").aria(CONSTANTS.showCourseTitle() ? clazz.getCourseNameWithTitle() : clazz.getCourseName()),
-							new WebTable.Cell(clazz.getSubpart()),
-							new WebTable.Cell(clazz.getSection()),
-							//new WebTable.Cell(clazz.getLimitString()),
-							new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())).aria(clazz.getDaysString(CONSTANTS.longDays(), " ")),
-							new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())).aria(clazz.getStartStringAria(CONSTANTS.useAmPm())),
-							new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())).aria(clazz.getEndStringAria(CONSTANTS.useAmPm())),
-							new WebTable.Cell(clazz.getDatePattern()),
-							(clazz.hasDistanceConflict() ? new WebTable.RoomCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(), ", ") : new WebTable.RoomCell(clazz.getRooms(), ", ")),
-							// new WebTable.InstructorCell(clazz.getInstructors(), null, ", "),
-							// new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
-							new WebTable.AbbvTextCell(clazz.getCredit()),
-							(firstClazz ? change : new GradeModeLabel(change, gradeMode)),
-							new WebTable.Cell(pendingGradeMode == null ? "" : pendingGradeMode.getLabel())
-							);
+					WebTable.Row row = null;
+					if (clazz.isAssigned()) {
+						row = new WebTable.Row(
+								new WebTable.Cell(firstClazz ? clazz.getSubject() : "").aria(clazz.getSubject()),
+								new WebTable.Cell(firstClazz ? CONSTANTS.showCourseTitle() ? clazz.getCourseNameWithTitle() : clazz.getCourseName() : "").aria(CONSTANTS.showCourseTitle() ? clazz.getCourseNameWithTitle() : clazz.getCourseName()),
+								new WebTable.Cell(clazz.getSubpart()),
+								new WebTable.Cell(clazz.getSection()),
+								new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())).aria(clazz.getDaysString(CONSTANTS.longDays(), " ")),
+								new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())).aria(clazz.getStartStringAria(CONSTANTS.useAmPm())),
+								new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())).aria(clazz.getEndStringAria(CONSTANTS.useAmPm())),
+								new WebTable.Cell(clazz.getDatePattern()),
+								(clazz.hasDistanceConflict() ? new WebTable.RoomCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(), ", ") : new WebTable.RoomCell(clazz.getRooms(), ", ")),
+								new WebTable.AbbvTextCell(clazz.getCredit()),
+								(firstClazz ? change : new GradeModeLabel(change, gradeMode)),
+								new WebTable.Cell(pendingGradeMode == null ? "" : pendingGradeMode.getLabel())
+								);
+					} else {
+						row = new WebTable.Row(
+								new WebTable.Cell(firstClazz ? clazz.getSubject() : "").aria(clazz.getSubject()),
+								new WebTable.Cell(firstClazz ? CONSTANTS.showCourseTitle() ? clazz.getCourseNameWithTitle() : clazz.getCourseName() : "").aria(CONSTANTS.showCourseTitle() ? clazz.getCourseNameWithTitle() : clazz.getCourseName()),
+								new WebTable.Cell(clazz.getSubpart()),
+								new WebTable.Cell(clazz.getSection()),
+								new WebTable.Cell(MESSAGES.arrangeHours(), 3, null),
+								new WebTable.Cell(clazz.getDatePattern()),
+								(clazz.hasDistanceConflict() ? new WebTable.RoomCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(), ", ") : new WebTable.RoomCell(clazz.getRooms(), ", ")),
+								new WebTable.AbbvTextCell(clazz.getCredit()),
+								(firstClazz ? change : new GradeModeLabel(change, gradeMode)),
+								new WebTable.Cell(pendingGradeMode == null ? "" : pendingGradeMode.getLabel())
+								);
+					}
 					for (WebTable.Cell cell: row.getCells())
 						cell.setStyleName(style);
 					rows.add(row);
