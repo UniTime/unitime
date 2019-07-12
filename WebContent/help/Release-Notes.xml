@@ -64,6 +64,15 @@ IFS.</line>
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Other Changes</title>
+		<item>
+			<name>Student Scheduling: Enrollment Table</name>
+			<description>
+				<line>Corrected column computation when switching between section numbers and external ids.</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>
