@@ -2248,11 +2248,11 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("The following grade mode changes are being requested:")
 	String gradeModeListChanges();
 	
-	@DefaultMessage("- No approval is needed.")
-	String gradeModeNoApprovalNeeded();
+	@DefaultMessage("- {0}: No approval is needed.")
+	String gradeModeNoApprovalNeeded(String gradeMode);
 	
-	@DefaultMessage("- {0} approval is needed.")
-	String gradeModeApprovalNeeded(String approvals);
+	@DefaultMessage("- {0}: {1} approval is needed.")
+	String gradeModeApprovalNeeded(String gradeMode, String approvals);
 	
 	@DefaultMessage(
 			"\nPlease, select <b>Submit Changes</b> to apply for the selected grade mode changes. "

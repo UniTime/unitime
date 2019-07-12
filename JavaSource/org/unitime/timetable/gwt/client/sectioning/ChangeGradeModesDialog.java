@@ -278,10 +278,10 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 				sn.setText(ca.getSection());
 				P m = new P("approval-message");
 				if (ch.hasApprovals()) {
-					m.setText(MESSAGES.gradeModeApprovalNeeded(ToolBox.toString(ch.getApprovals())));
+					m.setText(MESSAGES.gradeModeApprovalNeeded(ch.getLabel(), ToolBox.toString(ch.getApprovals())));
 					approvals = true;
 				} else {
-					m.setText(MESSAGES.gradeModeNoApprovalNeeded());
+					m.setText(MESSAGES.gradeModeNoApprovalNeeded(ch.getLabel()));
 				}	
 				P crow = new P("course-row");
 				if (first) crow.addStyleName("first-course-line");
@@ -402,9 +402,18 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 					iList.setSelectedIndex(0);
 				}
 			}
+			if (!same && current != null) {
+				boolean canSetCurrent = true;
+				for (SpecialRegistrationGradeModeChanges gm: iGradeMode)
+					if (gm.getAvailableChange(current.getCode()) == null && !gm.isCurrentGradeMode(current.getCode())) {
+						canSetCurrent = false; break;
+					}
+				if (canSetCurrent)
+					iList.addItem(current.getLabel(), current.getCode());
+			}
 			av: for (SpecialRegistrationGradeMode mode: iGradeMode.get(0).getAvailableChanges()) {
 				for (SpecialRegistrationGradeModeChanges gm: iGradeMode)
-					if (gm.getAvailableChange(mode.getCode()) == null) continue av;
+					if (gm.getAvailableChange(mode.getCode()) == null && !gm.isCurrentGradeMode(mode.getCode())) continue av;
 				if (same && current != null && current.getCode().equals(mode.getCode())) continue;
 				iList.addItem(mode.getLabel(), mode.getCode());
 			}
@@ -419,7 +428,13 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 		public Widget getWidget() { return iList; }
 		public SpecialRegistrationGradeMode getChange() {
 			if (iList.getSelectedIndex() <= 0) return null;
-			return iGradeMode.get(0).getAvailableChange(iList.getValue(iList.getSelectedIndex()));
+			SpecialRegistrationGradeMode change = iGradeMode.get(0).getAvailableChange(iList.getValue(iList.getSelectedIndex()));
+			if (change == null) {
+				SpecialRegistrationGradeMode current = iGradeMode.get(0).getCurrentGradeMode();
+				if (current != null && current.getCode().equals(iList.getValue(iList.getSelectedIndex())))
+					change = current;
+			}
+			return change;
 		}
 		public List<ClassAssignmentInterface.ClassAssignment> getClassAssignments() { return iClasses; }
 		public List<SpecialRegistrationGradeModeChanges> getGradeModes() { return iGradeMode; }

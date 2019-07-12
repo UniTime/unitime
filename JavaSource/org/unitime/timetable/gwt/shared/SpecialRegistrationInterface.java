@@ -709,6 +709,9 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		
 		public SpecialRegistrationGradeMode getCurrentGradeMode() { return iCurrentGradeMode; }
 		public void setCurrentGradeMode(SpecialRegistrationGradeMode mode) { iCurrentGradeMode = mode; }
+		public boolean isCurrentGradeMode(String code) {
+			return iCurrentGradeMode != null && iCurrentGradeMode.getCode().equals(code);
+		}
 		
 		public void addAvailableChange(SpecialRegistrationGradeMode mode) {
 			if (iAvailableChanges == null) iAvailableChanges = new TreeSet<SpecialRegistrationGradeMode>();
