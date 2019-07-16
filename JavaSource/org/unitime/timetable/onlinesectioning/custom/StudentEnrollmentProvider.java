@@ -151,6 +151,13 @@ public interface StudentEnrollmentProvider {
 		}
 		
 		public String getGradeMode() { return (iGradeModes != null && iGradeModes.size() == 1 ? iGradeModes.iterator().next() : null); }
+		public void resetGradeMode(String gm) {
+			if (iGradeModes == null)
+				iGradeModes = new HashSet<String>();
+			else
+				iGradeModes.clear();
+			iGradeModes.add(gm);
+		}
 		public void setGradeMode(String gm) {
 			if (gm != null && !gm.isEmpty())  {
 				if (iGradeModes == null) iGradeModes = new HashSet<String>();

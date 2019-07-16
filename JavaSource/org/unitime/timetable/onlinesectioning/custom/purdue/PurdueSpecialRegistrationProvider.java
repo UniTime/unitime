@@ -249,6 +249,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		return iExternalTermProvider.getExternalCampus(session);
 	}
 	
+	protected String getResetGradeModesRegExp() {
+		return ApplicationProperties.getProperty("banner.xe.resetGradeModes", "H|Q|R");
+	}
+	
 	protected String getBannerId(XStudent student) {
 		String id = student.getExternalId();
 		while (id.length() < 9) id = "0" + id;
@@ -1322,6 +1326,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		String maxi = null;
 		ChangeStatus maxStatus = null;
 		String maxiNote = null;
+		String honorsGradeMode = getResetGradeModesRegExp();
 		if (specialRequest.changes != null)
 			for (Change change: specialRequest.changes) {
 				if (change.crn == null || change.crn.isEmpty()) {
@@ -1384,7 +1389,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					List<Change> change = changes.get(clazz);
 					ca.setSpecRegOperation(ChangeOperation.ADD == change.get(0).operation ? SpecialRegistrationOperation.Add : SpecialRegistrationOperation.Keep);
 					if (change.get(0).operation == ChangeOperation.CHGMODE) {
-						ca.setGradeMode(new GradeMode(change.get(0).selectedGradeMode, change.get(0).selectedGradeModeDescription));
+						ca.setGradeMode(new GradeMode(change.get(0).selectedGradeMode, change.get(0).selectedGradeModeDescription, honorsGradeMode != null && !honorsGradeMode.isEmpty() && change.get(0).selectedGradeMode.matches(honorsGradeMode)));
 						if (clazz.getParentClass() != null && clazz.getSchedulingSubpart().getItype().equals(clazz.getParentClass().getSchedulingSubpart().getItype()))
 							continue;
 					}
@@ -2114,13 +2119,14 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				throw new SectioningException(response.message == null || response.message.isEmpty() ? "Failed to check availabel grade modes." : response.message);
 			
 			RetrieveAvailableGradeModesResponse ret = new RetrieveAvailableGradeModesResponse();
+			String honorsGradeMode = getResetGradeModesRegExp();
 			if (response.data.gradingModes != null)
 				for (SpecialRegistrationCurrentGradeMode m: response.data.gradingModes) {
 					SpecialRegistrationGradeModeChanges mode = new SpecialRegistrationGradeModeChanges();
-					mode.setCurrentGradeMode(new SpecialRegistrationGradeMode(m.gradingMode, m.gradingModeDescription));
+					mode.setCurrentGradeMode(new SpecialRegistrationGradeMode(m.gradingMode, m.gradingModeDescription, honorsGradeMode != null && !honorsGradeMode.isEmpty() && m.gradingMode.matches(honorsGradeMode)));
 					if (m.availableGradingModes != null)
 						for (SpecialRegistrationAvailableGradeMode av: m.availableGradingModes) {
-							SpecialRegistrationGradeMode availableMode = new SpecialRegistrationGradeMode(av.gradingMode, av.gradingModeDescription);
+							SpecialRegistrationGradeMode availableMode = new SpecialRegistrationGradeMode(av.gradingMode, av.gradingModeDescription, honorsGradeMode != null && !honorsGradeMode.isEmpty() && av.gradingMode.matches(honorsGradeMode));
 							availableMode.setOriginalGradeMode(m.gradingMode);
 							if (av.approvals != null)
 								for (String ap: av.approvals)
@@ -2292,11 +2298,12 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					}
 					
 					if (response.registrations != null) {
+						String honorsGradeMode = getResetGradeModesRegExp();
 						for (XEInterface.Registration reg: response.registrations) {
 							if ("Registered".equals(reg.statusDescription)) {
 								if (reg.gradingMode != null) {
 									String desc = code2desc.get(reg.gradingMode);
-									ret.addGradeMode(reg.courseReferenceNumber, reg.gradingMode, desc != null ? desc : reg.gradingModeDescription);
+									ret.addGradeMode(reg.courseReferenceNumber, reg.gradingMode, desc != null ? desc : reg.gradingModeDescription, honorsGradeMode != null && !honorsGradeMode.isEmpty() && reg.gradingMode.matches(honorsGradeMode));
 								}
 							}
 						}

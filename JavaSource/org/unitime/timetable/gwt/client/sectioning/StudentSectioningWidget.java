@@ -2433,11 +2433,36 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		return null;
 	}
 	
+	public List<String> getCourseChangesWithHonorsGradeMode() {
+		if (iLastAssignment != null && iSavedAssignment != null) {
+			List<String> ret = new ArrayList<String>();
+			courses: for (ClassAssignmentInterface.CourseAssignment course: iSavedAssignment.getCourseAssignments()) {
+				if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
+				classes: for (ClassAssignmentInterface.ClassAssignment ca: course.getClassAssignments()) {
+					if (ca.getGradeMode() != null && ca.getGradeMode().isHonor()) {
+						for (ClassAssignmentInterface.CourseAssignment x: iLastAssignment.getCourseAssignments())
+							if (course.getCourseId().equals(x.getCourseId()) && x.isAssigned())
+								for (ClassAssignmentInterface.ClassAssignment y: x.getClassAssignments())
+									if (ca.getClassId().equals(y.getClassId())) continue classes;
+						ret.add(MESSAGES.course(course.getSubject(), course.getCourseNbr()));
+						continue courses;
+					}
+				}
+			}
+			return ret;
+		}
+		return null;
+	}
+	
 	public boolean useDefaultConfirmDialog() {
 		return iEligibilityCheck == null || !iEligibilityCheck.hasFlag(EligibilityFlag.GWT_CONFIRMATIONS);
 	}
-
+	
 	protected Command confirmEnrollment(final Command callback) {
+		return confirmEnrollmentDrop(confirmEnrollmentHonors(callback));
+	}
+
+	protected Command confirmEnrollmentDrop(final Command callback) {
 		if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CONFIRM_DROP)) {
 			final List<String> drops = getCoursesToDrop();
 			if (drops != null && !drops.isEmpty()) {
@@ -2445,6 +2470,21 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					@Override
 					public void execute() {
 						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.confirmEnrollmentCourseDrop(ToolBox.toString(drops)), callback);
+					}
+				};
+			}
+		}
+		return callback;
+	}
+	
+	protected Command confirmEnrollmentHonors(final Command callback) {
+		if (iEligibilityCheck != null && iEligibilityCheck.hasGradeModes()) {
+			final List<String> changes = getCourseChangesWithHonorsGradeMode();
+			if (changes != null && !changes.isEmpty()) {
+				return new Command() {
+					@Override
+					public void execute() {
+						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.confirmEnrollmentHonorsGradeModeChange(ToolBox.toString(changes)), callback);
 					}
 				};
 			}

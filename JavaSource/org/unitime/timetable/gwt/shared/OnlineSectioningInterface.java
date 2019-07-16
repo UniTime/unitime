@@ -129,9 +129,9 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public boolean hasGradeModes() {
 			return iGradeModes != null && iGradeModes.hasGradeModes();
 		}
-		public void addGradeMode(String sectionId, String code, String label) {
+		public void addGradeMode(String sectionId, String code, String label, boolean honor) {
 			if (iGradeModes == null) iGradeModes = new GradeModes();
-			iGradeModes.add(sectionId, new GradeMode(code, label));
+			iGradeModes.add(sectionId, new GradeMode(code, label, honor));
 		}
 		public GradeMode getGradeMode(ClassAssignment section) {
 			if (iGradeModes == null) return null;
@@ -372,16 +372,20 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private String iCode;
 		private String iLabel;
+		private boolean iHonor;
 		
 		public GradeMode() {}
-		public GradeMode(String code, String label) {
+		public GradeMode(String code, String label, boolean honor) {
 			iCode = code; iLabel = label;
+			iHonor = honor;
 		}
 		
 		public void setCode(String code) { iCode = code; }
 		public String getCode() { return iCode; }
 		public void setLabel(String label) { iLabel = label; }
 		public String getLabel() { return iLabel; }
+		public void setHonor(boolean honor) { iHonor = honor; }
+		public boolean isHonor() { return iHonor; }
 		
 		@Override
 		public int hashCode() { return getCode().hashCode(); }

@@ -219,6 +219,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.xe.keepGradeMode", "false"));
 	}
 	
+	protected String getResetGradeModesRegExp() {
+		return ApplicationProperties.getProperty("banner.xe.resetGradeModes", "H|Q|R");
+	}
+	
 	protected Gson getGson(OnlineSectioningHelper helper) {
 		GsonBuilder builder = new GsonBuilder()
 		.registerTypeAdapter(DateTime.class, new JsonSerializer<DateTime>() {
@@ -367,6 +371,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				OnlineSectioningLog.Enrollment.Builder external = OnlineSectioningLog.Enrollment.newBuilder();
 				external.setType(OnlineSectioningLog.Enrollment.EnrollmentType.EXTERNAL);
 				String added = "";
+				String resetGradeModes = getResetGradeModesRegExp();
 				if (original.registrations != null)
 					for (XEInterface.Registration reg: original.registrations) {
 						if (reg.isRegistered()) {
@@ -379,7 +384,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 							if (reg.registrationStatusDate != null)
 								section.setTimeStamp(reg.registrationStatusDate.getMillis());
 							if (reg.gradingMode != null && !reg.gradingMode.isEmpty())
-								check.addGradeMode(reg.courseReferenceNumber, reg.gradingMode, reg.gradingModeDescription);
+								check.addGradeMode(reg.courseReferenceNumber, reg.gradingMode, reg.gradingModeDescription, resetGradeModes != null && !resetGradeModes.isEmpty() && reg.gradingMode.matches(resetGradeModes));
 						}
 					}
 				helper.getAction().addEnrollment(external);
@@ -742,6 +747,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			}
 			
 			Set<String> outcome = new HashSet<String>();
+			String resetGradeModes = getResetGradeModesRegExp();
 			if (response.registrations != null) {
 				OnlineSectioningLog.Enrollment.Builder external = OnlineSectioningLog.Enrollment.newBuilder();
 				external.setType(OnlineSectioningLog.Enrollment.EnrollmentType.EXTERNAL);
@@ -767,7 +773,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 							.setSubpart(OnlineSectioningLog.Entity.newBuilder().setName(reg.scheduleType));
 						outcome.add(reg.courseReferenceNumber);
 						if (gradeModes != null && reg.gradingMode != null) {
-							gradeModes.add(reg.courseReferenceNumber, new GradeMode(reg.gradingMode, reg.gradingModeDescription));
+							gradeModes.add(reg.courseReferenceNumber, new GradeMode(reg.gradingMode, reg.gradingModeDescription, resetGradeModes != null && !resetGradeModes.isEmpty() && reg.gradingMode.matches(resetGradeModes)));
 						}
 						if (added.contains(id)) {
 							// skip successfully registered enrollments
@@ -868,6 +874,22 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			if (isPreserveGradeMode() && response.registrations != null) {
 				XEInterface.RegisterRequest reqGM = new XEInterface.RegisterRequest(getBannerTerm(server.getAcademicSession()), getBannerId(student), null, true);
 				try {
+					if (resetGradeModes != null && !resetGradeModes.isEmpty()) {
+						request: for (EnrollmentRequest request: enrollments) {
+							String gm = request.getGradeMode();
+							if (gm != null && gm.matches(resetGradeModes)) {
+								for (XEInterface.Registration reg: response.registrations) {
+									if ("Registered".equals(reg.statusDescription) && request.getCourse().equals(id2course.get(reg.courseReferenceNumber))) {
+										if (reg.gradingMode != null && !gm.equals(reg.gradingMode)) {
+											request.resetGradeMode(reg.gradingMode);
+											helper.info("Resetting grade mode for " + request.getCourse().getCourseName() + " from " + gm + " to " + reg.gradingMode);
+											continue request;
+										}
+									}
+								}
+							}
+						}
+					}
 					reqGM.courseReferenceNumbers = new ArrayList<CourseReferenceNumber>();
 					reqGM.actionsAndOptions = new ArrayList<RegisterAction>();
 					for (XEInterface.Registration reg: response.registrations) {
@@ -879,6 +901,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 									if (request.getCourse().equals(course)) {
 										String gm = request.getGradeMode();
 										if (gm != null && !gm.equals(reg.gradingMode)) {
+											helper.info("Changing grade mode for " + request.getCourse().getCourseName() + " " + reg.courseReferenceNumber + " from " + reg.gradingMode + " to " + gm);
 											RegisterAction action = new RegisterAction(reg.courseReferenceNumber);
 											action.selectedGradingMode = gm;
 											reqGM.actionsAndOptions.add(action);
@@ -938,7 +961,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 								if ("Registered".equals(reg.statusDescription)) {
 									if (reg.gradingMode != null) {
 										String desc = code2desc.get(reg.gradingMode);
-										gradeModes.add(reg.courseReferenceNumber, new GradeMode(reg.gradingMode, desc != null ? desc : reg.gradingModeDescription));
+										gradeModes.add(reg.courseReferenceNumber, new GradeMode(reg.gradingMode, desc != null ? desc : reg.gradingModeDescription, resetGradeModes != null && !resetGradeModes.isEmpty() && reg.gradingMode.matches(resetGradeModes)));
 									}
 								}
 							}
