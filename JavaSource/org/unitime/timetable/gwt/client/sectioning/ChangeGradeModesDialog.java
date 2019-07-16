@@ -335,7 +335,10 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 				
 				@Override
 				public void onSuccess(ChangeGradeModesResponse response) {
-					iStatus.info(MESSAGES.statusGradeModeChangesDone());
+					if (response.hasRequests())
+						iStatus.info(MESSAGES.statusGradeModeChangesRequested());
+					else
+						iStatus.info(MESSAGES.statusGradeModeChangesApplied());
 					LoadingWidget.getInstance().hide();
 					onChange(response);
 				}

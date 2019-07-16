@@ -2234,7 +2234,10 @@ public interface StudentSectioningMessages extends Messages {
 	String statusNoGradeModeChangesMade();
 	
 	@DefaultMessage("Grade mode changes have been successfully requested.")
-	String statusGradeModeChangesDone();
+	String statusGradeModeChangesRequested();
+	
+	@DefaultMessage("Grade mode changes have been successfully applied.")
+    String statusGradeModeChangesApplied();
 	
 	@DefaultMessage("There are no courses with a grade mode.")
 	String emptyGradeChanges();
