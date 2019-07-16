@@ -692,7 +692,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		}
 		
 		SpecialRegistrationEligibilityResponse ret = new SpecialRegistrationEligibilityResponse(true, message);
-		Set<String> av = new HashSet<String>();
+		Set<String> ext = new HashSet<String>();
 		if (resp.outJson != null && resp.outJson.problems != null) {
 			Set<ErrorMessage> errors = new TreeSet<ErrorMessage>();
 			for (Problem problem: resp.outJson.problems) {
@@ -705,19 +705,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				} else {
 					errors.add(new ErrorMessage(crn2course.get(problem.crn), problem.crn, problem.code, problem.message));
 				}
-				if ("CLOS".equals(problem.code) && adds.contains(problem.crn) && isAllowClosedErrorForAvailableSections()) {
-					// CLOS error on a new section, check enrollment
-					XEnrollments enrollments = server.getEnrollments(courses.get(crn2course.get(problem.crn)).getOfferingId());
-					if (enrollments != null) {
-						boolean available = true;
-						for (XSection section: crn2sections.get(problem.crn)) {
-							if (section.getLimit() >= 0 && section.getLimit() <= enrollments.countEnrollmentsForSection(section.getSectionId())) {
-								available = false; break;
-							}
-						}
-						if (available) av.add(problem.crn);
-					}
-				}
+				if (problem.code != null && problem.code.startsWith("EX-")) ext.add(problem.crn);
 			}
 			ret.setErrors(errors);
 			if (resp.outJson.maxHoursCalc != null)
@@ -725,14 +713,40 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		}
 		
 		Set<ErrorMessage> denied = new TreeSet<ErrorMessage>();
-		if (ret.hasErrors() && resp.overrides != null) {
+		if (ret.hasErrors()) {
 			for (ErrorMessage error: ret.getErrors()) {
-				if (!resp.overrides.contains(error.getCode())) {
+				if (resp.overrides != null && !resp.overrides.contains(error.getCode())) {
 					ret.setMessage((ret.hasMessage() ? ret.getMessage() + "\n" : "") + "No approvals are allowed for " + error + ".");
 					ret.setCanSubmit(false);
 					denied.add(new ErrorMessage(error.getCourse(), "", error.getCode(), "Approvals are not allowed for: " + error.getMessage()));
+				} else if ("CLOS".equals(error.getCode()) && adds.contains(error.getSection()) && isAllowClosedErrorForAvailableSections()) {
+					XCourse course = courses.get(error.getCourse());
+					if (course == null) continue;
+					// special handing of CLOS errors
+					if (ext.contains(error.getSection())) {
+						// is extended add: check availability
+						XEnrollments enrollments = server.getEnrollments(course.getOfferingId());
+						boolean available = true;
+						for (XSection section: crn2sections.get(error.getSection())) {
+							int enrl = (enrollments != null ? enrollments.countEnrollmentsForSection(section.getSectionId()) : 0);
+							if (section.getLimit() >= 0 && section.getLimit() <= enrl) {
+								available = false; break;
+							}
+						}
+						if (!available) {
+							ret.setMessage((ret.hasMessage() ? ret.getMessage() + "\n" : "") + course.getCourseName() + " does not allow approvals for " + error + ".");
+							ret.setCanSubmit(false);
+							denied.add(new ErrorMessage(course.getCourseName(), "", error.getCode(), "Approvals are not allowed for: " + error.getMessage()));
+						}
+					} else {
+						// is open registration -- check course settings
+						if (course != null && !course.isOverrideEnabled(error.getCode())) {
+							ret.setMessage((ret.hasMessage() ? ret.getMessage() + "\n" : "") + course.getCourseName() + " does not allow approvals for " + error + ".");
+							ret.setCanSubmit(false);
+							denied.add(new ErrorMessage(course.getCourseName(), "", error.getCode(), "Approvals are not allowed for: " + error.getMessage()));
+						}
+					}
 				} else {
-					if ("CLOS".equals(error.getCode()) && av.contains(error.getSection())) continue;
 					XCourse course = courses.get(error.getCourse());
 					if (course != null && !course.isOverrideEnabled(error.getCode())) {
 						ret.setMessage((ret.hasMessage() ? ret.getMessage() + "\n" : "") + course.getCourseName() + " does not allow approvals for " + error + ".");
