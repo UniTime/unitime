@@ -302,6 +302,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		if (request.changes != null)
 			for (Change ch: request.changes)
 				ret = combine(ret, getStatus(ch.status));
+		if (ret == SpecialRegistrationStatus.Approved && request.completionStatus == CompletionStatus.inProgress)
+			return SpecialRegistrationStatus.Pending;
 		if (ret != null) return ret;
 		return getStatus(request.completionStatus);
 	}
