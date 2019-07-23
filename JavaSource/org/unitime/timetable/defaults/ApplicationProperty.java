@@ -1779,9 +1779,9 @@ public enum ApplicationProperty {
 	LogCleanupHashedQueries("unitime.cleanup.hashedQueries"),
 	
 	@Type(Integer.class)
-	@DefaultValue("92")
+	@DefaultValue("-1")
 	@Description("Configuration: automatically remove published batch student scheduling solutions after the given number of days")
-	LogCleanupSectioningSolutionLog("unitime.cleanup.hashedQueries"),
+	LogCleanupSectioningSolutionLog("unitime.cleanup.publishedSolutions"),
 
 	@DefaultValue("WARN")
 	@Values({"ERROR", "WARN", "INFO"})

@@ -178,7 +178,8 @@ public class LogCleaner {
 		cleanupOnlineSectioningLog(ApplicationProperty.LogCleanupOnlineSchedulingLog.intValue());
 		cleanupMessageLog(ApplicationProperty.LogCleanupMessageLog.intValue());
 		cleanupStudentSectioningQueue(ApplicationProperty.LogCleanupOnlineSchedulingQueue.intValue());
-		cleanupHashedQueries(ApplicationProperty.LogCleanupSectioningSolutionLog.intValue());
+		cleanupHashedQueries(ApplicationProperty.LogCleanupHashedQueries.intValue());
+		cleanupSctSolutionLog(ApplicationProperty.LogCleanupSectioningSolutionLog.intValue());
 	}
 
 }
