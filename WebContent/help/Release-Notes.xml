@@ -41,6 +41,14 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Log Cleaner: Published Solver Runs</name>
+			<description>
+				<line>Corrected the ability to automatically delete old published student scheduling solver runs during startup.</line>
+				<line>Using unitime.cleanup.publishedSolutions property listing number of days after which a published run can be deleted
+					(defaults to -1, no automatic delete).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>CPSolver updated to version 1.3.179 (was 1.3.176)</title>
