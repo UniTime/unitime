@@ -4720,6 +4720,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Can Require")
 	String toggleCanRequire();
 	
+	@DefaultMessage("No Personal Schedule")
+	String toggleNoSchedule();
+	
 	@DefaultMessage("Final Examinations")
 	String finalExaminations();
 	

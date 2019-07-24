@@ -213,6 +213,7 @@ public class StudentSchedulingStatusImport extends BaseImport {
 		case specreg: return "specialRegistration";
 		case reqval: return "requestValidation";
 		case canreq: return "canRequire";
+		case noschedule: return "noSchedule";
 		default: return option.name();
 		}
 	}

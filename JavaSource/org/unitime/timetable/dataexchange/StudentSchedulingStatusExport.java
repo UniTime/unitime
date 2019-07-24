@@ -118,6 +118,7 @@ public class StudentSchedulingStatusExport extends BaseExport {
 		case specreg: return "specialRegistration";
 		case reqval: return "requestValidation";
 		case canreq: return "canRequire";
+		case noschedule: return "noSchedule";
 		default: return option.name();
 		}
 	}

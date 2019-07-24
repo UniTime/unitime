@@ -49,10 +49,13 @@ import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomTypeOption;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
+import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.ExamEventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.UserQualifier;
@@ -69,6 +72,13 @@ public class EventPermissions {
 
 		@Override
 		public boolean check(UserContext user, Session source) {
+			if (Roles.ROLE_STUDENT.equals(user.getCurrentAuthority().getRole())) {
+				List<? extends UserQualifier> q = user.getCurrentAuthority().getQualifiers("Student");
+				Student student = (q == null || q.isEmpty() ? null : StudentDAO.getInstance().get((Long)q.get(0).getQualifierId()));
+				StudentSectioningStatus status = (student == null ? null : student.getEffectiveStatus());
+				if (status != null && status.hasOption(StudentSectioningStatus.Option.noschedule)) return false;
+			}
+
 			return
 				(permissionSession.check(user, source, DepartmentStatusType.Status.ReportClasses) && Solution.hasTimetable(source.getSessionId())) ||
 				(permissionSession.check(user, source, DepartmentStatusType.Status.ReportExamsFinal) && Exam.hasTimetable(source.getUniqueId(), ExamType.sExamTypeFinal)) ||

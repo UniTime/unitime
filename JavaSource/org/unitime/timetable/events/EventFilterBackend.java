@@ -606,6 +606,13 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 			public EventInstance set(String param, Object value) { iParams.put(param, value); return this; }
 			public EventInstance limit(Integer limit) { iLimit = (limit == null || limit <= 0 ? null : limit); return this; }
 			public EventInstance joinWithLocation() { iJoinWithLocation = true; return this; }
+			public EventInstance where(String where, String param, Object value) {
+				if (value != null) {
+					where(where);
+					set(param, value);
+				}
+				return this;
+			}
 			
 			public String query() {
 				return
