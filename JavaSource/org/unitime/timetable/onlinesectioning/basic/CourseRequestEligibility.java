@@ -87,6 +87,10 @@ public class CourseRequestEligibility extends CheckEligibility {
 				
 				StudentSectioningStatus status = student.getEffectiveStatus();
 				boolean disabled = (status != null && !status.hasOption(StudentSectioningStatus.Option.regenabled));
+				if (disabled && status != null && status.hasOption(StudentSectioningStatus.Option.regadmin) && iCheck.hasFlag(EligibilityFlag.IS_ADMIN))
+					disabled = false;
+				if (disabled && status != null && status.hasOption(StudentSectioningStatus.Option.regadvisor) && iCheck.hasFlag(EligibilityFlag.IS_ADVISOR))
+					disabled = false;
 				
 				boolean noreg = false;
 				if (iPermissionCanEnroll != null) {
