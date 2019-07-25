@@ -632,7 +632,8 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		try {
 			resource = new ClientResource(getDegreeWorksApiSite());
 			resource.setNext(iClient);
-			resource.addQueryParameter("terms", term);
+			if (term != null)
+				resource.addQueryParameter("terms", term);
 			resource.addQueryParameter("studentId", studentId);
 			if (effectiveOnly != null)
 				resource.addQueryParameter("effectiveOnly", effectiveOnly);
@@ -760,6 +761,30 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 	}
 	
 	public String getCriticalTerms(String bannerTerm) {
+		if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.criticalIncludeAllTerms", "false"))) {
+			return null;
+		}
+		if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.criticalIncludePastTerm", "false"))) {
+			if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.criticalIncludeFutureTerm", "true"))) {
+				if (bannerTerm.endsWith("10")) {
+					return (Integer.parseInt(bannerTerm) - 90) + "," + (Integer.parseInt(bannerTerm) - 80) +"," + bannerTerm
+							 + "," + (Integer.parseInt(bannerTerm) + 10) + "," + (Integer.parseInt(bannerTerm) + 20);
+				} else if (bannerTerm.endsWith("20")) {
+					return (Integer.parseInt(bannerTerm) - 90) + "," + (Integer.parseInt(bannerTerm) - 10) + "," + bannerTerm
+							 + "," + (Integer.parseInt(bannerTerm) + 10) + "," + (Integer.parseInt(bannerTerm) + 90);
+				} else if (bannerTerm.endsWith("30")) {
+					return (Integer.parseInt(bannerTerm) - 20) + "," + (Integer.parseInt(bannerTerm) - 10) + "," + bannerTerm
+							 + "," + (Integer.parseInt(bannerTerm) + 80) + "," + (Integer.parseInt(bannerTerm) + 90);
+				}
+			}
+			if (bannerTerm.endsWith("10")) {
+				return (Integer.parseInt(bannerTerm) - 90) + "," + (Integer.parseInt(bannerTerm) - 80) + "," + bannerTerm;
+			} else if (bannerTerm.endsWith("20")) {
+				return (Integer.parseInt(bannerTerm) - 90) + "," + (Integer.parseInt(bannerTerm) - 10) + "," + bannerTerm;
+			} else if (bannerTerm.endsWith("30")) {
+				return (Integer.parseInt(bannerTerm) - 20) + "," + (Integer.parseInt(bannerTerm) - 10) + "," + bannerTerm;
+			}
+		}
 		if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.criticalIncludeFutureTerm", "true"))) {
 			if (bannerTerm.endsWith("10")) {
 				return bannerTerm + "," + (Integer.parseInt(bannerTerm) + 10) + "," + (Integer.parseInt(bannerTerm) + 20);
@@ -816,14 +841,10 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 			
 			if (effectiveOnly != null)
 				action.addOptionBuilder().setKey("effectiveOnly").setValue(effectiveOnly);
-			action.addOptionBuilder().setKey("criticalTerms").setValue(criticalTerms);
+			if (criticalTerms != null)
+				action.addOptionBuilder().setKey("criticalTerms").setValue(criticalTerms);
 			
 			List<XEInterface.DegreePlan> current = null;
-			try {
-				current = getDegreePlans(getCriticalTerms(term), studentId, effectiveOnly, getDegreeWorksNrAttempts());
-			} catch (SectioningException e) {
-				throw e;
-			}
 			long t0 = System.currentTimeMillis();
 			try {
 				current = getDegreePlans(criticalTerms, studentId, effectiveOnly, getDegreeWorksNrAttempts());
