@@ -1385,6 +1385,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				desc += " (drop)";
 			}
 			CourseCreditUnitConfig credit = course.getCredit();
+			Set<String> additionalMessages = new TreeSet<String>();
 			if (adds.containsKey(course)) {
 				for (Class_ clazz: adds.get(course)) {
 					ClassAssignment ca = new ClassAssignment();
@@ -1481,6 +1482,19 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								}
 								if (SpecialRegistrationHelper.hasLastNote(ch))
 									message += "\n  <span class='note'>" + SpecialRegistrationHelper.getLastNote(ch) + "</span>";
+								String additionalMessage = ApplicationProperties.getProperty("purdue.specreg.note." + err.code + "." +
+									(ch.status == ChangeStatus.approved && specialRequest.completionStatus == CompletionStatus.completed ? "completed" : ch.status));
+								if (additionalMessage != null && !additionalMessage.isEmpty()) {
+									if (additionalMessage.contains("{course}"))
+										additionalMessage = additionalMessage.replace("{course}", ch.subject + " " + ch.courseNbr);
+									if (additionalMessage.contains("{crn}") && ch.crn != null)
+										additionalMessage = additionalMessage.replace("{crn}", ch.crn);
+									if (additionalMessage.contains("{currentGradeMode}") && ch.currentGradeMode != null)
+										additionalMessage = additionalMessage.replace("{currentGradeMode}", ch.currentGradeMode);
+									if (additionalMessage.contains("{selectedGradeMode}") && ch.selectedGradeMode != null)
+										additionalMessage = additionalMessage.replace("{selectedGradeMode}", ch.selectedGradeMode);
+									additionalMessages.add(additionalMessage);
+								}
 								if (ch.status != null)
 									message = "<span class='" + ch.status + "'>" + message + "</span>";
 								if (ca.hasError())
@@ -1512,6 +1526,13 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							}
 							if (maxiNote != null && !maxiNote.toString().isEmpty())
 								message += "\n  <span class='note'>" + maxiNote.trim() + "</span>";
+							String additionalMessage = ApplicationProperties.getProperty("purdue.specreg.note.MAXI." +
+									(maxStatus == ChangeStatus.approved && specialRequest.completionStatus == CompletionStatus.completed ? "completed" : maxStatus));
+							if (additionalMessage != null && !additionalMessage.isEmpty()) {
+								if (additionalMessage.contains("{course}"))
+									additionalMessage = additionalMessage.replace("{course}", ca.getCourseName());
+								additionalMessages.add(additionalMessage);
+							}
 							
 							if (maxStatus != null)
 								message = "<span class='" + maxStatus + "'>" + message + "</span>";
@@ -1618,6 +1639,19 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								}
 								if (SpecialRegistrationHelper.hasLastNote(ch))
 									message += "\n  <span class='note'>" + SpecialRegistrationHelper.getLastNote(ch) + "</span>";
+								String additionalMessage = ApplicationProperties.getProperty("purdue.specreg.note." + err.code + "." +
+										(ch.status == ChangeStatus.approved && specialRequest.completionStatus == CompletionStatus.completed ? "completed" : ch.status));
+								if (additionalMessage != null && !additionalMessage.isEmpty()) {
+									if (additionalMessage.contains("{course}"))
+										additionalMessage = additionalMessage.replace("{course}", ch.subject + " " + ch.courseNbr);
+									if (additionalMessage.contains("{crn}") && ch.crn != null)
+										additionalMessage = additionalMessage.replace("{crn}", ch.crn);
+									if (additionalMessage.contains("{currentGradeMode}") && ch.currentGradeMode != null)
+										additionalMessage = additionalMessage.replace("{currentGradeMode}", ch.currentGradeMode);
+									if (additionalMessage.contains("{selectedGradeMode}") && ch.selectedGradeMode != null)
+										additionalMessage = additionalMessage.replace("{selectedGradeMode}", ch.selectedGradeMode);
+									additionalMessages.add(additionalMessage);
+								}								
 								if (ch.status != null)
 									message = "<span class='" + ch.status + "'>" + message + "</span>";
 								if (ca.hasError())
@@ -1631,6 +1665,17 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					}
 
 					ret.addChange(ca);
+				}
+			}
+			
+			if (!additionalMessages.isEmpty() && ret.hasChanges()) {
+				ClassAssignment ca = ret.getChanges().get(ret.getChanges().size() - 1);
+				for (String message: additionalMessages) {
+					message = "<span class='note'>" + message + "</span>";
+					if (ca.hasError())
+						ca.setError(ca.getError() + "\n" + message);
+					else
+						ca.setError(message);
 				}
 			}
 		}
