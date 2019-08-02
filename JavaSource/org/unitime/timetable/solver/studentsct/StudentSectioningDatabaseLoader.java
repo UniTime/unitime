@@ -207,6 +207,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private int iNrCheckCriticalThreads = 1;
 	private boolean iMoveCriticalCoursesUp = false;
 	private boolean iCorrectConfigLimit = false;
+	private boolean iUseSnapShotLimits = false;
     
     private Progress iProgress = null;
     
@@ -243,6 +244,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iRequestGroupRegExp = model.getProperties().getProperty("Load.RequestGroupRegExp");
         iDatePatternFormat = ApplicationProperty.DatePatternFormatUseDates.value();
         iNoUnlimitedGroupReservations = model.getProperties().getPropertyBoolean("Load.NoUnlimitedGroupReservations", iNoUnlimitedGroupReservations);
+        iUseSnapShotLimits = model.getProperties().getPropertyBoolean("Load.UseSnapShotLimits", iUseSnapShotLimits);
         iCorrectConfigLimit = model.getProperties().getPropertyBoolean("Load.CorrectConfigLimit", iCorrectConfigLimit);
         iLinkedClassesMustBeUsed = model.getProperties().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
         iAllowDefaultCourseAlternatives = ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue();
@@ -479,7 +481,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             for (Iterator<InstrOfferingConfig> j = co.getInstructionalOffering().getInstrOfferingConfigs().iterator(); j.hasNext(); ) {
             	InstrOfferingConfig ioc = j.next();
                 if (ioc.isUnlimitedEnrollment()) return -1;
-                limit += ioc.getLimit();
+                int configLimit = ioc.getLimit();
+                if (iUseSnapShotLimits) {
+            		Integer snapShotLimit = ioc.getSnapShotLimit();
+                	if (snapShotLimit != null && snapShotLimit > configLimit) configLimit = snapShotLimit;	
+                }
+                limit += configLimit;
             }
             if (co.getReservation() != null)
             	limit = co.getReservation();
@@ -515,28 +522,19 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	InstrOfferingConfig ioc = j.next();
             if (ioc.isUnlimitedEnrollment()) return -1;
             int configLimit = ioc.getLimit();
-            int configEnabled = ioc.getLimit();
+            if (iUseSnapShotLimits) {
+        		Integer snapShotLimit = ioc.getSnapShotLimit();
+            	if (snapShotLimit != null && snapShotLimit > configLimit) {
+            		configLimit = snapShotLimit;
+            	}
+            }
+            int configEnabled = configLimit;
             
             for (SchedulingSubpart subpart: ioc.getSchedulingSubparts()) {
             	int subpartEnabled = 0;
             	int subpartDisabled = 0;
             	for (Class_ c: subpart.getClasses()) {
-            		int minLimit = c.getExpectedCapacity();
-                	int maxLimit = c.getMaxExpectedCapacity();
-                	int classLimit = maxLimit;
-                	if (minLimit < maxLimit) {
-                    	Assignment a = c.getCommittedAssignment();
-                        Placement p = null;
-                        if (iMakeupAssignmentsFromRequiredPrefs) {
-                            p = makeupPlacement(c);
-                        } else if (a != null) {
-                            p = a.getPlacement();
-                        }
-                        if (p != null) {
-                    		int roomLimit = (int) Math.floor(p.getRoomSize() / (c.getRoomRatio() == null ? 1.0f : c.getRoomRatio()));
-                    		classLimit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
-                    	}
-                	}
+            		int classLimit = getSectionLimit(c, false);
             		if (c.isCancelled()) {
             			classLimit = 0;
             			for (StudentClassEnrollment e: c.getStudentEnrollments()) {
@@ -586,6 +584,13 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     	if (ioc.isUnlimitedEnrollment()) return -1;
     	int configLimit = ioc.getLimit();
     	if (configLimit >= 9999) return -1;
+    	if (iUseSnapShotLimits) {
+    		Integer snapShotLimit = ioc.getSnapShotLimit();
+        	if (snapShotLimit != null && snapShotLimit > configLimit) {
+        		iProgress.debug("Using snapshot limit for " + ioc.getCourseName() + " [" + ioc.getName() + "] (limit: " + configLimit + ", snapshot: " + snapShotLimit + ")");
+        		configLimit = snapShotLimit;
+        	}
+    	}
     	if (!iCorrectConfigLimit) return configLimit;
     	int reservedDisabledSpace = 0;
     	for (org.unitime.timetable.model.Reservation r: ioc.getInstructionalOffering().getReservations()) {
@@ -615,23 +620,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	int subpartEnabled = 0;
         	int subpartDisabled = 0;
         	for (Class_ c: subpart.getClasses()) {
-        		int minLimit = c.getExpectedCapacity();
-            	int maxLimit = c.getMaxExpectedCapacity();
-            	int classLimit = maxLimit;
-            	if (minLimit < maxLimit) {
-                	Assignment a = c.getCommittedAssignment();
-                    Placement p = null;
-                    if (iMakeupAssignmentsFromRequiredPrefs) {
-                        p = makeupPlacement(c);
-                    } else if (a != null) {
-                        p = a.getPlacement();
-                    }
-                    if (p != null) {
-                		int roomLimit = (int) Math.floor(p.getRoomSize() / (c.getRoomRatio() == null ? 1.0f : c.getRoomRatio()));
-                		// int roomLimit = Math.round((c.getRoomRatio() == null ? 1.0f : c.getRoomRatio()) * p.getRoomSize());
-                		classLimit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
-                	}
-            	}
+            	int classLimit = getSectionLimit(c, false);
         		if (c.isCancelled()) {
         			classLimit = 0;
         			for (StudentClassEnrollment e: c.getStudentEnrollments()) {
@@ -662,6 +651,37 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	}
     	}
     	return configLimit;
+    }
+    
+    public int getSectionLimit(Class_ clazz, boolean infinityCheck) {
+        int minLimit = clazz.getExpectedCapacity();
+    	int maxLimit = clazz.getMaxExpectedCapacity();
+    	if (iUseSnapShotLimits && clazz.getSnapshotLimit() != null) {
+    		if (minLimit < clazz.getSnapshotLimit()) {
+    			if (infinityCheck)
+    				iProgress.debug("Using snapshot limit for " + clazz.getClassLabel(iShowClassSuffix, iShowConfigName) + " (limit: " + clazz.getExpectedCapacity() + ", snapshot: " + clazz.getSnapshotLimit() + ")");
+    			minLimit = clazz.getSnapshotLimit();
+    		}
+    		if (maxLimit < clazz.getSnapshotLimit()) {
+    			maxLimit = clazz.getSnapshotLimit();
+    		}
+    	}
+    	int classLimit = maxLimit;
+    	if (minLimit < maxLimit) {
+    		Assignment a = clazz.getCommittedAssignment();
+            Placement p = null;
+            if (iMakeupAssignmentsFromRequiredPrefs) {
+                p = makeupPlacement(clazz);
+            } else if (a != null) {
+                p = a.getPlacement();
+            }
+            if (p != null) {
+        		int roomLimit = (int) Math.floor(p.getRoomSize() / (clazz.getRoomRatio() == null ? 1.0f : clazz.getRoomRatio()));
+        		classLimit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
+        	}
+    	}
+    	if (infinityCheck && (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment() || classLimit >= 9999)) return -1;
+        return classLimit;
     }
     
     private Offering loadOffering(InstructionalOffering io, Hashtable<Long, Course> courseTable, Hashtable<Long, Section> classTable) {
@@ -725,17 +745,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     			datePatternName(a.getDatePattern(), p.getTimeLocation()),
                     			p.getTimeLocation().getWeekCode());
                     }
-                    int minLimit = c.getExpectedCapacity();
-                	int maxLimit = c.getMaxExpectedCapacity();
-                	int limit = maxLimit;
-                	if (minLimit < maxLimit && p != null) {
-                		int roomLimit = (int) Math.floor(p.getRoomSize() / (c.getRoomRatio() == null ? 1.0f : c.getRoomRatio()));
-                		// int roomLimit = Math.round((c.getRoomRatio() == null ? 1.0f : c.getRoomRatio()) * p.getRoomSize());
-                		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
-                	}
-                    if (ioc.isUnlimitedEnrollment() || limit >= 9999) limit = -1;
-                    // if (iCheckEnabledForScheduling && !c.isEnabledForStudentScheduling()) limit = 0;
-                    Section section = new Section(c.getUniqueId().longValue(), limit, (c.getClassSuffix() == null ? c.getSectionNumberString() : c.getClassSuffix()), subpart, p,
+                    Section section = new Section(c.getUniqueId().longValue(), getSectionLimit(c, true), (c.getClassSuffix() == null ? c.getSectionNumberString() : c.getClassSuffix()), subpart, p,
                     		getInstructors(c), parentSection);
                     if (iCheckEnabledForScheduling && !c.isEnabledForStudentScheduling())
                     	section.setEnabled(false);
