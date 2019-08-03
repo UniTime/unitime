@@ -80,6 +80,12 @@ IFS.</line>
 				<line>Corrected column computation when switching between section numbers and external ids.</line>
 			</description>
 		</item>
+		<item>
+			<name>Class Detail/Edit: Speed Improvements</name>
+			<description>
+				<line>Improved speed of the Class Detail and Edit Class pages when there are lots of instructors with time preferences in the department.</line>
+			</description>
+		</item>
 	</category>
 </release>
 

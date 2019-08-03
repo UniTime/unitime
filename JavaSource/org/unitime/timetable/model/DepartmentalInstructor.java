@@ -405,7 +405,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
             Preference preference = (Preference)i.next();
             if (preference instanceof TimePref) {
                 TimePref timePref = (TimePref)preference;
-                if (timePref.getTimePatternModel().isDefault()) continue;
+                if (timePref.getPreference() == null || timePref.getPreference().matches("2*")) continue;
             }
             return true;
         }
