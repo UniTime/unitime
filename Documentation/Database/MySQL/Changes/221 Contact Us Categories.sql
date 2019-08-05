@@ -23,7 +23,8 @@ create table contact_category (
 	reference varchar(20) not null,
 	label varchar(60) not null,
 	message varchar(2048),
-	has_role int(1) not null
+	has_role int(1) not null,
+	email varchar(1000),
 ) engine = INNODB;
 
 select 32767 * next_hi into @id from hibernate_unique_key;

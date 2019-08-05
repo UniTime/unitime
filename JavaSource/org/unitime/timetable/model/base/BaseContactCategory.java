@@ -33,10 +33,12 @@ public abstract class BaseContactCategory extends RefTableEntry implements Seria
 
 	private String iMessage;
 	private Boolean iHasRole;
+	private String iEmail;
 
 
 	public static String PROP_MESSAGE = "message";
 	public static String PROP_HAS_ROLE = "hasRole";
+	public static String PROP_EMAIL = "email";
 
 	public BaseContactCategory() {
 		initialize();
@@ -56,6 +58,9 @@ public abstract class BaseContactCategory extends RefTableEntry implements Seria
 	public Boolean getHasRole() { return iHasRole; }
 	public void setHasRole(Boolean hasRole) { iHasRole = hasRole; }
 
+	public String getEmail() { return iEmail; }
+	public void setEmail(String email) { iEmail = email; }
+
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof ContactCategory)) return false;
 		if (getUniqueId() == null || ((ContactCategory)o).getUniqueId() == null) return false;
@@ -73,6 +78,7 @@ public abstract class BaseContactCategory extends RefTableEntry implements Seria
 
 	public String toDebugString() {
 		return "ContactCategory[" +
+			"\n	Email: " + getEmail() +
 			"\n	HasRole: " + getHasRole() +
 			"\n	Label: " + getLabel() +
 			"\n	Message: " + getMessage() +

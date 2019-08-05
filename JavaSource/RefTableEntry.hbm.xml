@@ -447,6 +447,12 @@
                 column="has_role"
                 type="java.lang.Boolean"
                 not-null="true"/>
+	        <property
+    	        name="email"
+        	    column="email"
+            	type="java.lang.String"
+	            not-null="false"
+    	        length="1000"/>
         </union-subclass>
     </class>
 </hibernate-mapping>

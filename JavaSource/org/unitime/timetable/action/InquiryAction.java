@@ -48,7 +48,9 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.Email;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.InquiryForm;
+import org.unitime.timetable.model.ContactCategory;
 import org.unitime.timetable.model.EventContact;
+import org.unitime.timetable.model.dao.ContactCategoryDAO;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -171,8 +173,19 @@ public class InquiryAction extends Action {
 	            			email.addRecipientCC((String)i.next(), null);
 	            		}
 	            	}
-                    
-                    if (ApplicationProperty.EmailInquiryAddress.value() != null)
+	            	
+	            	ContactCategory cc = ContactCategoryDAO.getInstance().get(myForm.getType());
+	            	if (cc != null && cc.getEmail() != null && !cc.getEmail().isEmpty()) {
+	    				String suffix = ApplicationProperty.EmailDefaultAddressSuffix.value();
+	    				for (String address: cc.getEmail().split("[\n,]")) {
+	    					if (!address.trim().isEmpty()) {
+	    						if (suffix != null && address.indexOf('@') < 0)
+	    							email.addRecipient(address.trim() + suffix, null);
+	    						else
+	    							email.addRecipient(address.trim(), null);
+	    					}
+	    				}
+	            	} else if (ApplicationProperty.EmailInquiryAddress.value() != null)
                     	email.addRecipient(ApplicationProperty.EmailInquiryAddress.value(), ApplicationProperty.EmailInquiryAddressName.value());
                     else
                     	email.addNotify();

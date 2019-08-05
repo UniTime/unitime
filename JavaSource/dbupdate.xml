@@ -13579,7 +13579,8 @@
 				reference varchar2(20 char) constraint nn_concat_ref not null,
 				label varchar2(60 char) constraint nn_concat_label not null,
 				message varchar2(2048 char),
-				has_role number(1,0) constraint nn_concat_has_role not null
+				has_role number(1,0) constraint nn_concat_has_role not null,
+				email varchar2(1000 char)
 			)
 		</plsql>
 		<plsql>alter table %SCHEMA%.contact_category add constraint pk_contact_category primary key (uniqueid)</plsql>
@@ -13589,7 +13590,8 @@
 				reference varchar(20) not null,
 				label varchar(60) not null,
 				message varchar(2048),
-				has_role int(1) not null
+				has_role int(1) not null,
+				email varchar(1000)
 			) engine = INNODB
 		</mysql>
 		<mysql into="ID">

@@ -61,7 +61,8 @@ public class ContactCategories implements AdminTable {
 				new Field(MESSAGES.fieldReference(), FieldType.text, 160, 20, Flag.UNIQUE),
 				new Field(MESSAGES.fieldName(), FieldType.text, 300, 60, Flag.UNIQUE),
 				new Field(MESSAGES.fieldMessage(), FieldType.textarea, 100, 10, 2048),
-				new Field(MESSAGES.fieldHasRole(), FieldType.toggle, 40)
+				new Field(MESSAGES.fieldHasRole(), FieldType.toggle, 40),
+				new Field(MESSAGES.fieldEmailAddress(), FieldType.textarea, 50, 3, 1000)
 				);
 		data.setSortBy(1);
 		for (ContactCategory cc: (List<ContactCategory>)ContactCategoryDAO.getInstance().getSession().createQuery(
@@ -71,6 +72,7 @@ public class ContactCategories implements AdminTable {
 			r.setField(1, cc.getLabel());
 			r.setField(2, cc.getMessage());
 			r.setField(3, cc.isHasRole() ? "true" : "false");
+			r.setField(4, cc.getEmail());
 		}
 		data.setEditable(context.hasPermission(Right.ContactCategoryEdit));
 		return data;
@@ -98,6 +100,7 @@ public class ContactCategories implements AdminTable {
 		cc.setLabel(record.getField(1));
 		cc.setMessage(record.getField(2));
 		cc.setHasRole("true".equalsIgnoreCase(record.getField(3)));
+		cc.setEmail(record.getField(4));
 		record.setUniqueId((Long)hibSession.save(cc));
 		ChangeLog.addChange(hibSession,
 				context,
@@ -114,11 +117,13 @@ public class ContactCategories implements AdminTable {
 		if (ToolBox.equals(cc.getReference(), record.getField(0)) &&
 				ToolBox.equals(cc.getLabel(), record.getField(1)) &&
 				ToolBox.equals(cc.getMessage(), record.getField(2)) &&
-				ToolBox.equals(cc.getHasRole(), "true".equalsIgnoreCase(record.getField(3)))) return;
+				ToolBox.equals(cc.getHasRole(), "true".equalsIgnoreCase(record.getField(3))) &&
+				ToolBox.equals(cc.getEmail(), record.getField(4))) return;
 		cc.setReference(record.getField(0));
 		cc.setLabel(record.getField(1));
 		cc.setMessage(record.getField(2));
 		cc.setHasRole("true".equalsIgnoreCase(record.getField(3)));
+		cc.setEmail(record.getField(4));
 		hibSession.saveOrUpdate(cc);
 		ChangeLog.addChange(hibSession,
 				context,

@@ -23,7 +23,8 @@ create table contact_category (
 	reference varchar2(20 char) constraint nn_concat_ref not null,
 	label varchar2(60 char) constraint nn_concat_label not null,
 	message varchar2(2048 char),
-	has_role number(1,0) constraint nn_concat_has_role not null
+	has_role number(1,0) constraint nn_concat_has_role not null,
+	email varchar2(1000 char)
 );
 alter table contact_category add constraint pk_contact_category primary key (uniqueid);
 
