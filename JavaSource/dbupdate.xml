@@ -13572,4 +13572,81 @@
 		</plsql>
 		<plsql>alter table %SCHEMA%.map_tiles add constraint pk_map_tiles primary key (z, x, y)</plsql>
 	</update>
+	<update version="221" date="5-Aug-2019" comment="Contact Us Categries">
+		<plsql>
+			create table %SCHEMA%.contact_category (
+				uniqueid number(20,0) constraint nn_concat_id not null,
+				reference varchar2(20 char) constraint nn_concat_ref not null,
+				label varchar2(60 char) constraint nn_concat_label not null,
+				message varchar2(2048 char),
+				has_role number(1,0) constraint nn_concat_has_role not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.contact_category add constraint pk_contact_category primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.contact_category (
+				uniqueid decimal(20,0) primary key not null,
+				reference varchar(20) not null,
+				label varchar(60) not null,
+				message varchar(2048),
+				has_role int(1) not null
+			) engine = INNODB
+		</mysql>
+		<mysql into="ID">
+			select 32767 * next_hi from %SCHEMA%.hibernate_unique_key			
+		</mysql>
+		<mysql><![CDATA[
+			insert into %SCHEMA%.contact_category
+(uniqueid, reference, label, message, has_role) values
+(%ID%  , '01-QUESTION', 'Ask a question', null, 0),
+(%ID%+1, '02-ERROR', 'Report an error', null, 0),
+(%ID%+2, '03-SUGGESTION', 'Make a suggestion', null, 0),
+(%ID%+3, '04-REQ-TIMEPAT', 'Request addition of a time pattern', '1. Specify the list of classes or scheduling subparts on which the requested time pattern need to be set (e.g., AB 100 Lec 1, AB 100 Lec 2) : \r\n\r\n2. Specify the time pattern (number of meetings and number of minutes per meeting, e.g., 2x75) : \r\n\r\n3. Specify the available days (e.g., MW, WF, MF, TTh) : \r\n\r\n4. Specify the available starting times (e.g., 7:30am, 8:30am, 9:30am, ... 4:30pm) : \r\n', 1),
+(%ID%+4, '05-REQ-EXTIME', 'Request addition of an exact time', '1. Specify the list of classes on which the requested time pattern need to be set (e.g., AB 100 Lec 1, AB 100 Lec 2) : \r\n\r\n2. Specify the time (e.g., MWF 8:15am - 10:20am) : \r\n', 1),
+(%ID%+5, '06-REQ-DATEPAT', 'Request addition of a date pattern', '1. Specify the list of classes or scheduling subparts on which the requested date pattern need to be set (e.g., AB 100 Lec 1, AB 100 Lec 2) : \r\n\r\n2. Specify the list weeks for the date pattern (e.g., Weeks 2-8; alternatively, you can specify start and end date) : \r\n', 1),
+(%ID%+6, '07-REQ-CHOWN', 'Request a change of owner on class and/or scheduling subpart', '1. Specify the list of classes or scheduling subparts on which the requested date pattern need to be set (e.g., AB 100 Lec 1, AB 100 Lec 2) : \r\n\r\n2. Specify the new owner (e.g., LLR) : \r\n', 1),
+(%ID%+7, '08-REQ-CROSSLIST', 'Request a course cross-listing', '1. Specify the controlling course (e.g., AB 100) : \r\n\r\n2. Specify courses that should be cross-listed with the controlling course (e.g., CDFS 100) : \r\n', 1),
+(%ID%+8, '09-REQ-ROOMSHR', 'Request a room to be shared', '1. Specify the room that needs to be shared (e.g., GRIS 100) : \r\n\r\n2. Specify the departments between which the room needs to be shared (e.g., 1282-Aeronautics & Astronautics and 1287-Industrial Engineering) : \r\n\r\n3. Specify the times when the room is to be allocated for one of the departments or when the room is not available (e.g., MWF for Aero, TTh for I E, not available after 3:00pm) : \r\n', 1),
+(%ID%+9, '10-REQ-ADMIN', 'Request any other administrative change', null, 1),
+(%ID%+10, '11-NOT-LLRDONE', 'LLR/LAB data entry is done', '1. Specify the managing department (e.g., LLR or LAB) : \r\n', 1),
+(%ID%+11, '12-OTHER', 'Other', null, 1) 
+		]]></mysql>
+		<mysql>
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
+		</mysql>		
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'ContactCategories'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'PreferenceLevels'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'ContactCategoryEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'PreferenceLevelEdit'
+		</sql>
+		<plsql>insert into %SCHEMA%.contact_category (uniqueid, reference, label, message, has_role) values
+			(%SCHEMA%.ref_table_seq.nextval, '01-QUESTION', 'Ask a question', null, 0)</plsql>
+		<plsql>insert into %SCHEMA%.contact_category (uniqueid, reference, label, message, has_role) values
+			(%SCHEMA%.ref_table_seq.nextval, '02-ERROR', 'Report an error', null, 0)</plsql>
+		<plsql>insert into %SCHEMA%.contact_category (uniqueid, reference, label, message, has_role) values
+			(%SCHEMA%.ref_table_seq.nextval, '03-SUGGESTION', 'Make a suggestion', null, 0)</plsql>
+		<plsql>insert into %SCHEMA%.contact_category (uniqueid, reference, label, message, has_role) values
+			(%SCHEMA%.ref_table_seq.nextval, '04-REQ-TIMEPAT', 'Request addition of a time pattern', '1. Specify the list of classes or scheduling subparts on which the requested time pattern need to be set (e.g., AB 100 Lec 1, AB 100 Lec 2) : '||u'\000D\000A\000D\000A'||'2. Specify the time pattern (number of meetings and number of minutes per meeting, e.g., 2x75) : '||u'\000D\000A\000D\000A'||'3. Specify the available days (e.g., MW, WF, MF, TTh) : '||u'\000D\000A\000D\000A'||'4. Specify the available starting times (e.g., 7:30am, 8:30am, 9:30am, ... 4:30pm) : '||u'\000D\000A', 1)</plsql>
+		<plsql>insert into %SCHEMA%.contact_category (uniqueid, reference, label, message, has_role) values
+			(%SCHEMA%.ref_table_seq.nextval, '05-REQ-EXTIME', 'Request addition of an exact time', '1. Specify the list of classes on which the requested time pattern need to be set (e.g., AB 100 Lec 1, AB 100 Lec 2) : '||u'\000D\000A\000D\000A'||'2. Specify the time (e.g., MWF 8:15am - 10:20am) : '||u'\000D\000A', 1)</plsql>
+		<plsql>insert into %SCHEMA%.contact_category (uniqueid, reference, label, message, has_role) values
+			(%SCHEMA%.ref_table_seq.nextval, '06-REQ-DATEPAT', 'Request addition of a date pattern', '1. Specify the list of classes or scheduling subparts on which the requested date pattern need to be set (e.g., AB 100 Lec 1, AB 100 Lec 2) : '||u'\000D\000A\000D\000A'||'2. Specify the list weeks for the date pattern (e.g., Weeks 2-8; alternatively, you can specify start and end date) : '||u'\000D\000A', 1)</plsql>
+		<plsql>insert into %SCHEMA%.contact_category (uniqueid, reference, label, message, has_role) values
+			(%SCHEMA%.ref_table_seq.nextval, '07-REQ-CHOWN', 'Request a change of owner on class and/or scheduling subpart', '1. Specify the list of classes or scheduling subparts on which the requested date pattern need to be set (e.g., AB 100 Lec 1, AB 100 Lec 2) : '||u'\000D\000A\000D\000A'||'2. Specify the new owner (e.g., LLR) : '||u'\000D\000A', 1)</plsql>
+		<plsql>insert into %SCHEMA%.contact_category (uniqueid, reference, label, message, has_role) values
+			(%SCHEMA%.ref_table_seq.nextval, '08-REQ-CROSSLIST', 'Request a course cross-listing', '1. Specify the controlling course (e.g., AB 100) : '||u'\000D\000A\000D\000A'||'2. Specify courses that should be cross-listed with the controlling course (e.g., CDFS 100) : '||u'\000D\000A', 1)</plsql>
+		<plsql>insert into %SCHEMA%.contact_category (uniqueid, reference, label, message, has_role) values
+			(%SCHEMA%.ref_table_seq.nextval, '09-REQ-ROOMSHR', 'Request a room to be shared', '1. Specify the room that needs to be shared (e.g., GRIS 100) : '||u'\000D\000A\000D\000A'||'2. Specify the departments between which the room needs to be shared (e.g., 1282-Aeronautics '||u'\0026'||' Astronautics and 1287-Industrial Engineering) : '||u'\000D\000A\000D\000A'||'3. Specify the times when the room is to be allocated for one of the departments or when the room is not available (e.g., MWF for Aero, TTh for I E, not available after 3:00pm) : '||u'\000D\000A', 1)</plsql>
+		<plsql>insert into %SCHEMA%.contact_category (uniqueid, reference, label, message, has_role) values
+			(%SCHEMA%.ref_table_seq.nextval, '10-REQ-ADMIN', 'Request any other administrative change', null, 1)</plsql>
+		<plsql>insert into %SCHEMA%.contact_category (uniqueid, reference, label, message, has_role) values
+			(%SCHEMA%.ref_table_seq.nextval, '11-NOT-LLRDONE', 'LLR/LAB data entry is done', '1. Specify the managing department (e.g., LLR or LAB) : '||u'\000D\000A', 1)</plsql>
+		<plsql>insert into %SCHEMA%.contact_category (uniqueid, reference, label, message, has_role) values
+			(%SCHEMA%.ref_table_seq.nextval, '12-OTHER', 'Other', null, 1)</plsql>
+	</update>
 </dbupdate>

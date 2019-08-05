@@ -3170,6 +3170,14 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageOverrideTypes();
 
+	@DefaultMessage("Concact Category")
+	@DoNotTranslate
+	String pageContactCategory();
+	
+	@DefaultMessage("Concact Categories")
+	@DoNotTranslate
+	String pageContactCategories();
+
 	@DefaultMessage("Event Date Mapping")
 	@DoNotTranslate
 	String pageEventDateMapping();
@@ -4659,6 +4667,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Fallback Status")
 	String fieldStudentStatusFallback();
+	
+	@DefaultMessage("Restricted")
+	String fieldHasRole();
 	
 	@DefaultMessage("Not Allowed")
 	String itemAllowDisabledSectionsNotAllowed();

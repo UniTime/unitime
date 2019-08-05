@@ -1145,6 +1145,12 @@
 					<hasPermission name="ExamTypes"/>
 				</condition>
 			</item>
+			<item name="Contact Categories" page="admin" type="gwt">
+				<parameter name="type">contactCategory</parameter>
+				<condition>
+					<hasPermission name="ContactCategories"/>
+				</condition>
+			</item>
 			<separator/>
 			<item name="Roles" page="admin" type="gwt">
 				<parameter name="type">roles</parameter>
