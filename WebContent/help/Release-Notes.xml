@@ -158,6 +158,14 @@ IFS.</line>
 				<line>Improved speed of the Class Detail and Edit Class pages when there are lots of instructors with time preferences in the department.</line>
 			</description>
 		</item>
+		<item>
+			<name>Contact Us: Categories &amp; Attachments</name>
+			<description>
+				<line>Contact Us categories can now be customized using Administration &gt; Other &gt; Contact Categories page.</line>
+				<line>Also, each category may have a custom email address (or addresses).</line>
+				<line>It is now possible to include attachments in the Contact Us email.</line>
+			</description>
+		</item>
 	</category>
 </release>
 

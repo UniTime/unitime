@@ -574,6 +574,9 @@ public enum Right {
 	OverrideTypes,
 	OverrideTypeEdit,
 	
+	ContactCategories,
+	ContactCategoryEdit,
+	
 	EventServiceProviders,
 	EventServiceProviderEditGlobal,
 	EventServiceProviderEditSession(Session.class),

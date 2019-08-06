@@ -19,10 +19,18 @@
 */
 package org.unitime.timetable.action;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import javax.activation.DataSource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -32,6 +40,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+import org.apache.struts.upload.FormFile;
 import org.apache.struts.util.MessageResources;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,7 +48,9 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.Email;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.InquiryForm;
+import org.unitime.timetable.model.ContactCategory;
 import org.unitime.timetable.model.EventContact;
+import org.unitime.timetable.model.dao.ContactCategoryDAO;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -68,9 +79,14 @@ public class InquiryAction extends Action {
 	        String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 	        
             myForm.setNoRole(!sessionContext.getUser().getCurrentAuthority().hasRight(Right.HasRole));
-	        
+            
+            if (op == null && request.getParameter("op2") == null) {
+            	request.getSession().removeAttribute("ContactUsFiles");
+            }
+            
 	        if ("Cancel".equals(op) || "Back".equals(op)) {
-	        	return mapping.findForward("submit");
+            	request.getSession().removeAttribute("ContactUsFiles");
+            	return mapping.findForward("submit");
 	        }
 	        
     		ActionMessages errors = null;
@@ -86,6 +102,20 @@ public class InquiryAction extends Action {
 	        					new ActionMessage("errors.generic",	"Recipient has an invalid email address."));
 	                saveErrors(request, errors);
 	        	}
+	        }
+	        
+	        if (myForm.getFile() != null && myForm.getFile().getFileSize() > 0) {
+	        	Map<String, Attachment> files = (Map<String, Attachment>)request.getSession().getAttribute("ContactUsFiles");
+	        	if (files == null) {
+	        		files = new HashMap<String, Attachment>();
+	        		request.getSession().setAttribute("ContactUsFiles", files);
+	        	}
+	        	files.put(myForm.getFile().getFileName(), new Attachment(myForm.getFile()));
+	        }
+	        
+	        if (request.getParameter("deleteFile")!=null && !request.getParameter("deleteFile").isEmpty()) {
+	        	Map<String, Attachment> files = (Map<String, Attachment>)request.getSession().getAttribute("ContactUsFiles");
+	        	if (files != null) files.remove(request.getParameter("deleteFile"));
 	        }
 	        
 	        if (request.getParameter("deleteId")!=null && request.getParameter("deleteId").length()>0) {
@@ -143,8 +173,19 @@ public class InquiryAction extends Action {
 	            			email.addRecipientCC((String)i.next(), null);
 	            		}
 	            	}
-                    
-                    if (ApplicationProperty.EmailInquiryAddress.value() != null)
+	            	
+	            	ContactCategory cc = ContactCategoryDAO.getInstance().get(myForm.getType());
+	            	if (cc != null && cc.getEmail() != null && !cc.getEmail().isEmpty()) {
+	    				String suffix = ApplicationProperty.EmailDefaultAddressSuffix.value();
+	    				for (String address: cc.getEmail().split("[\n,]")) {
+	    					if (!address.trim().isEmpty()) {
+	    						if (suffix != null && address.indexOf('@') < 0)
+	    							email.addRecipient(address.trim() + suffix, null);
+	    						else
+	    							email.addRecipient(address.trim(), null);
+	    					}
+	    				}
+	            	} else if (ApplicationProperty.EmailInquiryAddress.value() != null)
                     	email.addRecipient(ApplicationProperty.EmailInquiryAddress.value(), ApplicationProperty.EmailInquiryAddressName.value());
                     else
                     	email.addNotify();
@@ -160,6 +201,14 @@ public class InquiryAction extends Action {
                         	email.addRecipientCC(sessionContext.getUser().getUsername() + ApplicationProperty.EmailInquiryAddressSuffix.value(), sessionContext.getUser().getName());
                         }
                     }
+                    
+                    Map<String, Attachment> files = (Map<String, Attachment>)request.getSession().getAttribute("ContactUsFiles");
+                    if (files != null) {
+                    	for (Attachment attachment: files.values())
+                    		email.addAttachment(attachment);
+                    	request.getSession().removeAttribute("ContactUsFiles");
+                    }
+                    
                     email.send();
                     
                     
@@ -207,6 +256,28 @@ public class InquiryAction extends Action {
 			Debug.error(e);
 			throw e;
 		}
+	}
+	
+	static class Attachment implements DataSource, Serializable {
+		private static final long serialVersionUID = 1L;
+		private String iName;
+		private byte[] iData;
+		private String iContentType;
+		
+		public Attachment(FormFile file) throws IOException {
+			iName = file.getFileName();
+			iData = file.getFileData();
+			iContentType = file.getContentType();
+		}
+
+		@Override
+		public String getContentType() { return iContentType; }
+		@Override
+		public InputStream getInputStream() throws IOException { return new ByteArrayInputStream(iData); }
+		@Override
+		public String getName() { return iName; }
+		@Override
+		public OutputStream getOutputStream() throws IOException { return null; }
 	}
 	
 }

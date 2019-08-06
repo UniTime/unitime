@@ -434,5 +434,25 @@
 			</union-subclass>
 
         <union-subclass name="OverrideType" table="override_type" abstract="false"/>
+        
+        <union-subclass name="ContactCategory" table="contact_category" abstract="false">
+        	<property
+        		name="message"
+        		column="message"
+        		type="string"
+        		not-null="false"
+        		length="2048"/>
+			<property
+                name="hasRole"
+                column="has_role"
+                type="java.lang.Boolean"
+                not-null="true"/>
+	        <property
+    	        name="email"
+        	    column="email"
+            	type="java.lang.String"
+	            not-null="false"
+    	        length="1000"/>
+        </union-subclass>
     </class>
 </hibernate-mapping>

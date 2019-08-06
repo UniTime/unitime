@@ -17,6 +17,7 @@
  * limitations under the License.
  * 
 --%>
+<%@page import="java.util.Map"%>
 <%@ page language="java" autoFlush="true"%>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.model.TimetableManager" %>
@@ -33,10 +34,16 @@
 		var delId = document.inquiryForm.deleteId;
 		delId.value = id;
 	}
+	function doDelFile(name) {
+		var deleteFile = document.inquiryForm.deleteFile;
+		deleteFile.value = name;
+	}
 </SCRIPT>				
 
-<html:form action="/inquiry" focus="type">
+<html:form action="/inquiry" focus="type" enctype="multipart/form-data">
 	<INPUT type="hidden" name="deleteId" id="deleteId" value="">
+	<INPUT type="hidden" name="deleteFile" id="deleteFile" value="">
+	<INPUT type="hidden" name="op2" value="Resubmit">
 	
 	<logic:equal name="inquiryForm" property="op" value="Sent">
 	
@@ -131,6 +138,29 @@
 				<html:textarea property="message" rows="20" cols="120"/>
 			</TD>
 		</TR>
+
+		<TR>
+			<TD nowrap>Attachment:</TD>
+			<TD>
+				<html:file name="inquiryForm" property="file" size="100" maxlength="255"/>
+				<html:submit property="op" accesskey="A" value="Attach File" styleClass="btn" />
+			</TD>
+		</TR>
+		<%
+		Map<String,Object> files = (Map<String,Object>)session.getAttribute("ContactUsFiles");
+		if (files != null && !files.isEmpty()) {%><TR><TD>&nbsp;</TD><TD><%
+			for (String name: files.keySet()) {
+				%><font class="font8Gray"><%=name%></font>
+				<html:image 
+					src="images/cancel.png" border="0" align="absmiddle"
+					title='<%="Remove " + name%>' 
+					styleClass="btn" style="border:0;background-color:#FFFFFF;"
+					onclick="<%= \"javascript: doDelFile('\" + name + \"');\"%>" />&nbsp;
+				<%
+			}
+			%></TD></TR><%
+		}
+		%>
 
 		<TR>
 			<TD valign="middle" colspan='2' align="right" style='border-top:1px solid #9CB0CE; padding-top: 4px;'>
