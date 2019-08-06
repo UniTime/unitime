@@ -345,12 +345,23 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			if (!hasChanges()) return getStatus() == SpecialRegistrationStatus.Approved;
 			if (saved == null) return false;
 			Set<Long> courseIds = new HashSet<Long>();
+			boolean enrolled = true, gmChange = false;
 			changes: for (ClassAssignmentInterface.ClassAssignment ch: iChanges) {
 				if (ch.getSpecRegOperation() == SpecialRegistrationOperation.Keep) {
-					if (ch.getGradeMode() != null)
+					if (ch.getGradeMode() != null) {
+						if (ch.getGradeMode().isHonor()) {
+							boolean found = false;
+							for (ClassAssignmentInterface.ClassAssignment ca: saved.getClassAssignments())
+								if (ca.isSaved() && ch.getClassId().equals(ca.getClassId())) {
+									found = true; break;
+								}
+							if (!found) enrolled = false;
+						}
 						for (ClassAssignmentInterface.ClassAssignment ca: saved.getClassAssignments())
-							if (ca.isSaved() && ch.getCourseId().equals(ca.getCourseId()) && !ch.getGradeMode().equals(ca.getGradeMode()))
-								return false;
+							if (ca.isSaved() && ch.getCourseId().equals(ca.getCourseId()) && !ch.getGradeMode().equals(ca.getGradeMode())) {
+								gmChange = true; break;
+							}
+					}
 					continue;
 				}
 				Long courseId = ch.getCourseId();
@@ -389,6 +400,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 					}
 				}
 			}
+			if (gmChange && enrolled) return false;
 			return true;
 		}
 		
@@ -685,8 +697,8 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public SpecialRegistrationGradeMode() {
 			super();
 		}
-		public SpecialRegistrationGradeMode(String code, String label) {
-			super(code, label);
+		public SpecialRegistrationGradeMode(String code, String label, boolean honors) {
+			super(code, label, honors);
 		}
 		
 		public boolean hasApprovals() { return iApprovals != null && !iApprovals.isEmpty(); }
@@ -830,9 +842,9 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public boolean hasGradeModes() {
 			return iGradeModes != null && iGradeModes.hasGradeModes();
 		}
-		public void addGradeMode(String sectionId, String code, String label) {
+		public void addGradeMode(String sectionId, String code, String label, boolean honors) {
 			if (iGradeModes == null) iGradeModes = new GradeModes();
-			iGradeModes.add(sectionId, new GradeMode(code, label));
+			iGradeModes.add(sectionId, new GradeMode(code, label, honors));
 		}
 		public GradeMode getGradeMode(ClassAssignment section) {
 			if (iGradeModes == null) return null;

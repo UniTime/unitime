@@ -2273,4 +2273,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("{0} (Mixed)")
 	String gradeModeItemNotSame(String gm);
+	
+	@DefaultMessage("You are making changes to {0} that has an honors grade mode. This will change the grade mode back to the regular grade mode for this course. Do you want to proceed?")
+    String confirmEnrollmentHonorsGradeModeChange(String course);
 }

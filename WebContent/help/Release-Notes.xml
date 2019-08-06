@@ -90,7 +90,16 @@ IFS.</line>
 		<item>
 			<name>Grade Mode Changes</name>
 			<description>
-				<line>Added ability to request grade mode changes</line>
+				<line>Added ability to request grade mode changes.</line>
+			</description>
+		</item>
+		<item>
+			<name>XE Student Enrollment</name>
+			<description>
+				<line>When banner.xe.keepGradeMode is set to true, make an additional API call to set the grade mode for the added section(s) to the one that was already set on the course (other sections of the same course).</line>
+				<line>Honors grade modes are identified by banner.xe.resetGradeModes reg exp property (defaults to H|Q|R).
+					<line>When there is a schedule change, honors grade mode is reset back to the default one (follow the grade mode of the added section).</line>
+				</line>
 			</description>
 		</item>
 	</category>

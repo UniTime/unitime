@@ -1210,7 +1210,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			for (CourseAssignment ca: ret.getCourseAssignments())
 				for (ClassAssignment a: ca.getClassAssignments()) {
 					if (a.getGradeMode() != null)
-						last.addGradeMode(a.getExternalId(), a.getGradeMode().getCode(), a.getGradeMode().getLabel());
+						last.addGradeMode(a.getExternalId(), a.getGradeMode().getCode(), a.getGradeMode().getLabel(), a.getGradeMode().isHonor());
 				}
 		}
 		
@@ -3150,7 +3150,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		EligibilityCheck last = (EligibilityCheck)getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingEligibility);
 		if (ret != null && ret.hasGradeModes() && last != null)
 			for (Map.Entry<String, GradeMode> e: ret.getGradeModes().toMap().entrySet())
-				last.addGradeMode(e.getKey(), e.getValue().getCode(), e.getValue().getLabel());
+				last.addGradeMode(e.getKey(), e.getValue().getCode(), e.getValue().getLabel(), e.getValue().isHonor());
 		
 		return ret;
 	}

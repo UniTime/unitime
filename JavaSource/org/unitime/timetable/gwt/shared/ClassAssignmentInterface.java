@@ -1501,6 +1501,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			UT_NOT_AVAILABLE("CLOS"),
 			UT_CANCEL,
 			UT_DEADLINE,
+			UT_GRADE_MODE,
 			;
 			
 			private String iCode;
