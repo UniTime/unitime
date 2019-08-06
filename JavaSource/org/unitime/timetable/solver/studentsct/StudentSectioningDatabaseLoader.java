@@ -124,6 +124,7 @@ import org.unitime.timetable.model.StudentClassPref;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.StudentGroupType;
+import org.unitime.timetable.model.StudentGroupType.AllowDisabledSection;
 import org.unitime.timetable.model.StudentInstrMthPref;
 import org.unitime.timetable.model.StudentSectioningPref;
 import org.unitime.timetable.model.StudentSectioningQueue;
@@ -205,6 +206,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private CriticalCoursesProvider iCriticalCoursesProvider = null;
 	private int iNrCheckCriticalThreads = 1;
 	private boolean iMoveCriticalCoursesUp = false;
+	private boolean iCorrectConfigLimit = false;
     
     private Progress iProgress = null;
     
@@ -241,6 +243,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iRequestGroupRegExp = model.getProperties().getProperty("Load.RequestGroupRegExp");
         iDatePatternFormat = ApplicationProperty.DatePatternFormatUseDates.value();
         iNoUnlimitedGroupReservations = model.getProperties().getPropertyBoolean("Load.NoUnlimitedGroupReservations", iNoUnlimitedGroupReservations);
+        iCorrectConfigLimit = model.getProperties().getPropertyBoolean("Load.CorrectConfigLimit", iCorrectConfigLimit);
         iLinkedClassesMustBeUsed = model.getProperties().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
         iAllowDefaultCourseAlternatives = ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue();
         iIncludeUnavailabilities = model.getProperties().getPropertyBoolean("Load.IncludeUnavailabilities", iIncludeUnavailabilities);
@@ -470,6 +473,197 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         return p;
     }
     
+    private int getCourseLimit(CourseOffering co) {
+    	if (!iCorrectConfigLimit) {
+            int limit = 0;
+            for (Iterator<InstrOfferingConfig> j = co.getInstructionalOffering().getInstrOfferingConfigs().iterator(); j.hasNext(); ) {
+            	InstrOfferingConfig ioc = j.next();
+                if (ioc.isUnlimitedEnrollment()) return -1;
+                limit += ioc.getLimit();
+            }
+            if (co.getReservation() != null)
+            	limit = co.getReservation();
+            if (limit >= 9999) return -1;
+            return limit;
+    	}
+        int reservedDisabledSpace = 0;
+    	for (org.unitime.timetable.model.Reservation r: co.getInstructionalOffering().getReservations()) {
+    		if (r instanceof LearningCommunityReservation && !((LearningCommunityReservation)r).getCourse().equals(co)) continue;
+    		if (r instanceof StudentGroupReservation) {
+    			if (!r.getClasses().isEmpty()) {
+    				boolean needDisabled = false;
+    				for (Class_ c: r.getClasses()) {
+    					if (!c.isEnabledForStudentScheduling()) needDisabled = true;
+    				}
+    				if (!needDisabled) continue;
+    			}
+    			StudentGroup gr = ((StudentGroupReservation)r).getGroup();
+    			if (gr.getType() != null && gr.getType().getAllowDisabledSection() == AllowDisabledSection.WithGroupReservation) {
+    				int reservationLimit = (r.getLimit() == null ? iNoUnlimitedGroupReservations ? gr.getStudents().size() : -1 : r.getLimit());
+    				if (reservationLimit >= 0) {
+    					reservedDisabledSpace += reservationLimit;
+    				} else {
+    					reservedDisabledSpace = -1; break;
+    				}
+    			}
+    		}
+    	}
+    	
+    	int limit = 0, limitDisabled = 0;
+    	boolean updated = false;
+        for (Iterator<InstrOfferingConfig> j = co.getInstructionalOffering().getInstrOfferingConfigs().iterator(); j.hasNext(); ) {
+        	InstrOfferingConfig ioc = j.next();
+            if (ioc.isUnlimitedEnrollment()) return -1;
+            int configLimit = ioc.getLimit();
+            int configEnabled = ioc.getLimit();
+            
+            for (SchedulingSubpart subpart: ioc.getSchedulingSubparts()) {
+            	int subpartEnabled = 0;
+            	int subpartDisabled = 0;
+            	for (Class_ c: subpart.getClasses()) {
+            		int minLimit = c.getExpectedCapacity();
+                	int maxLimit = c.getMaxExpectedCapacity();
+                	int classLimit = maxLimit;
+                	if (minLimit < maxLimit) {
+                    	Assignment a = c.getCommittedAssignment();
+                        Placement p = null;
+                        if (iMakeupAssignmentsFromRequiredPrefs) {
+                            p = makeupPlacement(c);
+                        } else if (a != null) {
+                            p = a.getPlacement();
+                        }
+                        if (p != null) {
+                    		int roomLimit = (int) Math.floor(p.getRoomSize() / (c.getRoomRatio() == null ? 1.0f : c.getRoomRatio()));
+                    		classLimit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
+                    	}
+                	}
+            		if (c.isCancelled()) {
+            			classLimit = 0;
+            			for (StudentClassEnrollment e: c.getStudentEnrollments()) {
+                			if ((iCheckForNoBatchStatus && e.getStudent().hasSectioningStatusOption(StudentSectioningStatus.Option.nobatch)) ||
+                				(iStudentQuery != null && !iStudentQuery.match(new DbStudentMatcher(e.getStudent())))) {
+                				classLimit ++;
+                			}
+                		}
+            		}
+                	if (c.isEnabledForStudentScheduling())
+                		subpartEnabled += classLimit;
+                	else {
+                		subpartDisabled += classLimit;
+                		for (StudentClassEnrollment e: c.getStudentEnrollments()) {
+                			if ((iCheckForNoBatchStatus && e.getStudent().hasSectioningStatusOption(StudentSectioningStatus.Option.nobatch)) ||
+                				(iStudentQuery != null && !iStudentQuery.match(new DbStudentMatcher(e.getStudent())))) {
+                				subpartEnabled ++; subpartDisabled --;
+                			}
+                		}
+                	}
+            	}
+            	int subpartLimit = subpartEnabled + subpartDisabled;
+            	if (subpartLimit < configLimit) {
+            		configLimit = subpartLimit; updated = true; }
+            	if (subpartEnabled < configEnabled) {
+            		configEnabled = subpartEnabled; updated = true;
+            	}
+            }
+            
+            limit += configEnabled;
+            limitDisabled += (configLimit - configEnabled);
+        }
+        if (limitDisabled > 0)
+        	limit += Math.min(limitDisabled, reservedDisabledSpace);
+        
+        if (updated && co.getReservation() == null) {
+        	iProgress.debug("Course limit of " + co.getCourseName() + " decreased to " + limit + " (disabled: " + limitDisabled + ", reserved: " + reservedDisabledSpace + ").");
+        }
+        
+        if (co.getReservation() != null)
+        	limit = co.getReservation();
+        if (limit >= 9999) return -1;
+        return limit;
+    }
+    
+    private int getConfigLimit(InstrOfferingConfig ioc) {
+    	if (ioc.isUnlimitedEnrollment()) return -1;
+    	int configLimit = ioc.getLimit();
+    	if (configLimit >= 9999) return -1;
+    	if (!iCorrectConfigLimit) return configLimit;
+    	int reservedDisabledSpace = 0;
+    	for (org.unitime.timetable.model.Reservation r: ioc.getInstructionalOffering().getReservations()) {
+    		if (r instanceof StudentGroupReservation) {
+    			if (!r.getConfigurations().isEmpty() && !r.getConfigurations().contains(ioc)) continue;
+    			if (!r.getClasses().isEmpty()) {
+    				boolean thisConfig = false;
+    				boolean needDisabled = false;
+    				for (Class_ c: r.getClasses()) {
+    					if (c.getSchedulingSubpart().getInstrOfferingConfig().equals(ioc)) thisConfig = true;
+    					if (!c.isEnabledForStudentScheduling()) needDisabled = true;
+    				}
+    				if (!thisConfig || !needDisabled) continue;
+    			}
+    			StudentGroup gr = ((StudentGroupReservation)r).getGroup();
+    			if (gr.getType() != null && gr.getType().getAllowDisabledSection() == AllowDisabledSection.WithGroupReservation) {
+    				int reservationLimit = (r.getLimit() == null ? iNoUnlimitedGroupReservations ? gr.getStudents().size() : -1 : r.getLimit());
+    				if (reservationLimit >= 0) {
+    					reservedDisabledSpace += reservationLimit;
+    				} else {
+    					reservedDisabledSpace = -1; break;
+    				}
+    			}
+    		}
+    	}
+    	for (SchedulingSubpart subpart: ioc.getSchedulingSubparts()) {
+        	int subpartEnabled = 0;
+        	int subpartDisabled = 0;
+        	for (Class_ c: subpart.getClasses()) {
+        		int minLimit = c.getExpectedCapacity();
+            	int maxLimit = c.getMaxExpectedCapacity();
+            	int classLimit = maxLimit;
+            	if (minLimit < maxLimit) {
+                	Assignment a = c.getCommittedAssignment();
+                    Placement p = null;
+                    if (iMakeupAssignmentsFromRequiredPrefs) {
+                        p = makeupPlacement(c);
+                    } else if (a != null) {
+                        p = a.getPlacement();
+                    }
+                    if (p != null) {
+                		int roomLimit = (int) Math.floor(p.getRoomSize() / (c.getRoomRatio() == null ? 1.0f : c.getRoomRatio()));
+                		// int roomLimit = Math.round((c.getRoomRatio() == null ? 1.0f : c.getRoomRatio()) * p.getRoomSize());
+                		classLimit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
+                	}
+            	}
+        		if (c.isCancelled()) {
+        			classLimit = 0;
+        			for (StudentClassEnrollment e: c.getStudentEnrollments()) {
+            			if ((iCheckForNoBatchStatus && e.getStudent().hasSectioningStatusOption(StudentSectioningStatus.Option.nobatch)) ||
+            				(iStudentQuery != null && !iStudentQuery.match(new DbStudentMatcher(e.getStudent())))) {
+            				classLimit ++;
+            			}
+            		}
+        		}
+            	if (c.isEnabledForStudentScheduling()) {
+            		subpartEnabled += classLimit;
+            	} else {
+            		subpartDisabled += classLimit;
+            		for (StudentClassEnrollment e: c.getStudentEnrollments()) {
+            			if ((iCheckForNoBatchStatus && e.getStudent().hasSectioningStatusOption(StudentSectioningStatus.Option.nobatch)) ||
+            				(iStudentQuery != null && !iStudentQuery.match(new DbStudentMatcher(e.getStudent())))) {
+            				subpartEnabled ++; subpartDisabled --;
+            			}
+            		}
+            	}
+        	}
+        	int subpartLimit = subpartEnabled + (reservedDisabledSpace < 0 ? subpartDisabled : Math.min(subpartDisabled, reservedDisabledSpace));
+        	if (subpartLimit < configLimit) {
+        		configLimit = subpartLimit;
+        		iProgress.debug("Configuration limit of " + ioc.getCourseName() + " [" + ioc.getName() + "] decreased to " + configLimit +
+        				" (" + subpart.getItypeDesc().trim() + (subpart.getSchedulingSubpartSuffix() == null ? "" : " " + subpart.getSchedulingSubpartSuffix()) + 
+        				" enabled: " + subpartEnabled + ", disabled: " + subpartDisabled + ", reserved: " + reservedDisabledSpace + ").");
+        	}
+    	}
+    	return configLimit;
+    }
+    
     private Offering loadOffering(InstructionalOffering io, Hashtable<Long, Course> courseTable, Hashtable<Long, Section> classTable) {
     	if (io.getInstrOfferingConfigs().isEmpty()) {
     		return null;
@@ -480,18 +674,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	CourseOffering co = i.next();
         	if (!co.isAllowStudentScheduling()) continue;
             int projected = (co.getProjectedDemand()==null ? 0 : co.getProjectedDemand().intValue());
-            boolean unlimited = false;
-            int limit = 0;
-            for (Iterator<InstrOfferingConfig> j = io.getInstrOfferingConfigs().iterator(); j.hasNext(); ) {
-            	InstrOfferingConfig ioc = j.next();
-                if (ioc.isUnlimitedEnrollment()) unlimited = true;
-                limit += ioc.getLimit();
-            }
-            if (co.getReservation() != null)
-            	limit = co.getReservation();
-            if (limit >= 9999) unlimited = true;
-            if (unlimited) limit=-1;
-            Course course = new Course(co.getUniqueId(), co.getSubjectArea().getSubjectAreaAbbreviation(), co.getCourseNbr(), offering, limit, projected);
+            Course course = new Course(co.getUniqueId(), co.getSubjectArea().getSubjectAreaAbbreviation(), co.getCourseNbr(), offering, getCourseLimit(co), projected);
             if (co.getCredit() != null)
             	course.setCredit(co.getCredit().creditAbbv() + "|" + co.getCredit().creditText());
             courseTable.put(co.getUniqueId(), course);
@@ -501,9 +684,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         DecimalFormat df = new DecimalFormat("000");
         for (Iterator<InstrOfferingConfig> i = io.getInstrOfferingConfigs().iterator(); i.hasNext(); ) {
         	InstrOfferingConfig ioc = i.next();
-        	int configLimit = (ioc.isUnlimitedEnrollment() ? -1 : ioc.getLimit());
-        	if (configLimit >= 9999) configLimit = -1;
-            Config config = new Config(ioc.getUniqueId(), configLimit, courseName + " [" + ioc.getName() + "]", offering);
+            Config config = new Config(ioc.getUniqueId(), getConfigLimit(ioc), courseName + " [" + ioc.getName() + "]", offering);
             InstructionalMethod im = ioc.getEffectiveInstructionalMethod();
             if (im != null) {
             	config.setInstructionalMethodId(im.getUniqueId());
