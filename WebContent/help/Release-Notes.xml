@@ -73,6 +73,22 @@ IFS.</line>
 		</item>
 	</category>
 	<category>
+		<title>Custom Special Registration</title>
+		<item>
+			<name>Closed Section Override</name>
+			<description>
+				<line>When purdue.specreg.allowClosedWhenAvailable is true (default is false):
+					<line>Closed section override can be requested when:
+						<line>a) there is space available, but Spec Reg returns CLOS and EX-ADD errors</line>
+						<line>b) closed section override is allowed on the course and Spec Reg does NOT return EX-ADD error</line>
+					</line>
+					<line>During extended add/drop, closed section overrides can be only requested when there is space in the section (regardless on the settings on the course).</line>
+					<line>During normal registration, closed section overrides can be only requested when allowed on the course (regardless of the space available in the section).</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Other Changes</title>
 		<item>
 			<name>Student Scheduling: Enrollment Table</name>
