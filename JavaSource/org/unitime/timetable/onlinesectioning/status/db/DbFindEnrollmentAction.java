@@ -112,8 +112,16 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 			st.setExternalId(student.getExternalUniqueId());
 			st.setCanShowExternalId(iCanShowExtIds);
 			StudentSectioningStatus status = student.getEffectiveStatus();
-			st.setCanRegister(iCanRegister && (status == null || status.hasOption(StudentSectioningStatus.Option.regenabled)));
-			st.setCanUseAssistant(iCanUseAssistant && (status == null || status.hasOption(StudentSectioningStatus.Option.enabled)));
+			st.setCanRegister(iCanRegister && (status == null
+					|| status.hasOption(StudentSectioningStatus.Option.regenabled)
+					|| (iIsAdmin && status.hasOption(StudentSectioningStatus.Option.regadmin))
+					|| (iIsAdvisor && status.hasOption(StudentSectioningStatus.Option.regadvisor))
+					));
+			st.setCanUseAssistant(iCanUseAssistant && (status == null
+					|| status.hasOption(StudentSectioningStatus.Option.enabled)
+					|| (iIsAdmin && status.hasOption(StudentSectioningStatus.Option.admin))
+					|| (iIsAdvisor && status.hasOption(StudentSectioningStatus.Option.advisor))
+					));
 			st.setCanSelect(isCanSelect(student));
 			st.setName(helper.getStudentNameFormat().format(student));
 			for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(student.getAreaClasfMajors())) {

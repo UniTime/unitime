@@ -60,6 +60,15 @@
 				<line>This is to improve performance of reservations that have no or only config-level restrictions for courses that have cancelled or disabled classes.</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Status</name>
+			<description>
+				<line>Added ability to allow Scheduling Assistant or Course Requests page to be used by an admin (or an advisor) without allowing the student to access the page.
+					<line>That is, for instance, the advisor can access the Course Requests page when Advisor Register toggle is checked regardless of the Registration toggle.</line>
+					<line>That is, for instance, the admin can access the Scheduling Assistant page when Admin Enroll toggle is checked regardless of the Assistant toggle.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>CPSolver updated to version 1.3.179 (was 1.3.176)</title>

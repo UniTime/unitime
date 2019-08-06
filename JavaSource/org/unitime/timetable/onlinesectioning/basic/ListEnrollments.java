@@ -68,6 +68,7 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 	
 	private Long iOfferingId, iSectionId;
 	private boolean iCanShowExtIds = false, iCanRegister = false, iCanUseAssistant = false;
+	protected boolean iIsAdmin = false, iIsAdvisor = false, iCanEditMyStudents = false, iCanEditOtherStudents = false;
 	
 	public ListEnrollments forOffering(Long offeringId) {
 		iOfferingId = offeringId;
@@ -94,6 +95,12 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 		return this;
 	}
 	
+	public ListEnrollments withPermissions(boolean isAdmin, boolean isAdvisor, boolean canEditMyStudents, boolean canEditOtherStudents) {
+		iIsAdmin = isAdmin; iIsAdvisor = isAdvisor;
+		iCanEditMyStudents = canEditMyStudents; iCanEditOtherStudents = canEditOtherStudents;
+		return this;
+	}
+	
 	@Override
 	public List<ClassAssignmentInterface.Enrollment> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		Lock lock = server.readLock();
@@ -110,8 +117,14 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 			AcademicSessionInfo session = server.getAcademicSession();
 			Session dbSession = SessionDAO.getInstance().get(session.getUniqueId());
 			for (StudentSectioningStatus status: StudentSectioningStatusDAO.getInstance().findAll(helper.getHibSession())) {
-				if (StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.enabled)) assStates.add(status.getReference());
-				if (StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.regenabled)) regStates.add(status.getReference());
+				if (StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.enabled)
+					|| (iIsAdmin && StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.admin))
+					|| (iIsAdvisor && StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.advisor))
+					) assStates.add(status.getReference());
+				if (StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.regenabled)
+					|| (iIsAdmin && StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.regadmin))
+					|| (iIsAdvisor && StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.regadvisor))
+					) regStates.add(status.getReference());
 			}
 
 			XEnrollments requests = server.getEnrollments(iOfferingId);

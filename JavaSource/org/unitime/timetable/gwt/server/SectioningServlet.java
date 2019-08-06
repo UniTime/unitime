@@ -635,7 +635,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					Student student = StudentDAO.getInstance().get(studentId);
 					if (student == null) continue;
 					StudentSectioningStatus status = student.getEffectiveStatus();
-					if (status != null && !status.hasOption(StudentSectioningStatus.Option.enabled)) continue;
+					if (status != null && !status.hasOption(StudentSectioningStatus.Option.enabled)
+						&& (!getSessionContext().hasPermissionAnySession(session, Right.StudentSchedulingAdmin) || !status.hasOption(StudentSectioningStatus.Option.admin))
+						&& (!getSessionContext().hasPermissionAnySession(session, Right.StudentSchedulingAdvisor) || !status.hasOption(StudentSectioningStatus.Option.advisor))
+						) continue;
 				} else {
 					if (!getSessionContext().hasPermissionAnySession(session, Right.SchedulingAssistant)) continue;
 				}
@@ -658,7 +661,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						Student student = StudentDAO.getInstance().get(studentId);
 						if (student == null) continue;
 						StudentSectioningStatus status = student.getEffectiveStatus();
-						if (status != null && !status.hasOption(StudentSectioningStatus.Option.regenabled)) continue;
+						if (status != null && !status.hasOption(StudentSectioningStatus.Option.regenabled)
+							&& (!getSessionContext().hasPermissionAnySession(session, Right.StudentSchedulingAdmin) || !status.hasOption(StudentSectioningStatus.Option.regadmin))
+							&& (!getSessionContext().hasPermissionAnySession(session, Right.StudentSchedulingAdvisor) || !status.hasOption(StudentSectioningStatus.Option.regadvisor))
+							) continue;
 					} else {
 						if (!getSessionContext().hasPermissionAnySession(session, Right.CourseRequests)) continue;
 					}
@@ -1455,7 +1461,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							.forOffering(offeringId).withSection(clazz == null ? null : clazz.getUniqueId())
 							.canShowExternalIds(sessionContext.hasPermission(Right.EnrollmentsShowExternalId))
 							.canRegister(sessionContext.hasPermission(Right.CourseRequests))
-							.canUseAssistant(sessionContext.hasPermission(Right.SchedulingAssistant)),
+							.canUseAssistant(sessionContext.hasPermission(Right.SchedulingAssistant))
+							.withPermissions(getSessionContext().hasPermissionAnySession(Right.StudentSchedulingAdmin),
+									getSessionContext().hasPermissionAnySession(Right.StudentSchedulingAdvisor),
+									getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyMyStudents),
+									getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyAllStudents)),
 							currentUser());
 				}
 			} finally {
@@ -2775,7 +2785,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						check.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, true);
 						check.setFlag(EligibilityFlag.CAN_WAITLIST, true);
 					} else {
-						check.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, status.hasOption(StudentSectioningStatus.Option.regenabled));
+						check.setFlag(EligibilityFlag.CAN_USE_ASSISTANT,
+								status.hasOption(StudentSectioningStatus.Option.regenabled) || 
+								(check.hasFlag(EligibilityFlag.IS_ADMIN) && status.hasOption(StudentSectioningStatus.Option.regadmin)) ||
+								(check.hasFlag(EligibilityFlag.IS_ADVISOR) && status.hasOption(StudentSectioningStatus.Option.regadvisor)));
 						check.setFlag(EligibilityFlag.CAN_WAITLIST, status.hasOption(StudentSectioningStatus.Option.waitlist));
 						check.setMessage(status.getMessage());
 					}
@@ -2915,15 +2928,14 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		Student student = Student.findByExternalId(getSessionContext().getUser().getCurrentAcademicSessionId(), studentId);
 		if (student == null) return null;
 		getSessionContext().checkPermission(student, Right.StudentEnrollments);
-		StudentSectioningStatus status = student.getEffectiveStatus();
 		ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
 		st.setId(student.getUniqueId());
 		st.setSessionId(getSessionContext().getUser().getCurrentAcademicSessionId());
 		st.setExternalId(student.getExternalUniqueId());
 		st.setCanShowExternalId(getSessionContext().hasPermission(Right.EnrollmentsShowExternalId));
-		st.setCanRegister((status == null || status.hasOption(StudentSectioningStatus.Option.regenabled)) && getSessionContext().hasPermission(Right.CourseRequests) && (getSessionContext().hasPermission(Right.StudentSchedulingAdmin) || getSessionContext().hasPermission(Right.StudentSchedulingAdvisor)));
+		st.setCanRegister(getSessionContext().hasPermission(Right.CourseRequests) && getSessionContext().hasPermission(student, Right.StudentSchedulingCanRegister));
 		st.setCanUseAssistant(online
-				? (status == null || status.hasOption(StudentSectioningStatus.Option.enabled)) && getSessionContext().hasPermission(Right.SchedulingAssistant) && (getSessionContext().hasPermission(Right.StudentSchedulingAdmin) || getSessionContext().hasPermission(Right.StudentSchedulingAdvisor))
+				? getSessionContext().hasPermission(Right.SchedulingAssistant) && getSessionContext().hasPermission(student, Right.StudentSchedulingCanEnroll)
 				: getStudentSolver() != null);
 		st.setName(student.getName(ApplicationProperty.OnlineSchedulingStudentNameFormat.value()));
 		for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(student.getAreaClasfMajors())) {
@@ -3021,15 +3033,14 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		Student student = StudentDAO.getInstance().get(studentId);
 		if (student == null) return null;
 		getSessionContext().checkPermission(student, Right.StudentEnrollments);
-		StudentSectioningStatus status = student.getEffectiveStatus();
 		ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
 		st.setId(student.getUniqueId());
 		st.setSessionId(getSessionContext().getUser().getCurrentAcademicSessionId());
 		st.setExternalId(student.getExternalUniqueId());
 		st.setCanShowExternalId(getSessionContext().hasPermission(Right.EnrollmentsShowExternalId));
-		st.setCanRegister((status == null || status.hasOption(StudentSectioningStatus.Option.regenabled)) && getSessionContext().hasPermission(Right.CourseRequests) && (getSessionContext().hasPermission(Right.StudentSchedulingAdmin) || getSessionContext().hasPermission(Right.StudentSchedulingAdvisor)));
+		st.setCanRegister(getSessionContext().hasPermission(Right.CourseRequests) && getSessionContext().hasPermission(student, Right.StudentSchedulingCanRegister));
 		st.setCanUseAssistant(online
-				? (status == null || status.hasOption(StudentSectioningStatus.Option.enabled)) && getSessionContext().hasPermission(Right.SchedulingAssistant) && (getSessionContext().hasPermission(Right.StudentSchedulingAdmin) || getSessionContext().hasPermission(Right.StudentSchedulingAdvisor))
+				? getSessionContext().hasPermission(Right.SchedulingAssistant) && getSessionContext().hasPermission(student, Right.StudentSchedulingCanEnroll)
 				: getStudentSolver() != null);
 		st.setName(student.getName(ApplicationProperty.OnlineSchedulingStudentNameFormat.value()));
 		for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(student.getAreaClasfMajors())) {

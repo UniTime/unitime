@@ -127,6 +127,10 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 				
 				StudentSectioningStatus status = student.getEffectiveStatus();
 				boolean disabled = (status != null && !status.hasOption(StudentSectioningStatus.Option.enabled));
+				if (disabled && status != null && status.hasOption(StudentSectioningStatus.Option.admin) && iCheck.hasFlag(EligibilityFlag.IS_ADMIN))
+					disabled = false;
+				if (disabled && status != null && status.hasOption(StudentSectioningStatus.Option.advisor) && iCheck.hasFlag(EligibilityFlag.IS_ADVISOR))
+					disabled = false;
 				
 				boolean noenrl = false;
 				if (iPermissionCanEnroll != null) {
