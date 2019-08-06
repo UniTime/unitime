@@ -80,6 +80,16 @@
 				<line>Added ability to include the previous two terms of the plan (when banner.dgw.criticalIncludePastTerm is true, defaults to false).</line>
 			</description>
 		</item>
+		<item>
+			<name>Use Class Snapshot Limits</name>
+			<description>
+				<line>Added ability to use class snapshot limit (e.g., for the test runs)
+					<line>when Load.UseSnapShotLimits is set to true (defaults to false).</line>
+				</line>
+				<line>When a class has a snapshot limit defined and it is above the class limit &gt;&gt; use snapshot limit instead of the class limit.</line>
+				<line>Compute snapshot limit on configurations and offerings (using class snapshot limits, defaulting to class limits for classes with no snapshot limit defined).</line>
+ 			</description>
+		</item>
 	</category>
 	<category>
 		<title>CPSolver updated to version 1.3.179 (was 1.3.176)</title>

@@ -306,4 +306,21 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
 		if (getInstructionalMethod() != null) return getInstructionalMethod();
 		return getSession().getDefaultInstructionalMethod();
 	}
+	
+	public Integer getSnapShotLimit() {
+		Integer snapShotLimit = null;
+    	for (SchedulingSubpart subpart: getSchedulingSubparts()) {
+        	int subpartLimit = 0;
+        	for (Class_ c: subpart.getClasses()) {
+        		if (c.isCancelled()) continue;
+        		if (c.getSnapshotLimit() != null)
+        			subpartLimit += c.getSnapshotLimit();
+        		else if (c.getExpectedCapacity() != null && c.isEnabledForStudentScheduling())
+        			subpartLimit += c.getExpectedCapacity();
+        	}
+        	if (snapShotLimit == null || snapShotLimit > subpartLimit)
+        		snapShotLimit = subpartLimit;
+    	}
+    	return snapShotLimit;
+	}
 }
