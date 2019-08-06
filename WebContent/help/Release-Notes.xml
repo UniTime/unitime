@@ -67,6 +67,10 @@
 					<line>That is, for instance, the advisor can access the Course Requests page when Advisor Register toggle is checked regardless of the Registration toggle.</line>
 					<line>That is, for instance, the admin can access the Scheduling Assistant page when Admin Enroll toggle is checked regardless of the Assistant toggle.</line>
 				</line>
+				<line>Added no-schedule status flag:
+					<line>When set, student of such status cannot see his/her personal schedule for the given term
+						(these include classes, exams, and course related events).</line>
+				</line>
 			</description>
 		</item>
 	</category>

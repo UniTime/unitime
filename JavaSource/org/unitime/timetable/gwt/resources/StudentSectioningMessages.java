@@ -1458,6 +1458,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Require Sections / Instr. Methods:")
 	String propCanRequire();
 	
+	@DefaultMessage("Personal Schedule:")
+	String propStatusSchedule();
+	
 	@DefaultMessage("You are not registered for any classes yet. Please click the Build Schedule button in order to complete your registration.")
 	String warnScheduleEmptyOnCourseRequest();
 	
@@ -2011,6 +2014,12 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Sections or Instructional Methods can NOT be required by the student.")
 	String messageStatusCanNotRequire();
+	
+	@DefaultMessage("Student can see his/her personal schedule.")
+	String messageStatusSchedule();
+	
+	@DefaultMessage("Student can NOT see his/her personal schedule.")
+	String messageStatusNoSchedule();
 	
 	@DefaultMessage("Email notifications are enabled.")
 	String messageStatusCanEmail();

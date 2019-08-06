@@ -253,7 +253,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private boolean iRegStudent = false, iRegAdvisor = false, iRegAdmin = false;
 		private boolean iEnrlStudent = false, iEnrlAdvisor = false, iEnrlAdmin = false;
 		private boolean iWaitList = false, iEmail = false, iCanRequire = false;
-		private boolean iSpecReg = false, iReqValidation = false;
+		private boolean iSpecReg = false, iReqValidation = false, iNoSchedule = false;
 		private String iCourseTypes;
 		private String iEffectiveStart, iEffectiveStop;
 		private String iMessage;
@@ -299,6 +299,8 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public boolean isSpecialRegistration() { return iSpecReg; }
 		public void setRequestValiadtion(boolean reqVal) { iReqValidation = reqVal; }
 		public boolean isRequestValiadtion() { return iReqValidation; }
+		public void setNoSchedule(boolean noSchedule) { iNoSchedule = noSchedule; }
+		public boolean isNoSchedule() { return iNoSchedule; }
 		
 		public void setAllEnabled() {
 			iAssistantPage = true;

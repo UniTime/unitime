@@ -80,6 +80,7 @@ import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
+import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.CourseEventDAO;
@@ -687,6 +688,23 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					boolean instructor = (roles == null || roles.contains("instructor") || roles.contains("Instructor"));
 					boolean contact = (roles == null || roles.contains("contact") || roles.contains("Contact"));
 					boolean coordinator = (roles != null && (roles.contains("coordinator") || roles.contains("Coordinator")));
+					Set<Long> excludeSessionIds = null;
+					if (allSessions && student) {
+						for (Student s: (List<Student>)hibSession.createQuery("from Student where externalUniqueId = :externalId")
+								.setString("externalId", request.getResourceExternalId()).setCacheable(true).list()) {
+							StudentSectioningStatus status = (s == null ? null : s.getEffectiveStatus());
+							if (status != null && status.hasOption(StudentSectioningStatus.Option.noschedule)) {
+								if (excludeSessionIds == null) excludeSessionIds = new HashSet<Long>();
+								excludeSessionIds.add(s.getSession().getUniqueId());
+							}
+						}
+					}
+					if (!allSessions && student) {
+						Student s = Student.findByExternalId(request.getSessionId(), request.getResourceExternalId());
+						StudentSectioningStatus status = (s == null ? null : s.getEffectiveStatus());
+						if (status != null && status.hasOption(StudentSectioningStatus.Option.noschedule))
+							student = false;
+					}
 					curriculumCourses = new HashSet<Long>();
 					curriculumClasses = new HashSet<Long>();
 					if (allSessions) {
@@ -736,6 +754,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							meetings.addAll(query.select("distinct m").type("ClassEvent").from("inner join e.clazz.studentEnrollments enrl")
 									.where("enrl.student.externalUniqueId = :externalId").where("enrl.student.session.uniqueId = s.uniqueId")
 									.set("externalId", request.getResourceExternalId())
+									.where("enrl.student.session.uniqueId not in :excludeSessionIds", "excludeSessionIds", excludeSessionIds)
 									.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
 						if (instructor && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query.select("distinct m").type("ClassEvent").from("inner join e.clazz.classInstructors ci")
@@ -774,6 +793,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									.where("o.ownerType = :type and o.ownerId = co.uniqueId")
 									.set("type", ExamOwner.sOwnerTypeCourse)
 									.where("enrl.student.session.uniqueId = s.uniqueId")
+									.where("enrl.student.session.uniqueId not in :excludeSessionIds", "excludeSessionIds", excludeSessionIds)
 									.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
 						if (student && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query
@@ -785,6 +805,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									.where("o.ownerType = :type and o.ownerId = co.instructionalOffering.uniqueId")
 									.set("type", ExamOwner.sOwnerTypeOffering)
 									.where("enrl.student.session.uniqueId = s.uniqueId")
+									.where("enrl.student.session.uniqueId not in :excludeSessionIds", "excludeSessionIds", excludeSessionIds)
 									.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
 						if (student && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query
@@ -796,6 +817,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									.where("o.ownerType = :type and o.ownerId = c.uniqueId")
 									.set("type", ExamOwner.sOwnerTypeClass)
 									.where("enrl.student.session.uniqueId = s.uniqueId")
+									.where("enrl.student.session.uniqueId not in :excludeSessionIds", "excludeSessionIds", excludeSessionIds)
 									.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
 						if (student && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query
@@ -807,6 +829,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									.where("o.ownerType = :type and o.ownerId = cfg.uniqueId")
 									.set("type", ExamOwner.sOwnerTypeConfig)
 									.where("enrl.student.session.uniqueId = s.uniqueId")
+									.where("enrl.student.session.uniqueId not in :excludeSessionIds", "excludeSessionIds", excludeSessionIds)
 									.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
 
 						if (instructor && (limit <= 0 || meetings.size() < limit))
@@ -1018,6 +1041,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								.where("o.ownerType = :type and o.ownerId = co.uniqueId")
 								.set("type", ExamOwner.sOwnerTypeCourse)
 								.where("enrl.student.session.uniqueId = s.uniqueId")
+								.where("enrl.student.session.uniqueId not in :excludeSessionIds", "excludeSessionIds", excludeSessionIds)
 								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
 								.query(hibSession).list());
 						if (student && (limit <= 0 || meetings.size() < limit))
@@ -1028,6 +1052,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								.where("o.ownerType = :type and o.ownerId = co.instructionalOffering.uniqueId")
 								.set("type", ExamOwner.sOwnerTypeOffering)
 								.where("enrl.student.session.uniqueId = s.uniqueId")
+								.where("enrl.student.session.uniqueId not in :excludeSessionIds", "excludeSessionIds", excludeSessionIds)
 								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
 								.query(hibSession).list());
 						if (student && (limit <= 0 || meetings.size() < limit))
@@ -1038,6 +1063,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								.where("o.ownerType = :type and o.ownerId = c.uniqueId")
 								.set("type", ExamOwner.sOwnerTypeClass)
 								.where("enrl.student.session.uniqueId = s.uniqueId")
+								.where("enrl.student.session.uniqueId not in :excludeSessionIds", "excludeSessionIds", excludeSessionIds)
 								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
 								.query(hibSession).list());
 						if (student && (limit <= 0 || meetings.size() < limit))
@@ -1048,6 +1074,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								.where("o.ownerType = :type and o.ownerId = cfg.uniqueId")
 								.set("type", ExamOwner.sOwnerTypeConfig)
 								.where("enrl.student.session.uniqueId = s.uniqueId")
+								.where("enrl.student.session.uniqueId not in :excludeSessionIds", "excludeSessionIds", excludeSessionIds)
 								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
 								.query(hibSession).list());
 						

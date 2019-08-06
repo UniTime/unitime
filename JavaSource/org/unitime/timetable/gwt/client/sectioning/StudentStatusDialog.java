@@ -178,6 +178,8 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 					status.isSpecialRegistration() ? MESSAGES.messageStatusCanSpecialRegistration() : MESSAGES.messageStatusCanNotSpecialRegistration(), null).getWidget());
 			iForm.addRow(MESSAGES.propCanRequire(), new WebTable.IconCell(status.isCanRequire() ? RESOURCES.on() : RESOURCES.off(),
 					status.isCanRequire() ? MESSAGES.messageStatusCanRequire() : MESSAGES.messageStatusCanNotRequire(), null).getWidget());
+			iForm.addRow(MESSAGES.propStatusSchedule(), new WebTable.IconCell(status.isNoSchedule() ? RESOURCES.off() : RESOURCES.on(),
+					status.isNoSchedule() ? MESSAGES.messageStatusNoSchedule() : MESSAGES.messageStatusSchedule(), null).getWidget());
 			
 			if (status.hasMessage()) {
 				P m = new P("status-message"); m.setText(status.getMessage());

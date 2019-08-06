@@ -56,6 +56,7 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 		/* 8192 */ reqval("Course Request Validation"),
 		/*16384 */ specreg("Special Registration"),
 		/*32768 */ canreq("Can Require Sections / IMs"),
+		/*65536 */ noschedule("Do Not Show Personal Schedule"),
 		;
 		
 		private String iName;

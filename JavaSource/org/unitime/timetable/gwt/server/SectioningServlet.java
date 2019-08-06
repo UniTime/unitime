@@ -2395,6 +2395,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		info.setWaitList(status.hasOption(StudentSectioningStatus.Option.waitlist));
 		info.setCanRequire(status.hasOption(StudentSectioningStatus.Option.canreq));
 		info.setEmail(status.hasOption(StudentSectioningStatus.Option.email));
+		info.setNoSchedule(status.hasOption(StudentSectioningStatus.Option.noschedule));
 		info.setMessage(status.getMessage());
 		if (status.getFallBackStatus() != null)
 			info.setFallback(status.getFallBackStatus().getLabel());
