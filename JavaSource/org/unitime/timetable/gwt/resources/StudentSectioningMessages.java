@@ -2276,4 +2276,13 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("You are making changes to {0} that has an honors grade mode. This will change the grade mode back to the regular grade mode for this course. Do you want to proceed?")
     String confirmEnrollmentHonorsGradeModeChange(String course);
+	
+	@DefaultMessage("Requested classes do not match your current schedule. The honors grade mode change cannot be processed. Please request a new grade mode change.")
+	String hintSpecRegHonorsGradeModeNotMatchingSchedule();
+	
+	@DefaultMessage("{0} is no longer in your schedule.")
+	String specRegRemoved(String clazz);
+	
+	@DefaultMessage("All approval requests have been approved and applied.")
+	String specRegAllRequestsFullyApplied();
 }

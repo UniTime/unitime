@@ -341,8 +341,23 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			return approved;
 		}
 		
+		public boolean isHonorsGradeModeNotFullyMatching(ClassAssignmentInterface saved) {
+			if (!hasChanges()) return false;
+			for (ClassAssignmentInterface.ClassAssignment ch: iChanges) {
+				if (ch.getGradeMode() != null && ch.getGradeMode().isHonor()) {
+					boolean found = false;
+					for (ClassAssignmentInterface.ClassAssignment ca: saved.getClassAssignments())
+						if (ca.isSaved() && ch.getClassId().equals(ca.getClassId())) {
+							found = true; break;
+						}
+					if (!found) return true;
+				}
+			}
+			return false;
+		}
+		
 		public boolean isFullyApplied(ClassAssignmentInterface saved) {
-			if (!hasChanges()) return getStatus() == SpecialRegistrationStatus.Approved;
+			if (!hasChanges() || isGradeModeChange() || isExtended()) return getStatus() == SpecialRegistrationStatus.Approved;
 			if (saved == null) return false;
 			Set<Long> courseIds = new HashSet<Long>();
 			boolean enrolled = true, gmChange = false;

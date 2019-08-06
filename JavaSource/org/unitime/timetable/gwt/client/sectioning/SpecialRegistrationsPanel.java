@@ -91,6 +91,7 @@ public class SpecialRegistrationsPanel extends P {
 	private ClassAssignmentInterface iLastSaved = null;
 	private OpenCloseSectionImage iOpenCloseImage;
 	private boolean iHasOneOrMoreFullyApproved = false;
+	private Label iAllRequestsApplied = null;
 	
 	public SpecialRegistrationsPanel(SpecialRegistrationContext specReg) {
 		addStyleName("unitime-SpecialRegistrationsPanel");
@@ -114,6 +115,11 @@ public class SpecialRegistrationsPanel extends P {
 		iTable.addStyleName("registrations-table");
 		iTable.setAllowSelection(true);
 		iTable.setAllowMultiSelect(true);
+		
+		iAllRequestsApplied = new Label(MESSAGES.specRegAllRequestsFullyApplied());
+		iAllRequestsApplied.setVisible(false);
+		iAllRequestsApplied.addStyleName("all-requests-applied");
+		add(iAllRequestsApplied);
 		
 		iPanel = new FocusPanel(iTable);
 		iPanel.addStyleName("registrations-panel");
@@ -190,7 +196,8 @@ public class SpecialRegistrationsPanel extends P {
 		iOpenCloseImage.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
-				iPanel.setVisible(event.getValue());
+				iPanel.setVisible(event.getValue() && iTable.getRowCount() > 1);
+				iAllRequestsApplied.setVisible(event.getValue() && iTable.getRowCount() <= 1);
 				iShowAllChanges.setVisible(event.getValue());
 				SectioningCookie.getInstance().setRequestOverridesOpened(event.getValue());
 			}
@@ -235,6 +242,7 @@ public class SpecialRegistrationsPanel extends P {
 	public void showWaiting() {
 		iWaiting.setVisible(true);
 		iOpenCloseImage.setVisible(false);
+		iAllRequestsApplied.setVisible(false);
 		iPanel.setVisible(false);
 		iShowAllChanges.setVisible(false);
 		setVisible(true);
@@ -243,9 +251,10 @@ public class SpecialRegistrationsPanel extends P {
 	public void hideWaiting() {
 		iWaiting.setVisible(false);
 		iOpenCloseImage.setVisible(true);
-		iPanel.setVisible(iOpenCloseImage.getValue());
+		iAllRequestsApplied.setVisible(iOpenCloseImage.getValue() && iTable.getRowCount() <= 1);
+		iPanel.setVisible(iOpenCloseImage.getValue() && iTable.getRowCount() > 1);
 		iShowAllChanges.setVisible(iOpenCloseImage.getValue());
-		setVisible(iTable.getRowCount() > 1);
+		setVisible(!iRegistrations.isEmpty());
 	}
 	
 	public void clearRegistrations() {
@@ -270,13 +279,20 @@ public class SpecialRegistrationsPanel extends P {
 			} else if (reg.getStatus() != null) {
 				switch (reg.getStatus()) {
 				case Approved:
-					p.add(new Icon(RESOURCES.specRegApproved(), MESSAGES.hintSpecRegApprovedNoteApply()));
+					if (reg.isGradeModeChange() || reg.isExtended())
+						p.add(new Icon(RESOURCES.specRegApproved(), MESSAGES.hintSpecRegApproved()));
+					else
+						p.add(new Icon(RESOURCES.specRegApproved(), MESSAGES.hintSpecRegApprovedNoteApply()));
 					break;
 				case Cancelled:
 					p.add(new Icon(RESOURCES.specRegCancelled(), MESSAGES.hintSpecRegCancelled()));
 					break;
 				case Pending:
-					p.add(new Icon(RESOURCES.specRegPending(), MESSAGES.hintSpecRegPending()));
+					if (reg.isHonorsGradeModeNotFullyMatching(saved)) {
+						p.add(new Icon(RESOURCES.specRegCancelled(), MESSAGES.hintSpecRegHonorsGradeModeNotMatchingSchedule()));
+					} else {
+						p.add(new Icon(RESOURCES.specRegPending(), MESSAGES.hintSpecRegPending()));
+					}
 					break;
 				case Rejected:
 					p.add(new Icon(RESOURCES.specRegRejected(), MESSAGES.hintSpecRegRejected()));
@@ -366,9 +382,18 @@ public class SpecialRegistrationsPanel extends P {
 						s.add(new Icon(RESOURCES.assignment(), MESSAGES.specRegAssignment(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection())));
 						break;
 					case Drop:
-						s.add(new Icon(RESOURCES.unassignment(), MESSAGES.specRegUnassignment(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection())));
+						s.add(new Icon(RESOURCES.unassignment(), MESSAGES.specRegRemoved(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection())));
 						break;
 					case Keep:
+						if (ca.getGradeMode() != null && ca.getGradeMode().isHonor()) {
+							boolean found = false;
+							for (ClassAssignmentInterface.ClassAssignment x: saved.getClassAssignments())
+								if (x.isSaved() && ca.getClassId().equals(x.getClassId())) {
+									found = true; break;
+								}
+							if (!found)
+								s.add(new Icon(RESOURCES.unassignment(), MESSAGES.specRegRemoved(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection())));
+						}
 						// s.add(new Icon(RESOURCES.saved(), MESSAGES.saved(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection())));
 						// break;
 					default:
@@ -423,7 +448,9 @@ public class SpecialRegistrationsPanel extends P {
 						iTable.getCellFormatter().addStyleName(idx, c, "top-border-solid");
 			}
 		}
-		setVisible(iTable.getRowCount() > 1);
+		setVisible(!iRegistrations.isEmpty());
+		iAllRequestsApplied.setVisible(iOpenCloseImage.getValue() && iTable.getRowCount() <= 1);
+		iPanel.setVisible(iOpenCloseImage.getValue() && iTable.getRowCount() > 1);
 	}
 	
 	public boolean hasOneOrMoreFullyApproved() {
@@ -673,7 +700,9 @@ public class SpecialRegistrationsPanel extends P {
 										}
 									}
 									iRegistrations.remove(reg);
-									setVisible(iTable.getRowCount() > 1);
+									setVisible(!iRegistrations.isEmpty());
+									iAllRequestsApplied.setVisible(iOpenCloseImage.getValue() && iTable.getRowCount() <= 1);
+									iPanel.setVisible(iOpenCloseImage.getValue() && iTable.getRowCount() > 1);
 								}
 							}
 						});

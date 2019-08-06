@@ -6460,6 +6460,14 @@ unitime-RoomSharingWidget .legend .blank {
 	width: 400px;
 }
 
+.unitime-SpecialRegistrationsPanel .all-requests-applied {
+	text-align: center;
+	font-style: italic;
+	border: 1px solid #9CB0CE;
+	padding: 2px;
+	background-color: #D7FFD7;
+}
+
 .unitime-PublishedSectioningSolutions {
 	width: 100%;
 	white-space: pre-wrap;
