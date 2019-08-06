@@ -38,7 +38,11 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegi
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.ChangeGradeModesRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.ChangeGradeModesResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAllSpecialRegistrationsRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAvailableGradeModesRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAvailableGradeModesResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationResponse;
@@ -100,4 +104,6 @@ public interface SectioningServiceAsync {
 	void retrieveAllSpecialRequests(RetrieveAllSpecialRegistrationsRequest request, AsyncCallback<List<RetrieveSpecialRegistrationResponse>> callback) throws SectioningException, PageAccessException;
 	void section(boolean online, CourseRequestInterface request, List<ClassAssignmentInterface.ClassAssignment> currentAssignment, List<ClassAssignmentInterface.ClassAssignment> specialRegistration, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;
 	void cancelSpecialRequest(CancelSpecialRegistrationRequest request, AsyncCallback<CancelSpecialRegistrationResponse> callback) throws SectioningException, PageAccessException;
+	void retrieveGradeModes(RetrieveAvailableGradeModesRequest request, AsyncCallback<RetrieveAvailableGradeModesResponse> callback) throws SectioningException, PageAccessException;
+	void changeGradeModes(ChangeGradeModesRequest request, AsyncCallback<ChangeGradeModesResponse> callback) throws SectioningException, PageAccessException;
 }

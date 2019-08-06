@@ -660,6 +660,10 @@
 		width: 90vw;
 		overflow-y: auto;
 	}
+	
+	.unitime-ChangeGradeModesDialog .request-note {
+		max-width: calc(90vw - 15px);
+	}
 }
 
 @media all and (max-width: 400px) {

@@ -114,6 +114,7 @@ public class SpecialRegistrationInterface {
 		ADD, // sections (or the course in case of pre-reg) are being added
 		DROP, // sections are being dropped (only during registration)
 		KEEP, // sections are being unchanged, but a registration error was reported on them (e.g., co-requisite, only during registration)
+		CHGMODE, // change grade mode
 		;
 	}
 	
@@ -135,6 +136,12 @@ public class SpecialRegistrationInterface {
 		public List<ChangeNote> notes;
 		/** Credit value associated with the course / change, populated by UniTime (only during registration) */
 		public String credit;
+		/** Current grade mode (only used when operation = CHGMODE) */
+		public String currentGradeMode;
+		/** New grade mode (only used when operation = CHGMODE) */
+		public String selectedGradeMode;
+		/** New grade mode description (only used when operation = CHGMODE) */
+		public String selectedGradeModeDescription;
 	}
 	
 
@@ -233,6 +240,11 @@ public class SpecialRegistrationInterface {
 	 * In registration, a single special registration request 
 	 */
 	public static class SpecialRegistrationResponseList extends Response<List<SubmitRegistrationResponse>> {
+		/**
+		 * List of special registrations that have been cancelled (to create these requests).
+		 * (only read, never sent; only used in submitRegistration response during grade mode change)
+		 */
+		public List<CancelledRequest> cancelledRequests;
 	}
 	
 	/* - Check Special Registration Status ------------------------------------ */
@@ -468,5 +480,50 @@ public class SpecialRegistrationInterface {
 	 * Response message for the /cancelRegistrationRequestFromUniTime call
 	 */
 	public static class SpecialRegistrationCancelResponse extends Response<String> {
+	}
+	
+	/**
+	 * Response message for the /checkStudentGradeModes call
+	 */
+	public static class SpecialRegistrationCheckGradeModesResponse extends Response<SpecialRegistrationCheckGradeModes> {
+	}
+	
+	
+	/**
+	 * List of available grade modes
+	 */
+	public static class SpecialRegistrationCheckGradeModes {
+		/** Student PUID including the leading zero */
+		public String studentId;
+		/** Banner term (e.g., 201910 for Fall 2018) */
+		public String term;
+		/** Banner campus (e.g., PWL) */
+		public String campus;
+		/** List of available grade modes */
+		List<SpecialRegistrationCurrentGradeMode> gradingModes;
+	}
+	
+	/**
+	 * Current grade mode of a section with the list of available grade mode changes
+	 */
+	public static class SpecialRegistrationCurrentGradeMode {
+		/** Section CRN */
+		public String crn;
+		/** Current grade mode code */
+		public String gradingMode;
+		/** Current grade mode desctiption */
+		public String gradingModeDescription;
+		/** List of available grading mode changes */
+		public List<SpecialRegistrationAvailableGradeMode> availableGradingModes;
+	}
+	
+	public static class SpecialRegistrationAvailableGradeMode {
+		/** Approvals needed, null or empty when no approvals are not needed */
+		public List<String> approvals;
+		/** Available grade mode code */
+		public String gradingMode;
+		/** Available grade mode desctiption */
+		public String gradingModeDescription;
+
 	}
 }

@@ -87,6 +87,12 @@ IFS.</line>
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Grade Mode Changes</name>
+			<description>
+				<line>Added ability to request grade mode changes</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Changes</title>

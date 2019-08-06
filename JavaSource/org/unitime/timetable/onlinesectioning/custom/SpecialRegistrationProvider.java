@@ -27,6 +27,9 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegi
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.ChangeGradeModesRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.ChangeGradeModesResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAvailableGradeModesResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationResponse;
@@ -50,6 +53,10 @@ public interface SpecialRegistrationProvider {
 	public void checkEligibility(OnlineSectioningServer server, OnlineSectioningHelper helper, EligibilityCheck check, XStudent student) throws SectioningException;
 	
 	public CancelSpecialRegistrationResponse cancelRegistration(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, CancelSpecialRegistrationRequest request) throws SectioningException;
+	
+	public RetrieveAvailableGradeModesResponse retrieveAvailableGradeModes(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) throws SectioningException;
+	
+	public ChangeGradeModesResponse changeGradeModes(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, ChangeGradeModesRequest reqiuest) throws SectioningException;
 	
 	public void dispose();
 }

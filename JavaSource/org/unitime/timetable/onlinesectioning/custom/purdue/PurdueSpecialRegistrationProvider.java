@@ -41,9 +41,11 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.restlet.Client;
 import org.restlet.Context;
+import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
 import org.restlet.resource.ClientResource;
+import org.restlet.resource.ResourceException;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -71,13 +73,20 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationGradeMode;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationGradeModeChange;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationGradeModeChanges;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationOperation;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationStatus;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.ChangeGradeModesRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.ChangeGradeModesResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAvailableGradeModesResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationResponse;
@@ -105,12 +114,18 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.RequestorRole;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ResponseStatus;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistration;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationAvailableGradeMode;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationCancelResponse;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationCheckGradeModesResponse;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationCurrentGradeMode;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationResponseList;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationStatusResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SubmitRegistrationResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ValidationMode;
+import org.unitime.timetable.onlinesectioning.custom.purdue.XEInterface.CourseReferenceNumber;
+import org.unitime.timetable.onlinesectioning.custom.purdue.XEInterface.RegisterAction;
+import org.unitime.timetable.onlinesectioning.custom.purdue.XEInterface.RegistrationGradingMode;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -206,6 +221,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		return ApplicationProperties.getProperty("purdue.specreg.site.cancelSpecialRegistration", getSpecialRegistrationApiSite() + "/cancelRegistrationRequestFromUniTime");
 	}
 	
+	protected String getSpecialRegistrationApiSiteCheckStudentGradeModes() {
+		return ApplicationProperties.getProperty("purdue.specreg.site.checkStudentGradeModes", getSpecialRegistrationApiSite() + "/checkStudentGradeModes");
+	}
+
 	protected String getSpecialRegistrationApiKey() {
 		return ApplicationProperties.getProperty("purdue.specreg.apiKey");
 	}
@@ -1328,7 +1347,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					if (course != null && classes != null && !classes.isEmpty()) {
 						courses.add(course);
 						Set<Class_> list = (ChangeOperation.DROP != change.operation ? adds : drops).get(course);
-						if (ChangeOperation.KEEP == change.operation) keeps.add(course);
+						if (ChangeOperation.KEEP == change.operation || ChangeOperation.CHGMODE == change.operation) keeps.add(course);
 						if (list == null) {
 							list = new TreeSet<Class_>(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
 							 (ChangeOperation.DROP != change.operation ? adds : drops).put(course, list);
@@ -1364,6 +1383,11 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					ClassAssignment ca = new ClassAssignment();
 					List<Change> change = changes.get(clazz);
 					ca.setSpecRegOperation(ChangeOperation.ADD == change.get(0).operation ? SpecialRegistrationOperation.Add : SpecialRegistrationOperation.Keep);
+					if (change.get(0).operation == ChangeOperation.CHGMODE) {
+						ca.setGradeMode(new GradeMode(change.get(0).selectedGradeMode, change.get(0).selectedGradeModeDescription));
+						if (clazz.getParentClass() != null && clazz.getSchedulingSubpart().getItype().equals(clazz.getParentClass().getSchedulingSubpart().getItype()))
+							continue;
+					}
 					SpecialRegistrationStatus s = null;
 					for (Change ch: change)
 						if (ch.status != null)
@@ -1886,6 +1910,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					check.setOverrides(response.overrides);
 					check.setFlag(EligibilityFlag.SR_TIME_CONF, check.hasOverride("TIME"));
 					check.setFlag(EligibilityFlag.SR_LIMIT_CONF, check.hasOverride("CLOS"));
+					check.setFlag(EligibilityFlag.CAN_CHANGE_GRADE_MODE, check.hasOverride("GMODE"));
 				}
 			} else {
 				check.setFlag(EligibilityFlag.CAN_SPECREG, false);
@@ -2027,5 +2052,402 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				resource.release();
 			}
 		}
+	}
+	
+	protected String getBannerSite() {
+		return ApplicationProperties.getProperty("banner.xe.site");
+	}
+	
+	protected String getBannerUser(boolean admin) {
+		if (admin) {
+			String user = ApplicationProperties.getProperty("banner.xe.admin.user");
+			if (user != null) return user;
+		}
+		return ApplicationProperties.getProperty("banner.xe.user");
+	}
+	
+	protected String getBannerPassword(boolean admin) {
+		if (admin) {
+			String pwd = ApplicationProperties.getProperty("banner.xe.admin.password");
+			if (pwd != null) return pwd;
+		}
+		return ApplicationProperties.getProperty("banner.xe.password");
+	}
+	
+	protected String getAdminParameter() {
+		return ApplicationProperties.getProperty("banner.xe.adminParameter", "persona");
+	}
+
+	@Override
+	public RetrieveAvailableGradeModesResponse retrieveAvailableGradeModes(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) throws SectioningException {
+		ClientResource resource = null;
+		try {
+			resource = new ClientResource(getSpecialRegistrationApiSiteCheckStudentGradeModes());
+			resource.setNext(iClient);
+
+			AcademicSessionInfo session = server.getAcademicSession();
+			String term = getBannerTerm(session);
+			String campus = getBannerCampus(session);
+			resource.addQueryParameter("term", term);
+			resource.addQueryParameter("campus", campus);
+			resource.addQueryParameter("studentId", getBannerId(student));
+			resource.addQueryParameter("mode", getSpecialRegistrationMode().name());
+			helper.getAction().addOptionBuilder().setKey("term").setValue(term);
+			helper.getAction().addOptionBuilder().setKey("campus").setValue(campus);
+			helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
+			resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
+			
+			long t1 = System.currentTimeMillis();
+			
+			resource.get(MediaType.APPLICATION_JSON);
+			
+			helper.getAction().setApiGetTime(System.currentTimeMillis() - t1);
+			
+			SpecialRegistrationCheckGradeModesResponse response = (SpecialRegistrationCheckGradeModesResponse)new GsonRepresentation<SpecialRegistrationCheckGradeModesResponse>(resource.getResponseEntity(), SpecialRegistrationCheckGradeModesResponse.class).getObject();
+			Gson gson = getGson(helper);
+			
+			if (helper.isDebugEnabled())
+				helper.debug("Response: " + gson.toJson(response));
+			helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(response));
+			
+			if (ResponseStatus.success != response.status || response.data == null)
+				throw new SectioningException(response.message == null || response.message.isEmpty() ? "Failed to check availabel grade modes." : response.message);
+			
+			RetrieveAvailableGradeModesResponse ret = new RetrieveAvailableGradeModesResponse();
+			if (response.data.gradingModes != null)
+				for (SpecialRegistrationCurrentGradeMode m: response.data.gradingModes) {
+					SpecialRegistrationGradeModeChanges mode = new SpecialRegistrationGradeModeChanges();
+					mode.setCurrentGradeMode(new SpecialRegistrationGradeMode(m.gradingMode, m.gradingModeDescription));
+					if (m.availableGradingModes != null)
+						for (SpecialRegistrationAvailableGradeMode av: m.availableGradingModes) {
+							SpecialRegistrationGradeMode availableMode = new SpecialRegistrationGradeMode(av.gradingMode, av.gradingModeDescription);
+							availableMode.setOriginalGradeMode(m.gradingMode);
+							if (av.approvals != null)
+								for (String ap: av.approvals)
+									availableMode.addApproval(ap);
+							mode.addAvailableChange(availableMode);
+						}
+					ret.add(m.crn, mode);
+				}
+			
+			return ret;
+		} catch (SectioningException e) {
+			helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
+			throw (SectioningException)e;
+		} catch (Exception e) {
+			helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(e.getMessage());
+		} finally {
+			if (resource != null) {
+				if (resource.getResponse() != null) resource.getResponse().release();
+				resource.release();
+			}
+		}
+	}
+
+	@Override
+	public ChangeGradeModesResponse changeGradeModes(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, ChangeGradeModesRequest request) throws SectioningException {
+		ChangeGradeModesResponse ret = new ChangeGradeModesResponse();
+		if (request.hasGradeModeChanges(false)) {
+			ClientResource resource = null;
+			try {
+				resource = new ClientResource(getBannerSite());
+				resource.setNext(iClient);
+				resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(true), getBannerPassword(true));
+				Gson gson = getGson(helper);
+				XEInterface.RegisterResponse original = null;
+				
+				String term = getBannerTerm(server.getAcademicSession());
+
+				resource.addQueryParameter("term", term);
+				resource.addQueryParameter("bannerId", getBannerId(student));
+				helper.getAction().addOptionBuilder().setKey("term").setValue(term);
+				helper.getAction().addOptionBuilder().setKey("bannerId").setValue(getBannerId(student));
+				
+				String param = getAdminParameter();
+				resource.addQueryParameter(param, "SB");
+				helper.getAction().addOptionBuilder().setKey(param).setValue("SB");
+				Map<String, String> code2desc = new HashMap<String, String>();
+				long t0 = System.currentTimeMillis();
+				try {
+					resource.get(MediaType.APPLICATION_JSON);
+				} catch (ResourceException exception) {
+					helper.getAction().setApiException(exception.getMessage());
+					try {
+						XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject();
+						helper.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
+						XEInterface.Error error = response.getError();
+						if (error != null && error.message != null) {
+							throw new SectioningException(error.message);
+						} else if (error != null && error.description != null) {
+							throw new SectioningException(error.description);
+						} else if (error != null && error.errorMessage != null) {
+							throw new SectioningException(error.errorMessage);
+						} else {
+							throw exception;
+						}
+					} catch (SectioningException e) {
+						helper.getAction().setApiException(e.getMessage());
+						throw e;
+					} catch (Throwable t) {
+						throw exception;
+					}
+				} finally {
+					helper.getAction().setApiGetTime(System.currentTimeMillis() - t0);
+				}
+				List<XEInterface.RegisterResponse> current = new GsonRepresentation<List<XEInterface.RegisterResponse>>(resource.getResponseEntity(), XEInterface.RegisterResponse.TYPE_LIST).getObject();
+				helper.getAction().addOptionBuilder().setKey("xe_get_response").setValue(gson.toJson(current));
+				if (current != null && !current.isEmpty())
+					original = current.get(0);
+				
+				if (original == null || !original.validStudent) {
+					String reason = null;
+					if (original != null && original.failureReasons != null) {
+						for (String m: original.failureReasons) {
+							if (reason == null)
+								reason = m;
+							else
+								reason += "\n" + m;
+						}
+					}
+					if (reason == null || reason.isEmpty()) {
+						reason = "Failed to check student registration eligility.";
+					}
+					throw new SectioningException(reason);
+				}
+				
+				XEInterface.RegisterRequest req = new XEInterface.RegisterRequest(getBannerTerm(server.getAcademicSession()), getBannerId(student), null, true);
+				req.courseReferenceNumbers = new ArrayList<CourseReferenceNumber>();
+				req.actionsAndOptions = new ArrayList<RegisterAction>();
+				
+				if (original.registrations != null)
+					for (XEInterface.Registration reg: original.registrations) {
+						if (reg.isRegistered()) {
+							req.courseReferenceNumbers.add(new CourseReferenceNumber(reg.courseReferenceNumber));
+							SpecialRegistrationGradeModeChange mode = request.getChange(reg.courseReferenceNumber);
+							if (mode != null && !mode.hasApprovals()) {
+								boolean allowed = false;
+								if (reg.registrationGradingModes != null)
+									for (RegistrationGradingMode m: reg.registrationGradingModes)
+										if (mode.getSelectedGradeMode().equals(m.gradingMode)) { allowed = true; break; }
+								if (!allowed)
+									throw new SectioningException(mode.getSelectedGradeModeDescription() + " is not allowed for " + reg.courseReferenceNumber + ".");
+								RegisterAction action = new RegisterAction(reg.courseReferenceNumber);
+								action.selectedGradingMode = mode.getSelectedGradeMode();
+								req.actionsAndOptions.add(action);
+								code2desc.put(mode.getSelectedGradeMode(), mode.getSelectedGradeModeDescription());
+							}
+						}
+					}
+				
+				if (!req.actionsAndOptions.isEmpty()) {
+					helper.getAction().addOptionBuilder().setKey("xe_request").setValue(gson.toJson(req));
+					
+					long t1 = System.currentTimeMillis();
+					try {
+						resource.post(new GsonRepresentation<XEInterface.RegisterRequest>(req));
+					} catch (ResourceException exception) {
+						helper.getAction().setApiException(exception.getMessage());
+						try {
+							XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject();
+							helper.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
+							XEInterface.Error error = response.getError();
+							if (error != null && error.message != null) {
+								throw new SectioningException(error.message);
+							} else if (error != null && error.description != null) {
+								throw new SectioningException(error.description);
+							} else if (error != null && error.errorMessage != null) {
+								throw new SectioningException(error.errorMessage);
+							} else {
+								throw exception;
+							}
+						} catch (SectioningException e) {
+							helper.getAction().setApiException(e.getMessage());
+							throw e;
+						} catch (Throwable t) {
+		 					throw exception;
+						}
+					} finally {
+						helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
+					}
+					
+					// Finally, check the response
+					XEInterface.RegisterResponse response = new GsonRepresentation<XEInterface.RegisterResponse>(resource.getResponseEntity(), XEInterface.RegisterResponse.class).getObject();
+					if (helper.isDebugEnabled())
+						helper.debug("Response: " + gson.toJson(response));
+					helper.getAction().addOptionBuilder().setKey("xe_response").setValue(gson.toJson(response));
+					
+					if (response == null || !response.validStudent) {
+						String reason = null;
+						if (response != null && response.failureReasons != null) {
+							for (String m: response.failureReasons) {
+								if (reason == null)
+									reason = m;
+								else
+									reason += "\n" + m;
+							}
+						}
+						throw new SectioningException(reason == null ? "Failed to change grade modes." : reason);
+					}
+					
+					if (response.registrations != null) {
+						for (XEInterface.Registration reg: response.registrations) {
+							if ("Registered".equals(reg.statusDescription)) {
+								if (reg.gradingMode != null) {
+									String desc = code2desc.get(reg.gradingMode);
+									ret.addGradeMode(reg.courseReferenceNumber, reg.gradingMode, desc != null ? desc : reg.gradingModeDescription);
+								}
+							}
+						}
+					}
+				}
+			} catch (SectioningException e) {
+				helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
+				throw (SectioningException)e;
+			} catch (Exception e) {
+				helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
+				sLog.error(e.getMessage(), e);
+				throw new SectioningException(e.getMessage());
+			} finally {
+				if (resource != null) {
+					if (resource.getResponse() != null) resource.getResponse().release();
+					resource.release();
+				}
+			}
+		}
+		if (request.hasGradeModeChanges(true)) {
+			ClientResource resource = null;
+			try {
+				SpecialRegistrationRequest req = new SpecialRegistrationRequest();
+				AcademicSessionInfo session = server.getAcademicSession();
+				req.term = getBannerTerm(session);
+				req.campus = getBannerCampus(session);
+				req.studentId = getBannerId(student);
+				req.changes = new ArrayList<Change>();
+				
+				/*
+				Set<String> crns = new HashSet<String>();
+				for (XRequest r: student.getRequests()) {
+					if (r instanceof XCourseRequest) {
+						XCourseRequest cr = (XCourseRequest)r;
+						if (cr.getEnrollment() != null) {
+							XEnrollment en = cr.getEnrollment();
+							XOffering offering = server.getOffering(en.getOfferingId());
+							XCourse course = offering.getCourse(en.getCourseId());
+							for (Long cid: en.getSectionIds()) {
+								XSection section = offering.getSection(cid);
+								String crn = section.getExternalId(en.getCourseId());
+								if (crn != null && crns.add(crn)) { 
+									SpecialRegistrationGradeModeChange m = request.getChange(crn);
+									if (m != null && m.hasApprovals()) {
+										Change ch = new Change();
+										ch.courseNbr = course.getCourseNumber();
+										ch.subject = course.getSubjectArea();
+										ch.crn = crn;
+										ch.operation = ChangeOperation.CHGMODE;
+										ch.credit = course.getCreditAbbv();
+										ch.errors = new ArrayList<ChangeError>();
+										ch.selectedGradeMode = m.getSelectedGradeMode();
+										ch.selectedGradeModeDescription = m.getSelectedGradeModeDescription();
+										ch.currentGradeMode = m.getOriginalGradeMode();
+										ChangeError err = new ChangeError();
+										err.code = "GMODE";
+										err.message = "Grade Mode Change: " + m.getSelectedGradeModeDescription();
+										ch.errors.add(err);
+										req.changes.add(ch);
+									}
+								}
+							}
+						}
+					}
+				}
+				*/
+				for (SpecialRegistrationGradeModeChange change: request.getChanges()) {
+					if (!change.hasApprovals()) continue;
+					String crns = null;
+					for (String crn: change.getCRNs())
+						if (crns == null)
+							crns = crn;
+						else
+							crns += "," + crn;
+					Change ch = new Change();
+					ch.courseNbr = change.getCourse();
+					ch.subject = change.getSubject();
+					ch.crn = crns;
+					ch.operation = ChangeOperation.CHGMODE;
+					ch.credit = change.getCredit();
+					if (ch.credit != null && ch.credit.indexOf('|') > 0)
+						ch.credit = ch.credit.substring(0, ch.credit.indexOf('|'));
+					ch.errors = new ArrayList<ChangeError>();
+					ch.selectedGradeMode = change.getSelectedGradeMode();
+					ch.selectedGradeModeDescription = change.getSelectedGradeModeDescription();
+					ch.currentGradeMode = change.getOriginalGradeMode();
+					ChangeError err = new ChangeError();
+					err.code = "GMODE";
+					err.message = "Grade Mode Change: " + change.getSelectedGradeModeDescription();
+					ch.errors.add(err);
+					req.changes.add(ch);
+				}
+
+				req.mode = getSpecialRegistrationMode(); 
+				if (helper.getUser() != null) {
+					req.requestorId = getRequestorId(helper.getUser());
+					req.requestorRole = getRequestorType(helper.getUser(), student);
+				}
+				req.requestorNotes = request.getNote();
+				
+				if (req.changes != null && !req.changes.isEmpty()) {
+					resource = new ClientResource(getSpecialRegistrationApiSiteSubmitRegistration());
+					resource.setNext(iClient);
+					resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
+					
+					Gson gson = getGson(helper);
+					if (helper.isDebugEnabled())
+						helper.debug("Request: " + gson.toJson(request));
+					helper.getAction().addOptionBuilder().setKey("specreg_request").setValue(gson.toJson(req));
+					long t1 = System.currentTimeMillis();
+					
+					resource.post(new GsonRepresentation<SpecialRegistrationRequest>(req));
+					
+					helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
+					
+					SpecialRegistrationResponseList response = (SpecialRegistrationResponseList)new GsonRepresentation<SpecialRegistrationResponseList>(resource.getResponseEntity(), SpecialRegistrationResponseList.class).getObject();
+					if (helper.isDebugEnabled())
+						helper.debug("Response: " + gson.toJson(response));
+					helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(response));
+					
+					if (response.data != null && !response.data.isEmpty()) {
+						for (SubmitRegistrationResponse r: response.data) {
+							if (r.requestorNotes == null) r.requestorNotes = request.getNote();
+							if (r.changes != null)
+								for (Change ch: r.changes)
+									if (ch.errors != null && !ch.errors.isEmpty() && ch.status == null)
+										ch.status = ChangeStatus.inProgress;
+							ret.addRequest(convert(server, helper, student, r, false));
+						}
+					}
+					if (response.cancelledRequests != null)
+						for (CancelledRequest c: response.cancelledRequests)
+							ret.addCancelRequestId(c.regRequestId);
+				}
+				
+			} catch (SectioningException e) {
+				helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
+				throw (SectioningException)e;
+			} catch (Exception e) {
+				helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
+				sLog.error(e.getMessage(), e);
+				throw new SectioningException(e.getMessage());
+			} finally {
+				if (resource != null) {
+					if (resource.getResponse() != null) resource.getResponse().release();
+					resource.release();
+				}
+			}
+		}
+		
+		return ret;
+
 	}
 }

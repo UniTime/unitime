@@ -73,6 +73,7 @@ public class XEInterface {
 		
 		public String gradingMode;
 		public String gradingModeDescription;
+		public List<RegistrationGradingMode> registrationGradingModes;
 		
 		public String level;
 		public String levelDescription;
@@ -202,6 +203,10 @@ public class XEInterface {
 		
 		public RegisterAction(String action, String crn) {
 			selectedAction = action;
+			courseReferenceNumber = crn;
+		}
+		
+		public RegisterAction(String crn) {
 			courseReferenceNumber = crn;
 		}
 	}
@@ -381,6 +386,11 @@ public class XEInterface {
 		public String description;
 		public String type;
 		public String errorMessage;
+	}
+	
+	public static class RegistrationGradingMode {
+		public String gradingMode;
+		public String description;
 	}
 
 }
