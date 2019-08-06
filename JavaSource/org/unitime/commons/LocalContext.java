@@ -492,6 +492,14 @@ public class LocalContext implements Context, NameParser, InitialContextFactory,
 
 	@Override
 	public InitialContextFactory createInitialContextFactory(Hashtable env) throws NamingException {
+		String className = (String)(env == null ? null : env.get(Context.INITIAL_CONTEXT_FACTORY));
+		if (className != null) {
+			try {
+				return (InitialContextFactory)Class.forName(className).newInstance();
+			} catch (Exception e) {
+				throw new NamingException(e.getMessage());
+			}
+		}
 		return new LocalContext(env);
 	}
 
