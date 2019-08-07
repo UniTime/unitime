@@ -161,6 +161,9 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 						st.addAccommodation(ac);
 					for (XStudent.XGroup gr: student.getGroups())
 						st.addGroup(gr.getType(), gr.getAbbreviation(), gr.getTitle());
+	    			for (XStudent.XAdvisor a: student.getAdvisors()) {
+	    				if (a.getName() != null) st.addAdvisor(a.getName());
+	    			}
 					e.setStudent(st);
 					
 					// fill course request information in

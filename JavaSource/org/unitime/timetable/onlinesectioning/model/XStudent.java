@@ -42,9 +42,11 @@ import org.cpsolver.studentsct.model.AreaClassificationMajor;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Request;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
+import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Student;
@@ -75,6 +77,7 @@ public class XStudent extends XStudentId implements Externalizable {
     private Float iMaxCredit = null;
     private XOverride iMaxCreditOverride = null;
     private boolean iAllowDisabled = false;
+    private List<XAdvisor> iAdvisors = new ArrayList<XAdvisor>();
 
     public XStudent() {
     	super();
@@ -105,6 +108,8 @@ public class XStudent extends XStudentId implements Externalizable {
         }
         for (StudentAccomodation accomodation: student.getAccomodations())
         	iAccomodations.add(accomodation.getAbbreviation());
+        for (Advisor advisor: student.getAdvisors())
+        	iAdvisors.add(new XAdvisor(advisor.getExternalUniqueId(), advisor.getLastName() == null ? null : helper.getInstructorNameFormat().format(advisor), advisor.getEmail()));
         
 		TreeSet<CourseDemand> demands = new TreeSet<CourseDemand>(new Comparator<CourseDemand>() {
 			public int compare(CourseDemand d1, CourseDemand d2) {
@@ -169,6 +174,7 @@ public class XStudent extends XStudentId implements Externalizable {
     	iAccomodations.addAll(student.getAccomodations());
     	iRequests.addAll(student.getRequests());
     	iAllowDisabled = student.iAllowDisabled;
+    	iAdvisors.addAll(student.getAdvisors());
     }
     
     public XStudent(XStudent student, Collection<CourseDemand> demands, OnlineSectioningHelper helper, BitSet freeTimePattern) {
@@ -182,6 +188,7 @@ public class XStudent extends XStudentId implements Externalizable {
     	iMaxCredit = student.getMaxCredit();
     	iMaxCreditOverride = student.getMaxCreditOverride();
     	iAllowDisabled = student.iAllowDisabled;
+    	iAdvisors.addAll(student.getAdvisors());
 
     	if (demands != null)
         	for (CourseDemand cd: demands) {
@@ -237,6 +244,8 @@ public class XStudent extends XStudentId implements Externalizable {
 			else
 				iGroups.add(new XGroup(aac));
     	}
+    	for (Instructor advisor: student.getAdvisors())
+    		iAdvisors.add(new XAdvisor(advisor.getExternalId(), advisor.getName(), advisor.getEmail()));
     	for (Request request: student.getRequests()) {
     		if (request instanceof FreeTimeRequest) {
     			iRequests.add(new XFreeTimeRequest((FreeTimeRequest)request));
@@ -303,6 +312,10 @@ public class XStudent extends XStudentId implements Externalizable {
     
     public boolean hasAccomodation(String accomodation) {
     	return accomodation != null && iAccomodations.contains(accomodation);
+    }
+    
+    public List<XAdvisor> getAdvisors() {
+        return iAdvisors;
     }
         
     /**
@@ -399,6 +412,11 @@ public class XStudent extends XStudentId implements Externalizable {
 		if (in.readBoolean())
 			iLastNote = new XStudentNote(in);
 		iAllowDisabled = in.readBoolean();
+		
+		int nrAdvisors = in.readInt();
+		iAdvisors.clear();
+		for (int i = 0; i < nrAdvisors; i++)
+			iAdvisors.add(new XAdvisor(in));
 	}
 
 	@Override
@@ -438,6 +456,10 @@ public class XStudent extends XStudentId implements Externalizable {
 		if (iLastNote != null)
 			iLastNote.writeExternal(out);
 		out.writeBoolean(iAllowDisabled);
+		
+		out.writeInt(iAdvisors.size());
+		for (XAdvisor advisor: iAdvisors)
+			advisor.writeExternal(out);
 	}
 	
 	public static class XStudentSerializer implements Externalizer<XStudent> {
@@ -525,6 +547,66 @@ public class XStudent extends XStudentId implements Externalizable {
 		@Override
 		public XGroup readObject(ObjectInput input) throws IOException, ClassNotFoundException {
 			return new XGroup(input);
+		}
+	}
+	
+	@SerializeWith(XStudent.XAdvisorSerializer.class)
+	public static class XAdvisor implements Externalizable {
+		public String iExternalId, iName, iEmail;
+		
+		public XAdvisor(String externalId, String name, String email) {
+			iExternalId = externalId;
+			iName = name;
+			iEmail = email;
+		}
+		
+		public XAdvisor(ObjectInput in) throws IOException, ClassNotFoundException {
+	    	super();
+	    	readExternal(in);
+	    }
+		
+		public String getExternalId() { return iExternalId; }
+		public String getEmail() { return iEmail; }
+		public String getName() { return iName; }
+		
+		@Override
+		public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+			iExternalId = (String)in.readObject();
+			iName = (String)in.readObject();
+			iEmail = (String)in.readObject();
+		}
+
+		@Override
+		public void writeExternal(ObjectOutput out) throws IOException {
+			out.writeObject(iExternalId);
+			out.writeObject(iName);
+			out.writeObject(iEmail);
+		}
+		
+		@Override
+		public String toString() { return iExternalId; }
+		
+		@Override
+		public int hashCode() { return toString().hashCode(); }
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof XAdvisor)) return false;
+			return getExternalId().equals(((XAdvisor)o).getExternalId());
+		}
+	}
+	
+	public static class XAdvisorSerializer implements Externalizer<XAdvisor> {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void writeObject(ObjectOutput output, XAdvisor object) throws IOException {
+			object.writeExternal(output);
+		}
+
+		@Override
+		public XAdvisor readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+			return new XAdvisor(input);
 		}
 	}
 }

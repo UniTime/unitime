@@ -35,6 +35,7 @@ import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.util.DistanceMetric;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.StudentInfo;
+import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseDemand;
@@ -152,6 +153,11 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 						else
 							st.addGroup(gr.getType().getReference(), gr.getGroupAbbreviation(), gr.getGroupName());
 					}
+	    			for (Advisor a: student.getAdvisors()) {
+	    				if (a.getLastName() != null)
+	    					st.addAdvisor(helper.getInstructorNameFormat().format(a));
+	    			}
+
 					int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0, tUnasg = 0, tOvrNeed = 0, ovrNeed = 0;
 					float tCred = 0f;
 					int nrDisCnf = 0, maxDist = 0, share = 0; 
@@ -522,6 +528,10 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					else
 						st.addGroup(gr.getType().getReference(), gr.getGroupAbbreviation(), gr.getGroupName());
 				}
+    			for (Advisor a: student.getAdvisors()) {
+    				if (a.getLastName() != null)
+    					st.addAdvisor(helper.getInstructorNameFormat().format(a));
+    			}
 				s.setStatus(student.getSectioningStatus() == null ? session.getDefaultSectioningStatus() : student.getSectioningStatus().getReference());
 				s.setEmailDate(student.getScheduleEmailedDate() == null ? null : student.getScheduleEmailedDate());
 				

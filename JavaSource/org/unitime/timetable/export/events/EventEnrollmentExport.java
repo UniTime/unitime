@@ -162,7 +162,7 @@ public class EventEnrollmentExport implements Exporter {
 		if (crosslist)
 			header.add(MESSAGES.colCourse());
 		
-		boolean hasPriority = false, hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasAlternative = false, hasReservation = false, hasRequestedDate = false, hasEnrolledDate = false, hasConflict = false, hasMessage = false;
+		boolean hasPriority = false, hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasAlternative = false, hasReservation = false, hasRequestedDate = false, hasEnrolledDate = false, hasConflict = false, hasMessage = false, hasAdvisor = false;
 		Set<String> groupTypes = new TreeSet<String>();
 		for (ClassAssignmentInterface.Enrollment e: enrollments) {
 			if (e.getPriority() > 0) hasPriority = true;
@@ -177,6 +177,7 @@ public class EventEnrollmentExport implements Exporter {
 			if (e.hasConflict()) hasConflict = true;
 			if (e.hasEnrollmentMessage()) hasMessage = true;
 			if (e.getStudent().hasGroups()) groupTypes.addAll(e.getStudent().getGroupTypes());
+			if (e.getStudent().hasAdvisor()) hasAdvisor = true;
 		}
 		
 		if (hasPriority)
@@ -221,6 +222,9 @@ public class EventEnrollmentExport implements Exporter {
 		
 		if (hasEnrolledDate)
 			header.add(MESSAGES.colEnrollmentTimeStamp());
+		
+		if (hasAdvisor)
+			header.add(MESSAGES.colAdvisor());
 		
 		if (hasMessage)
 			header.add(MESSAGES.colMessage());
@@ -276,6 +280,8 @@ public class EventEnrollmentExport implements Exporter {
 				line.add(enrollment.getRequestedDate() == null ? "" : sDF.format(enrollment.getRequestedDate()));
 			if (hasEnrolledDate)
 				line.add(enrollment.getEnrolledDate() == null ? "" : sDF.format(enrollment.getEnrolledDate()));
+			if (hasAdvisor)
+				line.add(enrollment.getStudent().getAdvisor("\n"));
 			if (hasMessage)
 				line.add(enrollment.hasEnrollmentMessage() ? enrollment.getEnrollmentMessage() : "");
 			if (hasConflict) {

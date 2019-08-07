@@ -33,6 +33,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.StudentAreaClassificationMajor;
@@ -111,6 +112,10 @@ public class DbFindOnlineSectioningLogAction extends FindOnlineSectioningLogActi
 						else
 							st.addGroup(gr.getType().getReference(), gr.getGroupAbbreviation(), gr.getGroupName());
 					}
+	    			for (Advisor a: student.getAdvisors()) {
+	    				if (a.getLastName() != null)
+	    					st.addAdvisor(helper.getInstructorNameFormat().format(a));
+	    			}
 					
 					SectioningAction a = new SectioningAction();
 					a.setStudent(st);

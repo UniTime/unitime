@@ -138,6 +138,9 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					for (XStudent.XGroup gr: student.getGroups()) {
 						st.addGroup(gr.getType(), gr.getAbbreviation(), gr.getTitle());
 					}
+	    			for (XStudent.XAdvisor a: student.getAdvisors()) {
+	    				if (a.getName() != null) st.addAdvisor(a.getName());
+	    			}
 
 					SectioningAction a = new SectioningAction();
 					a.setStudent(st);

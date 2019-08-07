@@ -574,4 +574,5 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
     		return null;
     	}
 	}
+
 }

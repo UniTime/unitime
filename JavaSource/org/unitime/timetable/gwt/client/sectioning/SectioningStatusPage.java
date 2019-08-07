@@ -2020,6 +2020,13 @@ public class SectioningStatusPage extends Composite {
 			addSortOperation(hEnrolledTS, StudentComparator.SortBy.ENROLLMENT_TS, MESSAGES.colEnrollmentTimeStamp());
 		}
 		
+		UniTimeTableHeader hAdvisor = null;
+		if (iStudentInfoVisibleColumns.hasAdvisor) {
+			hAdvisor = new UniTimeTableHeader(MESSAGES.colAdvisor());
+			header.add(hAdvisor);
+			addSortOperation(hAdvisor, StudentComparator.SortBy.ADVISOR, MESSAGES.colAdvisor());
+		}
+		
 		UniTimeTableHeader hNote = null;
 		if (iOnline && iStudentInfoVisibleColumns.hasNote) {
 			iNoteColumn = header.size() - 1;
@@ -2218,6 +2225,8 @@ public class SectioningStatusPage extends Composite {
 				line.add(new HTML(info.getRequestedDate() == null ? "&nbsp;" : sDF.format(info.getRequestedDate()), false));
 			if (iStudentInfoVisibleColumns.hasEnrolledDate)
 				line.add(new HTML(info.getEnrolledDate() == null ? "&nbsp;" : sDF.format(info.getEnrolledDate()), false));
+			if (iStudentInfoVisibleColumns.hasAdvisor)
+				line.add(new HTML(info.getStudent().getAdvisor("<br>"), false));
 			if (iOnline && iStudentInfoVisibleColumns.hasNote) {
 				HTML note = new HTML(info.hasNote() ? info.getNote() : ""); note.addStyleName("student-note");
 				if (info.hasNote())
@@ -2230,6 +2239,8 @@ public class SectioningStatusPage extends Composite {
 			if (iStudentInfoVisibleColumns.hasRequestedDate)
 				line.add(new HTML("&nbsp;", false));
 			if (iStudentInfoVisibleColumns.hasEnrolledDate)
+				line.add(new HTML("&nbsp;", false));
+			if (iStudentInfoVisibleColumns.hasAdvisor)
 				line.add(new HTML("&nbsp;", false));
 			if (iOnline && iStudentInfoVisibleColumns.hasNote)
 				line.add(new HTML("&nbsp;", false));
@@ -2804,6 +2815,7 @@ public class SectioningStatusPage extends Composite {
 			FT_OVERLAPS, PREF_IM, PREF_SEC,
 			OVERRIDE,
 			REQ_CREDIT,
+			ADVISOR,
 			;
 		}
 		
@@ -2917,6 +2929,8 @@ public class SectioningStatusPage extends Composite {
 				cmp = (e1.getOverrideNeeded() == null ? new Integer(0) : e1.getOverrideNeeded()).compareTo(e2.getOverrideNeeded() == null ? 0 : e2.getOverrideNeeded());
 				if (cmp != 0) return - cmp;
 				return (e1.getTotalOverrideNeeded() == null ? new Integer(0) : e1.getTotalOverrideNeeded()).compareTo(e2.getTotalOverrideNeeded() == null ? 0 : e2.getTotalOverrideNeeded());
+			case ADVISOR:
+				return e1.getStudent().getAdvisor("|").compareTo(e2.getStudent().getAdvisor("|"));
 			default:
 				return 0;
 			}
@@ -3155,7 +3169,8 @@ public class SectioningStatusPage extends Composite {
 	static class StudentsInfoVisibleColumns {
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
 				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false, hasReqCred = false, hasDistances = false, hasOverlaps = false,
-				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false, hasOverride = false, hasExtId = false;
+				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false, hasOverride = false, hasExtId = false,
+				hasAdvisor = false;
 		int selectableStudents = 0;
 		Set<String> groupTypes = new TreeSet<String>();
 		
@@ -3187,6 +3202,7 @@ public class SectioningStatusPage extends Composite {
 				if (e.getEmailDate() != null) hasEmailed = true;
 				if (e.getStudent() != null && e.getStudent().isCanShowExternalId()) hasExtId = true;
 				if (e.getStudent().hasGroups()) groupTypes.addAll(e.getStudent().getGroupTypes());
+				if (e.getStudent().hasAdvisor()) hasAdvisor = true;
 			}
 		}
 	}
