@@ -166,6 +166,12 @@ IFS.</line>
 				<line>It is now possible to include attachments in the Contact Us email.</line>
 			</description>
 		</item>
+		<item>
+			<name>Scheduling Subpart Suffix</name>
+			<description>
+				<line>When there are more than 27 subparts of the same itype, use aa, ab, ac for the suffixes instead of running out of letters.</line>
+			</description>
+		</item>
 	</category>
 </release>
 

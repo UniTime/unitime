@@ -660,8 +660,13 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	
     	if (nrItypes<=1 || nrItypesBefore<1) 
     		suffix = "";
-    	else
+    	else if (nrItypesBefore < 27)
     		suffix = String.valueOf((char)('a'+(nrItypesBefore-1)));
+    	else {
+    		int a = (nrItypesBefore - 1) / 26;
+    		int b = (nrItypesBefore - 1) % 26;
+    		suffix = String.valueOf((char)('a'+(a-1))) + String.valueOf((char)('a'+b));
+    	}
 
     	setSchedulingSubpartSuffixCache(suffix.length()==0?"-":suffix);
     	
