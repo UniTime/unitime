@@ -379,6 +379,12 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 				} else {
 					return "s.externalUniqueId = '" + body + "'";
 				}
+			} else if ("advisor".equalsIgnoreCase(attr)) {
+				if (ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue() && body.startsWith("0")) {
+					return "s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = '" + body.replaceFirst("^0+(?!$)", "") + "' and adv.session.uniqueId = s.session.uniqueId)";
+				} else {
+					return "s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = '" + body + "' and adv.session.uniqueId = s.session.uniqueId)";
+				}
 			} else if ("operation".equalsIgnoreCase(attr) || "op".equalsIgnoreCase(attr)) {
 				return "lower(l.operation) = '" + body.toLowerCase() + "'";
 			} else if ("max-age".equalsIgnoreCase(attr) || "age".equalsIgnoreCase(attr)) {

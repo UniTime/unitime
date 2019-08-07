@@ -5743,6 +5743,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("lookup")
 	String tagLookup();
 	
+	@DefaultMessage("advisor")
+	String tagAdvisor();
+	
 	@DefaultMessage("All Sessions")
 	String attrFlagAllSessions();
 	

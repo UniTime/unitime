@@ -719,6 +719,21 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				}
 			}
 			
+			if ("advisor".equals(attr)) {
+				if (ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue() && term.startsWith("0")) {
+					for (XStudent.XAdvisor a: student().getAdvisors()) {
+						if (eq(a.getExternalId(), term.replaceFirst("^0+(?!$)", "")))
+							return true;
+					}
+				} else {
+					for (XStudent.XAdvisor a: student().getAdvisors()) {
+						if (eq(a.getExternalId(), term))
+							return true;
+					}
+				}
+				return false;
+			}
+			
 			if ("assignment".equals(attr)) {
 				if (eq("Assigned", term)) {
 					return enrollment() != null;
@@ -1251,6 +1266,10 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					if (eq(acc, term)) return true;
 			} else if  ("student".equals(attr)) {
 				return has(student().getName(), term) || eq(student().getExternalId(), term) || eq(student().getName(), term);
+			} else if  ("advisor".equals(attr)) {
+				for (XStudent.XAdvisor a: student().getAdvisors())
+					if (eq(a.getExternalId(), term)) return true;
+				return false;
 			} else if ("registered".equals(attr)) {
 				if (eq("true", term) || eq("1",term))
 					return false;
