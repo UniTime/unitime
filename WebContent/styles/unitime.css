@@ -6584,6 +6584,14 @@ unitime-RoomSharingWidget .legend .blank {
 	text-align: justify;
 }
 
+.unitime-ChangeGradeModesDialog .disclaimer-message {
+	display: block;
+	white-space: pre-wrap;
+	text-align: justify;
+	margin-left: 15px;
+	margin-right: 15px;
+}
+
 .unitime-ChangeGradeModesDialog .request-note {
 	display: block;
 	margin-top: 2px;

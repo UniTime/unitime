@@ -21,6 +21,8 @@ package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.HasAriaLabel;
@@ -54,7 +56,10 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -81,6 +86,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 	private List<RetrieveSpecialRegistrationResponse> iApprovals;
 	private P iApproval = null;
 	private TextArea iNote = null;
+	private List<CheckBox> iDisclaimers = new ArrayList<CheckBox>();
 	
 	public ChangeGradeModesDialog(ScheduleStatus status) {
 		super(true, true);
@@ -263,6 +269,8 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 		iApproval.clear();
 		P ctab = new P("course-table");
 		boolean changes = false, approvals = false;
+		iDisclaimers.clear();
+		Set<String> disclaimers = new TreeSet<String>();
 		for (GradeModeChange cell: iChanges) {
 			SpecialRegistrationGradeMode change = cell.getChange();
 			if (change == null) continue;
@@ -282,7 +290,8 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 					approvals = true;
 				} else {
 					m.setText(MESSAGES.gradeModeNoApprovalNeeded(ch.getLabel()));
-				}	
+				}
+				if (ch.hasDisclaimer()) disclaimers.add(ch.getDisclaimer());
 				P crow = new P("course-row");
 				if (first) crow.addStyleName("first-course-line");
 				crow.add(cn);
@@ -299,9 +308,36 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 				m = new P("message"); m.setHTML(MESSAGES.gradeModeChangesNote()); iApproval.add(m);
 				iApproval.add(iNote);
 			}
-			m = new P("message"); m.setHTML(MESSAGES.gradeModeChangeOptions()); iApproval.add(m);
 		}
-		iButtons.setEnabled("submit", changes);
+		if (!disclaimers.isEmpty()) {
+			P m = new P("message"); m.setHTML(MESSAGES.gradeModeDisclaimers()); iApproval.add(m);
+			for (String d: disclaimers) {
+				CheckBox ch = new CheckBox(d, true);
+				ch.addStyleName("disclaimer-message");
+				ch.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+					@Override
+					public void onValueChange(ValueChangeEvent<Boolean> event) {
+						submitUpdateEnabled();
+					}
+				});
+				iDisclaimers.add(ch);
+				iApproval.add(ch);
+			}
+		}
+		if (changes) {
+			P m = new P("message"); m.setHTML(MESSAGES.gradeModeChangeOptions()); iApproval.add(m);
+		}
+		iButtons.setEnabled("submit", changes && disclaimers.isEmpty(), changes);
+		center();
+	}
+	
+	protected void submitUpdateEnabled() {
+		for (CheckBox ch: iDisclaimers)
+			if (!ch.getValue()) {
+				iButtons.setEnabled("submit", false, true);
+				return;
+			}
+		iButtons.setEnabled("submit", true, true);
 	}
 	
 	protected void onChange(ChangeGradeModesResponse response) {}
