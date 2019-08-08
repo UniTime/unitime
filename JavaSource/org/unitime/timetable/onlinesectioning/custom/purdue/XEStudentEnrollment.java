@@ -395,7 +395,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					if (updateStudentRegistration(server, helper, student, original.registrations)) return;
 					check.setMessage("UniTime enrollment data are not synchronized with Banner enrollment data, please try again later" +
 							" (" + (removed.isEmpty() ? "added " + added : added.isEmpty() ? "dropped " + removed : "added " + added + ", dropped " + removed) + ")");
-					// check.setFlag(EligibilityFlag.CAN_ENROLL, false);
+					check.setFlag(EligibilityFlag.CAN_ENROLL, false);
 					if (isCanRequestUpdates()) {
 						List<XStudent> students = new ArrayList<XStudent>(1); students.add(student);
 						requestUpdate(server, helper, students);
