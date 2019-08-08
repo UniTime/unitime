@@ -484,15 +484,20 @@ public class XOffering implements Serializable, Externalizable {
     			offeringLimit = add(offeringLimit, min(configLimit, config.getLimit()));
     	}
     	int enrl = 0;
+    	int req = 0;
     	if (requests != null)
-    		requests: for (XCourseRequest r: requests)
+    		requests: for (XCourseRequest r: requests) {
 				if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(course.getCourseId())) {
 					if (!hidden.isEmpty())
 						for (Long s: r.getEnrollment().getSectionIds())
 		    				if (hidden.contains(s)) continue requests;
 					enrl ++;
 				}
-    	return new int[] { enrl,  min(course.getLimit(), offeringLimit) };
+				if (!r.isAlternative() && r.getEnrollment() == null && r.getCourseIds().get(0).equals(course)) {
+					req ++;
+				}
+    		}
+    	return new int[] { enrl,  min(course.getLimit(), offeringLimit), req };
     }
     
     /** True if there are reservations for this offering */

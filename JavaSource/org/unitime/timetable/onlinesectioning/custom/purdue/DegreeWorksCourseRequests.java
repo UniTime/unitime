@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -34,6 +32,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.cpsolver.ifs.heuristics.RouletteWheelSelection;
 import org.restlet.Client;
 import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
@@ -349,14 +348,12 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 			for (XEInterface.Group g: group.groups)
 				fillInRequests(server, helper, request, g);
 			for (PlaceHolder ph: group.plannedPlaceholders) {
-				List<XCourseId> phc = getPlaceHolderCourses(server, helper, ph);
+				List<XCourse> phc = getPlaceHolderCourses(server, helper, ph);
 				List<XCourse> courses = null;
 				if (phc != null && !phc.isEmpty()) {
 					courses = new ArrayList<XCourse>();
 					String lastSubject = null, lastCourse = null;
-					for (XCourseId cid: phc) {
-						XCourse c = (cid instanceof XCourse ? (XCourse) cid : server.getCourse(cid.getCourseId()));
-						if (c == null) continue;
+					for (XCourse c: phc) {
 						if (lastSubject != null && lastSubject.equals(c.getSubjectArea()) && lastCourse != null && c.getCourseNumber().startsWith(lastCourse)) continue;
 						courses.add(c);
 						lastSubject = iExternalTermProvider.getExternalSubject(server.getAcademicSession(), c.getSubjectArea(), c.getCourseNumber());
@@ -367,27 +364,19 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					CourseRequestInterface.Request r = new CourseRequestInterface.Request();
 					r.setFilter(ph.placeholderValue);
 					OnlineSectioningLog.Request.Builder b = OnlineSectioningLog.Request.newBuilder().setPriority(request.getCourses().size()).setAlternative(false);
-					Collections.sort(courses, new Comparator<XCourse>() {
-						@Override
-						public int compare(XCourse c1, XCourse c2) {
-							int av1 = 4 * c1.getLimit();
-							Collection<XCourseRequest> r1 = server.getRequests(c1.getOfferingId());
-							if (r1 != null)
-								for (XCourseRequest r: r1) {
-									if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(c1.getCourseId())) av1-=3;
-									if (!r.isAlternative() && r.getEnrollment() == null && r.getCourseIds().get(0).equals(c1)) av1--;
-								}
-							int av2 = 4 * c2.getLimit();
-							Collection<XCourseRequest> r2 = server.getRequests(c2.getOfferingId());
-							if (r2 != null)
-								for (XCourseRequest r: r2) {
-									if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(c2.getCourseId())) av2-=3;
-									if (!r.isAlternative() && r.getEnrollment() == null && r.getCourseIds().get(0).equals(c2)) av2--;
-								}
-							return av1 > av2 ? -1 : av2 > av1 ? 1 : c1.compareTo(c2);
-						}
-					});
-					for (XCourse c: courses) {
+					RouletteWheelSelection<XCourse> roulette = new RouletteWheelSelection<XCourse>();
+					for (XCourse course: courses) {
+						int av1 = 4 * (course.getLimit() < 0 ? 9999 : course.getLimit());
+						Collection<XCourseRequest> reqs = server.getRequests(course.getOfferingId());
+						if (reqs != null)
+							for (XCourseRequest req: reqs) {
+								if (req.getEnrollment() != null && req.getEnrollment().getCourseId().equals(course.getCourseId())) av1-=3;
+								if (!req.isAlternative() && req.getEnrollment() == null && req.getCourseIds().get(0).equals(course)) av1--;
+							}
+						roulette.add(course, av1);
+					}
+					while (roulette.hasMoreElements()) {
+						XCourse c = roulette.nextElement();
 						RequestedCourse orc = new RequestedCourse();
 						orc.setCourseId(c.getCourseId());
 						orc.setCourseName(c.getCourseName());
@@ -570,7 +559,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 			}
 		if (g.plannedPlaceholders != null)
 			for (XEInterface.PlaceHolder ph: g.plannedPlaceholders) {
-				List<XCourseId> phc = getPlaceHolderCourses(server, helper, ph);
+				List<XCourse> phc = getPlaceHolderCourses(server, helper, ph);
 				if (phc != null && !phc.isEmpty()) {
 					DegreePlanInterface.DegreeGroupInterface phg = new DegreePlanInterface.DegreeGroupInterface();
 					phg.setChoice(true);
@@ -579,9 +568,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					phg.setId(ph.id);
 					phg.setCritical(isCriticalPlaceholder(ph));
 					DegreePlanInterface.DegreeCourseInterface course = null;
-					for (XCourseId id: phc) {
-						XCourse xc = (id instanceof XCourse ? (XCourse) id : server.getCourse(id.getCourseId()));
-						if (xc == null) continue;
+					for (XCourse xc: phc) {
 						if (course == null || !course.getSubject().equals(xc.getSubjectArea()) || !xc.getCourseNumber().startsWith(course.getCourse())) {
 							course = new DegreePlanInterface.DegreeCourseInterface();
 							course.setSubject(iExternalTermProvider.getExternalSubject(server.getAcademicSession(), xc.getSubjectArea(), xc.getCourseNumber()));
@@ -605,11 +592,11 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 						ca.setLimit(xc.getLimit());
 						int firstChoiceReqs = 0;
 						int enrl = 0;
-						Collection<XCourseRequest> requests = server.getRequests(id.getOfferingId());
+						Collection<XCourseRequest> requests = server.getRequests(xc.getOfferingId());
 						if (requests != null)
 							for (XCourseRequest r: requests) {
-								if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(id.getCourseId())) enrl ++;
-								if (!r.isAlternative() && r.getEnrollment() == null && r.getCourseIds().get(0).equals(id)) firstChoiceReqs ++;
+								if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(xc.getCourseId())) enrl ++;
+								if (!r.isAlternative() && r.getEnrollment() == null && r.getCourseIds().get(0).equals(xc)) firstChoiceReqs ++;
 							}
 						ca.setEnrollment(enrl);
 						ca.setProjected(firstChoiceReqs);
@@ -809,7 +796,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.placeHolderPartialMatch", "true"));
 	}
 	
-	protected List<XCourseId> getPlaceHolderCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, XEInterface.PlaceHolder ph) {
+	protected List<XCourse> getPlaceHolderCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, XEInterface.PlaceHolder ph) {
 		// check provider
 		if (!CustomCourseLookupHolder.hasProvider()) return null;
 		// check placeholder type code
@@ -822,7 +809,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		return ph.placeholderValue != null && ph.placeholderValue.matches(getCriticalPlaceHolderRegExp());
 	}
 	
-	protected List<XCourseId> getCriticalPlaceHolderCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, XEInterface.PlaceHolder ph) {
+	protected List<XCourse> getCriticalPlaceHolderCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, XEInterface.PlaceHolder ph) {
 		return (isCriticalPlaceholder(ph) ? getPlaceHolderCourses(server, helper, ph) : null);
 	}
 
@@ -923,10 +910,10 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		
 		public boolean add(XEInterface.Course c) { return iCriticalCourses.add(c.courseDiscipline + " " + c.courseNumber); }
 		
-		public void add(Collection<XCourseId> courseIds) {
-			if (courseIds == null || courseIds.isEmpty()) return;
+		public void add(Collection<XCourse> courses) {
+			if (courses == null || courses.isEmpty()) return;
 			if (iCriticalCourseIds == null) iCriticalCourseIds = new HashSet<XCourseId>();
-			iCriticalCourseIds.addAll(courseIds);
+			iCriticalCourseIds.addAll(courses);
 		}
 		
 		public boolean remove(String subjectArea, String courseNbr) {

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.cpsolver.ifs.heuristics.RouletteWheelSelection;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -84,14 +85,14 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 	protected List<CourseAssignment> customCourseLookup(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		try {
 			if (iQuery != null && !iQuery.isEmpty() && CustomCourseLookupHolder.hasProvider()) {
-				List<XCourseId> courses = CustomCourseLookupHolder.getProvider().getCourses(server, helper, iQuery, true);
+				List<XCourse> courses = CustomCourseLookupHolder.getProvider().getCourses(server, helper, iQuery, true);
 				if (courses != null && !courses.isEmpty()) {
 					List<CourseAssignment> ret = new ArrayList<CourseAssignment>();
-					for (XCourseId c: courses) {
-						XCourse course = (c instanceof XCourse ? (XCourse)c : server.getCourse(c.getCourseId()));
+					for (XCourse course: courses) {
 						if (course != null && (iMatcher == null || iMatcher.match(course)))
 							ret.add(convert(course, server));
 					}
+					setSelection(ret);
 					return ret;
 				}
 			}
@@ -125,6 +126,29 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 			course.setHasCrossList(offering.hasCrossList());
 		}
 		return course;
+	}
+	
+	public static void setSelection(List<CourseAssignment> courses) {
+		if (courses == null || courses.isEmpty()) return;
+		RouletteWheelSelection<CourseAssignment> roulette = new RouletteWheelSelection<CourseAssignment>();
+		for (CourseAssignment ca: courses) {
+			int p = 0;
+			if (ca.getLimit() != null)
+				p += 4 * (ca.getLimit() < 0 ? 9999 : ca.getLimit());
+			if (ca.getEnrollment() != null)
+				p -= 3 * (ca.getEnrollment());
+			if (ca.getRequested() != null)
+				p -= ca.getRequested();
+			if (p != 0) {
+				//System.out.println(ca.getCourseName() + ", " + p + ", limit: " + ca.getLimit() + ", enrollment: " + ca.getEnrollment() + ", requested: " + ca.getRequested());
+				roulette.add(ca, p);
+			}
+		}
+		int idx = 0;
+		while (roulette.hasMoreElements() && idx < 10) {
+			CourseAssignment ca = roulette.nextElement();
+			ca.setSelection(idx++);
+		}
 	}
 
 	@Override

@@ -27,14 +27,14 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.model.XCourseId;
+import org.unitime.timetable.onlinesectioning.model.XCourse;
 
 /**
  * @author Tomas Muller
  */
 public interface CustomCourseLookup {
 	
-	public List<XCourseId> getCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, String query, boolean allowPartialMatch);
+	public List<XCourse> getCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, String query, boolean allowPartialMatch);
 	public List<CourseOffering> getCourses(AcademicSessionInfo session, org.hibernate.Session hibSession, String query, boolean allowPartialMatch);
 	public Set<Long> getCourseIds(AcademicSessionInfo session, org.hibernate.Session hibSession, String query, boolean allowPartialMatch);
 	public void addSuggestions(OnlineSectioningServer server, OnlineSectioningHelper helper, String query, FilterRpcResponse filter);

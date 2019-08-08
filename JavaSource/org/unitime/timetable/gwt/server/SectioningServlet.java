@@ -335,7 +335,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								}
 							}
 						}
-						if (!results.isEmpty()) return results;
+						if (!results.isEmpty()) {
+							ListCourseOfferings.setSelection(results);
+							return results;
+						}
 					}
 				} catch (Exception e) {
 					sLog.error("Failed to use the custom course lookup: " + e.getMessage(), e);

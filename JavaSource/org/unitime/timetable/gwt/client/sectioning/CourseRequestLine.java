@@ -478,7 +478,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			setCourseFinderFactory(new CourseFinderFactory() {
 				@Override
 				public CourseFinder createCourseFinder() {
-					CourseFinder finder = new CourseFinderDialog();
+					CourseFinder finder = (alternative ? new CourseFinderDialog() : new SelectAllCourseFinderDialog());
 					
 					CourseFinder.CourseFinderTab<Collection<CourseAssignment>> courses = null;
 					if (!alternative) {

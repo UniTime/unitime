@@ -47,7 +47,6 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseLookup;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
-import org.unitime.timetable.onlinesectioning.model.XCourseId;
 
 /**
  * @author Tomas Muller
@@ -189,10 +188,10 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 	}
 
 	@Override
-	public List<XCourseId> getCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, String query, boolean allowPartialMatch) {
+	public List<XCourse> getCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, String query, boolean allowPartialMatch) {
 		String q = fixQuery(query);
 		if (q == null) return null;
-		List<XCourseId> ret = new ArrayList<XCourseId>();
+		List<XCourse> ret = new ArrayList<XCourse>();
 		if (useCache()) {
 			boolean fullMatch = false;
 			for (CourseAttribute ca: getCourseAttributes(server.getAcademicSession(), helper.getHibSession())) {
