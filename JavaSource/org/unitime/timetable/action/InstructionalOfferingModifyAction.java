@@ -21,6 +21,7 @@ package org.unitime.timetable.action;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -679,6 +680,7 @@ public class InstructionalOfferingModifyAction extends Action {
 		Iterator it11 = frm.getEnabledForStudentScheduling().listIterator();
 		Iterator it12 = (frm.getEditExternalId() ? frm.getExternalIds().listIterator() : null);
 		Iterator it13 = (frm.getEditSnapshotLimits() ? frm.getSnapshotLimits().listIterator() : null);
+		Date timeStamp = new Date();
 
 		for(;it1.hasNext();){
 			Long classId = new Long(it1.next().toString());
@@ -756,6 +758,7 @@ public class InstructionalOfferingModifyAction extends Action {
 				newClass.setEnabledForStudentScheduling(enabledForStudentScheduling);
 				newClass.setClassSuffix(suffix);
 				newClass.setSnapshotLimit(snapshotLimit);
+				newClass.setSnapshotLimitDate(timeStamp);
 				newClass.setCancelled(false);
 
 				hibSession.save(newClass);
@@ -786,6 +789,7 @@ public class InstructionalOfferingModifyAction extends Action {
 		Iterator it11 = (frm.getEditExternalId() ? frm.getExternalIds().listIterator() : null);
 		Iterator it12 = frm.getIsCancelled().listIterator();
 		Iterator it13 = (frm.getEditSnapshotLimits() ? frm.getSnapshotLimits().listIterator() : null);
+		Date timeStamp = new Date();
 
 		for(;it1.hasNext();){
 			Long classId = new Long(it1.next().toString());
@@ -923,6 +927,7 @@ public class InstructionalOfferingModifyAction extends Action {
 				if (frm.getEditSnapshotLimits()) {
 					if (snapshotLimit == null ? modifiedClass.getSnapshotLimit() != null : !snapshotLimit.equals(modifiedClass.getSnapshotLimit())) {
 						modifiedClass.setSnapshotLimit(snapshotLimit);
+						modifiedClass.setSnapshotLimitDate(timeStamp);
 						changed = true;
 					}
 				}
