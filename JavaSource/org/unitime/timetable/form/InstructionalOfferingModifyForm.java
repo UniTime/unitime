@@ -83,6 +83,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private Boolean displayEnabledForStudentScheduling;
 	private Long instructionalMethod;
 	private String instructionalMethodDefault;
+	private Boolean editSnapshotLimits;
 	
 	private List classIds;
 	private List subpartIds;
@@ -107,6 +108,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private List subtotalIndexes;
 	private List subtotalLabels;
 	private List subtotalValues;
+	private List subtotalSnapValues;
 	private List enableAllClassesForStudentSchedulingForSubpart;
 	private List displayAllClassesInstructorsForSubpart;
 	private List readOnlySubparts;
@@ -486,6 +488,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	displayEnabledForStudentScheduling = new Boolean(false);
     	displayExternalId = new Boolean(false);
     	editExternalId = new Boolean(false);
+    	editSnapshotLimits = new Boolean(false);
     	enableAllClassesForStudentScheduling = "";
     	displayAllClassesInstructors = "";
     	instructionalMethod = null;
@@ -516,6 +519,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
        	subtotalIndexes = DynamicList.getInstance(new ArrayList(), factoryClasses);
        	subtotalLabels = DynamicList.getInstance(new ArrayList(), factoryClasses);
        	subtotalValues = DynamicList.getInstance(new ArrayList(), factoryClasses);
+       	subtotalSnapValues = DynamicList.getInstance(new ArrayList(), factoryClasses);
        	enableAllClassesForStudentSchedulingForSubpart = DynamicList.getInstance(new ArrayList(), factoryClasses);
        	displayAllClassesInstructorsForSubpart = DynamicList.getInstance(new ArrayList(), factoryClasses);
     	classCanMoveUp = DynamicList.getInstance(new ArrayList(), factoryClasses);
@@ -664,6 +668,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	this.setSubtotalIndexes(DynamicList.getInstance(new ArrayList(), factoryClasses));
 		this.setSubtotalLabels(DynamicList.getInstance(new ArrayList(), factoryClasses));
 		this.setSubtotalValues(DynamicList.getInstance(new ArrayList(), factoryClasses));
+		this.setSubtotalSnapValues(DynamicList.getInstance(new ArrayList(), factoryClasses));
 		this.setEnableAllClassesForStudentSchedulingForSubpart(DynamicList.getInstance(new ArrayList(), factoryClasses));
 		this.setDisplayAllClassesInstructorsForSubpart(DynamicList.getInstance(new ArrayList(), factoryClasses));
 		this.setReadOnlySubparts(DynamicList.getInstance(new ArrayList(), factoryClasses));
@@ -674,6 +679,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	Iterator ssIt = this.getSubpartIds().iterator();
     	Iterator limitIt = this.getMinClassLimits().iterator();
     	Iterator cancelIt = this.getIsCancelled().iterator();
+    	Iterator snapLimitIt = (this.getEditSnapshotLimits() ? this.getSnapshotLimits().iterator() : null);
 
     	Boolean enableForScheduling = null;
     	Boolean displayInstructor = null;
@@ -681,17 +687,23 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	while (ssIt.hasNext() && limitIt.hasNext() && cancelIt.hasNext()){
     		Long subpartId = Long.valueOf((String) ssIt.next());
     		Integer limit = new Integer((String) limitIt.next());
+    		Integer snapshotLimit = null;
+    		try {
+    			snapshotLimit = (snapLimitIt == null ? null : Integer.valueOf((String)snapLimitIt.next()));
+    		} catch (NumberFormatException e) {}
     		boolean cancelled = "true".equals(cancelIt.next());
      		enableForScheduling = new Boolean(determineBooleanValueAtIndex(this.getEnabledForStudentScheduling(), cnt));    	   	
      		displayInstructor = new Boolean(determineBooleanValueAtIndex(this.getDisplayInstructors(), cnt));
        	   	readOnlySubpart = new Boolean(determineBooleanValueAtIndex(this.getReadOnlyClasses(), cnt));
      	   	
     		int addLimit = (limit == null || cancelled)?0:limit.intValue();
+    		int snapLimit = (snapshotLimit == null || cancelled? 0 : snapshotLimit.intValue());
     		Integer subtotalIndex = null;
 
     		if (!subpartToIndex.containsKey(subpartId)) {
      			ss = ssDao.get(subpartId);
     			getSubtotalValues().add(addLimit);
+    			getSubtotalSnapValues().add(snapLimit);
     			getEnableAllClassesForStudentSchedulingForSubpart().add(enableForScheduling);
     			getDisplayAllClassesInstructorsForSubpart().add(displayInstructor);
     			getReadOnlySubparts().add(readOnlySubpart);
@@ -705,6 +717,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
         		int oldSubtotal = ((Integer) this.getSubtotalValues().get(subtotalIndex)).intValue();
         		int newSubtotal = oldSubtotal + addLimit;
         		this.getSubtotalValues().set(subtotalIndex.intValue(), newSubtotal);
+        		int oldSnapSubtotal = ((Integer) this.getSubtotalSnapValues().get(subtotalIndex)).intValue();
+        		int newSnapSubtotal = oldSnapSubtotal + snapLimit;
+        		this.getSubtotalSnapValues().set(subtotalIndex.intValue(), newSnapSubtotal);
         		boolean oldEnableForScheduling = ((Boolean) this.getEnableAllClassesForStudentSchedulingForSubpart().get(subtotalIndex)).booleanValue();
         		boolean newEnableForScheduling = oldEnableForScheduling && enableForScheduling.booleanValue();
         		this.getEnableAllClassesForStudentSchedulingForSubpart().set(subtotalIndex, new Boolean(newEnableForScheduling));
@@ -1510,6 +1525,14 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.subtotalValues = subtotalValues;
 	}
 
+	public List getSubtotalSnapValues() {
+		return subtotalSnapValues;
+	}
+
+	public void setSubtotalSnapValues(List subtotalSnapValues) {
+		this.subtotalSnapValues = subtotalSnapValues;
+	}
+
 	public String getEnableAllClassesForStudentScheduling() {
 		return enableAllClassesForStudentScheduling;
 	}
@@ -1622,6 +1645,14 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 
 	public void setEditExternalId(Boolean editExternalId) {
 		this.editExternalId = editExternalId;
+	}
+	
+	public Boolean getEditSnapshotLimits() {
+		return editSnapshotLimits;
+	}
+	
+	public void setEditSnapshotLimits(Boolean editSnapshotLimits) {
+		this.editSnapshotLimits = editSnapshotLimits;
 	}
 
 	public Boolean getDisplayDisplayInstructors() {

@@ -77,6 +77,35 @@
 	
 	// -->
 </SCRIPT>
+<SCRIPT language="javascript">
+	<!--
+	function updateSnapshotTotal(subpartIndex) {
+	    displayInstructors = document.getElementsByName('displayDisplayInstructors')[0].value;
+	    displayEnabledForStudentScheduling = document.getElementsByName('displayEnabledForStudentScheduling')[0].value;
+		subtotalName='subtotalIndexes['+subpartIndex+']';
+		origLimitName='origSnapLimit['+subpartIndex+']';
+		minLimitName='snapshotLimits['+subpartIndex+']';
+		totalIndex=document.getElementsByName(subtotalName)[0].value;
+		subtotalValueName='subtotalSnapValues['+totalIndex+']';
+		subtotalValueName1='subtotal1SnapValues'+totalIndex;
+		if (displayInstructors != 'false' || displayEnabledForStudentScheduling != 'false') {
+			subtotalValueName2='subtotal2SnapValues' + totalIndex;
+		}
+		origTotal=document.getElementsByName(subtotalValueName)[0].value;
+		origSubpartLimit=document.getElementsByName(origLimitName)[0].value;
+		newSubpartLimit=document.getElementsByName(minLimitName)[0].value;
+		if(newSubpartLimit.length == 0 || (newSubpartLimit.search("[^0-9]")) >= 0)
+              { newSubpartLimit = 0;}
+		newTotal=origTotal-origSubpartLimit+(newSubpartLimit-0);
+		document.getElementsByName(subtotalValueName)[0].value=newTotal;
+		document.getElementById(subtotalValueName1).innerHTML=newTotal;
+		if (displayInstructors != 'false' || displayEnabledForStudentScheduling != 'false') {
+			document.getElementById(subtotalValueName2).innerHTML=newTotal;
+		}
+		document.getElementsByName(origLimitName)[0].value=newSubpartLimit;
+	}
+	// -->
+</SCRIPT>
 
 
 <tiles:importAttribute />
@@ -130,6 +159,7 @@
 	<html:hidden property="displaySnapshotLimit"/>
 	<html:hidden property="displayExternalId"/>
 	<html:hidden property="editExternalId"/>
+	<html:hidden property="editSnapshotLimits"/>
 	<html:hidden property="displayDisplayInstructors"/>
 	<html:hidden property="displayEnabledForStudentScheduling"/>
 	<INPUT type="hidden" name="hdnOp" value = "">
@@ -286,6 +316,28 @@
 						</table>
 			</TD>
 		</TR>
+		<logic:equal name="<%=frmName%>" property="editSnapshotLimits" value="true">
+			<logic:notEqual name="<%=frmName%>" property="instrOffrConfigUnlimited" value="true">
+			<TR>
+				<TD valign="top" style="white-space: nowrap; width: 165px;"><loc:message name="propertySchedulingSubpartSnapshotLimits"/></TD>
+				<TD>
+					<table align="left" border="0" cellspacing="0" cellpadding="0">
+						<logic:iterate name="<%=frmName%>" property="subtotalValues" id="v" indexId="ctr">
+						<tr onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='default';" onmouseout="this.style.backgroundColor='transparent';">
+							<td valign="top" align="right" nowrap>
+								<html:hidden property='<%= "subtotalSnapValues[" + ctr + "]" %>'/>
+								<b><%=((String)frm.getSubtotalLabels().get(ctr)).trim()%>:</b> &nbsp;
+							</td>
+							<td align="right" nowrap>
+								<div id='<%= "subtotal1SnapValues" + ctr %>'><bean:write name="<%=frmName%>" property='<%= "subtotalSnapValues[" + ctr + "]" %>'/></div>
+							</td>
+						</tr>
+						</logic:iterate>
+					</table>
+				</TD>
+			</TR>
+			</logic:notEqual>
+		</logic:equal>
 		<TR>
 			<TD colspan="2" align="left">
 				<TABLE align="left" border="0" cellspacing="0" cellpadding="1">
@@ -322,16 +374,15 @@
 							<TD align="center" valign="bottom" rowSpan="2" class='WebTableHeader'><loc:message name="columnEnroll"/></TD>
 							<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
 						</logic:equal>
-						<logic:equal name="<%=frmName%>" property="displaySnapshotLimit" value="true" >
-							<TD align="center" valign="bottom" rowSpan="2" class='WebTableHeader'><loc:message name="columnSnapshotLimit"/></TD>
-							<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
-						</logic:equal>
 						<logic:notEqual name="<%=frmName%>" property="instrOffrConfigUnlimited" value="true">
 							<logic:equal name="<%=frmName%>" property="displayMaxLimit" value="true" >
 								<TD align="center" valign="bottom" colSpan="2" class='WebTableHeaderFirstRow'><loc:message name="columnLimit"/></TD>
 							</logic:equal>
 							<logic:equal name="<%=frmName%>" property="displayMaxLimit" value="false" >
 								<TD align="center" valign="bottom" colSpan="2" rowspan="2" class='WebTableHeader'><loc:message name="columnLimit"/></TD>
+							</logic:equal>
+							<logic:equal name="<%=frmName%>" property="displaySnapshotLimit" value="true" >
+								<TD align="center" valign="bottom" rowSpan="2" class='WebTableHeader'><loc:message name="columnSnapshotLimitBr"/></TD>
 							</logic:equal>
 							<TD align="center" valign="bottom" rowSpan="2" class='WebTableHeader'><loc:message name="columnRoomRatioBr"/></TD>
 							<TD align="center" valign="bottom" rowSpan="2" class='WebTableHeader'><loc:message name="columnNbrRms"/></TD>
@@ -409,7 +460,6 @@
 								<html:hidden property='<%= "canDelete[" + ctr + "]" %>'/>
 								<html:hidden property='<%= "canCancel[" + ctr + "]" %>'/>
 								<html:hidden property='<%= "isCancelled[" + ctr + "]" %>'/>
-								<html:hidden property='<%= "snapshotLimits[" + ctr + "]" %>'/>
 								<%=frm.getClassLabelIndents().get(ctr.intValue()).toString()%>
 								<bean:write name="<%=frmName%>" property='<%= "classLabels[" + ctr + "]" %>'/> 
 								&nbsp;
@@ -485,10 +535,6 @@
 								<TD align="right" valign="top" nowrap><bean:write name="<%=frmName%>" property='<%= "enrollments[" + ctr + "]" %>'/></TD>
 								<TD>&nbsp;</TD>
 							</logic:equal>
-							<logic:equal name="<%=frmName%>" property="displaySnapshotLimit" value="true" >
-								<TD align="right" valign="top" nowrap><bean:write name="<%=frmName%>" property='<%= "snapshotLimits[" + ctr + "]" %>'/></TD>
-								<TD>&nbsp;</TD>
-							</logic:equal>
 							<logic:equal name="<%=frmName%>" property='<%= "isCancelled[" + ctr + "]" %>' value="true" >
 								<html:hidden property='<%= "minClassLimits[" + ctr + "]" %>'/>
 								<html:hidden property='<%= "maxClassLimits[" + ctr + "]" %>'/>
@@ -498,7 +544,8 @@
 								<html:hidden property='<%= "datePatterns[" + ctr + "]" %>'/>
 								<html:hidden property='<%= "displayInstructors[" + ctr + "]" %>'/>
 								<html:hidden property='<%= "enabledForStudentScheduling[" + ctr + "]" %>'/>
-								<TD colspan="8" style="font-style: italic;">
+								<html:hidden property='<%= "snapshotLimits[" + ctr + "]" %>'/>
+								<TD colspan="<%=(frm.getDisplaySnapshotLimit() ? "9" : "8")%>" style="font-style: italic;">
 									<loc:message name="classNoteCancelled"><bean:write name="<%=frmName%>" property='<%= "classLabels[" + ctr + "]" %>'/></loc:message>
 								</TD>
 							</logic:equal>
@@ -508,6 +555,7 @@
 								<html:hidden property='<%= "maxClassLimits[" + ctr + "]" %>'/>
 								<html:hidden property='<%= "roomRatios[" + ctr + "]" %>'/>
 								<html:hidden property='<%= "numberOfRooms[" + ctr + "]" %>'/>
+								<html:hidden property='<%= "snapshotLimits[" + ctr + "]" %>'/>
 							</logic:equal>
 							<logic:notEqual name="<%=frmName%>" property="instrOffrConfigUnlimited" value="true">							
 							<TD align="left" nowrap valign="top">
@@ -537,6 +585,25 @@
 								<TD align="left" valign="top" nowrap>
 									<html:hidden property='<%= "maxClassLimits[" + ctr + "]" %>'/>
 								</TD>
+							</logic:equal>
+							<logic:equal name="<%=frmName%>" property="displaySnapshotLimit" value="true" >
+								<logic:notEqual name="<%=frmName%>" property="editSnapshotLimits" value="true">
+									<html:hidden property='<%= "snapshotLimits[" + ctr + "]" %>'/>
+									<TD align="right" valign="top" nowrap><bean:write name="<%=frmName%>" property='<%= "snapshotLimits[" + ctr + "]" %>'/>&nbsp;&nbsp;&nbsp;</TD>
+								</logic:notEqual>
+								<logic:equal name="<%=frmName%>" property="editSnapshotLimits" value="true" >
+									<TD align="center" valign="top" nowrap>
+									<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
+										<html:hidden property='<%= "origSnapLimit[" + ctr + "]" %>' value="<%= (String)frm.getSnapshotLimits().get(ctr) %>"/>
+										<html:text name="<%=frmName%>" property='<%= "snapshotLimits[" + ctr + "]" %>' tabindex="<%=java.lang.Integer.toString(5000 + ctr.intValue())%>"
+											maxlength="5" size="4" onchange="<%= \"updateSnapshotTotal(\" + ctr + \");\"%>"/>
+									</logic:equal>
+									<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="true" >
+										<html:hidden property='<%= "snapshotLimits[" + ctr + "]" %>'/>
+										<bean:write name="<%=frmName%>" property='<%= "snapshotLimits[" + ctr + "]" %>'/>
+									</logic:equal>
+									</TD>
+								</logic:equal>
 							</logic:equal>
 							<TD align="left" valign="top" nowrap>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
@@ -704,6 +771,27 @@
 							</table>
 			</td>
 		</tr>
+		<logic:equal name="<%=frmName%>" property="editSnapshotLimits" value="true">
+			<logic:notEqual name="<%=frmName%>" property="instrOffrConfigUnlimited" value="true">
+			<TR>
+				<TD valign="top" style="white-space: nowrap; width: 165px;"><loc:message name="propertySchedulingSubpartSnapshotLimits"/></TD>
+				<TD>
+					<table align="left" border="0" cellspacing="0" cellpadding="0">
+						<logic:iterate name="<%=frmName%>" property="subtotalValues" id="v" indexId="ctr">
+						<tr onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='default';" onmouseout="this.style.backgroundColor='transparent';">
+							<td valign="top" align="right" nowrap>
+								<b><%=((String)frm.getSubtotalLabels().get(ctr)).trim()%>:</b> &nbsp;
+							</td>
+							<td align="right" nowrap>
+								<div id='<%= "subtotal2SnapValues" + ctr %>'><bean:write name="<%=frmName%>" property='<%= "subtotalSnapValues[" + ctr + "]" %>'/></div>
+							</td>
+						</tr>
+						</logic:iterate>
+					</table>
+				</TD>
+			</TR>
+			</logic:notEqual>
+		</logic:equal>
 	<% } %>
 		
 		

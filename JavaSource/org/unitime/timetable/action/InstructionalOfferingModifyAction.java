@@ -288,6 +288,7 @@ public class InstructionalOfferingModifyAction extends Action {
         frm.setDisplayEnabledForStudentScheduling(ApplicationProperty.ClassSetupEnabledForStudentScheduling.isTrue());
         frm.setDisplayExternalId(ApplicationProperty.ClassSetupShowExternalIds.isTrue() && !ApplicationProperty.ClassSetupEditExternalIds.isTrue());
         frm.setEditExternalId(ApplicationProperty.ClassSetupEditExternalIds.isTrue());
+        frm.setEditSnapshotLimits(ApplicationProperty.ClassSetupEditSnapshotLimits.isTrue() && io.getSnapshotLimitDate() != null);
         frm.setInstructionalMethod(ioc.getInstructionalMethod() == null ? -1l : ioc.getInstructionalMethod().getUniqueId());
         frm.setInstructionalMethodDefault(io.getSession().getDefaultInstructionalMethod() == null ? null : io.getSession().getDefaultInstructionalMethod().getLabel());
 
@@ -677,6 +678,7 @@ public class InstructionalOfferingModifyAction extends Action {
 		Iterator it10 = frm.getDisplayInstructors().listIterator();
 		Iterator it11 = frm.getEnabledForStudentScheduling().listIterator();
 		Iterator it12 = (frm.getEditExternalId() ? frm.getExternalIds().listIterator() : null);
+		Iterator it13 = (frm.getEditSnapshotLimits() ? frm.getSnapshotLimits().listIterator() : null);
 
 		for(;it1.hasNext();){
 			Long classId = new Long(it1.next().toString());
@@ -720,6 +722,10 @@ public class InstructionalOfferingModifyAction extends Action {
 			}
 			String suffix = (it12 == null ? null : it12.next().toString());
 			if (suffix != null && suffix.isEmpty()) suffix = null;
+			Integer snapshotLimit = null;
+			try {
+				snapshotLimit = (it13 == null ? null : Integer.valueOf(it13.next().toString()));
+			} catch (NumberFormatException e) {}
 
 			if (classId.longValue() < 0){
 				Class_ newClass = new Class_();
@@ -749,6 +755,7 @@ public class InstructionalOfferingModifyAction extends Action {
 				newClass.setDisplayInstructor(displayInstructor);
 				newClass.setEnabledForStudentScheduling(enabledForStudentScheduling);
 				newClass.setClassSuffix(suffix);
+				newClass.setSnapshotLimit(snapshotLimit);
 				newClass.setCancelled(false);
 
 				hibSession.save(newClass);
@@ -778,6 +785,7 @@ public class InstructionalOfferingModifyAction extends Action {
 		Iterator it10 = frm.getParentClassIds().listIterator();
 		Iterator it11 = (frm.getEditExternalId() ? frm.getExternalIds().listIterator() : null);
 		Iterator it12 = frm.getIsCancelled().listIterator();
+		Iterator it13 = (frm.getEditSnapshotLimits() ? frm.getSnapshotLimits().listIterator() : null);
 
 		for(;it1.hasNext();){
 			Long classId = new Long(it1.next().toString());
@@ -814,6 +822,10 @@ public class InstructionalOfferingModifyAction extends Action {
 			}
 			String suffix = (it11 != null ? it11.next().toString() : null);
 			Boolean cancelled = new Boolean("true".equals(it12.next()));
+			Integer snapshotLimit = null;
+			try {
+				snapshotLimit = (it13 == null ? null : Integer.valueOf(it13.next().toString()));
+			} catch (NumberFormatException e) {}
 
 			Long parentClassId = null;
 			String parentClassIdString = (String) it10.next();
@@ -905,6 +917,12 @@ public class InstructionalOfferingModifyAction extends Action {
 					if (suffix.isEmpty()) suffix = null;
 					if (suffix == null ? modifiedClass.getClassSuffix() != null : !suffix.equals(modifiedClass.getClassSuffix())) {
 						modifiedClass.setClassSuffix(suffix);
+						changed = true;
+					}
+				}
+				if (frm.getEditSnapshotLimits()) {
+					if (snapshotLimit == null ? modifiedClass.getSnapshotLimit() != null : !snapshotLimit.equals(modifiedClass.getSnapshotLimit())) {
+						modifiedClass.setSnapshotLimit(snapshotLimit);
 						changed = true;
 					}
 				}
