@@ -146,7 +146,10 @@ public class XCourseRequest extends XRequest {
     		}
         }
         iWaitlist = (demand.isWaitlist() != null && demand.isWaitlist());
-        iCritical = (demand.isCritical() != null && demand.isCritical());
+        if (demand.getCriticalOverride() != null)
+        	iCritical = demand.getCriticalOverride();
+        else
+        	iCritical = (demand.isCritical() != null && demand.isCritical());
         iTimeStamp = (demand.getTimestamp() == null ? new Date() : demand.getTimestamp());
         for (CourseRequest cr: crs) {
     		List<StudentClassEnrollment> enrl = cr.getClassEnrollments();

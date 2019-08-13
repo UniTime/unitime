@@ -57,6 +57,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Conflict;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Student;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.gwt.shared.UserAuthenticationProvider;
@@ -129,7 +130,12 @@ public class EnrollmentTable extends Composite {
 		iOnline = online;
 		iEnrollmentPanel = new SimpleForm();
 		iEnrollmentPanel.addStyleName("unitime-StudentEnrollmentsTable");
-		iStudentSchedule = new StudentSchedule(online);
+		iStudentSchedule = new StudentSchedule(online) {
+			@Override
+			protected void setCritical(Long studentId, Request request, Boolean critical, final AsyncCallback<Boolean> callback) {
+				iSectioningService.changeCriticalOverride(studentId, request.getRequestedCourse(0).getCourseId(), critical, callback);
+			}
+		};
 		iShowFilter = showFilter;
 		
 		iHeader = new UniTimeHeaderPanel(showHeader ? MESSAGES.enrollmentsTable() : "&nbsp;");

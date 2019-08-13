@@ -119,6 +119,7 @@ import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.StudentSectioningStatus.Option;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.CourseDemandDAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.CourseTypeDAO;
 import org.unitime.timetable.model.dao.CurriculumDAO;
@@ -181,6 +182,7 @@ import org.unitime.timetable.onlinesectioning.updates.ChangeStudentStatus;
 import org.unitime.timetable.onlinesectioning.updates.EnrollStudent;
 import org.unitime.timetable.onlinesectioning.updates.MassCancelAction;
 import org.unitime.timetable.onlinesectioning.updates.RejectEnrollmentsAction;
+import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
 import org.unitime.timetable.onlinesectioning.updates.SaveStudentRequests;
 import org.unitime.timetable.onlinesectioning.updates.StudentEmail;
 import org.unitime.timetable.security.SessionContext;
@@ -1675,10 +1677,14 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						}
 						
 						ret.setRequest(getRequest(student));
+						ret.setCanSetCriticalOverrides(getSessionContext().hasPermission(student, Right.StudentSchedulingChangeCriticalOverride));
 						
 						return ret;
 					} else {
-						return server.execute(server.createAction(GetAssignment.class).forStudent(studentId).withRequest(true).withCustomCheck(true), currentUser());
+						ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(studentId).withRequest(true).withCustomCheck(true), currentUser());
+						ret.setCanSetCriticalOverrides(getSessionContext().hasPermission(student, Right.StudentSchedulingChangeCriticalOverride));
+						
+						return ret;
 					}
 				} finally {
 					hibSession.close();
@@ -2264,7 +2270,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							request.getCourses().add(r);
 					}
 					r.setWaitList(cd.getWaitlist());
-					r.setCritical(cd.isCritical());
+					if (cd.isCriticalOverride() != null)
+						r.setCritical(cd.isCriticalOverride());
+					else
+						r.setCritical(cd.isCritical());
 					r.setTimeStamp(cd.getTimestamp());
 					lastRequest = r;
 					lastRequestPriority = cd.getPriority();
@@ -3187,5 +3196,36 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				last.addGradeMode(e.getKey(), e.getValue().getCode(), e.getValue().getLabel(), e.getValue().isHonor());
 		
 		return ret;
+	}
+
+	@Override
+	public Boolean changeCriticalOverride(Long studentId, Long courseId, Boolean critical) throws SectioningException, PageAccessException {
+		getSessionContext().checkPermission(studentId, Right.StudentSchedulingChangeCriticalOverride);
+		
+		try {
+			
+			org.hibernate.Session hibSession = CourseDemandDAO.getInstance().getSession();
+			CourseDemand cd = (CourseDemand)hibSession.createQuery(
+					"select cr.courseDemand from CourseRequest cr where cr.courseOffering = :courseId and cr.courseDemand.student = :studentId"
+					).setLong("studentId", studentId).setLong("courseId", courseId).setMaxResults(1).uniqueResult();
+			if (cd == null) return null;
+			
+			cd.setCriticalOverride(critical);
+			hibSession.save(cd);
+			hibSession.flush();
+			
+			OnlineSectioningServer server = getServerInstance(cd.getStudent().getSession().getUniqueId(), false);
+			if (server != null)
+				server.execute(server.createAction(ReloadStudent.class).forStudents(studentId), currentUser());
+			
+			return (cd.isCriticalOverride() != null ? cd.isCriticalOverride().booleanValue() : cd.isCritical() != null ? cd.isCritical().booleanValue() : false);
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (SectioningException e) {
+			throw e;
+		} catch (Exception e) {
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException("Failed to update critical status: " + e.getMessage(), e);
+		}
 	}
 }

@@ -678,6 +678,7 @@ public class WebTable extends Composite implements HasMobileScroll {
 		
 		public String getValue() { return (iPanel == null ? iIcon.getTitle() : iLabel.getText()); }
 		public Widget getWidget() { return (iPanel == null ? iIcon : iPanel); }
+		public Image getIcon() { return iIcon; }
 		public void setStyleName(String styleName) {
 			super.setStyleName(styleName);
 			if (iLabel != null) {

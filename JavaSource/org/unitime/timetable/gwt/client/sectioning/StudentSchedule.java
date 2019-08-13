@@ -27,9 +27,11 @@ import java.util.Map;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTabPanel;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.MenuBarWithAccessKeys;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
@@ -43,16 +45,25 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Cursor;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.TakesValue;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * @author Tomas Muller
@@ -153,7 +164,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 	
 	protected void fillInRequests() {
 		ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
-		boolean hasPref = false, hasWarn = false, hasWait = false, hasStat = false, hasCrit = false;
+		boolean hasPref = false, hasWarn = false, hasWait = false, hasStat = false, hasCrit = iAssignment.isCanSetCriticalOverrides();
 		NumberFormat df = NumberFormat.getFormat("0.#");
 		if (iAssignment.hasRequest()) {
 			CheckCoursesResponse check = new CheckCoursesResponse(iAssignment.getRequest().getConfirmations());
@@ -236,7 +247,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								new WebTable.Cell(ToolBox.toString(prefs)),
 								new WebTable.NoteCell(note, noteTitle),
 								(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
-								(first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") : new WebTable.Cell("")),
+								(first && iAssignment.isCanSetCriticalOverrides() ? new CriticalCell(request) : first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") : new WebTable.Cell("")),
 								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell("")),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
 								);
@@ -344,7 +355,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								new WebTable.Cell(ToolBox.toString(prefs)),
 								new WebTable.NoteCell(note, noteTitle),
 								(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
-								(first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") : new WebTable.Cell("")),
+								(first && iAssignment.isCanSetCriticalOverrides() ? new CriticalCell(request) : first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") : new WebTable.Cell("")),
 								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell("")),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
 								);
@@ -624,5 +635,84 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 	
 	public void setSelectionHandler(SelectionHandler<Integer> handler) {
 		iHandler = handler;
+	}
+	
+	protected void setCritical(Long studentId, Request request, Boolean critical, AsyncCallback<Boolean> callback) {
+		callback.onSuccess(request.isCritical());
+	}
+	
+	class CriticalCell extends WebTable.IconCell {
+		private Request iRequest;
+		
+		CriticalCell(Request request) {
+			super(request.isCritical() ? RESOURCES.requestsCritical() : RESOURCES.requestsNotCritical(), "", null);
+			getIcon().setTitle(request.isCritical() ? MESSAGES.descriptionRequestCritical() : MESSAGES.descriptionRequestNotCritical());
+			getIcon().setAltText(request.isCritical() ? MESSAGES.descriptionRequestCritical() : MESSAGES.descriptionRequestNotCritical());
+			iRequest = request;
+			getIcon().getElement().getStyle().setCursor(Cursor.POINTER);
+			getIcon().addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					final PopupPanel popup = new PopupPanel(true);
+					popup.addStyleName("unitime-Menu");
+					MenuBar menu = new MenuBarWithAccessKeys();
+					
+					MenuItem item1 = new MenuItem(MESSAGES.opSetCritical(), true, new Command() {
+						@Override
+						public void execute() {
+							popup.hide();
+							change(true);
+						}
+					});
+					menu.addItem(item1);
+					
+					MenuItem item2 = new MenuItem(MESSAGES.opSetNotCritical(), true, new Command() {
+						@Override
+						public void execute() {
+							popup.hide();
+							change(false);
+						}
+					});
+					menu.addItem(item2);
+					
+					MenuItem item3 = new MenuItem(MESSAGES.opSetCriticalNotSet(), true, new Command() {
+						@Override
+						public void execute() {
+							popup.hide();
+							change(null);
+						}
+					});
+					menu.addItem(item3);
+					menu.setVisible(true);
+					
+					popup.add(menu);
+					popup.showRelativeTo((Widget)event.getSource());
+					((MenuBar)popup.getWidget()).focus();
+				}
+			});
+		}
+		
+		void change(Boolean value) {
+			setCritical(iAssignment.getRequest().getStudentId(), iRequest, value, new AsyncCallback<Boolean>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					UniTimeNotifications.error(caught);
+				}
+
+				@Override
+				public void onSuccess(Boolean result) {
+					if (result == null) return;
+					if (result) {
+						getIcon().setResource(RESOURCES.requestsCritical());
+						getIcon().setTitle(MESSAGES.descriptionRequestCritical());
+						getIcon().setAltText(MESSAGES.descriptionRequestCritical());
+					} else {
+						getIcon().setResource(RESOURCES.requestsNotCritical());
+						getIcon().setTitle(MESSAGES.descriptionRequestNotCritical());
+						getIcon().setAltText(MESSAGES.descriptionRequestNotCritical());
+					}
+				}
+			});
+		}
 	}
 }

@@ -127,6 +127,8 @@ public class StudentSectioningExport extends BaseExport {
 	        					courseOfferingEl.addAttribute("alternative", "true");
 	        				if (first && cd.getCritical() != null)
 	        					courseOfferingEl.addAttribute("critical", cd.isCritical() ? "true" : "false");
+	        				if (first && cd.getCriticalOverride() != null)
+	        					courseOfferingEl.addAttribute("criticalOverride", cd.getCriticalOverride() ? "true" : "false");
 	        				if (cr.getCredit() != null && cr.getCredit() != 0)
 	        					courseOfferingEl.addAttribute("credit", String.valueOf(cr.getCredit()));
 	        				for (StudentClassEnrollment enrollment: cr.getClassEnrollments()) {

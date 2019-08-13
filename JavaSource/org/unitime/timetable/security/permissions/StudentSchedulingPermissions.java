@@ -417,4 +417,31 @@ public class StudentSchedulingPermissions {
 		@Override
 		public Class<Student> type() { return Student.class; }
 	}
+	
+	@PermissionForRight(Right.StudentSchedulingChangeCriticalOverride)
+	public static class StudentSchedulingChangeCriticalOverride implements Permission<Student> {
+		@Autowired PermissionSession permissionSession;
+
+		@Override
+		public boolean check(UserContext user, Student source) {
+			if (!permissionSession.check(user, source.getSession())) return false;
+			
+			if (user.getCurrentAuthority().hasRight(Right.StudentSchedulingAdmin))
+				return true;
+			
+			if (user.getCurrentAuthority().hasRight(Right.StudentSchedulingAdvisor)) {
+				if (user.getCurrentAuthority().hasRight(Right.StudentSchedulingAdvisorCanModifyAllStudents))
+					return true;
+				if (user.getCurrentAuthority().hasRight(Right.StudentSchedulingAdvisorCanModifyMyStudents)) {
+					for (Advisor advisor: source.getAdvisors())
+						if (advisor.getRole().getReference().equals(user.getCurrentAuthority().getRole()) && advisor.getExternalUniqueId().equals(user.getExternalUserId()))
+							return true;
+				}
+			}
+			return false;
+		}
+
+		@Override
+		public Class<Student> type() { return Student.class; }
+	}
 }
