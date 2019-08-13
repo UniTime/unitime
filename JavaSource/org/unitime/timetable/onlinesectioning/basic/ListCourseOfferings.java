@@ -139,8 +139,8 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 				p -= 3 * (ca.getEnrollment());
 			if (ca.getRequested() != null)
 				p -= ca.getRequested();
-			if (p != 0) {
-				//System.out.println(ca.getCourseName() + ", " + p + ", limit: " + ca.getLimit() + ", enrollment: " + ca.getEnrollment() + ", requested: " + ca.getRequested());
+			if (p > 0) {
+				// System.out.println(ca.getCourseName() + ", " + p + ", limit: " + ca.getLimit() + ", enrollment: " + ca.getEnrollment() + ", requested: " + ca.getRequested());
 				roulette.add(ca, p);
 			}
 		}
