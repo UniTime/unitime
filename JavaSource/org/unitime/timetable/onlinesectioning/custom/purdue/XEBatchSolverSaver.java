@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -223,6 +225,16 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		}
 	}
 	
+	protected int countUsedOverLimitReservations(Student s) {
+		int ret = 0;
+		for (Request r: s.getRequests()) {
+			Enrollment e = getAssignment().getValue(r);
+			if (e != null && e.getReservation() != null && e.getReservation().canAssignOverLimit())
+				ret ++;
+		}
+		return ret;
+	}
+	
 	public void save(Session session, org.hibernate.Session hibSession) {
 		setPhase("Loading classes...", 1);
 		iClasses = new Hashtable<Long, Class_>();
@@ -244,17 +256,33 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
         incProgress();
             
 		setPhase("Enrolling students...", getModel().getStudents().size());
+		List<Student> students = new ArrayList<Student>(getModel().getStudents());
+		Collections.sort(students, new Comparator<Student>() {
+			@Override
+			public int compare(Student s1, Student s2) {
+				int r1 = countUsedOverLimitReservations(s1);
+				int r2 = countUsedOverLimitReservations(s2);
+				if (r1 != r2)
+					return r1 < r2 ? -1 : 1;
+				
+				int cmp = (s1.getExternalId() == null ? "" : s1.getExternalId()).compareTo(s2.getExternalId() == null ? "" : s2.getExternalId());
+				if (cmp != 0)
+					return cmp;
+				return s1.compareTo(s2);
+			}
+		});
+		
 		if (iNrThreads <= 1) {
-			for (Student student: getModel().getStudents()) {
+			for (Student student: students) {
 	            incProgress();
 	            if (student.isDummy()) continue;
 	            saveStudent(student);
 	        }
 		} else {
 			List<Worker> workers = new ArrayList<Worker>();
-			Iterator<Student> students = getModel().getStudents().iterator();
+			Iterator<Student> studentsIterator = students.iterator();
 			for (int i = 0; i < iNrThreads; i++)
-				workers.add(new Worker(i, students));
+				workers.add(new Worker(i, studentsIterator));
 			for (Worker worker: workers) worker.start();
 			for (Worker worker: workers) {
 				try {
