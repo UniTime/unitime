@@ -64,7 +64,7 @@ public class ContactCategories implements AdminTable {
 				new Field(MESSAGES.fieldHasRole(), FieldType.toggle, 40),
 				new Field(MESSAGES.fieldEmailAddress(), FieldType.textarea, 50, 3, 1000)
 				);
-		data.setSortBy(1);
+		data.setSortBy(0);
 		for (ContactCategory cc: (List<ContactCategory>)ContactCategoryDAO.getInstance().getSession().createQuery(
 				"from ContactCategory order by reference").list()) {
 			Record r = data.addRecord(cc.getUniqueId());
