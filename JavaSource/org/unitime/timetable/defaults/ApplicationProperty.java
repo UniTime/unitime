@@ -2580,6 +2580,21 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Reservations: only require locking when there is a wait-listed request")
 	ReservationLockCheckWaitList("unitime.reservation.lockingCheckWaitList"),
+	
+	@Type(String.class)
+	@DefaultValue("availability")
+	@Description("Course Finder: selection model for the Select All button (availability, limit, or snapshot)")
+	ListCourseOfferingsSelectionMode("unitime.enrollment.listOfferings.selectionMode"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Course Finder: use random selection for Select All button")
+	ListCourseOfferingsSelectionRandomize("unitime.enrollment.listOfferings.rouletteWheel"),
+	
+	@Type(Integer.class)
+	@DefaultValue("10")
+	@Description("Course Finder: maximum courses for Select All button")
+	ListCourseOfferingsSelectionLimit("unitime.enrollment.listOfferings.limit"),
 	;
 
 	String iKey;

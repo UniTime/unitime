@@ -316,15 +316,21 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								course.setHasCrossList(c.getInstructionalOffering().hasCrossList());
 								boolean unlimited = false;
 								int courseLimit = 0;
+								int snapshotLimit = 0;
 								for (Iterator<InstrOfferingConfig> i = c.getInstructionalOffering().getInstrOfferingConfigs().iterator(); i.hasNext(); ) {
 									InstrOfferingConfig cfg = i.next();
 									if (cfg.isUnlimitedEnrollment()) unlimited = true;
 									if (cfg.getLimit() != null) courseLimit += cfg.getLimit();
+									Integer snapshot = cfg.getSnapShotLimit();
+									if (snapshot != null)
+										snapshotLimit += snapshot.intValue();
+									
 								}
 								if (c.getReservation() != null)
 									courseLimit = c.getReservation();
 					            if (courseLimit >= 9999) unlimited = true;
 								course.setLimit(unlimited ? -1 : courseLimit);
+								course.setSnapShotLimit(snapshotLimit);
 								course.setProjected(c.getProjectedDemand());
 								course.setEnrollment(c.getEnrollment());
 								course.setLastLike(c.getDemand());

@@ -133,7 +133,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private boolean iAssigned = true, iTeachingAssigment = false;
 		private String iSubject, iCourseNbr, iTitle, iNote, iCreditText = null, iCreditAbbv = null;
 		private boolean iHasUniqueName = true, iHasCrossList = false;
-		private Integer iLimit = null, iProjected = null, iEnrollment = null, iLastLike = null, iRequested = null;
+		private Integer iLimit = null, iProjected = null, iEnrollment = null, iLastLike = null, iRequested = null, iSnapShotLimit = null;
 		
 		private ArrayList<String> iOverlaps = null;
 		private boolean iNotAvailable = false, iFull = false, iLocked = false;
@@ -247,6 +247,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			if (iLimit < 0) return "&infin;";
 			return iLimit.toString();
 		}
+		
+		public Integer getSnapShotLimit() { return iSnapShotLimit; }
+		public void setSnapShotLimit(Integer limit) { iSnapShotLimit = limit; }
 		
 		public Integer getProjected() { return iProjected; }
 		public void setProjected(Integer projected) { iProjected = projected; }
