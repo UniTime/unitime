@@ -42,6 +42,7 @@ public class XCredit implements Serializable, Externalizable {
 	private String iText;
 	private float iMin = 0f;
 	private float iMax = 0f;
+	private static Pattern sCreditPattern = Pattern.compile("(^| )(\\d+\\.?\\d*)([,-]?(\\d+\\.?\\d*))?($| )");
 	
 	public XCredit() {}
 	
@@ -62,7 +63,7 @@ public class XCredit implements Serializable, Externalizable {
     		iAbbreviation = credit;
     		iText = credit;
     	}
-    	Matcher m = Pattern.compile("(^| )(\\d+\\.?\\d*)([,-]?(\\d+\\.?\\d*))?($| )").matcher(iAbbreviation);
+    	Matcher m = sCreditPattern.matcher(iAbbreviation);
     	if (m.find()) {
     		iMin = Float.parseFloat(m.group(2));
     		if (m.group(4) != null)
