@@ -20,6 +20,7 @@
 package org.unitime.timetable.onlinesectioning.basic;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -133,9 +134,11 @@ public class CourseRequestEligibility extends CheckEligibility {
 				else if (noreg)
 					iCheck.setMessage(MSG.exceptionRegistrationDisabled());
 
-				String effectivePeriod = (s != null ? s.getEffectivePeriod() : status != null ? status.getEffectivePeriod() : null);
-				if (effectivePeriod != null)
-					iCheck.setMessage((iCheck.hasMessage() ? iCheck.getMessage() + "\n" : "") + MSG.messageTimeWindow(effectivePeriod));
+				if (ApplicationProperty.StudentStatusEffectivePeriodMessage.isTrue()) {
+					String effectivePeriod = (s != null ? s.getEffectivePeriod() : status != null ? status.getEffectivePeriod() : null);
+					if (effectivePeriod != null)
+						iCheck.setMessage((iCheck.hasMessage() ? iCheck.getMessage() + "\n" : "") + MSG.messageTimeWindow(effectivePeriod));
+				}
 				
 				if (iCustomCheck) {
 					if (CustomCourseRequestsValidationHolder.hasProvider())
