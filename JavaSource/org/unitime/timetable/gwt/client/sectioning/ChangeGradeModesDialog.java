@@ -185,6 +185,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 				GradeModeChange change = null;
 				boolean hasPendingGradeMode = false;
 				for (ClassAssignmentInterface.ClassAssignment clazz: iEnrollment) {
+					if (clazz == null) continue;
 					SpecialRegistrationGradeModeChanges gradeMode = result.get(clazz);
 					if (gradeMode == null) continue;
 					if (clazz.getParentSection() != null && clazz.getParentSection().equals(clazz.getSection())) continue;
