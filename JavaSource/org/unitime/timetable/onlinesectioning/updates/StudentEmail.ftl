@@ -36,9 +36,9 @@
  				</tr>
  			</table></td></tr>
  			
- 			<#if message??>
+ 			<#if message?? && message?has_content>
  				<tr><td style="width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;">${msg.emailMessage()}</td></tr>
- 				<tr><td>${message?replace("\n", "<br>")}</td></tr>
+ 				<tr><td style="white-space: pre-wrap;">${message}</td></tr>
  			</#if>
  			
  			<#if changedCourse??>
@@ -66,6 +66,20 @@
  				</table></tr></tr>
  			</#if>
  			
+ 			<#if requests??>
+ 				<tr><td style="width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;">${msg.emailCourseRequests()}</td></tr>
+ 				<#if requests.lines??>
+ 					<tr><td><table width="100%">
+ 						<@courseRequestsHeader/>
+ 						<#list requests.lines as line>
+ 							<@courseRequestsLine line/>
+ 						</#list>
+ 					</table></td></tr>
+ 				<#else>
+ 					<tr><td style="color: red; text-align: center; font-style: italic; font-weight: normal;">${msg.emptyRequests()}</td></tr>
+ 				</#if>
+ 			</#if>
+ 			
  			<#if classes??>
  				<tr><td style="width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;">${msg.emailClassList()}</td></tr>
  				<#if classes?size == 0>
@@ -76,10 +90,13 @@
  						<#list classes as line>
  							<@classTableLine line/>
  						</#list>
+		 				<#if credit??>
+ 							<tr><td colspan="13" style="text-align: center;">${msg.totalCredit(credit)}</td></tr>
+ 						</#if>
  						<#if link??>
  							<tr><td colspan="13" style="font-size: 9pt; font-style: italic; color: #9CB0CE; text-align: right; margin-top: -2px; white-space: nowrap;">${msg.emailLinkToUniTime(link)}</td></tr>
  						</#if>
- 					</table></tr></tr
+ 					</table></td></tr>
  				</#if>
  			</#if>
  			
@@ -207,4 +224,59 @@
 		<td colspan='2'></td>
 		<td colspan='11'>${note}</td>
 	</tr>
+</#macro>
+
+<#macro courseRequestsHeader>
+ 	<tr>
+ 		<#assign style="white-space: nowrap; font-weight: bold; padding-top: 5px; border-bottom: 1px dashed #9CB0CE;">
+ 		<td style="${style}">${msg.colPriority()}</td>
+ 		<td style="${style}">${msg.colCourse()}</td>
+ 		<td style="${style}">${msg.colTitle()}</td>
+ 		<td style="${style}">${msg.colCredit()}</td>
+ 		<#if requests.hasPref><td style="${style}">${msg.colPreferences()}</td></#if>
+ 		<#if requests.hasWarn><td style="${style}">${msg.colWarnings()}</td></#if>
+ 		<td style="${style}">${msg.colStatus()}</td>
+ 		<#if requests.hasWait><td style="${style}">${msg.colWaitList()}</td></#if>
+ 	</tr>
+</#macro>
+
+<#macro courseRequestsLine line>
+	<#assign style="white-space: nowrap; vertical-align: top;">
+	<#if line.first>
+		<#assign style="border-top: 1px dashed #9CB0CE; white-space: nowrap; vertical-align: top;">
+	</#if>
+	<#if line.firstalt>
+		<#assign style="border-top: 1px solid #9CB0CE; white-space: nowrap; vertical-align: top;">
+	</#if>
+	<#if line.last>
+		<#assign style="border-top: 1px solid #9CB0CE; white-space: nowrap; vertical-align: top;">
+	</#if>
+ 	<tr>
+ 		<#if line.last>
+ 			<td style="${style} font-weight: bold;" colspan='2'>${line.courseName}</td>
+ 		<#else>
+ 			<td style="${style}">${line.priority}</td>
+ 			<td style="${style}">${line.courseName}</td>
+ 		</#if>
+ 		<td style="${style}">${line.courseTitle}</td>
+ 		<td style="${style}">${line.credit}</td>
+ 		<#if requests.hasPref><td style="${style}">${line.prefs}</td></#if>
+ 		<#if requests.hasWarn>
+ 			<#if line.note?? && line.note?has_content>
+ 				<td style="${style} white-space: pre-wrap;">${line.note}</td>
+ 			<#else>
+ 				<td style="${style}"></td>
+ 			</#if>
+ 		</#if>
+ 		<#if line.icon?? && line.icon?has_content>
+ 			<td style="${style}"><img src='http://www.unitime.org/icons/${line.icon}' width='16' height='16' alt='' title='${line.iconText}' style='padding-right:3px;'> ${line.status}</td>
+ 		<#else>
+ 			<td style="${style}">${line.status}</td>
+ 		</#if>
+ 		<#if requests.hasWait><td style="${style}">
+ 			<#if line.waitlist>
+ 				<img src='http://www.unitime.org/icons/action_check.png' width='16' height='16' title='${msg.descriptionRequestWaitListed()}' alt='${msg.courseWaitListed()}'>
+ 			</#if>
+ 		</td></#if>
+ 	</tr>
 </#macro>

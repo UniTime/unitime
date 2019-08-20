@@ -264,7 +264,7 @@ public class StudentSchedulingPermissions {
 	public static class StudentSchedulingEmailStudent extends SimpleSessionPermission {
 		@Override
 		public boolean check(UserContext user, Session source) {
-			return super.check(user, source) && source.getStatusType().can(Status.StudentsOnline) && ApplicationProperty.OnlineSchedulingEmailConfirmation.isTrue();
+			return super.check(user, source);// && source.getStatusType().can(Status.StudentsOnline) && ApplicationProperty.OnlineSchedulingEmailConfirmation.isTrue();
 		}
 	}
 

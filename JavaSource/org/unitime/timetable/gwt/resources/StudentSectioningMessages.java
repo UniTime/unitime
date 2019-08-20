@@ -1313,6 +1313,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Message")
 	String emailMessage();
 	
+	@DefaultMessage("Course Requests")
+	String emailCourseRequests();
+	
 	@DefaultMessage("List of Classes")
 	String emailClassList();
 	
@@ -1354,7 +1357,6 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Course {0} {1} dropped due to a reject.")
 	String emailCourseDropReject(String subject, String courseNbr);
-	
 
 	@DefaultMessage("Course {0} {1} dropped due to a course change.")
 	String emailCourseDropChange(String subject, String courseNbr);

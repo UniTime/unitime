@@ -44,6 +44,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.util.Formats;
 
 import com.google.gwt.i18n.client.Constants;
 import com.google.gwt.i18n.client.Messages;
@@ -163,8 +164,15 @@ public class Localization {
 		
 		private String fillArgumentsIn(String value, Object[] args, int firstIndex) {
 			if (value == null || args == null) return value;
-			for (int i = 0; i + firstIndex < args.length; i++)
+			for (int i = 0; i + firstIndex < args.length; i++) {
 				value = value.replace("{" + i + "}", (args[i + firstIndex] == null ? "" : args[i + firstIndex].toString()));
+				if (value.indexOf("{" + i + ",number,") >= 0) {
+					int idx = value.indexOf("{" + i + ",number,");
+					String pattern = value.substring(idx + ("{" + i + ",number,").length(), value.indexOf('}', idx));
+					String number = (args[i + firstIndex] == null ? "" : Formats.getNumberFormat(pattern).format((Number)args[i + firstIndex]));
+					value = value.replace("{" + i + ",number," + pattern + "}", number);
+				}
+			}
 			return value;
 		}
 		

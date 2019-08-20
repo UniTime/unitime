@@ -34,15 +34,17 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,6 +60,13 @@ import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -67,6 +76,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.basic.GetRequest;
 import org.unitime.timetable.onlinesectioning.custom.CourseUrlProvider;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -307,8 +317,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 								}
 							});
 						}
-						
-						if (ApplicationProperty.OnlineSchedulingEmailICalendar.isTrue()) {
+
+						if (ApplicationProperty.OnlineSchedulingEmailICalendar.isTrue() && (status == null || status.hasOption(StudentSectioningStatus.Option.enabled))) {
 							try {
 								final String calendar = CalendarExport.getCalendar(server, helper, student);
 								if (calendar != null)
@@ -458,34 +468,45 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		input.put("message", getMessage());
 		input.put("dfConsentApproval", sConsentApprovalDateFormat);
 		
-		Table classes = generateListOfClasses(student, server, helper);
-		input.put("classes", classes);
-		
-		// Total credit
-		float totalCredit = 0f;
-		Pattern pattern = Pattern.compile("\\d+\\.?\\d*");
-		for (TableLine line: classes) {
-			String credit = line.getCredit();
-			if (credit == null) continue;
-			Matcher m = pattern.matcher(credit);
-			if (m.find())
-				totalCredit += Float.parseFloat(m.group());
+		StudentSectioningStatus status = student.getEffectiveStatus();
+		if (status == null || status.hasOption(StudentSectioningStatus.Option.registration)) {
+			CourseRequestInterface requests = server.createAction(GetRequest.class)
+					.forStudent(student.getUniqueId())
+					.withCustomValidation(status != null && status.hasOption(StudentSectioningStatus.Option.reqval))
+					.execute(server, helper);
+			input.put("requests", generateCourseRequests(student, requests, server, helper));
 		}
-		input.put("credit", new DecimalFormat("0.#").format(totalCredit));
 		
-		if (!getStudent().getRequests().isEmpty() && ApplicationProperty.OnlineSchedulingEmailIncludeImage.isTrue()) {
-			try {
-				iTimetableImage = generateTimetableImage(server);
-			} catch (Exception e) {
-				helper.error("Unable to create timetable image: " + e.getMessage(), e);
-				StringWriter buffer = new StringWriter();
-				PrintWriter out = new PrintWriter(buffer);
-				generateTimetable(out, server, helper);
-				out.flush(); out.close();							
-				input.put("timetable", buffer.toString());
+		if (status == null || status.hasOption(StudentSectioningStatus.Option.enabled)) {
+			Table classes = generateListOfClasses(student, server, helper);
+			input.put("classes", classes);
+			
+			// Total credit
+			float totalCredit = 0f;
+			Pattern pattern = Pattern.compile("\\d+\\.?\\d*");
+			for (TableLine line: classes) {
+				String credit = line.getCredit();
+				if (credit == null) continue;
+				Matcher m = pattern.matcher(credit);
+				if (m.find())
+					totalCredit += Float.parseFloat(m.group());
 			}
-			if (iTimetableImage != null)
-				input.put("timetable", "<img src='cid:timetable.png' border='0' alt='Timetable Grid'/>");
+			input.put("credit", totalCredit);
+			
+			if (!getStudent().getRequests().isEmpty() && ApplicationProperty.OnlineSchedulingEmailIncludeImage.isTrue()) {
+				try {
+					iTimetableImage = generateTimetableImage(server);
+				} catch (Exception e) {
+					helper.error("Unable to create timetable image: " + e.getMessage(), e);
+					StringWriter buffer = new StringWriter();
+					PrintWriter out = new PrintWriter(buffer);
+					generateTimetable(out, server, helper);
+					out.flush(); out.close();
+					input.put("timetable", buffer.toString());
+				}
+				if (iTimetableImage != null)
+					input.put("timetable", "<img src='cid:timetable.png' border='0' alt='Timetable Grid'/>");
+			}
 		}
 		
 		AcademicSessionInfo session = server.getAcademicSession();
@@ -754,6 +775,327 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		s.flush(); s.close();
 
 		return s.toString();
+	}
+	
+	CourseRequestsTable generateCourseRequests(org.unitime.timetable.model.Student student, CourseRequestInterface requests, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		CourseRequestsTable courseRequests = new CourseRequestsTable();
+		Format<Number> df = Formats.getNumberFormat("0.#");
+		CheckCoursesResponse check = new CheckCoursesResponse(requests.getConfirmations());
+		courseRequests.hasWarn = requests.hasConfirmations();
+		int priority = 1;
+		for (Request request: requests.getCourses()) {
+			if (!request.hasRequestedCourse()) continue;
+			boolean first = true;
+			if (request.isWaitList()) courseRequests.hasWait = true;
+			for (RequestedCourse rc: request.getRequestedCourse()) {
+				if (rc.isCourse()) {
+					String icon = null; String iconText = null;
+					String msg = check.getMessage(rc.getCourseName(), "\n", "CREDIT");
+					if (check.isError(rc.getCourseName()) && (rc.getStatus() == null || rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED)) {
+						icon = "stop.png";
+						iconText = (msg);
+					} else if (rc.getStatus() != null) {
+						switch (rc.getStatus()) {
+						case ENROLLED:
+							icon = "login.png";
+							iconText = (MSG.enrolled(rc.getCourseName()));
+							break;
+						case OVERRIDE_NEEDED:
+							icon = "attention.png";
+							iconText = (MSG.overrideNeeded(msg));
+							break;
+						case SAVED:
+							icon = "action_check.png";
+							iconText = ((msg == null ? "" : MSG.requestWarnings(msg) + "\n\n") + MSG.requested(rc.getCourseName()));
+							break;
+						case OVERRIDE_REJECTED:
+							icon = "stop.png";
+							iconText = ((msg == null ? "" : MSG.requestWarnings(msg) + "\n\n") + MSG.overrideRejected(rc.getCourseName()));
+							break;
+						case OVERRIDE_PENDING:
+							icon = "time.png";
+							iconText = ((msg == null ? "" : MSG.requestWarnings(msg) + "\n\n") + MSG.overridePending(rc.getCourseName()));
+							break;
+						case OVERRIDE_CANCELLED:
+							icon = "attention.png";
+							iconText = ((msg == null ? "" : MSG.requestWarnings(msg) + "\n\n") + MSG.overrideCancelled(rc.getCourseName()));
+							break;
+						case OVERRIDE_APPROVED:
+							icon = "action_check.png";
+							iconText = ((msg == null ? "" : MSG.requestWarnings(msg) + "\n\n") + MSG.overrideApproved(rc.getCourseName()));
+							break;
+						default:
+							if (check.isError(rc.getCourseName()))
+								icon = "stop.png";
+							iconText = (msg);
+						}
+					}
+					if (rc.hasStatusNote()) iconText += "\n" + MSG.overrideNote(rc.getStatusNote());
+					Collection<Preference> prefs = null;
+					if (rc.hasSelectedIntructionalMethods()) {
+						if (rc.hasSelectedClasses()) {
+							prefs = new ArrayList<Preference>(rc.getSelectedIntructionalMethods().size() + rc.getSelectedClasses().size());
+							prefs.addAll(new TreeSet<Preference>(rc.getSelectedIntructionalMethods()));
+							prefs.addAll(new TreeSet<Preference>(rc.getSelectedClasses()));
+						} else {
+							prefs = new TreeSet<Preference>(rc.getSelectedIntructionalMethods());
+						}
+					} else if (rc.hasSelectedClasses()) {
+						prefs = new TreeSet<Preference>(rc.getSelectedClasses());
+					}
+					String status = "";
+					if (rc.getStatus() != null) {
+						switch (rc.getStatus()) {
+						case ENROLLED: status = MSG.reqStatusEnrolled(); break;
+						case OVERRIDE_APPROVED: status = MSG.reqStatusApproved(); break;
+						case OVERRIDE_CANCELLED: status = MSG.reqStatusCancelled(); break;
+						case OVERRIDE_PENDING: status = MSG.reqStatusPending(); break;
+						case OVERRIDE_REJECTED: status = MSG.reqStatusRejected(); break;
+						}
+					}
+					if (status.isEmpty()) status = MSG.reqStatusRegistered();
+					if (prefs != null) courseRequests.hasPref = true;
+					String credit = (rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : "");
+					String note = null;
+					if (check != null) note = check.getMessage(rc.getCourseName(), "\n", "CREDIT");
+					if (rc.hasStatusNote()) note = (note == null ? "" : note + "\n") + rc.getStatusNote();
+					CourseRequestLine line = new CourseRequestLine();
+					line.priority = (first ? MSG.courseRequestsPriority(priority) : "");
+					line.courseName = rc.getCourseName();
+					line.courseTitle = (rc.hasCourseTitle() ? rc.getCourseTitle() : "");
+					line.credit = credit;
+					line.prefs = toString(prefs);
+					line.note = note;
+					line.icon = icon;
+					line.iconText = iconText;
+					line.status = status;
+					line.waitlist = (first && request.isWaitList());
+					line.first = (priority > 1 && first);
+					courseRequests.add(line);
+				} else if (rc.isFreeTime()) {
+					CourseRequestLine line = new CourseRequestLine();
+					String  free = "";
+					for (FreeTime ft: rc.getFreeTime()) {
+						if (!free.isEmpty()) free += ", ";
+						free += ft.toString(CONST.shortDays(), CONST.useAmPm());
+					}
+					line.priority = (first ? MSG.courseRequestsPriority(priority) : "");
+					line.courseName = CONST.freePrefix() + free;
+					line.courseTitle = "";
+					line.credit = "";
+					line.prefs = "";
+					line.icon = "action_check.png";
+					line.iconText = MSG.requested(free);
+					line.status = MSG.reqStatusRegistered();
+					line.waitlist = false;
+					line.first = (priority > 1 && first);
+					courseRequests.add(line);
+				}
+				first = false;
+			}
+			priority ++;
+		}
+		
+		priority = 1;
+		for (Request request: requests.getAlternatives()) {
+			if (!request.hasRequestedCourse()) continue;
+			boolean first = true;
+			if (request.isWaitList()) courseRequests.hasWait = true;
+			for (RequestedCourse rc: request.getRequestedCourse()) {
+				if (rc.isCourse()) {
+					String icon = null; String iconText = null;
+					String msg = check.getMessage(rc.getCourseName(), "\n", "CREDIT");
+					if (check.isError(rc.getCourseName()) && (rc.getStatus() == null || rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED)) {
+						icon = "stop.png";
+						iconText = (msg);
+					} else if (rc.getStatus() != null) {
+						switch (rc.getStatus()) {
+						case ENROLLED:
+							icon = "login.png";
+							iconText = (MSG.enrolled(rc.getCourseName()));
+							break;
+						case OVERRIDE_NEEDED:
+							icon = "attention.png";
+							iconText = (MSG.overrideNeeded(msg));
+							break;
+						case SAVED:
+							icon = "action_check.png";
+							iconText = ((msg == null ? "" : MSG.requestWarnings(msg) + "\n\n") + MSG.requested(rc.getCourseName()));
+							break;
+						case OVERRIDE_REJECTED:
+							icon = "stop.png";
+							iconText = ((msg == null ? "" : MSG.requestWarnings(msg) + "\n\n") + MSG.overrideRejected(rc.getCourseName()));
+							break;
+						case OVERRIDE_PENDING:
+							icon = "time.png";
+							iconText = ((msg == null ? "" : MSG.requestWarnings(msg) + "\n\n") + MSG.overridePending(rc.getCourseName()));
+							break;
+						case OVERRIDE_CANCELLED:
+							icon = "attention.png";
+							iconText = ((msg == null ? "" : MSG.requestWarnings(msg) + "\n\n") + MSG.overrideCancelled(rc.getCourseName()));
+							break;
+						case OVERRIDE_APPROVED:
+							icon = "action_check.png";
+							iconText = ((msg == null ? "" : MSG.requestWarnings(msg) + "\n\n") + MSG.overrideApproved(rc.getCourseName()));
+							break;
+						default:
+							if (check.isError(rc.getCourseName()))
+								icon = "stop.png";
+							iconText = (msg);
+						}
+					}
+					if (rc.hasStatusNote()) iconText += "\n" + MSG.overrideNote(rc.getStatusNote());
+					Collection<Preference> prefs = null;
+					if (rc.hasSelectedIntructionalMethods()) {
+						if (rc.hasSelectedClasses()) {
+							prefs = new ArrayList<Preference>(rc.getSelectedIntructionalMethods().size() + rc.getSelectedClasses().size());
+							prefs.addAll(new TreeSet<Preference>(rc.getSelectedIntructionalMethods()));
+							prefs.addAll(new TreeSet<Preference>(rc.getSelectedClasses()));
+						} else {
+							prefs = new TreeSet<Preference>(rc.getSelectedIntructionalMethods());
+						}
+					} else if (rc.hasSelectedClasses()) {
+						prefs = new TreeSet<Preference>(rc.getSelectedClasses());
+					}
+					String status = "";
+					if (rc.getStatus() != null) {
+						switch (rc.getStatus()) {
+						case ENROLLED: status = MSG.reqStatusEnrolled(); break;
+						case OVERRIDE_APPROVED: status = MSG.reqStatusApproved(); break;
+						case OVERRIDE_CANCELLED: status = MSG.reqStatusCancelled(); break;
+						case OVERRIDE_PENDING: status = MSG.reqStatusPending(); break;
+						case OVERRIDE_REJECTED: status = MSG.reqStatusRejected(); break;
+						}
+					}
+					if (status.isEmpty()) status = MSG.reqStatusRegistered();
+					if (prefs != null) courseRequests.hasPref = true;
+					String credit = (rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : "");
+					String note = null;
+					if (check != null) note = check.getMessage(rc.getCourseName(), "\n", "CREDIT");
+					if (rc.hasStatusNote()) note = (note == null ? "" : note + "\n") + rc.getStatusNote();
+					CourseRequestLine line = new CourseRequestLine();
+					line.priority = (first ? MSG.courseRequestsAlternative(priority) : "");
+					line.courseName = rc.getCourseName();
+					line.courseTitle = (rc.hasCourseTitle() ? rc.getCourseTitle() : "");
+					line.credit = credit;
+					line.prefs = toString(prefs);
+					line.note = note;
+					line.icon = icon;
+					line.iconText = iconText;
+					line.status = status;
+					line.waitlist = (first && request.isWaitList());
+					line.first = first;
+					line.firstalt = (first && priority == 1);
+					courseRequests.add(line);
+				} else if (rc.isFreeTime()) {
+					CourseRequestLine line = new CourseRequestLine();
+					String free = "";
+					for (FreeTime ft: rc.getFreeTime()) {
+						if (!free.isEmpty()) free += ", ";
+						free += ft.toString(CONST.shortDays(), CONST.useAmPm());
+					}
+					line.priority = (first ? MSG.courseRequestsAlternative(priority) : "");
+					line.courseName = CONST.freePrefix() + free;
+					line.courseTitle = "";
+					line.credit = "";
+					line.prefs = "";
+					line.icon = "action_check.png";
+					line.iconText = MSG.requested(free);
+					line.status = MSG.reqStatusRegistered();
+					line.waitlist = false;
+					line.first = first;
+					line.firstalt = (first && priority == 1);
+					courseRequests.add(line);
+				}
+				first = false;
+			}
+			priority ++;
+		}
+		
+		if (requests.getMaxCreditOverrideStatus() != null) {
+			String icon = null;
+			String status = "";
+			String note = null;
+			String iconText = null;
+			if (requests.hasCreditWarning()) {
+				note = requests.getCreditWarning();
+				iconText = requests.getCreditWarning();
+				courseRequests.hasWarn = true;
+			}
+			switch (requests.getMaxCreditOverrideStatus()) {
+			case CREDIT_HIGH:
+				icon = "stop.png";
+				status = MSG.reqStatusRejected();
+				iconText += "\n" + MSG.creditStatusTooHigh();
+				break;
+			case OVERRIDE_REJECTED:
+				icon = "stop.png";
+				status = MSG.reqStatusRejected();
+				iconText += "\n" + MSG.creditStatusDenied();
+				break;
+			case CREDIT_LOW:
+			case OVERRIDE_NEEDED:
+				icon = "attention.png";
+				status = MSG.reqStatusWarning();
+				break;
+			case OVERRIDE_CANCELLED:
+				icon = "attention.png";
+				status = MSG.reqStatusCancelled();
+				iconText += "\n" + MSG.creditStatusCancelled();
+				break;
+			case OVERRIDE_PENDING:
+				icon = "time.png";
+				status = MSG.reqStatusPending();
+				iconText += "\n" + MSG.creditStatusPending();
+				break;
+			case OVERRIDE_APPROVED:
+				icon = "action_check.png";
+				status = MSG.reqStatusApproved();
+				iconText += (iconText == null ? "" : iconText + "\n") + MSG.creditStatusApproved();
+				break;
+			case SAVED:
+				icon = "action_check.png";
+				status = MSG.reqStatusRegistered();
+				break;
+			}
+			if (requests.hasCreditNote()) {
+				note = (note == null ? "" : note + "\n") + requests.getCreditNote();
+				courseRequests.hasWarn = true;
+			}
+			float[] range = requests.getCreditRange();
+			String credit = (range != null ? range[0] < range[1] ? df.format(range[0]) + " - " + df.format(range[1]) : df.format(range[0]) : "");
+			CourseRequestLine line = new CourseRequestLine();
+			line.priority = "";
+			line.courseName = MSG.rowRequestedCredit();
+			line.courseTitle = "";
+			line.credit = credit;
+			line.prefs = "";
+			line.note = note;
+			line.icon = icon;
+			line.iconText = iconText;
+			line.status = status;
+			line.last = true;
+			courseRequests.add(line);
+		} else {
+			float[] range = requests.getCreditRange();
+			if (range != null && range[1] > 0f) {
+				String credit = (range != null ? range[0] < range[1] ? df.format(range[0]) + " - " + df.format(range[1]) : df.format(range[0]) : "");
+				CourseRequestLine line = new CourseRequestLine();
+				line.priority = "";
+				line.courseName = MSG.rowRequestedCredit();
+				line.courseTitle = "";
+				line.credit = credit;
+				line.prefs = "";
+				line.note = null;
+				line.icon = "";
+				line.iconText = "";
+				line.status = "";
+				line.last = true;
+				courseRequests.add(line);
+			}
+		}
+
+		return courseRequests;
 	}
 	
 	Table generateListOfClasses(org.unitime.timetable.model.Student student, OnlineSectioningServer server, OnlineSectioningHelper helper) {
@@ -1627,5 +1969,70 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			line.setTable(this);
 			return super.add(line);
 		}
+
+	}
+	
+	public static String toString(Collection<?> items) {
+		if (items == null || items.isEmpty()) return "";
+		if (items.size() == 1) return items.iterator().next().toString();
+		if (items.size() == 2) {
+			Iterator<?> i = items.iterator();
+			return GWT.itemSeparatorPair(i.next().toString(), i.next().toString());
+		} else {
+			Iterator<?> i = items.iterator();
+			String list = i.next().toString();
+			while (i.hasNext()) {
+				String item = i.next().toString();
+				if (i.hasNext())
+					list = GWT.itemSeparatorMiddle(list, item);
+				else
+					list = GWT.itemSeparatorLast(list, item);
+			}
+			return list;
+		}
+	}
+	
+	public class CourseRequestsTable {
+		List<CourseRequestLine> lines = new ArrayList<CourseRequestLine>();
+		boolean hasPref = false, hasWarn = false, hasWait = false;
+		String credit = "";
+		
+		void add(CourseRequestLine line) { lines.add(line); }
+		
+		public List<CourseRequestLine> getLines() { return lines; }
+		public boolean getHasPref() { return hasPref; }
+		public boolean getHasWarn() { return hasWarn; }
+		public boolean getHasWait() { return hasWait; }
+		public String getCredit() { return credit; }
+	}
+	
+	public class CourseRequestLine {
+		public String priority;
+		public String courseName;
+		public String courseTitle;
+		public String credit;
+		public String prefs;
+		public String note;
+		public String status;
+		public String icon;
+		public String iconText;
+		public boolean waitlist = false;
+		public boolean first = false;
+		public boolean firstalt = false;
+		public boolean last = false;
+		
+		public String getPriority() { return priority; }
+		public String getCourseName() { return courseName; }
+		public String getCourseTitle() { return courseTitle; }
+		public String getCredit() { return credit; }
+		public String getPrefs() { return prefs; }
+		public String getNote() { return note; }
+		public String getStatus() { return status; }
+		public String getIcon() { return icon; }
+		public String getIconText() { return iconText; }
+		public boolean isWaitlist() { return waitlist; }
+		public boolean isFirst() { return first; }
+		public boolean isFirstalt() { return firstalt; }
+		public boolean isLast() { return last; }
 	}
 }
