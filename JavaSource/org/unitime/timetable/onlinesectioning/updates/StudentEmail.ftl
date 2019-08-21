@@ -69,7 +69,7 @@
  			<#if requests??>
  				<tr><td style="width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;">${msg.emailCourseRequests()}</td></tr>
  				<#if requests.lines??>
- 					<tr><td><table width="100%">
+ 					<tr><td><table width="100%" cellspacing="0" cellpadding="3">
  						<@courseRequestsHeader/>
  						<#list requests.lines as line>
  							<@courseRequestsLine line/>
@@ -232,7 +232,7 @@
  		<td style="${style}">${msg.colPriority()}</td>
  		<td style="${style}">${msg.colCourse()}</td>
  		<td style="${style}">${msg.colTitle()}</td>
- 		<td style="${style}">${msg.colCredit()}</td>
+ 		<td style="${style}" align="right">${msg.colCredit()}</td>
  		<#if requests.hasPref><td style="${style}">${msg.colPreferences()}</td></#if>
  		<#if requests.hasWarn><td style="${style}">${msg.colWarnings()}</td></#if>
  		<td style="${style}">${msg.colStatus()}</td>
@@ -259,7 +259,7 @@
  			<td style="${style}">${line.courseName}</td>
  		</#if>
  		<td style="${style}">${line.courseTitle}</td>
- 		<td style="${style}">${line.credit}</td>
+ 		<td style="${style} padding-right: 5px;" align="right">${line.credit}</td>
  		<#if requests.hasPref><td style="${style}">${line.prefs}</td></#if>
  		<#if requests.hasWarn>
  			<#if line.note?? && line.note?has_content>

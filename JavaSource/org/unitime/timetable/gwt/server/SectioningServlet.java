@@ -2519,7 +2519,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 
 	@Override
-	public Boolean sendEmail(Long studentId, String subject, String message, String cc) throws SectioningException, PageAccessException {
+	public Boolean sendEmail(Long studentId, String subject, String message, String cc, Boolean courseRequests, Boolean classSchedule) throws SectioningException, PageAccessException {
 		try {
 			OnlineSectioningServer server = getServerInstance(getStatusPageSessionId(), true);
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
@@ -2538,6 +2538,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				}
 			
 			StudentEmail email = server.createAction(StudentEmail.class).forStudent(studentId);
+			if (courseRequests != null && classSchedule != null)
+				email.overridePermissions(courseRequests, classSchedule);
 			email.setCC(cc);
 			email.setEmailSubject(subject == null || subject.isEmpty() ? MSG.defaulSubject() : subject);
 			email.setMessage(message);

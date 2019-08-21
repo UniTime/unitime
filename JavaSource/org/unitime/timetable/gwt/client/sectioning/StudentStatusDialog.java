@@ -38,6 +38,7 @@ import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextArea;
@@ -50,6 +51,7 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 	public static final StudentSectioningResources RESOURCES = GWT.create(StudentSectioningResources.class);
 	public static final GwtMessages GWT_MESSAGES = GWT.create(GwtMessages.class);
 	private UniTimeTextBox iSubject, iCC;
+	private CheckBox iCourseRequests, iClassSchedule;
 	private TextArea iMessage, iNote;
 	private Set<StudentStatusInfo> iStates;
 	private ListBox iStatus;
@@ -64,9 +66,18 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 		addStyleName("unitime-StudentStatusDialog");
 		setEscapeToHide(true);
 		
+		iCourseRequests = new CheckBox(MESSAGES.mailIncludeCourseRequests());
+		iCourseRequests.setValue(SectioningStatusCookie.getInstance().isEmailIncludeCourseRequests());
+		iClassSchedule = new CheckBox(MESSAGES.mailIncludeClassSchedule());
+		iClassSchedule.setValue(SectioningStatusCookie.getInstance().isEmailIncludeClassSchedule());
+		
 		iSubject = new UniTimeTextBox(512, 473);
 		iSubject.setText(MESSAGES.defaulSubject());
+		if (SectioningStatusCookie.getInstance().hasEmailSubject())
+			iSubject.setText(SectioningStatusCookie.getInstance().getEmailSubject());
 		iCC = new UniTimeTextBox(512, 473);
+		if (SectioningStatusCookie.getInstance().hasEmailCC())
+			iCC.setText(SectioningStatusCookie.getInstance().getEmailCC());
 		iMessage = new TextArea();
 		iMessage.setStyleName("unitime-TextArea");
 		iMessage.setVisibleLines(10);
@@ -101,6 +112,7 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 			@Override
 			public void onClick(ClickEvent event) {
 				hide();
+				SectioningStatusCookie.getInstance().setEmailDefaults(getIncludeCourseRequests(), getIncludeClassSchedule(), getCC(), getSubject());
 				iCommand.execute();
 			}
 		});
@@ -223,10 +235,16 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 		iCommand = command;
 		iForm.clear();
 		iForm.addRow(MESSAGES.emailSubject(), iSubject);
-		if (iSubject.getText().isEmpty() || iSubject.getText().equals(MESSAGES.defaulSubjectMassCancel()))
+		if (iSubject.getText().isEmpty() || iSubject.getText().equals(MESSAGES.defaulSubjectMassCancel())) {
 			iSubject.setText(MESSAGES.defaulSubject());
+			if (SectioningStatusCookie.getInstance().hasEmailSubject())
+				iSubject.setText(SectioningStatusCookie.getInstance().getEmailSubject());
+		}
 		iForm.addRow(MESSAGES.emailCC(), iCC);
 		iForm.addRow(MESSAGES.emailBody(), iMessage);
+		P panel = new P();
+		panel.add(iCourseRequests); panel.add(iClassSchedule);
+		iForm.addRow(MESSAGES.emailInclude(), panel);
 		iForm.addBottomRow(iButtons);
 		iButtons.setEnabled("set-note", false);
 		iButtons.setEnabled("send-email", true);
@@ -239,7 +257,7 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 	public void massCancel(Command command) {
 		iCommand = command;
 		iForm.clear();
-		if (iSubject.getText().isEmpty() || iSubject.getText().equals(MESSAGES.defaulSubject()))
+		if (iSubject.getText().isEmpty() || iSubject.getText().equals(MESSAGES.defaulSubject()) || iSubject.getText().equals(SectioningStatusCookie.getInstance().getEmailSubject()))
 			iSubject.setText(MESSAGES.defaulSubjectMassCancel());
 		iForm.addRow(MESSAGES.emailSubject(), iSubject);
 		iForm.addRow(MESSAGES.emailCC(), iCC);
@@ -293,6 +311,14 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 	
 	public String getMessage() {
 		return iMessage.getText();
+	}
+	
+	public Boolean getIncludeCourseRequests() {
+		return iCourseRequests.getValue();
+	}
+	
+	public Boolean getIncludeClassSchedule() {
+		return iClassSchedule.getValue();
 	}
 
 }

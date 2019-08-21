@@ -33,6 +33,8 @@ public class SectioningStatusCookie {
 	private int[] iSortBy = new int[] {0, 0, 0, 0, 0, 0};
 	private int iStudentTab = 1;
 	private String[] iSortByGroup = new String[] {"", ""};
+	private boolean iEmailIncludeCourseRequests = false, iEmailIncludeClassSchedule = true;
+	private String iEmailSubject, iEmailCC;
 	
 	private SectioningStatusCookie() {
 		try {
@@ -49,6 +51,10 @@ public class SectioningStatusCookie {
 				iStudentTab = Integer.parseInt(params[idx++]);
 				iSortByGroup[0] = params[idx++];
 				iSortByGroup[1] = params[idx++];
+				iEmailIncludeCourseRequests = "1".equals(params[idx++]);
+				iEmailIncludeClassSchedule = "1".equals(params[idx++]);
+				iEmailCC = params[idx++];
+				iEmailSubject = params[idx++];
 			}
 		} catch (Exception e) {
 		}
@@ -66,6 +72,7 @@ public class SectioningStatusCookie {
 			cookie += "|" + iSortBy[i];
 		cookie += "|" + iStudentTab;
 		cookie += "|" + iSortByGroup[0] + "|" + iSortByGroup[1];
+		cookie += "|" + (iEmailIncludeCourseRequests ? "1" : "0") + "|" + (iEmailIncludeClassSchedule ? "1" : "0") + "|" + iEmailCC + "|" + iEmailSubject;
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:StudentStatus", cookie, expires);
 	}
@@ -111,4 +118,19 @@ public class SectioningStatusCookie {
 	public int getStudentTab() { return iStudentTab; }
 	
 	public void setStudentTab(int tab) { iStudentTab = tab; save(); }
+	
+	public boolean isEmailIncludeCourseRequests() { return iEmailIncludeCourseRequests; }
+	public boolean isEmailIncludeClassSchedule() { return iEmailIncludeClassSchedule; }
+	public String getEmailCC() { return iEmailCC; }
+	public boolean hasEmailCC() { return iEmailCC != null && !iEmailCC.isEmpty(); }
+	public String getEmailSubject() { return iEmailSubject; }
+	public boolean hasEmailSubject() { return iEmailSubject != null && !iEmailSubject.isEmpty(); }
+	
+	public void setEmailDefaults(boolean includeCourseRequests, boolean includeClassSchedule, String cc, String subject) {
+		iEmailIncludeCourseRequests = includeCourseRequests;
+		iEmailIncludeClassSchedule = includeClassSchedule;
+		iEmailCC = cc;
+		iEmailSubject = subject;
+		save();
+	}
 }

@@ -126,6 +126,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	private XStudent iOldStudent;
 	private XStudent iStudent;
 	private CourseUrlProvider iCourseUrlProvider = null;
+	private boolean iPermisionCheck = true;
+	private boolean iIncludeCourseRequests = true;
+	private boolean iIncludeClassSchedule = true;
 	
 	public StudentEmail forStudent(Long studentId) {
 		iStudentId = studentId;
@@ -141,6 +144,13 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	
 	public StudentEmail oldStudent(XStudent oldStudent) {
 		iOldStudent = oldStudent;
+		return this;
+	}
+	
+	public StudentEmail overridePermissions(boolean courseRequests, boolean classSchedule) {
+		iPermisionCheck = false;
+		iIncludeCourseRequests = courseRequests;
+		iIncludeClassSchedule = classSchedule;
 		return this;
 	}
 	
@@ -217,9 +227,17 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			if (dbStudent != null && dbStudent.getEmail() != null && !dbStudent.getEmail().isEmpty()) {
 				action.getStudentBuilder().setName(dbStudent.getEmail());
 				boolean emailEnabled = true;
-				StudentSectioningStatus status = dbStudent.getEffectiveStatus();
-				if (status != null && !status.hasOption(StudentSectioningStatus.Option.email)) {
-					emailEnabled = false;
+				if (iPermisionCheck) {
+					StudentSectioningStatus status = dbStudent.getEffectiveStatus();
+					if (status != null && !status.hasOption(StudentSectioningStatus.Option.email)) {
+						emailEnabled = false;
+					}
+					if (iIncludeClassSchedule && status != null && !status.hasOption(StudentSectioningStatus.Option.enabled))
+						iIncludeClassSchedule = false;
+					if (iIncludeCourseRequests && status != null && !status.hasOption(StudentSectioningStatus.Option.registration))
+						iIncludeCourseRequests = false;
+				} else {
+					emailEnabled = true;
 				}
 				
 				if (emailEnabled) {
@@ -318,7 +336,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 							});
 						}
 
-						if (ApplicationProperty.OnlineSchedulingEmailICalendar.isTrue() && (status == null || status.hasOption(StudentSectioningStatus.Option.enabled))) {
+						if (ApplicationProperty.OnlineSchedulingEmailICalendar.isTrue() && iIncludeClassSchedule) {
 							try {
 								final String calendar = CalendarExport.getCalendar(server, helper, student);
 								if (calendar != null)
@@ -469,7 +487,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		input.put("dfConsentApproval", sConsentApprovalDateFormat);
 		
 		StudentSectioningStatus status = student.getEffectiveStatus();
-		if (status == null || status.hasOption(StudentSectioningStatus.Option.registration)) {
+		if (iIncludeCourseRequests) {
 			CourseRequestInterface requests = server.createAction(GetRequest.class)
 					.forStudent(student.getUniqueId())
 					.withCustomValidation(status != null && status.hasOption(StudentSectioningStatus.Option.reqval))
@@ -477,7 +495,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			input.put("requests", generateCourseRequests(student, requests, server, helper));
 		}
 		
-		if (status == null || status.hasOption(StudentSectioningStatus.Option.enabled)) {
+		if (iIncludeClassSchedule) {
 			Table classes = generateListOfClasses(student, server, helper);
 			input.put("classes", classes);
 			
@@ -763,7 +781,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			setSubject(MSG.emailSubjectNotification());
 		}
 		
-		input.put("manager", helper.getUser() != null && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER);
+		input.put("manager", !iPermisionCheck || (helper.getUser() != null && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER));
 		input.put("changed", getOldEnrollment() != null || getOldStudent() != null);
 		input.put("version", GWT.pageVersion(Constants.getVersion(), Constants.getReleaseDate()));
 		input.put("copyright", GWT.pageCopyright());
