@@ -698,7 +698,19 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					}
 				} else {
 					RequestedCourseStatus status = (problems == null ? null : problems.get(problem.code));
-					response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, problem.message, status == null ? CONF_BANNER : CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_PENDING)
+					if (status == null) {
+						if (resp.overrides != null && !resp.overrides.contains(problem.code)) {
+							response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Not Allowed " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
+							continue;
+						} else {
+							XCourse c = (course instanceof XCourse ? (XCourse) course : server.getCourse(course.getCourseId()));
+							if (c != null && !c.isOverrideEnabled(problem.code)) {
+								response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Not Allowed " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
+								continue;
+							}
+						}
+					}
+					response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, problem.message, status == null ? CONF_BANNER : CONF_NONE)
 						.setStatus(status == null ? RequestedCourseStatus.OVERRIDE_NEEDED : status);
 				}
 			}
@@ -729,6 +741,18 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					}
 				} else {
 					RequestedCourseStatus status = (problems == null ? null : problems.get(problem.code));
+					if (status == null) {
+						if (resp.overrides != null && !resp.overrides.contains(problem.code)) {
+							response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Not Allowed " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
+							continue;
+						} else {
+							XCourse c = (course instanceof XCourse ? (XCourse) course : server.getCourse(course.getCourseId()));
+							if (c != null && !c.isOverrideEnabled(problem.code)) {
+								response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Not Allowed " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
+								continue;
+							}
+						}
+					}
 					response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, problem.message, status == null ? CONF_BANNER : CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_PENDING)
 						.setStatus(status == null ? RequestedCourseStatus.OVERRIDE_NEEDED : status);
 				}
