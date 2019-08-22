@@ -785,13 +785,18 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		}
 		if (response.getConfirms().contains(CONF_BANNER)) {
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.bannerProblemsFound", "The following registration errors have been detected:"), CONF_BANNER, -1);
-			response.addConfirmation("", CONF_BANNER, 1);
+			String note = ApplicationProperties.getProperty("purdue.specreg.messages.courseRequestNote", "<b>Request Note:</b>");
+			int idx = 1;
+			if (note != null && !note.isEmpty()) {
+				response.addConfirmation(note, CONF_BANNER, idx++);
+				response.addConfirmation("", CONF_BANNER, idx++).setCode("REQUEST_NOTE");
+			}
 			response.addConfirmation(
 					ApplicationProperties.getProperty("purdue.specreg.messages.requestOverrides",
-							"If you have already discussed these courses with your advisor and were advised to request " +
+							"\nIf you have already discussed these courses with your advisor and were advised to request " +
 							"registration in them please select Request Overrides & Submit. If you aren’t sure, click Cancel Submit and " +
 							"consult with your advisor before coming back to your Course Request page."),
-					CONF_BANNER, 2);
+					CONF_BANNER, idx++);
 		}
 		if (response.getConfirms().contains(CONF_UNITIME)) {
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.unitimeProblemsFound", "The following issues have been detected:"), CONF_UNITIME, -1);
@@ -950,6 +955,11 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		}
 
 		if (request.hasConfirmations()) {
+			for (CourseMessage m: request.getConfirmations()) {
+				if ("REQUEST_NOTE".equals(m.getCode()) && m.getMessage() != null && !m.getMessage().isEmpty()) {
+					req.requestorNotes = m.getMessage();
+				}
+			}
 			for (CourseRequestInterface.Request c: request.getCourses())
 				if (c.hasRequestedCourse()) {
 					for (CourseRequestInterface.RequestedCourse rc: c.getRequestedCourse()) {

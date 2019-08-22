@@ -52,6 +52,12 @@
 				</line>
  			</description>
 		</item>
+		<item>
+			<name>Course Requests: Custom Course Request Validation</name>
+			<description>
+				<line>Request Overrides: added ability to provide request note.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>
