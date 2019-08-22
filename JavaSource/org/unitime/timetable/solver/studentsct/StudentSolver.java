@@ -59,6 +59,7 @@ import org.cpsolver.ifs.util.ProgressWriter;
 import org.cpsolver.studentsct.StudentSectioningModel;
 import org.cpsolver.studentsct.StudentSectioningXMLLoader;
 import org.cpsolver.studentsct.StudentSectioningXMLSaver;
+import org.cpsolver.studentsct.constraint.LinkedSections;
 import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
@@ -135,6 +136,9 @@ import com.google.gson.JsonSerializer;
 public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSectioningModel> implements StudentSolverProxy {
 	private static StudentSectioningMessages SCT_MSG = Localization.create(StudentSectioningMessages.class);
     private transient Map<Long, XCourse> iCourseInfoCache = null;
+    private transient Map<Long, XOffering> iOfferingCache = null;
+    private transient Map<String, Set<Long>> iInstructedOfferingsCache = null;
+    private transient Map<Long, Student> iStudentCache = null;
     private Map<String, Object> iOnlineProperties = new HashMap<String, Object>();
     private Map<String, InMemoryReport> iReports = new HashMap<String, InMemoryReport>();
     
@@ -226,16 +230,35 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
         getProperties().setProperty("Xml.LoadInitial", "true");
         getProperties().setProperty("Xml.LoadCurrent", "true");
 
-        new StudentSectioningXMLLoader((StudentSectioningModel)currentSolution().getModel(), currentSolution().getAssignment()).load(document);
+        new StudentSectioningXMLLoader(getModel(), currentSolution().getAssignment()).load(document);
         
         readReports(document);
+	}
+	
+	private void clearCachedData() {
+		clearCourseInfoTable();
+        clearOfferingCache();
+        clearInstructedOfferingsCache();
+        clearStudentCache();
 	}
 
 	@Override
     protected void disposeNoInherit(boolean unregister) {
 		super.disposeNoInherit(unregister);
-        clearCourseInfoTable();
+		clearCachedData();
     }
+	
+	@Override
+	protected void afterLoad() {
+		super.afterLoad();
+		clearCachedData();
+    }
+	
+	@Override
+	public void setInitalSolution(Solution<Request, Enrollment> solution) {
+		super.setInitalSolution(solution);
+		clearCachedData();
+	}
 	
 	@Override
     public Callback getReloadingDoneCallback() {
@@ -408,12 +431,19 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	@Override
 	public AcademicSessionInfo getAcademicSession() {
 		if (iSession == null) {
-			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession(); 
 			try {
-				iSession = new AcademicSessionInfo(SessionDAO.getInstance().get(getSessionId(), hibSession));
-				iSession.setSectioningEnabled(false);
-			} finally {
-				hibSession.close();
+				org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession(); 
+				try {
+					iSession = new AcademicSessionInfo(SessionDAO.getInstance().get(getSessionId(), hibSession));
+					iSession.setSectioningEnabled(false);
+				} finally {
+					hibSession.close();
+				}
+			} catch (Exception e) {
+				iSession = new AcademicSessionInfo(getSessionId(),
+						getConfig().getProperty("Data.Year"),
+						getConfig().getProperty("Data.Term"),
+						getConfig().getProperty("Data.Initiative"));
 			}
 		}
 		return iSession;
@@ -422,6 +452,8 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	private DistanceMetric iDistanceMetric = null;
 	@Override
 	public DistanceMetric getDistanceMetric() {
+		if (iDistanceMetric == null)
+			iDistanceMetric = getModel().getDistanceMetric();
 		if (iDistanceMetric == null) {
 			iDistanceMetric = new DistanceMetric(getProperties());
 			TravelTime.populateTravelTimes(iDistanceMetric);
@@ -446,6 +478,77 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	}
 	private void clearCourseInfoTable() {
 		iCourseInfoCache = null;
+	}
+	
+	private Map<Long, XOffering> getOfferingCache() {
+		if (iOfferingCache == null) {
+			iOfferingCache = new Hashtable<Long, XOffering>();
+			List<LinkedSections> links = getModel().getLinkedSections();
+			for (Offering offering: getModel().getOfferings())
+				iOfferingCache.put(offering.getId(), new XOffering(offering, links));
+		}
+		return iOfferingCache;
+	}
+	private void clearOfferingCache() {
+		iOfferingCache = null;
+	}
+	
+	private Map<String, Set<Long>> getInstructedOfferingsCache() {
+		if (iInstructedOfferingsCache == null) {
+			iInstructedOfferingsCache = new Hashtable<String, Set<Long>>();
+			for (Offering offering: getModel().getOfferings()) {
+				for (Config config: offering.getConfigs())
+					for (Subpart subpart: config.getSubparts())
+						for (Section section: subpart.getSections())
+							if (section.hasInstructors())
+								for (Instructor instructor: section.getInstructors())
+									if (instructor.getExternalId() != null) {
+										Set<Long> offerings = iInstructedOfferingsCache.get(instructor.getExternalId());
+										if (offerings == null) {
+											offerings = new HashSet<Long>();
+											iInstructedOfferingsCache.put(instructor.getExternalId(), offerings);
+										}
+										offerings.add(offering.getId());
+									}
+			}
+			for (Student student: getModel().getStudents()) {
+				if (student.isDummy() || student.getExternalId() == null) continue;
+				unavailbilities: for (Unavailability unavailability: student.getUnavailabilities())
+					for (Offering offering: getModel().getOfferings()) {
+						for (Config config: offering.getConfigs())
+							for (Subpart subpart: config.getSubparts())
+								for (Section section: subpart.getSections())
+									if (section.getId() == unavailability.getId()) {
+										Set<Long> offerings = iInstructedOfferingsCache.get(student.getExternalId());
+										if (offerings == null) {
+											offerings = new HashSet<Long>();
+											iInstructedOfferingsCache.put(student.getExternalId(), offerings);
+										}
+										offerings.add(offering.getId());
+										continue unavailbilities;
+									}
+					}
+			}
+		}
+		return iInstructedOfferingsCache;
+	}
+	
+	private void clearInstructedOfferingsCache() {
+		iInstructedOfferingsCache = null;
+	}
+	
+	private Map<Long, Student> getStudentCache() {
+		if (iStudentCache == null) {
+			iStudentCache = new Hashtable<Long, Student>();
+			for (Student student: getModel().getStudents())
+				if (!student.isDummy())
+					iStudentCache.put(student.getId(), student);
+		}
+		return iStudentCache;
+	}
+	
+	private void clearStudentCache() {
+		iStudentCache = null;
 	}
 	
 	
@@ -480,7 +583,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	public Collection<XStudentId> findStudents(StudentMatcher matcher) {
 		if (matcher != null) matcher.setServer(this);
 		List<XStudentId> ret = new ArrayList<XStudentId>();
-		for (Student student: ((StudentSectioningModel)currentSolution().getModel()).getStudents()) {
+		for (Student student: getModel().getStudents()) {
 			if (student.isDummy()) continue;
 			XStudentId s = new XStudentId(student);
 			if (!student.isDummy() && matcher.match(s))
@@ -496,7 +599,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	
 	@Override
 	public XCourse getCourse(String courseName) {
-		for (Offering offering: ((StudentSectioningModel)currentSolution().getModel()).getOfferings())
+		for (Offering offering: getModel().getOfferings())
 			for (Course course: offering.getCourses())
 				if (course.getName().equalsIgnoreCase(courseName)) return getCourse(course.getId());
 		return null;
@@ -504,18 +607,13 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 
 	@Override
 	public XStudent getStudent(Long studentId) {
-		for (Student student: ((StudentSectioningModel)currentSolution().getModel()).getStudents())
-			if (!student.isDummy() && student.getId() == studentId)
-				return new XStudent(student, currentSolution().getAssignment());
-		return null;
+		Student student = getStudentCache().get(studentId);
+		return (student == null ? null : new XStudent(student, currentSolution().getAssignment()));
 	}
 
 	@Override
 	public XOffering getOffering(Long offeringId) {
-		for (Offering offering: ((StudentSectioningModel)currentSolution().getModel()).getOfferings())
-			if (offering.getId() == offeringId)
-				return new XOffering(offering, ((StudentSectioningModel)currentSolution().getModel()).getLinkedSections());
-		return null;
+		return getOfferingCache().get(offeringId);
 	}
 
 	@Override
@@ -549,11 +647,14 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 		} catch (Exception e) {
 			if (e instanceof SectioningException) {
 				if (e.getCause() == null) {
+					sLog.info("Execution failed: " + e.getMessage());
 					h.info("Execution failed: " + e.getMessage());
 				} else {
+					sLog.warn("Execution failed: " + e.getMessage(), e);
 					h.warn("Execution failed: " + e.getMessage(), e.getCause());
 				}
 			} else {
+				sLog.error("Execution failed: " + e.getMessage(), e);
 				h.error("Execution failed: " + e.getMessage(), e);
 			}
 			if (h.getAction() != null) {
@@ -683,7 +784,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	public Collection<XCourseRequest> getRequests(Long offeringId) {
 		List<XCourseRequest> ret = new ArrayList<XCourseRequest>();
 		Set<Long> reqIds = new HashSet<Long>();
-		for (Offering offering: ((StudentSectioningModel)currentSolution().getModel()).getOfferings())
+		for (Offering offering: getModel().getOfferings())
 			if (offering.getId() == offeringId) {
 				for (Course course: offering.getCourses())
 					for (CourseRequest req: course.getRequests()) {
@@ -702,7 +803,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 
 	@Override
 	public XExpectations getExpectations(Long offeringId) {
-		for (Offering offering: ((StudentSectioningModel)currentSolution().getModel()).getOfferings())
+		for (Offering offering: getModel().getOfferings())
 			if (offering.getId() == offeringId)
 				return new XExpectations(offering);
 		return null;
@@ -820,30 +921,12 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 
 	@Override
 	public Collection<Long> getInstructedOfferings(String instructorExternalId) {
-		List<Long> ret = new ArrayList<Long>();
-		Set<Long> sections = new HashSet<Long>();
-		for (Student student: ((StudentSectioningModel)currentSolution().getModel()).getStudents())
-			if (instructorExternalId.equals(student.getExternalId()))
-				for (Unavailability unavailability: student.getUnavailabilities())
-					sections.add(unavailability.getId());
-		offerings: for (Offering offering: ((StudentSectioningModel)currentSolution().getModel()).getOfferings()) {
-			for (Config config: offering.getConfigs())
-				for (Subpart subpart: config.getSubparts())
-					for (Section section: subpart.getSections())
-						if (sections.contains(section.getId())) {
-							ret.add(offering.getId()); continue offerings;
-						} else if (section.hasInstructors())
-							for (Instructor instructor: section.getInstructors())
-								if (instructorExternalId.equals(instructor.getExternalId())) {
-									ret.add(offering.getId()); continue offerings;
-								}
-		}
-		return ret;
+		return getInstructedOfferingsCache().get(instructorExternalId);
 	}
 	
 	@Override
 	public Set<Long> getRequestedCourseIds(Long studentId) {
-		for (Student student: ((StudentSectioningModel)currentSolution().getModel()).getStudents())
+		for (Student student: getModel().getStudents())
 			if (!student.isDummy() && student.getId() == studentId) {
 				Set<Long> courseIds = new HashSet<Long>();
 				for (Request request: student.getRequests()) {

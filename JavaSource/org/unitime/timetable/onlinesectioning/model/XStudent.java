@@ -65,7 +65,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 @SerializeWith(XStudent.XStudentSerializer.class)
 public class XStudent extends XStudentId implements Externalizable {
 	private static final long serialVersionUID = 1L;
-    private Set<XAreaClassificationMajor> iMajors = new TreeSet<XAreaClassificationMajor>();
+    private List<XAreaClassificationMajor> iMajors = new ArrayList<XAreaClassificationMajor>();
     private List<XGroup> iGroups = new ArrayList<XGroup>();
     private List<String> iAccomodations = new ArrayList<String>();
     private List<XRequest> iRequests = new ArrayList<XRequest>();
@@ -100,6 +100,7 @@ public class XStudent extends XStudentId implements Externalizable {
     	for (StudentAreaClassificationMajor acm: student.getAreaClasfMajors()) {
         	iMajors.add(new XAreaClassificationMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode()));
         }
+    	if (iMajors.size() > 1) Collections.sort(iMajors);
         for (StudentGroup group: student.getGroups()) {
         	iGroups.add(new XGroup(group));
         	StudentGroupType type = group.getType();
@@ -238,6 +239,7 @@ public class XStudent extends XStudentId implements Externalizable {
     	for (int i = 0; i < Math.min(student.getAcademicAreaClasiffications().size(), student.getMajors().size()); i++) {
     		iMajors.add(new XAreaClassificationMajor(student.getMajors().get(i).getArea(), student.getAcademicAreaClasiffications().get(i).getCode(), student.getMajors().get(i).getCode()));
     	}
+    	if (iMajors.size() > 1) Collections.sort(iMajors);
     	for (AcademicAreaCode aac: student.getMinors()) {
     		if ("A".equals(aac.getArea()))
 				iAccomodations.add(aac.getCode());
@@ -292,7 +294,7 @@ public class XStudent extends XStudentId implements Externalizable {
     /**
      * List of academic area, classification, and major codes ({@link XAreaClassificationMajor}) for the given student
      */
-    public Set<XAreaClassificationMajor> getMajors() {
+    public List<XAreaClassificationMajor> getMajors() {
         return iMajors;
     }
 

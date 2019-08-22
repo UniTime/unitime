@@ -72,6 +72,12 @@
 				<line>This is to make sure some other student would not get a CLOS error.</line>
 			</description>
 		</item>
+		<item>
+			<name>Batch Student Scheduling: Solver Dashboard</name>
+			<description>
+				<line>A few changes (mostly caching) to make the search on the dashboard work faster, especially when returning a lot of data.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>
