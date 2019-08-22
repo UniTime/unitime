@@ -734,6 +734,7 @@ public class EnrollmentTable extends Composite {
 		}
 		
 		boolean hasPriority = false, hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasAlternative = false, hasReservation = false, hasRequestedDate = false, hasEnrolledDate = false, hasConflict = false, hasMessage = false;
+		boolean hasAdvisor = false;
 		Set<String> groupTypes = new HashSet<String>();
 		for (ClassAssignmentInterface.Enrollment e: enrollments) {
 			if (filter(f, e)) continue;
@@ -749,6 +750,7 @@ public class EnrollmentTable extends Composite {
 			if (e.hasConflict()) hasConflict = true;
 			if (e.hasEnrollmentMessage()) hasMessage = true;
 			if (e.getStudent().hasGroups()) groupTypes.addAll(e.getStudent().getGroupTypes());
+			if (e.getStudent().hasAdvisor()) hasAdvisor = true;
 		}
 
 		UniTimeTableHeader hPriority = null;
@@ -901,6 +903,13 @@ public class EnrollmentTable extends Composite {
 			hMessage = new UniTimeTableHeader(MESSAGES.colMessage());
 			header.add(hMessage);
 			addSortOperation(hMessage, EnrollmentComparator.SortBy.MESSAGE, MESSAGES.colMessage());
+		}
+		
+		UniTimeTableHeader hAdvisor = null;
+		if (hasAdvisor) {
+			hAdvisor = new UniTimeTableHeader(MESSAGES.colAdvisor());
+			header.add(hAdvisor);
+			addSortOperation(hAdvisor, EnrollmentComparator.SortBy.MESSAGE, MESSAGES.colAdvisor());
 		}
 		
 		UniTimeTableHeader hConflictType = null, hConflictName = null, hConflictDate = null, hConflictTime = null, hConflictRoom = null;
@@ -1138,6 +1147,8 @@ public class EnrollmentTable extends Composite {
 				line.add(new HTML(enrollment.getEnrolledDate() == null ? "&nbsp;" : sDF.format(enrollment.getEnrolledDate()), false));
 			if (hasMessage)
 				line.add(new HTML(enrollment.hasEnrollmentMessage() ? enrollment.getEnrollmentMessage().replace("\n", "<br>") : "&nbsp;", true));
+			if (hasAdvisor)
+				line.add(new HTML(enrollment.getStudent().hasAdvisor() ? enrollment.getStudent().getAdvisor("<br>") : "&nbsp;", true));
 			if (hasConflict) {
 				if (enrollment.hasConflict()) {
 					String name = "", type = "", date = "", time = "", room = "";
@@ -1585,6 +1596,7 @@ public class EnrollmentTable extends Composite {
 			CONFLICT_TIME,
 			CONFLICT_ROOM,
 			APPROVED,
+			ADVISOR,
 			;
 		}
 		
@@ -1673,6 +1685,8 @@ public class EnrollmentTable extends Composite {
 					return (e1.getEnrolledDate() == null ? new Date(0) : e1.getEnrolledDate()).compareTo(e2.getEnrolledDate() == null ? new Date(0) : e2.getEnrolledDate());
 				case MESSAGE:
 					return (e1.getEnrollmentMessage() == null ? "" : e1.getEnrollmentMessage()).compareTo(e2.getEnrollmentMessage() == null ? "" : e2.getEnrollmentMessage());
+				case ADVISOR:
+					return e1.getStudent().getAdvisor("|").compareTo(e2.getStudent().getAdvisor("|"));
 				case CONFLICT_TYPE:
 				case CONFLICT_NAME:
 				case CONFLICT_DATE:

@@ -226,7 +226,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		boolean hasExtId = false;
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
 				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasReqCredit = false, hasCredit = false, hasDistances = false, hasOverlaps = false,
-				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false, hasOverride = false;
+				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false, hasOverride = false, hasAdvisor = false;
 		Set<String> groupTypes = new TreeSet<String>();
 		if (students != null)
 			for (ClassAssignmentInterface.StudentInfo e: students) {
@@ -253,6 +253,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 				if (e.getEmailDate() != null) hasEmailed = true;
 				if (e.getStudent() != null && e.getStudent().isCanShowExternalId()) hasExtId = true;
 				if (e.getStudent().hasGroups()) groupTypes.addAll(e.getStudent().getGroupTypes());
+				if (e.getStudent().hasAdvisor()) hasAdvisor = true;
 			}
 		
 		List<String> header = new ArrayList<String>();
@@ -322,6 +323,9 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		if (hasEnrolledDate)
 			header.add(MESSAGES.colEnrollmentTimeStamp());
 		
+		if (hasAdvisor)
+			header.add(MESSAGES.colAdvisor());
+		
 		if (hasNote)
 			header.add(MESSAGES.colStudentNote());
 		
@@ -382,6 +386,8 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 						line.add((info.getRequestedDate() == null ? null : df.format(info.getRequestedDate())));
 					if (hasEnrolledDate)
 						line.add((info.getEnrolledDate() == null ? null : df.format(info.getEnrolledDate())));
+					if (hasAdvisor)
+						line.add(info.getStudent().getAdvisor("\n"));
 					if (hasNote)
 						line.add((info.hasNote() ? info.getNote() : ""));
 					if (hasEmailed)
@@ -434,6 +440,8 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 					if (hasEnrolledDate)
 						line.add("");
 					if (hasNote)
+						line.add("");
+					if (hasAdvisor)
 						line.add("");
 					if (hasEmailed)
 						line.add("");

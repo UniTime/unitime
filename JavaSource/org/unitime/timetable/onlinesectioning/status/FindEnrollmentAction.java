@@ -204,6 +204,9 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 			for (String acc: student.getAccomodations()) {
 				st.addAccommodation(acc);
 			}
+			for (XStudent.XAdvisor a: student.getAdvisors()) {
+				if (a.getName() != null) st.addAdvisor(a.getName());
+			}
 			
 			ClassAssignmentInterface.Enrollment e = new ClassAssignmentInterface.Enrollment();
 			e.setStudent(st);

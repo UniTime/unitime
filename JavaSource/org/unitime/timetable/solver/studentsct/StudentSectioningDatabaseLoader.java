@@ -90,6 +90,7 @@ import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.ReservationInterface.OverrideType;
 import org.unitime.timetable.model.AcademicClassification;
+import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.ClassWaitList;
@@ -1826,6 +1827,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         }
         for (StudentAccomodation a: s.getAccomodations())
         	student.getMinors().add(new AcademicAreaCode("A", a.getAbbreviation(), a.getName()));
+        for (Advisor a: s.getAdvisors())
+        	student.getAdvisors().add(new Instructor(0, a.getExternalUniqueId(), a.getLastName() == null ? null : iInstructorNameFormat.format(a), a.getEmail()));
     }
     
     public void loadRequestGroups(Student student, org.unitime.timetable.model.Student s) {

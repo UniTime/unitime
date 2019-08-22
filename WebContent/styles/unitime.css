@@ -3646,6 +3646,8 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-InfoTable {
 	border-spacing: 2px;
 	border-collapse: separate;
+	white-space: pre-wrap;
+	overflow: hidden;
 }
 
 .unitime-InfoTable .separator {

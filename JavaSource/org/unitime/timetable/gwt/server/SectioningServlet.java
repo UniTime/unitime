@@ -82,6 +82,7 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegi
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -1281,6 +1282,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				
 				if (server == null || !offering.isAllowStudentScheduling() || offering.isNotOffered() || offering.getInstrOfferingConfigs().isEmpty()) {
 					NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingStudentNameFormat.value());
+					NameFormat instructorNameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
 					Map<String, String> approvedBy2name = new Hashtable<String, String>();
 					Hashtable<Long, ClassAssignmentInterface.Enrollment> student2enrollment = new Hashtable<Long, ClassAssignmentInterface.Enrollment>();
 					boolean canShowExtIds = sessionContext.hasPermission(Right.EnrollmentsShowExternalId);
@@ -1316,6 +1318,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			    			for (StudentAccomodation a: enrollment.getStudent().getAccomodations()) {
 			    				st.addAccommodation(a.getAbbreviation());
 			    			}
+			    			for (Advisor a: enrollment.getStudent().getAdvisors()) {
+			    				if (a.getLastName() != null)
+			    					st.addAdvisor(instructorNameFormat.format(a));
+			    			}
+			    			
 							e = new ClassAssignmentInterface.Enrollment();
 							e.setStudent(st);
 							e.setEnrolledDate(enrollment.getTimestamp());
@@ -1417,6 +1424,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							}
 			    			for (StudentAccomodation a: request.getCourseDemand().getStudent().getAccomodations()) {
 			    				st.addAccommodation(a.getAbbreviation());
+			    			}
+			    			for (Advisor a: request.getCourseDemand().getStudent().getAdvisors()) {
+			    				if (a.getLastName() != null)
+			    					st.addAdvisor(instructorNameFormat.format(a));
 			    			}
 							e = new ClassAssignmentInterface.Enrollment();
 							e.setStudent(st);
@@ -2953,6 +2964,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		for (StudentAccomodation a: student.getAccomodations()) {
 			st.addAccommodation(a.getAbbreviation());
 		}
+		for (Advisor a: student.getAdvisors()) {
+			if (a.getLastName() != null)
+				st.addAdvisor(NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value()).format(a));
+		}
 		return st;
 	}
 
@@ -3057,6 +3072,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 		for (StudentAccomodation a: student.getAccomodations()) {
 			st.addAccommodation(a.getAbbreviation());
+		}
+		for (Advisor a: student.getAdvisors()) {
+			if (a.getLastName() != null)
+				st.addAdvisor(NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value()).format(a));
 		}
 		return st;
 	}

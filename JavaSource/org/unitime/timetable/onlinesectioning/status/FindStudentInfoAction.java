@@ -207,6 +207,10 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						for (XStudent.XGroup gr: student.getGroups()) {
 							st.addGroup(gr.getType(), gr.getAbbreviation(), gr.getTitle());
 						}
+		    			for (XStudent.XAdvisor a: student.getAdvisors()) {
+		    				if (a.getName() != null) st.addAdvisor(a.getName());
+		    			}
+
 						int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0, tUnasg = 0, tOvrNeed = 0, ovrNeed = 0;
 						float tCred = 0f;
 						int nrDisCnf = 0, maxDist = 0, share = 0; 
@@ -544,6 +548,9 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 					for (XStudent.XGroup gr: student.getGroups()) {
 						st.addGroup(gr.getType(), gr.getAbbreviation(), gr.getTitle());
 					}
+	    			for (XStudent.XAdvisor a: student.getAdvisors()) {
+	    				if (a.getName() != null) st.addAdvisor(a.getName());
+	    			}
 					s.setStatus(student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
 					s.setEmailDate(student.getEmailTimeStamp() == null ? null : student.getEmailTimeStamp());
 					s.setNote(student.hasLastNote() ? student.getLastNote().getNote() : null);
@@ -574,6 +581,9 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 					for (XStudent.XGroup gr: student.getGroups()) {
 						st.addGroup(gr.getType(), gr.getAbbreviation(), gr.getTitle());
 					}
+	    			for (XStudent.XAdvisor a: student.getAdvisors()) {
+	    				if (a.getName() != null) st.addAdvisor(a.getName());
+	    			}
 					s.setStatus(student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
 					s.setEmailDate(student.getEmailTimeStamp() == null ? null : student.getEmailTimeStamp());
 					s.setNote(student.hasLastNote() ? student.getLastNote().getNote() : null);

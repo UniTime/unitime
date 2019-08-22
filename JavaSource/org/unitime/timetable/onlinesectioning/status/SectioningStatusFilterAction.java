@@ -41,6 +41,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
+import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
@@ -455,6 +456,44 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			}
 		}
 		
+		if (!iRequest.getText().isEmpty() && (response.getSuggestions() == null || response.getSuggestions().size() < 20)) {
+			if (studentIdMatch) {
+				StudentQuery.QueryInstance instance = query.select("distinct ax").exclude("advisor").from("inner join s.advisors ax").where("ax.lastName is not null").order("ax.lastName, ax.firstName, ax.middleName");
+				instance.where("ax.externalUniqueId = :id");
+				if (ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue()) {
+					instance.set("id", iRequest.getText().trim().replaceFirst("^0+(?!$)", ""));
+				} else {
+					instance.set("id", iRequest.getText().trim());
+				}
+				for (Advisor advisor: (List<Advisor>)instance.limit(20).query(helper.getHibSession()).list())
+					response.addSuggestion(helper.getStudentNameFormat().format(advisor), advisor.getExternalUniqueId(), "Advisor", "advisor");
+			} else {
+				StudentQuery.QueryInstance instance = query.select("distinct ax").exclude("advisor").from("inner join s.advisors ax").where("ax.lastName is not null").order("ax.lastName, ax.firstName, ax.middleName");
+				
+				int id = 0;
+				String where = "";
+				for (StringTokenizer s = new StringTokenizer(iRequest.getText().trim(),", "); s.hasMoreTokens(); ) {
+					String token = s.nextToken().toUpperCase();
+					if (!where.isEmpty())
+						where += " and ";
+					where += "(upper(ax.firstName) like :cn" + id + " || '%' or upper(ax.middleName) like :cn" + id + " || '%' or upper(ax.lastName) like :cn" + id + " || '%' or upper(ax.email) like :cn" + id + ")";
+					instance.set("cn" + id, token);
+					id++;
+	            }
+				if (id > 0) {
+					instance.where("(" + where + ") or upper(trim(trailing ' ' from ax.lastName || ', ' || ax.firstName || ' ' || ax.middleName)) = :name or ax.externalUniqueId = :id");
+					instance.set("name", iRequest.getText().trim().toUpperCase());
+					if (ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue()) {
+						instance.set("id", iRequest.getText().trim().replaceFirst("^0+(?!$)", ""));
+					} else {
+						instance.set("id", iRequest.getText().trim());
+					}
+					for (Advisor advisor: (List<Advisor>)instance.limit(20).query(helper.getHibSession()).list())
+						response.addSuggestion(helper.getStudentNameFormat().format(advisor), advisor.getExternalUniqueId(), "Advisor", "advisor");
+				}
+			}
+		}
+		
 		return response;
 	}
 	
@@ -626,6 +665,11 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				}
 				query.addWhere("student", student);
 			}
+		}
+		
+		if (request.hasOption("advisor") ) {
+			query.addParameter("advisor", "Xadv", request.getOption("advisor"));
+			query.addWhere("advisor", "s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = :Xadv and adv.session.uniqueId = s.session.uniqueId)");
 		}
 		
 		if (request.hasOption("course")) {

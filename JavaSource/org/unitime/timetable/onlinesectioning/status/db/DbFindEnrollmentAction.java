@@ -27,6 +27,7 @@ import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -137,6 +138,10 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 					st.addGroup(gr.getGroupAbbreviation(), gr.getGroupName());
 				else
 					st.addGroup(gr.getType().getReference(), gr.getGroupAbbreviation(), gr.getGroupName());
+			}
+			for (Advisor a: student.getAdvisors()) {
+				if (a.getLastName() != null)
+					st.addAdvisor(helper.getInstructorNameFormat().format(a));
 			}
 			
 			ClassAssignmentInterface.Enrollment e = new ClassAssignmentInterface.Enrollment();

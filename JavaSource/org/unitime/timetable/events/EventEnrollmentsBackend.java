@@ -40,6 +40,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Conflict;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
 import org.unitime.timetable.gwt.shared.EventInterface.EventEnrollmentsRpcRequest;
+import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
@@ -67,6 +68,7 @@ import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.BackToBackConflict;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.DirectConflict;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.MoreThanTwoADayConflict;
+import org.unitime.timetable.util.NameFormat;
 
 /**
  * @author Tomas Muller
@@ -500,6 +502,8 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
 		GwtRpcResponseList<ClassAssignmentInterface.Enrollment> converted = new GwtRpcResponseList<ClassAssignmentInterface.Enrollment>();
 		Map<String, String> approvedBy2name = new Hashtable<String, String>();
 		Hashtable<Long, ClassAssignmentInterface.Enrollment> student2enrollment = new Hashtable<Long, ClassAssignmentInterface.Enrollment>();
+		NameFormat studentNameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingStudentNameFormat.value());
+		NameFormat instructorNameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
     	for (StudentClassEnrollment enrollment: enrollments) {
     		ClassAssignmentInterface.Enrollment enrl = student2enrollment.get(enrollment.getStudent().getUniqueId());
     		if (enrl == null) {
@@ -509,7 +513,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
     			st.setCanShowExternalId(canShowExtId);
     			st.setCanRegister(canRegister);
     			st.setCanUseAssistant(canUseAssistant);
-    			st.setName(enrollment.getStudent().getName(ApplicationProperty.OnlineSchedulingStudentNameFormat.value()));
+    			st.setName(studentNameFormat.format(enrollment.getStudent()));
     			st.setEmail(enrollment.getStudent().getEmail());
     			for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(enrollment.getStudent().getAreaClasfMajors())) {
     				st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation());
@@ -524,6 +528,10 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
     			}
     			for (StudentAccomodation a: enrollment.getStudent().getAccomodations()) {
     				st.addAccommodation(a.getAbbreviation());
+    			}
+    			for (Advisor a: enrollment.getStudent().getAdvisors()) {
+    				if (a.getLastName() != null)
+    					st.addAdvisor(instructorNameFormat.format(a));
     			}
     			enrl = new ClassAssignmentInterface.Enrollment();
     			enrl.setStudent(st);

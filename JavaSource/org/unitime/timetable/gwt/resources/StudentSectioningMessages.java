@@ -1271,6 +1271,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Message")
 	String colMessage();
 
+	@DefaultMessage("Advisor")
+	String colAdvisor();
+
 	@DefaultMessage("Messages")
 	String tableMessages();
 

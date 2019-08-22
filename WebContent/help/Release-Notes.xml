@@ -28,7 +28,7 @@
 	<version>4.4.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
-		<title>Batch Student Scheduling</title>
+		<title>Student Scheduling</title>
 		<item>
 			<name>Database Load: Learning Community Reservations</name>
 			<description>
@@ -88,6 +88,13 @@
 				</line>
 				<line>When a class has a snapshot limit defined and it is above the class limit &gt;&gt; use snapshot limit instead of the class limit.</line>
 				<line>Compute snapshot limit on configurations and offerings (using class snapshot limits, defaulting to class limits for classes with no snapshot limit defined).</line>
+ 			</description>
+		</item>
+		<item>
+			<name>Student Scheduling: Advisors</name>
+			<description>
+				<line>Show student's advisor(s) on the dashboard page (Students tab) and in the Enrollments tables.</line>
+				<line>Added ability to filter by advisor on the dashboard page.</line>
  			</description>
 		</item>
 	</category>

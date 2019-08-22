@@ -42,6 +42,7 @@ import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
+import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.ClassInstructor;
@@ -779,7 +780,18 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					return has(iFormat.format(student()), term) || eq(student().getExternalUniqueId(), term) || eq(iFormat.format(student()), term);
 				}
 			}
-			
+
+			if ("advisor".equals(attr)) {
+				if (ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue() && term.startsWith("0")) {
+					for (Advisor a: student().getAdvisors())
+						if (eq(a.getExternalUniqueId(), term.replaceFirst("^0+(?!$)", ""))) return true;
+				} else {
+					for (Advisor a: student().getAdvisors())
+						if (eq(a.getExternalUniqueId(), term)) return true;
+				}
+				return false;
+			}
+
 			if ("assignment".equals(attr)) {
 				if (eq("Assigned", term)) {
 					return !enrollment().isEmpty();
@@ -1264,6 +1276,10 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					if (eq(acc.getAbbreviation(), term)) return true;
 			} else if  ("student".equals(attr)) {
 				return has(iFormat.format(student()), term) || eq(student().getExternalUniqueId(), term) || eq(iFormat.format(student()), term);
+			} else if  ("advisor".equals(attr)) {
+				for (Advisor a: student().getAdvisors())
+					if (eq(a.getExternalUniqueId(), term)) return true;
+				return false;
 			} else if ("registered".equals(attr)) {
 				if (eq("true", term) || eq("1",term))
 					return false;
