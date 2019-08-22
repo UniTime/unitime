@@ -65,6 +65,13 @@
 				<line>Permission Student Scheduling Change Critical Override is needed.</line>
 			</description>
 		</item>
+		<item>
+			<name>Batch Student Scheduling: XE Save</name>
+			<description>
+				<line>Enroll students with CLOS overrides last (students with an override reservation that allows over the limit).</line>
+				<line>This is to make sure some other student would not get a CLOS error.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>
