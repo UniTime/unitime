@@ -2595,6 +2595,11 @@ public enum ApplicationProperty {
 	@DefaultValue("10")
 	@Description("Course Finder: maximum courses for Select All button")
 	ListCourseOfferingsSelectionLimit("unitime.enrollment.listOfferings.limit"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Student Status: include effective period message in the status")
+	StudentStatusEffectivePeriodMessage("unitime.enrollment.studentStatus.timeWindowMessage"),
 	;
 
 	String iKey;

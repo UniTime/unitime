@@ -86,6 +86,13 @@
 				<line>Fixed Null exception when the student has a teaching assignment.</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Status: Message</name>
+			<description>
+				<line>For statuses with an effective period, added ability to configure whether the automatically generated message (Your time window is between...) is to be automatically appended at the end of the status message.</line>
+				<line>Settings unitime.enrollment.studentStatus.timeWindowMessage, defaults to true (include the message).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>
