@@ -244,6 +244,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Scheduling Subpart Limits:")
 	String propertySchedulingSubpartLimits();
 	
+	@DefaultMessage("Snapshot Limits:")
+	String propertySchedulingSubpartSnapshotLimits();
+	
 	@DefaultMessage("All:") //used in Multiple Class Setup, Assign Instructors
 	String propertyAll();
 
@@ -663,6 +666,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Snapshot Limit")
 	String columnSnapshotLimit();
+	
+	@DefaultMessage("Snapshot<br>Limit")
+	String columnSnapshotLimitBr();
 	
 	@DefaultMessage("Nbr<br>Rms")
 	String columnNbrRms();

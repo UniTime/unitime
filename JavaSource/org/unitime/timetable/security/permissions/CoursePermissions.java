@@ -520,7 +520,20 @@ public class CoursePermissions {
 	public static class MultipleClassSetupDepartment extends InstrOfferingConfigEditDepartment {}
 	
 	@PermissionForRight(Right.MultipleClassSetupClass)
-	public static class MultipleClassSetupClassEdit extends ClassEdit {}
+	public static class MultipleClassSetupClassEdit implements Permission<Class_> {
+		@Autowired PermissionDepartment permissionDepartment;
+		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
+
+		@Override
+		public boolean check(UserContext user, Class_ source) {
+			return !permissionOfferingLockNeeded.check(user, source.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering()) &&
+					permissionDepartment.check(user, source.getControllingDept(), DepartmentStatusType.Status.OwnerEdit,
+							source.getManagingDept(), DepartmentStatusType.Status.ManagerEdit);
+		}
+
+		@Override
+		public Class<Class_> type() { return Class_.class; }
+	}
 
 	@PermissionForRight(Right.OfferingMakeOffered)
 	public static class OfferingMakeOffered implements Permission<InstructionalOffering> {

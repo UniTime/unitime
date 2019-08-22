@@ -462,6 +462,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Class Setup: edit external ids")
 	ClassSetupEditExternalIds("tmtbl.class_setup.edit_external_ids"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Class Setup: edit snapshot limits")
+	ClassSetupEditSnapshotLimits("tmtbl.class_setup.edit_snapshot_limits"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")

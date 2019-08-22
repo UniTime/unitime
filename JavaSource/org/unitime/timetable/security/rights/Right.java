@@ -126,6 +126,7 @@ public enum Right {
 	MultipleClassSetup(InstrOfferingConfig.class),
 	MultipleClassSetupDepartment(Department.class),
 	MultipleClassSetupClass(Class_.class),
+	MultipleClassSetupSnapshotLimits,
 	
 	AssignInstructors(InstrOfferingConfig.class),
 	AssignInstructorsClass(Class_.class),
