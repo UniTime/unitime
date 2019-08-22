@@ -30,6 +30,59 @@
 	<category>
 		<title>Student Scheduling</title>
 		<item>
+			<name>Student Scheduling: Advisors</name>
+			<description>
+				<line>Show student's advisor(s) on the dashboard page (Students tab) and in the Enrollments tables.</line>
+				<line>Added ability to filter by advisor on the dashboard page.</line>
+ 			</description>
+		</item>
+		<item>
+			<name>Course Finder: Select All</name>
+			<description>
+				<line>Added Select All button.</line>
+				<line>Only visible when there is a match on UCC attribute (custom course lookup).</line>
+				<line>When clicked, all courses are selected (limited to 10) in a random order favoring courses with more available space.</line>
+				<line>It is possible to choose the selection mode (availability, limit, or snapshot).</line>
+				<line>It is possible to define whether a random selection will be used (or the courses will be just listed in the given order).</line>
+				<line>It is possible to define the maximal number of returned courses.</line>
+				<line>The following application properties are used:
+					<line>unitime.enrollment.listOfferings.selectionMode=availability|limit|snapshot (defaults to availability)</line>
+					<line>unitime.enrollment.listOfferings.rouletteWheel=true</line>
+					<line>unitime.enrollment.listOfferings.limit=10</line>
+				</line>
+ 			</description>
+		</item>
+	</category>
+	<category>
+		<title>CPSolver updated to version 1.3.182 (was 1.3.179)</title>
+		<item>
+				<name>Examination Timetabling: Availability</name>
+				<description>
+						<line>When instructor or student direct conflicts are not allowed, also do not allow for availability violations.</line>
+				</description>
+		</item>
+		<item>
+				<name>Student Scheduling: Solution Info</name>
+				<description>
+						<line>Added information about full sections and offerings.</line>
+						<line>Added information about students with time overlaps (number of students, average overlapping minutes).</line>
+				</description>
+		</item>
+		<item>
+				<name>Student Scheduling: Advisors</name>
+				<description>
+						<line>Added support for student's advisor(s).</line>
+				</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.4.120</version>
+	<release-date>Thu, 8 Aug 2019</release-date>
+	<category>
+		<title>Batch Student Scheduling</title>
+		<item>
 			<name>Database Load: Learning Community Reservations</name>
 			<description>
 				<line>Corrected a minor issue with a Learning Community reservation:
@@ -90,32 +143,9 @@
 				<line>Compute snapshot limit on configurations and offerings (using class snapshot limits, defaulting to class limits for classes with no snapshot limit defined).</line>
  			</description>
 		</item>
-		<item>
-			<name>Student Scheduling: Advisors</name>
-			<description>
-				<line>Show student's advisor(s) on the dashboard page (Students tab) and in the Enrollments tables.</line>
-				<line>Added ability to filter by advisor on the dashboard page.</line>
- 			</description>
-		</item>
-		<item>
-			<name>Course Finder: Select All</name>
-			<description>
-				<line>Added Select All button.</line>
-				<line>Only visible when there is a match on UCC attribute (custom course lookup).</line>
-				<line>When clicked, all courses are selected (limited to 10) in a random order favoring courses with more available space.</line>
-				<line>It is possible to choose the selection mode (availability, limit, or snapshot).</line>
-				<line>It is possible to define whether a random selection will be used (or the courses will be just listed in the given order).</line>
-				<line>It is possible to define the maximal number of returned courses.</line>
-				<line>The following application properties are used:
-					<line>unitime.enrollment.listOfferings.selectionMode=availability|limit|snapshot (defaults to availability)</line>
-					<line>unitime.enrollment.listOfferings.rouletteWheel=true</line>
-					<line>unitime.enrollment.listOfferings.limit=10</line>
-				</line>
- 			</description>
-		</item>
 	</category>
 	<category>
-		<title>CPSolver updated to version 1.3.182 (was 1.3.176)</title>
+		<title>CPSolver updated to version 1.3.179 (was 1.3.176)</title>
 		<item>
 			<name>Student Scheduling: Enrollment</name>
 			<description>
@@ -134,25 +164,6 @@
 IFS.</line>
 				</line>
 			</description>
-		</item>
-		<item>
-				<name>Examination Timetabling: Availability</name>
-				<description>
-						<line>When instructor or student direct conflicts are not allowed, also do not allow for availability violations.</line>
-				</description>
-		</item>
-		<item>
-				<name>Student Scheduling: Solution Info</name>
-				<description>
-						<line>Added information about full sections and offerings.</line>
-						<line>Added information about students with time overlaps (number of students, average overlapping minutes).</line>
-				</description>
-		</item>
-		<item>
-				<name>Student Scheduling: Advisors</name>
-				<description>
-						<line>Added support for student's advisor(s).</line>
-				</description>
 		</item>
 	</category>
 	<category>
