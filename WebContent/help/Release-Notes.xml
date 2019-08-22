@@ -34,6 +34,7 @@
 			<description>
 				<line>Show student's advisor(s) on the dashboard page (Students tab) and in the Enrollments tables.</line>
 				<line>Added ability to filter by advisor on the dashboard page.</line>
+				<line>People Lookup: Added ability to check advisors when looking up a person. Added ability to use people lookup to fill in advisor details.</line>
  			</description>
 		</item>
 		<item>
@@ -90,7 +91,7 @@
 			<name>Student Status: Message</name>
 			<description>
 				<line>For statuses with an effective period, added ability to configure whether the automatically generated message (Your time window is between...) is to be automatically appended at the end of the status message.</line>
-				<line>Settings unitime.enrollment.studentStatus.timeWindowMessage, defaults to true (include the message).</line>
+				<line>Sgit settings unitime.enrollment.studentStatus.timeWindowMessage, defaults to true (include the message).</line>
 			</description>
 		</item>
 	</category>

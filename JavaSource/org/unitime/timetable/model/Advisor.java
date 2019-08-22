@@ -19,7 +19,14 @@
 */
 package org.unitime.timetable.model;
 
+import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
+import org.unitime.timetable.gwt.shared.PersonInterface;
+import org.unitime.timetable.gwt.shared.PersonInterface.LookupRequest;
+import org.unitime.timetable.interfaces.ExternalUidTranslation;
+import org.unitime.timetable.interfaces.ExternalUidTranslation.Source;
 import org.unitime.timetable.model.base.BaseAdvisor;
+import org.unitime.timetable.server.lookup.PeopleLookupBackend;
 import org.unitime.timetable.util.NameFormat;
 import org.unitime.timetable.util.NameInterface;
 
@@ -42,6 +49,35 @@ public class Advisor extends BaseAdvisor implements NameInterface, Comparable<Ad
         int cmp = NameFormat.LAST_FIRST.format(this).compareTo(NameFormat.LAST_FIRST.format(advisor));
         if (cmp!=0) return cmp;
         return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(advisor.getUniqueId() == null ? -1 : advisor.getUniqueId());
+    }
+    
+    public boolean lookupDetails() {
+    	if (getExternalUniqueId() == null) return false;
+    	ExternalUidTranslation translation = null;
+        if (ApplicationProperty.ExternalUserIdTranslation.value()!=null) {
+            try {
+                translation = (ExternalUidTranslation)Class.forName(ApplicationProperty.ExternalUserIdTranslation.value()).getConstructor().newInstance();
+            } catch (Exception e) {}
+        }
+        String query = getExternalUniqueId();
+        if (translation != null) query = translation.translate(getExternalUniqueId(), Source.Staff, Source.LDAP);
+        
+        LookupRequest request = new LookupRequest(query, "mustHaveExternalId,session=" + getSession().getUniqueId() + ",source=ldap:instructors:staff");
+        GwtRpcResponseList<PersonInterface> response = new PeopleLookupBackend().execute(request, null);
+        if (response != null) {
+        	for (PersonInterface person: response)
+        		if (getExternalUniqueId().equals(person.getId())) {
+        			setFirstName(person.getFirstName());
+        			setLastName(person.getLastName());
+        			setMiddleName(person.getMiddleName());
+        			setAcademicTitle(person.getAcademicTitle());
+        			setEmail(person.getEmail());
+        			return true;
+        		}
+        }
+        if (!query.equals(getExternalUniqueId()))
+        	setLastName(query);
+        return false;
     }
 
 }

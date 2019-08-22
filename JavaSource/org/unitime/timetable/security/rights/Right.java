@@ -668,6 +668,7 @@ public enum Right {
     CanLookupManagers,
     CanLookupEventContacts,
     CanLookupLdap,
+    CanLookupAdvisors,
 
 	/** Obsolete */
     

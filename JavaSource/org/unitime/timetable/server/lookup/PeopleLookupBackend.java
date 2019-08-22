@@ -50,11 +50,13 @@ import org.unitime.timetable.gwt.shared.PersonInterface.LookupRequest;
 import org.unitime.timetable.interfaces.ExternalUidLookup;
 import org.unitime.timetable.interfaces.ExternalUidTranslation;
 import org.unitime.timetable.interfaces.ExternalUidTranslation.Source;
+import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.Staff;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.dao.AdvisorDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.EventContactDAO;
 import org.unitime.timetable.model.dao.StaffDAO;
@@ -141,6 +143,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 				if (context == null || context.hasPermission(Right.CanLookupStaff)) findPeopleFromStaff(cx);
 				if (context == null || context.hasPermission(Right.CanLookupManagers)) findPeopleFromTimetableManagers(cx);
 				if (context == null || context.hasPermission(Right.CanLookupEventContacts)) findPeopleFromEventContact(cx);
+				if (context == null || context.hasPermission(Right.CanLookupAdvisors)) findPeopleFromAdvisors(cx);
 			} else {
 				for (String source: sources) {
 					if ("ldap".equals(source) && (context == null || context.hasPermission(Right.CanLookupLdap))) findPeopleFromLdap(cx);
@@ -149,6 +152,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 					if ("managers".equals(source) && (context == null || context.hasPermission(Right.CanLookupManagers))) findPeopleFromStaff(cx);
 					if ("events".equals(source) && (context == null || context.hasPermission(Right.CanLookupEventContacts))) findPeopleFromTimetableManagers(cx);
 					if ("instructors".equals(source) && (context == null || context.hasPermission(Right.CanLookupInstructors))) findPeopleFromEventContact(cx);
+					if ("advisors".equals(source) && (context == null || context.hasPermission(Right.CanLookupAdvisors))) findPeopleFromAdvisors(cx);
 				}
 			}
 			
@@ -201,7 +205,8 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
                 	"or lower(s.middleName) like '% ' || :t" + idx + " || '%' " +
                 	"or lower(s.lastName) like :t" + idx + " || '%' " +
                 	"or lower(s.lastName) like '% ' || :t" + idx + " || '%' " +
-                	"or lower(s.email) like :t" + idx + " || '%')";
+                	"or lower(s.email) like :t" + idx + " || '%'" +
+                	(context.isAdmin() ? "or s.externalUniqueId = :t" + idx : "") + ")";
         }
         q += " order by s.lastName, s.firstName, s.middleName";
         Query hq = StaffDAO.getInstance().getSession().createQuery(q);
@@ -218,6 +223,34 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
         }
     }
     
+    protected void findPeopleFromAdvisors(SearchContext context) throws Exception {
+        String q = "select s from Advisor s where s.lastName is not null and";
+        for (int idx = 0; idx < context.getQueryTokens().size(); idx++) {
+        	if (idx > 0) q += " and ";
+            q += "(lower(s.firstName) like :t" + idx + " || '%' " +
+            		"or lower(s.firstName) like '% ' || :t" + idx + " || '%' " +
+                	"or lower(s.middleName) like :t" + idx + " || '%' " +
+                	"or lower(s.middleName) like '% ' || :t" + idx + " || '%' " +
+                	"or lower(s.lastName) like :t" + idx + " || '%' " +
+                	"or lower(s.lastName) like '% ' || :t" + idx + " || '%' " +
+                	"or lower(s.email) like :t" + idx + " || '%'" + 
+                	(context.isAdmin() ? "or s.externalUniqueId = :t" + idx : "") + ")";
+        }
+        q += " order by s.lastName, s.firstName, s.middleName";
+        Query hq = AdvisorDAO.getInstance().getSession().createQuery(q);
+        for (int idx = 0; idx < context.getQueryTokens().size(); idx++)
+        	hq.setString("t" + idx, context.getQueryTokens().get(idx));
+        if (context.getLimit() > 0)
+        	hq.setMaxResults(context.getLimit());
+        for (Advisor advisor: (List<Advisor>)hq.setCacheable(true).list()) {
+            context.addPerson(new PersonInterface(translate(advisor.getExternalUniqueId(), Source.Staff), 
+                    advisor.getFirstName(), advisor.getMiddleName(), advisor.getLastName(), advisor.getAcademicTitle(),
+                    advisor.getEmail(), null, null, 
+                    null,
+                    "Advisors"));
+        }
+    }
+    
     protected void findPeopleFromEventContact(SearchContext context) throws Exception {
         String q = "select s from EventContact s where ";
         for (int idx = 0; idx < context.getQueryTokens().size(); idx++) {
@@ -228,7 +261,8 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
                 	"or lower(s.middleName) like '% ' || :t" + idx + " || '%' " +
                 	"or lower(s.lastName) like :t" + idx + " || '%' " +
                 	"or lower(s.lastName) like '% ' || :t" + idx + " || '%' " +
-                	"or lower(s.emailAddress) like :t" + idx + " || '%')";
+                	"or lower(s.emailAddress) like :t" + idx + " || '%'" +
+                	(context.isAdmin() ? "or s.externalUniqueId = :t" + idx : "") + ")";
         }
         q += " order by s.lastName, s.firstName, s.middleName";
         Query hq = EventContactDAO.getInstance().getSession().createQuery(q);
@@ -254,7 +288,8 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
                 	"or lower(s.middleName) like '% ' || :t" + idx + " || '%' " +
                 	"or lower(s.lastName) like :t" + idx + " || '%' " +
                 	"or lower(s.lastName) like '% ' || :t" + idx + " || '%' " +
-                	"or lower(s.email) like :t" + idx + " || '%')";
+                	"or lower(s.email) like :t" + idx + " || '%'" +
+                	(context.isAdmin() ? "or s.externalUniqueId = :t" + idx : "") + ")";
         }
         q += " order by s.lastName, s.firstName, s.middleName";
         Query hq = DepartmentalInstructorDAO.getInstance().getSession().createQuery(q);
@@ -321,7 +356,8 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
                 	"or lower(s.middleName) like '% ' || :t" + idx + " || '%' " +
                 	"or lower(s.lastName) like :t" + idx + " || '%' " +
                 	"or lower(s.lastName) like '% ' || :t" + idx + " || '%' " +
-                	"or lower(s.emailAddress) like :t" + idx + " || '%')";
+                	"or lower(s.emailAddress) like :t" + idx + " || '%'" +
+                	(context.isAdmin() ? "or s.externalUniqueId = :t" + idx : "") + ")";
         }
         q += " order by s.lastName, s.firstName, s.middleName";
         Query hq = TimetableManagerDAO.getInstance().getSession().createQuery(q);
