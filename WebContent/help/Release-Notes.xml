@@ -57,6 +57,9 @@
 			<name>Course Requests: Custom Course Request Validation</name>
 			<description>
 				<line>Request Overrides: added ability to provide request note.</line>
+				<line>Course request validation (when submitting the Course Requests page): for all new registration errors, check if the override is allowed.
+					<line>Using the response message (response.overrides) and prohibited overrides on the course that is being requested.</line>
+				</line>
 			</description>
 		</item>
 		<item>
