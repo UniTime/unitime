@@ -1237,6 +1237,9 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Message:")
 	String emailBody();
+	
+	@DefaultMessage("Include:")
+	String emailInclude();
 
 	@DefaultMessage("Send")
 	String emailSend();
@@ -1313,6 +1316,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Message")
 	String emailMessage();
 	
+	@DefaultMessage("Course Requests")
+	String emailCourseRequests();
+	
 	@DefaultMessage("List of Classes")
 	String emailClassList();
 	
@@ -1354,7 +1360,6 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Course {0} {1} dropped due to a reject.")
 	String emailCourseDropReject(String subject, String courseNbr);
-	
 
 	@DefaultMessage("Course {0} {1} dropped due to a course change.")
 	String emailCourseDropChange(String subject, String courseNbr);
@@ -1412,6 +1417,12 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Mass cancellation is an irreversible operation that will delete all class enrollments and course requests for the selected student(s). Are you sure to do that?")
 	String massCancelConfirmation();
+	
+	@DefaultMessage("Course Requests")
+	String mailIncludeCourseRequests();
+	
+	@DefaultMessage("Class Schedule")
+	String mailIncludeClassSchedule();
 	
 	@DefaultMessage("<i>Arrange Hours</i>")
 	String arrangeHours();

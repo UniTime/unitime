@@ -1319,7 +1319,8 @@ public class SectioningStatusPage extends Composite {
 									iStudentTable.setWidget(row, iStudentTable.getCellCount(row) - 1, new Image(RESOURCES.loading_small()));
 								}
 							}
-							sendEmail(studentIds.iterator(), iStudentStatusDialog.getSubject(), iStudentStatusDialog.getMessage(), iStudentStatusDialog.getCC(), 0);
+							sendEmail(studentIds.iterator(), iStudentStatusDialog.getSubject(), iStudentStatusDialog.getMessage(), iStudentStatusDialog.getCC(), 0,
+									iStudentStatusDialog.getIncludeCourseRequests(), iStudentStatusDialog.getIncludeClassSchedule());
 						}
 					});
 				}
@@ -2996,10 +2997,10 @@ public class SectioningStatusPage extends Composite {
 		}
 	}
 	
-	private void sendEmail(final Iterator<Long> studentIds, final String subject, final String message, final String cc, final int fails) {
+	private void sendEmail(final Iterator<Long> studentIds, final String subject, final String message, final String cc, final int fails, final boolean courseRequests, final boolean classSchedule) {
 		if (!studentIds.hasNext()) return;
 		final Long studentId = studentIds.next();
-		iSectioningService.sendEmail(studentId, subject, message, cc, new AsyncCallback<Boolean>() {
+		iSectioningService.sendEmail(studentId, subject, message, cc, courseRequests, classSchedule, new AsyncCallback<Boolean>() {
 
 			@Override
 			public void onFailure(Throwable caught) {
@@ -3026,7 +3027,7 @@ public class SectioningStatusPage extends Composite {
 						}
 					}
 				}
-				sendEmail(studentIds, subject, message, cc, fails + 1);
+				sendEmail(studentIds, subject, message, cc, fails + 1, courseRequests, classSchedule);
 			}
 
 			@Override
@@ -3044,7 +3045,7 @@ public class SectioningStatusPage extends Composite {
 							i.setEmailDate(null);
 						}
 					}
-					sendEmail(studentIds, subject, message, cc, fails);
+					sendEmail(studentIds, subject, message, cc, fails, courseRequests, classSchedule);
 				}
 			}
 		});

@@ -2479,7 +2479,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		List<StudentStatusInfo> ret = new ArrayList<StudentStatusInfo>();
 		boolean advisor = (getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdvisor) &&
 				!getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdmin));
-		boolean email = ApplicationProperty.OnlineSchedulingEmailConfirmation.isTrue();
+		boolean email = true;
 		boolean waitlist = CustomStudentEnrollmentHolder.isAllowWaitListing();
 		boolean specreg = CustomSpecialRegistrationHolder.hasProvider();
 		boolean reqval = CustomCourseRequestsValidationHolder.hasProvider();
@@ -2519,12 +2519,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 
 	@Override
-	public Boolean sendEmail(Long studentId, String subject, String message, String cc) throws SectioningException, PageAccessException {
+	public Boolean sendEmail(Long studentId, String subject, String message, String cc, Boolean courseRequests, Boolean classSchedule) throws SectioningException, PageAccessException {
 		try {
 			OnlineSectioningServer server = getServerInstance(getStatusPageSessionId(), true);
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
-			if (ApplicationProperty.OnlineSchedulingEmailConfirmation.isFalse())
-				throw new SectioningException(MSG.exceptionStudentEmailsDisabled());
 			getSessionContext().checkPermission(server.getAcademicSession(), Right.StudentSchedulingEmailStudent);
 			
 			if (!getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdmin) &&
@@ -2540,6 +2538,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				}
 			
 			StudentEmail email = server.createAction(StudentEmail.class).forStudent(studentId);
+			if (courseRequests != null && classSchedule != null)
+				email.overridePermissions(courseRequests, classSchedule);
 			email.setCC(cc);
 			email.setEmailSubject(subject == null || subject.isEmpty() ? MSG.defaulSubject() : subject);
 			email.setMessage(message);

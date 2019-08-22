@@ -94,6 +94,19 @@
 				<line>Sgit settings unitime.enrollment.studentStatus.timeWindowMessage, defaults to true (include the message).</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling: Student Emails</name>
+			<description>
+				<line>Added ability to send student emails (from the online dashboard) even when the automatic notifications are disabled.</line>
+				<line>Include course requests table on the email (when student can access Course Requests page).</line>
+				<line>Include List of Classes and Timetable only when the student can access the Scheduling Assistant page.</line>
+				<line>When the email is send from the online dashboard:
+					<line>Ignore the student status (email flag)</line>
+					<line>Added checkboxes: include course requests and include class schedule</line>
+					<line>Remember the last used settings in the cookie (subject, cc, includes)</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>

@@ -398,7 +398,9 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 		sendEmail(new OpExecution<Boolean>() {
 			@Override
 			public Boolean execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
-				return service.sendEmail(studentId, helper.getOptinalParameter("subject", null), helper.getOptinalParameter("message", null), helper.getOptinalParameter("cc", null));
+				return service.sendEmail(studentId, helper.getOptinalParameter("subject", null), helper.getOptinalParameter("message", null), helper.getOptinalParameter("cc", null),
+						helper.getOptinalParameterBoolean("courseRequests", null),
+						helper.getOptinalParameterBoolean("classSchedule", null));
 			}
 		}, Flag.GET, Flag.POST),
 		changeStatus(new OpExecution<Boolean>() {

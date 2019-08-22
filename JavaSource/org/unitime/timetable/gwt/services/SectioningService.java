@@ -87,7 +87,7 @@ public interface SectioningService extends RemoteService {
 	ClassAssignmentInterface savedResult(boolean online, Long sessionId, Long studentId) throws SectioningException, PageAccessException;
 	Boolean selectSession(Long sessionId) throws SectioningException, PageAccessException;
 	List<StudentStatusInfo> lookupStudentSectioningStates() throws SectioningException, PageAccessException;
-	Boolean sendEmail(Long studentId, String subject, String message, String cc) throws SectioningException, PageAccessException;
+	Boolean sendEmail(Long studentId, String subject, String message, String cc, Boolean courseRequests, Boolean classSchedule) throws SectioningException, PageAccessException;
 	Boolean changeStatus(List<Long> studentIds, String note, String status) throws SectioningException, PageAccessException;
 	Boolean changeStudentGroup(List<Long> studentIds, Long groupId, boolean remove) throws SectioningException, PageAccessException;
 	List<ClassAssignmentInterface.SectioningAction> changeLog(String query) throws SectioningException, PageAccessException;
