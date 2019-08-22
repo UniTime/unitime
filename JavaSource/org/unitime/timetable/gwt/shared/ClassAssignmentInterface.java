@@ -51,6 +51,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	private ArrayList<String> iMessages = null;
 	private ArrayList<ErrorMessage> iErrors = null;
 	private boolean iCanEnroll = true;
+	private boolean iCanSetCriticalOverrides = false;
 	private double iValue = 0.0;
 	
 	public ClassAssignmentInterface() {}
@@ -107,6 +108,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	
 	public boolean isCanEnroll() { return iCanEnroll; }
 	public void setCanEnroll(boolean canEnroll) { iCanEnroll = canEnroll; }
+	
+	public boolean isCanSetCriticalOverrides() { return iCanSetCriticalOverrides; }
+	public void setCanSetCriticalOverrides(boolean canSetCriticalOverrides) { iCanSetCriticalOverrides = canSetCriticalOverrides; }
 	
 	public double getValue() { return iValue; }
 	public void setValue(double value) { iValue = value; }

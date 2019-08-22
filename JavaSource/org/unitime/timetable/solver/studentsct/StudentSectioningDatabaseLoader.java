@@ -1332,7 +1332,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         student,
                         courses,
                         cd.isWaitlist(), 
-                        cd.isCritical() != null && cd.isCritical().booleanValue(),
+                        (cd.isCriticalOverride() != null ? cd.isCriticalOverride().booleanValue() : cd.isCritical() != null && cd.isCritical().booleanValue()),
                         cd.getTimestamp().getTime());
                 request.getSelectedChoices().addAll(selChoices);
                 request.getRequiredChoices().addAll(reqChoices);

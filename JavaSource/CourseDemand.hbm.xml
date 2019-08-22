@@ -70,6 +70,12 @@
             type="java.lang.Boolean"
             not-null="false"/>
 
+        <property
+            name="criticalOverride"
+            column="critical_override"
+            type="java.lang.Boolean"
+            not-null="false"/>
+
         <many-to-one
             name="freeTime"
             class="FreeTime"

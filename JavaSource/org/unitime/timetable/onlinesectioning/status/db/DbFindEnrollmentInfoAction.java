@@ -802,6 +802,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				} else if (eq("Wait-Listed", term)) {
 					return enrollment().isEmpty() && request().getCourseDemand().isWaitlist();
 				} else if (eq("Critical", term)) {
+					if (request().getCourseDemand().isCriticalOverride() != null)
+						return request().getCourseDemand().isCriticalOverride().booleanValue();
 					return request().getCourseDemand().isCritical() != null && request().getCourseDemand().isCritical().booleanValue();
 				}
 			}

@@ -597,6 +597,7 @@ public class StudentSectioningImport extends BaseImport {
                         String waitList = requestElement.attributeValue("waitlist");
                         String alternative = requestElement.attributeValue("alternative");
                         String critical = requestElement.attributeValue("critical");
+                        String criticalOverride = requestElement.attributeValue("criticalOverride");
                         if (requestElement.getName().equals("courseOffering")) {
                         	List<CourseOffering> courses = new ArrayList<CourseOffering>();
                         	List<Integer> credits = new ArrayList<Integer>();
@@ -653,6 +654,7 @@ public class StudentSectioningImport extends BaseImport {
         					cd.setPriority(priority);
         					cd.setWaitlist("true".equals(waitList));
         					cd.setCritical(critical == null ? null : new Boolean("true".equals(critical)));
+        					cd.setCriticalOverride(criticalOverride == null ? null : Boolean.valueOf("true".equals(criticalOverride)));
                             
             				Iterator<CourseRequest> requests = new TreeSet<CourseRequest>(cd.getCourseRequests()).iterator();
             				int order = 0;

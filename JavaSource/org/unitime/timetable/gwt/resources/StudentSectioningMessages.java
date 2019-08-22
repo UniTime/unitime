@@ -1895,6 +1895,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course request is critical.")
 	String descriptionRequestCritical();
 	
+	@DefaultMessage("Course request is not critical.")
+	String descriptionRequestNotCritical();
+	
 	@DefaultMessage("Enrolled")
 	String reqStatusEnrolled();
 
@@ -2300,4 +2303,13 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("All approval requests have been approved and applied.")
 	String specRegAllRequestsFullyApplied();
+	
+	@DefaultMessage("Critical")
+	String opSetCritical();
+	
+	@DefaultMessage("Not Critical")
+	String opSetNotCritical();
+	
+	@DefaultMessage("Use Default")
+	String opSetCriticalNotSet();
 }

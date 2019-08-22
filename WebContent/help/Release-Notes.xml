@@ -58,6 +58,13 @@
 				<line>Request Overrides: added ability to provide request note.</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Requests: Critical Course Override</name>
+			<description>
+				<line>Added ability to override critical course flag on the Online Student Scheduling Dashboard.</line>
+				<line>Permission Student Scheduling Change Critical Override is needed.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>
