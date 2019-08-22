@@ -78,6 +78,14 @@
 				<line>A few changes (mostly caching) to make the search on the dashboard work faster, especially when returning a lot of data.</line>
 			</description>
 		</item>
+		<item>
+			<name>Grade Modes: Disclaimer</name>
+			<description>
+				<line>Added ability to put in a custom disclaimer for each grade mode change.</line>
+				<line>Application property purdue.specreg.gradeModeDisclaimer.X, where X is the code of the grade mode change.</line>
+				<line>Fixed Null exception when the student has a teaching assignment.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>

@@ -707,6 +707,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 	public static class SpecialRegistrationGradeMode extends GradeMode {
 		private static final long serialVersionUID = 1L;
 		private List<String> iApprovals = null;
+		private String iDisclaimer = null;
 		private String iOriginalGradeMode = null;
 		
 		public SpecialRegistrationGradeMode() {
@@ -722,6 +723,10 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			if (iApprovals == null) iApprovals = new ArrayList<String>();
 			iApprovals.add(approval);
 		}
+		
+		public boolean hasDisclaimer() { return iDisclaimer != null && !iDisclaimer.isEmpty(); }
+		public String getDisclaimer() { return iDisclaimer; }
+		public void setDisclaimer(String disclaimer) { iDisclaimer = disclaimer; }
 		
 		public String getOriginalGradeMode() { return iOriginalGradeMode; }
 		public void setOriginalGradeMode(String mode) { iOriginalGradeMode = mode; }

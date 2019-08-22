@@ -2282,9 +2282,11 @@ public interface StudentSectioningMessages extends Messages {
 			+ "Click <b>Close Dialog</b> to cancel this request and go back to explore other scheduling options.")
 	String gradeModeChangeOptions();
 		
-	@DefaultMessage(
-			"<b>Request Note:</b>")
+	@DefaultMessage("<b>Request Note:</b>")
 	String gradeModeChangesNote();
+	
+	@DefaultMessage("\n<b>Disclaimer:</b>")
+	String gradeModeDisclaimers();
 	
 	@DefaultMessage("Not Set")
 	String gradeModeItemNotSet();

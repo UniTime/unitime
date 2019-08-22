@@ -284,10 +284,23 @@ public class UniTimeHeaderPanel extends P {
 			clone.setEnabled(button, enabled);
 	}
 	
+	public void setEnabled(int button, boolean enabled, boolean visible) {
+		Button b = (Button)iButtons.getWidget(button);
+		b.setVisible(visible); b.setEnabled(enabled);
+		for (UniTimeHeaderPanel clone: iClones)
+			clone.setEnabled(button, enabled, visible);
+	}
+	
 	public void setEnabled(String operation, boolean enabled) {
 		Integer op = iOperations.get(operation);
 		if (op != null)
 			setEnabled(iOperations.get(operation), enabled);
+	}
+	
+	public void setEnabled(String operation, boolean enabled, boolean visible) {
+		Integer op = iOperations.get(operation);
+		if (op != null)
+			setEnabled(iOperations.get(operation), enabled, visible);
 	}
 	
 	public boolean isEnabled(int button) {

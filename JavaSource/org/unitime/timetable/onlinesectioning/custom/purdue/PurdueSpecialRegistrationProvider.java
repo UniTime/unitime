@@ -2178,6 +2178,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							if (av.approvals != null)
 								for (String ap: av.approvals)
 									availableMode.addApproval(ap);
+							availableMode.setDisclaimer(ApplicationProperties.getProperty("purdue.specreg.gradeModeDisclaimer." + av.gradingMode));
 							mode.addAvailableChange(availableMode);
 						}
 					ret.add(m.crn, mode);
