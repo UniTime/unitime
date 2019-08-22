@@ -63,14 +63,14 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	protected static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	
-	private AriaTextBox iFilter = null;
-	private AriaButton iFilterSelect;
-	private P iFilterPanel;
+	protected AriaTextBox iFilter = null;
+	private AriaButton iFilterSelect = null;
+	protected P iFilterPanel;
 	private boolean iEnabled = true;
 	
 	private CourseFinderTab[] iTabs = null;
 	
-	private UniTimeTabPanel iTabPanel = null;
+	protected UniTimeTabPanel iTabPanel = null;
 	private VerticalPanel iDialogPanel = null;
 	private Map<Character, Integer> iTabAccessKeys = new HashMap<Character, Integer>();
 	private String iLastFilter = null;

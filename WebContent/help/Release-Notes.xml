@@ -97,6 +97,22 @@
 				<line>Added ability to filter by advisor on the dashboard page.</line>
  			</description>
 		</item>
+		<item>
+			<name>Course Finder: Select All</name>
+			<description>
+				<line>Added Select All button.</line>
+				<line>Only visible when there is a match on UCC attribute (custom course lookup).</line>
+				<line>When clicked, all courses are selected (limited to 10) in a random order favoring courses with more available space.</line>
+				<line>It is possible to choose the selection mode (availability, limit, or snapshot).</line>
+				<line>It is possible to define whether a random selection will be used (or the courses will be just listed in the given order).</line>
+				<line>It is possible to define the maximal number of returned courses.</line>
+				<line>The following application properties are used:
+					<line>unitime.enrollment.listOfferings.selectionMode=availability|limit|snapshot (defaults to availability)</line>
+					<line>unitime.enrollment.listOfferings.rouletteWheel=true</line>
+					<line>unitime.enrollment.listOfferings.limit=10</line>
+				</line>
+ 			</description>
+		</item>
 	</category>
 	<category>
 		<title>CPSolver updated to version 1.3.182 (was 1.3.176)</title>

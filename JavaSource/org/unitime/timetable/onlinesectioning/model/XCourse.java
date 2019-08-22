@@ -49,6 +49,7 @@ public class XCourse extends XCourseId {
     private String iNote = null;
     private String iDetails = null;
     private int iLimit = 0;
+    private int iSnapshotLimit = 0;
     private int iProjected = 0;
     private Integer iWkEnroll = null, iWkChange = null, iWkDrop = null;
     private XCredit iCredit = null;
@@ -79,6 +80,9 @@ public class XCourse extends XCourseId {
         for (InstrOfferingConfig config: course.getInstructionalOffering().getInstrOfferingConfigs()) {
         	if (config.isUnlimitedEnrollment()) unlimited = true;
         	iLimit += config.getLimit();
+        	Integer snapshot = config.getSnapShotLimit();
+        	if (snapshot != null)
+        		iSnapshotLimit += snapshot.intValue();
         }
         if (course.getReservation() != null)
         	iLimit = course.getReservation();
@@ -125,6 +129,10 @@ public class XCourse extends XCourseId {
     /** Course offering limit */
     public int getLimit() {
         return iLimit;
+    }
+    
+    public int getSnapshotLimit() {
+    	return iSnapshotLimit;
     }
     
     public int getProjected() { return iProjected; }
@@ -177,6 +185,7 @@ public class XCourse extends XCourseId {
 		iNote = (String)in.readObject();
 		iDetails = (String)in.readObject();
 		iLimit = in.readInt();
+		iSnapshotLimit = in.readInt();
 		iProjected = in.readInt();
 		iWkEnroll = (in.readBoolean() ? in.readInt() : null);
 		iWkChange = (in.readBoolean() ? in.readInt() : null);
@@ -200,6 +209,7 @@ public class XCourse extends XCourseId {
 		out.writeObject(iNote);
 		out.writeObject(iDetails);
 		out.writeInt(iLimit);
+		out.writeInt(iSnapshotLimit);
 		out.writeInt(iProjected);
 		out.writeBoolean(iWkEnroll != null);
 		if (iWkEnroll != null)

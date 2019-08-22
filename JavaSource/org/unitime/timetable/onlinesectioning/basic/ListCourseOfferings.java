@@ -21,8 +21,14 @@ package org.unitime.timetable.onlinesectioning.basic;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
+import org.cpsolver.ifs.heuristics.RouletteWheelSelection;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -84,14 +90,14 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 	protected List<CourseAssignment> customCourseLookup(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		try {
 			if (iQuery != null && !iQuery.isEmpty() && CustomCourseLookupHolder.hasProvider()) {
-				List<XCourseId> courses = CustomCourseLookupHolder.getProvider().getCourses(server, helper, iQuery, true);
+				List<XCourse> courses = CustomCourseLookupHolder.getProvider().getCourses(server, helper, iQuery, true);
 				if (courses != null && !courses.isEmpty()) {
 					List<CourseAssignment> ret = new ArrayList<CourseAssignment>();
-					for (XCourseId c: courses) {
-						XCourse course = (c instanceof XCourse ? (XCourse)c : server.getCourse(c.getCourseId()));
+					for (XCourse course: courses) {
 						if (course != null && (iMatcher == null || iMatcher.match(course)))
 							ret.add(convert(course, server));
 					}
+					setSelection(ret);
 					return ret;
 				}
 			}
@@ -113,6 +119,7 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 		course.setTitle(c.getTitle());
 		course.setHasUniqueName(c.hasUniqueName());
 		course.setLimit(c.getLimit());
+		course.setSnapShotLimit(c.getSnapshotLimit());
 		XOffering offering = server.getOffering(c.getOfferingId());
 		if (offering != null) {
 			course.setAvailability(offering.getCourseAvailability(server.getRequests(c.getOfferingId()), c));
@@ -125,6 +132,88 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 			course.setHasCrossList(offering.hasCrossList());
 		}
 		return course;
+	}
+	
+	static interface SelectionModeInterface {
+		public int getPoints(CourseAssignment ca);
+	}
+	
+	public static enum SelectionMode implements Comparator<CourseAssignment>{
+		availability(new SelectionModeInterface() {
+			@Override
+			public int getPoints(CourseAssignment ca) {
+				int p = 0;
+				if (ca.getLimit() != null)
+					p += 4 * (ca.getLimit() < 0 ? 9999 : ca.getLimit());
+				if (ca.getEnrollment() != null)
+					p -= 3 * (ca.getEnrollment());
+				if (ca.getRequested() != null)
+					p -= ca.getRequested();
+				return p;
+			}
+			
+		}),
+		limit(new SelectionModeInterface() {
+			@Override
+			public int getPoints(CourseAssignment ca) {
+				return (ca.getLimit() < 0 ? 999 : ca.getLimit());
+			}
+			
+		}),
+		snapshot(new SelectionModeInterface() {
+			@Override
+			public int getPoints(CourseAssignment ca) {
+				int snapshot = (ca.getSnapShotLimit() == null ? 0 : ca.getSnapShotLimit() < 0 ? 999 : ca.getSnapShotLimit());
+				int limit = (ca.getLimit() < 0 ? 999 : ca.getLimit());
+				return Math.max(snapshot, limit);
+			}
+			
+		}),
+		;
+		
+		SelectionModeInterface iMode;
+		SelectionMode(SelectionModeInterface mode) {
+			iMode = mode;
+		}
+		
+		public int getPoints(CourseAssignment ca) {
+			return iMode.getPoints(ca);
+		}
+
+		@Override
+		public int compare(CourseAssignment ca1, CourseAssignment ca2) {
+			int p1 = getPoints(ca1);
+			int p2 = getPoints(ca2);
+			if (p1 != p2) return (p1 > p2 ? -1 : 1);
+			return ca1.getCourseNameWithTitle().compareTo(ca2.getCourseNameWithTitle());
+		}
+	}
+	
+	public static void setSelection(List<CourseAssignment> courses) {
+		if (courses == null || courses.isEmpty()) return;
+		SelectionMode mode = SelectionMode.valueOf(ApplicationProperty.ListCourseOfferingsSelectionMode.value());
+		int limit = ApplicationProperty.ListCourseOfferingsSelectionLimit.intValue();
+		if (ApplicationProperty.ListCourseOfferingsSelectionRandomize.isTrue()) {
+			RouletteWheelSelection<CourseAssignment> roulette = new RouletteWheelSelection<CourseAssignment>();
+			for (CourseAssignment ca: courses) {
+				int p = mode.getPoints(ca);
+				if (p > 0) roulette.add(ca, p);
+			}
+			int idx = 0;
+			while (roulette.hasMoreElements() && idx < limit) {
+				CourseAssignment ca = roulette.nextElement();
+				ca.setSelection(idx++);
+			}
+		} else {
+			List<CourseAssignment> sorted = new ArrayList<CourseAssignment>(courses);
+			Collections.sort(sorted, mode);
+			int idx = 0;
+			for (CourseAssignment ca: sorted) {
+				int p = mode.getPoints(ca);
+				if (p <= 0 || idx >= limit) break;
+				ca.setSelection(idx++);
+			}
+		}
 	}
 
 	@Override

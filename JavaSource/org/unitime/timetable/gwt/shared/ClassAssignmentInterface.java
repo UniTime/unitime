@@ -123,13 +123,13 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		return false;
 	}
 	
-	public static class CourseAssignment implements IsSerializable, Serializable {
+	public static class CourseAssignment implements IsSerializable, Serializable, Comparable<CourseAssignment> {
 		private static final long serialVersionUID = 1L;
 		private Long iCourseId = null;
 		private boolean iAssigned = true, iTeachingAssigment = false;
 		private String iSubject, iCourseNbr, iTitle, iNote, iCreditText = null, iCreditAbbv = null;
 		private boolean iHasUniqueName = true, iHasCrossList = false;
-		private Integer iLimit = null, iProjected = null, iEnrollment = null, iLastLike = null;
+		private Integer iLimit = null, iProjected = null, iEnrollment = null, iLastLike = null, iRequested = null, iSnapShotLimit = null;
 		
 		private ArrayList<String> iOverlaps = null;
 		private boolean iNotAvailable = false, iFull = false, iLocked = false;
@@ -137,6 +137,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private boolean iWaitListed = false;
 		private String iEnrollmentMessage = null;
 		private Date iRequestedDate = null;
+		private Integer iSelection = null;
 
 		private ArrayList<ClassAssignment> iAssignments = new ArrayList<ClassAssignment>();
 		private Set<IdValue> iInstructionalMethods = null;
@@ -243,6 +244,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			return iLimit.toString();
 		}
 		
+		public Integer getSnapShotLimit() { return iSnapShotLimit; }
+		public void setSnapShotLimit(Integer limit) { iSnapShotLimit = limit; }
+		
 		public Integer getProjected() { return iProjected; }
 		public void setProjected(Integer projected) { iProjected = projected; }
 		public String getProjectedString() {
@@ -267,12 +271,15 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			return iEnrollment.toString();
 		}
 		public void setAvailability(int[] availability) {
+			iRequested = null;
 			if (availability == null) {
 				iEnrollment = null;
 				iLimit = null;
 			} else {
 				iEnrollment = availability[0];
 				iLimit = availability[1];
+				if (availability.length > 2)
+					iRequested = availability[2];
 			}
 		}
 		
@@ -306,6 +313,25 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public Date getRequestedDate() { return iRequestedDate; }
 		public void setRequestedDate(Date ts) { iRequestedDate = ts; }
+		
+		public Integer getRequested() { return iRequested; }
+		public void setRequested(Integer requested) { iRequested = requested; }
+		public Integer getSelection() { return iSelection; }
+		public void setSelection(Integer selection) { iSelection = selection; }
+		public boolean hasSelection() { return iSelection != null; }
+
+		@Override
+		public int compareTo(CourseAssignment c) {
+			if (hasSelection()) {
+				if (c.hasSelection()) {
+					int cmp = getSelection().compareTo(c.getSelection());
+					if (cmp != 0) return cmp;
+				} else {
+					return -1;
+				}
+			} else if (c.hasSelection()) { return 1; }
+			return getCourseName().compareTo(c.getCourseName());
+		}
 	}
 	
 	public static class ClassAssignment implements IsSerializable, Serializable {

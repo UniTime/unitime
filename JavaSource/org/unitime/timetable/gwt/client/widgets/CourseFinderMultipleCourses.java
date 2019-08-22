@@ -534,6 +534,10 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 	public boolean isEnabled() {
 		return iCourses.isEnabled();
 	}
+	
+	public List<CourseAssignment> getCourses() {
+		return iCourses.getData();
+	}
 
 	@Override
 	public void setEnabled(boolean enabled) {
@@ -602,6 +606,26 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 		scrollToSelectedRow();
 		updateCourseDetails();
 		return (checked == checkedCourses.size());
+	}
+	
+	public boolean selectCourse(CourseAssignment course) {
+		for (int r = 0; r < iCourses.getRowCount(); r++) {
+			CourseAssignment ca = iCourses.getData(r);
+			if (iCourses.getWidget(r, 0) instanceof CheckBox && ca != null && course.equals(ca)) {
+				CheckBox c = (CheckBox)iCourses.getWidget(r, 0);
+				boolean changed = false;
+				if (!c.getValue()) {
+					c.setValue(true, true);
+					changed = true;
+				}
+				if (iCourses.getSelectedRow() < 0) {
+					iCourses.setSelected(r, true);
+					updateCourseDetails();
+				}
+				return changed;
+			}
+		}
+		return false;
 	}
 	
 	public boolean isAllowMultiSelection() {
