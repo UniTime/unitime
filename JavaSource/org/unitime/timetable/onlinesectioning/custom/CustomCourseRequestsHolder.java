@@ -19,38 +19,20 @@
 */
 package org.unitime.timetable.onlinesectioning.custom;
 
-import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.defaults.ApplicationProperty;
-import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
-import org.unitime.timetable.gwt.shared.SectioningException;
-
 /**
  * @author Tomas Muller
  */
 public class CustomCourseRequestsHolder {
-	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
-
-	private static CourseRequestsProvider sProvider = null;
 	
-	public synchronized static CourseRequestsProvider getProvider() {
-		if (sProvider == null) {
-			try {
-				sProvider = ((CourseRequestsProvider)Class.forName(ApplicationProperty.CustomizationCourseRequests.value()).newInstance());
-			} catch (Exception e) {
-				throw new SectioningException(MSG.exceptionCourseRequestProvider(e.getMessage()), e);
-			}
-		}
-		return sProvider;
+	public static CourseRequestsProvider getProvider() {
+		return Customization.CourseRequestsProvider.getProvider();
 	}
 	
-	public synchronized static void release() {
-		if (sProvider != null) {
-			sProvider.dispose();
-			sProvider = null;
-		}
+	public static void release() {
+		Customization.CourseRequestsProvider.release();
 	}
 	
-	public synchronized static boolean hasProvider() {
-		return sProvider != null || ApplicationProperty.CustomizationCourseRequests.value() != null;
+	public static boolean hasProvider() {
+		return Customization.CourseRequestsProvider.hasProvider();
 	}
 }
