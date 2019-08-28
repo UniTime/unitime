@@ -60,6 +60,7 @@
 				<line>Course request validation (when submitting the Course Requests page): for all new registration errors, check if the override is allowed.
 					<line>Using the response message (response.overrides) and prohibited overrides on the course that is being requested.</line>
 				</line>
+				<line>Created a simplified implementation that can be used while the class schedule has not been published yet (eligiblity checking but no course request validation).</line>
 			</description>
 		</item>
 		<item>
