@@ -54,6 +54,12 @@
  			</description>
 		</item>
 		<item>
+			<name>Course Finder: List of Classes</name>
+			<description>
+				<line>Do not list classe for users that have no role (students) during pre-registration when the class schedule has not been published yet.</line>
+			</description>
+		</item>
+		<item>
 			<name>Course Requests: Custom Course Request Validation</name>
 			<description>
 				<line>Request Overrides: added ability to provide request note.</line>

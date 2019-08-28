@@ -851,6 +851,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("No classes found for {0}.")
 	String exceptionNoClassesForCourse(String course);
 	
+	@DefaultMessage("Class schedule is not available at the moment.")
+	String exceptionClassScheduleNotAvaiable();
+	
 	@DefaultMessage("Unable to compute a schedule ({0}).")
 	String exceptionSectioningFailed(String message);
 	

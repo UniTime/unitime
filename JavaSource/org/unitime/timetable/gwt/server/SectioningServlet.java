@@ -495,6 +495,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		OnlineSectioningServer server = getServerInstance(sessionId, false);
 		Set<Long> allowedClasses = null;
 		if (server == null) {
+			if (!sessionContext.hasPermission(Right.HasRole)) {
+				Session session = SessionDAO.getInstance().get(sessionId);
+				if (session != null && !session.canNoRoleReportClass())
+					throw new SectioningException(MSG.exceptionClassScheduleNotAvaiable());
+			}
 			ArrayList<ClassAssignmentInterface.ClassAssignment> results = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			CourseOffering courseOffering = null;
