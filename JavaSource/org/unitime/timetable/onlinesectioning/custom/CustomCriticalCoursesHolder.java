@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.CourseDemand;
@@ -46,29 +45,17 @@ import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
  */
 public class CustomCriticalCoursesHolder {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
-
-	private static CriticalCoursesProvider sProvider = null;
 	
-	public synchronized static CriticalCoursesProvider getProvider() {
-		if (sProvider == null) {
-			try {
-				sProvider = ((CriticalCoursesProvider)Class.forName(ApplicationProperty.CustomizationCriticalCourses.value()).newInstance());
-			} catch (Exception e) {
-				throw new SectioningException(MSG.exceptionCriticalCoursesProvider(e.getMessage()), e);
-			}
-		}
-		return sProvider;
+	public static CriticalCoursesProvider getProvider() {
+		return Customization.CriticalCoursesProvider.getProvider();
 	}
 	
-	public synchronized static void release() {
-		if (sProvider != null) {
-			sProvider.dispose();
-			sProvider = null;
-		}
+	public static void release() {
+		Customization.CriticalCoursesProvider.release();
 	}
 	
-	public synchronized static boolean hasProvider() {
-		return sProvider != null || ApplicationProperty.CustomizationCriticalCourses.value() != null;
+	public static boolean hasProvider() {
+		return Customization.CriticalCoursesProvider.hasProvider();
 	}
 	
 	public static class CheckCriticalCourses implements OnlineSectioningAction<Boolean> {

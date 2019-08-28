@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -44,29 +43,17 @@ import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
  */
 public class CustomCourseRequestsValidationHolder {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
-
-	private static CourseRequestsValidationProvider sProvider = null;
 	
-	public synchronized static CourseRequestsValidationProvider getProvider() {
-		if (sProvider == null) {
-			try {
-				sProvider = ((CourseRequestsValidationProvider)Class.forName(ApplicationProperty.CustomizationCourseRequestsValidation.value()).newInstance());
-			} catch (Exception e) {
-				throw new SectioningException(MSG.exceptionCourseRequestValidationProvider(e.getMessage()), e);
-			}
-		}
-		return sProvider;
+	public static CourseRequestsValidationProvider getProvider() {
+		return Customization.CourseRequestsValidationProvider.getProvider();
 	}
 	
-	public synchronized static void release() {
-		if (sProvider != null) {
-			sProvider.dispose();
-			sProvider = null;
-		}
+	public static void release() {
+		Customization.CourseRequestsValidationProvider.release();
 	}
 	
-	public synchronized static boolean hasProvider() {
-		return sProvider != null || ApplicationProperty.CustomizationCourseRequestsValidation.value() != null;
+	public static boolean hasProvider() {
+		return Customization.CourseRequestsValidationProvider.hasProvider();
 	}
 	
 	public static class Check implements OnlineSectioningAction<CourseRequestInterface> {

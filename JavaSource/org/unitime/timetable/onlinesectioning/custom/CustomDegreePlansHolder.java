@@ -19,50 +19,19 @@
 */
 package org.unitime.timetable.onlinesectioning.custom;
 
-import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.defaults.ApplicationProperty;
-import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
-import org.unitime.timetable.gwt.shared.SectioningException;
-
 /**
  * @author Tomas Muller
  */
 public class CustomDegreePlansHolder {
-	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
-
-	private static DegreePlansProvider sProvider = null;
-	private static String sProviderClass = null;
-	
-	public synchronized static DegreePlansProvider getProvider() {
-		String providerClass = ApplicationProperty.CustomizationDegreePlans.value();
-		if (providerClass == null) {
-			if (sProvider != null) {
-				sProvider.dispose();
-				sProvider = null;
-			}
-		} else if (!providerClass.equals(sProviderClass)) {
-			if (sProvider != null) {
-				sProvider.dispose();
-				sProvider = null;
-			}
-			sProviderClass = providerClass;
-			try {
-				sProvider = ((DegreePlansProvider)Class.forName(sProviderClass).newInstance());
-			} catch (Exception e) {
-				throw new SectioningException(MSG.exceptionDegreePlansProvider(e.getMessage()), e);
-			}
-		}
-		return sProvider;
+	public static DegreePlansProvider getProvider() {
+		return Customization.DegreePlansProvider.getProvider();
 	}
 	
-	public synchronized static void release() {
-		if (sProvider != null) {
-			sProvider.dispose();
-			sProvider = null;
-		}
+	public static void release() {
+		Customization.DegreePlansProvider.release();
 	}
 	
-	public synchronized static boolean hasProvider() {
-		return sProvider != null || ApplicationProperty.CustomizationDegreePlans.value() != null;
+	public static boolean hasProvider() {
+		return Customization.DegreePlansProvider.hasProvider();
 	}
 }

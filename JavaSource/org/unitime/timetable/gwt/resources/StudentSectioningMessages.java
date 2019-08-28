@@ -1007,6 +1007,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Eligibility check failed: {0}")
 	String exceptionFailedEligibilityCheck(String message);
 	
+	@DefaultMessage("Failed to create {0}: {1}")
+	String exceptionCustomProvider(String provider, String message);
+
 	@DefaultMessage("Processing...")
 	String waitEnroll();
 	

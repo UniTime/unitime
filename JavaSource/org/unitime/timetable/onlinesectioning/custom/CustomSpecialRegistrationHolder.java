@@ -19,50 +19,19 @@
 */
 package org.unitime.timetable.onlinesectioning.custom;
 
-import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.defaults.ApplicationProperty;
-import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
-import org.unitime.timetable.gwt.shared.SectioningException;
-
 /**
  * @author Tomas Muller
  */
 public class CustomSpecialRegistrationHolder {
-	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
-
-	private static SpecialRegistrationProvider sProvider = null;
-	private static String sProviderClass = null;
-	
-	public synchronized static SpecialRegistrationProvider getProvider() {
-		String providerClass = ApplicationProperty.CustomizationSpecialRegistration.value();
-		if (providerClass == null) {
-			if (sProvider != null) {
-				sProvider.dispose();
-				sProvider = null;
-			}
-		} else if (!providerClass.equals(sProviderClass)) {
-			if (sProvider != null) {
-				sProvider.dispose();
-				sProvider = null;
-			}
-			sProviderClass = providerClass;
-			try {
-				sProvider = ((SpecialRegistrationProvider)Class.forName(sProviderClass).newInstance());
-			} catch (Exception e) {
-				throw new SectioningException(MSG.exceptionSpecialRegistrationProvider(e.getMessage()), e);
-			}
-		}
-		return sProvider;
+	public static SpecialRegistrationProvider getProvider() {
+		return Customization.SpecialRegistrationProvider.getProvider();
 	}
 	
-	public synchronized static void release() {
-		if (sProvider != null) {
-			sProvider.dispose();
-			sProvider = null;
-		}
+	public static void release() {
+		Customization.SpecialRegistrationProvider.release();
 	}
 	
-	public synchronized static boolean hasProvider() {
-		return sProvider != null || ApplicationProperty.CustomizationSpecialRegistration.value() != null;
+	public static boolean hasProvider() {
+		return Customization.SpecialRegistrationProvider.hasProvider();
 	}
 }

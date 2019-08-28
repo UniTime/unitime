@@ -19,44 +19,26 @@
 */
 package org.unitime.timetable.onlinesectioning.custom;
 
-import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.defaults.ApplicationProperty;
-import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
-import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider;
 
 public class CustomStudentEnrollmentHolder {
-	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
+	public static StudentEnrollmentProvider getProvider() {
+		return Customization.StudentEnrollmentProvider.getProvider();
+	}
+	
+	public static void release() {
+		Customization.StudentEnrollmentProvider.release();
+	}
+	
+	public static boolean hasProvider() {
+		return Customization.StudentEnrollmentProvider.hasProvider();
+	}
 
-	private static StudentEnrollmentProvider sProvider = null;
-	
-	public synchronized static StudentEnrollmentProvider getProvider() {
-		if (sProvider == null) {
-			try {
-				sProvider = ((StudentEnrollmentProvider)Class.forName(ApplicationProperty.CustomizationStudentEnrollments.value()).newInstance());
-			} catch (Exception e) {
-				throw new SectioningException(MSG.exceptionStudentEnrollmentProvider(e.getMessage()), e);
-			}
-		}
-		return sProvider;
-	}
-	
-	public synchronized static void release() {
-		if (sProvider != null) {
-			sProvider.dispose();
-			sProvider = null;
-		}
-	}
-	
-	public synchronized static boolean hasProvider() {
-		return sProvider != null || ApplicationProperty.CustomizationStudentEnrollments.value() != null;
-	}
-	
-	public synchronized static boolean isAllowWaitListing() {
+	public static boolean isAllowWaitListing() {
 		return !hasProvider() || getProvider().isAllowWaitListing();
 	}
-	
-	public synchronized static boolean isCanRequestUpdates() {
+
+	public static boolean isCanRequestUpdates() {
 		return !hasProvider() || getProvider().isCanRequestUpdates();
 	}
 }
