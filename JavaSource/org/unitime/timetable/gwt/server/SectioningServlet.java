@@ -45,6 +45,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.SecurityMessages;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
@@ -268,6 +269,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	private @Autowired SolverServerService solverServerService;
 	private OnlineSectioningServer getServerInstance(Long academicSessionId, boolean canReturnDummy) {
 		if (academicSessionId == null) return null;
+		ApplicationProperties.setSessionId(academicSessionId);
 		OnlineSectioningServer server =  solverServerService.getOnlineStudentSchedulingContainer().getSolver(academicSessionId.toString());
 		if (server != null || !canReturnDummy) return server;
 		
