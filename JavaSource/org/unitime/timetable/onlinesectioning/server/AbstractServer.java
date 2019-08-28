@@ -377,6 +377,9 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 
 	@Override
 	public <E> E execute(OnlineSectioningAction<E> action, OnlineSectioningLog.Entity user) throws SectioningException {
+		Long oldSessionId = ApplicationProperties.getSessionId();
+		ApplicationProperties.setSessionId(getAcademicSession().getUniqueId());
+		
 		long c0 = OnlineSectioningHelper.getCpuTime();
 		String cacheMode = getConfig().getProperty(action.name() + ".CacheMode", getConfig().getProperty("CacheMode"));
 		OnlineSectioningHelper h = new OnlineSectioningHelper(user, cacheMode != null ? CacheMode.valueOf(cacheMode) : action instanceof HasCacheMode ? ((HasCacheMode)action).getCacheMode() : CacheMode.IGNORE);
@@ -436,6 +439,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 				iLog.debug("Executed: " + h.getLog() + " (" + h.getLog().toByteArray().length + " bytes)");
 			OnlineSectioningLogger.getInstance().record(h.getLog());
 			releaseCurrentHelper();
+			ApplicationProperties.setSessionId(oldSessionId);
 		}
 	}
 	

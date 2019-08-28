@@ -116,6 +116,7 @@
 				<description>
 						<line>Customization holder classes rewritten to use the same sub-class (Holder).</line>
 						<line>Property changes are monitored and a new provider instance is created when needed.</line>
+						<line>Ensure that session-dependent application properties are considered when needed.</line>
 				</description>
 		</item>
 	</category>
