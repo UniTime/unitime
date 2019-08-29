@@ -481,6 +481,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Select <u>A</u>ll")
 	String buttonSelectAll();
 	
+	@DefaultMessage("<u>P</u>ick {0}")
+	String buttonPickN(int n);
+	
 	@DefaultMessage("Current Registration")
 	String buttonStartOver();
 	
@@ -770,7 +773,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Select All")
 	String selectAll();
-
+	
 	@DefaultMessage("Clear All")
 	String clearAll();
 	

@@ -51,6 +51,7 @@
 					<line>unitime.enrollment.listOfferings.rouletteWheel=true</line>
 					<line>unitime.enrollment.listOfferings.limit=10</line>
 				</line>
+				<line>If not all courses are going to be selected, rename the button to Pick {N} where N is the number of courses that will be selected.</line>
  			</description>
 		</item>
 		<item>
