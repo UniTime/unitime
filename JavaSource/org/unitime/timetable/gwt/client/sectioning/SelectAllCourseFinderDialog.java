@@ -78,13 +78,23 @@ public class SelectAllCourseFinderDialog extends CourseFinderDialog {
 		CourseFinderTab tab = getSelectedTab();
 		if (tab != null && tab instanceof CourseFinderMultipleCourses) {
 			CourseFinderMultipleCourses course = (CourseFinderMultipleCourses)tab;
-			if (course.isAllowMultiSelection())
-				for (CourseAssignment ca: course.getCourses())
-					if (ca.getSelection() != null) {
-						iFilterSelectAll.setEnabled(true);
-						iFilterSelectAll.setVisible(true);
-						return;
+			if (course.isAllowMultiSelection()) {
+				int nrCourses = 0, nrSelect = 0;
+				for (CourseAssignment ca: course.getCourses()) {
+					nrCourses ++;
+					if (ca.getSelection() != null) nrSelect++;
+				}
+				if (nrSelect > 0) {
+					if (nrSelect == nrCourses) {
+						iFilterSelectAll.setHTML(MESSAGES.buttonSelectAll());
+					} else {
+						iFilterSelectAll.setHTML(MESSAGES.buttonPickN(nrSelect));
 					}
+					iFilterSelectAll.setEnabled(true);
+					iFilterSelectAll.setVisible(true);
+					return;
+				}
+			}
 			iFilterSelectAll.setEnabled(false);
 			iFilterSelectAll.setVisible(false);
 		} else {
