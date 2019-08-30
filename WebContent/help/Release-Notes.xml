@@ -126,6 +126,12 @@
 						<line>Ensure that session-dependent application properties are considered when needed.</line>
 				</description>
 		</item>
+		<item>
+			<name>Student Scheduling Dashboard: Request Student Update</name>
+			<description>
+				<line>Do not limit the ability to request students updates to online student scheduling.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>
