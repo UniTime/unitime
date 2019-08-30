@@ -46,7 +46,7 @@ public class Holder<T> {
 		if (iProvider != null) {
 			try {
 				iLog.info("Disposing old provider");
-				iProvider.getClass().getDeclaredMethod("dispose").invoke(iProvider);
+				iProvider.getClass().getMethod("dispose").invoke(iProvider);
 			} catch (Exception e) {
 				iLog.warn("Failed to dispose: " + e.getMessage(), e);
 			}
