@@ -168,6 +168,7 @@ public interface StudentCourseDemands {
 		private Set<String> iCurricula = new TreeSet<String>();
 		private Set<Group> iGroups = new HashSet<Group>();
 		private Long iPrimaryOfferingId = null;
+		private Student iStudent = null;
 		
 		public WeightedStudentId(WeightedStudentId student, float weight) {
 			iStudentId = student.iStudentId;
@@ -175,9 +176,11 @@ public interface StudentCourseDemands {
 			iMajors.addAll(student.iMajors);
 			iCurricula.addAll(student.iCurricula);
 			iGroups.addAll(student.iGroups);
+			iStudent = student.iStudent;
 		}
 		
 		public WeightedStudentId(Student student, ProjectionsProvider projections, float weight) {
+			iStudent = student;
 			iStudentId = student.getUniqueId();
 			iWeight = weight;
 			float rule = 1.0f; int cnt = 0;
@@ -253,6 +256,10 @@ public interface StudentCourseDemands {
 		
 		public long getStudentId() {
 			return iStudentId;
+		}
+		
+		public Student getStudent() {
+			return iStudent;
 		}
 		
 		public float getWeight() {

@@ -87,6 +87,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.server.Query;
+import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.ReservationInterface.OverrideType;
 import org.unitime.timetable.model.AcademicClassification;
@@ -154,6 +155,7 @@ import org.unitime.timetable.solver.curricula.LastLikeStudentCourseDemands;
 import org.unitime.timetable.solver.curricula.ProjectedStudentCourseDemands;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.AreaClasfMajor;
+import org.unitime.timetable.solver.curricula.StudentCourseDemands.Group;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedStudentId;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
@@ -210,6 +212,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private boolean iCorrectConfigLimit = false;
 	private boolean iUseSnapShotLimits = false;
 	private String iPriorityStudentGroupReference = null;
+	private Query iProjectedStudentQuery = null;
     
     private Progress iProgress = null;
     
@@ -317,6 +320,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	} catch (Exception e) {
         		iProgress.warn("Failed to parse classes fixed date " + classesFixedDate + ". The date must be in the yyyy-mm-dd format.");
         	}
+        }
+        
+        String projQuery = model.getProperties().getProperty("Load.ProjectedStudentQuery", null);
+        if (projQuery != null && !projQuery.isEmpty()) {
+        	iProjectedStudentQuery = new Query(projQuery);
+        	iProgress.info("Projected students filter: " + iProjectedStudentQuery); 
         }
     }
     
@@ -1549,8 +1558,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	    			continue;
 	    		}
     		}
-           	org.unitime.timetable.model.Student s = (student.getId() >= 0 ? StudentDAO.getInstance().get(student.getId()) : null);
-           	iProgress.error("There is a problem assigning " + cr.getName() + " to " + (s == null ? student.getId() : iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ")" ));
+           	iProgress.error("There is a problem assigning " + cr.getName() + " to " + student.getName() + " (" + student.getExternalId() + ")" );
            	boolean hasLimit = false, hasOverlap = false;
            	for (Iterator<Section> i = enrl.getSections().iterator(); i.hasNext();) {
            		Section section = i.next();
@@ -2307,9 +2315,13 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             		Set<WeightedStudentId> demands = iStudentCourseDemands.getDemands(co);
             		if (demands == null) continue;
             		for (WeightedStudentId demand: demands) {
+            			if (iProjectedStudentQuery != null && (
+            				(demand.getStudent() != null && !iProjectedStudentQuery.match(new DbStudentMatcher(demand.getStudent()))) ||
+            				(demand.getStudent() == null && !iProjectedStudentQuery.match(new ProjectedStudentMatcher(demand)))
+            				)) continue;
             	        Student student = (Student)students.get(demand.getStudentId());
             	        if (student == null) {
-            	            student = new Student(demand.getStudentId(), true);
+            	        	student = new Student(demand.getStudentId(), true);
             	            for (AreaClasfMajor acm: demand.getMajors())
             	            	student.getAreaClassificationMajors().add(new AreaClassificationMajor(acm.getArea(), acm.getClasf(), acm.getMajor()));
             	            students.put(demand.getStudentId(), student);
@@ -2620,6 +2632,40 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 				hibSession.close();
 			}
 			iProgress.debug(getName() + " has finished.");
+		}
+	}
+    
+    public class ProjectedStudentMatcher implements TermMatcher {
+		private WeightedStudentId iStudent;
+		
+		public ProjectedStudentMatcher(WeightedStudentId student) {
+			iStudent = student;
+		}
+		
+		public WeightedStudentId student() { return iStudent; }
+		
+		@Override
+		public boolean match(String attr, String term) {
+			if (attr == null && term.isEmpty()) return true;
+			if ("area".equals(attr)) {
+				for (AreaClasfMajor acm: student().getMajors())
+					if (eq(acm.getArea(), term)) return true;
+			} else if ("clasf".equals(attr) || "classification".equals(attr)) {
+				for (AreaClasfMajor acm: student().getMajors())
+					if (eq(acm.getClasf(), term)) return true;
+			} else if ("major".equals(attr)) {
+				for (AreaClasfMajor acm: student().getMajors())
+					if (eq(acm.getMajor(), term)) return true;
+			} else if ("group".equals(attr)) {
+				for (Group group: student().getGroups())
+					if (eq(group.getName(), term)) return true;
+			}
+			return false;
+		}
+		
+		private boolean eq(String name, String term) {
+			if (name == null) return false;
+			return name.equalsIgnoreCase(term);
 		}
 	}
 }
