@@ -209,6 +209,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private boolean iMoveCriticalCoursesUp = false;
 	private boolean iCorrectConfigLimit = false;
 	private boolean iUseSnapShotLimits = false;
+	private String iPriorityStudentGroupReference = null;
     
     private Progress iProgress = null;
     
@@ -251,6 +252,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iAllowDefaultCourseAlternatives = ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue();
         iIncludeUnavailabilities = model.getProperties().getPropertyBoolean("Load.IncludeUnavailabilities", iIncludeUnavailabilities);
         iShortDistanceAccomodationReference = model.getProperties().getProperty("Distances.ShortDistanceAccommodationReference", "SD");
+        iPriorityStudentGroupReference = model.getProperties().getProperty("Load.PriorityStudentGroupReference", null);
         iCheckOverrideStatus = model.getProperties().getPropertyBoolean("Load.CheckOverrideStatus", iCheckOverrideStatus);
         iValidateOverrides = model.getProperties().getPropertyBoolean("Load.ValidateOverrides", iValidateOverrides);
         if ((iValidateOverrides || iCheckOverrideStatus) && ApplicationProperty.CustomizationCourseRequestsValidation.value() != null) {
@@ -1138,6 +1140,11 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         student.setExternalId(s.getExternalUniqueId());
         student.setName(iStudentNameFormat.format(s));
         student.setStatus(s.getSectioningStatus() == null ? null : s.getSectioningStatus().getReference());
+        if (iPriorityStudentGroupReference != null)
+        	for (StudentGroup g: s.getGroups()) {
+        		if (iPriorityStudentGroupReference.equals(g.getGroupAbbreviation()))
+        			student.setPriority(true);
+        	}
         if (iLoadStudentInfo) loadStudentInfo(student,s);
         if (iShortDistanceAccomodationReference != null)
         	for (StudentAccomodation ac: s.getAccomodations())
