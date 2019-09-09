@@ -44,6 +44,8 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAva
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
 
@@ -108,4 +110,5 @@ public interface SectioningService extends RemoteService {
 	RetrieveAvailableGradeModesResponse retrieveGradeModes(RetrieveAvailableGradeModesRequest request) throws SectioningException, PageAccessException;
 	ChangeGradeModesResponse changeGradeModes(ChangeGradeModesRequest request) throws SectioningException, PageAccessException;
 	Boolean changeCriticalOverride(Long studentId, Long courseId, Boolean critical) throws SectioningException, PageAccessException;
+	UpdateSpecialRegistrationResponse updateSpecialRequest(UpdateSpecialRegistrationRequest request) throws SectioningException, PageAccessException;
 }

@@ -209,6 +209,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									icon = RESOURCES.requestError(); iconText = (msg);
 							}
 						}
+						if (rc.hasRequestorNote()) iconText += "\n" + MESSAGES.requestNote(rc.getRequestorNote());
 						if (rc.hasStatusNote()) iconText += "\n" + MESSAGES.overrideNote(rc.getStatusNote());
 						Collection<Preference> prefs = null;
 						if (rc.hasSelectedIntructionalMethods()) {
@@ -238,6 +239,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 						String note = null, noteTitle = null;
 						if (check != null) { note = check.getMessageWithColor(rc.getCourseName(), "<br>", "CREDIT"); noteTitle = check.getMessage(rc.getCourseName(), "\n", "CREDIT"); }
+						if (rc.hasRequestorNote()) { note = (note == null ? "" : note + "<br>") + rc.getRequestorNote(); noteTitle = (noteTitle == null ? "" : noteTitle + "\n") + rc.getRequestorNote(); }
 						if (rc.hasStatusNote()) { note = (note == null ? "" : note + "<br>") + rc.getStatusNote(); noteTitle = (noteTitle == null ? "" : noteTitle + "\n") + rc.getStatusNote(); }
 						WebTable.Row row = new WebTable.Row(
 								new WebTable.Cell(first ? MESSAGES.courseRequestsPriority(priority) : ""),
@@ -317,6 +319,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									icon = RESOURCES.requestError(); iconText = (msg);
 							}
 						}
+						if (rc.hasRequestorNote()) iconText += "\n" + MESSAGES.requestNote(rc.getRequestorNote());
 						if (rc.hasStatusNote()) iconText += "\n" + MESSAGES.overrideNote(rc.getStatusNote());
 						Collection<Preference> prefs = null;
 						if (rc.hasSelectedIntructionalMethods()) {
@@ -346,6 +349,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 						String note = null, noteTitle = null;
 						if (check != null) { note = check.getMessageWithColor(rc.getCourseName(), "<br>", "CREDIT"); noteTitle = check.getMessage(rc.getCourseName(), "\n", "CREDIT"); }
+						if (rc.hasRequestorNote()) { note = (note == null ? "" : note + "<br>") + rc.getRequestorNote(); noteTitle = (noteTitle == null ? "" : noteTitle + "\n") + rc.getRequestorNote(); }
 						if (rc.hasStatusNote()) { note = (note == null ? "" : note + "<br>") + rc.getStatusNote(); noteTitle = (noteTitle == null ? "" : noteTitle + "\n") + rc.getStatusNote(); }
 						WebTable.Row row = new WebTable.Row(
 								new WebTable.Cell(first ? MESSAGES.courseRequestsAlternative(priority) : ""),
@@ -442,6 +446,12 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				break;
 			}
 			if (!status.isEmpty()) hasStat = true;
+			if (iAssignment.getRequest().hasRequestorNote()) {
+				note = (note == null ? "" : note + "<br>") + iAssignment.getRequest().getRequestorNote().replace("\n", "<br>");
+				noteTitle = (noteTitle == null ? "" : noteTitle + "\n") + MESSAGES.requestNote(iAssignment.getRequest().getRequestorNote());
+				iconText = (iconText == null ? "" : iconText + "\n") + iAssignment.getRequest().getRequestorNote();
+				hasWarn = true;
+			}
 			if (iAssignment.getRequest().hasCreditNote()) {
 				note = (note == null ? "" : note + "<br>") + iAssignment.getRequest().getCreditNote().replace("\n", "<br>");
 				noteTitle = (noteTitle == null ? "" : noteTitle + "\n") + MESSAGES.overrideNote(iAssignment.getRequest().getCreditNote());

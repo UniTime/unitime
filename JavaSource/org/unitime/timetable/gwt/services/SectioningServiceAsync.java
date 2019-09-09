@@ -46,6 +46,8 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAva
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationResponse;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -107,4 +109,5 @@ public interface SectioningServiceAsync {
 	void retrieveGradeModes(RetrieveAvailableGradeModesRequest request, AsyncCallback<RetrieveAvailableGradeModesResponse> callback) throws SectioningException, PageAccessException;
 	void changeGradeModes(ChangeGradeModesRequest request, AsyncCallback<ChangeGradeModesResponse> callback) throws SectioningException, PageAccessException;
 	void changeCriticalOverride(Long studentId, Long courseId, Boolean critical, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
+	void updateSpecialRequest(UpdateSpecialRegistrationRequest request, AsyncCallback<UpdateSpecialRegistrationResponse> callback) throws SectioningException, PageAccessException;
 }

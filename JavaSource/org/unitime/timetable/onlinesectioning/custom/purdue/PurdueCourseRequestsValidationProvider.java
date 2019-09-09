@@ -217,6 +217,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.ignoreLCerrors", "false"));
 	}
 	
+	protected boolean isCanChangeNote() {
+		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.canChangeNote", "true"));
+	}
+	
 	protected String getBannerId(XStudent student) {
 		String id = student.getExternalId();
 		while (id.length() < 9) id = "0" + id;
@@ -1165,6 +1169,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 												rc.setOverrideExternalId(r.regRequestId);
 												rc.setStatus(status(r, false));
 												rc.setStatusNote(SpecialRegistrationHelper.note(r, false));
+												rc.setRequestId(r.regRequestId);
+												rc.setRequestorNote(r.requestorNotes);
 												break;
 											}
 										}
@@ -1210,6 +1216,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 										.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(req.maxCredit))
 										);
 								request.setCreditNote(SpecialRegistrationHelper.note(r, true));
+								request.setRequestorNote(r.requestorNotes);
+								request.setRequestId(r.regRequestId);
 								break;
 							}
 						}
@@ -1521,6 +1529,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						if (r.maxCredit != null)
 							request.setMaxCreditOverride(r.maxCredit);
 						creditNote = SpecialRegistrationHelper.note(r, true);
+						request.setRequestorNote(r.requestorNotes);
+						request.setRequestId(r.regRequestId);
 					}
 					RequestedCourse rc = rcs.get(r.regRequestId);
 					if (rc == null) continue;
@@ -1540,6 +1550,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 									}
 								}
 					rc.setStatusNote(SpecialRegistrationHelper.note(r, false));
+					rc.setRequestorNote(r.requestorNotes);
+					rc.setRequestId(r.regRequestId);
 				}
 			}
 			
@@ -2292,6 +2304,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			
 			if (eligibility.data == null || eligibility.data.eligible == null || !eligibility.data.eligible.booleanValue()) {
 				check.setFlag(EligibilityCheck.EligibilityFlag.CAN_REGISTER, false);
+			} else {
+				check.setFlag(EligibilityCheck.EligibilityFlag.SR_CHANGE_NOTE, isCanChangeNote());
 			}
 			if (eligibility.data != null && eligibility.data.eligibilityProblems != null) {
 				String m = null;

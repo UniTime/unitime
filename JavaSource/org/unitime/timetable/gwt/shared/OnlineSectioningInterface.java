@@ -65,6 +65,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			NO_REQUEST_ARROWS,
 			CAN_SPECREG, HAS_SPECREG, SR_TIME_CONF, SR_LIMIT_CONF,
 			CAN_REQUIRE, CAN_CHANGE_GRADE_MODE,
+			SR_CHANGE_NOTE,
 			;
 			
 			public int flag() { return 1 << ordinal(); }

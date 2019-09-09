@@ -58,6 +58,7 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegi
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -752,6 +753,12 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			if (!iSectioning) {
 				iStatus = new FilterStatus(RESOURCES.requestEnrolled()); iStatus.clearStatus();
 				addStatus(iStatus);
+				iError.addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						iStatus.click();
+					}
+				});
 			}
 		}
 		
@@ -801,6 +808,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 		public void setStatus(ImageResource icon, String message) {
 			if (iStatus != null) {
 				iStatus.setStatus(icon, message);
+				iError.getElement().getStyle().setCursor(Cursor.POINTER);
 				resizeFilterIfNeeded();
 			}
 		}
@@ -808,6 +816,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 		public void clearStatus() {
 			if (iStatus != null) {
 				iStatus.clearStatus();
+				iError.getElement().getStyle().clearCursor();
 				resizeFilterIfNeeded();
 			}
 		}

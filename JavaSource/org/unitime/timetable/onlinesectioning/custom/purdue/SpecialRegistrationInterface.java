@@ -488,6 +488,12 @@ public class SpecialRegistrationInterface {
 	public static class SpecialRegistrationCheckGradeModesResponse extends Response<SpecialRegistrationCheckGradeModes> {
 	}
 	
+	/**
+	 * Response message for the /updateRequestorNote call
+	 */
+	public static class SpecialRegistrationUpdateResponse extends Response<String> {
+	}
+	
 	
 	/**
 	 * List of available grade modes
@@ -524,6 +530,5 @@ public class SpecialRegistrationInterface {
 		public String gradingMode;
 		/** Available grade mode desctiption */
 		public String gradingModeDescription;
-
 	}
 }
