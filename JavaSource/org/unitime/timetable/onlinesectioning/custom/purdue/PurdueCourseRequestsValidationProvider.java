@@ -2266,9 +2266,11 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 
 	@Override
 	public void checkEligibility(OnlineSectioningServer server, OnlineSectioningHelper helper, EligibilityCheck check, org.unitime.timetable.model.Student student) throws SectioningException {
-		if (student == null || !check.hasFlag(EligibilityCheck.EligibilityFlag.CAN_REGISTER)) return;
+		if (student == null) return;
 		// Do not check eligibility when validation is disabled
 		if (!isValidationEnabled(student)) return;
+		check.setFlag(EligibilityCheck.EligibilityFlag.SR_CHANGE_NOTE, isCanChangeNote());
+		if (!check.hasFlag(EligibilityCheck.EligibilityFlag.CAN_REGISTER)) return;
 		ClientResource resource = null;
 		try {
 			resource = new ClientResource(getSpecialRegistrationApiSiteCheckEligibility());
@@ -2304,8 +2306,6 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			
 			if (eligibility.data == null || eligibility.data.eligible == null || !eligibility.data.eligible.booleanValue()) {
 				check.setFlag(EligibilityCheck.EligibilityFlag.CAN_REGISTER, false);
-			} else {
-				check.setFlag(EligibilityCheck.EligibilityFlag.SR_CHANGE_NOTE, isCanChangeNote());
 			}
 			if (eligibility.data != null && eligibility.data.eligibilityProblems != null) {
 				String m = null;
