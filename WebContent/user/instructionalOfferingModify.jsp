@@ -605,6 +605,9 @@
 									</TD>
 								</logic:equal>
 							</logic:equal>
+							<logic:notEqual name="<%=frmName%>" property="displaySnapshotLimit" value="true" >
+								<html:hidden property='<%= "snapshotLimits[" + ctr + "]" %>'/>
+							</logic:notEqual>
 							<TD align="left" valign="top" nowrap>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
 									<html:text name="<%=frmName%>" property='<%= "roomRatios[" + ctr + "]" %>' tabindex="<%=java.lang.Integer.toString(6000 + ctr.intValue())%>" 
