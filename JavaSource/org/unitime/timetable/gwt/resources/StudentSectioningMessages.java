@@ -1969,6 +1969,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("An override for the following registration issues has been requested:\n{0}")
 	String requestedWarnings(String errors);
 	
+	@DefaultMessage("The following approvals have been requested:")
+	String requestedApprovals();
+	
 	@DefaultMessage("Request Note: {0}")
 	String requestNote(String course);
 	
@@ -2349,6 +2352,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Requested Overrides")
 	String dialogChangeCreditRequestNote();
+	
+	@DefaultMessage("Requested Approvals")
+	String dialogChangeSpecRegRequestNote();
 	
 	@DefaultMessage("Change Note")
 	String buttonChangeRequestNote();
