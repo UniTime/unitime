@@ -34,7 +34,7 @@ public class SectioningStatusCookie {
 	private int iStudentTab = 1;
 	private String[] iSortByGroup = new String[] {"", ""};
 	private boolean iEmailIncludeCourseRequests = false, iEmailIncludeClassSchedule = true;
-	private String iEmailSubject, iEmailCC;
+	private String iEmailSubject = "", iEmailCC = "";
 	
 	private SectioningStatusCookie() {
 		try {
