@@ -34,6 +34,7 @@ import java.util.TreeSet;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationOperation;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationStatus;
 import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
@@ -1341,6 +1342,17 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 
 		public String getStatus() { return iStatus; }
 		public void setStatus(String status) { iStatus = status; }
+		public void setStatus(StudentStatusInfo status) {
+			if (status == null) {
+				iStatus = "";
+				iStudent.setCanRegister(true);
+				iStudent.setCanUseAssistant(true);
+			} else {
+				iStatus = status.getReference();
+				iStudent.setCanRegister(status.isCanRegister());
+				iStudent.setCanUseAssistant(status.isCanUseAssistant());
+			}
+		}
 		
 		public String getNote() { return iNote; }
 		public boolean hasNote() { return iNote != null && !iNote.isEmpty(); }

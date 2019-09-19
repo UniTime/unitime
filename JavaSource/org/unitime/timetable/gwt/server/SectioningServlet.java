@@ -2419,7 +2419,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		return true;
 	}
 	
-	private StudentStatusInfo toStudentStatusInfo(StudentSectioningStatus status, List<CourseType> types) {
+	private StudentStatusInfo toStudentStatusInfo(StudentSectioningStatus status, List<CourseType> types, boolean admin, boolean advisor) {
 		StudentStatusInfo info = new StudentStatusInfo();
 		info.setUniqueId(status.getUniqueId());
 		info.setReference(status.getReference());
@@ -2479,6 +2479,18 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			else
 				info.setEffectiveStop(Formats.getDateFormat(Formats.Pattern.DATE_EVENT).format(status.getEffectiveStopDate()) + " " + Constants.slot2str(status.getEffectiveStopPeriod()));
 		}
+		if (getSessionContext().hasPermission(Right.SchedulingAssistant)) {
+			info.setCanUseAssistant(
+					StudentSectioningStatus.hasEffectiveOption(status, null, StudentSectioningStatus.Option.enabled)
+					|| (admin && StudentSectioningStatus.hasEffectiveOption(status, null, StudentSectioningStatus.Option.admin))
+					|| (advisor && StudentSectioningStatus.hasEffectiveOption(status, null, StudentSectioningStatus.Option.advisor)));
+		}
+		if (getSessionContext().hasPermission(Right.CourseRequests)) {
+			info.setCanRegister(
+					StudentSectioningStatus.hasEffectiveOption(status, null, StudentSectioningStatus.Option.regenabled)
+					|| (admin && StudentSectioningStatus.hasEffectiveOption(status, null, StudentSectioningStatus.Option.regadmin))
+					|| (advisor && StudentSectioningStatus.hasEffectiveOption(status, null, StudentSectioningStatus.Option.regadvisor)));
+		}
 		return info;
 	}
 
@@ -2488,17 +2500,17 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				"select distinct t from CourseOffering c inner join c.courseType t where c.instructionalOffering.session = :sessionId order by t.reference"
 				).setLong("sessionId", getStatusPageSessionId()).setCacheable(true).list();
 		List<StudentStatusInfo> ret = new ArrayList<StudentStatusInfo>();
-		boolean advisor = (getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdvisor) &&
-				!getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdmin));
+		boolean advisor = getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdvisor);
+		boolean admin = getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdmin);
 		boolean email = true;
 		boolean waitlist = CustomStudentEnrollmentHolder.isAllowWaitListing();
 		boolean specreg = CustomSpecialRegistrationHolder.hasProvider();
 		boolean reqval = CustomCourseRequestsValidationHolder.hasProvider();
-		if (!advisor) {
+		if (admin) {
 			Session session = SessionDAO.getInstance().get(getStatusPageSessionId());
 			StudentStatusInfo info = null;
 			if (session.getDefaultSectioningStatus() != null) {
-				info = toStudentStatusInfo(session.getDefaultSectioningStatus(), courseTypes);
+				info = toStudentStatusInfo(session.getDefaultSectioningStatus(), courseTypes, admin, advisor);
 				info.setUniqueId(null);
 				info.setReference("");
 				info.setLabel(MSG.studentStatusSessionDefault(session.getDefaultSectioningStatus().getLabel()));
@@ -2517,8 +2529,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 		for (StudentSectioningStatus s: StudentSectioningStatus.findAll(getStatusPageSessionId())) {
 			if (s.isPast()) continue;
-			if (advisor && !s.hasOption(StudentSectioningStatus.Option.advcanset)) continue;
-			StudentStatusInfo info = toStudentStatusInfo(s, courseTypes);
+			if (advisor && !admin && !s.hasOption(StudentSectioningStatus.Option.advcanset)) continue;
+			StudentStatusInfo info = toStudentStatusInfo(s, courseTypes, admin, advisor);
 			info.setEmail(email && s.hasOption(StudentSectioningStatus.Option.email));
 			info.setWaitList(waitlist && s.hasOption(StudentSectioningStatus.Option.waitlist));
 			info.setSpecialRegistration(specreg && s.hasOption(StudentSectioningStatus.Option.specreg));
