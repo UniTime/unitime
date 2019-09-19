@@ -2910,7 +2910,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 
 	@Override
 	public Boolean requestStudentUpdate(List<Long> studentIds) throws SectioningException, PageAccessException {
-		OnlineSectioningServer server = getServerInstance(getStatusPageSessionId(), false);
+		OnlineSectioningServer server = getServerInstance(getStatusPageSessionId(), true);
 		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
 		
 		getSessionContext().checkPermission(server.getAcademicSession(), Right.StudentSchedulingRequestStudentUpdate);
