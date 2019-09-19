@@ -325,7 +325,7 @@ public class SpecialRegistrationsPanel extends P {
 				if (!iShowAllChanges.getValue() && reg.isFullyApplied(saved)) continue;
 				Long lastCourseId = null;
 				String[] dateAndNote = (reg.getSubmitDate() == null ? reg.getNote() == null ? "" : reg.getNote() : sModifiedDateFormat.format(reg.getSubmitDate()) + (reg.getNote() == null || reg.getNote().isEmpty() ? "" : "\n" + reg.getNote())).split("\n");
-				if (iSpecReg.getChangeRequestorNoteInterface() != null && reg.getStatus() == SpecialRegistrationStatus.Pending && reg.hasErrors() && (reg.getNote() == null || reg.getNote().isEmpty())) {
+				if (iSpecReg.isAllowChangeRequestNote() && reg.getStatus() == SpecialRegistrationStatus.Pending && reg.hasErrors() && (reg.getNote() == null || reg.getNote().isEmpty())) {
 					dateAndNote = ((reg.getSubmitDate() == null ? "" : sModifiedDateFormat.format(reg.getSubmitDate()) + "\n") + MESSAGES.noRequestNoteClickToChange()).split("\n");
 				}
 				List<ClassAssignment> rows = new ArrayList<ClassAssignment>();
@@ -363,7 +363,7 @@ public class SpecialRegistrationsPanel extends P {
 						} else {
 							label = new Label(dateAndNote[r]); label.addStyleName("date-and-note");
 						}
-						if (iSpecReg.getChangeRequestorNoteInterface() != null && reg.getStatus() == SpecialRegistrationStatus.Pending && reg.hasErrors()) {
+						if (iSpecReg.isAllowChangeRequestNote() && reg.getStatus() == SpecialRegistrationStatus.Pending && reg.hasErrors()) {
 							label.getElement().getStyle().setCursor(Cursor.POINTER);
 							label.addClickHandler(new ClickHandler() {
 								@Override
