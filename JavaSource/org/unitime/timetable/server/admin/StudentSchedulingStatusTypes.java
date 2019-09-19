@@ -114,7 +114,8 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 			fields[idx++] = new Field(MESSAGES.toggleNoCourseType(), FieldType.toggle, 40);
 		}
 		List<ListItem> fallbacks = new ArrayList<ListItem>();
-		List<StudentSectioningStatus> statuses = StudentSectioningStatus.findAll(context.getUser().getCurrentAcademicSessionId()); 
+		List<StudentSectioningStatus> statuses = StudentSectioningStatus.findAll(context.getUser().getCurrentAcademicSessionId());
+		fallbacks.add(new ListItem("", ""));
 		for (StudentSectioningStatus status: statuses) {
 			fallbacks.add(new ListItem(status.getUniqueId().toString(), status.getLabel()));
 		}
