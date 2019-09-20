@@ -755,7 +755,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<cpsolver.version>1.3.182</cpsolver.version>
+		<cpsolver.version>1.3.185</cpsolver.version>
 		<hibernate.version>4.3.11.Final</hibernate.version>
 		<itext.version>2.1.7</itext.version>
 		<struts.version>1.3.10</struts.version>
