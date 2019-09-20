@@ -149,6 +149,12 @@
 				<line>Priority students are identified by student group (Load.PriorityStudentGroupReference parameter).</line>
 			</description>
 		</item>
+		<item>
+			<name>Batch Student Scheduling: Projected Students</name>
+			<description>
+				<line>Added ability to filter projected students with a query (Load.ProjectedStudentQuery parameter).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>
