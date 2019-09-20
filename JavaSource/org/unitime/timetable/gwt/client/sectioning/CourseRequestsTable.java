@@ -401,48 +401,63 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	}
 	
 	protected void setErrors(CourseSelectionBox box, CheckCoursesResponse messages) {
-		String message = messages.getMessage(box.getText(), "\n");
+		String message = null;
+		String itemized = null;
+		for (CourseMessage m: messages.getMessages(box.getText())) {
+			if (message == null) {
+				message = m.getMessage();
+				itemized = MESSAGES.courseMessage(m.getMessage());
+			} else {
+				message += "\n" + m.getMessage();
+				itemized += "\n" + MESSAGES.courseMessage(m.getMessage());
+			}
+		}
+		RequestedCourseStatus status = messages.getStatus(box.getText());
+		if (status == null) status = box.getValue().getStatus();
+		if (status == null && !box.isCanDelete()) status = RequestedCourseStatus.ENROLLED;
 		if (message != null) {
 			String note = "";
-			if (box.getValue().hasStatusNote()) note = "\n<span class='status-note'>" + box.getValue().getStatusNote() + "</span>";
+			if (box.getValue().hasRequestorNote()) note += "\n<span class='status-note'>" + box.getValue().getRequestorNote() + "</span>";
+			else if (iSpecReg != null && iSpecReg.isAllowChangeRequestNote() && box.getValue().hasRequestId() && status == RequestedCourseStatus.OVERRIDE_PENDING)
+				note += "\n<span class='status-note'>" + MESSAGES.noRequestNoteClickToChange() + "</span>";
+			if (box.getValue().hasStatusNote()) note += "\n<span class='status-note'>" + box.getValue().getStatusNote() + "</span>";
 			if (messages.isError(box.getText()) || messages.isConfirm(box.getText()))
 				box.setError(message + note);
 			else
 				box.setWarning(message + note);
 		}
-		RequestedCourseStatus status = messages.getStatus(box.getText());
-		if (status == null) status = box.getValue().getStatus();
-		if (status == null && !box.isCanDelete()) status = RequestedCourseStatus.ENROLLED;
 		String note = "";
-		if (box.getValue().hasStatusNote()) note = "\n" + MESSAGES.overrideNote(box.getValue().getStatusNote());
+		if (box.getValue().hasRequestorNote())
+			note += "\n\n" + MESSAGES.requestNote(box.getValue().getRequestorNote());
+		if (box.getValue().hasStatusNote()) note = "\n\n" + MESSAGES.overrideNote(box.getValue().getStatusNote());
 		if (messages.isError(box.getText()) && (status == null || status != RequestedCourseStatus.OVERRIDE_REJECTED)) {
-			box.setStatus(RESOURCES.requestError(), message);
+			box.setStatus(RESOURCES.requestError(), itemized);
 		} else if (status != null) {
 			switch (status) {
 			case ENROLLED:
 				box.setStatus(RESOURCES.requestEnrolled(), MESSAGES.enrolled(box.getText()) + note);
 				break;
 			case OVERRIDE_NEEDED:
-				box.setStatus(RESOURCES.requestNeeded(), MESSAGES.overrideNeeded(message) + note);
+				box.setStatus(RESOURCES.requestNeeded(), (itemized == null ? "" : MESSAGES.overrideNeeded(itemized)) + note);
 				break;
 			case SAVED:
-				box.setStatus(RESOURCES.requestSaved(), (message == null ? "" : MESSAGES.requestWarnings(message) + "\n\n") + MESSAGES.requested(box.getText()) + note);
+				box.setStatus(RESOURCES.requestSaved(), (itemized == null ? "" : MESSAGES.requestWarnings(itemized) + "\n\n") + MESSAGES.requested(box.getText()) + note);
 				break;				
 			case OVERRIDE_REJECTED:
-				box.setStatus(RESOURCES.requestRejected(), (message == null ? "" : MESSAGES.requestWarnings(message) + "\n\n") + MESSAGES.overrideRejected(box.getText()) + note);
+				box.setStatus(RESOURCES.requestRejected(), (itemized == null ? "" : MESSAGES.requestWarnings(itemized) + "\n\n") + MESSAGES.overrideRejected(box.getText()) + note);
 				break;
 			case OVERRIDE_PENDING:
-				box.setStatus(RESOURCES.requestPending(), (message == null ? "" : MESSAGES.requestWarnings(message) + "\n\n") + MESSAGES.overridePending(box.getText()) + note);
+				box.setStatus(RESOURCES.requestPending(), (itemized == null ? "" : MESSAGES.requestWarnings(itemized) + "\n\n") + MESSAGES.overridePending(box.getText()) + note);
 				break;
 			case OVERRIDE_CANCELLED:
-				box.setStatus(RESOURCES.requestCancelled(), (message == null ? "" : MESSAGES.requestWarnings(message) + "\n\n") + MESSAGES.overrideCancelled(box.getText()) + note);
+				box.setStatus(RESOURCES.requestCancelled(), (itemized == null ? "" : MESSAGES.requestWarnings(itemized) + "\n\n") + MESSAGES.overrideCancelled(box.getText()) + note);
 				break;
 			case OVERRIDE_APPROVED:
-				box.setStatus(RESOURCES.requestSaved(), (message == null ? "" : MESSAGES.requestWarnings(message) + "\n\n") + MESSAGES.overrideApproved(box.getText()) + note);
+				box.setStatus(RESOURCES.requestSaved(), (itemized == null ? "" : MESSAGES.requestWarnings(itemized) + "\n\n") + MESSAGES.overrideApproved(box.getText()) + note);
 				break;
 			default:
 				if (messages.isError(box.getText()))
-					box.setStatus(RESOURCES.requestError(), message + note);
+					box.setStatus(RESOURCES.requestError(), (itemized == null ? "" : itemized) + note);
 				else
 					box.clearStatus();
 				break;
@@ -689,4 +704,6 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	}
 	
 	public void setCreditStatusIcon(Image image) { iCreditStatusIcon = image; }
+	
+	public CheckCoursesResponse getLastCheck() { return iLastCheck; }
 }

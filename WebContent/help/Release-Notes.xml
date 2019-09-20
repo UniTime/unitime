@@ -155,6 +155,14 @@
 				<line>Added ability to filter projected students with a query (Load.ProjectedStudentQuery parameter).</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Requests: Custom Validation</name>
+			<description>
+				<line>Display student provided notes for the requested overrides.</line>
+				<line>Added ability to change these notes.</line>
+				<line>Allow  note changes even when the student cannot update course requests.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>

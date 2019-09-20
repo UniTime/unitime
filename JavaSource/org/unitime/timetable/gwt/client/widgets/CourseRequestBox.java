@@ -83,7 +83,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 	protected static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 
 	private CourseRequestFilterBox iFilter;
-	private HTML iError;
+	protected HTML iError;
 	
 	private Map<String, CourseAssignment> iValidCourseNames = new HashMap<String, CourseAssignment>();
 
@@ -301,6 +301,8 @@ public class CourseRequestBox extends P implements CourseSelection {
 				ret.setStatusNote(iLastCourse.getStatusNote());
 				ret.setOverrideExternalId(iLastCourse.getOverrideExternalId());
 				ret.setOverrideTimeStamp(iLastCourse.getOverrideTimeStamp());
+				ret.setRequestId(iLastCourse.getRequestId());
+				ret.setRequestorNote(iLastCourse.getRequestorNote());
 			} else
 				ret.setStatus(RequestedCourseStatus.NEW_REQUEST);
 		} else if (iLastCourse != null && iLastCourse.isCourse() && iLastCourse.hasCourseId() && courseName.equalsIgnoreCase(iLastCourse.getCourseName())) {
@@ -312,6 +314,8 @@ public class CourseRequestBox extends P implements CourseSelection {
 			ret.setOverrideExternalId(iLastCourse.getOverrideExternalId());
 			ret.setOverrideTimeStamp(iLastCourse.getOverrideTimeStamp());
 			ret.setStatusNote(iLastCourse.getStatusNote());
+			ret.setRequestId(iLastCourse.getRequestId());
+			ret.setRequestorNote(iLastCourse.getRequestorNote());
 		} else if (iFreeTimeParser != null) {
 			try {
 				ret.setFreeTime(iFreeTimeParser.parseFreeTime(courseName));
@@ -870,15 +874,23 @@ public class CourseRequestBox extends P implements CourseSelection {
 		public Character getAccessKey() { return iAccessKey; }
 	}
 	
-	public static class FilterStatus extends FilterOperation implements HasAriaLabel {
+	public class FilterStatus extends FilterOperation implements HasAriaLabel {
+
 		public FilterStatus(ImageResource resource, Character accessKey) {
 			super(resource, accessKey);
 			addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					UniTimeConfirmationDialog.info(getAltText());
+					click();
 				}
 			});
+		}
+		
+		public void click() {
+			if (isVisible()) {
+				if (iSpecReg == null || !iSpecReg.isAllowChangeRequestNote() || !iSpecReg.getChangeRequestorNoteInterface().changeRequestorNote(getValue()))
+					UniTimeConfirmationDialog.info(getAltText());
+			}
 		}
 		
 		public FilterStatus(ImageResource resource) {

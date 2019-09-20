@@ -519,6 +519,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Failed to load approval requests: {0}")
 	String retrieveAllSpecialRegistrationsFail(String reason);
+	
+	@DefaultMessage("Failed to update approval request: {0}")
+	String updateSpecialRegistrationFail(String reason);
 
 	@DefaultMessage("Success!")
 	String submitSecialRegistrationOK();
@@ -1963,6 +1966,12 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Requested override for {0} has been approved.")
 	String overrideApproved(String course);
 	
+	@DefaultMessage("An override for the following registration issues has been requested:\n{0}")
+	String requestedWarnings(String errors);
+	
+	@DefaultMessage("Request Note: {0}")
+	String requestNote(String course);
+	
 	@DefaultMessage("Last Note: {0}")
 	String overrideNote(String course);
 	
@@ -2334,4 +2343,25 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Use Default")
 	String opSetCriticalNotSet();
+	
+	@DefaultMessage("Requested Overrides for {0}")
+	String dialogChangeRequestNote(String course);
+	
+	@DefaultMessage("Requested Overrides")
+	String dialogChangeCreditRequestNote();
+	
+	@DefaultMessage("Change Note")
+	String buttonChangeRequestNote();
+	
+	@DefaultMessage("Change request note for the above registration errors")
+	String titleChangeRequestNote();
+	
+	@DefaultMessage("Close Dialog")
+	String buttonHideRequestNote();
+	
+	@DefaultMessage("Close this dialog without making any changes")
+	String titleHideRequestNote();
+	
+	@DefaultMessage("No request note. Click here to provide a note.")
+	String noRequestNoteClickToChange();
 }

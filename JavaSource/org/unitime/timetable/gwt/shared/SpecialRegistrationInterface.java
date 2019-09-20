@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeModes;
@@ -54,10 +55,12 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private boolean iSpecRegDisclaimerAccepted = false;
 		private boolean iSpecRegTimeConfs = false;
 		private boolean iSpecRegSpaceConfs = false;
+		private boolean iSpecRegChangeRequestNote = false;
 		private SpecialRegistrationStatus iSpecRegStatus = null;
 		private String iNote;
 		private String iDisclaimer;
 		private boolean iCanRequire = true;
+		private ChangeRequestorNoteInterface iChangeRequestorNote = null;
 
 		public SpecialRegistrationContext() {}
 		public SpecialRegistrationContext(SpecialRegistrationContext cx) {
@@ -72,6 +75,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			iSpecRegStatus = cx.iSpecRegStatus;
 			iNote = cx.iNote;
 			iCanRequire = cx.iCanRequire;
+			iSpecRegChangeRequestNote = cx.iSpecRegChangeRequestNote;
 		}
 		
 		public boolean isEnabled() { return iSpecReg; }
@@ -94,12 +98,15 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void setDisclaimer(String disclaimer) { iDisclaimer = disclaimer; }
 		public boolean hasDisclaimer() { return iDisclaimer != null && !iDisclaimer.isEmpty(); }
 		public boolean isCanRequire() { return iCanRequire; }
+		public boolean isAllowChangeRequestNote() { return iSpecRegChangeRequestNote; }
+		public void setAllowChangeRequestNote(boolean changeRequestNote) { iSpecRegChangeRequestNote = changeRequestNote; } 
 		public void update(EligibilityCheck check) {
 			iSpecRegTimeConfs = check != null && check.hasFlag(EligibilityFlag.SR_TIME_CONF);
 			iSpecRegSpaceConfs = check != null && check.hasFlag(EligibilityFlag.SR_LIMIT_CONF);
 			iSpecReg = check != null && check.hasFlag(EligibilityFlag.CAN_SPECREG);
 			iDisclaimer = (check != null ? check.getOverrideRequestDisclaimer() : null);
 			iCanRequire = check == null || check.hasFlag(EligibilityFlag.CAN_REQUIRE);
+			iSpecRegChangeRequestNote = check != null && check.hasFlag(EligibilityFlag.SR_CHANGE_NOTE);
 		}
 		public void reset() {
 			iNote = null;
@@ -111,11 +118,15 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			iSpecRegStatus = null;
 			iDisclaimer = null;
 			iCanRequire = true;
+			iSpecRegChangeRequestNote = false;
 		}
 		public void reset(EligibilityCheck check) {
 			reset();
 			if (check != null) update(check);
 		}
+		
+		public void setChangeRequestorNote(ChangeRequestorNoteInterface changeRequestorNote) { iChangeRequestorNote = changeRequestorNote; }
+		public ChangeRequestorNoteInterface getChangeRequestorNoteInterface() { return iChangeRequestorNote; }
 	}
 	
 	public static class SpecialRegistrationEligibilityRequest implements IsSerializable, Serializable {
@@ -892,5 +903,55 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public boolean hasCancelRequestIds() { return iCancelRequestIds != null && !iCancelRequestIds.isEmpty(); }
 		public Set<String> getCancelRequestIds() { return iCancelRequestIds; }
 		public boolean isToBeCancelled(String requestId) { return iCancelRequestIds != null && iCancelRequestIds.contains(requestId); }
+	}
+	
+	public static interface ChangeRequestorNoteInterface {
+		public boolean changeRequestorNote(RequestedCourse request);
+		public boolean changeRequestorCreditNote(CourseRequestInterface request);
+	}
+	
+	public static class UpdateSpecialRegistrationRequest implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		private Long iSessionId;
+		private Long iStudentId;
+		private String iRequestId;
+		private String iNote;
+		private boolean iPreReg = false;
+		
+		public UpdateSpecialRegistrationRequest() {}
+		public UpdateSpecialRegistrationRequest(Long sessionId, Long studentId, String requestId, String note, boolean preReg) {
+			iRequestId = requestId;
+			iStudentId = studentId;
+			iSessionId = sessionId;
+			iNote = note;
+			iPreReg = preReg;
+		}
+		
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		public Long getStudentId() { return iStudentId; }
+		public void setStudentId(Long studentId) { iStudentId = studentId; }
+		public String getRequestId() { return iRequestId; }
+		public void setRequestId(String requestId) { iRequestId = requestId; }
+		public String getNote() { return iNote; }
+		public void setNote(String note) { iNote = note; }
+		public boolean isPreReg() { return iPreReg; }
+		public void setPreReg(boolean preReg) { iPreReg = preReg; }
+	}
+	
+	public static class UpdateSpecialRegistrationResponse implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		private boolean iSuccess;
+		private String iMessage;
+		
+		public UpdateSpecialRegistrationResponse() {}
+		
+		public boolean isSuccess() { return iSuccess; }
+		public boolean isFailure() { return !iSuccess; }
+		public void setSuccess(boolean success) { iSuccess = success; }
+		
+		public boolean hasMessage() { return iMessage != null && !iMessage.isEmpty(); }
+		public String getMessage() { return iMessage; }
+		public void setMessage(String message) { iMessage = message; }
 	}
 }

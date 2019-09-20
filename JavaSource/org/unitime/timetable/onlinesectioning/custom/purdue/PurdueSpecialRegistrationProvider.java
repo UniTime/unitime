@@ -90,6 +90,8 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAva
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationResponse;
 import org.unitime.timetable.interfaces.ExternalClassLookupInterface;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -120,6 +122,7 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationCurrentGradeMode;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationResponseList;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationStatusResponse;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationUpdateResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SubmitRegistrationResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ValidationMode;
@@ -223,6 +226,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 	
 	protected String getSpecialRegistrationApiSiteCheckStudentGradeModes() {
 		return ApplicationProperties.getProperty("purdue.specreg.site.checkStudentGradeModes", getSpecialRegistrationApiSite() + "/checkStudentGradeModes");
+	}
+	
+	protected String getSpecialRegistrationApiSiteUpdateRegistration() {
+		return ApplicationProperties.getProperty("purdue.specreg.site.updateRegistration", getSpecialRegistrationApiSite() + "/updateRequestorNotes");
 	}
 
 	protected String getSpecialRegistrationApiKey() {
@@ -2505,5 +2512,64 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		
 		return ret;
 
+	}
+
+	@Override
+	public UpdateSpecialRegistrationResponse updateRegistration(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, UpdateSpecialRegistrationRequest input) throws SectioningException {
+		ClientResource resource = null;
+		try {
+			SpecialRegistrationRequest request = new SpecialRegistrationRequest();
+			AcademicSessionInfo session = server.getAcademicSession();
+			request.term = getBannerTerm(session);
+			request.campus = getBannerCampus(session);
+			request.studentId = getBannerId(student);
+			request.regRequestId = input.getRequestId();
+			request.mode = (input.isPreReg() ? ApiMode.valueOf(ApplicationProperties.getProperty("purdue.specreg.mode.validation", "PREREG")) : getSpecialRegistrationMode()); 
+			if (helper.getUser() != null) {
+				request.requestorId = getRequestorId(helper.getUser());
+				request.requestorRole = getRequestorType(helper.getUser(), student);
+			}
+			request.requestorNotes = input.getNote();
+			
+			resource = new ClientResource(getSpecialRegistrationApiSiteUpdateRegistration());
+			resource.setNext(iClient);
+			resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
+			
+			Gson gson = getGson(helper);
+			if (helper.isDebugEnabled())
+				helper.debug("Request: " + gson.toJson(request));
+			helper.getAction().addOptionBuilder().setKey("specreg_request").setValue(gson.toJson(request));
+			long t1 = System.currentTimeMillis();
+			
+			resource.post(new GsonRepresentation<SpecialRegistrationRequest>(request));
+			
+			helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
+			
+			SpecialRegistrationUpdateResponse response = (SpecialRegistrationUpdateResponse)new GsonRepresentation<SpecialRegistrationUpdateResponse>(resource.getResponseEntity(), SpecialRegistrationUpdateResponse.class).getObject();
+			
+			if (helper.isDebugEnabled())
+				helper.debug("Response: " + gson.toJson(response));
+			helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(response));
+			
+			UpdateSpecialRegistrationResponse ret = new UpdateSpecialRegistrationResponse();
+			if (response != null) {
+				ret.setSuccess(ResponseStatus.success == response.status);
+				ret.setMessage(response.message);
+			}
+			
+			return ret;
+		} catch (SectioningException e) {
+			helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
+			throw (SectioningException)e;
+		} catch (Exception e) {
+			helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(e.getMessage());
+		} finally {
+			if (resource != null) {
+				if (resource.getResponse() != null) resource.getResponse().release();
+				resource.release();
+			}
+		}
 	}
 }

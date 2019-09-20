@@ -57,6 +57,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.ChangeGradeModesResponse;
@@ -68,11 +69,14 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegi
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationStatus;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.CourseMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
@@ -206,47 +210,53 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					iTotalCreditRequestsStatus.setVisible(false);
 					if (!isChanged() && iSavedRequest != null && iSavedRequest.getMaxCreditOverrideStatus() != null) {
 						String cw = (iSavedRequest.hasCreditWarning() ? iSavedRequest.getCreditWarning() : MESSAGES.creditWarning(iSavedRequest.getCredit()));
+						String note = "";
+						if (iSavedRequest.hasRequestorNote())
+							note += "\n" + MESSAGES.requestNote(iSavedRequest.getRequestorNote());
+						if (iSavedRequest.hasCreditNote())
+							note += "\n" + MESSAGES.overrideNote(iSavedRequest.getCreditNote()); 
+						
 						switch (iSavedRequest.getMaxCreditOverrideStatus()) {
 						case CREDIT_HIGH:
 							iTotalCreditRequestsStatus.setResource(RESOURCES.requestError());
-							iTotalCreditRequestsStatus.setAltText(cw + "\n" + MESSAGES.creditStatusTooHigh() + (iSavedRequest.hasCreditNote() ? "\n" + MESSAGES.overrideNote(iSavedRequest.getCreditNote()) : ""));
+							iTotalCreditRequestsStatus.setAltText(cw + "\n" + MESSAGES.creditStatusTooHigh() + note);
 							iTotalCreditRequestsStatus.setTitle(iTotalCreditRequestsStatus.getAltText());
 							iTotalCreditRequestsStatus.setVisible(true);
 							break;
 						case OVERRIDE_REJECTED:
 							iTotalCreditRequestsStatus.setResource(RESOURCES.requestError());
-							iTotalCreditRequestsStatus.setAltText(cw + "\n" + MESSAGES.creditStatusDenied() + (iSavedRequest.hasCreditNote() ? "\n" + MESSAGES.overrideNote(iSavedRequest.getCreditNote()) : ""));
+							iTotalCreditRequestsStatus.setAltText(cw + "\n" + MESSAGES.creditStatusDenied() + note);
 							iTotalCreditRequestsStatus.setTitle(iTotalCreditRequestsStatus.getAltText());
 							iTotalCreditRequestsStatus.setVisible(true);
 							break;
 						case OVERRIDE_CANCELLED:
 							iTotalCreditRequestsStatus.setResource(RESOURCES.requestNeeded());
-							iTotalCreditRequestsStatus.setAltText(cw + "\n" + MESSAGES.creditStatusCancelled() + (iSavedRequest.hasCreditNote() ? "\n" + MESSAGES.overrideNote(iSavedRequest.getCreditNote()) : ""));
+							iTotalCreditRequestsStatus.setAltText(cw + "\n" + MESSAGES.creditStatusCancelled() + note);
 							iTotalCreditRequestsStatus.setTitle(iTotalCreditRequestsStatus.getAltText());
 							iTotalCreditRequestsStatus.setVisible(true);
 							break;
 						case CREDIT_LOW:
 						case OVERRIDE_NEEDED:
 							iTotalCreditRequestsStatus.setResource(RESOURCES.requestNeeded());
-							iTotalCreditRequestsStatus.setAltText(cw + (iSavedRequest.hasCreditNote() ? "\n" + MESSAGES.overrideNote(iSavedRequest.getCreditNote()) : ""));
+							iTotalCreditRequestsStatus.setAltText(cw + note);
 							iTotalCreditRequestsStatus.setTitle(iTotalCreditRequestsStatus.getAltText());
 							iTotalCreditRequestsStatus.setVisible(true);
 							break;
 						case OVERRIDE_PENDING:
 							iTotalCreditRequestsStatus.setResource(RESOURCES.requestPending());
-							iTotalCreditRequestsStatus.setAltText(cw + "\n" + MESSAGES.creditStatusPending() + (iSavedRequest.hasCreditNote() ? "\n" + MESSAGES.overrideNote(iSavedRequest.getCreditNote()) : ""));
+							iTotalCreditRequestsStatus.setAltText(cw + "\n" + MESSAGES.creditStatusPending() + note);
 							iTotalCreditRequestsStatus.setTitle(iTotalCreditRequestsStatus.getAltText());
 							iTotalCreditRequestsStatus.setVisible(true);
 							break;
 						case OVERRIDE_APPROVED:
 							iTotalCreditRequestsStatus.setResource(RESOURCES.requestSaved());
-							iTotalCreditRequestsStatus.setAltText(MESSAGES.creditStatusApproved() + (iSavedRequest.hasCreditNote() ? "\n" + MESSAGES.overrideNote(iSavedRequest.getCreditNote()) : ""));
+							iTotalCreditRequestsStatus.setAltText(MESSAGES.creditStatusApproved() + note);
 							iTotalCreditRequestsStatus.setTitle(iTotalCreditRequestsStatus.getAltText());
 							iTotalCreditRequestsStatus.setVisible(true);
 							break;
 						case SAVED:
 							iTotalCreditRequestsStatus.setResource(RESOURCES.requestSaved());
-							iTotalCreditRequestsStatus.setAltText(iSavedRequest.hasCreditNote() ? MESSAGES.overrideNote(iSavedRequest.getCreditNote()) : "");
+							iTotalCreditRequestsStatus.setAltText(note.isEmpty() ? "" : note.substring(1));
 							iTotalCreditRequestsStatus.setTitle(iTotalCreditRequestsStatus.getAltText());
 							iTotalCreditRequestsStatus.setVisible(true);
 							break;
@@ -333,8 +343,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iTotalCreditRequestsStatus.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					if (iTotalCreditRequestsStatus.getAltText() != null && !iTotalCreditRequestsStatus.getAltText().isEmpty())
-						UniTimeConfirmationDialog.info(iTotalCreditRequestsStatus.getAltText());
+					if (!iSpecRegCx.isAllowChangeRequestNote() || !iSpecRegCx.getChangeRequestorNoteInterface().changeRequestorCreditNote(iSavedRequest)) {
+						if (iTotalCreditRequestsStatus.getAltText() != null && !iTotalCreditRequestsStatus.getAltText().isEmpty())
+							UniTimeConfirmationDialog.info(iTotalCreditRequestsStatus.getAltText());
+					}
 				}
 			});
 			iCourseRequests.setCreditStatusIcon(iTotalCreditRequestsStatus);
@@ -511,6 +523,119 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					}
 				});
 				
+			}
+		});
+		
+		iSpecRegCx.setChangeRequestorNote(new SpecialRegistrationInterface.ChangeRequestorNoteInterface() {
+			@Override
+			public boolean changeRequestorNote(final RequestedCourse rc) {
+				if (rc == null || rc.getRequestId() == null || rc.getStatus() != RequestedCourseStatus.OVERRIDE_PENDING || iCourseRequests.getLastCheck() == null) return false;
+				String message = null;
+				for (CourseMessage m: iCourseRequests.getLastCheck().getMessages(rc.getCourseName())) {
+					if ("NO_ALT".equals(m.getCode())) continue;
+					if ("OVERLAP".equals(m.getCode())) continue;
+					if ("CREDIT".equals(m.getCode())) continue;
+					if (message == null)
+						message = MESSAGES.courseMessage(m.getMessage());
+					else
+						message += "\n" + MESSAGES.courseMessage(m.getMessage());
+				}
+				if (message == null) return false;
+				CheckCoursesResponse confirm = new CheckCoursesResponse();
+				confirm.setConfirmation(0, MESSAGES.dialogChangeRequestNote(rc.getCourseName()),
+						MESSAGES.buttonChangeRequestNote(), MESSAGES.buttonHideRequestNote(),
+						MESSAGES.titleChangeRequestNote(), MESSAGES.titleHideRequestNote());
+				confirm.addConfirmation(MESSAGES.requestedWarnings(message), 0, 1);
+				confirm.addConfirmation("\n" + MESSAGES.messageRequestOverridesNote(), 0, 2);
+				final CourseRequestInterface.CourseMessage note = confirm.addConfirmation(rc.hasRequestorNote() ? rc.getRequestorNote() : "", 0, 3); note.setCode("REQUEST_NOTE");
+				if (rc.hasStatusNote())
+					confirm.addConfirmation("\n" + MESSAGES.overrideNote(rc.getStatusNote()), 0, 4);
+				CourseRequestsConfirmationDialog.confirm(confirm, 0, RESOURCES.statusInfo(), new AsyncCallback<Boolean>() {
+					@Override
+					public void onSuccess(Boolean result) {
+						if (result) {
+							final String requestorNote = note.getMessage();
+							UpdateSpecialRegistrationRequest request = new UpdateSpecialRegistrationRequest(
+									iSessionSelector.getAcademicSessionId(),
+									iEligibilityCheck.getStudentId(),
+									rc.getRequestId(),
+									requestorNote, true);
+							iSectioningService.updateSpecialRequest(request, new AsyncCallback<UpdateSpecialRegistrationResponse>() {
+								@Override
+								public void onSuccess(UpdateSpecialRegistrationResponse result) {
+									if (result.isFailure() && result.hasMessage()) {
+										iStatus.error(MESSAGES.updateSpecialRegistrationFail(result.getMessage()));
+									} else {
+										CourseRequestInterface req = iCourseRequests.getValue();
+										if (req.updateRequestorNote(rc.getRequestId(), requestorNote)) {
+											iCourseRequests.setValue(req);
+										}
+										if (iSavedRequest != null)
+											iSavedRequest.updateRequestorNote(rc.getRequestId(), requestorNote);
+										updateHistory();
+									}
+								}
+								
+								@Override
+								public void onFailure(Throwable caught) {
+									iStatus.error(MESSAGES.updateSpecialRegistrationFail(caught.getMessage()), caught);
+								}
+							});
+						}
+					}
+					@Override
+					public void onFailure(Throwable caught) {}
+				});
+				return true;
+			}
+
+			@Override
+			public boolean changeRequestorCreditNote(final CourseRequestInterface request) {
+				if (request == null || request.getRequestId() == null || request.getMaxCreditOverrideStatus() != RequestedCourseStatus.OVERRIDE_PENDING) return false;
+				String message = (request.hasCreditWarning() ? request.getCreditWarning() : MESSAGES.creditWarning(request.getCredit()));
+				CheckCoursesResponse confirm = new CheckCoursesResponse();
+				confirm.setConfirmation(0, MESSAGES.dialogChangeCreditRequestNote(),
+						MESSAGES.buttonChangeRequestNote(), MESSAGES.buttonHideRequestNote(),
+						MESSAGES.titleChangeRequestNote(), MESSAGES.titleHideRequestNote());
+				confirm.addConfirmation(MESSAGES.requestedWarnings(MESSAGES.courseMessage(message)), 0, 1);
+				confirm.addConfirmation("\n" + MESSAGES.messageRequestOverridesNote(), 0, 2);
+				final CourseRequestInterface.CourseMessage note = confirm.addConfirmation(request.hasRequestorNote() ? request.getRequestorNote() : "", 0, 3); note.setCode("REQUEST_NOTE");
+				if (request.hasCreditNote())
+					confirm.addConfirmation("\n" + MESSAGES.overrideNote(request.getCreditNote()), 0, 4);
+				CourseRequestsConfirmationDialog.confirm(confirm, 0, RESOURCES.statusInfo(), new AsyncCallback<Boolean>() {
+					@Override
+					public void onSuccess(Boolean result) {
+						if (result) {
+							final String requestorNote = note.getMessage();
+							UpdateSpecialRegistrationRequest req = new UpdateSpecialRegistrationRequest(
+									iSessionSelector.getAcademicSessionId(),
+									iEligibilityCheck.getStudentId(),
+									request.getRequestId(),
+									requestorNote, true);
+							iSectioningService.updateSpecialRequest(req, new AsyncCallback<UpdateSpecialRegistrationResponse>() {
+								@Override
+								public void onSuccess(UpdateSpecialRegistrationResponse result) {
+									if (result.isFailure() && result.hasMessage()) {
+										iStatus.error(MESSAGES.updateSpecialRegistrationFail(result.getMessage()));
+									} else {
+										if (request.updateRequestorNote(request.getRequestId(), requestorNote)) {
+											iCourseRequests.setValue(request);
+										}
+										updateHistory();
+									}
+								}
+								
+								@Override
+								public void onFailure(Throwable caught) {
+									iStatus.error(MESSAGES.updateSpecialRegistrationFail(caught.getMessage()), caught);
+								}
+							});
+						}
+					}
+					@Override
+					public void onFailure(Throwable caught) {}
+				});
+				return true;
 			}
 		});
 
@@ -2816,6 +2941,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								icon = RESOURCES.requestError(); iconText = (msg);
 						}
 					}
+					if (rc.hasRequestorNote()) iconText += "\n" + MESSAGES.requestNote(rc.getRequestorNote());
 					if (rc.hasStatusNote()) iconText += "\n" + MESSAGES.overrideNote(rc.getStatusNote());
 					Collection<Preference> prefs = null;
 					if (rc.hasSelectedIntructionalMethods()) {
@@ -2845,6 +2971,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 					String note = null;
 					if (check != null) note = check.getMessage(rc.getCourseName(), "\n", "CREDIT");
+					if (rc.hasRequestorNote()) note = (note == null ? "" : note + "\n") + rc.getRequestorNote();
 					if (rc.hasStatusNote()) note = (note == null ? "" : note + "\n") + rc.getStatusNote();
 					P messages = new P("text-pre-wrap"); messages.setText(note);
 					WebTable.Row row = new WebTable.Row(
@@ -2920,6 +3047,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								icon = RESOURCES.requestError(); iconText = (msg);
 						}
 					}
+					if (rc.hasRequestorNote()) iconText += "\n" + MESSAGES.requestNote(rc.getRequestorNote());
 					if (rc.hasStatusNote()) iconText += "\n" + MESSAGES.overrideNote(rc.getStatusNote());
 					Collection<Preference> prefs = null;
 					if (rc.hasSelectedIntructionalMethods()) {
@@ -2949,6 +3077,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 					String note = null;
 					if (check != null) note = check.getMessage(rc.getCourseName(), "\n", "CREDIT");
+					if (rc.hasRequestorNote()) note = (note == null ? "" : note + "\n") + rc.getRequestorNote();
 					if (rc.hasStatusNote()) note = (note == null ? "" : note + "\n") + rc.getStatusNote();
 					P messages = new P("text-pre-wrap"); messages.setText(note);
 					WebTable.Row row = new WebTable.Row(
@@ -3031,6 +3160,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				icon = RESOURCES.requestSaved();
 				status = MESSAGES.reqStatusRegistered();
 				break;
+			}
+			if (savedRequests.hasRequestorNote()) {
+				note = (note == null ? "" : note + "\n") + savedRequests.getRequestorNote();
+				hasWarn = true;
 			}
 			if (savedRequests.hasCreditNote()) {
 				note = (note == null ? "" : note + "\n") + savedRequests.getCreditNote();

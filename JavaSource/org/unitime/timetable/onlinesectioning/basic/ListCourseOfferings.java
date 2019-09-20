@@ -24,8 +24,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 import org.cpsolver.ifs.heuristics.RouletteWheelSelection;
 import org.unitime.timetable.defaults.ApplicationProperty;

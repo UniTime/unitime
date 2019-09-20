@@ -33,6 +33,8 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAva
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationResponse;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
@@ -57,6 +59,8 @@ public interface SpecialRegistrationProvider {
 	public RetrieveAvailableGradeModesResponse retrieveAvailableGradeModes(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) throws SectioningException;
 	
 	public ChangeGradeModesResponse changeGradeModes(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, ChangeGradeModesRequest reqiuest) throws SectioningException;
+	
+	public UpdateSpecialRegistrationResponse updateRegistration(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, UpdateSpecialRegistrationRequest request) throws SectioningException;
 	
 	public void dispose();
 }

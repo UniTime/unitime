@@ -62,6 +62,8 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	private String iCreditNote = null;
 	private String iErrorMessage = null;
 	private String iSpecRegDashboardUrl = null;
+	private String iRequestorNote = null;
+	private String iRequestId = null;
 	
 	public CourseRequestInterface() {}
 
@@ -452,6 +454,8 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		private String iStatusNote = null;
 		private String iOverrideExternalId = null;
 		private Date iOverrideTimeStamp = null;
+		private String iRequestorNote = null;
+		private String iRequestId = null;
 		
 		public RequestedCourse() {}
 		public RequestedCourse(List<FreeTime> freeTime) {
@@ -492,6 +496,17 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		}
 		public boolean hasStatusNote() { return iStatusNote != null && !iStatusNote.isEmpty() && !" ".equals(iStatusNote); }
 		public String getStatusNote() { return iStatusNote; }
+		public void setRequestorNote(String note) {
+			if (note == null)
+				iRequestorNote = null;
+			else
+				iRequestorNote = note.replace("<br>", "\n");
+		}
+		public boolean hasRequestorNote() { return iRequestorNote != null && !iRequestorNote.isEmpty() && !" ".equals(iRequestorNote); }
+		public String getRequestorNote() { return iRequestorNote; }
+		public void setRequestId(String id) { iRequestId = id; }
+		public boolean hasRequestId() { return iRequestId != null && !iRequestId.isEmpty() && !" ".equals(iRequestId); }
+		public String getRequestId() { return iRequestId; }
 		public void setOverrideExternalId(String externalId) { iOverrideExternalId = externalId; }
 		public String getOverrideExternalId() { return iOverrideExternalId; }
 		public void setOverrideTimeStamp(Date timeStamp) { iOverrideTimeStamp = timeStamp; }
@@ -1246,4 +1261,39 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	public String getSpecRegDashboardUrl() { return iSpecRegDashboardUrl; }
 	public boolean hasSpecRegDashboardUrl() { return iSpecRegDashboardUrl != null && !iSpecRegDashboardUrl.isEmpty(); }
 	public void setSpecRegDashboardUrl(String url) { iSpecRegDashboardUrl = url; }
+	public void setRequestorNote(String note) {
+		if (note == null)
+			iRequestorNote = null;
+		else
+			iRequestorNote = note.replace("<br>", "\n");
+	}
+	public boolean hasRequestorNote() { return iRequestorNote != null && !iRequestorNote.isEmpty() && !" ".equals(iRequestorNote); }
+	public String getRequestorNote() { return iRequestorNote; }
+	public void setRequestId(String id) { iRequestId = id; }
+	public boolean hasRequestId() { return iRequestId != null && !iRequestId.isEmpty() && !" ".equals(iRequestId); }
+	public String getRequestId() { return iRequestId; }
+	
+	public boolean updateRequestorNote(String requestId, String note) {
+		boolean changed = false;
+		if (requestId.equals(getRequestId())) {
+			setRequestorNote(note); changed = true;
+		}
+		for (Request r: getCourses()) {
+			if (r.hasRequestedCourse())
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					if (requestId.equals(rc.getRequestId())) {
+						rc.setRequestorNote(note); changed = true;
+					}
+				}
+		}
+		for (Request r: getAlternatives()) {
+			if (r.hasRequestedCourse())
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					if (requestId.equals(rc.getRequestId())) {
+						rc.setRequestorNote(note); changed = true;
+					}
+				}
+		}
+		return changed;
+	}
 }
