@@ -929,6 +929,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 			return removed;
 		}
 		
+		@Override
 		public boolean isEmpty() { return iCriticalCourses.isEmpty() && (iCriticalCourseIds == null || iCriticalCourseIds.isEmpty()); }
 
 		@Override

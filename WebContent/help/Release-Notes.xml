@@ -132,6 +132,15 @@
 				<line>Do not limit the ability to request students updates to online student scheduling.</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling: Critical Course Requests</name>
+			<description>
+				<line>Added ability to load critical courses from a CSV file (containing area, major, subject area, and course number).
+					<line>All courses with matching academic area and major are considered critical for the student.</line>
+				</line>
+				<line>Added ability to use the file-based critical courses as a fallback to using degree plans.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>

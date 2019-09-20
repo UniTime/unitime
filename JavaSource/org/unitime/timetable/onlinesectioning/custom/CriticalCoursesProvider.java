@@ -36,6 +36,7 @@ public interface CriticalCoursesProvider {
 	public void dispose();
 	
 	public static interface CriticalCourses {
+		public boolean isEmpty();
 		public boolean isCritical(CourseOffering course);
 	}
 }
