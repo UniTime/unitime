@@ -186,7 +186,7 @@ public class SectioningReportsExporter implements Exporter {
 				});
 			}
 			
-			if ("false".equalsIgnoreCase(helper.getParameter("pritify"))) {
+			if (!"true".equalsIgnoreCase(helper.getParameter("pritify"))) {
 				for (Row row: rows) {
 					String[] line = new String[csv.getHeader().size()];
 					for (int x = 0; x < csv.getHeader().size(); x++)

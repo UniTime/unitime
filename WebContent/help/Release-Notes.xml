@@ -170,6 +170,13 @@
 				<line>Added ability to change these notes.</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling: Solver Reports</name>
+			<description>
+				<line>Export CSV: do not pritify exported reports unless explicitly stated in the report definition
+					(changing the default value of the pritify parameter to false).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>
