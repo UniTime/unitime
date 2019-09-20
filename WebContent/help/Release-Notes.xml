@@ -141,6 +141,14 @@
 				<line>Added ability to use the file-based critical courses as a fallback to using degree plans.</line>
 			</description>
 		</item>
+		<item>
+			<name>Batch Student Scheduling: Priority Students</name>
+			<description>
+				<line>Added ability to mark some students as priority students.</line>
+				<line>Priority students are scheduled first (after the critical course assignments), improving their chance of getting the courses they need.</line>
+				<line>Priority students are identified by student group (Load.PriorityStudentGroupReference parameter).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>
