@@ -163,6 +163,13 @@
 				<line>Allow  note changes even when the student cannot update course requests.</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling: Special Registration</name>
+			<description>
+				<line>Display student provided notes for the requested overrides.</line>
+				<line>Added ability to change these notes.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>

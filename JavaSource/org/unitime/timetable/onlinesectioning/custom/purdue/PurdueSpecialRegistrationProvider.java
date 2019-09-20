@@ -1632,6 +1632,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							for (ChangeError err: ch.errors) {
 								if ("TIME".equals(err.code)) ret.setHasTimeConflict(true);
 								if ("CLOS".equals(err.code)) ret.setHasSpaceConflict(true);
+								if (err.code != null && err.code.startsWith("EX-")) ret.setExtended(true);
 								if ("MAXI".equals(err.code) && maxi != null) continue;
 								String message = err.message;
 								switch (getStatus(ch.status)) {
@@ -1915,6 +1916,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			}
 		}
 	}
+	
+	protected boolean isCanChangeNote() {
+		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.canChangeNote", "true"));
+	}
 
 	@Override
 	public void checkEligibility(OnlineSectioningServer server, OnlineSectioningHelper helper, EligibilityCheck check, XStudent student) throws SectioningException {
@@ -1922,6 +1927,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			check.setFlag(EligibilityFlag.CAN_SPECREG, false);
 			return;
 		}
+		check.setFlag(EligibilityCheck.EligibilityFlag.SR_CHANGE_NOTE, isCanChangeNote());
 		if (!check.hasFlag(EligibilityFlag.CAN_ENROLL) && !"true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.allowExtended", "false"))) {
 			check.setFlag(EligibilityFlag.CAN_SPECREG, false);
 			return;

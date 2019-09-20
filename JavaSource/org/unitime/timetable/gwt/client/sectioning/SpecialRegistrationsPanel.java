@@ -50,6 +50,7 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegi
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationStatus;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -324,6 +325,9 @@ public class SpecialRegistrationsPanel extends P {
 				if (!iShowAllChanges.getValue() && reg.isFullyApplied(saved)) continue;
 				Long lastCourseId = null;
 				String[] dateAndNote = (reg.getSubmitDate() == null ? reg.getNote() == null ? "" : reg.getNote() : sModifiedDateFormat.format(reg.getSubmitDate()) + (reg.getNote() == null || reg.getNote().isEmpty() ? "" : "\n" + reg.getNote())).split("\n");
+				if (iSpecReg.isAllowChangeRequestNote() && reg.getStatus() == SpecialRegistrationStatus.Pending && reg.hasErrors() && (reg.getNote() == null || reg.getNote().isEmpty())) {
+					dateAndNote = ((reg.getSubmitDate() == null ? "" : sModifiedDateFormat.format(reg.getSubmitDate()) + "\n") + MESSAGES.noRequestNoteClickToChange()).split("\n");
+				}
 				List<ClassAssignment> rows = new ArrayList<ClassAssignment>();
 				for (ClassAssignment ca: reg.getChanges()) {
 					if (!iShowAllChanges.getValue() && (reg.isApplied(ca.getCourseId(), saved) || (!reg.hasErrors(ca.getCourseId()) && !reg.isDrop(ca.getCourseId())))) {
@@ -350,16 +354,26 @@ public class SpecialRegistrationsPanel extends P {
 						row.add(new P("icons"));
 					}
 					if (r < dateAndNote.length) {
+						Label label = null;
 						if (r + 1 == rows.size()) {
 							String text = dateAndNote[r];
 							for (int i = r + 1; i < dateAndNote.length; i++)
 								text += "\n" + dateAndNote[i];
-							Label label = new Label(text); label.addStyleName("date-and-note");
-							row.add(label);
+							label = new Label(text); label.addStyleName("date-and-note");
 						} else {
-							Label label = new Label(dateAndNote[r]); label.addStyleName("date-and-note");
-							row.add(label);
+							label = new Label(dateAndNote[r]); label.addStyleName("date-and-note");
 						}
+						if (iSpecReg.isAllowChangeRequestNote() && reg.getStatus() == SpecialRegistrationStatus.Pending && reg.hasErrors()) {
+							label.getElement().getStyle().setCursor(Cursor.POINTER);
+							label.addClickHandler(new ClickHandler() {
+								@Override
+								public void onClick(ClickEvent event) {
+									iSpecReg.getChangeRequestorNoteInterface().changeRequestorNote(reg);
+									event.stopPropagation();
+								}
+							});
+						}
+						row.add(label);
 					} else {
 						row.add(new Label());
 					}

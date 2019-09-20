@@ -637,6 +637,54 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				});
 				return true;
 			}
+
+			@Override
+			public boolean changeRequestorNote(final RetrieveSpecialRegistrationResponse reg) {
+				if (reg == null || reg.getRequestId() == null || reg.getStatus() != SpecialRegistrationStatus.Pending) return false;
+				CheckCoursesResponse confirm = new CheckCoursesResponse();
+				confirm.setConfirmation(0, MESSAGES.dialogChangeSpecRegRequestNote(),
+						MESSAGES.buttonChangeRequestNote(), MESSAGES.buttonHideRequestNote(),
+						MESSAGES.titleChangeRequestNote(), MESSAGES.titleHideRequestNote());
+				if (reg.hasErrors()) {
+					confirm.addConfirmation(MESSAGES.requestedApprovals(), 0, 1);
+					for (ErrorMessage e: reg.getErrors())
+						confirm.addMessage(null, e.getCourse(), e.getCode(), e.getMessage(), 0, 2);
+				}
+				confirm.addConfirmation(MESSAGES.messageRequestOverridesNote(), 0, 3);
+				final CourseRequestInterface.CourseMessage note = confirm.addConfirmation(reg.getNote() == null ? "" : reg.getNote(), 0, 4); note.setCode("REQUEST_NOTE");
+				CourseRequestsConfirmationDialog.confirm(confirm, 0, RESOURCES.statusInfo(), new AsyncCallback<Boolean>() {
+					@Override
+					public void onSuccess(Boolean result) {
+						if (result) {
+							final String requestorNote = note.getMessage();
+							UpdateSpecialRegistrationRequest request = new UpdateSpecialRegistrationRequest(
+									iSessionSelector.getAcademicSessionId(),
+									iEligibilityCheck.getStudentId(),
+									reg.getRequestId(),
+									requestorNote, true);
+							iSectioningService.updateSpecialRequest(request, new AsyncCallback<UpdateSpecialRegistrationResponse>() {
+								@Override
+								public void onSuccess(UpdateSpecialRegistrationResponse result) {
+									if (result.isFailure() && result.hasMessage()) {
+										iStatus.error(MESSAGES.updateSpecialRegistrationFail(result.getMessage()));
+									} else {
+										reg.setNote(requestorNote);
+										iSpecialRegistrationsPanel.populate(iSpecialRegistrationsPanel.getRegistrations(), iSavedAssignment);
+										updateHistory();
+									}
+								}
+								@Override
+								public void onFailure(Throwable caught) {
+									iStatus.error(MESSAGES.updateSpecialRegistrationFail(caught.getMessage()), caught);
+								}
+							});
+						}
+					}
+					@Override
+					public void onFailure(Throwable caught) {}
+				});
+				return true;
+			}
 		});
 
 		initWidget(iPanel);

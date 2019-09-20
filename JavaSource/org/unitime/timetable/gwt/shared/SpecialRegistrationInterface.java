@@ -908,6 +908,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 	public static interface ChangeRequestorNoteInterface {
 		public boolean changeRequestorNote(RequestedCourse request);
 		public boolean changeRequestorCreditNote(CourseRequestInterface request);
+		public boolean changeRequestorNote(RetrieveSpecialRegistrationResponse registration);
 	}
 	
 	public static class UpdateSpecialRegistrationRequest implements IsSerializable, Serializable {
