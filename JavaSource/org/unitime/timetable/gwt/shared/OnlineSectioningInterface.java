@@ -259,6 +259,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private String iEffectiveStart, iEffectiveStop;
 		private String iMessage;
 		private String iFallback;
+		private boolean iCanUseAssitant = false, iCanRegister = false;
 		
 		public StudentStatusInfo() {}
 		
@@ -330,7 +331,12 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public void setFallback(String fallback) { iFallback = fallback; }
 		public boolean hasFallback() { return iFallback != null && !iFallback.isEmpty(); }
 		public String getFallback() { return iFallback; }
-
+		
+		public void setCanUseAssistant(boolean canUseAssistant) { iCanUseAssitant = canUseAssistant; }
+		public boolean isCanUseAssistant() { return iCanUseAssitant; }
+		
+		public void setCanRegister(boolean canRegister) { iCanRegister = canRegister; }
+		public boolean isCanRegister() { return iCanRegister; }
 		
 		@Override
 		public String toString() { return getReference(); }

@@ -1550,7 +1550,7 @@ public class SectioningStatusPage extends Composite {
 										if (i != null && i.getStudent() != null) {
 											Widget w = iStudentTable.getWidget(row, 0);
 											if (w instanceof CheckBox && ((CheckBox)w).getValue()) {
-												i.setStatus(info.getReference());
+												i.setStatus(info);
 												((HTML)iStudentTable.getWidget(row, iStatusColumn)).setHTML(info.getReference());
 											}
 										}
@@ -1599,7 +1599,7 @@ public class SectioningStatusPage extends Composite {
 										if (i != null && i.getStudent() != null) {
 											Widget w = iStudentTable.getWidget(row, 0);
 											if (w instanceof CheckBox && ((CheckBox)w).getValue()) {
-												i.setStatus(statusRef);
+												i.setStatus(iStudentStatusDialog.getStudentStatusInfo(statusRef));
 												((HTML)iStudentTable.getWidget(row, iStatusColumn)).setHTML(statusRef);
 											}
 										}
@@ -1634,6 +1634,7 @@ public class SectioningStatusPage extends Composite {
 							List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
 							final String statusRef = iStudentStatusDialog.getStatus();
 							final String note = iStudentStatusDialog.getNote();
+							final StudentStatusInfo status = iStudentStatusDialog.getStudentStatusInfo(statusRef);
 							iSectioningService.changeStatus(studentIds, note, statusRef, new AsyncCallback<Boolean>() {
 								
 								@Override
@@ -1650,7 +1651,7 @@ public class SectioningStatusPage extends Composite {
 											Widget w = iStudentTable.getWidget(row, 0);
 											if (w instanceof CheckBox && ((CheckBox)w).getValue()) {
 												if (!"-".equals(statusRef)) {
-													i.setStatus(statusRef);
+													i.setStatus(status);
 													((HTML)iStudentTable.getWidget(row, iStatusColumn)).setHTML(statusRef);
 												}
 												i.setNote(note);

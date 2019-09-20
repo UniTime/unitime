@@ -297,6 +297,13 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 		return iStatus.getValue(iStatus.getSelectedIndex());
 	}
 	
+	public StudentStatusInfo getStudentStatusInfo(String ref) {
+		for (StudentStatusInfo status: iStates)
+			if (status.getReference().equals(ref))
+				return status;
+		return null;
+	}
+	
 	public String getNote() {
 		return iNote.getText();
 	}

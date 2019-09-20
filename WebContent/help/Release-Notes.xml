@@ -177,6 +177,13 @@
 					(changing the default value of the pritify parameter to false).</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling Dashboard: Set Student Status </name>
+			<description>
+				<line>When a status is changed, update information on whether the user can use the scheduling assistant / course requests.</line>
+				<line>No need to use Refresh to open the Course Requests / Scheduling Assistant dialog after the status change.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>
