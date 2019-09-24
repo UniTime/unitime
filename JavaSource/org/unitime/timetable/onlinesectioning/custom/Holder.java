@@ -52,6 +52,7 @@ public class Holder<T> {
 			}
 		}
 		iProvider = null;
+		iProviderClass = null;
 	}
 	
 	public synchronized T getProvider() {
