@@ -1955,7 +1955,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				}
 				
 				if (request.getEventFilter().hasOptions("flag") && request.getEventFilter().getOptions("flag").contains("Conflicts")) {
-					request.getEventFilter().setOption("mode", "Conflicting Events");
+					request.getEventFilter().setOption("mode", "Conflicting");
 					query = EventFilterBackend.getQuery(request.getEventFilter(), context);
 					
 					List<Object[]> conflicts = null;
