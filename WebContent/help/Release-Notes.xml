@@ -233,6 +233,15 @@
 				</description>
 		</item>
 	</category>
+	<category>
+		<title>Event Management</title>
+		<item>
+				<name>Events: Display Conflicts</name>
+				<description>
+						<line>Avoid a &quot;No data type for node Xm&quot; exception when display conflicts are enabled in a non-English locale.</line>
+				</description>
+		</item>
+	</category>
 </release>
 
 <release>
