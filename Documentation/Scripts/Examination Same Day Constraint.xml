@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE script PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/Script.dtd">
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<script name="Distribution Types: Same Day (Examination)" permission="Distribution Types" engine="ECMAScript" created="Mon Sep 30 19:54:03 CEST 2019">
+  <description><![CDATA[This script creates the Same Day constraint distribution type for examination timetabling.]]></description>
+  <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
+var type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', 'EX_SAME_DAY').uniqueResult();
+if (type == null) {
+  type = new org.unitime.timetable.model.DistributionType();
+  type.setReference('EX_SAME_DAY');
+  log.info('Creating Same Day constraint...');
+} else {
+  log.warn('Constraint Same Day already exists.');
+}
+type.setLabel('Same Day');
+type.setSequencingRequired(false);
+type.setRequirementId(++reqId);
+type.setAllowedPref('P43210R');
+type.setDescr('Exams are to be placed at the same day.<br>When prohibited or (strongly) discouraged: exams are to be placed at different days.');
+type.setAbbreviation('Same Day');
+type.setInstructorPref(false);
+type.setExamPref(true);
+type.setVisible(true);
+hibSession.saveOrUpdate(type);
+log.info('All done.');]]></body>
+</script>
