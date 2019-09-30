@@ -6601,3 +6601,10 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-ChangeGradeModesDialog .grade-mode-label {
 	padding-left: 9px;
 }
+
+.unitime-SolutionInfoDialog {
+	overflow: auto;
+	overflow-x: hidden;
+	overflow-y: scroll !important;
+	max-height: 80vh;
+}

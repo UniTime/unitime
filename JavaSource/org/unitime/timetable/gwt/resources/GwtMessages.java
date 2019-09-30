@@ -3775,6 +3775,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Details of {0}")
 	String dialogDetailsOf(String item);
 	
+	@DefaultMessage("Details of {0} schedule run made by {1}")
+	String dialogDetailsOfPublishedScheduleRun(String time, String owner);
+	
 	@DefaultMessage("Details of {0} {1}")
 	String dialogTeachingRequestDetail(String course, String section);
 
