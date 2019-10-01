@@ -206,6 +206,12 @@
 						<line>Only users with Multiple Class Setup Snapshot Limits permission can edit snapshot limits.</line>
 				</description>
 		</item>
+		<item>
+				<name>Class Edit/Detail: No Date Pattern</name>
+				<description>
+						<line>Avoid null exception when there is no date pattern (there is no default date pattern defined and there is no date pattern set on the subpart or the class).</line>
+				</description>
+		</item>
 	</category>
 	<category>
 		<title>CPSolver updated to version 1.3.185 (was 1.3.179)</title>
