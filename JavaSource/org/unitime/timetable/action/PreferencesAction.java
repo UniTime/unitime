@@ -1359,7 +1359,9 @@ public abstract class PreferencesAction extends Action {
 				
 				String name = null;
 				if (timePattern != null && !rtt.getModel().isExactTime()) {
-					if (dpat.getType() != null && dpat.getType() == DatePattern.sTypePatternSet) {
+					if (dpat == null) {
+						name = timePattern.getName() + " <font color=\\'red\\'>" + MSG.warnNoMatchingDatePattern() + "</font>";
+					} else if (dpat.getType() != null && dpat.getType() == DatePattern.sTypePatternSet) {
 						boolean allPatterns = true;
 						String matching = "";
 						for (DatePattern dch: dpat.findChildren()) {
