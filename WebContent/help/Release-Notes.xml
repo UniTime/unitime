@@ -184,6 +184,15 @@
 				<line>No need to use Refresh to open the Course Requests / Scheduling Assistant dialog after the status change.</line>
 			</description>
 		</item>
+		<item>
+			<name>Published Schedule Runs: Solution Details</name>
+			<description>
+				<line>To remove flickering when showing mouse-over information (solution details):
+					<line>No mouse-over information (solution info is too long for this).</line>
+					<line>Show the solution information in a dialog instead (when a row is clicked).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>

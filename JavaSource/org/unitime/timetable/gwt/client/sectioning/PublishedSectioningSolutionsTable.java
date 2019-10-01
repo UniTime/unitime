@@ -25,13 +25,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.TreeSet;
 
-import org.unitime.timetable.gwt.client.GwtHint;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
+import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
+import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
+import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.HasColumnName;
@@ -48,15 +50,22 @@ import org.unitime.timetable.gwt.shared.PublishedSectioningSolutionInterface.Tab
 import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.event.logical.shared.CloseHandler;
+import com.google.gwt.event.logical.shared.OpenEvent;
+import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 
@@ -113,29 +122,150 @@ public class PublishedSectioningSolutionsTable extends UniTimeTable<PublishedSec
 		
 		setSortBy(SectioningCookie.getInstance().getSolutionsSortBy());
 		
-		addMouseOverListener(new MouseOverListener<PublishedSectioningSolutionInterface>() {
-
+		addMouseClickListener(new MouseClickListener<PublishedSectioningSolutionInterface>() {
 			@Override
-			public void onMouseOver(UniTimeTable.TableEvent<PublishedSectioningSolutionInterface> event) {
-				PublishedSectioningSolutionInterface row = event.getData();
-				if (row != null && row.getInfo() != null) {
-					FlexTable f = new FlexTable();
-					f.setStyleName("unitime-InfoTable");
-					int r = 0;
-					TreeSet<String> keys = new TreeSet<String>(new InfoComparator()); keys.addAll(row.getInfo().keySet());
-					for (String key: keys) {
-						f.setHTML(r, 0, key);
-						f.setHTML(r, 1, row.getInfo().get(key));
-						r ++;
+			public void onMouseClick(TableEvent<PublishedSectioningSolutionInterface> event) {
+				PublishedSectioningSolutionInterface solution = event.getData();
+				if (solution != null && solution.getInfo() != null) {
+					UniTimeDialogBox dialog = new UniTimeDialogBox(true, false);
+					dialog.setEscapeToHide(true);
+					SimpleForm form = new SimpleForm();
+					UniTimeHeaderPanel top = new UniTimeHeaderPanel();
+					top.addButton("close", MESSAGES.buttonClose(), new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							dialog.hide();
+						}
+					});
+					
+					final AsyncCallback<GwtRpcResponseList<PublishedSectioningSolutionInterface>> callback = new AsyncCallback<GwtRpcResponseList<PublishedSectioningSolutionInterface>>() {
+						@Override
+						public void onSuccess(GwtRpcResponseList<PublishedSectioningSolutionInterface> result) {
+							LoadingWidget.getInstance().hide();
+							setValue(result);
+						}
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+							UniTimeNotifications.error(caught);
+						}
+					};
+					final AsyncCallback<GwtRpcResponseList<PublishedSectioningSolutionInterface>> callbackOpenSolver = new AsyncCallback<GwtRpcResponseList<PublishedSectioningSolutionInterface>>() {
+						@Override
+						public void onSuccess(GwtRpcResponseList<PublishedSectioningSolutionInterface> result) {
+							LoadingWidget.getInstance().hide();
+							ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=solver&type=student");
+						}
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+							UniTimeNotifications.error(caught);
+						}
+					};
+					if (solution.isLoaded()) {
+						top.addButton("unpublish", MESSAGES.opSectioningSolutionUnpublish(), new ClickHandler() {
+							@Override
+							public void onClick(ClickEvent event) {
+								dialog.hide();
+								LoadingWidget.getInstance().show(MESSAGES.waitPlease());
+								RPC.execute(new PublishedSectioningSolutionsRequest(PublishedSectioningSolutionInterface.Operation.UNPUBLISH, solution.getUniqueId()), callback);
+							}
+						});
+						if (solution.isSelected()) {
+							dialog.hide();
+							top.addButton("deselect", MESSAGES.opSectioningSolutionDeselect(), new ClickHandler() {
+								@Override
+								public void onClick(ClickEvent event) {
+									dialog.hide();
+									LoadingWidget.getInstance().show(MESSAGES.waitPlease());
+									RPC.execute(new PublishedSectioningSolutionsRequest(PublishedSectioningSolutionInterface.Operation.DESELECT, solution.getUniqueId()), callback);
+								}
+							});
+						} else if (solution.isCanSelect()) {
+							top.addButton("select", MESSAGES.opSectioningSolutionSelect(), new ClickHandler() {
+								@Override
+								public void onClick(ClickEvent event) {
+									dialog.hide();
+									LoadingWidget.getInstance().show(MESSAGES.waitPlease());
+									RPC.execute(new PublishedSectioningSolutionsRequest(PublishedSectioningSolutionInterface.Operation.SELECT, solution.getUniqueId()), callbackOpenSolver);
+								}
+							});
+						}
+					} else if (solution.isCanLoad()) {
+						top.addButton("publish", MESSAGES.opSectioningSolutionPublish(), new ClickHandler() {
+							@Override
+							public void onClick(ClickEvent event) {
+								dialog.hide();
+								LoadingWidget.getInstance().show(MESSAGES.waitPlease());
+								RPC.execute(new PublishedSectioningSolutionsRequest(PublishedSectioningSolutionInterface.Operation.PUBLISH, solution.getUniqueId()), callback);
+							}
+						});
 					}
-					GwtHint.showHint(event.getCellElement(), f);
+					if (solution.isClonned()) {
+						top.addButton("unload", MESSAGES.opSectioningSolutionUnload(), new ClickHandler() {
+							@Override
+							public void onClick(ClickEvent event) {
+								dialog.hide();
+								RPC.execute(new PublishedSectioningSolutionsRequest(PublishedSectioningSolutionInterface.Operation.UNLOAD, solution.getUniqueId()), callback);
+							}
+						});
+					} else if (solution.isCanClone()) {
+						top.addButton("load", MESSAGES.opSectioningSolutionLoad(), new ClickHandler() {
+							@Override
+							public void onClick(ClickEvent event) {
+								dialog.hide();
+								LoadingWidget.getInstance().show(MESSAGES.waitPlease());
+								RPC.execute(new PublishedSectioningSolutionsRequest(PublishedSectioningSolutionInterface.Operation.LOAD, solution.getUniqueId()), callbackOpenSolver);
+							}
+						});
+					}
+					if (!solution.isLoaded()) {
+						top.addButton("remove", MESSAGES.opSectioningSolutionRemove(), new ClickHandler() {
+							@Override
+							public void onClick(ClickEvent event) {
+								dialog.hide();
+								UniTimeConfirmationDialog.confirm(MESSAGES.confirmDeletePublishedSectioningSolution(), new Command() {
+									@Override
+									public void execute() {
+										LoadingWidget.getInstance().show(MESSAGES.waitPlease());
+										RPC.execute(new PublishedSectioningSolutionsRequest(PublishedSectioningSolutionInterface.Operation.REMOVE, solution.getUniqueId()), callback);
+									}
+								});
+							}
+						});
+					}
+					top.addButton("export", MESSAGES.opExportXML(), new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							dialog.hide();
+							ToolBox.open(GWT.getHostPageBaseURL() + "export?output=published-solution.xml.gz&id=" + solution.getUniqueId());
+						}
+					});
+					form.setStyleName("unitime-InfoTable");
+					form.addHeaderRow(top);
+					TreeSet<String> keys = new TreeSet<String>(new InfoComparator()); keys.addAll(solution.getInfo().keySet());
+					for (String key: keys) {
+						form.addRow(key, new HTML(solution.getInfo().get(key)));
+					}
+					form.addBottomRow(top.clonePanel());
+					P widget = new P("unitime-SolutionInfoDialog"); widget.add(form);
+					dialog.setWidget(widget);
+					dialog.setText(MESSAGES.dialogDetailsOfPublishedScheduleRun(sDF.format(solution.getTimeStamp()), solution.getOwner()));
+					dialog.setEscapeToHide(true);
+					dialog.addOpenHandler(new OpenHandler<UniTimeDialogBox>() {
+						@Override
+						public void onOpen(OpenEvent<UniTimeDialogBox> event) {
+							RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
+						}
+					});
+					dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
+						@Override
+						public void onClose(CloseEvent<PopupPanel> event) {
+							RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
+						}
+					});
+					dialog.center();
 				}
-			}
-		});
-		addMouseOutListener(new MouseOutListener<PublishedSectioningSolutionInterface>() {
-			@Override
-			public void onMouseOut(UniTimeTable.TableEvent<PublishedSectioningSolutionInterface> event) {
-				GwtHint.hideHint();
 			}
 		});
 	}
