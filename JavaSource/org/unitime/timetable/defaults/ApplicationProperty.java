@@ -2600,6 +2600,19 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Student Status: include effective period message in the status")
 	StudentStatusEffectivePeriodMessage("unitime.enrollment.studentStatus.timeWindowMessage"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Student Scheduling link (studentScheduling.do): use default academic session when no session is given by the parameters")
+	@Since(4.4)
+	StudentSchedulingUseDefaultSession("unitime.studentScheduling.useDefaultSession"),
+	
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Student Scheduling link (studentScheduling.do): prefer Course Requests over Scheduling Assistant for a student")
+	@Since(4.4)
+	StudentSchedulingPreferCourseRequests("unitime.studentScheduling.preferCourseRequests"),
 	;
 
 	String iKey;
