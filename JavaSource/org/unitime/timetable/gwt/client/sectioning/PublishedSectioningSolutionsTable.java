@@ -125,9 +125,9 @@ public class PublishedSectioningSolutionsTable extends UniTimeTable<PublishedSec
 		addMouseClickListener(new MouseClickListener<PublishedSectioningSolutionInterface>() {
 			@Override
 			public void onMouseClick(TableEvent<PublishedSectioningSolutionInterface> event) {
-				PublishedSectioningSolutionInterface solution = event.getData();
+				final PublishedSectioningSolutionInterface solution = event.getData();
 				if (solution != null && solution.getInfo() != null) {
-					UniTimeDialogBox dialog = new UniTimeDialogBox(true, false);
+					final UniTimeDialogBox dialog = new UniTimeDialogBox(true, false);
 					dialog.setEscapeToHide(true);
 					SimpleForm form = new SimpleForm();
 					UniTimeHeaderPanel top = new UniTimeHeaderPanel();
