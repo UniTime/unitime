@@ -193,6 +193,17 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling Link (UniTime/studentScheduling.do): Default Session / Prefer Course Requests</name>
+			<description>
+				<line>When unitime.studentScheduling.useDefaultSession is set to false (defaults to true), the student scheduling link will not match on the default academic session. This means that it will:
+					<line>Open Scheduling Assistant page if there is a session for which the student can use the page.</line>
+					<line>Open Course Requests page if there is a session for which the student can use the page.</line>
+				</line>
+				<line>When unitime.studentScheduling.preferCourseRequests is set to true (defaults to false), the course request page take precedence.</line>
+				<line>When selecting the current role, also check the sessions for which course requests are enabled (not just the ones with student scheduling enabled).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>

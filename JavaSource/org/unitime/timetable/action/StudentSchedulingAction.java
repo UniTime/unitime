@@ -33,6 +33,7 @@ import org.apache.struts.action.ActionMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionInfo;
 import org.unitime.timetable.model.Roles;
@@ -40,8 +41,8 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
-import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserQualifier;
@@ -76,14 +77,14 @@ public class StudentSchedulingAction extends Action {
 		return session.equalsIgnoreCase(info.getTerm() + info.getYear() + info.getCampus()) || session.equalsIgnoreCase(info.getTerm() + info.getYear()) || session.equals(info.getSessionId().toString());
 	}
 
-	public boolean match(HttpServletRequest request, AcademicSessionInfo info) {
+	public boolean match(HttpServletRequest request, AcademicSessionInfo info, boolean useDefault) {
 		String campus = request.getParameter("campus");
 		if (campus != null && !matchCampus(info, campus)) return false;
 		String term = request.getParameter("term");
 		if (term != null && !matchTerm(info, term)) return false;
 		String session = request.getParameter("session");
 		if (session != null && !matchSession(info, session)) return false;
-		if (campus == null && term == null && session == null)
+		if (useDefault && campus == null && term == null && session == null)
 			return info.getSessionId().equals(sessionContext.getUser().getCurrentAcademicSessionId());
 		else
 			return true;
@@ -98,13 +99,15 @@ public class StudentSchedulingAction extends Action {
 			}
 		}
 		
+		boolean useDefault = ApplicationProperty.StudentSchedulingUseDefaultSession.isTrue();
+		
 		// Select current role -> prefer advisor, than student in the matching academic session
 		SectioningService service = (SectioningService)applicationContext.getBean("sectioning.gwt");
 		if (sessionContext.isAuthenticated()) {
 			UserAuthority preferredAuthority = null;
 			try {
 				for (AcademicSessionInfo session:  service.listAcademicSessions(true)) {
-					if (match(request, session)) {
+					if (match(request, session, true)) {
 						for (UserAuthority auth: sessionContext.getUser().getAuthorities(null, new SimpleQualifier("Session", session.getSessionId()))) {
 							if (preferredAuthority == null && Roles.ROLE_STUDENT.equals(auth.getRole())) {
 								preferredAuthority = auth;
@@ -116,6 +119,21 @@ public class StudentSchedulingAction extends Action {
 						}
 					}
 				}
+				// no authority selected --> also check the session for which the course requests are enabled
+				if (preferredAuthority == null)
+					for (AcademicSessionInfo session:  service.listAcademicSessions(false)) {
+						if (match(request, session, true)) {
+							for (UserAuthority auth: sessionContext.getUser().getAuthorities(null, new SimpleQualifier("Session", session.getSessionId()))) {
+								if (preferredAuthority == null && Roles.ROLE_STUDENT.equals(auth.getRole())) {
+									preferredAuthority = auth;
+								} else if ((preferredAuthority == null || !preferredAuthority.hasRight(Right.StudentSchedulingAdmin)) && auth.hasRight(Right.StudentSchedulingAdvisor)) {
+									preferredAuthority = auth;
+								} else if (auth.hasRight(Right.StudentSchedulingAdmin)) {
+									preferredAuthority = auth;
+								}
+							}
+						}
+					}
 			} catch (SectioningException e) {}
 			if (preferredAuthority == null && sessionContext.getUser().getCurrentAuthority() != null) {
 				for (UserAuthority auth: sessionContext.getUser().getAuthorities(null, sessionContext.getUser().getCurrentAuthority().getAcademicSession())) {
@@ -148,48 +166,85 @@ public class StudentSchedulingAction extends Action {
 			return null;
 		}
 		
-		// 1. Scheduling Assistant with the enrollment enabled
-		try {
-			for (AcademicSessionInfo session:  service.listAcademicSessions(true)) {
-				if (match(request, session)) {
-					OnlineSectioningServer server = solverServerService.getOnlineStudentSchedulingContainer().getSolver(session.getSessionId().toString());
-					if (server == null || !server.getAcademicSession().isSectioningEnabled()) continue;
-					if (Roles.ROLE_STUDENT.equals(sessionContext.getUser().getCurrentAuthority().getRole())) {
-						List<? extends UserQualifier> q = sessionContext.getUser().getCurrentAuthority().getQualifiers("Student");
-						if (q == null || q.isEmpty()) continue;
-						Student student = StudentDAO.getInstance().get((Long)q.get(0).getQualifierId());
-						if (student == null) continue;
-						StudentSectioningStatus status = student.getEffectiveStatus();
-						if (status != null && !status.hasOption(StudentSectioningStatus.Option.enrollment)) continue;
-					}
-					response.sendRedirect("gwt.jsp?page=sectioning" + (target == null ? "" : "&" + target));
-					return null;
+		// Only for students (check status)
+		if (Roles.ROLE_STUDENT.equals(sessionContext.getUser().getCurrentAuthority().getRole())) {
+			List<? extends UserQualifier> q = sessionContext.getUser().getCurrentAuthority().getQualifiers("Student");
+			if (q != null && !q.isEmpty()) {
+				UserQualifier studentQualifier = q.get(0);
+				if (ApplicationProperty.StudentSchedulingPreferCourseRequests.isTrue()) {
+					// 1. Course Requests with the registration enabled
+					try {
+						for (AcademicSessionInfo session:  service.listAcademicSessions(false)) {
+							if (match(request, session, useDefault)) {
+								Student student = Student.findByExternalId(session.getSessionId(), studentQualifier.getQualifierReference());
+								if (student == null)
+									student = StudentDAO.getInstance().get((Long)studentQualifier.getQualifierId());
+								if (student == null) continue;
+								StudentSectioningStatus status = student.getEffectiveStatus();
+								if (status == null || !status.hasOption(StudentSectioningStatus.Option.regenabled)) continue;
+								response.sendRedirect("gwt.jsp?page=requests" + (target == null ? "" : "&" + target));
+								return null;
+							}
+						}
+					} catch (SectioningException e) {}
+					// 2. Scheduling Assistant with the enrollment enabled
+					try {
+						for (AcademicSessionInfo session:  service.listAcademicSessions(true)) {
+							if (match(request, session, useDefault)) {
+								OnlineSectioningServer server = solverServerService.getOnlineStudentSchedulingContainer().getSolver(session.getSessionId().toString());
+								if (server == null || !server.getAcademicSession().isSectioningEnabled()) continue;
+								Student student = Student.findByExternalId(session.getSessionId(), studentQualifier.getQualifierReference());
+								if (student == null)
+									student = StudentDAO.getInstance().get((Long)studentQualifier.getQualifierId());
+								if (student == null) continue;
+								StudentSectioningStatus status = student.getEffectiveStatus();
+								if (status != null && !status.hasOption(StudentSectioningStatus.Option.enrollment)) continue;
+								response.sendRedirect("gwt.jsp?page=sectioning" + (target == null ? "" : "&" + target));
+								return null;
+							}
+						}
+					} catch (SectioningException e) {}
+				} else {
+					// 1. Scheduling Assistant with the enrollment enabled
+					try {
+						for (AcademicSessionInfo session:  service.listAcademicSessions(true)) {
+							if (match(request, session, useDefault)) {
+								OnlineSectioningServer server = solverServerService.getOnlineStudentSchedulingContainer().getSolver(session.getSessionId().toString());
+								if (server == null || !server.getAcademicSession().isSectioningEnabled()) continue;
+								Student student = Student.findByExternalId(session.getSessionId(), studentQualifier.getQualifierReference());
+								if (student == null)
+									student = StudentDAO.getInstance().get((Long)studentQualifier.getQualifierId());
+								if (student == null) continue;
+								StudentSectioningStatus status = student.getEffectiveStatus();
+								if (status != null && !status.hasOption(StudentSectioningStatus.Option.enrollment)) continue;
+								response.sendRedirect("gwt.jsp?page=sectioning" + (target == null ? "" : "&" + target));
+								return null;
+							}
+						}
+					} catch (SectioningException e) {}
+					// 2. Course Requests with the registration enabled
+					try {
+						for (AcademicSessionInfo session:  service.listAcademicSessions(false)) {
+							if (match(request, session, useDefault)) {
+								Student student = Student.findByExternalId(session.getSessionId(), studentQualifier.getQualifierReference());
+								if (student == null)
+									student = StudentDAO.getInstance().get((Long)studentQualifier.getQualifierId());
+								if (student == null) continue;
+								StudentSectioningStatus status = student.getEffectiveStatus();
+								if (status == null || !status.hasOption(StudentSectioningStatus.Option.regenabled)) continue;
+								response.sendRedirect("gwt.jsp?page=requests" + (target == null ? "" : "&" + target));
+								return null;
+							}
+						}
+					} catch (SectioningException e) {}					
 				}
 			}
-		} catch (SectioningException e) {}
-		
-		// 2. Course Requests with the registration enabled
-		try {
-			for (AcademicSessionInfo session:  service.listAcademicSessions(false)) {
-				if (match(request, session)) {
-					if (Roles.ROLE_STUDENT.equals(sessionContext.getUser().getCurrentAuthority().getRole())) {
-						List<? extends UserQualifier> q = sessionContext.getUser().getCurrentAuthority().getQualifiers("Student");
-						if (q == null || q.isEmpty()) continue;
-						Student student = StudentDAO.getInstance().get((Long)q.get(0).getQualifierId());
-						if (student == null) continue;
-						StudentSectioningStatus status = student.getEffectiveStatus();
-						if (status != null && !status.hasOption(StudentSectioningStatus.Option.regenabled)) continue;
-					}
-					response.sendRedirect("gwt.jsp?page=requests" + (target == null ? "" : "&" + target));
-					return null;
-				}
-			}
-		} catch (SectioningException e) {}
+		}
 		
 		// 3. Scheduling Assistant
 		try {
 			for (AcademicSessionInfo session:  service.listAcademicSessions(true)) {
-				if (match(request, session)) {
+				if (match(request, session, useDefault)) {
 					response.sendRedirect("gwt.jsp?page=sectioning" + (target == null ? "" : "&" + target));
 					return null;
 				}
@@ -199,7 +254,7 @@ public class StudentSchedulingAction extends Action {
 		// 4. Course Requests
 		try {
 			for (AcademicSessionInfo session:  service.listAcademicSessions(false)) {
-				if (match(request, session)) {
+				if (match(request, session, useDefault)) {
 					response.sendRedirect("gwt.jsp?page=requests" + (target == null ? "" : "&" + target));
 					return null;
 				}
