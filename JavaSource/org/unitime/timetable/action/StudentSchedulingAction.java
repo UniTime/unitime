@@ -107,7 +107,7 @@ public class StudentSchedulingAction extends Action {
 			UserAuthority preferredAuthority = null;
 			try {
 				for (AcademicSessionInfo session:  service.listAcademicSessions(true)) {
-					if (match(request, session, useDefault)) {
+					if (match(request, session, true)) {
 						for (UserAuthority auth: sessionContext.getUser().getAuthorities(null, new SimpleQualifier("Session", session.getSessionId()))) {
 							if (preferredAuthority == null && Roles.ROLE_STUDENT.equals(auth.getRole())) {
 								preferredAuthority = auth;
@@ -122,7 +122,7 @@ public class StudentSchedulingAction extends Action {
 				// no authority selected --> also check the session for which the course requests are enabled
 				if (preferredAuthority == null)
 					for (AcademicSessionInfo session:  service.listAcademicSessions(false)) {
-						if (match(request, session, useDefault)) {
+						if (match(request, session, true)) {
 							for (UserAuthority auth: sessionContext.getUser().getAuthorities(null, new SimpleQualifier("Session", session.getSessionId()))) {
 								if (preferredAuthority == null && Roles.ROLE_STUDENT.equals(auth.getRole())) {
 									preferredAuthority = auth;
