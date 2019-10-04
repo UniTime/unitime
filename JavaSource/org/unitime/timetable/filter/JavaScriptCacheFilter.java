@@ -68,8 +68,9 @@ public class JavaScriptCacheFilter implements Filter {
 	                }
 	            });
 			}
+		} else {
+			chain.doFilter(request, response);
 		}
-		chain.doFilter(request, response);
 	}
 
 	@Override
