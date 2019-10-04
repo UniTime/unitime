@@ -268,6 +268,16 @@
 				</description>
 		</item>
 	</category>
+	<category>
+		<title>Other Changes</title>
+		<item>
+				<name>JavaScript Cache Filter</name>
+				<description>
+						<line>Ensure that chain.doFilter does not get called two times.</line>
+						<line>This fixes issue #50 (multiple menu bars and fields) when UniTime is deployed on Windows.</line>
+				</description>
+		</item>
+	</category>
 </release>
 
 <release>
