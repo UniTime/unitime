@@ -51,7 +51,7 @@ public class SpecialRegistrationUpdate implements OnlineSectioningAction<UpdateS
 	
 	@Override
 	public UpdateSpecialRegistrationResponse execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		if (!server.getAcademicSession().isSectioningEnabled() || !CustomSpecialRegistrationHolder.hasProvider())
+		if (!CustomSpecialRegistrationHolder.hasProvider())
 			throw new SectioningException(MSG.exceptionNotSupportedFeature());
 		Lock lock = server.lockStudent(getStudentId(), null, name());
 		try {
