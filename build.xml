@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE project>
 
-<!-- 
+<!--
  * Licensed to The Apereo Foundation under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
  * additional information regarding copyright ownership.
@@ -18,13 +18,13 @@
  *
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  -->
 <project name="UniTime" basedir="." default="build">
 	<!-- Mac GWT requires -XstartOnFirstThread -->
 	<condition property="mac">
 		<os name="Mac OS X"/>
-	</condition>	
+	</condition>
 	<condition property="macJvmArgs" value="-XstartOnFirstThread" else="-Dgwt.dummy.arg1=">
 		<isset property="mac"/>
 	</condition>
@@ -42,21 +42,21 @@
     	</delete>
     	<delete dir="${dist.dir}/doc" failonerror="false"/>
     </target>
-    
+
     <target name="init" depends="clean, set-debug-mode, set-optimize-mode">
         <mkdir dir="${build.dir}"/>
         <mkdir dir="${temp.dir}"/>
     	<mkdir dir="${dist.dir}"/>
     </target>
-	
+
 	<target name="set-debug-mode" unless="java.debug">
 		<property name="java.debug" value="false"/>
 	</target>
-	
+
 	<target name="set-optimize-mode" unless="java.optimize">
 		<property name="java.optimize" value="true"/>
 	</target>
-    
+
     <target name="prepare" depends="init">
         <buildnumber/>
         <echo message="Build number: ${build.number}${build.tag}"/>
@@ -96,14 +96,14 @@
 			</fileset>
         </path>
     </target>
-	
+
 	<target name="compile-java" depends="prepare">
-		<javac debug="${java.debug}" optimize="${java.optimize}" source="1.5" target="1.5" destdir="${build.dir}" includeantruntime="false" encoding="utf-8">
+		<javac debug="${java.debug}" optimize="${java.optimize}" destdir="${build.dir}" includeantruntime="false" encoding="utf-8">
 			<src path="${build.dir}" />
 			<classpath refid="build.classpath" />
 		</javac>
 	</target>
-	
+
 	<target name="compile-gwt" depends="compile-java">
 		<java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler" dir="${temp.dir}">
 			<classpath refid="build.classpath" />
@@ -193,7 +193,7 @@
 		<copy todir="${dist.dir}" file="${war.dir}/help/Release-Notes.xml"/>
 		<copy todir="${dist.dir}" file="${war.dir}/help/Release-Notes.css"/>
 	</target>
-	
+
 	<target name="copy-gwt" depends="init, compile-gwt">
 		<copy todir="${war.dir}" overwrite="Yes" preservelastmodified="Yes">
 			<fileset dir="${temp.dir}/war"/>
@@ -220,9 +220,9 @@
 	<target name="validate">
 		<xmlvalidate failonerror="no">
 		  <fileset dir="Documentation/Interfaces/Examples" includes="**/*.xml"/>
-		</xmlvalidate>	
+		</xmlvalidate>
 	</target>
-	
+
     <target name="doc" depends="load-properties">
         <delete dir="${dist.dir}/doc" failonerror="false"/>
         <mkdir dir="${dist.dir}/doc"/>
@@ -409,19 +409,19 @@
 			-->
 		</zip>
 	</target>
-	
+
 	<target name="check-tomcat-home" depends="load-properties" unless="env.TOMCAT_HOME">
 		<fail>
 			Environment variable TOMCAT_HOME is not defined.
 		</fail>
 	</target>
-	
+
 	<target name="deploy" depends="check-tomcat-home">
-		<copy file="${dist.dir}/UniTime.war" todir="${env.TOMCAT_HOME}/webapps" 
+		<copy file="${dist.dir}/UniTime.war" todir="${env.TOMCAT_HOME}/webapps"
 			overwrite="Yes" preservelastmodified="No" verbose="Yes" />
 	</target>
-	
-	
+
+
 	<target name="redeploy-gwt" depends="check-tomcat-home,load-properties">
         <path id="build.classpath">
             <fileset dir="${lib.dir}">
@@ -447,7 +447,7 @@
 		</java>
 		<touch file="${env.TOMCAT_HOME}/webapps/UniTime/unitime/unitime.nocache.js"/>
 	</target>
-	
+
 	<target name="redeploy-gwtdev" depends="check-tomcat-home,load-properties">
         <path id="build.classpath">
             <fileset dir="${lib.dir}">
@@ -486,7 +486,7 @@
 	<target name="check-java-opts-nodef" depends="load-properties" unless="env.JAVA_OPTS">
 		<property name="java.opts" value=""/>
 	</target>
-	
+
 	<target name="check-java-opts" depends="check-java-opts-def,check-java-opts-nodef"/>
 
 	<target name="start" depends="check-tomcat-home,check-java-opts">
@@ -501,7 +501,7 @@
 			<jvmarg line="${java.opts}"/>
 		</java>
 	</target>
-	
+
 	<target name="stop" depends="check-tomcat-home,check-java-opts">
 		<java jar="${env.TOMCAT_HOME}/bin/bootstrap.jar" fork="true" maxmemory="1024m" taskname="tomcat">
 			<arg value="stop"/>
@@ -514,7 +514,7 @@
 			<jvmarg line="${java.opts}"/>
 		</java>
 	</target>
-	
+
 	<target name="check-jsp" depends="init,check-tomcat-home">
         <path id="build.classpath">
             <fileset dir="${lib.dir}">
@@ -524,7 +524,7 @@
 				<include name="*.jar" />
 			</fileset>
         </path>
-		<javac source="1.5" target="1.5" destdir="${build.dir}" debug="true" includeantruntime="false" encoding="utf-8">
+		<javac destdir="${build.dir}" debug="true" includeantruntime="false" encoding="utf-8">
 			<src path="${src.dir}" />
 			<classpath refid="build.classpath"/>
 		</javac>
@@ -539,7 +539,7 @@
 			outputDir="${temp.dir}/jsp"
 			webxmlfragment="${temp.dir}/jsp/generated_web.xml"
 			/>
-		<javac source="1.5" target="1.5" destdir="${temp.dir}/jsp" debug="true" includeantruntime="false" encoding="utf-8">
+		<javac destdir="${temp.dir}/jsp" debug="true" includeantruntime="false" encoding="utf-8">
 			<src path="${temp.dir}/jsp" />
 			<classpath refid="build.classpath"/>
 			<classpath path="${build.dir}"/>
@@ -555,7 +555,7 @@
 				<include name="*.jar" />
 			</fileset>
         </path>
-		<javac source="1.5" target="1.5" destdir="${build.dir}" includes="org/unitime/commons/ant/CreateBaseModelFromXml.java" debug="true" encoding="utf-8">
+		<javac destdir="${build.dir}" includes="org/unitime/commons/ant/CreateBaseModelFromXml.java" debug="true" encoding="utf-8">
 			<src path="${src.dir}" />
 			<classpath refid="build.classpath"/>
 		</javac>
@@ -567,7 +567,7 @@
         <delete dir="${build.dir}" failonerror="false"/>
 		<delete dir="${temp.dir}" failonerror="false"/>
 	</target>
-	
+
 	<target name="ldap-test" depends="init">
         <path id="build.classpath">
             <fileset dir="${lib.dir}">
@@ -577,7 +577,7 @@
 				<include name="*.jar" />
 			</fileset>
         </path>
-		<javac source="1.5" target="1.5" destdir="${build.dir}" includes="org/unitime/timetable/authenticate/jaas/LdapTest.java" debug="true" encoding="utf-8">
+		<javac destdir="${build.dir}" includes="org/unitime/timetable/authenticate/jaas/LdapTest.java" debug="true" encoding="utf-8">
 			<src path="${src.dir}" />
 			<classpath refid="build.classpath"/>
 		</javac>
@@ -592,7 +592,7 @@
         <delete dir="${build.dir}" failonerror="false"/>
 		<delete dir="${temp.dir}" failonerror="false"/>
 	</target>
-	
+
 	<target name="export-translations" depends="init">
 		<echo message="Exporting translations for ${locale} ..."/>
         <path id="build.classpath">
@@ -632,7 +632,7 @@
         <delete dir="${build.dir}" failonerror="false"/>
 		<delete dir="${temp.dir}" failonerror="false"/>
 	</target>
-	
+
 	<target name="import-translations" depends="init">
 		<echo message="Importing translations for ${locale} ..."/>
         <path id="build.classpath">
