@@ -2965,4 +2965,11 @@ public interface CourseMessages extends Messages {
 
 	@DefaultMessage("Prohibited Overrides")
 	String columnDisabledOverrides();
+	
+	@DefaultMessage("Showing projected student conflicts, click here to change to the actual class enrollments.")
+	String studentConflictsShowingSolutionConflicts();
+	
+	
+	@DefaultMessage("Showing the actual student class enrollments, click here to change to projected student conflicts.")
+	String studentConflictsShowingActualConflicts();
 }

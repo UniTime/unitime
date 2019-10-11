@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ClassInfoForm;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
@@ -70,7 +71,20 @@ public class ClassInfoAction extends Action {
         if (model==null) {
             model = new ClassInfoModel();
             sessionContext.setAttribute(SessionAttribute.ClassInfoModel, model);
-            model.setUseRealStudents(StudentClassEnrollment.sessionHasEnrollments(sessionContext.getUser().getCurrentAcademicSessionId()));
+            String type = ApplicationProperty.ClassAssignmentStudentConflictsType.value();
+            if ("none".equalsIgnoreCase(type)) {
+            	model.setShowStudentConflicts(false);
+            	model.setUseRealStudents(StudentClassEnrollment.sessionHasEnrollments(sessionContext.getUser().getCurrentAcademicSessionId()));
+            } else if ("actual".equalsIgnoreCase(type)) {
+            	model.setShowStudentConflicts(true);
+            	model.setUseRealStudents(true);
+            } else if ("solution".equalsIgnoreCase(type)) {
+            	model.setShowStudentConflicts(true);
+            	model.setUseRealStudents(false);
+            } else {
+            	// auto
+            	model.setUseRealStudents(StudentClassEnrollment.sessionHasEnrollments(sessionContext.getUser().getCurrentAcademicSessionId()));
+            }
         }
         model.setSessionContext(sessionContext);
         
@@ -126,6 +140,17 @@ public class ClassInfoAction extends Action {
                 if (request.getParameter("delete")!=null)
                     model.delete(Long.valueOf(request.getParameter("delete")));
             }
+        }
+        
+        if ("Type".equals(op)) {
+        	String type = request.getParameter("type");
+        	if ("actual".equalsIgnoreCase(type)) {
+            	model.setUseRealStudents(true);
+            } else if ("solution".equalsIgnoreCase(type)) {
+            	model.setUseRealStudents(false);
+            }
+        	model.setClazz(model.getClazz().getClazz());
+        	model.update();
         }
         
         if (MSG.actionClassAssign().equals(op) || "Assign".equals(op)) {
