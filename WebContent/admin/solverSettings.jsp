@@ -88,7 +88,7 @@
 						<logic:notEqual name="solverSettingsForm" property="op" value="Save">
 						Edit
 						</logic:notEqual>
-						Sovler Configuration
+						Solver Configuration
 					</tt:section-title>
 					<logic:equal name="solverSettingsForm" property="op" value="Save">
 						<html:submit property="op" value="Save" accesskey="S" title="Save Solver Parameter (Alt+S)"/>

@@ -45,7 +45,7 @@
 						<logic:notEqual name="solverParamGroupsForm" property="op" value="Save">
 							Edit
 						</logic:notEqual>
-						Sovler Parameter Group
+						Solver Parameter Group
 					</tt:section-title>
 					<logic:equal name="solverParamGroupsForm" property="op" value="Save">
 						<html:submit property="op" value="Save" accesskey="S" title="Save Solver Parameter Group (Alt+S)"/>
