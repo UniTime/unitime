@@ -98,7 +98,7 @@
     </target>
 
 	<target name="compile-java" depends="prepare">
-		<javac debug="${java.debug}" optimize="${java.optimize}" source="1.5" target="1.5" destdir="${build.dir}" includeantruntime="false" encoding="utf-8">
+		<javac debug="${java.debug}" optimize="${java.optimize}" destdir="${build.dir}" includeantruntime="false" encoding="utf-8">
 			<src path="${build.dir}" />
 			<classpath refid="build.classpath" />
 		</javac>
@@ -524,7 +524,7 @@
 				<include name="*.jar" />
 			</fileset>
         </path>
-		<javac source="1.5" target="1.5" destdir="${build.dir}" debug="true" includeantruntime="false" encoding="utf-8">
+		<javac destdir="${build.dir}" debug="true" includeantruntime="false" encoding="utf-8">
 			<src path="${src.dir}" />
 			<classpath refid="build.classpath"/>
 		</javac>
@@ -539,7 +539,7 @@
 			outputDir="${temp.dir}/jsp"
 			webxmlfragment="${temp.dir}/jsp/generated_web.xml"
 			/>
-		<javac source="1.5" target="1.5" destdir="${temp.dir}/jsp" debug="true" includeantruntime="false" encoding="utf-8">
+		<javac destdir="${temp.dir}/jsp" debug="true" includeantruntime="false" encoding="utf-8">
 			<src path="${temp.dir}/jsp" />
 			<classpath refid="build.classpath"/>
 			<classpath path="${build.dir}"/>
@@ -555,7 +555,7 @@
 				<include name="*.jar" />
 			</fileset>
         </path>
-		<javac source="1.5" target="1.5" destdir="${build.dir}" includes="org/unitime/commons/ant/CreateBaseModelFromXml.java" debug="true" encoding="utf-8">
+		<javac destdir="${build.dir}" includes="org/unitime/commons/ant/CreateBaseModelFromXml.java" debug="true" encoding="utf-8">
 			<src path="${src.dir}" />
 			<classpath refid="build.classpath"/>
 		</javac>
@@ -577,7 +577,7 @@
 				<include name="*.jar" />
 			</fileset>
         </path>
-		<javac source="1.5" target="1.5" destdir="${build.dir}" includes="org/unitime/timetable/authenticate/jaas/LdapTest.java" debug="true" encoding="utf-8">
+		<javac destdir="${build.dir}" includes="org/unitime/timetable/authenticate/jaas/LdapTest.java" debug="true" encoding="utf-8">
 			<src path="${src.dir}" />
 			<classpath refid="build.classpath"/>
 		</javac>
