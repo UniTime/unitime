@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ClassInfoForm;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.DatePattern;
@@ -65,10 +66,10 @@ public class ClassInfoAction extends Action {
         	myForm.setOp(op);
         }
 
-        ClassInfoModel model = (ClassInfoModel)request.getSession().getAttribute("ClassInfo.model");
+        ClassInfoModel model = (ClassInfoModel)sessionContext.getAttribute(SessionAttribute.ClassInfoModel);
         if (model==null) {
             model = new ClassInfoModel();
-            request.getSession().setAttribute("ClassInfo.model", model);
+            sessionContext.setAttribute(SessionAttribute.ClassInfoModel, model);
             model.setUseRealStudents(StudentClassEnrollment.sessionHasEnrollments(sessionContext.getUser().getCurrentAcademicSessionId()));
         }
         model.setSessionContext(sessionContext);
