@@ -30,6 +30,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ExamInfoForm;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Session;
@@ -54,10 +55,10 @@ public class ExamInfoAction extends Action {
         
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 
-        ExamInfoModel model = (ExamInfoModel)request.getSession().getAttribute("ExamInfo.model");
+        ExamInfoModel model = (ExamInfoModel)sessionContext.getAttribute(SessionAttribute.ExamInfoModel);
         if (model==null) {
             model = new ExamInfoModel();
-            request.getSession().setAttribute("ExamInfo.model", model);
+            sessionContext.setAttribute(SessionAttribute.ExamInfoModel, model);
         }
 
         if (op==null && model.getExam()!=null && request.getParameter("examId")==null) {

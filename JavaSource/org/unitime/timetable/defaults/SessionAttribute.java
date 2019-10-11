@@ -69,7 +69,8 @@ public enum SessionAttribute {
 	OnlineSchedulingLastSession("sessionId", "Online Student Scheduling: last academic session id"),
 	OnlineSchedulingLastSpecialRequest("specreq", "Online Student Scheduling: last special request id"),
 	
-	
+	ClassInfoModel("ClassInfo.model", "Class Assignment page model"),
+	ExamInfoModel("ExamInfo.model", "Examination Assignment page model"),
 	;
 
 	String iKey, iDefault, iDescription;
