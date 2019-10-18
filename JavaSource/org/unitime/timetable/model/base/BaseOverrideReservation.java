@@ -70,6 +70,7 @@ public abstract class BaseOverrideReservation extends IndividualReservation impl
 			"\n	ExpirationDate: " + getExpirationDate() +
 			"\n	InstructionalOffering: " + getInstructionalOffering() +
 			"\n	Limit: " + getLimit() +
+			"\n	StartDate: " + getStartDate() +
 			"\n	Type: " + getType() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";

@@ -1624,6 +1624,22 @@ public enum ApplicationProperty {
 	@Description("Reservations: default expiration date for reservation of type %; it is defined by a number of days after today (e.g., 7 days from now)")
 	@Parameter("reservation type")
 	ReservationExpirationInDays("unitime.reservations.%.expires_in_days"),
+	
+	@Description("Reservations: default reservation start date for all reservation types (given either in the number of days relative to the academic session begin date or as a date in yyyy-mm-dd format)")
+	ReservationStartDateGlobal("unitime.reservations.start_date"),
+
+	@Description("Reservations: default reservation start date for reservation of type % (given either in the number of days relative to the academic session begin date or as a date in yyyy-mm-dd format)")
+	@Parameter("reservation type")
+	ReservationStartDate("unitime.reservations.%.start_date"),
+
+	@Type(Integer.class)
+	@Description("Reservations: default start date for all reservation types; it is defined by a number of days after today (e.g., 7 days from now)")
+	ReservationStartInDaysGlobal("unitime.reservations.expires_in_days"),
+
+	@Type(Integer.class)
+	@Description("Reservations: default start date for reservation of type %; it is defined by a number of days after today (e.g., 7 days from now)")
+	@Parameter("reservation type")
+	ReservationStartInDays("unitime.reservations.%.expires_in_days"),
 
 	/**
 	 * Minimap (to be displayed if set, e.g., on the Room Detail page)

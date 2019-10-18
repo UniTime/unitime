@@ -40,7 +40,7 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 	private List<Config> iConfigs = new ArrayList<Config>();
 	private List<Clazz> iClasses = new ArrayList<Clazz>();
 	private Integer iLimit = null, iEnrollment = null, iLastLike = null, iProjection = null;
-	private Date iExpirationDate;
+	private Date iStartDate, iExpirationDate;
 	private boolean iEditable = false, iExpired = false;
 	private boolean iOverride = false, iAlwaysExpired = false, iAllowOverlaps = false, iOverLimit = false, iMustBeUsed = false;
 	
@@ -56,6 +56,8 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 	public void setEnrollment(Integer enrollment) { iEnrollment = enrollment; }
 	public Integer getProjection() { return iProjection; }
 	public void setProjection(Integer projection) { iProjection = projection; }
+	public Date getStartDate() { return iStartDate; }
+	public void setStartDate(Date d) { iStartDate = d; }
 	public Date getExpirationDate() { return iExpirationDate; }
 	public void setExpirationDate(Date d) { iExpirationDate = d; }
 	public void setEditable(boolean editable) { iEditable = editable; }
@@ -184,6 +186,11 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		@Override
 		public Date getExpirationDate() {
 			return (getType().isCanHaveExpirationDate() ? super.getExpirationDate() : null);
+		}
+		
+		@Override
+		public Date getStartDate() {
+			return (getType().isCanHaveExpirationDate() ? super.getStartDate() : null);
 		}
 		
 		@Override
@@ -506,6 +513,7 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 	
 	public static class DefaultExpirationDates implements GwtRpcResponse {
 		private Map<String, Date> iExpirations = new HashMap<String, Date>();
+		private Map<String, Date> iStartDates = new HashMap<String, Date>();
 		
 		public DefaultExpirationDates() {}
 		
@@ -516,6 +524,15 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 				iExpirations.remove(type);
 			else
 				iExpirations.put(type, date);
+		}
+		
+		public Date getStartDate(String type) { return iStartDates.get(type); }
+		public boolean hasStartDate(String type) { return getStartDate(type) != null; }
+		public void setStartDate(String type, Date date) { 
+			if (date == null)
+				iStartDates.remove(type);
+			else
+				iStartDates.put(type, date);
 		}
 		
 		public String toString() {

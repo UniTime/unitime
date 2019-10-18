@@ -174,7 +174,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 		all.setCount(((Number)query.select("count(distinct r)").exclude("mode").query(hibSession).uniqueResult()).intValue());
 		response.add("mode", all);
 		Entity expired = new Entity(1l, "Expired", CONSTANTS.reservationModeLabel()[1], "translated-value", CONSTANTS.reservationModeAbbv()[1]);
-		expired.setCount(((Number)query.select("count(distinct r)").exclude("mode").where("r.expirationDate < :today").set("today", today).query(hibSession).uniqueResult()).intValue());
+		expired.setCount(((Number)query.select("count(distinct r)").exclude("mode").where("r.expirationDate < :today or :today < r.startDate").set("today", today).query(hibSession).uniqueResult()).intValue());
 		response.add("mode", expired);
 		Entity notExpired = new Entity(2l, "Not Expired", CONSTANTS.reservationModeLabel()[2], "translated-value", CONSTANTS.reservationModeAbbv()[2]);
 		notExpired.setCount(all.getCount() - expired.getCount());
@@ -433,10 +433,10 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 		if (request.hasOption("mode")) {
 			String mode = request.getOption("mode");
 			if ("Expired".equalsIgnoreCase(mode)) {
-				query.addWhere("mode", "r.expirationDate < :today");
+				query.addWhere("mode", "r.expirationDate < :today or :today < r.startDate");
 				query.addParameter("mode", "today", today);  
 			} else if ("Not Expired".equalsIgnoreCase(mode)) {
-				query.addWhere("mode", "r.expirationDate is null or r.expirationDate >= :today");
+				query.addWhere("mode", "(r.expirationDate is null or r.expirationDate >= :today) and (r.startDate is null or r.startDate <= :today)");
 				query.addParameter("mode", "today", today);  
 			}
 		}
@@ -713,9 +713,15 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 				if (iReservation.getExpirationDate() != null && iReservation.getExpirationDate().before(iExpDate)) {
 					return true;
 				}
+				if (iReservation.getStartDate() != null && iExpDate.before(iReservation.getStartDate())) {
+					return true;
+				}
 			}
 			if (attr == null || "expiration".equals(attr) || "exp".equals(attr)) {
 				if (iReservation.getExpirationDate() != null && eq(format(iReservation.getExpirationDate()), term)) return true;
+			}
+			if (attr == null || "start".equals(attr)) {
+				if (iReservation.getStartDate() != null && eq(format(iReservation.getStartDate()), term)) return true;
 			}
 			if ("before".equals(attr)) {
 				try {

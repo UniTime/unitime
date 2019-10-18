@@ -609,6 +609,7 @@ public class ReservationServlet implements ReservationService {
 			clazz.setLimit(c.getClassLimit());
 			r.getClasses().add(clazz);
 		}
+		r.setStartDate(reservation.getStartDate());
 		r.setExpirationDate(reservation.getExpirationDate());
 		r.setExpired(reservation.isExpired());
 		r.setLimit(reservation.getLimit());
@@ -754,6 +755,7 @@ public class ReservationServlet implements ReservationService {
 						throw new ReservationException(MESSAGES.errorUnknownReservationType(reservation.getClass().getName()));
 				}
 				r.setLimit(r instanceof IndividualReservation ? null : reservation.getLimit());
+				r.setStartDate(reservation.getStartDate());
 				r.setExpirationDate(reservation.getExpirationDate());
 				r.setInstructionalOffering(offering);
 				if (r instanceof IndividualOverrideReservation) {

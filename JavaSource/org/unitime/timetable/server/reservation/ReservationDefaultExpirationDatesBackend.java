@@ -50,11 +50,13 @@ public class ReservationDefaultExpirationDatesBackend implements GwtRpcImplement
 			Session session = SessionDAO.getInstance().get(request.getSessionId());
 			for (String type: sTypes) {
 				expirations.setExpirationDate(type, getDefaultExpirationDate(session, type));
+				expirations.setStartDate(type, getDefaultStartDate(session, type));
 			}
 		} else if (context.getUser() != null && context.getUser().getCurrentAcademicSessionId() != null) {
 			Session session = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId());
 			for (String type: sTypes) {
 				expirations.setExpirationDate(type, getDefaultExpirationDate(session, type));
+				expirations.setStartDate(type, getDefaultStartDate(session, type));
 			}
 		}
 		
@@ -92,5 +94,38 @@ public class ReservationDefaultExpirationDatesBackend implements GwtRpcImplement
 		}
 		
 		return expiration;
+	}
+	
+	public Date getDefaultStartDate(Session session, String type) {
+		String startDateStr = ApplicationProperty.ReservationStartDate.value(type, ApplicationProperty.ReservationStartDateGlobal.value()); 
+		Date startDate = null;
+		if (startDateStr != null && !startDateStr.isEmpty()) {
+			try {
+				Calendar cal = Calendar.getInstance(Localization.getJavaLocale());
+				cal.setTime(session.getSessionBeginDateTime());
+				cal.add(Calendar.DAY_OF_YEAR, Integer.parseInt(startDateStr));
+				startDate = cal.getTime();
+			} catch (NumberFormatException e) {
+				try {
+					startDate = sDF.parse(startDateStr);
+				} catch (ParseException f) {}
+			}
+		}
+
+		String expInDaysStr = ApplicationProperty.ReservationStartInDays.value(type, ApplicationProperty.ReservationStartInDaysGlobal.value());
+		if (expInDaysStr != null && !expInDaysStr.isEmpty()) {
+			try {
+				Calendar cal = Calendar.getInstance(Localization.getJavaLocale());
+				cal.set(Calendar.HOUR_OF_DAY, 0);
+				cal.set(Calendar.MINUTE, 0);
+				cal.set(Calendar.SECOND, 0);
+				cal.set(Calendar.MILLISECOND, 0);
+				cal.add(Calendar.DAY_OF_YEAR, Integer.parseInt(expInDaysStr));
+				if (startDate == null || cal.getTime().after(startDate))
+					startDate = cal.getTime();
+			} catch (NumberFormatException e) {}
+		}
+		
+		return startDate;
 	}
 }

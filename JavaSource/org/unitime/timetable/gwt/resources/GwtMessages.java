@@ -735,6 +735,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Expiration<br>Date")
 	String colExpirationDate();
 	
+	@DefaultMessage("Start<br>Date")
+	String colStartDate();
+	
 	@DefaultMessage("Source")
 	String colSource();
 	
@@ -3048,6 +3051,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Expiration date is not valid.")
 	String hintExpirationDateNotValid();
 	
+	@DefaultMessage("Start date is not valid.")
+	String hintStartDateNotValid();
+	
+	@DefaultMessage("Expiration date must be after the start date.")
+	String hintExpirationDateNotAfterStartDate();
+	
 	@DefaultMessage("Reservation limit is not valid.")
 	String hintReservationLimitNotValid();
 	
@@ -4197,6 +4206,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Expiration Date:")
 	String propExpirationDate();
 	
+	@DefaultMessage("Start Date:")
+	String propStartDate();
+	
 	@DefaultMessage("Restrictions:")
 	String propRestrictions();
 	
@@ -4556,6 +4568,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Expiration Date")
 	String fieldExpirationDate();
+	
+	@DefaultMessage("Start Date")
+	String fieldStartDate();
 	
 	@DefaultMessage("Additional Emails")
 	String fieldAdditionalEmails();

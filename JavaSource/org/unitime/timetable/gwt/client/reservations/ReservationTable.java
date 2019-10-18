@@ -373,12 +373,16 @@ public class ReservationTable extends Composite {
 				line.add(new Label(""));
 			}
 
-			if (reservation instanceof OverrideReservation && !((OverrideReservation)reservation).getType().isCanHaveExpirationDate())
+			if (reservation instanceof OverrideReservation && !((OverrideReservation)reservation).getType().isCanHaveExpirationDate()) {
 				line.add(new Label(MESSAGES.reservationOverrideAbbv()));
-			else if (reservation.isOverride() && reservation.isAlwaysExpired())
 				line.add(new Label(MESSAGES.reservationOverrideAbbv()));
-			else
+			} else if (reservation.isOverride() && reservation.isAlwaysExpired()) {
+				line.add(new Label(MESSAGES.reservationOverrideAbbv()));
+				line.add(new Label(MESSAGES.reservationOverrideAbbv()));
+			} else {
+				line.add(new Label(reservation.getStartDate() == null ? "" : sDF.format(reservation.getStartDate())));
 				line.add(new Label(reservation.getExpirationDate() == null ? "" : sDF.format(reservation.getExpirationDate())));
+			}
 			iReservations.addRow(reservation, line);
 			iReservations.getRowFormatter().setVerticalAlign(iReservations.getRowCount() - 1, HasVerticalAlignment.ALIGN_TOP);
 			if (reservation.isExpired())
@@ -399,6 +403,7 @@ public class ReservationTable extends Composite {
 			footer.add(new TotalNumber(lastLike <= 0 ? "" : String.valueOf(lastLike)));
 			footer.add(new TotalNumber(projection <= 0 ? "" : String.valueOf(projection)));
 			footer.add(new TotalNumber(enrollment <= 0 ? "" : String.valueOf(enrollment)));
+			footer.add(new TotalLabel("&nbsp;", 1));
 			footer.add(new TotalLabel("&nbsp;", 1));
 			iReservations.addRow(null, footer);
 		} else if (reservations.isEmpty()) {
@@ -594,6 +599,7 @@ public class ReservationTable extends Composite {
 		case PROJECTED_BY_RULE:
 		case CURRENT_ENROLLMENT:
 		case EXPIRATION_DATE:
+		case START_DATE:
 			return "80px";
 		default:
 			return null;
@@ -620,6 +626,8 @@ public class ReservationTable extends Composite {
 			return MESSAGES.colCurrentEnrollment();
 		case EXPIRATION_DATE:
 			return MESSAGES.colExpirationDate();
+		case START_DATE:
+			return MESSAGES.colStartDate();
 		default:
 			return null;
 		}
@@ -645,6 +653,8 @@ public class ReservationTable extends Composite {
 			return MESSAGES.fieldCurrentEnrollment();
 		case EXPIRATION_DATE:
 			return MESSAGES.fieldExpirationDate();
+		case START_DATE:
+			return MESSAGES.fieldStartDate();
 		default:
 			return null;
 		}
@@ -659,6 +669,7 @@ public class ReservationTable extends Composite {
 		LAST_LIKE,
 		PROJECTED_BY_RULE,
 		CURRENT_ENROLLMENT,
+		START_DATE,
 		EXPIRATION_DATE,
 		;
 		
@@ -745,6 +756,15 @@ public class ReservationTable extends Composite {
 					@Override
 					public int compare(ReservationInterface r1, ReservationInterface r2) {
 						int cmp = new Long(r1.getExpirationDate() == null ? Long.MAX_VALUE : r1.getExpirationDate().getTime()).compareTo(r2.getExpirationDate() == null ? Long.MAX_VALUE : r2.getExpirationDate().getTime());
+						if (cmp != 0) return cmp;
+						return r1.compareTo(r2);
+					}
+				};
+			case START_DATE:
+				return new Comparator<ReservationInterface>() {
+					@Override
+					public int compare(ReservationInterface r1, ReservationInterface r2) {
+						int cmp = new Long(r1.getStartDate() == null ? Long.MIN_VALUE : r1.getStartDate().getTime()).compareTo(r2.getStartDate() == null ? Long.MIN_VALUE : r2.getStartDate().getTime());
 						if (cmp != 0) return cmp;
 						return r1.compareTo(r2);
 					}

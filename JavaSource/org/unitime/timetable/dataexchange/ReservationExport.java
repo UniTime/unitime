@@ -96,6 +96,8 @@ public class ReservationExport extends BaseExport {
 	        		reservationEl.addAttribute("limit", reservation.getLimit().toString());
 	        	if (reservation.getExpirationDate() != null)
 	        		reservationEl.addAttribute("expire", df.format(reservation.getExpirationDate()));
+	        	if (reservation.getStartDate() != null)
+	        		reservationEl.addAttribute("startDate", df.format(reservation.getStartDate()));
 	        	
 	        	for (InstrOfferingConfig config: reservation.getConfigurations()) {
 	        		reservationEl.addElement("configuration").addAttribute("name", config.getName());
