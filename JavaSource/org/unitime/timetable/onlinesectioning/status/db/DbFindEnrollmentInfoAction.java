@@ -39,6 +39,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.server.Query;
+import org.unitime.timetable.gwt.server.Query.AmbigousTermMatcher;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
@@ -582,7 +583,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 		
 	}
 	
-	public static class DbCourseInfoMatcher implements TermMatcher, Serializable {
+	public static class DbCourseInfoMatcher implements AmbigousTermMatcher, Serializable {
 		private static final long serialVersionUID = 1L;
 		private CourseOffering iCourse;
 		private boolean iConsentToDoCourse;
@@ -599,7 +600,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 		public boolean isConsentToDoCourse() { return iConsentToDoCourse; }
 		
 		@Override
-		public boolean match(String attr, String term) {
+		public Boolean match(String attr, String term) {
 			if (term.isEmpty()) return true;
 			if ("limit".equals(attr)) return true;
 			if ("lookup".equals(attr)) {
@@ -639,7 +640,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				else
 					return false;
 			}
-			return attr != null; // pass unknown attributes lower
+			return null; // pass unknown attributes lower
 		}
 	}
 	
@@ -739,7 +740,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 		}
 		
 		@Override
-		public boolean match(String attr, String term) {
+		public Boolean match(String attr, String term) {
 			if (attr == null || "name".equals(attr) || "title".equals(attr) || "subject".equals(attr) || "number".equals(attr) || "course".equals(attr) || "lookup".equals(attr) || "department".equals(attr) || "registered".equals(attr))
 				return super.match(attr, term);
 			
