@@ -22,7 +22,6 @@ package org.unitime.timetable.model.base;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.dom4j.Document;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentSectHistory;
 
@@ -34,7 +33,7 @@ public abstract class BaseStudentSectHistory implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Long iUniqueId;
-	private Document iData;
+	private byte[] iData;
 	private Integer iType;
 	private Date iTimestamp;
 
@@ -59,8 +58,8 @@ public abstract class BaseStudentSectHistory implements Serializable {
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
-	public Document getData() { return iData; }
-	public void setData(Document data) { iData = data; }
+	public byte[] getData() { return iData; }
+	public void setData(byte[] data) { iData = data; }
 
 	public Integer getType() { return iType; }
 	public void setType(Integer type) { iType = type; }

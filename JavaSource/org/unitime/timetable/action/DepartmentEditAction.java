@@ -188,7 +188,7 @@ public class DepartmentEditAction extends Action {
                 hibSession.createQuery(
                         "delete StudentClassEnrollment e where e.clazz.uniqueId in " +
                         "(select c.uniqueId from Class_ c, CourseOffering co where " +
-                        "co.isControl=1 and " +
+                        "co.isControl=true and " +
                         "c.schedulingSubpart.instrOfferingConfig.instructionalOffering=co.instructionalOffering and "+
                         "co.subjectArea.department.uniqueId=:deptId)").
                         setLong("deptId", department.getUniqueId()).

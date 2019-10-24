@@ -52,9 +52,9 @@
             length="10"/>
 
         <property
-            name="message"
+            name="data"
             column="message"
-            type="org.unitime.commons.hibernate.blob.XmlClobType"
+            type="java.lang.String"
             not-null="false"/>
 
     </class>

@@ -264,7 +264,7 @@ public class ImportPreferences {
 	public Department getDepartment(String deptCode) {
 		if ("LLR".equals(deptCode) || "LAB".equals(deptCode)) {
 			return (Department)hibSession.
-			createQuery("select d from Department d where d.session.uniqueId=:sessionId and d.externalManager=1 and d.externalMgrAbbv=:deptCode").
+			createQuery("select d from Department d where d.session.uniqueId=:sessionId and d.externalManager=true and d.externalMgrAbbv=:deptCode").
 			setLong("sessionId", iSession.getUniqueId().longValue()).
 			setString("deptCode",deptCode).
 			uniqueResult();

@@ -73,7 +73,7 @@
     <property
         name="courseName"
         type="java.lang.String"
-        formula="(select concat( concat( sa.subject_area_abbreviation , ' ') , co.course_nbr) from %SCHEMA%.pit_sched_subpart s, %SCHEMA%.pit_instr_offer_config c, %SCHEMA%.pit_instr_offering io, %SCHEMA%.pit_course_offering co, %SCHEMA%.subject_area sa where s.uniqueid=uniqueid and s.pit_config_id=c.uniqueid and c.pit_instr_offr_id=io.uniqueid and co.is_control=1 and co.pit_instr_offr_id=io.uniqueid and co.subject_area_id=sa.uniqueid)"
+        formula="(select concat( concat( sa.subject_area_abbreviation , ' ') , co.course_nbr) from %SCHEMA%.pit_sched_subpart s, %SCHEMA%.pit_instr_offer_config c, %SCHEMA%.pit_instr_offering io, %SCHEMA%.pit_course_offering co, %SCHEMA%.subject_area sa where s.uniqueid=uniqueid and s.pit_config_id=c.uniqueid and c.pit_instr_offr_id=io.uniqueid and co.is_control = %TRUE% and co.pit_instr_offr_id=io.uniqueid and co.subject_area_id=sa.uniqueid)"
         update="false"
         insert="false"/>
 

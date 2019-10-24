@@ -22,7 +22,6 @@ package org.unitime.timetable.model.base;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.dom4j.Document;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Session;
@@ -43,7 +42,7 @@ public abstract class BaseChangeLog implements Serializable {
 	private Long iObjectUniqueId;
 	private String iSourceString;
 	private String iOperationString;
-	private Document iDetail;
+	private byte[] iDetail;
 
 	private Session iSession;
 	private TimetableManager iManager;
@@ -91,8 +90,8 @@ public abstract class BaseChangeLog implements Serializable {
 	public String getOperationString() { return iOperationString; }
 	public void setOperationString(String operationString) { iOperationString = operationString; }
 
-	public Document getDetail() { return iDetail; }
-	public void setDetail(Document detail) { iDetail = detail; }
+	public byte[] getDetail() { return iDetail; }
+	public void setDetail(byte[] detail) { iDetail = detail; }
 
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }

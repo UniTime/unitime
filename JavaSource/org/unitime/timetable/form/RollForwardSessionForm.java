@@ -261,7 +261,7 @@ public class RollForwardSessionForm extends ActionForm {
 			for (int i = 0; i < getRollForwardSubjectAreaIds().length; i++){
 				String queryStr = "from CourseOffering co where co.subjectArea.session.uniqueId = "
 					+ toAcadSession.getUniqueId().toString()
-					+ " and co.isControl = 1 and co.subjectArea.uniqueId  = '"
+					+ " and co.isControl = true and co.subjectArea.uniqueId  = '"
 				    + getRollForwardSubjectAreaIds()[i] + "'";
 				validateRollForwardSessionHasNoDataOfType(errors, toAcadSession, ("Course Offerings - " + getRollForwardSubjectAreaIds()[i]), coDao.getQuery(queryStr).list());
 			}			
@@ -275,7 +275,7 @@ public class RollForwardSessionForm extends ActionForm {
 			for (int i = 0; i < getRollForwardClassInstrSubjectIds().length; i++){
 				String queryStr = "from ClassInstructor c  inner join c.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as co where c.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = "
 					+ toAcadSession.getUniqueId().toString()
-					+ " and co.isControl = 1 and co.subjectArea.uniqueId  = '"
+					+ " and co.isControl = true and co.subjectArea.uniqueId  = '"
 				    + getRollForwardClassInstrSubjectIds()[i] + "'";
 				validateRollForwardSessionHasNoDataOfType(errors, toAcadSession, ("Class Instructors - " + getRollForwardClassInstrSubjectIds()[i]), ciDao.getQuery(queryStr).list());
 			}			
@@ -289,7 +289,7 @@ public class RollForwardSessionForm extends ActionForm {
 			for (int i = 0; i < getRollForwardOfferingCoordinatorsSubjectIds().length; i++){
 				String queryStr = "from OfferingCoordinator c inner join c.offering.courseOfferings as co where c.offering.session.uniqueId = "
 					+ toAcadSession.getUniqueId().toString()
-					+ " and co.isControl = 1 and co.subjectArea.uniqueId  = '"
+					+ " and co.isControl = true and co.subjectArea.uniqueId  = '"
 				    + getRollForwardOfferingCoordinatorsSubjectIds()[i] + "'";
 				validateRollForwardSessionHasNoDataOfType(errors, toAcadSession, ("Offering Coordinators - " + getRollForwardOfferingCoordinatorsSubjectIds()[i]), ocDao.getQuery(queryStr).list());
 			}			

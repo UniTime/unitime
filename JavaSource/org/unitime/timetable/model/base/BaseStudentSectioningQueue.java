@@ -22,7 +22,6 @@ package org.unitime.timetable.model.base;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.dom4j.Document;
 import org.unitime.timetable.model.StudentSectioningQueue;
 
 /**
@@ -36,14 +35,14 @@ public abstract class BaseStudentSectioningQueue implements Serializable {
 	private Long iSessionId;
 	private Date iTimeStamp;
 	private Integer iType;
-	private Document iMessage;
+	private String iData;
 
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_SESSION_ID = "sessionId";
 	public static String PROP_TIME_STAMP = "timeStamp";
 	public static String PROP_TYPE = "type";
-	public static String PROP_MESSAGE = "message";
+	public static String PROP_MESSAGE = "data";
 
 	public BaseStudentSectioningQueue() {
 		initialize();
@@ -68,8 +67,8 @@ public abstract class BaseStudentSectioningQueue implements Serializable {
 	public Integer getType() { return iType; }
 	public void setType(Integer type) { iType = type; }
 
-	public Document getMessage() { return iMessage; }
-	public void setMessage(Document message) { iMessage = message; }
+	public String getData() { return iData; }
+	public void setData(String data) { iData = data; }
 
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof StudentSectioningQueue)) return false;
@@ -88,7 +87,7 @@ public abstract class BaseStudentSectioningQueue implements Serializable {
 
 	public String toDebugString() {
 		return "StudentSectioningQueue[" +
-			"\n	Message: " + getMessage() +
+			"\n	Data: " + getData() +
 			"\n	SessionId: " + getSessionId() +
 			"\n	TimeStamp: " + getTimeStamp() +
 			"\n	Type: " + getType() +
