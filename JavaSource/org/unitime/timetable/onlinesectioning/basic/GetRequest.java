@@ -119,14 +119,26 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 			int lastRequestPriority = -1;
 			boolean setReadOnly = ApplicationProperty.OnlineSchedulingMakeAssignedRequestReadOnly.isTrue();
 			boolean setReadOnlyWhenReserved = ApplicationProperty.OnlineSchedulingMakeReservedRequestReadOnly.isTrue();
+			boolean setInactive = ApplicationProperty.OnlineSchedulingMakeUnassignedRequestsInactive.isTrue();
 			if (helper.getUser() != null && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER) {
 				setReadOnly = ApplicationProperty.OnlineSchedulingMakeAssignedRequestReadOnlyIfAdmin.isTrue();
 				setReadOnlyWhenReserved = ApplicationProperty.OnlineSchedulingMakeReservedRequestReadOnlyIfAdmin.isTrue();
+				setInactive = ApplicationProperty.OnlineSchedulingMakeUnassignedRequestsInactiveIfAdmin.isTrue();
 			}
 			boolean reservedNoPriority = ApplicationProperty.OnlineSchedulingReservedRequestNoPriorityChanges.isTrue();
 			boolean reservedNoAlternatives = ApplicationProperty.OnlineSchedulingReservedRequestNoAlternativeChanges.isTrue();
 			boolean enrolledNoPriority = ApplicationProperty.OnlineSchedulingAssignedRequestNoPriorityChanges.isTrue();
 			boolean enrolledNoAlternatives = ApplicationProperty.OnlineSchedulingAssignedRequestNoAlternativeChanges.isTrue();
+			if (setInactive) {
+				boolean hasEnrollments = false;
+				for (XRequest cd: student.getRequests()) {
+					if (cd instanceof XCourseRequest && ((XCourseRequest)cd).getEnrollment() != null) {
+						hasEnrollments = true; break;
+					}
+				}
+				if (!hasEnrollments) setInactive = false;
+			}
+			
 			for (XRequest cd: student.getRequests()) {
 				CourseRequestInterface.Request r = null;
 				if (cd instanceof XFreeTimeRequest) {
@@ -164,6 +176,8 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 						boolean isEnrolled = ((XCourseRequest)cd).getEnrollment() != null && c.getCourseId().equals(((XCourseRequest)cd).getEnrollment().getCourseId());
 						if (setReadOnly && isEnrolled)
 							rc.setReadOnly(true);
+						if (iSectioning && setInactive && !isEnrolled)
+							rc.setInactive(true);
 						if (!iSectioning && isEnrolled) {
 							rc.setReadOnly(true);
 							rc.setCanDelete(false);

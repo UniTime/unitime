@@ -1381,6 +1381,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			for (final ClassAssignmentInterface.CourseAssignment course: result.getCourseAssignments()) {
 				boolean firstClazz = true;
 				if (course.isAssigned()) {
+					if (course.getCourseId() != null)
+						iCourseRequests.activate(course.getCourseId());
 					for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
 						if (clazz.getClassId() != null)
 							calendarUrl += clazz.getCourseId() + "-" + clazz.getClassId() + ",";
@@ -1518,7 +1520,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							cell.setStyleName(style);
 						firstClazz = false;
 					}
-				} else if (!iSpecialRegistrationsPanel.isDrop(course.getCourseId())) {
+				} else if (!iSpecialRegistrationsPanel.isDrop(course.getCourseId()) && iCourseRequests.isActive(course.getCourseId())) {
 					String style = "text-red" + (!rows.isEmpty() ? " top-border-dashed": "");
 					WebTable.Row row = null;
 					String unassignedMessage = MESSAGES.courseNotAssigned();
@@ -2709,7 +2711,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						iStatus.warning(MESSAGES.courseSelectionNoCourseSelected());
 						return;
 					}
-					if (iCourseRequests.hasCourse(event.getSelectedItem())) {
+					if (iCourseRequests.hasCourseActive(event.getSelectedItem())) {
 						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.confirmQuickDrop(event.getSelectedItem().getCourseName()), new Command() {
 							@Override
 							public void execute() {

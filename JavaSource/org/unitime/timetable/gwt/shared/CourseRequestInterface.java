@@ -456,6 +456,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		private Date iOverrideTimeStamp = null;
 		private String iRequestorNote = null;
 		private String iRequestId = null;
+		private Boolean iInactive = null;  
 		
 		public RequestedCourse() {}
 		public RequestedCourse(List<FreeTime> freeTime) {
@@ -531,6 +532,9 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		
 		public boolean isCanChangeAlternatives() { return iCanChangeAlternatives == null || iCanChangeAlternatives.booleanValue(); }
 		public void setCanChangeAlternatives(Boolean canChangeAlternatives) { iCanChangeAlternatives = canChangeAlternatives; }
+		
+		public boolean isInactive() { return iInactive != null && iInactive.booleanValue(); }
+		public void setInactive(Boolean inactive) { iInactive = inactive; }
 		
 		public boolean isEmpty() { return !isCourse() && !isFreeTime(); }
 		
@@ -765,6 +769,12 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			if (iRequestedCourse == null) return false;
 			for (RequestedCourse rc: iRequestedCourse)
 				if (rc.equals(course)) return true;
+			return false;
+		}
+		public boolean hasRequestedCourseActive(RequestedCourse course) {
+			if (iRequestedCourse == null) return false;
+			for (RequestedCourse rc: iRequestedCourse)
+				if (rc.equals(course) && !rc.isInactive()) return true;
 			return false;
 		}
 

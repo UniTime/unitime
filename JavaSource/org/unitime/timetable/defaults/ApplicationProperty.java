@@ -2348,6 +2348,18 @@ public enum ApplicationProperty {
 	@Description("Course Requests: disabled course requests (due to an enrollment) cannot be moved in priority")
 	@Since(4.4)
 	OnlineSchedulingAssignedRequestNoPriorityChanges("unitime.enrollment.disableAssignedRequests.noPriorityChanges"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Online Student Scheduling: make saved not-assigned course request inactive (they are still present, but they do not show in the schedule)")
+	@Since(4.4)
+	OnlineSchedulingMakeUnassignedRequestsInactive("unitime.enrollment.inactiveUnassignedRequests"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Online Student Scheduling: make saved not-assigned course request inactive (when administrator or advisor)")
+	@Since(4.4)
+	OnlineSchedulingMakeUnassignedRequestsInactiveIfAdmin("unitime.enrollment.inactiveUnassignedRequests.manager"),
 
 	@Type(Boolean.class)
 	@DefaultValue("true")

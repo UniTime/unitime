@@ -494,6 +494,23 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		return cr;
 	}
 	
+	public void activate(Long courseId) {
+		if (courseId == null) return;
+		for (CourseRequestLine line: iCourses) {
+			for (CourseSelectionBox box: line.getCourses())
+				box.activate(courseId);
+		}
+	}
+	
+	public boolean isActive(Long courseId) {
+		if (courseId == null) return true;
+		for (CourseRequestLine line: iCourses) {
+			for (CourseSelectionBox box: line.getCourses())
+				if (box.isInactive(courseId)) return false;
+		}
+		return true;
+	}
+	
 	public void setRequest(CourseRequestInterface request) {
 		clear();
 		while (iCourses.size() < request.getCourses().size()) addCourseLine();
@@ -654,6 +671,18 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		for (final CourseRequestLine line: iAlternatives) {
 			Request request = line.getValue();
 			if (request != null && request.hasRequestedCourse(rc)) return true;
+		}
+		return false;
+	}
+	
+	public boolean hasCourseActive(RequestedCourse rc) {
+		for (final CourseRequestLine line: iCourses) {
+			Request request = line.getValue();
+			if (request != null && request.hasRequestedCourseActive(rc)) return true;
+		}
+		for (final CourseRequestLine line: iAlternatives) {
+			Request request = line.getValue();
+			if (request != null && request.hasRequestedCourseActive(rc)) return true;
 		}
 		return false;
 	}
