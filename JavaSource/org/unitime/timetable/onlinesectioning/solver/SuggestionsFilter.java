@@ -69,7 +69,7 @@ public class SuggestionsFilter implements SuggestionsBranchAndBound.SuggestionFi
 					return true;
 			}
 			if (attr == null || attr.equals("course")) {
-				if (iCourse.getName().toLowerCase().startsWith(term.toLowerCase()))
+				if (iCourse.getName().toLowerCase().startsWith(term.toLowerCase()) || iCourse.getSubjectArea().equalsIgnoreCase(term) || iCourse.getCourseNumber().equalsIgnoreCase(term))
 					return true;
 			}
 			if (attr == null || attr.equals("day")) {
