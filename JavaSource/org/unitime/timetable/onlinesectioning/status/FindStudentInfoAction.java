@@ -682,7 +682,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		@Override
 		public boolean match(XStudentId id) {
 			XStudent student = (id instanceof XStudent ? (XStudent)id : getServer().getStudent(id.getStudentId()));
-			return student != null && student.getRequests().isEmpty() && iQuery.match(new StudentMatcher(student, iDefaultSectioningStatus, getServer(), isMyStudent(student)));
+			return student != null && iQuery.match(new StudentMatcher(student, iDefaultSectioningStatus, getServer(), isMyStudent(student)));
 		}
 	}
 }

@@ -59,6 +59,12 @@
 				</line>
  			</description>
 		</item>
+		<item>
+			<name>Online Student Scheduling Dashboard: Filter</name>
+			<description>
+				<line>Fixed an issue with hiding students that only have free time requests.</line>
+ 			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>
