@@ -94,7 +94,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	private DataProperties iConfig = null;
 	private OnlineSectioningActionFactory iActionFactory = null;
 	
-	protected AsyncExecutor iExecutor = null;
+	protected List<AsyncExecutor> iExecutors = new ArrayList<AsyncExecutor>();
 	private Queue<Runnable> iExecutorQueue = new LinkedList<Runnable>();
 	private HashSet<CacheElement<Long>> iOfferingsToPersistExpectedSpaces = new HashSet<CacheElement<Long>>();
 	private static ThreadLocal<LinkedList<OnlineSectioningHelper>> sHelper = new ThreadLocal<LinkedList<OnlineSectioningHelper>>();
@@ -120,8 +120,9 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 			AcademicSessionInfo academicSession = new AcademicSessionInfo(session);
 			iLog = LogFactory.getLog(OnlineSectioningServer.class.getName() + ".server[" + academicSession.toCompactString() + "]");
 			iProperties.put("AcademicSession", academicSession);
-			iExecutor = new AsyncExecutor(academicSession);
-			iExecutor.start();
+			int asncPoolSize = ApplicationProperty.OnlineSchedulingServerAsyncPoolSize.intValue();
+			for (int i = 0; i < asncPoolSize; i++)
+				new AsyncExecutor(academicSession, 1 + i).start();
 		} finally {
 			hibSession.close();
 		}
@@ -143,8 +144,9 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 		iLog = LogFactory.getLog(OnlineSectioningServer.class.getName() + ".server[" + session.toCompactString() + "]");
 		iProperties.put("AcademicSession", session);
 		if (allowAsyncCalls) {
-			iExecutor = new AsyncExecutor(session);
-			iExecutor.start();
+			int asncPoolSize = ApplicationProperty.OnlineSchedulingServerAsyncPoolSize.intValue();
+			for (int i = 0; i < asncPoolSize; i++)
+				new AsyncExecutor(session, 1 + i).start();
 		}
 	}
 	
@@ -445,7 +447,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	
 	@Override
 	public <E> void execute(final OnlineSectioningAction<E> action, final OnlineSectioningLog.Entity user, final ServerCallback<E> callback) throws SectioningException {
-		if (iExecutor == null) {
+		if (iExecutors == null || iExecutors.isEmpty()) {
 			try {
 				callback.onSuccess(execute(action, user));
 			} catch (Throwable t) {
@@ -477,10 +479,13 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	
 	public class AsyncExecutor extends Thread {
 		private boolean iStop = false;
+		private int iId;
 		
-		public AsyncExecutor(AcademicSessionInfo session) {
-			setName("AsyncExecutor[" + session + "]");
+		public AsyncExecutor(AcademicSessionInfo session, int id) {
+			iId = id;
+			setName("AsyncExecutor[" + session + "-" + id + "]");
 			setDaemon(true);
+			iExecutors.add(this);
 		}
 		
 		public void run() {
@@ -492,7 +497,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 						job = iExecutorQueue.poll();
 						if (job == null) {
 							try {
-								iLog.info("Executor is waiting for a new job...");
+								iLog.debug("Executor " + iId + " is waiting for a new job...");
 								iExecutorQueue.wait();
 							} catch (InterruptedException e) {}
 							continue;
@@ -502,11 +507,12 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 					if (_RootDAO.closeCurrentThreadSessions())
 						iLog.debug("Job " + job + " did not close current-thread hibernate session.");
 				}
-				iLog.info("Executor stopped.");
+				iLog.info("Executor " + iId + " stopped.");
 			} finally {
 				ApplicationProperties.setSessionId(null);
 				Localization.removeLocale();
 				Formats.removeFormats();
+				iExecutors.remove(this);
 			}
 		}
 		
@@ -514,10 +520,11 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	
 	@Override
 	public void unload() {
-		if (iExecutor != null) {
-			iExecutor.iStop = true;
+		if (iExecutors != null) {
+			for (AsyncExecutor ex: iExecutors)
+				ex.iStop = true;
 			synchronized (iExecutorQueue) {
-				iExecutorQueue.notify();
+				iExecutorQueue.notifyAll();
 			}
 		}
 		if (iMasterThread != null)
@@ -555,7 +562,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	@Override
 	public boolean needPersistExpectedSpaces(Long offeringId) {
 		synchronized(iOfferingsToPersistExpectedSpaces) {
-			return iOfferingsToPersistExpectedSpaces.remove(offeringId);
+			return iOfferingsToPersistExpectedSpaces.remove(new CacheElement<Long>(offeringId));
 		}
 	}
 

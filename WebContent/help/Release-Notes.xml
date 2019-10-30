@@ -43,6 +43,14 @@
 				</line>
  			</description>
 		</item>
+		<item>
+			<name>Online Student Scheduling: Asynchronous Execution</name>
+			<description>
+				<line>Added ability to use multiple threads for asynchronous execution.
+					<line>Set unitime.enrollment.server.asyncPoolSize for the thread pool size (defaults to 10).</line>
+				</line>
+ 			</description>
+		</item>
 	</category>
 </release>
 
