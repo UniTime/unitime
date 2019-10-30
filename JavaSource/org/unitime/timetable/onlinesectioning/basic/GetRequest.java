@@ -43,6 +43,7 @@ import org.unitime.timetable.onlinesectioning.model.XFreeTimeRequest;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.solver.studentsct.StudentSolver;
 
 /**
  * @author Tomas Muller
@@ -138,6 +139,8 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 				}
 				if (!hasEnrollments) setInactive = false;
 			}
+			if (setInactive && server instanceof StudentSolver)
+				setInactive = false;
 			
 			for (XRequest cd: student.getRequests()) {
 				CourseRequestInterface.Request r = null;

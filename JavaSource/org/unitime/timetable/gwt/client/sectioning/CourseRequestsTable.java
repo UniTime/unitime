@@ -500,11 +500,19 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			for (CourseSelectionBox box: line.getCourses())
 				box.activate(courseId);
 		}
+		for (CourseRequestLine line: iAlternatives) {
+			for (CourseSelectionBox box: line.getCourses())
+				box.activate(courseId);
+		}
 	}
 	
 	public boolean isActive(Long courseId) {
 		if (courseId == null) return true;
 		for (CourseRequestLine line: iCourses) {
+			for (CourseSelectionBox box: line.getCourses())
+				if (box.isInactive(courseId)) return false;
+		}
+		for (CourseRequestLine line: iAlternatives) {
 			for (CourseSelectionBox box: line.getCourses())
 				if (box.isInactive(courseId)) return false;
 		}
