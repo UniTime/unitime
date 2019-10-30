@@ -1161,7 +1161,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 
 	public CourseRequestInterface saveRequest(CourseRequestInterface request) throws SectioningException, PageAccessException {
-		OnlineSectioningServer server = getServerInstance(request.getAcademicSessionId(), false);
+		OnlineSectioningServer server = getServerInstance(request.getAcademicSessionId(), true);
 		Long studentId = getStudentId(request.getAcademicSessionId());
 		if (studentId == null && getSessionContext().hasPermissionAnySession(request.getAcademicSessionId(), Right.StudentSchedulingAdvisor))
 			studentId = request.getStudentId();
@@ -1170,10 +1170,6 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				throw new SectioningException(MSG.exceptionEnrollNotStudent(server.getAcademicSession().toString()));
 			return server.execute(server.createAction(SaveStudentRequests.class).forStudent(studentId).withRequest(request).withCustomValidation(true), currentUser());
 		} else {
-			if (CustomCourseRequestsValidationHolder.hasProvider()) {
-				OnlineSectioningServer dummy = getServerInstance(request.getAcademicSessionId(), true);
-				return dummy.execute(dummy.createAction(SaveStudentRequests.class).forStudent(studentId).withRequest(request).withCustomValidation(true), currentUser());
-			}
 			if (studentId == null)
 				throw new SectioningException(MSG.exceptionEnrollNotStudent(SessionDAO.getInstance().get(request.getAcademicSessionId()).getLabel()));
 			org.hibernate.Session hibSession = StudentDAO.getInstance().getSession();

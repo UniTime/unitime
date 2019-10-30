@@ -30,6 +30,20 @@
 	<category>
 		<title>Student Scheduling</title>
 		<item>
+			<name>Course Requests: Submit Requests</name>
+			<description>
+				<line>Ensure that the save-requests action gets logged when the online student scheduling is disabled (no online student scheduling server is running).</line>
+ 			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.4.130</version>
+	<release-date>Sat, 5 Oct 2019</release-date>
+	<category>
+		<title>Student Scheduling</title>
+		<item>
 			<name>Student Scheduling: Advisors</name>
 			<description>
 				<line>Show student's advisor(s) on the dashboard page (Students tab) and in the Enrollments tables.</line>
