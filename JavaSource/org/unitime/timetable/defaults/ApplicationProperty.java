@@ -452,6 +452,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Class Assignment: try to compute student conflicts faster by pre-fetching a table of all classes that students of the selected class are also taking")
 	ClassAssignmentPrefetchConflicts("tmtbl.classAssign.prefetchConflicts"),
+	
+	@Type(String.class)
+	@DefaultValue("auto")
+	@Description("Class Assignment: for student conflicts, use the actual student class enrollments or those that have been used by the solver (possible values none,auto,actual,solution)")
+	ClassAssignmentStudentConflictsType("tmtbl.classAssign.studentConflicts"),
 
 	@Type(Boolean.class)
 	@DefaultValue("true")

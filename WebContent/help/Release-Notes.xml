@@ -52,6 +52,27 @@
  			</description>
 		</item>
 	</category>
+	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Class Assigment: Student Conflicts</name>
+			<description>
+				<line>Added ability to change the default of how the student conflicts are computed.</line>
+				<line>Application configuration tmtbl.classAssign.studentConflicts with the possible values:
+					<line>auto: show the actual student conflicts when there are student class enrollments, show projected (solution) conflicts otherwise (this is the default)</line>
+					<line>actual: always show the actual student conflicts</line>
+					<line>solution: always show the projected (solution) student conflicts</line>
+					<line>none: do not show student conflicts in the Available Times table</line>
+				</line>
+				<line>It is now possible to switch between the two modes (actual/projected) student conflicts by clicking the note at the bottom of the Student Conflicts table, which now reads:
+					<line>Showing the actual student class enrollments, click here to change to projected student conflicts.</line>
+				</line>
+				<line>or
+					<line>Showing projected student conflicts, click here to change to the actual class enrollments.</line>
+				</line>
+ 			</description>
+		</item>
+	</category>
 </release>
 
 <release>

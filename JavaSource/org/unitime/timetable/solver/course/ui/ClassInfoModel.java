@@ -663,6 +663,7 @@ public class ClassInfoModel implements Serializable {
             }
             ret += "</tr>";
             ret += "</table>";
+            
             return ret;
         } catch (Exception e) {
         	iForm.setMessage(e.getMessage());
@@ -1549,4 +1550,7 @@ public class ClassInfoModel implements Serializable {
     
     public boolean isUseRealStudents() { return iUseRealStudents; }
     public void setUseRealStudents(boolean userReal) { iUseRealStudents = userReal; }
+    
+    public boolean isShowStudentConflicts() { return iShowStudentConflicts; }
+    public void setShowStudentConflicts(boolean showConflicts) { iShowStudentConflicts = showConflicts; }
 }
