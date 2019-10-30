@@ -72,6 +72,7 @@ public abstract class BaseGroupOverrideReservation extends StudentGroupReservati
 			"\n	Group: " + getGroup() +
 			"\n	InstructionalOffering: " + getInstructionalOffering() +
 			"\n	Limit: " + getLimit() +
+			"\n	StartDate: " + getStartDate() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

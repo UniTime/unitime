@@ -137,6 +137,9 @@ public class RollForwardSessionForm extends ActionForm {
 	private String[] rollForwardTeachingRequestsSubjectIds;
 	private Boolean rollForwardPeriodicTasks;
 	private Long sessionToRollPeriodicTasksFrom;
+	private String startDateCourseReservations;
+	private String startDateCurriculumReservations;
+	private String startDateGroupReservations;
 	
 	/** 
 	 * Method validate
@@ -440,6 +443,9 @@ public class RollForwardSessionForm extends ActionForm {
 		rollForwardOfferingCoordinatorsSubjectIds = new String[0];
 		rollForwardPeriodicTasks = false;
 		sessionToRollPeriodicTasksFrom = null;
+		startDateCourseReservations = null;
+		startDateCurriculumReservations = null;
+		startDateGroupReservations = null;
 	}
 
 	/** 
@@ -922,6 +928,16 @@ public class RollForwardSessionForm extends ActionForm {
 	
 	public boolean getCreateStudentGroupsIfNeeded() { return createStudentGroupsIfNeeded; }
 	public void setCreateStudentGroupsIfNeeded(boolean createStudentGroupsIfNeeded) { this.createStudentGroupsIfNeeded = createStudentGroupsIfNeeded; }
+	
+	public String getStartDateCourseReservations() { return startDateCourseReservations; }
+	public void setStartDateCourseReservations(String startDateCourseReservations) { this.startDateCourseReservations = startDateCourseReservations; }
+	
+	public String getStartDateCurriculumReservations() { return startDateCurriculumReservations; }
+	public void setStartDateCurriculumReservations(String startDateCurriculumReservations) { this.startDateCurriculumReservations = startDateCurriculumReservations; }
+	
+	public String getStartDateGroupReservations() { return startDateGroupReservations; }
+	public void setStartDateGroupReservations(String startDateGroupReservations) { this.startDateGroupReservations = startDateGroupReservations; }
+
 
 	public void copyTo(RollForwardSessionForm form) {
 		// form.subjectAreas = subjectAreas;
@@ -988,6 +1004,9 @@ public class RollForwardSessionForm extends ActionForm {
 		form.rollForwardDistributions = rollForwardDistributions;
 		form.rollForwardPeriodicTasks = rollForwardPeriodicTasks;
 		form.sessionToRollPeriodicTasksFrom = sessionToRollPeriodicTasksFrom;
+		form.startDateCourseReservations = startDateCourseReservations;
+		form.startDateCurriculumReservations = startDateCurriculumReservations;
+		form.startDateGroupReservations = startDateGroupReservations;
 	}
 	
 	public Boolean getRollForwardTeachingRequests() {

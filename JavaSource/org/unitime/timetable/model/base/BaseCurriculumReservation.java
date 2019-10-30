@@ -90,6 +90,7 @@ public abstract class BaseCurriculumReservation extends Reservation implements S
 			"\n	ExpirationDate: " + getExpirationDate() +
 			"\n	InstructionalOffering: " + getInstructionalOffering() +
 			"\n	Limit: " + getLimit() +
+			"\n	StartDate: " + getStartDate() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

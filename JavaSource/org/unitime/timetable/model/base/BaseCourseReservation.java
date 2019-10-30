@@ -70,6 +70,7 @@ public abstract class BaseCourseReservation extends Reservation implements Seria
 			"\n	ExpirationDate: " + getExpirationDate() +
 			"\n	InstructionalOffering: " + getInstructionalOffering() +
 			"\n	Limit: " + getLimit() +
+			"\n	StartDate: " + getStartDate() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

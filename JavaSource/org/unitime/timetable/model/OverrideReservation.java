@@ -47,6 +47,12 @@ public class OverrideReservation extends BaseOverrideReservation {
 	}
 	
 	@Override
+	public Date getStartDate() {
+		OverrideType type = getOverrideType();
+		return (type == null || type.isCanHaveExpirationDate() ? super.getStartDate() : null);
+	}
+	
+	@Override
 	public Date getExpirationDate() {
 		OverrideType type = getOverrideType();
 		return (type == null || type.isCanHaveExpirationDate() ? super.getExpirationDate() : null);		

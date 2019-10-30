@@ -50,13 +50,14 @@ public abstract class Reservation extends BaseReservation implements Comparable<
 /*[CONSTRUCTOR MARKER END]*/
 	
 	public boolean isExpired() {
-		if (getExpirationDate() == null) return false;
+		if (getStartDate() == null && getExpirationDate() == null) return false;
 		Calendar c = Calendar.getInstance(Locale.US);
 		c.set(Calendar.HOUR_OF_DAY, 0);
 		c.set(Calendar.MINUTE, 0);
 		c.set(Calendar.SECOND, 0);
 		c.set(Calendar.MILLISECOND, 0);
-		return getExpirationDate().before(c.getTime());
+		return ((getStartDate() != null && c.getTime().before(getStartDate())) ||
+				(getExpirationDate() != null && getExpirationDate().before(c.getTime())));
 	}
 	
 	public abstract boolean isApplicable(Student student, CourseRequest request);

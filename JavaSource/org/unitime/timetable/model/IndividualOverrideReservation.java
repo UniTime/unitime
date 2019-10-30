@@ -82,6 +82,11 @@ public class IndividualOverrideReservation extends BaseIndividualOverrideReserva
 	}
 	
 	@Override
+	public Date getStartDate() {
+		return (isAlwaysExpired() ? null : super.getStartDate());		
+	}
+	
+	@Override
 	public Date getExpirationDate() {
 		return (isAlwaysExpired() ? null : super.getExpirationDate());		
 	}

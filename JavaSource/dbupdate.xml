@@ -13655,4 +13655,8 @@
 	    <plsql>alter table %SCHEMA%.course_demand add critical_override number(1)</plsql>
 		<mysql>alter table %SCHEMA%.course_demand add critical_override int(1) null</mysql>
 	</update>
+	<update version="223" date="18-Oct-2019" comment="Reservations Start Date">
+		<plsql>alter table %SCHEMA%.reservation add start_date date</plsql>
+		<mysql>alter table %SCHEMA%.reservation add start_date date null</mysql>
+	</update>
 </dbupdate>

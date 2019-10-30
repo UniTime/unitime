@@ -39,6 +39,7 @@ public abstract class BaseReservation implements Serializable {
 	private Long iUniqueId;
 	private Date iExpirationDate;
 	private Integer iLimit;
+	private Date iStartDate;
 
 	private InstructionalOffering iInstructionalOffering;
 	private Set<InstrOfferingConfig> iConfigurations;
@@ -47,6 +48,7 @@ public abstract class BaseReservation implements Serializable {
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_EXPIRATION_DATE = "expirationDate";
 	public static String PROP_RESERVATION_LIMIT = "limit";
+	public static String PROP_START_DATE = "startDate";
 
 	public BaseReservation() {
 		initialize();
@@ -67,6 +69,9 @@ public abstract class BaseReservation implements Serializable {
 
 	public Integer getLimit() { return iLimit; }
 	public void setLimit(Integer limit) { iLimit = limit; }
+
+	public Date getStartDate() { return iStartDate; }
+	public void setStartDate(Date startDate) { iStartDate = startDate; }
 
 	public InstructionalOffering getInstructionalOffering() { return iInstructionalOffering; }
 	public void setInstructionalOffering(InstructionalOffering instructionalOffering) { iInstructionalOffering = instructionalOffering; }
@@ -105,6 +110,7 @@ public abstract class BaseReservation implements Serializable {
 			"\n	ExpirationDate: " + getExpirationDate() +
 			"\n	InstructionalOffering: " + getInstructionalOffering() +
 			"\n	Limit: " + getLimit() +
+			"\n	StartDate: " + getStartDate() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

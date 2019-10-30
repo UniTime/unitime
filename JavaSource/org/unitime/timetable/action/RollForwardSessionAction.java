@@ -529,11 +529,17 @@ public class RollForwardSessionAction extends Action {
 				form.setExpirationCourseReservations(dates.hasExpirationDate("course") ? df.format(dates.getExpirationDate("course")) : null);
 				form.setExpirationCurriculumReservations(dates.hasExpirationDate("curriculum") ? df.format(dates.getExpirationDate("curriculum")) : null);
 				form.setExpirationGroupReservations(dates.hasExpirationDate("group") ? df.format(dates.getExpirationDate("group")) : null);
+				form.setStartDateCourseReservations(dates.hasStartDate("course") ? df.format(dates.getStartDate("course")) : null);
+				form.setStartDateCurriculumReservations(dates.hasStartDate("curriculum") ? df.format(dates.getStartDate("curriculum")) : null);
+				form.setStartDateGroupReservations(dates.hasStartDate("group") ? df.format(dates.getStartDate("group")) : null);
 			}
 		} else {
 			form.setExpirationCourseReservations(null);
 			form.setExpirationCurriculumReservations(null);
 			form.setExpirationGroupReservations(null);
+			form.setStartDateCourseReservations(null);
+			form.setStartDateCurriculumReservations(null);
+			form.setStartDateGroupReservations(null);
 		}
 	}
 

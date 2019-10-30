@@ -45,7 +45,13 @@
        		column="reservation_limit"
        		type="java.lang.Integer"
        		not-null="false"/>
-        
+       		
+		<property
+            name="startDate"
+            column="start_date"
+            type="java.sql.Timestamp"
+            not-null="false"/>
+
         <many-to-one
             name="instructionalOffering"
             class="InstructionalOffering"

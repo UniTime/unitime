@@ -70,6 +70,7 @@ public abstract class BaseStudentGroupReservation extends Reservation implements
 			"\n	Group: " + getGroup() +
 			"\n	InstructionalOffering: " + getInstructionalOffering() +
 			"\n	Limit: " + getLimit() +
+			"\n	StartDate: " + getStartDate() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

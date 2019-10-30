@@ -51,6 +51,14 @@
 				</line>
  			</description>
 		</item>
+		<item>
+			<name>Reservations: Start Date</name>
+			<description>
+				<line>Added ability to provide start date on a reservation.
+					<line>A reservation is also considered expaired (does not reserve any space) when today is BEFORE the start date.</line>
+				</line>
+ 			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>

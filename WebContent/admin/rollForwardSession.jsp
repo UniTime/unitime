@@ -328,6 +328,11 @@
 			<tr style="display:none;" id="courseReservationDetail"><td style="padding-left: 50px; vertical-align: middle;" valign="top" colspan="2">
 				<span style="display: table;">
 					<span style="display: table-row;">
+						<span style="display: table-cell; vertical-align: middle;">New Start Date: </span>
+						<tt:calendar property="startDateCourseReservations" outerStyle="display: table-cell;"/>
+						<span style="display: table-cell; font-style: italic; padding-left: 20px; vertical-align: middle;">Applies to course reservations with a start date filled in.</span>
+					</span>
+					<span style="display: table-row;">
 						<span style="display: table-cell; vertical-align: middle;">New Expiration Date: </span>
 						<tt:calendar property="expirationCourseReservations" outerStyle="display: table-cell;"/>
 						<span style="display: table-cell; font-style: italic; padding-left: 20px; vertical-align: middle;">Applies to course reservations with an expiration date filled in.</span>
@@ -338,6 +343,11 @@
 				<html:checkbox name="<%=frmName%>" property="rollForwardCurriculumReservations" onclick="document.getElementById('curriculumReservationDetail').style.display = (this.checked ? 'table-row' : 'none');"/> Include Curriculum Reservations
 			<tr style="display:none;" id="curriculumReservationDetail"><td style="padding-left: 50px;" colspan="2">
 				<span style="display: table;">
+					<span style="display: table-row;">
+						<span style="display: table-cell; vertical-align: middle;">New Start Date: </span>
+						<tt:calendar property="startDateCurriculumReservations" outerStyle="display: table-cell;"/>
+						<span style="display: table-cell; font-style: italic; padding-left: 20px; vertical-align: middle;">Applies to curriculum reservations with a start date filled in.</span>
+					</span>
 					<span style="display: table-row;">
 						<span style="display: table-cell; vertical-align: middle;">New Expiration Date: </span>
 						<tt:calendar property="expirationCurriculumReservations" outerStyle="display: table-cell;"/>
@@ -351,9 +361,14 @@
 				<div>
 					<span style="display: table;">
 						<span style="display: table-row;">
+							<span style="display: table-cell; vertical-align: middle;">New Start Date: </span>
+							<tt:calendar property="startDateGroupReservations" outerStyle="display: table-cell;"/>
+							<span style="display: table-cell; font-style: italic; padding-left: 20px; vertical-align: middle;">Applies to student group reservations with a start date filled in.</span>
+						</span>
+						<span style="display: table-row;">
 							<span style="display: table-cell; vertical-align: middle;">New Expiration Date: </span>
 							<tt:calendar property="expirationGroupReservations" outerStyle="display: table-cell;"/>
-							<span style="display: table-cell; font-style: italic; padding-left: 20px; vertical-align: middle;">Applies to student group reservations with an expiration date filled in.
+							<span style="display: table-cell; font-style: italic; padding-left: 20px; vertical-align: middle;">Applies to student group reservations with an expiration date filled in.</span>
 						</span>
 					</span>
 				</div>

@@ -208,6 +208,15 @@ public class ReservationImport  extends BaseImport {
                 	}
                 }
                 
+                String startDate = reservationElement.attributeValue("startDate");
+                if (startDate != null) {
+                	try {
+                		reservation.setStartDate(df.parse(startDate));
+                	} catch (Exception e) {
+                		warn("Unable to parse reservation start date " + expire);
+                	}
+                }
+                
                 reservation.setConfigurations(new HashSet<InstrOfferingConfig>());
                 for (Iterator j = reservationElement.elementIterator("configuration"); j.hasNext(); ) {
                 	String name = ((Element)j.next()).attributeValue("name");

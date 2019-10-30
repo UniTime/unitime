@@ -45,7 +45,7 @@ import org.unitime.timetable.model.Reservation;
 public abstract class XReservation extends XReservationId implements Comparable<XReservation> {
 	private static final long serialVersionUID = 1L;
 	
-    private Date iExpirationDate;
+    private Date iExpirationDate, iStartDate;
     private Set<Long> iConfigs = new HashSet<Long>();
     private Map<Long, Set<Long>> iSections = new HashMap<Long, Set<Long>>();
     private int iLimitCap = -1;
@@ -81,6 +81,7 @@ public abstract class XReservation extends XReservationId implements Comparable<
     	super(type, offering.getOfferingId(), (reservation == null ? -1l : reservation.getUniqueId()));
     	if (reservation != null) {
         	iExpirationDate = reservation.getExpirationDate();
+        	iStartDate = reservation.getStartDate();
         	for (InstrOfferingConfig config: reservation.getConfigurations())
         		iConfigs.add(config.getUniqueId());
         	for (Class_ clazz: reservation.getClasses()) {
@@ -165,6 +166,7 @@ public abstract class XReservation extends XReservationId implements Comparable<
     	iLimitCap = (int)Math.round(reservation.getLimitCap());
     	iRestrictivity = reservation.getRestrictivity();
     	iExpirationDate = (reservation.isExpired() ? new Date(0) : null);
+    	iStartDate = null;
     	for (Config config: reservation.getConfigs())
     		iConfigs.add(config.getId());
     	for (Map.Entry<Subpart, Set<Section>> entry: reservation.getSections().entrySet()) {
@@ -278,13 +280,14 @@ public abstract class XReservation extends XReservationId implements Comparable<
      * of getting into the offering / config / section.
      */
     public boolean isExpired() {
-    	if (iExpirationDate == null) return false;
+    	if (iExpirationDate == null && iStartDate == null) return false;
 		Calendar c = Calendar.getInstance(Locale.US);
 		c.set(Calendar.HOUR_OF_DAY, 0);
 		c.set(Calendar.MINUTE, 0);
 		c.set(Calendar.SECOND, 0);
 		c.set(Calendar.MILLISECOND, 0);
-		return iExpirationDate.before(c.getTime());
+		return ((iStartDate != null && c.getTime().before(iStartDate)) ||
+				(iExpirationDate != null && iExpirationDate.before(c.getTime())));
     }
     
     /**

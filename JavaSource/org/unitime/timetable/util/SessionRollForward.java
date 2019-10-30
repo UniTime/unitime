@@ -2938,6 +2938,12 @@ public class SessionRollForward {
 					expiration = df.parse(rollForwardSessionForm.getExpirationCourseReservations());
 				} catch (ParseException e) {}
 			}
+			Date startDate = null;
+			if (rollForwardSessionForm.getStartDateCourseReservations() != null && !rollForwardSessionForm.getStartDateCourseReservations().isEmpty()) {
+				try {
+					startDate = df.parse(rollForwardSessionForm.getStartDateCourseReservations());
+				} catch (ParseException e) {}
+			}
 			for (SubjectArea subject: subjects) {
 				hibSession.createQuery("delete CourseReservation r where r.instructionalOffering.uniqueId in (select c.instructionalOffering.uniqueId from CourseOffering c where c.subjectArea.uniqueId = :subjectId and c.isControl = true)"
 						).setLong("subjectId", subject.getUniqueId()).executeUpdate();
@@ -2946,7 +2952,7 @@ public class SessionRollForward {
 						"select distinct r from CourseReservation r inner join r.instructionalOffering.courseOfferings c where " +
 						"c.isControl = true and c.subjectArea.subjectAreaAbbreviation = :subject and c.subjectArea.department.session.uniqueId = :sessionId")
 						.setString("subject", subject.getSubjectAreaAbbreviation()).setLong("sessionId", rollForwardSessionForm.getSessionToRollReservationsForwardFrom()).list()) {
-					CourseReservation toReservation = rollCourseReservationForward(reservation, subject.getSession(), expiration);
+					CourseReservation toReservation = rollCourseReservationForward(reservation, subject.getSession(), startDate, expiration);
 					if (toReservation != null)
 						hibSession.saveOrUpdate(toReservation);
 				}
@@ -2958,6 +2964,12 @@ public class SessionRollForward {
 			if (rollForwardSessionForm.getExpirationCurriculumReservations() != null && !rollForwardSessionForm.getExpirationCurriculumReservations().isEmpty()) {
 				try {
 					expiration = df.parse(rollForwardSessionForm.getExpirationCurriculumReservations());
+				} catch (ParseException e) {}
+			}
+			Date startDate = null;
+			if (rollForwardSessionForm.getStartDateCurriculumReservations() != null && !rollForwardSessionForm.getStartDateCurriculumReservations().isEmpty()) {
+				try {
+					startDate = df.parse(rollForwardSessionForm.getStartDateCurriculumReservations());
 				} catch (ParseException e) {}
 			}
 
@@ -2989,7 +3001,7 @@ public class SessionRollForward {
 						"select distinct r from CurriculumReservation r inner join r.instructionalOffering.courseOfferings c where " +
 						"c.isControl = true and c.subjectArea.subjectAreaAbbreviation = :subject and c.subjectArea.department.session.uniqueId = :sessionId")
 						.setString("subject", subject.getSubjectAreaAbbreviation()).setLong("sessionId", rollForwardSessionForm.getSessionToRollReservationsForwardFrom()).list()) {
-					CurriculumReservation toReservation = rollCurriculumReservationForward(reservation, subject.getSession(), expiration, areas, classifications, majors);
+					CurriculumReservation toReservation = rollCurriculumReservationForward(reservation, subject.getSession(), startDate, expiration, areas, classifications, majors);
 					if (toReservation != null)
 						hibSession.saveOrUpdate(toReservation);
 				}
@@ -3001,6 +3013,12 @@ public class SessionRollForward {
 			if (rollForwardSessionForm.getExpirationGroupReservations() != null && !rollForwardSessionForm.getExpirationGroupReservations().isEmpty()) {
 				try {
 					expiration = df.parse(rollForwardSessionForm.getExpirationGroupReservations());
+				} catch (ParseException e) {}
+			}
+			Date startDate = null;
+			if (rollForwardSessionForm.getStartDateGroupReservations() != null && !rollForwardSessionForm.getStartDateGroupReservations().isEmpty()) {
+				try {
+					startDate = df.parse(rollForwardSessionForm.getStartDateGroupReservations());
 				} catch (ParseException e) {}
 			}
 
@@ -3016,7 +3034,7 @@ public class SessionRollForward {
 						"select distinct r from StudentGroupReservation r inner join r.instructionalOffering.courseOfferings c where " +
 						"c.isControl = true and c.subjectArea.subjectAreaAbbreviation = :subject and c.subjectArea.department.session.uniqueId = :sessionId")
 						.setString("subject", subject.getSubjectAreaAbbreviation()).setLong("sessionId", rollForwardSessionForm.getSessionToRollReservationsForwardFrom()).list()) {
-					StudentGroupReservation toReservation = rollGroupReservationForward(reservation, subject.getSession(), expiration, groups, rollForwardSessionForm.getCreateStudentGroupsIfNeeded());
+					StudentGroupReservation toReservation = rollGroupReservationForward(reservation, subject.getSession(), startDate, expiration, groups, rollForwardSessionForm.getCreateStudentGroupsIfNeeded());
 					if (toReservation != null)
 						hibSession.saveOrUpdate(toReservation);
 				}
@@ -3026,7 +3044,7 @@ public class SessionRollForward {
 		hibSession.flush(); hibSession.clear();
 	}
 	
-	protected boolean rollReservationForward(Reservation fromReservation, Reservation toReservation, Session toSession, Date expiration) {
+	protected boolean rollReservationForward(Reservation fromReservation, Reservation toReservation, Session toSession, Date start, Date expiration) {
 		InstructionalOffering toOffering = InstructionalOffering.findByIdRolledForwardFrom(toSession.getUniqueId(), fromReservation.getInstructionalOffering().getUniqueId());
 		if (toOffering == null) {
 			CourseOffering toCourse = CourseOffering.findByIdRolledForwardFrom(toSession.getUniqueId(), fromReservation.getInstructionalOffering().getControllingCourseOffering().getUniqueId());
@@ -3058,6 +3076,17 @@ public class SessionRollForward {
 				cal.setTime(toSession.getSessionBeginDateTime());
 				cal.add(Calendar.DAY_OF_YEAR, nrDays);
 				toReservation.setExpirationDate(cal.getTime());
+			}
+		}
+		if (fromReservation.getStartDate() != null) {
+			if (start != null) {
+				toReservation.setStartDate(start);
+			} else {
+				int nrDays = (int)Math.round((fromReservation.getStartDate().getTime() - fromReservation.getInstructionalOffering().getSession().getSessionBeginDateTime().getTime()) / (1000.0 * 60 * 60 * 24));
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(toSession.getSessionBeginDateTime());
+				cal.add(Calendar.DAY_OF_YEAR, nrDays);
+				toReservation.setStartDate(cal.getTime());
 			}
 		}
 		
@@ -3104,10 +3133,10 @@ public class SessionRollForward {
 		return true;
 	}
 	
-	protected CourseReservation rollCourseReservationForward(CourseReservation fromReservation, Session toSession, Date expiration) {
+	protected CourseReservation rollCourseReservationForward(CourseReservation fromReservation, Session toSession, Date startDate, Date expiration) {
 		CourseReservation toReservation = new CourseReservation();
 		
-		if (!rollReservationForward(fromReservation, toReservation, toSession, expiration)) return null;
+		if (!rollReservationForward(fromReservation, toReservation, toSession, startDate, expiration)) return null;
 		
 		CourseOffering toCourse = CourseOffering.findByIdRolledForwardFrom(toSession.getUniqueId(), fromReservation.getCourse().getUniqueId());
 		if (toCourse == null){
@@ -3131,10 +3160,10 @@ public class SessionRollForward {
 		return toReservation;
 	}
 	
-	protected CurriculumReservation rollCurriculumReservationForward(CurriculumReservation fromReservation, Session toSession, Date expiration, Map<String, AcademicArea> areas, Map<String, AcademicClassification> classifications, Map<String, Map<String, PosMajor>> majors) {
+	protected CurriculumReservation rollCurriculumReservationForward(CurriculumReservation fromReservation, Session toSession, Date startDate, Date expiration, Map<String, AcademicArea> areas, Map<String, AcademicClassification> classifications, Map<String, Map<String, PosMajor>> majors) {
 		CurriculumReservation toReservation = new CurriculumReservation();
 	
-		if (!rollReservationForward(fromReservation, toReservation, toSession, expiration)) return null;
+		if (!rollReservationForward(fromReservation, toReservation, toSession, startDate, expiration)) return null;
 		
 		AcademicArea area = areas.get(fromReservation.getArea().getAcademicAreaAbbreviation());
 		if (area == null) return null;
@@ -3157,14 +3186,14 @@ public class SessionRollForward {
 		return toReservation;
 	}
 	
-	protected StudentGroupReservation rollGroupReservationForward(StudentGroupReservation fromReservation, Session toSession, Date expiration, Map<String, StudentGroup> groups, boolean createStudentGroupIfNeeded) {
+	protected StudentGroupReservation rollGroupReservationForward(StudentGroupReservation fromReservation, Session toSession, Date startDate, Date expiration, Map<String, StudentGroup> groups, boolean createStudentGroupIfNeeded) {
 		StudentGroupReservation toReservation = new StudentGroupReservation();
 		if (fromReservation instanceof GroupOverrideReservation) {
 			toReservation = new GroupOverrideReservation();
 			((GroupOverrideReservation)toReservation).setFlags(((GroupOverrideReservation)fromReservation).getFlags());
 		}
 		
-		if (!rollReservationForward(fromReservation, toReservation, toSession, expiration)) return null;
+		if (!rollReservationForward(fromReservation, toReservation, toSession, startDate, expiration)) return null;
 		
 		StudentGroup group = groups.get(fromReservation.getGroup().getGroupAbbreviation());
 		if (group == null) {
