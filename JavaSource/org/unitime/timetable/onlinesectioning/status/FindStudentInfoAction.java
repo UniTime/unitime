@@ -559,6 +559,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 			} else {
 				for (XStudentId id: server.findStudents(new FindStudentInfoMatcher(session, query(), iMyStudents))) {
 					XStudent student = (id instanceof XStudent ? (XStudent)id : server.getStudent(id.getStudentId()));
+					if (students.containsKey(id.getStudentId())) continue;
 					StudentInfo s = new StudentInfo();
 					ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student(); s.setStudent(st);
 					st.setId(student.getStudentId());
