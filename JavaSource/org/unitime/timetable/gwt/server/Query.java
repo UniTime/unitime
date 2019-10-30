@@ -46,6 +46,12 @@ public class Query implements Serializable {
 		return iQuery.match(m);
 	}
 	
+	public boolean match(AmbigousTermMatcher m) {
+		Boolean ret = iQuery.match(m);
+		if (ret == null) return true;
+		return ret;
+	}
+	
 	public String toString() {
 		return iQuery.toString();
 	}
@@ -169,6 +175,7 @@ public class Query implements Serializable {
 		public boolean match(TermMatcher m);
 		public String toString(QueryFormatter f);
 		public boolean hasAttribute(String attribute);
+		public Boolean match(AmbigousTermMatcher m);
 	}
 
 	public static abstract class CompositeTerm implements Term {
@@ -232,7 +239,16 @@ public class Query implements Serializable {
 				if (t.match(m)) return true;
 			return false;
 		}
-
+		
+		public Boolean match(AmbigousTermMatcher m) {
+			if (terms().isEmpty()) return true;
+			for (Term t: terms()) {
+				Boolean r = t.match(m);
+				if (r == null) return null;
+				if (r) return true;
+			}
+			return false;
+		}
 	}
 	
 	public static class AndTerm extends CompositeTerm {
@@ -246,6 +262,15 @@ public class Query implements Serializable {
 		public boolean match(TermMatcher m) {
 			for (Term t: terms())
 				if (!t.match(m)) return false;
+			return true;
+		}
+		
+		public Boolean match(AmbigousTermMatcher m) {
+			for (Term t: terms()) {
+				Boolean r = t.match(m);
+				if (r == null) return null;
+				if (!r) return false;
+			}
 			return true;
 		}
 	}
@@ -264,6 +289,12 @@ public class Query implements Serializable {
 		
 		public boolean hasAttribute(String attribute) {
 			return iTerm.hasAttribute(attribute);
+		}
+		
+		public Boolean match(AmbigousTermMatcher m) {
+			Boolean r = iTerm.match(m);
+			if (r == null) return r;
+			return !r;
 		}
 		
 		public String toString() { return "NOT " + iTerm.toString(); }
@@ -296,10 +327,18 @@ public class Query implements Serializable {
 		public String toString() { return (iAttr == null ? "" : iAttr + ":") + (iBody.indexOf(' ') >= 0 ? "\"" + iBody + "\"" : iBody); }
 		
 		public String toString(QueryFormatter f) { return f.format(iAttr, iBody); }
+
+		public Boolean match(AmbigousTermMatcher m) {
+			return m.match(iAttr, iBody);
+		}
 	}
 	
 	public static interface TermMatcher {
 		public boolean match(String attr, String term);
+	}
+	
+	public static interface AmbigousTermMatcher {
+		public Boolean match(String attr, String term);
 	}
 	
 	public static interface QueryFormatter {

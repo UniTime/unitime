@@ -63,6 +63,10 @@
 			<name>Online Student Scheduling Dashboard: Filter</name>
 			<description>
 				<line>Fixed an issue with hiding students that only have free time requests.</line>
+				<line>Improved boolean query capabilities of the filter, for instance
+					<line>(group:PREREG and not group:ENH-3)</line>
+				</line>
+				<line>Will return all students from the PREREG group that are NOT in the ENH-3 group.</line>
  			</description>
 		</item>
 	</category>
