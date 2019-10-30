@@ -3266,9 +3266,6 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		
 		OnlineSectioningServer server = getServerInstance(request.getSessionId(), true);
 		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
-		if (!server.getAcademicSession().isSectioningEnabled() || !CustomSpecialRegistrationHolder.hasProvider())
-			throw new SectioningException(MSG.exceptionNotSupportedFeature());
-		
 		setLastSessionId(request.getSessionId());
 
 		return server.execute(server.createAction(SpecialRegistrationUpdate.class).withRequest(request), currentUser());

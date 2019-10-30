@@ -35,6 +35,14 @@
 				<line>Ensure that the save-requests action gets logged when the online student scheduling is disabled (no online student scheduling server is running).</line>
  			</description>
 		</item>
+		<item>
+			<name>Course Requests: Custom Validation</name>
+			<description>
+				<line>When updating request note, do not check the scheduling status of the session.
+					<line>Course request changes may be done at a time when the online student scheduling is not accepting scheduling changes.</line>
+				</line>
+ 			</description>
+		</item>
 	</category>
 </release>
 
