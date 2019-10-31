@@ -555,6 +555,27 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             }
         } else if ("EX_SHARE_ROOM".equals(pref.getDistributionType().getReference())) {
         	return true;
+        } else if ("EX_SAME_DAY".equals(pref.getDistributionType().getReference())) {
+            if (positive) { //same day
+                ExamPeriod period = null;
+                for (Iterator i=pref.getDistributionObjects().iterator();i.hasNext();) {
+                    org.unitime.timetable.model.Exam x = (org.unitime.timetable.model.Exam)((DistributionObject)i.next()).getPrefGroup();
+                    ExamPeriod p = (x.equals(exam)?assignedPeriod:getAssignedPeriod(x,table));
+                    if (p==null) continue;
+                    if (period==null) period = p;
+                    else if (!period.getDateOffset().equals(p.getDateOffset())) return false;
+                }
+                return true;
+            } else { //different day
+                HashSet<Integer> periods = new HashSet<Integer>();
+                for (Iterator i=pref.getDistributionObjects().iterator();i.hasNext();) {
+                    org.unitime.timetable.model.Exam x = (org.unitime.timetable.model.Exam)((DistributionObject)i.next()).getPrefGroup();
+                    ExamPeriod p = (x.equals(exam)?assignedPeriod:getAssignedPeriod(x,table));
+                    if (p==null) continue;
+                    if (!periods.add(p.getDateOffset())) return false;
+                }
+                return true;
+            }
         }
         return false;
     }
@@ -1450,7 +1471,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         }
         public int compareTo(DistributionConflict c) {
             Iterator i1 = getOtherExams().iterator(), i2 = c.getOtherExams().iterator();
-            while (i1.hasNext()) {
+            while (i1.hasNext() && i2.hasNext()) {
                 ExamInfo a1 = (ExamInfo)i1.next();
                 ExamInfo a2 = (ExamInfo)i2.next();
                 if (!a1.equals(a2)) return a1.compareTo(a2);
