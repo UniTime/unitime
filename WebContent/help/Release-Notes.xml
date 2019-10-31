@@ -91,6 +91,16 @@
  			</description>
 		</item>
 	</category>
+	<category>
+		<title>Examination Timetabling</title>
+		<item>
+			<name>Examination Assignment: Same Days</name>
+			<description>
+				<line>Added Same Days constraint checking.</line>
+				<line>Fixed an issue with the DistributionConflict comparator (when two constraints with different number of exams are compared).</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>
