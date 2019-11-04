@@ -101,6 +101,37 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>CPSolver updated to version 1.3.189 (was 1.3.185)</title>
+		<item>
+				<name>Examination Timetabling: More Than One Exam A Day</name>
+				<description>
+						<line>Added the ability to set a penalty when a student has two exams or more a day.
+							<line>To enable add org.cpsolver.exam.criteria.additional.StudentMoreThan1ADayConflicts to Exam Additional Criteria.</line>
+							<line>More than one exam a day student conflict weight can be set by problem property Exams.MoreThanOneADayWeight.</line>
+						</line>
+				</description>
+		</item>
+		<item>
+			<name>Course Timetabling: Back-To-Back/Following Weeks</name>
+			<description>
+				<line>Added Back-To-Back Weeks distribution constraint.
+					<line>Given classes must be taught on weeks that are back-to-back (the gap between the two assigned date patterns is less than a week).</line>
+					<line>When prohibited or (strongly) discouraged: any two classes must have at least a week gap in between.</line>
+				</line>
+				<line>Added Following Weeks distribution constraint.
+					<line>Given classes must be taught on weeks that are back-to-back and in the given order.</line>
+					<line>When prohibited or (strongly) discouraged: given classes must be taught on weeks in the given order with at least one week between any two following classes.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Online Student Scheduling: Suggestions</name>
+			<description>
+				<line>Consider order of the courses within a course request when comparing two suggestions.</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>
