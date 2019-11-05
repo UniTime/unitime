@@ -69,6 +69,12 @@
 				<line>Will return all students from the PREREG group that are NOT in the ENH-3 group.</line>
  			</description>
 		</item>
+		<item>
+			<name>Online Student Scheduling: Check Assignment</name>
+			<description>
+				<line>When counting unreserved space: only check reservations that are set directly on the configuration/section in question.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>
