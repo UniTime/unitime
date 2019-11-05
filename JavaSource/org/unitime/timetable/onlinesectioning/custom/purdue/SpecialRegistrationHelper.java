@@ -61,8 +61,14 @@ public class SpecialRegistrationHelper {
 			for (Change ch: reg.changes) {
 				if (credit && ch.subject == null && ch.courseNbr == null && hasLastNote(ch))
 					note = (note == null ? "" : note + "\n") + getLastNote(ch);
-				if (!credit && ch.subject != null && ch.courseNbr != null && hasLastNote(ch) && ch.status != ChangeStatus.approved)
-					note = (note == null ? "" : note + "\n") + getLastNote(ch);
+				if (!credit && ch.subject != null && ch.courseNbr != null && hasLastNote(ch) && ch.status != ChangeStatus.approved) {
+					String n = getLastNote(ch);
+					if (note == null)
+						note = n;
+					else if (!note.contains(n)) {
+						note += "\n" + n;
+					}
+				}
 			}
 		return note;
 	}
