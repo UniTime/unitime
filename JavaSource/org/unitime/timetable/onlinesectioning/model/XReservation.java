@@ -48,6 +48,7 @@ public abstract class XReservation extends XReservationId implements Comparable<
     private Date iExpirationDate, iStartDate;
     private Set<Long> iConfigs = new HashSet<Long>();
     private Map<Long, Set<Long>> iSections = new HashMap<Long, Set<Long>>();
+    private Set<Long> iIds = new HashSet<Long>();
     private int iLimitCap = -1;
     private double iRestrictivity = 1.0;
     
@@ -82,9 +83,12 @@ public abstract class XReservation extends XReservationId implements Comparable<
     	if (reservation != null) {
         	iExpirationDate = reservation.getExpirationDate();
         	iStartDate = reservation.getStartDate();
-        	for (InstrOfferingConfig config: reservation.getConfigurations())
+        	for (InstrOfferingConfig config: reservation.getConfigurations()) {
         		iConfigs.add(config.getUniqueId());
+        		iIds.add(-config.getUniqueId());
+        	}
         	for (Class_ clazz: reservation.getClasses()) {
+        		iIds.add(clazz.getUniqueId());
         		iConfigs.add(clazz.getSchedulingSubpart().getInstrOfferingConfig().getUniqueId());
         		while (clazz != null) {
                     Set<Long> sections = iSections.get(clazz.getSchedulingSubpart().getUniqueId());
@@ -167,13 +171,31 @@ public abstract class XReservation extends XReservationId implements Comparable<
     	iRestrictivity = reservation.getRestrictivity();
     	iExpirationDate = (reservation.isExpired() ? new Date(0) : null);
     	iStartDate = null;
-    	for (Config config: reservation.getConfigs())
+    	for (Config config: reservation.getConfigs()) {
     		iConfigs.add(config.getId());
+    		iIds.add(-config.getId());
+    	}
     	for (Map.Entry<Subpart, Set<Section>> entry: reservation.getSections().entrySet()) {
     		Set<Long> sections = new HashSet<Long>();
-    		for (Section section: entry.getValue())
+    		for (Section section: entry.getValue()) {
     			sections.add(section.getId());
+    			iIds.add(section.getId());
+    		}
     		iSections.put(entry.getKey().getId(), sections);
+    	}
+    	for (Config config: reservation.getOffering().getConfigs()) {
+    		for (Subpart subpart: config.getSubparts()) {
+    			for (Section section: subpart.getSections()) {
+    				if (iIds.contains(section.getId())) {
+    					iIds.remove(-config.getId());
+    					Section parent = section.getParent();
+    					while (parent != null) {
+    						iIds.remove(parent.getId());
+    						parent = parent.getParent();
+    					}
+    				}
+    			}
+    		}
     	}
     	setPriority(reservation.getPriority());
     	setMustBeUsed(reservation.mustBeUsed());
@@ -208,6 +230,9 @@ public abstract class XReservation extends XReservationId implements Comparable<
      * One or more configurations on which the reservation is set (optional).
      */
     public Set<Long> getConfigsIds() { return iConfigs; }
+    
+    public boolean hasConfigRestriction(Long configId) { return iIds.contains(-configId); }
+    public boolean hasSectionRestriction(Long sectionId) { return iIds.contains(sectionId); }
         
     /**
      * One or more sections on which the reservation is set (optional).
@@ -415,6 +440,10 @@ public abstract class XReservation extends XReservationId implements Comparable<
     	iRestrictivity = in.readDouble();
     	iPriority = in.readInt();
     	iFlags = in.readInt();
+    	iIds.clear();
+    	int nrIds = in.readInt();
+    	for (int i = 0; i < nrIds; i++)
+    		iIds.add(in.readLong());
 	}
 
 	@Override
@@ -441,5 +470,9 @@ public abstract class XReservation extends XReservationId implements Comparable<
 		out.writeDouble(iRestrictivity);
 		out.writeInt(iPriority);
 		out.writeInt(iFlags);
+		
+		out.writeInt(iIds.size());
+		for (Long id: iIds)
+			out.writeLong(id);
 	}
 }

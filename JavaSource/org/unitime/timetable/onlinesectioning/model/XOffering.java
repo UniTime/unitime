@@ -357,6 +357,8 @@ public class XOffering implements Serializable, Externalizable {
             for (XReservation r: getSectionReservations(sectionId)) {
                 // ignore expired reservations
                 if (r.isExpired()) continue;
+                // ignore reservations NOT set directly on the section
+                if (!r.hasSectionRestriction(sectionId)) continue;
                 // there is an unlimited reservation -> no unreserved space
                 if (r.getLimit() < 0) return 0;
             }
@@ -368,6 +370,8 @@ public class XOffering implements Serializable, Externalizable {
         for (XReservation r: getSectionReservations(sectionId)) {
             // ignore expired reservations
             if (r.isExpired()) continue;
+            // ignore reservations NOT set directly on the section
+            if (!r.hasSectionRestriction(sectionId)) continue;
             // unlimited reservation -> all the space is reserved
             if (r.getLimit() < 0.0) return 0;
             // compute space that can be potentially taken by this reservation
@@ -388,6 +392,8 @@ public class XOffering implements Serializable, Externalizable {
             for (XReservation r: getConfigReservations(configId)) {
                 // ignore expired reservations
                 if (r.isExpired()) continue;
+                // ignore reservations NOT set directly on the config
+                if (!r.hasConfigRestriction(configId)) continue;
                 // there is an unlimited reservation -> no unreserved space
                 if (r.getLimit() < 0) return 0;
             }
@@ -399,6 +405,8 @@ public class XOffering implements Serializable, Externalizable {
         for (XReservation r: getConfigReservations(configId)) {
             // ignore expired reservations
             if (r.isExpired()) continue;
+            // ignore reservations NOT set directly on the config
+            if (!r.hasConfigRestriction(configId)) continue;
             // unlimited reservation -> all the space is reserved
             if (r.getLimit() < 0) return 0;
             // compute space that can be potentially taken by this reservation
