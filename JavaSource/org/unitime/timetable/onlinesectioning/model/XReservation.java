@@ -54,6 +54,7 @@ public abstract class XReservation extends XReservationId implements Comparable<
     
     private int iPriority = 1000;
     private int iFlags = 0;
+    private boolean iInclusive = true;
     
     public static enum Flags {
     	MustBeUsed,
@@ -79,26 +80,47 @@ public abstract class XReservation extends XReservationId implements Comparable<
     }
     
     public XReservation(XReservationType type, XOffering offering, Reservation reservation) {
+    	this(type, offering, reservation, ApplicationProperty.ReservationsAreInclusive.isTrue());
+    }
+    
+    public XReservation(XReservationType type, XOffering offering, Reservation reservation, boolean inclusive) {
     	super(type, offering.getOfferingId(), (reservation == null ? -1l : reservation.getUniqueId()));
     	if (reservation != null) {
         	iExpirationDate = reservation.getExpirationDate();
         	iStartDate = reservation.getStartDate();
-        	for (InstrOfferingConfig config: reservation.getConfigurations()) {
-        		iConfigs.add(config.getUniqueId());
-        		iIds.add(-config.getUniqueId());
-        	}
-        	for (Class_ clazz: reservation.getClasses()) {
-        		iIds.add(clazz.getUniqueId());
-        		iConfigs.add(clazz.getSchedulingSubpart().getInstrOfferingConfig().getUniqueId());
-        		while (clazz != null) {
-                    Set<Long> sections = iSections.get(clazz.getSchedulingSubpart().getUniqueId());
+        	iInclusive = inclusive;
+        	if (inclusive) {
+        		for (InstrOfferingConfig config: reservation.getConfigurations()) {
+            		iConfigs.add(config.getUniqueId());
+            		iIds.add(-config.getUniqueId());
+            	}
+            	for (Class_ clazz: reservation.getClasses()) {
+            		iIds.add(clazz.getUniqueId());
+            		iConfigs.add(clazz.getSchedulingSubpart().getInstrOfferingConfig().getUniqueId());
+            		while (clazz != null) {
+                        Set<Long> sections = iSections.get(clazz.getSchedulingSubpart().getUniqueId());
+                        if (sections == null) {
+                            sections = new HashSet<Long>();
+                            iSections.put(clazz.getSchedulingSubpart().getUniqueId(), sections);
+                        }
+                        sections.add(clazz.getUniqueId());
+                        clazz = clazz.getParentClass();
+                    }
+            	}
+        	} else {
+        		for (InstrOfferingConfig config: reservation.getConfigurations()) {
+            		iConfigs.add(config.getUniqueId());
+            		iIds.add(-config.getUniqueId());
+            	}
+            	for (Class_ clazz: reservation.getClasses()) {
+            		iIds.add(clazz.getUniqueId());
+            		Set<Long> sections = iSections.get(clazz.getSchedulingSubpart().getUniqueId());
                     if (sections == null) {
                         sections = new HashSet<Long>();
                         iSections.put(clazz.getSchedulingSubpart().getUniqueId(), sections);
                     }
                     sections.add(clazz.getUniqueId());
-                    clazz = clazz.getParentClass();
-                }
+            	}
         	}
     	}
         switch (type) {
@@ -140,28 +162,51 @@ public abstract class XReservation extends XReservationId implements Comparable<
         	setPriority(ApplicationProperty.ReservationPriorityDummy.intValue());
         	break;
         }
-        if (!iConfigs.isEmpty() && !canAssignOverLimit()) {
-        	// config cap
-        	int cap = 0;
-        	for (XConfig config: offering.getConfigs()) {
-        		if (iConfigs.contains(config.getConfigId()))
-        			cap = add(cap, config.getLimit());
+        if (iInclusive) {
+        	if (!iConfigs.isEmpty() && !canAssignOverLimit()) {
+            	// config cap
+            	int cap = 0;
+            	for (XConfig config: offering.getConfigs()) {
+            		if (iConfigs.contains(config.getConfigId()))
+            			cap = add(cap, config.getLimit());
+            	}
+            	for (XConfig config: offering.getConfigs()) {
+            		for (XSubpart subpart: config.getSubparts()) {
+            			Set<Long> sections = iSections.get(subpart.getSubpartId());
+            			if (sections == null) continue;
+            			// subpart cap
+            			int subpartCap = 0;
+            			for (XSection section: subpart.getSections())
+            				if (sections.contains(section.getSectionId()))
+            					subpartCap = add(subpartCap, section.getLimit());
+                		// minimize
+                		cap = min(cap, subpartCap);
+            		}
+            	}
+            	iLimitCap = cap;
+            }	
+        } else {
+        	if ((!iConfigs.isEmpty() || !iSections.isEmpty()) && !canAssignOverLimit()) {
+        		int cap = 0;
+            	for (XConfig config: offering.getConfigs()) {
+            		if (iConfigs.contains(config.getConfigId())) {
+            			cap = add(cap, config.getLimit());
+            		} else {
+            			for (XSubpart subpart: config.getSubparts()) {
+                			Set<Long> sections = iSections.get(subpart.getSubpartId());
+                			if (sections == null) continue;
+                			int subpartCap = 0;
+                			for (XSection section: subpart.getSections())
+                				if (sections.contains(section.getSectionId()))
+                					subpartCap = add(subpartCap, section.getLimit());
+                			cap = add(cap, subpartCap);
+            			}
+            		}
+            	}
+            	iLimitCap = cap;
         	}
-        	for (XConfig config: offering.getConfigs()) {
-        		for (XSubpart subpart: config.getSubparts()) {
-        			Set<Long> sections = iSections.get(subpart.getSubpartId());
-        			if (sections == null) continue;
-        			// subpart cap
-        			int subpartCap = 0;
-        			for (XSection section: subpart.getSections())
-        				if (sections.contains(section.getSectionId()))
-        					subpartCap = add(subpartCap, section.getLimit());
-            		// minimize
-            		cap = min(cap, subpartCap);
-        		}
-        	}
-        	iLimitCap = cap;
         }
+        
         iRestrictivity = computeRestrictivity(offering);
     }
     
@@ -171,6 +216,7 @@ public abstract class XReservation extends XReservationId implements Comparable<
     	iRestrictivity = reservation.getRestrictivity();
     	iExpirationDate = (reservation.isExpired() ? new Date(0) : null);
     	iStartDate = null;
+    	iInclusive = reservation.areRestrictionsInclusive();
     	for (Config config: reservation.getConfigs()) {
     		iConfigs.add(config.getId());
     		iIds.add(-config.getId());
@@ -183,19 +229,21 @@ public abstract class XReservation extends XReservationId implements Comparable<
     		}
     		iSections.put(entry.getKey().getId(), sections);
     	}
-    	for (Config config: reservation.getOffering().getConfigs()) {
-    		for (Subpart subpart: config.getSubparts()) {
-    			for (Section section: subpart.getSections()) {
-    				if (iIds.contains(section.getId())) {
-    					iIds.remove(-config.getId());
-    					Section parent = section.getParent();
-    					while (parent != null) {
-    						iIds.remove(parent.getId());
-    						parent = parent.getParent();
-    					}
-    				}
-    			}
-    		}
+    	if (iInclusive) {
+    		for (Config config: reservation.getOffering().getConfigs()) {
+        		for (Subpart subpart: config.getSubparts()) {
+        			for (Section section: subpart.getSections()) {
+        				if (iIds.contains(section.getId())) {
+        					iIds.remove(-config.getId());
+        					Section parent = section.getParent();
+        					while (parent != null) {
+        						iIds.remove(parent.getId());
+        						parent = parent.getParent();
+        					}
+        				}
+        			}
+        		}
+        	}
     	}
     	setPriority(reservation.getPriority());
     	setMustBeUsed(reservation.mustBeUsed());
@@ -319,30 +367,68 @@ public abstract class XReservation extends XReservationId implements Comparable<
      * Return true if the given enrollment meets the reservation.
      */
     public boolean isIncluded(Long configId, List<XSection> sections) {
-        // If there are configurations, check the configuration
-        if (!iConfigs.isEmpty() && !iConfigs.contains(configId)) return false;
-        
-        // Check all the sections of the enrollment
-        for (XSection section: sections) {
-            Set<Long> reserved = iSections.get(section.getSubpartId());
-            if (reserved != null && !reserved.contains(section.getSectionId()))
-                return false;
-        }
-        
-        return true;
+    	if (iInclusive) {
+            // If there are configurations, check the configuration
+            if (!iConfigs.isEmpty() && !iConfigs.contains(configId)) return false;
+            
+            // Check all the sections of the enrollment
+            for (XSection section: sections) {
+                Set<Long> reserved = iSections.get(section.getSubpartId());
+                if (reserved != null && !reserved.contains(section.getSectionId()))
+                    return false;
+            }
+            
+            return true;
+    	} else {
+    		// No restriction >> true
+    		if (iConfigs.isEmpty() && iSections.isEmpty()) return true;
+    		
+    		// Configuration match >> true
+    		if (iConfigs.contains(configId)) return true;
+    		
+    		// Section match >> true
+    		for (XSection section: sections) {
+                Set<Long> reserved = iSections.get(section.getSubpartId());
+                if (reserved != null && reserved.contains(section.getSectionId()))
+                	return true;
+            }
+    		
+    		// No match >> false
+    		return false;
+    	}
     }
     
     public boolean isIncluded(XOffering offering, Long configId, XSection section) {
-    	if (!iConfigs.isEmpty() && !iConfigs.contains(configId)) return false;
-    	
-    	XSection s = section;
-    	while (s != null) {
-    		Set<Long> reserved = iSections.get(s.getSubpartId());
-    		if (reserved != null && !reserved.contains(s.getSectionId())) return false;
-    		s = (s.getParentId() == null ? null : offering.getSection(s.getParentId()));
+    	if (iInclusive) {
+        	if (!iConfigs.isEmpty() && !iConfigs.contains(configId)) return false;
+        	
+        	XSection s = section;
+        	while (s != null) {
+        		Set<Long> reserved = iSections.get(s.getSubpartId());
+        		if (reserved != null && !reserved.contains(s.getSectionId())) return false;
+        		s = (s.getParentId() == null ? null : offering.getSection(s.getParentId()));
+        	}
+        	
+        	return true;
+    	} else {
+    		// No restriction >> true
+    		if (iConfigs.isEmpty() && iSections.isEmpty()) return true;
+    		
+    		// Configuration match >> true
+    		if (iConfigs.contains(configId)) return true;
+    		
+    		// Section match >> true
+    		XSection s = section;
+        	while (s != null) {
+                Set<Long> reserved = iSections.get(section.getSubpartId());
+                if (reserved != null && reserved.contains(section.getSectionId()))
+                	return true;
+                s = (s.getParentId() == null ? null : offering.getSection(s.getParentId()));
+            }
+    		
+    		// No match >> false
+    		return false;
     	}
-    	
-    	return true;
     }
     
     /**
@@ -382,7 +468,10 @@ public abstract class XReservation extends XReservationId implements Comparable<
                 }
                 if (section.isOverlapping(null, sections)) continue;
                 sections.add(section);
-                boolean m = matching && (matchingSections == null || matchingSections.contains(section.getSectionId()));
+                boolean m = (iInclusive
+                		? matching && (matchingSections == null || matchingSections.contains(section.getSectionId()))
+                		: matching || (matchingSections != null && matchingSections.contains(section.getSectionId()))
+                		);
                 int[] x = nrChoices(config, 1 + idx, sections, m);
                 choicesThisSubpart += x[0];
                 matchingChoicesThisSubpart += x[1];
@@ -444,6 +533,7 @@ public abstract class XReservation extends XReservationId implements Comparable<
     	int nrIds = in.readInt();
     	for (int i = 0; i < nrIds; i++)
     		iIds.add(in.readLong());
+    	iInclusive = in.readBoolean();
 	}
 
 	@Override
@@ -474,5 +564,6 @@ public abstract class XReservation extends XReservationId implements Comparable<
 		out.writeInt(iIds.size());
 		for (Long id: iIds)
 			out.writeLong(id);
+		out.writeBoolean(iInclusive);
 	}
 }

@@ -2409,6 +2409,13 @@ public enum ApplicationProperty {
 	@Since(4.1)
 	ReservationsShowClassSufix("unitime.reservations.showClassSuffixes"),
 	
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Reservations: are reservation restrictions inclusive (besides of the class, the restrictions also contain its configuration and all the parent classes)")
+	@Since(4.4)
+	ReservationsAreInclusive("unitime.reservations.restrictionsInclusive"),
+	
 	@Type(Boolean.class)
 	@DefaultValue("false")
 	@Description("Course Timetabling Solver: show class suffix (external id) next to the class section number")
