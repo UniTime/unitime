@@ -155,6 +155,7 @@ public class SessionBackup implements SessionBackupInterface {
     		// avoid following relations
     		avoid.add(TimetableManager.class.getName() + ".departments");
     		avoid.add(TimetableManager.class.getName() + ".solverGroups");
+    		avoid.add(TimetableManager.class.getName() + ".settings");
     		avoid.add(DistributionType.class.getName() + ".departments");
     		avoid.add(LastLikeCourseDemand.class.getName() + ".student");
     		avoid.add(Student.class.getName() + ".lastLikeCourseDemands");
