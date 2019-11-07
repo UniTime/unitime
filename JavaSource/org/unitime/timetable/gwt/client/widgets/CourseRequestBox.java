@@ -288,10 +288,21 @@ public class CourseRequestBox extends P implements CourseSelection {
 		return addHandler(handler, ValueChangeEvent.getType());
 	}
 	
+	public boolean isActive(Long courseId) {
+		return !iInactive && iLastCourse != null && courseId.equals(iLastCourse.getCourseId());
+	}
+	
 	public void activate(Long courseId) {
 		if (iInactive && iLastCourse != null && courseId.equals(iLastCourse.getCourseId())) {
 			iInactive = false;
 			iFilter.removeStyleName("inactive");
+		}
+	}
+	
+	public void deactivate(Long courseId) {
+		if (!iInactive && iLastCourse != null && courseId.equals(iLastCourse.getCourseId())) {
+			iInactive = true;
+			iFilter.addStyleName("inactive");
 		}
 	}
 	

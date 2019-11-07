@@ -150,19 +150,23 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	
 	public boolean dropCourse(RequestedCourse course) {
 		iLastCourse = course;
-		for (CourseRequestInterface.Request r: getCourses()) {
+		for (Iterator<CourseRequestInterface.Request> j = getCourses().iterator(); j.hasNext(); ) {
+			CourseRequestInterface.Request r = j.next();
 			if (r.hasRequestedCourse(course)) {
 				for (Iterator<RequestedCourse> i = r.getRequestedCourse().iterator(); i.hasNext(); ) {
 					if (course.equals(i.next())) i.remove();
 				}
+				if (!r.hasRequestedCourse()) j.remove();
 				return true;
 			}
 		}
-		for (CourseRequestInterface.Request r: getAlternatives()) {
+		for (Iterator<CourseRequestInterface.Request> j = getAlternatives().iterator(); j.hasNext(); ) {
+			CourseRequestInterface.Request r = j.next();
 			if (r.hasRequestedCourse(course)) {
 				for (Iterator<RequestedCourse> i = r.getRequestedCourse().iterator(); i.hasNext(); ) {
 					if (course.equals(i.next())) i.remove();
 				}
+				if (!r.hasRequestedCourse()) j.remove();
 				return true;
 			}
 		}
@@ -1305,5 +1309,37 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 				}
 		}
 		return changed;
+	}
+	
+	public void removeInactiveDuplicates() {
+		Set<Long> activeCourseIds = new HashSet<Long>();
+		for (Request r: iCourses) {
+			if (r.hasRequestedCourse())
+				for (RequestedCourse rc: r.getRequestedCourse())
+					if (!rc.isInactive() && rc.hasCourseId())
+						activeCourseIds.add(rc.getCourseId());
+		}
+		for (Request r: iAlternatives) {
+			if (r.hasRequestedCourse())
+				for (RequestedCourse rc: r.getRequestedCourse())
+					if (!rc.isInactive() && rc.hasCourseId())
+						activeCourseIds.add(rc.getCourseId());
+		}
+		for (Request r: iCourses) {
+			if (r.hasRequestedCourse())
+				for (Iterator<RequestedCourse> i = r.getRequestedCourse().iterator(); i.hasNext(); ) {
+					RequestedCourse rc = i.next();
+					if (rc.isInactive() && rc.hasCourseId() && activeCourseIds.contains(rc.getCourseId()))
+						i.remove();
+				}
+		}
+		for (Request r: iAlternatives) {
+			if (r.hasRequestedCourse())
+				for (Iterator<RequestedCourse> i = r.getRequestedCourse().iterator(); i.hasNext(); ) {
+					RequestedCourse rc = i.next();
+					if (rc.isInactive() && rc.hasCourseId() && activeCourseIds.contains(rc.getCourseId()))
+						i.remove();
+				}
+		}
 	}
 }

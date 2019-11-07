@@ -80,7 +80,6 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.CourseMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
-import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestPriority;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
@@ -2748,20 +2747,12 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								}
 							});
 						}
-						RequestedCourse course = event.getSelectedItem();
-						final CourseRequestInterface request = iCourseRequests.getRequest();
-						RequestPriority rp = request.getRequestPriority(course);
-						if (rp != null) {
-							rp.getRequest().getRequestedCourse().remove(course);
-							rp.getRequest().getRequestedCourse().add(0, course);
-						} else {
-							request.addCourse(course);
-						}
-						iQuickAddSuggestions.open(request, iLastResult, course, useDefaultConfirmDialog(), new AsyncCallback<ClassAssignmentInterface>() {
+						iQuickAddSuggestions.open(iCourseRequests.getRequest(), iLastResult, event.getSelectedItem(), useDefaultConfirmDialog(), new AsyncCallback<ClassAssignmentInterface>() {
 							@Override
 							public void onSuccess(ClassAssignmentInterface result) {
 								clearMessage();
-								iCourseRequests.setValue(request);
+								if (!iCourseRequests.hasCourseActive(event.getSelectedItem()))
+									iCourseRequests.addCourse(event.getSelectedItem());
 								fillIn(result);
 								addHistory();
 								iQuickAddFinder.setValue(null, true);

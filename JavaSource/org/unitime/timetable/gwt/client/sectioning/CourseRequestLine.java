@@ -749,6 +749,22 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 				});
 				addOperation(addAlternative, true);
 			}
+			final FilterOperation activate = new FilterOperation(RESOURCES.filterActivate(), null) {
+				@Override
+				public void onBeforeResize(CourseRequestFilterBox filter) {
+					setVisible(iSectioning && isEnabled() && isInactive());
+				}
+			};
+			activate.setTitle(MESSAGES.altFilterActivate());
+			activate.setAltText(MESSAGES.altFilterActivate());
+			activate.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					activate(getValue().getCourseId());
+					activate.setVisible(false);
+				}
+			});
+			addOperation(activate, false);
 			
 			if (!iSectioning) {
 				iStatus = new FilterStatus(RESOURCES.requestEnrolled()); iStatus.clearStatus();
