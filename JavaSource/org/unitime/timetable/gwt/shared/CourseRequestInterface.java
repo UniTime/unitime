@@ -135,7 +135,13 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	
 	public boolean addCourse(RequestedCourse course) {
 		iLastCourse = course;
-		if (getRequestPriority(course) != null) return false;
+		RequestPriority rp = getRequestPriority(course);
+		if (rp != null) {
+			if (rp.getRequest().getRequestedCourse(rp.getChoice()).isInactive())
+				dropCourse(course);
+			else
+				return false;
+		}
 		for (CourseRequestInterface.Request r: getCourses()) {
 			if (r.isEmpty()) {
 				r.addRequestedCourse(course);
