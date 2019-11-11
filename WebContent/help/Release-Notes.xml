@@ -138,6 +138,17 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Chameleon: Session Administrators</name>
+			<description>
+				<line>When the chameleon page is used by session dependent users (e.g., session admins),
+					only allow authorities from the academic session(s) for which the original user has Chameleon permission.</line>
+				<line>This is to prevent a session admin to chameleon into another session admin from a different academic session.</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>

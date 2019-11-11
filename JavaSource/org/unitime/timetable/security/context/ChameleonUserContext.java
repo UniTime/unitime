@@ -18,9 +18,10 @@
  * 
  */
 package org.unitime.timetable.security.context;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-
+import java.util.Set;
 import org.springframework.security.access.AccessDeniedException;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
@@ -39,9 +40,16 @@ public class ChameleonUserContext extends UniTimeUserContext implements UserCont
 		
 		// Original user is session dependent -> remove all session independent authorities from the new user
 		if (originalUser.getCurrentAuthority() == null || !originalUser.getCurrentAuthority().hasRight(Right.SessionIndependent)) {
+			Set<Long> sessionIds = new HashSet<Long>();
+			for (UserAuthority authority: originalUser.getAuthorities()) {
+				if (authority.hasRight(Right.Chameleon) && authority.getAcademicSession() != null)
+					sessionIds.add((Long)authority.getAcademicSession().getQualifierId());
+			}
 			for (Iterator<? extends UserAuthority> i = getAuthorities().iterator(); i.hasNext(); ) {
 				UserAuthority authority = i.next();
 				if (authority.hasRight(Right.SessionIndependent))
+					i.remove();
+				else if (authority.getAcademicSession() == null || !sessionIds.contains(authority.getAcademicSession().getQualifierId()))
 					i.remove();
 			}
 			if (getCurrentAuthority() != null && getCurrentAuthority().hasRight(Right.SessionIndependent)) {
