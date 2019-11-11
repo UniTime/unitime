@@ -137,6 +137,27 @@
 				<line>Consider order of the courses within a course request when comparing two suggestions.</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling Assistant: Inactive Course Requests</name>
+			<description>
+				<line>A course request is marked as inactive when it is saved in the database, but the student (that has a class schedule) is not enrolled in the course.</line>
+				<line>Inactive courses are NOT listed as not-assigned on the Class List page.</line>
+				<line>Inactive coruses are indicated on the Course Requests table (as dark red color, line-through and italic font).
+					<line>A course can be activated by using the finder dialog or making changes to it (including just selecting on amoung suggestions).</line>
+					<line>There is a new icon for reactivating an inactive course (universal recycling symbol).</line>
+				</line>
+				<line>When a new schedule is build (Build Schedule button), inactive courses are ignored (left not-assigned).
+					<line>Unless the Rearrange Schedule button is clicked.</line>
+					<line>Also do not consider inactive courses when computing suggestions.</line>
+				</line>
+				<line>Using + New Course will always put the new course at the bottom (even if it was present on among course requests as inactive before).</line>
+				<line>It is possible to add a new course without removing inactive (having a course listed two times would not trigger an error if one of them is not active).</line>
+				<line>These &quot;inactive&quot; course requests are not detected/indicated by default, but this feature must be enabled with the following property
+					<line>unitime.enrollment.inactiveUnassignedRequests=true (students)</line>
+  				<line>unitime.enrollment.inactiveUnassignedRequests.manager (advisors and admins).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>

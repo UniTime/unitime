@@ -109,12 +109,12 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 				for (CourseRequestLine line: iCourses)
 					for (CourseSelectionBox c: line.getCourses()) {
 						if (c == source) continue;
-						if (course.equals(c.getValue())) return MESSAGES.validationMultiple(course.getCourseName());
+						if (course.equals(c.getValue()) && !c.isInactive() && !course.isInactive()) return MESSAGES.validationMultiple(course.getCourseName());
 					}
 				for (CourseRequestLine line: iAlternatives)
 					for (CourseSelectionBox c: line.getCourses()) {
 						if (c == source) continue;
-						if (course.equals(c.getValue())) return MESSAGES.validationMultiple(course.getCourseName());
+						if (course.equals(c.getValue()) && !c.isInactive() && !course.isInactive()) return MESSAGES.validationMultiple(course.getCourseName());
 					}
 				return null;
 			}
@@ -491,7 +491,49 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		cr.setTimeConflictsAllowed(iSpecReg.isEnabled() && iSpecReg.isDisclaimerAccepted() && iSpecReg.areTimeConflictsAllowed());
 		cr.setSpaceConflictsAllowed(iSpecReg.isEnabled() && iSpecReg.isDisclaimerAccepted() && iSpecReg.areSpaceConflictsAllowed());
 		if (iLastCheck != null) cr.setConfirmations(iLastCheck.getMessages());
+		cr.removeInactiveDuplicates();
 		return cr;
+	}
+
+	public void activate(Long courseId) {
+		if (courseId == null) return;
+		for (CourseRequestLine line: iCourses) {
+			for (CourseSelectionBox box: line.getCourses())
+				if (box.isActive(courseId)) return;
+		}
+		for (CourseRequestLine line: iAlternatives) {
+			for (CourseSelectionBox box: line.getCourses())
+				if (box.isActive(courseId)) return;
+		}
+		for (CourseRequestLine line: iCourses) {
+			for (CourseSelectionBox box: line.getCourses())
+				box.activate(courseId);
+		}
+		for (CourseRequestLine line: iAlternatives) {
+			for (CourseSelectionBox box: line.getCourses())
+				box.activate(courseId);
+		}
+	}
+	
+	public boolean isActive(Long courseId) {
+		if (courseId == null) return true;
+		for (CourseRequestLine line: iCourses) {
+			for (CourseSelectionBox box: line.getCourses())
+				if (box.isActive(courseId)) return true;
+		}
+		for (CourseRequestLine line: iAlternatives) {
+			for (CourseSelectionBox box: line.getCourses())
+				if (box.isActive(courseId)) return true;
+		}
+		for (CourseRequestLine line: iCourses) {
+			for (CourseSelectionBox box: line.getCourses())
+				if (box.isInactive(courseId)) return false;
+		}
+		for (CourseRequestLine line: iAlternatives) {
+			for (CourseSelectionBox box: line.getCourses())
+				if (box.isInactive(courseId)) return false;
+		}
+		return true;
 	}
 	
 	public void setRequest(CourseRequestInterface request) {
@@ -657,8 +699,34 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		}
 		return false;
 	}
+	
+	public boolean hasCourseActive(RequestedCourse rc) {
+		for (final CourseRequestLine line: iCourses) {
+			Request request = line.getValue();
+			if (request != null && request.hasRequestedCourseActive(rc)) return true;
+		}
+		for (final CourseRequestLine line: iAlternatives) {
+			Request request = line.getValue();
+			if (request != null && request.hasRequestedCourseActive(rc)) return true;
+		}
+		return false;
+	}
 
 	public void dropCourse(RequestedCourse rc) {
+		for (final CourseRequestLine line: iCourses) {
+			Request request = line.getValue();
+			if (request != null && request.hasRequestedCourseActive(rc)) {
+				line.delete();
+				return;
+			}
+		}
+		for (final CourseRequestLine line: iAlternatives) {
+			Request request = line.getValue();
+			if (request != null && request.hasRequestedCourseActive(rc)) {
+				line.delete();
+				return;
+			}
+		}
 		for (final CourseRequestLine line: iCourses) {
 			Request request = line.getValue();
 			if (request != null && request.hasRequestedCourse(rc)) {
@@ -690,6 +758,16 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 				}
 			}
 		} else if (!assignment.isFreeTime()) {
+			for (final CourseRequestLine line: iCourses)
+				for (CourseSelectionBox box: line.getCourses())
+					if (assignment.equalsIgnoreCase(box.getValue()) && !box.isInactive()) {
+						line.delete(); return;
+					}
+			for (final CourseRequestLine line: iAlternatives)
+				for (CourseSelectionBox box: line.getCourses())
+					if (assignment.equalsIgnoreCase(box.getValue()) && !box.isInactive()) {
+						line.delete(); return;
+					}
 			for (final CourseRequestLine line: iCourses)
 				for (CourseSelectionBox box: line.getCourses())
 					if (assignment.equalsIgnoreCase(box.getValue())) {

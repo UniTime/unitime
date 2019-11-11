@@ -177,10 +177,10 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 			Map<Long, Section> classTable = new HashMap<Long, Section>();
 			Set<XDistribution> distributions = new HashSet<XDistribution>();
 			for (CourseRequestInterface.Request c: getRequest().getCourses())
-				addRequest(server, model, assignment, student, original, c, false, true, classTable, distributions, getAssignment() != null);
+				addRequest(server, model, assignment, student, original, c, false, true, classTable, distributions, getAssignment() != null, getAssignment() != null);
 			if (student.getRequests().isEmpty()) throw new SectioningException(MSG.exceptionNoCourse());
 			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
-				addRequest(server, model, assignment, student, original, c, true, true, classTable, distributions, getAssignment() != null);
+				addRequest(server, model, assignment, student, original, c, true, true, classTable, distributions, getAssignment() != null, getAssignment() != null);
 			if (helper.isAlternativeCourseEnabled()) {
 				for (Request r: student.getRequests()) {
 					if (r.isAlternative() || !(r instanceof CourseRequest)) continue;

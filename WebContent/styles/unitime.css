@@ -1757,6 +1757,9 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 		visibility: hidden;
 		display: none;
 	}
+	.unitime-CourseRequestBox .inactive input[type="text"] {
+		color: black;
+	}
 }
 
 .unitime-BlankSeparator {
@@ -1882,6 +1885,8 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	display: inline-block;
 	margin-top: 3px;
 	float: right;
+	width: 16px;
+	height: 16px;
 	filter: alpha(opacity = 40);
 	opacity: .40;
     -moz-opacity: .40;
@@ -1943,7 +1948,13 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 }
 
 .unitime-FilterBox .hint {
-	color: #AAAAAA;
+	color: #ccc;
+}
+
+.unitime-CourseRequestBox .inactive input[type="text"] {
+	color: #8b0000;
+	font-style: italic;
+	text-decoration: line-through;
 }
 
 @media print {

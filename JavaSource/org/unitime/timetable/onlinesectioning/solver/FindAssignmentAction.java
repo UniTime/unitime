@@ -206,10 +206,10 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			Map<Long, Section> classTable = new HashMap<Long, Section>();
 			Set<XDistribution> distributions = new HashSet<XDistribution>();
 			for (CourseRequestInterface.Request c: getRequest().getCourses())
-				addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, getAssignment() != null);
+				addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, getAssignment() != null, getAssignment() != null);
 			if (student.getRequests().isEmpty() && !CONSTANTS.allowEmptySchedule()) throw new SectioningException(MSG.exceptionNoCourse());
 			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
-				addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, getAssignment() != null);
+				addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, getAssignment() != null, getAssignment() != null);
 			if (helper.isAlternativeCourseEnabled()) {
 				for (Request r: student.getRequests()) {
 					if (r.isAlternative() || !(r instanceof CourseRequest)) continue;
@@ -672,6 +672,10 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	}
 	
 	public static void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, Student student, XStudent originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Set<XDistribution> distributions, boolean hasAssignment) {
+		addRequest(server, model, assignment, student, originalStudent, request, alternative, updateFromCache, classTable, distributions, hasAssignment, false);
+	}
+	
+	public static void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, Student student, XStudent originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Set<XDistribution> distributions, boolean hasAssignment, boolean excludeInactive) {
 		if (request.hasRequestedCourse()) {
 			Vector<Course> cr = new Vector<Course>();
 			Set<Choice> selChoices = new HashSet<Choice>();
@@ -689,6 +693,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 						new FreeTimeRequest(student.getRequests().size() + 1, student.getRequests().size(), alternative, student, freeTimeLoc);
 					}
 				} else if (rc.isCourse()) {
+					if (excludeInactive && rc.isInactive()) continue;
 					XCourseId courseInfo = server.getCourse(rc.getCourseId(), rc.getCourseName());
 					XOffering offering = null;
 					if (courseInfo != null) offering = server.getOffering(courseInfo.getOfferingId());

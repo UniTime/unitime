@@ -100,6 +100,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 	private boolean iCanDelete = true;
 	private boolean iCanChangePriority = true;
 	private boolean iCanChangeAlternatives = true;
+	private boolean iInactive = false;
 	
 	public CourseRequestBox() {
 		this(false, null);
@@ -264,12 +265,16 @@ public class CourseRequestBox extends P implements CourseSelection {
 				}
 				iFilter.resizeFilterIfNeeded();
 				CourseSelectionEvent.fire(CourseRequestBox.this, getValue());
+				if (iInactive) iFilter.removeStyleName("inactive");
+				iInactive = false;
 			}
 		});
 		iFilter.addSelectionHandler(new SelectionHandler<FilterBox.Suggestion>() {
 			@Override
 			public void onSelection(SelectionEvent<Suggestion> event) {
 				iLastCourse = getValue();
+				if (iInactive) iFilter.removeStyleName("inactive");
+				iInactive = false;
 			}
 		});
 	}
@@ -281,6 +286,28 @@ public class CourseRequestBox extends P implements CourseSelection {
 	@Override
 	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<RequestedCourse> handler) {
 		return addHandler(handler, ValueChangeEvent.getType());
+	}
+	
+	public boolean isActive(Long courseId) {
+		return !iInactive && iLastCourse != null && courseId.equals(iLastCourse.getCourseId());
+	}
+	
+	public void activate(Long courseId) {
+		if (iInactive && iLastCourse != null && courseId.equals(iLastCourse.getCourseId())) {
+			iInactive = false;
+			iFilter.removeStyleName("inactive");
+		}
+	}
+	
+	public void deactivate(Long courseId) {
+		if (!iInactive && iLastCourse != null && courseId.equals(iLastCourse.getCourseId())) {
+			iInactive = true;
+			iFilter.addStyleName("inactive");
+		}
+	}
+	
+	public boolean isInactive(Long courseId) {
+		return iInactive && iLastCourse != null && courseId.equals(iLastCourse.getCourseId());
 	}
 
 	@Override
@@ -337,6 +364,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 		ret.setCanDelete(iCanDelete);
 		ret.setCanChangePriority(iCanChangePriority);
 		ret.setCanChangeAlternatives(iCanChangeAlternatives);
+		ret.setInactive(iInactive);
 		return ret;
 		
 	}
@@ -345,6 +373,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 	public void setValue(RequestedCourse value) {
 		iLastCourse = value;
 		iFilter.removeAllChips();
+		if (iInactive) iFilter.removeStyleName("inactive");
 		if (value == null || value.isEmpty()) {
 			iFilter.setText("");
 			setError(null);
@@ -352,6 +381,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 			iCanDelete = true;
 			iCanChangePriority = true;
 			iCanChangeAlternatives = true;
+			iInactive = false;
 		} else {
 			if (value.isCourse()) {
 				iFilter.setText(value.getCourseName());
@@ -370,6 +400,8 @@ public class CourseRequestBox extends P implements CourseSelection {
 			iCanDelete = value.isCanDelete();
 			iCanChangePriority = value.isCanChangePriority();
 			iCanChangeAlternatives = value.isCanChangeAlternatives();
+			iInactive = value.isInactive();
+			if (iInactive) iFilter.addStyleName("inactive");
 		}
 		iFilter.resizeFilterIfNeeded();
 	}
@@ -390,6 +422,10 @@ public class CourseRequestBox extends P implements CourseSelection {
 	
 	public boolean isCanChangeAlternatives() {
 		return iCanChangeAlternatives;
+	}
+	
+	public boolean isInactive() {
+		return iInactive;
 	}
 
 	@Override

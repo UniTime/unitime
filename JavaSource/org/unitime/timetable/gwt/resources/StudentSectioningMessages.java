@@ -418,7 +418,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	/* Student Sectioning widget messages
 	 */
-	@DefaultMessage("Add/Drop <u>C</u>ourses")
+	@DefaultMessage("Add/Drop <u>C</u>ourses") 
 	String buttonRequests();
 	
 	@DefaultMessage("Go back to the Course Requests.")
@@ -1813,6 +1813,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Clear course request")
 	String altFilterClearCourseRequest();
+	
+	@DefaultMessage("This course is not active. Click here to activate.")
+	String altFilterActivate();
 	
 	@DefaultMessage("Student\nId")
 	String reportStudentId();

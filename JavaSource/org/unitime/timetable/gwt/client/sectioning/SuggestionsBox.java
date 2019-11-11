@@ -808,6 +808,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		iMessages.setHTML("");
 		iFilter.setText("");
 		iQuickDrop.setVisible(false); iQuickDrop.setEnabled(false);
+		request.dropCourse(course);
 		request.addCourse(course);
 		iCustomCallback = callback;
 		if (iAllChoices != null) {
