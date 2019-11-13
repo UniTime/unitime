@@ -1467,7 +1467,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public Integer getTotalPrefSectionConflict() { return iTotalPrefSectionConflict; }
 	}
 
-	public static class SectioningAction implements IsSerializable, Serializable {
+	public static class SectioningAction implements IsSerializable, Serializable, Comparable<SectioningAction> {
 		private static final long serialVersionUID = 1L;
 		private Student iStudent;
 		private Date iTimeStamp;
@@ -1508,6 +1508,11 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 
 		public String getProto() { return iProto; }
 		public void setProto(String proto) { iProto = proto; }
+
+		@Override
+		public int compareTo(SectioningAction a) {
+			return a.getTimeStamp().compareTo(getTimeStamp());
+		}
 	}
 	
 	public static class IdValue implements IsSerializable, Serializable, Comparable<IdValue> {

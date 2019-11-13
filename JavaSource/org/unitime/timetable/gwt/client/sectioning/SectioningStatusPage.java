@@ -85,6 +85,7 @@ import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Overflow;
+import com.google.gwt.dom.client.Style.WhiteSpace;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -2333,6 +2334,8 @@ public class SectioningStatusPage extends Composite {
 	}
 	
 	private void addLogTableLine(SectioningAction log) {
+		HTML message = new HTML(log.getMessage() == null ? "" : log.getMessage());
+		message.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE_WRAP);
 		if (iSectioningActionsVisibleColumns.hasExtId) {
 			iLogTable.addRow(log,
 					new TopCell(log.getStudent().isCanShowExternalId() ? log.getStudent().getExternalId() : ""),
@@ -2342,7 +2345,7 @@ public class SectioningStatusPage extends Composite {
 					new TopCell(log.getWallTime() == null ? "" : sNF.format(0.001 * log.getWallTime())),
 					new TopCell(log.getResult()),
 					new TopCell(log.getUser() == null ? "" : log.getUser()),
-					new HTML(log.getMessage() == null ? "" : log.getMessage())
+					message
 			);
 		} else {
 			iLogTable.addRow(log,
@@ -2352,7 +2355,7 @@ public class SectioningStatusPage extends Composite {
 					new TopCell(log.getWallTime() == null ? "" : sNF.format(0.001 * log.getWallTime())),
 					new TopCell(log.getResult()),
 					new TopCell(log.getUser() == null ? "" : log.getUser()),
-					new HTML(log.getMessage() == null ? "" : log.getMessage())
+					message
 			);
 		}
 	}
