@@ -1,3 +1,22 @@
+/*
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+*/
 package org.unitime.timetable.onlinesectioning.custom.purdue;
 
 import java.io.IOException;
@@ -14,12 +33,15 @@ import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
 
+/**
+ * @author Tomas Muller
+ */
 public class TestCriticalCourseProvider implements CriticalCoursesProvider {
-	CriticalCoursesProvider iFile, iDGW;
+	CriticalCoursesProvider iSQL, iDGW;
 	Query iStudentQuery;
 	
 	public TestCriticalCourseProvider() throws ServletException, IOException {
-		iFile = new CriticalCoursesFile();
+		iSQL = new CriticalCoursesQuery();
 		iDGW = new DegreeWorksCourseRequests();
 		iStudentQuery = new Query(ApplicationProperties.getProperty("purdue.critical.filter", "group:STAR group:VSTAR group:PREREG"));
 	}
@@ -37,12 +59,12 @@ public class TestCriticalCourseProvider implements CriticalCoursesProvider {
 			CriticalCourses cc = iDGW.getCriticalCourses(server, helper, student, action);
 			if (cc != null && !cc.isEmpty()) return cc;
 		}
-		return iFile.getCriticalCourses(server, helper, student, action);
+		return iSQL.getCriticalCourses(server, helper, student, action);
 	}
 
 	@Override
 	public void dispose() {
-		iFile.dispose(); iDGW.dispose();
+		iSQL.dispose(); iDGW.dispose();
 	}
 
 }
