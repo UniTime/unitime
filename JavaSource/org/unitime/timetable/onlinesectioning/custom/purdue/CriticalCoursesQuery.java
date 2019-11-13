@@ -217,15 +217,17 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 	
 	protected String getPlannedCoursesSQL() {
 		return ApplicationProperties.getProperty("banner.dgw.plannedCoursesSQL",
-				"select tmpl_id, tmpl_description, tmpl_conc, course_discipline, course_number, choice_group_id, is_critical as course from timetable.tmpl_course_view where " +
-				"tmpl_description not like '%Statewide%' and tmpl_college=:area and tmpl_major=:major and tmpl_catyear=:catyear and term_seq=:term"
+				"select tmpl_id, tmpl_description, tmpl_conc, course_discipline, course_number, choice_group_id, trim(is_critical) from timetable.tmpl_course_view where " +
+				"tmpl_description not like '%Statewide%' and tmpl_college=:area and tmpl_major=:major and tmpl_catyear=:catyear and term_seq=:term " +
+				"order by tmpl_conc, choice_group_id desc, course_discipline, course_number"
 				);
 	}
 	
 	protected String getPlannedPlaceholdersSQL() {
 		return ApplicationProperties.getProperty("banner.dgw.criticalPlaceholdersSQL",
 				"select tmpl_id, tmpl_description, tmpl_conc, placeholder_type, placeholder_value from timetable.tmpl_placeholder_view where " +
-				"tmpl_description not like '%Statewide%' and tmpl_college=:area and tmpl_major=:major and tmpl_catyear=:catyear and term_seq=:term"
+				"tmpl_description not like '%Statewide%' and tmpl_college=:area and tmpl_major=:major and tmpl_catyear=:catyear and term_seq=:term " +
+				"order by tmpl_conc, placeholder_value"
 				);
 	}
 	
