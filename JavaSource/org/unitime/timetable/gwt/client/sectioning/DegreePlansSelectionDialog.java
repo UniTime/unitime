@@ -126,6 +126,7 @@ public class DegreePlansSelectionDialog extends UniTimeDialogBox {
 	public void open(List<DegreePlanInterface> plans) {
 		iTable.clearTable(1);
 		int select = -1;
+		boolean hasTS = false;
 		for (DegreePlanInterface plan: plans) {
 			List<Widget> row = new ArrayList<Widget>();
 			P p = new P("icons");
@@ -143,6 +144,8 @@ public class DegreePlansSelectionDialog extends UniTimeDialogBox {
 			row.add(new Label(plan.getDegree() == null ? "" : plan.getDegree()));
 			row.add(new Label(plan.getLastModified() == null ? "" : sModifiedDateFormat.format(plan.getLastModified())));
 			row.add(new Label(plan.getModifiedWho() == null ? "" : plan.getModifiedWho()));
+			if (plan.getLastModified() != null || plan.getModifiedWho() != null)
+				hasTS = true;
 			if (plan.getId().equals(iLastSubmit))
 				select = iTable.getRowCount();
 			else if (select < 0 && plan.isActive())
@@ -150,6 +153,8 @@ public class DegreePlansSelectionDialog extends UniTimeDialogBox {
 			iTable.addRow(plan, row);
 			
 		}
+		iTable.setColumnVisible(3, hasTS);
+		iTable.setColumnVisible(4, hasTS);
 		iTable.setSelected(select < 0 ? 1 : select, true);
 		center();
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
@@ -205,7 +210,9 @@ public class DegreePlansSelectionDialog extends UniTimeDialogBox {
 		int row = iTable.getSelectedRow();
 		DegreePlanInterface plan = iTable.getData(row);
 		if (row >= 0 && plan != null) {
-			text += (text.isEmpty() ? "" : " ") + ARIA.showingDegreePlan(row, iTable.getRowCount() - 1, plan.getName(), plan.getDegree(), plan.getLastModified(), plan.getModifiedWho());
+			text += (text.isEmpty() ? "" : " ") + ARIA.showingDegreePlan(row, iTable.getRowCount() - 1, plan.getName(), plan.getDegree());
+			if (plan.getLastModified() != null && plan.getModifiedWho() != null)
+				text += ARIA.lastModified(plan.getLastModified(), plan.getModifiedWho());
 		}
 		AriaStatus.getInstance().setText(text);
 	}
