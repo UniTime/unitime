@@ -23,6 +23,7 @@ import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -107,7 +108,10 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					(getQuery().hasAttribute("course") || getQuery().hasAttribute("lookup") ? "left outer join s.courseDemands cd left outer join cd.courseRequests cr " : "") + join +
 					"where l.session.uniqueId = :sessionId and l.session = s.session and l.student = s.externalUniqueId " +
 					"and (" + getQuery().toString(formatter) + ") " +
-					"and (l.result is not null or l.operation not in ('reload-offering', 'check-offering')) order by l.timeStamp desc, l.uniqueId desc");
+					(getQuery().hasAttribute("operation") ? "" : 
+						"and (l.result is not null or l.operation not in ('reload-offering', 'check-offering', 'reload-student')) " +
+						"and (l.result != 3 or l.operation not in ('validate-overrides', 'critical-courses', 'banner-update')) "
+					) + "order by l.uniqueId desc");
 
 			q.setLong("sessionId", session.getUniqueId());
 			if (getLimit() != null)
@@ -339,6 +343,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 				} catch (InvalidProtocolBufferException e) {}
 			}
 			helper.commitTransaction();
+			Collections.sort(ret);
 			return ret;
 		} catch (Exception e) {
 			helper.rollbackTransaction();

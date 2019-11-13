@@ -158,6 +158,17 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Online Scheduling Dashboard: Change Log</name>
+			<description>
+				<line>Unless the filter checks for operation:
+					<line>Do not show validate-overrides, banner-update, and critical-courses actions that did not make any changes (result is False).</line>
+					<line>Do not show reload-student, reload-offering, and check-offering actions with no result filled in.</line>
+				</line>
+				<line>Order the results by log unique id (instead of timestamp; a little less precise, but much faster).</line>
+				<line>Message column: set white-space to pre-wrap to improve display of multi-line messages.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>

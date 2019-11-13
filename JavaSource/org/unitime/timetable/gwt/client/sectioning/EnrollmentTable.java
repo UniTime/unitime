@@ -65,6 +65,7 @@ import org.unitime.timetable.gwt.shared.UserAuthenticationProvider;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.dom.client.Style.WhiteSpace;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -536,13 +537,15 @@ public class EnrollmentTable extends Composite {
 						new UniTimeTableHeader(MESSAGES.colMessage()));
 				
 				for (ClassAssignmentInterface.SectioningAction log: logs) {
+					HTML message = new HTML(log.getMessage() == null ? "" : log.getMessage());
+					message.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE_WRAP);
 					table.addRow(log,
 							new TopCell(log.getOperation()),
 							new TopCell(sTSF.format(log.getTimeStamp())),
 							new TopCell(log.getWallTime() == null ? "" : sNF.format(0.001 * log.getWallTime())),
 							new TopCell(log.getResult()),
 							new TopCell(log.getUser() == null ? "" : log.getUser()),
-							new HTML(log.getMessage() == null ? "" : log.getMessage())
+							message
 					);
 				}
 				table.addMouseClickListener(new MouseClickListener<ClassAssignmentInterface.SectioningAction>() {
