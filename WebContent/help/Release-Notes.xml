@@ -180,6 +180,12 @@
 				<line>This is to prevent a session admin to chameleon into another session admin from a different academic session.</line>
 			</description>
 		</item>
+		<item>
+			<name>HQL Reports: Export XLS</name>
+			<description>
+				<line>Added ability to export HQL reports to XLS format.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
