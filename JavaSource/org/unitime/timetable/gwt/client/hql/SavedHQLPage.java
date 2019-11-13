@@ -380,6 +380,64 @@ public class SavedHQLPage extends Composite {
 				});
 			}
 		});
+		
+		iHeader.addButton("exportXls", MESSAGES.buttonExportXLS(), 85, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				Long id = Long.valueOf(iQuerySelector.getWidget().getValue(iQuerySelector.getWidget().getSelectedIndex()));
+				SavedHQLInterface.Query query = null;
+				for (SavedHQLInterface.Query q: iQueries) {
+					if (id.equals(q.getId())) {
+						query = q; break;
+					}
+				}
+				if (query == null) {
+					iHeader.setErrorMessage(MESSAGES.errorNoReportSelected());
+					return;
+				}
+				String params = "";
+				for (int i = 0; i < iOptions.size(); i++) {
+					SavedHQLInterface.Option option = iOptions.get(i);
+					if (query.getQuery().contains("%" + option.getType() + "%")) {
+						ListBox list = ((UniTimeWidget<ListBox>)iForm.getWidget(3 + i, 1)).getWidget();
+						String value = "";
+						boolean allSelected = true;
+						if (list.isMultipleSelect()) {
+							for (int j = 0; j < list.getItemCount(); j++)
+								if (list.isItemSelected(j)) {
+									if (!value.isEmpty()) value += ",";
+									value += list.getValue(j);
+								} else {
+									allSelected = false;
+								}
+						} else if (list.getSelectedIndex() > 0) {
+							value = list.getValue(list.getSelectedIndex());
+						}
+						if (value.isEmpty()) {
+							iHeader.setErrorMessage(MESSAGES.errorItemNotSelected(option.getName()));
+							return;
+						}
+						if (!params.isEmpty()) params += ":";
+						params += (list.isMultipleSelect() && allSelected ? "" : value);
+					}
+				}
+				if (query.hasParameters()) {
+					for (Map.Entry<String, String> e: iParams.entrySet())
+						params += "&" + e.getKey() + "=" + URL.encodeQueryString(e.getValue());
+				}
+				String reportId = iQuerySelector.getWidget().getValue(iQuerySelector.getWidget().getSelectedIndex());
+				
+				RPC.execute(EncodeQueryRpcRequest.encode("output=hql-report.xls&report=" + reportId + "&params=" + params + "&sort=" + iLastSort), new AsyncCallback<EncodeQueryRpcResponse>() {
+					@Override
+					public void onFailure(Throwable caught) {
+					}
+					@Override
+					public void onSuccess(EncodeQueryRpcResponse result) {
+						ToolBox.open(GWT.getHostPageBaseURL() + "export?q=" + result.getQuery());
+					}
+				});
+			}
+		});
 
 		
 		iHeader.addButton("edit", MESSAGES.buttonEdit(), 75, new ClickHandler() {
@@ -413,6 +471,7 @@ public class SavedHQLPage extends Composite {
 		iHeader.setEnabled("add", false);
 		iHeader.setEnabled("print", false);
 		iHeader.setEnabled("export", false);
+		iHeader.setEnabled("exportXls", false);
 
 		iForm.getColumnFormatter().setWidth(0, "120px");
 		iForm.getColumnFormatter().setWidth(1, "100%");
@@ -1141,6 +1200,7 @@ public class SavedHQLPage extends Composite {
 				iTable.setColumnVisible(0, false);
 			iHeader.setEnabled("print", true);
 			iHeader.setEnabled("export", iTable.getRowCount() > 1);
+			iHeader.setEnabled("exportXls", iTable.getRowCount() > 1);
 			if (result.size() == 102)
 				iTableHeader.setMessage(MESSAGES.infoShowingLines(iFirstLine + 1, iFirstLine + 100));
 			else if (iFirstLine > 0)
@@ -1270,6 +1330,7 @@ public class SavedHQLPage extends Composite {
 		HQLExecuteRpcRequest request = new HQLExecuteRpcRequest();
 		iHeader.setEnabled("print", false);
 		iHeader.setEnabled("export", false);
+		iHeader.setEnabled("exportXls", false);
 
 		Long id = Long.valueOf(iQuerySelector.getWidget().getValue(iQuerySelector.getWidget().getSelectedIndex()));
 		for (SavedHQLInterface.Query q: iQueries) {
