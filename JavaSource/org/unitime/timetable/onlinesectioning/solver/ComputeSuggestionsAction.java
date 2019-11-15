@@ -490,6 +490,21 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 			} else if (course.getLimit() == 0) {
 				messages.addMessage(MSG.suggestionsNoChoicesCourseIsFull(MSG.course(course.getSubjectArea(), course.getCourseNumber())));
 			}
+			if (student.hasMaxCredit()) {
+				float assignedCredit = 0;
+				for (Request q: student.getRequests()) {
+					if (q.equals(request)) continue;
+					Enrollment e = q.getAssignment(assignment);
+					if (e != null) assignedCredit += e.getCredit();
+				}
+				Float minCred = null;
+				for (Course c: request.getCourses()) {
+					if (c.hasCreditValue() && (minCred == null || minCred > c.getCreditValue()))
+						minCred = c.getCreditValue();
+				}
+				if (minCred != null && assignedCredit + minCred > student.getMaxCredit())
+					messages.addMessage(MSG.conflictOverMaxCredit(student.getMaxCredit()));
+			}
 		}
         
 		long t4 = System.currentTimeMillis();

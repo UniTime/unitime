@@ -550,6 +550,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		}
 		Course clonedCourse = new Course(courseId, course.getSubjectArea(), course.getCourseNumber(), clonedOffering, courseLimit, course.getProjected());
 		clonedCourse.setNote(course.getNote());
+		clonedCourse.setCreditValue(course.getMinCredit());
 		Hashtable<Long, Config> configs = new Hashtable<Long, Config>();
 		Hashtable<Long, Subpart> subparts = new Hashtable<Long, Subpart>();
 		for (XConfig config: offering.getConfigs()) {
@@ -783,6 +784,10 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
         ClassAssignmentInterface ret = new ClassAssignmentInterface();
 		int nrUnassignedCourses = 0;
 		int nrAssignedAlt = 0;
+		float assignedCredit = 0;
+		for (Enrollment enrollment: enrollments)
+			if (enrollment != null && enrollment.getAssignments() != null && !enrollment.getAssignments().isEmpty())
+				assignedCredit += enrollment.getCredit();
 		for (Enrollment enrollment: enrollments) {
 			if (enrollment == null) continue;
 			if (enrollment.getRequest().isAlternative() && nrAssignedAlt >= nrUnassignedCourses &&
@@ -872,6 +877,15 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 						if (avEnrls.isEmpty()) {
 							ca.setNotAvailable(true);
 							ca.setFull(course.getLimit() == 0);
+						}
+						if (r.getStudent().hasMaxCredit()) {
+							Float minCred = null;
+							for (Course c: r.getCourses()) {
+								if (c.hasCreditValue() && (minCred == null || minCred > c.getCreditValue()))
+									minCred = c.getCreditValue();
+							}
+							if (minCred != null && assignedCredit + minCred > r.getStudent().getMaxCredit())
+								ca.setOverMaxCredit(r.getStudent().getMaxCredit());
 						}
 					}
 					ret.add(ca);

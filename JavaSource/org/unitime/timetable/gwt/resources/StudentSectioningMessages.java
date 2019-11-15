@@ -666,6 +666,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage(", assigned {0} instead")
 	String conflictAssignedAlternative(String alt);
 	
+	@DefaultMessage("Exceeds maximum of {0,number,0.#} credit hours.")
+	String conflictOverMaxCredit(float maxCredit);
+	
 	@DefaultMessage("Failed to load the application ({0}).")
 	String failedToLoadTheApp(String message);
 	

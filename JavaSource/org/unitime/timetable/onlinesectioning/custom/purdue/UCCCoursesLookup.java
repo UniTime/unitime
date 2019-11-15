@@ -82,7 +82,7 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 				"where a.term_start <= :term and a.term_end >= :term and " +
 				"(lower(a.attribute_description) = concat('uc-', :query) or lower(a.course_attribute) = :query) and "+
 				"co.instr_offr_id = io.uniqueid and co.subject_area_id = sa.uniqueid and io.session_id = :sessionId and " +
-				"io.not_offered = 0 and sa.subject_area_abbreviation = a.subject and co.course_nbr like concat(a.course_number, '%')"
+				"io.not_offered = 'f' and sa.subject_area_abbreviation = a.subject and co.course_nbr like concat(a.course_number, '%')"
 				);
 	}
 	
@@ -93,7 +93,7 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 				"where a.term_start <= :term and a.term_end >= :term and " +
 				"(lower(a.attribute_description) like concat(concat('uc-', :query), '%') or lower(a.attribute_description) like concat(concat('% ', :query), '%')) and "+
 				"co.instr_offr_id = io.uniqueid and co.subject_area_id = sa.uniqueid and io.session_id = :sessionId and " +
-				"io.not_offered = 0 and sa.subject_area_abbreviation = a.subject and co.course_nbr like concat(a.course_number, '%')"
+				"io.not_offered = 'f' and sa.subject_area_abbreviation = a.subject and co.course_nbr like concat(a.course_number, '%')"
 				);
 	}
 	

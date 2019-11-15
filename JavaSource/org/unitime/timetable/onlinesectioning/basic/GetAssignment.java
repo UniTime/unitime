@@ -242,6 +242,24 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 		
 		List<CourseSection> unavailabilities = fillUnavailabilitiesIn(ret, student, server, helper, stored);
 		
+		float credit = 0f;
+		if (student.getMaxCredit() != null)
+			for (XRequest request: studentRequests) {
+				if (request instanceof XCourseRequest) {
+					XCourseRequest r = (XCourseRequest)request;
+					XEnrollment enrollment = r.getEnrollment();
+					if (enrollment != null) {
+						XOffering offering = server.getOffering(enrollment.getOfferingId());
+						XCourse course = offering.getCourse(enrollment);
+						if (course != null) {
+							Float c = course.getMinCredit();
+							if (c != null) credit += c;
+						}
+						
+					}
+				}
+			}
+		
 		for (XRequest request: studentRequests) {
 			action.addRequest(OnlineSectioningHelper.toProto(request));
 			ClassAssignmentInterface.CourseAssignment ca = new ClassAssignmentInterface.CourseAssignment();
@@ -326,6 +344,19 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 							}
 							ca.setFull(enrl >= course.getLimit());
 						}
+					}
+					if (student.getMaxCredit() != null) {
+						Float minCred = course.getMinCredit();
+						for (XCourseId altCourseId: r.getCourseIds()) {
+							if (altCourseId.equals(courseId)) continue;
+							XOffering altOffering = server.getOffering(altCourseId.getOfferingId());
+							XCourse altCourse = altOffering.getCourse(altCourseId);
+							Float altMinCred = altCourse.getMinCredit();
+							if (altMinCred != null && (minCred == null || minCred > altMinCred))
+								minCred = altMinCred;
+						}
+						if (minCred != null && credit + minCred > student.getMaxCredit())
+							ca.setOverMaxCredit(student.getMaxCredit());
 					}
 					if (!r.isWaitlist()) nrUnassignedCourses++;
 					int alt = nrUnassignedCourses;

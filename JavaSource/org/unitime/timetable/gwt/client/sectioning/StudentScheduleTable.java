@@ -255,6 +255,8 @@ public class StudentScheduleTable extends Composite {
 				String unassignedMessage = MESSAGES.courseNotAssigned();
 				if (course.hasEnrollmentMessage())
 					unassignedMessage = course.getEnrollmentMessage();
+				else if (course.isOverMaxCredit())
+					unassignedMessage = MESSAGES.conflictOverMaxCredit(course.getOverMaxCredit());
 				else if (course.getOverlaps()!=null && !course.getOverlaps().isEmpty()) {
 					unassignedMessage = "";
 					for (Iterator<String> i = course.getOverlaps().iterator(); i.hasNext();) {
