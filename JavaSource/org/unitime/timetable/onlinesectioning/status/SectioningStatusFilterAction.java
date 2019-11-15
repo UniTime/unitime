@@ -878,6 +878,12 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 						query.setInteger(param.getKey(), (Integer)param.getValue());
 					} else if (param.getValue() instanceof Long) {
 						query.setLong(param.getKey(), (Long)param.getValue());
+					} else if (param.getValue() instanceof Float) {
+						query.setFloat(param.getKey(), (Float)param.getValue());
+					} else if (param.getValue() instanceof Double) {
+						query.setDouble(param.getKey(), (Double)param.getValue());
+					} else if (param.getValue() instanceof Number) {
+						query.setDouble(param.getKey(), ((Number)param.getValue()).doubleValue());
 					} else if (param.getValue() instanceof String) {
 						query.setString(param.getKey(), (String)param.getValue());
 					} else if (param.getValue() instanceof Boolean) {
@@ -939,6 +945,12 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 						query.setInteger(param.getKey(), (Integer)param.getValue());
 					} else if (param.getValue() instanceof Long) {
 						query.setLong(param.getKey(), (Long)param.getValue());
+					} else if (param.getValue() instanceof Float) {
+						query.setFloat(param.getKey(), (Float)param.getValue());
+					} else if (param.getValue() instanceof Double) {
+						query.setDouble(param.getKey(), (Double)param.getValue());
+					} else if (param.getValue() instanceof Number) {
+						query.setDouble(param.getKey(), ((Number)param.getValue()).doubleValue());
 					} else if (param.getValue() instanceof String) {
 						query.setString(param.getKey(), (String)param.getValue());
 					} else if (param.getValue() instanceof Boolean) {

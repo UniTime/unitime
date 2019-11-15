@@ -1550,7 +1550,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					} else if (course.isLocked()) {
 						unassignedMessage = MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr());
 					}
-					
+					if (course.isOverMaxCredit())
+						unassignedMessage = MESSAGES.conflictOverMaxCredit(course.getOverMaxCredit())
+							+ (MESSAGES.courseNotAssigned().equals(unassignedMessage) ? "" : " " + unassignedMessage);
 					WebTable.IconsCell icons = new WebTable.IconsCell();
 					if (course.isLocked())
 						icons.add(RESOURCES.courseLocked(), course.getNote() != null ? course.getNote() : MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()));

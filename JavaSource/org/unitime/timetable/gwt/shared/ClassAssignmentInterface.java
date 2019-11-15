@@ -143,6 +143,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private String iEnrollmentMessage = null;
 		private Date iRequestedDate = null;
 		private Integer iSelection = null;
+		private Float iOverMaxCredit;
 
 		private ArrayList<ClassAssignment> iAssignments = new ArrayList<ClassAssignment>();
 		private Set<IdValue> iInstructionalMethods = null;
@@ -227,6 +228,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public boolean isFull() { return iFull; }
 		public void setFull(boolean full) { iFull = full; }
+		
+		public boolean isOverMaxCredit() { return iOverMaxCredit != null; }
+		public Float getOverMaxCredit() { return iOverMaxCredit; }
+		public void setOverMaxCredit(Float maxCredit) { iOverMaxCredit = maxCredit; }
 		
 		public boolean isLocked() { return iLocked; }
 		public void setLocked(boolean locked) { iLocked = locked; }

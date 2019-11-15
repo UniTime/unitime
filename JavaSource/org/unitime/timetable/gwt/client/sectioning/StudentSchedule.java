@@ -538,7 +538,6 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							unassignedMessage += MESSAGES.conflictWithLast(x);
 						else
 							unassignedMessage += MESSAGES.conflictWithMiddle(x);
-						if (i.hasNext()) unassignedMessage += ", ";
 					}
 					if (course.getInstead() != null)
 						unassignedMessage += MESSAGES.conflictAssignedAlternative(course.getInstead());
@@ -551,6 +550,9 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				} else if (course.isLocked()) {
 					unassignedMessage = MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr());
 				}
+				if (course.isOverMaxCredit())
+					unassignedMessage = MESSAGES.conflictOverMaxCredit(course.getOverMaxCredit())
+						+ (MESSAGES.courseNotAssigned().equals(unassignedMessage) ? "" : " " + unassignedMessage);
 				for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
 					row = new WebTable.Row(
 							new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
