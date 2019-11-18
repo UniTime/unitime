@@ -44,6 +44,7 @@ import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.Meeting;
@@ -129,6 +130,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
         case '_' : return " ";
         case 's' : return clazz.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea().getSubjectAreaAbbreviation();
         case 'c' : return clazz.getSchedulingSubpart().getControllingCourseOffering().getCourseNbr();
+        case 'T' : return clazz.getSchedulingSubpart().getControllingCourseOffering().getTitle();
         case 'i' : return clazz.getSchedulingSubpart().getItypeDesc().trim();
         case 'n' : return clazz.getSectionNumberString();
         case 'x' : return clazz.getSchedulingSubpart().getInstrOfferingConfig().getName();
@@ -151,6 +153,14 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
             itype = clazz.getSchedulingSubpart().getItype();
             while (itype.getParent()!=null) itype = itype.getParent();
             return itype.getItype().toString();
+        case 'm':
+        	InstructionalMethod im = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod();
+        	if (im != null) return im.getReference();
+        	return "";
+        case 'M':
+        	im = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod();
+        	if (im != null) return im.getLabel();
+        	return "";
         }
         return "";
     }
