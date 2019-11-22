@@ -51,12 +51,15 @@ import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Overflow;
+import com.google.gwt.dom.client.Style.WhiteSpace;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.event.logical.shared.OpenHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.TakesValue;
@@ -66,6 +69,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 
@@ -126,6 +130,7 @@ public class PublishedSectioningSolutionsTable extends UniTimeTable<PublishedSec
 			@Override
 			public void onMouseClick(TableEvent<PublishedSectioningSolutionInterface> event) {
 				final PublishedSectioningSolutionInterface solution = event.getData();
+				final int row = event.getRow();
 				if (solution != null && solution.getInfo() != null) {
 					final UniTimeDialogBox dialog = new UniTimeDialogBox(true, false);
 					dialog.setEscapeToHide(true);
@@ -243,6 +248,38 @@ public class PublishedSectioningSolutionsTable extends UniTimeTable<PublishedSec
 					});
 					form.setStyleName("unitime-InfoTable");
 					form.addHeaderRow(top);
+					form.addRow(MESSAGES.propTimeStamp(), new Label(sDF.format(solution.getTimeStamp())));
+					form.addRow(MESSAGES.propOwner(), new Label(solution.getOwner()));
+					if (solution.hasConfig())
+						form.addRow(MESSAGES.propSolutionConfig(), new Label(solution.getConfig()));
+					if (solution.isCanChangeNote()) {
+						TextArea text = new TextArea();
+						text.setStyleName("unitime-TextArea");
+						text.setVisibleLines(5);
+						text.setCharacterWidth(80);
+						text.setValue(solution.hasNote() ? solution.getNote() : "");
+						form.addRow(MESSAGES.propNote(), text);
+						text.addValueChangeHandler(new ValueChangeHandler<String>() {
+							@Override
+							public void onValueChange(final ValueChangeEvent<String> event) {
+								RPC.execute(new PublishedSectioningSolutionsRequest(solution.getUniqueId(), event.getValue()), new AsyncCallback<GwtRpcResponseList<PublishedSectioningSolutionInterface>>() {
+									@Override
+									public void onFailure(Throwable caught) {
+										UniTimeNotifications.error(caught);
+									}
+									@Override
+									public void onSuccess(GwtRpcResponseList<PublishedSectioningSolutionInterface> result) {
+										solution.setNote(event.getValue());
+										((Label)getWidget(row, getCellIndex(TableColumn.NOTE))).setText(event.getValue());
+									}
+								});
+							}
+						});
+					} else if (solution.hasNote()) {
+						Label note = new Label(solution.getNote() == null ? "" : solution.getNote());
+						note.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE);
+						form.addRow(MESSAGES.propNote(), note);
+					}
 					TreeSet<String> keys = new TreeSet<String>(new InfoComparator()); keys.addAll(solution.getInfo().keySet());
 					for (String key: keys) {
 						form.addRow(key, new HTML(solution.getInfo().get(key)));
@@ -312,6 +349,8 @@ public class PublishedSectioningSolutionsTable extends UniTimeTable<PublishedSec
 		switch (column) {
 		case DATE_TIME: return MESSAGES.colTimeStamp();
 		case OWNER: return MESSAGES.colOwner();
+		case CONFIG: return MESSAGES.colSolverConfig();
+		case NOTE: return MESSAGES.colNote();
 		case COURSE_REQUESTS: return MESSAGES.colAssignedCourseRequests();
 		case PRIORITY_REQUESTS: return MESSAGES.colAssignedPriorityCourseRequests();
 		case CRITICAL: return MESSAGES.colAssignedCriticalCourseRequests();
@@ -346,6 +385,12 @@ public class PublishedSectioningSolutionsTable extends UniTimeTable<PublishedSec
 			return new Label(sDF.format(solution.getTimeStamp()));
 		case OWNER:
 			return new Label(solution.getOwner());
+		case CONFIG:
+			return new Label(solution.getConfig() == null ? "" : solution.getConfig());
+		case NOTE:
+			Label note = new Label(solution.getNote() == null ? "" : solution.getNote());
+			note.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE_WRAP);
+			return note;
 		case OPERATIONS:
 			return new OperationsCell(solution);
 		default:
@@ -533,7 +578,14 @@ public class PublishedSectioningSolutionsTable extends UniTimeTable<PublishedSec
 		public int compareByOwner(PublishedSectioningSolutionInterface r1, PublishedSectioningSolutionInterface r2) {
 			return compare(r1.getOwner(), r2.getOwner());
 		}
-
+		
+		public int compareByNote(PublishedSectioningSolutionInterface r1, PublishedSectioningSolutionInterface r2) {
+			return compare(r1.getNote(), r2.getNote());
+		}
+		
+		public int compareByConfig(PublishedSectioningSolutionInterface r1, PublishedSectioningSolutionInterface r2) {
+			return compare(r1.getConfig(), r2.getConfig());
+		}
 		
 		public int compareByAttribute(String attribute, PublishedSectioningSolutionInterface r1, PublishedSectioningSolutionInterface r2) {
 			String v1 = r1.getValue(attribute), v2 = r2.getValue(attribute);
@@ -544,6 +596,8 @@ public class PublishedSectioningSolutionsTable extends UniTimeTable<PublishedSec
 			switch (iColumn) {
 			case DATE_TIME: return compareByTimeStamp(r1, r2);
 			case OWNER: return compareByOwner(r1, r2);
+			case CONFIG: return compareByConfig(r1, r2);
+			case NOTE: return compareByNote(r1, r2);
 			default:
 				String att = iColumn.getAttribute();
 				if (att != null)
@@ -557,6 +611,8 @@ public class PublishedSectioningSolutionsTable extends UniTimeTable<PublishedSec
 			switch (column) {
 			case DATE_TIME:
 			case OWNER:
+			case CONFIG:
+			case NOTE:
 				return true;
 			case OPERATIONS:
 				return false;

@@ -65,5 +65,19 @@
             type="byte[]"
             not-null="true"
             lazy="true"/>
+
+        <property
+            name="note"
+            column="note"
+            type="java.lang.String"
+            not-null="false"
+            length="2000"/>
+
+        <property
+            name="config"
+            column="config"
+            type="java.lang.String"
+            not-null="false"
+            length="100"/>
     </class>
 </hibernate-mapping>

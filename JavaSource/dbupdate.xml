@@ -31,6 +31,9 @@
 	<dialect type="plsql">org.hibernate.dialect.Oracle9Dialect</dialect>
 	<dialect type="plsql">org.hibernate.dialect.Oracle9iDialect</dialect>
 	<dialect type="plsql">org.hibernate.dialect.Oracle10gDialect</dialect>
+	<dialect type="pgsql">org.hibernate.dialect.PostgreSQL81Dialect</dialect>
+	<dialect type="pgsql">org.hibernate.dialect.PostgreSQL82Dialect</dialect>
+	<dialect type="pgsql">org.hibernate.dialect.PostgreSQL9Dialect</dialect>
 	<update version="1" date="11-Jun-2007" comment="Package Renames, Column Renames">
 		<sql>
 			update %SCHEMA%.solver_info_def set implementation=replace(implementation,'edu.purdue.smas','org.unitime') where implementation like 'edu.purdue.smas%'
@@ -13658,5 +13661,13 @@
 	<update version="223" date="18-Oct-2019" comment="Reservations Start Date">
 		<plsql>alter table %SCHEMA%.reservation add start_date date</plsql>
 		<mysql>alter table %SCHEMA%.reservation add start_date date null</mysql>
+	</update>
+	<update version="224" date="21-Nov-2019" comment="Published Solutions Notes and Config">
+		<plsql>alter table %SCHEMA%.sct_solution_log add note varchar2(2000 char)</plsql>
+		<plsql>alter table %SCHEMA%.sct_solution_log add config varchar2(1000 char)</plsql>
+		<mysql>alter table %SCHEMA%.sct_solution_log add note varchar(2000) null</mysql>
+		<mysql>alter table %SCHEMA%.sct_solution_log add config varchar(1000) null</mysql>
+		<pgsql>alter table %SCHEMA%.sct_solution_log add note varchar(2000)</pgsql>
+		<pgsql>alter table %SCHEMA%.sct_solution_log add config varchar(1000)</pgsql>
 	</update>
 </dbupdate>

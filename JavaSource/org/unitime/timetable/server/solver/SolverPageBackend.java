@@ -264,6 +264,12 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
         	log.setInfo(getGson().toJson(solver.currentSolutionInfo()));
         	log.setTimeStamp(new Date());
         	log.setSession(SessionDAO.getInstance().get(solver.getSessionId()));
+        	Long configId = solver.getProperties().getPropertyLong("General.SettingsId", null);
+        	if (configId != null) {
+        		SolverPredefinedSetting config = SolverPredefinedSettingDAO.getInstance().get(configId);
+        		if (config != null)
+        			log.setConfig(config.getDescription());
+        	}
         	String mgrId = solver.getProperties().getProperty("General.OwnerPuid");
         	log.setOwner(TimetableManager.findByExternalId(mgrId == null ? context.getUser().getExternalUserId() : mgrId));
         	Long publishId = SectioningSolutionLogDAO.getInstance().save(log);

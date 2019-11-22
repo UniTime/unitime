@@ -89,11 +89,13 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.SectioningSolutionLog;
+import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.SolverParameterGroup.SolverType;
 import org.unitime.timetable.model.dao.SectioningSolutionLogDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -1118,6 +1120,12 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
         	log.setSession(SessionDAO.getInstance().get(getSessionId()));
         	String mgrId = getProperties().getProperty("General.OwnerPuid");
         	log.setOwner(TimetableManager.findByExternalId(mgrId));
+        	Long configId = getProperties().getPropertyLong("General.SettingsId", null);
+        	if (configId != null) {
+        		SolverPredefinedSetting config = SolverPredefinedSettingDAO.getInstance().get(configId);
+        		if (config != null)
+        			log.setConfig(config.getDescription());
+        	}
         	Long publishId = SectioningSolutionLogDAO.getInstance().save(log);
         	if (SolverServerImplementation.getInstance() != null) {
     			SolverServerImplementation.getInstance().unloadSolver(getType(), "PUBLISHED_" + getSessionId());

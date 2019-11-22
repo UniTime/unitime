@@ -36,7 +36,8 @@ public class PublishedSectioningSolutionInterface implements IsSerializable {
 	private String iOwner;
 	private Map<String, String> iInfo;
 	private boolean iLoaded, iClonned, iSelected;
-	private boolean iCanSelect, iCanClone, iCanLoad;
+	private boolean iCanSelect, iCanClone, iCanLoad, iCanChangeNote;
+	private String iConfig, iNote;
 	
 	public PublishedSectioningSolutionInterface() {}
 	
@@ -62,6 +63,16 @@ public class PublishedSectioningSolutionInterface implements IsSerializable {
 	public boolean isCanClone() { return iCanClone; }
 	public void setCanClone(boolean canClone) { iCanClone = canClone; }
 	
+	public boolean hasConfig() { return iConfig != null && !iConfig.isEmpty(); }
+	public String getConfig() { return iConfig; }
+	public void setConfig(String config) { iConfig = config; }
+	
+	public boolean hasNote() { return iNote != null && !iNote.isEmpty(); }
+	public String getNote() { return iNote; }
+	public void setNote(String note) { iNote = note; }
+	public boolean isCanChangeNote() { return iCanChangeNote; }
+	public void setCanChangeNote(boolean canChangeNote) { iCanChangeNote = canChangeNote; }
+	
 	public String getValue(String attribute) { 
 		if (iInfo == null) return "";
 		String value = iInfo.get(attribute);
@@ -69,12 +80,13 @@ public class PublishedSectioningSolutionInterface implements IsSerializable {
 	}
 	
 	public static enum Operation implements IsSerializable {
-		LIST, REMOVE, LOAD, UNLOAD, PUBLISH, UNPUBLISH, SELECT, DESELECT, 
+		LIST, REMOVE, LOAD, UNLOAD, PUBLISH, UNPUBLISH, SELECT, DESELECT, NOTE,
 	}
 	
 	public static class PublishedSectioningSolutionsRequest implements GwtRpcRequest<GwtRpcResponseList<PublishedSectioningSolutionInterface>> {
 		private Operation iOperation;
 		private Long iUniqueId;
+		private String iNote;
 		
 		public PublishedSectioningSolutionsRequest() {}
 		public PublishedSectioningSolutionsRequest(Operation operation) {
@@ -83,16 +95,22 @@ public class PublishedSectioningSolutionInterface implements IsSerializable {
 		public PublishedSectioningSolutionsRequest(Operation operation, Long uniqueId) {
 			iOperation = operation; iUniqueId = uniqueId;
 		}
+		public PublishedSectioningSolutionsRequest(Long uniqueId, String note) {
+			iOperation = Operation.NOTE; iUniqueId = uniqueId; iNote = note;
+		}
 		
 		public Long getUniqueId() { return iUniqueId; }
 		public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 		public Operation getOperation() { return iOperation; }
 		public void setOperation(Operation operation) { iOperation = operation; }
+		public void setNote(String note) { iNote = note; }
+		public String getNote() { return iNote; }
 	}
 	
 	public static enum TableColumn {
 		DATE_TIME,
 		OWNER,
+		CONFIG,
 		COURSE_REQUESTS("Assigned course requests"),
 		PRIORITY_REQUESTS("Assigned priority course requests"),
 		CRITICAL("Assigned critical course requests"),
@@ -102,6 +120,7 @@ public class PublishedSectioningSolutionInterface implements IsSerializable {
 		TIME("Time overlapping conflicts"),
 		DISBALANCED("Sections disbalanced by 10% or more"),
 		NO_TIME("Using classes w/o time"),
+		NOTE,
 		OPERATIONS,
 		;
 		String iProperty;
