@@ -978,7 +978,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     			} else if (r instanceof CurriculumReservation) {
     				CurriculumReservation c = (CurriculumReservation)r;
     				for (StudentAreaClassificationMajor aac: s.getAreaClasfMajors()) {
-    					if (aac.getAcademicArea().equals(c.getAcademicArea()) &&
+    					if (c.getAcademicArea().equals(aac.getAcademicArea().getAcademicAreaAbbreviation()) &&
     						(c.getClassifications().isEmpty() || c.getClassifications().contains(aac.getAcademicClassification().getCode())) &&
     						(c.getMajors().isEmpty() || c.getMajors().contains(aac.getMajor().getCode()))) {
     							applicable = true; break;
