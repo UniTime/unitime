@@ -115,6 +115,12 @@
 					(where X is the current max credit for the student).</line>
 			</description>
 		</item>
+		<item>
+			<name>Batch Student Scheduling: Curriculum Reservations</name>
+			<description>
+				<line>Fixed a problem with curriculum reservations not counting matching students that are already enrolled and that are excluded from the run.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>
