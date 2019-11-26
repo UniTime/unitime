@@ -39,6 +39,8 @@ import org.unitime.timetable.onlinesectioning.model.XStudentNote;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 
+import com.google.gwt.core.client.GWT;
+
 /**
  * @author Tomas Muller
  */
@@ -114,8 +116,24 @@ public class ChangeStudentStatus implements OnlineSectioningAction<Boolean> {
 						}
 						
 						if (changeStatus()) {
+							String oldStatus = (dbStudent.getSectioningStatus() != null ? dbStudent.getSectioningStatus().getReference() :
+								dbStudent.getSession().getDefaultSectioningStatus() != null ? MSG.studentStatusSessionDefault(dbStudent.getSession().getDefaultSectioningStatus().getReference())
+								: MSG.studentStatusSystemDefault());
+							if (dbStudent.getSectioningStatus() != null)
+								action.addOptionBuilder().setKey("old-status").setValue(dbStudent.getSectioningStatus().getReference());
+							
 							student.setStatus(status == null ? null : status.getReference());
 							dbStudent.setSectioningStatus(status);
+							
+							String newStatus = (dbStudent.getSectioningStatus() != null ? dbStudent.getSectioningStatus().getReference() :
+								dbStudent.getSession().getDefaultSectioningStatus() != null ? MSG.studentStatusSessionDefault(dbStudent.getSession().getDefaultSectioningStatus().getReference())
+								: MSG.studentStatusSystemDefault());
+							if (dbStudent.getSectioningStatus() != null)
+								action.addOptionBuilder().setKey("new-status").setValue(dbStudent.getSectioningStatus().getReference());
+							if (oldStatus.equals(newStatus))
+								action.addMessage(OnlineSectioningLog.Message.newBuilder().setText(oldStatus).setTimeStamp(ts.getTime()).setLevel(OnlineSectioningLog.Message.Level.INFO));
+							else
+								action.addMessage(OnlineSectioningLog.Message.newBuilder().setText(oldStatus + " &rarr; " + newStatus).setTimeStamp(ts.getTime()).setLevel(OnlineSectioningLog.Message.Level.INFO));
 						}
 						
 						helper.getHibSession().saveOrUpdate(dbStudent);
