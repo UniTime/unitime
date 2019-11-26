@@ -176,6 +176,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					}
 					html += "<tr><td><b>Time Stamp:</b></td><td>" + df.format(log.getTimeStamp()) + "</td></tr>";
 					for (OnlineSectioningLog.Property p: action.getOptionList()) {
+						if ("student-email".equals(log.getOperation()) && p.getKey().equalsIgnoreCase("email")) continue;
 						html += "<tr><td><b>" + Constants.toInitialCase(p.getKey()) + ":</b></td><td><div class='property'>" + (p.hasValue() ? p.getValue() : "") + "</div></td></tr>";
 					}
 					if (action.hasCpuTime()) {
@@ -193,7 +194,14 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					if (action.hasApiException()) {
 						html += "<tr><td nowrap><b>" + MSG.colApiException() + ":</b></td><td>" + action.getApiException() + "</td></tr>";
 					}
-					
+					if ("student-email".equals(log.getOperation())) {
+						for (OnlineSectioningLog.Property p: action.getOptionList())
+							if ("email".equals(p.getKey()) && p.hasValue()) {
+								html += "<tr><td class='unitime-MainTableHeader' colspan='2'>Email</td></tr>";
+								html += "<tr><td colspan='2'>" + p.getValue() + "</td></tr>";
+							}
+					}
+
 					if (!action.getRequestList().isEmpty()) {
 						html += "<tr><td class='unitime-MainTableHeader' colspan='2'>" + MSG.courseRequestsCourses() + "</td></tr>";
 						html += "<tr><td colspan='2'><table cellspacing='0' cellpadding='2'>" +
@@ -321,11 +329,6 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					html += "<tr><td class='unitime-MainTableHeader' colspan='2'>" + MSG.tableProto() + "</td></tr>";
 					html += "<tr><td colspan='2' class='proto'>" + action.toString().replace("<", "&lt;").replace(">", "&gt;").replace(" ", "&nbsp;").replace("\n", "<br>") + "</td></tr>";
 					html += "</table>";
-					if ("student-email".equals(log.getOperation())) {
-						for (OnlineSectioningLog.Property p: action.getOptionList())
-							if ("email".equals(p.getKey()) && p.hasValue())
-								html = p.getValue();
-					}
 					if (action.hasResult() && OnlineSectioningLog.Action.ResultType.FAILURE.equals(action.getResult()) && !message.isEmpty()) {
 						a.setMessage(message);
 					} else if ("suggestions".equals(log.getOperation())) {
