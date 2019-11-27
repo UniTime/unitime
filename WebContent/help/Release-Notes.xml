@@ -134,6 +134,7 @@
 				<line>Student Email: improved logging (include recepient email address, show more details in the Change Log, etc.).
 					<line>Also, do not fail when CC address is incorrect (log a warning instead).</line>
 				</line>
+				<line>Status Change: improved logging (remember both the old and the new status reference), show status change in the Change Log (Message column).</line>
 			</description>
 		</item>
 	</category>
