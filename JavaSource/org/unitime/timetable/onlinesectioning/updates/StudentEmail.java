@@ -50,6 +50,8 @@ import java.util.regex.Pattern;
 
 import javax.activation.DataSource;
 import javax.imageio.ImageIO;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 
 import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.commons.Email;
@@ -246,11 +248,23 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						Email email = Email.createEmail();
 
 						email.addRecipient(dbStudent.getEmail(), helper.getStudentNameFormat().format(dbStudent));
+						helper.logOption("recipient", dbStudent.getEmail());
 						
 						if (getCC() != null && !getCC().isEmpty()) {
-							helper.logOption("cc", getCC());
+							String suffix = ApplicationProperty.EmailDefaultAddressSuffix.value();
 							for (StringTokenizer s = new StringTokenizer(getCC(), ",;"); s.hasMoreTokens(); ) {
-								email.addRecipientCC(s.nextToken(), null);
+								String address = s.nextToken().trim();
+								if (address.isEmpty()) continue;
+								if (suffix != null && address.indexOf('@') < 0)
+									address += suffix;
+								try {
+									new InternetAddress(address, true);
+								} catch (AddressException e) {
+									helper.warn(GWT.badEmailAddress(address, e.getMessage()));
+									continue;
+								}
+								email.addRecipientCC(address, null);
+								helper.logOption("cc", address);
 							}
 						}
 						
