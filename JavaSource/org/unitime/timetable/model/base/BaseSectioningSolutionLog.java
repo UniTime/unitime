@@ -37,6 +37,8 @@ public abstract class BaseSectioningSolutionLog implements Serializable {
 	private Date iTimeStamp;
 	private String iInfo;
 	private byte[] iData;
+	private String iNote;
+	private String iConfig;
 
 	private Session iSession;
 	private TimetableManager iOwner;
@@ -45,6 +47,8 @@ public abstract class BaseSectioningSolutionLog implements Serializable {
 	public static String PROP_TIME_STAMP = "timeStamp";
 	public static String PROP_INFO = "info";
 	public static String PROP_DATA = "data";
+	public static String PROP_NOTE = "note";
+	public static String PROP_CONFIG = "config";
 
 	public BaseSectioningSolutionLog() {
 		initialize();
@@ -69,6 +73,12 @@ public abstract class BaseSectioningSolutionLog implements Serializable {
 	public byte[] getData() { return iData; }
 	public void setData(byte[] data) { iData = data; }
 
+	public String getNote() { return iNote; }
+	public void setNote(String note) { iNote = note; }
+
+	public String getConfig() { return iConfig; }
+	public void setConfig(String config) { iConfig = config; }
+
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
@@ -92,8 +102,10 @@ public abstract class BaseSectioningSolutionLog implements Serializable {
 
 	public String toDebugString() {
 		return "SectioningSolutionLog[" +
+			"\n	Config: " + getConfig() +
 			"\n	Data: " + getData() +
 			"\n	Info: " + getInfo() +
+			"\n	Note: " + getNote() +
 			"\n	Owner: " + getOwner() +
 			"\n	Session: " + getSession() +
 			"\n	TimeStamp: " + getTimeStamp() +

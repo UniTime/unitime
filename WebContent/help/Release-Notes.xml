@@ -121,6 +121,13 @@
 				<line>Fixed a problem with curriculum reservations not counting matching students that are already enrolled and that are excluded from the run.</line>
 			</description>
 		</item>
+		<item>
+			<name>Published Schedule Runs: Config &amp; Notes</name>
+			<description>
+				<line>Added solver configuration on the published run.</line>
+				<line>Added ability to put in a note.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>

@@ -144,6 +144,10 @@ public class PublishedSectioningSolutionsBackend implements GwtRpcImplementation
 		case REMOVE:
 			SectioningSolutionLogDAO.getInstance().delete(solution);
 			break;
+		case NOTE:
+			solution.setNote(request.getNote());
+			SectioningSolutionLogDAO.getInstance().update(solution);
+			break;
 		}
 		
 		GwtRpcResponseList<PublishedSectioningSolutionInterface> ret = new GwtRpcResponseList<PublishedSectioningSolutionInterface>();
@@ -161,6 +165,9 @@ public class PublishedSectioningSolutionsBackend implements GwtRpcImplementation
 			pss.setCanLoad(!pss.isLoaded());
 			pss.setClonned(log.getUniqueId().equals(mySolverId));
 			pss.setCanClone(mySolver == null);
+			pss.setConfig(log.getConfig());
+			pss.setNote(log.getNote());
+			pss.setCanChangeNote(true);
 			if (pss.isLoaded())
 				pss.setSelected(("PUBLISHED_" + context.getUser().getCurrentAcademicSessionId()).equals(context.getAttribute(SessionAttribute.StudentSectioningUser)));
 			else

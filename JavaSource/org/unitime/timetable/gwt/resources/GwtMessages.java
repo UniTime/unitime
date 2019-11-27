@@ -726,6 +726,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Owner")
 	String colOwner();
 	
+	@DefaultMessage("Configuration")
+	String colSolverConfig();
+	
 	@DefaultMessage("Restrictions")
 	String colRestrictions();
 	
@@ -1658,6 +1661,15 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Load into interactive solver:")
 	String propLoadInteractiveSolver();
+	
+	@DefaultMessage("Time:")
+	String propTimeStamp();
+	
+	@DefaultMessage("Owner:")
+	String propOwner();
+	
+	@DefaultMessage("Configuration:")
+	String propSolutionConfig();
 	
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
