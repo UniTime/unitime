@@ -152,6 +152,12 @@
 				<line>Fixed an issue with the DistributionConflict comparator (when two constraints with different number of exams are compared).</line>
 			</description>
 		</item>
+		<item>
+			<name>Examination Name: T for course title</name>
+			<description>
+				<line>Added ability to include course title in the examination name (using %T).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>CPSolver updated to version 1.3.189 (was 1.3.185)</title>

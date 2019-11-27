@@ -886,12 +886,14 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
      * m ... instructional method reference
      * M ... instructional method label
      * _ ... space
+     * T ... course title
      */
 	protected String genName(char code) {
         switch (code) {
         case '_' : return " ";
         case 's' : return getCourse().getSubjectArea().getSubjectAreaAbbreviation();
         case 'c' : return getCourse().getCourseNbr();
+        case 'T' : return getCourse().getTitle();
         case 'i' :
             switch (getOwnerType()) {
             case sOwnerTypeClass : return ((Class_)getOwnerObject()).getSchedulingSubpart().getItypeDesc().trim();
@@ -968,7 +970,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             default:
             	if (getCourse().getInstructionalOffering().getInstrOfferingConfigs().size() == 1) {
             		im = getCourse().getInstructionalOffering().getInstrOfferingConfigs().iterator().next().getInstructionalMethod();
-            		if (im != null) return im.getLabel();	
+            		if (im != null) return im.getReference();	
             	}
             	return "";
         	}
