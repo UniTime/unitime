@@ -296,7 +296,6 @@ public class LookupTables {
 		query.append("select distinct i from DepartmentalInstructor i ");
 		query.append(" where i.department.session.uniqueId = :acadSessionId ");
 		query.append(clause);
-        query.append(" order by upper(i.lastName), upper(i.firstName) ");
         
         DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
 		org.hibernate.Session hibSession = idao.getSession();
@@ -309,6 +308,7 @@ public class LookupTables {
 		List result = q.list();
         Vector v = new Vector(result.size());
         Vector h = new Vector(result.size());
+        Collections.sort(result);
 	    for (Iterator i=result.iterator();i.hasNext();) {
             DepartmentalInstructor di = (DepartmentalInstructor)i.next();
             String name = di.getName(instructorNameFormat);

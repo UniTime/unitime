@@ -201,6 +201,16 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Other</title>
+		<item>
+			<name>PostgreSQL</name>
+			<description>
+				<line>Added support for PostgreSQL.</line>
+				<line>See http://help.unitime.org/PostgreSQL for more details.</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>

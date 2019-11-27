@@ -53,14 +53,13 @@ public class ItypeDesc extends BaseItypeDesc implements Comparable<Object> {
         return new TreeSet<ItypeDesc>(
                 new ItypeDescDAO().
                 getSession().
-                createQuery("select i from ItypeDesc i"+(basic?" where i.basic=1":"")).
+                createQuery("select i from ItypeDesc i"+(basic?" where i.basic = true":"")).
                 setCacheable(true).
                 list());
     }
 
     public String getBasicType() {
-        if (getBasic()>=0 && getBasic()<sBasicTypes.length) return sBasicTypes[getBasic()];
-        return "Unknown";
+    	return sBasicTypes[getBasic() ? 1 : 0];
     }
     
     public int compareTo(Object o) {

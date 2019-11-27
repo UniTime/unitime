@@ -723,7 +723,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 			int id = 0;
 			for (String s: ids) {
 				list += (list.isEmpty() ? "" : ", ") + ":Xi" + id;
-				query.addParameter("id", "Xi" + id, s);
+				query.addParameter("id", "Xi" + id, Long.valueOf(s));
 				id++;
 			}
 			query.addWhere("id", "l.uniqueId in (" + list + ")");

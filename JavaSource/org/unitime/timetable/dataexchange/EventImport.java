@@ -597,12 +597,13 @@ public class EventImport extends EventRelatedImports {
 		}
 
 		return((Class_) getHibSession().
-		createQuery("select c from Class_ as c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session as s where s.academicInitiative = :academicInititive and s.academicYear = :aYear and s.academicTerm = :aTerm and c.externalUniqueId = :anExternalId and rownum = 1").
+		createQuery("select c from Class_ as c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session as s where s.academicInitiative = :academicInititive and s.academicYear = :aYear and s.academicTerm = :aTerm and c.externalUniqueId = :anExternalId").
 		setString("academicInititive", academicInitiative).
 		setString("aYear", year).
 		setString("aTerm", term).
 		setString("anExternalId", externalId).
 		setCacheable(true).
+		setMaxResults(1).
 		uniqueResult());
 
 	}
@@ -613,12 +614,13 @@ public class EventImport extends EventRelatedImports {
 		}
 
 		return((InstructionalOffering) getHibSession().
-		createQuery("select io from InstructionalOffering as io inner join io.session as s where s.academicInitiative = :academicInititive and s.academicYear = :aYear and s.academicTerm = :aTerm and io.externalUniqueId = :anExternalId and rownum = 1").
+		createQuery("select io from InstructionalOffering as io inner join io.session as s where s.academicInitiative = :academicInititive and s.academicYear = :aYear and s.academicTerm = :aTerm and io.externalUniqueId = :anExternalId").
 		setString("academicInititive", academicInitiative).
 		setString("aYear", year).
 		setString("aTerm", term).
 		setString("anExternalId", externalId).
 		setCacheable(true).
+		setMaxResults(1).
 		uniqueResult());
 
 	}
@@ -629,12 +631,13 @@ public class EventImport extends EventRelatedImports {
 		}
 
 		return((CourseOffering) getHibSession().
-		createQuery("select co from CourseOffering as co inner join co.instructionalOffering.session as s where s.academicInitiative = :academicInititive and s.academicYear = :aYear and s.academicTerm = :aTerm and co.externalUniqueId = :anExternalId and rownum = 1").
+		createQuery("select co from CourseOffering as co inner join co.instructionalOffering.session as s where s.academicInitiative = :academicInititive and s.academicYear = :aYear and s.academicTerm = :aTerm and co.externalUniqueId = :anExternalId").
 		setString("academicInititive", academicInitiative).
 		setString("aYear", year).
 		setString("aTerm", term).
 		setString("anExternalId", externalId).
 		setCacheable(true).
+		setMaxResults(1).
 		uniqueResult());
 
 	}

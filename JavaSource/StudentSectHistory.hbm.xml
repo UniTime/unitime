@@ -42,9 +42,8 @@
         <property
             name="data"
             column="data"
-            type="org.unitime.commons.hibernate.blob.XmlBlobType"
-            not-null="true"
-            length="65535"/>
+            type="byte[]"
+            not-null="true"/>
 
         <property
             name="type"

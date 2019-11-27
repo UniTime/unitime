@@ -356,7 +356,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         	label += " [" + ioc.getName() + "]";
         frm.setInstructionalTypeLabel(label);
         frm.setUnlimitedEnroll(ioc.isUnlimitedEnrollment());
-        frm.setItypeBasic(ss.getItype()==null || ss.getItype().getBasic()==1);
+        frm.setItypeBasic(ss.getItype()==null || ss.getItype().getBasic());
         if (!frm.getItypeBasic())
             LookupTables.setupItypes(request, false);
         frm.setSubjectArea(co.getSubjectAreaAbbv());

@@ -75,7 +75,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 	public static TreeSet<Department> findAllExternal(Long sessionId) {
 		return new TreeSet<Department>((new DepartmentDAO()).
 				getSession().
-				createQuery("select distinct d from Department as d where d.externalManager=1 and d.session.uniqueId=:sessionId").
+				createQuery("select distinct d from Department as d where d.externalManager=true and d.session.uniqueId=:sessionId").
 				setLong("sessionId", sessionId.longValue()).
 				setCacheable(true).
 				list());
@@ -84,7 +84,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
     public static TreeSet findAllNonExternal(Long sessionId) {
         return new TreeSet((new DepartmentDAO()).
                 getSession().
-                createQuery("select distinct d from Department as d where d.externalManager=0 and d.session.uniqueId=:sessionId").
+                createQuery("select distinct d from Department as d where d.externalManager=false and d.session.uniqueId=:sessionId").
                 setLong("sessionId", sessionId.longValue()).
                 setCacheable(true).
                 list());

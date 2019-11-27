@@ -39,6 +39,7 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.MySQLDialect;
 import org.hibernate.dialect.Oracle8iDialect;
+import org.hibernate.dialect.PostgreSQL9Dialect;
 import org.hibernate.dialect.function.SQLFunctionTemplate;
 import org.hibernate.dialect.function.StandardSQLFunction;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
@@ -129,23 +130,32 @@ public class HibernateUtil {
         return value;
     }
     
-    public static void fixSchemaInFormulas(Configuration cfg) {
+    public static void fixSchemaInFormulas(Configuration cfg) throws ClassNotFoundException {
     	cfg.buildMappings();
-        String schema = cfg.getProperty("default_schema"); 
-        if (schema!=null) {
-            for (Iterator i=cfg.getClassMappings();i.hasNext();) {
-                PersistentClass pc = (PersistentClass)i.next();
-                for (Iterator j=pc.getPropertyIterator();j.hasNext();) {
-                    Property p = (Property)j.next();
-                    for (Iterator k=p.getColumnIterator();k.hasNext();) {
-                        Selectable c = (Selectable)k.next();
-                        if (c instanceof Formula) {
-                            Formula f = (Formula)c;
-                            if (f.getFormula()!=null && f.getFormula().indexOf("%SCHEMA%")>=0) {
-                                f.setFormula(f.getFormula().replaceAll("%SCHEMA%", schema));
-                                sLog.debug("Schema updated in "+pc.getClassName()+"."+p.getName()+" to "+f.getFormula());
-                            }
+    	Class dialect = Class.forName(cfg.getProperty("dialect"));
+    	String schema = cfg.getProperty("default_schema");
+    	for (Iterator i=cfg.getClassMappings();i.hasNext();) {
+            PersistentClass pc = (PersistentClass)i.next();
+            for (Iterator j=pc.getPropertyIterator();j.hasNext();) {
+                Property p = (Property)j.next();
+                for (Iterator k=p.getColumnIterator();k.hasNext();) {
+                    Selectable c = (Selectable)k.next();
+                    if (c instanceof Formula) {
+                        Formula f = (Formula)c;
+                        boolean updated = false;
+                        if (schema != null && f.getFormula() != null && f.getFormula().indexOf("%SCHEMA%")>=0) {
+                            f.setFormula(f.getFormula().replaceAll("%SCHEMA%", schema));
+                            sLog.debug("Schema updated in "+pc.getClassName()+"."+p.getName()+" to "+f.getFormula());
                         }
+                        if (f.getFormula()!=null && (f.getFormula().indexOf("%TRUE%")>=0 || f.getFormula().indexOf("%FALSE%")>=0)) {
+                        	if (isPostgress(dialect)) {
+                        		f.setFormula(f.getFormula().replaceAll("%TRUE%", "'t'").replaceAll("%FALSE%", "'f'"));
+                        	} else {
+                        		f.setFormula(f.getFormula().replaceAll("%TRUE%", "1").replaceAll("%FALSE%", "0"));
+                        	}
+                        }
+                        if (updated)
+                        	sLog.debug("Schema updated in "+pc.getClassName()+"."+p.getName()+" to "+f.getFormula());
                     }
                 }
             }
@@ -270,6 +280,8 @@ public class HibernateUtil {
         
         addBitwiseOperationsToDialect();
         sLog.debug("  -- bitwise operation added to the dialect if needed");
+        
+        addAddDateToDialect();
         
         DatabaseUpdate.update();
     }
@@ -449,8 +461,16 @@ public class HibernateUtil {
     	return Oracle8iDialect.class.isAssignableFrom(getDialect());
     }
     
+    public static boolean isPostgress() {
+    	return PostgreSQL9Dialect.class.isAssignableFrom(getDialect());
+    }
+    
+    public static boolean isPostgress(Class dialect) {
+    	return PostgreSQL9Dialect.class.isAssignableFrom(dialect);
+    }
+    
     public static String addDate(String dateSQL, String incrementSQL) {
-        if (isMySQL())
+        if (isMySQL() || isPostgress())
             return "adddate("+dateSQL+","+incrementSQL+")";
         else
             return dateSQL+(incrementSQL.startsWith("+")||incrementSQL.startsWith("-")?"":"+")+incrementSQL;
@@ -459,12 +479,14 @@ public class HibernateUtil {
     public static String dayOfWeek(String field) {
     	if (isOracle())
     		return "(trunc(" + field + ") - trunc(" + field + ", 'IW'))";
+    	else if (isPostgress())
+    		return "extract(isodow from " + field + ") - 1";
     	else
     		return "weekday(" + field + ")";
     }
     
     public static String date(Date date) {
-    	if (isOracle())
+    	if (isOracle() || isPostgress())
     		return "to_date('" + new SimpleDateFormat("yyyy-MM-dd").format(date) + "', 'YYYY-MM-DD')";
     	else
     		return "str_to_date('" + new SimpleDateFormat("yyyy-MM-dd").format(date) + "', '%Y-%m-%d')";
@@ -475,9 +497,19 @@ public class HibernateUtil {
     	Dialect dialect = hibSessionFactory.getDialect();
     	if (!dialect.getFunctions().containsKey("bit_and")) {
     		if (isOracle())
-    			dialect.getFunctions().put("bit_and", new StandardSQLFunction("bitand", IntegerType.INSTANCE));  
+    			dialect.getFunctions().put("bit_and", new StandardSQLFunction("bitand", IntegerType.INSTANCE));
+    		else if (isPostgress())
+    			dialect.getFunctions().put("bit_and", new SQLFunctionTemplate(IntegerType.INSTANCE, "cast(?1 as int) & cast(?2 as int)"));
     		else
     			dialect.getFunctions().put("bit_and", new SQLFunctionTemplate(IntegerType.INSTANCE, "?1 & ?2"));
+    	}
+    }
+    
+    public static void addAddDateToDialect() {
+    	SessionFactoryImplementor hibSessionFactory = (SessionFactoryImplementor)new _RootDAO().getSession().getSessionFactory();
+    	Dialect dialect = hibSessionFactory.getDialect();
+    	if (isPostgress() && !dialect.getFunctions().containsKey("adddate")) {
+    		dialect.getFunctions().put("adddate", new SQLFunctionTemplate(IntegerType.INSTANCE, "?1 + (?2) * interval '1 day'"));
     	}
     }
 }

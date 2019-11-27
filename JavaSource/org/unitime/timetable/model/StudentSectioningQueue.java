@@ -19,6 +19,9 @@
 */
 package org.unitime.timetable.model;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -27,8 +30,13 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.SAXReader;
+import org.dom4j.io.XMLWriter;
+import org.hibernate.HibernateException;
 import org.unitime.timetable.model.base.BaseStudentSectioningQueue;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.security.UserContext;
@@ -82,6 +90,30 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 		else
 			return (Date) hibSession.createQuery("select max(q.timeStamp) from StudentSectioningQueue q").uniqueResult();
 			
+	}
+	
+	public Document getMessage() {
+		try {
+			return new SAXReader().read(new StringReader(getData()));
+		} catch (DocumentException e) {
+			throw new HibernateException(e.getMessage(),e);
+		}
+	}
+	
+	public void setMessage(Document document) {
+		try {
+			if (document == null) {
+				setData(null);
+			} else {
+				StringWriter string = new StringWriter();
+				XMLWriter writer = new XMLWriter(string, OutputFormat.createCompactFormat());
+				writer.write(document);
+				writer.flush(); writer.close();
+				setData(string.toString());
+			}
+		} catch (IOException e) {
+			throw new HibernateException(e.getMessage(),e);
+		}
 	}
 
 	@Override

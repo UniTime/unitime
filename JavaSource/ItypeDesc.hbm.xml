@@ -53,9 +53,8 @@
         <property
             name="basic"
             column="basic"
-            type="java.lang.Integer"
-            not-null="false"
-            length="1"/>
+            type="java.lang.Boolean"
+            not-null="false"/>
 
         <property
             name="organized"

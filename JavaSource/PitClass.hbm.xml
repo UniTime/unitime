@@ -63,7 +63,7 @@
 		    name="controllingDept"
 		    class="Department"
 		    lazy="false"
-		    formula=" ( select sa.department_uniqueid from %SCHEMA%.pit_sched_subpart ss, %SCHEMA%.pit_instr_offer_config ioc, %SCHEMA%.pit_instr_offering io, %SCHEMA%.pit_course_offering co, %SCHEMA%.subject_area sa where ss.uniqueid = pit_subpart_id and ioc.uniqueid = ss.pit_config_id and io.uniqueid = ioc.pit_instr_offr_id and co.pit_instr_offr_id = io.uniqueid and co.is_control = 1 and sa.uniqueid = co.subject_area_id ) "/>
+		    formula=" ( select sa.department_uniqueid from %SCHEMA%.pit_sched_subpart ss, %SCHEMA%.pit_instr_offer_config ioc, %SCHEMA%.pit_instr_offering io, %SCHEMA%.pit_course_offering co, %SCHEMA%.subject_area sa where ss.uniqueid = pit_subpart_id and ioc.uniqueid = ss.pit_config_id and io.uniqueid = ioc.pit_instr_offr_id and co.pit_instr_offr_id = io.uniqueid and co.is_control = %TRUE% and sa.uniqueid = co.subject_area_id ) "/>
 		
 		<many-to-one
 		    name="clazz"

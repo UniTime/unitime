@@ -101,8 +101,7 @@
         <property
             name="detail"
             column="detail"
-            type="org.unitime.commons.hibernate.blob.XmlBlobType"
-            length="65535"/>
+            type="byte[]"/>
 
     </class>
 </hibernate-mapping>

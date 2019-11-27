@@ -65,7 +65,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 	public void rollForwardInstructionalOfferingsForASubjectArea(String subjectAreaAbbreviation, Session fromSession, Session toSession){
 		CourseOfferingDAO coDao = new CourseOfferingDAO();
 		String query = "from CourseOffering as co where co.subjectArea.subjectAreaAbbreviation = '" + subjectAreaAbbreviation
-			+ "' and co.isControl = 1"
+			+ "' and co.isControl = true"
 			+ " and co.subjectArea.session.uniqueId = " + fromSession.getUniqueId();
 		List l = coDao.getQuery(query).list();
 		if (l != null){
@@ -81,7 +81,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		String query = "select co from CourseOffering co"
 				+ " where co.subjectArea.subjectAreaAbbreviation = '" + subjectAreaAbbreviation + "'"
 				+ "  and co.subjectArea.session.uniqueId = " + fromSession.getUniqueId().longValue()
-				+ "  and co.isControl = 1"
+				+ "  and co.isControl = true"
 				+ "  and co.instructionalOffering.notOffered = false"
 				+ "  and 0 = (select count(cc) from CourseCatalog cc"
 				+ " where cc.session.uniqueId = " + toSession.getUniqueId().longValue()
@@ -172,7 +172,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		CourseOfferingDAO coDao = new CourseOfferingDAO();
 		String query = "from CourseOffering as co where co.subjectArea.subjectAreaAbbreviation = '" + subjectAreaAbbreviation
 		+ "' and co.getCourseNbr = '" + courseNumber
-		+ "' and co.isControl = 1"
+		+ "' and co.isControl = true"
 		+ " and co.subjectArea.session.uniqueId = " + fromSession.getUniqueId();
 		List l = coDao.getQuery(query).list();
 		if (l != null && l.size() > 0){

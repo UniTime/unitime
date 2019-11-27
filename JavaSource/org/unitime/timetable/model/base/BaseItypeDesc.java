@@ -34,7 +34,7 @@ public abstract class BaseItypeDesc implements Serializable {
 	private String iAbbv;
 	private String iDesc;
 	private String iSis_ref;
-	private Integer iBasic;
+	private Boolean iBasic;
 	private Boolean iOrganized;
 
 	private ItypeDesc iParent;
@@ -69,8 +69,9 @@ public abstract class BaseItypeDesc implements Serializable {
 	public String getSis_ref() { return iSis_ref; }
 	public void setSis_ref(String sis_ref) { iSis_ref = sis_ref; }
 
-	public Integer getBasic() { return iBasic; }
-	public void setBasic(Integer basic) { iBasic = basic; }
+	public Boolean isBasic() { return iBasic; }
+	public Boolean getBasic() { return iBasic; }
+	public void setBasic(Boolean basic) { iBasic = basic; }
 
 	public Boolean isOrganized() { return iOrganized; }
 	public Boolean getOrganized() { return iOrganized; }

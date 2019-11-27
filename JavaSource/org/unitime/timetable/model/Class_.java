@@ -1013,7 +1013,7 @@ public class Class_ extends BaseClass_ {
     public static List findAllForControllingSubjectArea(String subjectAreaAbbv, Long sessionId, org.hibernate.Session hibSession) {
     	return hibSession.
     		createQuery("select distinct c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as co where " +
-    				"co.subjectArea.subjectAreaAbbreviation=:subjectAreaAbbv and c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and co.isControl=1").
+    				"co.subjectArea.subjectAreaAbbreviation=:subjectAreaAbbv and c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and co.isControl=true").
     		setString("subjectAreaAbbv",subjectAreaAbbv).
     		setLong("sessionId",sessionId.longValue()).
 			setFlushMode(FlushMode.MANUAL).

@@ -93,7 +93,7 @@ public class AdministrationPermissions {
 			
 			int nrOffered = ((Number)DepartmentDAO.getInstance().getSession().
                     createQuery("select count(io) from CourseOffering co inner join co.instructionalOffering io " +
-                    		"where co.subjectArea.department.uniqueId=:deptId and io.notOffered = 0").
+                    		"where co.subjectArea.department.uniqueId=:deptId and io.notOffered = false").
                     setLong("deptId", source.getUniqueId()).setCacheable(true).uniqueResult()).intValue();
             
 			return nrOffered == 0;

@@ -126,7 +126,7 @@ public class ItypeDescEditForm extends ActionForm {
         setAbbreviation(itype.getAbbv());
         setName(itype.getDesc());
         setReference(itype.getSis_ref());
-        setBasicType(itype.getBasic());
+        setBasicType(itype.getBasic() ? 1 : 0);
         setParent(itype.getParent()==null?null:itype.getParent().getItype());
         setOrganized(itype.isOrganized());
     }
@@ -139,7 +139,7 @@ public class ItypeDescEditForm extends ActionForm {
         itype.setAbbv(getAbbreviation());
         itype.setDesc(getName());
         itype.setSis_ref(getReference());
-        itype.setBasic(getBasicType());
+        itype.setBasic(getBasicType() == 1);
         itype.setParent(getParent()==null?null:new ItypeDescDAO().get(getParent()));
         itype.setOrganized(getOrganized());
         hibSession.saveOrUpdate(itype);
