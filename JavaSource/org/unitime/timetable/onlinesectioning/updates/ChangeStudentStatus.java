@@ -39,8 +39,6 @@ import org.unitime.timetable.onlinesectioning.model.XStudentNote;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 
-import com.google.gwt.core.client.GWT;
-
 /**
  * @author Tomas Muller
  */
