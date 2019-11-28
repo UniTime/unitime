@@ -73,6 +73,7 @@ import org.hibernate.FlushMode;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.Query;
 import org.hibernate.Transaction;
+import org.hibernate.type.StringType;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.resources.CPSolverMessages;
@@ -1427,10 +1428,11 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	return ic;
     }
     
-    private void loadInstructorAvailabilities(org.hibernate.Session hibSession, String puids) {
+    private void loadInstructorAvailabilities(org.hibernate.Session hibSession, Set<String> puids) {
     	Query q = hibSession.createQuery("select distinct i.externalUniqueId, a from ClassInstructor ci inner join ci.instructor i inner join ci.classInstructing.assignments a " +
-    			"where ci.lead = true and i.externalUniqueId in ("+puids+") and a.solution.owner.session.uniqueId=:sessionId and a.solution.commited=true and a.solution.owner.uniqueId not in ("+iSolverGroupIds+")");
+    			"where ci.lead = true and i.externalUniqueId in :puids and a.solution.owner.session.uniqueId=:sessionId and a.solution.commited=true and a.solution.owner.uniqueId not in ("+iSolverGroupIds+")");
     	q.setLong("sessionId",iSessionId.longValue());
+    	q.setParameterList("puids", puids, StringType.INSTANCE);
 		for (Iterator i=q.iterate();i.hasNext();) {
 			Object[] x = (Object[])i.next();
 			String puid = (String)x[0];
@@ -1448,27 +1450,26 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     
     private void loadInstructorAvailabilities(org.hibernate.Session hibSession) {
     	setPhase(MSG.phaseLoadInstructorAvailabilities(), 1);
-    	StringBuffer puids = new StringBuffer();
-    	int idx = 0;
+    	Set<String> puids = new HashSet<String>();
     	for (Enumeration e=iInstructors.elements();e.hasMoreElements();) {
     		InstructorConstraint ic = (InstructorConstraint)e.nextElement();
     		if (ic.getPuid()==null) continue;
-    		if (puids.length()>0) puids.append(",");
-    		puids.append("'"+ic.getPuid()+"'"); idx++;
-    		if (idx==100) {
-    			loadInstructorAvailabilities(hibSession, puids.toString());
-    			puids = new StringBuffer();
-				idx = 0;
+    		puids.add(ic.getPuid());
+    		if (puids.size() == 100) {
+    			loadInstructorAvailabilities(hibSession, puids);
+    			puids.clear();
     		}
     	}
-    	if (puids.length()>0) loadInstructorAvailabilities(hibSession, puids.toString());
+    	if (!puids.isEmpty()) loadInstructorAvailabilities(hibSession, puids);
     	incProgress();
     }
     
-    private void loadInstructorStudentConflicts(org.hibernate.Session hibSession, String puids) {
+    private void loadInstructorStudentConflicts(org.hibernate.Session hibSession, Set<String> puids) {
     	for (Object[] x: (List<Object[]>)hibSession.createQuery("select s.uniqueId, s.externalUniqueId from Student s " +
-    			"where s.session.uniqueId = :sessionId and s.externalUniqueId in (" + puids + ")")
-    			.setLong("sessionId",iSessionId.longValue()).list()) {
+    			"where s.session.uniqueId = :sessionId and s.externalUniqueId in :puids")
+    			.setLong("sessionId",iSessionId.longValue())
+    			.setParameterList("puids", puids, StringType.INSTANCE)
+    			.list()) {
     		Long studentId = (Long)x[0];
     		String puid = (String)x[1];
 			InstructorConstraint ic = iInstructors.get(puid);
@@ -1486,19 +1487,16 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     
     private void loadInstructorStudentConflicts(org.hibernate.Session hibSession) {
     	setPhase(MSG.phaseLoadInstructorStudentConflicts(), 1);
-    	StringBuffer puids = new StringBuffer();
-    	int idx = 0;
+    	Set<String> puids = new HashSet<String>();
     	for (InstructorConstraint ic: iInstructors.values()) {
     		if (ic.getPuid() == null) continue;
-    		if (puids.length() > 0) puids.append(",");
-    		puids.append("'"+ic.getPuid()+"'"); idx++;
-    		if (idx==100) {
-    			loadInstructorStudentConflicts(hibSession, puids.toString());
-    			puids = new StringBuffer();
-				idx = 0;
+    		puids.add(ic.getPuid());
+    		if (puids.size() == 100) {
+    			loadInstructorStudentConflicts(hibSession, puids);
+    			puids.clear();
     		}
     	}
-    	if (puids.length()>0) loadInstructorStudentConflicts(hibSession, puids.toString());
+    	if (!puids.isEmpty()) loadInstructorStudentConflicts(hibSession, puids);
     	incProgress();
     }
     
