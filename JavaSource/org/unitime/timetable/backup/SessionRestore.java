@@ -90,6 +90,7 @@ import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.EventServiceProvider;
 import org.unitime.timetable.model.ExamOwner;
@@ -457,6 +458,13 @@ public class SessionRestore implements SessionRestoreInterface {
 		if (entity.getObject() instanceof ItypeDesc) {
 			ItypeDesc itype = (ItypeDesc)entity.getObject();
 			itype.setItype(new Integer(entity.getId()));
+		}
+		if (entity.getObject() instanceof DistributionType) {
+			int maxReqId = ((Number)iHibSession.createQuery("select max(requirementId) from DistributionType").uniqueResult()).intValue();
+			int distReqId = 0;
+			for (Entity e: iEntities.get(DistributionType.class.getName()).values())
+				if (e.getId().compareTo(entity.getId()) <= 0 && ((DistributionType)e.getObject()).getUniqueId() == null) distReqId ++;
+			((DistributionType)entity.getObject()).setRequirementId(maxReqId + distReqId);
 		}
 		return true;
 	}
