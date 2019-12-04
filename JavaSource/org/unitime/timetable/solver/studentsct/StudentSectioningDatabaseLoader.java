@@ -88,7 +88,6 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
-import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.ReservationInterface.OverrideType;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Advisor;
@@ -1113,7 +1112,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	} else {
         		action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
         	}
-		} catch (SectioningException e) {
+		} catch (Exception e) {
 			action.setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
 			if (e.getCause() != null) {
 				action.addMessage(OnlineSectioningLog.Message.newBuilder()
@@ -2577,7 +2576,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	} else {
         		action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
         	}
-		} catch (SectioningException e) {
+		} catch (Exception e) {
 			action.setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
 			if (e.getCause() != null) {
 				action.addMessage(OnlineSectioningLog.Message.newBuilder()
