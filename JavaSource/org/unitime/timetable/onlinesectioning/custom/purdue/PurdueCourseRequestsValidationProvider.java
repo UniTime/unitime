@@ -1807,6 +1807,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				Set<Section> sections = new HashSet<Section>();
 				for (XCourseId c: cr.getCourseIds()) {
 					XOffering offering = server.getOffering(c.getOfferingId());
+					if (offering == null) continue;
 					Course clonnedCourse = offering.toCourse(c.getCourseId(), original, server.getExpectations(c.getOfferingId()), offering.getDistributions(), server.getEnrollments(c.getOfferingId()));
 					courses.add(clonnedCourse);
 					model.addOffering(clonnedCourse.getOffering());
@@ -1820,6 +1821,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					if (offering != null && offering.hasLearningCommunityReservation(original, c))
 						lcCourses.add(c);
 				}
+				if (courses.isEmpty()) continue;
 				CourseRequest clonnedRequest = new CourseRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), s, courses, cr.isWaitlist(), cr.getTimeStamp() == null ? null : cr.getTimeStamp().getTime());
 				if (!sections.isEmpty())
 					preferredSections.put(clonnedRequest, sections);
