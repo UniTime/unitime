@@ -1271,6 +1271,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Integer iPrefSectionConflict, iTotalPrefSectionConflict;
 		private float[] iRequestCredit = null, iRequestTotalCredit = null;
 		private Integer iOverrideNeeded, iTotalOverrideNeeded;
+		private Boolean iMyStudent;
 		
 		public StudentInfo() {}
 		
@@ -1470,6 +1471,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public boolean hasTotalPrefSectionConflict() { return iTotalPrefSectionConflict != null && iTotalPrefSectionConflict > 0; }
 		public void setTotalPrefSectionConflict(Integer conf) { iTotalPrefSectionConflict = conf; }
 		public Integer getTotalPrefSectionConflict() { return iTotalPrefSectionConflict; }
+		
+		public boolean isMyStudent() { return iMyStudent != null && iMyStudent.booleanValue(); }
+		public Boolean getMyStudent() { return iMyStudent; }
+		public void setMyStudent(Boolean myStudent) { iMyStudent = myStudent; }
 	}
 
 	public static class SectioningAction implements IsSerializable, Serializable, Comparable<SectioningAction> {

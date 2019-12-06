@@ -41,6 +41,7 @@ import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable.TopCell;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
+import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
@@ -725,7 +726,27 @@ public class SectioningStatusPage extends Composite {
 			@Override
 			public void onSuccess(List<StudentStatusInfo> result) {
 				iStates = new TreeSet<StudentStatusInfo>(result);
-				iStudentStatusDialog = new StudentStatusDialog(iStates);
+				iStudentStatusDialog = new StudentStatusDialog(iStates, new StudentStatusDialog.StudentStatusConfirmation() {
+					@Override
+					public boolean isAllMyStudents() {
+						if (iSelectedStudentIds.size() <= 1) return true;
+						for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+							StudentInfo i = iStudentTable.getData(row);
+							if (i != null && i.getStudent() != null) {
+								Widget w = iStudentTable.getWidget(row, 0);
+								if (w instanceof CheckBox && ((CheckBox)w).getValue()) {
+									if (!i.isMyStudent()) return false; 
+								}
+							}
+						}
+						return true;
+					}
+					
+					@Override
+					public int getStudentCount() {
+						return iSelectedStudentIds.size();
+					}
+				});
 			}
 		});
 
@@ -1532,8 +1553,7 @@ public class SectioningStatusPage extends Composite {
 						public boolean isApplicable() {
 							return iSelectedStudentIds.size() > 0 && iProperties != null && iProperties.isChangeStatus();
 						}
-						@Override
-						public void execute() {
+						private void changeStatus() {
 							List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
 							LoadingWidget.getInstance().show(MESSAGES.changingStatusTo(info.getLabel()));
 							iSectioningService.changeStatus(studentIds, null, info.getReference(), new AsyncCallback<Boolean>() {
@@ -1559,6 +1579,29 @@ public class SectioningStatusPage extends Composite {
 									LoadingWidget.getInstance().hide();
 								}
 							});
+						}
+						@Override
+						public void execute() {
+							boolean allMine = true;
+							for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+								StudentInfo i = iStudentTable.getData(row);
+								if (i != null && i.getStudent() != null) {
+									Widget w = iStudentTable.getWidget(row, 0);
+									if (w instanceof CheckBox && ((CheckBox)w).getValue()) {
+										if (!i.isMyStudent()) { allMine = false; break; } 
+									}
+								}
+							}
+							if (!allMine) {
+								UniTimeConfirmationDialog.confirm(MESSAGES.confirmStatusChange(info.getLabel(), iSelectedStudentIds.size()), new Command() {
+									@Override
+									public void execute() {
+										changeStatus();
+									}
+								});
+							} else {
+								changeStatus();
+							}
 						}
 					});
 				}

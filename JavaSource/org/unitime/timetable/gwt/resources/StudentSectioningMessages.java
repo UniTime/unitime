@@ -2376,4 +2376,16 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("No request note. Click here to provide a note.")
 	String noRequestNoteClickToChange();
+	
+	@DefaultMessage("Do you really want to change note for {0}\u00a0students?")
+	String confirmNoteChange(int studentCount);
+	
+	@DefaultMessage("Do you really want to send an email to {0}\u00a0students?")
+	String confirmSendEmail(int studentCount);
+		
+	@DefaultMessage("Do you really want to change status to {0} for {1}\u00a0students?")
+	String confirmStatusChange(String newStatus, int studentCount);
+	
+	@DefaultMessage("Do you really want to change note and set status to {0} for {1}\u00a0students?")
+	String confirmStatusNoteChange(String newStatus, int studentCount);
 }
