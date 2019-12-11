@@ -811,6 +811,28 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				}
 			}
 		}
+		
+		boolean questionDropCritical = false;
+		for (XRequest r: original.getRequests()) {
+			if (r instanceof XCourseRequest) {
+				XCourseRequest cr = (XCourseRequest)r;
+				if (cr.isCritical() && !cr.isAlternative() && !cr.getCourseIds().isEmpty()) {
+					boolean hasCourse = false;
+					for (XCourseId course: cr.getCourseIds()) {
+						if (request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName())) != null) {
+							hasCourse = true; break;
+						}
+					}
+					if (!hasCourse) {
+						XCourseId course = cr.getCourseIds().get(0);
+						response.addMessage(course.getCourseId(), course.getCourseName(), "DROP_CRIT",
+								ApplicationProperties.getProperty("purdue.specreg.messages.courseDropCrit", "Critical course has been removed.").replace("{course}", course.getCourseName()),
+								CONF_UNITIME);
+						questionDropCritical = true;
+					}
+				}
+			}
+		}
 		if (response.getConfirms().contains(CONF_BANNER)) {
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.bannerProblemsFound", "The following registration errors have been detected:"), CONF_BANNER, -1);
 			String note = ApplicationProperties.getProperty("purdue.specreg.messages.courseRequestNote", "<b>Request Note:</b>");
@@ -841,8 +863,12 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.timeConflicts", (creditError != null || questionNoAlt ? "\n" : "") +
 					"Two or more single section courses are conflicting with each other. You will likely not be able to get the conflicting course, so please provide an alternative course if possible."),
 					CONF_UNITIME, 4);
+		if (questionDropCritical)
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.dropCritical", (creditError != null ? "\n" : "") +
+					"One or more courses that are marked as critical in your degree plan have been removed. You may not be able to graduate in time."),
+					CONF_UNITIME, 5);
 		if (creditError != null || questionNoAlt || questionTimeConflict)
-			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.confirmation", "\nDo you want to proceed?"), CONF_UNITIME, 5);
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.confirmation", "\nDo you want to proceed?"), CONF_UNITIME, 6);
 		
 		Set<Integer> conf = response.getConfirms();
 		if (conf.contains(CONF_UNITIME)) {
@@ -1001,6 +1027,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						for (CourseMessage m: request.getConfirmations()) {
 							if ("CREDIT".equals(m.getCode())) continue;
 							if ("NO_ALT".equals(m.getCode())) continue;
+							if ("DROP_CRIT".equals(m.getCode())) continue;
 							if ("OVERLAP".equals(m.getCode())) continue;
 							if (!m.hasCourse()) continue;
 							if (!m.isError() && (course.getCourseId().equals(m.getCourseId()) || course.getCourseName().equals(m.getCourse()))) {
@@ -1034,6 +1061,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						for (CourseMessage m: request.getConfirmations()) {
 							if ("CREDIT".equals(m.getCode())) continue;
 							if ("NO_ALT".equals(m.getCode())) continue;
+							if ("DROP_CRIT".equals(m.getCode())) continue;
 							if ("OVERLAP".equals(m.getCode())) continue;
 							if (!m.hasCourse()) continue;
 							if (!m.isError() && (course.getCourseId().equals(m.getCourseId()) || course.getCourseName().equals(m.getCourse()))) {
@@ -2307,7 +2335,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				throw new SectioningException(eligibility.message == null || eligibility.message.isEmpty() ? "Failed to check student eligibility (" + eligibility.status + ")." : eligibility.message);
 			
 			if (eligibility.data == null || eligibility.data.eligible == null || !eligibility.data.eligible.booleanValue()) {
-				check.setFlag(EligibilityCheck.EligibilityFlag.CAN_REGISTER, false);
+				//check.setFlag(EligibilityCheck.EligibilityFlag.CAN_REGISTER, false);
 			}
 			if (eligibility.data != null && eligibility.data.eligibilityProblems != null) {
 				String m = null;
