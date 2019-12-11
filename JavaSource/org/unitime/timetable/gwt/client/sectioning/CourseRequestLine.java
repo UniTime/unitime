@@ -27,7 +27,6 @@ import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
 import org.unitime.timetable.gwt.client.aria.ImageButton;
 import org.unitime.timetable.gwt.client.widgets.CourseFinder;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderClasses;
-import org.unitime.timetable.gwt.client.widgets.CourseFinderCourses;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderDetails;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderDialog;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderFactory;
@@ -481,14 +480,8 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 				public CourseFinder createCourseFinder() {
 					CourseFinder finder = (alternative ? new CourseFinderDialog() : new SelectAllCourseFinderDialog());
 					
-					CourseFinder.CourseFinderTab<Collection<CourseAssignment>> courses = null;
-					if (!alternative) {
-						iCourseFinderMultipleCourses = new CourseFinderMultipleCourses(CONSTANTS.showCourseTitle(), CONSTANTS.courseFinderSuggestWhenEmpty(), CONSTANTS.courseFinderShowRequired(), iSpecReg);
-						courses = iCourseFinderMultipleCourses;
-					} else {
-						courses = new CourseFinderCourses(CONSTANTS.showCourseTitle(), CONSTANTS.courseFinderSuggestWhenEmpty(), CONSTANTS.courseFinderShowRequired(), iSpecReg);
-					}
-					courses.setDataProvider(new DataProvider<String, Collection<CourseAssignment>>() {
+					iCourseFinderMultipleCourses = new CourseFinderMultipleCourses(CONSTANTS.showCourseTitle(), CONSTANTS.courseFinderSuggestWhenEmpty(), CONSTANTS.courseFinderShowRequired(), iSpecReg);
+					iCourseFinderMultipleCourses.setDataProvider(new DataProvider<String, Collection<CourseAssignment>>() {
 						@Override
 						public void getData(String source, AsyncCallback<Collection<CourseAssignment>> callback) {
 							sSectioningService.listCourseOfferings(iSessionProvider.getAcademicSessionId(), source, null, callback);
@@ -501,20 +494,20 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 							sSectioningService.retrieveCourseDetails(iSessionProvider.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 						}
 					});
-					CourseFinderClasses classes = new CourseFinderClasses(true, iSpecReg, courses.getRequiredCheckbox());
+					CourseFinderClasses classes = new CourseFinderClasses(true, iSpecReg, iCourseFinderMultipleCourses.getRequiredCheckbox());
 					classes.setDataProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
 						@Override
 						public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {
 							sSectioningService.listClasses(iOnline, iSessionProvider.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 						}
 					});
-					courses.setCourseDetails(details, classes);
+					iCourseFinderMultipleCourses.setCourseDetails(details, classes);
 					if (getFreeTimes() != null) {
 						CourseFinderFreeTime free = new CourseFinderFreeTime();
 						free.setDataProvider(getFreeTimes());
-						finder.setTabs(courses, free);
+						finder.setTabs(iCourseFinderMultipleCourses, free);
 					} else {
-						finder.setTabs(courses);
+						finder.setTabs(iCourseFinderMultipleCourses);
 					}
 					return finder;
 				}
@@ -784,15 +777,16 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 				if (iCourseFinderMultipleCourses != null && !iCourseFinderMultipleCourses.getCheckedCourses().isEmpty()) {
 					List<RequestedCourse> list = iCourseFinderMultipleCourses.getCheckedCourses();
 					int courses = list.size();
-					if (courses == 1) courses = 2;
-					while (iCourses.size() < courses) {
+					int index = iCourses.indexOf(this);
+					if (index == 0 && courses == 1) courses = 2;
+					while (iCourses.size() < courses + index) {
 						insertAlternative(iCourses.size());
 					}
-					while (iCourses.size() > courses) {
+					while (iCourses.size() > courses + index) {
 						deleteAlternative(iCourses.size() - 1);
 					}
 					for (int i = 0; i < courses; i++)
-						iCourses.get(i).setValue(i < list.size() ? list.get(i) : null, true);
+						iCourses.get(index + i).setValue(i < list.size() ? list.get(i) : null, true);
 				} else {
 					setValue(rc, true);
 				}
@@ -804,7 +798,9 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			if (iCourseFinderMultipleCourses != null && iCourseFinderMultipleCourses.getLastQuery() != null) {
 				getCourseFinder().setFilter(iCourseFinderMultipleCourses.getLastQuery());
 				List<RequestedCourse> list = new ArrayList<RequestedCourse>();
-				for (CourseSelectionBox box: iCourses) {
+				int index = iCourses.indexOf(this);
+				for (int i = index; i < iCourses.size(); i++) {
+					CourseSelectionBox box = iCourses.get(i);
 					RequestedCourse rc = box.getValue();
 					if (rc != null && rc.isCourse())
 						list.add(rc);
