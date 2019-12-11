@@ -939,6 +939,14 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 			if (iCriticalCourseIds != null && iCriticalCourseIds.contains(new XCourseId(course))) return true;
 			return false;
 		}
+
+		@Override
+		public boolean isCritical(XCourseId course) {
+			for (String c: iCriticalCourses)
+				if (course.getCourseName().startsWith(c)) return true;
+			if (iCriticalCourseIds != null && iCriticalCourseIds.contains(course)) return true;
+			return false;
+		}
 		
 		@Override
 		public String toString() {

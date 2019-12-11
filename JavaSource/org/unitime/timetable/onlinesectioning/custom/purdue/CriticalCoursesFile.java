@@ -39,6 +39,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Action.Builder
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider;
 import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 
@@ -111,6 +112,13 @@ public class CriticalCoursesFile implements CriticalCoursesProvider {
 
 		@Override
 		public boolean isCritical(CourseOffering course) {
+			for (String c: iCriticalCourses)
+				if (course.getCourseName().startsWith(c)) return true;
+			return false;
+		}
+
+		@Override
+		public boolean isCritical(XCourseId course) {
 			for (String c: iCriticalCourses)
 				if (course.getCourseName().startsWith(c)) return true;
 			return false;
