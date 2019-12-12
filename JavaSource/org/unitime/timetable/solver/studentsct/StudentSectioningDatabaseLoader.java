@@ -147,7 +147,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity;
 import org.unitime.timetable.onlinesectioning.custom.CourseRequestsValidationProvider;
 import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider;
 import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.CriticalCourses;
-import org.unitime.timetable.onlinesectioning.model.XStudentId;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbStudentMatcher;
 import org.unitime.timetable.solver.TimetableDatabaseLoader;
 import org.unitime.timetable.solver.curricula.LastLikeStudentCourseDemands;
@@ -2562,7 +2562,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 				.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
 		long c0 = OnlineSectioningHelper.getCpuTime();
 		try {
-			CriticalCourses critical = iCriticalCoursesProvider.getCriticalCourses(iValidator, helper, new XStudentId(s, helper));
+			CriticalCourses critical = iCriticalCoursesProvider.getCriticalCourses(iValidator, helper, new XStudent(s, helper, iFreeTimePattern));
 			boolean changed = false;
 			for (CourseDemand cd: s.getCourseDemands()) {
 				boolean crit = isCritical(cd, critical);
