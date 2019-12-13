@@ -30,6 +30,24 @@
 	<category>
 		<title>Student Scheduling</title>
 		<item>
+			<name>Online Student Scheduling Dashboard: Confirmations</name>
+			<description>
+				<line>Added a change status, a change note, and a send email confirmations.</line>
+				<line>The confirmation does not show when:
+					<line>only 1 student is selected,</line>
+					<line>all selected students are advised by the advisor using the page.</line>
+				</line>
+ 			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.4.140</version>
+	<release-date>Fri, 29 Nov 2019</release-date>
+	<category>
+		<title>Student Scheduling</title>
+		<item>
 			<name>Course Requests: Submit Requests</name>
 			<description>
 				<line>Ensure that the save-requests action gets logged when the online student scheduling is disabled (no online student scheduling server is running).</line>

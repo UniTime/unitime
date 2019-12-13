@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
@@ -59,10 +60,12 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 	private UniTimeHeaderPanel iButtons;
 	private SimpleForm iForm;
 	private Command iCommand;
+	private StudentStatusConfirmation iConfirmation = null;
 	
-	public StudentStatusDialog(Set<StudentStatusInfo> states) {
+	public StudentStatusDialog(Set<StudentStatusInfo> states, StudentStatusConfirmation confirmation) {
 		super(true, false);
 		iStates = states;
+		iConfirmation = confirmation;
 		addStyleName("unitime-StudentStatusDialog");
 		setEscapeToHide(true);
 		
@@ -105,7 +108,14 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 			@Override
 			public void onClick(ClickEvent event) {
 				hide();
-				iCommand.execute();
+				if (iConfirmation != null && !iConfirmation.isAllMyStudents()) {
+					if (iStatus.getSelectedIndex() > 0)
+						UniTimeConfirmationDialog.confirm(MESSAGES.confirmStatusNoteChange(iStatus.getItemText(iStatus.getSelectedIndex()), iConfirmation.getStudentCount()), iCommand);
+					else 
+						UniTimeConfirmationDialog.confirm(MESSAGES.confirmNoteChange(iConfirmation.getStudentCount()), iCommand);
+				} else {
+					iCommand.execute();
+				}
 			}
 		});
 		iButtons.addButton("send-email", MESSAGES.emailSend(), new ClickHandler() {
@@ -113,7 +123,11 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 			public void onClick(ClickEvent event) {
 				hide();
 				SectioningStatusCookie.getInstance().setEmailDefaults(getIncludeCourseRequests(), getIncludeClassSchedule(), getCC(), getSubject());
-				iCommand.execute();
+				if (iConfirmation != null && !iConfirmation.isAllMyStudents()) {
+					UniTimeConfirmationDialog.confirm(MESSAGES.confirmSendEmail(iConfirmation.getStudentCount()), iCommand);
+				} else {
+					iCommand.execute();
+				}
 			}
 		});
 		iButtons.addButton("mass-cancel", MESSAGES.buttonMassCancel(), new ClickHandler() {
@@ -127,7 +141,11 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 			@Override
 			public void onClick(ClickEvent event) {
 				hide();
-				iCommand.execute();
+				if (iConfirmation != null && iStatus.getSelectedIndex() > 0 && !iConfirmation.isAllMyStudents()) {
+					UniTimeConfirmationDialog.confirm(MESSAGES.confirmStatusChange(iStatus.getItemText(iStatus.getSelectedIndex()), iConfirmation.getStudentCount()), iCommand);
+				} else {
+					iCommand.execute();
+				}
 			}
 		});
 		iButtons.addButton("close", MESSAGES.buttonClose(), new ClickHandler() {
@@ -326,6 +344,11 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 	
 	public Boolean getIncludeClassSchedule() {
 		return iClassSchedule.getValue();
+	}
+	
+	public static interface StudentStatusConfirmation {
+		public boolean isAllMyStudents();
+		public int getStudentCount();
 	}
 
 }

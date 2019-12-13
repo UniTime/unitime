@@ -332,6 +332,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					for (StudentNote n: student.getNotes())
 						if (note == null || note.compareTo(n) > 0) note = n;
 					if (note != null) s.setNote(note.getTextNote());
+					s.setMyStudent(isMyStudent(student));
 				}
 				DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(student), helper.getStudentNameFormat(), lookup);
 				if (!crm.enrollment().isEmpty()) {
@@ -539,6 +540,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 				for (StudentNote n: student.getNotes())
 					if (note == null || note.compareTo(n) > 0) note = n;
 				if (note != null) s.setNote(note.getTextNote());
+				s.setMyStudent(isMyStudent(student));
 				
 				ret.add(s);
 			}
