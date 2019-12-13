@@ -136,6 +136,10 @@ public class OnlineSectioningHelper {
     }
     
     public OnlineSectioningLog.Entity getUser() { return iUser; }
+    
+    public boolean isAdmin() {
+    	return (getUser() != null && getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER);
+    }
 
     public void log(Message m) {
     	if (m.getLevel() != LogLevel.DEBUG) {

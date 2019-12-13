@@ -2335,7 +2335,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				throw new SectioningException(eligibility.message == null || eligibility.message.isEmpty() ? "Failed to check student eligibility (" + eligibility.status + ")." : eligibility.message);
 			
 			if (eligibility.data == null || eligibility.data.eligible == null || !eligibility.data.eligible.booleanValue()) {
-				//check.setFlag(EligibilityCheck.EligibilityFlag.CAN_REGISTER, false);
+				check.setFlag(EligibilityCheck.EligibilityFlag.CAN_REGISTER, helper.isAdmin());
 			}
 			if (eligibility.data != null && eligibility.data.eligibilityProblems != null) {
 				String m = null;
