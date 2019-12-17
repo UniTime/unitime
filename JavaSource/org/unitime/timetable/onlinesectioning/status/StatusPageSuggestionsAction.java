@@ -746,6 +746,10 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					return enrollment() == null && request().isWaitlist();
 				} else if (eq("Critical", term)) {
 					return request().isCritical();
+				} else if (eq("Assigned Critical", term)) {
+					return request().isCritical() && enrollment() != null;
+				} else if (eq("Not Assigned Critical", term)) {
+					return request().isCritical() && enrollment() == null;
 				}
 			}
 			

@@ -116,6 +116,10 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 					translatedValue = CONSTANTS.assignmentType()[3];
 				else if ("critical".equalsIgnoreCase(text))
 					translatedValue = (CONSTANTS.assignmentType().length > 4 ? CONSTANTS.assignmentType()[4] : null);
+				else if ("assigned critical".equalsIgnoreCase(text))
+					translatedValue = (CONSTANTS.assignmentType().length > 5 ? CONSTANTS.assignmentType()[5] : null);
+				else if ("not assigned critical".equalsIgnoreCase(text))
+					translatedValue = (CONSTANTS.assignmentType().length > 6 ? CONSTANTS.assignmentType()[6] : null);
 				callback.onSuccess(new Chip(getCommand(), text).withTranslatedCommand(getLabel()).withTranslatedValue(translatedValue));
 			}
 		});

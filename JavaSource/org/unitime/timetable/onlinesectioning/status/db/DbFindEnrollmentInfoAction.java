@@ -806,6 +806,16 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					if (request().getCourseDemand().isCriticalOverride() != null)
 						return request().getCourseDemand().isCriticalOverride().booleanValue();
 					return request().getCourseDemand().isCritical() != null && request().getCourseDemand().isCritical().booleanValue();
+				} else if (eq("Assigned Critical", term)) {
+					if (enrollment().isEmpty()) return false;
+					if (request().getCourseDemand().isCriticalOverride() != null)
+						return request().getCourseDemand().isCriticalOverride().booleanValue();
+					return request().getCourseDemand().isCritical() != null && request().getCourseDemand().isCritical().booleanValue();
+				} else if (eq("Not Assigned Critical", term)) {
+					if (!enrollment().isEmpty()) return false;
+					if (request().getCourseDemand().isCriticalOverride() != null)
+						return request().getCourseDemand().isCriticalOverride().booleanValue();
+					return request().getCourseDemand().isCritical() != null && request().getCourseDemand().isCritical().booleanValue();
 				}
 			}
 			
