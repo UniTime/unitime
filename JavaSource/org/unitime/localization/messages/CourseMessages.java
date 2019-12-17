@@ -361,6 +361,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Default")
 	String dropDefaultDatePattern();
 	
+	@DefaultMessage("Default")
+	String dropDefaultLearningManagementSystem();
+	
 	@DefaultMessage("Name")
 	String columnName();
 	
@@ -751,6 +754,12 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Enrollment Conflict")
 	String columnEnrollmentConflict();
 	
+	@DefaultMessage("LMS Integration")
+	String columnLms();
+
+	@DefaultMessage("LMS Integration:")
+	String propertyLms();
+
 	@DefaultMessage("Total")
 	String rowCrossListsTotal();
 	

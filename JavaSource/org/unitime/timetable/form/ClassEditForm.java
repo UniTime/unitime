@@ -107,6 +107,7 @@ public class ClassEditForm extends PreferencesForm {
     private Boolean isCancelled;
     private List instrResponsibility;
     private String defaultTeachingResponsibilityId;
+    private String lms;
     
     // --------------------------------------------------------- Classes
 
@@ -283,7 +284,8 @@ public class ClassEditForm extends PreferencesForm {
         accommodation = null;
         instrResponsibility = DynamicList.getInstance(new ArrayList(), factoryInstructors);
         TeachingResponsibility tr = TeachingResponsibility.getDefaultInstructorTeachingResponsibility();
-    	defaultTeachingResponsibilityId = (tr == null ? "" : tr.getUniqueId().toString());
+        defaultTeachingResponsibilityId = (tr == null ? "" : tr.getUniqueId().toString());
+        lms = null;
 
         super.reset(mapping, request);
     }
@@ -754,4 +756,12 @@ public class ClassEditForm extends PreferencesForm {
     public void setInstrResponsibility(List instrResponsibility) { this.instrResponsibility = instrResponsibility; }
 	public String getDefaultTeachingResponsibilityId() { return defaultTeachingResponsibilityId; }
 	public void setDefaultTeachingResponsibilityId(String defaultTeachingResponsibilityId) { this.defaultTeachingResponsibilityId = defaultTeachingResponsibilityId; }
+
+	public String getLms() {
+		return lms;
+	}
+
+	public void setLms(String lms) {
+		this.lms = lms;
+	}
 }

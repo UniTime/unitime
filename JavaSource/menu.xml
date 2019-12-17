@@ -941,6 +941,13 @@
 				</condition>
 			</item>
 			<separator/>
+			<item name="Learning Management Systems" page="admin" type="gwt">
+				<parameter name="type">lmsInfo</parameter>
+				<condition>
+					<hasPermission name="LearningManagementSystemInfos"/>
+				</condition>
+			</item>
+			<separator/>
 			<item name="Data Exchange" page="dataImport.do">
 				<condition>
 					<hasPermission name="DataExchange"/>

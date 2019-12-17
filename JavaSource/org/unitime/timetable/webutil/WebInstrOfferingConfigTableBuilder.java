@@ -38,6 +38,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.StudentClassEnrollment;
@@ -208,6 +209,9 @@ public class WebInstrOfferingConfigTableBuilder extends
 	    	columnList.add(MSG.columnPreferences());
 	    	columnList.add(MSG.columnInstructor());
 	    	columnList.add(MSG.columnTimetable());
+	    	if(LearningManagementSystemInfo.isLmsInfoDefinedForSession(ioc.getSessionId())) {
+	    		columnList.add(MSG.columnLms());
+	    	}
             setVisibleColumns(columnList);
 	        boolean hasInstructorAssignments = false;
 	        ss: for (SchedulingSubpart ss: ioc.getSchedulingSubparts()) {

@@ -35,6 +35,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ExamType;
+import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.PointInTimeData;
@@ -120,6 +121,9 @@ public class RollForwardSessionForm extends ActionForm {
 	private String midtermExamsPrefsAction, finalExamsPrefsAction;
 	private Boolean rollForwardSessionConfig;
 	private Long sessionToRollSessionConfigForwardFrom;
+	private Boolean rollForwardLearningManagementSystems;
+	private Long sessionToRollLearningManagementSystemsForwardFrom;
+
 	
 	private Boolean rollForwardReservations;
 	private Long sessionToRollReservationsForwardFrom;
@@ -174,6 +178,11 @@ public class RollForwardSessionForm extends ActionForm {
 		}	
 	}
 
+	public void validateLearningManagementSystemRollForward(Session toAcadSession,ActionErrors errors){
+		if (getRollForwardLearningManagementSystems().booleanValue()){
+			validateRollForward(errors, toAcadSession, getSessionToRollLearningManagementSystemsForwardFrom(), "Learning Management System Info", LearningManagementSystemInfo.findAll(toAcadSession.getUniqueId()));			
+ 		}
+	}
 	
 	public void validateDatePatternRollForward(Session toAcadSession,ActionErrors errors){
 		if (getRollForwardDatePatterns().booleanValue()){
@@ -363,6 +372,7 @@ public class RollForwardSessionForm extends ActionForm {
 		validateBuildingAndRoomRollForward(toAcadSession, errors);
 		validateDatePatternRollForward(toAcadSession, errors);
 		validateTimePatternRollForward(toAcadSession, errors);
+		validateLearningManagementSystemRollForward(toAcadSession, errors);
 		validateSubjectAreaRollForward(toAcadSession, errors);
 		validateCourseOfferingRollForward(toAcadSession, errors);
 		validateTeachingRequestsRollForward(toAcadSession, errors);
@@ -446,6 +456,8 @@ public class RollForwardSessionForm extends ActionForm {
 		startDateCourseReservations = null;
 		startDateCurriculumReservations = null;
 		startDateGroupReservations = null;
+		rollForwardLearningManagementSystems = new Boolean(false);
+		sessionToRollLearningManagementSystemsForwardFrom = null;
 	}
 
 	/** 
@@ -1007,6 +1019,9 @@ public class RollForwardSessionForm extends ActionForm {
 		form.startDateCourseReservations = startDateCourseReservations;
 		form.startDateCurriculumReservations = startDateCurriculumReservations;
 		form.startDateGroupReservations = startDateGroupReservations;
+		form.rollForwardLearningManagementSystems = rollForwardLearningManagementSystems;
+		form.sessionToRollLearningManagementSystemsForwardFrom = sessionToRollLearningManagementSystemsForwardFrom;
+
 	}
 	
 	public Boolean getRollForwardTeachingRequests() {
@@ -1043,6 +1058,27 @@ public class RollForwardSessionForm extends ActionForm {
 	public Long getSessionToRollPeriodicTasksFrom() { return sessionToRollPeriodicTasksFrom; }
 	public void setSessionToRollPeriodicTasksFrom(Long sessionToRollPeriodicTasksFrom) { this.sessionToRollPeriodicTasksFrom = sessionToRollPeriodicTasksFrom; }
 	
+	public Boolean getRollForwardLearningManagementSystems() {
+		return rollForwardLearningManagementSystems;
+	}
+
+
+	public void setRollForwardLearningManagementSystems(Boolean rollForwardLearningManagementSystems) {
+		this.rollForwardLearningManagementSystems = rollForwardLearningManagementSystems;
+	}
+
+
+	public Long getSessionToRollLearningManagementSystemsForwardFrom() {
+		return sessionToRollLearningManagementSystemsForwardFrom;
+	}
+
+
+	public void setSessionToRollLearningManagementSystemsForwardFrom(
+			Long sessionToRollLearningManagementSystemsForwardFrom) {
+		this.sessionToRollLearningManagementSystemsForwardFrom = sessionToRollLearningManagementSystemsForwardFrom;
+	}
+
+
 	public Object clone() {
 		RollForwardSessionForm form = new RollForwardSessionForm();
 		copyTo(form);

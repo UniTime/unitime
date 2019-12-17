@@ -490,6 +490,7 @@ public class ClassEditAction extends PreferencesAction {
 		    frm.setClassSuffix(c.getDivSecNumber());
 		    frm.setMaxExpectedCapacity(c.getMaxExpectedCapacity());
 		    frm.setRoomRatio(c.getRoomRatio());
+		    frm.setLms(c.getLms() == null ? "" : c.getLms().getLabel());
 		    frm.setEnabledForStudentScheduling(c.isEnabledForStudentScheduling());
 		    frm.setDisplayInstructor(c.isDisplayInstructor());
 

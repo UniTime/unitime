@@ -578,7 +578,10 @@ public enum Right {
 	
 	ContactCategories,
 	ContactCategoryEdit,
-	
+
+	LearningManagementSystemInfos,
+	LearningManagementSystemInfoEdit,
+
 	EventServiceProviders,
 	EventServiceProviderEditGlobal,
 	EventServiceProviderEditSession(Session.class),

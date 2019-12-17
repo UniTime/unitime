@@ -42,6 +42,13 @@ import org.unitime.timetable.model.comparators.ClassCourseComparator;
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
 public class InstructionalOfferingListForm extends ActionForm implements InstructionalOfferingListFormInterface {
+	public Boolean getLms() {
+		return lms;
+	}
+
+	public void setLms(Boolean lms) {
+		this.lms = lms;
+	}
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
 	/**
@@ -111,6 +118,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	
 	private Boolean instructorAssignment;
 	
+	private Boolean lms;
 
 	/**
 	 * @return Returns the ctrlInstrOfferingId.
@@ -237,6 +245,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 		consent = new Boolean(false);
 		exams = new Boolean(false);
 		instructorAssignment = new Boolean(false);
+		lms = new Boolean(false);
 		sortBy = ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME);
 	}
 
@@ -502,6 +511,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
         title=null;
         consent=null;
         instructorAssignment = null;
+        lms = null;
         super.finalize();
     }
 
@@ -532,7 +542,8 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 				&& getCredit().booleanValue()
 				&& getSubpartCredit().booleanValue()
 				&& getConsent().booleanValue()
-				&& getSchedulePrintNote().booleanValue()));
+				&& getSchedulePrintNote().booleanValue())
+				&& getLms().booleanValue());
 	}
 	public void setCatalogInformation(){
 		; //do nothing

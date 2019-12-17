@@ -36,6 +36,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.StudentClassEnrollment;
@@ -129,7 +130,9 @@ public class WebClassAssignmentReportListTableBuilder extends WebClassListTableB
         if (StudentClassEnrollment.sessionHasEnrollments(context.getUser().getCurrentAcademicSessionId())) {
         	setShowDemand(true);
         }
-        
+        if (LearningManagementSystemInfo.isLmsInfoDefinedForSession(context.getUser().getCurrentAcademicSessionId())) {
+     		setShowLms(true);
+     	}
         TableStream table = null;
         int ct = 0;
         Iterator it = classes.iterator();

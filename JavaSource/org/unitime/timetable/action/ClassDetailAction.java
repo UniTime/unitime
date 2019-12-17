@@ -497,6 +497,7 @@ public class ClassDetailAction extends PreferencesAction {
 		    frm.setEnrollment(c.getEnrollment());
 		    frm.setSnapshotLimit(c.getSnapshotLimit());
 	        frm.setDatePattern(c.getDatePattern()==null?new Long(-1):c.getDatePattern().getUniqueId());
+	        frm.setLms(c.getLms() == null? "" : c.getLms().getLabel());
 		    frm.setNbrRooms(c.getNbrRooms());
 		    if (c.getNotes()==null)
 		    	frm.setNotes("");

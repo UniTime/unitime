@@ -282,6 +282,7 @@
 		<html:hidden property="expectedCapacity"/>
 		<html:hidden property="maxExpectedCapacity"/>
 		<html:hidden property="roomRatio"/>
+		<html:hidden property="lms"/>
 		<TR>
 			<TD><loc:message name="propertyEnrollment"/></TD>
 			<TD>
@@ -339,6 +340,14 @@
 			</TR>
 		</logic:notEqual>
 		
+		<logic:notEmpty name="<%=frmName%>" property="lms">
+			<TR>
+				<TD valign="top"><loc:message name="propertyLms"/></TD>
+				<TD>
+					<bean:write name="<%=frmName%>" property="lms" filter="false"/>
+				</TD>
+			</TR>
+		</logic:notEmpty>
 
 		<TR>
 			<TD><loc:message name="propertyDatePattern"/></TD>

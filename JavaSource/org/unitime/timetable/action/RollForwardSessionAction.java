@@ -281,6 +281,14 @@ public class RollForwardSessionAction extends Action {
 			if (iErrors.isEmpty()){
 				iForm.validateSubjectAreaRollForward(toAcadSession, iErrors);
 			}
+		if (iErrors.isEmpty()){
+			iForm.validateLearningManagementSystemRollForward(toAcadSession, iErrors);
+		}
+        if (iErrors.isEmpty() && iForm.getRollForwardLearningManagementSystems()) {
+			setStatus("Learning Management System Infos ...");
+        	sessionRollForward.rollLearningManagementSystemInfoForward(iErrors, iForm);
+        }
+        iProgress++;
         	if (iErrors.isEmpty() && iForm.getRollForwardSubjectAreas()) {
 				setStatus("Subjects ...");
         		sessionRollForward.rollSubjectAreasForward(iErrors, iForm);
@@ -394,6 +402,7 @@ public class RollForwardSessionAction extends Action {
         	if (iForm.getRollForwardRoomData()) names.add("rooms");
 			if (iForm.getRollForwardDatePatterns()) names.add("date patterns");
             if (iForm.getRollForwardTimePatterns()) names.add("time patterns");
+		if (iForm.getRollForwardLearningManagementSystems()) names.add("learning management systems");
         	if (iForm.getRollForwardSubjectAreas()) names.add("subjects");
         	if (iForm.getRollForwardInstructorData()) names.add("instructors");
         	if (iForm.getRollForwardCourseOfferings()) names.add("courses");

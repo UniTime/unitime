@@ -428,6 +428,10 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 		return false;
 	}
 	@Override
+	public Boolean getLms() {
+		return false;
+	}
+	@Override
 	public boolean getFilterNeedInstructor() {
 		return false;
 	}

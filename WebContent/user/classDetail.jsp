@@ -246,6 +246,15 @@
 			</TR>
 		</logic:notEqual>
 
+		<logic:notEmpty name="<%=frmName%>" property="lms">
+			<TR>
+				<TD valign="top"><loc:message name="propertyLms"/></TD>
+				<TD>
+					<bean:write name="<%=frmName%>" property="lms" filter="false"/>
+				</TD>
+			</TR>
+		</logic:notEmpty>
+
 		<TR>
 			<TD><loc:message name="propertyDatePattern"/></TD>
 			<TD>

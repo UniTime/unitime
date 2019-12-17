@@ -67,6 +67,7 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	private Boolean note;
 	private Boolean exams;
 	private Boolean instructorAssignment;
+	private Boolean lms;
 	private boolean includeCancelledClasses;
 	private boolean filterNeedInstructor;
 	
@@ -181,6 +182,7 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 		note = new Boolean(false);
 		exams = new Boolean(false);
 		instructorAssignment = new Boolean(false);
+		lms = new Boolean(false);
 		includeCancelledClasses = false;
 		filterNeedInstructor = false;
 		
@@ -573,7 +575,13 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
     public void setInstructorAssignment(Boolean instructorAssignment) {
     	this.instructorAssignment = instructorAssignment;
     }
-    @Override
+    public Boolean getLms() {
+		return lms;
+	}
+	public void setLms(Boolean lms) {
+		this.lms = lms;
+	}
+	@Override
     public boolean getFilterNeedInstructor() {
     	return filterNeedInstructor;
     }

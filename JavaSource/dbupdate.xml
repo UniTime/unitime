@@ -13575,7 +13575,7 @@
 		</plsql>
 		<plsql>alter table %SCHEMA%.map_tiles add constraint pk_map_tiles primary key (z, x, y)</plsql>
 	</update>
-	<update version="221" date="5-Aug-2019" comment="Contact Us Categries">
+	<update version="221" date="5-Aug-2019" comment="Contact Us Categories">
 		<plsql>
 			create table %SCHEMA%.contact_category (
 				uniqueid number(20,0) constraint nn_concat_id not null,
@@ -13669,5 +13669,98 @@
 		<mysql>alter table %SCHEMA%.sct_solution_log add config varchar(1000) null</mysql>
 		<pgsql>alter table %SCHEMA%.sct_solution_log add note varchar(2000)</pgsql>
 		<pgsql>alter table %SCHEMA%.sct_solution_log add config varchar(1000)</pgsql>
+	</update>
+		<update version="225" date="10-Dec-2019" comment="Learning Management System (LMS) Integration Partner Information">
+		<plsql>
+			create table %SCHEMA%.learn_mgmt_sys_info (
+				uniqueid number(20,0) constraint nn_lms_info_id not null,
+				session_id number(20,0) constraint nn_lms_info_session_id not null,
+				reference varchar2(20 char) constraint nn_lms_info_ref not null,
+				label varchar2(60 char) constraint nn_lms_info_label not null,
+				external_uid varchar2(40 char),
+				default_lms number(1,0) constraint nn_lms_info_default_lms not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.learn_mgmt_sys_info add constraint pk_lms_info primary key (uniqueid)</plsql>
+		<plsql>
+			alter table %SCHEMA%.learn_mgmt_sys_info add constraint fk_lms_code_session foreign key (session_id)
+			references %SCHEMA%.sessions (uniqueid) on delete cascade
+		</plsql>
+		<plsql>create unique index %SCHEMA%.uk_lms_info on %SCHEMA%.learn_mgmt_sys_info(session_id, reference)</plsql>
+
+		<mysql>
+			create table %SCHEMA%.learn_mgmt_sys_info (
+				uniqueid decimal(20,0) primary key not null,
+				session_id decimal(20,0) not null,
+				reference varchar(20) not null,
+				label varchar(60) not null,
+				external_uid varchar(40),
+				default_lms int(1) not null
+			) engine = INNODB
+		</mysql>
+		<mysql>
+			alter table %SCHEMA%.learn_mgmt_sys_info add constraint fk_lms_code_session foreign key (session_id)
+			references %SCHEMA%.sessions (uniqueid) on delete cascade
+		</mysql>
+		<mysql>create unique index uk_lms_info on %SCHEMA%.learn_mgmt_sys_info(session_id, reference)</mysql>
+
+		<pgsql>
+			create table %SCHEMA%.learn_mgmt_sys_info (
+			    uniqueid bigint NOT NULL,
+			    session_id bigint NOT NULL,
+			    reference varchar(20) NOT NULL,
+			    label varchar(60) NOT NULL,
+				external_uid varchar(40),
+			    default_lms boolean NOT NULL
+			)
+		</pgsql>
+		<pgsql>alter table only %SCHEMA%.learn_mgmt_sys_info add constraint pk_lms_info primary key (uniqueid)</pgsql>
+		<pgsql>
+			create index idx_fk_time_pattern_session ON %SCHEMA%.learn_mgmt_sys_info USING btree (session_id)
+		</pgsql>
+		<pgsql>
+			alter table only %SCHEMA%.learn_mgmt_sys_info 
+			add constraint fk_lms_code_session foreign key (session_id) references %SCHEMA%.sessions (uniqueid) on delete cascade
+		</pgsql>
+
+		<pgsql>create unique index uk_lms_info on %SCHEMA%.learn_mgmt_sys_info using btree (session_id, reference)</pgsql>
+
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'LearningManagementSystemInfos'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'Departments'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'LearningManagementSystemInfoEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'DepartmentEdit'
+		</sql>
+
+		<plsql>
+			alter table %SCHEMA%.class_ add lms_info_id number(20,0)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.class_ add constraint fk_class_lms_info foreign key (lms_info_id)
+			references %SCHEMA%.learn_mgmt_sys_info (uniqueid) on delete set null
+		</plsql>
+
+		<mysql>
+			alter table %SCHEMA%.class_ add lms_info_id decimal(20,0)
+		</mysql>
+		<mysql>
+			alter table %SCHEMA%.class_ add constraint fk_class_lms_info foreign key (lms_info_id)
+			references %SCHEMA%.learn_mgmt_sys_info (uniqueid) on delete set null
+		</mysql>
+		<pgsql>
+			alter table %SCHEMA%.class_ add lms_info_id bigint
+		</pgsql>
+		<pgsql>
+			create index idx_fk_class_lms_info ON %SCHEMA%.class_ USING btree (lms_info_id);
+		</pgsql>
+		<pgsql>
+			alter table only %SCHEMA%.class_ add constraint fk_class_lms_info foreign key (lms_info_id)
+			references %SCHEMA%.learn_mgmt_sys_info (uniqueid) on delete set null
+		</pgsql>
+		
 	</update>
 </dbupdate>

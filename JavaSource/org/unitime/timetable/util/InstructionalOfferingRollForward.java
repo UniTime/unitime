@@ -38,6 +38,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
@@ -296,6 +297,10 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		toClass.setSchedulePrintNote(fromClass.getSchedulePrintNote());
 		toClass.setSchedulingSubpart(toSubpart);
 		toClass.setUniqueIdRolledForwardFrom(fromClass.getUniqueId());
+		if (fromClass.getLmsInfo() != null) {
+			LearningManagementSystemInfo lms = LearningManagementSystemInfo.findBySessionIdAndReference(toSession.getUniqueId(), fromClass.getLmsInfo().getReference());
+			toClass.setLms(lms);
+		}
 		if (!isResetClassSuffix()) {
 			toClass.setClassSuffix(fromClass.getClassSuffix());
 			toClass.setExternalUniqueId(fromClass.getExternalUniqueId());
@@ -443,8 +448,12 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		CourseOffering toCourseOffering = null;
 		for(Iterator coIt = fromInstructionalOffering.getCourseOfferings().iterator(); coIt.hasNext();){
 			fromCourseOffering = (CourseOffering) coIt.next();
+			SubjectArea toSa = fromCourseOffering.getSubjectArea().findSameSubjectAreaInSession(toSession);
+			if (toSa == null) {
+				continue;
+			}
 			toCourseOffering = new CourseOffering();
-			toCourseOffering.setSubjectArea(fromCourseOffering.getSubjectArea().findSameSubjectAreaInSession(toSession));
+			toCourseOffering.setSubjectArea(toSa);
 			toCourseOffering.setCourseNbr(fromCourseOffering.getCourseNbr());
 			if (fromInstructionalOffering.getCourseOfferings().size() == 1){
 				toCourseOffering.setIsControl(new Boolean(true));

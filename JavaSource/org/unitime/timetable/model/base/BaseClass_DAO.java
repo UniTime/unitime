@@ -61,4 +61,9 @@ public abstract class BaseClass_DAO extends _RootDAO<Class_,Long> {
 	public List<Class_> findByDatePattern(org.hibernate.Session hibSession, Long datePatternId) {
 		return hibSession.createQuery("from Class_ x where x.datePattern.uniqueId = :datePatternId").setLong("datePatternId", datePatternId).list();
 	}
+
+	@SuppressWarnings("unchecked")
+	public List<Class_> findByLmsInfo(org.hibernate.Session hibSession, Long lmsInfoId) {
+		return hibSession.createQuery("from Class_ x where x.lmsInfo.uniqueId = :lmsInfoId").setLong("lmsInfoId", lmsInfoId).list();
+	}
 }
