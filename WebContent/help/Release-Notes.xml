@@ -61,6 +61,15 @@
 				</line>
  			</description>
 		</item>
+		<item>
+			<name>Course Requests: Custom Validation</name>
+			<description>
+				<line>
+					Admin can use the Course Requests page even when Spec Reg returns not eligible,
+					but cannot request a new override.
+				</line>
+ 			</description>
+		</item>
 	</category>
 </release>
 
