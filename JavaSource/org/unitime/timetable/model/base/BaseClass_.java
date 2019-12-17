@@ -29,6 +29,7 @@ import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.StudentClassEnrollment;
@@ -64,6 +65,7 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	private Class_ iParentClass;
 	private DatePattern iDatePattern;
 	private Assignment iCommittedAssignment;
+	private LearningManagementSystemInfo iLmsInfo;
 	private Set<Class_> iChildClasses;
 	private Set<ClassInstructor> iClassInstructors;
 	private Set<Assignment> iAssignments;
@@ -166,6 +168,9 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	public Assignment getCommittedAssignment() { return iCommittedAssignment; }
 	public void setCommittedAssignment(Assignment committedAssignment) { iCommittedAssignment = committedAssignment; }
 
+	public LearningManagementSystemInfo getLmsInfo() { return iLmsInfo; }
+	public void setLmsInfo(LearningManagementSystemInfo lmsInfo) { iLmsInfo = lmsInfo; }
+
 	public Set<Class_> getChildClasses() { return iChildClasses; }
 	public void setChildClasses(Set<Class_> childClasses) { iChildClasses = childClasses; }
 	public void addTochildClasses(Class_ class_) {
@@ -225,6 +230,7 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 			"\n	EnabledForStudentScheduling: " + getEnabledForStudentScheduling() +
 			"\n	ExpectedCapacity: " + getExpectedCapacity() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +
+			"\n	LmsInfo: " + getLmsInfo() +
 			"\n	ManagingDept: " + getManagingDept() +
 			"\n	MaxExpectedCapacity: " + getMaxExpectedCapacity() +
 			"\n	NbrRooms: " + getNbrRooms() +

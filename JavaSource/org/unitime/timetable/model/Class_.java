@@ -1219,6 +1219,7 @@ public class Class_ extends BaseClass_ {
 		newClass.setSchedulePrintNote(getSchedulePrintNote());
 		newClass.setSchedulingSubpart(getSchedulingSubpart());
 		newClass.setCancelled(isCancelled());
+		newClass.setLms(getLms());
 		return(newClass);
 	}
 	
@@ -1896,4 +1897,20 @@ public class Class_ extends BaseClass_ {
 		}
 		return label;
 	}
+	
+	public LearningManagementSystemInfo getLms() {
+		if (this.getLmsInfo() == null) {
+			return(LearningManagementSystemInfo.getDefaultIfExists(getSessionId()));	
+		} else {
+			return(this.getLmsInfo());
+		}
+	}
+	public void setLms(LearningManagementSystemInfo lms) {
+		if (lms != null && !lms.isDefaultLms()) {
+			setLmsInfo(lms);
+		} else {
+			setLmsInfo(null);
+		}
+	}
+
 }

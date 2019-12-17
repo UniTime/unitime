@@ -60,6 +60,7 @@ import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroup;
@@ -77,6 +78,7 @@ import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.InstructionalMethodDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
+import org.unitime.timetable.model.dao.LearningManagementSystemInfoDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.permissions.Permission.PermissionDepartment;
@@ -159,6 +161,9 @@ public class InstructionalOfferingModifyAction extends Action {
 				ts.add(d);
 		}
 		request.setAttribute((Department.EXTERNAL_DEPT_ATTR_NAME + "list"), ts);
+		
+	    LookupTables.setupLearningManagementSystemInfos(request, sessionContext.getUser(), true, MSG.dropDefaultLearningManagementSystem(), 
+	    		LearningManagementSystemInfo.getDefaultIfExists(sessionContext.getUser().getCurrentAcademicSessionId()));
 
         // Add a class
         if(op.equalsIgnoreCase(rsc.getMessage("button.add"))) {
@@ -292,6 +297,7 @@ public class InstructionalOfferingModifyAction extends Action {
         frm.setEditSnapshotLimits(ApplicationProperty.ClassSetupEditSnapshotLimits.isTrue() && io.getSnapshotLimitDate() != null && sessionContext.hasPermission(Right.MultipleClassSetupSnapshotLimits));
         frm.setInstructionalMethod(ioc.getInstructionalMethod() == null ? -1l : ioc.getInstructionalMethod().getUniqueId());
         frm.setInstructionalMethodDefault(io.getSession().getDefaultInstructionalMethod() == null ? null : io.getSession().getDefaultInstructionalMethod().getLabel());
+		frm.setDisplayLms(new Boolean(isLmsInfoDefined()));
 
         String name = io.getCourseNameWithTitle();
         if (io.hasMultipleConfigurations()) {
@@ -321,6 +327,9 @@ public class InstructionalOfferingModifyAction extends Action {
         frm.initializeDisplayAllClassInstructors();
     }
 
+    private boolean isLmsInfoDefined() {
+        return(LearningManagementSystemInfo.isLmsInfoDefinedForSession(sessionContext.getUser().getCurrentAcademicSessionId()));
+    }
     private void loadClasses(InstructionalOfferingModifyForm frm, Set classes, Boolean isReadOnly, String indent, ClassAssignmentProxy proxy){
     	if (classes != null && classes.size() > 0){
     		ArrayList classesList = new ArrayList(classes);
@@ -666,6 +675,8 @@ public class InstructionalOfferingModifyAction extends Action {
 		Department managingDept = null;
 		DatePatternDAO dpdao = new DatePatternDAO();
 		DatePattern dp = null;
+		LearningManagementSystemInfoDAO lmsdao = new LearningManagementSystemInfoDAO();
+		LearningManagementSystemInfo lms = null;
 
 		Iterator it1 = frm.getClassIds().listIterator();
 		Iterator it2 = frm.getSubpartIds().listIterator();
@@ -680,6 +691,7 @@ public class InstructionalOfferingModifyAction extends Action {
 		Iterator it11 = frm.getEnabledForStudentScheduling().listIterator();
 		Iterator it12 = (frm.getEditExternalId() ? frm.getExternalIds().listIterator() : null);
 		Iterator it13 = (frm.getEditSnapshotLimits() ? frm.getSnapshotLimits().listIterator() : null);
+		Iterator it14 = (frm.getDisplayLms() ? frm.getLms().listIterator() : null);
 		Date timeStamp = new Date();
 
 		for(;it1.hasNext();){
@@ -728,6 +740,13 @@ public class InstructionalOfferingModifyAction extends Action {
 			try {
 				snapshotLimit = (it13 == null ? null : Integer.valueOf(it13.next().toString()));
 			} catch (NumberFormatException e) {}
+			String lmsStrId = null;
+			if (it14 != null) {
+				lmsStrId = it14.next().toString();
+			}
+			Long lmsId = null;
+			if (lmsStrId != null && lmsStrId.length() != 0)
+				lmsId = new Long(lmsStrId);
 
 			if (classId.longValue() < 0){
 				Class_ newClass = new Class_();
@@ -760,6 +779,12 @@ public class InstructionalOfferingModifyAction extends Action {
 				newClass.setSnapshotLimit(snapshotLimit);
 				newClass.setSnapshotLimitDate(timeStamp);
 				newClass.setCancelled(false);
+				if (lms == null || !lms.getUniqueId().equals(lmsId)) {
+					if (lmsId != null) {
+						lms = lmsdao.get(lmsId);
+					}
+				}
+				newClass.setLms(lms);
 
 				hibSession.save(newClass);
 				hibSession.save(ss);
@@ -775,6 +800,8 @@ public class InstructionalOfferingModifyAction extends Action {
 		Department managingDept = null;
 		DatePatternDAO dpdao = new DatePatternDAO();
 		DatePattern dp = null;
+		LearningManagementSystemInfoDAO lmsdao = new LearningManagementSystemInfoDAO();
+		LearningManagementSystemInfo lms = null;
 
 		Iterator it1 = frm.getClassIds().listIterator();
 		Iterator it2 = frm.getMinClassLimits().listIterator();
@@ -789,6 +816,7 @@ public class InstructionalOfferingModifyAction extends Action {
 		Iterator it11 = (frm.getEditExternalId() ? frm.getExternalIds().listIterator() : null);
 		Iterator it12 = frm.getIsCancelled().listIterator();
 		Iterator it13 = (frm.getEditSnapshotLimits() ? frm.getSnapshotLimits().listIterator() : null);
+		Iterator it14 = (frm.getDisplayLms() ? frm.getLms().listIterator() : null);
 		Date timeStamp = new Date();
 
 		for(;it1.hasNext();){
@@ -830,6 +858,14 @@ public class InstructionalOfferingModifyAction extends Action {
 			try {
 				snapshotLimit = (it13 == null ? null : Integer.valueOf(it13.next().toString()));
 			} catch (NumberFormatException e) {}
+
+			String lmsStrId = null;
+			if (it14 != null) {
+				lmsStrId = it14.next().toString();
+			}
+			Long lmsId = null;
+			if (lmsStrId != null && lmsStrId.length() != 0)
+				lmsId = new Long(lmsStrId);
 
 			Long parentClassId = null;
 			String parentClassIdString = (String) it10.next();
@@ -890,6 +926,15 @@ public class InstructionalOfferingModifyAction extends Action {
 					if (dp == null || !dp.getUniqueId().equals(datePattern))
 						dp = dpdao.get(datePattern);
 					modifiedClass.setDatePattern(dp);
+				}
+				if ((modifiedClass.getLms() == null && lmsId != null) || (modifiedClass.getLms() != null && !modifiedClass.getLms().getUniqueId().equals(lmsId))) {
+					if (lms == null || !lms.getUniqueId().equals(lmsId)) {
+						if (lmsId != null) {
+							lms = lmsdao.get(lmsId);
+						}
+					}
+					changed = true;
+					modifiedClass.setLms(lms);
 				}
 				if (!modifiedClass.getExpectedCapacity().equals(minClassLimit)){
 					changed = true;

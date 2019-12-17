@@ -44,5 +44,6 @@ public interface InstructionalOfferingListFormInterface {
 	public Boolean getTitle();
 	public Boolean getExams();
 	public Boolean getInstructorAssignment();
+	public Boolean getLms();
 	public String getSortBy();
 }

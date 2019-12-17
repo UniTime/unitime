@@ -21,6 +21,7 @@
 <%@ page import="org.unitime.timetable.util.IdValue" %>
 <%@ page import="org.unitime.timetable.model.Department" %>
 <%@ page import="org.unitime.timetable.model.DatePattern" %>
+<%@ page import="org.unitime.timetable.model.LearningManagementSystemInfo" %>
 <%@ page import="org.unitime.timetable.form.InstructionalOfferingModifyForm" %>
 <%@ page import="org.unitime.timetable.defaults.SessionAttribute"%>
 <%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
@@ -162,6 +163,7 @@
 	<html:hidden property="editSnapshotLimits"/>
 	<html:hidden property="displayDisplayInstructors"/>
 	<html:hidden property="displayEnabledForStudentScheduling"/>
+	<html:hidden property="displayLms"/>
 	<INPUT type="hidden" name="hdnOp" value = "">
 	<INPUT type="hidden" name="id" value = "">
 	<INPUT type="hidden" name="click" value = "">
@@ -389,6 +391,11 @@
 						</logic:notEqual>
 						<TD align="center" valign="bottom" rowSpan="2" class='WebTableHeader'><loc:message name="columnManagingDepartment"/></TD>
 						<TD align="center" valign="bottom" rowSpan="2" class='WebTableHeader'><loc:message name="columnDatePattern"/></TD>
+						<TD align="center" valign="bottom" rowSpan="2" class='WebTableHeader'>
+							<logic:equal name="<%=frmName%>" property="displayLms" value="true" >
+								<loc:message name="columnLms"/>
+							</logic:equal>
+						</TD>
 						<TD align="center" valign="bottom" rowSpan="1" class='WebTableHeaderFirstRow'>
 							<logic:equal name="<%=frmName%>" property="displayDisplayInstructors" value="true" >
 								<loc:message name="columnDisplayInstr"/>
@@ -545,6 +552,7 @@
 								<html:hidden property='<%= "displayInstructors[" + ctr + "]" %>'/>
 								<html:hidden property='<%= "enabledForStudentScheduling[" + ctr + "]" %>'/>
 								<html:hidden property='<%= "snapshotLimits[" + ctr + "]" %>'/>
+								<html:hidden property='<%= "lms[" + ctr + "]" %>'/>
 								<TD colspan="<%=(frm.getDisplaySnapshotLimit() ? "9" : "8")%>" style="font-style: italic;">
 									<loc:message name="classNoteCancelled"><bean:write name="<%=frmName%>" property='<%= "classLabels[" + ctr + "]" %>'/></loc:message>
 								</TD>
@@ -667,10 +675,36 @@
 									<html:hidden property='<%= "datePatterns[" + ctr + "]" %>'/>
 								</logic:equal>
 							</TD>
+							<TD align="left" valign="top" nowrap>
+								<logic:equal name="<%=frmName%>" property="displayLms" value="true" >
+									<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
+										<html:select style="width:100px;" property='<%= "lms[" + ctr + "]" %>' 
+												     tabindex="<%=java.lang.Integer.toString(14000 + ctr.intValue())%>">
+											<html:options collection="<%=LearningManagementSystemInfo.LEARNING_MANAGEMENT_SYSTEM_LIST_ATTR%>" property="id" labelProperty="value" />
+										</html:select>
+									</logic:equal>
+									<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="true" >
+										<logic:equal name="<%=frmName%>" property='<%= "lms[" + ctr + "]"%>' value="">
+											<loc:message name="dropDefaultLearningManagementSystem"/>
+										</logic:equal>
+										<logic:iterate scope="request" name="<%=LearningManagementSystemInfo.LEARNING_MANAGEMENT_SYSTEM_LIST_ATTR%>" id="lmsInfo">
+											<logic:notEqual name="<%=frmName%>" property='<%= "lms[" + ctr + "]" %>' value="">
+												<logic:equal name="<%=frmName%>" property='<%= "lms[" + ctr + "]" %>' value="<%=((IdValue)lmsInfo).getId().toString()%>">
+													<bean:write name="lmsInfo" property="value" />
+												</logic:equal>
+											</logic:notEqual>
+										</logic:iterate>
+										<html:hidden property='<%= "lms[" + ctr + "]" %>'/>
+									</logic:equal>
+								</logic:equal>
+								<logic:notEqual name="<%=frmName%>" property="displayLms" value="true" >
+									<html:hidden property='<%= "lms[" + ctr + "]" %>'/>
+								</logic:notEqual>
+							</TD>
 							<TD align="center" valign="top" nowrap>
 								<logic:equal name="<%=frmName%>" property="displayDisplayInstructors" value="true" >
 									<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
-										<html:checkbox name="<%=frmName%>" property='<%= "displayInstructors[" + ctr + "]" %>' tabindex="<%=java.lang.Integer.toString(14000 + ctr.intValue())%>"/>
+										<html:checkbox name="<%=frmName%>" property='<%= "displayInstructors[" + ctr + "]" %>' tabindex="<%=java.lang.Integer.toString(16000 + ctr.intValue())%>"/>
 									</logic:equal>
 										<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="true" >					
 											<logic:equal name="<%=frmName%>" property='<%= "displayInstructors[" + ctr + "]" %>' value="true" >
@@ -686,7 +720,7 @@
 							<TD align="center" valign="top" nowrap>
 								<logic:equal name="<%=frmName%>" property="displayEnabledForStudentScheduling" value="true" >
 									<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
-										<html:checkbox name="<%=frmName%>" property='<%= "enabledForStudentScheduling[" + ctr + "]" %>' tabindex="<%=java.lang.Integer.toString(16000 + ctr.intValue())%>"/>
+										<html:checkbox name="<%=frmName%>" property='<%= "enabledForStudentScheduling[" + ctr + "]" %>' tabindex="<%=java.lang.Integer.toString(18000 + ctr.intValue())%>"/>
 									</logic:equal>
 									<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="true" >
 										<logic:equal name="<%=frmName%>" property='<%= "enabledForStudentScheduling[" + ctr + "]" %>' value="true" >

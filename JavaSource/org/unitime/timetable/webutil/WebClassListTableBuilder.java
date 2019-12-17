@@ -41,6 +41,7 @@ import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.StudentClassEnrollment;
@@ -213,6 +214,9 @@ public class WebClassListTableBuilder extends
     	columnList.add(MSG.columnInstructor());
     	columnList.add(MSG.columnTimetable());
     	columnList.add(MSG.columnSchedulePrintNote());
+    	if (LearningManagementSystemInfo.isLmsInfoDefinedForSession(co.getInstructionalOffering().getSessionId())) {
+    		columnList.add(MSG.columnLms());
+    	}
         setVisibleColumns(columnList);
 
         if (isShowTimetable()) {

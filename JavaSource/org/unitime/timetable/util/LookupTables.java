@@ -50,6 +50,7 @@ import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.InstructorAttribute;
 import org.unitime.timetable.model.InstructorAttributeType;
 import org.unitime.timetable.model.ItypeDesc;
+import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.PreferenceGroup;
@@ -246,6 +247,19 @@ public class LookupTables {
     		request.setAttribute(DatePattern.DATE_PATTERN_LIST_ATTR, list);
     }
 
+	public static void setupLearningManagementSystemInfos(HttpServletRequest request, UserContext user, boolean includeExtended, String inheritString, LearningManagementSystemInfo inheritedDatePattern) {
+	    	Vector list = new Vector();
+	    	list.addElement(new IdValue(new Long(-1),inheritString+(inheritedDatePattern==null?"":" ("+inheritedDatePattern.getLabel()+")")));
+	    	try {
+	    		for (LearningManagementSystemInfo lms: LearningManagementSystemInfo.findAll(user))
+	    			list.addElement(new IdValue(lms.getUniqueId(),lms.getLabel()));
+	    	} catch (Exception e) {
+	    		Debug.error(e);
+	    	}
+	    	request.setAttribute(LearningManagementSystemInfo.LEARNING_MANAGEMENT_SYSTEM_LIST_ATTR, list);
+    }
+
+    
     /**
      * Get Instructors and store it in request object
      * @param request

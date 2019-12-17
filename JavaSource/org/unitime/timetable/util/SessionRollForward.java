@@ -84,6 +84,7 @@ import org.unitime.timetable.model.InstructorAttributePref;
 import org.unitime.timetable.model.InstructorCoursePref;
 import org.unitime.timetable.model.InstructorPref;
 import org.unitime.timetable.model.LastLikeCourseDemand;
+import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.NonUniversityLocationPicture;
@@ -145,6 +146,7 @@ import org.unitime.timetable.model.dao.GlobalRoomFeatureDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.InstructorAttributeDAO;
 import org.unitime.timetable.model.dao.LastLikeCourseDemandDAO;
+import org.unitime.timetable.model.dao.LearningManagementSystemInfoDAO;
 import org.unitime.timetable.model.dao.NonUniversityLocationDAO;
 import org.unitime.timetable.model.dao.OfferingCoordinatorDAO;
 import org.unitime.timetable.model.dao.PeriodicTaskDAO;
@@ -3334,6 +3336,33 @@ public class SessionRollForward {
 		}
 		hibSession.flush(); hibSession.clear();
 	}
+	
+	public void rollLearningManagementSystemInfoForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
+		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollDatePatternsForwardFrom());
+		List<LearningManagementSystemInfo> fromLearningManagementSystems = LearningManagementSystemInfo.findAll(fromSession.getUniqueId());
+		LearningManagementSystemInfo fromLms = null;
+		LearningManagementSystemInfo toLms = null;
+		LearningManagementSystemInfoDAO lmsDao = new LearningManagementSystemInfoDAO();
+		try {
+			for(Iterator it = fromLearningManagementSystems.iterator(); it.hasNext();){
+				fromLms = (LearningManagementSystemInfo) it.next();
+				if (fromLms != null){
+					toLms = (LearningManagementSystemInfo) fromLms.clone();
+					toLms.setSession(toSession);
+					lmsDao.saveOrUpdate(toLms);
+					lmsDao.getSession().flush();
+				}
+			}
+			
+			lmsDao.getSession().flush();
+			lmsDao.getSession().clear();
+		} catch (Exception e) {
+			iLog.error("Failed to roll all learning management system infos forward.", e);
+			errors.add("rollForward", new ActionMessage("errors.rollForward", "Learning Management System Info", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all learning management system infos forward."));
+		}		
+	}
+
 
 	/**
 	 * @return the subpartTimeRollForward

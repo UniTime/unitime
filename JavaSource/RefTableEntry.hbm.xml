@@ -454,5 +454,23 @@
 	            not-null="false"
     	        length="1000"/>
         </union-subclass>
+        <union-subclass name="LearningManagementSystemInfo" table="learn_mgmt_sys_info" abstract="false">
+	        <property
+	            name="externalUniqueId"
+	            column="external_uid"
+	            type="java.lang.String"
+	            not-null="false"
+	            length="40"/>
+			<property
+                name="defaultLms"
+                column="default_lms"
+                type="java.lang.Boolean"
+                not-null="true"/>
+	        <many-to-one
+	            name="session"
+	            class="Session"
+	            column="session_id"
+	            not-null="true"/>
+        </union-subclass>
     </class>
 </hibernate-mapping>

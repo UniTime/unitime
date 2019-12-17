@@ -153,6 +153,12 @@
 			</td>			
 		</tr>
 		<tr>
+			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardLearningManagementSystems"/> Roll Learning Management System Data Forward From Session: 
+			<html:select style="width:200px;" property="sessionToRollLearningManagementSystemsForwardFrom">
+			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
+			</td>			
+		</tr>
+		<tr>
 			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardSubjectAreas"/> Roll Subject Areas Forward From Session: 
 			<html:select style="width:200px;" property="sessionToRollSubjectAreasForwardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>

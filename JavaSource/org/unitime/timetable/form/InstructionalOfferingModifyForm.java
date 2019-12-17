@@ -84,6 +84,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private Long instructionalMethod;
 	private String instructionalMethodDefault;
 	private Boolean editSnapshotLimits;
+	private Boolean displayLms;
 	
 	private List classIds;
 	private List subpartIds;
@@ -119,6 +120,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private List canDelete;
 	private List canCancel;
 	private List isCancelled;
+	private List lms;
 	
 	private List classHasErrors;
 	private Long addTemplateClassId;
@@ -154,6 +156,8 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private static String CAN_DELETE_TOKEN = "canDelete";
 	private static String CAN_CANCEL_TOKEN = "canCancel";
 	private static String IS_CANCELLED_TOKEN = "isCancelled";
+	private static String DISPLAY_LMS_TOKEN = "displayLms";
+	private static String LMS_TOKEN = "lms";
 	
 
     // --------------------------------------------------------- Classes
@@ -493,6 +497,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	displayAllClassesInstructors = "";
     	instructionalMethod = null;
     	instructionalMethodDefault = null;
+    	displayLms = new Boolean(false);
     	resetLists();
     }
     
@@ -532,6 +537,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	canDelete = DynamicList.getInstance(new ArrayList(), factoryClasses);
     	canCancel = DynamicList.getInstance(new ArrayList(), factoryClasses);
     	isCancelled = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	lms = DynamicList.getInstance(new ArrayList(), factoryClasses);
 }
     
 //    private int numberOfClassesOfSubpartWithParentClassId(String parentClassId, String classSubpartId){
@@ -993,7 +999,8 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		}
 	}
 	    
-	public void addToClasses(Class_ cls, Boolean isReadOnly, String indent, ClassAssignmentProxy proxy, String nameFormat, boolean canDelete, boolean canCancel){
+	public void addToClasses(Class_ cls, Boolean isReadOnly, String indent, ClassAssignmentProxy proxy, 
+			String nameFormat, boolean canDelete, boolean canCancel){
 		this.classLabels.add(cls.htmlLabel());
 		this.classLabelIndents.add(indent);
 		this.classIds.add(cls.getUniqueId().toString());
@@ -1067,6 +1074,11 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.canDelete.add(canDelete ? "true" : "false");
 		this.canCancel.add(canCancel ? "true" : "false");
 		this.isCancelled.add(cls.isCancelled().toString());
+		if (cls.getLms() != null) {
+			this.lms.add(cls.getLms().getUniqueId().toString());
+		} else {
+			this.lms.add("");
+		}
 	}
 	
 	private int indexOfLastChildClass(String classId){
@@ -1119,6 +1131,8 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		hm.put(CAN_DELETE_TOKEN, this.getCanDelete());
 		hm.put(CAN_CANCEL_TOKEN, this.getCanCancel());
 		hm.put(IS_CANCELLED_TOKEN, this.getIsCancelled());
+		hm.put(DISPLAY_LMS_TOKEN, this.getDisplayLms());
+		hm.put(LMS_TOKEN, this.getLms());
 		
 		return(hm);
 	}
@@ -1166,6 +1180,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.getCanDelete().add((String) getObjectFromListMapAtIndex(originalClassesMap, CAN_DELETE_TOKEN, classIndex));
 		this.getCanCancel().add((String) getObjectFromListMapAtIndex(originalClassesMap, CAN_CANCEL_TOKEN, classIndex));
 		this.getIsCancelled().add((String) getObjectFromListMapAtIndex(originalClassesMap, IS_CANCELLED_TOKEN, classIndex));
+		this.getLms().add((String) getObjectFromListMapAtIndex(originalClassesMap, LMS_TOKEN, classIndex));
 	}
 	
 	public void addNewClassesBasedOnTemplate(String clsId){
@@ -1332,6 +1347,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.canDelete.add("true");
 		this.canCancel.add("false");
 		this.isCancelled.add("false");
+		this.lms.add(this.getLms().get(index));
 	}
 	
 	private Long nextTmpClassId(List origClassIds){
@@ -1679,6 +1695,22 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.externalIds = externalIds;
 	}
 	
+	public Boolean getDisplayLms() {
+		return displayLms;
+	}
+
+	public void setDisplayLms(Boolean displayLms) {
+		this.displayLms = displayLms;
+	}
+
+	public List getLms() {
+		return lms;
+	}
+
+	public void setLms(List lms) {
+		this.lms = lms;
+	}
+
 	public List getCanDelete() { return canDelete; }
 	public void setCanDelete(List canDelete) { this.canDelete = canDelete; }
 	public List getCanCancel() { return canCancel; }

@@ -65,6 +65,7 @@ import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.InstructorAttributePref;
 import org.unitime.timetable.model.InstructorPref;
+import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
@@ -136,7 +137,8 @@ public class WebInstructionalOfferingTableBuilder {
     										MSG.columnSubpartCredit(),
     										MSG.columnSchedulePrintNote(),
     										MSG.columnNote(),
-    										MSG.columnExam()};
+    										MSG.columnExam(),
+    										MSG.columnLms()};
     
     @Deprecated
     protected String[] TIMETABLE_COLUMN_ORDER = {
@@ -168,8 +170,9 @@ public class WebInstructionalOfferingTableBuilder {
     private boolean showExamName=true;
     private boolean showExamTimetable;
     private boolean showInstructorAssignment;
+    private boolean showLms;
     
-    private boolean iDisplayDistributionPrefs = true;
+	private boolean iDisplayDistributionPrefs = true;
     private boolean iDisplayTimetable = true;
     private boolean iDisplayConflicts = false;
     private boolean iDisplayInstructorPrefs = true;
@@ -306,6 +309,14 @@ public class WebInstructionalOfferingTableBuilder {
     
     public boolean isShowInstructorAssignment() { return showInstructorAssignment; }
     public void setShowInstructorAssignment(boolean showInstructorAssignment) { this.showInstructorAssignment = showInstructorAssignment; }
+
+    public boolean isShowLms() {
+		return showLms;
+	}
+	public void setShowLms(boolean showLms) {
+		this.showLms = showLms;
+	}
+
 
     /**
      * 
@@ -561,6 +572,10 @@ public class WebInstructionalOfferingTableBuilder {
                 row2.addContent(cell);
                 
             }
+    	}
+    	if (isShowLms()) {
+    		cell = this.headerCell(MSG.columnLms(), 2, 1);
+    		row.addContent(cell);    		
     	}
     	table.addContent(row);
     	table.addContent(row2);
@@ -1338,6 +1353,31 @@ public class WebInstructionalOfferingTableBuilder {
         return(cell);
     }
     
+    protected TableCell buildLmsInfo(PreferenceGroup prefGroup, boolean isEditable){
+	    	TableCell cell = this.initNormalCell("" ,isEditable);
+	    	if (prefGroup instanceof Class_) {
+	    		Class_ aClass = (Class_) prefGroup;
+		    	if (LearningManagementSystemInfo.isLmsInfoDefinedForSession(aClass.getSessionId())) {
+		    		if (aClass.getLms() == null) {
+		    			cell.addContent(" &nbsp; ");
+		    		} else {
+			    		String label = aClass.getLms().getLabel();
+			    		if (!isEditable) {
+			    			label = "<span style=\"color:gray;\">" + label + "</span>";
+			    		}
+			    		cell.addContent(label);
+			        cell.setAlign("left");
+		    		}
+		    	} else {
+	    			cell.addContent(" &nbsp; ");
+	    		}
+	    	} else {
+	    		cell.addContent(" &nbsp; ");
+	    	}
+        return(cell);
+    }
+
+    
     //MSG.columnNote(): if changing column order column order must be changed in
     //		buildTableHeader, addInstrOffrRowsToTable, buildClassOrSubpartRow, and buildConfigRow
     protected void buildClassOrSubpartRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TableRow row, CourseOffering co, PreferenceGroup prefGroup, int indentSpaces, boolean isEditable, String prevLabel, String icon, SessionContext context){
@@ -1439,6 +1479,9 @@ public class WebInstructionalOfferingTableBuilder {
                     row.addContent(this.initNormalCell("&nbsp;", isEditable));
                 }
     	    }
+    	}
+    	if (isShowLms()) {    		
+    			row.addContent(this.buildLmsInfo(prefGroup, isEditable));
     	}
     }
     
@@ -1706,7 +1749,9 @@ public class WebInstructionalOfferingTableBuilder {
                     row.addContent(this.buildExamRoom(examAssignment, exams, isEditable));
                 }
             }
-
+	    		if (isShowLms()) {
+	                row.addContent(initNormalCell("", isEditable));			
+	    		}
 	    
 	        table.addContent(row);
 	        hasConfig = true;
@@ -1971,6 +2016,9 @@ public class WebInstructionalOfferingTableBuilder {
                 row.addContent(this.buildExamPeriod(examAssignment, exams, isEditable));
                 row.addContent(this.buildExamRoom(examAssignment, exams, isEditable));
             }
+        }
+        if (isShowLms()) {
+            row.addContent(initNormalCell("", isEditable));        	
         }
         table.addContent(row);
         if (io.getInstrOfferingConfigs() != null & !io.getInstrOfferingConfigs().isEmpty()){
@@ -2242,6 +2290,11 @@ public class WebInstructionalOfferingTableBuilder {
 		} else {
 			setShowInstructorAssignment(false);
 		}
+		if (form.getLms() != null) {
+			setShowLms(form.getLms());
+		} else {
+			setShowLms(false);
+		}
 	}
 	
 	protected void setVisibleColumns(ArrayList<String> columns){
@@ -2267,6 +2320,7 @@ public class WebInstructionalOfferingTableBuilder {
 		setShowConsent(columns.contains(MSG.columnConsent()));
 		setShowTitle(columns.contains(MSG.columnTitle()));
 		setShowExam(columns.contains(MSG.columnExam()));
+		setShowLms(columns.contains(MSG.columnLms()));
 		
 	}
 	

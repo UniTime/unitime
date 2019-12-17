@@ -3727,6 +3727,14 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pagePublishedSectioningSolutions();
 	
+	@DefaultMessage("Learning Management System")
+	@DoNotTranslate
+	String pageLearningManagementSystemInfo();
+
+	@DefaultMessage("Learning Management Systems")
+	@DoNotTranslate
+	String pageLearningManagementSystemInfos();
+	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	
