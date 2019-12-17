@@ -176,6 +176,16 @@
 				</line>
  			</description>
 		</item>
+		<item>
+			<name>Learning Management System Integration Partner Code</name>
+			<description>
+				<line>Added the ability to store the Learning Management System Integration Partner Code (LMS) on classes.</line>
+				<line>LMSs are session specific.</line>
+				<line>If an LMS is designated as the default for session, all classes with no LMS set will default to the designated default LMS.</line>
+				<line>If no LMS is defined for a term, then the LMS data field is not visible on classes.</line>
+				<line>Classes can be assigned an LMS using the Class Setup page from the Instructional Offering Detail page.</line>
+			</description>
+		</item>		
 	</category>
 	<category>
 		<title>Examination Timetabling</title>
