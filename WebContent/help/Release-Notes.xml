@@ -86,6 +86,12 @@
 				<line>Show a warning when a critical course is being dropped (only when drop warnings are enabled).</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Requests / Scheduling Assistant: Course Finder</name>
+			<description>
+				<line>Added ability to select multiple courses on alternatives.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
