@@ -88,6 +88,7 @@ public abstract class BaseCurriculumReservation extends Reservation implements S
 		return "CurriculumReservation[" +
 			"\n	Area: " + getArea() +
 			"\n	ExpirationDate: " + getExpirationDate() +
+			"\n	Inclusive: " + getInclusive() +
 			"\n	InstructionalOffering: " + getInstructionalOffering() +
 			"\n	Limit: " + getLimit() +
 			"\n	StartDate: " + getStartDate() +

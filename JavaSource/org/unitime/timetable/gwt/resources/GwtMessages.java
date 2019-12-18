@@ -4232,6 +4232,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Restrictions:")
 	String propRestrictions();
 	
+	@DefaultMessage("Mode:")
+	String propInclusive();
+	
 	@DefaultMessage("Type:")
 	String propType();
 	
@@ -6448,4 +6451,22 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Do Not Reserve Space")
 	String checkAllwaysExpired();
+	
+	@DefaultMessage("Restriction")
+	String checkReservationRestriction();
+	
+	@DefaultMessage("Not Set: Using application configuration settings")
+	String reservationInclusiveNotSet();
+	
+	@DefaultMessage("Default: Reservation is enforced on all the levels")
+	String reservationInclusiveDefaultTrue();
+	
+	@DefaultMessage("Default: Reservation is only enforced on the selected level")
+	String reservationInclusiveDefaultFalse();
+	
+	@DefaultMessage("Reservation: Reservation is enforced on all the levels")
+	String reservationInclusiveTrue();
+	
+	@DefaultMessage("Restriction: Reservation is only enforced on the selected level")
+	String reservationInclusiveFalse();
 }

@@ -98,6 +98,8 @@ public class ReservationExport extends BaseExport {
 	        		reservationEl.addAttribute("expire", df.format(reservation.getExpirationDate()));
 	        	if (reservation.getStartDate() != null)
 	        		reservationEl.addAttribute("startDate", df.format(reservation.getStartDate()));
+	        	if (reservation.isInclusive() != null)
+	        		reservationEl.addAttribute("inclusive", reservation.isInclusive() ? "true" : "false");
 	        	
 	        	for (InstrOfferingConfig config: reservation.getConfigurations()) {
 	        		reservationEl.addElement("configuration").addAttribute("name", config.getName());

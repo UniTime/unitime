@@ -613,6 +613,7 @@ public class ReservationServlet implements ReservationService {
 		r.setExpirationDate(reservation.getExpirationDate());
 		r.setExpired(reservation.isExpired());
 		r.setLimit(reservation.getLimit());
+		r.setInclusive(reservation.getInclusive());
 		r.setId(reservation.getUniqueId());
 		r.setOverride(reservation instanceof IndividualOverrideReservation || reservation instanceof GroupOverrideReservation);
 		r.setAllowOverlaps(reservation.isAllowOverlap());
@@ -758,6 +759,7 @@ public class ReservationServlet implements ReservationService {
 				r.setStartDate(reservation.getStartDate());
 				r.setExpirationDate(reservation.getExpirationDate());
 				r.setInstructionalOffering(offering);
+				r.setInclusive(reservation.isInclusive());
 				if (r instanceof IndividualOverrideReservation) {
 					((IndividualOverrideReservation)r).setAllowOverlap(reservation.isAllowOverlaps());
 					((IndividualOverrideReservation)r).setAlwaysExpired(reservation.isAlwaysExpired());

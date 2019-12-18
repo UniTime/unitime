@@ -51,6 +51,12 @@
             column="start_date"
             type="java.sql.Timestamp"
             not-null="false"/>
+            
+        <property
+            name="inclusive"
+            column="inclusive"
+            type="java.lang.Boolean"
+            not-null="false"/>
 
         <many-to-one
             name="instructionalOffering"

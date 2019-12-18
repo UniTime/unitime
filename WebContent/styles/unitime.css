@@ -582,7 +582,10 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 }
 
 .unitime-ReservationDisabled {
-	color: gray;
+}
+
+.unitime-ReservationExclusive {
+	text-decoration: underline;
 }
 
 .unitime-Editable {

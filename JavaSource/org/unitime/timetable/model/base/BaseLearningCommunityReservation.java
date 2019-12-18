@@ -69,6 +69,7 @@ public abstract class BaseLearningCommunityReservation extends StudentGroupReser
 			"\n	Course: " + getCourse() +
 			"\n	ExpirationDate: " + getExpirationDate() +
 			"\n	Group: " + getGroup() +
+			"\n	Inclusive: " + getInclusive() +
 			"\n	InstructionalOffering: " + getInstructionalOffering() +
 			"\n	Limit: " + getLimit() +
 			"\n	StartDate: " + getStartDate() +

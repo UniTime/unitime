@@ -68,6 +68,7 @@ public abstract class BaseCourseReservation extends Reservation implements Seria
 		return "CourseReservation[" +
 			"\n	Course: " + getCourse() +
 			"\n	ExpirationDate: " + getExpirationDate() +
+			"\n	Inclusive: " + getInclusive() +
 			"\n	InstructionalOffering: " + getInstructionalOffering() +
 			"\n	Limit: " + getLimit() +
 			"\n	StartDate: " + getStartDate() +

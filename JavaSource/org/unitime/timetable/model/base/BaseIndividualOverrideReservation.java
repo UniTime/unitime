@@ -69,6 +69,7 @@ public abstract class BaseIndividualOverrideReservation extends IndividualReserv
 		return "IndividualOverrideReservation[" +
 			"\n	ExpirationDate: " + getExpirationDate() +
 			"\n	Flags: " + getFlags() +
+			"\n	Inclusive: " + getInclusive() +
 			"\n	InstructionalOffering: " + getInstructionalOffering() +
 			"\n	Limit: " + getLimit() +
 			"\n	StartDate: " + getStartDate() +

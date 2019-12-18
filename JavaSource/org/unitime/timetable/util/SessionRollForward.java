@@ -3091,6 +3091,7 @@ public class SessionRollForward {
 				toReservation.setStartDate(cal.getTime());
 			}
 		}
+		toReservation.setInclusive(fromReservation.isInclusive());;
 		
 		toReservation.setConfigurations(new HashSet<InstrOfferingConfig>());
 		toReservation.setClasses(new HashSet<Class_>());

@@ -73,6 +73,7 @@ public abstract class BaseIndividualReservation extends Reservation implements S
 	public String toDebugString() {
 		return "IndividualReservation[" +
 			"\n	ExpirationDate: " + getExpirationDate() +
+			"\n	Inclusive: " + getInclusive() +
 			"\n	InstructionalOffering: " + getInstructionalOffering() +
 			"\n	Limit: " + getLimit() +
 			"\n	StartDate: " + getStartDate() +

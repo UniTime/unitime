@@ -60,6 +60,8 @@ public class ReservationDefaultExpirationDatesBackend implements GwtRpcImplement
 			}
 		}
 		
+		expirations.setInclusive(ApplicationProperty.ReservationsAreInclusive.isTrue());
+		
 		return expirations;
 	}
 

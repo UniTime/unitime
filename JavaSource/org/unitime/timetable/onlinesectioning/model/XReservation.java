@@ -80,7 +80,7 @@ public abstract class XReservation extends XReservationId implements Comparable<
     }
     
     public XReservation(XReservationType type, XOffering offering, Reservation reservation) {
-    	this(type, offering, reservation, ApplicationProperty.ReservationsAreInclusive.isTrue());
+    	this(type, offering, reservation, reservation.isReservationInclusive());
     }
     
     public XReservation(XReservationType type, XOffering offering, Reservation reservation, boolean inclusive) {

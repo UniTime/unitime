@@ -43,6 +43,7 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 	private Date iStartDate, iExpirationDate;
 	private boolean iEditable = false, iExpired = false;
 	private boolean iOverride = false, iAlwaysExpired = false, iAllowOverlaps = false, iOverLimit = false, iMustBeUsed = false;
+	private Boolean iInclusive = null;
 	
 	public Long getId() { return iId; }
 	public void setId(Long id) { iId = id; }
@@ -75,6 +76,10 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 	public void setOverLimit(boolean overLimit) { iOverLimit = overLimit; }
 	public boolean isMustBeUsed() { return iMustBeUsed; }
 	public void setMustBeUsed(boolean mustBeUsed) { iMustBeUsed = mustBeUsed; }
+	
+	public void setInclusive(Boolean inclusive) { iInclusive = inclusive; }
+	public boolean hasInclusive() { return iInclusive != null; }
+	public Boolean isInclusive() { return iInclusive; }
 	
 	public List<Config> getConfigs() { return iConfigs; }
 	public List<Clazz> getClasses() { return iClasses; }
@@ -514,6 +519,7 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 	public static class DefaultExpirationDates implements GwtRpcResponse {
 		private Map<String, Date> iExpirations = new HashMap<String, Date>();
 		private Map<String, Date> iStartDates = new HashMap<String, Date>();
+		private Boolean iInclusive = null;
 		
 		public DefaultExpirationDates() {}
 		
@@ -534,6 +540,10 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 			else
 				iStartDates.put(type, date);
 		}
+		
+		public void setInclusive(Boolean inclusive) { iInclusive = inclusive; }
+		public boolean hasInclusive() { return iInclusive != null; }
+		public Boolean isInclusive() { return iInclusive; }
 		
 		public String toString() {
 			return iExpirations.toString();

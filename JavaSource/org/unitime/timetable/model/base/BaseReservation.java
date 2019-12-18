@@ -40,6 +40,7 @@ public abstract class BaseReservation implements Serializable {
 	private Date iExpirationDate;
 	private Integer iLimit;
 	private Date iStartDate;
+	private Boolean iInclusive;
 
 	private InstructionalOffering iInstructionalOffering;
 	private Set<InstrOfferingConfig> iConfigurations;
@@ -49,6 +50,7 @@ public abstract class BaseReservation implements Serializable {
 	public static String PROP_EXPIRATION_DATE = "expirationDate";
 	public static String PROP_RESERVATION_LIMIT = "limit";
 	public static String PROP_START_DATE = "startDate";
+	public static String PROP_INCLUSIVE = "inclusive";
 
 	public BaseReservation() {
 		initialize();
@@ -72,6 +74,10 @@ public abstract class BaseReservation implements Serializable {
 
 	public Date getStartDate() { return iStartDate; }
 	public void setStartDate(Date startDate) { iStartDate = startDate; }
+
+	public Boolean isInclusive() { return iInclusive; }
+	public Boolean getInclusive() { return iInclusive; }
+	public void setInclusive(Boolean inclusive) { iInclusive = inclusive; }
 
 	public InstructionalOffering getInstructionalOffering() { return iInstructionalOffering; }
 	public void setInstructionalOffering(InstructionalOffering instructionalOffering) { iInstructionalOffering = instructionalOffering; }
@@ -108,6 +114,7 @@ public abstract class BaseReservation implements Serializable {
 	public String toDebugString() {
 		return "Reservation[" +
 			"\n	ExpirationDate: " + getExpirationDate() +
+			"\n	Inclusive: " + getInclusive() +
 			"\n	InstructionalOffering: " + getInstructionalOffering() +
 			"\n	Limit: " + getLimit() +
 			"\n	StartDate: " + getStartDate() +

@@ -345,6 +345,13 @@ public class ReservationTable extends Composite {
 				restrictions.add(new Label(clazz.getName() + " (" + clazz.getLimit() + ")", false));
 			}
 			line.add(restrictions);
+			if (reservation.hasInclusive() && reservation.isInclusive()) {
+				restrictions.addStyleName("unitime-ReservationInclusive");
+				restrictions.setTitle(MESSAGES.reservationInclusiveTrue());
+			} else if (reservation.hasInclusive() && !reservation.isInclusive()) {
+				restrictions.addStyleName("unitime-ReservationExclusive");
+				restrictions.setTitle(MESSAGES.reservationInclusiveFalse());
+			}
 			line.add(new Number(limit == null ? MESSAGES.infinity() : String.valueOf(limit)));
 			if (limit == null)
 				unlimited = true;

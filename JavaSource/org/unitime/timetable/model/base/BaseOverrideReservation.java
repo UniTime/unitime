@@ -68,6 +68,7 @@ public abstract class BaseOverrideReservation extends IndividualReservation impl
 	public String toDebugString() {
 		return "OverrideReservation[" +
 			"\n	ExpirationDate: " + getExpirationDate() +
+			"\n	Inclusive: " + getInclusive() +
 			"\n	InstructionalOffering: " + getInstructionalOffering() +
 			"\n	Limit: " + getLimit() +
 			"\n	StartDate: " + getStartDate() +

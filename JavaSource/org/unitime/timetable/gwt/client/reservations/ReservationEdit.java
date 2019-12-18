@@ -111,9 +111,10 @@ public class ReservationEdit extends Composite {
 	private DefaultExpirationDates iExpirations = null;
 	
 	private final ReservationServiceAsync iReservationService = GWT.create(ReservationService.class);
-	private int iStartDateLine, iExpirationLine, iReservedSpaceLine, iGroupLine, iCourseLine, iAreaLine, iStudentsLine, iCurriculumLine;
+	private int iStartDateLine, iExpirationLine, iReservedSpaceLine, iGroupLine, iCourseLine, iAreaLine, iStudentsLine, iCurriculumLine, iInclusionLine;
 	
 	private CheckBox iCanOverlap, iMustBeUsed, iOverLimit, iAlwaysExpired;
+	private ListBox iInclusive;
 	private int iOverrideLine;
 	
 	private Offering iOffering = null;
@@ -380,6 +381,7 @@ public class ReservationEdit extends Composite {
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
 				iPanel.getRowFormatter().setVisible(iExpirationLine, !event.getValue());
 				iPanel.getRowFormatter().setVisible(iStartDateLine, !event.getValue());
+				iPanel.getRowFormatter().setVisible(iInclusionLine, !event.getValue());
 			}
 		});
 		
@@ -406,6 +408,12 @@ public class ReservationEdit extends Composite {
 		iRestrictions = new RestrictionsTable(iLimit);
 		iPanel.addRow(MESSAGES.propRestrictions(), iRestrictions);
 		iPanel.getCellFormatter().setVerticalAlignment(iPanel.getRowCount() - 1, 0, HasVerticalAlignment.ALIGN_TOP);
+		
+		iInclusive = new ListBox();
+		iInclusive.addItem(MESSAGES.reservationInclusiveNotSet(), "");
+		iInclusive.addItem(MESSAGES.reservationInclusiveTrue(), "true");
+		iInclusive.addItem(MESSAGES.reservationInclusiveFalse(), "false");
+		iInclusionLine = iPanel.addRow(MESSAGES.propInclusive(), iInclusive);
 		
 		iStudents = new UniTimeWidget<TextArea>(new TextArea());
 		iStudents.getWidget().addChangeHandler(new ChangeHandler() {
@@ -587,7 +595,7 @@ public class ReservationEdit extends Composite {
 			}
 		});
 	}
-	
+		
 	protected void load(String id) {
 		LoadingWidget.getInstance().show(MESSAGES.waitLoadingReservation());
 		if (id == null) {
@@ -709,6 +717,7 @@ public class ReservationEdit extends Composite {
 			iCurriculum.getWidget().clear();
 			iCurriculum.getWidget().addItem(MESSAGES.itemNone(), "");
 			iCurriculum.getWidget().setSelectedIndex(0);
+			iInclusive.setSelectedIndex(0);
 			areaChanged();
 			typeChanged(true);
 		} else {
@@ -834,9 +843,11 @@ public class ReservationEdit extends Composite {
 		iPanel.getRowFormatter().setVisible(2 + iAreaLine, "curriculum".equals(val));
 		iPanel.getRowFormatter().setVisible(iExpirationLine, getOverrideType(val) == null || getOverrideType(val).isCanHaveExpirationDate());
 		iPanel.getRowFormatter().setVisible(iStartDateLine, getOverrideType(val) == null || getOverrideType(val).isCanHaveExpirationDate());
+		iPanel.getRowFormatter().setVisible(iInclusionLine, getOverrideType(val) == null || getOverrideType(val).isCanHaveExpirationDate());
 		if (("individual-override".equals(val) || "group-override".equals(val)) && iAlwaysExpired.getValue()) {
 			iPanel.getRowFormatter().setVisible(iExpirationLine, false);
 			iPanel.getRowFormatter().setVisible(iStartDateLine, false);
+			iPanel.getRowFormatter().setVisible(iInclusionLine, false);
 		}
 		iPanel.getRowFormatter().setVisible(iReservedSpaceLine, getOverrideType(val) == null || getOverrideType(val).isCanHaveExpirationDate() || !getOverrideType(val).isExpired());
 		iPanel.getRowFormatter().setVisible(iOverrideLine, "individual-override".equals(val) || "group-override".equals(val)); 
@@ -916,6 +927,7 @@ public class ReservationEdit extends Composite {
 	public void populate() {
 		if (iReservation == null) return;
 		iLimit.getWidget().setValue(iReservation.getLimit() == null ? "" : iReservation.getLimit().toString());
+		iInclusive.setSelectedIndex(iReservation.hasInclusive() ? iReservation.isInclusive() ? 1 : 2 : 0);
 		iCanOverlap.setValue(iReservation.isAllowOverlaps());
 		iAlwaysExpired.setValue(iReservation.isAlwaysExpired());
 		iOverLimit.setValue(iReservation.isOverLimit());
@@ -1142,6 +1154,10 @@ public class ReservationEdit extends Composite {
 			r.setOverLimit(iOverLimit.getValue());
 			r.setAllowOverlaps(iCanOverlap.getValue());
 		}
+		if (iPanel.getRowFormatter().isVisible(iInclusionLine))
+			r.setInclusive(iInclusive.getSelectedIndex() == 0 ? null : iInclusive.getSelectedIndex() == 1 ? Boolean.TRUE : Boolean.FALSE);
+		else
+			r.setInclusive(null);
 		if (iReservation != null)
 			r.setId(iReservation.getId());
 		Offering o = new Offering();
@@ -1201,6 +1217,8 @@ public class ReservationEdit extends Composite {
 				@Override
 				public void onSuccess(DefaultExpirationDates result) {
 					iExpirations = result;
+					if (iExpirations.hasInclusive())
+						iInclusive.setItemText(0, iExpirations.isInclusive() ? MESSAGES.reservationInclusiveDefaultTrue() : MESSAGES.reservationInclusiveDefaultFalse());
 					callback.onSuccess(true);
 				}
 			});

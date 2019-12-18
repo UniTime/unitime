@@ -17,15 +17,13 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.model;
 
-import org.unitime.timetable.model.base.BaseContactCategory;
+alter table reservation add inclusive boolean;
 
-public class ContactCategory extends BaseContactCategory {
-	private static final long serialVersionUID = 1L;
+/*
+ * Update database version
+ */
 
-	public ContactCategory() {
-		super();
-	}
+update application_config set value='226' where name='tmtbl.db.version';
 
-}
+commit;

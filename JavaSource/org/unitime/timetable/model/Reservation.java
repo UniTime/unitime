@@ -27,6 +27,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseReservation;
 
 /**
@@ -223,5 +224,9 @@ public abstract class Reservation extends BaseReservation implements Comparable<
 
     private static int add(int l1, int l2) {
         return (l1 < 0 ? -1 : l2 < 0 ? -1 : l1 + l2);
+    }
+    
+    public boolean isReservationInclusive() {
+    	return (isInclusive() == null ? ApplicationProperty.ReservationsAreInclusive.isTrue() : isInclusive());
     }
 }

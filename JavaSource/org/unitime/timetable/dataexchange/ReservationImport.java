@@ -217,6 +217,11 @@ public class ReservationImport  extends BaseImport {
                 	}
                 }
                 
+                String inclusive = reservationElement.attributeValue("inclusive");
+                if (inclusive != null) {
+                	reservation.setInclusive("true".equalsIgnoreCase(inclusive));
+                }
+                
                 reservation.setConfigurations(new HashSet<InstrOfferingConfig>());
                 for (Iterator j = reservationElement.elementIterator("configuration"); j.hasNext(); ) {
                 	String name = ((Element)j.next()).attributeValue("name");

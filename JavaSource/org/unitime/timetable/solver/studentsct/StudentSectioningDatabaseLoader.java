@@ -906,7 +906,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         			for (Subpart subpart: config.getSubparts()) {
         				for (Section section: subpart.getSections()) {
         					if (c.getUniqueId().equals(section.getId())) {
-        						r.addSection(section, ApplicationProperty.ReservationsAreInclusive.isTrue());
+        						r.addSection(section, reservation.isReservationInclusive());
         						continue classes;
         					}
         				}

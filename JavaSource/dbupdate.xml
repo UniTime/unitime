@@ -13670,7 +13670,7 @@
 		<pgsql>alter table %SCHEMA%.sct_solution_log add note varchar(2000)</pgsql>
 		<pgsql>alter table %SCHEMA%.sct_solution_log add config varchar(1000)</pgsql>
 	</update>
-		<update version="225" date="10-Dec-2019" comment="Learning Management System (LMS) Integration Partner Information">
+	<update version="225" date="10-Dec-2019" comment="Learning Management System (LMS) Integration Partner Information">
 		<plsql>
 			create table %SCHEMA%.learn_mgmt_sys_info (
 				uniqueid number(20,0) constraint nn_lms_info_id not null,
@@ -13761,6 +13761,10 @@
 			alter table only %SCHEMA%.class_ add constraint fk_class_lms_info foreign key (lms_info_id)
 			references %SCHEMA%.learn_mgmt_sys_info (uniqueid) on delete set null
 		</pgsql>
-		
+	</update>
+	<update version="226" date="17-Dec-2019" comment="Reservations Inclusive Flag">
+		<plsql>alter table %SCHEMA%.reservation add inclusive number(1)</plsql>
+		<mysql>alter table %SCHEMA%.reservation add inclusive int(1) null</mysql>
+		<pgsql>alter table %SCHEMA%.reservation add inclusive boolean</pgsql>
 	</update>
 </dbupdate>
