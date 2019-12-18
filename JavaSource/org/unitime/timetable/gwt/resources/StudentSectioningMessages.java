@@ -1595,7 +1595,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Together with other registration changes, the course {0} will be dropped. Do you want to proceed?")
 	String confirmEnrollmentCourseDrop(String course);
 	
-	@DefaultMessage("Together with other registration changes, the critical course {0} will be dropped. Do you want to proceed?")
+	@DefaultMessage("Together with other registration changes, the critical course {0} will be dropped. This may prohibit progress towards degree. Please consult with your academic advisor. Do you want to proceed?")
 	String confirmEnrollmentCriticalCourseDrop(String course);
 
 	@DefaultMessage("<u>N</u>ew Course")
