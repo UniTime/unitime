@@ -865,7 +865,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					CONF_UNITIME, 4);
 		if (questionDropCritical)
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.dropCritical", (creditError != null ? "\n" : "") +
-					"One or more courses that are marked as critical in your degree plan have been removed. You may not be able to graduate in time."),
+					"One or more courses that are marked as critical in your degree plan have been removed. This may prohibit progress towards degree. Please consult with your academic advisor."),
 					CONF_UNITIME, 5);
 		if (creditError != null || questionNoAlt || questionTimeConflict)
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.confirmation", "\nDo you want to proceed?"), CONF_UNITIME, 6);
