@@ -864,7 +864,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					"Two or more single section courses are conflicting with each other. You will likely not be able to get the conflicting course, so please provide an alternative course if possible."),
 					CONF_UNITIME, 4);
 		if (questionDropCritical)
-			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.dropCritical", (creditError != null ? "\n" : "") +
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.dropCritical", (creditError != null || questionNoAlt || questionDropCritical ? "\n" : "") +
 					"One or more courses that are marked as critical in your degree plan have been removed. This may prohibit progress towards degree. Please consult with your academic advisor."),
 					CONF_UNITIME, 5);
 		if (creditError != null || questionNoAlt || questionTimeConflict)
