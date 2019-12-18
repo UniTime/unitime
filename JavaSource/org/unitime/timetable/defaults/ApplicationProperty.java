@@ -2651,6 +2651,12 @@ public enum ApplicationProperty {
 	@Description("Student Scheduling link (studentScheduling.do): prefer Course Requests over Scheduling Assistant for a student")
 	@Since(4.4)
 	StudentSchedulingPreferCourseRequests("unitime.studentScheduling.preferCourseRequests"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Enrollment: check for critical courses with an enrollment is changed (not just when course requests are collected)")
+	@Since(4.4)
+	EnrollmentCheckCritical("unitime.enrollment.checkCritical"),
 	;
 
 	String iKey;

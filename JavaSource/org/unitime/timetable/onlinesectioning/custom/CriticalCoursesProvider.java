@@ -23,6 +23,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 
 /**
@@ -38,5 +39,6 @@ public interface CriticalCoursesProvider {
 	public static interface CriticalCourses {
 		public boolean isEmpty();
 		public boolean isCritical(CourseOffering course);
+		public boolean isCritical(XCourseId course);
 	}
 }

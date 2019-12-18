@@ -68,6 +68,8 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
+import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.CriticalCourses;
+import org.unitime.timetable.onlinesectioning.custom.CustomCriticalCoursesHolder;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentFailure;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentRequest;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
@@ -156,6 +158,15 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 			public void onSuccess(Boolean result) {
 			}
 		};
+		
+		CriticalCourses cc = null;
+		boolean checkCritical = ApplicationProperty.EnrollmentCheckCritical.isTrue();
+		try {
+			if (CustomCriticalCoursesHolder.hasProvider() && checkCritical)
+				cc = CustomCriticalCoursesHolder.getProvider().getCriticalCourses(server, helper, server.getStudent(getStudentId()));
+		} catch (Exception e) {
+			helper.warn("Failed to lookup critical courses: " + e.getMessage(), e);
+		}
 		
 		Set<ErrorMessage> checkErrors = (getRequest().areTimeConflictsAllowed() || getRequest().areSpaceConflictsAllowed() ? new TreeSet<ErrorMessage>() : null);
 		Lock lock = server.lockStudent(getStudentId(), offeringIds, name());
@@ -263,6 +274,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 									cd.setAlternative(false);
 									cd.setPriority(priority);
 									cd.setWaitlist(false);
+									cd.setCritical(false);
 									FreeTime free = cd.getFreeTime();
 									if (free == null) {
 										free = new FreeTime();
@@ -314,6 +326,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					cd.setAlternative(false);
 					cd.setPriority(priority);
 					cd.setWaitlist(r.isWaitList());
+					if (checkCritical) cd.setCritical(isCritical(courses, cc));
 					Iterator<CourseRequest> requests = new TreeSet<CourseRequest>(cd.getCourseRequests()).iterator();
 					int order = 0;
 					for (XCourseId co: courses) {
@@ -397,6 +410,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 									cd.setAlternative(true);
 									cd.setPriority(priority);
 									cd.setWaitlist(false);
+									cd.setCritical(false);
 									FreeTime free = cd.getFreeTime();
 									if (free == null) {
 										free = new FreeTime();
@@ -441,6 +455,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					cd.setAlternative(true);
 					cd.setPriority(priority);
 					cd.setWaitlist(r.isWaitList());
+					cd.setCritical(false);
 					Iterator<CourseRequest> requests = new TreeSet<CourseRequest>(cd.getCourseRequests()).iterator();
 					int order = 0;
 					for (XCourseId co: courses) {
@@ -528,6 +543,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							cd.setAlternative(false);
 							cd.setPriority(priority++);
 							cd.setWaitlist(false);
+							if (checkCritical) cd.setCritical(isCritical(ca, cc));
 						}
 						if (cr == null) {
 							cr = new CourseRequest();
@@ -558,6 +574,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							cd.setAlternative(false);
 							cd.setPriority(priority++);
 							cd.setWaitlist(false);
+							if (checkCritical) cd.setCritical(isCritical(ca, cc));
 							cr.setCourseDemand(cd);
 							cd.getCourseRequests().add(cr);
 							helper.getHibSession().saveOrUpdate(cd);
@@ -889,6 +906,21 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
     	}
     	server.update(expectations);
     }
+    
+    protected static boolean isCritical(List<XCourseId> courses, CriticalCourses critical) {
+		if (critical == null) return false;
+		for (XCourseId co: courses) {
+			if (critical.isCritical(co)) return true;
+			break;
+		}
+		return false;
+	}
+    
+    protected static boolean isCritical(ClassAssignmentInterface.ClassAssignment course, CriticalCourses critical) {
+		if (critical == null) return false;
+		if (course == null || course.getCourseId() == null) return false;
+		return critical.isCritical(new XCourseId(null, course.getCourseId(), course.getCourseName()));
+	}
 	
 	@Override
 	public String name() {

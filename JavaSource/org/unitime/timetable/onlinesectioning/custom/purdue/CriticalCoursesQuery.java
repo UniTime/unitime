@@ -131,7 +131,7 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 				if (action != null) action.addOptionBuilder().setKey("catyear").setValue(catyear);
 			}
 			cc.addCourses((List<String>)query.list());
-			if (action != null) action.addOptionBuilder().setKey("courses").setValue(cc.toString());
+			if (action != null) action.addOptionBuilder().setKey("critical").setValue(cc.toString());
 			if (sqlPlaceholders != null && !sqlPlaceholders.isEmpty() && CustomCourseLookupHolder.hasProvider()) {
 				query = helper.getHibSession().createSQLQuery(sqlPlaceholders);
 				query.setString("area", acm.getArea());
@@ -173,6 +173,14 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 		@Override
 		public boolean isCritical(CourseOffering course) {
 			if (iCourseIds.contains(course.getUniqueId())) return true;
+			for (String c: iCriticalCourses)
+				if (course.getCourseName().startsWith(c)) return true;
+			return false;
+		}
+
+		@Override
+		public boolean isCritical(XCourseId course) {
+			if (iCourseIds.contains(course.getCourseId())) return true;
 			for (String c: iCriticalCourses)
 				if (course.getCourseName().startsWith(c)) return true;
 			return false;
