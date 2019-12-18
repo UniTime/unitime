@@ -80,6 +80,12 @@
 				</line>
  			</description>
 		</item>
+		<item>
+			<name>Scheduling Assistant: Critical Courses</name>
+			<description>
+				<line>Show a warning when a critical course is being dropped (only when drop warnings are enabled).</line>
+			</description>
+		</item>
 	</category>
 </release>
 

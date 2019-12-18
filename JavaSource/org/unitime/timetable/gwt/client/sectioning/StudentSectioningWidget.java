@@ -80,6 +80,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.CourseMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestPriority;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
@@ -2595,6 +2596,29 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		return false;
 	}
 	
+	public List<String> getCriticalCoursesToDrop() {
+		if (iLastAssignment != null && iSavedAssignment != null && iSavedRequest != null) {
+			List<String> ret = new ArrayList<String>();
+			for (ClassAssignmentInterface.CourseAssignment course: iSavedAssignment.getCourseAssignments()) {
+				if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
+				RequestPriority rp = iSavedRequest.getRequestPriority(course);
+				if (rp == null || rp.isAlternative() || !rp.getRequest().isCritical()) continue;
+				boolean hasCourse = false;
+				for (RequestedCourse alt: rp.getRequest().getRequestedCourse()) {
+					if (alt.getCourseId() == null) continue;
+					for (ClassAssignmentInterface.CourseAssignment x: iLastAssignment.getCourseAssignments())
+						if (alt.getCourseId().equals(x.getCourseId()) && x.isAssigned()) {
+							hasCourse = true; break;
+						}
+				}
+				if (!hasCourse)
+					ret.add(MESSAGES.course(course.getSubject(), course.getCourseNbr()));
+			}
+			return ret;
+		}
+		return null;
+	}
+	
 	public List<String> getCoursesToDrop() {
 		if (iLastAssignment != null && iSavedAssignment != null) {
 			List<String> ret = new ArrayList<String>();
@@ -2641,6 +2665,15 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 
 	protected Command confirmEnrollmentDrop(final Command callback) {
 		if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CONFIRM_DROP)) {
+			final List<String> critical = getCriticalCoursesToDrop();
+			if (critical != null && !critical.isEmpty()) {
+				return new Command() {
+					@Override
+					public void execute() {
+						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.confirmEnrollmentCriticalCourseDrop(ToolBox.toString(critical)), callback);
+					}
+				};
+			}
 			final List<String> drops = getCoursesToDrop();
 			if (drops != null && !drops.isEmpty()) {
 				return new Command() {
