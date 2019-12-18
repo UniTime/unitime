@@ -60,6 +60,7 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CheckEligibilityResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.EligibilityProblem;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ResponseStatus;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
@@ -543,6 +544,7 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 				if (cr.getCourseIds().size() == 1 && !cr.isAlternative()) coursesWithNotAlt.add(cr.getCourseIds().get(0).getCourseId());
 			}
 		}
+		
 		boolean questionNoAlt = false;
 		for (CourseRequestInterface.Request r: request.getCourses()) {
 			if (r.hasRequestedCourse() && r.getRequestedCourse().size() == 1) {
@@ -553,6 +555,29 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 							!coursesWithNotAlt.contains(rc.getCourseId()) ? CONF_UNITIME : CONF_NONE);
 					if (!coursesWithNotAlt.contains(rc.getCourseId())) {
 						questionNoAlt = true;
+					}
+				}
+			}
+		}
+		
+		// Check for critical course removals
+		boolean questionDropCritical = false;
+		for (XRequest r: original.getRequests()) {
+			if (r instanceof XCourseRequest) {
+				XCourseRequest cr = (XCourseRequest)r;
+				if (cr.isCritical() && !cr.isAlternative() && !cr.getCourseIds().isEmpty()) {
+					boolean hasCourse = false;
+					for (XCourseId course: cr.getCourseIds()) {
+						if (request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName())) != null) {
+							hasCourse = true; break;
+						}
+					}
+					if (!hasCourse) {
+						XCourseId course = cr.getCourseIds().get(0);
+						response.addMessage(course.getCourseId(), course.getCourseName(), "DROP_CRIT",
+								ApplicationProperties.getProperty("purdue.specreg.messages.courseDropCrit", "Critical course has been removed.").replace("{course}", course.getCourseName()),
+								CONF_UNITIME);
+						questionDropCritical = true;
 					}
 				}
 			}
@@ -609,7 +634,13 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.noAlternatives", (creditError != null ? "\n" : "") +
 					"One or more of the newly requested courses have no alternatives provided. You may not be able to get a full schedule because you did not provide an alternative course."),
 					CONF_UNITIME, 3);
-		if (creditError != null || questionNoAlt)
+		
+		if (questionDropCritical)
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.dropCritical", (creditError != null ? "\n" : "") +
+					"One or more courses that are marked as critical in your degree plan have been removed. This may prohibit progress towards degree. Please consult with your academic advisor."),
+					CONF_UNITIME, 4);
+		
+		if (creditError != null || questionNoAlt || questionDropCritical)
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.confirmation", "\nDo you want to proceed?"), CONF_UNITIME, 5);
 
 		Set<Integer> conf = response.getConfirms();
