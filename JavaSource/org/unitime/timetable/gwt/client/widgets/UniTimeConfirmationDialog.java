@@ -63,6 +63,7 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 	private Command iCommand;
 	private P iError = null;
 	private String iMessage;
+	private boolean iDefaultIsYes = true;
 	
 	protected UniTimeConfirmationDialog(Type type, String message, String question, String answer, Command command) {
 		this(type, message, false, question, answer, command);
@@ -88,6 +89,7 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 		setEnterToSubmit(new Command() {
 			@Override
 			public void execute() {
+				if (!iDefaultIsYes) hide();
 				if (iNo != null && iNo.isFocused()) return;
 				submit();
 			}
@@ -169,7 +171,12 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 	
 	@Override
 	public void center() {
+		center(true);
+	}
+	
+	public void center(final boolean defaultIsYes) {
 		super.center();
+		iDefaultIsYes = defaultIsYes;
 		if (iMessage != null && !iMessage.isEmpty())
 			AriaStatus.getInstance().setText(ARIA.dialogOpened(getText()) + " " + iMessage + (iNo == null ? "" : " " + ARIA.confirmationEnterToAcceptEscapeToReject()));
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
@@ -179,7 +186,7 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 					iTextBox.setFocus(true);
 					iTextBox.selectAll();
 				} else {
-					iYes.setFocus(true);
+					(iDefaultIsYes ? iYes : iNo).setFocus(true);
 				}
 			}
 		});
@@ -221,6 +228,10 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 
 	public static void confirm(String message, Command callback) {
 		new UniTimeConfirmationDialog(Type.CONFIRM, message, null, null, callback).center();
+	}
+	
+	public static void confirmFocusNo(String message, Command callback) {
+		new UniTimeConfirmationDialog(Type.CONFIRM, message, null, null, callback).center(false);
 	}
 	
 	public static void confirm(String message, ImageResource icon, Command callback) {
