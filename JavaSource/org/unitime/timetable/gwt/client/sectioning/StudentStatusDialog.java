@@ -110,9 +110,9 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 				hide();
 				if (iConfirmation != null && !iConfirmation.isAllMyStudents()) {
 					if (iStatus.getSelectedIndex() > 0)
-						UniTimeConfirmationDialog.confirm(MESSAGES.confirmStatusNoteChange(iStatus.getItemText(iStatus.getSelectedIndex()), iConfirmation.getStudentCount()), iCommand);
+						UniTimeConfirmationDialog.confirmFocusNo(MESSAGES.confirmStatusNoteChange(iStatus.getItemText(iStatus.getSelectedIndex()), iConfirmation.getStudentCount()), iCommand);
 					else 
-						UniTimeConfirmationDialog.confirm(MESSAGES.confirmNoteChange(iConfirmation.getStudentCount()), iCommand);
+						UniTimeConfirmationDialog.confirmFocusNo(MESSAGES.confirmNoteChange(iConfirmation.getStudentCount()), iCommand);
 				} else {
 					iCommand.execute();
 				}
@@ -124,7 +124,7 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 				hide();
 				SectioningStatusCookie.getInstance().setEmailDefaults(getIncludeCourseRequests(), getIncludeClassSchedule(), getCC(), getSubject());
 				if (iConfirmation != null && !iConfirmation.isAllMyStudents()) {
-					UniTimeConfirmationDialog.confirm(MESSAGES.confirmSendEmail(iConfirmation.getStudentCount()), iCommand);
+					UniTimeConfirmationDialog.confirmFocusNo(MESSAGES.confirmSendEmail(iConfirmation.getStudentCount()), iCommand);
 				} else {
 					iCommand.execute();
 				}
@@ -142,7 +142,7 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 			public void onClick(ClickEvent event) {
 				hide();
 				if (iConfirmation != null && iStatus.getSelectedIndex() > 0 && !iConfirmation.isAllMyStudents()) {
-					UniTimeConfirmationDialog.confirm(MESSAGES.confirmStatusChange(iStatus.getItemText(iStatus.getSelectedIndex()), iConfirmation.getStudentCount()), iCommand);
+					UniTimeConfirmationDialog.confirmFocusNo(MESSAGES.confirmStatusChange(iStatus.getItemText(iStatus.getSelectedIndex()), iConfirmation.getStudentCount()), iCommand);
 				} else {
 					iCommand.execute();
 				}

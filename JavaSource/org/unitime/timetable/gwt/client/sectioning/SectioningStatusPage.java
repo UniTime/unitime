@@ -1365,39 +1365,43 @@ public class SectioningStatusPage extends Composite {
 					iStudentStatusDialog.massCancel(new Command() {
 						@Override
 						public void execute() {
-							if (!Window.confirm(MESSAGES.massCancelConfirmation())) return;
-							final List<Long> studentIds = new ArrayList<Long>();
-							for (int row = 0; row < iStudentTable.getRowCount(); row++) {
-								StudentInfo i = iStudentTable.getData(row);
-								if (i != null && i.getStudent() != null && iSelectedStudentIds.contains(i.getStudent().getId())) { 
-									studentIds.add(i.getStudent().getId());
-									iStudentTable.setWidget(row, iStudentTable.getCellCount(row) - 1, new Image(RESOURCES.loading_small()));
-								}
-							}
-							
-							LoadingWidget.getInstance().show(MESSAGES.massCanceling());
-							iSectioningService.massCancel(studentIds, iStudentStatusDialog.getStatus(),
-									iStudentStatusDialog.getSubject(), iStudentStatusDialog.getMessage(), iStudentStatusDialog.getCC(), new AsyncCallback<Boolean>() {
-
+							UniTimeConfirmationDialog.confirmFocusNo(MESSAGES.massCancelConfirmation(), new Command() {
 								@Override
-								public void onFailure(Throwable caught) {
-									LoadingWidget.getInstance().hide();
-									UniTimeNotifications.error(caught);
+								public void execute() {
+									final List<Long> studentIds = new ArrayList<Long>();
 									for (int row = 0; row < iStudentTable.getRowCount(); row++) {
 										StudentInfo i = iStudentTable.getData(row);
-										if (i != null && i.getStudent() != null && studentIds.contains(i.getStudent().getId())) {
-											HTML error = new HTML(caught.getMessage());
-											error.setStyleName("unitime-ErrorMessage");
-											iStudentTable.setWidget(row, iStudentTable.getCellCount(row) - 1, error);
-											i.setEmailDate(null);
+										if (i != null && i.getStudent() != null && iSelectedStudentIds.contains(i.getStudent().getId())) { 
+											studentIds.add(i.getStudent().getId());
+											iStudentTable.setWidget(row, iStudentTable.getCellCount(row) - 1, new Image(RESOURCES.loading_small()));
 										}
 									}
-								}
+									
+									LoadingWidget.getInstance().show(MESSAGES.massCanceling());
+									iSectioningService.massCancel(studentIds, iStudentStatusDialog.getStatus(),
+											iStudentStatusDialog.getSubject(), iStudentStatusDialog.getMessage(), iStudentStatusDialog.getCC(), new AsyncCallback<Boolean>() {
 
-								@Override
-								public void onSuccess(Boolean result) {
-									LoadingWidget.getInstance().hide();
-									loadData();
+										@Override
+										public void onFailure(Throwable caught) {
+											LoadingWidget.getInstance().hide();
+											UniTimeNotifications.error(caught);
+											for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+												StudentInfo i = iStudentTable.getData(row);
+												if (i != null && i.getStudent() != null && studentIds.contains(i.getStudent().getId())) {
+													HTML error = new HTML(caught.getMessage());
+													error.setStyleName("unitime-ErrorMessage");
+													iStudentTable.setWidget(row, iStudentTable.getCellCount(row) - 1, error);
+													i.setEmailDate(null);
+												}
+											}
+										}
+
+										@Override
+										public void onSuccess(Boolean result) {
+											LoadingWidget.getInstance().hide();
+											loadData();
+										}
+									});									
 								}
 							});
 						}
@@ -1593,7 +1597,7 @@ public class SectioningStatusPage extends Composite {
 								}
 							}
 							if (!allMine) {
-								UniTimeConfirmationDialog.confirm(MESSAGES.confirmStatusChange(info.getLabel(), iSelectedStudentIds.size()), new Command() {
+								UniTimeConfirmationDialog.confirmFocusNo(MESSAGES.confirmStatusChange(info.getLabel(), iSelectedStudentIds.size()), new Command() {
 									@Override
 									public void execute() {
 										changeStatus();
