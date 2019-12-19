@@ -843,6 +843,24 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public String getFilter() { return iFilter; }
 		public void setFilter(String filter) { iFilter = filter; }
 		
+		public boolean isInactive() {
+			if (iRequestedCourse == null) return false;
+			// all requests are inactive -> inactive
+			for (RequestedCourse rc: iRequestedCourse) {
+				if (!rc.isInactive()) return false;
+			}
+			return true;
+		}
+		
+		public boolean isActive() {
+			if (iRequestedCourse == null) return false;
+			// one request is active (not inactive) -> active
+			for (RequestedCourse rc: iRequestedCourse) {
+				if (!rc.isInactive()) return true;
+			}
+			return false;
+		}
+		
 		public String toString() {
 			return (hasRequestedCourse() ? iRequestedCourse.toString() : "-") + (isWaitList() ? " (w)" : "");
 		}
@@ -1346,6 +1364,22 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 					if (rc.isInactive() && rc.hasCourseId() && activeCourseIds.contains(rc.getCourseId()))
 						i.remove();
 				}
+		}
+	}
+	
+	public void moveActiveSubstitutionsUp() {
+		// Count the number of inactive course requests in the upper table
+		int nrInactive = 0;
+		for (CourseRequestInterface.Request request: getCourses())
+			if (request.isInactive()) nrInactive ++;
+		// For each inactive request, move one active request from substitutes up
+		for (Iterator<CourseRequestInterface.Request> i = getAlternatives().iterator(); i.hasNext() && nrInactive > 0; ) {
+			CourseRequestInterface.Request request = i.next();
+			if (request.isActive()) {
+				getCourses().add(request);
+				i.remove();
+				nrInactive --;
+			}
 		}
 	}
 }
