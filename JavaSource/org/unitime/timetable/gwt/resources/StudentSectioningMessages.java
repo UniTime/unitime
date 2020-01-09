@@ -1085,6 +1085,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Projection")
 	String colProjection();
 	
+	@DefaultMessage("Snapshot<br>Limit")
+	String colSnapshotLimit();
+	
 	@DefaultMessage("Enrollment")
 	String colEnrollment();
 	

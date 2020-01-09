@@ -1098,7 +1098,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private String iArea, iMajor, iClassification;
 		private String iSubject, iCourseNbr, iConfig, iSubpart, iClazz, iTitle, iConsent;
 		private Long iCourseId, iOfferingId, iSubjectId, iConfigId, iSubpartId, iClazzId;
-		private Integer iLimit, iOther, iProjection, iEnrollment, iWaitlist, iReservation, iAvailable, iUnassigned, iUnassignedPrimary;
+		private Integer iLimit, iOther, iProjection, iEnrollment, iWaitlist, iReservation, iAvailable, iUnassigned, iUnassignedPrimary, iSnapshot;
 		private Integer iTotalEnrollment, iTotalWaitlist, iTotalReservation, iTotalUnassigned, iTotalUnassignedPrimary;
 		private Integer iConsentNeeded, iTotalConsentNeeded;
 		private Integer iOverrideNeeded, iTotalOverrideNeeded;
@@ -1158,6 +1158,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public Integer getLimit() { return iLimit; }
 		public void setLimit(Integer limit) { iLimit = limit; }
 		public boolean hasLimit() { return iLimit != null; }
+		
+		public Integer getSnapshot() { return iSnapshot; }
+		public void setSnapshot(Integer snapshot) { iSnapshot = snapshot; }
+		public boolean hasSnapshot() { return iSnapshot != null; }
 		
 		public Integer getOther() { return iOther; }
 		public void setOther(Integer other) { iOther = other; }

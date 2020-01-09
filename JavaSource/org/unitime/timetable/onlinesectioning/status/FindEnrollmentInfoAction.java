@@ -20,6 +20,7 @@
 package org.unitime.timetable.onlinesectioning.status;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -37,6 +38,7 @@ import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
+import org.hibernate.type.LongType;
 import org.unitime.commons.NaturalOrderComparator;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
@@ -124,7 +126,50 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 	
 	public boolean hasMatchingSubjectArea(String subject) {
 		return iSubjectAreas == null || iSubjectAreas.contains(subject);
-	}	
+	}
+	
+	Map<Long, Integer> getClassSnapshots(Long courseId, OnlineSectioningHelper helper) {
+		Map<Long, Integer> ret = new HashMap<Long, Integer>();
+		for (Object[] o: (List<Object[]>)helper.getHibSession().createQuery(
+				"select c.uniqueId, c.snapshotLimit from " +
+				"Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
+				"co.uniqueId = :courseId").setLong("courseId", courseId).setCacheable(true).list()) {
+			Long classId = (Long)o[0];
+			Integer limit = (Integer)o[1];
+			ret.put(classId, limit);
+		}
+		return ret;
+	}
+	
+	Map<Long, Integer> getOfferingSnapshots(Collection<? extends XCourseId> courseIds, OnlineSectioningHelper helper) {
+		Map<Long, Integer> ret = new HashMap<Long, Integer>();
+		List<Long> ids = new ArrayList<Long>(1000);
+		for (XCourseId courseId: courseIds) {
+			ids.add(courseId.getOfferingId());
+			if (ids.size() == 1000) {
+				for (Object[] o: (List<Object[]>)helper.getHibSession().createQuery(
+						"select io.uniqueId, io.snapshotLimit from " +
+						"InstructionalOffering io where " +
+						"io.uniqueId = :ids").setParameterList("ids", ids, LongType.INSTANCE).setCacheable(true).list()) {
+					Long classId = (Long)o[0];
+					Integer limit = (Integer)o[1];
+					ret.put(classId, limit);
+				}
+				ids.clear();
+			}
+		}
+		if (!ids.isEmpty()) {
+			for (Object[] o: (List<Object[]>)helper.getHibSession().createQuery(
+					"select io.uniqueId, io.snapshotLimit from " +
+					"InstructionalOffering io where " +
+					"io.uniqueId in :ids").setParameterList("ids", ids, LongType.INSTANCE).setCacheable(true).list()) {
+				Long classId = (Long)o[0];
+				Integer limit = (Integer)o[1];
+				ret.put(classId, limit);
+			}
+		}
+		return ret;
+	}
 	
 	@Override
 	public List<EnrollmentInfo> execute(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
@@ -143,7 +188,9 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 			int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0, gtUnasgPrim = 0;
 			int gConNeed = 0, gtConNeed = 0, gOvrNeed = 0, gtOvrNeed = 0;
 			
-			for (XCourseId info: server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery, lookup))) {
+			Collection<? extends XCourseId> courses = server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery, lookup)); 
+			Map<Long, Integer> snapshots = getOfferingSnapshots(courses, helper);
+			for (XCourseId info: courses) {
 				XOffering offering = server.getOffering(info.getOfferingId());
 				if (offering == null) continue;
 				XCourse course = offering.getCourse(info.getCourseId());
@@ -278,6 +325,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 									
 				e.setLimit(course.getLimit());
 				e.setProjection(course.getProjected());
+				e.setSnapshot(snapshots.get(course.getOfferingId()));
 				int av = (int)Math.max(0, offering.getUnreservedSpace(enrollments));
 				if (course.getLimit() >= 0 && av > course.getLimit() - enrollments.countEnrollmentsForCourse(info.getCourseId()))
 					av = course.getLimit() - enrollments.countEnrollmentsForCourse(info.getCourseId());
@@ -358,6 +406,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 			t.setTotalOverrideNeeded(gtOvrNeed);
 			ret.add(t);
 		} else {
+			Map<Long, Integer> snapshots = getClassSnapshots(courseId(), helper);
 			XCourse info = server.getCourse(courseId());
 			if (info == null) return ret;
 			final XOffering offering = server.getOffering(info.getOfferingId());
@@ -559,6 +608,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				e.setAvailable(section.isCancelled() || !section.isEnabledForScheduling() ? 0 : Math.max(0, offering.getUnreservedSectionSpace(section.getSectionId(), enrollments)));
 				if (e.getAvailable() == Integer.MAX_VALUE) e.setAvailable(-1);
 				e.setProjection(tEnrl + (int)Math.round(expectations.getExpectedSpace(section.getSectionId())));
+				e.setSnapshot(snapshots.get(section.getSectionId()));
 				
 				e.setEnrollment(enrl);
 				e.setReservation(res);

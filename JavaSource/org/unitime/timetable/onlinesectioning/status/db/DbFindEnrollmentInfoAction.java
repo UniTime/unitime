@@ -241,6 +241,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				}
 
 				e.setLimit(course.getReservation() != null ? course.getReservation() : limit);
+				e.setSnapshot(course.getInstructionalOffering().getSnapshotLimit());
 				e.setProjection(course.getProjectedDemand() != null ? course.getProjectedDemand().intValue() : course.getDemand() != null ? course.getDemand().intValue() : 0);
 				int av = (int)Math.max(0, offering.getUnreservedSpace());
 				if (e.getLimit() >= 0 && av > e.getLimit() - course.getEnrollment())
@@ -490,6 +491,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				e.setAvailable(section.isCancelled() || !section.isEnabledForStudentScheduling() ? 0 : Math.max(0, section.getUnreservedSectionSpace()));
 				if (e.getAvailable() == Integer.MAX_VALUE) e.setAvailable(-1);
 				e.setProjection(tEnrl + Math.max(0, (int)Math.round(section.getSectioningInfo() == null ? 0 : section.getSectioningInfo().getNbrExpectedStudents())));
+				e.setSnapshot(section.getSnapshotLimit());
 				
 				e.setEnrollment(enrl);
 				e.setReservation(res);

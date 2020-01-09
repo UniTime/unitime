@@ -164,6 +164,12 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		Printer out = new CSVPrinter(helper, false);
 		helper.setup(out.getContentType(), reference(), false);
 		
+		boolean hasSnapshot = false;
+		for (EnrollmentInfo e: enrollments) {
+			if (e.getSnapshot() != null) { hasSnapshot = true; break; }
+		}
+		if (!hasSnapshot) out.hideColumn(7);
+		
 		out.printHeader(
 				MESSAGES.colSubject() + "\n  " + MESSAGES.colSubpart(),
 				MESSAGES.colCourse() + "\n" + MESSAGES.colClass(),
@@ -172,6 +178,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 				MESSAGES.colConsent() + "\n" + MESSAGES.colRoom(),
 				MESSAGES.colAvailable(),
 				MESSAGES.colProjection(),
+				MESSAGES.colSnapshotLimit().replace("<br>", "\n"),
 				MESSAGES.colEnrollment(),
 				MESSAGES.colWaitListed(),
 				MESSAGES.colUnassignedAlternative().replace("<br>", "\n"),
@@ -190,6 +197,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 							e.getConsent(),
 							(e.getCourseId() == null ? number(e.getAvailable(), e.getLimit()) : available(e)),
 							number(null, e.getProjection()),
+							number(null, e.getSnapshot()),
 							number(e.getEnrollment(), e.getTotalEnrollment()),
 							waitlist(e),
 							number(e.getUnassignedAlternative(), e.getTotalUnassignedAlternative()),
@@ -206,6 +214,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 							e.getAssignment().getRooms(","),
 							(e.getCourseId() == null ? number(e.getAvailable(), e.getLimit()) : available(e)),
 							number(null, e.getProjection()),
+							number(null, e.getSnapshot()),
 							number(e.getEnrollment(), e.getTotalEnrollment()),
 							waitlist(e),
 							number(e.getUnassignedAlternative(), e.getTotalUnassignedAlternative()),

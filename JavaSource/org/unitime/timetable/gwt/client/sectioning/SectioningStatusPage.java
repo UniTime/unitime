@@ -201,6 +201,7 @@ public class SectioningStatusPage extends Composite {
 	
 	private List<StudentInfo> iStudentInfos = null;
 	private StudentsInfoVisibleColumns iStudentInfoVisibleColumns = null;
+	private CourseInfoVisibleColums iCourseInfoVisibleColums = null;
 	private int iStudentInfosFirstLine = -1;
 	
 	private List<EnrollmentInfo> iEnrollmentInfos = null;
@@ -1106,6 +1107,8 @@ public class SectioningStatusPage extends Composite {
 		else
 			line.add(new AvailableCell(e));
 		line.add(new NumberCell(null, e.getProjection()));
+		if (iCourseInfoVisibleColums.hasSnapshot)
+			line.add(new NumberCell(null, e.getSnapshot()));
 		line.add(new NumberCell(e.getEnrollment(), e.getTotalEnrollment()));
 		line.add(new WaitListCell(e));
 		line.add(new NumberCell(e.getUnassignedAlternative(), e.getTotalUnassignedAlternative()));
@@ -1120,6 +1123,7 @@ public class SectioningStatusPage extends Composite {
 		iClassInfos.clear();
 		iSelectedCourseIds.clear();
 		iSortOperations.clear();
+		iCourseInfoVisibleColums = new CourseInfoVisibleColums(result);
 		List<Widget> header = new ArrayList<Widget>();
 
 		UniTimeTableHeader hOperations = new UniTimeTableHeader("");
@@ -1153,6 +1157,14 @@ public class SectioningStatusPage extends Composite {
 		hProjection.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		header.add(hProjection);
 		addSortOperation(hProjection, EnrollmentComparator.SortBy.PROJECTION, MESSAGES.colProjection());
+		
+		UniTimeTableHeader hSnapshot = null;
+		if (iCourseInfoVisibleColums.hasSnapshot) {
+			hSnapshot = new UniTimeTableHeader(MESSAGES.colSnapshotLimit());
+			hSnapshot.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+			header.add(hSnapshot);
+			addSortOperation(hSnapshot, EnrollmentComparator.SortBy.LIMIT, MESSAGES.colSnapshotLimit().replace("<br>", " "));
+		}
 
 		UniTimeTableHeader hEnrollment = new UniTimeTableHeader(MESSAGES.colEnrollment());
 		hEnrollment.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
@@ -1185,12 +1197,7 @@ public class SectioningStatusPage extends Composite {
 		addSortOperation(hOverride, EnrollmentComparator.SortBy.NEED_OVERRIDE, MESSAGES.colNeedOverride().replace("<br>", " "));
 
 		iCourseTable.addRow(null, header);
-		
-		boolean hasReservation = false;
-		for (EnrollmentInfo e: result) {
-			if (AvailableCell.hasReservedSpace(e)) { hasReservation = true; break; }
-		}
-		
+				
 		if (SectioningStatusCookie.getInstance().getSortBy(iOnline, 0) != 0) {
 			boolean asc = (SectioningStatusCookie.getInstance().getSortBy(iOnline, 0) > 0);
 			EnrollmentComparator.SortBy sort = EnrollmentComparator.SortBy.values()[Math.abs(SectioningStatusCookie.getInstance().getSortBy(iOnline, 0)) - 1];
@@ -1208,6 +1215,7 @@ public class SectioningStatusPage extends Composite {
 			case WAITLIST: h = hWaitListed; break;
 			case ALTERNATIVES: h = hAlternative; break;
 			case NEED_OVERRIDE: h = hOverride; break;
+			case SNAPSHOT: h = hSnapshot; break;
 			}
 			if (h != null) {
 				Collections.sort(result, new EnrollmentComparator(sort, asc));
@@ -1216,7 +1224,7 @@ public class SectioningStatusPage extends Composite {
 			}
 		}
 		
-		iCourseTableHint.setVisible(hasReservation);
+		iCourseTableHint.setVisible(iCourseInfoVisibleColums.hasReservation);
 		
 		fillCourseTable(0);
 	}
@@ -2732,6 +2740,7 @@ public class SectioningStatusPage extends Composite {
 			NEED_CONSENT,
 			ALTERNATIVES,
 			NEED_OVERRIDE,
+			SNAPSHOT,
 		}
 		
 		private SortBy iSortBy;
@@ -2782,6 +2791,12 @@ public class SectioningStatusPage extends Composite {
 			case LIMIT:
 				cmp = (e1.getAvailable() == null ? new Integer(0) : e1.getAvailable() < 0 ? new Integer(Integer.MAX_VALUE) : e1.getAvailable()).compareTo(
 						e2.getAvailable() == null ? 0 : e2.getAvailable() < 0 ? Integer.MAX_VALUE : e2.getAvailable());
+				if (cmp != 0) return cmp;
+				cmp = (e1.getLimit() == null ? new Integer(0) : e1.getLimit()).compareTo(e2.getLimit() == null ? 0 : e2.getLimit());
+				if (cmp != 0) return cmp;
+				break;
+			case SNAPSHOT:
+				cmp = (e1.getSnapshot() == null ? new Integer(0) : e1.getSnapshot()).compareTo(e2.getSnapshot() == null ? 0 : e2.getSnapshot());
 				if (cmp != 0) return cmp;
 				cmp = (e1.getLimit() == null ? new Integer(0) : e1.getLimit()).compareTo(e2.getLimit() == null ? 0 : e2.getLimit());
 				if (cmp != 0) return cmp;
@@ -3215,6 +3230,18 @@ public class SectioningStatusPage extends Composite {
 		@Override
 		public HorizontalAlignmentConstant getCellAlignment() {
 			return HasHorizontalAlignment.ALIGN_CENTER;
+		}
+	}
+	
+	static class CourseInfoVisibleColums {
+		boolean hasReservation = false;
+		boolean hasSnapshot = false;
+		
+		public CourseInfoVisibleColums(List<EnrollmentInfo> result) {
+			for (EnrollmentInfo e: result) {
+				if (AvailableCell.hasReservedSpace(e)) hasReservation = true;
+				if (e.getSnapshot() != null) hasSnapshot = true;
+			}
 		}
 	}
 	
