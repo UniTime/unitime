@@ -111,10 +111,10 @@
 		<tr><td colspan='2'><tt:section-title><br><loc:message name="sectionTitleStudentConflicts"/></tt:section-title></td></tr>
 		<tr><td colspan='2'><bean:write name="model" property="studentConflictTable" filter="false"/></td></tr>
 		<logic:notEqual name="model" property="useRealStudents" value="true">
-			<tr><td colspan='2' align="center" onClick="displayLoading(); document.location='classInfo.do?op=Type&type=actual';" align='center' style='cursor:pointer;'><i><loc:message name="studentConflictsShowingSolutionConflicts"/></i></td></tr>
+			<tr><td colspan='2' align="center" onClick="displayLoading(); document.location='classInfo.do?op=Type&type=actual';" align='center' class='unitime-ClassAssignmentLink'><loc:message name="studentConflictsShowingSolutionConflicts"/></td></tr>
 		</logic:notEqual>
 		<logic:equal name="model" property="useRealStudents" value="true">
-			<tr><td colspan='2' align="center" onClick="displayLoading(); document.location='classInfo.do?op=Type&type=solution';" align='center' style='cursor:pointer;'><i><loc:message name="studentConflictsShowingActualConflicts"/></i></td></tr>
+			<tr><td colspan='2' align="center" onClick="displayLoading(); document.location='classInfo.do?op=Type&type=solution';" align='center' class='unitime-ClassAssignmentLink'><loc:message name="studentConflictsShowingActualConflicts"/></td></tr>
 		</logic:equal>
 		<logic:equal name="model" property="showDates" value="true">
 			<tr><td colspan='2'><tt:section-title>

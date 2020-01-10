@@ -6622,3 +6622,10 @@ unitime-RoomSharingWidget .legend .blank {
 	overflow-y: scroll !important;
 	max-height: 80vh;
 }
+
+.unitime-ClassAssignmentLink {
+	font-size: x-small;
+	font-style: italic;
+	text-decoration: underline;
+	cursor: pointer;
+}
