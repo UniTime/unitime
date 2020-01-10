@@ -102,6 +102,12 @@
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-core</artifactId>
 			<version>${hibernate.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>dom4j</groupId>
+					<artifactId>dom4j</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
@@ -481,7 +487,7 @@
 			<version>${poi.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>dom4j</groupId>
+			<groupId>org.dom4j</groupId>
 			<artifactId>dom4j</artifactId>
 			<version>${dom4j.version}</version>
 		</dependency>
@@ -563,8 +569,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.5.1</version>
 				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
+					<source>1.8</source>
+					<target>1.8</target>
 					<fork>true</fork>
 					<maxmem>512m</maxmem>
 				</configuration>
@@ -704,7 +710,8 @@
 									BSD or BSD-style License|
 									BSD License|BSD|
 									BSD-style License|BSD-style license|
-									New BSD license|FreeBSD License
+									New BSD license|FreeBSD License|
+									BSD 3-clause New License
 								</licenseMerge>
 								<licenseMerge>
 									GNU Lesser General Public License (LGPL), Version 3|
@@ -794,7 +801,7 @@
 		<biweekly.version>0.4.3</biweekly.version>
 		<jboss-logging.version>1.2.1.Final</jboss-logging.version>
 		<poi.version>3.17</poi.version>
-		<dom4j.version>1.6.1</dom4j.version>
+		<dom4j.version>2.1.1</dom4j.version>
 		<jaxen.version>1.1.6</jaxen.version>
 	</properties>
 	
