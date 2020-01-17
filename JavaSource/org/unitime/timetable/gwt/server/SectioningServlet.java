@@ -3283,7 +3283,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		
 		SessionDAO.getInstance().getSession().setCacheMode(CacheMode.REFRESH);
 		
-		getSessionContext().checkPermission(sessionId, Right.AdvisorCourseRequests);
+		getSessionContext().checkPermissionAnySession(sessionId, Right.AdvisorCourseRequests);
 		Student student = Student.findByExternalId(sessionId, studentExternalId);
 		if (student == null)  throw new SectioningException(MSG.exceptionNoStudent());
 		
@@ -3384,7 +3384,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 
 	@Override
 	public AdvisorCourseRequestSubmission submitAdvisingDetails(AdvisingStudentDetails details) throws SectioningException, PageAccessException {
-		getSessionContext().checkPermission(details.getSessionId(), Right.AdvisorCourseRequests);
+		getSessionContext().checkPermissionAnySession(details.getSessionId(), Right.AdvisorCourseRequests);
 		
 		OnlineSectioningServer server = getServerInstance(details.getSessionId(), true);
 		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
