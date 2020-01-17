@@ -39,6 +39,12 @@
 				<line>Classes can be assigned an LMS using the Class Setup page from the Instructional Offering Detail page.</line>
 			</description>
 		</item>
+		<item>
+			<name>Timetable Grid: Curriculum, Student Groups</name>
+			<description>
+				<line>Fixed &quot;ORA-00932: inconsistent datatypes&quot; error when using Curriculum or Student Group resource (when showing the selected or committed solution).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>
