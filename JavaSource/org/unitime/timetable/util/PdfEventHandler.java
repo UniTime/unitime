@@ -56,7 +56,7 @@ public class PdfEventHandler extends PdfPageEventHelper {
 	    
     	Font font = PdfFont.getSmallFont();
 		setBaseFont(font.getBaseFont());
-		setFontSize(font.getSize());
+		setFontSize(font.getSize() * 0.8f);
 		
         return;
      }

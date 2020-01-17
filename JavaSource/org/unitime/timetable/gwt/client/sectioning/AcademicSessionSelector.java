@@ -123,9 +123,13 @@ public class AcademicSessionSelector implements AcademicSessionProvider {
 		AriaStatus.getInstance().setText(ARIA.sessionSelectorDialogSelected(session.getYear(), session.getTerm(), session.getCampus()));
 	}
 	
+	protected void listAcademicSessions(AsyncCallback<Collection<AcademicSessionInfo>> callback) {
+		iSectioningService.listAcademicSessions(iMode.isSectioning(), callback);
+	}
+	
 	public void selectSession() {
 		iDialog.setAutoHideEnabled(getAcademicSessionId()!=null);
-		iSectioningService.listAcademicSessions(iMode.isSectioning(), new AsyncCallback<Collection<AcademicSessionInfo>>() {
+		listAcademicSessions(new AsyncCallback<Collection<AcademicSessionInfo>>() {
 			public void onSuccess(Collection<AcademicSessionInfo> result) {
 				iSessions.clearTable(1);
 				int row = 1;
@@ -174,7 +178,7 @@ public class AcademicSessionSelector implements AcademicSessionProvider {
 		} else if (iSession != null && matcher.match(iSession)) {
 			callback.onSuccess(true);
 		} else {
-			iSectioningService.listAcademicSessions(iMode.isSectioning(), new AsyncCallback<Collection<AcademicSessionInfo>>() {
+			listAcademicSessions(new AsyncCallback<Collection<AcademicSessionInfo>>() {
 				public void onSuccess(Collection<AcademicSessionInfo> result) {
 					List<AcademicSessionInfo> match = new ArrayList<AcademicSessionInfo>();
 					for (AcademicSessionInfo session: result) {

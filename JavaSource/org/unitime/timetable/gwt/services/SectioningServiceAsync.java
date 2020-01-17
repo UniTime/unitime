@@ -32,6 +32,9 @@ import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionInfo;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisingStudentDetails;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisorCourseRequestSubmission;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityRequest;
@@ -110,4 +113,8 @@ public interface SectioningServiceAsync {
 	void changeGradeModes(ChangeGradeModesRequest request, AsyncCallback<ChangeGradeModesResponse> callback) throws SectioningException, PageAccessException;
 	void changeCriticalOverride(Long studentId, Long courseId, Boolean critical, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	void updateSpecialRequest(UpdateSpecialRegistrationRequest request, AsyncCallback<UpdateSpecialRegistrationResponse> callback) throws SectioningException, PageAccessException;
+	
+	void getStudentSessions(String studentExternalId, AsyncCallback<Collection<AcademicSessionInfo>> callback) throws SectioningException, PageAccessException;
+	void getStudentAdvisingDetails(Long sessionId, String studentExternalId, AsyncCallback<AdvisingStudentDetails> callback) throws SectioningException, PageAccessException;
+	void submitAdvisingDetails(AdvisingStudentDetails details, AsyncCallback<AdvisorCourseRequestSubmission> callback) throws SectioningException, PageAccessException;
 }

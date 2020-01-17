@@ -34,6 +34,7 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.cpsolver.coursett.model.Placement;
+import org.hibernate.CacheMode;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +63,8 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesRespo
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisingStudentDetails;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisorCourseRequestSubmission;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
@@ -134,6 +137,7 @@ import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.advisors.AdvisorCourseRequestsSubmit;
 import org.unitime.timetable.onlinesectioning.basic.CheckCourses;
 import org.unitime.timetable.onlinesectioning.basic.CheckEligibility;
 import org.unitime.timetable.onlinesectioning.basic.CourseRequestEligibility;
@@ -2894,6 +2898,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			properties.setCheckStudentOverrides(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingCheckStudentOverrides));
 			properties.setValidateStudentOverrides(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingValidateStudentOverrides));
 			properties.setRecheckCriticalCourses(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingRecheckCriticalCourses));
+			properties.setAdvisorCourseRequests(getSessionContext().hasPermission(sessionId, Right.AdvisorCourseRequests));
 			if (getSessionContext().hasPermission(sessionId, Right.StudentSchedulingChangeStudentGroup))
 				for (StudentGroup g: (List<StudentGroup>)StudentGroupDAO.getInstance().getSession().createQuery(
 						"from StudentGroup g where g.type.advisorsCanSet = true and g.session = :sessionId order by g.groupAbbreviation"
@@ -3269,5 +3274,147 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		setLastSessionId(request.getSessionId());
 
 		return server.execute(server.createAction(SpecialRegistrationUpdate.class).withRequest(request), currentUser());
+	}
+
+	@Override
+	public AdvisingStudentDetails getStudentAdvisingDetails(Long sessionId, String studentExternalId) throws SectioningException, PageAccessException {
+		if (sessionId == null)
+			sessionId = getLastSessionId();
+		
+		SessionDAO.getInstance().getSession().setCacheMode(CacheMode.REFRESH);
+		
+		getSessionContext().checkPermission(sessionId, Right.AdvisorCourseRequests);
+		Student student = Student.findByExternalId(sessionId, studentExternalId);
+		if (student == null)  throw new SectioningException(MSG.exceptionNoStudent());
+		
+		AdvisingStudentDetails ret = new AdvisingStudentDetails();
+		ret.setSessionId(sessionId);
+		ret.setStudentId(student.getUniqueId());
+		ret.setStudentName(student.getName(NameFormat.LAST_FIRST_MIDDLE.reference()));
+		ret.setStudentExternalId(student.getExternalUniqueId());
+		ret.setSessionName(student.getSession().getLabel());
+		
+		TimetableManager manager = TimetableManager.findByExternalId(getSessionContext().getUser().getExternalUserId());
+		Advisor advisor = Advisor.findByExternalId(getSessionContext().getUser().getExternalUserId(), sessionId);
+		if (manager != null && manager.getEmailAddress() != null && !manager.getEmailAddress().isEmpty()) {
+			ret.setAdvisorEmail(manager.getEmailAddress());
+		} else if (advisor != null && advisor.getEmail() != null && !advisor.getEmail().isEmpty()) {
+			ret.setAdvisorEmail(advisor.getEmail());
+		} else {
+			String email = null;
+			for (Advisor a: student.getAdvisors()) {
+				if (a.getEmail() != null) {
+					email = (email == null ? "" : email + "\n") + a.getEmail();
+					if (getSessionContext().getUser().getExternalUserId().equals(a.getExternalUniqueId())) {
+						email = a.getEmail();
+						break;
+					}
+				}
+			}
+			ret.setAdvisorEmail(email);
+		}
+		
+		ret.setCanUpdate(false);
+		if (getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdmin)) {
+			ret.setCanUpdate(true);
+		} else if (getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdvisor)) {
+			if (getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyAllStudents))
+				ret.setCanUpdate(true);
+			else if (getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyMyStudents) && advisor != null && advisor.getStudents().contains(student))
+				ret.setCanUpdate(true);
+		}
+		
+		List<CourseType> courseTypes = CourseTypeDAO.getInstance().getSession().createQuery(
+				"select distinct t from CourseOffering c inner join c.courseType t where c.instructionalOffering.session = :sessionId order by t.reference"
+				).setLong("sessionId", getStatusPageSessionId()).setCacheable(true).list();
+		boolean adv = getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdvisor);
+		boolean admin = getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdmin);
+		
+		if (student.getSectioningStatus() != null) {
+			ret.setStatus(toStudentStatusInfo(student.getSectioningStatus(), courseTypes, admin, adv));
+		} else if (student.getSession().getDefaultSectioningStatus() != null) {
+			StudentStatusInfo info = toStudentStatusInfo(student.getSession().getDefaultSectioningStatus(), courseTypes, admin, adv);
+			info.setUniqueId(null);
+			info.setReference("");
+			info.setLabel(MSG.studentStatusSessionDefault(student.getSession().getDefaultSectioningStatus().getLabel()));
+			info.setEffectiveStart(null); info.setEffectiveStop(null);
+			ret.setStatus(info);
+		} else {
+			StudentStatusInfo info = new StudentStatusInfo();
+			info.setReference("");
+			info.setLabel(MSG.studentStatusSystemDefault());
+			info.setAllEnabled();
+			ret.setStatus(info);
+		}
+
+		if (ret.isCanUpdate() && getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingChangeStudentStatus)) {
+			if (admin) {
+				Session session = student.getSession();
+				StudentStatusInfo info = null;
+				if (session.getDefaultSectioningStatus() != null) {
+					info = toStudentStatusInfo(session.getDefaultSectioningStatus(), courseTypes, admin, adv);
+					info.setUniqueId(null);
+					info.setReference("");
+					info.setLabel(MSG.studentStatusSessionDefault(session.getDefaultSectioningStatus().getLabel()));
+					info.setEffectiveStart(null); info.setEffectiveStop(null);
+				} else {
+					info = new StudentStatusInfo();
+					info.setReference("");
+					info.setLabel(MSG.studentStatusSystemDefault());
+					info.setAllEnabled();
+				}
+				ret.addStatus(info);
+			}
+			for (StudentSectioningStatus s: StudentSectioningStatus.findAll(sessionId)) {
+				if (!admin && s.isPast()) continue;
+				if (!admin && !s.hasOption(StudentSectioningStatus.Option.advcanset)) continue;
+				ret.addStatus(toStudentStatusInfo(s, courseTypes, admin, adv));
+			}
+		}
+		
+		OnlineSectioningServer server = getServerInstance(sessionId, false);
+		if (server != null) {
+			ret.setRequest(server.execute(server.createAction(GetRequest.class).forStudent(student.getUniqueId(), false).withCustomValidation(false), currentUser()));
+		} else {
+			ret.setRequest(getRequest(student));
+		}
+		
+		return ret;
+	}
+
+	@Override
+	public AdvisorCourseRequestSubmission submitAdvisingDetails(AdvisingStudentDetails details) throws SectioningException, PageAccessException {
+		getSessionContext().checkPermission(details.getSessionId(), Right.AdvisorCourseRequests);
+		
+		OnlineSectioningServer server = getServerInstance(details.getSessionId(), true);
+		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+		
+		return server.execute(server.createAction(AdvisorCourseRequestsSubmit.class).withDetails(details), currentUser());
+	}
+
+	@Override
+	public Collection<AcademicSessionProvider.AcademicSessionInfo> getStudentSessions(String studentExternalId) throws SectioningException, PageAccessException {
+		ArrayList<AcademicSessionProvider.AcademicSessionInfo> ret = new ArrayList<AcademicSessionProvider.AcademicSessionInfo>();
+		ExternalTermProvider extTerm = getExternalTermProvider();
+		for (Student student: (List<Student>)StudentDAO.getInstance().getSession().createQuery(
+				"from Student where externalUniqueId = :id")
+				.setString("id", studentExternalId).setCacheable(true).list()) {
+			Session session = student.getSession();
+			if (session.getStatusType().isTestSession()) continue;
+			if (session.getStatusType().canPreRegisterStudents()) {
+				if (!getSessionContext().hasPermissionAnySession(session, Right.AdvisorCourseRequests)) continue;
+				AcademicSessionInfo info = new AcademicSessionInfo(session);
+				ret.add(new AcademicSessionProvider.AcademicSessionInfo(
+						session.getUniqueId(),
+						session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
+						MSG.sessionName(session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative()),
+						session.getSessionBeginDateTime()
+						)
+						.setExternalCampus(extTerm == null ? null : extTerm.getExternalCampus(info))
+						.setExternalTerm(extTerm == null ? null : extTerm.getExternalTerm(info))
+						);
+			}
+		}
+		return ret;
 	}
 }

@@ -277,6 +277,13 @@ public class EnrollmentTable extends Composite {
 				dialog.setEscapeToHide(true);
 				dialog.sinkEvents(Event.ONKEYUP);
 				buttons.setMessage(iStudentSchedule.getCreditMessage());
+				buttons.addButton("acrf", MESSAGES.buttonAdvisorCourseRequests(), new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						Window.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=acrf&term=" + student.getSessionId() + "&student=" + student.getExternalId(), "_blank", "");
+					}
+				});
+				buttons.setEnabled("acrf", student.isCanSelect() && iOnline && student.getSessionId() != null);
 				buttons.addButton("registration", MESSAGES.buttonRegistration(), new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent e) {

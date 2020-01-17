@@ -713,9 +713,15 @@ public class OnlineSectioningHelper {
     				rq.addCourse(e);
 				}
 			}
+			if (rq.getCourseCount() > 0 && (r.hasAdvisorNote() || r.hasAdvisorCredit())) {
+				OnlineSectioningLog.Entity.Builder e = rq.getCourseBuilder(0);
+				if (r.hasAdvisorCredit())
+					e.addParameterBuilder().setKey("credit").setValue(r.getAdvisorCredit());
+				if (r.hasAdvisorNote())
+					e.addParameterBuilder().setKey("note").setValue(r.getAdvisorNote());
+			}
     		ret.add(rq.build());
     	}
-    	priority = 0;
     	for (CourseRequestInterface.Request r: request.getAlternatives()) {
     		if (!r.hasRequestedCourse()) continue;
     		OnlineSectioningLog.Request.Builder rq = OnlineSectioningLog.Request.newBuilder();
@@ -743,6 +749,13 @@ public class OnlineSectioningHelper {
     						e.addParameterBuilder().setKey("im_pref").setValue(im.toString());
     				rq.addCourse(e);
 				}
+			}
+    		if (rq.getCourseCount() > 0 && (r.hasAdvisorNote() || r.hasAdvisorCredit())) {
+				OnlineSectioningLog.Entity.Builder e = rq.getCourseBuilder(0);
+				if (r.hasAdvisorCredit())
+					e.addParameterBuilder().setKey("credit").setValue(r.getAdvisorCredit());
+				if (r.hasAdvisorNote())
+					e.addParameterBuilder().setKey("note").setValue(r.getAdvisorNote());
 			}
     		ret.add(rq.build());
     	}

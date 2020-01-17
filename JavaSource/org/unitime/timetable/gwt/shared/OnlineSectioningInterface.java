@@ -20,9 +20,11 @@
 package org.unitime.timetable.gwt.shared;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -151,6 +153,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private boolean iCheckStudentOverrides = false;
 		private boolean iValidateStudentOverrides = false;
 		private boolean iRecheckCriticalCourses = false;
+		private boolean iAdvisorCourseRequests = false;
 		private Set<StudentGroupInfo> iEditableGroups = null;
 		
 		public SectioningProperties() {
@@ -186,6 +189,9 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		
 		public void setRecheckCriticalCourses(boolean recheckCriticalCourses) { iRecheckCriticalCourses = recheckCriticalCourses; }
 		public boolean isRecheckCriticalCourses() { return iRecheckCriticalCourses; }
+		
+		public void setAdvisorCourseRequests(boolean advisorCourseRequests) { iAdvisorCourseRequests = advisorCourseRequests; }
+		public boolean isAdvisorCourseRequests() { return iAdvisorCourseRequests; }
 		
 		public void setChangeLog(boolean changeLog) { iChangeLog = changeLog; }
 		public boolean isChangeLog() { return iChangeLog; }
@@ -352,7 +358,8 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		@Override
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof StudentStatusInfo)) return false;
-			return getUniqueId().equals(((StudentStatusInfo)o).getUniqueId());
+			StudentStatusInfo s = (StudentStatusInfo)o;
+			return (getUniqueId() == null ? -1l : getUniqueId()) == (s.getUniqueId() == null ? -1l : s.getUniqueId());
 		}
 	}
 	
@@ -409,6 +416,83 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public int compareTo(GradeMode m) {
 			return getLabel().compareToIgnoreCase(m.getLabel());
 		}
+	}
+	
+	public static class AdvisingStudentDetails implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		private Long iStudentId;
+		private Long iSessionId;
+		private String iStudentName;
+		private String iStudentExternalId;
+		private String iSessionName;
+		private String iAdvisorEmail;
+		private StudentStatusInfo iCurrentStatus;
+		private List<StudentStatusInfo> iAvailableStatuses;
+		private boolean iCanUpdate;
+		private CourseRequestInterface iRequest = null;
+		
+		public AdvisingStudentDetails() {}
+		public AdvisingStudentDetails(AdvisingStudentDetails clone) {
+			iSessionId = clone.iSessionId;
+			iStudentId = clone.iStudentId;
+			iStudentName = clone.iStudentName;
+			iStudentExternalId = clone.iStudentExternalId;
+			iSessionName = clone.iSessionName;
+			iAdvisorEmail = clone.iAdvisorEmail;
+			iCurrentStatus = clone.iCurrentStatus;
+			iCanUpdate = clone.iCanUpdate;
+		}
+		
+		public Long getStudentId() { return iStudentId; }
+		public void setStudentId(Long studentId) { iStudentId = studentId; }
+		
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		
+		public String getStudentName() { return iStudentName; }
+		public void setStudentName(String name) { iStudentName = name; }
+		public String getStudentExternalId() { return iStudentExternalId; }
+		public void setStudentExternalId(String id) { iStudentExternalId = id; }
+		
+		public String getSessionName() { return iSessionName; }
+		public void setSessionName(String name) { iSessionName = name; }
+		
+		public String getAdvisorEmail() { return iAdvisorEmail; }
+		public void setAdvisorEmail(String email) { iAdvisorEmail = email; }
+		
+		public StudentStatusInfo getStatus() { return iCurrentStatus; }
+		public void setStatus(StudentStatusInfo status) { iCurrentStatus = status; }
+		public StudentStatusInfo getStatus(String reference) {
+			if (reference == null) return null;
+			if (iCurrentStatus != null && iCurrentStatus.getReference().equals(reference)) return iCurrentStatus;
+			if (iAvailableStatuses != null)
+				for (StudentStatusInfo info: iAvailableStatuses)
+					if (reference.equals(info.getReference())) return info;
+			return null;
+		}
+		
+		public boolean hasStatuses() { return iAvailableStatuses != null && !iAvailableStatuses.isEmpty(); }
+		public void addStatus(StudentStatusInfo status) {
+			if (iAvailableStatuses == null) iAvailableStatuses = new ArrayList<StudentStatusInfo>();
+			iAvailableStatuses.add(status);
+		}
+		public List<StudentStatusInfo> getStatuses() { return iAvailableStatuses; }
+		
+		public boolean isCanUpdate() { return iCanUpdate; }
+		public void setCanUpdate(boolean canUpdate) { iCanUpdate = canUpdate; }
+		
+		public CourseRequestInterface getRequest() { return iRequest; }
+		public void setRequest(CourseRequestInterface request) { iRequest = request; }
+	}
+	
+	public static class AdvisorCourseRequestSubmission implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		private byte[] iPdf;
+		
+		public AdvisorCourseRequestSubmission() {}
+		
+		public byte[] getPdf() { return iPdf; }
+		public void setPdf(byte[] pdf) { iPdf = pdf; }
 	}
 
 }

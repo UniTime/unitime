@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionInfo;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationRequest;
@@ -46,6 +47,8 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpeci
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationResponse;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisingStudentDetails;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisorCourseRequestSubmission;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
 
@@ -111,4 +114,8 @@ public interface SectioningService extends RemoteService {
 	ChangeGradeModesResponse changeGradeModes(ChangeGradeModesRequest request) throws SectioningException, PageAccessException;
 	Boolean changeCriticalOverride(Long studentId, Long courseId, Boolean critical) throws SectioningException, PageAccessException;
 	UpdateSpecialRegistrationResponse updateSpecialRequest(UpdateSpecialRegistrationRequest request) throws SectioningException, PageAccessException;
+	
+	Collection<AcademicSessionInfo> getStudentSessions(String studentExternalId) throws SectioningException, PageAccessException;
+	AdvisingStudentDetails getStudentAdvisingDetails(Long sessionId, String studentExternalId) throws SectioningException, PageAccessException;
+	AdvisorCourseRequestSubmission submitAdvisingDetails(AdvisingStudentDetails details) throws SectioningException, PageAccessException;
 }

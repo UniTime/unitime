@@ -463,6 +463,7 @@
 				<or>
 					<hasPermission name="SchedulingAssistant" authority="role"/>
 					<hasPermission name="CourseRequests" authority="role"/>
+					<hasPermission name="AdvisorCourseRequests" authority="role"/>
 				</or>
 			</condition>
 		</separator>
@@ -484,6 +485,11 @@
 		<item name="Course Requests" page="requests" type="gwt">
 			<condition>
 				<hasPermission name="CourseRequests" authority="role"/>
+			</condition>
+		</item>
+		<item name="Advisor Course Requests" page="acrf" type="gwt">
+			<condition>
+				<hasPermission name="AdvisorCourseRequests" authority="role"/>
 			</condition>
 		</item>
 		<separator/>

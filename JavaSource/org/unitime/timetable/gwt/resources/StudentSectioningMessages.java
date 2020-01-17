@@ -106,6 +106,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Note")
 	String colNote();
 	
+	@DefaultMessage("Notes")
+	String colNotes();
+	
 	@DefaultMessage("Request<br>Credit")
 	String colRequestCredit();
 	
@@ -2394,4 +2397,64 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Do you really want to change note and set status to {0} for {1}\u00a0students?")
 	String confirmStatusNoteChange(String newStatus, int studentCount);
+	
+	@DefaultMessage("<u>L</u>ookup Student")
+	String buttonLookupStudent();
+	
+	@DefaultMessage("<u>S</u>ubmit &amp; Print")
+	String buttonSubmitPrint();
+	
+	@DefaultMessage("There are unsaved changes on this page. Do you really want to discard these changes?")
+	String queryLeaveAdvisorsCourseRequestsNotSave();
+	
+	@DefaultMessage("Student’s Name:")
+	String propStudentName();
+	
+	@DefaultMessage("PUID:")
+	String propStudentExternalId();
+	
+	@DefaultMessage("Advisor/Email:")
+	String propAdvisorEmail();
+	
+	@DefaultMessage("Term:")
+	String propAcademicSession();
+	
+	@DefaultMessage("Lookup Student")
+	String dialogStudentLookup();
+	
+	@DefaultMessage("Credit Hours&nbsp;&nbsp;&nbsp;Notes")
+	String headCreditHoursNotes();
+	
+	@DefaultMessage("{0,number,0.#}")
+	String credit(float total);
+	
+	@DefaultMessage("{0,number,0.#} - {1,number,0.#}")
+	String creditRange(float minTotal, float maxTotal);
+	
+	@DefaultMessage("Total Priority Credit Hours:")
+	String labelTotalPriorityCreditHours();
+	
+	@DefaultMessage("Status:")
+	String propStudentStatus();
+	
+	@DefaultMessage("Student Course Requests")
+	String pdfHeaderAdvisorCourseRequests();
+	
+	@DefaultMessage("Saving...")
+	String advisorCourseRequestsSaving();
+	
+	@DefaultMessage("Advisor’s Signature:     _____________________________________________")
+	String pdfAdvisorSignature();
+	
+	@DefaultMessage("Student’s Signature:     _____________________________________________")
+	String pdfStudentSignature();
+	
+	@DefaultMessage("Date:      _______________")
+	String pdfSignatureDate();
+	
+	@DefaultMessage("Students are responsible for meeting course prerequisites and fulfilling degree requirements, and are ultimately responsible for their own educational plan and academic success.")
+	String pdfStudentDisclaimer();
+	
+	@DefaultMessage("<u>A</u>dvisor Course Requests")
+	String buttonAdvisorCourseRequests();
 }

@@ -26,6 +26,7 @@ import org.unitime.timetable.gwt.shared.PersonInterface.LookupRequest;
 import org.unitime.timetable.interfaces.ExternalUidTranslation;
 import org.unitime.timetable.interfaces.ExternalUidTranslation.Source;
 import org.unitime.timetable.model.base.BaseAdvisor;
+import org.unitime.timetable.model.dao.AdvisorDAO;
 import org.unitime.timetable.server.lookup.PeopleLookupBackend;
 import org.unitime.timetable.util.NameFormat;
 import org.unitime.timetable.util.NameInterface;
@@ -44,6 +45,12 @@ public class Advisor extends BaseAdvisor implements NameInterface, Comparable<Ad
 	public String getName(String instructorNameFormat) {
     	return NameFormat.fromReference(instructorNameFormat).format(this);
     }
+	
+	public static Advisor findByExternalId(String externalId, Long sessionId) {
+		return (Advisor) AdvisorDAO.getInstance().getSession().createQuery(
+				"from Advisor where externalUniqueId = :externalId and session.uniqueId = :sessionId"
+				).setString("externalId", externalId).setLong("sessionId", sessionId).setCacheable(true).setMaxResults(1).uniqueResult();
+	}
     
     public int compareTo(Advisor advisor) {
         int cmp = NameFormat.LAST_FIRST.format(this).compareTo(NameFormat.LAST_FIRST.format(advisor));

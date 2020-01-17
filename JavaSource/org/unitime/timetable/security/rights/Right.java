@@ -341,6 +341,7 @@ public enum Right {
     SchedulingAssistant(Session.class),
     SchedulingDashboard(Session.class),
     SchedulingReports(Session.class),
+    AdvisorCourseRequests(Session.class),
 
     ConsentApproval(CourseOffering.class),
     StudentSchedulingAdvisor(Session.class),

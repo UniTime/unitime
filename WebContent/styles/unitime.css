@@ -6629,3 +6629,153 @@ unitime-RoomSharingWidget .legend .blank {
 	text-decoration: underline;
 	cursor: pointer;
 }
+
+.unitime-AdvisorCourseRequests .label-cell {
+	font-weight: bold;
+}
+
+.unitime-AdvisorCourseRequests .term {
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.unitime-AdvisorCourseRequests .student-id {
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.unitime-AdvisorCourseRequests .student-name {
+	cursor: pointer;
+}
+
+.unitime-AdvisorCourseRequestLine {
+	white-space: nowrap;
+}
+
+.unitime-AdvisorCourseRequestLine .line {
+	overflow: hidden;
+}
+
+.unitime-AdvisorCourseRequestLine .line .title {
+	display: inline-block;
+	width: 75px;
+	text-align: right;
+	padding: 2px 2px 2px 0px;
+	vertical-align: top;
+	margin-top: 3px;
+	padding-right: 5px;
+}
+
+.unitime-AdvisorCourseRequestLine .alternative .title {
+	padding-right: 0px;
+}
+
+.unitime-AdvisorCourseRequestLine .alt-line .title {
+	display: inline-block;
+	width: 125px;
+	text-align: right;
+	padding: 2px 2px 2px 0px;
+	vertical-align: top;
+	margin-top: 3px;
+}
+
+.unitime-AdvisorCourseRequestLine .line .course {
+	display: inline-block;
+	padding: 2px;
+	vertical-align: top;
+}
+
+.unitime-AdvisorCourseRequestLine .alt-line .course {
+	display: inline-block;
+	padding: 2px;
+	vertical-align: top;
+}
+
+.unitime-AdvisorCourseRequestLine .line .gwt-SuggestBox {
+	 text-align: left;
+	 text-align-last: left;
+	-moz-text-align-last: left;
+}
+
+.unitime-AdvisorCourseRequestLine .line .unitime-TextBoxHint {
+	 text-align: left;
+	 text-align-last: left;
+	-moz-text-align-last: left;
+}
+
+.unitime-AdvisorCourseRequestLine .line .course .unitime-FilterBox {
+	width: 320px;
+}
+
+.unitime-AdvisorCourseRequestLine .alt-line .course .unitime-FilterBox {
+	width: 270px;
+}
+
+.unitime-AdvisorCourseRequestButtons {
+	white-space: nowrap;
+}
+
+.unitime-AdvisorCourseRequestButtons .blank {
+	display: inline-block;
+	width: 19px;
+	margin: 2px 2px 0px 2px;
+}
+
+.unitime-AdvisorCourseRequestButtons .up {
+	margin: 2px 2px 0px 2px;
+}
+
+.unitime-AdvisorCourseRequestButtons .down {
+	margin: 2px 2px 0px 2px;
+}
+
+.unitime-AdvisorCourseRequestButtons .delete {
+	margin: 2px 2px 0px 2px;
+	text-align: right;
+}
+
+.unitime-AdvisorCourseRequestCredit {
+	margin-top: 2px;
+	height: 23px;
+	width: 50px;
+	text-align: right;
+}
+
+.unitime-AdvisorCourseRequests .label-td {
+	width: 100px;
+}
+
+.unitime-AdvisorCourseRequests .label-td2 {
+	width: 50px;
+}
+
+.unitime-AdvisorCourseRequests .unitime-TextArea {
+	width: 250px;
+	margin-top: 2px;
+}
+
+.unitime-AdvisorCourseRequests .requests-header .message {
+	margin-left: -20px;
+}
+
+.unitime-AdvisorCourseRequests .total-credit-label {
+	text-align: right;
+	font-weight: bold;
+}
+
+.unitime-AdvisorCourseRequests .total-credit-value {
+	text-align: right;	
+	margin-right: 5px;
+}
+
+.unitime-AdvisorCourseRequests .status {
+	max-width: 275px;
+}
+
+.unitime-AdvisorCourseRequests .advisor-email {
+	white-space: pre-wrap;	
+}
+
+.unitime-AdvisorCourseRequestLine .course {
+	white-space: normal;
+}

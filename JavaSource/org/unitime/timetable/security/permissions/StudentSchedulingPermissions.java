@@ -184,6 +184,21 @@ public class StudentSchedulingPermissions {
 		@Override
 		public Class<Session> type() { return Session.class; }
 	}
+	
+	@PermissionForRight(Right.AdvisorCourseRequests)
+	public static class AdvisorCourseRequests implements Permission<Session> {
+		@Autowired PermissionSession permissionSession;
+		
+		@Override
+		public boolean check(UserContext user, Session source) {
+			if (!permissionSession.check(user, source, DepartmentStatusType.Status.StudentsPreRegister))
+				return false;
+			return true;
+		}
+
+		@Override
+		public Class<Session> type() { return Session.class; }
+	}
 
 	@PermissionForRight(Right.ConsentApproval)
 	public static class ConsentApproval implements Permission<CourseOffering> {

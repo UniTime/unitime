@@ -3735,6 +3735,10 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageLearningManagementSystemInfos();
 	
+	@DefaultMessage("Advisor Course Requests")
+	@DoNotTranslate
+	String pageAdvisorCourseRequests();
+	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	

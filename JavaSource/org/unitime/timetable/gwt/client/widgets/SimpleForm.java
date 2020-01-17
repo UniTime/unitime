@@ -136,6 +136,55 @@ public class SimpleForm extends FlexTable {
 		return row;
 	}
 	
+	public int addDoubleRow(String text1, Widget widget1, int c1, String text2, Widget widget2, int c2) {
+		return addDoubleRow(new Label(text1), widget1, c1, new Label(text2), widget2, c2);
+	}
+	
+	public int addDoubleRow(Widget header1, Widget widget1, int c1, Widget header2, Widget widget2, int c2) {
+		header1.addStyleName("label-cell");
+		int row = getRowCount();
+		setWidget(row, 0, header1);
+		getCellFormatter().setStyleName(row, 0, "label-td");
+		if (widget1 instanceof HasMobileScroll) {
+			ScrollPanel scroll = new ScrollPanel(widget1);
+			scroll.addStyleName("table-cell");
+			setWidget(row, 1, scroll);
+			getCellFormatter().setStyleName(row, 1, "table-td");
+		} else {
+			widget1.addStyleName("widget-cell");
+			setWidget(row, 1, widget1);
+			getCellFormatter().setStyleName(row, 1, "widget-td");
+		}
+		if (c1 != 1) getFlexCellFormatter().setColSpan(row, 1, c1);
+		header2.addStyleName("label-cell");
+		setWidget(row, 2, header2);
+		getCellFormatter().setStyleName(row, 2, "label-td2");
+		if (widget2 instanceof HasMobileScroll) {
+			ScrollPanel scroll = new ScrollPanel(widget2);
+			scroll.addStyleName("table-cell");
+			setWidget(row, 3, scroll);
+			getCellFormatter().setStyleName(row, 3, "table-td");
+		} else {
+			widget2.addStyleName("widget-cell");
+			setWidget(row, 3, widget2);
+			getCellFormatter().setStyleName(row, 3, "widget-td");
+		}
+		if (c2 != 1) getFlexCellFormatter().setColSpan(row, 3, c2);
+		if (header1.getElement().getId() == null || header1.getElement().getId().isEmpty())
+			header1.getElement().setId(DOM.createUniqueId());
+		if (widget1 instanceof UniTimeWidget)
+			Roles.getTextboxRole().setAriaLabelledbyProperty(((UniTimeWidget)widget1).getWidget().getElement(), Id.of(header1.getElement()));
+		else
+			Roles.getTextboxRole().setAriaLabelledbyProperty(widget1.getElement(), Id.of(header1.getElement()));
+		if (header2.getElement().getId() == null || header2.getElement().getId().isEmpty())
+			header2.getElement().setId(DOM.createUniqueId());
+		if (widget2 instanceof UniTimeWidget)
+			Roles.getTextboxRole().setAriaLabelledbyProperty(((UniTimeWidget)widget2).getWidget().getElement(), Id.of(header2.getElement()));
+		else
+			Roles.getTextboxRole().setAriaLabelledbyProperty(widget2.getElement(), Id.of(header2.getElement()));
+		return row;
+	}
+	
 	public int getRow(String text) {
 		for (int row = 0; row < getRowCount(); row ++) {
 			if (getCellCount(row) > 1) {

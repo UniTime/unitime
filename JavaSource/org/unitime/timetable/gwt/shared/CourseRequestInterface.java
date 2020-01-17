@@ -748,6 +748,8 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		private Boolean iCritical = false;
 		private Date iTimeStamp = null;
 		private String iFilter = null;
+		private String iAdvisorCredit = null;
+		private String iAdvisorNote = null;
 		
 		public Request() {}
 		
@@ -843,6 +845,14 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public String getFilter() { return iFilter; }
 		public void setFilter(String filter) { iFilter = filter; }
 		
+		public boolean hasAdvisorCredit() { return iAdvisorCredit != null && !iAdvisorCredit.isEmpty(); }
+		public String getAdvisorCredit() { return iAdvisorCredit; }
+		public void setAdvisorCredit(String credit) { iAdvisorCredit = credit; }
+		
+		public boolean hasAdvisorNote() { return iAdvisorNote != null && !iAdvisorNote.isEmpty(); }
+		public String getAdvisorNote() { return iAdvisorNote; }
+		public void setAdvisorNote(String note) { iAdvisorNote = note; }
+		
 		public boolean isInactive() {
 			if (iRequestedCourse == null) return false;
 			// all requests are inactive -> inactive
@@ -875,6 +885,8 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 				RequestedCourse c2 = r.getRequestedCourse(i);
 				if (!c1.equals(c2) || !c1.sameSelectedClasses(c2) || !c1.sameSelectedIntructionalMethods(c2)) return false;
 			}
+			if (!(hasAdvisorNote() ? getAdvisorNote() : "").equals(r.hasAdvisorNote() ? r.getAdvisorNote() : "")) return false;
+			if (!(hasAdvisorCredit() ? getAdvisorCredit() : "").equals(r.hasAdvisorCredit() ? r.getAdvisorCredit() : "")) return false;
 			return true;
 		}
 	}
