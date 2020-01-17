@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.hibernate.Query;
@@ -246,22 +247,26 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
     				}
     			} else if (cx.getResourceType() == ResourceType.CURRICULUM.ordinal()) {
     				Query q = hibSession.createQuery(
-    						"select distinct cc.classification from "+
+    						"select cc.classification from "+
     						"CurriculumCourse cc, Assignment a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as co where "+
     						"a.solution.uniqueId in ("+solutionIdsStr+") and co = cc.course");
     				q.setCacheable(true);
+    				Set<Long> infos = new HashSet<Long>();
     				for (Iterator i=q.list().iterator();i.hasNext();) {
     					CurriculumClassification cc = (CurriculumClassification)i.next();
+    					if (!infos.add(cc.getUniqueId())) continue;
     					String name = cc.getCurriculum().getAbbv() + " " + cc.getName();
     					if (!match(filter, name)) continue;
     					response.addModel(TimetableGridSolutionHelper.createModel(solutionIdsStr, cc, hibSession, cx));
     				}
     			} else if (cx.getResourceType() == ResourceType.STUDENT_GROUP.ordinal()) {
     				Query q = hibSession.createQuery(
-    						"select distinct c from ConstraintInfo c inner join c.assignments a where a.solution.uniqueId in ("+solutionIdsStr+") and c.definition.name = 'GroupInfo'");
+    						"select c from ConstraintInfo c inner join c.assignments a where a.solution.uniqueId in ("+solutionIdsStr+") and c.definition.name = 'GroupInfo'");
     				q.setCacheable(true);
+    				Set<Long> infos = new HashSet<Long>();
     				for (Iterator i=q.list().iterator();i.hasNext();) {
     					ConstraintInfo g = (ConstraintInfo)i.next();
+    					if (!infos.add(g.getUniqueId())) continue;
     					if (!match(filter, g.getOpt())) continue;
     					TimetableInfo info = g.getInfo();
     					if (info != null && info instanceof StudentGroupInfo)
