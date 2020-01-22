@@ -23,18 +23,25 @@ import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.server.DayCode;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisingStudentDetails;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisorCourseRequestSubmission;
+import org.unitime.timetable.model.AdvisorCourseRequest;
+import org.unitime.timetable.model.FreeTime;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -93,25 +100,217 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 			if (getDetails().getRequest() != null)
 				for (OnlineSectioningLog.Request r: OnlineSectioningHelper.toProto(getDetails().getRequest()))
 					action.addRequest(r);
-			
-			if (getDetails().getStatus() != null) {
-				XStudent student = server.getStudent(getDetails().getStudentId());
-				if (student != null) {
-					String current = (student.getStatus() == null ? "" : student.getStatus());
-					if (!getDetails().getStatus().getReference().equals(current)) {
-						//status change
-						Date ts = new Date();
-						Lock lock = server.lockStudent(getDetails().getStudentId(), null, name());
-						try {
-							helper.beginTransaction();
-							StudentSectioningStatus status = (getDetails().getStatus().getReference().isEmpty() ? null : 
-								StudentSectioningStatus.getStatus(getDetails().getStatus().getReference(), server.getAcademicSession().getUniqueId(), helper.getHibSession()));
-							
-							Student dbStudent = StudentDAO.getInstance().get(getDetails().getStudentId(), helper.getHibSession());
-							if (dbStudent != null) {
+
+			Date ts = new Date();
+			Lock lock = server.lockStudent(getDetails().getStudentId(), null, name());
+			try {
+				helper.beginTransaction();
+				
+				Student dbStudent = StudentDAO.getInstance().get(getDetails().getStudentId(), helper.getHibSession());
+				if (dbStudent != null) {
+				
+					List<AdvisorCourseRequest> acrs = helper.getHibSession().createQuery(
+							"from AdvisorCourseRequest where student = :studentId order by priority, alternative"
+							).setLong("studentId", getDetails().getStudentId()).list();
+					
+					if (getDetails().getRequest() != null) {
+						int priority = 0;
+						for (Request request: getDetails().getRequest().getCourses()) {
+							if (request.hasRequestedCourse()) {
+								int alt = 0;
+								for (RequestedCourse rc: request.getRequestedCourse()) {
+									if (rc.isFreeTime()) {
+										for (CourseRequestInterface.FreeTime ft: rc.getFreeTime()) {
+											AdvisorCourseRequest acr = null;
+											for (Iterator<AdvisorCourseRequest> i = acrs.iterator(); i.hasNext(); ) {
+												AdvisorCourseRequest adept = i.next();
+												if (adept.getFreeTime() != null) {
+													acr = adept; i.remove(); break;
+												}
+											}
+											if (acr == null) {
+												acr = new AdvisorCourseRequest();
+												acr.setStudent(dbStudent);
+												acr.setChangedBy(helper.getUser().getExternalId());
+												acr.setTimestamp(ts);
+											} else if (acr.getPreferences() != null) {
+												acr.getPreferences().clear();
+											}
+											FreeTime free = acr.getFreeTime();
+											if (free == null) {
+												free = new FreeTime();
+												acr.setFreeTime(free);
+											}
+											free.setCategory(0);
+											free.setDayCode(DayCode.toInt(DayCode.toDayCodes(ft.getDays())));
+											free.setStartSlot(ft.getStart());
+											free.setLength(ft.getLength());
+											free.setSession(dbStudent.getSession());
+											free.setName(ft.toString());
+											acr.setCourseOffering(null);
+											acr.setCourse(CONST.freePrefix() + ft.toString(CONST.shortDays(), CONST.useAmPm()));
+											acr.setPriority(priority); acr.setAlternative(alt); acr.setSubstitute(false);
+											if (alt == 0) {
+												acr.setCredit(request.getAdvisorCredit());
+												acr.setNotes(request.getAdvisorNote());
+											} else {
+												acr.setCredit(null); acr.setNotes(null); 
+											}
+											helper.getHibSession().saveOrUpdate(free);
+											helper.getHibSession().saveOrUpdate(acr);
+											alt++;
+										}
+										continue;
+									}
+									AdvisorCourseRequest acr = null;
+									for (Iterator<AdvisorCourseRequest> i = acrs.iterator(); i.hasNext(); ) {
+										AdvisorCourseRequest adept = i.next();
+										if (rc.hasCourseId() && adept.getCourseOffering() != null && rc.getCourseId().equals(adept.getCourseOffering().getUniqueId())) {
+											acr = adept; i.remove(); break;
+										} else if (!rc.hasCourseId() && adept.getCourseOffering() == null && rc.getCourseName().equals(adept.getCourse())) {
+											acr = adept; i.remove(); break;
+										}
+									}
+									if (acr == null) {
+										acr = new AdvisorCourseRequest();
+										acr.setStudent(dbStudent);
+										acr.setChangedBy(helper.getUser().getExternalId());
+										acr.setTimestamp(ts);
+									}
+									acr.setCourseOffering(rc.hasCourseId() ? CourseOfferingDAO.getInstance().get(rc.getCourseId(), helper.getHibSession()) : null);
+									acr.setCourse(rc.getCourseName());
+									acr.setPriority(priority); acr.setAlternative(alt); acr.setSubstitute(false);
+									if (acr.getFreeTime() != null) {
+										helper.getHibSession().delete(acr.getFreeTime());
+										acr.setFreeTime(null);
+									}
+									if (alt == 0) {
+										acr.setCredit(request.getAdvisorCredit());
+										acr.setNotes(request.getAdvisorNote());
+									} else {
+										acr.setCredit(null); acr.setNotes(null); 
+									}
+									acr.updatePreferences(rc, helper.getHibSession());
+									helper.getHibSession().saveOrUpdate(acr);
+									alt++;
+								}
+							} else {
+								AdvisorCourseRequest acr = null;
+								for (Iterator<AdvisorCourseRequest> i = acrs.iterator(); i.hasNext(); ) {
+									AdvisorCourseRequest adept = i.next();
+									if (adept.getCourseOffering() == null && adept.getFreeTime() == null && adept.getCourse() == null) {
+										acr = adept; i.remove(); break;
+									}
+								}
+								if (acr == null) {
+									acr = new AdvisorCourseRequest();
+									acr.setStudent(dbStudent);
+								} else if (acr.getPreferences() != null) {
+									acr.getPreferences().clear();
+								}
+								if (acr.getFreeTime() != null) {
+									helper.getHibSession().delete(acr.getFreeTime());
+									acr.setFreeTime(null);
+								}
+								acr.setFreeTime(null);
+								acr.setCourse(null); acr.setCourseOffering(null);
+								acr.setPriority(priority); acr.setAlternative(0); acr.setSubstitute(false);
+								acr.setCredit(request.getAdvisorCredit());
+								acr.setNotes(request.getAdvisorNote());
+								acr.setChangedBy(helper.getUser().getExternalId());
+								acr.setTimestamp(ts);
+								helper.getHibSession().saveOrUpdate(acr);
+							}
+							priority ++;
+						}
+						// substitutes
+						for (Request request: getDetails().getRequest().getAlternatives()) {
+							if (request.hasRequestedCourse()) {
+								int alt = 0;
+								for (RequestedCourse rc: request.getRequestedCourse()) {
+									AdvisorCourseRequest acr = null;
+									for (Iterator<AdvisorCourseRequest> i = acrs.iterator(); i.hasNext(); ) {
+										AdvisorCourseRequest adept = i.next();
+										if (rc.hasCourseId() && adept.getCourseOffering() != null && rc.getCourseId().equals(adept.getCourseOffering().getUniqueId())) {
+											acr = adept; i.remove(); break;
+										} else if (!rc.hasCourseId() && adept.getCourseOffering() == null && rc.getCourseName().equals(adept.getCourse())) {
+											acr = adept; i.remove(); break;
+										}
+									}
+									if (acr == null) {
+										acr = new AdvisorCourseRequest();
+										acr.setStudent(dbStudent);
+										acr.setChangedBy(helper.getUser().getExternalId());
+										acr.setTimestamp(ts);
+									}
+									acr.setCourseOffering(rc.hasCourseId() ? CourseOfferingDAO.getInstance().get(rc.getCourseId(), helper.getHibSession()) : null);
+									acr.setCourse(rc.getCourseName());
+									acr.setPriority(priority); acr.setAlternative(alt); acr.setSubstitute(true);
+									if (alt == 0) {
+										acr.setCredit(request.getAdvisorCredit());
+										acr.setNotes(request.getAdvisorNote());
+									} else {
+										acr.setCredit(null); acr.setNotes(null); 
+									}
+									if (acr.getFreeTime() != null) {
+										helper.getHibSession().delete(acr.getFreeTime());
+										acr.setFreeTime(null);
+									}
+									acr.updatePreferences(rc, helper.getHibSession());
+									helper.getHibSession().saveOrUpdate(acr);
+									alt++;
+								}
+							} else {
+								AdvisorCourseRequest acr = null;
+								for (Iterator<AdvisorCourseRequest> i = acrs.iterator(); i.hasNext(); ) {
+									AdvisorCourseRequest adept = i.next();
+									if (adept.getCourseOffering() == null && adept.getFreeTime() == null && adept.getCourse() == null) {
+										acr = adept; i.remove(); break;
+									}
+								}
+								if (acr == null) {
+									acr = new AdvisorCourseRequest();
+									acr.setStudent(dbStudent);
+								} else if (acr.getPreferences() != null) {
+									acr.getPreferences().clear();
+								}
+								if (acr.getFreeTime() != null) {
+									helper.getHibSession().delete(acr.getFreeTime());
+									acr.setFreeTime(null);
+								}
+								acr.setCourse(null); acr.setCourseOffering(null);
+								acr.setPriority(priority); acr.setAlternative(0); acr.setSubstitute(true);
+								acr.setCredit(request.getAdvisorCredit());
+								acr.setNotes(request.getAdvisorNote());
+								acr.setChangedBy(helper.getUser().getExternalId());
+								acr.setTimestamp(ts);
+								helper.getHibSession().saveOrUpdate(acr);
+							}
+							priority ++;
+						}
+					}
+					
+					
+					for (AdvisorCourseRequest acr: acrs) {
+						if (acr.getFreeTime() != null)
+							helper.getHibSession().delete(acr.getFreeTime());
+						helper.getHibSession().delete(acr);
+					}
+					
+					// change status
+					if (getDetails().getStatus() != null) {
+						XStudent student = server.getStudent(getDetails().getStudentId());
+						if (student != null) {
+							String current = (student.getStatus() == null ? "" : student.getStatus());
+							if (!getDetails().getStatus().getReference().equals(current)) {
+								//status change
+								StudentSectioningStatus status = (getDetails().getStatus().getReference().isEmpty() ? null :
+									StudentSectioningStatus.getStatus(getDetails().getStatus().getReference(), server.getAcademicSession().getUniqueId(), helper.getHibSession()));
+
 								String oldStatus = (dbStudent.getSectioningStatus() != null ? dbStudent.getSectioningStatus().getReference() :
-										dbStudent.getSession().getDefaultSectioningStatus() != null ? MSG.studentStatusSessionDefault(dbStudent.getSession().getDefaultSectioningStatus().getReference())
-										: MSG.studentStatusSystemDefault());
+									dbStudent.getSession().getDefaultSectioningStatus() != null ? MSG.studentStatusSessionDefault(dbStudent.getSession().getDefaultSectioningStatus().getReference())
+									: MSG.studentStatusSystemDefault());
+								
 								if (dbStudent.getSectioningStatus() != null)
 									action.addOptionBuilder().setKey("old-status").setValue(dbStudent.getSectioningStatus().getReference());
 
@@ -130,20 +329,20 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 								
 								helper.getHibSession().saveOrUpdate(dbStudent);
 								server.update(student, false);
+								action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
+							} else {
+								action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
 							}
-							helper.commitTransaction();
-							action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
-						} catch (Exception e) {
-							helper.rollbackTransaction();
-							if (e instanceof SectioningException) throw (SectioningException)e;
-							throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
-						} finally {
-							lock.release();
 						}
-					} else {
-						action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
 					}
 				}
+				helper.commitTransaction();
+			} catch (Exception e) {
+				helper.rollbackTransaction();
+				if (e instanceof SectioningException) throw (SectioningException)e;
+				throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
+			} finally {
+				lock.release();
 			}
 			
 			generatePdfConfirmation(ret, server, helper);
@@ -447,6 +646,6 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 	
 	@Override
 	public String name() {
-		return "advisor-requests";
+		return "advisor-submit";
 	}
 }

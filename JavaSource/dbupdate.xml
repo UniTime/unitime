@@ -13767,4 +13767,106 @@
 		<mysql>alter table %SCHEMA%.reservation add inclusive int(1) null</mysql>
 		<pgsql>alter table %SCHEMA%.reservation add inclusive boolean</pgsql>
 	</update>
+	<update version="227" date="21-Jan-2020" comment="Advisor Course Requests">
+		<plsql>
+			create table %SCHEMA%.advisor_crsreq (
+				uniqueid number(20,0) constraint nn_advisor_crsreq_id not null,
+				student_id number(20,0) constraint nn_advisor_crsreq_student not null,
+				priority number(10) constraint nn_advisor_crsreq_priority not null,
+				substitute number(1) constraint nn_advisor_crsreq_substitute not null,
+				alternative number(10) constraint nn_advisor_crsreq_alternative not null,
+				time_stamp timestamp constraint nn_advisor_crsreq_timestamp not null,
+				changed_by varchar2(40 char),
+				credit varchar2(10 char),
+				course varchar2(1024 char),
+				course_offering_id number(20,0),
+				notes varchar2(2048 char),
+				free_time_id number(20,0)
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.advisor_crsreq add constraint pk_advisor_crsreq primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.advisor_crsreq (
+				uniqueid decimal(20,0) primary key not null,
+				student_id decimal(20,0) not null,
+				priority bigint(10) not null,
+				substitute int(1) not null,
+				alternative bigint(10) not null,
+				time_stamp datetime not null,
+				changed_by varchar(40),
+				credit varchar(10),
+				course varchar(1024),
+				course_offering_id decimal(20,0),
+				notes varchar(2048),
+				free_time_id decimal(20,0)
+			) engine = INNODB
+		</mysql>
+		<pgsql>
+			create table %SCHEMA%.advisor_crsreq (
+			    uniqueid bigint not null,
+			    student_id bigint not null,
+			    priority bigint not null,
+			    substitute boolean not null,
+				alternative bigint not null,
+				time_stamp timestamp with time zone not null,
+				changed_by varchar(40),
+				credit varchar(10),
+				course varchar(1024),
+				course_offering_id bigint,
+				notes varchar(2048),
+				free_time_id bigint
+			)
+		</pgsql>
+		<pgsql>alter table %SCHEMA%.advisor_crsreq add constraint pk_advisor_crsreq primary key (uniqueid)</pgsql>
+		<sql>
+			alter table %SCHEMA%.advisor_crsreq add constraint fk_advisor_crsreq_student foreign key (student_id)
+			references %SCHEMA%.student (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.advisor_crsreq add constraint fk_advisor_crsreq_course foreign key (course_offering_id)
+			references %SCHEMA%.course_offering (uniqueid) on delete set null
+		</sql>
+		<sql>
+			alter table %SCHEMA%.advisor_crsreq add constraint fk_advisor_crsreq_free foreign key (free_time_id)
+			references %SCHEMA%.free_time (uniqueid) on delete cascade
+		</sql>
+		<plsql>
+			create table %SCHEMA%.advisor_sect_pref (
+				uniqueid number(20,0) constraint nn_adv_sect_pref_id not null,
+				preference_type number(10,0) constraint nn_adv_sect_pref_type not null,
+				request_id number(20,0) constraint nn_adv_sect_pref_request not null,
+				required number(1) constraint nn_adv_sect_pref_requred not null,
+				class_id number(20,0),
+				instr_mthd_id number(20,0),
+				label varchar2(60 char)
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.advisor_sect_pref add constraint pk_advisor_sect_pref primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.advisor_sect_pref (
+				uniqueid decimal(20,0) primary key not null,
+				preference_type decimal(10,0) not null,
+				request_id decimal(20,0) not null,
+				required int(1) not null,
+				class_id decimal(20,0),
+				instr_mthd_id decimal(20,0),
+				label varchar(60)
+			) engine = INNODB
+		</mysql>
+		<pgsql>
+			create table %SCHEMA%.advisor_sect_pref (
+				uniqueid bigint not null,
+				preference_type bigint not null,
+				request_id bigint not null,
+				required boolean not null,
+				class_id bigint,
+				instr_mthd_id bigint,
+				label varchar(60)
+			)
+		</pgsql>
+		<pgsql>alter table %SCHEMA%.advisor_sect_pref add constraint pk_advisor_sect_pref primary key (uniqueid)</pgsql>
+		<sql>alter table %SCHEMA%.advisor_sect_pref add constraint fk_adv_pref_request foreign key (request_id) references %SCHEMA%.advisor_crsreq (uniqueid) on delete cascade</sql>
+		<sql>alter table %SCHEMA%.advisor_sect_pref add constraint fk_adv_pref_class foreign key (class_id) references %SCHEMA%.class_ (uniqueid) on delete cascade</sql>
+		<sql>alter table %SCHEMA%.advisor_sect_pref add constraint fk_adv_pref_im foreign key (instr_mthd_id) references %SCHEMA%.instructional_method (uniqueid) on delete cascade</sql>
+	</update>
 </dbupdate>

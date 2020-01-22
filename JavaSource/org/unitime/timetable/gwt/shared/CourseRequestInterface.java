@@ -754,6 +754,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public Request() {}
 		
 		public List<RequestedCourse> getRequestedCourse() { return iRequestedCourse; }
+		public int countRequestedCourses() { return iRequestedCourse == null ? 0 : iRequestedCourse.size(); }
 		public RequestedCourse getRequestedCourse(int index) {
 			if (iRequestedCourse != null && index < iRequestedCourse.size())
 				return iRequestedCourse.get(index);
@@ -852,6 +853,12 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public boolean hasAdvisorNote() { return iAdvisorNote != null && !iAdvisorNote.isEmpty(); }
 		public String getAdvisorNote() { return iAdvisorNote; }
 		public void setAdvisorNote(String note) { iAdvisorNote = note; }
+		public void addAdvisorNote(String note) {
+			if (iAdvisorNote == null)
+				iAdvisorNote = note;
+			else if (!iAdvisorNote.contains(note))
+				iAdvisorNote += "\n" + note;
+		}
 		
 		public boolean isInactive() {
 			if (iRequestedCourse == null) return false;
@@ -879,8 +886,8 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof Request)) return false;
 			Request r = (Request)o;
-			if (isWaitList() != r.isWaitList() || getRequestedCourse().size() != r.getRequestedCourse().size()) return false;
-			for (int i = 0; i < getRequestedCourse().size(); i++) {
+			if (isWaitList() != r.isWaitList() || countRequestedCourses() != r.countRequestedCourses()) return false;
+			for (int i = 0; i < countRequestedCourses(); i++) {
 				RequestedCourse c1 = getRequestedCourse(i);
 				RequestedCourse c2 = r.getRequestedCourse(i);
 				if (!c1.equals(c2) || !c1.sameSelectedClasses(c2) || !c1.sameSelectedIntructionalMethods(c2)) return false;

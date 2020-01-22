@@ -505,7 +505,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm {
 	}-*/;
 	
 	protected void submit() {
-		AdvisingStudentDetails details = new AdvisingStudentDetails(iDetails);
+		final AdvisingStudentDetails details = new AdvisingStudentDetails(iDetails);
 		details.setRequest(getRequest());
 		details.setStatus(iDetails.getStatus(iStatus.getSelectedValue()));
 		LoadingWidget.getInstance().show(MESSAGES.advisorCourseRequestsSaving());
@@ -513,6 +513,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm {
 			@Override
 			public void onSuccess(AdvisorCourseRequestSubmission result) {
 				LoadingWidget.getInstance().hide();
+				iDetails = details;
 				download(result.getPdf(), "crf-" + iStudentExternalId.getText());
 			}
 			

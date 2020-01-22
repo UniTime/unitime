@@ -239,5 +239,6 @@
 	<mapping resource="SctSolutionLog.hbm.xml"/>
 	<mapping resource="SectioningPreferences.hbm.xml"/>
 	<mapping resource="MapTileCache.hbm.xml"/>
+	<mapping resource="AdvisorCourseRequest.hbm.xml"/>
 </session-factory>
 </hibernate-configuration>

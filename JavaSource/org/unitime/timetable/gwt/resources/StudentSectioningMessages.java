@@ -2457,4 +2457,13 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("<u>A</u>dvisor Course Requests")
 	String buttonAdvisorCourseRequests();
+	
+	@DefaultMessage("{0} reservation")
+	String noteHasGroupReservation(String group);
+	
+	@DefaultMessage("Individual reservation")
+	String noteHasIndividualReservation();
+	
+	@DefaultMessage("Enrolled in {0} on {1}")
+	String noteEnrolled(String course, String date);
 }

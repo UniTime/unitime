@@ -155,6 +155,7 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 				ValueChangeEvent.fire(AdvisorCourseRequestLine.this, getValue());
 			}
 		});
+		iCredit.setMaxLength(10);
 		iNotes = new TextArea();
 		iNotes.setStyleName("unitime-TextArea");
 		iNotes.setText("");
