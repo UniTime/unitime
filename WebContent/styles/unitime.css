@@ -6646,6 +6646,7 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-AdvisorCourseRequests .student-name {
 	cursor: pointer;
+	min-width: 280px;
 }
 
 .unitime-AdvisorCourseRequestLine {
@@ -6741,6 +6742,10 @@ unitime-RoomSharingWidget .legend .blank {
 	text-align: right;
 }
 
+.unitime-AdvisorCourseRequests .widget-td {
+	width: inherit;	
+}
+
 .unitime-AdvisorCourseRequests .label-td {
 	width: 100px;
 }
@@ -6769,7 +6774,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-AdvisorCourseRequests .status {
-	max-width: 275px;
+	max-width: 320px;
 }
 
 .unitime-AdvisorCourseRequests .advisor-email {
@@ -6779,3 +6784,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-AdvisorCourseRequestLine .course {
 	white-space: normal;
 }
+
+.unitime-AdvisorCourseRequests .unitime-PageHeaderFooter .left {
+	line-height: inherit;
+} 

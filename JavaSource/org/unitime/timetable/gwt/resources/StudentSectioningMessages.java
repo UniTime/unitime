@@ -2466,4 +2466,16 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Enrolled in {0} on {1}")
 	String noteEnrolled(String course, String date);
+	
+	@DefaultMessage("Success!")
+	String advisorRequestsSubmitOK();
+	
+	@DefaultMessage("Submit failed: {0}")
+	String advisorRequestsSubmitFailed(String reason);
+	
+	@DefaultMessage("Failed to load student: {0}")
+	String advisorRequestsLoadFailed(String reason);
+	
+	@DefaultMessage("Loading data for {0}...")
+	String loadingAdvisorRequests(String student);
 }

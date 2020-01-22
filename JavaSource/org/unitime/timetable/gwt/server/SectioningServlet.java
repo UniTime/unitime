@@ -3316,6 +3316,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 		
 		ret.setCanUpdate(false);
+		ret.setDegreePlan(CustomDegreePlansHolder.hasProvider());
 		if (getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdmin)) {
 			ret.setCanUpdate(true);
 		} else if (getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdvisor)) {

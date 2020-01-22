@@ -698,7 +698,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 	}
 	
 	public boolean isLast(CourseAssignment course) {
-		if (iAssignments.getLastAssignment() != null) {
+		if (iAssignments != null && iAssignments.getLastAssignment() != null) {
 			for (ClassAssignmentInterface.CourseAssignment c: iAssignments.getLastAssignment().getCourseAssignments())
 				if (course.getCourseId().equals(c.getCourseId()) && c.isAssigned())
 					return true;
@@ -707,7 +707,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 	}
 	
 	public boolean isSaved(CourseAssignment course) {
-		if (iAssignments.getSavedAssignment() != null) {
+		if (iAssignments != null && iAssignments.getSavedAssignment() != null) {
 			 for (ClassAssignmentInterface.CourseAssignment c: iAssignments.getSavedAssignment().getCourseAssignments())
 				 if (course.getCourseId().equals(c.getCourseId()) && c.isAssigned())
 					 return true;
@@ -717,7 +717,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 	
 	protected boolean isLast(RequestedCourse course) {
 		if (course == null || course.isEmpty()) return false;
-		if (iAssignments.getLastAssignment() != null) {
+		if (iAssignments != null && iAssignments.getLastAssignment() != null) {
 			for (ClassAssignmentInterface.CourseAssignment c: iAssignments.getLastAssignment().getCourseAssignments())
 				if (course.equals(c) && c.isAssigned())
 					return true;
@@ -727,7 +727,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 	
 	protected boolean isSaved(RequestedCourse course) {
 		if (course == null || course.isEmpty()) return false;
-		if (iAssignments.getSavedAssignment() != null) {
+		if (iAssignments != null && iAssignments.getSavedAssignment() != null) {
 			 for (ClassAssignmentInterface.CourseAssignment c: iAssignments.getSavedAssignment().getCourseAssignments())
 				 if (course.equals(c) && c.isAssigned())
 					 return true;
@@ -798,6 +798,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 				}
 				
 				r.setFilter(iPlan.getPlaceHolder(course));
+				r.setAdvisorNote(iPlan.getPlaceHolder(course));
 				for (CourseAssignment altCa: alternatives) {
 					p = requests.getRequestPriority(altCa);
 					if (p != null) continue;

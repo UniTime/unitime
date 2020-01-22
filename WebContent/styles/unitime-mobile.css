@@ -664,6 +664,10 @@
 	.unitime-ChangeGradeModesDialog .request-note {
 		max-width: calc(90vw - 15px);
 	}
+	
+	.unitime-AdvisorCourseRequests .widget-cell {
+		max-width: 325px;
+	}
 }
 
 @media all and (max-width: 400px) {

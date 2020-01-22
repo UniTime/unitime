@@ -428,7 +428,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private String iAdvisorEmail;
 		private StudentStatusInfo iCurrentStatus;
 		private List<StudentStatusInfo> iAvailableStatuses;
-		private boolean iCanUpdate;
+		private boolean iCanUpdate, iDegreePlan;
 		private CourseRequestInterface iRequest = null;
 		
 		public AdvisingStudentDetails() {}
@@ -441,6 +441,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			iAdvisorEmail = clone.iAdvisorEmail;
 			iCurrentStatus = clone.iCurrentStatus;
 			iCanUpdate = clone.iCanUpdate;
+			iDegreePlan = clone.iDegreePlan;
 		}
 		
 		public Long getStudentId() { return iStudentId; }
@@ -481,6 +482,9 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public boolean isCanUpdate() { return iCanUpdate; }
 		public void setCanUpdate(boolean canUpdate) { iCanUpdate = canUpdate; }
 		
+		public boolean isDegreePlan() { return iDegreePlan; }
+		public void setDegreePlan(boolean dp) { iDegreePlan = dp; }
+		
 		public CourseRequestInterface getRequest() { return iRequest; }
 		public void setRequest(CourseRequestInterface request) { iRequest = request; }
 	}
@@ -488,11 +492,15 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 	public static class AdvisorCourseRequestSubmission implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private byte[] iPdf;
+		private boolean iUpdated = false;
 		
 		public AdvisorCourseRequestSubmission() {}
 		
 		public byte[] getPdf() { return iPdf; }
 		public void setPdf(byte[] pdf) { iPdf = pdf; }
+		
+		public boolean isUpdated() { return iUpdated; }
+		public void setUpdated(boolean updated) { iUpdated = updated; }
 	}
 
 }

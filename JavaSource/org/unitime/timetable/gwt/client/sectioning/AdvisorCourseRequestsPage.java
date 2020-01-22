@@ -21,10 +21,13 @@ package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.unitime.timetable.gwt.client.Lookup;
-import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
+import org.unitime.timetable.gwt.client.widgets.CourseFinderClasses;
+import org.unitime.timetable.gwt.client.widgets.CourseFinderDetails;
+import org.unitime.timetable.gwt.client.widgets.DataProvider;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
@@ -33,11 +36,15 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.PersonInterface;
+import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeHandler;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionInfo;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionMatcher;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisingStudentDetails;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisorCourseRequestSubmission;
@@ -52,6 +59,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.Window.Location;
@@ -62,7 +70,7 @@ import com.google.gwt.user.client.ui.ListBox;
 /**
  * @author Tomas Muller
  */
-public class AdvisorCourseRequestsPage extends SimpleForm {
+public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<CourseRequestInterface> {
 	private static final SectioningServiceAsync sSectioningService = GWT.create(SectioningService.class);
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	private UniTimeHeaderPanel header, footer;
@@ -77,6 +85,12 @@ public class AdvisorCourseRequestsPage extends SimpleForm {
 	private ArrayList<AdvisorCourseRequestLine> iCourses;
 	private ArrayList<AdvisorCourseRequestLine> iAlternatives;
 	private AdvisingStudentDetails iDetails;
+
+	private DegreePlansSelectionDialog iDegreePlansSelectionDialog = null;
+	private DegreePlanDialog iDegreePlanDialog = null;
+	private AriaMultiButton iDegreePlan = null;
+	
+	private ScheduleStatus iStatusBox = null;
 	
 	public AdvisorCourseRequestsPage() {
 		super(6);
@@ -85,6 +99,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm {
 		addStyleName("unitime-AdvisorCourseRequests");
 
 		header = new UniTimeHeaderPanel();
+		header.addStyleName("unitime-PageHeaderFooter");
 		header.addButton("lookup", MESSAGES.buttonLookupStudent(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -120,16 +135,16 @@ public class AdvisorCourseRequestsPage extends SimpleForm {
 		iStudentName = new Label(); iStudentName.addStyleName("student-name");
 		iStudentExternalId = new Label(); iStudentExternalId.addStyleName("student-id");
 		
-		addDoubleRow(MESSAGES.propStudentName(), iStudentName, 2,
-				MESSAGES.propStudentExternalId(), iStudentExternalId, 2);
+		addDoubleRow(MESSAGES.propStudentName(), iStudentName, 1,
+				MESSAGES.propStudentExternalId(), iStudentExternalId, 3);
 		
 		iSession = new AdvisorAcademicSessionSelector();
 		
 		iAdvisorEmail = new Label(); iAdvisorEmail.addStyleName("advisor-email");
 		
 		iTerm = new Label(); iTerm.addStyleName("term");
-		addDoubleRow(MESSAGES.propAdvisorEmail(), iAdvisorEmail, 2,
-				MESSAGES.propAcademicSession(), iTerm, 2);
+		addDoubleRow(MESSAGES.propAdvisorEmail(), iAdvisorEmail, 1,
+				MESSAGES.propAcademicSession(), iTerm, 3);
 		iSession.addAcademicSessionChangeHandler(new AcademicSessionChangeHandler() {
 			@Override
 			public void onAcademicSessionChange(AcademicSessionChangeEvent event) {
@@ -137,12 +152,17 @@ public class AdvisorCourseRequestsPage extends SimpleForm {
 				iLookupDialog.setOptions("mustHaveExternalId,source=students,session=" + event.getNewAcademicSessionId());
 				header.setEnabled("submit", false);
 				header.setEnabled("print", false);
+				iDegreePlan.setVisible(false); iDegreePlan.setEnabled(false);
+				iStatusBox.clear();
+				LoadingWidget.getInstance().show(MESSAGES.loadingAdvisorRequests(iStudentName.getText()));
 				sSectioningService.getStudentAdvisingDetails(iSession.getAcademicSessionId(), iStudentExternalId.getText(), new AsyncCallback<AdvisingStudentDetails>() {
 					@Override
 					public void onSuccess(AdvisingStudentDetails result) {
+						LoadingWidget.getInstance().hide();
 						iDetails = result;
 						header.setEnabled("submit", result.isCanUpdate());
 						header.setEnabled("print", !result.isCanUpdate());
+						iDegreePlan.setVisible(result.isDegreePlan()); iDegreePlan.setEnabled(result.isDegreePlan());
 						iAdvisorEmail.setText(result.getAdvisorEmail() == null ? "" : result.getAdvisorEmail());
 						iStudentName.setText(result.getStudentName());
 						iStudentExternalId.setText(result.getStudentExternalId());
@@ -162,7 +182,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm {
 					}
 					@Override
 					public void onFailure(Throwable caught) {
-						UniTimeNotifications.error(caught.getMessage());
+						LoadingWidget.getInstance().hide();
+						iStatusBox.error(MESSAGES.advisorRequestsLoadFailed(caught.getMessage()), caught);
 					}
 				});
 			}
@@ -206,8 +227,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm {
 		
 		iStatus = new ListBox();
 		iStatus.addStyleName("status");
-		addDoubleRow("", new Label(), 2,
-				MESSAGES.propStudentStatus(), iStatus, 2);
+		addDoubleRow("", new Label(), 1,
+				MESSAGES.propStudentStatus(), iStatus, 3);
 		
 		iSpecRegCx = new SpecialRegistrationContext();
 		
@@ -274,7 +295,18 @@ public class AdvisorCourseRequestsPage extends SimpleForm {
 		iAlternatives.get(0).getCourses().get(0).setHint(MESSAGES.courseRequestsHintA0());
 		
 		footer = header.clonePanel();
+		footer.addStyleName("unitime-PageHeaderFooter");
 		addBottomRow(footer);
+		
+		iStatusBox = new ScheduleStatus();
+		addRow(iStatusBox);
+		
+		iDegreePlan = new AriaMultiButton(MESSAGES.buttonDegreePlan());
+		iDegreePlan.setTitle(MESSAGES.hintDegreePlan());
+		iDegreePlan.setVisible(false); iDegreePlan.setEnabled(false);
+		header.insertLeft(iDegreePlan, true);
+		footer.insertLeft(iDegreePlan.createClone(), true);
+		
 		
 		Window.addWindowClosingHandler(new Window.ClosingHandler() {
 			@Override
@@ -339,6 +371,75 @@ public class AdvisorCourseRequestsPage extends SimpleForm {
 				}
 			});
 		}
+		
+		iDegreePlan.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				LoadingWidget.getInstance().show(MESSAGES.waitListDegreePlans());
+				sSectioningService.listDegreePlans(true, iSession.getAcademicSessionId(), iDetails.getStudentId(), new AsyncCallback<List<DegreePlanInterface>>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						LoadingWidget.getInstance().hide();
+						if (caught instanceof SectioningException) {
+							SectioningException s = (SectioningException)caught;
+							if (s.isInfo())
+								iStatusBox.info(s.getMessage());
+							else if (s.isWarning())
+								iStatusBox.warning(s.getMessage());
+							else if (s.isError())
+								iStatusBox.error(s.getMessage());
+							else
+								iStatusBox.error(MESSAGES.failedListDegreePlans(s.getMessage()), s);
+						} else {
+							iStatusBox.error(MESSAGES.failedListDegreePlans(caught.getMessage()), caught);
+						}
+					}
+					@Override
+					public void onSuccess(List<DegreePlanInterface> result) {
+						LoadingWidget.getInstance().hide();
+						if (result == null || result.isEmpty()) {
+							iStatusBox.info(MESSAGES.failedNoDegreePlans());
+						} else {
+							CourseFinderDetails details = new CourseFinderDetails();
+							details.setDataProvider(new DataProvider<CourseAssignment, String>() {
+								@Override
+								public void getData(CourseAssignment source, AsyncCallback<String> callback) {
+									sSectioningService.retrieveCourseDetails(iSession.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
+								}
+							});
+							CourseFinderClasses classes = new CourseFinderClasses(false, iSpecRegCx);
+							classes.setDataProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
+								@Override
+								public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {
+									sSectioningService.listClasses(true, iSession.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
+								}
+							});
+							if (iDegreePlanDialog == null) {
+								iDegreePlanDialog = new DegreePlanDialog(StudentSectioningPage.Mode.REQUESTS, AdvisorCourseRequestsPage.this, null, details, classes) {
+									protected void doBack() {
+										super.doBack();
+										iDegreePlansSelectionDialog.show();
+									}
+								};
+							}
+							if (iDegreePlansSelectionDialog == null) {
+								iDegreePlansSelectionDialog = new DegreePlansSelectionDialog() {
+									public void doSubmit(DegreePlanInterface plan) {
+										super.doSubmit(plan);
+										iDegreePlanDialog.open(plan, true);
+									}
+								};
+							}
+							if (result.size() == 1)
+								iDegreePlanDialog.open(result.get(0), false);
+							else
+								iDegreePlansSelectionDialog.open(result);
+						}
+					}
+				});
+				
+			}
+		});
 	}
 	
 	private void updateTotalCredits() {
@@ -358,6 +459,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm {
 			line.setValue(null);
 		for (AdvisorCourseRequestLine line: iAlternatives)
 			line.setValue(null);
+		iStatusBox.clear();
 		updateTotalCredits();
 	}
 	
@@ -421,6 +523,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm {
 			iTerm.setText("");
 			header.setEnabled("submit", false);
 			header.setEnabled("print", false);
+			iDegreePlan.setVisible(false); iDegreePlan.setEnabled(false);
 			clearRequests();
 		} else {
 			iStudentName.setText(person.getName());
@@ -456,6 +559,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm {
 		public void selectSessionNoCheck() {
 			header.setEnabled("submit", false);
 			header.setEnabled("print", false);
+			iDegreePlan.setVisible(false); iDegreePlan.setEnabled(false);
 			super.selectSession();
 		}		
 	}
@@ -515,13 +619,25 @@ public class AdvisorCourseRequestsPage extends SimpleForm {
 				LoadingWidget.getInstance().hide();
 				iDetails = details;
 				download(result.getPdf(), "crf-" + iStudentExternalId.getText());
+				if (result.isUpdated())
+					iStatusBox.info(MESSAGES.advisorRequestsSubmitOK());
 			}
 			
 			@Override
 			public void onFailure(Throwable caught) {
 				LoadingWidget.getInstance().hide();
-				UniTimeNotifications.error(caught);
+				iStatusBox.error(MESSAGES.advisorRequestsSubmitFailed(caught.getMessage()), caught);
 			}
 		});
+	}
+
+	@Override
+	public void setValue(CourseRequestInterface value) {
+		setRequest(value);
+	}
+
+	@Override
+	public CourseRequestInterface getValue() {
+		return getRequest();
 	}
 }
