@@ -167,7 +167,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 							}
 						r.addRequestedCourse(rc);
 					}
-					if (r.hasRequestedCourse() && (enrolled || reserved)) { // acrs.isEmpty()
+					if (r.hasRequestedCourse() && (enrolled || reserved) && acrs.isEmpty()) {
 						if (cd.isAlternative())
 							request.getAlternatives().add(r);
 						else

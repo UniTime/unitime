@@ -3375,9 +3375,17 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 		
 		OnlineSectioningServer server = getServerInstance(sessionId, true);
-		if (server != null)
+		if (server != null) {
 			ret.setRequest(server.execute(server.createAction(AdvisorGetCourseRequests.class).forStudent(student.getUniqueId()), currentUser()));
+		}
 		
+		if (server != null && !(server instanceof DatabaseServer)) {
+			ret.setStudentRequest(server.execute(server.createAction(GetRequest.class).forStudent(student.getUniqueId(), false)
+					.withCustomValidation(true).withCustomRequest(false), currentUser()));
+		} else {
+			ret.setStudentRequest(getRequest(student));
+		}
+
 		return ret;
 	}
 

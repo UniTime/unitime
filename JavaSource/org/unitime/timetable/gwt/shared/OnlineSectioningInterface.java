@@ -430,6 +430,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private List<StudentStatusInfo> iAvailableStatuses;
 		private boolean iCanUpdate, iDegreePlan;
 		private CourseRequestInterface iRequest = null;
+		private CourseRequestInterface iStudentRequest = null;
 		
 		public AdvisingStudentDetails() {}
 		public AdvisingStudentDetails(AdvisingStudentDetails clone) {
@@ -487,6 +488,10 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		
 		public CourseRequestInterface getRequest() { return iRequest; }
 		public void setRequest(CourseRequestInterface request) { iRequest = request; }
+		
+		public CourseRequestInterface getStudentRequest() { return iStudentRequest; }
+		public boolean hasStudentRequest() { return iStudentRequest != null && !iStudentRequest.isEmpty(); }
+		public void setStudentRequest(CourseRequestInterface request) { iStudentRequest = request; }
 	}
 	
 	public static class AdvisorCourseRequestSubmission implements IsSerializable, Serializable {

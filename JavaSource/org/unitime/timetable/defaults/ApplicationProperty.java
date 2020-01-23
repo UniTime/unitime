@@ -2664,6 +2664,11 @@ public enum ApplicationProperty {
 	@Description("Enrollment: check for critical courses with an enrollment is changed (not just when course requests are collected)")
 	@Since(4.4)
 	EnrollmentCheckCritical("unitime.enrollment.checkCritical"),
+	
+	@Type(String.class)
+	@DefaultValue("org/unitime/timetable/onlinesectioning/advisors/unitime.png")
+	@Description("Advisor Course Requests: PDF logo")
+	AdvisorCourseRequestsPDFLogo("unitime.acrf.pdflogo"),
 	;
 
 	String iKey;

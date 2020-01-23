@@ -6755,7 +6755,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-AdvisorCourseRequests .unitime-TextArea {
-	width: 250px;
+	width: 265px;
 	margin-top: 2px;
 }
 
@@ -6774,7 +6774,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-AdvisorCourseRequests .status {
-	max-width: 320px;
+	max-width: 335px;
 }
 
 .unitime-AdvisorCourseRequests .advisor-email {
@@ -6788,3 +6788,8 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-AdvisorCourseRequests .unitime-PageHeaderFooter .left {
 	line-height: inherit;
 } 
+
+.unitime-AdvisorCourseRequests .unitime-WebTable {
+	width: 100%;
+	max-width: 800px;
+}

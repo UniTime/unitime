@@ -56,6 +56,7 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 	private Long iStudentId;
 	private boolean iSectioning;
 	private boolean iCustomValidation = false;
+	private boolean iCustomRequests = true;
 	
 	public GetRequest forStudent(Long studentId, boolean sectioning) {
 		iStudentId = studentId;
@@ -70,11 +71,15 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 	public GetRequest withCustomValidation(boolean validation) {
 		iCustomValidation = validation; return this;
 	}
+	
+	public GetRequest withCustomRequest(boolean request) {
+		iCustomRequests = request; return this;
+	}
 
 	@Override
 	public CourseRequestInterface execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		if (iStudentId == null) {
-			if (CustomCourseRequestsHolder.hasProvider()) {
+			if (CustomCourseRequestsHolder.hasProvider() && iCustomRequests) {
 				CourseRequestInterface request = CustomCourseRequestsHolder.getProvider().getCourseRequests(
 						server, helper, new XStudent(null, helper.getStudentExternalId(), helper.getUser().getName()));
 				if (request != null) return request;
@@ -90,7 +95,7 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 			action.getStudentBuilder().setExternalId(student.getExternalId());
 			action.getStudentBuilder().setName(student.getName());
 
-			if (student.getRequests().isEmpty() && CustomCourseRequestsHolder.hasProvider()) {
+			if (student.getRequests().isEmpty() && CustomCourseRequestsHolder.hasProvider() && iCustomRequests) {
 				CourseRequestInterface request = CustomCourseRequestsHolder.getProvider().getCourseRequests(server, helper, student);
 				if (request != null) return request;
 			}

@@ -457,7 +457,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Sumbit the above enrollment changes to Special Registration.")
 	String hintSpecialRegistration();
 	
-	@DefaultMessage("<u>P</u>rint")
+	@DefaultMessage("<u>E</u>xport PDF")
 	String buttonPrint();
 	
 	@DefaultMessage("Print the currently selected schedule.")
@@ -2401,7 +2401,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("<u>L</u>ookup Student")
 	String buttonLookupStudent();
 	
-	@DefaultMessage("<u>S</u>ubmit &amp; Print")
+	@DefaultMessage("<u>S</u>ubmit")
 	String buttonSubmitPrint();
 	
 	@DefaultMessage("There are unsaved changes on this page. Do you really want to discard these changes?")
@@ -2478,4 +2478,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Loading data for {0}...")
 	String loadingAdvisorRequests(String student);
+	
+	@DefaultMessage("Student Course Requests")
+	String studentCourseRequests();
 }
