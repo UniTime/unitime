@@ -22,11 +22,13 @@ package org.unitime.timetable.onlinesectioning.advisors;
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
@@ -58,8 +60,10 @@ import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
+import com.lowagie.text.Image;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
+import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
@@ -363,16 +367,40 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 		writer.setPageEvent(new PdfEventHandler());
 		document.open();
 		
-		Font font = PdfFont.getBigFont(true);
-		Paragraph ch = new Paragraph(MSG.pdfHeaderAdvisorCourseRequests(), font);
-		ch.setAlignment(Element.ALIGN_CENTER);
-		ch.setSpacingAfter(5f);
-		document.add(ch);
+		Image image = null; 
+		URL imageUrl = AdvisorCourseRequestsSubmit.class.getClassLoader().getResource(ApplicationProperty.AdvisorCourseRequestsPDFLogo.value());
+		if (imageUrl != null) {
+			image = Image.getInstance(imageUrl);
+		} else {
+			image = Image.getInstance(new URL(ApplicationProperty.AdvisorCourseRequestsPDFLogo.value()));
+		}
+		image.scaleToFit(80f, 80f);
 		
-		PdfPTable header = new PdfPTable(new float[] {80f, 200f, 50f, 150f});
-		header.setSpacingBefore(5f);
+		PdfPTable header = new PdfPTable(new float[] {80f, 200f, 40f, 200f});
 		header.setHeaderRows(0);
 		header.setWidthPercentage(100f);
+		
+		Font font = PdfFont.getBigFont(true);
+		PdfPCell imageCell = new PdfPCell();
+		imageCell.setBorder(0);
+		imageCell.addElement(new Chunk(image, 0f, 0f));
+		imageCell.setPaddingTop(Math.max(0f, font.getCalculatedLeading(1.5f) - image.getScaledHeight()));
+		imageCell.setPaddingBottom(10f);
+		header.addCell(imageCell);
+		
+		Paragraph ch = new Paragraph(MSG.pdfHeaderAdvisorCourseRequests(), font);
+		ch.setAlignment(Element.ALIGN_CENTER);
+		PdfPCell headerCell = new PdfPCell();
+		headerCell.addElement(ch);
+		headerCell.setBorder(0);
+		headerCell.setColspan(3);
+		headerCell.setPaddingTop(Math.max(0f, image.getScaledHeight() - font.getCalculatedLeading(1.5f)));
+		headerCell.setPaddingRight(80f);
+		headerCell.setPaddingBottom(10f);
+		header.addCell(headerCell);
+
+		header.completeRow();
+		
 		header.addCell(header(MSG.propStudentName()));
 		header.addCell(cell(getDetails().getStudentName()));
 		header.addCell(header(MSG.propStudentExternalId()));
