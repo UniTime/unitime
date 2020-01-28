@@ -649,9 +649,10 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		private Date iFirstDate;
 		private String iDefaultStatus;
 		private OnlineSectioningServer iServer;
+		private OnlineSectioningHelper iHelper;
 		private boolean iMyStudent;
 		
-		public CourseRequestMatcher(AcademicSessionInfo session, XCourse info, XStudent student, XOffering offering, XCourseRequest request, boolean isConsentToDoCourse, boolean isMyStudent, CourseLookup lookup, OnlineSectioningServer server) {
+		public CourseRequestMatcher(AcademicSessionInfo session, XCourse info, XStudent student, XOffering offering, XCourseRequest request, boolean isConsentToDoCourse, boolean isMyStudent, CourseLookup lookup, OnlineSectioningServer server, OnlineSectioningHelper helper) {
 			super(info, isConsentToDoCourse, lookup);
 			iFirstDate = session.getDatePatternFirstDate();
 			iStudent = student;
@@ -659,6 +660,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			iDefaultStatus = session.getDefaultSectioningStatus();
 			iOffering = offering;
 			iServer = server;
+			iHelper = helper;
 			iMyStudent = isMyStudent;
 		}
 		
@@ -675,6 +677,12 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		}
 		public XOffering offering() {
 			return iOffering;
+		}
+		
+		public boolean isAdvised() {
+			Number nbr = (Number)iHelper.getHibSession().createQuery("select count(a) from AdvisorCourseRequest a where a.student = :studentId"
+					).setLong("studentId", iStudent.getStudentId()).setCacheable(true).uniqueResult();
+			return nbr.intValue() > 0;
 		}
 
 		@Override
@@ -793,6 +801,18 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			if ("mode".equals(attr)) {
 				if (eq("My Students", term)) {
 					return iMyStudent;
+				}
+				if (eq("My Advised", term)) {
+					return iMyStudent && isAdvised();
+				}
+				if (eq("My Not Advised", term)) {
+					return iMyStudent && !isAdvised();
+				}
+				if (eq("Advised", term)) {
+					return isAdvised();
+				}
+				if (eq("Not Advised", term)) {
+					return !isAdvised();
 				}
 				return true;
 			}
@@ -1237,13 +1257,20 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		private XStudent iStudent;
 		private String iDefaultStatus;
 		private OnlineSectioningServer iServer;
+		private OnlineSectioningHelper iHelper;
 		private boolean iMyStudent;
 		
-		public StudentMatcher(XStudent student, String defaultStatus, OnlineSectioningServer server, boolean myStudent) {
+		public StudentMatcher(XStudent student, String defaultStatus, OnlineSectioningServer server, OnlineSectioningHelper helper, boolean myStudent) {
 			iStudent = student;
 			iDefaultStatus = defaultStatus;
 			iServer = server;
 			iMyStudent = myStudent;
+			iHelper = helper;
+		}
+		public boolean isAdvised() {
+			Number nbr = (Number)iHelper.getHibSession().createQuery("select count(a) from AdvisorCourseRequest a where a.student = :studentId"
+					).setLong("studentId", iStudent.getStudentId()).setCacheable(true).uniqueResult();
+			return nbr.intValue() > 0;
 		}
 
 		public XStudent student() { return iStudent; }
@@ -1432,6 +1459,18 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			} else if ("mode".equals(attr)) {
 				if (eq("My Students", term)) {
 					return iMyStudent;
+				}
+				if (eq("My Advised", term)) {
+					return iMyStudent && isAdvised();
+				}
+				if (eq("My Not Advised", term)) {
+					return iMyStudent && !isAdvised();
+				}
+				if (eq("Advised", term)) {
+					return isAdvised();
+				}
+				if (eq("Not Advised", term)) {
+					return !isAdvised();
 				}
 				return true;
 			} else if (attr != null) {

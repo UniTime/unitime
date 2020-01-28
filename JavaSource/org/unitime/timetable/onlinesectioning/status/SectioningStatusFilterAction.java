@@ -268,8 +268,8 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		}
 		
 		
+		List<Entity> modes = new ArrayList<Entity>();
 		if (iRequest.hasOption("role")) {
-			List<Entity> modes = new ArrayList<Entity>();
 			int myStudents = ((Number)query.select("count(distinct s)")
 					.where("s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = :Xuser and adv.role.reference = :Xrole and adv.session.uniqueId = s.session.uniqueId)")
 					.set("Xuser", iRequest.getOption("user")).set("Xrole", iRequest.getOption("role"))
@@ -278,10 +278,40 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				Entity myE = new Entity(-1l, "My Students", MESSAGES.modeMyStudents(), "translated-value", MESSAGES.modeMyStudents());
 				myE.setCount(myStudents);
 				modes.add(myE);
+				int myAdvised = ((Number)query.select("count(distinct s)")
+						.where("s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = :Xuser and adv.role.reference = :Xrole and adv.session.uniqueId = s.session.uniqueId) and s.advisorCourseRequests is not empty")
+						.set("Xuser", iRequest.getOption("user")).set("Xrole", iRequest.getOption("role"))
+						.exclude("mode").query(helper.getHibSession()).uniqueResult()).intValue();
+				if (myAdvised > 0) {
+					Entity myA = new Entity(-1l, "My Advised", MESSAGES.modeMyStudentsAdvised(), "translated-value", MESSAGES.modeMyStudentsAdvised());
+					myA.setCount(myAdvised);
+					modes.add(myA);
+				}
+				if (myAdvised < myStudents) {
+					Entity myA = new Entity(-1l, "My Not Advised", MESSAGES.modeMyStudentsNotAdvised(), "translated-value", MESSAGES.modeMyStudentsNotAdvised());
+					myA.setCount(myStudents - myAdvised);
+					modes.add(myA);
+				}
 			}
-			if (!modes.isEmpty())
-				response.add("mode", modes);
 		}
+		int advised = ((Number)query.select("count(distinct s)")
+				.where("s.advisorCourseRequests is not empty")
+				.exclude("mode").query(helper.getHibSession()).uniqueResult()).intValue();
+		if (advised > 0) {
+			Entity adv = new Entity(-1l, "Advised", MESSAGES.modeAdvised(), "translated-value", MESSAGES.modeAdvised());
+			adv.setCount(advised);
+			modes.add(adv);
+			int notAdvised = ((Number)query.select("count(distinct s)")
+					.where("s.advisorCourseRequests is empty")
+					.exclude("mode").query(helper.getHibSession()).uniqueResult()).intValue();
+			if (notAdvised > 0) {
+				Entity notAdv = new Entity(-1l, "Not Advised", MESSAGES.modeNotAdvised(), "translated-value", MESSAGES.modeNotAdvised());
+				notAdv.setCount(notAdvised);
+				modes.add(notAdv);
+			}
+		}
+		if (!modes.isEmpty())
+			response.add("mode", modes);
 		
 
 		List<Entity> preferences = new ArrayList<Entity>();
@@ -773,6 +803,22 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			query.addWhere("mode", "s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = :Xuser and adv.role.reference = :Xrole and adv.session.uniqueId = s.session.uniqueId)");
 			query.addParameter("mode", "Xuser", request.getOption("user"));
 			query.addParameter("mode", "Xrole", request.getOption("role"));
+		}
+		if (request.hasOption("mode") && "My Advised".equals(request.getOption("mode")) && request.hasOption("role")) {
+			query.addWhere("mode", "s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = :Xuser and adv.role.reference = :Xrole and adv.session.uniqueId = s.session.uniqueId) and s.advisorCourseRequests is not empty");
+			query.addParameter("mode", "Xuser", request.getOption("user"));
+			query.addParameter("mode", "Xrole", request.getOption("role"));
+		}
+		if (request.hasOption("mode") && "My Not Advised".equals(request.getOption("mode")) && request.hasOption("role")) {
+			query.addWhere("mode", "s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = :Xuser and adv.role.reference = :Xrole and adv.session.uniqueId = s.session.uniqueId) and s.advisorCourseRequests is empty");
+			query.addParameter("mode", "Xuser", request.getOption("user"));
+			query.addParameter("mode", "Xrole", request.getOption("role"));
+		}
+		if (request.hasOption("mode") && "Advised".equals(request.getOption("mode"))) {
+			query.addWhere("mode", "s.advisorCourseRequests is not empty");
+		}
+		if (request.hasOption("mode") && "Not Advised".equals(request.getOption("mode"))) {
+			query.addWhere("mode", "s.advisorCourseRequests is empty");
 		}
 		
 		if (request.hasOption("override")) {

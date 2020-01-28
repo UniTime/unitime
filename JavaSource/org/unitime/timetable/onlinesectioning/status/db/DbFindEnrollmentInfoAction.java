@@ -862,6 +862,18 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				if (eq("My Students", term)) {
 					return iMyStudent;
 				}
+				if (eq("My Advised", term)) {
+					return iMyStudent && !student().getAdvisorCourseRequests().isEmpty();
+				}
+				if (eq("My Not Advised", term)) {
+					return iMyStudent && student().getAdvisorCourseRequests().isEmpty();
+				}
+				if (eq("Advised", term)) {
+					return !student().getAdvisorCourseRequests().isEmpty();
+				}
+				if (eq("Not Advised", term)) {
+					return student().getAdvisorCourseRequests().isEmpty();
+				}
 				return true;
 			}
 			
@@ -1429,6 +1441,18 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			} else if ("mode".equals(attr)) {
 				if (eq("My Students", term)) {
 					return iMyStudent;
+				}
+				if (eq("My Advised", term)) {
+					return iMyStudent && !student().getAdvisorCourseRequests().isEmpty();
+				}
+				if (eq("My Not Advised", term)) {
+					return iMyStudent && student().getAdvisorCourseRequests().isEmpty();
+				}
+				if (eq("Advised", term)) {
+					return !student().getAdvisorCourseRequests().isEmpty();
+				}
+				if (eq("Not Advised", term)) {
+					return student().getAdvisorCourseRequests().isEmpty();
 				}
 				return true;
 			} else if (attr != null) {

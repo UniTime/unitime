@@ -1927,6 +1927,18 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("My Students")
 	String modeMyStudents();
 	
+	@DefaultMessage("My Students Advised")
+	String modeMyStudentsAdvised();
+	
+	@DefaultMessage("My Students Not Advised")
+	String modeMyStudentsNotAdvised();
+	
+	@DefaultMessage("Not Advised")
+	String modeNotAdvised();
+	
+	@DefaultMessage("Advised")
+	String modeAdvised();
+	
 	@DefaultMessage("Request is wait-listed.")
 	String descriptionRequestWaitListed();
 	

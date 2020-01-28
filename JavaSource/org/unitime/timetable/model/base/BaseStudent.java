@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.unitime.timetable.model.Advisor;
+import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.LastLikeCourseDemand;
 import org.unitime.timetable.model.Session;
@@ -73,6 +74,7 @@ public abstract class BaseStudent implements Serializable {
 	private Set<LastLikeCourseDemand> iLastLikeCourseDemands;
 	private Set<StudentNote> iNotes;
 	private Set<Advisor> iAdvisors;
+	private Set<AdvisorCourseRequest> iAdvisorCourseRequests;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_EXTERNAL_UID = "externalUniqueId";
@@ -220,6 +222,13 @@ public abstract class BaseStudent implements Serializable {
 	public void addToadvisors(Advisor advisor) {
 		if (iAdvisors == null) iAdvisors = new HashSet<Advisor>();
 		iAdvisors.add(advisor);
+	}
+
+	public Set<AdvisorCourseRequest> getAdvisorCourseRequests() { return iAdvisorCourseRequests; }
+	public void setAdvisorCourseRequests(Set<AdvisorCourseRequest> advisorCourseRequests) { iAdvisorCourseRequests = advisorCourseRequests; }
+	public void addToadvisorCourseRequests(AdvisorCourseRequest advisorCourseRequest) {
+		if (iAdvisorCourseRequests == null) iAdvisorCourseRequests = new HashSet<AdvisorCourseRequest>();
+		iAdvisorCourseRequests.add(advisorCourseRequest);
 	}
 
 	public boolean equals(Object o) {

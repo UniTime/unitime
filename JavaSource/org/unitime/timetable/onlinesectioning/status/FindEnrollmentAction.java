@@ -164,7 +164,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 			XStudent student = server.getStudent(request.getStudentId());
 			if (student == null) continue;
 			if (request.getEnrollment() == null && !student.canAssign(request)) continue;
-			if (!query().match(new StatusPageSuggestionsAction.CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse(), isMyStudent(student), lookup, server))) continue;
+			if (!query().match(new StatusPageSuggestionsAction.CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse(), isMyStudent(student), lookup, server, helper))) continue;
 			if (classId() != null && request.getEnrollment() == null) {
 				boolean hasEnrollment = false;
 				Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
