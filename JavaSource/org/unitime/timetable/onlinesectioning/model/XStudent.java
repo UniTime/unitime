@@ -78,6 +78,7 @@ public class XStudent extends XStudentId implements Externalizable {
     private XOverride iMaxCreditOverride = null;
     private boolean iAllowDisabled = false;
     private List<XAdvisor> iAdvisors = new ArrayList<XAdvisor>();
+    private Date iLastStudentChange = null;
 
     public XStudent() {
     	super();
@@ -97,6 +98,7 @@ public class XStudent extends XStudentId implements Externalizable {
     	iStatus = student.getSectioningStatus() == null ? null : student.getSectioningStatus().getReference();
     	iEmail = student.getEmail();
     	iEmailTimeStamp = student.getScheduleEmailedDate() == null ? null : student.getScheduleEmailedDate();
+    	iLastStudentChange = student.getLastChangedByStudent();
     	for (StudentAreaClassificationMajor acm: student.getAreaClasfMajors()) {
         	iMajors.add(new XAreaClassificationMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode()));
         }
@@ -170,6 +172,7 @@ public class XStudent extends XStudentId implements Externalizable {
     	iStatus = student.getStatus();
     	iEmail = student.getEmail();
     	iEmailTimeStamp = student.getEmailTimeStamp();
+    	iLastStudentChange = student.getLastStudentChange();
     	iMajors.addAll(student.getMajors());
     	iGroups.addAll(student.getGroups());
     	iAccomodations.addAll(student.getAccomodations());
@@ -183,6 +186,7 @@ public class XStudent extends XStudentId implements Externalizable {
     	iStatus = student.getStatus();
     	iEmail = student.getEmail();
     	iEmailTimeStamp = student.getEmailTimeStamp();
+    	iLastStudentChange = student.getLastStudentChange();
     	iMajors.addAll(student.getMajors());
     	iGroups.addAll(student.getGroups());
     	iAccomodations.addAll(student.getAccomodations());
@@ -338,6 +342,9 @@ public class XStudent extends XStudentId implements Externalizable {
      */
     public void setEmailTimeStamp(Date emailTimeStamp) { iEmailTimeStamp = emailTimeStamp; }
     
+    public Date getLastStudentChange() { return iLastStudentChange; }
+    public void setLastStudentChange(Date lastStudentChange) { iLastStudentChange = lastStudentChange; }
+    
     public List<XRequest> getRequests() { return iRequests; }
     
     public String getEmail() { return iEmail; }
@@ -410,6 +417,7 @@ public class XStudent extends XStudentId implements Externalizable {
 		iStatus = (String)in.readObject();
 		iEmail = (String)in.readObject();
 		iEmailTimeStamp = (in.readBoolean() ? new Date(in.readLong()) : null);
+		iLastStudentChange = (in.readBoolean() ? new Date(in.readLong()) : null);
 		
 		if (in.readBoolean())
 			iLastNote = new XStudentNote(in);
@@ -453,6 +461,10 @@ public class XStudent extends XStudentId implements Externalizable {
 		out.writeBoolean(iEmailTimeStamp != null);
 		if (iEmailTimeStamp != null)
 			out.writeLong(iEmailTimeStamp.getTime());
+		
+		out.writeBoolean(iLastStudentChange != null);
+		if (iLastStudentChange != null)
+			out.writeLong(iLastStudentChange.getTime());
 		
 		out.writeBoolean(iLastNote != null);
 		if (iLastNote != null)

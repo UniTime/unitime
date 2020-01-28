@@ -117,4 +117,5 @@ public interface SectioningServiceAsync {
 	void getStudentSessions(String studentExternalId, AsyncCallback<Collection<AcademicSessionInfo>> callback) throws SectioningException, PageAccessException;
 	void getStudentAdvisingDetails(Long sessionId, String studentExternalId, AsyncCallback<AdvisingStudentDetails> callback) throws SectioningException, PageAccessException;
 	void submitAdvisingDetails(AdvisingStudentDetails details, AsyncCallback<AdvisorCourseRequestSubmission> callback) throws SectioningException, PageAccessException;
+	void getAdvisorRequests(Long sessionId, Long studentId, AsyncCallback<CourseRequestInterface> callback) throws SectioningException, PageAccessException;
 }

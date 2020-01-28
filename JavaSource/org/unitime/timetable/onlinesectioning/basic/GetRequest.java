@@ -34,6 +34,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.advisors.AdvisorGetCourseRequests;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsValidationHolder;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
@@ -97,7 +98,7 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 
 			if (student.getRequests().isEmpty() && CustomCourseRequestsHolder.hasProvider() && iCustomRequests) {
 				CourseRequestInterface request = CustomCourseRequestsHolder.getProvider().getCourseRequests(server, helper, student);
-				if (request != null) return request;
+				if (request != null && !request.isEmpty()) return request;
 			}
 			
 			CourseRequestInterface request = new CourseRequestInterface();
@@ -238,6 +239,10 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 			
 			if (iCustomValidation && CustomCourseRequestsValidationHolder.hasProvider())
 				CustomCourseRequestsValidationHolder.getProvider().check(server, helper, request);
+			
+			if (student.getLastStudentChange() == null && !(server instanceof StudentSolver) && !iSectioning) {
+				request.applyAdvisorRequests(AdvisorGetCourseRequests.getRequest(iStudentId, helper.getHibSession()));
+			}
 			
 			return request;
 		} finally {

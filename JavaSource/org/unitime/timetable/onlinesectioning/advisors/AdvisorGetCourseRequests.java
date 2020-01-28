@@ -67,9 +67,15 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 	protected static StudentSectioningConstants CONST = Localization.create(StudentSectioningConstants.class);
 	protected static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Long iStudentId;
+	private boolean iCheckExistingDemands = false;
 	
 	public AdvisorGetCourseRequests forStudent(Long id) {
 		iStudentId = id;
+		return this;
+	}
+	
+	public AdvisorGetCourseRequests checkDemands(boolean check) {
+		iCheckExistingDemands = check;
 		return this;
 	}
 
@@ -94,9 +100,8 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 				"from AdvisorCourseRequest where student = :studentId order by priority, alternative"
 				).setLong("studentId", iStudentId).list();
 		
-		Format<Date> ts = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP_SHORT);
-		
-		if (student != null) {
+		if (student != null && iCheckExistingDemands) {
+			Format<Date> ts = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP_SHORT);
 
 			TreeSet<CourseDemand> demands = new TreeSet<CourseDemand>(new Comparator<CourseDemand>() {
 				public int compare(CourseDemand d1, CourseDemand d2) {
@@ -184,6 +189,15 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 		}
 	
 		
+		fillCourseRequests(request, acrs);
+		
+		for (OnlineSectioningLog.Request log: OnlineSectioningHelper.toProto(request))
+			action.addRequest(log);
+
+		return request;
+	}
+	
+	protected static void fillCourseRequests(CourseRequestInterface request, List<AdvisorCourseRequest> acrs) {
 		int last = -1;
 		CourseRequestInterface.Request r = null;
 		Set<Integer> skip = new HashSet<Integer>();
@@ -245,10 +259,18 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 			if (acr.getNotes() != null)
 				r.setAdvisorNote(acr.getNotes());
 		}
+	}
+	
+	public static CourseRequestInterface getRequest(Long studentId, org.hibernate.Session hibSession) {
+		CourseRequestInterface request = new CourseRequestInterface();
+		request.setStudentId(studentId);
 		
-		for (OnlineSectioningLog.Request log: OnlineSectioningHelper.toProto(request))
-			action.addRequest(log);
-
+		List<AdvisorCourseRequest> acrs = hibSession.createQuery(
+				"from AdvisorCourseRequest where student = :studentId order by priority, alternative"
+				).setLong("studentId", studentId).list();
+		
+		fillCourseRequests(request, acrs);
+		
 		return request;
 	}
 	

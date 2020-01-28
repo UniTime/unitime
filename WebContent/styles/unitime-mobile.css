@@ -668,6 +668,11 @@
 	.unitime-AdvisorCourseRequests .widget-cell {
 		max-width: 340px;
 	}
+	
+	.unitime-AdvisorCourseRequestsDialog .requests {
+		max-width: 90vw;
+		max-height: 40vh;
+	}
 }
 
 @media all and (max-width: 400px) {

@@ -76,7 +76,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 	private ClassAssignmentInterface iAssignment;
 	private UniTimeTabPanel iTabs;
 	private TimeGrid iGrid;
-	private WebTable iAssignments, iRequests;
+	private WebTable iAssignments, iRequests, iAdvReqs;
 	private boolean iOnline = false;
 	private float iTotalCredit = 0f;
 	private Map<Character, Integer> iTabAccessKeys = new HashMap<Character, Integer>();
@@ -87,6 +87,22 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		
 		iTabs = new UniTimeTabPanel();
 		iTabs.setDeckStyleName("unitime-TabPanel");
+		
+		iAdvReqs = new WebTable();
+		iAdvReqs.setEmptyMessage(MESSAGES.emptyRequests());
+		iAdvReqs.setHeader(new WebTable.Row(
+				new WebTable.Cell(MESSAGES.colPriority(), 1, "25px"),
+				new WebTable.Cell(MESSAGES.colCourse(), 1, "75px"),
+				new WebTable.Cell(MESSAGES.colTitle(), 1, "200px"),
+				new WebTable.Cell(MESSAGES.colCredit(), 1, "20px"),
+				new WebTable.Cell(MESSAGES.colPreferences(), 1, "100px"),
+				new WebTable.Cell(MESSAGES.colNotes(), 1, "300px")));
+		iAdvReqs.setSelectSameIdRows(true);
+		iAdvReqs.addStyleName("unitime-AdvisorCourseRequestsTable");
+		iTabs.add(iAdvReqs, MESSAGES.tabAdvisorRequests(), true);
+		Character cha = UniTimeHeaderPanel.guessAccessKey(MESSAGES.tabAdvisorRequests());
+		if (cha != null)
+			iTabAccessKeys.put(cha, 0);
 		
 		iRequests = new WebTable();
 		iRequests.setEmptyMessage(MESSAGES.emptyRequests());
@@ -104,7 +120,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		iTabs.add(iRequests, MESSAGES.tabRequests(), true);
 		Character ch0 = UniTimeHeaderPanel.guessAccessKey(MESSAGES.tabRequests());
 		if (ch0 != null)
-			iTabAccessKeys.put(ch0, 0);
+			iTabAccessKeys.put(ch0, 1);
 		
 		iAssignments = new WebTable();
 		iAssignments.setHeader(new WebTable.Row(
@@ -129,13 +145,13 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		iTabs.add(iAssignments, MESSAGES.tabClasses(), true);
 		Character ch1 = UniTimeHeaderPanel.guessAccessKey(MESSAGES.tabClasses());
 		if (ch1 != null)
-			iTabAccessKeys.put(ch1, 1);
+			iTabAccessKeys.put(ch1, 2);
 		
 		iGrid = new TimeGrid();
 		iTabs.add(iGrid, MESSAGES.tabTimetable(), true);
 		Character ch2 = UniTimeHeaderPanel.guessAccessKey(MESSAGES.tabTimetable());
 		if (ch2 != null)
-			iTabAccessKeys.put(ch2, 2);
+			iTabAccessKeys.put(ch2, 3);
 		
 		iTabs.selectTab(SectioningStatusCookie.getInstance().getStudentTab());
 		
@@ -156,10 +172,206 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 	@Override
 	public void setValue(ClassAssignmentInterface result) {
 		iAssignment = result;
-		
+		fillInAdvisorRequests();
 		fillInRequests();
 		fillInAssignments();
 		fillInTimeGrid();
+	}
+	
+	protected void fillInAdvisorRequests() {
+		ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
+		boolean hasPref = false;
+		iTabs.getTabBar().setTabEnabled(0, iAssignment.hasAdvisorRequest());
+		if (iAssignment.hasAdvisorRequest()) {
+			int priority = 1;
+			for (Request request: iAssignment.getAdvisorRequest().getCourses()) {
+				if (request.hasRequestedCourse()) {
+					boolean first = true;
+					for (RequestedCourse rc: request.getRequestedCourse()) {
+						WebTable.Row row = null;
+						if (rc.isCourse()) {
+							Collection<Preference> prefs = null;
+							if (rc.hasSelectedIntructionalMethods()) {
+								if (rc.hasSelectedClasses()) {
+									prefs = new ArrayList<Preference>(rc.getSelectedIntructionalMethods().size() + rc.getSelectedClasses().size());
+									prefs.addAll(new TreeSet<Preference>(rc.getSelectedIntructionalMethods()));
+									prefs.addAll(new TreeSet<Preference>(rc.getSelectedClasses()));
+								} else {
+									prefs = new TreeSet<Preference>(rc.getSelectedIntructionalMethods());
+								}
+							} else if (rc.hasSelectedClasses()) {
+								prefs = new TreeSet<Preference>(rc.getSelectedClasses());
+							}
+							if (prefs != null) hasPref = true;
+							if (first) {
+								WebTable.Cell credit = new WebTable.Cell(request.hasAdvisorCredit() ? request.getAdvisorCredit() : "");
+								credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+								WebTable.NoteCell note = new WebTable.NoteCell(request.hasAdvisorNote() ? request.getAdvisorNote() : "", null);
+								note.setRowSpan(request.getRequestedCourse().size());
+								row = new WebTable.Row(
+									new WebTable.Cell(MESSAGES.courseRequestsPriority(priority)),
+									new WebTable.Cell(rc.getCourseName()),
+									new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
+									credit,
+									new WebTable.Cell(ToolBox.toString(prefs)),
+									note
+									);
+							} else {
+								row = new WebTable.Row(
+									new WebTable.Cell(""),
+									new WebTable.Cell(rc.getCourseName()),
+									new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
+									new WebTable.Cell(""),
+									new WebTable.Cell(ToolBox.toString(prefs))
+									);
+							}
+						} else if (rc.isFreeTime()) {
+							String  free = "";
+							for (FreeTime ft: rc.getFreeTime()) {
+								if (!free.isEmpty()) free += ", ";
+								free += ft.toString(CONSTANTS.shortDays(), CONSTANTS.useAmPm());
+							}
+							if (first) {
+								WebTable.Cell credit = new WebTable.Cell(first && request.hasAdvisorCredit() ? request.getAdvisorCredit() : "");
+								credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+								WebTable.NoteCell note = new WebTable.NoteCell(request.hasAdvisorNote() ? request.getAdvisorNote() : "", null);
+								note.setRowSpan(request.getRequestedCourse().size());
+								row = new WebTable.Row(
+									new WebTable.Cell(MESSAGES.courseRequestsPriority(priority)),
+									new WebTable.Cell(CONSTANTS.freePrefix() + free, 2, null),
+									credit,
+									new WebTable.Cell(""),
+									note
+									);
+							} else {
+								row = new WebTable.Row(
+									new WebTable.Cell(""),
+									new WebTable.Cell(CONSTANTS.freePrefix() + free, 2, null),
+									new WebTable.Cell(""),
+									new WebTable.Cell(""),
+									new WebTable.Cell(""),
+									new WebTable.Cell("")
+									);
+							}
+						}
+						if (priority > 1 && first)
+							for (WebTable.Cell cell: row.getCells()) cell.setStyleName("top-border-dashed");
+						row.setId("P" + priority);
+						rows.add(row);
+						first = false;
+					}
+					priority ++;
+				} else {
+					WebTable.Cell credit = new WebTable.Cell(request.hasAdvisorCredit() ? request.getAdvisorCredit() : "");
+					credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+					WebTable.NoteCell note = new WebTable.NoteCell(request.hasAdvisorNote() ? request.getAdvisorNote() : "", null);
+					WebTable.Row row = new WebTable.Row(
+						new WebTable.Cell(MESSAGES.courseRequestsPriority(priority)),
+						new WebTable.Cell(""),
+						new WebTable.Cell(""),
+						credit,
+						new WebTable.Cell(""),
+						note
+						);
+					if (priority > 1)
+						for (WebTable.Cell cell: row.getCells()) cell.setStyleName("top-border-dashed");
+					row.setId("P" + priority);
+					rows.add(row);
+				}
+			}
+			priority = 1;
+			for (Request request: iAssignment.getAdvisorRequest().getAlternatives()) {
+				if (request.hasRequestedCourse()) {
+					boolean first = true;
+					for (RequestedCourse rc: request.getRequestedCourse()) {
+						WebTable.Row row = null;
+						if (rc.isCourse()) {
+							Collection<Preference> prefs = null;
+							if (rc.hasSelectedIntructionalMethods()) {
+								if (rc.hasSelectedClasses()) {
+									prefs = new ArrayList<Preference>(rc.getSelectedIntructionalMethods().size() + rc.getSelectedClasses().size());
+									prefs.addAll(new TreeSet<Preference>(rc.getSelectedIntructionalMethods()));
+									prefs.addAll(new TreeSet<Preference>(rc.getSelectedClasses()));
+								} else {
+									prefs = new TreeSet<Preference>(rc.getSelectedIntructionalMethods());
+								}
+							} else if (rc.hasSelectedClasses()) {
+								prefs = new TreeSet<Preference>(rc.getSelectedClasses());
+							}
+							if (prefs != null) hasPref = true;
+							if (first) {
+								WebTable.Cell credit = new WebTable.Cell(request.hasAdvisorCredit() ? request.getAdvisorCredit() : "");
+								credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+								WebTable.NoteCell note = new WebTable.NoteCell(request.hasAdvisorNote() ? request.getAdvisorNote() : "", null);
+								note.setRowSpan(request.getRequestedCourse().size());
+								row = new WebTable.Row(
+									new WebTable.Cell(MESSAGES.courseRequestsAlternative(priority)),
+									new WebTable.Cell(rc.getCourseName()),
+									new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
+									credit,
+									new WebTable.Cell(ToolBox.toString(prefs)),
+									note
+									);
+							} else {
+								row = new WebTable.Row(
+									new WebTable.Cell(""),
+									new WebTable.Cell(rc.getCourseName()),
+									new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
+									new WebTable.Cell(""),
+									new WebTable.Cell(ToolBox.toString(prefs))
+									);
+							}
+						}
+						if (first)
+							for (WebTable.Cell cell: row.getCells()) cell.setStyleName(priority == 1 ? "top-border-solid" : "top-border-dashed");
+						row.setId("A" + priority);
+						rows.add(row);
+						first = false;
+					}
+					priority ++;
+				} else {
+					WebTable.Cell credit = new WebTable.Cell(request.hasAdvisorCredit() ? request.getAdvisorCredit() : "");
+					credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+					WebTable.NoteCell note = new WebTable.NoteCell(request.hasAdvisorNote() ? request.getAdvisorNote() : "", null);
+					WebTable.Row row = new WebTable.Row(
+						new WebTable.Cell(MESSAGES.courseRequestsAlternative(priority)),
+						new WebTable.Cell(""),
+						new WebTable.Cell(""),
+						credit,
+						new WebTable.Cell(""),
+						note
+						);
+					for (WebTable.Cell cell: row.getCells()) cell.setStyleName(priority == 1 ? "top-border-solid" : "top-border-dashed");
+					row.setId("A" + priority);
+					rows.add(row);
+				}
+			}
+			float min = 0, max = 0;
+			for (Request request: iAssignment.getAdvisorRequest().getCourses()) {
+				min += request.getAdvisorCreditMin();
+				max += request.getAdvisorCreditMax();
+			}
+			WebTable.Cell credit = new WebTable.Cell(min < max ? MESSAGES.creditRange(min, max) : MESSAGES.credit(min));
+			credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+			WebTable.Row crow = new WebTable.Row(
+					new WebTable.Cell(MESSAGES.rowTotalPriorityCreditHours(), 2, null),
+					new WebTable.Cell(""),
+					credit,
+					new WebTable.Cell(""),
+					new WebTable.Cell("")
+					);
+			for (WebTable.Cell cell: crow.getCells()) cell.setStyleName("top-border-solid");
+			crow.getCell(0).setStyleName("top-border-solid text-bold");
+			crow.setId("C");
+			rows.add(crow);			
+		}
+		
+		WebTable.Row[] rowArray = new WebTable.Row[rows.size()];
+		int idx = 0;
+		for (WebTable.Row row: rows) rowArray[idx++] = row;
+		
+		iAdvReqs.setData(rowArray);
+		iAdvReqs.setColumnVisible(4, hasPref);
 	}
 	
 	protected void fillInRequests() {

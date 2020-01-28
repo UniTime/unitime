@@ -176,6 +176,7 @@ public class WebTable extends Composite implements HasMobileScroll {
 				if (cell.getWidth() != null)
 					iTable.getFlexCellFormatter().setWidth(i, j, cell.getWidth());
 				iTable.getFlexCellFormatter().setColSpan(i, j, cell.getColSpan());
+				iTable.getFlexCellFormatter().setRowSpan(i, j, cell.getRowSpan());
 				iTable.getFlexCellFormatter().setVerticalAlignment(i, j, cell.getVerticalAlignment());
 				iTable.getFlexCellFormatter().setHorizontalAlignment(i, j, cell.getHorizontalAlignment());
 				iTable.getFlexCellFormatter().getElement(i, j).setTitle(cell.getTitle());
@@ -303,6 +304,7 @@ public class WebTable extends Composite implements HasMobileScroll {
 				iTable.getFlexCellFormatter().setVisible(i+getHeaderRowsCount(), j, true);
 				iTable.getFlexCellFormatter().setWordWrap(i+getHeaderRowsCount(), j, cell.getWordWrap());
 				iTable.getFlexCellFormatter().setColSpan(i+getHeaderRowsCount(), j, cell.getColSpan());
+				iTable.getFlexCellFormatter().setRowSpan(i+getHeaderRowsCount(), j, cell.getRowSpan());
 				iTable.getFlexCellFormatter().setStyleName(i+getHeaderRowsCount(), j, cell.getStyleName());
 				iTable.getFlexCellFormatter().setWidth(i+getHeaderRowsCount(), j, cell.getWidth());
 				iTable.getFlexCellFormatter().setVerticalAlignment(i+getHeaderRowsCount(), j, cell.getVerticalAlignment());
@@ -483,6 +485,7 @@ public class WebTable extends Composite implements HasMobileScroll {
 	public static class Cell implements HasAriaLabel {
 		String iValue;
 		int iColSpan = 1;
+		int iRowSpan = 1;
 		String iStyleName = null;
 		String iWidth = null;
 		Row iRow = null;
@@ -508,6 +511,8 @@ public class WebTable extends Composite implements HasMobileScroll {
 		public String getValue() { return iValue; }
 		public int getColSpan() { return iColSpan; }
 		public void setColSpan(int colSpan) { iColSpan = colSpan; }
+		public int getRowSpan() { return iRowSpan; }
+		public void setRowSpan(int rowSpan) { iRowSpan = rowSpan; }
 		public String getStyleName() { return iStyleName; }
 		public void setStyleName(String styleName) {
 			iStyleName = styleName;

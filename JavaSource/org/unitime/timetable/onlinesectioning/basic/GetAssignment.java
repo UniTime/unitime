@@ -58,6 +58,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.advisors.AdvisorGetCourseRequests;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsValidationHolder;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentError;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentFailure;
@@ -92,6 +93,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 	private Set<ErrorMessage> iErrors;
 	private boolean iIncludeRequest = false;
 	private boolean iCustomCheck = false;
+	private boolean iIncludeAdvisorRequest = false;
 	
 	public GetAssignment forStudent(Long studentId) {
 		iStudentId = studentId;
@@ -113,6 +115,11 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 		return this;
 	}
 	
+	public GetAssignment withAdvisorRequest(boolean includeRequest) {
+		iIncludeAdvisorRequest = includeRequest;
+		return this;
+	}
+	
 	public GetAssignment withCustomCheck(boolean customCheck) {
 		iCustomCheck = customCheck;
 		return this;
@@ -128,6 +135,9 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 			
 			if (ret.hasRequest() && iCustomCheck && CustomCourseRequestsValidationHolder.hasProvider())
 				CustomCourseRequestsValidationHolder.getProvider().check(server, helper, ret.getRequest());
+			
+			if (iIncludeAdvisorRequest)
+				ret.setAdvisorRequest(AdvisorGetCourseRequests.getRequest(iStudentId, helper.getHibSession()));
 			
 			return ret;
 		} finally {

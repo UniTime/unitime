@@ -116,11 +116,15 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	public double getValue() { return iValue; }
 	public void setValue(double value) { iValue = value; }
 	
-	private CourseRequestInterface iRequest = null;
+	private CourseRequestInterface iRequest = null, iAdvisorRequest = null;
 	
 	public boolean hasRequest() { return iRequest != null; }
 	public void setRequest(CourseRequestInterface request) { iRequest = request; }
 	public CourseRequestInterface getRequest() { return iRequest; }
+	
+	public boolean hasAdvisorRequest() { return iAdvisorRequest != null && !iAdvisorRequest.isEmpty(); }
+	public void setAdvisorRequest(CourseRequestInterface request) { iAdvisorRequest = request; }
+	public CourseRequestInterface getAdvisorRequest() { return iAdvisorRequest; }
 	
 	public boolean isEnrolled() {
 		for (CourseAssignment course: getCourseAssignments())

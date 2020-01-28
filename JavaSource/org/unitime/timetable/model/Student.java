@@ -296,4 +296,23 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
 		}
     	return getSession().getDefaultSectioningStatus();
     }
+    
+    public Date getLastChangedByStudent() {
+    	Date ret = null;
+    	if (getCourseDemands() != null) {
+    		for (CourseDemand cd: getCourseDemands()) {
+    			if (getExternalUniqueId() != null && getExternalUniqueId().equals(cd.getChangedBy())) {
+    				if (ret == null || ret.before(cd.getTimestamp())) ret = cd.getTimestamp();
+    			}
+    		}
+    	}
+    	if (getClassEnrollments() != null) {
+    		for (StudentClassEnrollment e: getClassEnrollments()) {
+    			if (getExternalUniqueId() != null && getExternalUniqueId().equals(e.getChangedBy())) {
+    				if (ret == null || ret.before(e.getTimestamp())) ret = e.getTimestamp();
+    			}
+    		}
+    	}
+    	return ret;
+    }
 }

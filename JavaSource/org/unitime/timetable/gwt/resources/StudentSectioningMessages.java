@@ -2481,4 +2481,31 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Student Course Requests")
 	String studentCourseRequests();
+	
+	@DefaultMessage("Advisor Course Requests")
+	String dialogAdvisorCourseRequests();
+	
+	@DefaultMessage("Total Priority Credit Hours")
+	String rowTotalPriorityCreditHours();
+	
+	@DefaultMessage("<u>A</u>pply")
+	String buttonAdvisorRequestsApply();
+	
+	@DefaultMessage("<u>C</u>lose")
+	String buttonAdvisorRequestsClose();
+	
+	@DefaultMessage("<u>A</u>dvisor Requests")
+	String buttonAdvisorRequests();
+	
+	@DefaultMessage("Show course requests filled in with the advisor.")
+	String hintAdvisorRequests();
+	
+	@DefaultMessage("Retrieving advisor course requests...")
+	String waitAdvisorRequests();
+	
+	@DefaultMessage("Failed to load advisor course requests: {0}")
+	String failedAdvisorRequests(String reason);
+	
+	@DefaultMessage("<u>A</u>dvisor Requests")
+	String tabAdvisorRequests();
 }

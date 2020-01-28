@@ -152,7 +152,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	
 	private VerticalPanel iPanel;
 	private P iFooter, iHeader;
-	private AriaMultiButton iRequests, iReset, iSchedule, iEnroll, iPrint, iExport = null, iSave, iStartOver, iDegreePlan, iSubmitSpecReg, iChangeGradeModes;
+	private AriaMultiButton iRequests, iReset, iSchedule, iEnroll, iPrint, iExport = null, iSave, iStartOver, iDegreePlan, iSubmitSpecReg, iChangeGradeModes, iAdvisorReqs;
 	
 	private AriaTabBar iAssignmentTab;
 	private DockPanel iAssignmentDock;
@@ -322,6 +322,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iDegreePlan.setEnabled(false);
 		leftFooterPanel.add(iDegreePlan);
 		leftHeaderPanel.add(iDegreePlan.createClone());
+		
+		iAdvisorReqs = new AriaMultiButton(MESSAGES.buttonAdvisorRequests());
+		iAdvisorReqs.setTitle(MESSAGES.hintAdvisorRequests());
+		iAdvisorReqs.setVisible(false);
+		iAdvisorReqs.setEnabled(false);
+		leftFooterPanel.add(iAdvisorReqs);
+		leftHeaderPanel.add(iAdvisorReqs.createClone());
 		
 		iRequests = new AriaMultiButton(RESOURCES.arrowBack(), MESSAGES.buttonRequests());
 		iRequests.setTitle(MESSAGES.hintRequests());
@@ -524,6 +531,47 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					}
 				});
 				
+			}
+		});
+		
+		iAdvisorReqs.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				LoadingWidget.getInstance().show(MESSAGES.waitAdvisorRequests());
+				iSectioningService.getAdvisorRequests(iSessionSelector.getAcademicSessionId(), null, new AsyncCallback<CourseRequestInterface>() {
+
+					@Override
+					public void onFailure(Throwable caught) {
+						LoadingWidget.getInstance().hide();
+						if (caught instanceof SectioningException) {
+							SectioningException s = (SectioningException)caught;
+							if (s.isInfo())
+								iStatus.info(s.getMessage());
+							else if (s.isWarning())
+								iStatus.warning(s.getMessage());
+							else if (s.isError())
+								iStatus.error(s.getMessage());
+							else
+								iStatus.error(MESSAGES.failedAdvisorRequests(s.getMessage()), s);
+						} else {
+							iStatus.error(MESSAGES.failedAdvisorRequests(caught.getMessage()), caught);
+						}
+					}
+
+					@Override
+					public void onSuccess(CourseRequestInterface result) {
+						LoadingWidget.getInstance().hide();
+						new AdvisorCourseRequestsDialog(iCourseRequests) {
+							@Override
+							protected void doApply() {
+								updateHistory();
+								super.doApply();
+								addHistory();
+							}
+						}.open(result);
+					}
+					
+				});
 			}
 		});
 		
@@ -1925,6 +1973,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			}
 			iSchedule.setVisible(false); iSchedule.setEnabled(false);
 			iDegreePlan.setVisible(false); iDegreePlan.setEnabled(false);
+			iAdvisorReqs.setVisible(false); iAdvisorReqs.setEnabled(false);
 			iAssignmentGrid.scrollDown();
 			if (iCalendar != null) {
 				if (calendarUrl.endsWith(",")) calendarUrl = calendarUrl.substring(0, calendarUrl.length() - 1);
@@ -1978,6 +2027,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iSave.setVisible(!iMode.isSectioning()); iSave.setEnabled(!iMode.isSectioning() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_REGISTER));
 		if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.DEGREE_PLANS)) {
 			iDegreePlan.setVisible(true); iDegreePlan.setEnabled(true);
+		}
+		if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.HAS_ADVISOR_REQUESTS)) {
+			iAdvisorReqs.setVisible(true); iAdvisorReqs.setEnabled(true);
 		}
 		clearMessage();
 		ResizeEvent.fire(this, getOffsetWidth(), getOffsetHeight());
@@ -2037,6 +2089,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.DEGREE_PLANS)) {
 									iDegreePlan.setVisible(true); iDegreePlan.setEnabled(true);
 								}
+								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.HAS_ADVISOR_REQUESTS)) {
+									iAdvisorReqs.setVisible(true); iAdvisorReqs.setEnabled(true);
+								}
 								lastRequest(sessionId, studentId, saved, true);
 								if (ret != null) ret.onSuccess(iEligibilityCheck);
 							}
@@ -2050,6 +2105,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								iSave.setVisible(!iMode.isSectioning()); iSave.setEnabled(!iMode.isSectioning() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_REGISTER));
 								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.DEGREE_PLANS)) {
 									iDegreePlan.setVisible(true); iDegreePlan.setEnabled(true);
+								}
+								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.HAS_ADVISOR_REQUESTS)) {
+									iAdvisorReqs.setVisible(true); iAdvisorReqs.setEnabled(true);
 								}
 								lastRequest(sessionId, studentId, saved, true);
 								if (ret != null) ret.onSuccess(iEligibilityCheck);
@@ -2072,6 +2130,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.DEGREE_PLANS)) {
 							iDegreePlan.setVisible(true); iDegreePlan.setEnabled(true);
 						}
+						if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.HAS_ADVISOR_REQUESTS)) {
+							iAdvisorReqs.setVisible(true); iAdvisorReqs.setEnabled(true);
+						}
 						lastRequest(sessionId, studentId, saved, true);
 						if (ret != null) ret.onSuccess(iEligibilityCheck);
 					}
@@ -2084,6 +2145,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					iSchedule.setVisible(false);  iSchedule.setEnabled(false);
 					iSave.setVisible(false); iSave.setEnabled(false);
 					iDegreePlan.setVisible(false); iDegreePlan.setEnabled(false);
+					iAdvisorReqs.setVisible(false); iAdvisorReqs.setEnabled(false);
 					if (result.hasMessage()) {
 						iStatus.warning(result.getMessage());
 					} else {

@@ -31,7 +31,7 @@ public class SectioningStatusCookie {
 	private int iOnlineTab = 0, iBashTab = 0;
 	private String iOnlineQuery = "", iBashQuery = "";
 	private int[] iSortBy = new int[] {0, 0, 0, 0, 0, 0};
-	private int iStudentTab = 1;
+	private int iStudentTab = 2;
 	private String[] iSortByGroup = new String[] {"", ""};
 	private boolean iEmailIncludeCourseRequests = false, iEmailIncludeClassSchedule = true;
 	private String iEmailSubject = "", iEmailCC = "";

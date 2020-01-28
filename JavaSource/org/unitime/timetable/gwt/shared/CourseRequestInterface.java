@@ -849,6 +849,30 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public boolean hasAdvisorCredit() { return iAdvisorCredit != null && !iAdvisorCredit.isEmpty(); }
 		public String getAdvisorCredit() { return iAdvisorCredit; }
 		public void setAdvisorCredit(String credit) { iAdvisorCredit = credit; }
+		public float getAdvisorCreditMin() {
+			if (iAdvisorCredit == null || iAdvisorCredit.isEmpty()) return 0f;
+			try {
+				return Float.parseFloat(iAdvisorCredit.replaceAll("\\s",""));
+			} catch (NumberFormatException e) {}
+			if (iAdvisorCredit.contains("-")) {
+				try {
+					return Float.parseFloat(iAdvisorCredit.substring(0, iAdvisorCredit.indexOf('-')).replaceAll("\\s",""));
+				} catch (NumberFormatException e) {}	
+			}
+			return 0f;
+		}
+		public float getAdvisorCreditMax() {
+			if (iAdvisorCredit == null || iAdvisorCredit.isEmpty()) return 0f;
+			try {
+				return Float.parseFloat(iAdvisorCredit.replaceAll("\\s",""));
+			} catch (NumberFormatException e) {}
+			if (iAdvisorCredit.contains("-")) {
+				try {
+					return Float.parseFloat(iAdvisorCredit.substring(1 + iAdvisorCredit.indexOf('-')).replaceAll("\\s",""));
+				} catch (NumberFormatException e) {}	
+			}
+			return 0f;
+		}
 		
 		public boolean hasAdvisorNote() { return iAdvisorNote != null && !iAdvisorNote.isEmpty(); }
 		public String getAdvisorNote() { return iAdvisorNote; }
@@ -1399,6 +1423,28 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 				i.remove();
 				nrInactive --;
 			}
+		}
+	}
+	
+	public void applyAdvisorRequests(CourseRequestInterface req) {
+		if (req == null || req.isEmpty()) return;
+		for (Request r: req.getCourses()) {
+			if (!r.hasRequestedCourse()) continue;
+			boolean skip = false;
+			for (RequestedCourse rc: r.getRequestedCourse()) {
+				if (rc.isCourse() && getRequestPriority(rc) != null) { skip = true; break; }
+			}
+			if (!skip)
+				getCourses().add(r);
+		}
+		for (Request r: req.getAlternatives()) {
+			if (!r.hasRequestedCourse()) continue;
+			boolean skip = false;
+			for (RequestedCourse rc: r.getRequestedCourse()) {
+				if (rc.isCourse() && getRequestPriority(rc) != null) { skip = true; break; }
+			}
+			if (!skip)
+				getAlternatives().add(r);
 		}
 	}
 }
