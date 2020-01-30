@@ -3386,7 +3386,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		
 		if (server != null && !(server instanceof DatabaseServer)) {
 			ret.setStudentRequest(server.execute(server.createAction(GetRequest.class).forStudent(student.getUniqueId(), false)
-					.withCustomValidation(true).withCustomRequest(false), currentUser()));
+					.withCustomValidation(true).withCustomRequest(false).withAdvisorRequests(false), currentUser()));
 		} else {
 			ret.setStudentRequest(getRequest(student));
 		}

@@ -58,6 +58,7 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 	private boolean iSectioning;
 	private boolean iCustomValidation = false;
 	private boolean iCustomRequests = true;
+	private boolean iAdvisorRequests = true;
 	
 	public GetRequest forStudent(Long studentId, boolean sectioning) {
 		iStudentId = studentId;
@@ -75,6 +76,10 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 	
 	public GetRequest withCustomRequest(boolean request) {
 		iCustomRequests = request; return this;
+	}
+	
+	public GetRequest withAdvisorRequests(boolean adv) {
+		iAdvisorRequests = adv; return this;
 	}
 
 	@Override
@@ -240,7 +245,7 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 			if (iCustomValidation && CustomCourseRequestsValidationHolder.hasProvider())
 				CustomCourseRequestsValidationHolder.getProvider().check(server, helper, request);
 			
-			if (student.getLastStudentChange() == null && !(server instanceof StudentSolver) && !iSectioning) {
+			if (student.getLastStudentChange() == null && !(server instanceof StudentSolver) && !iSectioning && iAdvisorRequests) {
 				request.applyAdvisorRequests(AdvisorGetCourseRequests.getRequest(iStudentId, helper.getHibSession()));
 			}
 			
