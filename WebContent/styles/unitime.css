@@ -5342,6 +5342,7 @@ unitime-RoomSharingWidget .legend .blank {
 	display: block;
 	text-align: center;
 	width: auto;
+	padding: inherit;
 }
 
 .unitime-HeaderPanel .gwt-Button {
@@ -6781,6 +6782,15 @@ unitime-RoomSharingWidget .legend .blank {
 	white-space: pre-wrap;	
 }
 
+.unitime-AdvisorCourseRequests .advisor-notes {
+	width: calc(100% - 4px);
+	height: 50px;
+}
+
+.unitime-AdvisorCourseRequests .advisor-notes-line {
+	padding-top: 15px;
+}
+
 .unitime-AdvisorCourseRequestLine .course {
 	white-space: normal;
 }
@@ -6797,5 +6807,5 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-AdvisorCourseRequestsTable .unitime-Note {
 	white-space: pre-wrap;
 	text-overflow: inherit;
-	max-width: 300px;
+	max-width: inherit;
 }

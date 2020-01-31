@@ -213,7 +213,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									new WebTable.Cell(rc.getCourseName()),
 									new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 									credit,
-									new WebTable.Cell(ToolBox.toString(prefs)),
+									new WebTable.Cell(ToolBox.toString(prefs), true),
 									note
 									);
 							} else {
@@ -222,7 +222,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									new WebTable.Cell(rc.getCourseName()),
 									new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 									new WebTable.Cell(""),
-									new WebTable.Cell(ToolBox.toString(prefs))
+									new WebTable.Cell(ToolBox.toString(prefs), true)
 									);
 							}
 						} else if (rc.isFreeTime()) {
@@ -309,7 +309,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									new WebTable.Cell(rc.getCourseName()),
 									new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 									credit,
-									new WebTable.Cell(ToolBox.toString(prefs)),
+									new WebTable.Cell(ToolBox.toString(prefs), true),
 									note
 									);
 							} else {
@@ -318,7 +318,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									new WebTable.Cell(rc.getCourseName()),
 									new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 									new WebTable.Cell(""),
-									new WebTable.Cell(ToolBox.toString(prefs))
+									new WebTable.Cell(ToolBox.toString(prefs), true)
 									);
 							}
 						}
@@ -353,12 +353,13 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 			}
 			WebTable.Cell credit = new WebTable.Cell(min < max ? MESSAGES.creditRange(min, max) : MESSAGES.credit(min));
 			credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+			WebTable.NoteCell note = new WebTable.NoteCell(iAssignment.getAdvisorRequest().hasCreditNote() ? iAssignment.getAdvisorRequest().getCreditNote() : "", null);
+			note.setColSpan(2);
 			WebTable.Row crow = new WebTable.Row(
 					new WebTable.Cell(MESSAGES.rowTotalPriorityCreditHours(), 2, null),
 					new WebTable.Cell(""),
 					credit,
-					new WebTable.Cell(""),
-					new WebTable.Cell("")
+					note
 					);
 			for (WebTable.Cell cell: crow.getCells()) cell.setStyleName("top-border-solid");
 			crow.getCell(0).setStyleName("top-border-solid text-bold");

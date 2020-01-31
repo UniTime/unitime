@@ -158,7 +158,7 @@ public class AdvisorCourseRequestsDialog extends UniTimeDialogBox {
 								new WebTable.Cell(rc.getCourseName()),
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 								credit,
-								new WebTable.Cell(ToolBox.toString(prefs)),
+								new WebTable.Cell(ToolBox.toString(prefs), true),
 								note
 								);
 						} else {
@@ -167,7 +167,7 @@ public class AdvisorCourseRequestsDialog extends UniTimeDialogBox {
 								new WebTable.Cell(rc.getCourseName()),
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 								new WebTable.Cell(""),
-								new WebTable.Cell(ToolBox.toString(prefs))
+								new WebTable.Cell(ToolBox.toString(prefs), true)
 								);
 						}
 					} else if (rc.isFreeTime()) {
@@ -254,7 +254,7 @@ public class AdvisorCourseRequestsDialog extends UniTimeDialogBox {
 								new WebTable.Cell(rc.getCourseName()),
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 								credit,
-								new WebTable.Cell(ToolBox.toString(prefs)),
+								new WebTable.Cell(ToolBox.toString(prefs), true),
 								note
 								);
 						} else {
@@ -263,7 +263,7 @@ public class AdvisorCourseRequestsDialog extends UniTimeDialogBox {
 								new WebTable.Cell(rc.getCourseName()),
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 								new WebTable.Cell(""),
-								new WebTable.Cell(ToolBox.toString(prefs))
+								new WebTable.Cell(ToolBox.toString(prefs), true)
 								);
 						}
 					}
@@ -297,13 +297,14 @@ public class AdvisorCourseRequestsDialog extends UniTimeDialogBox {
 			max += request.getAdvisorCreditMax();
 		}
 		WebTable.Cell credit = new WebTable.Cell(min < max ? MESSAGES.creditRange(min, max) : MESSAGES.credit(min));
+		WebTable.NoteCell note = new WebTable.NoteCell(iAdvisorRequests.hasCreditNote() ? iAdvisorRequests.getCreditNote() : "", null);
+		note.setColSpan(2);
 		credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		WebTable.Row crow = new WebTable.Row(
 				new WebTable.Cell(MESSAGES.rowTotalPriorityCreditHours(), 2, null),
 				new WebTable.Cell(""),
 				credit,
-				new WebTable.Cell(""),
-				new WebTable.Cell("")
+				note
 				);
 		for (WebTable.Cell cell: crow.getCells()) cell.setStyleName("top-border-solid");
 		crow.getCell(0).setStyleName("top-border-solid text-bold");

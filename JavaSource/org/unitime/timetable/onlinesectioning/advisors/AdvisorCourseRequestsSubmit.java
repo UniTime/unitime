@@ -63,7 +63,6 @@ import com.lowagie.text.Font;
 import com.lowagie.text.Image;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
-import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
@@ -293,6 +292,32 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 								}
 								priority ++;
 							}
+							if (getDetails().getRequest().hasCreditNote()) {
+								AdvisorCourseRequest acr = null;
+								for (Iterator<AdvisorCourseRequest> i = acrs.iterator(); i.hasNext(); ) {
+									AdvisorCourseRequest adept = i.next();
+									if (adept.getPriority() == -1) {
+										acr = adept; i.remove(); break;
+									}
+								}
+								if (acr == null) {
+									acr = new AdvisorCourseRequest();
+									acr.setStudent(dbStudent);
+								} else if (acr.getPreferences() != null) {
+									acr.getPreferences().clear();
+								}
+								if (acr.getFreeTime() != null) {
+									helper.getHibSession().delete(acr.getFreeTime());
+									acr.setFreeTime(null);
+								}
+								acr.setCourse(null); acr.setCourseOffering(null);
+								acr.setPriority(-1); acr.setAlternative(0); acr.setSubstitute(false);
+								acr.setCredit(null);
+								acr.setNotes(getDetails().getRequest().getCreditNote());
+								acr.setChangedBy(helper.getUser().getExternalId());
+								acr.setTimestamp(ts);
+								helper.getHibSession().saveOrUpdate(acr);
+							}
 						}
 						
 						
@@ -422,6 +447,12 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 		
 		if (getDetails().getRequest().getAlternatives() != null && !getDetails().getRequest().getAlternatives().isEmpty())
 			document.add(courseTable(false));
+		
+		if (getDetails().getRequest().hasCreditNote()) {
+			Paragraph p = new Paragraph(getDetails().getRequest().getCreditNote(), PdfFont.getSmallFont());
+			p.setSpacingBefore(10f);
+			document.add(p);
+		}
 		
 		PdfPTable sign = new PdfPTable(new float[] {
 				PdfFont.getSmallFont(true).getBaseFont().getWidth(MSG.pdfAdvisorSignature()), 

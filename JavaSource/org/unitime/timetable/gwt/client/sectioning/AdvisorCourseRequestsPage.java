@@ -64,8 +64,12 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegi
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
@@ -73,6 +77,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.TakesValue;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.Window.Location;
@@ -80,6 +85,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.TextArea;
 
 /**
  * @author Tomas Muller
@@ -98,6 +104,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	private SpecialRegistrationContext iSpecRegCx = null;
 	private Label iTotalCredit = null;
 	private ListBox iStatus = null;
+	private TextArea iNotes = null;
 	
 	private ArrayList<AdvisorCourseRequestLine> iCourses;
 	private ArrayList<AdvisorCourseRequestLine> iAlternatives;
@@ -332,6 +339,32 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		iCourses.get(iCourses.size()-1).getCourses().get(0).setHint(MESSAGES.courseRequestsHint8());
 		iAlternatives.get(0).getCourses().get(0).setHint(MESSAGES.courseRequestsHintA0());
 		
+		iNotes = new TextArea();
+		iNotes.setStyleName("unitime-TextArea");
+		iNotes.addStyleName("advisor-notes");
+		iNotes.setText("");
+		int notesRow = addRow(MESSAGES.propAdvisorNotes(), iNotes);
+		for (int i = 0; i < getCellCount(notesRow); i++)
+			getCellFormatter().addStyleName(notesRow, i, "advisor-notes-line");
+		final Timer timer = new Timer() {
+			@Override
+			public void run() {
+				resizeNotes();
+			}
+		};
+		iNotes.addKeyPressHandler(new KeyPressHandler() {
+			@Override
+			public void onKeyPress(KeyPressEvent event) {
+				timer.schedule(10);
+			}
+		});
+		iNotes.addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				timer.schedule(10);
+			}
+		});
+		
 		footer = header.clonePanel();
 		footer.addStyleName("unitime-PageHeaderFooter");
 		addBottomRow(footer);
@@ -480,6 +513,13 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		});
 	}
 	
+	private void resizeNotes() {
+		iNotes.setHeight("50px");
+		if (!iNotes.getText().isEmpty()) {
+			iNotes.setHeight(Math.max(50, iNotes.getElement().getScrollHeight()) + "px");
+		}
+	}
+	
 	private void updateTotalCredits() {
 		float min = 0, max = 0;
 		for (AdvisorCourseRequestLine line: iCourses) {
@@ -498,6 +538,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		for (AdvisorCourseRequestLine line: iAlternatives)
 			line.setValue(null);
 		iStatusBox.clear();
+		iNotes.setText("");
+		resizeNotes();
 		updateTotalCredits();
 	}
 	
@@ -623,6 +665,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		cr.setAcademicSessionId(iSession.getAcademicSessionId());
 		fillInCourses(cr);
 		fillInAlternatives(cr);
+		cr.setCreditNote(iNotes.getText());
 		return cr;
 	}
 	
@@ -635,6 +678,10 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 			while (iAlternatives.size() < request.getAlternatives().size()) addAlternativeLine();;
 			for (int idx = 0; idx < request.getAlternatives().size(); idx++)
 				iAlternatives.get(idx).setValue(request.getAlternatives().get(idx), true);
+			if (request.hasCreditNote()) {
+				iNotes.setText(request.getCreditNote());
+				resizeNotes();
+			}
 		}
 		updateTotalCredits();
 	}

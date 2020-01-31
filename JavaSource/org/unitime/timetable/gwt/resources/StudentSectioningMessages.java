@@ -2431,6 +2431,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Term:")
 	String propAcademicSession();
 	
+	@DefaultMessage("Additional Notes:")
+	String propAdvisorNotes();
+	
 	@DefaultMessage("Lookup Student")
 	String dialogStudentLookup();
 	

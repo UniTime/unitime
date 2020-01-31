@@ -215,6 +215,10 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 		}
 		for (AdvisorCourseRequest acr: acrs) {
 			if (skip.contains(acr.getPriority())) continue;
+			if (acr.getPriority() == -1) {
+				request.setCreditNote(acr.getNotes());
+				continue;
+			}
 			if (r == null || last != acr.getPriority()) {
 				r = new CourseRequestInterface.Request();
 				if (acr.isSubstitute())
