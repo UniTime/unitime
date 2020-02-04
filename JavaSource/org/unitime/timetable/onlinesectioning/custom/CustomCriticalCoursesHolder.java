@@ -27,6 +27,7 @@ import java.util.List;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -146,6 +147,13 @@ public class CustomCriticalCoursesHolder {
 								cd.setCritical(crit); helper.getHibSession().update(cd); changed = true;
 							}
 						}
+						if (student.getAdvisorCourseRequests() != null)
+							for (AdvisorCourseRequest acr: student.getAdvisorCourseRequests()) {
+								boolean crit = acr.isCritical(critical);
+								if (acr.isCritical() == null || acr.isCritical().booleanValue() != crit) {
+									acr.setCritical(crit); helper.getHibSession().update(acr);
+								}
+							}
 						if (changed) {
 			        		action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
 			        	} else {
