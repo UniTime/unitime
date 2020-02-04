@@ -71,6 +71,7 @@ import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Subpart;
 import org.cpsolver.studentsct.model.Unavailability;
+import org.cpsolver.studentsct.model.Request.RequestPriority;
 import org.cpsolver.studentsct.reservation.CourseReservation;
 import org.cpsolver.studentsct.reservation.CurriculumReservation;
 import org.cpsolver.studentsct.reservation.DummyReservation;
@@ -226,6 +227,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private Date iClassesFixedDate = null;
     private int iClassesFixedDateIndex = 0;
     private int iDayOfWeekOffset = 0;
+    private String iAltGroupType = null;
     
     public StudentSectioningDatabaseLoader(StudentSectioningModel model, org.cpsolver.ifs.assignment.Assignment<Request, Enrollment> assignment) {
         super(model, assignment);
@@ -312,6 +314,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iMaxDefaultCredit = model.getProperties().getPropertyFloat("Load.DefaultMaxCredit", iMaxDefaultCredit);
         iMinDefaultCredit = model.getProperties().getPropertyFloat("Load.DefaultMinCredit", iMinDefaultCredit);
         iMoveCriticalCoursesUp = model.getProperties().getPropertyBoolean("Load.MoveCriticalCoursesUp", iMoveCriticalCoursesUp);
+        iAltGroupType = model.getProperties().getProperty("Load.AltMajorGroupType", ApplicationProperties.getProperty("banner.unex.groupType", "1st Choice"));
         
         String classesFixedDate = getModel().getProperties().getProperty("General.ClassesFixedDate", "");
         if (!classesFixedDate.isEmpty()) {
@@ -1184,6 +1187,11 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	minCredit = s.getMinCredit();
         if (minCredit >= 0 && minCredit <= maxCredit)
         	student.setMinCredit(minCredit);
+        
+        boolean altGroup = false;
+        for (StudentGroup g: s.getGroups())
+        	if (g.getType() != null && iAltGroupType.equals(g.getType().getReference()) && g.getGroupAbbreviation() != null && g.getGroupAbbreviation().contains("-"))
+        		altGroup = true;
 
 		TreeSet<CourseDemand> demands = new TreeSet<CourseDemand>(new Comparator<CourseDemand>() {
 			public int compare(CourseDemand d1, CourseDemand d2) {
@@ -1350,6 +1358,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         cd.isWaitlist(), 
                         (cd.isCriticalOverride() != null ? cd.isCriticalOverride().booleanValue() : cd.isCritical() != null && cd.isCritical().booleanValue()),
                         cd.getTimestamp().getTime());
+                if (request.getRequestPriority() == RequestPriority.Critical && altGroup)
+                	request.setRequestPriority(RequestPriority.Important);
                 request.getSelectedChoices().addAll(selChoices);
                 request.getRequiredChoices().addAll(reqChoices);
                 request.getWaitlistedChoices().addAll(wlChoices);

@@ -120,7 +120,7 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 		String sqlCourses = getCriticalCoursesSQL();
 		String sqlPlaceholders = getCriticalPlaceholdersSQL();
 		CriticalCoursesImpl cc = new CriticalCoursesImpl();
-		for (XAreaClassificationMajor acm: student.getMajors()) {
+		for (XAreaClassificationMajor acm: getAreaClasfMajors(server, helper, student)) {
 			org.hibernate.Query query = helper.getHibSession().createSQLQuery(sqlCourses);
 			query.setString("area", acm.getArea());
 			if (action != null) action.addOptionBuilder().setKey("area").setValue(acm.getArea());
@@ -239,6 +239,10 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 				);
 	}
 	
+	protected List<XAreaClassificationMajor> getAreaClasfMajors(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) {
+		return student.getMajors();
+	}
+	
 	protected DegreeCourseInterface getCourse(OnlineSectioningServer server, String subjectArea, String courseNbr, boolean critical) {
 		DegreeCourseInterface course = new DegreeCourseInterface();
 		course.setSubject(subjectArea);
@@ -305,7 +309,7 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 		String sqlPlaceholders = getPlannedPlaceholdersSQL();
 		Builder action = helper.getAction();
 		Map<String, DegreePlanInterface> plans = new HashMap<String, DegreePlanInterface>();
-		for (XAreaClassificationMajor acm: student.getMajors()) {
+		for (XAreaClassificationMajor acm: getAreaClasfMajors(server, helper, student)) {
 			String catyear = getCatalogYear(server, student, acm);
 			int term = getTermSequence(server, student, acm);
 			org.hibernate.Query query = helper.getHibSession().createSQLQuery(sqlCourses);
