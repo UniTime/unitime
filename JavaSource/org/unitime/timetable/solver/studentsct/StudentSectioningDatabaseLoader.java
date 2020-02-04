@@ -91,6 +91,7 @@ import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.gwt.shared.ReservationInterface.OverrideType;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Advisor;
+import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.ClassWaitList;
@@ -2568,6 +2569,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 				boolean crit = isCritical(cd, critical);
 				if (cd.isCritical() == null || cd.isCritical().booleanValue() != crit) {
 					cd.setCritical(crit); hibSession.update(cd); changed = true;
+				}
+			}
+			for (AdvisorCourseRequest acr: s.getAdvisorCourseRequests()) {
+				boolean crit = acr.isCritical(critical);
+				if (acr.isCritical() == null || acr.isCritical().booleanValue() != crit) {
+					acr.setCritical(crit); hibSession.update(acr);
 				}
 			}
 			if (changed) {

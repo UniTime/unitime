@@ -96,7 +96,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				new WebTable.Cell(MESSAGES.colTitle(), 1, "200px"),
 				new WebTable.Cell(MESSAGES.colCredit(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colPreferences(), 1, "100px"),
-				new WebTable.Cell(MESSAGES.colNotes(), 1, "300px")));
+				new WebTable.Cell(MESSAGES.colNotes(), 1, "300px"),
+				new WebTable.Cell(MESSAGES.colCritical(), 1, "20px")));
 		iAdvReqs.setSelectSameIdRows(true);
 		iAdvReqs.addStyleName("unitime-AdvisorCourseRequestsTable");
 		iTabs.add(iAdvReqs, MESSAGES.tabAdvisorRequests(), true);
@@ -181,11 +182,13 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 	protected void fillInAdvisorRequests() {
 		ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 		boolean hasPref = false;
+		boolean hasCrit = false;
 		iTabs.getTabBar().setTabEnabled(0, iAssignment.hasAdvisorRequest());
 		if (iAssignment.hasAdvisorRequest()) {
 			int priority = 1;
 			for (Request request: iAssignment.getAdvisorRequest().getCourses()) {
 				if (request.hasRequestedCourse()) {
+					if (request.isCritical()) hasCrit = true;
 					boolean first = true;
 					for (RequestedCourse rc: request.getRequestedCourse()) {
 						WebTable.Row row = null;
@@ -214,7 +217,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 									credit,
 									new WebTable.Cell(ToolBox.toString(prefs), true),
-									note
+									note,
+									request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") : new WebTable.Cell("")
 									);
 							} else {
 								row = new WebTable.Row(
@@ -222,7 +226,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									new WebTable.Cell(rc.getCourseName()),
 									new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 									new WebTable.Cell(""),
-									new WebTable.Cell(ToolBox.toString(prefs), true)
+									new WebTable.Cell(ToolBox.toString(prefs), true),
+									new WebTable.Cell("")
 									);
 							}
 						} else if (rc.isFreeTime()) {
@@ -241,12 +246,14 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									new WebTable.Cell(CONSTANTS.freePrefix() + free, 2, null),
 									credit,
 									new WebTable.Cell(""),
-									note
+									note,
+									new WebTable.Cell("")
 									);
 							} else {
 								row = new WebTable.Row(
 									new WebTable.Cell(""),
 									new WebTable.Cell(CONSTANTS.freePrefix() + free, 2, null),
+									new WebTable.Cell(""),
 									new WebTable.Cell(""),
 									new WebTable.Cell(""),
 									new WebTable.Cell(""),
@@ -271,7 +278,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						new WebTable.Cell(""),
 						credit,
 						new WebTable.Cell(""),
-						note
+						note,
+						new WebTable.Cell("")
 						);
 					if (priority > 1)
 						for (WebTable.Cell cell: row.getCells()) cell.setStyleName("top-border-dashed");
@@ -310,7 +318,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 									credit,
 									new WebTable.Cell(ToolBox.toString(prefs), true),
-									note
+									note,
+									new WebTable.Cell("")
 									);
 							} else {
 								row = new WebTable.Row(
@@ -318,7 +327,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									new WebTable.Cell(rc.getCourseName()),
 									new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 									new WebTable.Cell(""),
-									new WebTable.Cell(ToolBox.toString(prefs), true)
+									new WebTable.Cell(ToolBox.toString(prefs), true),
+									new WebTable.Cell("")
 									);
 							}
 						}
@@ -339,7 +349,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						new WebTable.Cell(""),
 						credit,
 						new WebTable.Cell(""),
-						note
+						note,
+						new WebTable.Cell("")
 						);
 					for (WebTable.Cell cell: row.getCells()) cell.setStyleName(priority == 1 ? "top-border-solid" : "top-border-dashed");
 					row.setId("A" + priority);
@@ -373,6 +384,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		
 		iAdvReqs.setData(rowArray);
 		iAdvReqs.setColumnVisible(4, hasPref);
+		iAdvReqs.setColumnVisible(6, hasCrit);
 	}
 	
 	protected void fillInRequests() {

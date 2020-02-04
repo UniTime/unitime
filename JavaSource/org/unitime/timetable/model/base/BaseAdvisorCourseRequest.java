@@ -46,6 +46,7 @@ public abstract class BaseAdvisorCourseRequest implements Serializable {
 	private String iCredit;
 	private String iCourse;
 	private String iNotes;
+	private Boolean iCritical;
 
 	private Student iStudent;
 	private CourseOffering iCourseOffering;
@@ -61,6 +62,7 @@ public abstract class BaseAdvisorCourseRequest implements Serializable {
 	public static String PROP_CREDIT = "credit";
 	public static String PROP_COURSE = "course";
 	public static String PROP_NOTES = "notes";
+	public static String PROP_CRITICAL = "critical";
 
 	public BaseAdvisorCourseRequest() {
 		initialize();
@@ -101,6 +103,10 @@ public abstract class BaseAdvisorCourseRequest implements Serializable {
 	public String getNotes() { return iNotes; }
 	public void setNotes(String notes) { iNotes = notes; }
 
+	public Boolean isCritical() { return iCritical; }
+	public Boolean getCritical() { return iCritical; }
+	public void setCritical(Boolean critical) { iCritical = critical; }
+
 	public Student getStudent() { return iStudent; }
 	public void setStudent(Student student) { iStudent = student; }
 
@@ -139,6 +145,7 @@ public abstract class BaseAdvisorCourseRequest implements Serializable {
 			"\n	Course: " + getCourse() +
 			"\n	CourseOffering: " + getCourseOffering() +
 			"\n	Credit: " + getCredit() +
+			"\n	Critical: " + getCritical() +
 			"\n	FreeTime: " + getFreeTime() +
 			"\n	Notes: " + getNotes() +
 			"\n	Priority: " + getPriority() +

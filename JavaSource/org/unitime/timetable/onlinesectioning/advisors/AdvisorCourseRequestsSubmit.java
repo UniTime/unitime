@@ -24,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -50,7 +51,10 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.custom.CustomCriticalCoursesHolder;
+import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.CriticalCourses;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
@@ -112,10 +116,20 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 					
 					Student dbStudent = StudentDAO.getInstance().get(getDetails().getStudentId(), helper.getHibSession());
 					if (dbStudent != null) {
+						
+						CriticalCourses critical = null;
+						try {
+							if (CustomCriticalCoursesHolder.hasProvider())
+								critical = CustomCriticalCoursesHolder.getProvider().getCriticalCourses(server, helper, new XStudentId(dbStudent, helper));
+						} catch (Exception e) {
+							helper.warn("Failed to lookup critical courses: " + e.getMessage(), e);
+						}
 					
 						List<AdvisorCourseRequest> acrs = helper.getHibSession().createQuery(
 								"from AdvisorCourseRequest where student = :studentId order by priority, alternative"
 								).setLong("studentId", getDetails().getStudentId()).list();
+						if (dbStudent.getAdvisorCourseRequests() == null)
+							dbStudent.setAdvisorCourseRequests(new HashSet<AdvisorCourseRequest>());
 						
 						if (getDetails().getRequest() != null) {
 							int priority = 0;
@@ -137,6 +151,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 													acr.setStudent(dbStudent);
 													acr.setChangedBy(helper.getUser().getExternalId());
 													acr.setTimestamp(ts);
+													dbStudent.getAdvisorCourseRequests().add(acr);
 												} else if (acr.getPreferences() != null) {
 													acr.getPreferences().clear();
 												}
@@ -160,6 +175,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 												} else {
 													acr.setCredit(null); acr.setNotes(null); 
 												}
+												acr.setCritical(false);
 												helper.getHibSession().saveOrUpdate(free);
 												helper.getHibSession().saveOrUpdate(acr);
 												alt++;
@@ -180,6 +196,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 											acr.setStudent(dbStudent);
 											acr.setChangedBy(helper.getUser().getExternalId());
 											acr.setTimestamp(ts);
+											dbStudent.getAdvisorCourseRequests().add(acr);
 										}
 										acr.setCourseOffering(rc.hasCourseId() ? CourseOfferingDAO.getInstance().get(rc.getCourseId(), helper.getHibSession()) : null);
 										acr.setCourse(rc.getCourseName());
@@ -194,6 +211,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 										} else {
 											acr.setCredit(null); acr.setNotes(null); 
 										}
+										acr.setCritical(acr.isCritical(critical));
 										acr.updatePreferences(rc, helper.getHibSession());
 										helper.getHibSession().saveOrUpdate(acr);
 										alt++;
@@ -209,6 +227,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 									if (acr == null) {
 										acr = new AdvisorCourseRequest();
 										acr.setStudent(dbStudent);
+										dbStudent.getAdvisorCourseRequests().add(acr);
 									} else if (acr.getPreferences() != null) {
 										acr.getPreferences().clear();
 									}
@@ -223,6 +242,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 									acr.setNotes(request.getAdvisorNote());
 									acr.setChangedBy(helper.getUser().getExternalId());
 									acr.setTimestamp(ts);
+									acr.setCritical(false);
 									helper.getHibSession().saveOrUpdate(acr);
 								}
 								priority ++;
@@ -246,6 +266,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 											acr.setStudent(dbStudent);
 											acr.setChangedBy(helper.getUser().getExternalId());
 											acr.setTimestamp(ts);
+											dbStudent.getAdvisorCourseRequests().add(acr);
 										}
 										acr.setCourseOffering(rc.hasCourseId() ? CourseOfferingDAO.getInstance().get(rc.getCourseId(), helper.getHibSession()) : null);
 										acr.setCourse(rc.getCourseName());
@@ -260,6 +281,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 											helper.getHibSession().delete(acr.getFreeTime());
 											acr.setFreeTime(null);
 										}
+										acr.setCritical(acr.isCritical(critical));
 										acr.updatePreferences(rc, helper.getHibSession());
 										helper.getHibSession().saveOrUpdate(acr);
 										alt++;
@@ -275,6 +297,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 									if (acr == null) {
 										acr = new AdvisorCourseRequest();
 										acr.setStudent(dbStudent);
+										dbStudent.getAdvisorCourseRequests().add(acr);
 									} else if (acr.getPreferences() != null) {
 										acr.getPreferences().clear();
 									}
@@ -288,6 +311,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 									acr.setNotes(request.getAdvisorNote());
 									acr.setChangedBy(helper.getUser().getExternalId());
 									acr.setTimestamp(ts);
+									acr.setCritical(false);
 									helper.getHibSession().saveOrUpdate(acr);
 								}
 								priority ++;
@@ -303,6 +327,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 								if (acr == null) {
 									acr = new AdvisorCourseRequest();
 									acr.setStudent(dbStudent);
+									dbStudent.getAdvisorCourseRequests().add(acr);
 								} else if (acr.getPreferences() != null) {
 									acr.getPreferences().clear();
 								}
@@ -316,6 +341,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 								acr.setNotes(getDetails().getRequest().getCreditNote());
 								acr.setChangedBy(helper.getUser().getExternalId());
 								acr.setTimestamp(ts);
+								acr.setCritical(false);
 								helper.getHibSession().saveOrUpdate(acr);
 							}
 						}
@@ -325,6 +351,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 							if (acr.getFreeTime() != null)
 								helper.getHibSession().delete(acr.getFreeTime());
 							helper.getHibSession().delete(acr);
+							dbStudent.getAdvisorCourseRequests().remove(acr);
 						}
 						
 						// change status

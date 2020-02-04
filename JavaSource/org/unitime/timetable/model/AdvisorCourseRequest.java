@@ -29,8 +29,9 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.model.base.BaseAdvisorCourseRequest;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.InstructionalMethodDAO;
+import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.CriticalCourses;
 
-public class AdvisorCourseRequest extends BaseAdvisorCourseRequest {
+public class AdvisorCourseRequest extends BaseAdvisorCourseRequest implements Comparable<AdvisorCourseRequest> {
 	private static final long serialVersionUID = 1L;
 
 	public AdvisorCourseRequest() {
@@ -106,4 +107,19 @@ public class AdvisorCourseRequest extends BaseAdvisorCourseRequest {
     	}
     	return changed;
     }
+	
+	public boolean isCritical(CriticalCourses cc) {
+		if (cc == null) return false;
+		if (getCourseOffering() == null || isSubstitute()) return false;
+		return cc.isCritical(getCourseOffering());
+	}
+
+	@Override
+	public int compareTo(AdvisorCourseRequest r) {
+		int cmp = getPriority().compareTo(r.getPriority());
+		if (cmp != 0) return cmp;
+		cmp = getAlternative().compareTo(r.getAlternative());
+		if (cmp != 0) return cmp;
+		return getUniqueId().compareTo(r.getUniqueId());
+	}
 }

@@ -934,7 +934,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		
 	}
 	
-	public static class RequestPriority implements IsSerializable, Serializable {
+	public static class RequestPriority implements IsSerializable, Serializable, Comparable<RequestPriority> {
 		private static final long serialVersionUID = 1L;
 		private boolean iAlternative = false;
 		private int iPriority = 0;
@@ -986,6 +986,17 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 				}
 			}
 			
+		}
+
+		@Override
+		public int compareTo(RequestPriority p) {
+			if (isAlternative() != p.isAlternative())
+				return isAlternative() ? 1 : -1;
+			if (getPriority() != p.getPriority())
+				return (getPriority() < p.getPriority() ? -1 : 1);
+			if (getChoice() != p.getChoice())
+				return (getChoice() < p.getChoice() ? -1 : 1);
+			return 0;
 		}
 	}
 	

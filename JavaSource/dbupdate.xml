@@ -13869,4 +13869,9 @@
 		<sql>alter table %SCHEMA%.advisor_sect_pref add constraint fk_adv_pref_class foreign key (class_id) references %SCHEMA%.class_ (uniqueid) on delete cascade</sql>
 		<sql>alter table %SCHEMA%.advisor_sect_pref add constraint fk_adv_pref_im foreign key (instr_mthd_id) references %SCHEMA%.instructional_method (uniqueid) on delete cascade</sql>
 	</update>
+	<update version="228" date="3-Feb-2020" comment="Advisor Critical Course Requests">
+	    <plsql>alter table %SCHEMA%.advisor_crsreq add critical number(1)</plsql>
+		<mysql>alter table %SCHEMA%.advisor_crsreq add critical int(1) null</mysql>
+		<pgsql>alter table %SCHEMA%.advisor_crsreq add critical boolean null</pgsql>
+	</update>
 </dbupdate>

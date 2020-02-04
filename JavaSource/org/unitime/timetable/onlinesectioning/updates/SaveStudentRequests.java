@@ -37,6 +37,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
+import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
@@ -471,6 +472,15 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 			student.getCourseDemands().remove(cd);
 			helper.getHibSession().delete(cd);
 		}
+		
+		
+		if (student.getAdvisorCourseRequests() != null)
+			for (AdvisorCourseRequest acr: student.getAdvisorCourseRequests()) {
+				boolean crit = acr.isCritical(critical);
+				if (acr.isCritical() == null || acr.isCritical().booleanValue() != crit) {
+					acr.setCritical(crit); helper.getHibSession().update(acr);
+				}
+			}
 		
 		student.setMaxCredit(request.getMaxCredit());
 		student.setOverrideExternalId(request.getMaxCreditOverrideExternalId());

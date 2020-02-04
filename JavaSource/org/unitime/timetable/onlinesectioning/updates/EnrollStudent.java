@@ -49,6 +49,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeModes;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
@@ -490,6 +491,15 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					priority++;
 				}
 				
+				if (cc != null && student.getAdvisorCourseRequests() != null) {
+					for (AdvisorCourseRequest acr: student.getAdvisorCourseRequests()) {
+						boolean crit = acr.isCritical(cc);
+						if (acr.isCritical() == null || acr.isCritical().booleanValue() != crit) {
+							acr.setCritical(crit); helper.getHibSession().update(acr);
+						}
+					}
+				}
+				
 				Map<IdPair, StudentClassEnrollment> oldEnrollments = new HashMap<IdPair, StudentClassEnrollment>();
 				Map<Long, Object[]> oldApprovals = new HashMap<Long, Object[]>();
 				for (StudentClassEnrollment e: student.getClassEnrollments()) {
@@ -921,7 +931,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 		if (course == null || course.getCourseId() == null) return false;
 		return critical.isCritical(new XCourseId(null, course.getCourseId(), course.getCourseName()));
 	}
-	
+    
 	@Override
 	public String name() {
 		return "enroll";

@@ -245,6 +245,8 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 						}
 					}
 				r.addRequestedCourse(rc);
+				if (acr.getAlternative() == 0)
+					r.setCritical(acr.getCritical());
 			} else if (acr.getFreeTime() != null) {
 				CourseRequestInterface.FreeTime ft = new CourseRequestInterface.FreeTime();
 				ft.setStart(acr.getFreeTime().getStartSlot());
