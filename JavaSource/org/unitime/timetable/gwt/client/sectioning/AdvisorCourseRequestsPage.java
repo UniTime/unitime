@@ -932,7 +932,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 						if (rc.hasRequestorNote()) { note = (note == null ? "" : note + "<br>") + rc.getRequestorNote(); noteTitle = (noteTitle == null ? "" : noteTitle + "\n") + rc.getRequestorNote(); }
 						if (rc.hasStatusNote()) { note = (note == null ? "" : note + "<br>") + rc.getStatusNote(); noteTitle = (noteTitle == null ? "" : noteTitle + "\n") + rc.getStatusNote(); }
 						WebTable.Row row = new WebTable.Row(
-								new WebTable.Cell(first ? MESSAGES.courseRequestsAlternative(priority) : ""),
+								new WebTable.Cell(first ? MESSAGES.courseRequestsAlternate(priority) : ""),
 								new WebTable.Cell(rc.getCourseName()),
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 								credit,
@@ -953,7 +953,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 							free += ft.toString(CONSTANTS.shortDays(), CONSTANTS.useAmPm());
 						}
 						WebTable.Row row = new WebTable.Row(
-								new WebTable.Cell(first ? MESSAGES.courseRequestsPriority(priority) : ""),
+								new WebTable.Cell(first ? MESSAGES.courseRequestsAlternate(priority) : ""),
 								new WebTable.Cell(CONSTANTS.freePrefix() + free, 3, null),
 								new WebTable.Cell(""),
 								new WebTable.Cell(""),

@@ -250,7 +250,7 @@ public class AdvisorCourseRequestsDialog extends UniTimeDialogBox {
 							WebTable.NoteCell note = new WebTable.NoteCell(request.hasAdvisorNote() ? request.getAdvisorNote() : "", null);
 							note.setRowSpan(request.getRequestedCourse().size());
 							row = new WebTable.Row(
-								new WebTable.Cell(MESSAGES.courseRequestsAlternative(priority)),
+								new WebTable.Cell(MESSAGES.courseRequestsAlternate(priority)),
 								new WebTable.Cell(rc.getCourseName()),
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 								credit,
@@ -279,7 +279,7 @@ public class AdvisorCourseRequestsDialog extends UniTimeDialogBox {
 				credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 				WebTable.NoteCell note = new WebTable.NoteCell(request.hasAdvisorNote() ? request.getAdvisorNote() : "", null);
 				WebTable.Row row = new WebTable.Row(
-					new WebTable.Cell(MESSAGES.courseRequestsAlternative(priority)),
+					new WebTable.Cell(MESSAGES.courseRequestsAlternate(priority)),
 					new WebTable.Cell(""),
 					new WebTable.Cell(""),
 					credit,

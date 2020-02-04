@@ -41,6 +41,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesRespo
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestPriority;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 
@@ -97,7 +98,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				new WebTable.Cell(MESSAGES.colCredit(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colPreferences(), 1, "100px"),
 				new WebTable.Cell(MESSAGES.colNotes(), 1, "300px"),
-				new WebTable.Cell(MESSAGES.colCritical(), 1, "20px")));
+				new WebTable.Cell(MESSAGES.colCritical(), 1, "20px"),
+				new WebTable.Cell(MESSAGES.colChanges(), 1, "100px")));
 		iAdvReqs.setSelectSameIdRows(true);
 		iAdvReqs.addStyleName("unitime-AdvisorCourseRequestsTable");
 		iTabs.add(iAdvReqs, MESSAGES.tabAdvisorRequests(), true);
@@ -179,6 +181,81 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		fillInTimeGrid();
 	}
 	
+	protected String getChanges(Request request, RequestedCourse rc) {
+		if (!rc.hasCourseId()) return null;
+		RequestPriority arp = iAssignment.getAdvisorRequest().getRequestPriority(rc);
+		RequestPriority rp = (iAssignment.hasRequest() ? iAssignment.getRequest().getRequestPriority(rc) : null);
+		if (arp.getChoice() == 0) {
+			if (rp == null) {
+				// not present among student's CR
+				if (request.getRequestedCourse().size() > 1) {
+					RequestPriority top = null;
+					RequestedCourse other = null;
+					for (RequestedCourse x: request.getRequestedCourse()) {
+						RequestPriority p = (iAssignment.hasRequest() ? iAssignment.getRequest().getRequestPriority(x) : null);
+						if (top == null || top.compareTo(p) >= 0) {
+							top = p; other = x;
+						}
+					}
+					if (top != null) {
+						String prio = "&nbsp; ";
+						if (top.getPriority() != arp.getPriority()) {
+							prio = top.getPriority() < arp.getPriority() ? "&uarr; " : "&darr; ";
+						}
+						return prio + MESSAGES.advChangesMissingCourseButHasAlt(rc.getCourseName(), other.getCourseName());
+					}
+					return MESSAGES.advChangesMissingCourseWithAllAlts(rc.getCourseName());
+				}
+				return MESSAGES.advChangesMissingCourse(rc.getCourseName()); 
+			}
+			if (rp.isAlternative() != arp.isAlternative()) {
+				if (rp.isAlternative()) return MESSAGES.advChangesPrimaryToSubstitute(rc.getCourseName(), rp.getPriority());
+				return MESSAGES.advChangesSubstituteToPrimary(rc.getCourseName(), rp.getPriority());
+			}
+			String prio = "&nbsp; ";
+			if (rp.getPriority() != arp.getPriority()) {
+				prio = rp.getPriority() < arp.getPriority() ? "&uarr; " : "&darr; ";
+			}
+			if (rp.getChoice() != arp.getChoice()) {
+				RequestedCourse ch1 = (rp.isAlternative() ? iAssignment.getRequest().getAlternatives() : iAssignment.getRequest().getCourses()).get(rp.getPriority() - 1).getRequestedCourse(0);
+				RequestPriority p = iAssignment.getAdvisorRequest().getRequestPriority(ch1);
+				if (p != null && p.getPriority() == arp.getPriority()) {
+					return prio + MESSAGES.advChanges1stChoiceChanged(ch1.getCourseName());
+				} else {
+					return prio + MESSAGES.advChangesDifferent1stChoice(ch1.getCourseName());
+				}
+			}
+			if (rp.getPriority() != arp.getPriority()) {
+				return prio + MESSAGES.advChangesMovedToPriority(rp.getPriority());
+			}
+		} else {
+			if (rp == null) {
+				if (iAssignment.getRequest().getRequestPriority(request.getRequestedCourse(0)) != null)
+					return MESSAGES.advChangesMissingCourse(rc.getCourseName());
+				return null;
+			}
+			if (rp.isAlternative() != arp.isAlternative()) {
+				if (rp.isAlternative()) return MESSAGES.advChangesPrimaryToSubstitute(rc.getCourseName(), rp.getPriority());
+				return MESSAGES.advChangesSubstituteToPrimary(rc.getCourseName(), rp.getPriority());
+			}
+			if (rp.getChoice() != arp.getChoice()) {
+				if (rp.getChoice() == 0) return MESSAGES.advChangesMoved1stChoice();
+				RequestedCourse ch1 = (rp.isAlternative() ? iAssignment.getRequest().getAlternatives() : iAssignment.getRequest().getCourses()).get(rp.getPriority() - 1).getRequestedCourse(0);
+				RequestPriority p = iAssignment.getAdvisorRequest().getRequestPriority(ch1);
+				if (p == null || p.getPriority() != arp.getPriority()) {
+					String prio = "&nbsp; ";
+					if (rp.getPriority() != arp.getPriority()) {
+						prio = rp.getPriority() < arp.getPriority() ? "&uarr; " : "&darr; ";
+					}
+					return prio + MESSAGES.advChangesDifferent1stChoice(ch1.getCourseName());
+				}
+				if (rp.getChoice() == 1) return MESSAGES.advChangesMoved2ndChoice();
+				if (rp.getChoice() == 2) return MESSAGES.advChangesMoved3rdChoice();
+			}
+		}
+		return null;
+	}
+	
 	protected void fillInAdvisorRequests() {
 		ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 		boolean hasPref = false;
@@ -218,7 +295,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									credit,
 									new WebTable.Cell(ToolBox.toString(prefs), true),
 									note,
-									request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") : new WebTable.Cell("")
+									request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") : new WebTable.Cell(""),
+									new WebTable.Cell(getChanges(request, rc))
 									);
 							} else {
 								row = new WebTable.Row(
@@ -227,7 +305,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 									new WebTable.Cell(""),
 									new WebTable.Cell(ToolBox.toString(prefs), true),
-									new WebTable.Cell("")
+									new WebTable.Cell(""),
+									new WebTable.Cell(getChanges(request, rc))
 									);
 							}
 						} else if (rc.isFreeTime()) {
@@ -247,12 +326,14 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									credit,
 									new WebTable.Cell(""),
 									note,
+									new WebTable.Cell(""),
 									new WebTable.Cell("")
 									);
 							} else {
 								row = new WebTable.Row(
 									new WebTable.Cell(""),
 									new WebTable.Cell(CONSTANTS.freePrefix() + free, 2, null),
+									new WebTable.Cell(""),
 									new WebTable.Cell(""),
 									new WebTable.Cell(""),
 									new WebTable.Cell(""),
@@ -279,6 +360,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						credit,
 						new WebTable.Cell(""),
 						note,
+						new WebTable.Cell(""),
 						new WebTable.Cell("")
 						);
 					if (priority > 1)
@@ -313,13 +395,14 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								WebTable.NoteCell note = new WebTable.NoteCell(request.hasAdvisorNote() ? request.getAdvisorNote() : "", null);
 								note.setRowSpan(request.getRequestedCourse().size());
 								row = new WebTable.Row(
-									new WebTable.Cell(MESSAGES.courseRequestsAlternative(priority)),
+									new WebTable.Cell(MESSAGES.courseRequestsAlternate(priority)),
 									new WebTable.Cell(rc.getCourseName()),
 									new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 									credit,
 									new WebTable.Cell(ToolBox.toString(prefs), true),
 									note,
-									new WebTable.Cell("")
+									new WebTable.Cell(""),
+									new WebTable.Cell(getChanges(request, rc))
 									);
 							} else {
 								row = new WebTable.Row(
@@ -328,7 +411,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 									new WebTable.Cell(""),
 									new WebTable.Cell(ToolBox.toString(prefs), true),
-									new WebTable.Cell("")
+									new WebTable.Cell(""),
+									new WebTable.Cell(getChanges(request, rc))
 									);
 							}
 						}
@@ -344,12 +428,13 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 					credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 					WebTable.NoteCell note = new WebTable.NoteCell(request.hasAdvisorNote() ? request.getAdvisorNote() : "", null);
 					WebTable.Row row = new WebTable.Row(
-						new WebTable.Cell(MESSAGES.courseRequestsAlternative(priority)),
+						new WebTable.Cell(MESSAGES.courseRequestsAlternate(priority)),
 						new WebTable.Cell(""),
 						new WebTable.Cell(""),
 						credit,
 						new WebTable.Cell(""),
 						note,
+						new WebTable.Cell(""),
 						new WebTable.Cell("")
 						);
 					for (WebTable.Cell cell: row.getCells()) cell.setStyleName(priority == 1 ? "top-border-solid" : "top-border-dashed");
@@ -365,12 +450,13 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 			WebTable.Cell credit = new WebTable.Cell(min < max ? MESSAGES.creditRange(min, max) : MESSAGES.credit(min));
 			credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			WebTable.NoteCell note = new WebTable.NoteCell(iAssignment.getAdvisorRequest().hasCreditNote() ? iAssignment.getAdvisorRequest().getCreditNote() : "", null);
-			note.setColSpan(2);
+			note.setColSpan(3);
 			WebTable.Row crow = new WebTable.Row(
 					new WebTable.Cell(MESSAGES.rowTotalPriorityCreditHours(), 2, null),
 					new WebTable.Cell(""),
 					credit,
-					note
+					note,
+					new WebTable.Cell("")
 					);
 			for (WebTable.Cell cell: crow.getCells()) cell.setStyleName("top-border-solid");
 			crow.getCell(0).setStyleName("top-border-solid text-bold");
@@ -577,7 +663,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						if (rc.hasRequestorNote()) { note = (note == null ? "" : note + "<br>") + rc.getRequestorNote(); noteTitle = (noteTitle == null ? "" : noteTitle + "\n") + rc.getRequestorNote(); }
 						if (rc.hasStatusNote()) { note = (note == null ? "" : note + "<br>") + rc.getStatusNote(); noteTitle = (noteTitle == null ? "" : noteTitle + "\n") + rc.getStatusNote(); }
 						WebTable.Row row = new WebTable.Row(
-								new WebTable.Cell(first ? MESSAGES.courseRequestsAlternative(priority) : ""),
+								new WebTable.Cell(first ? MESSAGES.courseRequestsAlternate(priority) : ""),
 								new WebTable.Cell(rc.getCourseName()),
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 								credit,
@@ -598,7 +684,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							free += ft.toString(CONSTANTS.shortDays(), CONSTANTS.useAmPm());
 						}
 						WebTable.Row row = new WebTable.Row(
-								new WebTable.Cell(first ? MESSAGES.courseRequestsPriority(priority) : ""),
+								new WebTable.Cell(first ? MESSAGES.courseRequestsAlternate(priority) : ""),
 								new WebTable.Cell(CONSTANTS.freePrefix() + free, 3, null),
 								new WebTable.Cell(""),
 								new WebTable.Cell(""),

@@ -217,7 +217,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 						int idx = 0;
 						for (OnlineSectioningLog.Time f: r.getFreeTimeList()) {
 							if (idx == 0) {
-								html += (r.getPriority() > 0 && lastFT != r.getPriority() ? "<tr><td class='top-border-dashed'>" : "<tr><td>") + (lastFT == r.getPriority() ? "" : !r.getAlternative() ? MSG.courseRequestsPriority(1 + r.getPriority()) : MSG.courseRequestsAlternative(1 + r.getPriority() - notAlt)) + "</td>";
+								html += (r.getPriority() > 0 && lastFT != r.getPriority() ? "<tr><td class='top-border-dashed'>" : "<tr><td>") + (lastFT == r.getPriority() ? "" : !r.getAlternative() ? MSG.courseRequestsPriority(1 + r.getPriority()) : MSG.courseRequestsAlternate(1 + r.getPriority() - notAlt)) + "</td>";
 								html += (r.getPriority() > 0 && lastFT != r.getPriority() ?"<td class='top-border-dashed' colspan='2'>":"<td colspan='2'>") + CONST.freePrefix() + " ";
 								request += (lastFT == r.getPriority() ? ", " : (request.isEmpty() ? "" : "<br>") + (r.getAlternative() ? "A" + (1 + r.getPriority() - notAlt) : String.valueOf(1 + r.getPriority())) + ". " + CONST.freePrefix() + " ");
 							} else {
@@ -233,7 +233,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 						if (r.getFreeTimeList().isEmpty())
 							for (OnlineSectioningLog.Entity e: r.getCourseList()) {
 								if (idx == 0) {
-									html += (r.getPriority() > 0 ? "<tr><td class='top-border-dashed'>" : "<tr><td>") + (!r.getAlternative() ? MSG.courseRequestsPriority(1 + r.getPriority()) : MSG.courseRequestsAlternative(1 + r.getPriority() - notAlt)) + "</td>";
+									html += (r.getPriority() > 0 ? "<tr><td class='top-border-dashed'>" : "<tr><td>") + (!r.getAlternative() ? MSG.courseRequestsPriority(1 + r.getPriority()) : MSG.courseRequestsAlternate(1 + r.getPriority() - notAlt)) + "</td>";
 									html += (r.getPriority() > 0 ?"<td class='top-border-dashed'>":"<td>");
 									request += (request.isEmpty() ? "" : "<br>") + (r.getAlternative() ? "A" + (1 + r.getPriority() - notAlt) : String.valueOf(1 + r.getPriority())) + ". ";
 								} else {

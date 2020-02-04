@@ -3229,7 +3229,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					if (rc.hasStatusNote()) note = (note == null ? "" : note + "\n") + rc.getStatusNote();
 					P messages = new P("text-pre-wrap"); messages.setText(note);
 					WebTable.Row row = new WebTable.Row(
-							new WebTable.Cell(first ? MESSAGES.courseRequestsAlternative(priority) : ""),
+							new WebTable.Cell(first ? MESSAGES.courseRequestsAlternate(priority) : ""),
 							new WebTable.Cell(rc.getCourseName()),
 							new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 							credit,

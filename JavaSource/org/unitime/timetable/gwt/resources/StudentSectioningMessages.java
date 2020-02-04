@@ -166,6 +166,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Critical")
 	String colCritical();
 	
+	@DefaultMessage("Changes")
+	String colChanges();
+	
 	@DefaultMessage("Preferences")
 	String colPreferences();
 	
@@ -2523,4 +2526,41 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("<u>A</u>dvisor Requests")
 	String tabAdvisorRequests();
+	
+	@DefaultMessage("Course requests not filled in.")
+	String advChangesNoCourseRequests();
+	
+	@DefaultMessage("&times; Missing {0}.")
+	String advChangesMissingCourse(String course);
+	
+	@DefaultMessage("&times; Missing {0} and its alternatives.")
+	String advChangesMissingCourseWithAllAlts(String course);
+	
+	@DefaultMessage("Missing {0} but has {1}.")
+	String advChangesMissingCourseButHasAlt(String course, String alt);
+	
+	@DefaultMessage("&uArr; {0} moved to priority {1}.")
+	String advChangesSubstituteToPrimary(String course, int priority);
+	
+	@DefaultMessage("&dArr; {0} moved to substitute {1}.")
+	String advChangesPrimaryToSubstitute(String course, int priority);
+	
+	@DefaultMessage("1st choice changed to {0}.")
+	String advChanges1stChoiceChanged(String courses);
+	
+	@DefaultMessage("Alternative to {0}.")
+	String advChangesDifferent1stChoice(String courses);
+	
+	@DefaultMessage("Moved to 1st choice.")
+	String advChangesMoved1stChoice();
+	
+	@DefaultMessage("Moved to 2nd choice.")
+	String advChangesMoved2ndChoice();
+	
+	@DefaultMessage("Moved to 3rd choice.")
+	String advChangesMoved3rdChoice();
+	
+	@DefaultMessage("Moved to priority {0}.")
+	String advChangesMovedToPriority(int prio);
+
 }

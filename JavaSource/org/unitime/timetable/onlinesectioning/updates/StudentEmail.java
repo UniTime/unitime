@@ -1006,7 +1006,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					if (check != null) note = check.getMessage(rc.getCourseName(), "\n", "CREDIT");
 					if (rc.hasStatusNote()) note = (note == null ? "" : note + "\n") + rc.getStatusNote();
 					CourseRequestLine line = new CourseRequestLine();
-					line.priority = (first ? MSG.courseRequestsAlternative(priority) : "");
+					line.priority = (first ? MSG.courseRequestsAlternate(priority) : "");
 					line.courseName = rc.getCourseName();
 					line.courseTitle = (rc.hasCourseTitle() ? rc.getCourseTitle() : "");
 					line.credit = credit;
@@ -1026,7 +1026,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						if (!free.isEmpty()) free += ", ";
 						free += ft.toString(CONST.shortDays(), CONST.useAmPm());
 					}
-					line.priority = (first ? MSG.courseRequestsAlternative(priority) : "");
+					line.priority = (first ? MSG.courseRequestsAlternate(priority) : "");
 					line.courseName = CONST.freePrefix() + free;
 					line.courseTitle = "";
 					line.credit = "";
