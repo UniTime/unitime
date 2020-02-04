@@ -175,3 +175,24 @@
 	border-left: 1px solid #9CB0CE;
 	border-right: none;
 }
+
+.unitime-FlowForm .header-cell {
+	float: right;
+	clear: right;
+}
+
+.unitime-FlowForm .content-cell {
+	float: right;
+}
+
+.unitime-FilterPanel .filter-left {
+	float: right;
+}
+
+.unitime-FilterPanel .filter-right {
+	float: left;
+}
+
+.unitime-FilterPanel .unitime-FilterBox .chip {
+	float: right;
+}
