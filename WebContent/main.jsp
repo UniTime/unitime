@@ -23,6 +23,7 @@
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
 <%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
+<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
 
 <HTML>
 <head>
@@ -35,6 +36,7 @@
     <link type="text/css" rel="stylesheet" href="styles/unitime.css">
     <link type="text/css" rel="stylesheet" href="styles/unitime-mobile.css">
     <link type="text/css" rel="stylesheet" href="styles/timetabling.css">
+    <loc:rtl><link type="text/css" rel="stylesheet" href="styles/unitime-rtl.css"></loc:rtl>
     <tt:hasProperty name="tmtbl.custom.css">
 		<LINK rel="stylesheet" type="text/css" href="%tmtbl.custom.css%" />
     </tt:hasProperty>

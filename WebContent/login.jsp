@@ -25,6 +25,7 @@
 <%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
 <%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
 <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
+<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
 
 <HTML>
 	<HEAD>
@@ -34,6 +35,7 @@
  	   <link type="text/css" rel="stylesheet" href="styles/unitime.css">
  	   <link type="text/css" rel="stylesheet" href="styles/unitime-mobile.css">
  	   <link type="text/css" rel="stylesheet" href="styles/timetabling.css">
+ 	   <loc:rtl><link type="text/css" rel="stylesheet" href="styles/unitime-rtl.css"></loc:rtl>
 		<link rel="shortcut icon" href="images/timetabling.ico" />
 	    <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
 		<TITLE>UniTime <%=Constants.VERSION%></TITLE>

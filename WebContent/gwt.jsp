@@ -22,6 +22,7 @@
 <%@ page import="org.unitime.localization.impl.Localization"%>
 <%@ page import="org.unitime.timetable.util.Constants"%>
 <%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
+<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
 <html>
   <head>
     <meta name="gwt:property" content="locale=<%=Localization.getFirstLocale()%>">
@@ -34,6 +35,7 @@
     <!--[if IE]>
 	    <link type="text/css" rel="stylesheet" href="styles/unitime-ie.css">
     <![endif]-->
+    <loc:rtl><link type="text/css" rel="stylesheet" href="styles/unitime-rtl.css"></loc:rtl>
     <tt:hasProperty name="tmtbl.custom.css">
     	<link rel="stylesheet" type="text/css" href="%tmtbl.custom.css%" />
     </tt:hasProperty>

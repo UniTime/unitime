@@ -35,6 +35,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -57,6 +58,9 @@ public class Localization {
 	public static final String ROOT = "org.unitime.localization.messages.";
 	public static final String GWTROOT = "org.unitime.timetable.gwt.resources.";
 	private static Map<Class, Object> sBundles = new Hashtable<Class, Object>();
+	private static final Pattern sRtlLocalesRe = Pattern.compile(
+		    "^(ar|dv|he|iw|fa|nqo|ps|sd|ug|ur|yi|.*[-_](Arab|Hebr|Thaa|Nkoo|Tfng))" +
+		    "(?!.*[-_](Latn|Cyrl)($|-|_))($|-|_)");
 	
 	private static final ThreadLocal<String> sLocale = new ThreadLocal<String>() {
 		 @Override
@@ -88,6 +92,11 @@ public class Localization {
 	public static DateFormat getDateFormat(String pattern) { return new SimpleDateFormat(pattern, getJavaLocale()); }
 	
 	public static NumberFormat getNumberFormat(String pattern) { return new DecimalFormat(pattern, new DecimalFormatSymbols(getJavaLocale())); }
+	
+	public static boolean isRTL() {
+		String locale = getLocale();
+		return locale != null && sRtlLocalesRe.matcher(locale).find();
+	}
 
 	public static String getFirstLocale() {
 		String locale = getLocale();

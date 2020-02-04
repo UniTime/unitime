@@ -35,6 +35,7 @@ import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.unitime.commons.NaturalOrderComparator;
 import org.unitime.commons.ToolBox;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.security.SessionContext;
 
@@ -256,10 +257,16 @@ public class WebTable {
         return ret;
     }
     
+    protected static String align(String alignment, boolean rtl) {
+    	if (rtl && "left".equalsIgnoreCase(alignment)) return "right";
+    	return alignment;
+    }
+    
     /** returns table's HTML code, table is ordered by ordCol-th column */
     public String printTable(int ordCol) {
         String lastLine[] = new String[Math.max(iColumns,(iHeaders==null?0:iHeaders.length))];
         StringBuffer sb = new StringBuffer();
+        boolean rtl = Localization.isRTL();
         
         if (iName != null && iName.trim().length()>0) {
             sb.append("<tr><td colspan=" + iColumns
@@ -309,7 +316,7 @@ public class WebTable {
                                 : i + 1));
 
                         sb.append("<td align=\""
-                                + (iAlign != null ? iAlign[i] : "left") + "\""
+                                + (iAlign != null ? align(iAlign[i], rtl) : (rtl ? "right" : "left")) + "\""
                                 + (i == iHeaders.length - 1
                                         ? " colspan=" + last + " "
                                         : "") + " class=\"WebTableHeader\">" + header + "</td>");
@@ -366,7 +373,7 @@ public class WebTable {
                         sb.append("<td "
                                 + style
                                 + " align=\""
-                                + (iAlign != null ? iAlign[i] : "left")
+                                + (iAlign != null ? align(iAlign[i], rtl) : (rtl ? "right" : "left"))
                                 + "\""
                                 + (i == line.length - 1
                                         ? " colspan=" + last + " "

@@ -114,6 +114,7 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Command;
@@ -330,7 +331,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		leftFooterPanel.add(iAdvisorReqs);
 		leftHeaderPanel.add(iAdvisorReqs.createClone());
 		
-		iRequests = new AriaMultiButton(RESOURCES.arrowBack(), MESSAGES.buttonRequests());
+		iRequests = (LocaleInfo.getCurrentLocale().isRTL() ? new AriaMultiButton(MESSAGES.buttonRequests(), RESOURCES.arrowForward()) : new AriaMultiButton(RESOURCES.arrowBack(), MESSAGES.buttonRequests()));
 		iRequests.setTitle(MESSAGES.hintRequests());
 		iRequests.setVisible(false);
 		iRequests.setEnabled(false);
@@ -377,7 +378,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iStartOver.setEnabled(false);
 		leftHeaderPanel.add(iStartOver.createClone());
 		
-		iSchedule = new AriaMultiButton(MESSAGES.buttonSchedule(), RESOURCES.arrowForward());
+		iSchedule = (LocaleInfo.getCurrentLocale().isRTL() ? new AriaMultiButton(RESOURCES.arrowBack(), MESSAGES.buttonSchedule()) : new AriaMultiButton(MESSAGES.buttonSchedule(), RESOURCES.arrowForward()));
 		iSchedule.setTitle(MESSAGES.hintSchedule());
 		if (mode.isSectioning()) {
 			rightFooterPanel.add(iSchedule);

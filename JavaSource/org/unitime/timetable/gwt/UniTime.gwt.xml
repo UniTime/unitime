@@ -31,6 +31,7 @@
 	<extend-property name="locale" values="en"/>
 	<extend-property name="locale" values="en_UK"/>
 	<extend-property name="locale" values="cs"/>
+	<extend-property name="locale" values="ar"/>
 	<set-property-fallback name="locale" value="en"/>
 	
 	<!-- Logging -->

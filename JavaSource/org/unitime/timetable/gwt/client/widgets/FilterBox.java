@@ -75,6 +75,7 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
@@ -550,6 +551,8 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		int buttonWidth = (isFilterPopupShowing() ? iFilterClose : iFilterOpen).getElement().getOffsetWidth() + iFilterClear.getElement().getOffsetWidth() + 8;
 		if (last != null) {
 			int width = getAbsoluteLeft() + getOffsetWidth() - last.getAbsoluteLeft() - last.getOffsetWidth() - buttonWidth;
+			if (LocaleInfo.getCurrentLocale().isRTL())
+				width = last.getAbsoluteLeft() - getAbsoluteLeft() - buttonWidth;
 			if (width < 100)
 				width = getElement().getClientWidth() - buttonWidth;
 			iFilter.getElement().getStyle().setWidth(width, Unit.PX);

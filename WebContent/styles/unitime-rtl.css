@@ -1,0 +1,177 @@
+/*
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+*/
+
+* {
+	direction: rtl;
+}
+
+.unitime-SchedulingAssistantButtons .right-panel {
+	float: left;
+}
+
+.unitime-SchedulingAssistantButtons .left-panel {
+	float: right;
+}
+
+.gwt-DialogBox .dialogControls {
+	right: inherit;
+	left: 4px;
+}
+
+.unitime-SuggestionsBox .filter .buttons {
+	float: left;
+}
+
+.unitime-SuggestionsBox .filter .label {
+	float: right;
+}
+
+.unitime-CourseRequests .header .title {
+	float: right;
+}
+
+.unitime-CourseRequests .header .waitlist {
+	text-align: left;
+	padding-left: 20px;
+	padding-right: inherit;
+}
+
+.unitime-CourseRequests .alt-header .title {
+	float: right;
+}
+
+.unitime-InfoPanel .right {
+	padding-right: 30px;
+	padding-left: inherit;
+}
+
+.unitime-InfoPanel .left {
+	padding-left: 30px;
+	padding-right: inherit;
+}
+
+.unitime-Footer .left {
+	text-align: right;
+}
+
+.unitime-Footer .right {
+	text-align: left;
+}
+
+#login .txtField {
+	float: left;
+	padding-left: 50px;
+}
+
+#login label {
+	float: right;
+	text-align: left;
+}
+
+.unitime-FilterBox .button-image {
+	float: left;
+}
+
+.unitime-Login .bottom {
+	direction: ltr;
+}
+
+.unitime-FilterBoxPopup .button-star {
+	left: 2px;
+	right: inherit;
+}
+
+.unitime-HeaderPanel .left {
+	float: right;
+}
+
+.unitime-HeaderPanel .right {
+	float: left;
+}
+
+.unitime-DateSelector .dow {
+	border-left: 1px solid black;
+	border-right: none;
+}
+
+.unitime-DateSelector .day {
+	border-left: 1px solid black;
+	border-right: none;
+}
+
+.unitime-DateSelector .weekend {
+	border-left: 1px solid black;
+	border-right: none;
+}
+
+.unitime-DateSelector .last-blank {
+	border-left: 1px solid black;
+	border-right: none;
+}
+
+.unitime-DateSelector .legend .title {
+	padding-right: 5px;
+}
+
+.unitime-MainTableHeader {
+	text-align: right;
+}
+
+.unitime-RoomSharingWidget .corner {
+	border-left: 1px solid black;
+	border-right: none;
+}
+
+.unitime-RoomSharingWidget .time {
+	border-left: 1px solid black;
+	border-right: none;	
+}
+
+.unitime-RoomSharingWidget .item {
+	border-left: 1px solid black;
+	border-right: none;
+}
+
+.unitime-RoomSharingWidget .legend .title {
+	padding-right: 5px;
+}
+
+.unitime-SolverStatus .status-label {
+	float: right;
+}
+
+.unitime-TimetableGrid .grid-name {
+	float: left;
+}
+
+.unitime-FreeTimePicker .corner {
+	border-left: 1px solid #9CB0CE;
+	border-right: none;
+}
+
+.unitime-FreeTimePicker .horizontal-header {
+	border-left: 1px solid #9CB0CE;
+	border-right: none;
+}
+
+.unitime-FreeTimePicker .slot {
+	border-left: 1px solid #9CB0CE;
+	border-right: none;
+}

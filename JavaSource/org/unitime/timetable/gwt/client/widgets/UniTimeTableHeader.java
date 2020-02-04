@@ -34,6 +34,7 @@ import com.google.gwt.aria.client.Roles;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
@@ -125,28 +126,34 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 		return true;
 	}
 	
+	public static HorizontalAlignmentConstant getDefaultHorizontalAlignment() {
+		if (LocaleInfo.getCurrentLocale().isRTL())
+			return HasHorizontalAlignment.ALIGN_RIGHT;
+		return HasHorizontalAlignment.ALIGN_LEFT;
+	}
+	
 	public UniTimeTableHeader(String title) {
-		this(title, 1, HasHorizontalAlignment.ALIGN_LEFT);
+		this(title, 1, getDefaultHorizontalAlignment());
 	}
 	
 	public UniTimeTableHeader(String title, int colSpan) {
-		this(title, colSpan, HasHorizontalAlignment.ALIGN_LEFT);
+		this(title, colSpan, getDefaultHorizontalAlignment());
 	}
 	
 	public UniTimeTableHeader() {
-		this(" ", 1, HasHorizontalAlignment.ALIGN_LEFT);
+		this(" ", 1, getDefaultHorizontalAlignment());
 	}
 
 	public UniTimeTableHeader(String title, ClickHandler clickHandler) {
-		this(title, 1, HasHorizontalAlignment.ALIGN_LEFT, clickHandler);
+		this(title, 1, getDefaultHorizontalAlignment(), clickHandler);
 	}
 	
 	public UniTimeTableHeader(String title, int colSpan, ClickHandler clickHandler) {
-		this(title, colSpan, HasHorizontalAlignment.ALIGN_LEFT, clickHandler);
+		this(title, colSpan, getDefaultHorizontalAlignment(), clickHandler);
 	}
 	
 	public UniTimeTableHeader(ClickHandler clickHandler) {
-		this(" ", 1, HasHorizontalAlignment.ALIGN_LEFT, clickHandler);
+		this(" ", 1, getDefaultHorizontalAlignment(), clickHandler);
 	}
 
 	
