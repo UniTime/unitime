@@ -84,8 +84,7 @@ public class CourseRequestEligibility extends CheckEligibility {
 				}
 				
 				if (iStudentId != null) {
-					Number acr = (Number)helper.getHibSession().createQuery("select count(a) from AdvisorCourseRequest a where a.student = :studentId").setCacheable(true).setLong("studentId", iStudentId).uniqueResult();
-					iCheck.setFlag(EligibilityFlag.HAS_ADVISOR_REQUESTS, acr.intValue() > 0);
+					iCheck.setFlag(EligibilityFlag.HAS_ADVISOR_REQUESTS, student.getAdvisorCourseRequests() != null && !student.getAdvisorCourseRequests().isEmpty());
 				}
 				
 				action.getStudentBuilder().setExternalId(student.getExternalUniqueId());

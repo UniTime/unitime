@@ -47,6 +47,7 @@ import org.cpsolver.studentsct.model.Request;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.Advisor;
+import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Student;
@@ -79,6 +80,7 @@ public class XStudent extends XStudentId implements Externalizable {
     private boolean iAllowDisabled = false;
     private List<XAdvisor> iAdvisors = new ArrayList<XAdvisor>();
     private Date iLastStudentChange = null;
+    private List<XAdvisorRequest> iAdvisorRequests = null;
 
     public XStudent() {
     	super();
@@ -165,6 +167,19 @@ public class XStudent extends XStudentId implements Externalizable {
         iMaxCredit = student.getMaxCredit();
         if (student.getOverrideMaxCredit() != null)
         	iMaxCreditOverride = new XOverride(student.getOverrideExternalId(), student.getOverrideTimeStamp(), student.getOverrideStatus(), student.getOverrideMaxCredit());
+        
+        setAdvisorRequests(student, helper, freeTimePattern);
+    }
+    
+    public void setAdvisorRequests(Student student, OnlineSectioningHelper helper, BitSet freeTimePattern) {
+        if (student.getAdvisorCourseRequests() != null && !student.getAdvisorCourseRequests().isEmpty()) {
+        	iAdvisorRequests = new ArrayList<XAdvisorRequest>();
+        	for (AdvisorCourseRequest acr: student.getAdvisorCourseRequests())
+        		iAdvisorRequests.add(new XAdvisorRequest(acr, helper, freeTimePattern));
+        	Collections.sort(iAdvisorRequests);
+        } else {
+        	iAdvisorRequests = null;
+        }
     }
     
     public XStudent(XStudent student) {
@@ -179,6 +194,8 @@ public class XStudent extends XStudentId implements Externalizable {
     	iRequests.addAll(student.getRequests());
     	iAllowDisabled = student.iAllowDisabled;
     	iAdvisors.addAll(student.getAdvisors());
+    	if (student.hasAdvisorRequests())
+    		iAdvisorRequests = new ArrayList<XAdvisorRequest>(student.getAdvisorRequests());
     }
     
     public XStudent(XStudent student, Collection<CourseDemand> demands, OnlineSectioningHelper helper, BitSet freeTimePattern) {
@@ -194,6 +211,8 @@ public class XStudent extends XStudentId implements Externalizable {
     	iMaxCreditOverride = student.getMaxCreditOverride();
     	iAllowDisabled = student.iAllowDisabled;
     	iAdvisors.addAll(student.getAdvisors());
+    	if (student.hasAdvisorRequests())
+    		iAdvisorRequests = new ArrayList<XAdvisorRequest>(student.getAdvisorRequests());
 
     	if (demands != null)
         	for (CourseDemand cd: demands) {
@@ -323,6 +342,9 @@ public class XStudent extends XStudentId implements Externalizable {
     public List<XAdvisor> getAdvisors() {
         return iAdvisors;
     }
+    
+    public boolean hasAdvisorRequests() { return iAdvisorRequests != null && !iAdvisorRequests.isEmpty(); }
+    public List<XAdvisorRequest> getAdvisorRequests() { return iAdvisorRequests; }
         
     /**
      * Get student status (online sectioning only)
@@ -427,6 +449,15 @@ public class XStudent extends XStudentId implements Externalizable {
 		iAdvisors.clear();
 		for (int i = 0; i < nrAdvisors; i++)
 			iAdvisors.add(new XAdvisor(in));
+		
+		int nrAdvisorRequests = in.readInt();
+		if (nrAdvisorRequests < 0) {
+			iAdvisorRequests = null;
+		} else {
+			iAdvisorRequests = new ArrayList<XAdvisorRequest>(nrAdvisorRequests);
+			for (int i = 0; i < nrAdvisorRequests; i++)
+				iAdvisorRequests.add(new XAdvisorRequest(in));
+		}
 	}
 
 	@Override
@@ -474,6 +505,14 @@ public class XStudent extends XStudentId implements Externalizable {
 		out.writeInt(iAdvisors.size());
 		for (XAdvisor advisor: iAdvisors)
 			advisor.writeExternal(out);
+		
+		if (iAdvisorRequests == null) {
+			out.writeInt(-1);
+		} else {
+			out.writeInt(iAdvisorRequests.size());
+			for (XAdvisorRequest ar: iAdvisorRequests)
+				ar.writeExternal(out);
+		}
 	}
 	
 	public static class XStudentSerializer implements Externalizer<XStudent> {

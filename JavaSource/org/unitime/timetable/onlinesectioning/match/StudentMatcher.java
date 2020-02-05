@@ -21,7 +21,6 @@ package org.unitime.timetable.onlinesectioning.match;
 
 import java.io.Serializable;
 
-import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 
@@ -31,8 +30,6 @@ import org.unitime.timetable.onlinesectioning.model.XStudentId;
 public interface StudentMatcher extends Serializable {
 	public void setServer(OnlineSectioningServer server);
 	public OnlineSectioningServer getServer();
-	public void setHelper(OnlineSectioningHelper server);
-	public OnlineSectioningHelper getHelper();
 
 	public boolean match(XStudentId student);
 }

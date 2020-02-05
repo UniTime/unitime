@@ -55,7 +55,7 @@ public class TestCriticalCourseProvider implements CriticalCoursesProvider {
 	public CriticalCourses getCriticalCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudentId studentId, Builder action) {
 		XStudent student = (studentId instanceof XStudent ? (XStudent)studentId : server.getStudent(studentId.getStudentId()));
 		if (student == null) return null;
-		if (iStudentQuery.match(new StudentMatcher(student, server.getAcademicSession().getDefaultSectioningStatus(), server, helper, false))) {
+		if (iStudentQuery.match(new StudentMatcher(student, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
 			CriticalCourses cc = iDGW.getCriticalCourses(server, helper, student, action);
 			if (cc != null && !cc.isEmpty()) return cc;
 		}

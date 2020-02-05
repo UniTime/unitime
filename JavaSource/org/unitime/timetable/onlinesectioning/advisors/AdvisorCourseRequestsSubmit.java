@@ -23,6 +23,8 @@ import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -113,7 +115,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 				Lock lock = server.lockStudent(getDetails().getStudentId(), null, name());
 				try {
 					helper.beginTransaction();
-					
+					XStudent student = server.getStudent(getDetails().getStudentId());
 					Student dbStudent = StudentDAO.getInstance().get(getDetails().getStudentId(), helper.getHibSession());
 					if (dbStudent != null) {
 						
@@ -125,11 +127,13 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 							helper.warn("Failed to lookup critical courses: " + e.getMessage(), e);
 						}
 					
-						List<AdvisorCourseRequest> acrs = helper.getHibSession().createQuery(
-								"from AdvisorCourseRequest where student = :studentId order by priority, alternative"
-								).setLong("studentId", getDetails().getStudentId()).list();
-						if (dbStudent.getAdvisorCourseRequests() == null)
+						List<AdvisorCourseRequest> acrs = new ArrayList<AdvisorCourseRequest>();
+						if (dbStudent.getAdvisorCourseRequests() == null) {
 							dbStudent.setAdvisorCourseRequests(new HashSet<AdvisorCourseRequest>());
+						} else {
+							acrs.addAll(dbStudent.getAdvisorCourseRequests());
+							Collections.sort(acrs);
+						}
 						
 						if (getDetails().getRequest() != null) {
 							int priority = 0;
@@ -355,42 +359,42 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 						}
 						
 						// change status
-						if (getDetails().getStatus() != null) {
-							XStudent student = server.getStudent(getDetails().getStudentId());
-							if (student != null) {
-								String current = (student.getStatus() == null ? "" : student.getStatus());
-								if (!getDetails().getStatus().getReference().equals(current)) {
-									//status change
-									StudentSectioningStatus status = (getDetails().getStatus().getReference().isEmpty() ? null :
-										StudentSectioningStatus.getStatus(getDetails().getStatus().getReference(), server.getAcademicSession().getUniqueId(), helper.getHibSession()));
+						if (getDetails().getStatus() != null && student != null) {
+							String current = (student.getStatus() == null ? "" : student.getStatus());
+							if (!getDetails().getStatus().getReference().equals(current)) {
+								//status change
+								StudentSectioningStatus status = (getDetails().getStatus().getReference().isEmpty() ? null :
+									StudentSectioningStatus.getStatus(getDetails().getStatus().getReference(), server.getAcademicSession().getUniqueId(), helper.getHibSession()));
 
-									String oldStatus = (dbStudent.getSectioningStatus() != null ? dbStudent.getSectioningStatus().getReference() :
-										dbStudent.getSession().getDefaultSectioningStatus() != null ? MSG.studentStatusSessionDefault(dbStudent.getSession().getDefaultSectioningStatus().getReference())
-										: MSG.studentStatusSystemDefault());
-									
-									if (dbStudent.getSectioningStatus() != null)
-										action.addOptionBuilder().setKey("old-status").setValue(dbStudent.getSectioningStatus().getReference());
+								String oldStatus = (dbStudent.getSectioningStatus() != null ? dbStudent.getSectioningStatus().getReference() :
+									dbStudent.getSession().getDefaultSectioningStatus() != null ? MSG.studentStatusSessionDefault(dbStudent.getSession().getDefaultSectioningStatus().getReference())
+									: MSG.studentStatusSystemDefault());
+								
+								if (dbStudent.getSectioningStatus() != null)
+									action.addOptionBuilder().setKey("old-status").setValue(dbStudent.getSectioningStatus().getReference());
 
-									student.setStatus(status == null ? null : status.getReference());
-									dbStudent.setSectioningStatus(status);
-									
-									String newStatus = (dbStudent.getSectioningStatus() != null ? dbStudent.getSectioningStatus().getReference() :
-										dbStudent.getSession().getDefaultSectioningStatus() != null ? MSG.studentStatusSessionDefault(dbStudent.getSession().getDefaultSectioningStatus().getReference())
-										: MSG.studentStatusSystemDefault());
-									if (dbStudent.getSectioningStatus() != null)
-										action.addOptionBuilder().setKey("new-status").setValue(dbStudent.getSectioningStatus().getReference());
-									if (oldStatus.equals(newStatus))
-										action.addMessage(OnlineSectioningLog.Message.newBuilder().setText(oldStatus).setTimeStamp(ts.getTime()).setLevel(OnlineSectioningLog.Message.Level.INFO));
-									else
-										action.addMessage(OnlineSectioningLog.Message.newBuilder().setText(oldStatus + " &rarr; " + newStatus).setTimeStamp(ts.getTime()).setLevel(OnlineSectioningLog.Message.Level.INFO));
-									
-									helper.getHibSession().saveOrUpdate(dbStudent);
-									server.update(student, false);
-									action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
-								} else {
-									action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
-								}
+								student.setStatus(status == null ? null : status.getReference());
+								dbStudent.setSectioningStatus(status);
+								
+								String newStatus = (dbStudent.getSectioningStatus() != null ? dbStudent.getSectioningStatus().getReference() :
+									dbStudent.getSession().getDefaultSectioningStatus() != null ? MSG.studentStatusSessionDefault(dbStudent.getSession().getDefaultSectioningStatus().getReference())
+									: MSG.studentStatusSystemDefault());
+								if (dbStudent.getSectioningStatus() != null)
+									action.addOptionBuilder().setKey("new-status").setValue(dbStudent.getSectioningStatus().getReference());
+								if (oldStatus.equals(newStatus))
+									action.addMessage(OnlineSectioningLog.Message.newBuilder().setText(oldStatus).setTimeStamp(ts.getTime()).setLevel(OnlineSectioningLog.Message.Level.INFO));
+								else
+									action.addMessage(OnlineSectioningLog.Message.newBuilder().setText(oldStatus + " &rarr; " + newStatus).setTimeStamp(ts.getTime()).setLevel(OnlineSectioningLog.Message.Level.INFO));
+								
+								helper.getHibSession().saveOrUpdate(dbStudent);
+								action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
+							} else {
+								action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
 							}
+						}
+						if (student != null) {
+							student.setAdvisorRequests(dbStudent, helper, server.getAcademicSession().getFreeTimePattern());
+							server.update(student, false);
 						}
 					}
 					helper.commitTransaction();

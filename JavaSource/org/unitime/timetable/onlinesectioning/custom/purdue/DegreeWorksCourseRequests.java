@@ -430,7 +430,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 			Query q = getStudentFilter();
 			if (q != null) {
 				XStudent s = (student instanceof XStudent ? (XStudent)student : server.getStudent(student.getStudentId()));
-				if (s == null || !q.match(new StudentMatcher(s, server.getAcademicSession().getDefaultSectioningStatus(), server, helper, false)))
+				if (s == null || !q.match(new StudentMatcher(s, server.getAcademicSession().getDefaultSectioningStatus(), server, false)))
 					return null;
 			}
 			

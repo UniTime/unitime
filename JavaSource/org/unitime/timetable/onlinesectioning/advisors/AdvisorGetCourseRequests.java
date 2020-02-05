@@ -55,6 +55,19 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.model.XAdvisorRequest;
+import org.unitime.timetable.onlinesectioning.model.XCourse;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XGroupReservation;
+import org.unitime.timetable.onlinesectioning.model.XIndividualReservation;
+import org.unitime.timetable.onlinesectioning.model.XLearningCommunityReservation;
+import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XReservation;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest.XPreference;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.NameFormat;
 import org.unitime.timetable.util.Formats.Format;
@@ -81,6 +94,106 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 
 	@Override
 	public CourseRequestInterface execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		if (server instanceof DatabaseServer) return executeDB(server, helper);
+		
+		OnlineSectioningLog.Action.Builder action = helper.getAction();
+		action.setStudent(OnlineSectioningLog.Entity.newBuilder().setUniqueId(iStudentId));
+		
+		XStudent student = server.getStudent(iStudentId);
+		if (student != null) {
+			action.getStudentBuilder().setExternalId(student.getExternalId());
+			action.getStudentBuilder().setName(student.getName());
+			if (student.getStatus() != null)
+				action.addOptionBuilder().setKey("status").setValue(student.getStatus());
+
+		}
+		
+		CourseRequestInterface request = new CourseRequestInterface();
+		request.setStudentId(iStudentId);
+		request.setAcademicSessionId(server.getAcademicSession().getUniqueId());
+		
+		if (student != null && iCheckExistingDemands) {
+			Format<Date> ts = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP_SHORT);
+			
+			for (XRequest xr: student.getRequests()) {
+				CourseRequestInterface.Request r = null;
+				if (xr instanceof XCourseRequest) {
+					XCourseRequest xcr = (XCourseRequest)xr;
+					r = new CourseRequestInterface.Request();
+					boolean enrolled = false, reserved = false;
+					for (XCourseId course: xcr.getCourseIds()) {
+						RequestedCourse rc = new RequestedCourse();
+						rc.setCourseId(course.getCourseId());
+						rc.setCourseName(course.getCourseName() + (!CONST.showCourseTitle() || course.getTitle() == null || course.getTitle().isEmpty() ? "" : " - " + course.getTitle()));
+						rc.setCourseTitle(course.getTitle());
+						XCourse xcourse = server.getCourse(course.getCourseId());
+						if (xcourse != null) {
+							rc.setCredit(xcourse.getMinCredit(), xcourse.getMaxCredit());
+						}
+						Date hasEnrollments = null;
+						if (xcr.getEnrollment() != null && xcr.getEnrollment().equals(course))
+							hasEnrollments = xcr.getEnrollment().getTimeStamp();
+						rc.setReadOnly(hasEnrollments != null);
+						rc.setCanDelete(hasEnrollments == null);
+						if (hasEnrollments != null) {
+							rc.setStatus(RequestedCourseStatus.ENROLLED);
+							enrolled = true;
+						} else
+							rc.setStatus(RequestedCourseStatus.SAVED);
+						if (hasEnrollments != null) {
+							rc.setCanChangeAlternatives(false);
+							rc.setCanChangePriority(false);
+							r.addAdvisorNote(MSG.noteEnrolled(course.getCourseName(), ts.format(hasEnrollments)));
+						}
+						XOffering offering = server.getOffering(course.getOfferingId());
+						if (offering != null && offering.hasReservations()) {
+							for (XReservation reservation: offering.getReservations()) {
+								if (reservation instanceof XIndividualReservation || reservation instanceof XGroupReservation || reservation instanceof XLearningCommunityReservation) {
+									if (reservation.mustBeUsed() && reservation.isApplicable(student, course)) { // !reservation.isExpired() && 
+										rc.setReadOnly(true);
+										rc.setCanDelete(false);
+										rc.setCanChangeAlternatives(false);
+										rc.setCanChangePriority(false);
+										if (reservation instanceof XGroupReservation)
+											r.addAdvisorNote(MSG.noteHasGroupReservation(((XGroupReservation)reservation).getGroup().getTitle()));
+										else if (reservation instanceof XLearningCommunityReservation)
+											r.addAdvisorNote(MSG.noteHasGroupReservation(((XLearningCommunityReservation)reservation).getGroup().getTitle()));
+										else
+											r.addAdvisorNote(MSG.noteHasIndividualReservation());
+										reserved = true;
+										break;
+									}
+								}
+							}
+						}
+						xcr.fillPreferencesIn(rc, course);
+						r.addRequestedCourse(rc);
+					}
+					if (r.hasRequestedCourse() && (enrolled || reserved) && !student.hasAdvisorRequests()) {
+						if (xr.isAlternative())
+							request.getAlternatives().add(r);
+						else
+							request.getCourses().add(r);
+					}
+					r.setWaitList(xcr.isWaitlist());
+					r.setCritical(xcr.isCritical());
+					r.setTimeStamp(xcr.getTimeStamp());
+				}
+			}
+		}
+	
+		
+		if (student.hasAdvisorRequests())
+			fillCourseRequests(request, student.getAdvisorRequests(), server);
+		
+		for (OnlineSectioningLog.Request log: OnlineSectioningHelper.toProto(request))
+			action.addRequest(log);
+
+		return request;
+
+	}
+	
+	protected CourseRequestInterface executeDB(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		OnlineSectioningLog.Action.Builder action = helper.getAction();
 		action.setStudent(OnlineSectioningLog.Entity.newBuilder().setUniqueId(iStudentId));
 
@@ -267,6 +380,79 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 		}
 	}
 	
+	protected static void fillCourseRequests(CourseRequestInterface request, List<XAdvisorRequest> acrs, OnlineSectioningServer server) {
+		int last = -1;
+		CourseRequestInterface.Request r = null;
+		Set<Integer> skip = new HashSet<Integer>();
+		String note = null;
+		for (XAdvisorRequest acr: acrs) {
+			if (acr.getAlternative() == 0 || acr.getNote() != null)
+				note = acr.getNote();
+			if (acr.getCourseId() != null) {
+				RequestPriority rp = request.getRequestPriority(new RequestedCourse(acr.getCourseId().getCourseId(), acr.getCourseId().getCourseName()));
+				if (rp != null) {
+					if (note != null) rp.getRequest().addAdvisorNote(note);
+					skip.add(acr.getPriority());
+				}
+			}
+		}
+		for (XAdvisorRequest acr: acrs) {
+			if (skip.contains(acr.getPriority())) continue;
+			if (acr.getPriority() == -1) {
+				request.setCreditNote(acr.getNote());
+				continue;
+			}
+			if (r == null || last != acr.getPriority()) {
+				r = new CourseRequestInterface.Request();
+				if (acr.isSubstitute())
+					request.getAlternatives().add(r);
+				else
+					request.getCourses().add(r);
+				last = acr.getPriority();
+			}
+			if (acr.getCourseId() != null) {
+				RequestedCourse rc = new RequestedCourse();
+				rc.setCourseId(acr.getCourseId().getCourseId());
+				rc.setCourseName(acr.getCourseId().getCourseName() + (!CONST.showCourseTitle() || acr.getCourseId().getTitle() == null || acr.getCourseId().getTitle().isEmpty() ? "" : " - " + acr.getCourseId().getTitle()));
+				rc.setCourseTitle(acr.getCourseId().getTitle());
+				XCourse course = server.getCourse(acr.getCourseId().getCourseId());
+				if (course != null) {
+					rc.setCredit(course.getMinCredit(), course.getMaxCredit());
+				}
+				if (acr.hasPreferences())
+					for (XPreference ssp: acr.getPreferences()) {
+						switch (ssp.getType()) {
+						case SECTION:
+							rc.setSelectedClass(ssp.getUniqueId(), ssp.getLabel(), ssp.isRequired(), true);
+							break;
+						case INSTR_METHOD:
+							rc.setSelectedIntructionalMethod(ssp.getUniqueId(), ssp.getLabel(), ssp.isRequired(), true);
+							break;
+						}
+					}
+				r.addRequestedCourse(rc);
+				if (acr.getAlternative() == 0)
+					r.setCritical(acr.isCritical());
+			} else if (acr.getFreeTime() != null) {
+				CourseRequestInterface.FreeTime ft = new CourseRequestInterface.FreeTime();
+				ft.setStart(acr.getFreeTime().getSlot());
+				ft.setLength(acr.getFreeTime().getLength());
+				for (DayCode day : DayCode.toDayCodes(acr.getFreeTime().getDays()))
+					ft.addDay(day.getIndex());	
+				if (!r.hasRequestedCourse()) r.addRequestedCourse(new RequestedCourse());
+				r.getRequestedCourse(0).addFreeTime(ft);
+			} else if (acr.getCourseName() != null) {
+				RequestedCourse rc = new RequestedCourse();
+				rc.setCourseName(acr.getCourseName());
+				r.addRequestedCourse(rc);
+			}
+			if (acr.getCredit() != null)
+				r.setAdvisorCredit(acr.getCredit());
+			if (acr.getNote() != null)
+				r.setAdvisorNote(acr.getNote());
+		}
+	}
+	
 	public static CourseRequestInterface getRequest(Long studentId, org.hibernate.Session hibSession) {
 		CourseRequestInterface request = new CourseRequestInterface();
 		request.setStudentId(studentId);
@@ -276,6 +462,17 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 				).setLong("studentId", studentId).list();
 		
 		fillCourseRequests(request, acrs);
+		
+		return request;
+	}
+	
+	public static CourseRequestInterface getRequest(XStudent student, OnlineSectioningServer server) {
+		if (!student.hasAdvisorRequests()) return null;
+		
+		CourseRequestInterface request = new CourseRequestInterface();
+		request.setStudentId(student.getStudentId());
+		
+		fillCourseRequests(request, student.getAdvisorRequests(), server);
 		
 		return request;
 	}

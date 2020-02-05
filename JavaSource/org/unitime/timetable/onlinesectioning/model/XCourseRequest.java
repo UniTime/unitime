@@ -44,6 +44,10 @@ import org.cpsolver.studentsct.model.Section;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.model.AdvisorClassPref;
+import org.unitime.timetable.model.AdvisorCourseRequest;
+import org.unitime.timetable.model.AdvisorInstrMthPref;
+import org.unitime.timetable.model.AdvisorSectioningPref;
 import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
@@ -667,6 +671,21 @@ public class XCourseRequest extends XRequest {
 				iType = XPreferenceType.SECTION;
 			} else {
 				StudentInstrMthPref imp = (StudentInstrMthPref)p;
+				iId = imp.getInstructionalMethod().getUniqueId();
+				iLabel = imp.getInstructionalMethod().getLabel();
+				iType = XPreferenceType.INSTR_METHOD;
+			}
+		}
+		
+		public XPreference(AdvisorCourseRequest acr, AdvisorSectioningPref p) {
+			iRequired = p.isRequired();
+			if (p instanceof AdvisorClassPref) {
+				AdvisorClassPref scp = (AdvisorClassPref)p;
+				iId = scp.getClazz().getUniqueId();
+				iLabel = scp.getClazz().getClassPrefLabel(acr.getCourseOffering());
+				iType = XPreferenceType.SECTION;
+			} else {
+				AdvisorInstrMthPref imp = (AdvisorInstrMthPref)p;
 				iId = imp.getInstructionalMethod().getUniqueId();
 				iLabel = imp.getInstructionalMethod().getLabel();
 				iType = XPreferenceType.INSTR_METHOD;

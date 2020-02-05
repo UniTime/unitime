@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.onlinesectioning.match;
 
-import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 
 /**
@@ -28,7 +27,6 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 public abstract class AbstractStudentMatcher implements StudentMatcher {
 	private static final long serialVersionUID = 1L;
 	private transient OnlineSectioningServer iServer;
-	private transient OnlineSectioningHelper iHelper;
 
 	@Override
 	public void setServer(OnlineSectioningServer server) {
@@ -38,17 +36,5 @@ public abstract class AbstractStudentMatcher implements StudentMatcher {
 	@Override
 	public OnlineSectioningServer getServer() {
 		return iServer;
-	}
-	
-	@Override
-	public void setHelper(OnlineSectioningHelper helper) {
-		iHelper = helper;
-	}
-
-	@Override
-	public OnlineSectioningHelper getHelper() {
-		if (iHelper == null)
-			iHelper = new OnlineSectioningHelper();
-		return iHelper;
 	}
 }

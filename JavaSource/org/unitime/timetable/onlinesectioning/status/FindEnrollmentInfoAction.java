@@ -243,7 +243,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					
 					XStudent student = server.getStudent(request.getStudentId());
 					if (student == null) continue;
-					CourseRequestMatcher m = new CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse, isMyStudent(student), lookup, server, helper);
+					CourseRequestMatcher m = new CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse, isMyStudent(student), lookup, server);
 					if (query().match(m)) {
 						matchingStudents.add(request.getStudentId());
 						match++;
@@ -558,7 +558,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					if (!request.getEnrollment().getCourseId().equals(courseId())) {other++; continue; }
 					XStudent student = server.getStudent(request.getStudentId());
 					if (student == null) continue;
-					CourseRequestMatcher m = new CourseRequestMatcher(session, info, student, offering, request, isConsentToDoCourse, isMyStudent(student), lookup, server, helper);
+					CourseRequestMatcher m = new CourseRequestMatcher(session, info, student, offering, request, isConsentToDoCourse, isMyStudent(student), lookup, server);
 					if (query().match(m)) {
 						match++;
 						enrl ++;
@@ -582,7 +582,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 							XOverride override = request.getOverride(info);
 							if (override != null && !override.isApproved()) continue;
 						}
-						CourseRequestMatcher m = new CourseRequestMatcher(session, info, student, offering, request, isConsentToDoCourse, isMyStudent(student), lookup, server, helper);
+						CourseRequestMatcher m = new CourseRequestMatcher(session, info, student, offering, request, isConsentToDoCourse, isMyStudent(student), lookup, server);
 						
 						if (query().match(m)) {
 							match++;
