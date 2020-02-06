@@ -2566,6 +2566,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Moved to priority {0}.")
 	String advChangesMovedToPriority(int prio);
 	
+	@DefaultMessage("Moved to substitute {0}.")
+	String advChangesMovedToSubstitute(int prio);
+	
 	@DefaultMessage("{0,number,0.#} - {1,number,0.#} ({2,number,0} %)")
 	String advisedCreditRangePercentage(float minCred, float maxCred, int percent);
 

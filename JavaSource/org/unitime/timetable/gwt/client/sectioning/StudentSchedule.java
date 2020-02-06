@@ -97,8 +97,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				new WebTable.Cell(MESSAGES.colTitle(), 1, "200px"),
 				new WebTable.Cell(MESSAGES.colCredit(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colPreferences(), 1, "100px"),
-				new WebTable.Cell(MESSAGES.colNotes(), 1, "300px"),
 				new WebTable.Cell(MESSAGES.colCritical(), 1, "20px"),
+				new WebTable.Cell(MESSAGES.colNotes(), 1, "300px"),
 				new WebTable.Cell(MESSAGES.colChanges(), 1, "100px")));
 		iAdvReqs.setSelectSameIdRows(true);
 		iAdvReqs.addStyleName("unitime-AdvisorCourseRequestsTable");
@@ -193,12 +193,12 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 					RequestedCourse other = null;
 					for (RequestedCourse x: request.getRequestedCourse()) {
 						RequestPriority p = (iAssignment.hasRequest() ? iAssignment.getRequest().getRequestPriority(x) : null);
-						if (top == null || top.compareTo(p) >= 0) {
+						if (p != null && (top == null || top.compareTo(p) >= 0)) {
 							top = p; other = x;
 						}
 					}
 					if (top != null) {
-						String prio = "&nbsp; ";
+						String prio = "&rarr; ";
 						if (top.getPriority() != arp.getPriority()) {
 							prio = top.getPriority() < arp.getPriority() ? "&uarr; " : "&darr; ";
 						}
@@ -212,7 +212,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				if (rp.isAlternative()) return MESSAGES.advChangesPrimaryToSubstitute(rc.getCourseName(), rp.getPriority());
 				return MESSAGES.advChangesSubstituteToPrimary(rc.getCourseName(), rp.getPriority());
 			}
-			String prio = "&nbsp; ";
+			String prio = "&rarr; ";
 			if (rp.getPriority() != arp.getPriority()) {
 				prio = rp.getPriority() < arp.getPriority() ? "&uarr; " : "&darr; ";
 			}
@@ -226,11 +226,16 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				}
 			}
 			if (rp.getPriority() != arp.getPriority()) {
-				return prio + MESSAGES.advChangesMovedToPriority(rp.getPriority());
+				return prio + (rp.isAlternative() ? MESSAGES.advChangesMovedToSubstitute(rp.getPriority()) : MESSAGES.advChangesMovedToPriority(rp.getPriority()));
 			}
 		} else {
 			if (rp == null) {
 				if (iAssignment.getRequest().getRequestPriority(request.getRequestedCourse(0)) != null)
+					return MESSAGES.advChangesMissingCourse(rc.getCourseName());
+				int nrContains = 0;
+				for (RequestedCourse x: request.getRequestedCourse())
+					if (iAssignment.getRequest().getRequestPriority(x) != null) nrContains ++;
+				if (nrContains > 1)
 					return MESSAGES.advChangesMissingCourse(rc.getCourseName());
 				return null;
 			}
@@ -238,12 +243,26 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				if (rp.isAlternative()) return MESSAGES.advChangesPrimaryToSubstitute(rc.getCourseName(), rp.getPriority());
 				return MESSAGES.advChangesSubstituteToPrimary(rc.getCourseName(), rp.getPriority());
 			}
+			RequestPriority top = null;
+			for (RequestedCourse x: request.getRequestedCourse()) {
+				RequestPriority p = (iAssignment.hasRequest() ? iAssignment.getRequest().getRequestPriority(x) : null);
+				if (p != null && (top == null || top.compareTo(p) >= 0)) {
+					top = p;
+				}
+			}
 			if (rp.getChoice() != arp.getChoice()) {
-				if (rp.getChoice() == 0) return MESSAGES.advChangesMoved1stChoice();
+				if (rp.getChoice() == 0) {
+					if (top.getPriority() == rp.getPriority() && top.getChoice() == rp.getChoice()) return null;
+					if (top.getPriority() != rp.getPriority() && rp.getPriority() != arp.getPriority()) {
+						String prio = rp.getPriority() < arp.getPriority() ? "&uarr; " : "&darr; ";
+						return prio + (rp.isAlternative() ? MESSAGES.advChangesMovedToSubstitute(rp.getPriority()) : MESSAGES.advChangesMovedToPriority(rp.getPriority()));
+					}
+					return MESSAGES.advChangesMoved1stChoice();
+				}
 				RequestedCourse ch1 = (rp.isAlternative() ? iAssignment.getRequest().getAlternatives() : iAssignment.getRequest().getCourses()).get(rp.getPriority() - 1).getRequestedCourse(0);
 				RequestPriority p = iAssignment.getAdvisorRequest().getRequestPriority(ch1);
 				if (p == null || p.getPriority() != arp.getPriority()) {
-					String prio = "&nbsp; ";
+					String prio = "&rarr; ";
 					if (rp.getPriority() != arp.getPriority()) {
 						prio = rp.getPriority() < arp.getPriority() ? "&uarr; " : "&darr; ";
 					}
@@ -251,6 +270,12 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				}
 				if (rp.getChoice() == 1) return MESSAGES.advChangesMoved2ndChoice();
 				if (rp.getChoice() == 2) return MESSAGES.advChangesMoved3rdChoice();
+			} else if (top.getPriority() != rp.getPriority() && rp.getPriority() != arp.getPriority()) {
+				String prio = "";
+				if (top.getPriority() != rp.getPriority() && rp.getPriority() != arp.getPriority()) {
+					prio = rp.getPriority() < arp.getPriority() ? "&uarr; " : "&darr; ";
+				}
+				return prio + (rp.isAlternative() ? MESSAGES.advChangesMovedToSubstitute(rp.getPriority()) : MESSAGES.advChangesMovedToPriority(rp.getPriority()));
 			}
 		}
 		return null;
@@ -294,8 +319,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 									credit,
 									new WebTable.Cell(ToolBox.toString(prefs), true),
-									note,
 									request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") : new WebTable.Cell(""),
+									note,
 									new WebTable.Cell(getChanges(request, rc))
 									);
 							} else {
@@ -325,8 +350,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									new WebTable.Cell(CONSTANTS.freePrefix() + free, 2, null),
 									credit,
 									new WebTable.Cell(""),
-									note,
 									new WebTable.Cell(""),
+									note,
 									new WebTable.Cell("")
 									);
 							} else {
@@ -359,8 +384,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						new WebTable.Cell(""),
 						credit,
 						new WebTable.Cell(""),
-						note,
 						new WebTable.Cell(""),
+						note,
 						new WebTable.Cell("")
 						);
 					if (priority > 1)
@@ -400,8 +425,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 									credit,
 									new WebTable.Cell(ToolBox.toString(prefs), true),
-									note,
 									new WebTable.Cell(""),
+									note,
 									new WebTable.Cell(getChanges(request, rc))
 									);
 							} else {
@@ -433,8 +458,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						new WebTable.Cell(""),
 						credit,
 						new WebTable.Cell(""),
-						note,
 						new WebTable.Cell(""),
+						note,
 						new WebTable.Cell("")
 						);
 					for (WebTable.Cell cell: row.getCells()) cell.setStyleName(priority == 1 ? "top-border-solid" : "top-border-dashed");
@@ -449,14 +474,13 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 			}
 			WebTable.Cell credit = new WebTable.Cell(min < max ? MESSAGES.creditRange(min, max) : MESSAGES.credit(min));
 			credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-			WebTable.NoteCell note = new WebTable.NoteCell(iAssignment.getAdvisorRequest().hasCreditNote() ? iAssignment.getAdvisorRequest().getCreditNote() : "", null);
-			note.setColSpan(3);
+			WebTable.NoteCell note = new WebTable.NoteCell(iAssignment.getAdvisorRequest().hasCreditNote() ? iAssignment.getAdvisorRequest().getCreditNote() : "&nbsp;", null);
+			note.setColSpan(4);
 			WebTable.Row crow = new WebTable.Row(
 					new WebTable.Cell(MESSAGES.rowTotalPriorityCreditHours(), 2, null),
 					new WebTable.Cell(""),
 					credit,
-					note,
-					new WebTable.Cell("")
+					note
 					);
 			for (WebTable.Cell cell: crow.getCells()) cell.setStyleName("top-border-solid");
 			crow.getCell(0).setStyleName("top-border-solid text-bold");
@@ -470,7 +494,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		
 		iAdvReqs.setData(rowArray);
 		iAdvReqs.setColumnVisible(4, hasPref);
-		iAdvReqs.setColumnVisible(6, hasCrit);
+		iAdvReqs.setColumnVisible(5, hasCrit);
 	}
 	
 	protected void fillInRequests() {
