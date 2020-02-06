@@ -235,7 +235,8 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		boolean hasExtId = false;
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
 				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasReqCredit = false, hasCredit = false, hasDistances = false, hasOverlaps = false,
-				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false, hasOverride = false, hasAdvisor = false;
+				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false, hasOverride = false, hasAdvisor = false,
+				hasAdvisedInfo = false;
 		Set<String> groupTypes = new TreeSet<String>();
 		if (students != null)
 			for (ClassAssignmentInterface.StudentInfo e: students) {
@@ -263,6 +264,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 				if (e.getStudent() != null && e.getStudent().isCanShowExternalId()) hasExtId = true;
 				if (e.getStudent().hasGroups()) groupTypes.addAll(e.getStudent().getGroupTypes());
 				if (e.getStudent().hasAdvisor()) hasAdvisor = true;
+				if (e.getAdvisedInfo() != null) hasAdvisedInfo = true;
 			}
 		
 		List<String> header = new ArrayList<String>();
@@ -335,6 +337,9 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		if (hasAdvisor)
 			header.add(MESSAGES.colAdvisor());
 		
+		if (hasAdvisedInfo)
+			header.add(MESSAGES.colAdvised().replace("<br>", "\n").replace("<small>","").replace("</small>", ""));
+		
 		if (hasNote)
 			header.add(MESSAGES.colStudentNote());
 		
@@ -397,6 +402,16 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 						line.add((info.getEnrolledDate() == null ? null : df.format(info.getEnrolledDate())));
 					if (hasAdvisor)
 						line.add(info.getStudent().getAdvisor("\n"));
+					if (hasAdvisedInfo)
+						if (info.getAdvisedInfo() != null) {
+							if (info.getAdvisedInfo().getMinCredit() < info.getAdvisedInfo().getMaxCredit())
+								line.add(sCreditFormat.format(info.getAdvisedInfo().getMinCredit()) + " - " + sCreditFormat.format(info.getAdvisedInfo().getMaxCredit())
+								+ " (" + Math.round(100f * info.getAdvisedInfo().getPercentage()) + " %)");
+							else
+								line.add(sCreditFormat.format(info.getAdvisedInfo().getMinCredit()) + " (" + Math.round(100f * info.getAdvisedInfo().getPercentage()) + " %)");
+						} else {
+							line.add("");
+						}
 					if (hasNote)
 						line.add((info.hasNote() ? info.getNote() : ""));
 					if (hasEmailed)
@@ -451,6 +466,8 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 					if (hasNote)
 						line.add("");
 					if (hasAdvisor)
+						line.add("");
+					if (hasAdvisedInfo)
 						line.add("");
 					if (hasEmailed)
 						line.add("");

@@ -113,6 +113,32 @@ public class AdvisorCourseRequest extends BaseAdvisorCourseRequest implements Co
 		if (getCourseOffering() == null || isSubstitute()) return false;
 		return cc.isCritical(getCourseOffering());
 	}
+	
+	public float getCreditMin() {
+		if (getCredit() == null || getCredit().isEmpty()) return 0f;
+		try {
+			return Float.parseFloat(getCredit().replaceAll("\\s",""));
+		} catch (NumberFormatException e) {}
+		if (getCredit().contains("-")) {
+			try {
+				return Float.parseFloat(getCredit().substring(0, getCredit().indexOf('-')).replaceAll("\\s",""));
+			} catch (NumberFormatException e) {}	
+		}
+		return 0f;
+	}
+	
+	public float getCreditMax() {
+		if (getCredit() == null || getCredit().isEmpty()) return 0f;
+		try {
+			return Float.parseFloat(getCredit().replaceAll("\\s",""));
+		} catch (NumberFormatException e) {}
+		if (getCredit().contains("-")) {
+			try {
+				return Float.parseFloat(getCredit().substring(1 + getCredit().indexOf('-')).replaceAll("\\s",""));
+			} catch (NumberFormatException e) {}	
+		}
+		return 0f;
+	}
 
 	@Override
 	public int compareTo(AdvisorCourseRequest r) {

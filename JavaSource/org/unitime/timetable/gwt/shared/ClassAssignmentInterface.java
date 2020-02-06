@@ -1280,6 +1280,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private float[] iRequestCredit = null, iRequestTotalCredit = null;
 		private Integer iOverrideNeeded, iTotalOverrideNeeded;
 		private Boolean iMyStudent;
+		private AdvisedInfoInterface iAdvised;
 		
 		public StudentInfo() {}
 		
@@ -1483,6 +1484,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public boolean isMyStudent() { return iMyStudent != null && iMyStudent.booleanValue(); }
 		public Boolean getMyStudent() { return iMyStudent; }
 		public void setMyStudent(Boolean myStudent) { iMyStudent = myStudent; }
+		
+		public boolean isAdvised() { return iAdvised != null; }
+		public AdvisedInfoInterface getAdvisedInfo() { return iAdvised; }
+		public void setAdvisedInfo(AdvisedInfoInterface advised) { iAdvised = advised; }
 	}
 
 	public static class SectioningAction implements IsSerializable, Serializable, Comparable<SectioningAction> {
@@ -1636,6 +1641,34 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof ErrorMessage)) return false;
 			return toString().equals(o.toString());
+		}
+	}
+	
+	public static class AdvisedInfoInterface implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		private Float iMinCredit, iMaxCredit;
+		private Float iPercentage;
+		private String iMessage;
+		
+		public AdvisedInfoInterface() {}
+		
+		public boolean hasMinCredit() { return iMinCredit != null; }
+		public Float getMinCredit() { return iMinCredit; }
+		public void setMinCredit(Float cred) { iMinCredit = cred; }
+		
+		public boolean hasMaxCredit() { return iMaxCredit != null; }
+		public Float getMaxCredit() { return iMaxCredit; }
+		public void setMaxCredit(Float cred) { iMaxCredit = cred; }
+		
+		public boolean hasPercentage() { return iPercentage != null; }
+		public Float getPercentage() { return iPercentage; }
+		public void setPercentage(Float p) { iPercentage = p; }
+		
+		public String getMessage() { return iMessage; }
+		public boolean hasMessage() { return iMessage != null && !iMessage.isEmpty(); }
+		public void setMessage(String message) { iMessage = message; }
+		public void addMessage(String message) {
+			iMessage = (iMessage == null ? "" : iMessage + "\n") +  message;
 		}
 	}
 }

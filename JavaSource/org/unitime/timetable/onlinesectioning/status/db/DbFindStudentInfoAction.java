@@ -34,8 +34,10 @@ import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.util.DistanceMetric;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.AdvisedInfoInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.StudentInfo;
 import org.unitime.timetable.model.Advisor;
+import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseDemand;
@@ -333,6 +335,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 						if (note == null || note.compareTo(n) > 0) note = n;
 					if (note != null) s.setNote(note.getTextNote());
 					s.setMyStudent(isMyStudent(student));
+					s.setAdvisedInfo(getAdvisedInfo(student, server, helper));
 				}
 				DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(student), helper.getStudentNameFormat(), lookup);
 				if (!crm.enrollment().isEmpty()) {
@@ -541,6 +544,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					if (note == null || note.compareTo(n) > 0) note = n;
 				if (note != null) s.setNote(note.getTextNote());
 				s.setMyStudent(isMyStudent(student));
+				s.setAdvisedInfo(getAdvisedInfo(student, server, helper));
 				
 				ret.add(s);
 			}
@@ -655,5 +659,190 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 	
 	public boolean isConsentToDoCourse(CourseOffering course) {
 		return iCoursesIcanApprove != null && course.getConsentType() != null && iCoursesIcanApprove.contains(course.getUniqueId());
+	}
+	
+	public static AdvisedInfoInterface getAdvisedInfo(Student student, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		if (student.getAdvisorCourseRequests() == null || student.getAdvisorCourseRequests().isEmpty()) return null;
+		List<AdvisorCourseRequest> acrs = new ArrayList<AdvisorCourseRequest>(student.getAdvisorCourseRequests());
+		Collections.sort(acrs);
+		
+		AdvisedInfoInterface info = new AdvisedInfoInterface();
+		AdvisorCourseRequest last = null;
+		CourseOffering advFirstChoice = null;
+		CourseRequest firstChoice = null;
+		boolean firstChoiceCritical = false;
+		float minCred = 0f, maxCred = 0f, cm = 0f, cx = 0f;
+		int nrCourses = 0, nrCriticalCourses = 0, nrCoursesFound = 0, nrCriticalCoursesFound = 0, nrSubstMisMatch = 0;
+		int foundPrioMin = 0, foundPrioMax = 0;
+		int points = 0, maxPoints = 0;
+		for (AdvisorCourseRequest acr: acrs) {
+			if (acr.getPriority() == -1) continue;
+			if (last != null && last.getPriority() != acr.getPriority()) {
+				minCred += cm; maxCred += cx; cm = 0; cx = 0;
+				if (advFirstChoice != null) { // ignore requests without any courses
+					if (firstChoiceCritical && nrCoursesFound == 0) {
+						if (nrCourses > 1)
+							info.addMessage(MSG.advMessageMissingCriticalCourseWithAlts(advFirstChoice.getCourseName()));
+						else
+							info.addMessage(MSG.advMessageMissingCriticalCourse(advFirstChoice.getCourseName()));
+					} else if (!last.isSubstitute() && nrCoursesFound - nrSubstMisMatch == 0) {
+						if (nrCourses > 1)
+							info.addMessage(MSG.advMessageMissingCourseWithAlts(advFirstChoice.getCourseName()));
+						else
+							info.addMessage(MSG.advMessageMissingCourse(advFirstChoice.getCourseName()));
+					} else if (last.isSubstitute() && nrCoursesFound == 0) {
+						if (nrCourses > 1)
+							info.addMessage(MSG.advMessageMissingSubstituteCourseWithAlts(advFirstChoice.getCourseName()));
+						else
+							info.addMessage(MSG.advMessageMissingSubstituteCourse(advFirstChoice.getCourseName()));
+					} else if (firstChoice == null && firstChoiceCritical) {
+						info.addMessage(MSG.advMessageMissingCriticalCourseHasAlts(advFirstChoice.getCourseName()));
+					} else if (firstChoice == null) {
+						info.addMessage(MSG.advMessageMissingCourseHasAlts(advFirstChoice.getCourseName()));
+					} else if (nrCoursesFound < nrCourses) {
+						info.addMessage(MSG.advMessageMissingAlternatives(advFirstChoice.getCourseName()));
+					}
+					
+					// 1st choice course match
+					maxPoints += 4 + (firstChoiceCritical ? 2 : 0);
+					if (firstChoice != null) {
+						points += 2; // first choice course is present
+						if (firstChoiceCritical && firstChoice.getCourseDemand().isCritical() != null && firstChoice.getCourseDemand().isCritical().booleanValue()) points +=2; // also is critical
+						if (firstChoice.getCourseDemand().isAlternative() == last.isSubstitute()) points ++; // in the same table
+						if (firstChoice.getCourseDemand().getFirstChoiceCourseOffering().equals(advFirstChoice)) points ++; // also first as choice (not alt to something else)
+					}
+					
+					// number of courses match
+					maxPoints += 2;
+					if (nrCourses == nrCoursesFound) points += 2; // all courses exist
+					
+					if (nrCourses > 1) maxPoints ++;
+					if (nrCourses > 1 && nrCoursesFound >= 1) points ++; // at least one
+					
+					if (nrCourses > 0 && !last.isSubstitute()) maxPoints += 2;
+					if (nrCourses > 0 && nrCoursesFound >= 1 && !last.isSubstitute() && nrCoursesFound - nrSubstMisMatch > 0) points += 2; // and are proprity
+					
+					if (nrCourses > 1) maxPoints ++;
+					if (nrCourses > 1 && nrCoursesFound > 1) points++; // at least two
+					
+					if (nrCourses > 2) maxPoints ++;
+					if (nrCourses > 2 && nrCoursesFound > 2) points++; // at least three
+					
+					if (nrCoursesFound > 1) maxPoints ++;
+					if (nrCoursesFound > 1 && foundPrioMin == foundPrioMax) points++; // and have same priority
+					
+					maxPoints ++;
+					if (nrSubstMisMatch == 0 && nrCoursesFound > 0) points ++; // not priority mismatch
+					
+					if (nrCriticalCourses > 1) maxPoints += 3;
+					if (nrCriticalCourses > 1 && nrCriticalCoursesFound > 1) points += 3; // critical
+				}
+				nrCourses = 0; nrCriticalCourses = 0; nrCoursesFound = 0; nrCriticalCoursesFound = 0; nrSubstMisMatch = 0;
+				advFirstChoice = null; firstChoice = null; firstChoiceCritical = false;
+				foundPrioMin = 0; foundPrioMax = 0;
+			}
+			if (!acr.isSubstitute()) {
+				CourseCreditUnitConfig credit = (acr.getCourseOffering() == null ? null: acr.getCourseOffering().getCredit());
+				if (credit != null) {
+					if (acr.getAlternative() == 0 || credit.getMinCredit() < cm) cm = credit.getMinCredit();
+					if (acr.getAlternative() == 0 || credit.getMaxCredit() > cx) cx = credit.getMaxCredit();
+				} else if (acr.getAlternative() == 0) {
+					cm = acr.getCreditMin(); cx = acr.getCreditMax();
+				}
+			}
+			if (acr.getCourseOffering() != null) {
+				nrCourses ++;
+				if (acr.isCritical() && !acr.isSubstitute()) nrCriticalCourses ++;
+				CourseRequest request = null;
+				cd: for (CourseDemand cd: student.getCourseDemands()) {
+					for (CourseRequest cr: cd.getCourseRequests()) {
+						if (cr.getCourseOffering().equals(acr.getCourseOffering())) {
+							request = cr; break cd;
+						}
+					}
+				}
+				if (advFirstChoice == null) {
+					advFirstChoice = acr.getCourseOffering();
+					firstChoiceCritical = acr.isCritical();
+					firstChoice = request;
+				}
+				if (request != null) {
+					nrCoursesFound ++;
+					if (nrCoursesFound == 1) {
+						foundPrioMin = request.getCourseDemand().getPriority();
+						foundPrioMax = request.getCourseDemand().getPriority();
+					} else {
+						if (request.getCourseDemand().getPriority() < foundPrioMin) foundPrioMin = request.getCourseDemand().getPriority();
+						if (request.getCourseDemand().getPriority() > foundPrioMax) foundPrioMax = request.getCourseDemand().getPriority();
+					}
+					if (acr.isSubstitute() != request.getCourseDemand().isAlternative()) nrSubstMisMatch ++;
+					if (acr.isCritical() && request.getCourseDemand().isCritical() != null && request.getCourseDemand().isCritical().booleanValue() && !request.getCourseDemand().isAlternative()) nrCriticalCoursesFound ++;
+				}
+			}
+			last = acr;
+		}
+		minCred += cm; maxCred += cx;
+		info.setMinCredit(minCred); info.setMaxCredit(maxCred);
+		if (advFirstChoice != null) { // ignore requests without any courses
+			if (firstChoiceCritical && nrCoursesFound == 0) {
+				if (nrCourses > 1)
+					info.addMessage(MSG.advMessageMissingCriticalCourseWithAlts(advFirstChoice.getCourseName()));
+				else
+					info.addMessage(MSG.advMessageMissingCriticalCourse(advFirstChoice.getCourseName()));
+			} else if (!last.isSubstitute() && nrCoursesFound - nrSubstMisMatch == 0) {
+				if (nrCourses > 1)
+					info.addMessage(MSG.advMessageMissingCourseWithAlts(advFirstChoice.getCourseName()));
+				else
+					info.addMessage(MSG.advMessageMissingCourse(advFirstChoice.getCourseName()));
+			} else if (last.isSubstitute() && nrCoursesFound == 0) {
+				if (nrCourses > 1)
+					info.addMessage(MSG.advMessageMissingSubstituteCourseWithAlts(advFirstChoice.getCourseName()));
+				else
+					info.addMessage(MSG.advMessageMissingSubstituteCourse(advFirstChoice.getCourseName()));
+			} else if (firstChoice == null && firstChoiceCritical) {
+				info.addMessage(MSG.advMessageMissingCriticalCourseHasAlts(advFirstChoice.getCourseName()));
+			} else if (firstChoice == null) {
+				info.addMessage(MSG.advMessageMissingCourseHasAlts(advFirstChoice.getCourseName()));
+			} else if (nrCoursesFound < nrCourses) {
+				info.addMessage(MSG.advMessageMissingAlternatives(advFirstChoice.getCourseName()));
+			}
+			
+			// 1st choice course match
+			maxPoints += 4 + (firstChoiceCritical ? 2 : 0);
+			if (firstChoice != null) {
+				points += 2; // first choice course is present
+				if (firstChoiceCritical && firstChoice.getCourseDemand().isCritical() != null && firstChoice.getCourseDemand().isCritical().booleanValue()) points +=2; // also is critical
+				if (firstChoice.getCourseDemand().isAlternative() == last.isSubstitute()) points ++; // in the same table
+				if (firstChoice.getCourseDemand().getFirstChoiceCourseOffering().equals(advFirstChoice)) points ++; // also first as choice (not alt to something else)
+			}
+			
+			// number of courses match
+			maxPoints += 2;
+			if (nrCourses == nrCoursesFound) points += 2; // all courses exist
+			
+			if (nrCourses > 1) maxPoints ++;
+			if (nrCourses > 1 && nrCoursesFound >= 1) points ++; // at least one
+			
+			if (nrCourses > 0 && !last.isSubstitute()) maxPoints += 2;
+			if (nrCourses > 0 && nrCoursesFound >= 1 && !last.isSubstitute() && nrCoursesFound - nrSubstMisMatch > 0) points += 2; // and are proprity
+			
+			if (nrCourses > 1) maxPoints ++;
+			if (nrCourses > 1 && nrCoursesFound > 1) points++; // at least two
+			
+			if (nrCourses > 2) maxPoints ++;
+			if (nrCourses > 2 && nrCoursesFound > 2) points++; // at least three
+			
+			if (nrCoursesFound > 1) maxPoints ++;
+			if (nrCoursesFound > 1 && foundPrioMin == foundPrioMax) points++; // and have same priority
+			
+			maxPoints ++;
+			if (nrSubstMisMatch == 0 && nrCoursesFound > 0) points ++; // not priority mismatch
+			
+			if (nrCriticalCourses > 1) maxPoints += 3;
+			if (nrCriticalCourses > 1 && nrCriticalCoursesFound > 1) points += 3; // critical
+		}
+		info.setPercentage(((float)points)/maxPoints);
+		
+		return info;
 	}
 }

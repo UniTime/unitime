@@ -932,6 +932,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 	
 	public String getCreditMessage() {
 		if (iTabs.getSelectedTab() == 0) {
+			return "";
+		} else if (iTabs.getSelectedTab() == 1) {
 			float[] range = getCreditRange();
 			if (range != null && range[1] > 0f) {
 				if (range[0] == range[1]) return MESSAGES.requestedCredit(range[0]);

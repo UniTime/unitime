@@ -6809,3 +6809,8 @@ unitime-RoomSharingWidget .legend .blank {
 	text-overflow: inherit;
 	max-width: inherit;
 }
+
+.unitime-StudentsTable .advised-info {
+	display: inline;
+	padding: 0px 2px 0px 2px;
+}

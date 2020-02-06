@@ -64,6 +64,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.AdvisedInfoInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Group;
@@ -2084,7 +2085,14 @@ public class SectioningStatusPage extends Composite {
 			header.add(hAdvisor);
 			addSortOperation(hAdvisor, StudentComparator.SortBy.ADVISOR, MESSAGES.colAdvisor());
 		}
-		
+
+		UniTimeTableHeader hAdvised = null;
+		if (iStudentInfoVisibleColumns.hasAdvisedInfo) {
+			hAdvised = new UniTimeTableHeader(MESSAGES.colAdvised());
+			header.add(hAdvised);
+			addSortOperation(hAdvised, StudentComparator.SortBy.ADVISED, MESSAGES.colAdvised());
+		}
+
 		UniTimeTableHeader hNote = null;
 		if (iOnline && iStudentInfoVisibleColumns.hasNote) {
 			iNoteColumn = header.size() - 1;
@@ -2285,6 +2293,8 @@ public class SectioningStatusPage extends Composite {
 				line.add(new HTML(info.getEnrolledDate() == null ? "&nbsp;" : sDF.format(info.getEnrolledDate()), false));
 			if (iStudentInfoVisibleColumns.hasAdvisor)
 				line.add(new HTML(info.getStudent().getAdvisor("<br>"), false));
+			if (iStudentInfoVisibleColumns.hasAdvisedInfo)
+				line.add(new AdvisorInfoCell(info.getAdvisedInfo()));
 			if (iOnline && iStudentInfoVisibleColumns.hasNote) {
 				HTML note = new HTML(info.hasNote() ? info.getNote() : ""); note.addStyleName("student-note");
 				if (info.hasNote())
@@ -2299,6 +2309,8 @@ public class SectioningStatusPage extends Composite {
 			if (iStudentInfoVisibleColumns.hasEnrolledDate)
 				line.add(new HTML("&nbsp;", false));
 			if (iStudentInfoVisibleColumns.hasAdvisor)
+				line.add(new HTML("&nbsp;", false));
+			if (iStudentInfoVisibleColumns.hasAdvisedInfo)
 				line.add(new HTML("&nbsp;", false));
 			if (iOnline && iStudentInfoVisibleColumns.hasNote)
 				line.add(new HTML("&nbsp;", false));
@@ -2620,6 +2632,37 @@ public class SectioningStatusPage extends Composite {
 		}
 	}
 	
+	public static class AdvisorInfoCell extends HTML implements HasCellAlignment {
+		
+		public AdvisorInfoCell(AdvisedInfoInterface value) {
+			super();
+			addStyleName("advised-info");
+			if (value == null) {
+				setHTML("");
+			} else if (value.getMinCredit() < value.getMaxCredit()) {
+				setHTML(MESSAGES.advisedCreditRangePercentage(value.getMinCredit(), value.getMaxCredit(), Math.round(100.0f * value.getPercentage())));
+			} else {
+				setHTML(MESSAGES.advisedCreditPercentage(value.getMinCredit(), Math.round(100.0f * value.getPercentage())));
+			}
+			if (value != null & value.hasMessage())
+				setTitle(value.getMessage());
+			if (value != null) {
+				if (value.getPercentage() <= 0.5f) {
+					// from FFCCCC (red) to FFFFCC (yellow)
+					getElement().getStyle().setBackgroundColor("rgb(255," + (204 + Math.round(100f * value.getPercentage())) + ",204)");
+				} else {
+					// from FFFFCC (yellow) to CCFFCC (green)
+					getElement().getStyle().setBackgroundColor("rgb(" + (305 - Math.round(100f * value.getPercentage())) + ",255,204)");
+				}
+			}
+		}
+
+		@Override
+		public HorizontalAlignmentConstant getCellAlignment() {
+			return HasHorizontalAlignment.ALIGN_CENTER;
+		}
+	}
+	
 	public static class TitleCell extends HTML implements HasColSpan {
 		
 		public TitleCell(String title) {
@@ -2883,6 +2926,7 @@ public class SectioningStatusPage extends Composite {
 			OVERRIDE,
 			REQ_CREDIT,
 			ADVISOR,
+			ADVISED,
 			;
 		}
 		
@@ -2998,6 +3042,8 @@ public class SectioningStatusPage extends Composite {
 				return (e1.getTotalOverrideNeeded() == null ? new Integer(0) : e1.getTotalOverrideNeeded()).compareTo(e2.getTotalOverrideNeeded() == null ? 0 : e2.getTotalOverrideNeeded());
 			case ADVISOR:
 				return e1.getStudent().getAdvisor("|").compareTo(e2.getStudent().getAdvisor("|"));
+			case ADVISED:
+				return Float.compare(e1.getAdvisedInfo() == null ? -1f : e1.getAdvisedInfo().getPercentage(), e2.getAdvisedInfo() == null ? -1f : e2.getAdvisedInfo().getPercentage());
 			default:
 				return 0;
 			}
@@ -3249,7 +3295,7 @@ public class SectioningStatusPage extends Composite {
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
 				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false, hasReqCred = false, hasDistances = false, hasOverlaps = false,
 				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false, hasOverride = false, hasExtId = false,
-				hasAdvisor = false;
+				hasAdvisor = false, hasAdvisedInfo = false;
 		int selectableStudents = 0;
 		Set<String> groupTypes = new TreeSet<String>();
 		
@@ -3282,6 +3328,7 @@ public class SectioningStatusPage extends Composite {
 				if (e.getStudent() != null && e.getStudent().isCanShowExternalId()) hasExtId = true;
 				if (e.getStudent().hasGroups()) groupTypes.addAll(e.getStudent().getGroupTypes());
 				if (e.getStudent().hasAdvisor()) hasAdvisor = true;
+				if (e.getAdvisedInfo() != null) hasAdvisedInfo = true;
 			}
 		}
 	}

@@ -288,7 +288,7 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 			if (rc.hasCredit()) {
 				if (minCredit == null || minCredit > rc.getCreditMin()) 
 					minCredit = rc.getCreditMin();
-				if (maxCredit == null || maxCredit < rc.getCreditMin()) 
+				if (maxCredit == null || maxCredit < rc.getCreditMax()) 
 					maxCredit = rc.getCreditMax();
 			}
 		}

@@ -112,4 +112,12 @@ public class CourseDemand extends BaseCourseDemand implements Comparable {
         	}
     	}
     }
+    
+    public CourseOffering getFirstChoiceCourseOffering() {
+    	CourseRequest ret = null;
+    	for (CourseRequest cr: getCourseRequests()) {
+    		if (ret == null || cr.getOrder() < ret.getOrder()) ret = cr;
+    	}
+    	return (ret == null ? null : ret.getCourseOffering());
+    }
 }

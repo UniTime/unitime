@@ -147,6 +147,32 @@ public class XAdvisorRequest implements Comparable<XAdvisorRequest>, Serializabl
 	public boolean isCritical() { return iCritical; }
 	public boolean hasPreferences() { return iPreferences != null && !iPreferences.isEmpty(); }
 	public List<XPreference> getPreferences() { return iPreferences; }
+	
+	public float getCreditMin() {
+		if (iCredit == null || iCredit.isEmpty()) return 0f;
+		try {
+			return Float.parseFloat(iCredit.replaceAll("\\s",""));
+		} catch (NumberFormatException e) {}
+		if (iCredit.contains("-")) {
+			try {
+				return Float.parseFloat(iCredit.substring(0, iCredit.indexOf('-')).replaceAll("\\s",""));
+			} catch (NumberFormatException e) {}	
+		}
+		return 0f;
+	}
+	
+	public float getCreditMax() {
+		if (iCredit == null || iCredit.isEmpty()) return 0f;
+		try {
+			return Float.parseFloat(iCredit.replaceAll("\\s",""));
+		} catch (NumberFormatException e) {}
+		if (iCredit.contains("-")) {
+			try {
+				return Float.parseFloat(iCredit.substring(1 + iCredit.indexOf('-')).replaceAll("\\s",""));
+			} catch (NumberFormatException e) {}	
+		}
+		return 0f;
+	}
 
 	@Override
 	public int compareTo(XAdvisorRequest r) {

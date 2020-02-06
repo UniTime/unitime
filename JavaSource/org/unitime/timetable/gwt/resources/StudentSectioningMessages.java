@@ -1303,6 +1303,9 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Advisor")
 	String colAdvisor();
+	
+	@DefaultMessage("Advised<br><small>Credit (% Compl)</small>")
+	String colAdvised();
 
 	@DefaultMessage("Messages")
 	String tableMessages();
@@ -2562,5 +2565,37 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Moved to priority {0}.")
 	String advChangesMovedToPriority(int prio);
+	
+	@DefaultMessage("{0,number,0.#} - {1,number,0.#} ({2,number,0} %)")
+	String advisedCreditRangePercentage(float minCred, float maxCred, int percent);
 
+	@DefaultMessage("{0,number,0.#} ({1,number,0} %)")
+	String advisedCreditPercentage(float cred, int percent);
+	
+	@DefaultMessage("Missing critical course {0}.")
+	String advMessageMissingCriticalCourse(String course);
+	
+	@DefaultMessage("Missing critical course {0} and its alternatives.")
+	String advMessageMissingCriticalCourseWithAlts(String course);
+	
+	@DefaultMessage("Missing critical course {0}, but has alternative(s).")
+	String advMessageMissingCriticalCourseHasAlts(String course);
+	
+	@DefaultMessage("Missing course {0}.")
+	String advMessageMissingCourse(String course);
+	
+	@DefaultMessage("Missing course {0} and its alternatives.")
+	String advMessageMissingCourseWithAlts(String course);
+	
+	@DefaultMessage("Missing course {0}, but has alternative(s).")
+	String advMessageMissingCourseHasAlts(String course);
+	
+	@DefaultMessage("Missing substitute course {0}.")
+	String advMessageMissingSubstituteCourse(String course);
+	
+	@DefaultMessage("Missing substitute course {0} and its alternatives.")
+	String advMessageMissingSubstituteCourseWithAlts(String course);
+	
+	@DefaultMessage("Missing some alternatives of {0}")
+	String advMessageMissingAlternatives(String course);
 }
