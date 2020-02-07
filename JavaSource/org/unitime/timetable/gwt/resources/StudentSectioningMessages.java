@@ -831,10 +831,10 @@ public interface StudentSectioningMessages extends Messages {
 	/* Enrollment dialog messages (opened from Enrollments table)
 	 */
 	
-	@DefaultMessage("Loading classes for {0}...")
+	@DefaultMessage("Loading student details for {0}...")
 	String loadingEnrollment(String student);
 
-	@DefaultMessage("Classes for {0}")
+	@DefaultMessage("{0}")
 	String dialogEnrollments(String student);
 	
 	@DefaultMessage("Show External Ids")

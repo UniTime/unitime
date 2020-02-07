@@ -204,11 +204,27 @@ public class WebTable extends Composite implements HasMobileScroll {
 		return true;
 	}
 	
+	public Cell getCell(int row, int col) {
+		if (row < getHeaderRowsCount()) {
+			return iHeader[row].getCell(col);
+		} else {
+			return iRows[row - getHeaderRowsCount()].getCell(col);
+		}
+	}
+	
+	public int getOriginalColSpan(int row, int col) {
+		try {
+			return getCell(row, col).getColSpan();
+		} catch (Exception e) {
+			return iTable.getFlexCellFormatter().getColSpan(row, col);
+		}
+	}
+	
 	public void setColumnVisible(int col, boolean visible) {
 		for (int r = 0; r < iTable.getRowCount(); r++) {
 			int x = 0;
 			for (int c = 0; c < iTable.getCellCount(r); c++) {
-				int colSpan = iTable.getFlexCellFormatter().getColSpan(r, c);
+				int colSpan = getOriginalColSpan(r, c);
 				x += colSpan;
 				if (x > col) {
 					if (colSpan > 1 && r > 0) {

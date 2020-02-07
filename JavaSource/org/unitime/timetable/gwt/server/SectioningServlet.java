@@ -3401,7 +3401,16 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		OnlineSectioningServer server = getServerInstance(details.getSessionId(), true);
 		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
 		
-		return server.execute(server.createAction(AdvisorCourseRequestsSubmit.class).withDetails(details), currentUser());
+		AdvisorCourseRequestSubmission ret = server.execute(server.createAction(AdvisorCourseRequestsSubmit.class).withDetails(details), currentUser());
+		
+		try {
+	        SessionFactory hibSessionFactory = SessionDAO.getInstance().getSession().getSessionFactory();
+	        hibSessionFactory.getCache().evictEntity(Student.class, details.getStudentId());
+        } catch (Exception e) {
+        	sLog.warn("Failed to evict cache: " + e.getMessage());
+        }
+
+		return ret;
 	}
 
 	@Override

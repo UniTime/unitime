@@ -2644,7 +2644,7 @@ public class SectioningStatusPage extends Composite {
 			} else {
 				setHTML(MESSAGES.advisedCreditPercentage(value.getMinCredit(), Math.round(100.0f * value.getPercentage())));
 			}
-			if (value != null & value.hasMessage())
+			if (value != null && value.hasMessage())
 				setTitle(value.getMessage());
 			if (value != null) {
 				if (value.getPercentage() <= 0.5f) {
