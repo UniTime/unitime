@@ -216,82 +216,68 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 			public void onClick(ClickEvent clickEvent) {
 				HashMap<Long, String> colors = new HashMap<Long, String>();
 				List<Page> pages = new ArrayList<Page>();
-				if (iSelectedDates.size() == 1) {
-					final Date date = iDates.getDate(iSelectedDates.get(0));
+				int[] days = new int[iSelectedDates.size()];
+				WeekInterface week = new WeekInterface();
+				week.setDayOfYear(iSelectedDates.get(0));
+				List<String> dows = new ArrayList<String>();
+				int lastPast = -1;
+				for (int i = 0; i < iSelectedDates.size(); i++) {
+					Date date = iDates.getDate(iSelectedDates.get(i));
 					int year = Integer.parseInt(DateTimeFormat.getFormat("yyyy").format(date));
 					int month = Integer.parseInt(DateTimeFormat.getFormat("MM").format(date));
 					int dow = (SingleDateSelector.firstDayOfWeek(year, month) + Integer.parseInt(DateTimeFormat.getFormat("dd").format(date)) - 1) % 7;
-					int days[] = new int[] {dow};
-					WeekInterface week = new WeekInterface();
-					week.setDayOfYear(iSelectedDates.get(0) - dow);
-					for (int i = 0; i < 7; i++) {
-						week.addDayName(new DateInterface(
-								sDateFormat.format(iDates.getDate(week.getDayOfYear() + i)),
-								month,
-								week.getDayOfYear() + i));
+					days[i] = i;
+					week.addDayName(new DateInterface(sDateFormat.format(date), month, iSelectedDates.get(i)));
+					dows.add(CONSTANTS.days()[dow]);
+					if (!iDates.isEnabled(date) || iDates.hasFlag(date, Flag.PAST))
+						lastPast = i;
+				}
+				List<WeekInterface> weeks = new ArrayList<WeekInterface>(); weeks.add(week);
+				if (iSelectedDates.size() == 1) {
+					int startHour = (int)(CONSTANTS.eventStartDefault() / 12);
+					if (iSelectedTimes.getStart() != null) {
+						startHour = Math.max(0, (iSelectedTimes.getStart() - 6) / 12);
 					}
-					List<WeekInterface> weeks = new ArrayList<WeekInterface>(); weeks.add(week);
-					boolean past = !iDates.isEnabled(date) || iDates.hasFlag(date, Flag.PAST);
-					for (int i = 0; i < iSelectedDates.size(); i++) {
-						int startHour = (int)(CONSTANTS.eventStartDefault() / 12);
-						if (iSelectedTimes.getStart() != null) {
-							startHour = Math.max(0, (iSelectedTimes.getStart() - 6) / 12);
-						}
-						int endHour = (int)((11 + CONSTANTS.eventStopDefault()) / 12);
-						if (iSelectedTimes.getEnd() != null) {
-							endHour = Math.min(24, (17 + iSelectedTimes.getEnd()) / 12);
-						}
+					int endHour = (int)((11 + CONSTANTS.eventStopDefault()) / 12);
+					if (iSelectedTimes.getEnd() != null) {
+						endHour = Math.min(24, (17 + iSelectedTimes.getEnd()) / 12);
+					}
 
-						final TimeGrid grid = new TimeGrid(colors, days, (int)(1000 / days.length), 55, true, false, startHour, endHour, EventRoomAvailability.this);
-						grid.setResourceType(ResourceType.ROOM);
-						grid.setSelectedWeeks(weeks);
-						List<ResourceInterface> rooms = new ArrayList<EventInterface.ResourceInterface>(iSelectedRooms);
-						grid.setRoomResources(rooms);
-						grid.setMode(TimeGrid.Mode.OVERLAP);
-						for (EventInterface event: sortedEvents()) {
-							List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
-							for (MeetingInterface meeting: event.getMeetings()) {
-								if (meeting.getApprovalStatus() != ApprovalStatus.Pending && meeting.getApprovalStatus() != ApprovalStatus.Approved) continue;
-								if (iSelectedDates.get(i) == meeting.getDayOfYear() && meeting.hasLocation())
-									meetings.add(meeting);
+					final TimeGrid grid = new TimeGrid(colors, days, (int)(1000 / days.length), 55, true, false, startHour, endHour, EventRoomAvailability.this);
+					grid.setResourceType(ResourceType.ROOM);
+					grid.setSelectedWeeks(weeks);
+					List<ResourceInterface> rooms = new ArrayList<EventInterface.ResourceInterface>(iSelectedRooms);
+					grid.setRoomResources(rooms);
+					grid.setMode(TimeGrid.Mode.OVERLAP);
+					for (EventInterface event: sortedEvents()) {
+						List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
+						for (MeetingInterface meeting: event.getMeetings()) {
+							if (meeting.getApprovalStatus() != ApprovalStatus.Pending && meeting.getApprovalStatus() != ApprovalStatus.Approved) continue;
+							if (iSelectedDates.get(0) == meeting.getDayOfYear() && meeting.hasLocation()) {
+								meeting.setGridIndex(0);
+								meetings.add(meeting);
 							}
-							if (!meetings.isEmpty())
-								grid.addEvent(event, meetings);
 						}
-						grid.labelDays(week, null);
-						grid.yellow(iSelectedTimes.getStart() == null ? CONSTANTS.eventStartDefault() : iSelectedTimes.getStart(), iSelectedTimes.getEnd() == null ? CONSTANTS.eventStopDefault() : iSelectedTimes.getEnd());
-						if (past) grid.gray(0, 1);
-						grid.showVerticalSplit();
-						grid.addMeetingClickHandler(iMeetingClickHandler);
-						pages.add(new Page() {
-							@Override
-							public String getName() { return DateTimeFormat.getFormat(CONSTANTS.meetingDateFormat()).format(date); }
-							@Override
-							public String getUser() { return ""; }
-							@Override
-							public String getSession() { return ""; }
-							@Override
-							public Element getBody() { return grid.getElement(); }
-						});
+						if (!meetings.isEmpty())
+							grid.addEvent(event, meetings);
 					}
+					grid.labelDays(dows, week);
+					grid.yellow(iSelectedTimes.getStart() == null ? CONSTANTS.eventStartDefault() : iSelectedTimes.getStart(), iSelectedTimes.getEnd() == null ? CONSTANTS.eventStopDefault() : iSelectedTimes.getEnd());
+					if (lastPast >= 0) grid.gray(0, lastPast);
+					grid.showVerticalSplit();
+					grid.addMeetingClickHandler(iMeetingClickHandler);
+					final Date date = iDates.getDate(iSelectedDates.get(0));
+					pages.add(new Page() {
+						@Override
+						public String getName() { return DateTimeFormat.getFormat(CONSTANTS.meetingDateFormat()).format(date); }
+						@Override
+						public String getUser() { return ""; }
+						@Override
+						public String getSession() { return ""; }
+						@Override
+						public Element getBody() { return grid.getElement(); }
+					});
 				} else {
-					int[] days = new int[iSelectedDates.size()];
-					WeekInterface week = new WeekInterface();
-					week.setDayOfYear(iSelectedDates.get(0));
-					List<String> dows = new ArrayList<String>();
-					int lastPast = -1;
-					for (int i = 0; i < iSelectedDates.size(); i++) {
-						Date date = iDates.getDate(iSelectedDates.get(i));
-						int year = Integer.parseInt(DateTimeFormat.getFormat("yyyy").format(date));
-						int month = Integer.parseInt(DateTimeFormat.getFormat("MM").format(date));
-						int dow = (SingleDateSelector.firstDayOfWeek(year, month) + Integer.parseInt(DateTimeFormat.getFormat("dd").format(date)) - 1) % 7;
-						days[i] = i;
-						week.addDayName(new DateInterface(sDateFormat.format(date), month, iSelectedDates.get(i)));
-						dows.add(CONSTANTS.days()[dow]);
-						if (!iDates.isEnabled(date) || iDates.hasFlag(date, Flag.PAST))
-							lastPast = i;
-					}
-					List<WeekInterface> weeks = new ArrayList<WeekInterface>(); weeks.add(week);
 					for (final ResourceInterface room: iSelectedRooms) {
 						int startHour = (int)(CONSTANTS.eventStartDefault() / 12);
 						if (iSelectedTimes.getStart() != null) {
@@ -908,73 +894,57 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 		}
 		iTables.clear();
 		HashMap<Long, String> colors = new HashMap<Long, String>();
-		if (iSelectedDates.size() == 1) {
-			Date date = iDates.getDate(iSelectedDates.get(0));
+		int[] days = new int[iSelectedDates.size()];
+		WeekInterface week = new WeekInterface();
+		week.setDayOfYear(iSelectedDates.get(0));
+		List<String> dows = new ArrayList<String>();
+		int lastPast = -1;
+		for (int i = 0; i < iSelectedDates.size(); i++) {
+			Date date = iDates.getDate(iSelectedDates.get(i));
 			int year = Integer.parseInt(DateTimeFormat.getFormat("yyyy").format(date));
 			int month = Integer.parseInt(DateTimeFormat.getFormat("MM").format(date));
 			int dow = (SingleDateSelector.firstDayOfWeek(year, month) + Integer.parseInt(DateTimeFormat.getFormat("dd").format(date)) - 1) % 7;
-			int days[] = new int[] {dow};
-			WeekInterface week = new WeekInterface();
-			week.setDayOfYear(iSelectedDates.get(0) - dow);
-			for (int i = 0; i < 7; i++) {
-				week.addDayName(new DateInterface(
-						sDateFormat.format(iDates.getDate(week.getDayOfYear() + i)),
-						month,
-						week.getDayOfYear() + i));
+			days[i] = i;
+			week.addDayName(new DateInterface(sDateFormat.format(date), month, iSelectedDates.get(i)));
+			dows.add(CONSTANTS.days()[dow]);
+			if (!iDates.isEnabled(date) || iDates.hasFlag(date, Flag.PAST))
+				lastPast = i;
+		}
+		List<WeekInterface> weeks = new ArrayList<WeekInterface>(); weeks.add(week);
+		if (iSelectedDates.size() == 1) {
+			int startHour = (int)(CONSTANTS.eventStartDefault() / 12);
+			if (iSelectedTimes.getStart() != null) {
+				startHour = Math.max(0, (iSelectedTimes.getStart() - 6) / 12);
 			}
-			List<WeekInterface> weeks = new ArrayList<WeekInterface>(); weeks.add(week);
-			boolean past = !iDates.isEnabled(date) || iDates.hasFlag(date, Flag.PAST);
-			for (int i = 0; i < iSelectedDates.size(); i++) {
-				int startHour = (int)(CONSTANTS.eventStartDefault() / 12);
-				if (iSelectedTimes.getStart() != null) {
-					startHour = Math.max(0, (iSelectedTimes.getStart() - 6) / 12);
-				}
-				int endHour = (int)((11 + CONSTANTS.eventStopDefault()) / 12);
-				if (iSelectedTimes.getEnd() != null) {
-					endHour = Math.min(24, (17 + iSelectedTimes.getEnd()) / 12);
-				}
-
-				TimeGrid grid = new TimeGrid(colors, days, (int)(0.9 * ToolBox.getClientWidth() / days.length), false, false, startHour, endHour, this);
-				grid.setResourceType(ResourceType.ROOM);
-				grid.setSelectedWeeks(weeks);
-				List<ResourceInterface> rooms = new ArrayList<EventInterface.ResourceInterface>(iSelectedRooms);
-				grid.setRoomResources(rooms);
-				grid.setMode(TimeGrid.Mode.OVERLAP);
-				for (EventInterface event: sortedEvents()) {
-					List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
-					for (MeetingInterface meeting: event.getMeetings()) {
-						if (meeting.getApprovalStatus() != ApprovalStatus.Pending && meeting.getApprovalStatus() != ApprovalStatus.Approved) continue;
-						if (iSelectedDates.get(i) == meeting.getDayOfYear() && meeting.hasLocation())
-							meetings.add(meeting);
+			int endHour = (int)((11 + CONSTANTS.eventStopDefault()) / 12);
+			if (iSelectedTimes.getEnd() != null) {
+				endHour = Math.min(24, (17 + iSelectedTimes.getEnd()) / 12);
+			}
+			TimeGrid grid = new TimeGrid(colors, days, (int)(0.9 * ToolBox.getClientWidth() / days.length), false, false, startHour, endHour, this);
+			grid.setResourceType(ResourceType.ROOM);
+			grid.setSelectedWeeks(weeks);
+			List<ResourceInterface> rooms = new ArrayList<EventInterface.ResourceInterface>(iSelectedRooms);
+			grid.setRoomResources(rooms);
+			grid.setMode(TimeGrid.Mode.OVERLAP);
+			for (EventInterface event: sortedEvents()) {
+				List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
+				for (MeetingInterface meeting: event.getMeetings()) {
+					if (meeting.getApprovalStatus() != ApprovalStatus.Pending && meeting.getApprovalStatus() != ApprovalStatus.Approved) continue;
+					if (iSelectedDates.get(0) == meeting.getDayOfYear() && meeting.hasLocation()) {
+						meeting.setGridIndex(0);
+						meetings.add(meeting);
 					}
-					if (!meetings.isEmpty())
-						grid.addEvent(event, meetings);
 				}
-				grid.labelDays(week, null);
-				grid.yellow(iSelectedTimes.getStart() == null ? CONSTANTS.eventStartDefault() : iSelectedTimes.getStart(), iSelectedTimes.getEnd() == null ? CONSTANTS.eventStopDefault() : iSelectedTimes.getEnd());
-				if (past) grid.gray(0, 1);
-				grid.showVerticalSplit();
-				grid.addMeetingClickHandler(iMeetingClickHandler);
-				iTables.add(grid);
+				if (!meetings.isEmpty())
+					grid.addEvent(event, meetings);
 			}
+			grid.labelDays(dows, week);
+			grid.yellow(iSelectedTimes.getStart() == null ? CONSTANTS.eventStartDefault() : iSelectedTimes.getStart(), iSelectedTimes.getEnd() == null ? CONSTANTS.eventStopDefault() : iSelectedTimes.getEnd());
+			if (lastPast >= 0) grid.gray(0, lastPast);
+			grid.showVerticalSplit();
+			grid.addMeetingClickHandler(iMeetingClickHandler);
+			iTables.add(grid);
 		} else {
-			int[] days = new int[iSelectedDates.size()];
-			WeekInterface week = new WeekInterface();
-			week.setDayOfYear(iSelectedDates.get(0));
-			List<String> dows = new ArrayList<String>();
-			int lastPast = -1;
-			for (int i = 0; i < iSelectedDates.size(); i++) {
-				Date date = iDates.getDate(iSelectedDates.get(i));
-				int year = Integer.parseInt(DateTimeFormat.getFormat("yyyy").format(date));
-				int month = Integer.parseInt(DateTimeFormat.getFormat("MM").format(date));
-				int dow = (SingleDateSelector.firstDayOfWeek(year, month) + Integer.parseInt(DateTimeFormat.getFormat("dd").format(date)) - 1) % 7;
-				days[i] = i;
-				week.addDayName(new DateInterface(sDateFormat.format(date), month, iSelectedDates.get(i)));
-				dows.add(CONSTANTS.days()[dow]);
-				if (!iDates.isEnabled(date) || iDates.hasFlag(date, Flag.PAST))
-					lastPast = i;
-			}
-			List<WeekInterface> weeks = new ArrayList<WeekInterface>(); weeks.add(week);
 			for (ResourceInterface room: iSelectedRooms) {
 				P hp = new P("unitime-RoomAvailabilityHeader");
 				HTML name = new HTML(room.getNameWithSizeAndHint(MESSAGES), false); name.setStyleName("name");
