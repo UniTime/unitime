@@ -2533,6 +2533,11 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
+	@Description("Time Grid: when no solution is loaded or selected, show all committed solution (regardless on the user's department)")
+	TimeGridShowAllCommitted("unitime.timeGrid.showAllCommitted"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
 	@Description("Events: show academic sessions in the reverse order (latest first)")
 	ListSessionsReverse("unitime.events.listSessionsLatestFirst"),
 	

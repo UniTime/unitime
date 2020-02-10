@@ -146,14 +146,25 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
         	
         	String solutionIdsStr = (String)context.getAttribute(SessionAttribute.SelectedSolution);
         	if (solutionIdsStr == null || solutionIdsStr.isEmpty()) {
-        		for (SolverGroup g: SolverGroup.getUserSolverGroups(context.getUser())) {
-            		for (Long id: (List<Long>)SolutionDAO.getInstance().getSession().createQuery(
-            				"select s.uniqueId from Solution s where s.commited = true and s.owner = :groupId")
-            				.setLong("groupId", g.getUniqueId()).setCacheable(true).list()) {
+        		if (ApplicationProperty.TimeGridShowAllCommitted.isTrue()) {
+        			for (Long id: (List<Long>)SolutionDAO.getInstance().getSession().createQuery(
+            				"select s.uniqueId from Solution s where s.commited = true and s.owner.session = :sessionId")
+            				.setLong("sessionId", acadSession.getUniqueId()).setCacheable(true).list()) {
             			if (solutionIdsStr == null)
             				solutionIdsStr = id.toString();
             			else
             				solutionIdsStr += (solutionIdsStr.isEmpty() ? "" : ",") + id;
+            		}
+        		} else {
+        			for (SolverGroup g: SolverGroup.getUserSolverGroups(context.getUser())) {
+                		for (Long id: (List<Long>)SolutionDAO.getInstance().getSession().createQuery(
+                				"select s.uniqueId from Solution s where s.commited = true and s.owner = :groupId")
+                				.setLong("groupId", g.getUniqueId()).setCacheable(true).list()) {
+                			if (solutionIdsStr == null)
+                				solutionIdsStr = id.toString();
+                			else
+                				solutionIdsStr += (solutionIdsStr.isEmpty() ? "" : ",") + id;
+                		}
             		}
         		}
         	}
