@@ -59,6 +59,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.DOM;
@@ -90,6 +91,17 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 	private DateTimeFormat iFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 	private DateTimeFormat iDefaultFormat = DateTimeFormat.getFormat("MM/dd/yyyy");
 	private AcademicSessionProvider iAcademicSession;
+	
+	private static int sFirstDayOfWeekend;
+	private static int sLastDayOfWeekend;
+	private static int sStartingDay;
+	
+	static {
+		sFirstDayOfWeekend = (6 + LocaleInfo.getCurrentLocale().getDateTimeFormatInfo().weekendStart()) % 7;
+		sLastDayOfWeekend = (6 + LocaleInfo.getCurrentLocale().getDateTimeFormatInfo().weekendEnd()) % 7;
+		sStartingDay = (6 + LocaleInfo.getCurrentLocale().getDateTimeFormatInfo().firstDayOfTheWeek()) % 7;
+	}
+	
 	
 	AriaTextBox iPicker;
 	private boolean iHint;
@@ -394,7 +406,11 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 	}
 	
 	static int startingDayOfWeek() {
-		return (6 + CalendarUtil.getStartingDayOfWeek()) % 7;
+		return sStartingDay;
+	}
+	
+	static boolean isWeekend(int dayOfWeek) {
+		return sFirstDayOfWeekend == dayOfWeek || sLastDayOfWeekend == dayOfWeek;
 	}
 	
 	static Date toDate(int year, int month, int day) {
@@ -693,7 +709,7 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 					week = new P(String.valueOf(weekNumber ++), "cell", "week");
 					line.add(week);
 				}
-				D d = new D(i, "cell", (((idx + startingDayOfWeek()) % 7) < 5 ? "day" : "weekend"), "clickable", (iDay == i ? "selected" : null));
+				D d = new D(i, "cell", (isWeekend((idx + startingDayOfWeek()) % 7) ? "weekend" : "day"), "clickable", (iDay == i ? "selected" : null));
 				line.add(d);
 				iDays.add(d);
 				idx++;

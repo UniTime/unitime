@@ -336,7 +336,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 		}
 		
 		public boolean isWeekend() {
-			return getDow() >= 5;
+			return SingleDateSelector.isWeekend(getDow());
 		}
 		
 		@Override
@@ -491,7 +491,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 					previousWeek = null;
 				}
 				Date date = df.parse(getYear() + "/" + (1 + getMonth()) + "/" + (1 + i));
-				D d = new D(i, iSessionMonth.getFlags(i), new int[] {index, (idx + startDayOfWeek) % 7, iWeeks.size() - 1}, false, "cell", (((idx + startDayOfWeek) % 7) < 5 ? "day" : "weekend"), "clickable");
+				D d = new D(i, iSessionMonth.getFlags(i), new int[] {index, (idx + startDayOfWeek) % 7, iWeeks.size() - 1}, false, "cell", (SingleDateSelector.isWeekend((idx + startDayOfWeek) % 7) ? "weekend" : "day"), "clickable");
 				Roles.getGridcellRole().set(d.getElement());
 				line.add(d);
 				d.addValueChangeHandler(onChange);
