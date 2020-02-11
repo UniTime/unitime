@@ -87,6 +87,7 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpeci
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationResponse;
+import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpart;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.Assignment;
@@ -1549,6 +1550,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						ClassAssignmentInterface ret = new ClassAssignmentInterface();
 						Hashtable<Long, CourseAssignment> courses = new Hashtable<Long, ClassAssignmentInterface.CourseAssignment>();
 						CourseCreditUnitConfig credit = null;
+						HasGradableSubpart gs = null;
+						if (Class_.getExternalClassNameHelper() != null && Class_.getExternalClassNameHelper() instanceof HasGradableSubpart)
+							gs = (HasGradableSubpart) Class_.getExternalClassNameHelper();
 						Set<StudentClassEnrollment> enrollments = new TreeSet<StudentClassEnrollment>(cmp);
 						enrollments.addAll(hibSession.createQuery(
 								"from StudentClassEnrollment e where e.student.uniqueId = :studentId order by e.courseOffering.subjectAreaAbbv, e.courseOffering.courseNbr"
@@ -1630,14 +1634,19 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 									clazz.addInstructor(nameFormat.format(ci.getInstructor()));
 									clazz.addInstructoEmail(ci.getInstructor().getEmail() == null ? "" : ci.getInstructor().getEmail());
 								}
+							if (credit != null && gs != null && gs.isGradableSubpart(enrollment.getClazz().getSchedulingSubpart(), enrollment.getCourseOffering())) {
+								clazz.setCredit(credit.creditAbbv() + "|" + credit.creditText());
+								credit = null;
+							} else if (credit != null && gs == null) {
+								clazz.setCredit(credit.creditAbbv() + "|" + credit.creditText());
+								credit = null;
+							}
 							if (enrollment.getClazz().getSchedulingSubpart().getCredit() != null) {
 								clazz.setCredit(enrollment.getClazz().getSchedulingSubpart().getCredit().creditAbbv() + "|" + enrollment.getClazz().getSchedulingSubpart().getCredit().creditText());
-							} else if (credit != null) {
-								clazz.setCredit(credit.creditAbbv() + "|" + credit.creditText());
+								credit = null;
 							}
 							Float creditOverride = enrollment.getClazz().getCredit(enrollment.getCourseOffering());
 							if (creditOverride != null) clazz.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
-							credit = null;
 							if (clazz.getParentSection() == null)
 								clazz.setParentSection(enrollment.getCourseOffering().getConsentType() == null ? null : enrollment.getCourseOffering().getConsentType().getLabel());
 						}

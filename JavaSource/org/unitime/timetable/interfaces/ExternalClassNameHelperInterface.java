@@ -21,6 +21,7 @@ package org.unitime.timetable.interfaces;
 
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.SchedulingSubpart;
 
 /**
  * @author Stephanie Schluttenhofer
@@ -33,4 +34,8 @@ public interface ExternalClassNameHelperInterface {
 	public String getClassLabelWithTitle(Class_ clazz, CourseOffering courseOffering);
 	public String getExternalId(Class_ clazz, CourseOffering courseOffering);
 	public Float getClassCredit(Class_ clazz, CourseOffering courseOffering);
+	
+	public interface HasGradableSubpart {
+		public boolean isGradableSubpart(SchedulingSubpart subpart, CourseOffering courseOffering);
+	}
 }

@@ -22,13 +22,15 @@ package org.unitime.timetable.util;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 
 /**
  * @author Stephanie Schluttenhofer, Tomas Muller
  *
  */
 public class DefaultExternalClassNameHelper implements
-		ExternalClassNameHelperInterface {
+	ExternalClassNameHelperInterface, ExternalClassNameHelperInterface.HasGradableSubpart {
 
 	/**
 	 * 
@@ -68,5 +70,19 @@ public class DefaultExternalClassNameHelper implements
 	@Override
 	public Float getClassCredit(Class_ clazz, CourseOffering courseOffering) {
 		return null;
+	}
+
+	@Override
+	public boolean isGradableSubpart(SchedulingSubpart subpart, CourseOffering courseOffering) {
+		// there is only one subpart -> true
+		if (subpart.getInstrOfferingConfig().getSchedulingSubparts().size() == 1) return true;
+		// has a parent -> false
+		if (subpart.getParentSubpart() != null) return false;
+		// otherwise, check that this subpart is the first one
+		SchedulingSubpartComparator cmp = new SchedulingSubpartComparator();
+		for (SchedulingSubpart s: subpart.getInstrOfferingConfig().getSchedulingSubparts()) {
+			if (cmp.compare(s, subpart) < 0) return false;
+		}
+		return true;
 	}
 }
