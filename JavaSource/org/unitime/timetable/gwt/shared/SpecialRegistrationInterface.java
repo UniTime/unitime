@@ -875,11 +875,11 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		}
 		public void addGradeMode(String sectionId, String code, String label, boolean honors) {
 			if (iGradeModes == null) iGradeModes = new GradeModes();
-			iGradeModes.add(sectionId, new GradeMode(code, label, honors));
+			iGradeModes.addGradeMode(sectionId, new GradeMode(code, label, honors));
 		}
 		public GradeMode getGradeMode(ClassAssignment section) {
 			if (iGradeModes == null) return null;
-			return iGradeModes.get(section);
+			return iGradeModes.getGradeMode(section);
 		}
 		public GradeModes getGradeModes() { return iGradeModes; }
 		

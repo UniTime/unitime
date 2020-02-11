@@ -375,6 +375,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private SpecialRegistrationStatus iSpecRegStatus = null;
 		private SpecialRegistrationOperation iSpecRegOperation = null;
 		private GradeMode iGradeMode = null;
+		private Float iCreditHour = null;
 		
 		public ClassAssignment() {}
 		public ClassAssignment(CourseAssignment course) {
@@ -731,6 +732,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public GradeMode getGradeMode() { return iGradeMode; }
 		public void setGradeMode(GradeMode mode) { iGradeMode = mode; }
+		
+		public Float getCreditHour() { return iCreditHour; }
+		public void setCreditHour(Float creditHour) { iCreditHour = creditHour; }
 	}
 	
 	public static class Group implements IsSerializable, Serializable, Comparable<Group> {

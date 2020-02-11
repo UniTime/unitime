@@ -135,13 +135,25 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		}
 		public void addGradeMode(String sectionId, String code, String label, boolean honor) {
 			if (iGradeModes == null) iGradeModes = new GradeModes();
-			iGradeModes.add(sectionId, new GradeMode(code, label, honor));
+			iGradeModes.addGradeMode(sectionId, new GradeMode(code, label, honor));
 		}
 		public GradeMode getGradeMode(ClassAssignment section) {
 			if (iGradeModes == null) return null;
-			return iGradeModes.get(section);
+			return iGradeModes.getGradeMode(section);
 		}
 		public GradeModes getGradeModes() { return iGradeModes; }
+		
+		public boolean hasCreditHours() {
+			return iGradeModes != null && iGradeModes.hasCreditHours();
+		}
+		public Float getCreditHour(ClassAssignment section) {
+			if (iGradeModes == null || section == null) return null;
+			return iGradeModes.getCreditHour(section);
+		}
+		public void addCreditHour(String sectionId, Float credit) {
+			if (iGradeModes == null) iGradeModes = new GradeModes();
+			iGradeModes.addCreditHour(sectionId, credit);
+		}
 	}
 	
 	public static class SectioningProperties implements IsSerializable, Serializable {
@@ -367,24 +379,43 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 	public static class GradeModes implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		Map<String, GradeMode> iModes = new HashMap<String, GradeMode>();
+		private Map<String, Float> iCreditHours = new HashMap<String, Float>();
 		
 		public GradeModes() {}
 		
 		public boolean hasGradeModes() { return !iModes.isEmpty(); }
 		
-		public void add(String sectionId, GradeMode mode) {
+		public void addGradeMode(String sectionId, GradeMode mode) {
 			iModes.put(sectionId, mode);
 		}
 		
-		public GradeMode get(ClassAssignment a) {
+		public GradeMode getGradeMode(ClassAssignment a) {
 			if (a.getExternalId() == null) return null;
 			if (a.getParentSection() != null && a.getParentSection().equals(a.getSection())) return null;
 			return iModes.get(a.getExternalId());
 		}
 		
 		public Map<String, GradeMode> toMap() { return iModes; }
+		
+		public boolean hasCreditHours() {
+			return iCreditHours != null && !iCreditHours.isEmpty();
+		}
+		
+		public Float getCreditHour(ClassAssignment a) {
+			if (a.getExternalId() == null) return 0f;
+			if (a.getParentSection() != null && a.getParentSection().equals(a.getSection())) return 0f;
+			return iCreditHours.get(a.getExternalId());
+		}
+		
+		public void addCreditHour(String sectionId, Float credit) {
+			if (credit == null)
+				iCreditHours.remove(sectionId);
+			else
+				iCreditHours.put(sectionId, credit);
+		}
+
 	}
-	
+		
 	public static class GradeMode implements IsSerializable, Serializable, Comparable<GradeMode> {
 		private static final long serialVersionUID = 1L;
 		private String iCode;

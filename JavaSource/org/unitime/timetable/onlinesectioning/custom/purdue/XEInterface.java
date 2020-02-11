@@ -69,7 +69,7 @@ public class XEInterface {
 		 */
 		public String courseRegistrationStatus;
 		public String courseRegistrationStatusDescription;
-		public Double creditHour;
+		public Float creditHour;
 		
 		public String gradingMode;
 		public String gradingModeDescription;

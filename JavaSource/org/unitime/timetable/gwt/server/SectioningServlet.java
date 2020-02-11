@@ -1154,7 +1154,13 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						GradeMode m = last.getGradeMode(a);
 						if (m != null) a.setGradeMode(m);
 					}
-			
+			if (ret != null && last != null && last.hasCreditHours())
+				for (CourseAssignment ca: ret.getCourseAssignments())
+					for (ClassAssignment a: ca.getClassAssignments()) {
+						Float credit = last.getCreditHour(a);
+						a.setCreditHour(credit);
+						if (credit != null) a.setCredit(FixedCreditUnitConfig.formatCredit(credit));
+					}
 			if (!ret.getCourseAssignments().isEmpty()) return ret;
 			throw new SectioningException(MSG.exceptionNoSchedule());
 		} catch (PageAccessException e) {
@@ -1242,6 +1248,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				for (ClassAssignment a: ca.getClassAssignments()) {
 					if (a.getGradeMode() != null)
 						last.addGradeMode(a.getExternalId(), a.getGradeMode().getCode(), a.getGradeMode().getLabel(), a.getGradeMode().isHonor());
+					if (a.getCreditHour() != null)
+						last.addCreditHour(a.getExternalId(), a.getCreditHour());
 				}
 		}
 		
@@ -2405,7 +2413,13 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						GradeMode m = last.getGradeMode(a);
 						if (m != null) a.setGradeMode(m);
 					}
-
+			if (ret != null && last != null && last.hasCreditHours())
+				for (CourseAssignment ca: ret.getCourseAssignments())
+					for (ClassAssignment a: ca.getClassAssignments()) {
+						Float credit = last.getCreditHour(a);
+						a.setCreditHour(credit);
+						if (credit != null) a.setCredit(FixedCreditUnitConfig.formatCredit(credit));
+					}
 			
 			return ret;
 		} else {

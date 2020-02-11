@@ -56,6 +56,7 @@ import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.CourseRequestOption;
+import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.FreeTime;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
@@ -799,8 +800,16 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 		if (ret != null && gradeModes.hasGradeModes()) {
 			for (CourseAssignment ca: ret.getCourseAssignments())
 				for (ClassAssignment a: ca.getClassAssignments()) {
-					GradeMode m = gradeModes.get(a);
+					GradeMode m = gradeModes.getGradeMode(a);
 					if (m != null) a.setGradeMode(m);
+				}
+		}
+		if (ret != null && gradeModes.hasCreditHours()) {
+			for (CourseAssignment ca: ret.getCourseAssignments())
+				for (ClassAssignment a: ca.getClassAssignments()) {
+					Float credit = gradeModes.getCreditHour(a);
+					a.setCreditHour(credit);
+					if (credit != null) a.setCredit(FixedCreditUnitConfig.formatCredit(credit));
 				}
 		}
 		return ret;

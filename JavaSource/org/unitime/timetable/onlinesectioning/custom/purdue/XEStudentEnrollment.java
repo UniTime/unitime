@@ -385,6 +385,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 								section.setTimeStamp(reg.registrationStatusDate.getMillis());
 							if (reg.gradingMode != null && !reg.gradingMode.isEmpty())
 								check.addGradeMode(reg.courseReferenceNumber, reg.gradingMode, reg.gradingModeDescription, resetGradeModes != null && !resetGradeModes.isEmpty() && reg.gradingMode.matches(resetGradeModes));
+							if (reg.creditHour != null)
+								check.addCreditHour(reg.courseReferenceNumber, reg.creditHour);
 						}
 					}
 				helper.getAction().addEnrollment(external);
@@ -773,7 +775,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 							.setSubpart(OnlineSectioningLog.Entity.newBuilder().setName(reg.scheduleType));
 						outcome.add(reg.courseReferenceNumber);
 						if (gradeModes != null && reg.gradingMode != null) {
-							gradeModes.add(reg.courseReferenceNumber, new GradeMode(reg.gradingMode, reg.gradingModeDescription, resetGradeModes != null && !resetGradeModes.isEmpty() && reg.gradingMode.matches(resetGradeModes)));
+							gradeModes.addGradeMode(reg.courseReferenceNumber, new GradeMode(reg.gradingMode, reg.gradingModeDescription, resetGradeModes != null && !resetGradeModes.isEmpty() && reg.gradingMode.matches(resetGradeModes)));
+						}
+						if (gradeModes != null && reg.creditHour != null) {
+							gradeModes.addCreditHour(reg.courseReferenceNumber, reg.creditHour);
 						}
 						if (added.contains(id)) {
 							// skip successfully registered enrollments
@@ -961,7 +966,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 								if ("Registered".equals(reg.statusDescription)) {
 									if (reg.gradingMode != null) {
 										String desc = code2desc.get(reg.gradingMode);
-										gradeModes.add(reg.courseReferenceNumber, new GradeMode(reg.gradingMode, desc != null ? desc : reg.gradingModeDescription, resetGradeModes != null && !resetGradeModes.isEmpty() && reg.gradingMode.matches(resetGradeModes)));
+										gradeModes.addGradeMode(reg.courseReferenceNumber, new GradeMode(reg.gradingMode, desc != null ? desc : reg.gradingModeDescription, resetGradeModes != null && !resetGradeModes.isEmpty() && reg.gradingMode.matches(resetGradeModes)));
+									}
+									if (reg.creditHour != null) {
+										gradeModes.addCreditHour(reg.courseReferenceNumber, reg.creditHour);
 									}
 								}
 							}
