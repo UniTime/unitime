@@ -617,6 +617,11 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Online Student Scheduling: enable student email confirmations")
 	OnlineSchedulingEmailConfirmation("unitime.enrollment.email"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Online Student Scheduling: check for gradable itypes when checking on which subpart course credit information should be shown")
+	OnlineSchedulingGradableIType("unitime.enrollment.gradableITypes"),
 
 	@Type(Boolean.class)
 	@Description("Online Student Scheduling: allow student to select over-expected sections (even if there is a choice avoiding them)")

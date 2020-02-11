@@ -1559,7 +1559,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						Hashtable<Long, CourseAssignment> courses = new Hashtable<Long, ClassAssignmentInterface.CourseAssignment>();
 						CourseCreditUnitConfig credit = null;
 						HasGradableSubpart gs = null;
-						if (Class_.getExternalClassNameHelper() != null && Class_.getExternalClassNameHelper() instanceof HasGradableSubpart)
+						if (ApplicationProperty.OnlineSchedulingGradableIType.isTrue() && Class_.getExternalClassNameHelper() != null && Class_.getExternalClassNameHelper() instanceof HasGradableSubpart)
 							gs = (HasGradableSubpart) Class_.getExternalClassNameHelper();
 						Set<StudentClassEnrollment> enrollments = new TreeSet<StudentClassEnrollment>(cmp);
 						enrollments.addAll(hibSession.createQuery(
@@ -1642,7 +1642,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 									clazz.addInstructor(nameFormat.format(ci.getInstructor()));
 									clazz.addInstructoEmail(ci.getInstructor().getEmail() == null ? "" : ci.getInstructor().getEmail());
 								}
-							if (credit != null && gs != null && gs.isGradableSubpart(enrollment.getClazz().getSchedulingSubpart(), enrollment.getCourseOffering())) {
+							if (credit != null && gs != null && gs.isGradableSubpart(enrollment.getClazz().getSchedulingSubpart(), enrollment.getCourseOffering(), hibSession)) {
 								clazz.setCredit(credit.creditAbbv() + "|" + credit.creditText());
 								credit = null;
 							} else if (credit != null && gs == null) {

@@ -73,7 +73,7 @@ public class DefaultExternalClassNameHelper implements
 	}
 
 	@Override
-	public boolean isGradableSubpart(SchedulingSubpart subpart, CourseOffering courseOffering) {
+	public boolean isGradableSubpart(SchedulingSubpart subpart, CourseOffering courseOffering, org.hibernate.Session hibSession) {
 		// there is only one subpart -> true
 		if (subpart.getInstrOfferingConfig().getSchedulingSubparts().size() == 1) return true;
 		// has a parent -> false

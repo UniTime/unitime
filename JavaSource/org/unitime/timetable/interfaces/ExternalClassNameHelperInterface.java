@@ -36,6 +36,6 @@ public interface ExternalClassNameHelperInterface {
 	public Float getClassCredit(Class_ clazz, CourseOffering courseOffering);
 	
 	public interface HasGradableSubpart {
-		public boolean isGradableSubpart(SchedulingSubpart subpart, CourseOffering courseOffering);
+		public boolean isGradableSubpart(SchedulingSubpart subpart, CourseOffering courseOffering, org.hibernate.Session hibSession);
 	}
 }
