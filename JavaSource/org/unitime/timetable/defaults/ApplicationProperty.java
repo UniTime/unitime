@@ -2679,6 +2679,11 @@ public enum ApplicationProperty {
 	@DefaultValue("org/unitime/timetable/onlinesectioning/advisors/unitime.png")
 	@Description("Advisor Course Requests: PDF logo")
 	AdvisorCourseRequestsPDFLogo("unitime.acrf.pdflogo"),
+	
+	@Type(String.class)
+	@DefaultValue("Students are responsible for meeting course prerequisites and fulfilling degree requirements, and are ultimately responsible for their own educational plan and academic success.")
+	@Description("Advisor Course Requests: PDF disclaimer")
+	AdvisorCourseRequestsPDFDisclaimer("unitime.acrf.pdfdisclaimer");
 	;
 
 	String iKey;

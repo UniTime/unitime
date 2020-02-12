@@ -491,6 +491,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public String getSessionName() { return iSessionName; }
 		public void setSessionName(String name) { iSessionName = name; }
 		
+		public boolean hasAdvisorEmail() { return iAdvisorEmail != null && !iAdvisorEmail.isEmpty(); }
 		public String getAdvisorEmail() { return iAdvisorEmail; }
 		public void setAdvisorEmail(String email) { iAdvisorEmail = email; }
 		

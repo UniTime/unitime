@@ -2473,9 +2473,6 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Date:      _______________")
 	String pdfSignatureDate();
 	
-	@DefaultMessage("Students are responsible for meeting course prerequisites and fulfilling degree requirements, and are ultimately responsible for their own educational plan and academic success.")
-	String pdfStudentDisclaimer();
-	
 	@DefaultMessage("<u>A</u>dvisor Course Requests")
 	String buttonAdvisorCourseRequests();
 	
