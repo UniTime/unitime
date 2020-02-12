@@ -330,7 +330,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					
 					StudentNote note = null;
 					for (StudentNote n: student.getNotes())
-						if (note == null || note.compareTo(n) > 0) note = n;
+						if (note == null || note.compareTo(n) < 0) note = n;
 					if (note != null) s.setNote(note.getTextNote());
 					s.setMyStudent(isMyStudent(student));
 				}

@@ -98,6 +98,14 @@
 				<line>Added ability to select multiple courses on alternatives.</line>
 			</description>
 		</item>
+		<item>
+				<name>Online Student Scheduling Dashboard: Student Notes</name>
+				<description>
+					<line>Corrected the logic computing the last note of a student.
+						<line>This fixes the issue of showing an older note instead of the last one.</line>
+					</line>
+				</description>
+		</item>
 	</category>
 </release>
 
