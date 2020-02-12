@@ -45,6 +45,13 @@
 				<line>Fixed &quot;ORA-00932: inconsistent datatypes&quot; error when using Curriculum or Student Group resource (when showing the selected or committed solution).</line>
 			</description>
 		</item>
+		<item>
+			<name>Timetable Grid: Show All Committed</name>
+			<description>
+				<line>Added ability to show all committed classes when there is no solution loaded or selected (regardless of the user's department).</line>
+				<line>To enable set unitime.timeGrid.showAllCommitted to true (defaults to false).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>
