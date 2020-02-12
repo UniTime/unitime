@@ -910,15 +910,6 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					for (ClassAssignmentInterface ca: ret)
 						ca.setCanEnroll(canEnroll);
 				}
-				EligibilityCheck last = (EligibilityCheck)getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingEligibility);
-				if (ret != null && last != null && last.hasCreditHours())
-					for (ClassAssignmentInterface suggestion: ret)
-						for (CourseAssignment ca: suggestion.getCourseAssignments())
-							for (ClassAssignment a: ca.getClassAssignments()) {
-								Float credit = last.getCreditHour(a);
-								a.setCreditHour(credit);
-								if (credit != null) a.setCredit(FixedCreditUnitConfig.formatCredit(credit));
-							}
 				return ret;
 			}
 			
@@ -947,6 +938,15 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				for (ClassAssignmentInterface ca: ret)
 					ca.setCanEnroll(canEnroll);
 			}
+			EligibilityCheck last = (EligibilityCheck)getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingEligibility);
+			if (ret != null && last != null && last.hasCreditHours())
+				for (ClassAssignmentInterface suggestion: ret)
+					for (CourseAssignment ca: suggestion.getCourseAssignments())
+						for (ClassAssignment a: ca.getClassAssignments()) {
+							Float credit = last.getCreditHour(a);
+							a.setCreditHour(credit);
+							if (credit != null) a.setCredit(FixedCreditUnitConfig.formatCredit(credit));
+						}
 			return ret;
 		} catch (PageAccessException e) {
 			throw e;
