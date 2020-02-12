@@ -35,8 +35,11 @@ import java.util.Set;
 import org.cpsolver.coursett.constraint.GroupConstraint;
 import org.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpart;
+import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpartCache;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
@@ -74,6 +77,14 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 
 	@Override
 	public Boolean execute(final OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		if (ApplicationProperty.OnlineSchedulingGradableIType.isTrue() && Class_.getExternalClassNameHelper() != null) {
+			if (Class_.getExternalClassNameHelper() instanceof HasGradableSubpartCache) {
+				helper.setGradableSubpartsProvider(((HasGradableSubpartCache)Class_.getExternalClassNameHelper()).getGradableSubparts(server.getAcademicSession().getUniqueId(), helper.getHibSession()));
+			} else if (Class_.getExternalClassNameHelper() instanceof HasGradableSubpart) {
+				helper.setGradableSubpartsProvider((HasGradableSubpart)Class_.getExternalClassNameHelper());
+			}
+		}
+
 		Lock lock = server.lockAll();
 		try {
 			helper.beginTransaction();

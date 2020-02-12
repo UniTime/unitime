@@ -29,8 +29,11 @@ import java.util.Set;
 
 import org.cpsolver.coursett.constraint.GroupConstraint;
 import org.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.SectioningServlet;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpart;
+import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpartCache;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
@@ -198,7 +201,17 @@ public class DatabaseServer extends AbstractLockingServer {
 				"left join fetch co.creditConfigs cc " +
 				"left join fetch ss.creditConfigs sc " +
 				"where io.uniqueId = :offeringId").setLong("offeringId", offeringId).setCacheable(true).uniqueResult();
-		return o == null || !o.isAllowStudentScheduling() ? null : new XOffering(o, distributions, getCurrentHelper());
+		if (o == null || !o.isAllowStudentScheduling()) return null;
+		if (ApplicationProperty.OnlineSchedulingGradableIType.isTrue() && Class_.getExternalClassNameHelper() != null) {
+			if (Class_.getExternalClassNameHelper() instanceof HasGradableSubpartCache) {
+				List<Long> offeringIds = new ArrayList<Long>(1); offeringIds.add(offeringId);
+				getCurrentHelper().setGradableSubpartsProvider(((HasGradableSubpartCache)Class_.getExternalClassNameHelper()).getGradableSubparts(offeringIds, getCurrentHelper().getHibSession()));
+			} else if (Class_.getExternalClassNameHelper() instanceof HasGradableSubpart) {
+				getCurrentHelper().setGradableSubpartsProvider((HasGradableSubpart)Class_.getExternalClassNameHelper());
+			}
+		}
+		
+		return new XOffering(o, distributions, getCurrentHelper());
 	}
 
 	@Override

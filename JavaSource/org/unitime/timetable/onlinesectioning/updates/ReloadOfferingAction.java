@@ -37,8 +37,11 @@ import org.cpsolver.ifs.util.ToolBox;
 import org.cpsolver.studentsct.extension.StudentQuality;
 import org.cpsolver.studentsct.online.selection.ResectioningWeights;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpart;
+import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpartCache;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
@@ -96,6 +99,14 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 	
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		if (ApplicationProperty.OnlineSchedulingGradableIType.isTrue() && Class_.getExternalClassNameHelper() != null) {
+			if (Class_.getExternalClassNameHelper() instanceof HasGradableSubpartCache) {
+				helper.setGradableSubpartsProvider(((HasGradableSubpartCache)Class_.getExternalClassNameHelper()).getGradableSubparts(getOfferingIds(), helper.getHibSession()));
+			} else if (Class_.getExternalClassNameHelper() instanceof HasGradableSubpart) {
+				helper.setGradableSubpartsProvider((HasGradableSubpart)Class_.getExternalClassNameHelper());
+			}
+		}
+
 		for (Long offeringId: getOfferingIds()) {
 			helper.getAction().addOther(OnlineSectioningLog.Entity.newBuilder()
 					.setUniqueId(offeringId)
@@ -111,6 +122,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 							"select distinct e.student.uniqueId from StudentClassEnrollment e " +
 							"where e.courseOffering.instructionalOffering.uniqueId = :offeringId and e.courseRequest is null")
 							.setLong("offeringId", offeringId).list());
+			
 			/*
 			List<Long> studentIds = (List<Long>)helper.getHibSession().createQuery(
 					"select distinct s.uniqueId from Student s " +

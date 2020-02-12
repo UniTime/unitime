@@ -56,6 +56,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpart;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -107,6 +108,7 @@ public class OnlineSectioningHelper {
     protected static int sBatchSize = 100;
     protected CacheMode iCacheMode = null;
     protected XExactTimeConversion iExactTimeConversion = null;
+    protected HasGradableSubpart iHasGradableSubpart = null;
     
     public OnlineSectioningHelper() {
     	this(null, null, null);
@@ -379,6 +381,14 @@ public class OnlineSectioningHelper {
     	if (iExactTimeConversion == null)
     		iExactTimeConversion = new XExactTimeConversion(getHibSession());
     	return iExactTimeConversion;
+    }
+    
+    public HasGradableSubpart getGradableSubpartsProvider() {
+    	return iHasGradableSubpart;
+    }
+    
+    public void setGradableSubpartsProvider(HasGradableSubpart provider) {
+    	iHasGradableSubpart = provider;
     }
     
     public NameFormat getStudentNameFormat() {

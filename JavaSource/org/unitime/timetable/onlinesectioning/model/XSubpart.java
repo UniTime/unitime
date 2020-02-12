@@ -36,8 +36,6 @@ import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Subpart;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
-import org.unitime.timetable.defaults.ApplicationProperty;
-import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpart;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.SchedulingSubpart;
@@ -77,10 +75,9 @@ public class XSubpart implements Serializable, Externalizable {
         iParentId = subpart.getParentSubpart() == null ? null : subpart.getParentSubpart().getUniqueId();
         if (subpart.getCredit() != null)
         	iCredit = new XCredit(subpart.getCredit());
-        if (ApplicationProperty.OnlineSchedulingGradableIType.isTrue() && Class_.getExternalClassNameHelper() != null && Class_.getExternalClassNameHelper() instanceof HasGradableSubpart) {
-        	HasGradableSubpart gs = (HasGradableSubpart) Class_.getExternalClassNameHelper();
+        if (helper.getGradableSubpartsProvider() != null) {
         	for (CourseOffering co: subpart.getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings()) {
-        		if (co.getCredit() != null && gs.isGradableSubpart(subpart, co, helper.getHibSession()))
+        		if (co.getCredit() != null && helper.getGradableSubpartsProvider().isGradableSubpart(subpart, co, helper.getHibSession()))
         			iCreditByCourse.put(co.getUniqueId(), new XCredit(co.getCredit()));
         	}
         } else if (courseCredit) {

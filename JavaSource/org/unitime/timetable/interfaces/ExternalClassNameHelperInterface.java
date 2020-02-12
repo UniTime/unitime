@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.interfaces;
 
+import java.util.Collection;
+
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.SchedulingSubpart;
@@ -37,5 +39,10 @@ public interface ExternalClassNameHelperInterface {
 	
 	public interface HasGradableSubpart {
 		public boolean isGradableSubpart(SchedulingSubpart subpart, CourseOffering courseOffering, org.hibernate.Session hibSession);
+	}
+	
+	public interface HasGradableSubpartCache {
+		public HasGradableSubpart getGradableSubparts(Long sessionId, org.hibernate.Session hibSession);
+		public HasGradableSubpart getGradableSubparts(Collection<Long> offeringIds, org.hibernate.Session hibSession);
 	}
 }
