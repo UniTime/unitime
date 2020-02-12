@@ -78,7 +78,8 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 	}
 	
 	public String getCatalogYear(OnlineSectioningServer server) {
-		return iExternalTermProvider.getExternalTerm(server.getAcademicSession()).substring(0, 4) + "10";
+		return ApplicationProperties.getProperty("banner.dgw.catalogYear." + server.getAcademicSession().getTerm() + server.getAcademicSession().getYear(),
+				ApplicationProperties.getProperty("banner.dgw.catalogYear", iExternalTermProvider.getExternalTerm(server.getAcademicSession()).substring(0, 4) + "10"));
 	}
 	
 	protected String getCriticalCoursesSQL() {
@@ -198,11 +199,11 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 			return year + "10";
 		if ("03".equals(acm.getClassification()) || "04".equals(acm.getClassification()))
 			return (year - 1) + "10";
-		if ("04".equals(acm.getClassification()) || "05".equals(acm.getClassification()))
+		if ("05".equals(acm.getClassification()) || "06".equals(acm.getClassification()))
 			return (year - 2) + "10";
-		if ("06".equals(acm.getClassification()) || "07".equals(acm.getClassification()))
+		if ("07".equals(acm.getClassification()) || "08".equals(acm.getClassification()))
 			return (year - 3) + "10";
-		if ("08".equals(acm.getClassification()) || "09".equals(acm.getClassification()) || "10".equals(acm.getClassification()))
+		if ("09".equals(acm.getClassification()) || "10".equals(acm.getClassification()))
 			return (year - 4) + "10";
 		return year + "10";
 	}
@@ -214,11 +215,11 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 			return seq;
 		if ("03".equals(acm.getClassification()) || "04".equals(acm.getClassification()))
 			return seq + 3;
-		if ("04".equals(acm.getClassification()) || "05".equals(acm.getClassification()))
+		if ("05".equals(acm.getClassification()) || "06".equals(acm.getClassification()))
 			return seq + 6;
-		if ("06".equals(acm.getClassification()) || "07".equals(acm.getClassification()))
+		if ("07".equals(acm.getClassification()) || "08".equals(acm.getClassification()))
 			return seq + 9;
-		if ("08".equals(acm.getClassification()) || "09".equals(acm.getClassification()) || "10".equals(acm.getClassification()))
+		if ("09".equals(acm.getClassification()) || "10".equals(acm.getClassification()))
 			return seq + 9; // most plans are only for four years
 		return seq;
 	}
