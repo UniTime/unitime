@@ -73,6 +73,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CourseMessage;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestPriority;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
@@ -114,6 +115,7 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationStatus;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationStatusResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationRequest;
+import org.unitime.timetable.onlinesectioning.model.XAdvisorRequest;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -833,6 +835,33 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				}
 			}
 		}
+		
+		// Check for missing critical courses that have been recommended by the advisor
+		boolean questionMissingAdvisorCritical = false;
+		if (original.hasAdvisorRequests()) {
+			for (XAdvisorRequest ar: original.getAdvisorRequests()) {
+				if (ar.getAlternative() == 0 && !ar.isSubstitute() && ar.isCritical() && ar.hasCourseId()) {
+					RequestPriority arp = request.getRequestPriority(new RequestedCourse(ar.getCourseId().getCourseId(), ar.getCourseId().getCourseName()));
+					if (arp == null || arp.isAlternative()) {
+						boolean hasAlt = false;
+						for (XAdvisorRequest alt: original.getAdvisorRequests()) {
+							if (alt.getPriority() != ar.getPriority() || !alt.hasCourseId() || alt.isSubstitute() || !alt.isCritical() || ar.getAlternative() == 0) continue;
+							RequestPriority altrp = request.getRequestPriority(new RequestedCourse(alt.getCourseId().getCourseId(), alt.getCourseId().getCourseName())); 
+							if (altrp != null && !altrp.isAlternative()) {
+								hasAlt = true; break;
+							}
+						}
+						if (!hasAlt) {
+							response.addMessage(ar.getCourseId().getCourseId(), ar.getCourseId().getCourseName(), "DROP_CRIT",
+									ApplicationProperties.getProperty("purdue.specreg.messages.courseMissingAdvisedCritical", "Missing critical course that has been recommended by the advisor.").replace("{course}", ar.getCourseId().getCourseName()),
+									CONF_UNITIME);
+							questionMissingAdvisorCritical = true;
+						}
+					}
+				}
+			}
+		}
+		
 		if (response.getConfirms().contains(CONF_BANNER)) {
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.bannerProblemsFound", "The following registration errors have been detected:"), CONF_BANNER, -1);
 			String note = ApplicationProperties.getProperty("purdue.specreg.messages.courseRequestNote", "<b>Request Note:</b>");
@@ -864,11 +893,15 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					"Two or more single section courses are conflicting with each other. You will likely not be able to get the conflicting course, so please provide an alternative course if possible."),
 					CONF_UNITIME, 4);
 		if (questionDropCritical)
-			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.dropCritical", (creditError != null || questionNoAlt || questionDropCritical ? "\n" : "") +
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.dropCritical", (creditError != null || questionNoAlt || questionTimeConflict ? "\n" : "") +
 					"One or more courses that are marked as critical in your degree plan have been removed. This may prohibit progress towards degree. Please consult with your academic advisor."),
 					CONF_UNITIME, 5);
-		if (creditError != null || questionNoAlt || questionTimeConflict)
-			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.confirmation", "\nDo you want to proceed?"), CONF_UNITIME, 6);
+		if (questionMissingAdvisorCritical)
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.missingAdvisedCritical", (creditError != null || questionNoAlt || questionTimeConflict || questionDropCritical ? "\n" : "") +
+					"One or more courses that are marked as critical in your degree plan and that have been listed by your advisor have not been requested. This may prohibit progress towards degree. Please see you advisor course requests and/or consult with your academic advisor."),
+					CONF_UNITIME, 6);
+		if (creditError != null || questionNoAlt || questionTimeConflict || questionDropCritical || questionMissingAdvisorCritical)
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.confirmation", "\nDo you want to proceed?"), CONF_UNITIME, 7);
 		
 		Set<Integer> conf = response.getConfirms();
 		if (conf.contains(CONF_UNITIME)) {
