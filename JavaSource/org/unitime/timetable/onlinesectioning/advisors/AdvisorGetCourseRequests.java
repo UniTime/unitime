@@ -136,24 +136,14 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 						rc.setReadOnly(hasEnrollments != null);
 						rc.setCanDelete(hasEnrollments == null);
 						if (hasEnrollments != null) {
-							rc.setStatus(RequestedCourseStatus.ENROLLED);
 							enrolled = true;
-						} else
-							rc.setStatus(RequestedCourseStatus.SAVED);
-						if (hasEnrollments != null) {
-							rc.setCanChangeAlternatives(false);
-							rc.setCanChangePriority(false);
 							r.addAdvisorNote(MSG.noteEnrolled(course.getCourseName(), ts.format(hasEnrollments)));
 						}
 						XOffering offering = server.getOffering(course.getOfferingId());
 						if (offering != null && offering.hasReservations()) {
 							for (XReservation reservation: offering.getReservations()) {
 								if (reservation instanceof XIndividualReservation || reservation instanceof XGroupReservation || reservation instanceof XLearningCommunityReservation) {
-									if (reservation.mustBeUsed() && reservation.isApplicable(student, course)) { // !reservation.isExpired() && 
-										rc.setReadOnly(true);
-										rc.setCanDelete(false);
-										rc.setCanChangeAlternatives(false);
-										rc.setCanChangePriority(false);
+									if (reservation.mustBeUsed() && reservation.isApplicable(student, course)) {
 										if (reservation instanceof XGroupReservation)
 											r.addAdvisorNote(MSG.noteHasGroupReservation(((XGroupReservation)reservation).getGroup().getTitle()));
 										else if (reservation instanceof XLearningCommunityReservation)
