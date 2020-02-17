@@ -52,7 +52,7 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 	public static final StudentSectioningResources RESOURCES = GWT.create(StudentSectioningResources.class);
 	public static final GwtMessages GWT_MESSAGES = GWT.create(GwtMessages.class);
 	private UniTimeTextBox iSubject, iCC;
-	private CheckBox iCourseRequests, iClassSchedule;
+	private CheckBox iCourseRequests, iClassSchedule, iAdvisorRequests;
 	private TextArea iMessage, iNote;
 	private Set<StudentStatusInfo> iStates;
 	private ListBox iStatus;
@@ -69,6 +69,8 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 		addStyleName("unitime-StudentStatusDialog");
 		setEscapeToHide(true);
 		
+		iAdvisorRequests = new CheckBox(MESSAGES.mailIncludeAdvisorRequests());
+		iAdvisorRequests.setValue(SectioningStatusCookie.getInstance().isEmailIncludeAdvisorRequests());
 		iCourseRequests = new CheckBox(MESSAGES.mailIncludeCourseRequests());
 		iCourseRequests.setValue(SectioningStatusCookie.getInstance().isEmailIncludeCourseRequests());
 		iClassSchedule = new CheckBox(MESSAGES.mailIncludeClassSchedule());
@@ -122,7 +124,7 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 			@Override
 			public void onClick(ClickEvent event) {
 				hide();
-				SectioningStatusCookie.getInstance().setEmailDefaults(getIncludeCourseRequests(), getIncludeClassSchedule(), getCC(), getSubject());
+				SectioningStatusCookie.getInstance().setEmailDefaults(getIncludeCourseRequests(), getIncludeClassSchedule(), getIncludeAdvisorRequests(), getCC(), getSubject());
 				if (iConfirmation != null && !iConfirmation.isAllMyStudents()) {
 					UniTimeConfirmationDialog.confirmFocusNo(MESSAGES.confirmSendEmail(iConfirmation.getStudentCount()), iCommand);
 				} else {
@@ -261,7 +263,7 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 		iForm.addRow(MESSAGES.emailCC(), iCC);
 		iForm.addRow(MESSAGES.emailBody(), iMessage);
 		P panel = new P();
-		panel.add(iCourseRequests); panel.add(iClassSchedule);
+		panel.add(iAdvisorRequests); panel.add(iCourseRequests); panel.add(iClassSchedule);
 		iForm.addRow(MESSAGES.emailInclude(), panel);
 		iForm.addBottomRow(iButtons);
 		iButtons.setEnabled("set-note", false);
@@ -270,6 +272,7 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 		iButtons.setEnabled("set-status", false);
 		setText(MESSAGES.sendStudentEmail());
 		center();
+		iSubject.focus();
 	}
 	
 	public void massCancel(Command command) {
@@ -330,8 +333,16 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 		return iSubject.getText();
 	}
 	
+	public void setSubject(String subject) {
+		iSubject.setText(subject);
+	}
+	
 	public String getCC() {
 		return iCC.getText();
+	}
+	
+	public void setCC(String cc) {
+		iCC.setText(cc);
 	}
 	
 	public String getMessage() {
@@ -344,6 +355,10 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 	
 	public Boolean getIncludeClassSchedule() {
 		return iClassSchedule.getValue();
+	}
+	
+	public Boolean getIncludeAdvisorRequests() {
+		return iAdvisorRequests.getValue();
 	}
 	
 	public static interface StudentStatusConfirmation {

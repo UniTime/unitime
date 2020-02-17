@@ -62,7 +62,7 @@ public class AdvisorConfirmationPDF {
 
 	public AdvisingStudentDetails getDetails() { return iDetails; }
 	
-	protected void generatePdfConfirmation(OutputStream out) throws IOException, DocumentException {
+	public void generatePdfConfirmation(OutputStream out) throws IOException, DocumentException {
 		Document document = new Document(PageSize.LETTER);
 		PdfWriter writer = PdfWriter.getInstance(document, out);
 		writer.setPageEvent(new PdfEventHandler());

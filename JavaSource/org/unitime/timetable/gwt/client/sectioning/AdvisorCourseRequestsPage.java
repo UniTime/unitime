@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -82,6 +83,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -118,6 +120,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	
 	private ScheduleStatus iStatusBox = null;
 	private WebTable iRequests;
+	
+	private CheckBox iEmailConfirmationHeader, iEmailConfirmationFooter;
 	
 	public AdvisorCourseRequestsPage() {
 		super(6);
@@ -180,6 +184,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				header.setEnabled("submit", false);
 				header.setEnabled("print", false);
 				iDegreePlan.setVisible(false); iDegreePlan.setEnabled(false);
+				iEmailConfirmationHeader.setVisible(false);
+				iEmailConfirmationFooter.setVisible(false);
 				iStatusBox.clear();
 				LoadingWidget.getInstance().show(MESSAGES.loadingAdvisorRequests(iStudentName.getText()));
 				sSectioningService.getStudentAdvisingDetails(iSession.getAcademicSessionId(), iStudentExternalId.getText(), new AsyncCallback<AdvisingStudentDetails>() {
@@ -190,6 +196,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 						header.setEnabled("submit", result.isCanUpdate());
 						header.setEnabled("print", !result.isCanUpdate());
 						iDegreePlan.setVisible(result.isDegreePlan()); iDegreePlan.setEnabled(result.isDegreePlan());
+						iEmailConfirmationHeader.setVisible(result.isCanUpdate());
+						iEmailConfirmationFooter.setVisible(result.isCanUpdate());
 						iAdvisorEmail.setText(result.getAdvisorEmail() == null ? "" : result.getAdvisorEmail());
 						iStudentName.setText(result.getStudentName());
 						iStudentExternalId.setText(result.getStudentExternalId());
@@ -368,6 +376,33 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		footer = header.clonePanel();
 		footer.addStyleName("unitime-PageHeaderFooter");
 		addBottomRow(footer);
+		
+		iEmailConfirmationHeader = new CheckBox(MESSAGES.checkSendEmailConfirmation(), true);
+		iEmailConfirmationHeader.addStyleName("toggle");
+		header.insertRight(iEmailConfirmationHeader, true);
+		iEmailConfirmationHeader.setVisible(false);
+		
+		iEmailConfirmationFooter = new CheckBox(MESSAGES.checkSendEmailConfirmation(), true);
+		iEmailConfirmationFooter.addStyleName("toggle");
+		footer.insertRight(iEmailConfirmationFooter, true);
+		iEmailConfirmationFooter.setVisible(false);
+		
+		iEmailConfirmationHeader.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				iEmailConfirmationFooter.setValue(event.getValue(), false);
+				SectioningStatusCookie.getInstance().setAdvisorRequestsEmailStudent(event.getValue());
+			}
+		});
+		iEmailConfirmationFooter.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				iEmailConfirmationHeader.setValue(event.getValue(), false);
+				SectioningStatusCookie.getInstance().setAdvisorRequestsEmailStudent(event.getValue());
+			}
+		});
+		iEmailConfirmationHeader.setValue(SectioningStatusCookie.getInstance().isAdvisorRequestsEmailStudent());
+		iEmailConfirmationFooter.setValue(iEmailConfirmationHeader.getValue());
 		
 		iStatusBox = new ScheduleStatus();
 		addRow(iStatusBox);
@@ -604,6 +639,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 			header.setEnabled("submit", false);
 			header.setEnabled("print", false);
 			iDegreePlan.setVisible(false); iDegreePlan.setEnabled(false);
+			iEmailConfirmationHeader.setVisible(false);
+			iEmailConfirmationFooter.setVisible(false);
 			clearRequests();
 			clearStudentRequests();
 		} else {
@@ -642,6 +679,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 			header.setEnabled("submit", false);
 			header.setEnabled("print", false);
 			iDegreePlan.setVisible(false); iDegreePlan.setEnabled(false);
+			iEmailConfirmationHeader.setVisible(false);
+			iEmailConfirmationFooter.setVisible(false);
 			super.selectSession();
 		}		
 	}
@@ -708,14 +747,37 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		details.setRequest(getRequest());
 		details.setStatus(iDetails.getStatus(iStatus.getSelectedValue()));
 		LoadingWidget.getInstance().show(MESSAGES.advisorCourseRequestsSaving());
-		sSectioningService.submitAdvisingDetails(details, new AsyncCallback<AdvisorCourseRequestSubmission>() {
+		sSectioningService.submitAdvisingDetails(details, false, new AsyncCallback<AdvisorCourseRequestSubmission>() {
 			@Override
 			public void onSuccess(AdvisorCourseRequestSubmission result) {
 				LoadingWidget.getInstance().hide();
 				iDetails = details;
 				download(result.getPdf(), "crf-" + iStudentExternalId.getText());
-				if (result.isUpdated())
+				if (result.isUpdated()) {
 					iStatusBox.info(MESSAGES.advisorRequestsSubmitOK());
+					if (isSendEmailConformation()) {
+						final StudentStatusDialog dialog = new StudentStatusDialog(new HashSet<StudentStatusInfo>(), null);
+						dialog.setCC(iDetails.hasAdvisorEmail() ? iDetails.getAdvisorEmail().replace("\n", ", ") : "");
+						dialog.setSubject(MESSAGES.defaulSubjectAdvisorRequests());
+						dialog.sendStudentEmail(new Command() {
+							@Override
+							public void execute() {
+								sSectioningService.sendEmail(iDetails.getStudentId(),
+										dialog.getSubject(), dialog.getMessage(), dialog.getCC(),
+										false, false, true, new AsyncCallback<Boolean>() {
+											@Override
+											public void onFailure(Throwable caught) {
+												iStatusBox.error(MESSAGES.advisorRequestsEmailFailed(caught.getMessage()), caught);
+											}
+											@Override
+											public void onSuccess(Boolean result) {
+												iStatusBox.info(MESSAGES.advisorRequestsEmailSent());
+											}
+								});
+							}
+						});
+					}
+				}
 			}
 			
 			@Override
@@ -1069,5 +1131,9 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		
 		getRowFormatter().setVisible(iStudentRequestHeaderLine, iDetails != null && iDetails.hasStudentRequest());
 		getRowFormatter().setVisible(iStudentRequestHeaderLine + 1, iDetails != null && iDetails.hasStudentRequest());
+	}
+	
+	public boolean isSendEmailConformation() {
+		return !iEmailConfirmationHeader.isVisible() || iEmailConfirmationHeader.getValue();
 	}
 }

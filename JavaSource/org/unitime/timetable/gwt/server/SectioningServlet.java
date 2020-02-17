@@ -199,8 +199,8 @@ import org.unitime.timetable.onlinesectioning.updates.StudentEmail;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.UserContext.Chameleon;
 import org.unitime.timetable.security.context.AnonymousUserContext;
-import org.unitime.timetable.security.permissions.AdministrationPermissions.Chameleon;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.service.ProxyHolder;
@@ -2587,7 +2587,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 
 	@Override
-	public Boolean sendEmail(Long studentId, String subject, String message, String cc, Boolean courseRequests, Boolean classSchedule) throws SectioningException, PageAccessException {
+	public Boolean sendEmail(Long studentId, String subject, String message, String cc, Boolean courseRequests, Boolean classSchedule, Boolean advisorRequests) throws SectioningException, PageAccessException {
 		try {
 			OnlineSectioningServer server = getServerInstance(getStatusPageSessionId(), true);
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
@@ -2606,10 +2606,15 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				}
 			
 			StudentEmail email = server.createAction(StudentEmail.class).forStudent(studentId);
-			if (courseRequests != null && classSchedule != null)
-				email.overridePermissions(courseRequests, classSchedule);
+			if (courseRequests != null && classSchedule != null && advisorRequests != null) {
+				email.overridePermissions(courseRequests, classSchedule, advisorRequests);
+				if (advisorRequests && !courseRequests && !classSchedule)
+					email.includeAdvisorRequestsPDF();
+			}
 			email.setCC(cc);
-			email.setEmailSubject(subject == null || subject.isEmpty() ? MSG.defaulSubject() : subject);
+			email.setEmailSubject(subject == null || subject.isEmpty() ?
+					(classSchedule ? MSG.defaulSubject() : courseRequests ? MSG.defaulSubjectCourseRequests() : advisorRequests ? MSG.defaulSubjectAdvisorRequests() : MSG.defaulSubjectOther())
+					: subject);
 			email.setMessage(message);
 			return server.execute(email, currentUser());
 		} catch (PageAccessException e) {
@@ -3435,13 +3440,27 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 
 	@Override
-	public AdvisorCourseRequestSubmission submitAdvisingDetails(AdvisingStudentDetails details) throws SectioningException, PageAccessException {
+	public AdvisorCourseRequestSubmission submitAdvisingDetails(AdvisingStudentDetails details, boolean emailStudent) throws SectioningException, PageAccessException {
 		getSessionContext().checkPermissionAnySession(details.getSessionId(), Right.AdvisorCourseRequests);
 		
 		OnlineSectioningServer server = getServerInstance(details.getSessionId(), true);
 		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
 		
 		AdvisorCourseRequestSubmission ret = server.execute(server.createAction(AdvisorCourseRequestsSubmit.class).withDetails(details), currentUser());
+		
+		if (emailStudent) {
+			StudentEmail email = server.createAction(StudentEmail.class)
+					.forStudent(details.getStudentId())
+					.overridePermissions(false, false, true)
+					.includeAdvisorRequestsPDF();
+			email.setEmailSubject(MSG.defaulSubjectAdvisorRequests());
+			UserContext user = getSessionContext().getUser();
+			if (user != null && user instanceof Chameleon)
+				email.setCC(((Chameleon)user).getOriginalUserContext().getEmail());
+			else if (user != null)
+				email.setCC(user.getEmail());
+			server.execute(email, currentUser());
+		}
 		
 		try {
 	        SessionFactory hibSessionFactory = SessionDAO.getInstance().getSession().getSessionFactory();

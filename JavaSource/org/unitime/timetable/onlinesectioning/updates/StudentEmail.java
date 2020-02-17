@@ -69,6 +69,10 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisingStudentDetails;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
+import org.unitime.timetable.model.Advisor;
+import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -78,6 +82,8 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.advisors.AdvisorConfirmationPDF;
+import org.unitime.timetable.onlinesectioning.advisors.AdvisorGetCourseRequests;
 import org.unitime.timetable.onlinesectioning.basic.GetRequest;
 import org.unitime.timetable.onlinesectioning.custom.CourseUrlProvider;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
@@ -97,6 +103,7 @@ import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
+import org.unitime.timetable.util.NameFormat;
 import org.unitime.timetable.util.Formats.Format;
 
 import freemarker.template.Configuration;
@@ -120,6 +127,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	private String iSubject = MSG.emailDeafultSubject(), iSubjectExt = null, iMessage = null, iCC = null;
 	private static Hashtable<Long, String> sLastMessage = new Hashtable<Long, String>();
 	private byte[] iTimetableImage = null;
+	private byte[] iAdvisorRequestsPDF = null;
 	
 	private Long iStudentId;
 	private XOffering iOldOffering;
@@ -131,6 +139,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	private boolean iPermisionCheck = true;
 	private boolean iIncludeCourseRequests = true;
 	private boolean iIncludeClassSchedule = true;
+	private boolean iIncludeAdvisorRequests = false;
+	private boolean iIncludeAdvisorRequestsPDF = false;
 	
 	public StudentEmail forStudent(Long studentId) {
 		iStudentId = studentId;
@@ -149,10 +159,16 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		return this;
 	}
 	
-	public StudentEmail overridePermissions(boolean courseRequests, boolean classSchedule) {
+	public StudentEmail overridePermissions(boolean courseRequests, boolean classSchedule, boolean advisorRequests) {
 		iPermisionCheck = false;
 		iIncludeCourseRequests = courseRequests;
 		iIncludeClassSchedule = classSchedule;
+		iIncludeAdvisorRequests = advisorRequests;
+		return this;
+	}
+	
+	public StudentEmail includeAdvisorRequestsPDF() {
+		iIncludeAdvisorRequestsPDF = true;
 		return this;
 	}
 	
@@ -207,7 +223,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				action.addEnrollment(enrollment);
 			}
 			
-			XStudent student = server.getStudent(getStudentId());
+			final XStudent student = server.getStudent(getStudentId());
 			if (student == null) return false;
 			setStudent(student);
 			action.getStudentBuilder().setUniqueId(student.getStudentId()).setExternalId(student.getExternalId()).setName(student.getName());
@@ -252,7 +268,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						
 						if (getCC() != null && !getCC().isEmpty()) {
 							String suffix = ApplicationProperty.EmailDefaultAddressSuffix.value();
-							for (StringTokenizer s = new StringTokenizer(getCC(), ",;"); s.hasMoreTokens(); ) {
+							for (StringTokenizer s = new StringTokenizer(getCC(), ",;\n"); s.hasMoreTokens(); ) {
 								String address = s.nextToken().trim();
 								if (address.isEmpty()) continue;
 								if (suffix != null && address.indexOf('@') < 0)
@@ -346,6 +362,30 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 								@Override
 								public String getContentType() {
 									return "image/png";
+								}
+							});
+						}
+						
+						if (iAdvisorRequestsPDF != null) {
+							email.addAttachment(new DataSource() {
+								@Override
+								public OutputStream getOutputStream() throws IOException {
+									throw new IOException("No output stream.");
+								}
+								
+								@Override
+								public String getName() {
+									return "recommendations.pdf";
+								}
+								
+								@Override
+								public InputStream getInputStream() throws IOException {
+									return new ByteArrayInputStream(iAdvisorRequestsPDF);
+								}
+								
+								@Override
+								public String getContentType() {
+									return "application/pdf";
 								}
 							});
 						}
@@ -507,6 +547,85 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					.withCustomValidation(status != null && status.hasOption(StudentSectioningStatus.Option.reqval))
 					.execute(server, helper);
 			input.put("requests", generateCourseRequests(student, requests, server, helper));
+		}
+		
+		if (iIncludeAdvisorRequests) {
+			CourseRequestInterface requests = server.createAction(AdvisorGetCourseRequests.class)
+					.forStudent(student.getUniqueId())
+					.checkDemands(false)
+					.execute(server, helper);
+			if (requests != null && !requests.isEmpty()) {
+				input.put("advisor", generateAdvisorRequests(student, requests, server, helper));
+				String disclaimer = ApplicationProperty.AdvisorCourseRequestsPDFDisclaimer.value();
+				if (disclaimer != null && !disclaimer.isEmpty()) {
+					input.put("disclaimer", disclaimer);
+				}
+				if (iIncludeAdvisorRequestsPDF) {
+					AdvisingStudentDetails details = new AdvisingStudentDetails();
+					details.setSessionId(server.getAcademicSession().getUniqueId());
+					details.setStudentId(student.getUniqueId());
+					details.setStudentName(student.getName(NameFormat.LAST_FIRST_MIDDLE.reference()));
+					details.setStudentExternalId(student.getExternalUniqueId());
+					details.setSessionName(student.getSession().getLabel());
+					Advisor advisor = Advisor.findByExternalId(helper.getUser().getExternalId(), server.getAcademicSession().getUniqueId());
+					if (advisor != null)
+						details.setAdvisorEmail(advisor.getEmail());
+					if (!details.hasAdvisorEmail()) {
+						AdvisorCourseRequest lastAcr = null;
+						for (AdvisorCourseRequest acr: student.getAdvisorCourseRequests()) {
+							if (lastAcr == null || lastAcr.getTimestamp().before(acr.getTimestamp())) lastAcr = acr;
+						}
+						if (lastAcr != null) {
+							advisor = Advisor.findByExternalId(lastAcr.getChangedBy(), server.getAcademicSession().getUniqueId());
+							if (advisor != null)
+								details.setAdvisorEmail(advisor.getEmail());
+						}
+					}
+					if (!details.hasAdvisorEmail()) {
+						String email = null;
+						for (Advisor a: student.getAdvisors()) {
+							if (a.getEmail() != null && !a.getEmail().isEmpty()) {
+								email = (email == null ? "" : email + "\n") + a.getEmail();
+							}
+						}
+						details.setAdvisorEmail(email);;
+					}
+					if (!details.hasAdvisorEmail()) {
+						TimetableManager manager = TimetableManager.findByExternalId(helper.getUser().getExternalId());
+						if (manager != null)
+							details.setAdvisorEmail(manager.getEmailAddress());
+					}
+					if (student.getSectioningStatus() != null) {
+						StudentStatusInfo info = new StudentStatusInfo();
+						info.setUniqueId(student.getSectioningStatus().getUniqueId());
+						info.setReference(student.getSectioningStatus().getReference());
+						info.setLabel(student.getSectioningStatus().getLabel());
+						details.setStatus(info);
+					} else if (student.getSession().getDefaultSectioningStatus() != null) {
+						StudentStatusInfo info = new StudentStatusInfo();
+						info.setUniqueId(null);
+						info.setReference("");
+						info.setLabel(MSG.studentStatusSessionDefault(student.getSession().getDefaultSectioningStatus().getLabel()));
+						info.setEffectiveStart(null); info.setEffectiveStop(null);
+						details.setStatus(info);
+					} else {
+						StudentStatusInfo info = new StudentStatusInfo();
+						info.setReference("");
+						info.setLabel(MSG.studentStatusSystemDefault());
+						info.setAllEnabled();
+						details.setStatus(info);
+					}
+					details.setRequest(requests);
+					try {
+						ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+						new AdvisorConfirmationPDF(details).generatePdfConfirmation(bytes);
+						bytes.flush(); bytes.close();
+						iAdvisorRequestsPDF = bytes.toByteArray();
+					} catch (Exception e) {
+						helper.error("Failed to generate PDF confirmation: " + e.getMessage(), e);
+					}
+				}
+			}
 		}
 		
 		if (iIncludeClassSchedule) {
@@ -1126,6 +1245,167 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				courseRequests.add(line);
 			}
 		}
+
+		return courseRequests;
+	}
+	
+	CourseRequestsTable generateAdvisorRequests(org.unitime.timetable.model.Student student, CourseRequestInterface requests, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		CourseRequestsTable courseRequests = new CourseRequestsTable();
+		Format<Number> df = Formats.getNumberFormat("0.#");
+		int priority = 1;
+		for (Request request: requests.getCourses()) {
+			if (request.hasRequestedCourse()) {
+				boolean first = true;
+				for (RequestedCourse rc: request.getRequestedCourse()) {
+					if (rc.isCourse()) {
+						Collection<Preference> prefs = null;
+						if (rc.hasSelectedIntructionalMethods()) {
+							if (rc.hasSelectedClasses()) {
+								prefs = new ArrayList<Preference>(rc.getSelectedIntructionalMethods().size() + rc.getSelectedClasses().size());
+								prefs.addAll(new TreeSet<Preference>(rc.getSelectedIntructionalMethods()));
+								prefs.addAll(new TreeSet<Preference>(rc.getSelectedClasses()));
+							} else {
+								prefs = new TreeSet<Preference>(rc.getSelectedIntructionalMethods());
+							}
+						} else if (rc.hasSelectedClasses()) {
+							prefs = new TreeSet<Preference>(rc.getSelectedClasses());
+						}
+						if (prefs != null) courseRequests.hasPref = true;
+						String credit = (first && request.hasAdvisorCredit() ? request.getAdvisorCredit() : "");
+						String note = (first && request.hasAdvisorNote() ? request.getAdvisorNote() : "");
+						CourseRequestLine line = new CourseRequestLine();
+						line.priority = (first ? MSG.courseRequestsPriority(priority) : "");
+						line.courseName = rc.getCourseName();
+						line.courseTitle = (rc.hasCourseTitle() ? rc.getCourseTitle() : "");
+						line.credit = credit;
+						line.prefs = toString(prefs);
+						line.note = note;
+						line.first = (priority > 1 && first);
+						line.rows = (first ? request.getRequestedCourse().size() : 0);
+						courseRequests.add(line);
+					} else if (rc.isFreeTime()) {
+						String  free = "";
+						for (FreeTime ft: rc.getFreeTime()) {
+							if (!free.isEmpty()) free += ", ";
+							free += ft.toString(CONST.shortDays(), CONST.useAmPm());
+						}
+						String credit = (first && request.hasAdvisorCredit() ? request.getAdvisorCredit() : "");
+						String note = (first && request.hasAdvisorNote() ? request.getAdvisorNote() : "");
+						CourseRequestLine line = new CourseRequestLine();
+						line.priority = (first ? MSG.courseRequestsPriority(priority) : "");
+						line.courseName = CONST.freePrefix() + free;
+						line.courseTitle = "";
+						line.credit = credit;
+						line.note = note;
+						line.prefs = "";
+						line.first = (priority > 1 && first);
+						line.rows = (first ? request.getRequestedCourse().size() : 0);
+						courseRequests.add(line);
+					}
+					first = false;
+				}
+			} else {
+				String credit = (request.hasAdvisorCredit() ? request.getAdvisorCredit() : "");
+				String note = (request.hasAdvisorNote() ? request.getAdvisorNote() : "");
+				CourseRequestLine line = new CourseRequestLine();
+				line.priority = MSG.courseRequestsPriority(priority);
+				line.courseName = "";
+				line.courseTitle = "";
+				line.credit = credit;
+				line.note = note;
+				line.prefs = "";
+				line.first = (priority > 1);
+				courseRequests.add(line);
+			}
+			priority ++;				
+		}
+		priority = 1;
+		for (Request request: requests.getAlternatives()) {
+			if (request.hasRequestedCourse()) {
+				boolean first = true;
+				if (request.isWaitList()) courseRequests.hasWait = true;
+				for (RequestedCourse rc: request.getRequestedCourse()) {
+					if (rc.isCourse()) {
+						Collection<Preference> prefs = null;
+						if (rc.hasSelectedIntructionalMethods()) {
+							if (rc.hasSelectedClasses()) {
+								prefs = new ArrayList<Preference>(rc.getSelectedIntructionalMethods().size() + rc.getSelectedClasses().size());
+								prefs.addAll(new TreeSet<Preference>(rc.getSelectedIntructionalMethods()));
+								prefs.addAll(new TreeSet<Preference>(rc.getSelectedClasses()));
+							} else {
+								prefs = new TreeSet<Preference>(rc.getSelectedIntructionalMethods());
+							}
+						} else if (rc.hasSelectedClasses()) {
+							prefs = new TreeSet<Preference>(rc.getSelectedClasses());
+						}
+						if (prefs != null) courseRequests.hasPref = true;
+						String credit = (first && request.hasAdvisorCredit() ? request.getAdvisorCredit() : "");
+						String note = (first && request.hasAdvisorNote() ? request.getAdvisorNote() : "");
+						CourseRequestLine line = new CourseRequestLine();
+						line.priority = (first ? MSG.courseRequestsAlternate(priority) : "");
+						line.courseName = rc.getCourseName();
+						line.courseTitle = (rc.hasCourseTitle() ? rc.getCourseTitle() : "");
+						line.credit = credit;
+						line.prefs = toString(prefs);
+						line.note = note;
+						line.first = first;
+						line.firstalt = (first && priority == 1);
+						line.rows = (first ? request.getRequestedCourse().size() : 0);
+						courseRequests.add(line);
+					} else if (rc.isFreeTime()) {
+						CourseRequestLine line = new CourseRequestLine();
+						String free = "";
+						for (FreeTime ft: rc.getFreeTime()) {
+							if (!free.isEmpty()) free += ", ";
+							free += ft.toString(CONST.shortDays(), CONST.useAmPm());
+						}
+						String credit = (first && request.hasAdvisorCredit() ? request.getAdvisorCredit() : "");
+						String note = (first && request.hasAdvisorNote() ? request.getAdvisorNote() : "");
+						line.priority = (first ? MSG.courseRequestsAlternate(priority) : "");
+						line.courseName = CONST.freePrefix() + free;
+						line.courseTitle = "";
+						line.credit = credit;
+						line.prefs = "";
+						line.note = note;
+						line.first = first;
+						line.firstalt = (first && priority == 1);
+						line.rows = (first ? request.getRequestedCourse().size() : 0);
+						courseRequests.add(line);
+					}
+					first = false;
+				}
+			} else {
+				String credit = (request.hasAdvisorCredit() ? request.getAdvisorCredit() : "");
+				String note = (request.hasAdvisorNote() ? request.getAdvisorNote() : "");
+				CourseRequestLine line = new CourseRequestLine();
+				line.priority = MSG.courseRequestsAlternate(priority);
+				line.courseName = "";
+				line.courseTitle = "";
+				line.credit = credit;
+				line.note = note;
+				line.prefs = "";
+				line.first = (priority > 1);
+				courseRequests.add(line);
+			}
+			priority ++;
+		}
+		
+		float min = 0, max = 0;
+		for (Request request: requests.getCourses()) {
+			min += request.getAdvisorCreditMin();
+			max += request.getAdvisorCreditMax();
+		}
+		String note = (requests.hasCreditNote() ? requests.getCreditNote() : "");
+		String credit = (min < max ? df.format(min) + " - " + df.format(max) : df.format(min));
+		CourseRequestLine line = new CourseRequestLine();
+		line.priority = "";
+		line.courseName = MSG.rowTotalPriorityCreditHours();
+		line.courseTitle = "";
+		line.credit = credit;
+		line.prefs = "";
+		line.note = note;
+		line.last = true;
+		courseRequests.add(line);
 
 		return courseRequests;
 	}
@@ -2052,6 +2332,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		public boolean first = false;
 		public boolean firstalt = false;
 		public boolean last = false;
+		public int rows = 1;
 		
 		public String getPriority() { return priority; }
 		public String getCourseName() { return courseName; }
@@ -2066,5 +2347,6 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		public boolean isFirst() { return first; }
 		public boolean isFirstalt() { return firstalt; }
 		public boolean isLast() { return last; }
+		public int getRows() { return rows; }
 	}
 }

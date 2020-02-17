@@ -1346,6 +1346,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course Requests")
 	String emailCourseRequests();
 	
+	@DefaultMessage("Advisor Recommendations")
+	String emailAdvisorRequests();
+	
 	@DefaultMessage("List of Classes")
 	String emailClassList();
 	
@@ -1442,6 +1445,15 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Class schedule for %session%")
 	String defaulSubject();
 	
+	@DefaultMessage("Course requests for %session%")
+	String defaulSubjectCourseRequests();
+	
+	@DefaultMessage("Advisor recommendations for %session%")
+	String defaulSubjectAdvisorRequests();
+	
+	@DefaultMessage("Email notification for %session%")
+	String defaulSubjectOther();
+	
 	@DefaultMessage("Mass cancellation is an irreversible operation that will delete all class enrollments and course requests for the selected student(s). Are you sure to do that?")
 	String massCancelConfirmation();
 	
@@ -1450,6 +1462,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Class Schedule")
 	String mailIncludeClassSchedule();
+	
+	@DefaultMessage("Advisor Recommendations")
+	String mailIncludeAdvisorRequests();
 	
 	@DefaultMessage("<i>Arrange Hours</i>")
 	String arrangeHours();
@@ -2458,7 +2473,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Status:")
 	String propStudentStatus();
 	
-	@DefaultMessage("Student Course Requests")
+	@DefaultMessage("Advisor Recommendations")
 	String pdfHeaderAdvisorCourseRequests();
 	
 	@DefaultMessage("Saving...")
@@ -2488,8 +2503,14 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Success!")
 	String advisorRequestsSubmitOK();
 	
+	@DefaultMessage("Email sent.")
+	String advisorRequestsEmailSent();
+	
 	@DefaultMessage("Submit failed: {0}")
 	String advisorRequestsSubmitFailed(String reason);
+	
+	@DefaultMessage("Email failed: {0}")
+	String advisorRequestsEmailFailed(String reason);
 	
 	@DefaultMessage("Failed to load student: {0}")
 	String advisorRequestsLoadFailed(String reason);
@@ -2500,7 +2521,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Student Course Requests")
 	String studentCourseRequests();
 	
-	@DefaultMessage("Advisor Course Requests")
+	@DefaultMessage("Advisor Recommendations")
 	String dialogAdvisorCourseRequests();
 	
 	@DefaultMessage("Total Priority Credit Hours")
@@ -2512,19 +2533,19 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("<u>C</u>lose")
 	String buttonAdvisorRequestsClose();
 	
-	@DefaultMessage("<u>A</u>dvisor Requests")
+	@DefaultMessage("<u>A</u>dvisor Recommendations")
 	String buttonAdvisorRequests();
 	
 	@DefaultMessage("Show course requests filled in with the advisor.")
 	String hintAdvisorRequests();
 	
-	@DefaultMessage("Retrieving advisor course requests...")
+	@DefaultMessage("Retrieving advisor recommendations...")
 	String waitAdvisorRequests();
 	
-	@DefaultMessage("Failed to load advisor course requests: {0}")
+	@DefaultMessage("Failed to load advisor recommendations: {0}")
 	String failedAdvisorRequests(String reason);
 	
-	@DefaultMessage("<u>A</u>dvisor Requests")
+	@DefaultMessage("<u>A</u>dvisor Recommendations")
 	String tabAdvisorRequests();
 	
 	@DefaultMessage("Course requests not filled in.")
@@ -2598,4 +2619,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Missing some alternatives of {0}")
 	String advMessageMissingAlternatives(String course);
+	
+	@DefaultMessage("Send email confirmation")
+	String checkSendEmailConfirmation();
 }

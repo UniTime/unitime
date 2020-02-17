@@ -66,6 +66,17 @@
  				</table></tr></tr>
  			</#if>
  			
+ 			<#if advisor?? && advisor.lines??>
+ 				<tr><td style="width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;">${msg.emailAdvisorRequests()}</td></tr>
+ 				<tr><td><table width="100%" cellspacing="0" cellpadding="3">
+ 					<@advisorRequestsHeader/>
+ 					<#list advisor.lines as line>
+ 						<@advisorRequestsLine line/>
+ 					</#list>
+ 				</table></td></tr>
+ 				<#if disclaimer??><tr><td>${disclaimer}</td></tr></#if>
+ 			</#if>
+ 			
  			<#if requests??>
  				<tr><td style="width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;">${msg.emailCourseRequests()}</td></tr>
  				<#if requests.lines??>
@@ -278,5 +289,48 @@
  				<img src='http://www.unitime.org/icons/action_check.png' width='16' height='16' title='${msg.descriptionRequestWaitListed()}' alt='${msg.courseWaitListed()}'>
  			</#if>
  		</td></#if>
+ 	</tr>
+</#macro>
+
+<#macro advisorRequestsHeader>
+ 	<tr>
+ 		<#assign style="white-space: nowrap; font-weight: bold; padding-top: 5px; border-bottom: 1px dashed #9CB0CE;">
+ 		<td style="${style}">${msg.colPriority()}</td>
+ 		<td style="${style}">${msg.colCourse()}</td>
+ 		<td style="${style}">${msg.colTitle()}</td>
+ 		<td style="${style}" align="right">${msg.colCredit()}</td>
+ 		<#if advisor.hasPref><td style="${style}">${msg.colPreferences()}</td></#if>
+ 		<td style="${style}">${msg.colNotes()}</td>
+ 	</tr>
+</#macro>
+
+<#macro advisorRequestsLine line>
+	<#assign style="white-space: nowrap; vertical-align: top;">
+	<#if line.first>
+		<#assign style="border-top: 1px dashed #9CB0CE; white-space: nowrap; vertical-align: top;">
+	</#if>
+	<#if line.firstalt>
+		<#assign style="border-top: 1px solid #9CB0CE; white-space: nowrap; vertical-align: top;">
+	</#if>
+	<#if line.last>
+		<#assign style="border-top: 1px solid #9CB0CE; white-space: nowrap; vertical-align: top;">
+	</#if>
+ 	<tr>
+ 		<#if line.last>
+ 			<td style="${style} font-weight: bold;" colspan='2'>${line.courseName}</td>
+ 		<#else>
+ 			<td style="${style}">${line.priority}</td>
+ 			<td style="${style}">${line.courseName}</td>
+ 		</#if>
+ 		<td style="${style}">${line.courseTitle}</td>
+ 		<td style="${style} padding-right: 5px;" align="right">${line.credit}</td>
+ 		<#if advisor.hasPref><td style="${style}">${line.prefs}</td></#if>
+ 		<#if line.rows gt 0>
+ 			<#if line.note?? && line.note?has_content>
+ 				<td style="${style} white-space: pre-wrap;" rowSpan="${line.rows}">${line.note}</td>
+ 			<#else>
+ 				<td style="${style}" rowSpan="${line.rows}"></td>
+ 			</#if>
+ 		</#if>
  	</tr>
 </#macro>

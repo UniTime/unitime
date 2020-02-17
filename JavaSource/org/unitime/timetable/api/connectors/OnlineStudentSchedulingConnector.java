@@ -400,7 +400,8 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 			public Boolean execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
 				return service.sendEmail(studentId, helper.getOptinalParameter("subject", null), helper.getOptinalParameter("message", null), helper.getOptinalParameter("cc", null),
 						helper.getOptinalParameterBoolean("courseRequests", null),
-						helper.getOptinalParameterBoolean("classSchedule", null));
+						helper.getOptinalParameterBoolean("classSchedule", null),
+						helper.getOptinalParameterBoolean("advisorRequests", false));
 			}
 		}, Flag.GET, Flag.POST),
 		changeStatus(new OpExecution<Boolean>() {

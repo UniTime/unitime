@@ -91,7 +91,7 @@ public interface SectioningServiceAsync {
 	void savedResult(boolean online, Long sessionId, Long studentId, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;
 	void selectSession(Long sessionId, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	void lookupStudentSectioningStates(AsyncCallback<List<StudentStatusInfo>> callback) throws SectioningException, PageAccessException;
-	void sendEmail(Long studentId, String subject, String message, String cc, Boolean courseRequests, Boolean classSchedule, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
+	void sendEmail(Long studentId, String subject, String message, String cc, Boolean courseRequests, Boolean classSchedule, Boolean advisorRequests, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	void changeStatus(List<Long> studentIds, String note, String status, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	void changeStudentGroup(List<Long> studentIds, Long groupId, boolean remove, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	void changeLog(String query, AsyncCallback<List<ClassAssignmentInterface.SectioningAction>> callback) throws SectioningException, PageAccessException;
@@ -116,6 +116,6 @@ public interface SectioningServiceAsync {
 	
 	void getStudentSessions(String studentExternalId, AsyncCallback<Collection<AcademicSessionInfo>> callback) throws SectioningException, PageAccessException;
 	void getStudentAdvisingDetails(Long sessionId, String studentExternalId, AsyncCallback<AdvisingStudentDetails> callback) throws SectioningException, PageAccessException;
-	void submitAdvisingDetails(AdvisingStudentDetails details, AsyncCallback<AdvisorCourseRequestSubmission> callback) throws SectioningException, PageAccessException;
+	void submitAdvisingDetails(AdvisingStudentDetails details, boolean emailStudent, AsyncCallback<AdvisorCourseRequestSubmission> callback) throws SectioningException, PageAccessException;
 	void getAdvisorRequests(Long sessionId, Long studentId, AsyncCallback<CourseRequestInterface> callback) throws SectioningException, PageAccessException;
 }

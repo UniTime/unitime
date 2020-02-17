@@ -20,11 +20,9 @@
 package org.unitime.timetable.gwt.shared;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -459,7 +457,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private String iSessionName;
 		private String iAdvisorEmail;
 		private StudentStatusInfo iCurrentStatus;
-		private List<StudentStatusInfo> iAvailableStatuses;
+		private Set<StudentStatusInfo> iAvailableStatuses;
 		private boolean iCanUpdate, iDegreePlan;
 		private CourseRequestInterface iRequest = null;
 		private CourseRequestInterface iStudentRequest = null;
@@ -508,10 +506,10 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		
 		public boolean hasStatuses() { return iAvailableStatuses != null && !iAvailableStatuses.isEmpty(); }
 		public void addStatus(StudentStatusInfo status) {
-			if (iAvailableStatuses == null) iAvailableStatuses = new ArrayList<StudentStatusInfo>();
+			if (iAvailableStatuses == null) iAvailableStatuses = new TreeSet<StudentStatusInfo>();
 			iAvailableStatuses.add(status);
 		}
-		public List<StudentStatusInfo> getStatuses() { return iAvailableStatuses; }
+		public Set<StudentStatusInfo> getStatuses() { return iAvailableStatuses; }
 		
 		public boolean isCanUpdate() { return iCanUpdate; }
 		public void setCanUpdate(boolean canUpdate) { iCanUpdate = canUpdate; }

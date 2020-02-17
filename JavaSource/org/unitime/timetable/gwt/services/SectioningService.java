@@ -92,7 +92,7 @@ public interface SectioningService extends RemoteService {
 	ClassAssignmentInterface savedResult(boolean online, Long sessionId, Long studentId) throws SectioningException, PageAccessException;
 	Boolean selectSession(Long sessionId) throws SectioningException, PageAccessException;
 	List<StudentStatusInfo> lookupStudentSectioningStates() throws SectioningException, PageAccessException;
-	Boolean sendEmail(Long studentId, String subject, String message, String cc, Boolean courseRequests, Boolean classSchedule) throws SectioningException, PageAccessException;
+	Boolean sendEmail(Long studentId, String subject, String message, String cc, Boolean courseRequests, Boolean classSchedule, Boolean advisorRequests) throws SectioningException, PageAccessException;
 	Boolean changeStatus(List<Long> studentIds, String note, String status) throws SectioningException, PageAccessException;
 	Boolean changeStudentGroup(List<Long> studentIds, Long groupId, boolean remove) throws SectioningException, PageAccessException;
 	List<ClassAssignmentInterface.SectioningAction> changeLog(String query) throws SectioningException, PageAccessException;
@@ -117,6 +117,6 @@ public interface SectioningService extends RemoteService {
 	
 	Collection<AcademicSessionInfo> getStudentSessions(String studentExternalId) throws SectioningException, PageAccessException;
 	AdvisingStudentDetails getStudentAdvisingDetails(Long sessionId, String studentExternalId) throws SectioningException, PageAccessException;
-	AdvisorCourseRequestSubmission submitAdvisingDetails(AdvisingStudentDetails details) throws SectioningException, PageAccessException;
+	AdvisorCourseRequestSubmission submitAdvisingDetails(AdvisingStudentDetails details, boolean emailStudent) throws SectioningException, PageAccessException;
 	CourseRequestInterface getAdvisorRequests(Long sessionId, Long studentId) throws SectioningException, PageAccessException;
 }
