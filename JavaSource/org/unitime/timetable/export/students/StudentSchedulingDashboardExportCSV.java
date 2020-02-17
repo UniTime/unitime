@@ -46,6 +46,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.AdvisedInfoInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.StudentInfo;
@@ -402,16 +403,27 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 						line.add((info.getEnrolledDate() == null ? null : df.format(info.getEnrolledDate())));
 					if (hasAdvisor)
 						line.add(info.getStudent().getAdvisor("\n"));
-					if (hasAdvisedInfo)
-						if (info.getAdvisedInfo() != null) {
-							if (info.getAdvisedInfo().getMinCredit() < info.getAdvisedInfo().getMaxCredit())
-								line.add(sCreditFormat.format(info.getAdvisedInfo().getMinCredit()) + " - " + sCreditFormat.format(info.getAdvisedInfo().getMaxCredit())
-								+ " (" + Math.round(100f * info.getAdvisedInfo().getPercentage()) + " %)");
+					if (hasAdvisedInfo) {
+						AdvisedInfoInterface ai = info.getAdvisedInfo();
+						if (ai != null) {
+							String crit = "";
+							if (ai.getMissingCritical() > 0) {
+								if (ai.getMissingCritical() == ai.getMissingPrimary()) {
+									crit = " (" + ai.getMissingCritical() + "!)";
+								} else {
+									crit = " (" + ai.getMissingCritical() + "! + " + (ai.getMissingPrimary() - ai.getMissingCritical()) + ")";
+								}
+							} else if (ai.getMissingPrimary() > 0) {
+								crit = " (" + ai.getMissingPrimary() + ")";
+							}
+							if (ai.getMinCredit() < ai.getMaxCredit())
+								line.add(sCreditFormat.format(ai.getMinCredit()) + " - " + sCreditFormat.format(ai.getMaxCredit()) + crit);
 							else
-								line.add(sCreditFormat.format(info.getAdvisedInfo().getMinCredit()) + " (" + Math.round(100f * info.getAdvisedInfo().getPercentage()) + " %)");
+								line.add(sCreditFormat.format(ai.getMinCredit()) + crit);
 						} else {
 							line.add("");
 						}
+					}
 					if (hasNote)
 						line.add((info.hasNote() ? info.getNote() : ""));
 					if (hasEmailed)

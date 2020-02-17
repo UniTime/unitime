@@ -675,17 +675,20 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		int nrCourses = 0, nrCriticalCourses = 0, nrCoursesFound = 0, nrCriticalCoursesFound = 0, nrSubstMisMatch = 0;
 		int foundPrioMin = 0, foundPrioMax = 0;
 		int points = 0, maxPoints = 0;
+		int missingCrit = 0, missingPrim = 0;
 		for (AdvisorCourseRequest acr: acrs) {
 			if (acr.getPriority() == -1) continue;
 			if (last != null && last.getPriority() != acr.getPriority()) {
 				minCred += cm; maxCred += cx; cm = 0; cx = 0;
 				if (advFirstChoice != null) { // ignore requests without any courses
 					if (firstChoiceCritical && nrCoursesFound == 0) {
+						missingCrit ++; missingPrim ++;
 						if (nrCourses > 1)
 							info.addMessage(MSG.advMessageMissingCriticalCourseWithAlts(advFirstChoice.getCourseName()));
 						else
 							info.addMessage(MSG.advMessageMissingCriticalCourse(advFirstChoice.getCourseName()));
 					} else if (!last.isSubstitute() && nrCoursesFound - nrSubstMisMatch == 0) {
+						missingPrim ++;
 						if (nrCourses > 1)
 							info.addMessage(MSG.advMessageMissingCourseWithAlts(advFirstChoice.getCourseName()));
 						else
@@ -785,11 +788,13 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		info.setMinCredit(minCred); info.setMaxCredit(maxCred);
 		if (advFirstChoice != null) { // ignore requests without any courses
 			if (firstChoiceCritical && nrCoursesFound == 0) {
+				missingCrit ++; missingPrim ++;
 				if (nrCourses > 1)
 					info.addMessage(MSG.advMessageMissingCriticalCourseWithAlts(advFirstChoice.getCourseName()));
 				else
 					info.addMessage(MSG.advMessageMissingCriticalCourse(advFirstChoice.getCourseName()));
 			} else if (!last.isSubstitute() && nrCoursesFound - nrSubstMisMatch == 0) {
+				missingPrim ++;
 				if (nrCourses > 1)
 					info.addMessage(MSG.advMessageMissingCourseWithAlts(advFirstChoice.getCourseName()));
 				else
@@ -842,6 +847,8 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 			if (nrCriticalCourses > 1 && nrCriticalCoursesFound > 1) points += 3; // critical
 		}
 		info.setPercentage(((float)points)/maxPoints);
+		info.setMissingCritical(missingCrit);
+		info.setMissingPrimary(missingPrim);
 		
 		return info;
 	}

@@ -1304,8 +1304,17 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Advisor")
 	String colAdvisor();
 	
-	@DefaultMessage("Advised<br><small>Credit (% Compl)</small>")
+	@DefaultMessage("Advised<br><small>Credit (Missing)</small>")
 	String colAdvised();
+	
+	@DefaultMessage("Advised Credit")
+	String ordAdvisedCredit();
+	
+	@DefaultMessage("Missing Courses")
+	String ordAdvisedCritical();
+	
+	@DefaultMessage("% Complete")
+	String ordAdvisedPercentage();
 
 	@DefaultMessage("Messages")
 	String tableMessages();
@@ -2587,11 +2596,41 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Moved to substitute {0}.")
 	String advChangesMovedToSubstitute(int prio);
 	
-	@DefaultMessage("{0,number,0.#} - {1,number,0.#} ({2,number,0} %)")
-	String advisedCreditRangePercentage(float minCred, float maxCred, int percent);
+	@DefaultMessage("{0,number,0.#} - {1,number,0.#}")
+	String advisedCreditRange(float minCred, float maxCred);
 
-	@DefaultMessage("{0,number,0.#} ({1,number,0} %)")
-	String advisedCreditPercentage(float cred, int percent);
+	@DefaultMessage("{0,number,0.#}")
+	String advisedCredit(float cred);
+	
+	@DefaultMessage("Total Priority Credit Hours: {0}")
+	String hintAdvisedCredit(String crit);
+	
+	@DefaultMessage("Missing {0} critical course(s) and {1} other primary course(s).")
+	String hintAdvisedMissingCriticalOther(int critical, int other);
+	
+	@DefaultMessage("Missing {0} critical course(s).")
+	String hintAdvisedMissingCritical(int critical);
+	
+	@DefaultMessage("Missing {0} primary course(s).")
+	String hintAdvisedMissingOther(int other);
+	
+	@DefaultMessage("{0,number,0.#} - {1,number,0.#} ({2})")
+	String advisedCreditRangeCritical(float minCred, float maxCred, String crit);
+
+	@DefaultMessage("{0,number,0.#} ({1})")
+	String advisedCreditCritical(float cred, String crit);
+	
+	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}!</span> + {1}")
+	@DoNotTranslate
+	String advisedMissingCriticalOther(int critical, int other);
+	
+	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}!</span>")
+	@DoNotTranslate
+	String advisedMissingCritical(int critical);
+	
+	@DefaultMessage("{0}")
+	@DoNotTranslate
+	String advisedMissingOther(int other);
 	
 	@DefaultMessage("Missing critical course {0}.")
 	String advMessageMissingCriticalCourse(String course);

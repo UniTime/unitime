@@ -2090,7 +2090,9 @@ public class SectioningStatusPage extends Composite {
 		if (iStudentInfoVisibleColumns.hasAdvisedInfo) {
 			hAdvised = new UniTimeTableHeader(MESSAGES.colAdvised());
 			header.add(hAdvised);
-			addSortOperation(hAdvised, StudentComparator.SortBy.ADVISED, MESSAGES.colAdvised());
+			addSortOperation(hAdvised, StudentComparator.SortBy.ADVISED_CRED, MESSAGES.ordAdvisedCredit());
+			addSortOperation(hAdvised, StudentComparator.SortBy.ADVISED_CRIT, MESSAGES.ordAdvisedCritical());
+			addSortOperation(hAdvised, StudentComparator.SortBy.ADVISED_PERC, MESSAGES.ordAdvisedPercentage());
 		}
 
 		UniTimeTableHeader hNote = null;
@@ -2637,15 +2639,40 @@ public class SectioningStatusPage extends Composite {
 		public AdvisorInfoCell(AdvisedInfoInterface value) {
 			super();
 			addStyleName("advised-info");
+			String crit = null, title = null;
+			if (value != null && value.getMissingCritical() != null && value.getMissingPrimary() != null) {
+				if (value.getMissingCritical() > 0) {
+					if (value.getMissingPrimary() > value.getMissingCritical()) {
+						crit = MESSAGES.advisedMissingCriticalOther(value.getMissingCritical(), value.getMissingPrimary() - value.getMissingCritical());
+						title = MESSAGES.hintAdvisedMissingCriticalOther(value.getMissingCritical(), value.getMissingPrimary() - value.getMissingCritical());
+					} else {
+						crit = MESSAGES.advisedMissingCritical(value.getMissingCritical());
+						title = MESSAGES.hintAdvisedMissingCritical(value.getMissingCritical());
+					}
+				} else if (value.getMissingPrimary() > 0) {
+					crit = MESSAGES.advisedMissingOther(value.getMissingPrimary());
+					title = MESSAGES.hintAdvisedMissingOther(value.getMissingPrimary());
+				}
+			}
 			if (value == null) {
 				setHTML("");
 			} else if (value.getMinCredit() < value.getMaxCredit()) {
-				setHTML(MESSAGES.advisedCreditRangePercentage(value.getMinCredit(), value.getMaxCredit(), Math.round(100.0f * value.getPercentage())));
+				if (crit != null)
+					setHTML(MESSAGES.advisedCreditRangeCritical(value.getMinCredit(), value.getMaxCredit(), crit));
+				else
+					setHTML(MESSAGES.advisedCreditRange(value.getMinCredit(), value.getMaxCredit()));
+				title = MESSAGES.hintAdvisedCredit(MESSAGES.advisedCreditRange(value.getMinCredit(), value.getMaxCredit())) + (title == null ? "" : "\n" + title);
 			} else {
-				setHTML(MESSAGES.advisedCreditPercentage(value.getMinCredit(), Math.round(100.0f * value.getPercentage())));
+				if (crit != null)
+					setHTML(MESSAGES.advisedCreditCritical(value.getMinCredit(), crit));
+				else
+					setHTML(MESSAGES.advisedCredit(value.getMinCredit()));
+				title = MESSAGES.hintAdvisedCredit(MESSAGES.advisedCredit(value.getMinCredit())) + (title == null ? "" : "\n" + title);
 			}
 			if (value != null && value.hasMessage())
-				setTitle(value.getMessage());
+				setTitle((title == null ? "" : title + "\n") + value.getMessage());
+			else if (title != null)
+				setTitle(title);
 			if (value != null) {
 				if (value.getPercentage() <= 0.5f) {
 					// from FFCCCC (red) to FFFFCC (yellow)
@@ -2926,7 +2953,9 @@ public class SectioningStatusPage extends Composite {
 			OVERRIDE,
 			REQ_CREDIT,
 			ADVISOR,
-			ADVISED,
+			ADVISED_CRED,
+			ADVISED_PERC,
+			ADVISED_CRIT,
 			;
 		}
 		
@@ -3042,8 +3071,16 @@ public class SectioningStatusPage extends Composite {
 				return (e1.getTotalOverrideNeeded() == null ? new Integer(0) : e1.getTotalOverrideNeeded()).compareTo(e2.getTotalOverrideNeeded() == null ? 0 : e2.getTotalOverrideNeeded());
 			case ADVISOR:
 				return e1.getStudent().getAdvisor("|").compareTo(e2.getStudent().getAdvisor("|"));
-			case ADVISED:
+			case ADVISED_PERC:
 				return Float.compare(e1.getAdvisedInfo() == null ? -1f : e1.getAdvisedInfo().getPercentage(), e2.getAdvisedInfo() == null ? -1f : e2.getAdvisedInfo().getPercentage());
+			case ADVISED_CRED:
+				cmp = Float.compare(e1.getAdvisedInfo() == null ? -1f : e1.getAdvisedInfo().getMinCredit(), e2.getAdvisedInfo() == null ? -1f : e2.getAdvisedInfo().getMinCredit());
+				if (cmp != 0) return cmp;
+				return Float.compare(e1.getAdvisedInfo() == null ? -1f : e1.getAdvisedInfo().getMaxCredit(), e2.getAdvisedInfo() == null ? -1f : e2.getAdvisedInfo().getMaxCredit());
+			case ADVISED_CRIT:
+				cmp = Integer.compare(e1.getAdvisedInfo() == null ? 0 : e1.getAdvisedInfo().getMissingCritical(), e2.getAdvisedInfo() == null ? 0 : e2.getAdvisedInfo().getMissingCritical());
+				if (cmp != 0) return cmp;
+				return Integer.compare(e1.getAdvisedInfo() == null ? 0 : e1.getAdvisedInfo().getMissingPrimary(), e2.getAdvisedInfo() == null ? 0 : e2.getAdvisedInfo().getMissingPrimary());
 			default:
 				return 0;
 			}

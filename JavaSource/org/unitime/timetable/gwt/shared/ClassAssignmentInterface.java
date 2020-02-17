@@ -1653,6 +1653,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Float iMinCredit, iMaxCredit;
 		private Float iPercentage;
 		private String iMessage;
+		private Integer iMissingCritical, iMissingPrimary;
 		
 		public AdvisedInfoInterface() {}
 		
@@ -1667,6 +1668,14 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public boolean hasPercentage() { return iPercentage != null; }
 		public Float getPercentage() { return iPercentage; }
 		public void setPercentage(Float p) { iPercentage = p; }
+		
+		public boolean hasMissingCritical() { return iMissingCritical != null; }
+		public Integer getMissingCritical() { return iMissingCritical; }
+		public void setMissingCritical(Integer missing) { iMissingCritical = missing; }
+		
+		public boolean hasMissingPrimary() { return iMissingPrimary != null; }
+		public Integer getMissingPrimary() { return iMissingPrimary; }
+		public void setMissingPrimary(Integer missing) { iMissingPrimary = missing; }
 		
 		public String getMessage() { return iMessage; }
 		public boolean hasMessage() { return iMessage != null && !iMessage.isEmpty(); }
