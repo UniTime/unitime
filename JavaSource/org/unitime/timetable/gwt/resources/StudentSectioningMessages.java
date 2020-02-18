@@ -2531,6 +2531,9 @@ public interface StudentSectioningMessages extends Messages {
 	String studentCourseRequests();
 	
 	@DefaultMessage("Advisor Recommendations")
+	String advisorCourseRequests();
+	
+	@DefaultMessage("Advisor Recommendations")
 	String dialogAdvisorCourseRequests();
 	
 	@DefaultMessage("Total Priority Credit Hours")

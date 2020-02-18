@@ -191,8 +191,7 @@ public class StudentSchedulingPermissions {
 		
 		@Override
 		public boolean check(UserContext user, Session source) {
-			if (!permissionSession.check(user, source, DepartmentStatusType.Status.StudentsPreRegister))
-				return false;
+			// if (!permissionSession.check(user, source, DepartmentStatusType.Status.StudentsPreRegister)) return false;
 			return true;
 		}
 

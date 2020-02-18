@@ -36,6 +36,7 @@ import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionI
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisingStudentDetails;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisorCourseRequestSubmission;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse;
@@ -116,6 +117,7 @@ public interface SectioningServiceAsync {
 	
 	void getStudentSessions(String studentExternalId, AsyncCallback<Collection<AcademicSessionInfo>> callback) throws SectioningException, PageAccessException;
 	void getStudentAdvisingDetails(Long sessionId, String studentExternalId, AsyncCallback<AdvisingStudentDetails> callback) throws SectioningException, PageAccessException;
+	void getStudentInfo(Long studentId, AsyncCallback<StudentInfo> callback) throws SectioningException, PageAccessException;
 	void submitAdvisingDetails(AdvisingStudentDetails details, boolean emailStudent, AsyncCallback<AdvisorCourseRequestSubmission> callback) throws SectioningException, PageAccessException;
 	void getAdvisorRequests(Long sessionId, Long studentId, AsyncCallback<CourseRequestInterface> callback) throws SectioningException, PageAccessException;
 }

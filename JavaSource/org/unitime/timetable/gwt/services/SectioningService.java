@@ -50,6 +50,7 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpeci
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisingStudentDetails;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisorCourseRequestSubmission;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -117,6 +118,7 @@ public interface SectioningService extends RemoteService {
 	
 	Collection<AcademicSessionInfo> getStudentSessions(String studentExternalId) throws SectioningException, PageAccessException;
 	AdvisingStudentDetails getStudentAdvisingDetails(Long sessionId, String studentExternalId) throws SectioningException, PageAccessException;
+	StudentInfo getStudentInfo(Long studentId) throws SectioningException, PageAccessException;
 	AdvisorCourseRequestSubmission submitAdvisingDetails(AdvisingStudentDetails details, boolean emailStudent) throws SectioningException, PageAccessException;
 	CourseRequestInterface getAdvisorRequests(Long sessionId, Long studentId) throws SectioningException, PageAccessException;
 }

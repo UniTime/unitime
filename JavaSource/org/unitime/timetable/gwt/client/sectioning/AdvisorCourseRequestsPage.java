@@ -59,6 +59,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisingStudentDetails;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisorCourseRequestSubmission;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
@@ -77,6 +78,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
@@ -117,9 +119,12 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	private AriaMultiButton iDegreePlan = null;
 	
 	private int iStudentRequestHeaderLine = 0;
+	private int iAdisorRequestsHeaderLine = 0;
+	private int iStatusLine = 0;
 	
 	private ScheduleStatus iStatusBox = null;
 	private WebTable iRequests;
+	private AdvisorCourseRequestsTable iAdvisorRequests;
 	
 	private CheckBox iEmailConfirmationHeader, iEmailConfirmationFooter;
 	
@@ -202,19 +207,27 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 						iStudentName.setText(result.getStudentName());
 						iStudentExternalId.setText(result.getStudentExternalId());
 						fillInStudentRequests();
-						iStatus.clear();
-						if (result.getStatus() != null) {
-							iStatus.addItem(result.getStatus().getLabel(), result.getStatus().getReference());
-						} else {
-							iStatus.addItem("", "");
-						}
-						iStatus.setSelectedIndex(0);
-						if (result.hasStatuses())
-							for (StudentStatusInfo status: result.getStatuses()) {
-								if (!status.equals(result.getStatus()))
-									iStatus.addItem(status.getLabel(), status.getReference());
+						if (result.isCanUpdate()) {
+							clearAdvisorRequests();
+							setRequest(result.getRequest());
+							iStatus.clear();
+							if (result.getStatus() != null) {
+								iStatus.addItem(result.getStatus().getLabel(), result.getStatus().getReference());
+							} else {
+								iStatus.addItem("", "");
 							}
-						setRequest(result.getRequest());
+							iStatus.setSelectedIndex(0);
+							if (result.hasStatuses())
+								for (StudentStatusInfo status: result.getStatuses()) {
+									if (!status.equals(result.getStatus()))
+										iStatus.addItem(status.getLabel(), status.getReference());
+								}
+							getRowFormatter().setVisible(iStatusLine, true);
+						} else {
+							setAdvisorRequests(result.getRequest());
+							getRowFormatter().setVisible(iStatusLine, false);
+						}
+						History.newItem(String.valueOf(result.getStudentId()), false);
 					}
 					@Override
 					public void onFailure(Throwable caught) {
@@ -263,7 +276,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		
 		iStatus = new ListBox();
 		iStatus.addStyleName("status");
-		addDoubleRow("", new Label(), 1,
+		iStatusLine = addDoubleRow("", new Label(), 1,
 				MESSAGES.propStudentStatus(), iStatus, 3);
 		
 		UniTimeHeaderPanel studentReqs = new UniTimeHeaderPanel(MESSAGES.studentCourseRequests());
@@ -282,6 +295,13 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				new WebTable.Cell(MESSAGES.colWaitList(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colRequestTimeStamp(), 1, "50px")));
 		addRow(iRequests);
+		
+		UniTimeHeaderPanel advisorReqs = new UniTimeHeaderPanel(MESSAGES.advisorCourseRequests());
+		iAdisorRequestsHeaderLine = addHeaderRow(advisorReqs);
+		iAdvisorRequests = new AdvisorCourseRequestsTable();
+		addRow(iAdvisorRequests);
+		getRowFormatter().setVisible(iAdisorRequestsHeaderLine, false);
+		getRowFormatter().setVisible(iAdisorRequestsHeaderLine + 1, false);
 		
 		iSpecRegCx = new SpecialRegistrationContext();
 		
@@ -469,6 +489,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				@Override
 				public void onSuccess(Boolean result) {}
 			});
+		} else if (Window.Location.getHash() != null && !Window.Location.getHash().isEmpty()) {
+			loadStudent(Window.Location.getHash().substring(1));
 		} else {
 			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 				@Override
@@ -546,6 +568,59 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				
 			}
 		});
+		
+		History.addValueChangeHandler(new ValueChangeHandler<String>() {
+			@Override
+			public void onValueChange(final ValueChangeEvent<String> event) {
+				if (event.getValue() != null && !event.getValue().isEmpty()) {
+					if (isPageChanged()) {
+						UniTimeConfirmationDialog.confirm(MESSAGES.queryLeaveAdvisorsCourseRequestsNotSave(), new Command() {
+							@Override
+							public void execute() {
+								loadStudent(event.getValue());
+							}
+						});
+					} else {
+						loadStudent(event.getValue());
+					}
+				}
+			}
+		});
+	}
+	
+	protected void loadStudent(String studentId) {
+		header.setEnabled("submit", false);
+		header.setEnabled("print", false);
+		iDegreePlan.setVisible(false); iDegreePlan.setEnabled(false);
+		iEmailConfirmationHeader.setVisible(false);
+		iEmailConfirmationFooter.setVisible(false);
+		iStatusBox.clear();
+		LoadingWidget.getInstance().show(MESSAGES.loadingData());
+		sSectioningService.getStudentInfo(Long.valueOf(studentId), new AsyncCallback<StudentInfo>() {
+			@Override
+			public void onSuccess(StudentInfo result) {
+				LoadingWidget.getInstance().hide();
+				iTerm.setText(result.getSessionName());
+				iLookupDialog.setOptions("mustHaveExternalId,source=students,session=" + result.getSessionId());
+				iStudentName.setText(result.getStudentName());
+				iStudentExternalId.setText(result.getStudentExternalId());
+				if (result.getSessionId().equals(iSession.getAcademicSessionId())) {
+					iSession.selectSession(iSession.getAcademicSessionInfo(), true);
+				} else {
+					iSession.selectSession(result.getSessionId(), new AsyncCallback<Boolean>() {
+						@Override
+						public void onSuccess(Boolean result) {}
+						@Override
+						public void onFailure(Throwable caught) {}
+					});
+				}
+			}
+			@Override
+			public void onFailure(Throwable caught) {
+				LoadingWidget.getInstance().hide();
+				iStatusBox.error(MESSAGES.advisorRequestsLoadFailed(caught.getMessage()), caught);
+			}
+		});
 	}
 	
 	private void resizeNotes() {
@@ -620,6 +695,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	}
 	
 	protected boolean isPageChanged() {
+		if (iDetails != null && !iDetails.isCanUpdate()) return false;
 		if (iDetails == null || iDetails.getRequest() == null)
 			return !getRequest().isEmpty();
 		else {
@@ -643,12 +719,14 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 			iEmailConfirmationFooter.setVisible(false);
 			clearRequests();
 			clearStudentRequests();
+			clearAdvisorRequests();
 		} else {
 			iStudentName.setText(person.getName());
 			iStudentExternalId.setText(person.getId());
 			clearRequests();
 			iSession.selectSessionNoCheck();
 			clearStudentRequests();
+			clearAdvisorRequests();
 		}
 	}
 	
@@ -802,6 +880,22 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		iRequests.setData(new WebTable.Row[] {});
 		getRowFormatter().setVisible(iStudentRequestHeaderLine, false);
 		getRowFormatter().setVisible(iStudentRequestHeaderLine + 1, false);
+	}
+	
+	protected void clearAdvisorRequests() {
+		iAdvisorRequests.setValue(new CourseRequestInterface());
+		getRowFormatter().setVisible(iAdisorRequestsHeaderLine, false);
+		getRowFormatter().setVisible(iAdisorRequestsHeaderLine + 1, false);
+		for (int i = iAdisorRequestsHeaderLine + 2; i < getRowCount() - 2; i ++)
+			getRowFormatter().setVisible(i, true);
+	}
+	
+	protected void setAdvisorRequests(CourseRequestInterface requests) {
+		iAdvisorRequests.setValue(requests);
+		getRowFormatter().setVisible(iAdisorRequestsHeaderLine, true);
+		getRowFormatter().setVisible(iAdisorRequestsHeaderLine + 1, true);
+		for (int i = iAdisorRequestsHeaderLine + 2; i < getRowCount() - 2; i ++)
+			getRowFormatter().setVisible(i, false);
 	}
 	
 	protected void fillInStudentRequests() {

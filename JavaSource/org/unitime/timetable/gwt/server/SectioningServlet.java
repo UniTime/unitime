@@ -70,6 +70,7 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityChe
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentGroupInfo;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -2940,6 +2941,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			sessionId = getSessionContext().getUser().getCurrentAcademicSessionId();
 		properties.setSessionId(sessionId);
 		if (sessionId != null) {
+			Session session = SessionDAO.getInstance().get(sessionId);
 			properties.setChangeLog(properties.isAdmin() && getServerInstance(sessionId, true) != null);
 			properties.setMassCancel(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingMassCancel));
 			properties.setEmail(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingEmailStudent));
@@ -2948,7 +2950,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			properties.setCheckStudentOverrides(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingCheckStudentOverrides));
 			properties.setValidateStudentOverrides(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingValidateStudentOverrides));
 			properties.setRecheckCriticalCourses(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingRecheckCriticalCourses));
-			properties.setAdvisorCourseRequests(getSessionContext().hasPermission(sessionId, Right.AdvisorCourseRequests));
+			properties.setAdvisorCourseRequests(getSessionContext().hasPermission(sessionId, Right.AdvisorCourseRequests) && session != null && session.getStatusType().canPreRegisterStudents());
 			if (getSessionContext().hasPermission(sessionId, Right.StudentSchedulingChangeStudentGroup))
 				for (StudentGroup g: (List<StudentGroup>)StudentGroupDAO.getInstance().getSession().createQuery(
 						"from StudentGroup g where g.type.advisorsCanSet = true and g.session = :sessionId order by g.groupAbbreviation"
@@ -3325,15 +3327,34 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 
 		return server.execute(server.createAction(SpecialRegistrationUpdate.class).withRequest(request), currentUser());
 	}
+	
+	@Override
+	public StudentInfo getStudentInfo(Long studentId) throws SectioningException, PageAccessException {
+		Student student = StudentDAO.getInstance().get(studentId);
+		if (student == null)  throw new SectioningException(MSG.exceptionNoStudent());
+		
+		getSessionContext().checkPermissionAnySession(student.getSession(), Right.AdvisorCourseRequests);
 
+		Long sessionId = student.getSession().getUniqueId();
+		
+		StudentInfo ret = new StudentInfo();
+		ret.setSessionId(sessionId);
+		ret.setStudentId(student.getUniqueId());
+		ret.setStudentName(student.getName(NameFormat.LAST_FIRST_MIDDLE.reference()));
+		ret.setStudentExternalId(student.getExternalUniqueId());
+		ret.setSessionName(student.getSession().getLabel());
+		
+		return ret;
+	}
+	
 	@Override
 	public AdvisingStudentDetails getStudentAdvisingDetails(Long sessionId, String studentExternalId) throws SectioningException, PageAccessException {
+		SessionDAO.getInstance().getSession().setCacheMode(CacheMode.REFRESH);
+
 		if (sessionId == null)
 			sessionId = getLastSessionId();
-		
-		SessionDAO.getInstance().getSession().setCacheMode(CacheMode.REFRESH);
-		
 		getSessionContext().checkPermissionAnySession(sessionId, Right.AdvisorCourseRequests);
+		
 		Student student = Student.findByExternalId(sessionId, studentExternalId);
 		if (student == null)  throw new SectioningException(MSG.exceptionNoStudent());
 		
@@ -3373,6 +3394,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				ret.setCanUpdate(true);
 			else if (getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyMyStudents) && advisor != null && advisor.getStudents().contains(student))
 				ret.setCanUpdate(true);
+		}
+		if (!student.getSession().getStatusType().canPreRegisterStudents()) {
+			ret.setCanUpdate(false);
+			ret.setDegreePlan(false);
 		}
 		
 		List<CourseType> courseTypes = CourseTypeDAO.getInstance().getSession().createQuery(
@@ -3432,7 +3457,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (server != null && !(server instanceof DatabaseServer)) {
 			ret.setStudentRequest(server.execute(server.createAction(GetRequest.class).forStudent(student.getUniqueId(), false)
 					.withCustomValidation(true).withCustomRequest(false).withAdvisorRequests(false), currentUser()));
-		} else {
+		} else if (ret.isCanUpdate()) {
 			ret.setStudentRequest(getRequest(student));
 		}
 
@@ -3476,6 +3501,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	public Collection<AcademicSessionProvider.AcademicSessionInfo> getStudentSessions(String studentExternalId) throws SectioningException, PageAccessException {
 		ArrayList<AcademicSessionProvider.AcademicSessionInfo> ret = new ArrayList<AcademicSessionProvider.AcademicSessionInfo>();
 		ExternalTermProvider extTerm = getExternalTermProvider();
+		Set<Long> sessionIds = new HashSet<Long>();
 		for (Student student: (List<Student>)StudentDAO.getInstance().getSession().createQuery(
 				"from Student where externalUniqueId = :id")
 				.setString("id", studentExternalId).setCacheable(true).list()) {
@@ -3493,7 +3519,27 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						.setExternalCampus(extTerm == null ? null : extTerm.getExternalCampus(info))
 						.setExternalTerm(extTerm == null ? null : extTerm.getExternalTerm(info))
 						);
+				sessionIds.add(session.getUniqueId());
 			}
+		}
+		for (Student student: (List<Student>)StudentDAO.getInstance().getSession().createQuery(
+				"from Student s where s.externalUniqueId = :id and s.advisorCourseRequests is not empty")
+				.setString("id", studentExternalId)
+				.setCacheable(true).list()) {
+			Session session = student.getSession();
+			if (session.getStatusType().isTestSession()) continue;
+			if (sessionIds.contains(session.getUniqueId())) continue;
+			if (!getSessionContext().hasPermissionAnySession(session, Right.AdvisorCourseRequests)) continue;
+			AcademicSessionInfo info = new AcademicSessionInfo(session);
+			ret.add(new AcademicSessionProvider.AcademicSessionInfo(
+					session.getUniqueId(),
+					session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
+					MSG.sessionName(session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative()),
+					session.getSessionBeginDateTime()
+					)
+					.setExternalCampus(extTerm == null ? null : extTerm.getExternalCampus(info))
+					.setExternalTerm(extTerm == null ? null : extTerm.getExternalTerm(info))
+					);
 		}
 		return ret;
 	}

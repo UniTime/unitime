@@ -448,6 +448,31 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		}
 	}
 	
+	public static class StudentInfo implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		private Long iStudentId;
+		private Long iSessionId;
+		private String iStudentName;
+		private String iStudentExternalId;
+		private String iSessionName;
+		
+		public StudentInfo() {}
+		
+		public Long getStudentId() { return iStudentId; }
+		public void setStudentId(Long studentId) { iStudentId = studentId; }
+		
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		
+		public String getStudentName() { return iStudentName; }
+		public void setStudentName(String name) { iStudentName = name; }
+		public String getStudentExternalId() { return iStudentExternalId; }
+		public void setStudentExternalId(String id) { iStudentExternalId = id; }
+		
+		public String getSessionName() { return iSessionName; }
+		public void setSessionName(String name) { iSessionName = name; }
+	}
+	
 	public static class AdvisingStudentDetails implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private Long iStudentId;
