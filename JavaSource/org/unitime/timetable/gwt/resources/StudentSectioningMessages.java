@@ -2491,6 +2491,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Saving...")
 	String advisorCourseRequestsSaving();
 	
+	@DefaultMessage("Exporting...")
+	String advisorCourseRequestsExporting();
+	
 	@DefaultMessage("Advisor’s Signature:     _____________________________________________")
 	String pdfAdvisorSignature();
 	

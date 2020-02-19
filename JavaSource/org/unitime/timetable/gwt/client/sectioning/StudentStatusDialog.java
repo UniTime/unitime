@@ -353,12 +353,24 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 		return iCourseRequests.getValue();
 	}
 	
+	public void setIncludeCourseRequests(boolean value) {
+		iCourseRequests.setValue(value);
+	}
+	
 	public Boolean getIncludeClassSchedule() {
 		return iClassSchedule.getValue();
 	}
 	
+	public void setIncludeClassSchedule(boolean value) {
+		iClassSchedule.setValue(value);
+	}
+	
 	public Boolean getIncludeAdvisorRequests() {
 		return iAdvisorRequests.getValue();
+	}
+	
+	public void setIncludeAdvisorRequests(boolean value) {
+		iAdvisorRequests.setValue(value);
 	}
 	
 	public static interface StudentStatusConfirmation {

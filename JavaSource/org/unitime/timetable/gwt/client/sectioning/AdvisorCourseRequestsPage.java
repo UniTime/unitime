@@ -822,9 +822,9 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	
 	protected void submit() {
 		final AdvisingStudentDetails details = new AdvisingStudentDetails(iDetails);
-		details.setRequest(getRequest());
+		details.setRequest(details.isCanUpdate() ? getRequest() : iAdvisorRequests.getValue());
 		details.setStatus(iDetails.getStatus(iStatus.getSelectedValue()));
-		LoadingWidget.getInstance().show(MESSAGES.advisorCourseRequestsSaving());
+		LoadingWidget.getInstance().show(details.isCanUpdate() ? MESSAGES.advisorCourseRequestsSaving() : MESSAGES.advisorCourseRequestsExporting());
 		sSectioningService.submitAdvisingDetails(details, false, new AsyncCallback<AdvisorCourseRequestSubmission>() {
 			@Override
 			public void onSuccess(AdvisorCourseRequestSubmission result) {
@@ -836,13 +836,17 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 					if (isSendEmailConformation()) {
 						final StudentStatusDialog dialog = new StudentStatusDialog(new HashSet<StudentStatusInfo>(), null);
 						dialog.setCC(iDetails.hasAdvisorEmail() ? iDetails.getAdvisorEmail().replace("\n", ", ") : "");
-						dialog.setSubject(MESSAGES.defaulSubjectAdvisorRequests());
+						dialog.setSubject(MESSAGES.defaulSubjectAdvisorRequests().replace("%session%", iTerm.getText()));
+						dialog.setIncludeAdvisorRequests(true);
+						dialog.setIncludeClassSchedule(false);
+						dialog.setIncludeCourseRequests(false);
 						dialog.sendStudentEmail(new Command() {
 							@Override
 							public void execute() {
 								sSectioningService.sendEmail(iDetails.getStudentId(),
 										dialog.getSubject(), dialog.getMessage(), dialog.getCC(),
-										false, false, true, new AsyncCallback<Boolean>() {
+										dialog.getIncludeCourseRequests(), dialog.getIncludeClassSchedule(), dialog.getIncludeAdvisorRequests(),
+										new AsyncCallback<Boolean>() {
 											@Override
 											public void onFailure(Throwable caught) {
 												iStatusBox.error(MESSAGES.advisorRequestsEmailFailed(caught.getMessage()), caught);

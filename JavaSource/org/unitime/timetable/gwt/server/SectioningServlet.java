@@ -3542,6 +3542,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					.setExternalTerm(extTerm == null ? null : extTerm.getExternalTerm(info))
 					);
 		}
+		Collections.sort(ret);
 		return ret;
 	}
 
