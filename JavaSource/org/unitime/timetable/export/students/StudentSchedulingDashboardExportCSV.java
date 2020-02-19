@@ -338,8 +338,10 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		if (hasAdvisor)
 			header.add(MESSAGES.colAdvisor());
 		
-		if (hasAdvisedInfo)
-			header.add(MESSAGES.colAdvised().replace("<br>", "\n").replace("<small>","").replace("</small>", ""));
+		if (hasAdvisedInfo) {
+			header.add(MESSAGES.colAdvisedCredit().replace("<br>", "\n"));
+			header.add(MESSAGES.colMissingCourses().replace("<br>", "\n"));
+		}
 		
 		if (hasNote)
 			header.add(MESSAGES.colStudentNote());
@@ -406,21 +408,23 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 					if (hasAdvisedInfo) {
 						AdvisedInfoInterface ai = info.getAdvisedInfo();
 						if (ai != null) {
-							String crit = "";
+							if (ai.getMinCredit() < ai.getMaxCredit())
+								line.add(sCreditFormat.format(ai.getMinCredit()) + " - " + sCreditFormat.format(ai.getMaxCredit()));
+							else
+								line.add(sCreditFormat.format(ai.getMinCredit()));
 							if (ai.getMissingCritical() > 0) {
 								if (ai.getMissingCritical() == ai.getMissingPrimary()) {
-									crit = " (" + ai.getMissingCritical() + "!)";
+									line.add(ai.getMissingCritical() + "!");
 								} else {
-									crit = " (" + ai.getMissingCritical() + "! + " + (ai.getMissingPrimary() - ai.getMissingCritical()) + ")";
+									line.add(ai.getMissingCritical() + "! + " + (ai.getMissingPrimary() - ai.getMissingCritical()));
 								}
 							} else if (ai.getMissingPrimary() > 0) {
-								crit = " (" + ai.getMissingPrimary() + ")";
+								line.add(ai.getMissingPrimary().toString());
+							} else {
+								line.add("");
 							}
-							if (ai.getMinCredit() < ai.getMaxCredit())
-								line.add(sCreditFormat.format(ai.getMinCredit()) + " - " + sCreditFormat.format(ai.getMaxCredit()) + crit);
-							else
-								line.add(sCreditFormat.format(ai.getMinCredit()) + crit);
 						} else {
+							line.add("");
 							line.add("");
 						}
 					}
@@ -479,8 +483,10 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 						line.add("");
 					if (hasAdvisor)
 						line.add("");
-					if (hasAdvisedInfo)
+					if (hasAdvisedInfo) {
 						line.add("");
+						line.add("");
+					}
 					if (hasEmailed)
 						line.add("");
 				}

@@ -46,6 +46,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasColSpan;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasStyleChanges;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
@@ -85,6 +86,7 @@ import org.unitime.timetable.gwt.shared.SolverInterface.SolverType;
 
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.WhiteSpace;
@@ -2086,13 +2088,16 @@ public class SectioningStatusPage extends Composite {
 			addSortOperation(hAdvisor, StudentComparator.SortBy.ADVISOR, MESSAGES.colAdvisor());
 		}
 
-		UniTimeTableHeader hAdvised = null;
+		UniTimeTableHeader hAdvisedCred = null, hMissingCourses = null;
 		if (iStudentInfoVisibleColumns.hasAdvisedInfo) {
-			hAdvised = new UniTimeTableHeader(MESSAGES.colAdvised());
-			header.add(hAdvised);
-			addSortOperation(hAdvised, StudentComparator.SortBy.ADVISED_CRED, MESSAGES.ordAdvisedCredit());
-			addSortOperation(hAdvised, StudentComparator.SortBy.ADVISED_CRIT, MESSAGES.ordAdvisedCritical());
-			addSortOperation(hAdvised, StudentComparator.SortBy.ADVISED_PERC, MESSAGES.ordAdvisedPercentage());
+			hAdvisedCred = new UniTimeTableHeader(MESSAGES.colAdvisedCredit());
+			header.add(hAdvisedCred);
+			addSortOperation(hAdvisedCred, StudentComparator.SortBy.ADVISED_CRED, MESSAGES.ordAdvisedCredit());
+			addSortOperation(hAdvisedCred, StudentComparator.SortBy.ADVISED_PERC, MESSAGES.ordAdvisedPercentage());
+			hMissingCourses = new UniTimeTableHeader(MESSAGES.colMissingCourses());
+			header.add(hMissingCourses);
+			addSortOperation(hMissingCourses, StudentComparator.SortBy.ADVISED_CRIT, MESSAGES.ordAdvisedCourses());
+
 		}
 
 		UniTimeTableHeader hNote = null;
@@ -2149,6 +2154,10 @@ public class SectioningStatusPage extends Composite {
 			case PREF_SEC: h = hPrefSecConfs; break;
 			case OVERRIDE: h = hOverride; break;
 			case REQ_CREDIT: h = hReqCred; break;
+			case ADVISOR: h = hAdvisor; break;
+			case ADVISED_CRED: h = hAdvisedCred; break;
+			case ADVISED_PERC: h = hAdvisedCred; break;
+			case ADVISED_CRIT: h = hMissingCourses; break;
 			}
 			if (h != null) {
 				Collections.sort(result, new StudentComparator(sort, asc, g));
@@ -2295,8 +2304,10 @@ public class SectioningStatusPage extends Composite {
 				line.add(new HTML(info.getEnrolledDate() == null ? "&nbsp;" : sDF.format(info.getEnrolledDate()), false));
 			if (iStudentInfoVisibleColumns.hasAdvisor)
 				line.add(new HTML(info.getStudent().getAdvisor("<br>"), false));
-			if (iStudentInfoVisibleColumns.hasAdvisedInfo)
-				line.add(new AdvisorInfoCell(info.getAdvisedInfo()));
+			if (iStudentInfoVisibleColumns.hasAdvisedInfo) {
+				line.add(new AdvisorInfoCell(info.getAdvisedInfo(), AdvisorInfoCell.Mode.ADVISOR_CREDITS));
+				line.add(new AdvisorInfoCell(info.getAdvisedInfo(), AdvisorInfoCell.Mode.MISSING_COURSES));
+			}
 			if (iOnline && iStudentInfoVisibleColumns.hasNote) {
 				HTML note = new HTML(info.hasNote() ? info.getNote() : ""); note.addStyleName("student-note");
 				if (info.hasNote())
@@ -2312,8 +2323,10 @@ public class SectioningStatusPage extends Composite {
 				line.add(new HTML("&nbsp;", false));
 			if (iStudentInfoVisibleColumns.hasAdvisor)
 				line.add(new HTML("&nbsp;", false));
-			if (iStudentInfoVisibleColumns.hasAdvisedInfo)
+			if (iStudentInfoVisibleColumns.hasAdvisedInfo) {
 				line.add(new HTML("&nbsp;", false));
+				line.add(new HTML("&nbsp;", false));
+			}
 			if (iOnline && iStudentInfoVisibleColumns.hasNote)
 				line.add(new HTML("&nbsp;", false));
 			if (iOnline && iStudentInfoVisibleColumns.hasEmailed)
@@ -2634,40 +2647,46 @@ public class SectioningStatusPage extends Composite {
 		}
 	}
 	
-	public static class AdvisorInfoCell extends HTML implements HasCellAlignment {
+	public static class AdvisorInfoCell extends HTML implements HasCellAlignment, HasStyleChanges {
+		String iBackgroundColor = null;
 		
-		public AdvisorInfoCell(AdvisedInfoInterface value) {
+		public static enum Mode {
+			ADVISOR_CREDITS,
+			MISSING_COURSES,
+			};
+		
+		public AdvisorInfoCell(AdvisedInfoInterface value, Mode mode) {
 			super();
 			addStyleName("advised-info");
-			String crit = null, title = null;
-			if (value != null && value.getMissingCritical() != null && value.getMissingPrimary() != null) {
-				if (value.getMissingCritical() > 0) {
-					if (value.getMissingPrimary() > value.getMissingCritical()) {
-						crit = MESSAGES.advisedMissingCriticalOther(value.getMissingCritical(), value.getMissingPrimary() - value.getMissingCritical());
-						title = MESSAGES.hintAdvisedMissingCriticalOther(value.getMissingCritical(), value.getMissingPrimary() - value.getMissingCritical());
+			String title = null;
+			switch (mode) {
+			case ADVISOR_CREDITS:
+				if (value != null) {
+					if (value.getMinCredit() < value.getMaxCredit()) {
+						setHTML(MESSAGES.advisedCreditRange(value.getMinCredit(), value.getMaxCredit()));
+						title = MESSAGES.hintAdvisedCredit(MESSAGES.advisedCreditRange(value.getMinCredit(), value.getMaxCredit()));
 					} else {
-						crit = MESSAGES.advisedMissingCritical(value.getMissingCritical());
-						title = MESSAGES.hintAdvisedMissingCritical(value.getMissingCritical());
+						setHTML(MESSAGES.advisedCredit(value.getMinCredit()));
+						title = MESSAGES.hintAdvisedCredit(MESSAGES.advisedCredit(value.getMinCredit()));
 					}
-				} else if (value.getMissingPrimary() > 0) {
-					crit = MESSAGES.advisedMissingOther(value.getMissingPrimary());
-					title = MESSAGES.hintAdvisedMissingOther(value.getMissingPrimary());
 				}
-			}
-			if (value == null) {
-				setHTML("");
-			} else if (value.getMinCredit() < value.getMaxCredit()) {
-				if (crit != null)
-					setHTML(MESSAGES.advisedCreditRangeCritical(value.getMinCredit(), value.getMaxCredit(), crit));
-				else
-					setHTML(MESSAGES.advisedCreditRange(value.getMinCredit(), value.getMaxCredit()));
-				title = MESSAGES.hintAdvisedCredit(MESSAGES.advisedCreditRange(value.getMinCredit(), value.getMaxCredit())) + (title == null ? "" : "\n" + title);
-			} else {
-				if (crit != null)
-					setHTML(MESSAGES.advisedCreditCritical(value.getMinCredit(), crit));
-				else
-					setHTML(MESSAGES.advisedCredit(value.getMinCredit()));
-				title = MESSAGES.hintAdvisedCredit(MESSAGES.advisedCredit(value.getMinCredit())) + (title == null ? "" : "\n" + title);
+				break;
+			case MISSING_COURSES:
+				if (value != null && value.getMissingCritical() != null && value.getMissingPrimary() != null) {
+					if (value.getMissingCritical() > 0) {
+						if (value.getMissingPrimary() > value.getMissingCritical()) {
+							setHTML(MESSAGES.advisedMissingCriticalOther(value.getMissingCritical(), value.getMissingPrimary() - value.getMissingCritical()));
+							title = MESSAGES.hintAdvisedMissingCriticalOther(value.getMissingCritical(), value.getMissingPrimary() - value.getMissingCritical());
+						} else {
+							setHTML(MESSAGES.advisedMissingCritical(value.getMissingCritical()));
+							title = MESSAGES.hintAdvisedMissingCritical(value.getMissingCritical());
+						}
+					} else if (value.getMissingPrimary() > 0) {
+						setHTML(MESSAGES.advisedMissingPrimary(value.getMissingPrimary()));
+						title = MESSAGES.hintAdvisedMissingOther(value.getMissingPrimary());
+					}
+				}
+				break;
 			}
 			if (value != null && value.hasMessage())
 				setTitle((title == null ? "" : title + "\n") + value.getMessage());
@@ -2676,17 +2695,29 @@ public class SectioningStatusPage extends Composite {
 			if (value != null) {
 				if (value.getPercentage() <= 0.5f) {
 					// from FFCCCC (red) to FFFFCC (yellow)
-					getElement().getStyle().setBackgroundColor("rgb(255," + (204 + Math.round(100f * value.getPercentage())) + ",204)");
+					iBackgroundColor = "rgb(255," + (204 + Math.round(100f * value.getPercentage())) + ",204)";
 				} else {
 					// from FFFFCC (yellow) to CCFFCC (green)
-					getElement().getStyle().setBackgroundColor("rgb(" + (305 - Math.round(100f * value.getPercentage())) + ",255,204)");
+					iBackgroundColor = "rgb(" + (305 - Math.round(100f * value.getPercentage())) + ",255,204)";
 				}
 			}
+			if (iBackgroundColor != null && !getHTML().isEmpty() && mode == Mode.ADVISOR_CREDITS)
+				getElement().getStyle().setBackgroundColor(iBackgroundColor);
 		}
 
 		@Override
 		public HorizontalAlignmentConstant getCellAlignment() {
-			return HasHorizontalAlignment.ALIGN_CENTER;
+			return HasHorizontalAlignment.ALIGN_RIGHT;
+		}
+
+		@Override
+		public void applyStyleChanegs(Style style) {
+			/*
+			if (iBackgroundColor != null)
+				style.setBackgroundColor(iBackgroundColor);
+			else
+				style.clearBackgroundColor();
+				*/
 		}
 	}
 	

@@ -755,7 +755,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 			}
 			if (acr.getCourseOffering() != null) {
 				nrCourses ++;
-				if (acr.isCritical() && !acr.isSubstitute()) nrCriticalCourses ++;
+				if ((acr.isCritical() != null && acr.isCritical().booleanValue()) && !acr.isSubstitute()) nrCriticalCourses ++;
 				CourseRequest request = null;
 				cd: for (CourseDemand cd: student.getCourseDemands()) {
 					for (CourseRequest cr: cd.getCourseRequests()) {
@@ -766,7 +766,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 				}
 				if (advFirstChoice == null) {
 					advFirstChoice = acr.getCourseOffering();
-					firstChoiceCritical = acr.isCritical();
+					firstChoiceCritical = (acr.isCritical() != null && acr.isCritical().booleanValue());
 					firstChoice = request;
 				}
 				if (request != null) {
@@ -779,7 +779,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 						if (request.getCourseDemand().getPriority() > foundPrioMax) foundPrioMax = request.getCourseDemand().getPriority();
 					}
 					if (acr.isSubstitute() != request.getCourseDemand().isAlternative()) nrSubstMisMatch ++;
-					if (acr.isCritical() && request.getCourseDemand().isCritical() != null && request.getCourseDemand().isCritical().booleanValue() && !request.getCourseDemand().isAlternative()) nrCriticalCoursesFound ++;
+					if ((acr.isCritical() != null && acr.isCritical().booleanValue()) && request.getCourseDemand().isCritical() != null && request.getCourseDemand().isCritical().booleanValue() && !request.getCourseDemand().isAlternative()) nrCriticalCoursesFound ++;
 				}
 			}
 			last = acr;

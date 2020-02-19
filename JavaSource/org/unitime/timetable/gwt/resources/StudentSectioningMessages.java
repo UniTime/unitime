@@ -1304,14 +1304,17 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Advisor")
 	String colAdvisor();
 	
-	@DefaultMessage("Advised<br><small>Credit (Missing)</small>")
-	String colAdvised();
+	@DefaultMessage("Advised<br>Credit")
+	String colAdvisedCredit();
+	
+	@DefaultMessage("Missing<br>Courses")
+	String colMissingCourses();
 	
 	@DefaultMessage("Advised Credit")
 	String ordAdvisedCredit();
 	
 	@DefaultMessage("Missing Courses")
-	String ordAdvisedCritical();
+	String ordAdvisedCourses();
 	
 	@DefaultMessage("% Complete")
 	String ordAdvisedPercentage();
@@ -2617,23 +2620,17 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Missing {0} primary course(s).")
 	String hintAdvisedMissingOther(int other);
 	
-	@DefaultMessage("{0,number,0.#} - {1,number,0.#} ({2})")
-	String advisedCreditRangeCritical(float minCred, float maxCred, String crit);
-
-	@DefaultMessage("{0,number,0.#} ({1})")
-	String advisedCreditCritical(float cred, String crit);
-	
-	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}!</span> + {1}")
+	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> cr</sup></span> + {1}")
 	@DoNotTranslate
 	String advisedMissingCriticalOther(int critical, int other);
 	
-	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}!</span>")
+	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> critical</sup></span>")
 	@DoNotTranslate
 	String advisedMissingCritical(int critical);
 	
 	@DefaultMessage("{0}")
 	@DoNotTranslate
-	String advisedMissingOther(int other);
+	String advisedMissingPrimary(int primary);
 	
 	@DefaultMessage("Missing critical course {0}.")
 	String advMessageMissingCriticalCourse(String course);

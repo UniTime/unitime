@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -139,13 +140,15 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 					for (String styleName: styleNames)
 						getFlexCellFormatter().addStyleName(row, col, styleName);
 			}
-			if (widget instanceof  HasCellAlignment)
+			if (widget instanceof HasCellAlignment)
 				getFlexCellFormatter().setHorizontalAlignment(row, col, ((HasCellAlignment)widget).getCellAlignment());
 			if (widget instanceof  HasVerticalCellAlignment)
 				getFlexCellFormatter().setVerticalAlignment(row, col, ((HasVerticalCellAlignment)widget).getVerticalCellAlignment());
 			if (widget instanceof HasColumn)
 				((HasColumn)widget).setColumn(col);
 			setWidget(row, col, cell);
+			if (widget instanceof HasStyleChanges)
+				((HasStyleChanges)widget).applyStyleChanegs(getFlexCellFormatter().getElement(row, col).getStyle());
 			if (widget instanceof AriaHiddenLabel) {
 				getFlexCellFormatter().addStyleName(row, col, "rowheader");
 				Roles.getRowheaderRole().set(getCellFormatter().getElement(row, col));
@@ -907,6 +910,10 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 		public List<String> getAdditionalStyleNames();
 	}
 	
+	public static interface HasStyleChanges {
+		public void applyStyleChanegs(Style style);
+	}
+		
 	public static interface HasDataUpdate {
 		public void update();
 	}
