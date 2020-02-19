@@ -201,8 +201,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 						header.setEnabled("submit", result.isCanUpdate());
 						header.setEnabled("print", !result.isCanUpdate());
 						iDegreePlan.setVisible(result.isDegreePlan()); iDegreePlan.setEnabled(result.isDegreePlan());
-						iEmailConfirmationHeader.setVisible(result.isCanUpdate());
-						iEmailConfirmationFooter.setVisible(result.isCanUpdate());
+						iEmailConfirmationHeader.setVisible(result.isCanUpdate() && result.isCanEmail());
+						iEmailConfirmationFooter.setVisible(result.isCanUpdate() && result.isCanEmail());
 						iAdvisorEmail.setText(result.getAdvisorEmail() == null ? "" : result.getAdvisorEmail());
 						iStudentName.setText(result.getStudentName());
 						iStudentExternalId.setText(result.getStudentExternalId());
@@ -1228,6 +1228,6 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	}
 	
 	public boolean isSendEmailConformation() {
-		return !iEmailConfirmationHeader.isVisible() || iEmailConfirmationHeader.getValue();
+		return iEmailConfirmationHeader.isVisible() && iEmailConfirmationHeader.getValue();
 	}
 }

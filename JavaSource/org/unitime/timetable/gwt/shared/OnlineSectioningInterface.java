@@ -483,7 +483,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private String iAdvisorEmail;
 		private StudentStatusInfo iCurrentStatus;
 		private Set<StudentStatusInfo> iAvailableStatuses;
-		private boolean iCanUpdate, iDegreePlan;
+		private boolean iCanUpdate, iDegreePlan, iCanEmail = false;
 		private CourseRequestInterface iRequest = null;
 		private CourseRequestInterface iStudentRequest = null;
 		
@@ -498,6 +498,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			iCurrentStatus = clone.iCurrentStatus;
 			iCanUpdate = clone.iCanUpdate;
 			iDegreePlan = clone.iDegreePlan;
+			iCanEmail = clone.iCanEmail;
 		}
 		
 		public Long getStudentId() { return iStudentId; }
@@ -538,6 +539,9 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		
 		public boolean isCanUpdate() { return iCanUpdate; }
 		public void setCanUpdate(boolean canUpdate) { iCanUpdate = canUpdate; }
+		
+		public boolean isCanEmail() { return iCanEmail; }
+		public void setCanEmail(boolean canEmail) { iCanEmail = canEmail; }
 		
 		public boolean isDegreePlan() { return iDegreePlan; }
 		public void setDegreePlan(boolean dp) { iDegreePlan = dp; }

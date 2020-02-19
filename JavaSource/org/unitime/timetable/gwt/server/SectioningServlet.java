@@ -3399,6 +3399,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			ret.setCanUpdate(false);
 			ret.setDegreePlan(false);
 		}
+		ret.setCanEmail(getSessionContext().hasPermissionAnySession(student.getSession(), Right.StudentSchedulingEmailStudent));
 		
 		List<CourseType> courseTypes = CourseTypeDAO.getInstance().getSession().createQuery(
 				"select distinct t from CourseOffering c inner join c.courseType t where c.instructionalOffering.session = :sessionId order by t.reference"
@@ -3473,7 +3474,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		
 		AdvisorCourseRequestSubmission ret = server.execute(server.createAction(AdvisorCourseRequestsSubmit.class).withDetails(details), currentUser());
 		
-		if (emailStudent) {
+		if (emailStudent && details.isCanEmail()) {
 			StudentEmail email = server.createAction(StudentEmail.class)
 					.forStudent(details.getStudentId())
 					.overridePermissions(false, false, true)
