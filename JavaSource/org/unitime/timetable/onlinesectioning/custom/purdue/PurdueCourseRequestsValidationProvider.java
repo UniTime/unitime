@@ -533,263 +533,264 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			}
 		}
 		
-		if (SpecialRegistrationHelper.isEmpty(req)) return;
-		if (req.changes == null)
-			req.changes = new RestrictionsCheckRequest();
-		CheckRestrictionsResponse resp = null;
-		ClientResource resource = null;
-		try {
-			resource = new ClientResource(getSpecialRegistrationApiValidationSite());
-			resource.setNext(iClient);
-			resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
-			
-			Gson gson = getGson(helper);
-			if (helper.isDebugEnabled())
-				helper.debug("Request: " + gson.toJson(req));
-			helper.getAction().addOptionBuilder().setKey("validation_request").setValue(gson.toJson(req));
-			long t1 = System.currentTimeMillis();
-			
-			resource.post(new GsonRepresentation<CheckRestrictionsRequest>(req));
-			
-			helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
-			
-			resp = (CheckRestrictionsResponse)new GsonRepresentation<CheckRestrictionsResponse>(resource.getResponseEntity(), CheckRestrictionsResponse.class).getObject();
-			if (helper.isDebugEnabled())
-				helper.debug("Response: " + gson.toJson(resp));
-			helper.getAction().addOptionBuilder().setKey("validation_response").setValue(gson.toJson(resp));
-			
-			if (ResponseStatus.success != resp.status)
-				throw new SectioningException(resp.message == null || resp.message.isEmpty() ? "Failed to check student eligibility (" + resp.status + ")." : resp.message);
-		} catch (SectioningException e) {
-			helper.getAction().setApiException(e.getMessage());
-			throw (SectioningException)e;
-		} catch (Exception e) {
-			helper.getAction().setApiException(e.getMessage());
-			sLog.error(e.getMessage(), e);
-			throw new SectioningException(e.getMessage());
-		} finally {
-			if (resource != null) {
-				if (resource.getResponse() != null) resource.getResponse().release();
-				resource.release();
+		String creditError = null;
+		if (!SpecialRegistrationHelper.isEmpty(req)) {
+			if (req.changes == null)
+				req.changes = new RestrictionsCheckRequest();
+			CheckRestrictionsResponse resp = null;
+			ClientResource resource = null;
+			try {
+				resource = new ClientResource(getSpecialRegistrationApiValidationSite());
+				resource.setNext(iClient);
+				resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
+				
+				Gson gson = getGson(helper);
+				if (helper.isDebugEnabled())
+					helper.debug("Request: " + gson.toJson(req));
+				helper.getAction().addOptionBuilder().setKey("validation_request").setValue(gson.toJson(req));
+				long t1 = System.currentTimeMillis();
+				
+				resource.post(new GsonRepresentation<CheckRestrictionsRequest>(req));
+				
+				helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
+				
+				resp = (CheckRestrictionsResponse)new GsonRepresentation<CheckRestrictionsResponse>(resource.getResponseEntity(), CheckRestrictionsResponse.class).getObject();
+				if (helper.isDebugEnabled())
+					helper.debug("Response: " + gson.toJson(resp));
+				helper.getAction().addOptionBuilder().setKey("validation_response").setValue(gson.toJson(resp));
+				
+				if (ResponseStatus.success != resp.status)
+					throw new SectioningException(resp.message == null || resp.message.isEmpty() ? "Failed to check student eligibility (" + resp.status + ")." : resp.message);
+			} catch (SectioningException e) {
+				helper.getAction().setApiException(e.getMessage());
+				throw (SectioningException)e;
+			} catch (Exception e) {
+				helper.getAction().setApiException(e.getMessage());
+				sLog.error(e.getMessage(), e);
+				throw new SectioningException(e.getMessage());
+			} finally {
+				if (resource != null) {
+					if (resource.getResponse() != null) resource.getResponse().release();
+					resource.release();
+				}
 			}
-		}
-		
-		Float maxCredit = resp.maxCredit;
-		if (maxCredit == null) maxCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"));
+			
+			Float maxCredit = resp.maxCredit;
+			if (maxCredit == null) maxCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"));
 
-		Float maxCreditDenied = null;
-		if (resp.deniedMaxCreditRequests != null) {
-			for (DeniedMaxCredit r: resp.deniedMaxCreditRequests) {
-				if (r.mode == req.mode && r.maxCredit != null && r.maxCredit > maxCredit && (maxCreditDenied == null || maxCreditDenied > r.maxCredit))
-					maxCreditDenied = r.maxCredit;
+			Float maxCreditDenied = null;
+			if (resp.deniedMaxCreditRequests != null) {
+				for (DeniedMaxCredit r: resp.deniedMaxCreditRequests) {
+					if (r.mode == req.mode && r.maxCredit != null && r.maxCredit > maxCredit && (maxCreditDenied == null || maxCreditDenied > r.maxCredit))
+						maxCreditDenied = r.maxCredit;
+				}
 			}
-		}
-		
-		Map<String, Map<String, RequestedCourseStatus>> overrides = new HashMap<String, Map<String, RequestedCourseStatus>>();
-		Float maxCreditOverride = null;
-		RequestedCourseStatus maxCreditOverrideStatus = null;
-		
-		if (resp.cancelRegistrationRequests != null)
-			for (SpecialRegistration r: resp.cancelRegistrationRequests) {
-				if (r.changes == null || r.changes.isEmpty()) continue;
-				for (Change ch: r.changes) {
-					if (ch.status == ChangeStatus.cancelled || ch.status == ChangeStatus.denied) continue;
-					if (ch.subject != null && ch.courseNbr != null) {
-						String course = ch.subject + " " + ch.courseNbr;
-						Map<String, RequestedCourseStatus> problems = overrides.get(course);
-						if (problems == null) {
-							problems = new HashMap<String, RequestedCourseStatus>();
-							overrides.put(course, problems);
-						}
-						if (ch.errors != null)
-							for (ChangeError err: ch.errors) {
-								if (err.code != null)
-									problems.put(err.code, status(ch.status));
+			
+			Map<String, Map<String, RequestedCourseStatus>> overrides = new HashMap<String, Map<String, RequestedCourseStatus>>();
+			Float maxCreditOverride = null;
+			RequestedCourseStatus maxCreditOverrideStatus = null;
+			
+			if (resp.cancelRegistrationRequests != null)
+				for (SpecialRegistration r: resp.cancelRegistrationRequests) {
+					if (r.changes == null || r.changes.isEmpty()) continue;
+					for (Change ch: r.changes) {
+						if (ch.status == ChangeStatus.cancelled || ch.status == ChangeStatus.denied) continue;
+						if (ch.subject != null && ch.courseNbr != null) {
+							String course = ch.subject + " " + ch.courseNbr;
+							Map<String, RequestedCourseStatus> problems = overrides.get(course);
+							if (problems == null) {
+								problems = new HashMap<String, RequestedCourseStatus>();
+								overrides.put(course, problems);
 							}
-					} else if (r.maxCredit != null && (maxCreditOverride == null || maxCreditOverride < r.maxCredit)) {
-						maxCreditOverride = r.maxCredit;
-						maxCreditOverrideStatus = status(ch.status);
+							if (ch.errors != null)
+								for (ChangeError err: ch.errors) {
+									if (err.code != null)
+										problems.put(err.code, status(ch.status));
+								}
+						} else if (r.maxCredit != null && (maxCreditOverride == null || maxCreditOverride < r.maxCredit)) {
+							maxCreditOverride = r.maxCredit;
+							maxCreditOverrideStatus = status(ch.status);
+						}
 					}
 				}
-			}
-		
-		String creditError = null;
-		String maxCreditLimitStr = ApplicationProperties.getProperty("purdue.specreg.maxCreditCheck");
-		if (maxCreditDenied != null && request.getCredit() >= maxCreditDenied) {
-			for (RequestedCourse rc: getOverCreditRequests(request, maxCredit))
-				response.addMessage(rc.getCourseId(), rc.getCourseName(), "CREDIT",
-						ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit()))
-						, CONF_NONE);
-			response.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit",
-					"Maximum of {max} credit hours exceeded.")
-					.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())).replace("{maxCreditDenied}", sCreditFormat.format(maxCreditDenied))
-			);
-			response.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
-			creditError = ApplicationProperties.getProperty("purdue.specreg.messages.maxCreditDeniedError",
-							"Maximum of {max} credit hours exceeded.\nThe request to increase the maximum credit hours to {maxCreditDenied} has been denied.\nYou may not be able to get a full schedule.")
-					.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())).replace("{maxCreditDenied}", sCreditFormat.format(maxCreditDenied));
-		} else if (maxCreditLimitStr != null) {
-			float maxCreditLimit = Float.parseFloat(maxCreditLimitStr);
-			if (maxCredit != null && maxCredit > maxCreditLimit) maxCreditLimit = maxCredit;
-			if (request.getCredit() > maxCreditLimit) {
-				for (RequestedCourse rc: getOverCreditRequests(request, maxCreditLimit)) {
+			
+			String maxCreditLimitStr = ApplicationProperties.getProperty("purdue.specreg.maxCreditCheck");
+			if (maxCreditDenied != null && request.getCredit() >= maxCreditDenied) {
+				for (RequestedCourse rc: getOverCreditRequests(request, maxCredit))
 					response.addMessage(rc.getCourseId(), rc.getCourseName(), "CREDIT",
-							ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCreditLimit)).replace("{credit}", sCreditFormat.format(request.getCredit()))
+							ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit()))
 							, CONF_NONE);
-				}
 				response.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit",
 						"Maximum of {max} credit hours exceeded.")
-						.replace("{max}", sCreditFormat.format(maxCreditLimit)).replace("{credit}", sCreditFormat.format(request.getCredit())));
-				response.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_HIGH);
-				creditError = ApplicationProperties.getProperty("purdue.specreg.messages.maxCreditError",
-						"Maximum of {max} credit hours exceeded.\nYou may not be able to get a full schedule.")
-						.replace("{max}", sCreditFormat.format(maxCreditLimit)).replace("{credit}", sCreditFormat.format(request.getCredit()));
-			}
-		}
-		
-		if (creditError == null && maxCredit < request.getCredit()) {
-			for (RequestedCourse rc: getOverCreditRequests(request, maxCredit)) 
-				response.addMessage(rc.getCourseId(), rc.getCourseName(), "CREDIT",
-						ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())),
-						maxCreditOverride == null || maxCreditOverride < request.getCredit() ? CONF_BANNER : CONF_NONE);
-			response.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())));
-			response.setMaxCreditOverrideStatus(maxCreditOverrideStatus == null || maxCreditOverride < request.getCredit() ? RequestedCourseStatus.OVERRIDE_NEEDED : maxCreditOverrideStatus);
-		}
-		
-		Map<String, Set<String>> deniedOverrides = new HashMap<String, Set<String>>();
-		if (resp.deniedRequests != null)
-			for (DeniedRequest r: resp.deniedRequests) {
-				if (r.mode != req.mode) continue;
-				String course = r.subject + " " + r.courseNbr;
-				Set<String> problems = deniedOverrides.get(course);
-				if (problems == null) {
-					problems = new TreeSet<String>();
-					deniedOverrides.put(course, problems);
-				}
-				problems.add(r.code);
-			}
-		
-		if (resp.outJson != null && resp.outJson.message != null && resp.outJson.status != null && resp.outJson.status != ResponseStatus.success) {
-			response.addError(null, null, "Failure", resp.outJson.message);
-			response.setErrorMessage(resp.outJson.message);
-		} else if (resp.outJsonAlternatives != null && resp.outJsonAlternatives.message != null && resp.outJsonAlternatives.status != null && resp.outJsonAlternatives.status != ResponseStatus.success) {
-			response.addError(null, null, "Failure", resp.outJsonAlternatives.message);
-			response.setErrorMessage(resp.outJsonAlternatives.message);
-		}
-		
-		if (resp.outJson != null && resp.outJson.problems != null)
-			for (Problem problem: resp.outJson.problems) {
-				if ("HOLD".equals(problem.code)) {
-					response.addError(null, null, problem.code, problem.message);
-					response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.holdError", problem.message));
-					//throw new SectioningException(problem.message);
-				}
-				if ("DUPL".equals(problem.code)) continue;
-				if ("MAXI".equals(problem.code)) continue;
-				if ("CLOS".equals(problem.code)) continue;
-				if ("TIME".equals(problem.code)) continue;
-				XCourseId course = crn2course.get(problem.crn);
-				if (course == null) continue;
-				if (ignoreLcCourses && lcCourses.contains(course)) continue;
-				String bc = course2banner.get(course);
-				Map<String, RequestedCourseStatus> problems = (bc == null ? null : overrides.get(bc));
-				Set<String> denied = (bc == null ? null : deniedOverrides.get(bc));
-				if (denied != null && denied.contains(problem.code)) {
-					if (fixedCourses.contains(course)) {
-						response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message, CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
-					} else {
-						response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
-						response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.deniedOverrideError",
-								"One or more courses require registration overrides which have been denied.\nYou must remove or replace these courses in order to submit your registration request."));
+						.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())).replace("{maxCreditDenied}", sCreditFormat.format(maxCreditDenied))
+				);
+				response.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
+				creditError = ApplicationProperties.getProperty("purdue.specreg.messages.maxCreditDeniedError",
+								"Maximum of {max} credit hours exceeded.\nThe request to increase the maximum credit hours to {maxCreditDenied} has been denied.\nYou may not be able to get a full schedule.")
+						.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())).replace("{maxCreditDenied}", sCreditFormat.format(maxCreditDenied));
+			} else if (maxCreditLimitStr != null) {
+				float maxCreditLimit = Float.parseFloat(maxCreditLimitStr);
+				if (maxCredit != null && maxCredit > maxCreditLimit) maxCreditLimit = maxCredit;
+				if (request.getCredit() > maxCreditLimit) {
+					for (RequestedCourse rc: getOverCreditRequests(request, maxCreditLimit)) {
+						response.addMessage(rc.getCourseId(), rc.getCourseName(), "CREDIT",
+								ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCreditLimit)).replace("{credit}", sCreditFormat.format(request.getCredit()))
+								, CONF_NONE);
 					}
-				} else {
-					RequestedCourseStatus status = (problems == null ? null : problems.get(problem.code));
-					if (status == null) {
-						if (resp.overrides != null && !resp.overrides.contains(problem.code)) {
-							response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Not Allowed " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
-							continue;
+					response.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit",
+							"Maximum of {max} credit hours exceeded.")
+							.replace("{max}", sCreditFormat.format(maxCreditLimit)).replace("{credit}", sCreditFormat.format(request.getCredit())));
+					response.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_HIGH);
+					creditError = ApplicationProperties.getProperty("purdue.specreg.messages.maxCreditError",
+							"Maximum of {max} credit hours exceeded.\nYou may not be able to get a full schedule.")
+							.replace("{max}", sCreditFormat.format(maxCreditLimit)).replace("{credit}", sCreditFormat.format(request.getCredit()));
+				}
+			}
+			
+			if (creditError == null && maxCredit < request.getCredit()) {
+				for (RequestedCourse rc: getOverCreditRequests(request, maxCredit)) 
+					response.addMessage(rc.getCourseId(), rc.getCourseName(), "CREDIT",
+							ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())),
+							maxCreditOverride == null || maxCreditOverride < request.getCredit() ? CONF_BANNER : CONF_NONE);
+				response.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())));
+				response.setMaxCreditOverrideStatus(maxCreditOverrideStatus == null || maxCreditOverride < request.getCredit() ? RequestedCourseStatus.OVERRIDE_NEEDED : maxCreditOverrideStatus);
+			}
+			
+			Map<String, Set<String>> deniedOverrides = new HashMap<String, Set<String>>();
+			if (resp.deniedRequests != null)
+				for (DeniedRequest r: resp.deniedRequests) {
+					if (r.mode != req.mode) continue;
+					String course = r.subject + " " + r.courseNbr;
+					Set<String> problems = deniedOverrides.get(course);
+					if (problems == null) {
+						problems = new TreeSet<String>();
+						deniedOverrides.put(course, problems);
+					}
+					problems.add(r.code);
+				}
+			
+			if (resp.outJson != null && resp.outJson.message != null && resp.outJson.status != null && resp.outJson.status != ResponseStatus.success) {
+				response.addError(null, null, "Failure", resp.outJson.message);
+				response.setErrorMessage(resp.outJson.message);
+			} else if (resp.outJsonAlternatives != null && resp.outJsonAlternatives.message != null && resp.outJsonAlternatives.status != null && resp.outJsonAlternatives.status != ResponseStatus.success) {
+				response.addError(null, null, "Failure", resp.outJsonAlternatives.message);
+				response.setErrorMessage(resp.outJsonAlternatives.message);
+			}
+			
+			if (resp.outJson != null && resp.outJson.problems != null)
+				for (Problem problem: resp.outJson.problems) {
+					if ("HOLD".equals(problem.code)) {
+						response.addError(null, null, problem.code, problem.message);
+						response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.holdError", problem.message));
+						//throw new SectioningException(problem.message);
+					}
+					if ("DUPL".equals(problem.code)) continue;
+					if ("MAXI".equals(problem.code)) continue;
+					if ("CLOS".equals(problem.code)) continue;
+					if ("TIME".equals(problem.code)) continue;
+					XCourseId course = crn2course.get(problem.crn);
+					if (course == null) continue;
+					if (ignoreLcCourses && lcCourses.contains(course)) continue;
+					String bc = course2banner.get(course);
+					Map<String, RequestedCourseStatus> problems = (bc == null ? null : overrides.get(bc));
+					Set<String> denied = (bc == null ? null : deniedOverrides.get(bc));
+					if (denied != null && denied.contains(problem.code)) {
+						if (fixedCourses.contains(course)) {
+							response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message, CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
 						} else {
-							XCourse c = (course instanceof XCourse ? (XCourse) course : server.getCourse(course.getCourseId()));
-							if (c != null && !c.isOverrideEnabled(problem.code)) {
+							response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
+							response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.deniedOverrideError",
+									"One or more courses require registration overrides which have been denied.\nYou must remove or replace these courses in order to submit your registration request."));
+						}
+					} else {
+						RequestedCourseStatus status = (problems == null ? null : problems.get(problem.code));
+						if (status == null) {
+							if (resp.overrides != null && !resp.overrides.contains(problem.code)) {
 								response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Not Allowed " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
 								continue;
+							} else {
+								XCourse c = (course instanceof XCourse ? (XCourse) course : server.getCourse(course.getCourseId()));
+								if (c != null && !c.isOverrideEnabled(problem.code)) {
+									response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Not Allowed " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
+									continue;
+								}
 							}
 						}
+						response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, problem.message, status == null ? CONF_BANNER : CONF_NONE)
+							.setStatus(status == null ? RequestedCourseStatus.OVERRIDE_NEEDED : status);
 					}
-					response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, problem.message, status == null ? CONF_BANNER : CONF_NONE)
-						.setStatus(status == null ? RequestedCourseStatus.OVERRIDE_NEEDED : status);
 				}
-			}
-		if (resp.outJsonAlternatives != null && resp.outJsonAlternatives.problems != null)
-			for (Problem problem: resp.outJsonAlternatives.problems) {
-				if ("HOLD".equals(problem.code)) {
-					response.addError(null, null, problem.code, problem.message);
-					response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.holdError", problem.message));
-					// throw new SectioningException(problem.message);
-				}
-				if ("DUPL".equals(problem.code)) continue;
-				if ("MAXI".equals(problem.code)) continue;
-				if ("CLOS".equals(problem.code)) continue;
-				if ("TIME".equals(problem.code)) continue;
-				XCourseId course = crn2course.get(problem.crn);
-				if (course == null) continue;
-				if (ignoreLcCourses && lcCourses.contains(course)) continue;
-				String bc = course2banner.get(course);
-				Map<String, RequestedCourseStatus> problems = (bc == null ? null : overrides.get(bc));
-				Set<String> denied = (bc == null ? null : deniedOverrides.get(bc));
-				if (denied != null && denied.contains(problem.code)) {
-					if (fixedCourses.contains(course)) {
-						response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message, CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
-					} else {
-						response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
-						response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.deniedOverrideError",
-								"One or more courses require registration overrides which have been denied.\nYou must remove or replace these courses in order to submit your registration request."));
+			if (resp.outJsonAlternatives != null && resp.outJsonAlternatives.problems != null)
+				for (Problem problem: resp.outJsonAlternatives.problems) {
+					if ("HOLD".equals(problem.code)) {
+						response.addError(null, null, problem.code, problem.message);
+						response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.holdError", problem.message));
+						// throw new SectioningException(problem.message);
 					}
-				} else {
-					RequestedCourseStatus status = (problems == null ? null : problems.get(problem.code));
-					if (status == null) {
-						if (resp.overrides != null && !resp.overrides.contains(problem.code)) {
-							response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Not Allowed " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
-							continue;
+					if ("DUPL".equals(problem.code)) continue;
+					if ("MAXI".equals(problem.code)) continue;
+					if ("CLOS".equals(problem.code)) continue;
+					if ("TIME".equals(problem.code)) continue;
+					XCourseId course = crn2course.get(problem.crn);
+					if (course == null) continue;
+					if (ignoreLcCourses && lcCourses.contains(course)) continue;
+					String bc = course2banner.get(course);
+					Map<String, RequestedCourseStatus> problems = (bc == null ? null : overrides.get(bc));
+					Set<String> denied = (bc == null ? null : deniedOverrides.get(bc));
+					if (denied != null && denied.contains(problem.code)) {
+						if (fixedCourses.contains(course)) {
+							response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message, CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
 						} else {
-							XCourse c = (course instanceof XCourse ? (XCourse) course : server.getCourse(course.getCourseId()));
-							if (c != null && !c.isOverrideEnabled(problem.code)) {
+							response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
+							response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.deniedOverrideError",
+									"One or more courses require registration overrides which have been denied.\nYou must remove or replace these courses in order to submit your registration request."));
+						}
+					} else {
+						RequestedCourseStatus status = (problems == null ? null : problems.get(problem.code));
+						if (status == null) {
+							if (resp.overrides != null && !resp.overrides.contains(problem.code)) {
 								response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Not Allowed " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
 								continue;
+							} else {
+								XCourse c = (course instanceof XCourse ? (XCourse) course : server.getCourse(course.getCourseId()));
+								if (c != null && !c.isOverrideEnabled(problem.code)) {
+									response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Not Allowed " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
+									continue;
+								}
 							}
 						}
+						response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, problem.message, status == null ? CONF_BANNER : CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_PENDING)
+							.setStatus(status == null ? RequestedCourseStatus.OVERRIDE_NEEDED : status);
 					}
-					response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, problem.message, status == null ? CONF_BANNER : CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_PENDING)
-						.setStatus(status == null ? RequestedCourseStatus.OVERRIDE_NEEDED : status);
 				}
-			}
-		
-		if (response.hasMessages())
-			for (CourseMessage m: response.getMessages()) {
-				if (m.getCourse() != null && m.getMessage().indexOf("this section") >= 0)
-					m.setMessage(m.getMessage().replace("this section", m.getCourse()));
-				if (m.getCourse() != null && m.getMessage().indexOf(" (CRN ") >= 0)
-					m.setMessage(m.getMessage().replaceFirst(" \\(CRN [0-9][0-9][0-9][0-9][0-9]\\) ", " "));
-			}
+			
+			if (response.hasMessages())
+				for (CourseMessage m: response.getMessages()) {
+					if (m.getCourse() != null && m.getMessage().indexOf("this section") >= 0)
+						m.setMessage(m.getMessage().replace("this section", m.getCourse()));
+					if (m.getCourse() != null && m.getMessage().indexOf(" (CRN ") >= 0)
+						m.setMessage(m.getMessage().replaceFirst(" \\(CRN [0-9][0-9][0-9][0-9][0-9]\\) ", " "));
+				}
 
-		String minCreditLimit = ApplicationProperties.getProperty("purdue.specreg.minCreditCheck");
-		float minCredit = 0;
-		for (CourseRequestInterface.Request r: request.getCourses()) {
-			if (r.hasRequestedCourse()) {
-				for (RequestedCourse rc: r.getRequestedCourse())
-					if (rc.hasCredit()) {
-						minCredit += rc.getCreditMin(); break;
-					}
+			String minCreditLimit = ApplicationProperties.getProperty("purdue.specreg.minCreditCheck");
+			float minCredit = 0;
+			for (CourseRequestInterface.Request r: request.getCourses()) {
+				if (r.hasRequestedCourse()) {
+					for (RequestedCourse rc: r.getRequestedCourse())
+						if (rc.hasCredit()) {
+							minCredit += rc.getCreditMin(); break;
+						}
+				}
 			}
-		}
-		if (creditError == null && minCreditLimit != null && minCredit < Float.parseFloat(minCreditLimit) && (maxCredit == null || maxCredit > Float.parseFloat(minCreditLimit))) {
-			creditError = ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
-					"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit));
-			response.setCreditWarning(
-					ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
-					"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit))
-					);
-			response.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_LOW);
+			if (creditError == null && minCreditLimit != null && minCredit < Float.parseFloat(minCreditLimit) && (maxCredit == null || maxCredit > Float.parseFloat(minCreditLimit))) {
+				creditError = ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
+						"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit));
+				response.setCreditWarning(
+						ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
+						"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit))
+						);
+				response.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_LOW);
+			}
 		}
 		
 		Set<Long> coursesWithNotAlt = new HashSet<Long>();
