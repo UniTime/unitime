@@ -850,7 +850,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					iSpecRegCx.setStatus(specReg.getStatus());
 					iSpecRegCx.setNote(specReg.getNote());
 					iSpecialRegAssignment = null;
-					if (specReg.hasChanges() && !specReg.isGradeModeChange()) {
+					if (specReg.hasChanges() && !specReg.isGradeModeChange() && !specReg.isCreditChange()) {
 						final CourseRequestInterface courseRequests = iCourseRequests.getRequest();
 						courseRequests.setTimeConflictsAllowed(specReg.hasTimeConflict()); courseRequests.setSpaceConflictsAllowed(specReg.hasSpaceConflict());
 						Set<Long> specRegDrops = new HashSet<Long>();
@@ -1463,10 +1463,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							icons.add(RESOURCES.assignment(), MESSAGES.assignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
 						GradeMode gradeMode = clazz.getGradeMode();
 						SpecialRegistrationStatus specRegStatus = iSpecialRegistrationsPanel.getStatus(clazz);
+						Float creditHour = null;
 						if (specRegStatus != null) {
 							String error = iSpecialRegistrationsPanel.getError(clazz);
 							GradeMode gm = iSpecialRegistrationsPanel.getGradeMode(clazz);
 							if (gm != null && gradeMode != null) gradeMode = gm;
+							Float ch = iSpecialRegistrationsPanel.getCreditHours(clazz);
+							if (ch != null) { creditHour = ch; totalCredit += creditHour; }
 							switch (specRegStatus) {
 							case Draft:
 								icons.add(RESOURCES.specRegDraft(), (error != null ? error + "\n" : "") + MESSAGES.hintSpecRegDraft(), true);
@@ -1501,7 +1504,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (clazz.isCancelled())
 							icons.add(RESOURCES.cancelled(), MESSAGES.classCancelled(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
 
-						if (!clazz.isTeachingAssignment())
+						if (!clazz.isTeachingAssignment() && creditHour == null)
 							totalCredit += clazz.guessCreditCount();
 						if (gradeMode != null)
 							hasGradeMode = true;
@@ -1521,7 +1524,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
 								new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
 								new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
-								new WebTable.AbbvTextCell(clazz.getCredit()),
+								(creditHour != null ? new WebTable.Cell(MESSAGES.credit(creditHour)) : new WebTable.AbbvTextCell(clazz.getCredit())),
 								(gradeMode == null ? new WebTable.Cell("") : new WebTable.Cell(gradeMode.getCode()).title(gradeMode.getLabel()).aria(gradeMode.getLabel())),
 								icons);
 						} else {
@@ -1538,7 +1541,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
 									new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
 									new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
-									new WebTable.AbbvTextCell(clazz.getCredit()),
+									(creditHour != null ? new WebTable.Cell(MESSAGES.credit(creditHour)) : new WebTable.AbbvTextCell(clazz.getCredit())),
 									(gradeMode == null ? new WebTable.Cell("") : new WebTable.Cell(gradeMode.getCode()).title(gradeMode.getLabel()).aria(gradeMode.getLabel())),
 									icons);
 						}
@@ -1746,11 +1749,14 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							if (firstClazz && !rows.isEmpty()) style += " top-border-dashed";
 							WebTable.IconsCell icons = new WebTable.IconsCell();
 							GradeMode gradeMode = clazz.getGradeMode();
+							Float creditHour = null;
 							SpecialRegistrationStatus specRegStatus = iSpecialRegistrationsPanel.getStatus(clazz);
 							if (specRegStatus != null) {
 								String error = iSpecialRegistrationsPanel.getError(clazz);
 								GradeMode gm = iSpecialRegistrationsPanel.getGradeMode(clazz);
 								if (gm != null && gradeMode != null) gradeMode = gm;
+								Float ch = iSpecialRegistrationsPanel.getCreditHours(clazz);
+								if (ch != null) creditHour = ch;
 								switch (specRegStatus) {
 								case Draft:
 									icons.add(RESOURCES.specRegDraft(), (error != null ? error + "\n" : "") + MESSAGES.hintSpecRegDraft(), true);
@@ -1794,7 +1800,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 										new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
 										new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
 										new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
-										new WebTable.AbbvTextCell(clazz.getCredit()),
+										(creditHour != null ? new WebTable.Cell(MESSAGES.credit(creditHour)) : new WebTable.AbbvTextCell(clazz.getCredit())),
 										(gradeMode == null ? new WebTable.Cell("") : new WebTable.Cell(gradeMode.getCode()).title(gradeMode.getLabel()).aria(gradeMode.getLabel())),
 										icons);								
 							} else {
@@ -1811,7 +1817,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 										new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
 										new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
 										new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
-										new WebTable.AbbvTextCell(clazz.getCredit()),
+										(creditHour != null ? new WebTable.Cell(MESSAGES.credit(creditHour)) : new WebTable.AbbvTextCell(clazz.getCredit())),
 										(gradeMode == null ? new WebTable.Cell("") : new WebTable.Cell(gradeMode.getCode()).title(gradeMode.getLabel()).aria(gradeMode.getLabel())),
 										icons);
 							}
@@ -1839,11 +1845,14 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						
 						WebTable.IconsCell icons = new WebTable.IconsCell();
 						GradeMode gradeMode = clazz.getGradeMode();
+						Float creditHour = null;
 						SpecialRegistrationStatus specRegStatus = iSpecialRegistrationsPanel.getStatus(clazz);
 						if (specRegStatus != null) {
 							String error = iSpecialRegistrationsPanel.getError(clazz);
 							GradeMode gm = iSpecialRegistrationsPanel.getGradeMode(clazz);
 							if (gm != null && gradeMode != null) gradeMode = gm;
+							Float ch = iSpecialRegistrationsPanel.getCreditHours(clazz);
+							if (ch != null) creditHour = ch;
 							switch (specRegStatus) {
 							case Draft:
 								icons.add(RESOURCES.specRegDraft(), (error != null ? error + "\n" : "") + MESSAGES.hintSpecRegDraft(), true);
@@ -1887,7 +1896,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
 									new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
 									new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
-									new WebTable.AbbvTextCell(clazz.getCredit()),
+									(creditHour != null ? new WebTable.Cell(MESSAGES.credit(creditHour)) : new WebTable.AbbvTextCell(clazz.getCredit())),
 									(gradeMode == null ? new WebTable.Cell("") : new WebTable.Cell(gradeMode.getCode()).title(gradeMode.getLabel()).aria(gradeMode.getLabel())),
 									icons);
 						} else {
@@ -1904,7 +1913,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
 									new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
 									new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
-									new WebTable.AbbvTextCell(clazz.getCredit()),
+									(creditHour != null ? new WebTable.Cell(MESSAGES.credit(creditHour)) : new WebTable.AbbvTextCell(clazz.getCredit())),
 									(gradeMode == null ? new WebTable.Cell("") : new WebTable.Cell(gradeMode.getCode()).title(gradeMode.getLabel()).aria(gradeMode.getLabel())),
 									icons);
 						}
@@ -3376,6 +3385,16 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							for (ClassAssignment ca: course.getClassAssignments()) {
 								GradeMode mode = response.getGradeMode(ca);
 								if (mode != null) ca.setGradeMode(mode);
+							}
+					}
+					if (response.hasCreditHours()) {
+						for (CourseAssignment course: iSavedAssignment.getCourseAssignments())
+							for (ClassAssignment ca: course.getClassAssignments()) {
+								Float creditHour = response.getCreditHour(ca);
+								if (creditHour != null) {
+									ca.setCreditHour(creditHour);
+									ca.setCredit(creditHour == 0f ? "" : MESSAGES.credit(creditHour));
+								}
 							}
 					}
 					if (response.hasRequests()) {

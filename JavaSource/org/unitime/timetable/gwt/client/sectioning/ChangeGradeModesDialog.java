@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.client.widgets.WebTable.Cell;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
@@ -46,10 +47,13 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.ChangeGrade
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAvailableGradeModesRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAvailableGradeModesResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationCreditChange;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationGradeMode;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationGradeModeChange;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationGradeModeChanges;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationStatus;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationVariableCredit;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationVariableCreditChange;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -72,6 +76,7 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class ChangeGradeModesDialog extends UniTimeDialogBox {
 	protected static StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
+	protected static GwtMessages GWT_MESSAGES = GWT.create(GwtMessages.class);
 	protected static StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	protected static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
 	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
@@ -81,12 +86,15 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 	private WebTable iTable;
 	private UniTimeHeaderPanel iButtons;
 	private List<GradeModeChange> iChanges = new ArrayList<GradeModeChange>();
+	private List<VariableCreditChange> iVarChanges = new ArrayList<VariableCreditChange>();
+	private Focusable iFirstChange = null;
 	private ScheduleStatus iStatus;
 	private ArrayList<ClassAssignmentInterface.ClassAssignment> iEnrollment;
 	private List<RetrieveSpecialRegistrationResponse> iApprovals;
 	private P iApproval = null;
 	private TextArea iNote = null;
 	private List<CheckBox> iDisclaimers = new ArrayList<CheckBox>();
+	private Float iCurrentCredit, iMaxCredit;
 	
 	public ChangeGradeModesDialog(ScheduleStatus status) {
 		super(true, true);
@@ -108,6 +116,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 				new WebTable.Cell(MESSAGES.colDate()),
 				new WebTable.Cell(MESSAGES.colRoom()),
 				new WebTable.Cell(MESSAGES.colCredit()),
+				new WebTable.Cell(MESSAGES.colPendingCredit()),
 				new WebTable.Cell(MESSAGES.colTitleGradeMode()),
 				new WebTable.Cell(MESSAGES.colTitlePendingGradeMode())
 				));
@@ -161,9 +170,25 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 		return null;
 	}
 	
+	protected Float getPendingCredit(Long courseId) {
+		if (iApprovals == null) return null;
+		for (RetrieveSpecialRegistrationResponse approval: iApprovals) {
+			if (approval.getStatus() == SpecialRegistrationStatus.Pending && approval.hasChanges()) {
+				for (ClassAssignmentInterface.ClassAssignment clazz: approval.getChanges()) {
+					if (clazz.getCreditHour() != null && courseId.equals(clazz.getCourseId())) {
+						return clazz.getCreditHour();
+					}
+				}
+			}
+		}
+		return null;
+	}
+	
 	public void changeGradeModes(Long sessionId, Long studentId, ArrayList<ClassAssignmentInterface.ClassAssignment> enrollment, List<RetrieveSpecialRegistrationResponse> approvals) {
 		LoadingWidget.getInstance().show(MESSAGES.waitRetrieveGradeModes());
 		iChanges.clear();
+		iVarChanges.clear();
+		iFirstChange = null;
 		iNote.setValue("");
 		iApproval.clear();
 		iEnrollment = enrollment;
@@ -180,37 +205,58 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 			public void onSuccess(RetrieveAvailableGradeModesResponse result) {
 				ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 				iTable.clearData(true);
+				iCurrentCredit = result.getCurrentCredit(); iMaxCredit = result.getMaxCredit();
 				
 				Long lastCourseId = null;
 				GradeModeChange change = null;
+				boolean hasPendingCredit = false;
 				boolean hasPendingGradeMode = false;
 				for (ClassAssignmentInterface.ClassAssignment clazz: iEnrollment) {
 					if (clazz == null) continue;
 					SpecialRegistrationGradeModeChanges gradeMode = result.get(clazz);
-					if (gradeMode == null) continue;
+					SpecialRegistrationVariableCreditChange varCredit = result.getVariableCredits(clazz);
+					if (gradeMode == null && varCredit == null) continue;
+					
 					if (clazz.getParentSection() != null && clazz.getParentSection().equals(clazz.getSection())) continue;
 					if (clazz.isTeachingAssignment() || clazz.isDummy() || clazz.isFreeTime()) continue;
 					
-					boolean firstClazz = !clazz.getCourseId().equals(lastCourseId);
-					if (firstClazz) {
-						change = new GradeModeChange(clazz, gradeMode);
-						iChanges.add(change);
-					} else {
-						change.addClassAssignment(clazz, gradeMode);
-					}
-					lastCourseId = clazz.getCourseId();
-					GradeMode pendingGradeMode = getPendingGradeMode(clazz.getCourseId());
-					if (pendingGradeMode != null) {
-						hasPendingGradeMode = true;
-						if (pendingGradeMode.getLabel() == null) {
-							SpecialRegistrationGradeMode m = gradeMode.getAvailableChange(pendingGradeMode.getCode());
-							if (m != null)
-								pendingGradeMode.setLabel(m.getLabel());
-							else
-								pendingGradeMode.setLabel(pendingGradeMode.getCode());
-						}
+					VariableCreditChange vcc = null;
+					Float pendingCredit = null;
+					if (varCredit != null) {
+						vcc = new VariableCreditChange(clazz, varCredit);
+						iVarChanges.add(vcc);
+						if (iFirstChange == null) iFirstChange = (Focusable)vcc.getWidget();
+						pendingCredit = getPendingCredit(clazz.getCourseId());
+						if (pendingCredit != null)
+							hasPendingCredit = true;
 					}
 					
+					boolean firstClazz = !clazz.getCourseId().equals(lastCourseId);
+					GradeMode pendingGradeMode = null;
+					if (gradeMode != null) {
+						if (firstClazz) {
+							change = new GradeModeChange(clazz, gradeMode);
+							iChanges.add(change);
+							if (iFirstChange == null) iFirstChange = (Focusable)change.getWidget();
+						} else {
+							change.addClassAssignment(clazz, gradeMode);
+						}
+						pendingGradeMode = getPendingGradeMode(clazz.getCourseId());
+						if (pendingGradeMode != null) {
+							hasPendingGradeMode = true;
+							if (pendingGradeMode.getLabel() == null) {
+								SpecialRegistrationGradeMode m = gradeMode.getAvailableChange(pendingGradeMode.getCode());
+								if (m != null)
+									pendingGradeMode.setLabel(m.getLabel());
+								else
+									pendingGradeMode.setLabel(pendingGradeMode.getCode());
+							}
+						}
+					} else {
+						change = null;
+					}
+					lastCourseId = clazz.getCourseId();
+
 					String style = (firstClazz && !rows.isEmpty() ? "top-border-dashed": "");
 					WebTable.Row row = null;
 					if (clazz.isAssigned()) {
@@ -224,8 +270,9 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 								new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())).aria(clazz.getEndStringAria(CONSTANTS.useAmPm())),
 								new WebTable.Cell(clazz.getDatePattern()),
 								(clazz.hasDistanceConflict() ? new WebTable.RoomCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(), ", ") : new WebTable.RoomCell(clazz.getRooms(), ", ")),
-								new WebTable.AbbvTextCell(clazz.getCredit()),
-								(firstClazz ? change : new GradeModeLabel(change, gradeMode)),
+								(vcc != null ? vcc : new WebTable.AbbvTextCell(clazz.getCredit())),
+								new WebTable.Cell(pendingCredit == null ? "" : MESSAGES.credit(pendingCredit)),
+								(change == null ? new WebTable.Cell("") : firstClazz ? change : new GradeModeLabel(change, gradeMode)),
 								new WebTable.Cell(pendingGradeMode == null ? "" : pendingGradeMode.getLabel())
 								);
 					} else {
@@ -237,8 +284,9 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 								new WebTable.Cell(MESSAGES.arrangeHours(), 3, null),
 								new WebTable.Cell(clazz.getDatePattern()),
 								(clazz.hasDistanceConflict() ? new WebTable.RoomCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(), ", ") : new WebTable.RoomCell(clazz.getRooms(), ", ")),
-								new WebTable.AbbvTextCell(clazz.getCredit()),
-								(firstClazz ? change : new GradeModeLabel(change, gradeMode)),
+								(vcc != null ? vcc : new WebTable.AbbvTextCell(clazz.getCredit())),
+								new WebTable.Cell(pendingCredit == null ? "" : MESSAGES.credit(pendingCredit)),
+								(change == null ? new WebTable.Cell("") : firstClazz ? change : new GradeModeLabel(change, gradeMode)),
 								new WebTable.Cell(pendingGradeMode == null ? "" : pendingGradeMode.getLabel())
 								);
 					}
@@ -252,15 +300,20 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 				for (WebTable.Row row: rows) rowArray[idx++] = row;
 				
 				iTable.setData(rowArray);
-				iTable.setColumnVisible(11, hasPendingGradeMode);
+				iTable.setColumnVisible(10, hasPendingCredit);
+				iTable.setColumnVisible(12, hasPendingGradeMode);
 				
 				LoadingWidget.getInstance().hide();
 				if (rows.isEmpty()) {
 					iStatus.info(MESSAGES.statusNoGradeModeChangesAvailable());
 				} else {
 					center();
-					if (!iChanges.isEmpty())
+					if (iFirstChange != null)
+						iFirstChange.setFocus(true);
+					else if (!iChanges.isEmpty())
 						((Focusable)iChanges.get(0).getWidget()).setFocus(true);
+					else if (!iVarChanges.isEmpty())
+						((Focusable)iVarChanges.get(0).getWidget()).setFocus(true);
 				}
 			}
 		});
@@ -302,13 +355,47 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 				first = false;
 			}
 		}
+		P crtab = new P("course-table");
+		boolean credChanges = false, credApprovals = false;
+		float cred = (iCurrentCredit == null ? 0f: iCurrentCredit.floatValue());
+		for (VariableCreditChange cell: iVarChanges) {
+			SpecialRegistrationVariableCredit change = cell.getChange();
+			if (change == null) continue;
+			cred += change.getCreditChange();
+			credChanges = true;
+			ClassAssignmentInterface.ClassAssignment ca = cell.getClassAssignment();
+			P cn = new P("course-name");
+			cn.setText(ca.getCourseName());
+			P sn = new P("section-name");
+			sn.setText(ca.getSection());
+			P m = new P("approval-message");
+			if (change.hasApprovals()) {
+				m.setText(MESSAGES.varCreditApprovalNeeded(change.getCredit(), ToolBox.toString(change.getApprovals())));
+				credApprovals = true;
+			} else {
+				m.setText(MESSAGES.varCreditNoApprovalNeeded(change.getCredit()));
+			}
+			P crow = new P("course-row");
+			crow.addStyleName("first-course-line");
+			crow.add(cn);
+			crow.add(sn);
+			crow.add(m);
+			crtab.add(crow);
+		}
 		if (changes) {
 			P m = new P("message"); m.setHTML(MESSAGES.gradeModeListChanges()); iApproval.add(m);
 			iApproval.add(ctab);
-			if (approvals) {
-				m = new P("message"); m.setHTML(MESSAGES.gradeModeChangesNote()); iApproval.add(m);
-				iApproval.add(iNote);
+		}
+		if (credChanges) {
+			P m = new P("message"); m.setHTML(MESSAGES.varCreditListChanges()); iApproval.add(m);
+			iApproval.add(crtab);
+			if (iMaxCredit != null && cred > iMaxCredit) {
+				m = new P("message", "credit-message"); m.setHTML(MESSAGES.varCreditMaxExceeded(cred, iMaxCredit)); iApproval.add(m);
 			}
+		}
+		if (approvals || credApprovals || (credChanges && iMaxCredit != null && cred > iMaxCredit)) {
+			P m = new P("message"); m.setHTML(MESSAGES.gradeModeChangesNote()); iApproval.add(m);
+			iApproval.add(iNote);
 		}
 		if (!disclaimers.isEmpty()) {
 			P m = new P("message"); m.setHTML(MESSAGES.gradeModeDisclaimers()); iApproval.add(m);
@@ -325,10 +412,10 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 				iApproval.add(ch);
 			}
 		}
-		if (changes) {
+		if (changes || credChanges) {
 			P m = new P("message"); m.setHTML(MESSAGES.gradeModeChangeOptions()); iApproval.add(m);
 		}
-		iButtons.setEnabled("submit", changes && disclaimers.isEmpty(), changes);
+		iButtons.setEnabled("submit", (changes || credChanges) && disclaimers.isEmpty(), changes || credChanges);
 		center();
 	}
 	
@@ -345,6 +432,8 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 	
 	protected void onSubmit() {
 		ChangeGradeModesRequest request = new ChangeGradeModesRequest();
+		request.setCurrentCredit(iCurrentCredit);
+		request.setMaxCredit(iMaxCredit);
 		request.setNote(iNote.getValue());
 		for (GradeModeChange cell: iChanges) {
 			SpecialRegistrationGradeMode change = cell.getChange();
@@ -366,7 +455,20 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 			}
 			request.addChange(ch);
 		}
-		if (request.hasGradeModeChanges()) {
+		for (VariableCreditChange cell: iVarChanges) {
+			SpecialRegistrationVariableCredit change = cell.getChange();
+			if (change == null) continue;
+			SpecialRegistrationCreditChange ch = new SpecialRegistrationCreditChange();
+			ch.setCredit(change.getCredit());
+			ch.setOriginalCredit(change.getOriginalCredit());
+			ch.setSubject(cell.getClassAssignment().getSubject());
+			ch.setCourse(cell.getClassAssignment().getCourseNbr());
+			ch.setCrn(cell.getClassAssignment().getExternalId());
+			if (change.hasApprovals())
+				for (String app: change.getApprovals()) ch.addApproval(app);
+			request.addChange(ch);
+		}
+		if (request.hasGradeModeChanges() || request.hasCreditChanges()) {
 			LoadingWidget.getInstance().show(MESSAGES.waitChangeGradeModes());
 			iSectioningService.changeGradeModes(request, new AsyncCallback<ChangeGradeModesResponse>() {
 				
@@ -521,6 +623,72 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 		public void setStyleName(String styleName) {
 			super.setStyleName(styleName);
 		}
+	}
+	
+	public class VariableCreditChange extends Cell implements HasAriaLabel {
+		private ListBox iList;
+		private SpecialRegistrationVariableCreditChange iVarCredit;
+		private ClassAssignmentInterface.ClassAssignment iClass;
+		
+		public VariableCreditChange(ClassAssignmentInterface.ClassAssignment ca, SpecialRegistrationVariableCreditChange vcc) {
+			super(null);
+			iList = new ListBox();
+			iList.addStyleName("variable-credit-list");
+			iClass = ca;
+			iVarCredit = vcc;
+			iList.addChangeHandler(new ChangeHandler() {
+				@Override
+				public void onChange(ChangeEvent event) {
+					formChanged();
+				}
+			});
+			setup();
+		}
+		
+		private void setup() {
+			iList.clear();
+			boolean hasCredit = false;
+			if (iVarCredit.hasAvailableCredits()) {
+				for (float cred: iVarCredit.getAvailableCredits()) {
+					iList.addItem(MESSAGES.credit(cred), String.valueOf(cred));
+					if (iClass.getCreditHour() != null && iClass.getCreditHour() == cred) {
+						iList.setSelectedIndex(iList.getItemCount() - 1);
+						hasCredit = true;
+					} else if (iClass.getCreditHour() == null && iClass.hasCredit() && iClass.guessCreditCount() == cred) {
+						iList.setSelectedIndex(iList.getItemCount() - 1);
+						hasCredit = true;
+					}
+				}
+			}
+			if (!hasCredit) {
+				if (iClass.getCreditHour() != null)
+					iList.insertItem(MESSAGES.credit(iClass.getCreditHour()), iClass.getCreditHour().toString(), 0);
+				else if (iClass.getCredit() != null)
+					iList.insertItem(MESSAGES.credit(iClass.guessCreditCount()), String.valueOf(iClass.guessCreditCount()), 0);
+				else
+					iList.insertItem("","", 0);
+				iList.setSelectedIndex(0);
+			}
+		}
+		
+		public String getValue() { return iList.getValue(iList.getSelectedIndex()); }
+		public Widget getWidget() { return iList; }
+		public SpecialRegistrationVariableCredit getChange() {
+			String credit = iList.getValue(iList.getSelectedIndex());
+			if (credit.isEmpty()) return null;
+			if (iClass.getCreditHour() != null) {
+				if (iClass.getCreditHour().equals(Float.valueOf(credit))) return null;
+			} else if (iClass.getCredit() != null) {
+				if (iClass.guessCreditCount() == Float.valueOf(credit)) return null;
+			}
+			
+			SpecialRegistrationVariableCredit change = new SpecialRegistrationVariableCredit(iVarCredit);
+			change.setOriginalCredit(iClass.getCreditHour() != null ? iClass.getCreditHour() : iClass.getCredit() != null ? new Float(iClass.guessCreditCount()) : null);
+			change.setCredit(Float.valueOf(credit));
+			return change;
+		}
+		public ClassAssignmentInterface.ClassAssignment getClassAssignment() { return iClass; }
+		public SpecialRegistrationVariableCreditChange getVarCredits() { return iVarCredit; }
 	}
 
 }

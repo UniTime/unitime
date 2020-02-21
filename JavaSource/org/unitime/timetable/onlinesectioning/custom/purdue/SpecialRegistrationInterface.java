@@ -115,6 +115,7 @@ public class SpecialRegistrationInterface {
 		DROP, // sections are being dropped (only during registration)
 		KEEP, // sections are being unchanged, but a registration error was reported on them (e.g., co-requisite, only during registration)
 		CHGMODE, // change grade mode
+		CHGVARCR, // change variable credit
 		;
 	}
 	
@@ -142,6 +143,10 @@ public class SpecialRegistrationInterface {
 		public String selectedGradeMode;
 		/** New grade mode description (only used when operation = CHGMODE) */
 		public String selectedGradeModeDescription;
+		/** Current credit hours (only used when operation = CHGVARCR) */
+		public String currentCreditHour;
+		/** Selected credit hours (only used when operation = CHGVARCR) */
+		public String selectedCreditHour;
 	}
 	
 
@@ -507,6 +512,12 @@ public class SpecialRegistrationInterface {
 		public String campus;
 		/** List of available grade modes */
 		List<SpecialRegistrationCurrentGradeMode> gradingModes;
+		/** List of available variable credits changes */
+		List<SpecialRegistrationVariableCredit> varCredits;
+		/** Student's current credit */
+		public Float currentCredit;
+		/** Student's max credit */
+		public Float maxCredit;
 	}
 	
 	/**
@@ -521,6 +532,22 @@ public class SpecialRegistrationInterface {
 		public String gradingModeDescription;
 		/** List of available grading mode changes */
 		public List<SpecialRegistrationAvailableGradeMode> availableGradingModes;
+	}
+	
+	/**
+	 * Variable credit change
+	 */
+	public static class SpecialRegistrationVariableCredit {
+		/** Section CRN */
+		public String crn;
+		/** Credit min */
+		public String creditHrLow;
+		/** Credit max */
+		public String creditHrHigh;
+		/** Credit indicator */
+		public String creditHrInd;
+		/** Approvals needed, null or empty when no approvals are not needed */
+		public List<String> approvals;
 	}
 	
 	public static class SpecialRegistrationAvailableGradeMode {

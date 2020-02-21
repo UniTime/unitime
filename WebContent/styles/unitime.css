@@ -6613,6 +6613,12 @@ unitime-RoomSharingWidget .legend .blank {
 	text-align: justify;
 }
 
+.unitime-ChangeGradeModesDialog .credit-message {
+	margin-top: -5px;
+	margin-left: 10px;
+	margin-bottom: 10px;
+}
+
 .unitime-ChangeGradeModesDialog .disclaimer-message {
 	display: block;
 	white-space: pre-wrap;
@@ -6629,6 +6635,10 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-ChangeGradeModesDialog .grade-mode-label {
 	padding-left: 9px;
+}
+
+.unitime-ChangeGradeModesDialog .variable-credit-list {
+	min-width: 50px;
 }
 
 .unitime-SolutionInfoDialog {

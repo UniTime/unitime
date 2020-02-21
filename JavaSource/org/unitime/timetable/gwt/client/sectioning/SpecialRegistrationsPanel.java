@@ -387,7 +387,11 @@ public class SpecialRegistrationsPanel extends P {
 					row.add(new Label(ca.getSubpart(), false));
 					row.add(new Label(ca.getSection(), false));
 					row.add(new HTML(ca.getLimitString(), false));
-					row.add(new CreditCell(ca.getCredit()));
+					if (ca.getCreditHour() != null) {
+						row.add(new Label(MESSAGES.credit(ca.getCreditHour())));
+					} else {
+						row.add(new CreditCell(ca.getCredit()));
+					}
 					HTML errorsLabel = new HTML(ca.hasError() ? ca.getError() : ""); errorsLabel.addStyleName("registration-errors");
 					row.add(errorsLabel);
 					P s = new P("icons");
@@ -447,7 +451,9 @@ public class SpecialRegistrationsPanel extends P {
 				row.add(new DateAndNoteCell(reg.getSubmitDate(), reg.getNote()));
 				row.add(new DescriptionCell(reg.getDescription()));
 				String errors = "";
-				Label errorsLabel = new Label(errors); errorsLabel.addStyleName("registration-errors");
+				for (ErrorMessage e: reg.getErrors())
+					errors += (errors.isEmpty() ? "" : "\n") + e.getMessage();
+				HTML errorsLabel = new HTML(errors); errorsLabel.addStyleName("registration-errors");
 				row.add(errorsLabel);
 				row.add(new Label());
 				if (delete != null)
@@ -634,9 +640,13 @@ public class SpecialRegistrationsPanel extends P {
 					for (ClassAssignment ch: response.getChanges())
 						if (ch.getGradeMode() != null) {
 							if (a.getCourseId().equals(ch.getCourseId()) && a.getGradeMode() != null && !ch.getGradeMode().equals(a.getGradeMode()) && response.getRequestId().equals(iSpecReg.getRequestId()))
-								return ch.getSpecRegStatus();	
-						} else if (a.getCourseId().equals(ch.getCourseId()) && a.getSection().equals(ch.getSection()))
+								return ch.getSpecRegStatus();
+						} else if (ch.getCreditHour() != null) {
+							if (a.getCourseId().equals(ch.getCourseId()) && a.getCreditHour() != null && !ch.getCreditHour().equals(a.getCreditHour()) && response.getRequestId().equals(iSpecReg.getRequestId()))
+								return ch.getSpecRegStatus();
+						} else if (a.getCourseId().equals(ch.getCourseId()) && a.getSection().equals(ch.getSection())) {
 							return ch.getSpecRegStatus();
+						}
 			}
 		return null;
 	}
@@ -648,7 +658,10 @@ public class SpecialRegistrationsPanel extends P {
 				if (response.hasChanges())
 					for (ClassAssignment ch: response.getChanges())
 						if (ch.getGradeMode() != null) {
-							if (a.getCourseId().equals(ch.getCourseId()) && a.getGradeMode() != null && !ch.getGradeMode().equals(a.getGradeMode()))
+							if (a.getCourseId().equals(ch.getCourseId()) && a.getGradeMode() != null && !ch.getGradeMode().equals(a.getGradeMode()) && response.getRequestId().equals(iSpecReg.getRequestId()))
+								if (ch.hasError()) return ch.getError();
+						} else if (ch.getCreditHour() != null) {
+							if (a.getCourseId().equals(ch.getCourseId()) && a.getCreditHour() != null && !ch.getCreditHour().equals(a.getCreditHour()) && response.getRequestId().equals(iSpecReg.getRequestId()))
 								if (ch.hasError()) return ch.getError();
 						} else if (a.getCourseId().equals(ch.getCourseId()) && a.getSection().equals(ch.getSection()))
 							if (ch.hasError()) return ch.getError();
@@ -661,8 +674,19 @@ public class SpecialRegistrationsPanel extends P {
 			for (RetrieveSpecialRegistrationResponse response: iRegistrations) {
 				if (response.hasChanges())
 					for (ClassAssignment ch: response.getChanges())
-						if (a.getCourseId().equals(ch.getCourseId()))
+						if (a.getCourseId().equals(ch.getCourseId()) && ch.getGradeMode() != null)
 							return ch.getGradeMode();
+			}
+		return null;
+	}
+	
+	public Float getCreditHours(ClassAssignment a) {
+		if (iRegistrations != null && a.getClassId() != null)
+			for (RetrieveSpecialRegistrationResponse response: iRegistrations) {
+				if (response.hasChanges())
+					for (ClassAssignment ch: response.getChanges())
+						if (a.getCourseId().equals(ch.getCourseId()) && ch.getCreditHour() != null && a.getSection().equals(ch.getSection()) && !a.getSection().equals(a.getParentSection()))
+							return ch.getCreditHour();
 			}
 		return null;
 	}

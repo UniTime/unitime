@@ -395,6 +395,8 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		
 		public Map<String, GradeMode> toMap() { return iModes; }
 		
+		public Map<String, Float> getCreditHours() { return iCreditHours; }
+		
 		public boolean hasCreditHours() {
 			return iCreditHours != null && !iCreditHours.isEmpty();
 		}

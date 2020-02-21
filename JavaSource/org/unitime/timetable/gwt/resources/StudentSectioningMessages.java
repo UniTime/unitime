@@ -118,6 +118,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Credit")
 	String colCredit();
 	
+	@DefaultMessage("Pending")
+	String colPendingCredit();
+	
 	@DefaultMessage("Gr Md")
 	String colGradeMode();
 	
@@ -451,7 +454,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("<u>S</u>ubmit Schedule")
 	String buttonEnroll();
 	
-	@DefaultMessage("<u>G</u>rade Modes")
+	@DefaultMessage("<u>G</u>rade Modes &amp; Credits")
 	String buttonChangeGradeModes();
 	
 	@DefaultMessage("Submit Approval Requests")
@@ -2340,34 +2343,34 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Elective {0} is marked as critical.")
 	String hintCriticalGroup(String courseOrGroup);
 	
-	@DefaultMessage("Grade Modes")
+	@DefaultMessage("Grade Modes & Variable Credits")
 	String dialogChangeGradeMode();
 	
-	@DefaultMessage("Retrieving available grade modes...")
+	@DefaultMessage("Retrieving available grade modes and variable credits...")
 	String waitRetrieveGradeModes();
 	
-	@DefaultMessage("Requesting grade mode changes...")
+	@DefaultMessage("Requesting grade mode and credit changes...")
 	String waitChangeGradeModes();
 	
-	@DefaultMessage("Unable to get available grade modes: {0}")
+	@DefaultMessage("Unable to get available grade modes and variable credits: {0}")
 	String exceptionRetrieveGradeModes(String message);
 	
-	@DefaultMessage("Failed to request grade mode changes: {0}")
+	@DefaultMessage("Failed to request grade mode and/or credit changes: {0}")
 	String exceptionChangeGradeModes(String message);
 	
-	@DefaultMessage("No grade mode changes are available.")
+	@DefaultMessage("No grade mode or credit changes are available.")
 	String statusNoGradeModeChangesAvailable();
 	
-	@DefaultMessage("No grade mode changes have been requested.")
+	@DefaultMessage("No grade mode or credit changes have been requested.")
 	String statusNoGradeModeChangesMade();
 	
-	@DefaultMessage("Grade mode changes have been successfully requested.")
+	@DefaultMessage("Grade mode and/or credit changes have been successfully requested.")
 	String statusGradeModeChangesRequested();
 	
-	@DefaultMessage("Grade mode changes have been successfully applied.")
+	@DefaultMessage("Grade mode and/or credit  changes have been successfully applied.")
     String statusGradeModeChangesApplied();
 	
-	@DefaultMessage("There are no courses with a grade mode.")
+	@DefaultMessage("There are no courses with grade modes and/or variable credits.")
 	String emptyGradeChanges();
 	
 	@DefaultMessage("Submit Changes")
@@ -2379,16 +2382,28 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("The following grade mode changes are being requested:")
 	String gradeModeListChanges();
 	
+	@DefaultMessage("The following credit changes are being requested:")
+	String varCreditListChanges();
+	
+	@DefaultMessage("Maximum of {1,number,0.#} credit hours exceeded. An override for {0,number,0.#} credit hours will be requested.")
+	String varCreditMaxExceeded(float curent, float max);
+	
 	@DefaultMessage("- {0}: No approval is needed.")
 	String gradeModeNoApprovalNeeded(String gradeMode);
 	
 	@DefaultMessage("- {0}: {1} approval is needed.")
 	String gradeModeApprovalNeeded(String gradeMode, String approvals);
 	
+	@DefaultMessage("- {0,number,0.#} credit hours: No approval is needed.")
+	String varCreditNoApprovalNeeded(Float credit);
+	
+	@DefaultMessage("- {0,number,0.#} credit hours: {1} approval is needed.")
+	String varCreditApprovalNeeded(Float credit, String approvals);
+	
 	@DefaultMessage(
-			"\nPlease, select <b>Submit Changes</b> to apply for the selected grade mode changes. "
-			+ "The chosen grade mode changes will be submitted for the required approvals. "
-			+ "If no approval is necessary, grade mode will change immediately. "
+			"\nPlease, select <b>Submit Changes</b> to apply for the selected grade mode and/or credit changes. "
+			+ "The chosen grade mode and/or credit changes will be submitted for the required approvals. "
+			+ "If no approval is necessary, grade mode and/or credit will change immediately. "
 			+ "Click <b>Close Dialog</b> to cancel this request and go back to explore other scheduling options.")
 	String gradeModeChangeOptions();
 		

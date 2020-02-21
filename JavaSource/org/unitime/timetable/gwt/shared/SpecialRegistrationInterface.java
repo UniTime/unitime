@@ -299,6 +299,13 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			return false;
 		}
 		
+		public boolean isCreditChange() {
+			if (iChanges == null) return false;
+			for (ClassAssignmentInterface.ClassAssignment ca: iChanges)
+				if (ca.getCreditHour() != null) return true;
+			return false;
+		}
+		
 		public boolean isAdd(Long courseId) {
 			boolean hasDrop = false, hasAdd = false;
 			for (ClassAssignmentInterface.ClassAssignment ca: iChanges)
@@ -368,7 +375,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		}
 		
 		public boolean isFullyApplied(ClassAssignmentInterface saved) {
-			if (!hasChanges() || isGradeModeChange() || isExtended()) return getStatus() == SpecialRegistrationStatus.Approved;
+			if (!hasChanges() || isGradeModeChange() || isCreditChange() || isExtended()) return getStatus() == SpecialRegistrationStatus.Approved;
 			if (saved == null) return false;
 			Set<Long> courseIds = new HashSet<Long>();
 			boolean enrolled = true, gmChange = false;
@@ -386,6 +393,12 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 						for (ClassAssignmentInterface.ClassAssignment ca: saved.getClassAssignments())
 							if (ca.isSaved() && ch.getCourseId().equals(ca.getCourseId()) && !ch.getGradeMode().equals(ca.getGradeMode())) {
 								gmChange = true; break;
+							}
+					}
+					if (ch.getCreditHour() != null) {
+						for (ClassAssignmentInterface.ClassAssignment ca: saved.getClassAssignments())
+							if (ca.isSaved() && ch.getCourseId().equals(ca.getCourseId()) && ca.getCreditHour() != null && ca.getCreditHour().equals(ch.getCreditHour())) {
+								return false;
 							}
 					}
 					continue;
@@ -434,6 +447,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			if (courseId == null || saved == null) return false;
 			boolean hasDrop = false, hasAdd = false, hasKeep = false;
 			GradeMode gm = null;
+			Float vc = null;
 			for (ClassAssignmentInterface.ClassAssignment ca: iChanges)
 				if (courseId.equals(ca.getCourseId())) {
 					switch (ca.getSpecRegOperation()) {
@@ -442,7 +456,9 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 					case Keep:
 						if (ca.getGradeMode() != null)
 							gm = ca.getGradeMode();
-						else
+						if (ca.getCreditHour() != null)
+							vc = ca.getCreditHour();
+						if (ca.getGradeMode() == null && ca.getCreditHour() == null)
 							hasKeep = true;
 						break;
 					}
@@ -451,6 +467,13 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 				for (ClassAssignmentInterface.ClassAssignment ca: saved.getClassAssignments())
 					if (ca.isSaved() && courseId.equals(ca.getCourseId())) {
 						if (ca.getGradeMode() != null && !ca.getGradeMode().equals(gm)) return false;
+						if (vc != null && ca.getCreditHour() != null && !ca.getCreditHour().equals(vc)) return false;
+					}
+				return true;
+			} else if (vc != null) {
+				for (ClassAssignmentInterface.ClassAssignment ca: saved.getClassAssignments())
+					if (ca.isSaved() && courseId.equals(ca.getCourseId())) {
+						if (ca.getCreditHour() != null && !ca.getCreditHour().equals(vc)) return false;
 					}
 				return true;
 			} else if (hasKeep) {
@@ -699,6 +722,8 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 	public static class RetrieveAvailableGradeModesResponse implements GwtRpcResponse, Serializable {
 		private static final long serialVersionUID = 1L;
 		Map<String, SpecialRegistrationGradeModeChanges> iModes = new HashMap<String, SpecialRegistrationGradeModeChanges>();
+		Map<String, SpecialRegistrationVariableCreditChange> iVarCreds = new HashMap<String, SpecialRegistrationVariableCreditChange>();
+		private Float iMaxCredit, iCurrentCredit;
 		
 		public RetrieveAvailableGradeModesResponse() {}
 		
@@ -708,11 +733,29 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			iModes.put(sectionId, modes);
 		}
 		
+		public boolean hasVariableCredits() { return !iVarCreds.isEmpty(); }
+		
+		public void add(String sectionId, SpecialRegistrationVariableCreditChange var) {
+			iVarCreds.put(sectionId,var);
+		}
+		
 		public SpecialRegistrationGradeModeChanges get(ClassAssignment a) {
 			if (a.getExternalId() == null) return null;
 			if (a.getParentSection() != null && a.getParentSection().equals(a.getSection())) return null;
 			return iModes.get(a.getExternalId());
 		}
+		
+		public SpecialRegistrationVariableCreditChange getVariableCredits(ClassAssignment a) {
+			if (a.getExternalId() == null) return null;
+			if (a.getParentSection() != null && a.getParentSection().equals(a.getSection())) return null;
+			return iVarCreds.get(a.getExternalId());
+		}
+		
+		public Float getMaxCredit() { return iMaxCredit; }
+		public void setMaxCredit(Float credit) { iMaxCredit = credit; }
+		
+		public Float getCurrentCredit() { return iCurrentCredit; }
+		public void setCurrentCredit(Float credit) { iCurrentCredit = credit; }
 	}
 	
 	public static class SpecialRegistrationGradeMode extends GradeMode {
@@ -741,6 +784,36 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		
 		public String getOriginalGradeMode() { return iOriginalGradeMode; }
 		public void setOriginalGradeMode(String mode) { iOriginalGradeMode = mode; }
+	}
+	
+	public static class SpecialRegistrationVariableCredit implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		private List<String> iApprovals = null;
+		private Float iCredit = null;
+		private Float iOriginalCredit = null;
+		
+		public SpecialRegistrationVariableCredit() {
+			super();
+		}
+		public SpecialRegistrationVariableCredit(SpecialRegistrationVariableCreditChange change) {
+			super();
+			if (change.hasApprovals()) iApprovals = new ArrayList<String>(change.getApprovals());
+		}
+		
+		public boolean hasApprovals() { return iApprovals != null && !iApprovals.isEmpty(); }
+		public List<String> getApprovals() { return iApprovals; }
+		public void addApproval(String approval) {
+			if (iApprovals == null) iApprovals = new ArrayList<String>();
+			iApprovals.add(approval);
+		}
+		
+		public Float getOriginalCredit() { return iOriginalCredit; }
+		public void setOriginalCredit(Float credit) { iOriginalCredit = credit; }
+		
+		public Float getCredit() { return iCredit; }
+		public void setCredit(Float credit) { iCredit = credit; }
+		
+		public float getCreditChange() { return (iCredit == null ? 0f : iCredit.floatValue()) - (iOriginalCredit == null ? 0f : iOriginalCredit.floatValue()); }
 	}
 	
 	public static class SpecialRegistrationGradeModeChanges implements IsSerializable, Serializable {
@@ -816,12 +889,68 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public Set<String> getApprovals() { return iApprovals; }
 	}
 	
+	public static class SpecialRegistrationCreditChange implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		private String iSubject, iCourse, iCrn;
+		private Float iCredit, iOriginalCredit;
+		private Set<String> iApprovals = null;
+		
+		public SpecialRegistrationCreditChange() {}
+		
+		public String getSubject() { return iSubject; }
+		public void setSubject(String subject) { iSubject = subject; }
+		
+		public String getCourse() { return iCourse; }
+		public void setCourse(String course) { iCourse = course; }
+
+		public String getCrn() { return iCrn; }
+		public void setCrn(String crn) { iCrn = crn; }
+		
+		public Float getOriginalCredit() { return iOriginalCredit; }
+		public void setOriginalCredit(Float credit) { iOriginalCredit = credit; }
+		
+		public Float getCredit() { return iCredit; }
+		public void setCredit(Float credit) { iCredit = credit; }
+
+		public boolean hasApprovals() { return iApprovals != null && !iApprovals.isEmpty(); }
+		public void addApproval(String app) {
+			if (iApprovals == null) iApprovals = new TreeSet<String>();
+			iApprovals.add(app);
+		}
+		public Set<String> getApprovals() { return iApprovals; }
+
+	}
+	
+	public static class SpecialRegistrationVariableCreditChange implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		private Set<String> iApprovals = null;
+		private Set<Float> iAvailableCredits = null;
+		
+		public SpecialRegistrationVariableCreditChange() {}
+
+		public boolean hasApprovals() { return iApprovals != null && !iApprovals.isEmpty(); }
+		public void addApproval(String app) {
+			if (iApprovals == null) iApprovals = new TreeSet<String>();
+			iApprovals.add(app);
+		}
+		public Set<String> getApprovals() { return iApprovals; }
+		
+		public boolean hasAvailableCredits() { return iAvailableCredits != null && !iAvailableCredits.isEmpty(); }
+		public void addAvailableCredit(Float credit) {
+			if (iAvailableCredits == null) iAvailableCredits = new TreeSet<Float>();
+			iAvailableCredits.add(credit);
+		}
+		public Set<Float> getAvailableCredits() { return iAvailableCredits; }
+	}
+	
 	public static class ChangeGradeModesRequest implements GwtRpcRequest<ChangeGradeModesResponse>, Serializable {
 		private static final long serialVersionUID = 1L;
 		private Long iSessionId;
 		private Long iStudentId;
 		List<SpecialRegistrationGradeModeChange> iChanges = new ArrayList<SpecialRegistrationGradeModeChange>();
+		List<SpecialRegistrationCreditChange> iCreditChanges = new ArrayList<SpecialRegistrationCreditChange>();
 		private String iNote;
+		private Float iMaxCredit, iCurrentCredit;
 		
 		public ChangeGradeModesRequest() {}
 		public ChangeGradeModesRequest(Long sessionId, Long studentId) {
@@ -853,6 +982,30 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			return false;
 		}
 		
+		public boolean hasCreditChanges() { return !iCreditChanges.isEmpty(); }
+		
+		public void addChange(SpecialRegistrationCreditChange change) {
+			iCreditChanges.add(change);
+		}
+		
+		public SpecialRegistrationCreditChange getCreditChange(String sectionId) {
+			for (SpecialRegistrationCreditChange ch: iCreditChanges)
+				if (ch.getCrn().equals(sectionId)) return ch;
+			return null;
+		}
+		
+		public List<SpecialRegistrationCreditChange> getCreditChanges() {
+			return iCreditChanges;
+		}
+		
+		public boolean hasCreditChanges(boolean approval) {
+			for (SpecialRegistrationCreditChange change: iCreditChanges) {
+				if (approval && change.hasApprovals()) return true;
+				if (!approval && !change.hasApprovals()) return true;
+			}
+			return false;
+		}
+		
 		public Long getSessionId() { return iSessionId; }
 		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 		public Long getStudentId() { return iStudentId; }
@@ -860,6 +1013,12 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void setNote(String note) { iNote = note; }
 		public String getNote() { return iNote; }
 		public boolean hasNote() { return iNote != null && !iNote.isEmpty(); }
+		
+		public Float getMaxCredit() { return iMaxCredit; }
+		public void setMaxCredit(Float credit) { iMaxCredit = credit; }
+		
+		public Float getCurrentCredit() { return iCurrentCredit; }
+		public void setCurrentCredit(Float credit) { iCurrentCredit = credit; }
 	}
 	
 	public static class ChangeGradeModesResponse implements GwtRpcResponse, Serializable {
@@ -882,6 +1041,18 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			return iGradeModes.getGradeMode(section);
 		}
 		public GradeModes getGradeModes() { return iGradeModes; }
+		
+		public boolean hasCreditHours() {
+			return iGradeModes != null && iGradeModes.hasCreditHours();
+		}
+		public void addCreditHour(String sectionId, Float creditHour) {
+			if (iGradeModes == null) iGradeModes = new GradeModes();
+			iGradeModes.addCreditHour(sectionId, creditHour);
+		}
+		public Float getCreditHour(ClassAssignment section) {
+			if (iGradeModes == null) return null;
+			return iGradeModes.getCreditHour(section);
+		}
 		
 		public boolean hasRequests() { return iRequests != null && !iRequests.isEmpty(); }
 		public void addRequest(RetrieveSpecialRegistrationResponse request) {

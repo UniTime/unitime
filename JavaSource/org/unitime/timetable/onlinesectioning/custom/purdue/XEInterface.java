@@ -70,6 +70,7 @@ public class XEInterface {
 		public String courseRegistrationStatus;
 		public String courseRegistrationStatusDescription;
 		public Float creditHour;
+		public CreditHours creditHours;
 		
 		public String gradingMode;
 		public String gradingModeDescription;
@@ -391,6 +392,13 @@ public class XEInterface {
 	public static class RegistrationGradingMode {
 		public String gradingMode;
 		public String description;
+	}
+	
+	public static class CreditHours {
+		public Float creditHourHigh;
+		public Float creditHourLow;
+		public String creditHourIndicator;
+		public Float[] creditHourList;
 	}
 
 }
