@@ -1060,6 +1060,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								a.setSpecRegStatus(b.getSpecRegStatus());
 								a.setSpecRegOperation(b.getSpecRegOperation());
 								if (b.hasError()) a.setError(b.getError());
+								if (b.hasWarn()) a.setWarn(b.getWarn());
+								if (b.hasInfo()) a.setInfo(b.getInfo());
 							}
 				}
 				ret.add(ca);

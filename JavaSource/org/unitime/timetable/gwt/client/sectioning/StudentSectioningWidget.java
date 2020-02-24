@@ -1159,7 +1159,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 											});
 								}
 								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG)) {
-									if (result.hasMessages()) {
+									if (result.isError() || result.hasErrors()) {
 										checkSpecialRegistrationAfterFailedSubmitSchedule(lastEnrollment, null, result);
 									}
 									iSpecialRegistrationsPanel.populate(iSpecialRegistrationsPanel.getRegistrations(), iSavedAssignment);
@@ -1431,7 +1431,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iLastAssignment = result;
 		String calendarUrl = GWT.getHostPageBaseURL() + "calendar?sid=" + iSessionSelector.getAcademicSessionId() + "&cid=";
 		String ftParam = "&ft=";
-		boolean hasError = false;
+		boolean hasError = false, hasWarning = false;
 		float totalCredit = 0f;
 		boolean hasGradeMode = false;
 		if (!result.getCourseAssignments().isEmpty() || CONSTANTS.allowEmptySchedule()) {
@@ -1490,10 +1490,17 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							style += (specRegStatus != SpecialRegistrationStatus.Rejected ? " text-blue" : " text-red");
 							if (clazz.hasError())
 								hasError = true;
+							else if (clazz.hasWarn())
+								hasWarning = true;
 						} else if (clazz.hasError()) {
 							icons.add(RESOURCES.error(), clazz.getError(), true);
 							style += " text-red";
 							hasError = true;
+						} else if (clazz.hasWarn()) {
+							icons.add(RESOURCES.warning(), clazz.getWarn(), true);
+							hasWarning = true;
+						} else if (clazz.hasInfo()) {
+							icons.add(RESOURCES.info(), clazz.getInfo(), true);
 						}
 						if (course.isLocked())
 							icons.add(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()));
@@ -1776,6 +1783,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								}
 							} else if (clazz.hasError()) {
 								icons.add(RESOURCES.error(), clazz.getError(), true);
+							} else if (clazz.hasWarn()) {
+								icons.add(RESOURCES.warning(), clazz.getWarn(), true);
+							} else if (clazz.hasInfo()) {
+								icons.add(RESOURCES.info(), clazz.getInfo(), true);
 							}
 							if (clazz.isSaved())
 								icons.add(RESOURCES.unassignment(), MESSAGES.unassignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
@@ -1872,6 +1883,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							}
 						} else if (clazz.hasError()) {
 							icons.add(RESOURCES.error(), clazz.getError(), true);
+						} else if (clazz.hasWarn()) {
+							icons.add(RESOURCES.warning(), clazz.getWarn(), true);
+						} else if (clazz.hasInfo()) {
+							icons.add(RESOURCES.info(), clazz.getInfo(), true);
 						}
 						if (clazz.isSaved())
 							icons.add(RESOURCES.unassignment(), MESSAGES.unassignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
@@ -2010,8 +2025,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			if (result.hasMessages()) {
 				if (hasError) {
 					iStatus.error(result.getMessages("<br>"), popup);
-				} else { 
+				} else if (hasWarning) {
 					iStatus.warning(result.getMessages("<br>"), popup);
+				} else { 
+					iStatus.info(result.getMessages("<br>"), popup);
 				}
 			} else {
 				updateScheduleChangedNoteIfNeeded();
@@ -2963,13 +2980,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									}
 									for (CourseAssignment ca: iLastAssignment.getCourseAssignments())
 										for (ClassAssignment a: ca.getClassAssignments()) {
-											a.setError(null); a.setSpecRegStatus(null);
+											a.setError(null); a.setWarn(null); a.setInfo(null);
+											a.setSpecRegStatus(null);
 											for (ErrorMessage f: errors) {
 												if (a.getExternalId() != null && a.getExternalId().equals(f.getSection())) {
-													if (a.hasError())
-														a.setError(a.getError() + "\n" + f.getMessage());
-													else
-														a.setError(f.getMessage());
+													a.addError(f.getMessage());
 													a.setSpecRegStatus(response.getStatus());
 												}
 											}

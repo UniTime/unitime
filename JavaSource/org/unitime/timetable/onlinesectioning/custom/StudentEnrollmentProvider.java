@@ -22,8 +22,10 @@ package org.unitime.timetable.onlinesectioning.custom;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.cpsolver.ifs.util.ToolBox;
@@ -86,6 +88,8 @@ public interface StudentEnrollmentProvider {
 		private String iMessage;
 		private boolean iEnrolled;
 		private List<EnrollmentError> iErrors;
+		public static enum Level { ERROR, WARNING, INFO };
+		private Level iLevel = Level.ERROR;
 		
 		public EnrollmentFailure(XCourse course, XSection section, String message, boolean enrolled, Collection<EnrollmentError> errors) {
 			this(course, section, message, enrolled);
@@ -119,6 +123,13 @@ public interface StudentEnrollmentProvider {
 		}
 		public List<EnrollmentError> getErrors() { return iErrors; }
 		
+		public EnrollmentFailure setWarning() { iLevel = Level.WARNING; return this; }
+		public EnrollmentFailure setInfo() { iLevel = Level.INFO; return this; }
+		
+		public boolean isError() { return iLevel == Level.ERROR; }
+		public boolean isWarning() { return iLevel == Level.WARNING; }
+		public boolean isInfo() { return iLevel == Level.INFO; }
+		
 		public String toString() {
 			return getCourse().getCourseName() + " " + getSection().getSubpartName() + " " + getSection().getName(getCourse().getCourseId()) + ": " + getMessage() + (isEnrolled() ? " (e)" : "");
 		}
@@ -129,6 +140,7 @@ public interface StudentEnrollmentProvider {
 		private XCourse iCourse;
 		private List<XSection> iSections;
 		private Set<String> iGradeModes;
+		private Map<String, Float> iCreditHour = null;
 		
 		public EnrollmentRequest(XCourse course, List<XSection> sections) {
 			iCourse = course; iSections = sections;
@@ -165,6 +177,21 @@ public interface StudentEnrollmentProvider {
 			}
 		}
 		public boolean hasGradeMode() { return iGradeModes != null && iGradeModes.size() == 1; }
+		
+		public void setCreditHour(String crn, Float credit) {
+			if (credit == null) return;
+			if (iCreditHour == null) iCreditHour = new HashMap<String, Float>();
+			iCreditHour.put(crn, credit);
+		}
+		
+		public boolean hasCreditHour() { return iCreditHour != null && !iCreditHour.isEmpty(); }
+		
+		public Float getCreditHour() {
+			if (iCreditHour == null) return null;
+			float ret = 0;
+			for (Float c: iCreditHour.values()) ret += c;
+			return ret;
+		}
 		
 		public String toString() {
 			return getCourse().getCourseName() + ": " + ToolBox.col2string(getSections(), 2);

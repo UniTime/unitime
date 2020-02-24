@@ -69,7 +69,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	public void clear() {
 		iAssignments.clear();
 		if (iMessages != null) iMessages.clear();
-		if (iErrors != null) iMessages.clear();
+		if (iErrors != null) iErrors.clear();
 	}
 	
 	public void addMessage(String message) {
@@ -79,6 +79,13 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	public boolean hasMessages() {
 		return iMessages != null && !iMessages.isEmpty();
 	}
+	public boolean isError() {
+		for (CourseAssignment a: iAssignments)
+			for (ClassAssignment ca: a.getClassAssignments())
+				if (ca != null && ca.hasError()) return true;
+		return false;
+	}
+	
 	public ArrayList<String> getMessages() { return iMessages; }
 	public String getMessages(String delim) {
 		String ret = "";
@@ -369,7 +376,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private String iOverlapNote = null;
 		private String iNote = null;
 		private String iCredit = null;
-		private String iError = null;
+		private String iError = null, iWarn = null, iInfo = null;
 		private Date iEnrolledDate = null;
 		private String iExternalId = null;
 		private SpecialRegistrationStatus iSpecRegStatus = null;
@@ -624,8 +631,19 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public void setCancelled(boolean cancelled) { iCancelled = cancelled; }
 		
 		public void setError(String error) { iError = error; }
+		public void addError(String error) { iError = (iError == null || iError.isEmpty() ? "" : iError + "\n") + error; }
 		public boolean hasError() { return iError != null && !iError.isEmpty(); }
 		public String getError() { return iError; }
+		
+		public void setWarn(String warn) { iWarn = warn; }
+		public void addWarn(String warn) { iWarn = (iWarn == null || iWarn.isEmpty() ? "" : iWarn + "\n") + warn; }
+		public boolean hasWarn() { return iWarn != null && !iWarn.isEmpty(); }
+		public String getWarn() { return iWarn; }
+		
+		public void setInfo(String info) { iInfo = info; }
+		public void addInfo(String info) { iInfo = (iInfo == null || iInfo.isEmpty() ? "" : iInfo + "\n") + info; }
+		public boolean hasInfo() { return iInfo != null && !iInfo.isEmpty(); }
+		public String getInfo() { return iInfo; }
 		
 		public void setExpected(Integer expected) { iExpected = expected; }
 		public boolean hasExpected() { return iExpected != null; }

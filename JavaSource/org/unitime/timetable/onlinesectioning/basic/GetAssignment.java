@@ -505,7 +505,9 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 						if (!f.getCourse().getCourseId().equals(ca.getCourseId())) continue;
 						for (ClassAssignmentInterface.ClassAssignment a: ca.getClassAssignments())
 							if (f.getSection().getSectionId().equals(a.getClassId())) {
-								a.setError(f.getMessage());
+								if (f.isError()) a.addError(f.getMessage());
+								else if (f.isWarning()) a.addWarn(f.getMessage());
+								else a.addInfo(f.getMessage());
 								continue f;
 							}
 						ca.setAssigned(true);
@@ -550,7 +552,9 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 						a.setBackToBackRooms(from);
 						a.setSaved(false);
 						a.setDummy(true);
-						a.setError(f.getMessage());
+						if (f.isError()) a.setError(f.getMessage());
+						else if (f.isWarning()) a.setWarn(f.getMessage());
+						else a.setInfo(f.getMessage());
 						a.setExpected(overExp.getExpected(section.getLimit(), expectations.getExpectedSpace(section.getSectionId())));
 					}
 				}
@@ -558,12 +562,8 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 					for (ErrorMessage f: errors) {
 						if (!ca.getCourseName().equals(f.getCourse())) continue;
 						for (ClassAssignmentInterface.ClassAssignment a: ca.getClassAssignments())
-							if (a.getExternalId().equals(f.getSection())) {
-								if (a.hasError())
-									a.setError(a.getError() + "\n" + f.getMessage());
-								else
-									a.setError(f.getMessage());
-							}
+							if (a.getExternalId().equals(f.getSection()))
+								a.addError(f.getMessage());
 					}
 				}
 			} else if (request instanceof XFreeTimeRequest) {

@@ -585,6 +585,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 							sections.add(section);
 							id2course.put(id, course);
 							request.setGradeMode(r.gradingMode);
+							request.setCreditHour(id, r.creditHour);
 						} else {
 							// student had a different section: just put warning on the new enrollment
 							fails.add(new EnrollmentFailure(course, section, MESSAGES.courseLocked(course.getCourseName()), false, new EnrollmentError(ErrorMessage.UniTimeCode.UT_LOCKED.name(), MESSAGES.courseLocked(course.getCourseName()))));
@@ -611,6 +612,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 							if (r != null) {
 								if (added.add(id)) req.keep(id);
 								request.setGradeMode(r.gradingMode);
+								request.setCreditHour(id, r.creditHour);
 							} else {
 								changed = true;
 								if (added.add(id)) req.add(id, notregistered.contains(id));
@@ -659,8 +661,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 												drop = false;
 											}
 											for (EnrollmentRequest request: enrollments) {
-												if (request.getCourse().equals(c))
+												if (request.getCourse().equals(c)) {
 													request.setGradeMode(entry.getValue().gradingMode);
+													request.setCreditHour(id, entry.getValue().creditHour);
+												}
 											}
 										}
 						}
@@ -996,6 +1000,47 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					}
 				}
 			}
+			
+			if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.xe.gradeModeWarnings", "true"))) {
+				for (EnrollmentRequest request: enrollments) {
+					if (request.hasGradeMode()) {
+						String originalGradeMode = request.getGradeMode();
+						for (XSection section: request.getSections()) {
+							GradeMode gm = gradeModes.getGradeMode(section.getExternalId(request.getCourse().getCourseId()));
+							if (gm != null && !originalGradeMode.equals(gm.getCode())) {
+								fails.add(new EnrollmentFailure(request.getCourse(), section,
+										ApplicationProperties.getProperty("banner.xe.warn.gradeModeChanged", "Grade mode changed back to {label}.")
+										.replace("{course}", request.getCourse().getCourseName())
+										.replace("{label}", gm.getLabel())
+										.replace("{code}", gm.getCode()), true).setInfo());
+								break;
+							}
+						}
+					}
+				}
+			}
+			if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.xe.creditWarnings", "true"))) {
+				for (EnrollmentRequest request: enrollments) {
+					if (request.hasCreditHour()) {
+						float originalCreditHour = request.getCreditHour();
+						float creditHour = 0f;
+						XSection creditSection = null;
+						for (XSection section: request.getSections()) {
+							Float credit = gradeModes.getCreditHour(section.getExternalId(request.getCourse().getCourseId()));
+							if (credit != null) {
+								creditHour += credit;
+								if (creditSection == null || credit > 0f) creditSection = section;
+							}
+						}
+						if (Math.abs(creditHour - originalCreditHour) > 0.01 && creditSection != null) {
+							fails.add(new EnrollmentFailure(request.getCourse(), creditSection,
+									ApplicationProperties.getProperty("banner.xe.warn.creditChanged", "Variable credit changed back to {credit} credit hour(s).")
+									.replace("{course}", request.getCourse().getCourseName())
+									.replace("{credit}", Formats.getNumberFormat("0.#").format(creditHour)), true).setInfo());
+						}
+					}
+				}
+			}	
 			
 			if (helper.isDebugEnabled())
 				helper.debug("Return: " + fails);

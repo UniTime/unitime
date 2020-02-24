@@ -82,6 +82,12 @@ public interface StudentSectioningResources extends ClientBundle {
 	
 	@Source("org/unitime/timetable/gwt/resources/icons/error.png")
 	ImageResource error();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/warning.png")
+	ImageResource warning();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/info16.png")
+	ImageResource info();
 
 	@Source("org/unitime/timetable/gwt/resources/icons/printer.png")
 	ImageResource print();

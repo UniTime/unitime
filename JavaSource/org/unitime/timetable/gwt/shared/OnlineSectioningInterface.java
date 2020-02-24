@@ -393,6 +393,11 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			return iModes.get(a.getExternalId());
 		}
 		
+		public GradeMode getGradeMode(String sectionId) {
+			if (iModes == null) return null;
+			return iModes.get(sectionId);
+		}
+		
 		public Map<String, GradeMode> toMap() { return iModes; }
 		
 		public Map<String, Float> getCreditHours() { return iCreditHours; }
@@ -405,6 +410,11 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			if (a.getExternalId() == null) return 0f;
 			if (a.getParentSection() != null && a.getParentSection().equals(a.getSection())) return 0f;
 			return iCreditHours.get(a.getExternalId());
+		}
+		
+		public Float getCreditHour(String sectionId) {
+			if (iCreditHours == null) return null;
+			return iCreditHours.get(sectionId);
 		}
 		
 		public void addCreditHour(String sectionId, Float credit) {

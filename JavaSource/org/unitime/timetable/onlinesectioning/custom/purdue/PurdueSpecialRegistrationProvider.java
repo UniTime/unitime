@@ -1512,10 +1512,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								}
 								if (ch.status != null)
 									message = "<span class='" + ch.status + "'>" + message + "</span>";
-								if (ca.hasError())
-									ca.setError(ca.getError() + "\n" + message);
-								else
-									ca.setError(message);
+								ca.addError(message);
 								if (isPending(ch.status))
 									ret.addError(new ErrorMessage(ch.subject + " " + ch.courseNbr, ch.crn, err.code, err.message));
 								ca.setPinned(true);
@@ -1551,10 +1548,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							
 							if (maxStatus != null)
 								message = "<span class='" + maxStatus + "'>" + message + "</span>";
-							if (ca.hasError())
-								ca.setError(ca.getError() + "\n" + message);
-							else
-								ca.setError(message);
+							ca.addError(message);
 							if (ca.getSpecRegStatus() == null)
 								ca.setSpecRegStatus(getStatus(maxStatus));
 							if (isPending(maxStatus))
@@ -1670,10 +1664,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								}								
 								if (ch.status != null)
 									message = "<span class='" + ch.status + "'>" + message + "</span>";
-								if (ca.hasError())
-									ca.setError(ca.getError() + "\n" + message);
-								else
-									ca.setError(message);
+								ca.addError(message);
 								ca.setPinned(true);
 								if (isPending(ch.status))
 									ret.addError(new ErrorMessage(ch.subject + " " + ch.courseNbr, ch.crn, err.code, err.message));
@@ -1688,10 +1679,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				ClassAssignment ca = ret.getChanges().get(ret.getChanges().size() - 1);
 				for (String message: additionalMessages) {
 					message = "<span class='note'>" + message + "</span>";
-					if (ca.hasError())
-						ca.setError(ca.getError() + "\n" + message);
-					else
-						ca.setError(message);
+					ca.addError(message);
 				}
 			}
 		}
@@ -1999,7 +1987,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					check.setOverrides(response.overrides);
 					check.setFlag(EligibilityFlag.SR_TIME_CONF, check.hasOverride("TIME"));
 					check.setFlag(EligibilityFlag.SR_LIMIT_CONF, check.hasOverride("CLOS"));
-					check.setFlag(EligibilityFlag.CAN_CHANGE_GRADE_MODE, check.hasOverride("GMODE"));
+					check.setFlag(EligibilityFlag.CAN_CHANGE_GRADE_MODE, check.hasOverride("GMODE") || check.hasOverride("VARCR"));
 				}
 			} else {
 				check.setFlag(EligibilityFlag.CAN_SPECREG, false);
