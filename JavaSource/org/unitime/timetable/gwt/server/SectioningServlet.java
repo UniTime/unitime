@@ -3277,6 +3277,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (ret != null && ret.hasGradeModes() && last != null)
 			for (Map.Entry<String, GradeMode> e: ret.getGradeModes().toMap().entrySet())
 				last.addGradeMode(e.getKey(), e.getValue().getCode(), e.getValue().getLabel(), e.getValue().isHonor());
+		if (ret != null && ret.hasCreditHours() && last != null)
+			for (Map.Entry<String, Float> e: ret.getGradeModes().getCreditHours().entrySet())
+				last.addCreditHour(e.getKey(), e.getValue());
 		
 		return ret;
 	}
