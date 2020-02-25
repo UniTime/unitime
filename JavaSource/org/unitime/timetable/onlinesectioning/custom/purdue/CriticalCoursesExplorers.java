@@ -62,6 +62,7 @@ public class CriticalCoursesExplorers extends CriticalCoursesQuery {
 			if (gType.equals(g.getType()) && g.getAbbreviation().contains("-")) {
 				String area = g.getAbbreviation().substring(0, g.getAbbreviation().indexOf('-'));
 				String major = g.getAbbreviation().substring(g.getAbbreviation().indexOf('-') + 1);
+				if (ret == null) ret = new ArrayList<XAreaClassificationMajor>(student.getMajors());
 				ret.add(new XAreaClassificationMajor(area, "01", major));
 			}
 		}
