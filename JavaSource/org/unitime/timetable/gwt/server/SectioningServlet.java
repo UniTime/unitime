@@ -2386,8 +2386,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			return server.execute(server.createAction(GetRequest.class).forStudent(studentId, sectioning), currentUser());
 		}
 		OnlineSectioningServer server = getServerInstance(sessionId == null ? canEnroll(online, studentId) : sessionId, false);
+		EligibilityCheck last = (EligibilityCheck)getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingEligibility);
+		boolean includeAdvisorRequests = !sectioning && (last != null && last.hasFlag(EligibilityFlag.CAN_REGISTER));
 		if (server != null) {
-			return server.execute(server.createAction(GetRequest.class).forStudent(studentId, sectioning).withCustomValidation(!sectioning), currentUser());
+			return server.execute(server.createAction(GetRequest.class).forStudent(studentId, sectioning)
+					.withCustomValidation(!sectioning)
+					.withAdvisorRequests(includeAdvisorRequests), currentUser());
 		} else {
 			org.hibernate.Session hibSession = StudentDAO.getInstance().getSession();
 			try {
@@ -2401,7 +2405,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					if (r != null && !r.isEmpty()) return r;
 				}
 				
-				if (!sectioning && student.getLastChangedByStudent() == null)
+				if (includeAdvisorRequests && student.getLastChangedByStudent() == null)
 					request.applyAdvisorRequests(AdvisorGetCourseRequests.getRequest(student.getUniqueId(), hibSession));
 				
 				return request;
@@ -2898,16 +2902,14 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					}
 					check.setFlag(EligibilityFlag.CAN_REGISTER, getSessionContext().hasPermissionAnyAuthority(student, Right.StudentSchedulingCanRegister));
 					check.setFlag(EligibilityFlag.CAN_REQUIRE, getSessionContext().hasPermissionAnyAuthority(student, Right.StudentSchedulingCanRequirePreferences));
-					
-					if (!check.hasMessage() && !check.hasFlag(EligibilityFlag.CAN_REGISTER))
-						check.setMessage(MSG.exceptionAccessDisabled());
-					return check;
 				} else {
-					return server.execute(server.createAction(CourseRequestEligibility.class).forStudent(studentId).withCheck(check).includeCustomCheck(includeCustomCheck)
+					check = server.execute(server.createAction(CourseRequestEligibility.class).forStudent(studentId).withCheck(check).includeCustomCheck(includeCustomCheck)
 							.withPermission(
 									getSessionContext().hasPermissionAnyAuthority(studentId, "Student", Right.StudentSchedulingCanRegister),
 									getSessionContext().hasPermissionAnyAuthority(studentId, "Student", Right.StudentSchedulingCanRequirePreferences)), currentUser());
 				}
+				if (includeCustomCheck) getSessionContext().setAttribute(SessionAttribute.OnlineSchedulingEligibility, check);
+				return check;
 			}
 			
 			OnlineSectioningServer server = getServerInstance(sessionId, false);
