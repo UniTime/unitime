@@ -42,6 +42,24 @@
 				<line>Student Course Requests page can be pre-populated with these courses, or a student can review the courses filled in by the advisor.</line>
 			</description>
 		</item>
+		<item>
+			<name>Important Course Requests</name>
+			<description>
+				<line>Added ability to put a multiple levels to critical courses: Critical &gt; Important &gt; Normal.</line>
+				<line>Critical course request are assigned first, then important requests, then the rest.</line>
+				<line>More levels can be defined in the future, if needed.</line>
+			</description>
+		</item>
+		<item>
+			<name>Alternative Majors</name>
+			<description>
+				<line>Added ability to load critical courses and degree plans from an alternative major.</line>
+				<line>Alternative majors are identified by a student group of a particular type a student is in.
+					<line>By default group type is &quot;1st Choice&quot;, and the group abbreviation is area abbv - major code.</line>
+				</line>
+				<line>Custom class CriticalCoursesExplorers makes use of these (implementing both CriticalCoursesProvider and DegreePlansProvider interfaces).</line>
+			</description>
+		</item>
 	</category>
 </release>
 </release-history>
