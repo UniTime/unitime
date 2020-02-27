@@ -6384,6 +6384,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Critical<br>Assignments")
 	String colAssignedCriticalCourseRequests();
 	
+	@DefaultMessage("Important<br>Assignments")
+	String colAssignedImportantCourseRequests();
+	
 	@DefaultMessage("Complete<br>Schedule")
 	String colStudentsWithCompleteSchedule();
 	
