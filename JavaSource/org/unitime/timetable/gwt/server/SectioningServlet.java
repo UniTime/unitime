@@ -2324,10 +2324,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							request.getCourses().add(r);
 					}
 					r.setWaitList(cd.getWaitlist());
-					if (cd.isCriticalOverride() != null)
-						r.setCritical(cd.isCriticalOverride());
+					if (cd.getCriticalOverride() != null)
+						r.setCritical(cd.getCriticalOverride());
 					else
-						r.setCritical(cd.isCritical());
+						r.setCritical(cd.getCritical());
 					r.setTimeStamp(cd.getTimestamp());
 					lastRequest = r;
 					lastRequestPriority = cd.getPriority();
@@ -3279,7 +3279,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 
 	@Override
-	public Boolean changeCriticalOverride(Long studentId, Long courseId, Boolean critical) throws SectioningException, PageAccessException {
+	public Integer changeCriticalOverride(Long studentId, Long courseId, Integer critical) throws SectioningException, PageAccessException {
 		getSessionContext().checkPermission(studentId, Right.StudentSchedulingChangeCriticalOverride);
 		
 		try {
@@ -3298,7 +3298,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			if (server != null)
 				server.execute(server.createAction(ReloadStudent.class).forStudents(studentId), currentUser());
 			
-			return (cd.isCriticalOverride() != null ? cd.isCriticalOverride().booleanValue() : cd.isCritical() != null ? cd.isCritical().booleanValue() : false);
+			return cd.getEffectiveCritical().ordinal();
 		} catch (PageAccessException e) {
 			throw e;
 		} catch (SectioningException e) {

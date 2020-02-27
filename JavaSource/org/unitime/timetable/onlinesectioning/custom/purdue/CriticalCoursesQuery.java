@@ -42,6 +42,7 @@ import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreeGroupInterface
 import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreePlaceHolderInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -172,19 +173,19 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 		public boolean isEmpty() { return iCriticalCourses.isEmpty() && iCourseIds.isEmpty(); }
 
 		@Override
-		public boolean isCritical(CourseOffering course) {
-			if (iCourseIds.contains(course.getUniqueId())) return true;
+		public int isCritical(CourseOffering course) {
+			if (iCourseIds.contains(course.getUniqueId())) return CourseDemand.Critical.IMPORTANT.ordinal();
 			for (String c: iCriticalCourses)
-				if (course.getCourseName().startsWith(c)) return true;
-			return false;
+				if (course.getCourseName().startsWith(c)) return CourseDemand.Critical.IMPORTANT.ordinal();
+			return CourseDemand.Critical.NORMAL.ordinal();
 		}
 
 		@Override
-		public boolean isCritical(XCourseId course) {
-			if (iCourseIds.contains(course.getCourseId())) return true;
+		public int isCritical(XCourseId course) {
+			if (iCourseIds.contains(course.getCourseId())) return CourseDemand.Critical.IMPORTANT.ordinal();
 			for (String c: iCriticalCourses)
-				if (course.getCourseName().startsWith(c)) return true;
-			return false;
+				if (course.getCourseName().startsWith(c)) return CourseDemand.Critical.IMPORTANT.ordinal();
+			return CourseDemand.Critical.NORMAL.ordinal();
 		}
 		
 		@Override

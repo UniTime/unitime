@@ -254,10 +254,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 			}
 			row.add(new TitleLabel(course.getTitle() == null ? "" : course.getTitle()));
 			row.add(new CourseNotOfferedLabel(MESSAGES.plannedCourseNotOffered(MESSAGES.course(course.getSubject(), course.getCourse()))));
-			if (course.isCritical())
-				row.add(new Image(RESOURCES.requestsCritical()));
-			else
-				row.add(new Label());
+			row.add(new Label());
 			addRow(course, row);
 		} else if (course.getCourses().size() > 1 && !group.isChoice()) {
 			List<Widget> row = new ArrayList<Widget>();

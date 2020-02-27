@@ -13874,4 +13874,17 @@
 		<mysql>alter table %SCHEMA%.advisor_crsreq add critical int(1) null</mysql>
 		<pgsql>alter table %SCHEMA%.advisor_crsreq add critical boolean null</pgsql>
 	</update>
+	<update version="229" date="26-Feb-2020" comment="Important Course Demands">
+		<plsql>alter table %SCHEMA%.course_demand modify critical number(10) default 0</plsql>
+		<mysql>alter table %SCHEMA%.course_demand modify critical int(10) default 0</mysql>
+		<pgsql>alter table %SCHEMA%.course_demand alter critical drop default</pgsql>
+		<pgsql>alter table %SCHEMA%.course_demand alter critical type integer using case when critical then 1 else 0 end</pgsql>
+		<pgsql>alter table %SCHEMA%.course_demand alter critical set default 0</pgsql>
+		<plsql>alter table %SCHEMA%.course_demand modify critical_override number(10)</plsql>
+		<mysql>alter table %SCHEMA%.course_demand modify critical_override int(10)</mysql>
+		<pgsql>alter table %SCHEMA%.course_demand alter critical_override type integer using case when critical_override then 1 when not critical_override then 0 else null end</pgsql>
+		<plsql>alter table %SCHEMA%.advisor_crsreq modify critical number(10)</plsql>
+		<mysql>alter table %SCHEMA%.advisor_crsreq modify critical int(10)</mysql>
+		<pgsql>alter table %SCHEMA%.advisor_crsreq alter critical type integer using case when critical then 1 when not critical then 0 else null end</pgsql>
+	</update>
 </dbupdate>

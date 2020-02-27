@@ -50,6 +50,7 @@ import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseDemand;
+import org.unitime.timetable.model.CourseDemand.Critical;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
@@ -805,19 +806,21 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				} else if (eq("Wait-Listed", term)) {
 					return enrollment().isEmpty() && request().getCourseDemand().isWaitlist();
 				} else if (eq("Critical", term)) {
-					if (request().getCourseDemand().isCriticalOverride() != null)
-						return request().getCourseDemand().isCriticalOverride().booleanValue();
-					return request().getCourseDemand().isCritical() != null && request().getCourseDemand().isCritical().booleanValue();
+					return request().getCourseDemand().getEffectiveCritical() == Critical.CRITICAL;
 				} else if (eq("Assigned Critical", term)) {
 					if (enrollment().isEmpty()) return false;
-					if (request().getCourseDemand().isCriticalOverride() != null)
-						return request().getCourseDemand().isCriticalOverride().booleanValue();
-					return request().getCourseDemand().isCritical() != null && request().getCourseDemand().isCritical().booleanValue();
+					return request().getCourseDemand().getEffectiveCritical() == Critical.CRITICAL;
 				} else if (eq("Not Assigned Critical", term)) {
 					if (!enrollment().isEmpty()) return false;
-					if (request().getCourseDemand().isCriticalOverride() != null)
-						return request().getCourseDemand().isCriticalOverride().booleanValue();
-					return request().getCourseDemand().isCritical() != null && request().getCourseDemand().isCritical().booleanValue();
+					return request().getCourseDemand().getEffectiveCritical() == Critical.CRITICAL;
+				} else if (eq("Important", term)) {
+					return request().getCourseDemand().getEffectiveCritical() == Critical.IMPORTANT;
+				} else if (eq("Assigned Important", term)) {
+					if (enrollment().isEmpty()) return false;
+					return request().getCourseDemand().getEffectiveCritical() == Critical.IMPORTANT;
+				} else if (eq("Not Assigned Important", term)) {
+					if (!enrollment().isEmpty()) return false;
+					return request().getCourseDemand().getEffectiveCritical() == Critical.IMPORTANT;
 				}
 			}
 			

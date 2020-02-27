@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -114,7 +115,7 @@ public class ReplayLogTest extends OnlineSectioningTestFwk {
 		if (request.hasWaitList())
 			ret.setWaitList(request.getWaitList());
 		if (request.hasCritical())
-			ret.setCritical(request.getCritical());
+			ret.setCritical(request.getCritical() ? CourseDemand.Critical.CRITICAL.ordinal() : CourseDemand.Critical.NORMAL.ordinal());
 		return ret;
 	}
 	

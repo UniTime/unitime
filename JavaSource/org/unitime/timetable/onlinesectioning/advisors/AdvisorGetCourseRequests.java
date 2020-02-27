@@ -166,7 +166,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 							request.getCourses().add(r);
 					}
 					r.setWaitList(xcr.isWaitlist());
-					r.setCritical(xcr.isCritical());
+					r.setCritical(xcr.getCritical());
 					r.setTimeStamp(xcr.getTimeStamp());
 				}
 			}
@@ -282,10 +282,10 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 							request.getCourses().add(r);
 					}
 					r.setWaitList(cd.getWaitlist());
-					if (cd.isCriticalOverride() != null)
-						r.setCritical(cd.isCriticalOverride());
+					if (cd.getCriticalOverride() != null)
+						r.setCritical(cd.getCriticalOverride());
 					else
-						r.setCritical(cd.isCritical());
+						r.setCritical(cd.getCritical());
 					r.setTimeStamp(cd.getTimestamp());
 				}
 			}
@@ -422,7 +422,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 					}
 				r.addRequestedCourse(rc);
 				if (acr.getAlternative() == 0)
-					r.setCritical(acr.isCritical());
+					r.setCritical(acr.getCritical());
 			} else if (acr.getFreeTime() != null) {
 				CourseRequestInterface.FreeTime ft = new CourseRequestInterface.FreeTime();
 				ft.setStart(acr.getFreeTime().getSlot());

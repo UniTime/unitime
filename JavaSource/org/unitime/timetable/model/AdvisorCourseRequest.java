@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.model.CourseDemand.Critical;
 import org.unitime.timetable.model.base.BaseAdvisorCourseRequest;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.InstructionalMethodDAO;
@@ -108,9 +109,9 @@ public class AdvisorCourseRequest extends BaseAdvisorCourseRequest implements Co
     	return changed;
     }
 	
-	public boolean isCritical(CriticalCourses cc) {
-		if (cc == null) return false;
-		if (getCourseOffering() == null || isSubstitute()) return false;
+	public int isCritical(CriticalCourses cc) {
+		if (cc == null) return 0;
+		if (getCourseOffering() == null || isSubstitute()) return 0;
 		return cc.isCritical(getCourseOffering());
 	}
 	
@@ -148,4 +149,21 @@ public class AdvisorCourseRequest extends BaseAdvisorCourseRequest implements Co
 		if (cmp != 0) return cmp;
 		return getUniqueId().compareTo(r.getUniqueId());
 	}
+	
+	public Critical getEffectiveCritical() {
+    	if (getCritical() != null)
+    		return Critical.values()[getCritical()];
+    	return Critical.NORMAL;
+    }
+    
+    public boolean isCriticalOrImportant() {
+    	switch (getEffectiveCritical()) {
+    	case CRITICAL:
+    		return true;
+    	case IMPORTANT:
+    		return true;
+    	default:
+    		return false;
+    	}
+    }
 }

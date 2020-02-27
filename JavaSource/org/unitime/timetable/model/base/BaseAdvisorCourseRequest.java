@@ -46,7 +46,7 @@ public abstract class BaseAdvisorCourseRequest implements Serializable {
 	private String iCredit;
 	private String iCourse;
 	private String iNotes;
-	private Boolean iCritical;
+	private Integer iCritical;
 
 	private Student iStudent;
 	private CourseOffering iCourseOffering;
@@ -103,9 +103,8 @@ public abstract class BaseAdvisorCourseRequest implements Serializable {
 	public String getNotes() { return iNotes; }
 	public void setNotes(String notes) { iNotes = notes; }
 
-	public Boolean isCritical() { return iCritical; }
-	public Boolean getCritical() { return iCritical; }
-	public void setCritical(Boolean critical) { iCritical = critical; }
+	public Integer getCritical() { return iCritical; }
+	public void setCritical(Integer critical) { iCritical = critical; }
 
 	public Student getStudent() { return iStudent; }
 	public void setStudent(Student student) { iStudent = student; }

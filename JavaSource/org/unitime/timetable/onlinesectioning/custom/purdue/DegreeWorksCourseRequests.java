@@ -45,6 +45,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
@@ -228,7 +229,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 						XCourse c = server.getCourse(cid.getCourseId());
 						if (c != null) rc.setCredit(c.getMinCredit(), c.getMaxCredit());
 					}
-					r.setCritical(group.isCritical);
+					r.setCritical(group.isCritical ? CourseDemand.Critical.CRITICAL.ordinal() : CourseDemand.Critical.NORMAL.ordinal());
 					if (group.isCritical != null) b.setCritical(group.isCritical);
 					r.addRequestedCourse(rc);
 					request.addCourseCriticalFirst(r);
@@ -315,7 +316,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				
 				
 				if (r.hasRequestedCourse()) {
-					r.setCritical(group.isCritical);
+					r.setCritical(group.isCritical ? CourseDemand.Critical.CRITICAL.ordinal() : CourseDemand.Critical.NORMAL.ordinal());
 					if (group.isCritical != null) b.setCritical(group.isCritical);
 					helper.getAction().addRequest(b);
 					request.addCourseCriticalFirst(r);
@@ -343,7 +344,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					XCourse c = server.getCourse(cid.getCourseId());
 					if (c != null) rc.setCredit(c.getMinCredit(), c.getMaxCredit());
 				}
-				r.setCritical(course.isCritical);
+				r.setCritical(course.isCritical ? CourseDemand.Critical.CRITICAL.ordinal() : CourseDemand.Critical.NORMAL.ordinal());
 				if (course.isCritical != null) b.setCritical(course.isCritical);
 				r.addRequestedCourse(rc);
 				request.addCourseCriticalFirst(r);
@@ -397,7 +398,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 						b.addCourse(toEntity(c));
 					}
 					if (isCriticalPlaceholder(ph)) {
-						r.setCritical(true);
+						r.setCritical(CourseDemand.Critical.CRITICAL.ordinal());
 						b.setCritical(true);
 					}
 					helper.getAction().addRequest(b);
@@ -960,19 +961,19 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		public boolean isEmpty() { return iCriticalCourses.isEmpty() && (iCriticalCourseIds == null || iCriticalCourseIds.isEmpty()); }
 
 		@Override
-		public boolean isCritical(CourseOffering course) {
+		public int isCritical(CourseOffering course) {
 			for (String c: iCriticalCourses)
-				if (course.getCourseName().startsWith(c)) return true;
-			if (iCriticalCourseIds != null && iCriticalCourseIds.contains(new XCourseId(course))) return true;
-			return false;
+				if (course.getCourseName().startsWith(c)) return CourseDemand.Critical.CRITICAL.ordinal();
+			if (iCriticalCourseIds != null && iCriticalCourseIds.contains(new XCourseId(course))) return CourseDemand.Critical.CRITICAL.ordinal();
+			return CourseDemand.Critical.NORMAL.ordinal();
 		}
 
 		@Override
-		public boolean isCritical(XCourseId course) {
+		public int isCritical(XCourseId course) {
 			for (String c: iCriticalCourses)
-				if (course.getCourseName().startsWith(c)) return true;
-			if (iCriticalCourseIds != null && iCriticalCourseIds.contains(course)) return true;
-			return false;
+				if (course.getCourseName().startsWith(c)) return CourseDemand.Critical.CRITICAL.ordinal();
+			if (iCriticalCourseIds != null && iCriticalCourseIds.contains(course)) return CourseDemand.Critical.CRITICAL.ordinal();
+			return CourseDemand.Critical.NORMAL.ordinal();
 		}
 		
 		@Override

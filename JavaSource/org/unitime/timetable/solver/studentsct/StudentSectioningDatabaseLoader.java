@@ -227,7 +227,6 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private Date iClassesFixedDate = null;
     private int iClassesFixedDateIndex = 0;
     private int iDayOfWeekOffset = 0;
-    private String iAltGroupType = null;
     
     public StudentSectioningDatabaseLoader(StudentSectioningModel model, org.cpsolver.ifs.assignment.Assignment<Request, Enrollment> assignment) {
         super(model, assignment);
@@ -314,7 +313,6 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iMaxDefaultCredit = model.getProperties().getPropertyFloat("Load.DefaultMaxCredit", iMaxDefaultCredit);
         iMinDefaultCredit = model.getProperties().getPropertyFloat("Load.DefaultMinCredit", iMinDefaultCredit);
         iMoveCriticalCoursesUp = model.getProperties().getPropertyBoolean("Load.MoveCriticalCoursesUp", iMoveCriticalCoursesUp);
-        iAltGroupType = model.getProperties().getProperty("Load.AltMajorGroupType", ApplicationProperties.getProperty("banner.unex.groupType", "1st Choice"));
         
         String classesFixedDate = getModel().getProperties().getProperty("General.ClassesFixedDate", "");
         if (!classesFixedDate.isEmpty()) {
@@ -1188,11 +1186,6 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         if (minCredit >= 0 && minCredit <= maxCredit)
         	student.setMinCredit(minCredit);
         
-        boolean altGroup = false;
-        for (StudentGroup g: s.getGroups())
-        	if (g.getType() != null && iAltGroupType.equals(g.getType().getReference()) && g.getGroupAbbreviation() != null && g.getGroupAbbreviation().contains("-"))
-        		altGroup = true;
-
 		TreeSet<CourseDemand> demands = new TreeSet<CourseDemand>(new Comparator<CourseDemand>() {
 			public int compare(CourseDemand d1, CourseDemand d2) {
 				if (d1.isAlternative() && !d2.isAlternative()) return 1;
@@ -1356,10 +1349,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         student,
                         courses,
                         cd.isWaitlist(), 
-                        (cd.isCriticalOverride() != null ? cd.isCriticalOverride().booleanValue() : cd.isCritical() != null && cd.isCritical().booleanValue()),
+                        cd.getEffectiveCritical().toRequestPriority(),
                         cd.getTimestamp().getTime());
-                if (request.getRequestPriority() == RequestPriority.Critical && altGroup)
-                	request.setRequestPriority(RequestPriority.Important);
                 request.getSelectedChoices().addAll(selChoices);
                 request.getRequiredChoices().addAll(reqChoices);
                 request.getWaitlistedChoices().addAll(wlChoices);
@@ -2543,12 +2534,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 		}
     }
     
-    protected boolean isCritical(CourseDemand cd, CriticalCourses critical) {
-		if (critical == null || cd.isAlternative()) return false;
+    protected int isCritical(CourseDemand cd, CriticalCourses critical) {
+		if (critical == null || cd.isAlternative()) return 0;
 		for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests()) {
-			if (cr.getOrder() == 0 && critical.isCritical(cr.getCourseOffering())) return true;
+			if (cr.getOrder() == 0 && critical.isCritical(cr.getCourseOffering()) > 0) return critical.isCritical(cr.getCourseOffering());
 		}
-		return false;
+		return 0;
 	}
     
     protected void checkCriticalCourses(org.hibernate.Session hibSession, org.unitime.timetable.model.Student s) {
@@ -2576,14 +2567,14 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 			CriticalCourses critical = iCriticalCoursesProvider.getCriticalCourses(iValidator, helper, new XStudent(s, helper, iFreeTimePattern));
 			boolean changed = false;
 			for (CourseDemand cd: s.getCourseDemands()) {
-				boolean crit = isCritical(cd, critical);
-				if (cd.isCritical() == null || cd.isCritical().booleanValue() != crit) {
+				int crit = isCritical(cd, critical);
+				if (cd.getCritical() == null || cd.getCritical().intValue() != crit) {
 					cd.setCritical(crit); hibSession.update(cd); changed = true;
 				}
 			}
 			for (AdvisorCourseRequest acr: s.getAdvisorCourseRequests()) {
-				boolean crit = acr.isCritical(critical);
-				if (acr.isCritical() == null || acr.isCritical().booleanValue() != crit) {
+				int crit = acr.isCritical(critical);
+				if (acr.getCritical() == null || acr.getCritical().intValue() != crit) {
 					acr.setCritical(crit); hibSession.update(acr);
 				}
 			}

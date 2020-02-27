@@ -51,6 +51,7 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 				new WebTable.Cell(MESSAGES.colTitle(), 1, "200px"),
 				new WebTable.Cell(MESSAGES.colCredit(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colPreferences(), 1, "100px"),
+				new WebTable.Cell(MESSAGES.colCritical(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colNotes(), 1, "300px")));
 		addStyleName("unitime-AdvisorCourseRequestsTable");
 		setSelectSameIdRows(true);
@@ -61,9 +62,11 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 		iAdvisorRequests = requests;
 		ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 		boolean hasPref = false;
+		boolean hasCrit = false;
 		int priority = 1;
 		for (Request request: iAdvisorRequests.getCourses()) {
 			if (request.hasRequestedCourse()) {
+				if (request.isCritical() || request.isImportant()) hasCrit = true;
 				boolean first = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					WebTable.Row row = null;
@@ -92,6 +95,8 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 								credit,
 								new WebTable.Cell(ToolBox.toString(prefs), true),
+								request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
+								request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") : new WebTable.Cell(""),
 								note
 								);
 						} else {
@@ -100,7 +105,8 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 								new WebTable.Cell(rc.getCourseName()),
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 								new WebTable.Cell(""),
-								new WebTable.Cell(ToolBox.toString(prefs), true)
+								new WebTable.Cell(ToolBox.toString(prefs), true),
+								new WebTable.Cell("")
 								);
 						}
 					} else if (rc.isFreeTime()) {
@@ -118,6 +124,7 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 								new WebTable.Cell(MESSAGES.courseRequestsPriority(priority)),
 								new WebTable.Cell(CONSTANTS.freePrefix() + free, 2, null),
 								credit,
+								new WebTable.Cell(""),
 								new WebTable.Cell(""),
 								note
 								);
@@ -149,6 +156,7 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 					new WebTable.Cell(""),
 					credit,
 					new WebTable.Cell(""),
+					new WebTable.Cell(""),
 					note
 					);
 				if (priority > 1)
@@ -160,6 +168,7 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 		priority = 1;
 		for (Request request: iAdvisorRequests.getAlternatives()) {
 			if (request.hasRequestedCourse()) {
+				if (request.isCritical() || request.isImportant()) hasCrit = true;
 				boolean first = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					WebTable.Row row = null;
@@ -188,6 +197,8 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 								credit,
 								new WebTable.Cell(ToolBox.toString(prefs), true),
+								request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
+								request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") : new WebTable.Cell(""),
 								note
 								);
 						} else {
@@ -196,7 +207,8 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 								new WebTable.Cell(rc.getCourseName()),
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 								new WebTable.Cell(""),
-								new WebTable.Cell(ToolBox.toString(prefs), true)
+								new WebTable.Cell(ToolBox.toString(prefs), true),
+								new WebTable.Cell("")
 								);
 						}
 					}
@@ -217,6 +229,7 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 					new WebTable.Cell(""),
 					credit,
 					new WebTable.Cell(""),
+					new WebTable.Cell(""),
 					note
 					);
 				for (WebTable.Cell cell: row.getCells()) cell.setStyleName(priority == 1 ? "top-border-solid" : "top-border-dashed");
@@ -231,7 +244,7 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 		}
 		WebTable.Cell credit = new WebTable.Cell(min < max ? MESSAGES.creditRange(min, max) : MESSAGES.credit(min));
 		WebTable.NoteCell note = new WebTable.NoteCell(iAdvisorRequests.hasCreditNote() ? iAdvisorRequests.getCreditNote() : "", null);
-		note.setColSpan(2);
+		note.setColSpan(3);
 		credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		WebTable.Row crow = new WebTable.Row(
 				new WebTable.Cell(MESSAGES.rowTotalPriorityCreditHours(), 2, null),
@@ -250,6 +263,7 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 		
 		setData(rowArray);
 		setColumnVisible(4, hasPref);
+		setColumnVisible(5, hasCrit);
 	}
 
 	@Override

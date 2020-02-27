@@ -28,10 +28,12 @@ import javax.servlet.ServletException;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Action.Builder;
 import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XStudent.XGroup;
@@ -77,9 +79,14 @@ public class CriticalCoursesExplorers extends CriticalCoursesQuery {
 	@Override
 	public CriticalCourses getCriticalCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudentId studentId, Builder action) {
 		if (isFallBackToDegreeWorks()) {
-			CriticalCourses cc = super.getCriticalCourses(server, helper, studentId, action);
-			if (cc != null && !cc.isEmpty()) return cc;
-			return iDGW.getCriticalCourses(server, helper, studentId, action);
+			CriticalCourses critQuery = super.getCriticalCourses(server, helper, studentId, action);
+			if (critQuery != null && !critQuery.isEmpty()) {
+				CriticalCourses critDgw = iDGW.getCriticalCourses(server, helper, studentId, action);
+				if (critDgw == null || critDgw.isEmpty()) return critQuery;
+				return new CombinedCriticals(critDgw, critQuery);
+			} else {
+				return iDGW.getCriticalCourses(server, helper, studentId, action);
+			}
 		} else {
 			return super.getCriticalCourses(server, helper, studentId, action);
 		}
@@ -105,5 +112,34 @@ public class CriticalCoursesExplorers extends CriticalCoursesQuery {
 	public void dispose() {
 		super.dispose();
 		iDGW.dispose();
+	}
+	
+	public static class CombinedCriticals implements CriticalCourses {
+		private CriticalCourses iPrimary, iSecondary;
+		
+		public CombinedCriticals(CriticalCourses primary, CriticalCourses secondary) {
+			iPrimary = primary;
+			iSecondary = secondary;
+		}
+
+		@Override
+		public boolean isEmpty() {
+			return iPrimary.isEmpty() && iSecondary.isEmpty();
+		}
+
+		@Override
+		public int isCritical(CourseOffering course) {
+			int crit = iPrimary.isCritical(course);
+			if (crit > 0) return crit;
+			return iSecondary.isCritical(course);
+		}
+
+		@Override
+		public int isCritical(XCourseId course) {
+			int crit = iPrimary.isCritical(course);
+			if (crit > 0) return crit;
+			return iSecondary.isCritical(course);
+		}
+		
 	}
 }

@@ -701,7 +701,7 @@ public class OnlineSectioningHelper {
     		rq.setPriority(priority++);
     		rq.setWaitList(r.hasRequestedCourse() && r.isWaitList());
     		rq.setAlternative(false);
-    		rq.setCritical(r.isCritical());
+    		rq.setCritical(r.isCritical() || r.isImportant());
 			for (RequestedCourse rc: r.getRequestedCourse()) {
 				if (rc.isFreeTime()) {
 	        		for (CourseRequestInterface.FreeTime ft: rc.getFreeTime()) {
@@ -738,7 +738,7 @@ public class OnlineSectioningHelper {
     		rq.setPriority(priority++);
     		rq.setAlternative(true);
     		rq.setWaitList(r.hasRequestedCourse() && r.isWaitList());
-    		rq.setCritical(r.isCritical());
+    		rq.setCritical(r.isCritical() || r.isImportant());
     		for (RequestedCourse rc: r.getRequestedCourse()) {
 				if (rc.isFreeTime()) {
 	        		for (CourseRequestInterface.FreeTime ft: rc.getFreeTime()) {

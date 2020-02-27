@@ -38,7 +38,7 @@ public interface CriticalCoursesProvider {
 	
 	public static interface CriticalCourses {
 		public boolean isEmpty();
-		public boolean isCritical(CourseOffering course);
-		public boolean isCritical(XCourseId course);
+		public int isCritical(CourseOffering course);
+		public int isCritical(XCourseId course);
 	}
 }

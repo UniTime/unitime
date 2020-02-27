@@ -42,8 +42,8 @@ public abstract class BaseCourseDemand implements Serializable {
 	private Boolean iWaitlist;
 	private Boolean iAlternative;
 	private Date iTimestamp;
-	private Boolean iCritical;
-	private Boolean iCriticalOverride;
+	private Integer iCritical;
+	private Integer iCriticalOverride;
 	private String iChangedBy;
 
 	private Student iStudent;
@@ -88,13 +88,11 @@ public abstract class BaseCourseDemand implements Serializable {
 	public Date getTimestamp() { return iTimestamp; }
 	public void setTimestamp(Date timestamp) { iTimestamp = timestamp; }
 
-	public Boolean isCritical() { return iCritical; }
-	public Boolean getCritical() { return iCritical; }
-	public void setCritical(Boolean critical) { iCritical = critical; }
+	public Integer getCritical() { return iCritical; }
+	public void setCritical(Integer critical) { iCritical = critical; }
 
-	public Boolean isCriticalOverride() { return iCriticalOverride; }
-	public Boolean getCriticalOverride() { return iCriticalOverride; }
-	public void setCriticalOverride(Boolean criticalOverride) { iCriticalOverride = criticalOverride; }
+	public Integer getCriticalOverride() { return iCriticalOverride; }
+	public void setCriticalOverride(Integer criticalOverride) { iCriticalOverride = criticalOverride; }
 
 	public String getChangedBy() { return iChangedBy; }
 	public void setChangedBy(String changedBy) { iChangedBy = changedBy; }

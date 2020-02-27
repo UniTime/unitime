@@ -33,6 +33,7 @@ import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.cpsolver.ifs.util.CSVFile.CSVLine;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Action.Builder;
@@ -111,17 +112,17 @@ public class CriticalCoursesFile implements CriticalCoursesProvider {
 		public boolean isEmpty() { return iCriticalCourses.isEmpty(); }
 
 		@Override
-		public boolean isCritical(CourseOffering course) {
+		public int isCritical(CourseOffering course) {
 			for (String c: iCriticalCourses)
-				if (course.getCourseName().startsWith(c)) return true;
-			return false;
+				if (course.getCourseName().startsWith(c)) return CourseDemand.Critical.IMPORTANT.ordinal();
+			return CourseDemand.Critical.NORMAL.ordinal();
 		}
 
 		@Override
-		public boolean isCritical(XCourseId course) {
+		public int isCritical(XCourseId course) {
 			for (String c: iCriticalCourses)
-				if (course.getCourseName().startsWith(c)) return true;
-			return false;
+				if (course.getCourseName().startsWith(c)) return CourseDemand.Critical.IMPORTANT.ordinal();
+			return CourseDemand.Critical.NORMAL.ordinal();
 		}
 		
 		@Override

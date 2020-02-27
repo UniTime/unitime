@@ -133,7 +133,7 @@ public class EnrollmentTable extends Composite {
 		iEnrollmentPanel.addStyleName("unitime-StudentEnrollmentsTable");
 		iStudentSchedule = new StudentSchedule(online) {
 			@Override
-			protected void setCritical(Long studentId, Request request, Boolean critical, final AsyncCallback<Boolean> callback) {
+			protected void setCritical(Long studentId, Request request, Integer critical, final AsyncCallback<Integer> callback) {
 				iSectioningService.changeCriticalOverride(studentId, request.getRequestedCourse(0).getCourseId(), critical, callback);
 			}
 		};

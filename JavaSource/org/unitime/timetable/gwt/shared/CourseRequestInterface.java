@@ -86,10 +86,10 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		return null;
 	}
 	public void addCourseCriticalFirst(Request request) {
-		if (request.isCritical()) {
+		if (request.isCritical() || request.isImportant()) {
 			int lastCritical = -1;
 			for (int i = 0; i < getCourses().size(); i++)
-				if (getCourses().get(i).isCritical()) lastCritical = i;
+				if (getCourses().get(i).isCritical() || getCourses().get(i).isImportant()) lastCritical = i;
 			getCourses().add(lastCritical + 1, request);
 		} else {
 			getCourses().add(request);
@@ -745,7 +745,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private List<RequestedCourse> iRequestedCourse = null;
 		private Boolean iWaitList = false;
-		private Boolean iCritical = false;
+		private Integer iCritical = null;
 		private Date iTimeStamp = null;
 		private String iFilter = null;
 		private String iAdvisorCredit = null;
@@ -835,8 +835,10 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public void setWaitList(Boolean waitList) { iWaitList = waitList; }
 		
 		public boolean hasCritical() { return iCritical != null; }
-		public boolean isCritical() { return iCritical != null && iCritical.booleanValue(); }
-		public void setCritical(Boolean critical) { iCritical = critical; }
+		public boolean isCritical() { return iCritical != null && iCritical.intValue() == 1; }
+		public boolean isImportant() { return iCritical != null && iCritical.intValue() == 2; }
+		public Integer getCritical() { return iCritical; }
+		public void setCritical(Integer critical) { iCritical = critical; }
 
 		public boolean hasTimeStamp() { return iTimeStamp != null; }
 		public Date getTimeStamp() { return iTimeStamp; }

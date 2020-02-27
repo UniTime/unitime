@@ -43,6 +43,7 @@ import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
+import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.OfferingConsentType;
@@ -745,12 +746,19 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				} else if (eq("Wait-Listed", term)) {
 					return enrollment() == null && request().isWaitlist();
 				} else if (eq("Critical", term)) {
-					return request().isCritical();
+					return request().getCritical() == CourseDemand.Critical.CRITICAL.ordinal();
 				} else if (eq("Assigned Critical", term)) {
-					return request().isCritical() && enrollment() != null;
+					return request().getCritical() == CourseDemand.Critical.CRITICAL.ordinal() && enrollment() != null;
 				} else if (eq("Not Assigned Critical", term)) {
-					return request().isCritical() && enrollment() == null;
+					return request().getCritical() == CourseDemand.Critical.CRITICAL.ordinal() && enrollment() == null;
+				} else if (eq("Important", term)) {
+					return request().getCritical() == CourseDemand.Critical.IMPORTANT.ordinal();
+				} else if (eq("Assigned Important", term)) {
+					return request().getCritical() == CourseDemand.Critical.IMPORTANT.ordinal() && enrollment() != null;
+				} else if (eq("Not Assigned Important", term)) {
+					return request().getCritical() == CourseDemand.Critical.IMPORTANT.ordinal() && enrollment() == null;
 				}
+				
 			}
 			
 			if ("assigned".equals(attr) || "scheduled".equals(attr)) {

@@ -292,7 +292,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 			int priority = 1;
 			for (Request request: iAssignment.getAdvisorRequest().getCourses()) {
 				if (request.hasRequestedCourse()) {
-					if (request.isCritical()) hasCrit = true;
+					if (request.isCritical() || request.isImportant()) hasCrit = true;
 					boolean first = true;
 					for (RequestedCourse rc: request.getRequestedCourse()) {
 						WebTable.Row row = null;
@@ -323,7 +323,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 									credit,
 									new WebTable.Cell(ToolBox.toString(prefs), true),
-									request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") : new WebTable.Cell(""),
+									request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
+									request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") : new WebTable.Cell(""),
 									note,
 									new WebTable.Cell(changes)
 									);
@@ -516,7 +517,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				if (!request.hasRequestedCourse()) continue;
 				boolean first = true;
 				if (request.isWaitList()) hasWait = true;
-				if (request.isCritical()) hasCrit = true;
+				if (request.isCritical() || request.isImportant()) hasCrit = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					if (rc.isCourse()) {
 						ImageResource icon = null; String iconText = null;
@@ -591,7 +592,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								new WebTable.Cell(ToolBox.toString(prefs)),
 								new WebTable.NoteCell(note, noteTitle),
 								(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
-								(first && iAssignment.isCanSetCriticalOverrides() ? new CriticalCell(request) : first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") : new WebTable.Cell("")),
+								(first && iAssignment.isCanSetCriticalOverrides() ? new CriticalCell(request) : first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
+									first && request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") : new WebTable.Cell("")),
 								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell("")),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
 								);
@@ -626,7 +628,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				if (!request.hasRequestedCourse()) continue;
 				boolean first = true;
 				if (request.isWaitList()) hasWait = true;
-				if (request.isCritical()) hasCrit = true;
+				if (request.isCritical() || request.isImportant()) hasCrit = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					if (rc.isCourse()) {
 						ImageResource icon = null; String iconText = null;
@@ -701,7 +703,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								new WebTable.Cell(ToolBox.toString(prefs)),
 								new WebTable.NoteCell(note, noteTitle),
 								(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
-								(first && iAssignment.isCanSetCriticalOverrides() ? new CriticalCell(request) : first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") : new WebTable.Cell("")),
+								(first && iAssignment.isCanSetCriticalOverrides() ? new CriticalCell(request) : first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
+									first && request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") : new WebTable.Cell("")),
 								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell("")),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
 								);
@@ -993,17 +996,17 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		iHandler = handler;
 	}
 	
-	protected void setCritical(Long studentId, Request request, Boolean critical, AsyncCallback<Boolean> callback) {
-		callback.onSuccess(request.isCritical());
+	protected void setCritical(Long studentId, Request request, Integer critical, AsyncCallback<Integer> callback) {
+		callback.onSuccess(request.getCritical());
 	}
 	
 	class CriticalCell extends WebTable.IconCell {
 		private Request iRequest;
 		
 		CriticalCell(Request request) {
-			super(request.isCritical() ? RESOURCES.requestsCritical() : RESOURCES.requestsNotCritical(), "", null);
-			getIcon().setTitle(request.isCritical() ? MESSAGES.descriptionRequestCritical() : MESSAGES.descriptionRequestNotCritical());
-			getIcon().setAltText(request.isCritical() ? MESSAGES.descriptionRequestCritical() : MESSAGES.descriptionRequestNotCritical());
+			super(request.isCritical() ? RESOURCES.requestsCritical() : request.isImportant() ? RESOURCES.requestsImportant() : RESOURCES.requestsNotCritical(), "", null);
+			getIcon().setTitle(request.isCritical() ? MESSAGES.descriptionRequestCritical() : request.isImportant() ? MESSAGES.descriptionRequestImportant() : MESSAGES.descriptionRequestNotCritical());
+			getIcon().setAltText(request.isCritical() ? MESSAGES.descriptionRequestCritical() : request.isImportant() ? MESSAGES.descriptionRequestImportant() : MESSAGES.descriptionRequestNotCritical());
 			iRequest = request;
 			getIcon().getElement().getStyle().setCursor(Cursor.POINTER);
 			getIcon().addClickHandler(new ClickHandler() {
@@ -1017,28 +1020,37 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						@Override
 						public void execute() {
 							popup.hide();
-							change(true);
+							change(1);
 						}
 					});
 					menu.addItem(item1);
 					
-					MenuItem item2 = new MenuItem(MESSAGES.opSetNotCritical(), true, new Command() {
+					MenuItem item2 = new MenuItem(MESSAGES.opSetImportant(), true, new Command() {
 						@Override
 						public void execute() {
 							popup.hide();
-							change(false);
+							change(2);
 						}
 					});
 					menu.addItem(item2);
 					
-					MenuItem item3 = new MenuItem(MESSAGES.opSetCriticalNotSet(), true, new Command() {
+					MenuItem item3 = new MenuItem(MESSAGES.opSetNotCritical(), true, new Command() {
+						@Override
+						public void execute() {
+							popup.hide();
+							change(0);
+						}
+					});
+					menu.addItem(item3);
+					
+					MenuItem item4 = new MenuItem(MESSAGES.opSetCriticalNotSet(), true, new Command() {
 						@Override
 						public void execute() {
 							popup.hide();
 							change(null);
 						}
 					});
-					menu.addItem(item3);
+					menu.addItem(item4);
 					menu.setVisible(true);
 					
 					popup.add(menu);
@@ -1048,20 +1060,24 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 			});
 		}
 		
-		void change(Boolean value) {
-			setCritical(iAssignment.getRequest().getStudentId(), iRequest, value, new AsyncCallback<Boolean>() {
+		void change(Integer value) {
+			setCritical(iAssignment.getRequest().getStudentId(), iRequest, value, new AsyncCallback<Integer>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					UniTimeNotifications.error(caught);
 				}
 
 				@Override
-				public void onSuccess(Boolean result) {
+				public void onSuccess(Integer result) {
 					if (result == null) return;
-					if (result) {
+					if (result == 1) {
 						getIcon().setResource(RESOURCES.requestsCritical());
 						getIcon().setTitle(MESSAGES.descriptionRequestCritical());
 						getIcon().setAltText(MESSAGES.descriptionRequestCritical());
+					} else if (result == 2) {
+						getIcon().setResource(RESOURCES.requestsImportant());
+						getIcon().setTitle(MESSAGES.descriptionRequestImportant());
+						getIcon().setAltText(MESSAGES.descriptionRequestImportant());
 					} else {
 						getIcon().setResource(RESOURCES.requestsNotCritical());
 						getIcon().setTitle(MESSAGES.descriptionRequestNotCritical());

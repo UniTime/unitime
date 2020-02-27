@@ -653,9 +653,34 @@ public class StudentSectioningImport extends BaseImport {
         					cd.setAlternative("true".equals(alternative));
         					cd.setPriority(priority);
         					cd.setWaitlist("true".equals(waitList));
-        					cd.setCritical(critical == null ? null : new Boolean("true".equals(critical)));
-        					cd.setCriticalOverride(criticalOverride == null ? null : Boolean.valueOf("true".equals(criticalOverride)));
-                            
+        					if (critical == null)
+        						cd.setCritical(null);
+        					else if ("true".equals(critical))
+        						cd.setCritical(CourseDemand.Critical.CRITICAL.ordinal());
+        					else if ("false".equals(critical))
+        						cd.setCritical(CourseDemand.Critical.NORMAL.ordinal());
+        					else {
+        						for (CourseDemand.Critical c: CourseDemand.Critical.values()) {
+        							if (c.name().equalsIgnoreCase(critical) || String.valueOf(c.ordinal()).equals(critical)) {
+        								cd.setCritical(c.ordinal());
+        								break;
+        							}        								
+        						}
+        					}
+        					if (criticalOverride == null)
+        						cd.setCriticalOverride(null);
+        					else if ("true".equals(criticalOverride))
+        						cd.setCriticalOverride(CourseDemand.Critical.CRITICAL.ordinal());
+        					else if ("false".equals(criticalOverride))
+        						cd.setCriticalOverride(CourseDemand.Critical.NORMAL.ordinal());
+        					else {
+        						for (CourseDemand.Critical c: CourseDemand.Critical.values()) {
+        							if (c.name().equalsIgnoreCase(criticalOverride) || String.valueOf(c.ordinal()).equals(criticalOverride)) {
+        								cd.setCriticalOverride(c.ordinal());
+        								break;
+        							}        								
+        						}
+        					}
             				Iterator<CourseRequest> requests = new TreeSet<CourseRequest>(cd.getCourseRequests()).iterator();
             				int order = 0;
             				for (CourseOffering co: courses) {

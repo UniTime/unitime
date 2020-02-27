@@ -276,7 +276,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 									cd.setAlternative(false);
 									cd.setPriority(priority);
 									cd.setWaitlist(false);
-									cd.setCritical(false);
+									cd.setCritical(0);
 									FreeTime free = cd.getFreeTime();
 									if (free == null) {
 										free = new FreeTime();
@@ -412,7 +412,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 									cd.setAlternative(true);
 									cd.setPriority(priority);
 									cd.setWaitlist(false);
-									cd.setCritical(false);
+									cd.setCritical(0);
 									FreeTime free = cd.getFreeTime();
 									if (free == null) {
 										free = new FreeTime();
@@ -457,7 +457,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					cd.setAlternative(true);
 					cd.setPriority(priority);
 					cd.setWaitlist(r.isWaitList());
-					cd.setCritical(false);
+					cd.setCritical(0);
 					Iterator<CourseRequest> requests = new TreeSet<CourseRequest>(cd.getCourseRequests()).iterator();
 					int order = 0;
 					for (XCourseId co: courses) {
@@ -494,8 +494,8 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				
 				if (cc != null && student.getAdvisorCourseRequests() != null) {
 					for (AdvisorCourseRequest acr: student.getAdvisorCourseRequests()) {
-						boolean crit = acr.isCritical(cc);
-						if (acr.isCritical() == null || acr.isCritical().booleanValue() != crit) {
+						int crit = acr.isCritical(cc);
+						if (acr.getCritical() == null || acr.getCritical().intValue() != crit) {
 							acr.setCritical(crit); helper.getHibSession().update(acr);
 						}
 					}
@@ -926,18 +926,16 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
     	server.update(expectations);
     }
     
-    protected static boolean isCritical(List<XCourseId> courses, CriticalCourses critical) {
-		if (critical == null) return false;
-		for (XCourseId co: courses) {
-			if (critical.isCritical(co)) return true;
-			break;
-		}
-		return false;
+    protected static int isCritical(List<XCourseId> courses, CriticalCourses critical) {
+		if (critical == null) return 0;
+		for (XCourseId co: courses)
+			return critical.isCritical(co);
+		return 0;
 	}
     
-    protected static boolean isCritical(ClassAssignmentInterface.ClassAssignment course, CriticalCourses critical) {
-		if (critical == null) return false;
-		if (course == null || course.getCourseId() == null) return false;
+    protected static int isCritical(ClassAssignmentInterface.ClassAssignment course, CriticalCourses critical) {
+		if (critical == null) return 0;
+		if (course == null || course.getCourseId() == null) return 0;
 		return critical.isCritical(new XCourseId(null, course.getCourseId(), course.getCourseName()));
 	}
     

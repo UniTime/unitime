@@ -710,7 +710,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					maxPoints += 4 + (firstChoiceCritical ? 2 : 0);
 					if (firstChoice != null) {
 						points += 2; // first choice course is present
-						if (firstChoiceCritical && firstChoice.getCourseDemand().isCritical() != null && firstChoice.getCourseDemand().isCritical().booleanValue()) points +=2; // also is critical
+						if (firstChoiceCritical && firstChoice.getCourseDemand().isCriticalOrImportant()) points +=2; // also is critical
 						if (firstChoice.getCourseDemand().isAlternative() == last.isSubstitute()) points ++; // in the same table
 						if (firstChoice.getCourseDemand().getFirstChoiceCourseOffering().equals(advFirstChoice)) points ++; // also first as choice (not alt to something else)
 					}
@@ -755,7 +755,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 			}
 			if (acr.getCourseOffering() != null) {
 				nrCourses ++;
-				if ((acr.isCritical() != null && acr.isCritical().booleanValue()) && !acr.isSubstitute()) nrCriticalCourses ++;
+				if (acr.isCriticalOrImportant() && !acr.isSubstitute()) nrCriticalCourses ++;
 				CourseRequest request = null;
 				cd: for (CourseDemand cd: student.getCourseDemands()) {
 					for (CourseRequest cr: cd.getCourseRequests()) {
@@ -766,7 +766,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 				}
 				if (advFirstChoice == null) {
 					advFirstChoice = acr.getCourseOffering();
-					firstChoiceCritical = (acr.isCritical() != null && acr.isCritical().booleanValue());
+					firstChoiceCritical = acr.isCriticalOrImportant();
 					firstChoice = request;
 				}
 				if (request != null) {
@@ -779,7 +779,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 						if (request.getCourseDemand().getPriority() > foundPrioMax) foundPrioMax = request.getCourseDemand().getPriority();
 					}
 					if (acr.isSubstitute() != request.getCourseDemand().isAlternative()) nrSubstMisMatch ++;
-					if ((acr.isCritical() != null && acr.isCritical().booleanValue()) && request.getCourseDemand().isCritical() != null && request.getCourseDemand().isCritical().booleanValue() && !request.getCourseDemand().isAlternative()) nrCriticalCoursesFound ++;
+					if (acr.isCriticalOrImportant() && request.getCourseDemand().isCriticalOrImportant() && !request.getCourseDemand().isAlternative()) nrCriticalCoursesFound ++;
 				}
 			}
 			last = acr;
@@ -816,7 +816,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 			maxPoints += 4 + (firstChoiceCritical ? 2 : 0);
 			if (firstChoice != null) {
 				points += 2; // first choice course is present
-				if (firstChoiceCritical && firstChoice.getCourseDemand().isCritical() != null && firstChoice.getCourseDemand().isCritical().booleanValue()) points +=2; // also is critical
+				if (firstChoiceCritical && firstChoice.getCourseDemand().isCriticalOrImportant()) points +=2; // also is critical
 				if (firstChoice.getCourseDemand().isAlternative() == last.isSubstitute()) points ++; // in the same table
 				if (firstChoice.getCourseDemand().getFirstChoiceCourseOffering().equals(advFirstChoice)) points ++; // also first as choice (not alt to something else)
 			}

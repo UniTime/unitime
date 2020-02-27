@@ -47,7 +47,7 @@ public class XAdvisorRequest implements Comparable<XAdvisorRequest>, Serializabl
 	private String iCourseName;
 	private XCourseId iCourseId;
 	private String iCredit, iNote;
-	private boolean iCritical;
+	private int iCritical;
 	private XTime iFreeTime;
 	private List<XPreference> iPreferences = null;
 	
@@ -55,7 +55,7 @@ public class XAdvisorRequest implements Comparable<XAdvisorRequest>, Serializabl
 		iPriority = acr.getPriority();
 		iAlternative = acr.getAlternative();
 		iSubstitute = acr.isSubstitute();
-		iCritical = (acr.isCritical() != null && acr.isCritical().booleanValue());
+		iCritical = (acr.getCritical() == null ? 0 : acr.getCritical().intValue());
 		iCourseName = acr.getCourse();
 		if (acr.getCourseOffering() != null)
 			iCourseId = new XCourseId(acr.getCourseOffering());
@@ -86,7 +86,7 @@ public class XAdvisorRequest implements Comparable<XAdvisorRequest>, Serializabl
 			iCourseId = null;
 		iCredit = (String)in.readObject();;
 		iNote = (String)in.readObject();
-		iCritical = in.readBoolean();
+		iCritical = in.readInt();
 		if (in.readBoolean())
 			iFreeTime = new XTime(in);
 		else
@@ -115,7 +115,7 @@ public class XAdvisorRequest implements Comparable<XAdvisorRequest>, Serializabl
 		}
 		out.writeObject(iCredit);
 		out.writeObject(iNote);
-		out.writeBoolean(iCritical);
+		out.writeInt(iCritical);
 		if (iFreeTime == null) {
 			out.writeBoolean(false);
 		} else {
@@ -144,7 +144,8 @@ public class XAdvisorRequest implements Comparable<XAdvisorRequest>, Serializabl
 	public boolean hasCredit() { return iCredit != null && !iCredit.isEmpty(); }
 	public String getNote() { return iNote; }
 	public boolean hasNote() { return iNote != null && !iNote.isEmpty(); }
-	public boolean isCritical() { return iCritical; }
+	public int getCritical() { return iCritical; }
+	public boolean isCritical() { return iCritical > 0; }
 	public boolean hasPreferences() { return iPreferences != null && !iPreferences.isEmpty(); }
 	public List<XPreference> getPreferences() { return iPreferences; }
 	

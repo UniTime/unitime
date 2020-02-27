@@ -103,7 +103,7 @@
         <property
             name="critical"
             column="critical"
-            type="java.lang.Boolean"
+            type="java.lang.Integer"
             not-null="false"/>
 
 		<set

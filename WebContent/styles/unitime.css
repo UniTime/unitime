@@ -4894,6 +4894,10 @@ unitime-RoomSharingWidget .legend .blank {
 	margin-bottom: 3px;
 }
 
+.unitime-CourseFinderDialog .course-details-tabs {
+	width: 100%;
+}
+
 .unitime-CourseFinderDialog .course-details {
 	border: 1px solid #9CB0CE;
 	height: 200px;

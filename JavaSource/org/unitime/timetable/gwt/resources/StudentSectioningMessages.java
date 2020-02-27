@@ -1978,6 +1978,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course request is critical.")
 	String descriptionRequestCritical();
 	
+	@DefaultMessage("Course request is important.")
+	String descriptionRequestImportant();
+	
 	@DefaultMessage("Course request is not critical.")
 	String descriptionRequestNotCritical();
 	
@@ -2401,6 +2404,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Critical")
 	String opSetCritical();
 	
+	@DefaultMessage("Important")
+	String opSetImportant();
+
 	@DefaultMessage("Not Critical")
 	String opSetNotCritical();
 	

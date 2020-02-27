@@ -26,6 +26,7 @@ import java.util.Set;
 import org.cpsolver.studentsct.model.Choice;
 import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
+import org.cpsolver.studentsct.model.Request.RequestPriority;
 import org.cpsolver.studentsct.model.Section;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.model.base.BaseCourseDemand;
@@ -36,6 +37,26 @@ import org.unitime.timetable.model.dao.CourseDemandDAO;
  */
 public class CourseDemand extends BaseCourseDemand implements Comparable {
 	private static final long serialVersionUID = 1L;
+	
+	public static enum Critical {
+		NORMAL(RequestPriority.Normal),
+		CRITICAL(RequestPriority.Critical),
+		IMPORTANT(RequestPriority.Important),
+		;
+		
+		RequestPriority iPriority;
+		Critical(RequestPriority rp) {
+			iPriority = rp;
+		}
+		
+		public RequestPriority toRequestPriority() { return iPriority; }
+		public static Critical fromRequestPriority(RequestPriority rp) {
+			if (rp == null) return Critical.NORMAL;
+			for (Critical c: Critical.values())
+				if (c.toRequestPriority() == rp) return c;
+			return Critical.NORMAL;
+		}
+	}
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
 	public CourseDemand () {
@@ -119,5 +140,24 @@ public class CourseDemand extends BaseCourseDemand implements Comparable {
     		if (ret == null || cr.getOrder() < ret.getOrder()) ret = cr;
     	}
     	return (ret == null ? null : ret.getCourseOffering());
+    }
+    
+    public Critical getEffectiveCritical() {
+    	if (getCriticalOverride() != null)
+    		return Critical.values()[getCriticalOverride()];
+    	if (getCritical() != null)
+    		return Critical.values()[getCritical()];
+    	return Critical.NORMAL;
+    }
+    
+    public boolean isCriticalOrImportant() {
+    	switch (getEffectiveCritical()) {
+    	case CRITICAL:
+    		return true;
+    	case IMPORTANT:
+    		return true;
+    	default:
+    		return false;
+    	}
     }
 }

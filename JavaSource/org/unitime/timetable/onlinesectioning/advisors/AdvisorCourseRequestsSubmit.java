@@ -162,7 +162,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 												} else {
 													acr.setCredit(null); acr.setNotes(null); 
 												}
-												acr.setCritical(false);
+												acr.setCritical(0);
 												helper.getHibSession().saveOrUpdate(free);
 												helper.getHibSession().saveOrUpdate(acr);
 												alt++;
@@ -229,7 +229,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 									acr.setNotes(request.getAdvisorNote());
 									acr.setChangedBy(helper.getUser().getExternalId());
 									acr.setTimestamp(ts);
-									acr.setCritical(false);
+									acr.setCritical(0);
 									helper.getHibSession().saveOrUpdate(acr);
 								}
 								priority ++;
@@ -298,7 +298,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 									acr.setNotes(request.getAdvisorNote());
 									acr.setChangedBy(helper.getUser().getExternalId());
 									acr.setTimestamp(ts);
-									acr.setCritical(false);
+									acr.setCritical(0);
 									helper.getHibSession().saveOrUpdate(acr);
 								}
 								priority ++;
@@ -328,7 +328,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 								acr.setNotes(getDetails().getRequest().getCreditNote());
 								acr.setChangedBy(helper.getUser().getExternalId());
 								acr.setTimestamp(ts);
-								acr.setCritical(false);
+								acr.setCritical(0);
 								helper.getHibSession().saveOrUpdate(acr);
 							}
 						}

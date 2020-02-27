@@ -914,7 +914,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				if (!request.hasRequestedCourse()) continue;
 				boolean first = true;
 				if (request.isWaitList()) hasWait = true;
-				if (request.isCritical()) hasCrit = true;
+				if (request.isCritical() || request.isImportant()) hasCrit = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					if (rc.isCourse()) {
 						ImageResource icon = null; String iconText = null;
@@ -989,7 +989,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 								new WebTable.Cell(ToolBox.toString(prefs)),
 								new WebTable.NoteCell(note, noteTitle),
 								(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
-								(first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") : new WebTable.Cell("")),
+								(first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
+									first && request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") : new WebTable.Cell("")),
 								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell("")),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
 								);
@@ -1024,7 +1025,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				if (!request.hasRequestedCourse()) continue;
 				boolean first = true;
 				if (request.isWaitList()) hasWait = true;
-				if (request.isCritical()) hasCrit = true;
+				if (request.isCritical() || request.isImportant()) hasCrit = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					if (rc.isCourse()) {
 						ImageResource icon = null; String iconText = null;
@@ -1099,7 +1100,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 								new WebTable.Cell(ToolBox.toString(prefs)),
 								new WebTable.NoteCell(note, noteTitle),
 								(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
-								(first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") : new WebTable.Cell("")),
+								(first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
+									first && request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") : new WebTable.Cell("")),
 								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell("")),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
 								);

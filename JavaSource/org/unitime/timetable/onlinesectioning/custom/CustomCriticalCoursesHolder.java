@@ -117,12 +117,12 @@ public class CustomCriticalCoursesHolder {
 			return !reloadIds.isEmpty();
 		}
 		
-		protected boolean isCritical(CourseDemand cd, CriticalCourses critical) {
-			if (critical == null || cd.isAlternative()) return false;
+		protected int isCritical(CourseDemand cd, CriticalCourses critical) {
+			if (critical == null || cd.isAlternative()) return 0;
 			for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests()) {
-				if (cr.getOrder() == 0 && critical.isCritical(cr.getCourseOffering())) return true;
+				if (cr.getOrder() == 0 && critical.isCritical(cr.getCourseOffering()) > 0) return critical.isCritical(cr.getCourseOffering());
 			}
-			return false;
+			return 0;
 		}
 		
 		protected boolean recheckStudent(OnlineSectioningServer server, OnlineSectioningHelper helper, Long studentId) {
@@ -142,15 +142,15 @@ public class CustomCriticalCoursesHolder {
 					try {
 						CriticalCourses critical = CustomCriticalCoursesHolder.getProvider().getCriticalCourses(server, helper, new XStudentId(student, helper), action);
 						for (CourseDemand cd: student.getCourseDemands()) {
-							boolean crit = isCritical(cd, critical);
-							if (cd.isCritical() == null || cd.isCritical().booleanValue() != crit) {
+							int crit = isCritical(cd, critical);
+							if (cd.getCritical() == null || cd.getCritical().intValue() != crit) {
 								cd.setCritical(crit); helper.getHibSession().update(cd); changed = true;
 							}
 						}
 						if (student.getAdvisorCourseRequests() != null)
 							for (AdvisorCourseRequest acr: student.getAdvisorCourseRequests()) {
-								boolean crit = acr.isCritical(critical);
-								if (acr.isCritical() == null || acr.isCritical().booleanValue() != crit) {
+								int crit = acr.isCritical(critical);
+								if (acr.getCritical() == null || acr.getCritical().intValue() != crit) {
 									acr.setCritical(crit); helper.getHibSession().update(acr);
 								}
 							}

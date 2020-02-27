@@ -184,13 +184,11 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 		return CourseOfferingDAO.getInstance().get(courseId, hibSession);
 	}
 	
-	protected static boolean isCritical(boolean alternative, List<CourseOffering> courses, CriticalCourses critical) {
-		if (critical == null || alternative) return false;
-		for (CourseOffering co: courses) {
-			if (critical.isCritical(co)) return true;
-			break;
-		}
-		return false;
+	protected static int isCritical(boolean alternative, List<CourseOffering> courses, CriticalCourses critical) {
+		if (critical == null || alternative) return 0;
+		for (CourseOffering co: courses)
+			return critical.isCritical(co);
+		return 0;
 	}
 	
 	public static Map<Long, CourseRequest>  saveRequest(OnlineSectioningServer server, OnlineSectioningHelper helper, Student student, CourseRequestInterface request, boolean keepEnrollments, CriticalCourses critical) throws SectioningException {
@@ -221,7 +219,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 							cd.setAlternative(false);
 							cd.setPriority(priority);
 							cd.setWaitlist(false);
-							cd.setCritical(false);
+							cd.setCritical(0);
 							FreeTime free = cd.getFreeTime();
 							if (free == null) {
 								free = new FreeTime();
@@ -339,7 +337,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 							cd.setAlternative(true);
 							cd.setPriority(priority);
 							cd.setWaitlist(false);
-							cd.setCritical(false);
+							cd.setCritical(0);
 							FreeTime free = cd.getFreeTime();
 							if (free == null) {
 								free = new FreeTime();
@@ -476,8 +474,8 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 		
 		if (student.getAdvisorCourseRequests() != null)
 			for (AdvisorCourseRequest acr: student.getAdvisorCourseRequests()) {
-				boolean crit = acr.isCritical(critical);
-				if (acr.isCritical() == null || acr.isCritical().booleanValue() != crit) {
+				int crit = acr.isCritical(critical);
+				if (acr.getCritical() == null || acr.getCritical().intValue() != crit) {
 					acr.setCritical(crit); helper.getHibSession().update(acr);
 				}
 			}

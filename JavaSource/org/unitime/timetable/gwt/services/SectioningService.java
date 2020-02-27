@@ -113,7 +113,7 @@ public interface SectioningService extends RemoteService {
 	CancelSpecialRegistrationResponse cancelSpecialRequest(CancelSpecialRegistrationRequest request) throws SectioningException, PageAccessException;
 	RetrieveAvailableGradeModesResponse retrieveGradeModes(RetrieveAvailableGradeModesRequest request) throws SectioningException, PageAccessException;
 	ChangeGradeModesResponse changeGradeModes(ChangeGradeModesRequest request) throws SectioningException, PageAccessException;
-	Boolean changeCriticalOverride(Long studentId, Long courseId, Boolean critical) throws SectioningException, PageAccessException;
+	Integer changeCriticalOverride(Long studentId, Long courseId, Integer critical) throws SectioningException, PageAccessException;
 	UpdateSpecialRegistrationResponse updateSpecialRequest(UpdateSpecialRegistrationRequest request) throws SectioningException, PageAccessException;
 	
 	Collection<AcademicSessionInfo> getStudentSessions(String studentExternalId) throws SectioningException, PageAccessException;

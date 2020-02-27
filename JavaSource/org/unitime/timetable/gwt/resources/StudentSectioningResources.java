@@ -215,6 +215,9 @@ public interface StudentSectioningResources extends ClientBundle {
 	@Source("org/unitime/timetable/gwt/resources/icons/action_check.png")
 	ImageResource requestsCritical();
 	
+	@Source("org/unitime/timetable/gwt/resources/icons/action_check_blue.png")
+	ImageResource requestsImportant();
+	
 	@Source("org/unitime/timetable/gwt/resources/icons/action_delete.png")
 	ImageResource requestsNotCritical();
 	
