@@ -50,6 +50,7 @@ public class ImportTranslations {
 	private File iSource;
 	private String iTranslations = "Documentation/Translations";
 	private boolean iGeneratePageNames = false;
+	private boolean iFixMe = false;
 	private String iEncoding = "UTF-8";
 
 	public ImportTranslations() {}
@@ -109,6 +110,10 @@ public class ImportTranslations {
 
 	public void setGeneratePageNames(boolean generatePageNames) {
 		iGeneratePageNames = generatePageNames;
+	}
+	
+	public void setIncludeFixMe(boolean fixMe) {
+		iFixMe = fixMe;
 	}
 	
     public void info(String message) {
@@ -257,10 +262,11 @@ public class ImportTranslations {
 							names.add((String)o);
 						for (String name: names) {
 							String value = defaults.getProperty(name);
+							String text = translation.getProperty(name);
+							if (!iFixMe && text == null) continue;
 							out.println();
 							if (value != null)
 								out.println("# Default: " + unicodeEscape(value, false).trim());
-							String text = translation.getProperty(name);
 							if (text == null) {
 								if (value != null)
 									out.println("# FIXME: Translate \"" + unicodeEscape(value, false) + "\"");
@@ -310,7 +316,7 @@ public class ImportTranslations {
 
 							String text = translation.getProperty(method.getName(), old.getProperty(method.getName()));
 							boolean doNotTranslate = (method.getAnnotation(Messages.DoNotTranslate.class) != null) || (method.getAnnotation(Constants.DoNotTranslate.class) != null);
-							if (text == null && (constants || doNotTranslate)) continue;
+							if (text == null && (constants || doNotTranslate || !iFixMe)) continue;
 							
 							out.println();
 							if (value != null)
