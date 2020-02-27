@@ -60,6 +60,53 @@
 				<line>Custom class CriticalCoursesExplorers makes use of these (implementing both CriticalCoursesProvider and DegreePlansProvider interfaces).</line>
 			</description>
 		</item>
+		<item>
+			<name>Reservation Restrictions</name>
+			<description>
+				<line>Added ability to define on a reservation whether it is inclusive or not.</line>
+				<line>There is a new mode field when editing a reservation (that is not an override) which can be:
+					<line>Default: using unitime.reservations.restrictionsInclusive which defaults to true.</line>
+					<line>Reservation: the currently default mode (restrictions are applied at all levels).</line>
+					<line>Restriction: not-inclusive mode (restrictions are only applied on the selected level).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Gradable Subpart</name>
+			<description>
+				<line>Added ability to show course credit information on a particular section (not just the first one).</line>
+				<line>Gradable subpat (on which the credit is shown) can be provided using the ExternalClassNameHelperInterface interface, implementing HasGradableSubpart sub-interface.</line>
+			</description>
+		</item>
+		<item>
+			<name>Banner Integration: Assigned Credit</name>
+			<description>
+				<line>Show credit information on the gradable section.</line>
+				<line>For variable credit courses, display assigned credit returned by XE API.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Room Sharing</name>
+			<description>
+				<line>More precise computation of allowed room sharing (how much space is needed in a room).</line>
+				<line>This is to avoid issues when three or more classes can share a room and some of these classes do not overlap.
+					<line>For example, no more than two classes overlap when there is a Monday class, a Wednesday class, and a Monday-Wednesday class.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Other</title>
+		<item>
+			<name>Right-to-Left Support</name>
+			<description>
+				<line>Basic support for right-to-left languages.</line>
+				<line>Enable by using ar locale.</line>
+			</description>
+		</item>
 	</category>
 </release>
 </release-history>
