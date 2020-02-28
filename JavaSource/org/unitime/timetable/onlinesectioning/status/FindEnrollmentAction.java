@@ -295,6 +295,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 					a.addNote(section.getNote());
 					XSubpart subpart = offering.getSubpart(section.getSubpartId());
 					a.setCredit(subpart.getCredit(course.getCourseId()));
+					a.setCreditRange(subpart.getCreditMin(course.getCourseId()), subpart.getCreditMax(course.getCourseId()));
 					Float creditOverride = section.getCreditOverride(c.getCourseId());
 					if (creditOverride != null) a.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
 					int dist = 0;

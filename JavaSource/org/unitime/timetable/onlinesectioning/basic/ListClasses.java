@@ -131,6 +131,7 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 						}
 						a.addNote(section.getNote());
 						a.setCredit(subpart.getCredit(c.getCourseId()));
+						a.setCreditRange(subpart.getCreditMin(c.getCourseId()), subpart.getCreditMax(c.getCourseId()));
 						Float creditOverride = section.getCreditOverride(c.getCourseId());
 						if (creditOverride != null) a.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
 						if (section.getTime() != null) {

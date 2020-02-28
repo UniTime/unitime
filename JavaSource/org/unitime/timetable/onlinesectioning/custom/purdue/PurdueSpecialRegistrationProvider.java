@@ -95,6 +95,7 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpeci
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationResponse;
 import org.unitime.timetable.interfaces.ExternalClassLookupInterface;
+import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpart;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -1395,6 +1396,9 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			} else if (drops.containsKey(course)) {
 				desc += " (drop)";
 			}
+			HasGradableSubpart gs = null;
+			if (ApplicationProperty.OnlineSchedulingGradableIType.isTrue() && Class_.getExternalClassNameHelper() != null && Class_.getExternalClassNameHelper() instanceof HasGradableSubpart)
+				gs = (HasGradableSubpart) Class_.getExternalClassNameHelper();
 			CourseCreditUnitConfig credit = course.getCredit();
 			Set<String> additionalMessages = new TreeSet<String>();
 			if (adds.containsKey(course)) {
@@ -1409,7 +1413,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					}
 					if (change.get(0).operation == ChangeOperation.CHGVARCR) {
 						if (clazz.getExternalId(course).equals(change.get(0).crn) && (clazz.getParentClass() == null || !clazz.getSchedulingSubpart().getItype().equals(clazz.getParentClass().getSchedulingSubpart().getItype())))
-							ca.setCreditHour(Float.valueOf(change.get(0).selectedCreditHour));
+							if (change.get(0).selectedCreditHour != null)
+								ca.setCreditHour(Float.valueOf(change.get(0).selectedCreditHour));
 					}
 					SpecialRegistrationStatus s = null;
 					for (Change ch: change)
@@ -1466,14 +1471,22 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							ca.addInstructor(nameFormat.format(ci.getInstructor()));
 							ca.addInstructoEmail(ci.getInstructor().getEmail() == null ? "" : ci.getInstructor().getEmail());
 						}
+					if (credit != null && gs != null && gs.isGradableSubpart(clazz.getSchedulingSubpart(), course, helper.getHibSession())) {
+						ca.setCredit(credit.creditAbbv() + "|" + credit.creditText());
+						ca.setCreditRange(credit.getMinCredit(), credit.getMaxCredit());
+						credit = null;
+					} else if (credit != null && gs == null) {
+						ca.setCredit(credit.creditAbbv() + "|" + credit.creditText());
+						ca.setCreditRange(credit.getMinCredit(), credit.getMaxCredit());
+						credit = null;
+					}
 					if (clazz.getSchedulingSubpart().getCredit() != null) {
 						ca.setCredit(clazz.getSchedulingSubpart().getCredit().creditAbbv() + "|" + clazz.getSchedulingSubpart().getCredit().creditText());
-					} else if (credit != null) {
-						ca.setCredit(credit.creditAbbv() + "|" + credit.creditText());
+						ca.setCreditRange(clazz.getSchedulingSubpart().getCredit().getMinCredit(), clazz.getSchedulingSubpart().getCredit().getMaxCredit());
+						credit = null;
 					}
 					Float creditOverride = clazz.getCredit(course);
 					if (creditOverride != null) ca.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
-					credit = null;
 					if (ca.getParentSection() == null)
 						ca.setParentSection(course.getConsentType() == null ? null : course.getConsentType().getLabel());
 					
@@ -1508,6 +1521,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 										additionalMessage = additionalMessage.replace("{currentGradeMode}", ch.currentGradeMode);
 									if (additionalMessage.contains("{selectedGradeMode}") && ch.selectedGradeMode != null)
 										additionalMessage = additionalMessage.replace("{selectedGradeMode}", ch.selectedGradeMode);
+									if (additionalMessage.contains("{selectedCreditHour}") && ch.selectedCreditHour != null)
+										additionalMessage = additionalMessage.replace("{selectedCreditHour}", ch.selectedCreditHour);
+									if (additionalMessage.contains("{currentCreditHour}") && ch.currentCreditHour != null)
+										additionalMessage = additionalMessage.replace("{currentCreditHour}", ch.currentCreditHour);
 									additionalMessages.add(additionalMessage);
 								}
 								if (ch.status != null)
@@ -1618,14 +1635,22 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							ca.addInstructor(nameFormat.format(ci.getInstructor()));
 							ca.addInstructoEmail(ci.getInstructor().getEmail() == null ? "" : ci.getInstructor().getEmail());
 						}
+					if (credit != null && gs != null && gs.isGradableSubpart(clazz.getSchedulingSubpart(), course, helper.getHibSession())) {
+						ca.setCredit(credit.creditAbbv() + "|" + credit.creditText());
+						ca.setCreditRange(credit.getMinCredit(), credit.getMaxCredit());
+						credit = null;
+					} else if (credit != null && gs == null) {
+						ca.setCredit(credit.creditAbbv() + "|" + credit.creditText());
+						ca.setCreditRange(credit.getMinCredit(), credit.getMaxCredit());
+						credit = null;
+					}
 					if (clazz.getSchedulingSubpart().getCredit() != null) {
 						ca.setCredit(clazz.getSchedulingSubpart().getCredit().creditAbbv() + "|" + clazz.getSchedulingSubpart().getCredit().creditText());
-					} else if (credit != null) {
-						ca.setCredit(credit.creditAbbv() + "|" + credit.creditText());
+						ca.setCreditRange(clazz.getSchedulingSubpart().getCredit().getMinCredit(), clazz.getSchedulingSubpart().getCredit().getMaxCredit());
+						credit = null;
 					}
 					Float creditOverride = clazz.getCredit(course);
 					if (creditOverride != null) ca.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
-					credit = null;
 					if (ca.getParentSection() == null)
 						ca.setParentSection(course.getConsentType() == null ? null : course.getConsentType().getLabel());
 

@@ -249,6 +249,7 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 							a.addNote(course.getNote());
 							a.addNote(section.getNote());
 							a.setCredit(subpart.getCredit(course.getCourseId()));
+							a.setCreditRange(subpart.getCreditMin(course.getCourseId()), subpart.getCreditMax(course.getCourseId()));
 							Float creditOverride = section.getCreditOverride(c.getCourseId());
 							if (creditOverride != null) a.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
 							int dist = 0;

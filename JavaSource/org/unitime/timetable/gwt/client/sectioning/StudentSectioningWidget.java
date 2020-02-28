@@ -2753,12 +2753,33 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		return null;
 	}
 	
+	public List<String> getCourseChangesWithVarbiableCredit() {
+		if (iLastAssignment != null && iSavedAssignment != null) {
+			List<String> ret = new ArrayList<String>();
+			courses: for (ClassAssignmentInterface.CourseAssignment course: iSavedAssignment.getCourseAssignments()) {
+				if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
+				classes: for (ClassAssignmentInterface.ClassAssignment ca: course.getClassAssignments()) {
+					if (ca.getCreditHour() != null && ca.hasVariableCredit() && ca.getCreditMin() < ca.getCreditHour()) {
+						for (ClassAssignmentInterface.CourseAssignment x: iLastAssignment.getCourseAssignments())
+							if (course.getCourseId().equals(x.getCourseId()) && x.isAssigned())
+								for (ClassAssignmentInterface.ClassAssignment y: x.getClassAssignments())
+									if (ca.getClassId().equals(y.getClassId())) continue classes;
+						ret.add(MESSAGES.course(course.getSubject(), course.getCourseNbr()));
+						continue courses;
+					}
+				}
+			}
+			return ret;
+		}
+		return null;
+	}
+	
 	public boolean useDefaultConfirmDialog() {
 		return iEligibilityCheck == null || !iEligibilityCheck.hasFlag(EligibilityFlag.GWT_CONFIRMATIONS);
 	}
 	
 	protected Command confirmEnrollment(final Command callback) {
-		return confirmEnrollmentDrop(confirmEnrollmentHonors(callback));
+		return confirmEnrollmentDrop(confirmEnrollmentHonors(confirmEnrollmentVariableCredits(callback)));
 	}
 
 	protected Command confirmEnrollmentDrop(final Command callback) {
@@ -2793,6 +2814,21 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					@Override
 					public void execute() {
 						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.confirmEnrollmentHonorsGradeModeChange(ToolBox.toString(changes)), callback);
+					}
+				};
+			}
+		}
+		return callback;
+	}
+	
+	protected Command confirmEnrollmentVariableCredits(final Command callback) {
+		if (iEligibilityCheck != null && iEligibilityCheck.hasGradeModes()) {
+			final List<String> changes = getCourseChangesWithVarbiableCredit();
+			if (changes != null && !changes.isEmpty()) {
+				return new Command() {
+					@Override
+					public void execute() {
+						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.confirmEnrollmentVariableCreditChange(ToolBox.toString(changes)), callback);
 					}
 				};
 			}

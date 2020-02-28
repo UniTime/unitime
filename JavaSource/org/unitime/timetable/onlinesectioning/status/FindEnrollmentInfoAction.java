@@ -658,6 +658,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				a.addNote(course.getNote());
 				a.addNote(section.getNote());
 				a.setCredit(subpart.getCredit(course.getCourseId()));
+				a.setCreditRange(subpart.getCreditMin(course.getCourseId()), subpart.getCreditMax(course.getCourseId()));
 				Float creditOverride = section.getCreditOverride(course.getCourseId());
 				if (creditOverride != null) a.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
 				if (a.getParentSection() == null) {

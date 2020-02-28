@@ -1005,6 +1005,10 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 						Float credit = xSection.getCreditOverride(course.getId());
 						if (credit != null) a.setCredit(FixedCreditUnitConfig.formatCredit(credit));
 					}
+					XSubpart xSubpart = offering.getSubpart(section.getSubpart().getId());
+					if (xSubpart != null) {
+						a.setCreditRange(xSubpart.getCreditMin(course.getId()), xSubpart.getCreditMax(course.getId()));
+					}
 					int dist = 0;
 					String from = null;
 					TreeSet<String> overlap = new TreeSet<String>();

@@ -382,7 +382,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private SpecialRegistrationStatus iSpecRegStatus = null;
 		private SpecialRegistrationOperation iSpecRegOperation = null;
 		private GradeMode iGradeMode = null;
-		private Float iCreditHour = null;
+		private Float iCreditHour = null, iCreditMin = null, iCreditMax = null;
 		
 		public ClassAssignment() {}
 		public ClassAssignment(CourseAssignment course) {
@@ -753,6 +753,11 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public Float getCreditHour() { return iCreditHour; }
 		public void setCreditHour(Float creditHour) { iCreditHour = creditHour; }
+		
+		public Float getCreditMin() { return iCreditMin; }
+		public Float getCreditMax() { return iCreditMax; }
+		public void setCreditRange(Float creditMin, Float creditMax) { iCreditMin = creditMin; iCreditMax = creditMax; }
+		public boolean hasVariableCredit() { return iCreditMin != null && iCreditMax != null && iCreditMin < iCreditMax; }
 	}
 	
 	public static class Group implements IsSerializable, Serializable, Comparable<Group> {

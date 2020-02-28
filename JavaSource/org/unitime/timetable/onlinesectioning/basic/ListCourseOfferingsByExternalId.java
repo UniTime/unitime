@@ -87,6 +87,7 @@ public class ListCourseOfferingsByExternalId extends ListCourseOfferings {
 							a.addNote(course.getNote());
 							a.addNote(section.getNote());
 							a.setCredit(subpart.getCredit(courseId));
+							a.setCreditRange(subpart.getCreditMin(course.getCourseId()), subpart.getCreditMax(course.getCourseId()));
 							Float creditOverride = section.getCreditOverride(courseId);
 							if (creditOverride != null) a.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
 							if (section.getTime() != null) {

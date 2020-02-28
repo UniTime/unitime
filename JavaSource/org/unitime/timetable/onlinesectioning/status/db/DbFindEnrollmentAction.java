@@ -24,9 +24,11 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpart;
 import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
@@ -90,6 +92,9 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 		if (course == null) return ret;
 		InstructionalOffering offering = course.getInstructionalOffering();
 		if (offering == null) return ret;
+		HasGradableSubpart gs = null;
+		if (ApplicationProperty.OnlineSchedulingGradableIType.isTrue() && Class_.getExternalClassNameHelper() != null && Class_.getExternalClassNameHelper() instanceof HasGradableSubpart)
+			gs = (HasGradableSubpart) Class_.getExternalClassNameHelper();
 		
 		for (CourseRequest request: (List<CourseRequest>)helper.getHibSession().createQuery(
 				"from CourseRequest where courseOffering.uniqueId = :courseId"
@@ -268,8 +273,13 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 					a.addNote(section.getSchedulePrintNote());
 					if (section.getSchedulingSubpart().getCredit() != null) {
 						a.setCredit(section.getSchedulingSubpart().getCredit().creditAbbv() + "|" + section.getSchedulingSubpart().getCredit().creditText());
-					} else if (section.getParentClass() != null && course.getCredit() != null) {
+						a.setCreditRange(section.getSchedulingSubpart().getCredit().getMinCredit(), section.getSchedulingSubpart().getCredit().getMaxCredit());
+					} else if (gs != null && gs.isGradableSubpart(section.getSchedulingSubpart(), enrollment.getCourseOffering(), helper.getHibSession()) && course.getCredit() != null) {
 						a.setCredit(course.getCredit().creditAbbv() + "|" + course.getCredit().creditText());
+						a.setCreditRange(course.getCredit().getMinCredit(), course.getCredit().getMaxCredit());
+					} else if (gs == null && section.getParentClass() != null && course.getCredit() != null) {
+						a.setCredit(course.getCredit().creditAbbv() + "|" + course.getCredit().creditText());
+						a.setCreditRange(course.getCredit().getMinCredit(), course.getCredit().getMaxCredit());
 					}
 					Float creditOverride = section.getCredit(course);
 					if (creditOverride != null) a.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));

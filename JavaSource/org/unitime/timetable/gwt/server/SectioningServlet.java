@@ -1662,13 +1662,16 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								}
 							if (credit != null && gs != null && gs.isGradableSubpart(enrollment.getClazz().getSchedulingSubpart(), enrollment.getCourseOffering(), hibSession)) {
 								clazz.setCredit(credit.creditAbbv() + "|" + credit.creditText());
+								clazz.setCreditRange(credit.getMinCredit(), credit.getMaxCredit());;
 								credit = null;
 							} else if (credit != null && gs == null) {
 								clazz.setCredit(credit.creditAbbv() + "|" + credit.creditText());
+								clazz.setCreditRange(credit.getMinCredit(), credit.getMaxCredit());
 								credit = null;
 							}
 							if (enrollment.getClazz().getSchedulingSubpart().getCredit() != null) {
 								clazz.setCredit(enrollment.getClazz().getSchedulingSubpart().getCredit().creditAbbv() + "|" + enrollment.getClazz().getSchedulingSubpart().getCredit().creditText());
+								clazz.setCreditRange(enrollment.getClazz().getSchedulingSubpart().getCredit().getMinCredit(), enrollment.getClazz().getSchedulingSubpart().getCredit().getMaxCredit());
 								credit = null;
 							}
 							Float creditOverride = enrollment.getClazz().getCredit(enrollment.getCourseOffering());

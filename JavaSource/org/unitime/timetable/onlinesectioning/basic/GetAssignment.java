@@ -221,6 +221,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 										a.addNote(course.getNote());
 										a.addNote(section.getNote());
 										a.setCredit(subpart.getCredit(course.getCourseId()));
+										a.setCreditRange(subpart.getCreditMin(course.getCourseId()), subpart.getCreditMax(course.getCourseId()));
 										Float creditOverride = section.getCreditOverride(course.getCourseId());
 										if (creditOverride != null) a.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
 										a.setTeachingAssignment(true);
@@ -433,6 +434,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 						a.addNote(course.getNote());
 						a.addNote(section.getNote());
 						a.setCredit(subpart.getCredit(course.getCourseId()));
+						a.setCreditRange(subpart.getCreditMin(course.getCourseId()), subpart.getCreditMax(course.getCourseId()));
 						Float creditOverride = section.getCreditOverride(course.getCourseId());
 						if (creditOverride != null) a.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
 						a.setEnrolledDate(enrollment.getTimeStamp());
@@ -544,6 +546,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 						a.addNote(course.getNote());
 						a.addNote(section.getNote());
 						a.setCredit(subpart.getCredit(course.getCourseId()));
+						a.setCreditRange(subpart.getCreditMin(course.getCourseId()), subpart.getCreditMax(course.getCourseId()));
 						Float creditOverride = section.getCreditOverride(course.getCourseId());
 						if (creditOverride != null) a.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
 						int dist = 0;
