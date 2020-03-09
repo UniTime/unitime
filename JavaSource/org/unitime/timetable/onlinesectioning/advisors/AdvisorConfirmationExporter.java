@@ -140,7 +140,7 @@ public class AdvisorConfirmationExporter implements Exporter {
 		
 		details.setRequest(AdvisorGetCourseRequests.getRequest(student.getUniqueId(), AdvisorCourseRequestDAO.getInstance().getSession()));
 		
-		helper.setup("application/pdf", isAdvisor ? "acrf-" + student.getExternalUniqueId() + ".pdf" : "acrf-" + student.getSession().getAcademicTerm() + student.getSession().getAcademicYear() + ".pdf", false);
+		helper.setup("application/pdf", "crf-" + student.getSession().getAcademicTerm() + student.getSession().getAcademicYear() + (isAdvisor ? "-" + student.getExternalUniqueId() : "") + ".pdf", false);
 		try {
 			new AdvisorConfirmationPDF(details).generatePdfConfirmation(helper.getOutputStream());
 		} catch (DocumentException e) {

@@ -135,6 +135,10 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 					}
 				}
 			}
+			
+			if (!cx.isAdmin() && sources != null && sources.length == 1 && sources[0].equals("students")) {
+				cx.setAdmin(context.hasPermission(Right.EnrollmentsShowExternalId));
+			}
 
 			if (sources == null) {
 				if (context == null || context.hasPermission(Right.CanLookupLdap)) findPeopleFromLdap(cx);
@@ -487,8 +491,11 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 				iTokens = new ArrayList<String>();
 			else
 				iTokens.clear();
+			boolean stripLeadingZeroes = ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue();
 			for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
 				String t = stk.nextToken();
+				if (stripLeadingZeroes && t.matches("\\d+") && t.startsWith("0"))
+					while (t.startsWith("0")) t = t.substring(1);
 				iTokens.add(t.toLowerCase());
             }
 		}

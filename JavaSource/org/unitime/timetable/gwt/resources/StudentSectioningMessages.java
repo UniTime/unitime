@@ -254,6 +254,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course Requests")
 	String courseRequestsCourses();
 	
+	@DefaultMessage("Course Recommendations")
+	String advisorRequestsCourses();
+	
 	@DefaultMessage("&darr; Wait-List")
 	String courseRequestsWaitList();
 	
@@ -268,6 +271,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Substitute Course Requests")
 	String courseRequestsAlternatives();
+	
+	@DefaultMessage("Substitute Course Recommendations")
+	String advisorRequestsAlternatives();
 	
 	@DefaultMessage("(used only if a course requested above is not available)")
 	String courseRequestsAlternativesNote();
@@ -2491,7 +2497,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Status:")
 	String propStudentStatus();
 	
-	@DefaultMessage("Advisor Recommendations")
+	@DefaultMessage("Advisor Course Recommendations")
 	String pdfHeaderAdvisorCourseRequests();
 	
 	@DefaultMessage("Saving...")
@@ -2509,7 +2515,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Date:      _______________")
 	String pdfSignatureDate();
 	
-	@DefaultMessage("<u>A</u>dvisor Course Requests")
+	@DefaultMessage("<u>A</u>dvisor Recommendations")
 	String buttonAdvisorCourseRequests();
 	
 	@DefaultMessage("{0} reservation")
@@ -2542,10 +2548,10 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Student Course Requests")
 	String studentCourseRequests();
 	
-	@DefaultMessage("Advisor Recommendations")
+	@DefaultMessage("Advisor Course Recommendations")
 	String advisorCourseRequests();
 	
-	@DefaultMessage("Advisor Recommendations")
+	@DefaultMessage("Advisor Course Recommendations")
 	String dialogAdvisorCourseRequests();
 	
 	@DefaultMessage("Total Priority Credit Hours")
@@ -2563,10 +2569,10 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Show course requests filled in with the advisor.")
 	String hintAdvisorRequests();
 	
-	@DefaultMessage("Retrieving advisor recommendations...")
+	@DefaultMessage("Retrieving advisor course recommendations...")
 	String waitAdvisorRequests();
 	
-	@DefaultMessage("Failed to load advisor recommendations: {0}")
+	@DefaultMessage("Failed to load advisor course recommendations: {0}")
 	String failedAdvisorRequests(String reason);
 	
 	@DefaultMessage("<u>A</u>dvisor Recommendations")

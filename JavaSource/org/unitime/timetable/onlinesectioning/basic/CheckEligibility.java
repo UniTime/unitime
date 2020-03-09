@@ -123,6 +123,10 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 					return iCheck;
 				}
 				
+				if (iStudentId != null) {
+					iCheck.setFlag(EligibilityFlag.HAS_ADVISOR_REQUESTS, student.getAdvisorCourseRequests() != null && !student.getAdvisorCourseRequests().isEmpty());
+				}
+				
 				action.getStudentBuilder().setExternalId(student.getExternalUniqueId());
 				action.getStudentBuilder().setName(helper.getStudentNameFormat().format(student));
 				

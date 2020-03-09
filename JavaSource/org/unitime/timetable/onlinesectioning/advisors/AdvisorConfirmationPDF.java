@@ -179,7 +179,7 @@ public class AdvisorConfirmationPDF {
 			c.setBorder(0);
 			font = PdfFont.getBigFont(true);
 			font.setSize(font.getSize() * 0.8f);
-			Paragraph ch = new Paragraph(MSG.courseRequestsCourses(), font);
+			Paragraph ch = new Paragraph(MSG.advisorRequestsCourses(), font);
 			ch.setAlignment(Element.ALIGN_LEFT);
 			ch.setSpacingBefore(10f); ch.setSpacingAfter(2f); c.addElement(ch); c.setColspan(3);
 			c.setBorder(PdfPCell.BOTTOM); c.setBorderWidth(0.1f);
@@ -197,7 +197,7 @@ public class AdvisorConfirmationPDF {
 			c.setBorder(0);
 			font = PdfFont.getBigFont(true);
 			font.setSize(font.getSize() * 0.8f);
-			Paragraph ch = new Paragraph(MSG.courseRequestsAlternatives(), font);
+			Paragraph ch = new Paragraph(MSG.advisorRequestsAlternatives(), font);
 			Chunk x = new Chunk("          " + MSG.courseRequestsAlternativesNote());
 			x.setFont(PdfFont.getSmallFont(false, true));
 			ch.add(x);

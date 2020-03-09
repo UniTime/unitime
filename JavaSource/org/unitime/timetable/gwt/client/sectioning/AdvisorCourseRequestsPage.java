@@ -308,7 +308,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		iCourses = new ArrayList<AdvisorCourseRequestLine>();
 		iAlternatives = new ArrayList<AdvisorCourseRequestLine>();
 		
-		UniTimeHeaderPanel requests = new UniTimeHeaderPanel(MESSAGES.courseRequestsCourses());
+		UniTimeHeaderPanel requests = new UniTimeHeaderPanel(MESSAGES.advisorRequestsCourses());
 		requests.setMessage(MESSAGES.headCreditHoursNotes());
 		requests.addStyleName("requests-header");
 		addHeaderRow(requests);
@@ -338,7 +338,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		iTotalCredit = new Label(MESSAGES.credit(0f)); iTotalCredit.addStyleName("total-credit-value");
 		setWidget(row, 1, iTotalCredit);
 		
-		UniTimeHeaderPanel alternatives = new UniTimeHeaderPanel(MESSAGES.courseRequestsAlternatives());
+		UniTimeHeaderPanel alternatives = new UniTimeHeaderPanel(MESSAGES.advisorRequestsAlternatives());
 		alternatives.setMessage(MESSAGES.courseRequestsAlternativesNote());
 		addHeaderRow(alternatives);
 		for (int i = 0; i < 2; i++) {
@@ -665,7 +665,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		if (next != null) {
 			line.setNext(next); next.setPrevious(line);
 		}
-		line.insert(this, insertRow(4 + iCourses.size()));
+		line.insert(this, insertRow(8 + iCourses.size()));
 		line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Request> event) {
@@ -684,7 +684,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		if (prev != null) {
 			line.setPrevious(prev); prev.setNext(line);
 		}
-		line.insert(this, insertRow(4 + iCourses.size() + 2 + iAlternatives.size()));
+		line.insert(this, insertRow(8 + iCourses.size() + 2 + iAlternatives.size()));
 		line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Request> event) {
@@ -830,7 +830,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 			public void onSuccess(AdvisorCourseRequestSubmission result) {
 				LoadingWidget.getInstance().hide();
 				iDetails = details;
-				download(result.getPdf(), "crf-" + iStudentExternalId.getText());
+				download(result.getPdf(), result.hasName() ? result.getName() : "crf-" + iTerm.getText() + "-" + iStudentName.getText() + "-" + iStudentExternalId.getText());
 				if (result.isUpdated()) {
 					iStatusBox.info(MESSAGES.advisorRequestsSubmitOK());
 					if (isSendEmailConformation()) {

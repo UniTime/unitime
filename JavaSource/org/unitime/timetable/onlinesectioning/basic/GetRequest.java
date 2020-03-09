@@ -129,6 +129,12 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 			}
 			CourseRequestInterface.Request lastRequest = null;
 			int lastRequestPriority = -1;
+			boolean hasEnrollments = false;
+			for (XRequest cd: student.getRequests()) {
+				if (cd instanceof XCourseRequest && ((XCourseRequest)cd).getEnrollment() != null) {
+					hasEnrollments = true; break;
+				}
+			}
 			boolean setReadOnly = ApplicationProperty.OnlineSchedulingMakeAssignedRequestReadOnly.isTrue();
 			boolean setReadOnlyWhenReserved = ApplicationProperty.OnlineSchedulingMakeReservedRequestReadOnly.isTrue();
 			boolean setInactive = ApplicationProperty.OnlineSchedulingMakeUnassignedRequestsInactive.isTrue();
@@ -141,15 +147,7 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 			boolean reservedNoAlternatives = ApplicationProperty.OnlineSchedulingReservedRequestNoAlternativeChanges.isTrue();
 			boolean enrolledNoPriority = ApplicationProperty.OnlineSchedulingAssignedRequestNoPriorityChanges.isTrue();
 			boolean enrolledNoAlternatives = ApplicationProperty.OnlineSchedulingAssignedRequestNoAlternativeChanges.isTrue();
-			if (setInactive) {
-				boolean hasEnrollments = false;
-				for (XRequest cd: student.getRequests()) {
-					if (cd instanceof XCourseRequest && ((XCourseRequest)cd).getEnrollment() != null) {
-						hasEnrollments = true; break;
-					}
-				}
-				if (!hasEnrollments) setInactive = false;
-			}
+			if (setInactive && !hasEnrollments) setInactive = false;
 			if (setInactive && server instanceof StudentSolver)
 				setInactive = false;
 			
@@ -245,7 +243,7 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 			if (iCustomValidation && CustomCourseRequestsValidationHolder.hasProvider())
 				CustomCourseRequestsValidationHolder.getProvider().check(server, helper, request);
 			
-			if (student.getLastStudentChange() == null && !(server instanceof StudentSolver) && !iSectioning && iAdvisorRequests) {
+			if (student.getLastStudentChange() == null && !(server instanceof StudentSolver) && iAdvisorRequests && (!iSectioning || !hasEnrollments)) {
 				request.applyAdvisorRequests(AdvisorGetCourseRequests.getRequest(student, server));
 			}
 			

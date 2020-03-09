@@ -76,6 +76,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 	public AdvisorCourseRequestSubmission execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		try {
 			AdvisorCourseRequestSubmission ret = new AdvisorCourseRequestSubmission();
+			ret.setName("crf-" + server.getAcademicSession().getTerm() + server.getAcademicSession().getYear() + "-" + getDetails().getStudentName() + "-" + getDetails().getStudentExternalId());
 			
 			OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
 			action.setStudent(OnlineSectioningLog.Entity.newBuilder()
@@ -379,6 +380,10 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 							student.setAdvisorRequests(dbStudent, helper, server.getAcademicSession().getFreeTimePattern());
 							server.update(student, false);
 						}
+						
+						ret.setName("crf-" + server.getAcademicSession().getTerm() + server.getAcademicSession().getYear() + "-" +
+								dbStudent.getLastName() + (dbStudent.getFirstName() == null ? "" : "-" + dbStudent.getFirstName()) + (dbStudent.getMiddleName() == null ? "" : "-" + dbStudent.getMiddleName()) +
+								"-" + dbStudent.getExternalUniqueId());
 					}
 					helper.commitTransaction();
 					ret.setUpdated(true);

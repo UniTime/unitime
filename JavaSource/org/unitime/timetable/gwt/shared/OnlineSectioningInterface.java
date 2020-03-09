@@ -558,11 +558,16 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private byte[] iPdf;
 		private boolean iUpdated = false;
+		private String iName = null;
 		
 		public AdvisorCourseRequestSubmission() {}
 		
 		public byte[] getPdf() { return iPdf; }
 		public void setPdf(byte[] pdf) { iPdf = pdf; }
+		
+		public String getName() { return iName; }
+		public boolean hasName() { return iName != null && !iName.isEmpty(); }
+		public void setName(String name) { iName = name; }
 		
 		public boolean isUpdated() { return iUpdated; }
 		public void setUpdated(boolean updated) { iUpdated = updated; }

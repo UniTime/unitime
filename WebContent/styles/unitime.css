@@ -6765,7 +6765,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-AdvisorCourseRequests .requests-header .message {
-	margin-left: -20px;
+	margin-left: -100px;
 }
 
 .unitime-AdvisorCourseRequests .total-credit-label {

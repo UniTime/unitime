@@ -2387,7 +2387,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 		OnlineSectioningServer server = getServerInstance(sessionId == null ? canEnroll(online, studentId) : sessionId, false);
 		EligibilityCheck last = (EligibilityCheck)getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingEligibility);
-		boolean includeAdvisorRequests = !sectioning && (last != null && last.hasFlag(EligibilityFlag.CAN_REGISTER));
+		boolean includeAdvisorRequests = sectioning || (last != null && last.hasFlag(EligibilityFlag.CAN_REGISTER));
 		if (server != null) {
 			return server.execute(server.createAction(GetRequest.class).forStudent(studentId, sectioning)
 					.withCustomValidation(!sectioning)
