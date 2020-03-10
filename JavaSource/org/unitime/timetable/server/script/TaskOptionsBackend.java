@@ -42,6 +42,7 @@ import org.unitime.timetable.model.dao.ScriptDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.DateUtils;
 
 /**
  * @author Tomas Muller
@@ -83,8 +84,20 @@ public class TaskOptionsBackend implements GwtRpcImplementation<GetTaskOptionsRp
 		Session session = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId());
 		if (session != null) {
 			options.setSession(new AcademicSessionInfo(session.getUniqueId(), session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(), session.getLabel(), session.getSessionBeginDateTime()));
+			int before = ApplicationProperty.DatePatternNrExessMonth.intValue();
+			int after = ApplicationProperty.DatePatternNrExessMonth.intValue();
+			Date first = DateUtils.getDate(1, session.getStartMonth() - before, session.getSessionStartYear());
+			while (new Date().before(first)  && before < 12) {
+				before ++;
+				first = DateUtils.getDate(1, session.getStartMonth() - before, session.getSessionStartYear());
+			}
+			Date last = DateUtils.getDate(1, session.getEndMonth() + after + 1, session.getSessionStartYear());
+			while (new Date().after(last)  && after < 12) {
+				after ++;
+				last = DateUtils.getDate(1, session.getEndMonth() + after + 1, session.getSessionStartYear());
+			}
 			options.setSessionMonth(DateSelectorBackend.listMonths(session, context.hasPermission(Right.EventDateMappings), new SimplePastOrOutside(session),
-					ApplicationProperty.DatePatternNrExessMonth.intValue(), false));
+					before, after, false));
 		} else {
 			options.setCanAdd(false);
 		}

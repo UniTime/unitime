@@ -53,6 +53,10 @@ public class DateSelectorBackend extends EventAction<RequestSessionDetails, GwtR
 	}
 	
 	public static GwtRpcResponseList<SessionMonth> listMonths(Session session, boolean includeEventDateMappings, HasPastOrOutside check, int extraMonths, boolean disableOutsideEventDates) {
+		return listMonths(session, includeEventDateMappings, check, extraMonths, extraMonths, disableOutsideEventDates);
+	}
+	
+	public static GwtRpcResponseList<SessionMonth> listMonths(Session session, boolean includeEventDateMappings, HasPastOrOutside check, int monthsBefore, int monthsAfter, boolean disableOutsideEventDates) {
 		GwtRpcResponseList<SessionMonth> response = new GwtRpcResponseList<SessionMonth>();
 		
 		Calendar calendar = Calendar.getInstance();
@@ -88,7 +92,7 @@ public class DateSelectorBackend extends EventAction<RequestSessionDetails, GwtR
 		case 6: firstDay = Calendar.SUNDAY; break;
 		}
 		
-		for (int month = session.getStartMonth() - extraMonths; month <= session.getEndMonth() + extraMonths; month ++) {
+		for (int month = session.getStartMonth() - monthsBefore; month <= session.getEndMonth() + monthsAfter; month ++) {
 			calendar.setTime(DateUtils.getDate(1, month, session.getSessionStartYear()));
 			
 			SessionMonth m = new SessionMonth(
