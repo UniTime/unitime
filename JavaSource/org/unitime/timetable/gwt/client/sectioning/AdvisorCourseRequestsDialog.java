@@ -21,13 +21,16 @@ package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.Iterator;
 
+import org.unitime.timetable.gwt.client.sectioning.DegreePlanDialog.AssignmentProvider;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -46,13 +49,15 @@ public class AdvisorCourseRequestsDialog extends UniTimeDialogBox {
 	private UniTimeHeaderPanel iFooter;
 	private TakesValue<CourseRequestInterface> iRequests;
 	private AdvisorCourseRequestsTable iTable;
+	private AssignmentProvider iAssignments;
 	
-	public AdvisorCourseRequestsDialog(TakesValue<CourseRequestInterface> requests) {
+	public AdvisorCourseRequestsDialog(TakesValue<CourseRequestInterface> requests, AssignmentProvider assignments) {
 		super(true, false);
 		setEscapeToHide(true);
 		addStyleName("unitime-AdvisorCourseRequestsDialog");
 		setText(MESSAGES.dialogAdvisorCourseRequests());
 		iRequests = requests;
+		iAssignments = assignments;
 		
 		iForm = new SimpleForm();
 		
@@ -92,15 +97,32 @@ public class AdvisorCourseRequestsDialog extends UniTimeDialogBox {
 		for (Iterator<CourseRequestInterface.Request> i = requests.getCourses().iterator(); i.hasNext(); ) {
 			CourseRequestInterface.Request request = i.next();
 			if (!request.isCanDelete()) continue;
-			i.remove();
+			if (!isLast(request)) i.remove();
 		}
 		for (Iterator<CourseRequestInterface.Request> i = requests.getAlternatives().iterator(); i.hasNext(); ) {
 			CourseRequestInterface.Request request = i.next();
 			if (!request.isCanDelete()) continue;
+			if (isLast(request)) requests.getCourses().add(request);
 			i.remove();
 		}
 		requests.applyAdvisorRequests(iTable.getValue());
 		return requests;
+	}
+	
+	protected boolean isLast(CourseRequestInterface.Request request) {
+		for (RequestedCourse course: request.getRequestedCourse())
+			if (isLast(course)) return true;
+		return false;
+	}
+	
+	protected boolean isLast(RequestedCourse course) {
+		if (course == null || course.isEmpty()) return false;
+		if (iAssignments != null && iAssignments.getLastAssignment() != null) {
+			for (ClassAssignmentInterface.CourseAssignment c: iAssignments.getLastAssignment().getCourseAssignments())
+				if (course.equals(c) && c.isAssigned())
+					return true;
+		}
+		return false;
 	}
 	
 	public void open(CourseRequestInterface requests) {

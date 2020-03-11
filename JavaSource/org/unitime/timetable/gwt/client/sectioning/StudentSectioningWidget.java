@@ -562,7 +562,16 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					@Override
 					public void onSuccess(CourseRequestInterface result) {
 						LoadingWidget.getInstance().hide();
-						new AdvisorCourseRequestsDialog(iCourseRequests) {
+						new AdvisorCourseRequestsDialog(iCourseRequests, new DegreePlanDialog.AssignmentProvider() {
+							@Override
+							public ClassAssignmentInterface getSavedAssignment() {
+								return iSavedAssignment;
+							}
+							@Override
+							public ClassAssignmentInterface getLastAssignment() {
+								return iLastAssignment;
+							}
+						}) {
 							@Override
 							protected void doApply() {
 								updateHistory();
