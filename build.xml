@@ -283,7 +283,7 @@
 			<arg value="-d"/>
 			<arg value="unitime.org"/>
 			<arg value="-w"/>
-			<arg value="help44"/>
+			<arg value="help45"/>
 			<arg value="-f"/>
 			<arg value="${dist.dir}/help"/>
 		</java>
