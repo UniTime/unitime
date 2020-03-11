@@ -2677,13 +2677,28 @@ public enum ApplicationProperty {
 	
 	@Type(String.class)
 	@DefaultValue("org/unitime/timetable/onlinesectioning/advisors/unitime.png")
-	@Description("Advisor Course Requests: PDF logo")
+	@Description("Advisor Course Recommendations: PDF logo")
+	@Since(4.5)
 	AdvisorCourseRequestsPDFLogo("unitime.acrf.pdflogo"),
 	
 	@Type(String.class)
 	@DefaultValue("Students are responsible for meeting course prerequisites and fulfilling degree requirements, and are ultimately responsible for their own educational plan and academic success.")
-	@Description("Advisor Course Requests: PDF disclaimer")
-	AdvisorCourseRequestsPDFDisclaimer("unitime.acrf.pdfdisclaimer");
+	@Description("Advisor Course Recommendations: PDF disclaimer")
+	@Since(4.5)
+	AdvisorCourseRequestsPDFDisclaimer("unitime.acrf.pdfdisclaimer"),
+	
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Advisor Course Recommendations: pre-populate Course Requests with advisor recommendations (when student has not made any changes and is allowed to submit)")
+	@Since(4.5)
+	AdvisorCourseRequestsPrepopulateCourseRequests("unitime.acrf.prepopulate.courseRequests"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Advisor Course Recommendations: pre-populate Scheduling Assistant with advisor recommendations (when student has not made any changes and no class enrollments)")
+	@Since(4.5)
+	AdvisorCourseRequestsPrepopulateSchedulingAssistant("unitime.acrf.prepopulate.schedulingAssistant"),
 	;
 
 	String iKey;
