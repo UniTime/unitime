@@ -575,9 +575,22 @@ public class CourseRequestBox extends P implements CourseSelection {
 		}
 	}
 	
+	public void setInfo(String error) {
+		iError.setStyleName("unitime-InfoHint");
+		if (error == null || error.isEmpty()) {
+			iError.setHTML("");
+			iError.setVisible(false);
+		} else {
+			iError.setHTML(error);
+			iError.setVisible(true);
+			iFilter.setStatus(error);
+			// AriaStatus.getInstance().setText(error);
+		}
+	}
+	
 	@Override
 	public String getError() {
-		return (iError.isVisible() ? iError.getText() : null);
+		return (iError.isVisible() && !"unitime-Hint".equals(iError.getStyleName()) ? iError.getText() : null);
 	}
 
 	@Override

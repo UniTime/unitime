@@ -519,6 +519,16 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	white-space: pre-wrap;
 }
 
+.unitime-InfoHint {
+	font-size: xx-small;
+	font-style: italic;
+	color: #9CB0CE;
+	text-align: right;
+	margin-top: -2px;
+	white-space: pre;
+	text-decoration: none;
+}
+
 .unitime-FreeTimePicker .corner {
 	border-bottom: 1px solid #9CB0CE;
 	border-right: 1px solid #9CB0CE;

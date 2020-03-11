@@ -435,6 +435,10 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			for (int i = iCourses.size() - 1; i >= index; i--)
 				deleteAlternative(i);
 			if (value.hasFilter()) iCourses.get(0).getCourseFinder().setFilter(value.getFilter());
+			if (value.hasAdvisorNote() && value.hasAdvisorCredit())
+				iCourses.get(iCourses.size() - 1).setInfo(MESSAGES.advisorNoteWithCredit(value.getAdvisorNote(), value.getAdvisorCredit()));
+			else if (value.hasAdvisorNote())
+				iCourses.get(iCourses.size() - 1).setInfo(MESSAGES.advisorNote(value.getAdvisorNote()));
 		}
 		if (iWaitList != null && iWaitList.isVisible()) {
 			iWaitList.setEnabled(value == null || !value.isReadOnly());

@@ -2623,6 +2623,12 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("{0,number,0.#}")
 	String advisedCredit(float cred);
 	
+	@DefaultMessage("Advisor note: {0} ({1} credit hours)")
+	String advisorNoteWithCredit(String note, String credit);
+	
+	@DefaultMessage("Advisor note: {0}")
+	String advisorNote(String note);
+	
 	@DefaultMessage("Total Priority Credit Hours: {0}")
 	String hintAdvisedCredit(String crit);
 	
