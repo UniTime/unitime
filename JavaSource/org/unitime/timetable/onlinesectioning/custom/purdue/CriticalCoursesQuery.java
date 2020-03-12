@@ -194,37 +194,51 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 		}
 	}
 	
-	public String getCatalogYear(OnlineSectioningServer server, XStudent student, XAreaClassificationMajor acm) {
+	public CatalogYearTerm[] getCatalogYearTermSequence(OnlineSectioningServer server, XStudent student, XAreaClassificationMajor acm) {
+		int firstYear = Integer.parseInt(getCatalogYear(server)) / 100;
 		int year = Integer.parseInt(iExternalTermProvider.getExternalTerm(server.getAcademicSession()).substring(0, 4));
-		if ("01".equals(acm.getClassification()) || "02".equals(acm.getClassification()))
-			return year + "10";
-		if ("03".equals(acm.getClassification()) || "04".equals(acm.getClassification()))
-			return (year - 1) + "10";
-		if ("05".equals(acm.getClassification()) || "06".equals(acm.getClassification()))
-			return (year - 2) + "10";
-		if ("07".equals(acm.getClassification()) || "08".equals(acm.getClassification()))
-			return (year - 3) + "10";
-		if ("09".equals(acm.getClassification()) || "10".equals(acm.getClassification()))
-			return (year - 4) + "10";
-		return year + "10";
-	}
-	
-	public int getTermSequence(OnlineSectioningServer server, XStudent student, XAreaClassificationMajor acm) {
 		String term = iExternalTermProvider.getExternalTerm(server.getAcademicSession());
 		int seq = (term.endsWith("20") ? 1 : term.endsWith("30") ? 2 : 0);
 		if ("01".equals(acm.getClassification()) || "02".equals(acm.getClassification()))
-			return seq;
+			return new CatalogYearTerm[] {
+					new CatalogYearTerm(year, firstYear, seq, true),
+					// new CatalogYearTerm((year - 1), firstYear, seq + 3, false),
+				};
 		if ("03".equals(acm.getClassification()) || "04".equals(acm.getClassification()))
-			return seq + 3;
+			return new CatalogYearTerm[] {
+					new CatalogYearTerm(year, firstYear, seq, false),
+					new CatalogYearTerm((year - 1), firstYear, seq + 3, true),
+					// new CatalogYearTerm((year - 2), firstYear, seq + 6, false),
+				};
 		if ("05".equals(acm.getClassification()) || "06".equals(acm.getClassification()))
-			return seq + 6;
+			return new CatalogYearTerm[] {
+					new CatalogYearTerm((year - 0), firstYear, seq, false),
+					new CatalogYearTerm((year - 1), firstYear, seq + 3, false),
+					new CatalogYearTerm((year - 2), firstYear, seq + 6, true),
+					// new CatalogYearTerm((year - 3), firstYear, seq + 9, false),
+				};
 		if ("07".equals(acm.getClassification()) || "08".equals(acm.getClassification()))
-			return seq + 9;
+			return new CatalogYearTerm[] {
+					new CatalogYearTerm((year - 1), firstYear, seq + 3, false),
+					new CatalogYearTerm((year - 2), firstYear, seq + 6, false),
+					new CatalogYearTerm((year - 3), firstYear, seq + 9, true),
+					// new CatalogYearTerm((year - 4), firstYear, seq + 9, false),
+				};
 		if ("09".equals(acm.getClassification()) || "10".equals(acm.getClassification()))
-			return seq + 9; // most plans are only for four years
-		return seq;
+			return new CatalogYearTerm[] {
+					new CatalogYearTerm((year - 2), firstYear, seq + 6, false),
+					new CatalogYearTerm((year - 3), firstYear, seq + 9, false),
+					new CatalogYearTerm((year - 4), firstYear, seq + 9, true),
+					// new CatalogYearTerm((year - 5), firstYear, seq + 9, false),
+				};
+		return new CatalogYearTerm[] {
+				new CatalogYearTerm(year, firstYear, seq, true),
+				new CatalogYearTerm((year - 1), firstYear, seq + 3, false),
+				new CatalogYearTerm((year - 2), firstYear, seq + 6, false),
+				new CatalogYearTerm((year - 3), firstYear, seq + 9, false)
+				};
 	}
-	
+
 	protected String getPlannedCoursesSQL() {
 		return ApplicationProperties.getProperty("banner.dgw.plannedCoursesSQL",
 				"select tmpl_id, tmpl_description, tmpl_conc, course_discipline, course_number, choice_group_id, trim(is_critical) from timetable.tmpl_course_view where " +
@@ -312,77 +326,37 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 		Builder action = helper.getAction();
 		Map<String, DegreePlanInterface> plans = new HashMap<String, DegreePlanInterface>();
 		for (XAreaClassificationMajor acm: getAreaClasfMajors(server, helper, student)) {
-			String catyear = getCatalogYear(server, student, acm);
-			int term = getTermSequence(server, student, acm);
-			org.hibernate.Query query = helper.getHibSession().createSQLQuery(sqlCourses);
-			query.setString("area", acm.getArea());
-			if (action != null) action.addOptionBuilder().setKey("area").setValue(acm.getArea());
-			query.setString("major", acm.getMajor());
-			if (action != null) action.addOptionBuilder().setKey("major").setValue(acm.getMajor());
-			if (sqlCourses.contains(":catyear")) {
-				query.setString("catyear", catyear);
-				if (action != null) action.addOptionBuilder().setKey("catyear").setValue(catyear);
-			}
-			if (sqlCourses.contains(":term")) {
-				query.setInteger("term", term);
-				if (action != null) action.addOptionBuilder().setKey("term").setValue(String.valueOf(term));
-			}
-			for (Object[] o: (List<Object[]>)query.list()) {
-				String progCode = (String)o[0];
-				String progName = (String)o[1];
-				String progConc = (String)o[2];
-				String subject = (String)o[3];
-				String courseNbr = (String)o[4];
-				String choiceGroupId = (String)o[5];
-				boolean isCritical = "Y".equals(o[6]);
-				DegreePlanInterface plan = plans.get(progCode);
-				if (plan == null) {
-					plan = new DegreePlanInterface();
-					plan.setId(progCode);
-					plan.setName(progName);
-					plan.setSchool(acm.getArea());
-					plan.setDegree(acm.getMajor());
-					plan.setGroup(new DegreeGroupInterface());
-					plan.getGroup().setChoice(false);
-					if (progConc != null && !progConc.isEmpty())
-						plan.setDegree(acm.getMajor() + "/" + progConc);
-					else
-						plan.setActive(true);
-					plans.put(progCode, plan);
-				}
-				if (choiceGroupId == null || choiceGroupId.isEmpty()) {
-					plan.getGroup().addCourse(getCourse(server, subject, courseNbr, isCritical));
-				} else {
-					DegreeGroupInterface group = plan.getGroup().getGroup(choiceGroupId);
-					if (group == null) {
-						group = new DegreeGroupInterface();
-						group.setChoice(true);
-						group.setId(choiceGroupId);
-						group.setCritical(isCritical);
-						plan.getGroup().addGroup(group);
-					}
-					group.addCourse(getCourse(server, subject, courseNbr, isCritical));
-				}
-			}
-			if (sqlPlaceholders != null && !sqlPlaceholders.isEmpty()) {
-				query = helper.getHibSession().createSQLQuery(sqlPlaceholders);
+			for (CatalogYearTerm cyt: getCatalogYearTermSequence(server, student, acm)) {
+				if (cyt == null) continue;
+				String catyear = cyt.getCatalogYear();
+				int term = cyt.getTermSequence();
+				if (catyear == null) continue;
+				org.hibernate.Query query = helper.getHibSession().createSQLQuery(sqlCourses);
 				query.setString("area", acm.getArea());
+				if (action != null) action.addOptionBuilder().setKey("area").setValue(acm.getArea());
 				query.setString("major", acm.getMajor());
-				if (sqlCourses.contains(":catyear"))
+				if (action != null) action.addOptionBuilder().setKey("major").setValue(acm.getMajor());
+				if (sqlCourses.contains(":catyear")) {
 					query.setString("catyear", catyear);
-				if (sqlPlaceholders.contains(":term"))
+					if (action != null) action.addOptionBuilder().setKey("catyear").setValue(catyear);
+				}
+				if (sqlCourses.contains(":term")) {
 					query.setInteger("term", term);
+					if (action != null) action.addOptionBuilder().setKey("term").setValue(String.valueOf(term));
+				}
 				for (Object[] o: (List<Object[]>)query.list()) {
-					String progCode = (String)o[0];
+					String progCode = (String)o[0] + ":" + cyt.getCatalogYear() + ":" + cyt.getTermSequence();
 					String progName = (String)o[1];
 					String progConc = (String)o[2];
-					String placType = (String)o[3];
-					String placName = (String)o[4];
+					String subject = (String)o[3];
+					String courseNbr = (String)o[4];
+					String choiceGroupId = (String)o[5];
+					boolean isCritical = "Y".equals(o[6]);
 					DegreePlanInterface plan = plans.get(progCode);
 					if (plan == null) {
 						plan = new DegreePlanInterface();
 						plan.setId(progCode);
-						plan.setName(progName);
+						plan.setName(progName + " (" + cyt.getYear() + ")");
 						plan.setSchool(acm.getArea());
 						plan.setDegree(acm.getMajor());
 						plan.setGroup(new DegreeGroupInterface());
@@ -390,58 +364,102 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 						if (progConc != null && !progConc.isEmpty())
 							plan.setDegree(acm.getMajor() + "/" + progConc);
 						else
-							plan.setActive(true);
+							plan.setActive(cyt.isActive());
 						plans.put(progCode, plan);
 					}
-					List<XCourse> phc = getPlaceHolderCourses(server, helper, placType, placName);
-					if (phc != null && !phc.isEmpty()) {
-						DegreePlanInterface.DegreeGroupInterface phg = new DegreePlanInterface.DegreeGroupInterface();
-						phg.setChoice(true);
-						phg.setPlaceHolder(true);
-						phg.setDescription(placName);
-						phg.setId(placName);
-						phg.setCritical(isCriticalPlaceholder(placName));
-						DegreePlanInterface.DegreeCourseInterface course = null;
-						for (XCourse xc: phc) {
-							if (course == null || !course.getSubject().equals(xc.getSubjectArea()) || !xc.getCourseNumber().startsWith(course.getCourse())) {
-								course = new DegreePlanInterface.DegreeCourseInterface();
-								course.setSubject(iExternalTermProvider.getExternalSubject(server.getAcademicSession(), xc.getSubjectArea(), xc.getCourseNumber()));
-								course.setCourse(iExternalTermProvider.getExternalCourseNumber(server.getAcademicSession(), xc.getSubjectArea(), xc.getCourseNumber()));
-								course.setTitle(xc.getTitle());
-								course.setId(placName + "-" + xc.getCourseId());
-								course.setCourseId(xc.getCourseId());
-								course.setSelected(false);
-								phg.addCourse(course);
-							}
-							CourseAssignment ca = new CourseAssignment();
-							ca.setCourseId(xc.getCourseId());
-							ca.setSubject(xc.getSubjectArea());
-							ca.setCourseNbr(xc.getCourseNumber());
-							ca.setTitle(xc.getTitle());
-							ca.setNote(xc.getNote());
-							ca.setCreditAbbv(xc.getCreditAbbv());
-							ca.setCreditText(xc.getCreditText());
-							ca.setTitle(xc.getTitle());
-							ca.setHasUniqueName(xc.hasUniqueName());
-							ca.setLimit(xc.getLimit());
-							int firstChoiceReqs = 0;
-							int enrl = 0;
-							Collection<XCourseRequest> requests = server.getRequests(xc.getOfferingId());
-							if (requests != null)
-								for (XCourseRequest r: requests) {
-									if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(xc.getCourseId())) enrl ++;
-									if (!r.isAlternative() && r.getEnrollment() == null && r.getCourseIds().get(0).equals(xc)) firstChoiceReqs ++;
-								}
-							ca.setEnrollment(enrl);
-							ca.setProjected(firstChoiceReqs);
-							course.addCourse(ca);
-						}
-						plan.getGroup().addGroup(phg);
+					if (choiceGroupId == null || choiceGroupId.isEmpty()) {
+						plan.getGroup().addCourse(getCourse(server, subject, courseNbr, isCritical));
 					} else {
-						DegreePlaceHolderInterface placeholder = new DegreePlaceHolderInterface();
-						placeholder.setType(placType);
-						placeholder.setName(placName);
-						plan.getGroup().addPlaceHolder(placeholder);
+						DegreeGroupInterface group = plan.getGroup().getGroup(choiceGroupId);
+						if (group == null) {
+							group = new DegreeGroupInterface();
+							group.setChoice(true);
+							group.setId(choiceGroupId);
+							group.setCritical(isCritical);
+							plan.getGroup().addGroup(group);
+						}
+						group.addCourse(getCourse(server, subject, courseNbr, isCritical));
+					}
+				}
+				if (sqlPlaceholders != null && !sqlPlaceholders.isEmpty()) {
+					query = helper.getHibSession().createSQLQuery(sqlPlaceholders);
+					query.setString("area", acm.getArea());
+					query.setString("major", acm.getMajor());
+					if (sqlCourses.contains(":catyear"))
+						query.setString("catyear", catyear);
+					if (sqlPlaceholders.contains(":term"))
+						query.setInteger("term", term);
+					for (Object[] o: (List<Object[]>)query.list()) {
+						String progCode = (String)o[0] + ":" + cyt.getCatalogYear() + ":" + cyt.getTermSequence();
+						String progName = (String)o[1];
+						String progConc = (String)o[2];
+						String placType = (String)o[3];
+						String placName = (String)o[4];
+						DegreePlanInterface plan = plans.get(progCode);
+						if (plan == null) {
+							plan = new DegreePlanInterface();
+							plan.setId(progCode);
+							plan.setName(progName + " (" + cyt.getYear() + ")");
+							plan.setSchool(acm.getArea());
+							plan.setDegree(acm.getMajor());
+							plan.setGroup(new DegreeGroupInterface());
+							plan.getGroup().setChoice(false);
+							if (progConc != null && !progConc.isEmpty())
+								plan.setDegree(acm.getMajor() + "/" + progConc);
+							else
+								plan.setActive(true);
+							plans.put(progCode, plan);
+						}
+						List<XCourse> phc = getPlaceHolderCourses(server, helper, placType, placName);
+						if (phc != null && !phc.isEmpty()) {
+							DegreePlanInterface.DegreeGroupInterface phg = new DegreePlanInterface.DegreeGroupInterface();
+							phg.setChoice(true);
+							phg.setPlaceHolder(true);
+							phg.setDescription(placName);
+							phg.setId(placName);
+							phg.setCritical(isCriticalPlaceholder(placName));
+							DegreePlanInterface.DegreeCourseInterface course = null;
+							for (XCourse xc: phc) {
+								if (course == null || !course.getSubject().equals(xc.getSubjectArea()) || !xc.getCourseNumber().startsWith(course.getCourse())) {
+									course = new DegreePlanInterface.DegreeCourseInterface();
+									course.setSubject(iExternalTermProvider.getExternalSubject(server.getAcademicSession(), xc.getSubjectArea(), xc.getCourseNumber()));
+									course.setCourse(iExternalTermProvider.getExternalCourseNumber(server.getAcademicSession(), xc.getSubjectArea(), xc.getCourseNumber()));
+									course.setTitle(xc.getTitle());
+									course.setId(placName + "-" + xc.getCourseId());
+									course.setCourseId(xc.getCourseId());
+									course.setSelected(false);
+									phg.addCourse(course);
+								}
+								CourseAssignment ca = new CourseAssignment();
+								ca.setCourseId(xc.getCourseId());
+								ca.setSubject(xc.getSubjectArea());
+								ca.setCourseNbr(xc.getCourseNumber());
+								ca.setTitle(xc.getTitle());
+								ca.setNote(xc.getNote());
+								ca.setCreditAbbv(xc.getCreditAbbv());
+								ca.setCreditText(xc.getCreditText());
+								ca.setTitle(xc.getTitle());
+								ca.setHasUniqueName(xc.hasUniqueName());
+								ca.setLimit(xc.getLimit());
+								int firstChoiceReqs = 0;
+								int enrl = 0;
+								Collection<XCourseRequest> requests = server.getRequests(xc.getOfferingId());
+								if (requests != null)
+									for (XCourseRequest r: requests) {
+										if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(xc.getCourseId())) enrl ++;
+										if (!r.isAlternative() && r.getEnrollment() == null && r.getCourseIds().get(0).equals(xc)) firstChoiceReqs ++;
+									}
+								ca.setEnrollment(enrl);
+								ca.setProjected(firstChoiceReqs);
+								course.addCourse(ca);
+							}
+							plan.getGroup().addGroup(phg);
+						} else {
+							DegreePlaceHolderInterface placeholder = new DegreePlaceHolderInterface();
+							placeholder.setType(placType);
+							placeholder.setName(placName);
+							plan.getGroup().addPlaceHolder(placeholder);
+						}
 					}
 				}
 			}
@@ -473,5 +491,29 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 				action.addOptionBuilder().setKey(plan.getDegree()).setValue(value);
 			}
 		return ret;
+	}
+	
+	static class CatalogYearTerm {
+		private String iCatalogYear;
+		private int iTermSequence;
+		private boolean iActive;
+		
+		CatalogYearTerm(int year, int firstYear, int term, boolean active) {
+			iCatalogYear = Math.min(year, firstYear) + "10"; iTermSequence = term;
+			iActive = active;
+		}
+		
+		public String getCatalogYear() { return iCatalogYear; }
+		public int getTermSequence() { return iTermSequence; }
+		public boolean isActive() { return iActive; }
+		public String getYear() {
+			int year = 1 + (iTermSequence / 3);
+			switch (iTermSequence % 3) {
+			case 0: return (year == 1 ? "1st" : year == 2 ? "2nd" : year == 3 ? "3rd" : year + "th") + " Fall";
+			case 1: return (year == 1 ? "1st" : year == 2 ? "2nd" : year == 3 ? "3rd" : year + "th") + " Spring";
+			case 2: return (year == 1 ? "1st" : year == 2 ? "2nd" : year == 3 ? "3rd" : year + "th") + " Summer";
+			default: return (year == 1 ? "1st" : year == 2 ? "2nd" : year == 3 ? "3rd" : year + "th") + " Year";
+			}
+		}
 	}
 }

@@ -60,12 +60,17 @@ public class CriticalCoursesExplorers extends CriticalCoursesQuery {
 	protected List<XAreaClassificationMajor> getAreaClasfMajors(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) {
 		List<XAreaClassificationMajor> ret = (isFallBackToDegreeWorks() ? new ArrayList<XAreaClassificationMajor>() : null);
 		String gType = getGroupType();
+		String clasf = "01";
+		if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.unex.checkClassification", "true")))
+			if (student.getMajors() != null)
+				for (XAreaClassificationMajor acm: student.getMajors())
+					clasf = acm.getClassification();
 		for (XGroup g: student.getGroups()) {
 			if (gType.equals(g.getType()) && g.getAbbreviation().contains("-")) {
 				String area = g.getAbbreviation().substring(0, g.getAbbreviation().indexOf('-'));
 				String major = g.getAbbreviation().substring(g.getAbbreviation().indexOf('-') + 1);
 				if (ret == null) ret = new ArrayList<XAreaClassificationMajor>(student.getMajors());
-				ret.add(new XAreaClassificationMajor(area, "01", major));
+				ret.add(new XAreaClassificationMajor(area, clasf, major));
 			}
 		}
 		return ret != null ? ret : student.getMajors();
