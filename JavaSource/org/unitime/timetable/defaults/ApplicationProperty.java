@@ -2699,6 +2699,12 @@ public enum ApplicationProperty {
 	@Description("Advisor Course Recommendations: pre-populate Scheduling Assistant with advisor recommendations (when student has not made any changes and no class enrollments)")
 	@Since(4.5)
 	AdvisorCourseRequestsPrepopulateSchedulingAssistant("unitime.acrf.prepopulate.schedulingAssistant"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Advisor Course Recommendations: advisors can only change status if the student is in a status that they can use (both current and the new status is available to advisors)")
+	@Since(4.5)
+	AdvisorCourseRequestsRestrictedStatusChange("unitime.acrf.restrictedStatusChange"),
 	;
 
 	String iKey;

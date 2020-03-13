@@ -3428,6 +3428,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 
 		if (ret.isCanUpdate() && getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingChangeStudentStatus)) {
+			boolean canChange = true;
 			if (admin) {
 				Session session = student.getSession();
 				StudentStatusInfo info = null;
@@ -3444,11 +3445,16 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					info.setAllEnabled();
 				}
 				ret.addStatus(info);
+			} else if (ApplicationProperty.AdvisorCourseRequestsRestrictedStatusChange.isTrue()) {
+				StudentSectioningStatus status = (student.getSectioningStatus() == null ? student.getSession().getDefaultSectioningStatus() : student.getSectioningStatus());
+				canChange = (status != null && status.hasOption(StudentSectioningStatus.Option.advcanset));
 			}
-			for (StudentSectioningStatus s: StudentSectioningStatus.findAll(sessionId)) {
-				if (!admin && s.isPast()) continue;
-				if (!admin && !s.hasOption(StudentSectioningStatus.Option.advcanset)) continue;
-				ret.addStatus(toStudentStatusInfo(s, courseTypes, admin, adv));
+			if (canChange) {
+				for (StudentSectioningStatus s: StudentSectioningStatus.findAll(sessionId)) {
+					if (s.isPast()) continue;
+					if (!admin && !s.hasOption(StudentSectioningStatus.Option.advcanset)) continue;
+					ret.addStatus(toStudentStatusInfo(s, courseTypes, admin, adv));
+				}
 			}
 		}
 		

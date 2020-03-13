@@ -217,11 +217,15 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 								iStatus.addItem("", "");
 							}
 							iStatus.setSelectedIndex(0);
-							if (result.hasStatuses())
+							if (result.hasStatuses()) {
 								for (StudentStatusInfo status: result.getStatuses()) {
 									if (!status.equals(result.getStatus()))
 										iStatus.addItem(status.getLabel(), status.getReference());
 								}
+								iStatus.setEnabled(true);
+							} else {
+								iStatus.setEnabled(false);
+							}
 							getRowFormatter().setVisible(iStatusLine, true);
 						} else {
 							setAdvisorRequests(result.getRequest());
