@@ -64,7 +64,7 @@ public class CourseRequestEligibility extends CheckEligibility {
 		
 		OnlineSectioningLog.Action.Builder action = helper.getAction();
 
-		Lock lock = (iStudentId == null ? null : server.lockStudent(iStudentId, null, name()));
+		Lock lock = (iStudentId == null || server.getStudent(iStudentId) == null ? null : server.lockStudent(iStudentId, null, name()));
 		try {
 			iCheck.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, true);
 			if (iStudentId != null)
