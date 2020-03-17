@@ -554,7 +554,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					.forStudent(student.getUniqueId())
 					.checkDemands(false)
 					.execute(server, helper);
-			if (requests != null && !requests.isEmpty()) {
+			if (requests != null && (!requests.isEmpty() || requests.hasCreditNote())) {
 				input.put("advisor", generateAdvisorRequests(student, requests, server, helper));
 				String disclaimer = ApplicationProperty.AdvisorCourseRequestsPDFDisclaimer.value();
 				if (disclaimer != null && !disclaimer.isEmpty()) {
