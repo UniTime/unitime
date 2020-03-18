@@ -847,7 +847,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 						dialog.sendStudentEmail(new Command() {
 							@Override
 							public void execute() {
-								sSectioningService.sendEmail(iDetails.getStudentId(),
+								sSectioningService.sendEmail(iDetails.getSessionId(), iDetails.getStudentId(),
 										dialog.getSubject(), dialog.getMessage(), dialog.getCC(),
 										dialog.getIncludeCourseRequests(), dialog.getIncludeClassSchedule(), dialog.getIncludeAdvisorRequests(),
 										new AsyncCallback<Boolean>() {

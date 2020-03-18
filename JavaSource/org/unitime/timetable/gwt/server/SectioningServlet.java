@@ -2593,17 +2593,19 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 
 	@Override
-	public Boolean sendEmail(Long studentId, String subject, String message, String cc, Boolean courseRequests, Boolean classSchedule, Boolean advisorRequests) throws SectioningException, PageAccessException {
+	public Boolean sendEmail(Long sessionId, Long studentId, String subject, String message, String cc, Boolean courseRequests, Boolean classSchedule, Boolean advisorRequests) throws SectioningException, PageAccessException {
 		try {
-			OnlineSectioningServer server = getServerInstance(getStatusPageSessionId(), true);
+			if (sessionId == null) sessionId = getStatusPageSessionId();
+			
+			OnlineSectioningServer server = getServerInstance(sessionId, true);
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
 			getSessionContext().checkPermission(server.getAcademicSession(), Right.StudentSchedulingEmailStudent);
 			
-			if (!getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdmin) &&
-					getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdvisor) &&
+			if (!getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdmin) &&
+					getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdvisor) &&
 					!getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyAllStudents)) {
 					getSessionContext().checkPermission(Right.StudentSchedulingAdvisorCanModifyMyStudents);
-					Set<Long> myStudentIds = getMyStudents(getStatusPageSessionId());
+					Set<Long> myStudentIds = getMyStudents(sessionId);
 					if (!myStudentIds.contains(studentId)) {
 						Student student = StudentDAO.getInstance().get(studentId);
 						throw new PageAccessException(SEC_MSG.permissionCheckFailed(Right.StudentSchedulingEmailStudent.toString(),
