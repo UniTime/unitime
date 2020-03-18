@@ -2599,7 +2599,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			
 			OnlineSectioningServer server = getServerInstance(sessionId, true);
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
-			getSessionContext().checkPermission(server.getAcademicSession(), Right.StudentSchedulingEmailStudent);
+			getSessionContext().checkPermissionAnySession(server.getAcademicSession(), Right.StudentSchedulingEmailStudent);
 			
 			if (!getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdmin) &&
 					getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdvisor) &&
