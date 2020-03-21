@@ -835,8 +835,9 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				LoadingWidget.getInstance().hide();
 				iDetails = details;
 				download(result.getPdf(), result.hasName() ? result.getName() : "crf-" + iTerm.getText() + "-" + iStudentName.getText() + "-" + iStudentExternalId.getText());
+				final String statusLink = (result.hasLink() ?  "\n" + MESSAGES.advisorRequestsPdfLink(GWT.getHostPageBaseURL() + result.getLink()) : "");
 				if (result.isUpdated()) {
-					iStatusBox.info(MESSAGES.advisorRequestsSubmitOK());
+					iStatusBox.info(MESSAGES.advisorRequestsSubmitOK() + statusLink);
 					if (isSendEmailConformation()) {
 						final StudentStatusDialog dialog = new StudentStatusDialog(new HashSet<StudentStatusInfo>(), null);
 						dialog.setCC(iDetails.hasAdvisorEmail() ? iDetails.getAdvisorEmail().replace("\n", ", ") : "");
@@ -853,11 +854,11 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 										new AsyncCallback<Boolean>() {
 											@Override
 											public void onFailure(Throwable caught) {
-												iStatusBox.error(MESSAGES.advisorRequestsEmailFailed(caught.getMessage()), caught);
+												iStatusBox.error(MESSAGES.advisorRequestsEmailFailed(caught.getMessage()) + statusLink, caught);
 											}
 											@Override
 											public void onSuccess(Boolean result) {
-												iStatusBox.info(MESSAGES.advisorRequestsEmailSent());
+												iStatusBox.info(MESSAGES.advisorRequestsEmailSent() + statusLink);
 											}
 								});
 							}

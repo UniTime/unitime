@@ -559,6 +559,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private byte[] iPdf;
 		private boolean iUpdated = false;
 		private String iName = null;
+		private String iLink = null;
 		
 		public AdvisorCourseRequestSubmission() {}
 		
@@ -568,6 +569,10 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public String getName() { return iName; }
 		public boolean hasName() { return iName != null && !iName.isEmpty(); }
 		public void setName(String name) { iName = name; }
+		
+		public String getLink() { return iLink; }
+		public boolean hasLink() { return iLink != null && !iLink.isEmpty(); }
+		public void setLink(String link) { iLink = link; }
 		
 		public boolean isUpdated() { return iUpdated; }
 		public void setUpdated(boolean updated) { iUpdated = updated; }

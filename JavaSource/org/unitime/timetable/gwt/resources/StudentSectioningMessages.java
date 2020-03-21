@@ -2530,6 +2530,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Success!")
 	String advisorRequestsSubmitOK();
 	
+	@DefaultMessage("Click <a href=\"{0}\" style='color: inherit; background-color : transparent;' target='_blank'>here</a> to download the Advisor Course Recommendations PDF.")
+	String advisorRequestsPdfLink(String link);
+	
 	@DefaultMessage("Email sent.")
 	String advisorRequestsEmailSent();
 	

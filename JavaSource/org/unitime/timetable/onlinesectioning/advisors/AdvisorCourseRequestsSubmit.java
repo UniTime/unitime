@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.events.QueryEncoderBackend;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
@@ -77,6 +78,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 		try {
 			AdvisorCourseRequestSubmission ret = new AdvisorCourseRequestSubmission();
 			ret.setName("crf-" + server.getAcademicSession().getTerm() + server.getAcademicSession().getYear() + "-" + getDetails().getStudentName() + "-" + getDetails().getStudentExternalId());
+			ret.setLink("export?q=" + QueryEncoderBackend.encode("output=acrf.pdf&sid=" + server.getAcademicSession().getUniqueId() + "&user=" + helper.getUser().getExternalId() + "&id=" + getDetails().getStudentExternalId()));
 			
 			OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
 			action.setStudent(OnlineSectioningLog.Entity.newBuilder()
