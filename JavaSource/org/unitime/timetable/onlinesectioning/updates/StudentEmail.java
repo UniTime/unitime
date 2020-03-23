@@ -387,7 +387,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 								
 								@Override
 								public String getName() {
-									return "recommendations.pdf";
+									return "recommendations-" + server.getAcademicSession().getTerm() + server.getAcademicSession().getYear() + "-" + 
+											student.getName().replaceAll("[&$\\+,/:;=\\?@<>\\[\\]\\{\\}\\|\\^\\~%#`\\t\\s\\n\\r \\\\]", "") + ".pdf";
 								}
 								
 								@Override
@@ -577,7 +578,6 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					details.setSessionId(server.getAcademicSession().getUniqueId());
 					details.setStudentId(student.getUniqueId());
 					details.setStudentName(student.getName(NameFormat.LAST_FIRST_MIDDLE.reference()));
-					details.setStudentExternalId(student.getExternalUniqueId());
 					details.setSessionName(student.getSession().getLabel());
 					Advisor advisor = Advisor.findByExternalId(helper.getUser().getExternalId(), server.getAcademicSession().getUniqueId());
 					if (advisor != null)
