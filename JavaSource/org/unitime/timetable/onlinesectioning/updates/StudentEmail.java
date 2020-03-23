@@ -266,6 +266,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						email.addRecipient(dbStudent.getEmail(), helper.getStudentNameFormat().format(dbStudent));
 						helper.logOption("recipient", dbStudent.getEmail());
 						
+						String firstCarbonCopy = null;
 						if (getCC() != null && !getCC().isEmpty()) {
 							String suffix = ApplicationProperty.EmailDefaultAddressSuffix.value();
 							for (StringTokenizer s = new StringTokenizer(getCC(), ",;\n"); s.hasMoreTokens(); ) {
@@ -281,6 +282,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 								}
 								email.addRecipientCC(address, null);
 								helper.logOption("cc", address);
+								if (firstCarbonCopy == null) firstCarbonCopy = address;
 							}
 						}
 						
@@ -295,9 +297,19 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						
 						if (helper.getUser() != null && getOldEnrollment() == null && getOldStudent() == null) {
 							TimetableManager manager = (TimetableManager)helper.getHibSession().createQuery("from TimetableManager where externalUniqueId = :id").setString("id", helper.getUser().getExternalId()).uniqueResult();
+							Advisor advisor = null;
+							if (manager == null || manager.getEmailAddress() == null)
+								advisor = (Advisor)helper.getHibSession().createQuery("from Advisor where externalUniqueId = :externalId and session.uniqueId = :sessionId")
+										.setString("externalId", helper.getUser().getExternalId()).setLong("sessionId", server.getAcademicSession().getUniqueId()).setMaxResults(1).uniqueResult();
 							if (manager != null && manager.getEmailAddress() != null) {
-								email.setReplyTo(manager.getEmailAddress(), manager.getName());
-								helper.logOption("reply-to", manager.getName() + " <" + manager.getEmailAddress() + ">");
+								email.setReplyTo(manager.getEmailAddress(), helper.getInstructorNameFormat().format(manager));
+								helper.logOption("reply-to", helper.getInstructorNameFormat().format(manager) + " <" + manager.getEmailAddress() + ">");
+							} else if (advisor != null && advisor.getEmail() != null) {
+								email.setReplyTo(advisor.getEmail(), helper.getInstructorNameFormat().format(advisor));
+								helper.logOption("reply-to", helper.getInstructorNameFormat().format(advisor) + " <" + advisor.getEmail() + ">");
+							} else if (firstCarbonCopy != null) {
+								email.setReplyTo(firstCarbonCopy, null);
+								helper.logOption("reply-to", firstCarbonCopy);
 							}
 						}
 						
