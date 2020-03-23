@@ -33,6 +33,7 @@ import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseReservation;
+import org.unitime.timetable.model.CurriculumOverrideReservation;
 import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.GroupOverrideReservation;
 import org.unitime.timetable.model.IndividualOverrideReservation;
@@ -170,6 +171,14 @@ public class ReservationExport extends BaseExport {
 		        		if (major.getExternalUniqueId() != null)
 		        			majorEl.addAttribute("externalId", major.getExternalUniqueId());
 		        		majorEl.addAttribute("code", major.getCode());
+	        		}
+	        		if (reservation instanceof CurriculumOverrideReservation) {
+	        			CurriculumOverrideReservation override = (CurriculumOverrideReservation)reservation;
+	        			reservationEl.addElement("override", "true");
+	        			reservationEl.addElement("expired", override.isAlwaysExpired() ? "true" : "false");
+	        			reservationEl.addElement("allowOverlap", override.isAllowOverlap() ? "true" : "false");
+	        			reservationEl.addElement("overLimit", override.isCanAssignOverLimit() ? "true" : "false");
+	        			reservationEl.addElement("mustBeUsed", override.isMustBeUsed() ? "true" : "false");
 	        		}
 	        	} else if (reservation instanceof CourseReservation) {
 	        		if (course.getReservation() != null)

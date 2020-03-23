@@ -5280,6 +5280,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Curriculum Reservation")
 	String reservationCurriculum();
 	
+	@DefaultMessage("Curriculum Override")
+	String reservationCurriculumOverride();
+	
 	@DefaultMessage("Course Reservation")
 	String reservationCourse();
 	

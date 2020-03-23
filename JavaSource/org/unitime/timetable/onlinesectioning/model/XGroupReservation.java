@@ -111,6 +111,10 @@ public class XGroupReservation extends XReservation {
     		default:
     			iExpired = null; break;
     		}
+        	iOverride = in.readBoolean();
+    	} else {
+    		iExpired = null;
+    		iOverride = false;
     	}
 	}
 
@@ -121,6 +125,7 @@ public class XGroupReservation extends XReservation {
 		out.writeInt(iLimit);
 		if (getType() == XReservationType.GroupOverride) {
 			out.writeByte(iExpired == null ? 2 : iExpired.booleanValue() ? 1 : 0);
+			out.writeBoolean(iOverride);
 		}
 	}
 	

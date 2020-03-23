@@ -156,6 +156,7 @@ public abstract class XReservation extends XReservationId implements Comparable<
         	break;
         case IndividualOverride:
         case GroupOverride:
+        case CurriculumOverride:
         	setPriority(ApplicationProperty.ReservationPriorityOverride.intValue());
         	break;
         case Dummy:

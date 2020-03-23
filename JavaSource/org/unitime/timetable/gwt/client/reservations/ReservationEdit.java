@@ -349,6 +349,7 @@ public class ReservationEdit extends Composite {
 		}
 		iType.getWidget().addItem(MESSAGES.reservationIndividualOverride(), "individual-override");
 		iType.getWidget().addItem(MESSAGES.reservationStudentGroupOverride(), "group-override");
+		iType.getWidget().addItem(MESSAGES.reservationCurriculumOverride(), "curriculum-override");
 		iType.getWidget().setSelectedIndex(0);
 		iType.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
@@ -837,20 +838,20 @@ public class ReservationEdit extends Composite {
 		iPanel.getRowFormatter().setVisible(iStudentsLine, "individual".equals(val) || "individual-override".equals(val) || getOverrideType(val) != null);
 		iPanel.getRowFormatter().setVisible(iCourseLine, "course".equals(val) || "lc".equals(val));
 		iPanel.getRowFormatter().setVisible(iGroupLine, "group".equals(val) || "group-override".equals(val) || "lc".equals(val));
-		iPanel.getRowFormatter().setVisible(iCurriculumLine, "curriculum".equals(val) && iCurriculum.getWidget().getItemCount() > 1);
-		iPanel.getRowFormatter().setVisible(iAreaLine, "curriculum".equals(val));
-		iPanel.getRowFormatter().setVisible(1 + iAreaLine, "curriculum".equals(val));
-		iPanel.getRowFormatter().setVisible(2 + iAreaLine, "curriculum".equals(val));
+		iPanel.getRowFormatter().setVisible(iCurriculumLine, ("curriculum".equals(val) || "curriculum-override".equals(val)) && iCurriculum.getWidget().getItemCount() > 1);
+		iPanel.getRowFormatter().setVisible(iAreaLine, "curriculum".equals(val) || "curriculum-override".equals(val));
+		iPanel.getRowFormatter().setVisible(1 + iAreaLine, "curriculum".equals(val) || "curriculum-override".equals(val));
+		iPanel.getRowFormatter().setVisible(2 + iAreaLine, "curriculum".equals(val) || "curriculum-override".equals(val));
 		iPanel.getRowFormatter().setVisible(iExpirationLine, getOverrideType(val) == null || getOverrideType(val).isCanHaveExpirationDate());
 		iPanel.getRowFormatter().setVisible(iStartDateLine, getOverrideType(val) == null || getOverrideType(val).isCanHaveExpirationDate());
 		iPanel.getRowFormatter().setVisible(iInclusionLine, getOverrideType(val) == null || getOverrideType(val).isCanHaveExpirationDate());
-		if (("individual-override".equals(val) || "group-override".equals(val)) && iAlwaysExpired.getValue()) {
+		if (("individual-override".equals(val) || "group-override".equals(val) || "curriculum-override".equals(val)) && iAlwaysExpired.getValue()) {
 			iPanel.getRowFormatter().setVisible(iExpirationLine, false);
 			iPanel.getRowFormatter().setVisible(iStartDateLine, false);
 			iPanel.getRowFormatter().setVisible(iInclusionLine, false);
 		}
 		iPanel.getRowFormatter().setVisible(iReservedSpaceLine, getOverrideType(val) == null || getOverrideType(val).isCanHaveExpirationDate() || !getOverrideType(val).isExpired());
-		iPanel.getRowFormatter().setVisible(iOverrideLine, "individual-override".equals(val) || "group-override".equals(val)); 
+		iPanel.getRowFormatter().setVisible(iOverrideLine, "individual-override".equals(val) || "group-override".equals(val) || "curriculum-override".equals(val)); 
 		if ("course".equals(val)) {
 			iLimit.getWidget().setReadOnly(true);
 			iLimit.getWidget().setValue("", true);
@@ -958,7 +959,7 @@ public class ReservationEdit extends Composite {
 			select(iGroup.getWidget(), ((ReservationInterface.LCReservation) iReservation).getGroup().getId().toString());
 			select(iCourse.getWidget(), ((ReservationInterface.LCReservation) iReservation).getCourse().getId().toString());
 		} else if (iReservation instanceof ReservationInterface.CurriculumReservation) {
-			select(iType.getWidget(), "curriculum");
+			select(iType.getWidget(), iReservation.isOverride() ? "curriculum-override" : "curriculum");
 			Area curriculum = ((ReservationInterface.CurriculumReservation) iReservation).getCurriculum();
 			select(iArea.getWidget(), curriculum.getId().toString());
 			areaChanged();
@@ -1083,8 +1084,9 @@ public class ReservationEdit extends Composite {
 				course.setName(iCourse.getWidget().getItemText(iCourse.getWidget().getSelectedIndex()));
 				((ReservationInterface.CourseReservation) r).setCourse(course);
 			}
-		} else if ("curriculum".equals(type)) {
+		} else if ("curriculum".equals(type) || "curriculum-override".equals(type)) {
 			r = new ReservationInterface.CurriculumReservation();
+			r.setOverride("curriculum-override".equals(type));
 			String aid = iArea.getWidget().getValue(iArea.getWidget().getSelectedIndex());
 			if (aid.isEmpty()) {
 				iArea.setErrorHint(MESSAGES.hintAcademicAreaNotProvided());

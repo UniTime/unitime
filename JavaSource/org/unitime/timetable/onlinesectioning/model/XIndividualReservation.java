@@ -156,6 +156,10 @@ public class XIndividualReservation extends XReservation {
     		default:
     			iExpired = null; break;
     		}
+    		iOverride = in.readBoolean();
+    	} else {
+    		iExpired = null;
+    		iOverride = false;
     	}
 	}
 
@@ -171,6 +175,7 @@ public class XIndividualReservation extends XReservation {
 		
 		if (getType() == XReservationType.IndividualOverride) {
 			out.writeByte(iExpired == null ? 2 : iExpired.booleanValue() ? 1 : 0);
+			out.writeBoolean(iOverride);
 		}
 	}
 	

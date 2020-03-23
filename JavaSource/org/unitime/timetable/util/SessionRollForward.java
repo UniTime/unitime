@@ -54,6 +54,7 @@ import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.CurriculumClassification;
 import org.unitime.timetable.model.CurriculumCourse;
 import org.unitime.timetable.model.CurriculumCourseGroup;
+import org.unitime.timetable.model.CurriculumOverrideReservation;
 import org.unitime.timetable.model.CurriculumProjectionRule;
 import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.DatePattern;
@@ -3165,6 +3166,10 @@ public class SessionRollForward {
 	
 	protected CurriculumReservation rollCurriculumReservationForward(CurriculumReservation fromReservation, Session toSession, Date startDate, Date expiration, Map<String, AcademicArea> areas, Map<String, AcademicClassification> classifications, Map<String, Map<String, PosMajor>> majors) {
 		CurriculumReservation toReservation = new CurriculumReservation();
+		if (fromReservation instanceof CurriculumOverrideReservation) {
+			toReservation = new CurriculumOverrideReservation();
+			((CurriculumOverrideReservation)toReservation).setFlags(((CurriculumOverrideReservation)fromReservation).getFlags());
+		}
 	
 		if (!rollReservationForward(fromReservation, toReservation, toSession, startDate, expiration)) return null;
 		

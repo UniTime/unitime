@@ -53,6 +53,7 @@ import org.cpsolver.studentsct.model.Subpart;
 import org.cpsolver.studentsct.online.OnlineSectioningModel;
 import org.cpsolver.studentsct.report.StudentSectioningReport;
 import org.cpsolver.studentsct.reservation.CourseReservation;
+import org.cpsolver.studentsct.reservation.CurriculumOverride;
 import org.cpsolver.studentsct.reservation.CurriculumReservation;
 import org.cpsolver.studentsct.reservation.DummyReservation;
 import org.cpsolver.studentsct.reservation.GroupReservation;
@@ -235,6 +236,16 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
             				}
             				list.add((GroupReservation)clonedReservation);
         				}
+        				break;
+        			case CurriculumOverride:
+        				XCurriculumReservation curR = (XCurriculumReservation) reservation;
+        				if (curR.isOverride())
+        					clonedReservation = new CurriculumOverride(reservation.getReservationId(), reservation.getLimit(), clonedOffering, curR.getAcademicArea(), curR.getClassifications(), curR.getMajors());
+        				else
+        					clonedReservation = new CurriculumReservation(reservation.getReservationId(), reservation.getLimit(), clonedOffering, curR.getAcademicArea(), curR.getClassifications(), curR.getMajors());
+        				((CurriculumReservation)clonedReservation).setMustBeUsed(curR.mustBeUsed());
+        				((CurriculumReservation)clonedReservation).setAllowOverlap(curR.isAllowOverlap());
+        				((CurriculumReservation)clonedReservation).setCanAssignOverLimit(curR.canAssignOverLimit());
         				break;
         			default:
         				clonedReservation = new DummyReservation(clonedOffering);

@@ -71,8 +71,8 @@ import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Subpart;
 import org.cpsolver.studentsct.model.Unavailability;
-import org.cpsolver.studentsct.model.Request.RequestPriority;
 import org.cpsolver.studentsct.reservation.CourseReservation;
+import org.cpsolver.studentsct.reservation.CurriculumOverride;
 import org.cpsolver.studentsct.reservation.CurriculumReservation;
 import org.cpsolver.studentsct.reservation.DummyReservation;
 import org.cpsolver.studentsct.reservation.GroupReservation;
@@ -100,6 +100,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.CurriculumOverrideReservation;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionObject;
@@ -866,6 +867,24 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		r.setMustBeUsed(ApplicationProperty.ReservationMustBeUsedGroup.isTrue());
         		StudentGroupType type = ((StudentGroupReservation)reservation).getGroup().getType();
         		if (type != null && type.getAllowDisabledSection() == StudentGroupType.AllowDisabledSection.WithGroupReservation) r.setAllowDisabled(true);
+        	} else if (reservation instanceof CurriculumOverrideReservation) {
+        		org.unitime.timetable.model.CurriculumReservation cr = (org.unitime.timetable.model.CurriculumReservation)reservation;
+        		List<String> classifications = new ArrayList<String>();
+        		for (AcademicClassification clasf: cr.getClassifications())
+        			classifications.add(clasf.getCode());
+        		List<String> majors = new ArrayList<String>();
+        		for (PosMajor major: cr.getMajors())
+        			majors.add(major.getCode());
+        		if (((CurriculumOverrideReservation)reservation).isAlwaysExpired())
+        			r = new CurriculumOverride(reservation.getUniqueId(), (reservation.getLimit() == null ? -1.0 : reservation.getLimit()),
+            				offering, cr.getArea().getAcademicAreaAbbreviation(), classifications, majors);
+        		else
+        			r = new CurriculumReservation(reservation.getUniqueId(), (reservation.getLimit() == null ? -1.0 : reservation.getLimit()),
+            				offering, cr.getArea().getAcademicAreaAbbreviation(), classifications, majors);
+        		r.setPriority(reservation.getPriority());
+        		r.setMustBeUsed(reservation.isMustBeUsed());
+        		r.setAllowOverlap(reservation.isAllowOverlap());
+        		r.setCanAssignOverLimit(reservation.isCanAssignOverLimit());
         	} else if (reservation instanceof org.unitime.timetable.model.CurriculumReservation) {
         		org.unitime.timetable.model.CurriculumReservation cr = (org.unitime.timetable.model.CurriculumReservation)reservation;
         		List<String> classifications = new ArrayList<String>();

@@ -53,6 +53,7 @@ import org.unitime.timetable.model.CourseReservation;
 import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.CurriculumClassification;
 import org.unitime.timetable.model.CurriculumCourse;
+import org.unitime.timetable.model.CurriculumOverrideReservation;
 import org.unitime.timetable.model.CurriculumProjectionRule;
 import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.GroupOverrideReservation;
@@ -615,7 +616,7 @@ public class ReservationServlet implements ReservationService {
 		r.setLimit(reservation.getLimit());
 		r.setInclusive(reservation.getInclusive());
 		r.setId(reservation.getUniqueId());
-		r.setOverride(reservation instanceof IndividualOverrideReservation || reservation instanceof GroupOverrideReservation);
+		r.setOverride(reservation instanceof IndividualOverrideReservation || reservation instanceof GroupOverrideReservation || reservation instanceof CurriculumOverrideReservation);
 		r.setAllowOverlaps(reservation.isAllowOverlap());
 		r.setMustBeUsed(reservation.isMustBeUsed());
 		r.setAlwaysExpired(reservation.isAlwaysExpired());
@@ -746,9 +747,11 @@ public class ReservationServlet implements ReservationService {
 						r = new StudentGroupReservation();
 						if (reservation.isOverride())
 							r = new GroupOverrideReservation();
-					} else if (reservation instanceof ReservationInterface.CurriculumReservation)
+					} else if (reservation instanceof ReservationInterface.CurriculumReservation) {
 						r = new CurriculumReservation();
-					else if (reservation instanceof ReservationInterface.CourseReservation)
+						if (reservation.isOverride())
+							r = new CurriculumOverrideReservation();
+					} else if (reservation instanceof ReservationInterface.CourseReservation)
 						r = new CourseReservation();
 					else if (reservation instanceof ReservationInterface.LCReservation)
 						r = new LearningCommunityReservation();
@@ -770,6 +773,11 @@ public class ReservationServlet implements ReservationService {
 					((GroupOverrideReservation)r).setAlwaysExpired(reservation.isAlwaysExpired());
 					((GroupOverrideReservation)r).setCanAssignOverLimit(reservation.isOverLimit());
 					((GroupOverrideReservation)r).setMustBeUsed(reservation.isMustBeUsed());
+				} else if (r instanceof CurriculumOverrideReservation) {
+					((CurriculumOverrideReservation)r).setAllowOverlap(reservation.isAllowOverlaps());
+					((CurriculumOverrideReservation)r).setAlwaysExpired(reservation.isAlwaysExpired());
+					((CurriculumOverrideReservation)r).setCanAssignOverLimit(reservation.isOverLimit());
+					((CurriculumOverrideReservation)r).setMustBeUsed(reservation.isMustBeUsed());
 				}
 				offering.getReservations().add(r);
 				if (r.getClasses() == null)

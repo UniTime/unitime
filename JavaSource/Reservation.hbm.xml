@@ -199,6 +199,18 @@
         	    <key column="reservation_id" foreign-key="fk_res_clasf_reservation"/>
     	        <many-to-many class="AcademicClassification" column="acad_clasf_id" foreign-key="fk_res_clasf_clasf"/>
 	        </set>
+	        
+	        <subclass
+	        	name="CurriculumOverrideReservation"
+	        	abstract="false"
+	        	discriminator-value="8">
+	        	
+	        	<property
+	        		name="flags"
+	        		column="override_type"
+	        		type="java.lang.Integer"
+	        		not-null="true"/>
+	        </subclass>
         </subclass>
         
         <subclass

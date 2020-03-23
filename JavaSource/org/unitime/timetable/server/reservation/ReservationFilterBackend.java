@@ -328,7 +328,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 				if ("course".equalsIgnoreCase(t))
 					type += "CourseReservation";
 				if ("curriculum".equalsIgnoreCase(t))
-					type += "CurriculumReservation";
+					type += "CurriculumReservation,CurriculumOverrideReservation";
 				if ("override".equalsIgnoreCase(t))
 					type += "OverrideReservation";
 				if ("lc".equalsIgnoreCase(t))

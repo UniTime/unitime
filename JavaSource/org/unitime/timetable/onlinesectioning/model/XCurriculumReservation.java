@@ -25,9 +25,11 @@ import java.io.ObjectOutput;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.cpsolver.studentsct.reservation.CurriculumOverride;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.AcademicClassification;
+import org.unitime.timetable.model.CurriculumOverrideReservation;
 import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.PosMajor;
 
@@ -41,6 +43,8 @@ public class XCurriculumReservation extends XReservation {
     private String iAcadArea;
     private Set<String> iClassifications = new HashSet<String>();
     private Set<String> iMajors = new HashSet<String>();
+    private Boolean iExpired;
+    private boolean iOverride = false;
     
     public XCurriculumReservation() {
     	super();
@@ -61,6 +65,21 @@ public class XCurriculumReservation extends XReservation {
     		iMajors.add(major.getCode());
     }
     
+    public XCurriculumReservation(XOffering offering, CurriculumOverrideReservation reservation) {
+    	super(XReservationType.CurriculumOverride, offering, reservation);
+        iLimit = (reservation.getLimit() == null ? -1 : reservation.getLimit());
+        iAcadArea = reservation.getArea().getAcademicAreaAbbreviation();
+    	for (AcademicClassification clasf: reservation.getClassifications())
+    		iClassifications.add(clasf.getCode());
+    	for (PosMajor major: reservation.getMajors())
+    		iMajors.add(major.getCode());
+    	iOverride = reservation.isAlwaysExpired();
+        setMustBeUsed(reservation.isMustBeUsed());
+        setAllowOverlap(reservation.isAllowOverlap());
+        setCanAssignOverLimit(reservation.isCanAssignOverLimit());
+        if (reservation.isAlwaysExpired()) iExpired = true; else iType = XReservationType.Group;
+    }
+    
     public XCurriculumReservation(org.cpsolver.studentsct.reservation.CurriculumReservation reservation) {
     	super(XReservationType.Curriculum, reservation);
     	iLimit = (int)Math.round(reservation.getReservationLimit());
@@ -69,6 +88,17 @@ public class XCurriculumReservation extends XReservation {
     		iClassifications.addAll(reservation.getClassifications());
     	if (reservation.getMajors() != null)
     		iMajors.addAll(reservation.getMajors());
+    }
+    
+    public XCurriculumReservation(CurriculumOverride reservation) {
+    	super(XReservationType.CurriculumOverride, reservation);
+    	iLimit = (int)Math.round(reservation.getReservationLimit());
+    	iAcadArea = reservation.getAcademicArea();
+    	if (reservation.getClassifications() != null)
+    		iClassifications.addAll(reservation.getClassifications());
+    	if (reservation.getMajors() != null)
+    		iMajors.addAll(reservation.getMajors());
+    	iOverride = true;
     }
 
 
@@ -100,6 +130,14 @@ public class XCurriculumReservation extends XReservation {
     public Set<String> getClassifications() {
         return iClassifications;
     }
+    
+    @Override
+    public boolean isOverride() { return iOverride; }
+    
+    @Override
+    public boolean isExpired() {
+    	return (getType() == XReservationType.CurriculumOverride && iExpired != null ? iExpired.booleanValue() : super.isExpired());
+    }
 
     /**
      * Check the area, classifications and majors
@@ -130,6 +168,21 @@ public class XCurriculumReservation extends XReservation {
     		iMajors.add((String)in.readObject());
     	
     	iLimit = in.readInt();
+    	
+    	if (getType() == XReservationType.GroupOverride) {
+    		switch (in.readByte()) {
+    		case 0:
+    			iExpired = false; break;
+    		case 1:
+    			iExpired = true; break;
+    		default:
+    			iExpired = null; break;
+    		}
+    		iOverride = in.readBoolean();
+    	} else {
+    		iExpired = null;
+    		iOverride = false;
+    	}
 	}
 
 	@Override
@@ -146,6 +199,11 @@ public class XCurriculumReservation extends XReservation {
 			out.writeObject(major);
 		
 		out.writeInt(iLimit);
+		
+		if (getType() == XReservationType.CurriculumOverride) {
+			out.writeByte(iExpired == null ? 2 : iExpired.booleanValue() ? 1 : 0);
+			out.writeBoolean(iOverride);
+		}
 	}
 	
 	public static class XCurriculumReservationSerializer implements Externalizer<XCurriculumReservation> {

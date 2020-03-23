@@ -34,6 +34,7 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseReservation;
+import org.unitime.timetable.model.CurriculumOverrideReservation;
 import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.GroupOverrideReservation;
 import org.unitime.timetable.model.IndividualOverrideReservation;
@@ -164,6 +165,13 @@ public class ReservationImport  extends BaseImport {
                 	}
                 } else if ("curriculum".equals(type)) {
                 	reservation = new CurriculumReservation();
+                	if ("true".equalsIgnoreCase(reservationElement.attributeValue("override"))) {
+                		reservation = new CurriculumOverrideReservation();
+                		((CurriculumOverrideReservation)reservation).setAlwaysExpired("true".equalsIgnoreCase(reservationElement.attributeValue("expired")));
+                		((CurriculumOverrideReservation)reservation).setAllowOverlap("true".equalsIgnoreCase(reservationElement.attributeValue("allowOverlap")));
+                		((CurriculumOverrideReservation)reservation).setCanAssignOverLimit("true".equalsIgnoreCase(reservationElement.attributeValue("overLimit")));
+                		((CurriculumOverrideReservation)reservation).setMustBeUsed("true".equalsIgnoreCase(reservationElement.attributeValue("mustBeUsed")));
+                	}
                 } else if ("course".equals(type)) {
                 	reservation = new CourseReservation();
                 } else if ("lc".equals(type)) {
