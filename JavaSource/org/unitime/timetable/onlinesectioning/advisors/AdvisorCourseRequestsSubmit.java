@@ -77,7 +77,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 	public AdvisorCourseRequestSubmission execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		try {
 			AdvisorCourseRequestSubmission ret = new AdvisorCourseRequestSubmission();
-			ret.setName("crf-" + server.getAcademicSession().getTerm() + server.getAcademicSession().getYear() + "-" + getDetails().getStudentName() + "-" + getDetails().getStudentExternalId());
+			ret.setName("crf-" + server.getAcademicSession().getTerm() + server.getAcademicSession().getYear() + "-" + getDetails().getStudentName().replaceAll("[&$\\+,/:;=\\?@<>\\[\\]\\{\\}\\|\\^\\~%#`\\t\\s\\n\\r \\\\]", "") + "-" + getDetails().getStudentExternalId());
 			ret.setLink("export?q=" + QueryEncoderBackend.encode("output=acrf.pdf&sid=" + server.getAcademicSession().getUniqueId() + "&user=" + helper.getUser().getExternalId() + "&id=" + getDetails().getStudentExternalId()));
 			
 			OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
