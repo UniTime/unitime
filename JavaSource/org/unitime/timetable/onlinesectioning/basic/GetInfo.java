@@ -212,6 +212,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
             				}
             				list.add((GroupReservation)clonedReservation);
         				}
+        				break;
         			case CurriculumOverride:
         				XCurriculumReservation curR = (XCurriculumReservation) reservation;
         				if (curR.isOverride())

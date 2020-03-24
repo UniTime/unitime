@@ -77,7 +77,7 @@ public class XCurriculumReservation extends XReservation {
         setMustBeUsed(reservation.isMustBeUsed());
         setAllowOverlap(reservation.isAllowOverlap());
         setCanAssignOverLimit(reservation.isCanAssignOverLimit());
-        if (reservation.isAlwaysExpired()) iExpired = true; else iType = XReservationType.Group;
+        if (reservation.isAlwaysExpired()) iExpired = true; else iType = XReservationType.Curriculum;
     }
     
     public XCurriculumReservation(org.cpsolver.studentsct.reservation.CurriculumReservation reservation) {
