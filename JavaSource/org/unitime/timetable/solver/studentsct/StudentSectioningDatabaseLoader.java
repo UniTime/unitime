@@ -211,6 +211,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private CriticalCoursesProvider iCriticalCoursesProvider = null;
 	private int iNrCheckCriticalThreads = 1;
 	private boolean iMoveCriticalCoursesUp = false;
+	private boolean iMoveFreeTimesDown = false;
 	private boolean iCorrectConfigLimit = false;
 	private boolean iUseSnapShotLimits = false;
 	private String iPriorityStudentGroupReference = null;
@@ -314,6 +315,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iMaxDefaultCredit = model.getProperties().getPropertyFloat("Load.DefaultMaxCredit", iMaxDefaultCredit);
         iMinDefaultCredit = model.getProperties().getPropertyFloat("Load.DefaultMinCredit", iMinDefaultCredit);
         iMoveCriticalCoursesUp = model.getProperties().getPropertyBoolean("Load.MoveCriticalCoursesUp", iMoveCriticalCoursesUp);
+        iMoveFreeTimesDown = model.getProperties().getPropertyBoolean("Load.MoveFreeTimesDown", iMoveFreeTimesDown);
         
         String classesFixedDate = getModel().getProperties().getProperty("General.ClassesFixedDate", "");
         if (!classesFixedDate.isEmpty()) {
@@ -1630,16 +1632,18 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     }
     
     public void reorderStudentRequests(Student student) {
-    	int assigned = 0, critical = 0;
+    	int assigned = 0, critical = 0, freetime = 0;
     	for (Request r: student.getRequests()) {
     		if (r instanceof CourseRequest) {
     			if (r.getInitialAssignment() != null && getAssignment().getValue(r) != null)
     				assigned ++;
     			if (r.isCritical() && !r.isAlternative())
     				critical ++;
+    		} else if (r instanceof FreeTimeRequest) {
+    			freetime ++;
     		}
     	}
-    	if ((getModel().isMPP() && getModel().getKeepInitialAssignments() && assigned > 0) || (iMoveCriticalCoursesUp && critical > 0)) {
+    	if ((getModel().isMPP() && getModel().getKeepInitialAssignments() && assigned > 0) || (iMoveCriticalCoursesUp && critical > 0) || (iMoveFreeTimesDown && freetime > 0)) {
 			Collections.sort(student.getRequests(), new Comparator<Request>() {
 				@Override
 				public int compare(Request r1, Request r2) {
@@ -1653,6 +1657,11 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 						boolean c1 = (r1 instanceof CourseRequest && r1.isCritical());
 						boolean c2 = (r2 instanceof CourseRequest && r2.isCritical());
 						if (c1 != c2) return c1 ? -1 : 1;
+					}
+					if (iMoveFreeTimesDown) {
+						boolean f1 = (r1 instanceof FreeTimeRequest);
+						boolean f2 = (r2 instanceof FreeTimeRequest);
+						if (f1 != f2) return f1 ? 1 : -1;
 					}
 					return r1.getPriority() < r2.getPriority() ? -1 : 1;
 				}
@@ -2295,6 +2304,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             }
         } else if (iMoveCriticalCoursesUp) {
         	setPhase("Moving critical requests first...", getModel().getStudents().size());
+            for (Student student: getModel().getStudents()) {
+            	incProgress();
+            	reorderStudentRequests(student);
+            }
+        } else if (iMoveFreeTimesDown) {
+        	setPhase("Moving free times last...", getModel().getStudents().size());
             for (Student student: getModel().getStudents()) {
             	incProgress();
             	reorderStudentRequests(student);
