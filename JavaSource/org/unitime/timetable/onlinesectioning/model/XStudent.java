@@ -182,6 +182,17 @@ public class XStudent extends XStudentId implements Externalizable {
         }
     }
     
+    public void setAdvisorRequests(List<AdvisorCourseRequest> acrs, OnlineSectioningHelper helper, BitSet freeTimePattern) {
+        if (acrs != null && !acrs.isEmpty()) {
+        	iAdvisorRequests = new ArrayList<XAdvisorRequest>();
+        	for (AdvisorCourseRequest acr: acrs)
+        		iAdvisorRequests.add(new XAdvisorRequest(acr, helper, freeTimePattern));
+        	Collections.sort(iAdvisorRequests);
+        } else {
+        	iAdvisorRequests = null;
+        }
+    }
+    
     public XStudent(XStudent student) {
     	super(student);
     	iStatus = student.getStatus();

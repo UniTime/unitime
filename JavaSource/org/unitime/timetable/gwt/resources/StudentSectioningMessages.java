@@ -1316,11 +1316,17 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Missing<br>Courses")
 	String colMissingCourses();
 	
+	@DefaultMessage("Not-Enrolled<br>Courses")
+	String colNotAssignedCourses();
+	
 	@DefaultMessage("Advised Credit")
 	String ordAdvisedCredit();
 	
 	@DefaultMessage("Missing Courses")
 	String ordAdvisedCourses();
+	
+	@DefaultMessage("Not-Enrolled Courses")
+	String ordNotAssignedCourses();
 	
 	@DefaultMessage("% Complete")
 	String ordAdvisedPercentage();
@@ -2656,6 +2662,27 @@ public interface StudentSectioningMessages extends Messages {
 	@DoNotTranslate
 	String advisedMissingPrimary(int primary);
 	
+	@DefaultMessage("Not enrolled {0} critical course(s) and {1} other primary course(s).")
+	String hintAdvisedNotAssignedCriticalOther(int critical, int other);
+	
+	@DefaultMessage("Not enrolled {0} critical course(s).")
+	String hintAdvisedNotAssignedCritical(int critical);
+	
+	@DefaultMessage("Not enrolled {0} primary course(s).")
+	String hintAdvisedNotAssignedOther(int other);
+	
+	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> cr</sup></span> + {1}")
+	@DoNotTranslate
+	String advisedNotAssignedCriticalOther(int critical, int other);
+	
+	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> critical</sup></span>")
+	@DoNotTranslate
+	String advisedNotAssignedCritical(int critical);
+	
+	@DefaultMessage("{0}")
+	@DoNotTranslate
+	String advisedNotAssignedPrimary(int primary);
+	
 	@DefaultMessage("Missing critical course {0}.")
 	String advMessageMissingCriticalCourse(String course);
 	
@@ -2680,9 +2707,27 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Missing substitute course {0} and its alternatives.")
 	String advMessageMissingSubstituteCourseWithAlts(String course);
 	
+	@DefaultMessage("Not-enrolled course {0} or its alternatives.")
+	String advMessageNotEnrolledCourseWithAlts(String course);
+	
+	@DefaultMessage("Not-enrolled course {0}.")
+	String advMessageNotEnrolledCourse(String course);
+	
+	@DefaultMessage("But has a substitue course {0} enrolled instead.")
+	String advMessageHasEnrolledSubstituteCourse(String course);
+	
+	@DefaultMessage("Not-enrolled critical course {0} or its alternatives.")
+	String advMessageNotEnrolledCriticalCourseWithAlts(String course);
+	
+	@DefaultMessage("Not-enrolled critical course {0}.")
+	String advMessageNotEnrolledCriticalCourse(String course);
+	
 	@DefaultMessage("Missing some alternatives of {0}")
 	String advMessageMissingAlternatives(String course);
 	
 	@DefaultMessage("Send email confirmation")
 	String checkSendEmailConfirmation();
+	
+	@DefaultMessage("Course {0} is enrolled.")
+	String titleCourseEnrolled(String course);
 }

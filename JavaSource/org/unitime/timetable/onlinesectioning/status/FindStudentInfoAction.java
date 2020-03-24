@@ -39,6 +39,7 @@ import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.AdvisedInfoInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.StudentInfo;
+import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -169,8 +170,12 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		DistanceMetric dm = server.getDistanceMetric();
 		boolean solver = (server instanceof StudentSolver);
 		Set<Long> studentIds = null;
-		if (!solver)
+		Map<Long, List<AdvisorCourseRequest>> acrs = null;
+		if (!solver) {
 			studentIds = (iFilter == null ? null : server.createAction(SectioningStatusFilterAction.class).forRequest(iFilter).getStudentIds(server, helper));
+		} else if (iFilter != null) {
+			acrs = server.createAction(SectioningStatusFilterAction.class).forRequest(iFilter).getAdvisorCourseRequests(server, helper);
+		}
 		for (XCourseId info: findCourses(server, helper, lookup)) {
 			XOffering offering = server.getOffering(info.getOfferingId());
 			if (offering == null) continue;
@@ -185,6 +190,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 				if (studentIds != null && !studentIds.contains(request.getStudentId())) continue;
 				XStudent student = server.getStudent(request.getStudentId());
 				if (student == null) continue;
+				if (acrs != null) student.setAdvisorRequests(acrs.get(student.getStudentId()), helper, server.getAcademicSession().getFreeTimePattern());
 				CourseRequestMatcher m = new CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse, isMyStudent(student), lookup, server);
 				if (query().match(m)) {
 					StudentInfo s = students.get(request.getStudentId());
@@ -703,13 +709,15 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		AdvisedInfoInterface info = new AdvisedInfoInterface();
 		XAdvisorRequest last = null;
 		XCourseId advFirstChoice = null;
+		XCourseId firstEnrolled = null;
 		XCourseRequest firstChoice = null;
 		boolean firstChoiceCritical = false;
 		float minCred = 0f, maxCred = 0f, cm = 0f, cx = 0f;
-		int nrCourses = 0, nrCriticalCourses = 0, nrCoursesFound = 0, nrCriticalCoursesFound = 0, nrSubstMisMatch = 0;
+		int nrCourses = 0, nrCriticalCourses = 0, nrCoursesFound = 0, nrCriticalCoursesFound = 0, nrSubstMisMatch = 0, nrCoursesAssigned = 0;
 		int foundPrioMin = 0, foundPrioMax = 0;
 		int points = 0, maxPoints = 0;
 		int missingCrit = 0, missingPrim = 0;
+		int notAssignedCrit = 0, notAssignedPrim = 0;
 		for (XAdvisorRequest acr: student.getAdvisorRequests()) {
 			if (acr.getPriority() == -1) continue;
 			if (last != null && last.getPriority() != acr.getPriority()) {
@@ -738,6 +746,25 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						info.addMessage(MSG.advMessageMissingCourseHasAlts(advFirstChoice.getCourseName()));
 					} else if (nrCoursesFound < nrCourses) {
 						info.addMessage(MSG.advMessageMissingAlternatives(advFirstChoice.getCourseName()));
+					}
+					
+					if (nrCoursesFound > 0 && nrCoursesAssigned == 0 && !last.isSubstitute()) {
+						notAssignedPrim ++;
+						if (firstChoiceCritical) {
+							notAssignedCrit ++;
+							if (nrCourses > 1)
+								info.addNotAssignedMessage(MSG.advMessageNotEnrolledCriticalCourseWithAlts(advFirstChoice.getCourseName()));
+							else
+								info.addNotAssignedMessage(MSG.advMessageNotEnrolledCriticalCourse(advFirstChoice.getCourseName()));
+						} else {
+							if (nrCourses > 1)
+								info.addNotAssignedMessage(MSG.advMessageNotEnrolledCourseWithAlts(advFirstChoice.getCourseName()));
+							else
+								info.addNotAssignedMessage(MSG.advMessageNotEnrolledCourse(advFirstChoice.getCourseName()));
+						}
+					} else if (last.isSubstitute() && nrCoursesAssigned > 0) {
+						notAssignedPrim --;
+						info.addNotAssignedMessage(MSG.advMessageHasEnrolledSubstituteCourse(firstEnrolled.getCourseName()));
 					}
 					
 					// 1st choice course match
@@ -777,6 +804,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 				nrCourses = 0; nrCriticalCourses = 0; nrCoursesFound = 0; nrCriticalCoursesFound = 0; nrSubstMisMatch = 0;
 				advFirstChoice = null; firstChoice = null; firstChoiceCritical = false;
 				foundPrioMin = 0; foundPrioMax = 0;
+				firstEnrolled = null; nrCoursesAssigned = 0;
 			}
 			if (!acr.isSubstitute()) {
 				XCourse course = (acr.getCourseId() == null ? null : server.getCourse(acr.getCourseId().getCourseId()));
@@ -789,7 +817,8 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 			}
 			if (acr.getCourseId() != null) {
 				nrCourses ++;
-				if (acr.isCritical() && !acr.isSubstitute()) nrCriticalCourses ++;
+				if (acr.isCritical() && !acr.isSubstitute())
+					nrCriticalCourses ++;
 				XCourseRequest request = null;
 				for (XRequest r: student.getRequests()) {
 					if (r instanceof XCourseRequest) {
@@ -805,6 +834,10 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 					firstChoice = request;
 				}
 				if (request != null) {
+					if (request.getEnrollment() != null && request.getEnrollment().getCourseId().equals(acr.getCourseId().getCourseId())) {
+						nrCoursesAssigned ++;
+						if (firstEnrolled == null) firstEnrolled = acr.getCourseId();
+					}
 					nrCoursesFound ++;
 					if (nrCoursesFound == 1) {
 						foundPrioMin = request.getPriority();
@@ -847,6 +880,25 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 				info.addMessage(MSG.advMessageMissingAlternatives(advFirstChoice.getCourseName()));
 			}
 			
+			if (nrCoursesFound > 0 && nrCoursesAssigned == 0 && !last.isSubstitute()) {
+				notAssignedPrim ++;
+				if (firstChoiceCritical) {
+					notAssignedCrit ++;
+					if (nrCourses > 1)
+						info.addNotAssignedMessage(MSG.advMessageNotEnrolledCriticalCourseWithAlts(advFirstChoice.getCourseName()));
+					else
+						info.addNotAssignedMessage(MSG.advMessageNotEnrolledCriticalCourse(advFirstChoice.getCourseName()));
+				} else {
+					if (nrCourses > 1)
+						info.addNotAssignedMessage(MSG.advMessageNotEnrolledCourseWithAlts(advFirstChoice.getCourseName()));
+					else
+						info.addNotAssignedMessage(MSG.advMessageNotEnrolledCourse(advFirstChoice.getCourseName()));
+				}
+			} else if (last.isSubstitute() && nrCoursesAssigned > 0) {
+				notAssignedPrim --;
+				info.addNotAssignedMessage(MSG.advMessageHasEnrolledSubstituteCourse(firstEnrolled.getCourseName()));
+			}
+			
 			// 1st choice course match
 			maxPoints += 4 + (firstChoiceCritical ? 2 : 0);
 			if (firstChoice != null) {
@@ -887,6 +939,8 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 			info.setPercentage(((float)points)/maxPoints);
 		info.setMissingCritical(missingCrit);
 		info.setMissingPrimary(missingPrim);
+		info.setNotAssignedCritical(notAssignedCrit);
+		info.setNotAssignedPrimary(notAssignedPrim);
 		
 		return info;
 	}

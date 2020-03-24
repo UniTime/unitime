@@ -312,6 +312,13 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							if (prefs != null) hasPref = true;
 							String changes = getChanges(request, rc);
 							if (changes != null) hasChanges = true;
+							boolean enrolled = false;
+							for (ClassAssignmentInterface.CourseAssignment course: iAssignment.getCourseAssignments()) {
+								if (course.isAssigned() && !course.isTeachingAssignment() && !course.isFreeTime() && course.getCourseId().equals(rc.getCourseId())) {
+									enrolled = true;
+									break;
+								}
+							}
 							if (first) {
 								WebTable.Cell credit = new WebTable.Cell(request.hasAdvisorCredit() ? request.getAdvisorCredit() : "");
 								credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
@@ -319,7 +326,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								note.setRowSpan(request.getRequestedCourse().size());
 								row = new WebTable.Row(
 									new WebTable.Cell(MESSAGES.courseRequestsPriority(priority)),
-									new WebTable.Cell(rc.getCourseName()),
+									(enrolled ? new WebTable.IconCell(RESOURCES.courseEnrolled(), MESSAGES.titleCourseEnrolled(rc.getCourseName()), rc.getCourseName(), true) : new WebTable.Cell(rc.getCourseName())),
 									new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 									credit,
 									new WebTable.Cell(ToolBox.toString(prefs), true),
@@ -331,7 +338,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							} else {
 								row = new WebTable.Row(
 									new WebTable.Cell(""),
-									new WebTable.Cell(rc.getCourseName()),
+									(enrolled ? new WebTable.IconCell(RESOURCES.courseEnrolled(), MESSAGES.titleCourseEnrolled(rc.getCourseName()), rc.getCourseName(), true) : new WebTable.Cell(rc.getCourseName())),
 									new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 									new WebTable.Cell(""),
 									new WebTable.Cell(ToolBox.toString(prefs), true),
@@ -421,6 +428,13 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							if (prefs != null) hasPref = true;
 							String changes = getChanges(request, rc);
 							if (changes != null) hasChanges = true;
+							boolean enrolled = false;
+							for (ClassAssignmentInterface.CourseAssignment course: iAssignment.getCourseAssignments()) {
+								if (course.isAssigned() && !course.isTeachingAssignment() && !course.isFreeTime() && course.getCourseId().equals(rc.getCourseId())) {
+									enrolled = true;
+									break;
+								}
+							}
 							if (first) {
 								WebTable.Cell credit = new WebTable.Cell(request.hasAdvisorCredit() ? request.getAdvisorCredit() : "");
 								credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
@@ -428,7 +442,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								note.setRowSpan(request.getRequestedCourse().size());
 								row = new WebTable.Row(
 									new WebTable.Cell(MESSAGES.courseRequestsAlternate(priority)),
-									new WebTable.Cell(rc.getCourseName()),
+									(enrolled ? new WebTable.IconCell(RESOURCES.courseEnrolled(), MESSAGES.titleCourseEnrolled(rc.getCourseName()), rc.getCourseName(), true) : new WebTable.Cell(rc.getCourseName())),
 									new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 									credit,
 									new WebTable.Cell(ToolBox.toString(prefs), true),
@@ -439,7 +453,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							} else {
 								row = new WebTable.Row(
 									new WebTable.Cell(""),
-									new WebTable.Cell(rc.getCourseName()),
+									(enrolled ? new WebTable.IconCell(RESOURCES.courseEnrolled(), MESSAGES.titleCourseEnrolled(rc.getCourseName()), rc.getCourseName(), true) : new WebTable.Cell(rc.getCourseName())),
 									new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 									new WebTable.Cell(""),
 									new WebTable.Cell(ToolBox.toString(prefs), true),

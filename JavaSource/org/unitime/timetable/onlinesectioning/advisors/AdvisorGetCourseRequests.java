@@ -66,6 +66,7 @@ import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XReservation;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
+import org.unitime.timetable.solver.studentsct.StudentSolver;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest.XPreference;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.util.Formats;
@@ -456,7 +457,10 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 		return request;
 	}
 	
-	public static CourseRequestInterface getRequest(XStudent student, OnlineSectioningServer server) {
+	public static CourseRequestInterface getRequest(XStudent student, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		if (server instanceof StudentSolver)
+			return getRequest(student.getStudentId(), helper.getHibSession());
+		
 		if (!student.hasAdvisorRequests()) return null;
 		
 		CourseRequestInterface request = new CourseRequestInterface();

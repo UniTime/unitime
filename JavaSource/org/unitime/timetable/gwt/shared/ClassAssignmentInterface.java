@@ -1652,8 +1652,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private Float iMinCredit, iMaxCredit;
 		private Float iPercentage;
-		private String iMessage;
+		private String iMessage, iNotAssignedMessage;
 		private Integer iMissingCritical, iMissingPrimary;
+		private Integer iNotAssignedCritical, iNotAssignedPrimary;
 		
 		public AdvisedInfoInterface() {}
 		
@@ -1677,11 +1678,26 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public Integer getMissingPrimary() { return iMissingPrimary; }
 		public void setMissingPrimary(Integer missing) { iMissingPrimary = missing; }
 		
+		public boolean hasNotAssignedCritical() { return iNotAssignedCritical != null; }
+		public Integer getNotAssignedCritical() { return iNotAssignedCritical; }
+		public void setNotAssignedCritical(Integer notAssigned) { iNotAssignedCritical = notAssigned; }
+		
+		public boolean hasNotAssignedPrimary() { return iNotAssignedPrimary != null; }
+		public Integer getNotAssignedPrimary() { return iNotAssignedPrimary; }
+		public void setNotAssignedPrimary(Integer notAssigned) { iNotAssignedPrimary = notAssigned; }
+		
 		public String getMessage() { return iMessage; }
 		public boolean hasMessage() { return iMessage != null && !iMessage.isEmpty(); }
 		public void setMessage(String message) { iMessage = message; }
 		public void addMessage(String message) {
 			iMessage = (iMessage == null ? "" : iMessage + "\n") +  message;
+		}
+		
+		public String getNotAssignedMessage() { return iNotAssignedMessage; }
+		public boolean hasNotAssignedMessage() { return iNotAssignedMessage != null && !iNotAssignedMessage.isEmpty(); }
+		public void setNotAssignedMessage(String message) { iNotAssignedMessage = message; }
+		public void addNotAssignedMessage(String message) {
+			iNotAssignedMessage = (iNotAssignedMessage == null ? "" : iNotAssignedMessage + "\n") +  message;
 		}
 	}
 }

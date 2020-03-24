@@ -42,6 +42,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
 import org.unitime.timetable.model.Advisor;
+import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
@@ -1037,7 +1038,25 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 	public Set<Long> getStudentIds(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		return new HashSet<Long>((List<Long>)getQuery(iRequest, server, helper).select("distinct s.uniqueId").query(helper.getHibSession()).list());
 	}
-	
+
+	public Map<Long, List<AdvisorCourseRequest>> getAdvisorCourseRequests(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		Map<Long, List<AdvisorCourseRequest>> ret = new HashMap<Long, List<AdvisorCourseRequest>>();
+		for (Object[] o: (List<Object[]>)getQuery(iRequest, server, helper)
+				.select("s.uniqueId, acr")
+				.from("inner join s.advisorCourseRequests acr")
+				.order("s.uniqueId, acr.priority, acr.alternative").query(helper.getHibSession()).list()) {
+			Long studentId = (Long)o[0];
+			AdvisorCourseRequest acr = (AdvisorCourseRequest)o[1];
+			List<AdvisorCourseRequest> acrs = ret.get(studentId);
+			if (acrs == null) {
+				acrs = new ArrayList<AdvisorCourseRequest>();
+				ret.put(studentId, acrs);
+			}
+			acrs.add(acr);
+		}
+		return ret;
+	}
+
 	public List<XStudent> getStudens(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		List<XStudent> students = new ArrayList<XStudent>();
 		for (XStudent student: (List<XStudent>)getQuery(iRequest, server, helper).select("distinct s").query(helper.getHibSession()).list()) {

@@ -2088,7 +2088,7 @@ public class SectioningStatusPage extends Composite {
 			addSortOperation(hAdvisor, StudentComparator.SortBy.ADVISOR, MESSAGES.colAdvisor());
 		}
 
-		UniTimeTableHeader hAdvisedCred = null, hMissingCourses = null;
+		UniTimeTableHeader hAdvisedCred = null, hMissingCourses = null, hNotAssignedCourses = null;
 		if (iStudentInfoVisibleColumns.hasAdvisedInfo) {
 			hAdvisedCred = new UniTimeTableHeader(MESSAGES.colAdvisedCredit());
 			header.add(hAdvisedCred);
@@ -2097,6 +2097,9 @@ public class SectioningStatusPage extends Composite {
 			hMissingCourses = new UniTimeTableHeader(MESSAGES.colMissingCourses());
 			header.add(hMissingCourses);
 			addSortOperation(hMissingCourses, StudentComparator.SortBy.ADVISED_CRIT, MESSAGES.ordAdvisedCourses());
+			hNotAssignedCourses = new UniTimeTableHeader(MESSAGES.colNotAssignedCourses());
+			header.add(hNotAssignedCourses);
+			addSortOperation(hNotAssignedCourses, StudentComparator.SortBy.ADVISED_ASSGN, MESSAGES.ordNotAssignedCourses());
 
 		}
 
@@ -2158,6 +2161,7 @@ public class SectioningStatusPage extends Composite {
 			case ADVISED_CRED: h = hAdvisedCred; break;
 			case ADVISED_PERC: h = hAdvisedCred; break;
 			case ADVISED_CRIT: h = hMissingCourses; break;
+			case ADVISED_ASSGN: h = hNotAssignedCourses; break;
 			}
 			if (h != null) {
 				Collections.sort(result, new StudentComparator(sort, asc, g));
@@ -2307,6 +2311,7 @@ public class SectioningStatusPage extends Composite {
 			if (iStudentInfoVisibleColumns.hasAdvisedInfo) {
 				line.add(new AdvisorInfoCell(info.getAdvisedInfo(), AdvisorInfoCell.Mode.ADVISOR_CREDITS));
 				line.add(new AdvisorInfoCell(info.getAdvisedInfo(), AdvisorInfoCell.Mode.MISSING_COURSES));
+				line.add(new AdvisorInfoCell(info.getAdvisedInfo(), AdvisorInfoCell.Mode.NOT_ENROLLED_COURSES));
 			}
 			if (iOnline && iStudentInfoVisibleColumns.hasNote) {
 				HTML note = new HTML(info.hasNote() ? info.getNote() : ""); note.addStyleName("student-note");
@@ -2324,6 +2329,7 @@ public class SectioningStatusPage extends Composite {
 			if (iStudentInfoVisibleColumns.hasAdvisor)
 				line.add(new HTML("&nbsp;", false));
 			if (iStudentInfoVisibleColumns.hasAdvisedInfo) {
+				line.add(new HTML("&nbsp;", false));
 				line.add(new HTML("&nbsp;", false));
 				line.add(new HTML("&nbsp;", false));
 			}
@@ -2653,6 +2659,7 @@ public class SectioningStatusPage extends Composite {
 		public static enum Mode {
 			ADVISOR_CREDITS,
 			MISSING_COURSES,
+			NOT_ENROLLED_COURSES,
 			};
 		
 		public AdvisorInfoCell(AdvisedInfoInterface value, Mode mode) {
@@ -2687,9 +2694,27 @@ public class SectioningStatusPage extends Composite {
 					}
 				}
 				break;
+			case NOT_ENROLLED_COURSES:
+				if (value != null && value.getNotAssignedPrimary() != null && value.getNotAssignedCritical() != null) {
+					if (value.getNotAssignedCritical() > 0) {
+						if (value.getNotAssignedPrimary() > value.getNotAssignedCritical()) {
+							setHTML(MESSAGES.advisedNotAssignedCriticalOther(value.getNotAssignedCritical(), value.getNotAssignedPrimary() - value.getNotAssignedCritical()));
+							title = MESSAGES.hintAdvisedNotAssignedCriticalOther(value.getNotAssignedCritical(), value.getNotAssignedPrimary() - value.getNotAssignedCritical());
+						} else {
+							setHTML(MESSAGES.advisedNotAssignedCritical(value.getNotAssignedCritical()));
+							title = MESSAGES.hintAdvisedNotAssignedCritical(value.getNotAssignedCritical());
+						}
+					} else if (value.getNotAssignedPrimary() > 0) {
+						setHTML(MESSAGES.advisedNotAssignedPrimary(value.getNotAssignedPrimary()));
+						title = MESSAGES.hintAdvisedNotAssignedOther(value.getNotAssignedPrimary());
+					}
+				}
+				break;
 			}
-			if (value != null && value.hasMessage())
+			if (value != null && value.hasMessage() && mode != Mode.NOT_ENROLLED_COURSES)
 				setTitle((title == null ? "" : title + "\n") + value.getMessage());
+			else if (value != null && value.hasNotAssignedMessage() && mode == Mode.NOT_ENROLLED_COURSES)
+				setTitle((title == null ? "" : title + "\n") + value.getNotAssignedMessage());
 			else if (title != null)
 				setTitle(title);
 			if (value != null) {
@@ -2987,6 +3012,7 @@ public class SectioningStatusPage extends Composite {
 			ADVISED_CRED,
 			ADVISED_PERC,
 			ADVISED_CRIT,
+			ADVISED_ASSGN,
 			;
 		}
 		
@@ -3112,6 +3138,10 @@ public class SectioningStatusPage extends Composite {
 				cmp = Integer.compare(e1.getAdvisedInfo() == null ? 0 : e1.getAdvisedInfo().getMissingCritical(), e2.getAdvisedInfo() == null ? 0 : e2.getAdvisedInfo().getMissingCritical());
 				if (cmp != 0) return cmp;
 				return Integer.compare(e1.getAdvisedInfo() == null ? 0 : e1.getAdvisedInfo().getMissingPrimary(), e2.getAdvisedInfo() == null ? 0 : e2.getAdvisedInfo().getMissingPrimary());
+			case ADVISED_ASSGN:
+				cmp = Integer.compare(e1.getAdvisedInfo() == null ? 0 : e1.getAdvisedInfo().getNotAssignedCritical(), e2.getAdvisedInfo() == null ? 0 : e2.getAdvisedInfo().getNotAssignedCritical());
+				if (cmp != 0) return cmp;
+				return Integer.compare(e1.getAdvisedInfo() == null ? 0 : e1.getAdvisedInfo().getNotAssignedPrimary(), e2.getAdvisedInfo() == null ? 0 : e2.getAdvisedInfo().getNotAssignedPrimary());
 			default:
 				return 0;
 			}

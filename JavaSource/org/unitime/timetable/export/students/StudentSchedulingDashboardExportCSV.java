@@ -341,6 +341,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		if (hasAdvisedInfo) {
 			header.add(MESSAGES.colAdvisedCredit().replace("<br>", "\n"));
 			header.add(MESSAGES.colMissingCourses().replace("<br>", "\n"));
+			header.add(MESSAGES.colNotAssignedCourses().replace("<br>", "\n"));
 		}
 		
 		if (hasNote)
@@ -423,7 +424,19 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 							} else {
 								line.add("");
 							}
+							if (ai.getNotAssignedCritical() > 0) {
+								if (ai.getNotAssignedCritical() < ai.getNotAssignedPrimary()) {
+									line.add(ai.getNotAssignedCritical() + "! + " + (ai.getNotAssignedPrimary() - ai.getNotAssignedCritical()));
+								} else {
+									line.add(ai.getNotAssignedCritical() + "!");
+								}
+							} else if (ai.getNotAssignedPrimary() > 0) {
+								line.add(ai.getNotAssignedPrimary().toString());
+							} else {
+								line.add("");
+							}
 						} else {
+							line.add("");
 							line.add("");
 							line.add("");
 						}

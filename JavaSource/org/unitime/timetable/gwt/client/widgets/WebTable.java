@@ -38,6 +38,7 @@ import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
+import com.google.gwt.dom.client.Style.Float;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -684,6 +685,40 @@ public class WebTable extends Composite implements HasMobileScroll {
 				iPanel.add(iIcon);
 				iPanel.add(iLabel);
 				iIcon.getElement().getStyle().setPaddingRight(3, Unit.PX);
+				iPanel.setCellVerticalAlignment(iIcon, HasVerticalAlignment.ALIGN_MIDDLE);
+			}
+			if (title != null && !title.isEmpty()) {
+				iIcon.addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						event.stopPropagation();
+						UniTimeConfirmationDialog.info(title);
+					}
+				});
+			}
+		}
+		
+		public IconCell(ImageResource resource, final String title, String text, boolean reverse) {
+			super(null);
+			iIcon = new Image(resource);
+			iIcon.setTitle(title);
+			iIcon.setAltText(title);
+			if (text != null && !text.isEmpty()) {
+				iLabel = new HTML(text, false);
+				iPanel = new HorizontalPanel();
+				iPanel.setStyleName("icon");
+				if (reverse) {
+					iPanel.add(iLabel);
+					iPanel.add(iIcon);
+					iLabel.getElement().getStyle().setPaddingRight(3, Unit.PX);
+					iLabel.setWidth("100%");
+					iPanel.setWidth("100%");
+					iIcon.getElement().getStyle().setFloat(Float.RIGHT);
+				} else {
+					iPanel.add(iIcon);
+					iPanel.add(iLabel);
+					iIcon.getElement().getStyle().setPaddingRight(3, Unit.PX);
+				}
 				iPanel.setCellVerticalAlignment(iIcon, HasVerticalAlignment.ALIGN_MIDDLE);
 			}
 			if (title != null && !title.isEmpty()) {

@@ -662,20 +662,26 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 	}
 	
 	public static AdvisedInfoInterface getAdvisedInfo(Student student, OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		if (student.getAdvisorCourseRequests() == null || student.getAdvisorCourseRequests().isEmpty()) return null;
+		if (student == null || student.getAdvisorCourseRequests() == null || student.getAdvisorCourseRequests().isEmpty()) return null;
 		List<AdvisorCourseRequest> acrs = new ArrayList<AdvisorCourseRequest>(student.getAdvisorCourseRequests());
 		Collections.sort(acrs);
+		
+		Set<Long> enrolledCourseIds = new HashSet<Long>();
+		for (StudentClassEnrollment e: student.getClassEnrollments())
+			enrolledCourseIds.add(e.getCourseOffering().getUniqueId());
 		
 		AdvisedInfoInterface info = new AdvisedInfoInterface();
 		AdvisorCourseRequest last = null;
 		CourseOffering advFirstChoice = null;
 		CourseRequest firstChoice = null;
+		CourseOffering firstEnrolled = null;
 		boolean firstChoiceCritical = false;
 		float minCred = 0f, maxCred = 0f, cm = 0f, cx = 0f;
-		int nrCourses = 0, nrCriticalCourses = 0, nrCoursesFound = 0, nrCriticalCoursesFound = 0, nrSubstMisMatch = 0;
+		int nrCourses = 0, nrCriticalCourses = 0, nrCoursesFound = 0, nrCriticalCoursesFound = 0, nrSubstMisMatch = 0, nrCoursesAssigned = 0;
 		int foundPrioMin = 0, foundPrioMax = 0;
 		int points = 0, maxPoints = 0;
 		int missingCrit = 0, missingPrim = 0;
+		int notAssignedCrit = 0, notAssignedPrim = 0;
 		for (AdvisorCourseRequest acr: acrs) {
 			if (acr.getPriority() == -1) continue;
 			if (last != null && last.getPriority() != acr.getPriority()) {
@@ -704,6 +710,25 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 						info.addMessage(MSG.advMessageMissingCourseHasAlts(advFirstChoice.getCourseName()));
 					} else if (nrCoursesFound < nrCourses) {
 						info.addMessage(MSG.advMessageMissingAlternatives(advFirstChoice.getCourseName()));
+					}
+					
+					if (nrCoursesFound > 0 && nrCoursesAssigned == 0 && !last.isSubstitute()) {
+						notAssignedPrim ++;
+						if (firstChoiceCritical) {
+							notAssignedCrit ++;
+							if (nrCourses > 1)
+								info.addNotAssignedMessage(MSG.advMessageNotEnrolledCriticalCourseWithAlts(advFirstChoice.getCourseName()));
+							else
+								info.addNotAssignedMessage(MSG.advMessageNotEnrolledCriticalCourse(advFirstChoice.getCourseName()));
+						} else {
+							if (nrCourses > 1)
+								info.addNotAssignedMessage(MSG.advMessageNotEnrolledCourseWithAlts(advFirstChoice.getCourseName()));
+							else
+								info.addNotAssignedMessage(MSG.advMessageNotEnrolledCourse(advFirstChoice.getCourseName()));
+						}
+					} else if (last.isSubstitute() && nrCoursesAssigned > 0) {
+						notAssignedPrim --;
+						info.addNotAssignedMessage(MSG.advMessageHasEnrolledSubstituteCourse(firstEnrolled.getCourseName()));
 					}
 					
 					// 1st choice course match
@@ -743,6 +768,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 				nrCourses = 0; nrCriticalCourses = 0; nrCoursesFound = 0; nrCriticalCoursesFound = 0; nrSubstMisMatch = 0;
 				advFirstChoice = null; firstChoice = null; firstChoiceCritical = false;
 				foundPrioMin = 0; foundPrioMax = 0;
+				firstEnrolled = null; nrCoursesAssigned = 0;
 			}
 			if (!acr.isSubstitute()) {
 				CourseCreditUnitConfig credit = (acr.getCourseOffering() == null ? null: acr.getCourseOffering().getCredit());
@@ -768,6 +794,10 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					advFirstChoice = acr.getCourseOffering();
 					firstChoiceCritical = acr.isCriticalOrImportant();
 					firstChoice = request;
+				}
+				if (enrolledCourseIds.contains(acr.getCourseOffering().getUniqueId())) {
+					nrCoursesAssigned ++;
+					if (firstEnrolled == null) firstEnrolled = acr.getCourseOffering();
 				}
 				if (request != null) {
 					nrCoursesFound ++;
@@ -812,6 +842,25 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 				info.addMessage(MSG.advMessageMissingAlternatives(advFirstChoice.getCourseName()));
 			}
 			
+			if (nrCoursesFound > 0 && nrCoursesAssigned == 0 && !last.isSubstitute()) {
+				notAssignedPrim ++;
+				if (firstChoiceCritical) {
+					notAssignedCrit ++;
+					if (nrCourses > 1)
+						info.addNotAssignedMessage(MSG.advMessageNotEnrolledCriticalCourseWithAlts(advFirstChoice.getCourseName()));
+					else
+						info.addNotAssignedMessage(MSG.advMessageNotEnrolledCriticalCourse(advFirstChoice.getCourseName()));
+				} else {
+					if (nrCourses > 1)
+						info.addNotAssignedMessage(MSG.advMessageNotEnrolledCourseWithAlts(advFirstChoice.getCourseName()));
+					else
+						info.addNotAssignedMessage(MSG.advMessageNotEnrolledCourse(advFirstChoice.getCourseName()));
+				}
+			} else if (last.isSubstitute() && nrCoursesAssigned > 0) {
+				notAssignedPrim --;
+				info.addNotAssignedMessage(MSG.advMessageHasEnrolledSubstituteCourse(firstEnrolled.getCourseName()));
+			}
+			
 			// 1st choice course match
 			maxPoints += 4 + (firstChoiceCritical ? 2 : 0);
 			if (firstChoice != null) {
@@ -849,6 +898,8 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		info.setPercentage(((float)points)/maxPoints);
 		info.setMissingCritical(missingCrit);
 		info.setMissingPrimary(missingPrim);
+		info.setNotAssignedCritical(notAssignedCrit);
+		info.setNotAssignedPrimary(notAssignedPrim);
 		
 		return info;
 	}
