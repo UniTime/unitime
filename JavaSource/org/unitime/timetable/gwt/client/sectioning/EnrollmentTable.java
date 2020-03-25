@@ -59,6 +59,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningActio
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Student;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.gwt.shared.UserAuthenticationProvider;
 
@@ -82,6 +83,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
@@ -122,6 +124,7 @@ public class EnrollmentTable extends Composite {
 	
 	private boolean iOnline;
 	private boolean iShowFilter = false;
+	private boolean iEmail = false;
 	
 	public EnrollmentTable(final boolean showHeader, boolean online) {
 		this(showHeader, online, false);
@@ -219,6 +222,8 @@ public class EnrollmentTable extends Composite {
 	
 	public UniTimeHeaderPanel getHeader() { return iHeader; }
 	
+	public void setEmail(boolean email) { iEmail = email; }
+	
 	public void showStudentSchedule(final Long studentId) {
 		iSectioningService.lookupStudent(iOnline, studentId, new AsyncCallback<ClassAssignmentInterface.Student>() {
 			@Override
@@ -283,7 +288,7 @@ public class EnrollmentTable extends Composite {
 						Window.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=acrf#" + student.getId(), "_blank", "");
 					}
 				});
-				buttons.setEnabled("acrf", student.isCanSelect() && iOnline && student.getSessionId() != null);
+				buttons.setEnabled("acrf", student.isCanSelect() && student.getSessionId() != null); // && iOnline
 				buttons.addButton("registration", MESSAGES.buttonRegistration(), new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent e) {
@@ -345,6 +350,35 @@ public class EnrollmentTable extends Composite {
 						@Override
 						public void onClick(ClickEvent event) {
 							Window.open(result.getRequest().getSpecRegDashboardUrl(), "_blank", "");
+						}
+					});
+				}
+				if (student.isCanSelect() && iEmail) {
+					buttons.addButton("email", MESSAGES.buttonSendStudentEmail(), new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							final StudentStatusDialog dialog = new StudentStatusDialog(new HashSet<StudentStatusInfo>(), null);
+							if (!iOnline)
+								dialog.getClassScheduleCheckBox().setVisible(false);
+							dialog.sendStudentEmail(new Command() {
+								@Override
+								public void execute() {
+									iSectioningService.sendEmail(student.getSessionId(), student.getId(),
+											dialog.getSubject(), dialog.getMessage(), dialog.getCC(),
+											dialog.getIncludeCourseRequests(), iOnline && dialog.getIncludeClassSchedule(), dialog.getIncludeAdvisorRequests(),
+											new AsyncCallback<Boolean>() {
+												@Override
+												public void onFailure(Throwable caught) {
+													UniTimeNotifications.error(MESSAGES.advisorRequestsEmailFailed(caught.getMessage()), caught);
+												}
+												@Override
+												public void onSuccess(Boolean result) {
+													UniTimeNotifications.info(MESSAGES.advisorRequestsEmailSent());
+												}
+									});
+								}
+							});
+							
 						}
 					});
 				}

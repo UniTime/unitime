@@ -1286,6 +1286,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Special Registration")
 	String buttonSpecRegDashboard();
 	
+	@DefaultMessage("Send <u>E</u>mail")
+	String buttonSendStudentEmail();
+	
 	@DefaultMessage("Loading change log for {0}...")
 	String loadingChangeLog(String student);
 
@@ -2521,7 +2524,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Date:      _______________")
 	String pdfSignatureDate();
 	
-	@DefaultMessage("<u>A</u>dvisor Recommendations")
+	@DefaultMessage("A<u>d</u>visor Recommendations")
 	String buttonAdvisorCourseRequests();
 	
 	@DefaultMessage("{0} reservation")
@@ -2584,7 +2587,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Failed to load advisor course recommendations: {0}")
 	String failedAdvisorRequests(String reason);
 	
-	@DefaultMessage("<u>A</u>dvisor Recommendations")
+	@DefaultMessage("Advisor Recommendations")
 	String tabAdvisorRequests();
 	
 	@DefaultMessage("Course requests not filled in.")

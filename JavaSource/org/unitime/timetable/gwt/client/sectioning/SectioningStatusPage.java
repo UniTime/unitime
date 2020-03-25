@@ -711,6 +711,7 @@ public class SectioningStatusPage extends Composite {
 				iProperties = result;
 				if (iProperties.isChangeLog() && iOnline)
 					iTabBar.addTab(MESSAGES.tabChangeLog(), true);
+				iEnrollmentTable.setEmail(!iOnline && iProperties.isEmail());
 				checkLastQuery();
 			}
 

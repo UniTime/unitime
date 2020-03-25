@@ -377,5 +377,9 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 		public boolean isAllMyStudents();
 		public int getStudentCount();
 	}
+	
+	public CheckBox getCourseRequestsCheckBox() { return iCourseRequests; }
+	public CheckBox getClassScheduleCheckBox() { return iClassSchedule; }
+	public CheckBox getAdvisorRequestsCheckBox() { return iAdvisorRequests; }
 
 }
