@@ -126,6 +126,9 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 		Integer curriculumCnt = type2count.get(2);
 		if (curriculumCnt != null)
 			curriculumType.setCount(curriculumCnt);
+		Integer curriculumOverrideCnt = type2count.get(8);
+		if (curriculumOverrideCnt != null)
+			curriculumType.setCount(curriculumType.getCount() + curriculumOverrideCnt);
 		response.add("type", curriculumType);
 		Entity courseType = new Entity(new Long(0), "Course", MESSAGES.reservationCourseAbbv(), "translated-value", MESSAGES.reservationCourseAbbv());
 		Integer courseCnt = type2count.get(3);
@@ -182,7 +185,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 		
 		if (request.hasOptions("type") && request.getOptions("type").contains("Curriculum")) {
 			Map<Long, Entity> areas = new HashMap<Long, Entity>();
-			for (Reservation reservation: (List<Reservation>)query.select("distinct r").where("r.class = CurriculumReservation").exclude("area").query(hibSession).list()) {
+			for (Reservation reservation: (List<Reservation>)query.select("distinct r").where("r.class in (CurriculumReservation, CurriculumOverrideReservation)").exclude("area").query(hibSession).list()) {
 				AcademicArea acedmicArea = ((CurriculumReservation)reservation).getArea();
 				Entity area = areas.get(acedmicArea.getUniqueId());
 				if (area == null) {
