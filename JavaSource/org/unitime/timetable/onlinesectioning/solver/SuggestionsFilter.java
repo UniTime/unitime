@@ -153,10 +153,6 @@ public class SuggestionsFilter implements SuggestionsBranchAndBound.SuggestionFi
 						}
 					}
 			}
-			if (attr != null && iSection.getTime() != null) {
-				int start = parseStart(attr + ":" + term);
-				if (start >= 0 && iSection.getTime().getStartSlot() == start) return true;
-			}
 			return false;
 		}
 		

@@ -1158,10 +1158,6 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 							}
 						}
 					}
-					if (attr != null) {
-						int start = parseStart(attr + ":" + term);
-						if (start >= 0 && e.getClazz().getCommittedAssignment() != null && e.getClazz().getCommittedAssignment().getStartSlot() == start) return true;
-					}
 				}
 			}
 			

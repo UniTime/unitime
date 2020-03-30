@@ -1148,10 +1148,6 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 							}
 						}
 					}
-					if (attr != null && section.getTime() != null) {
-						int start = parseStart(attr + ":" + term);
-						if (start >= 0 && section.getTime().getSlot() == start) return true;
-					}
 				}
 			}
 			
