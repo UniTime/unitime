@@ -144,7 +144,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		
 		List<Entity> groups = new ArrayList<Entity>();
 		for (Object[] o: (List<Object[]>)query.select("g.uniqueId, g.groupAbbreviation, g.groupName, count(distinct s)")
-				.from("StudentGroup g").where("g in elements(s.groups) and g.type is null")
+				.from("inner join s.groups g").where("g.type is null")
 				.order("g.groupAbbreviation, g.groupName").group("g.uniqueId, g.groupAbbreviation, g.groupName")
 				.exclude("group").exclude("course").exclude("lookup").exclude("prefer").exclude("require").query(helper.getHibSession()).list()) {
 			Entity c = new Entity(
@@ -159,7 +159,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		for (StudentGroupType type: StudentGroupTypeDAO.getInstance().findAll(helper.getHibSession())) {
 			List<Entity> groupsOfThisType = new ArrayList<Entity>();
 			for (Object[] o: (List<Object[]>)query.select("gt.uniqueId, gt.groupAbbreviation, gt.groupName, count(distinct s)")
-					.from("StudentGroup gt").where("gt in elements(s.groups) and gt.type = :groupTypeId")
+					.from("inner join s.groups gt").where("gt.type = :groupTypeId")
 					.set("groupTypeId", type.getUniqueId())
 					.order("gt.groupAbbreviation, gt.groupName").group("gt.uniqueId, gt.groupAbbreviation, gt.groupName")
 					.exclude(type.getReference().replace(' ', '_')).exclude("course").exclude("lookup").exclude("prefer").exclude("require").query(helper.getHibSession()).list()) {
@@ -177,7 +177,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		
 		List<Entity> acc = new ArrayList<Entity>();
 		for (Object[] o: (List<Object[]>)query.select("a.uniqueId, a.abbreviation, a.name, count(distinct s)")
-				.from("StudentAccomodation a").where("a in elements(s.accomodations)")
+				.from("inner join s.accomodations a")
 				.order("a.abbreviation, a.name").group("a.uniqueId, a.abbreviation, a.name")
 				.exclude("accommodation").exclude("course").exclude("lookup").exclude("prefer").exclude("require").query(helper.getHibSession()).list()) {
 			Entity c = new Entity(
