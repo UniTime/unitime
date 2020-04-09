@@ -742,7 +742,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				} else if (eq("Reserved", term)) {
 					return enrollment() != null && enrollment().getReservation() != null;
 				} else if (eq("Not Assigned", term)) {
-					return enrollment() == null;
+					return enrollment() == null && !request().isAlternative();
 				} else if (eq("Wait-Listed", term)) {
 					return enrollment() == null && request().isWaitlist();
 				} else if (eq("Critical", term)) {

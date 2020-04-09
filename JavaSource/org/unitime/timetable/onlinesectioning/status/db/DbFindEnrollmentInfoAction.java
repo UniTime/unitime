@@ -802,7 +802,12 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				} else if (eq("Reserved", term)) {
 					return !enrollment().isEmpty() && reservation() != null;
 				} else if (eq("Not Assigned", term)) {
-					return enrollment().isEmpty();
+					if (enrollment().isEmpty() && !request().getCourseDemand().isAlternative()) {
+						for (StudentClassEnrollment e: student().getClassEnrollments())
+							if (e.getCourseRequest() != null && e.getCourseRequest().getCourseDemand().equals(request().getCourseDemand())) return false;
+						return true;
+					}
+					return false;
 				} else if (eq("Wait-Listed", term)) {
 					return enrollment().isEmpty() && request().getCourseDemand().isWaitlist();
 				} else if (eq("Critical", term)) {
@@ -811,16 +816,24 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					if (enrollment().isEmpty()) return false;
 					return request().getCourseDemand().getEffectiveCritical() == Critical.CRITICAL;
 				} else if (eq("Not Assigned Critical", term)) {
-					if (!enrollment().isEmpty()) return false;
-					return request().getCourseDemand().getEffectiveCritical() == Critical.CRITICAL;
+					if (enrollment().isEmpty() && request().getCourseDemand().getEffectiveCritical() == Critical.CRITICAL && !request().getCourseDemand().isAlternative()) {
+						for (StudentClassEnrollment e: student().getClassEnrollments())
+							if (e.getCourseRequest() != null && e.getCourseRequest().getCourseDemand().equals(request().getCourseDemand())) return false;
+						return true;
+					}
+					return false;
 				} else if (eq("Important", term)) {
 					return request().getCourseDemand().getEffectiveCritical() == Critical.IMPORTANT;
 				} else if (eq("Assigned Important", term)) {
 					if (enrollment().isEmpty()) return false;
 					return request().getCourseDemand().getEffectiveCritical() == Critical.IMPORTANT;
 				} else if (eq("Not Assigned Important", term)) {
-					if (!enrollment().isEmpty()) return false;
-					return request().getCourseDemand().getEffectiveCritical() == Critical.IMPORTANT;
+					if (enrollment().isEmpty() && request().getCourseDemand().getEffectiveCritical() == Critical.IMPORTANT && !request().getCourseDemand().isAlternative()) {
+						for (StudentClassEnrollment e: student().getClassEnrollments())
+							if (e.getCourseRequest() != null && e.getCourseRequest().getCourseDemand().equals(request().getCourseDemand())) return false;
+						return true;
+					}
+					return false;
 				}
 			}
 			
