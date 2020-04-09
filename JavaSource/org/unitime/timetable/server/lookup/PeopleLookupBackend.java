@@ -416,6 +416,8 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 		if (iSearchControls == null) {
 			iSearchControls = new SearchControls();
 			iSearchControls.setCountLimit(ApplicationProperty.PeopleLookupLdapLimit.intValue());
+			if (ApplicationProperty.PeopleLookupLdapSearchSubtree.isTrue())
+				iSearchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 		}
 		return iSearchControls;
 	}

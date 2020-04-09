@@ -1590,6 +1590,11 @@ public enum ApplicationProperty {
 	@DefaultValue("100")
 	@Description("People Lookup LDAP: search limit")
 	PeopleLookupLdapLimit("tmtbl.lookup.ldap.countLimit"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("People Lookup LDAP: search subtree (not just the current level)")
+	PeopleLookupLdapSearchSubtree("tmtbl.lookup.ldap.searchSubtree"),
 
 	@DefaultValue("(|(|(sn=%*)(uid=%))(givenName=%*)(cn=* %* *)(mail=%*))")
 	@Description("People Lookup LDAP: search query")
