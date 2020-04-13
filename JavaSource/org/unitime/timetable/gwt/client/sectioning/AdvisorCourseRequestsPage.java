@@ -375,6 +375,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		iNotes.setStyleName("unitime-TextArea");
 		iNotes.addStyleName("advisor-notes");
 		iNotes.setText("");
+		iNotes.getElement().setAttribute("maxlength", "2048");
 		int notesRow = addRow(MESSAGES.propAdvisorNotes(), iNotes);
 		for (int i = 0; i < getCellCount(notesRow); i++)
 			getCellFormatter().addStyleName(notesRow, i, "advisor-notes-line");

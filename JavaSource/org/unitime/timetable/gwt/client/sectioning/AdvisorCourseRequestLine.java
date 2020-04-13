@@ -160,6 +160,7 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 		iNotes.setStyleName("unitime-TextArea");
 		iNotes.setText("");
 		iNotes.setHeight(23 + "px");
+		iNotes.getElement().setAttribute("maxlength", "2048");
 		iTimer = new Timer() {
 			@Override
 			public void run() {
