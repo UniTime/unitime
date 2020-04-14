@@ -1097,6 +1097,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
 			AcademicSessionInfo s = server.getAcademicSession();
 			if (s == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+			if (getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingUser) == null)
+				getSessionContext().checkPermissionAnySession(s, Right.SchedulingAssistant);
 			return new AcademicSessionProvider.AcademicSessionInfo(
 					s.getUniqueId(),
 					s.getYear(), s.getTerm(), s.getCampus(),
@@ -1111,6 +1113,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			if (!session.getStatusType().canPreRegisterStudents() || session.getStatusType().canSectionAssistStudents() || session.getStatusType().canOnlineSectionStudents())
 				throw new SectioningException(MSG.exceptionNoServerForSession());
 			AcademicSessionInfo info = new AcademicSessionInfo(session);
+			if (getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingUser) == null)
+				getSessionContext().checkPermissionAnySession(session, Right.CourseRequests);
 			return new AcademicSessionProvider.AcademicSessionInfo(
 					session.getUniqueId(),
 					session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
