@@ -71,12 +71,14 @@ import org.cpsolver.studentsct.online.selection.BestPenaltyCriterion;
 import org.cpsolver.studentsct.online.selection.MultiCriteriaBranchAndBoundSelection;
 import org.cpsolver.studentsct.online.selection.OnlineSectioningSelection;
 import org.cpsolver.studentsct.online.selection.SuggestionSelection;
+import org.cpsolver.studentsct.reservation.DummyReservation;
 import org.cpsolver.studentsct.reservation.Reservation;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
+import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
@@ -107,6 +109,7 @@ import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
+import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
 import org.unitime.timetable.solver.studentsct.StudentSolver;
 
 /**
@@ -650,6 +653,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					reservation.getPriority(), reservation.canAssignOverLimit(), reservationLimit, 
 					applicable, reservation.mustBeUsed(), reservation.isAllowOverlap(), reservation.isExpired(), reservation.isOverride());
 			clonedReservation.setAllowDisabled(reservation.isAllowDisabled());
+			clonedReservation.setNeverIncluded(reservation.neverIncluded());
 			for (Long configId: reservation.getConfigsIds())
 				clonedReservation.addConfig(configs.get(configId));
 			for (Map.Entry<Long, Set<Long>> entry: reservation.getSections().entrySet()) {
@@ -659,12 +663,37 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				clonedReservation.getSections().put(subparts.get(entry.getKey()), clonedSections);
 			}
 		}
+		if (!(server instanceof StudentSolver)) {
+			String filter = server.getConfig().getProperty("Load.OnlineOnlyStudentFilter", null);
+			if (filter != null && !filter.isEmpty()) {
+				if (new Query(filter).match(new StudentMatcher(originalStudent, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
+					String im = server.getConfig().getProperty("Load.OnlineOnlyInstructionalModeRegExp", "");
+					List<Config> matchingConfigs = new ArrayList<Config>();
+	        		for (Config config: clonedOffering.getConfigs()) {
+	        			if (im.isEmpty()) {
+	        				if (config.getInstructionalMethodReference() == null || config.getInstructionalMethodReference().isEmpty())
+	        					matchingConfigs.add(config);	
+	        			} else {
+	        				if (config.getInstructionalMethodReference() != null && config.getInstructionalMethodReference().matches(im)) {
+	        					matchingConfigs.add(config);
+	        				}
+	        			}
+	        		}
+	        		if (matchingConfigs.size() != clonedOffering.getConfigs().size()) {
+	        			Reservation clonedReservation = new OnlineReservation(XReservationType.IndividualOverride.ordinal(), -3l, clonedOffering, DummyReservation.DEFAULT_PRIORITY, false, 1,true, true, false, true, true);
+	        			if (matchingConfigs.size() == 0) clonedReservation.setNeverIncluded(true);
+	        			else for (Config c: matchingConfigs)
+	        				clonedReservation.addConfig(c);
+	        			hasMustUse = true;
+	        		}
+				}
+			}
+		}
 		// There are reservations >> allow user to keep the current enrollment by providing a dummy reservation for it
 		if (!offering.getReservations().isEmpty() && hasAssignment)
 			for (XEnrollment enrollment: enrollments.getEnrollmentsForCourse(courseId))
 				if (enrollment.getStudentId().equals(studentId)) {
-					Reservation clonedReservation = new OnlineReservation(XReservationType.Dummy.ordinal(), -2l, clonedOffering, 1000, false, 1, true, false, false, hasMustUse, true);
-					clonedReservation = new OnlineReservation(XReservationType.Dummy.ordinal(), -2l, clonedOffering, 1000, false, 1, true, hasMustUse, false, true, true);
+					Reservation clonedReservation = new OnlineReservation(XReservationType.Dummy.ordinal(), -2l, clonedOffering, 1000, false, 1, true, hasMustUse, false, true, true);
 					clonedReservation.addConfig(configs.get(enrollment.getConfigId()));
 					for (Long sectionId: enrollment.getSectionIds())
 						clonedReservation.addSection(sections.get(sectionId));

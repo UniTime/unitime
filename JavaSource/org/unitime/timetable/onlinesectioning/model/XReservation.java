@@ -55,6 +55,7 @@ public abstract class XReservation extends XReservationId implements Comparable<
     private int iPriority = 1000;
     private int iFlags = 0;
     private boolean iInclusive = true;
+    private boolean iNeverIncluded = false;
     
     public static enum Flags {
     	MustBeUsed,
@@ -216,6 +217,7 @@ public abstract class XReservation extends XReservationId implements Comparable<
     	iLimitCap = (int)Math.round(reservation.getLimitCap());
     	iRestrictivity = reservation.getRestrictivity();
     	iExpirationDate = (reservation.isExpired() ? new Date(0) : null);
+    	iNeverIncluded = reservation.neverIncluded();
     	iStartDate = null;
     	iInclusive = reservation.areRestrictionsInclusive();
     	for (Config config: reservation.getConfigs()) {
@@ -313,6 +315,16 @@ public abstract class XReservation extends XReservationId implements Comparable<
     public void setMustBeUsed(boolean mustBeUsed) { iFlags = Flags.MustBeUsed.set(iFlags, mustBeUsed); }
     
     /**
+     * No enrollment is matching this reservation when set to true
+     */
+    public boolean neverIncluded() { return iNeverIncluded; }
+    
+    /**
+     * No enrollment is matching this reservation when set to true
+     */
+    public void setNeverIncluded(boolean neverIncluded) { iNeverIncluded = neverIncluded; }
+    
+    /**
      * Return minimum of two limits where -1 counts as unlimited (any limit is smaller)
      */
     private static int min(int l1, int l2) {
@@ -368,6 +380,7 @@ public abstract class XReservation extends XReservationId implements Comparable<
      * Return true if the given enrollment meets the reservation.
      */
     public boolean isIncluded(Long configId, List<XSection> sections) {
+    	if (iNeverIncluded) return false;
     	if (iInclusive) {
             // If there are configurations, check the configuration
             if (!iConfigs.isEmpty() && !iConfigs.contains(configId)) return false;
@@ -400,6 +413,7 @@ public abstract class XReservation extends XReservationId implements Comparable<
     }
     
     public boolean isIncluded(XOffering offering, Long configId, XSection section) {
+    	if (iNeverIncluded) return false;
     	if (iInclusive) {
         	if (!iConfigs.isEmpty() && !iConfigs.contains(configId)) return false;
         	
@@ -535,6 +549,7 @@ public abstract class XReservation extends XReservationId implements Comparable<
     	for (int i = 0; i < nrIds; i++)
     		iIds.add(in.readLong());
     	iInclusive = in.readBoolean();
+    	iNeverIncluded = in.readBoolean();
 	}
 
 	@Override
@@ -566,5 +581,6 @@ public abstract class XReservation extends XReservationId implements Comparable<
 		for (Long id: iIds)
 			out.writeLong(id);
 		out.writeBoolean(iInclusive);
+		out.writeBoolean(iNeverIncluded);
 	}
 }

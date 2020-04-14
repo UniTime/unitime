@@ -1870,7 +1870,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				for (XCourseId c: cr.getCourseIds()) {
 					XOffering offering = server.getOffering(c.getOfferingId());
 					if (offering == null) continue;
-					Course clonnedCourse = offering.toCourse(c.getCourseId(), original, server.getExpectations(c.getOfferingId()), offering.getDistributions(), server.getEnrollments(c.getOfferingId()));
+					Course clonnedCourse = offering.toCourse(c.getCourseId(), original, server);
 					courses.add(clonnedCourse);
 					model.addOffering(clonnedCourse.getOffering());
 					distributions.addAll(offering.getDistributions());

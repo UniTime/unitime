@@ -56,6 +56,7 @@ import org.cpsolver.studentsct.reservation.GroupReservation;
 import org.cpsolver.studentsct.reservation.ReservationOverride;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
+import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseReservation;
 import org.unitime.timetable.model.CurriculumOverrideReservation;
@@ -70,6 +71,9 @@ import org.unitime.timetable.model.OverrideReservation;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
+import org.unitime.timetable.solver.studentsct.StudentSolver;
 
 /**
  * @author Tomas Muller
@@ -621,6 +625,36 @@ public class XOffering implements Serializable, Externalizable {
 			return Double.compare(a.getId(), b.getId());
 		}
 	}
+	
+	public Course toCourse(Long courseId, XStudent student, OnlineSectioningServer server) {
+		Course course = toCourse(courseId, student, server.getExpectations(getOfferingId()), getDistributions(), server.getEnrollments(getOfferingId()));
+		if (!(server instanceof StudentSolver)) {
+			String filter = server.getConfig().getProperty("Load.OnlineOnlyStudentFilter", null);
+			if (filter != null && !filter.isEmpty()) {
+				if (new Query(filter).match(new StudentMatcher(student, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
+					String im = server.getConfig().getProperty("Load.OnlineOnlyInstructionalModeRegExp", "");
+					List<Config> matchingConfigs = new ArrayList<Config>();
+	        		for (Config config: course.getOffering().getConfigs()) {
+	        			if (im.isEmpty()) {
+	        				if (config.getInstructionalMethodReference() == null || config.getInstructionalMethodReference().isEmpty())
+	        					matchingConfigs.add(config);	
+	        			} else {
+	        				if (config.getInstructionalMethodReference() != null && config.getInstructionalMethodReference().matches(im)) {
+	        					matchingConfigs.add(config);
+	        				}
+	        			}
+	        		}
+	        		if (matchingConfigs.size() != course.getOffering().getConfigs().size()) {
+	        			org.cpsolver.studentsct.reservation.Reservation clonedReservation = new OnlineReservation(XReservationType.IndividualOverride.ordinal(), -3l, course.getOffering(), DummyReservation.DEFAULT_PRIORITY, false, 1,true, true, false, true, true);
+	        			if (matchingConfigs.size() == 0) clonedReservation.setNeverIncluded(true);
+	        			else for (Config c: matchingConfigs)
+	        				clonedReservation.addConfig(c);
+	        		}
+				}
+			}
+		}
+		return course;
+	}
 
     public Course toCourse(Long courseId, XStudent student, XExpectations expectations, Collection<XDistribution> distributions, XEnrollments enrollments) {
 		Offering clonedOffering = new Offering(getOfferingId(), getName());
@@ -722,6 +756,7 @@ public class XOffering implements Serializable, Externalizable {
 					reservation.getPriority(), reservation.canAssignOverLimit(), reservationLimit, 
 					applicable, reservation.mustBeUsed(), reservation.isAllowOverlap(), reservation.isExpired(), reservation.isOverride());
 			clonedReservation.setAllowDisabled(reservation.isAllowDisabled());
+			clonedReservation.setNeverIncluded(reservation.neverIncluded());
 			for (Long configId: reservation.getConfigsIds())
 				clonedReservation.addConfig(configs.get(configId));
 			for (Map.Entry<Long, Set<Long>> entry: reservation.getSections().entrySet()) {
@@ -731,6 +766,7 @@ public class XOffering implements Serializable, Externalizable {
 				clonedReservation.getSections().put(subparts.get(entry.getKey()), clonedSections);
 			}
 		}
+		
 		return clonedCourse;
     }
     
