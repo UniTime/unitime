@@ -445,7 +445,7 @@ public class SpecialRegistrationsPanel extends P {
 					}
 					lastCourseId = ca.getCourseId();
 				}
-			} else {
+			} else if (reg.hasErrors()) {
 				List<Widget> row = new ArrayList<Widget>();
 				row.add(p);
 				row.add(new DateAndNoteCell(reg.getSubmitDate(), reg.getNote()));
