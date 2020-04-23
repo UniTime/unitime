@@ -42,6 +42,7 @@ import org.cpsolver.ifs.solver.Solver;
 import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.cpsolver.studentsct.StudentSectioningSaver;
+import org.cpsolver.studentsct.model.AreaClassificationMajor;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.Request;
@@ -181,6 +182,9 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		iCSV.setHeader(new CSVField[] {
 				new CSVField("PUID"),
 				new CSVField("Name"),
+				new CSVField("Area"),
+				new CSVField("Clasf"),
+				new CSVField("Major"),
 				new CSVField("Course"),
 				new CSVField("CRN"),
 				new CSVField("Request"),
@@ -339,12 +343,21 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 			} else {
 				iProgress.error("Enrollment failed: " + e.getMessage(), e);
 			}
+        	String area = "", clasf = "", major = "";
+			for (AreaClassificationMajor acm: student.getAreaClassificationMajors()) {
+				area += (area.isEmpty() ? "" : "\n") + (acm.getArea() == null ? "" : acm.getArea());
+				clasf += (clasf.isEmpty() ? "" : "\n") + (acm.getClassification() == null ? "" : acm.getClassification());
+				major += (major.isEmpty() ? "" : "\n") + (acm.getMajor() == null ? "" : acm.getMajor());
+			}
         	String puid = getBannerId(student);
         	for (String id: getCrns(student)) {
         		if (id == null) continue;
         		csv.add(new CSVField[] {
         				new CSVField(puid),
 						new CSVField(student.getName()),
+						new CSVField(area),
+						new CSVField(clasf),
+						new CSVField(major),
 						new CSVField(getCourseNameForCrn(student, id)),
 						new CSVField(id),
 						new CSVField("Add"),
@@ -496,6 +509,13 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 			String campus = iExternalTermProvider.getExternalCampus(iSession);
 			String puid = getBannerId(student);
 			
+			String area = "", clasf = "", major = "";
+			for (AreaClassificationMajor acm: student.getAreaClassificationMajors()) {
+				area += (area.isEmpty() ? "" : "\n") + (acm.getArea() == null ? "" : acm.getArea());
+				clasf += (clasf.isEmpty() ? "" : "\n") + (acm.getClassification() == null ? "" : acm.getClassification());
+				major += (major.isEmpty() ? "" : "\n") + (acm.getMajor() == null ? "" : acm.getMajor());
+			}
+			
 			resource.addQueryParameter("term", term);
 		    resource.addQueryParameter("bannerId", puid);
 		    resource.addQueryParameter("systemIn", "SB");
@@ -556,6 +576,9 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 					csv.add(new CSVField[] {
 							new CSVField(puid),
 							new CSVField(student.getName()),
+							new CSVField(area),
+							new CSVField(clasf),
+							new CSVField(major),
 							new CSVField(getCourseNameForCrn(student, id)),
 							new CSVField(id),
 							new CSVField("Add"),
@@ -585,6 +608,9 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 					csv.add(new CSVField[] {
 							new CSVField(puid),
 							new CSVField(student.getName()),
+							new CSVField(area),
+							new CSVField(clasf),
+							new CSVField(major),
 							new CSVField(reg.subject + " " + reg.courseNumber),
 							new CSVField(id),
 							new CSVField("Drop"),
@@ -674,6 +700,9 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 					csv.add(new CSVField[] {
 							new CSVField(puid),
 							new CSVField(student.getName()),
+							new CSVField(area),
+							new CSVField(clasf),
+							new CSVField(major),
 							new CSVField(reg.subject + " " + reg.courseNumber),
 							new CSVField(id),
 							new CSVField(op),
@@ -709,6 +738,9 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		            csv.add(new CSVField[] {
 		            		new CSVField(puid),
 							new CSVField(student.getName()),
+							new CSVField(area),
+							new CSVField(clasf),
+							new CSVField(major),
 							new CSVField(getCourseNameForCrn(student, id)),
 							new CSVField(id),
 							new CSVField(op),
@@ -733,6 +765,9 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 				csv.add(new CSVField[] {
 						new CSVField(puid),
 						new CSVField(student.getName()),
+						new CSVField(area),
+						new CSVField(clasf),
+						new CSVField(major),
 						new CSVField(getCourseNameForCrn(student, id)),
 						new CSVField(id),
 						new CSVField(op),
@@ -745,6 +780,9 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 				csv.add(new CSVField[] {
 						new CSVField(puid),
 						new CSVField(student.getName()),
+						new CSVField(area),
+						new CSVField(clasf),
+						new CSVField(major),
 						new CSVField(null),
 						new CSVField(null),
 						new CSVField(null),

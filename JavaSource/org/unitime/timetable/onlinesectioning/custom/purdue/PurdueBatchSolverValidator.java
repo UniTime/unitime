@@ -33,6 +33,7 @@ import org.cpsolver.ifs.solver.Solver;
 import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.cpsolver.studentsct.StudentSectioningSaver;
+import org.cpsolver.studentsct.model.AreaClassificationMajor;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.Request;
@@ -132,6 +133,9 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 		iCSV.setHeader(new CSVField[] {
 				new CSVField("PUID"),
 				new CSVField("Name"),
+				new CSVField("Area"),
+				new CSVField("Clasf"),
+				new CSVField("Major"),
 				new CSVField("Course"),
 				new CSVField("CRN"),
 				new CSVField("Code"),
@@ -354,9 +358,18 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 					.setLevel(OnlineSectioningLog.Message.Level.FATAL)
 					.setText(e.getClass().getSimpleName() + ": " + e.getMessage()));
 			iProgress.error("[" + student.getExternalId() + "] Failed to validate: " + e.getMessage(), e);
+			String area = "", clasf = "", major = "";
+			for (AreaClassificationMajor acm: student.getAreaClassificationMajors()) {
+				area += (area.isEmpty() ? "" : "\n") + (acm.getArea() == null ? "" : acm.getArea());
+				clasf += (clasf.isEmpty() ? "" : "\n") + (acm.getClassification() == null ? "" : acm.getClassification());
+				major += (major.isEmpty() ? "" : "\n") + (acm.getMajor() == null ? "" : acm.getMajor());
+			}
 			csv.add(new CSVField[] {
 					new CSVField(puid),
 					new CSVField(student.getName()),
+					new CSVField(area),
+					new CSVField(clasf),
+					new CSVField(major),
 					new CSVField(""),
 					new CSVField(""),
 					new CSVField("FAIL"),
@@ -372,12 +385,21 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 		
 		action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
 		if (resp != null && resp.outJson != null && resp.outJson.problems != null) {
+			String area = "", clasf = "", major = "";
+			for (AreaClassificationMajor acm: student.getAreaClassificationMajors()) {
+				area += (area.isEmpty() ? "" : "\n") + (acm.getArea() == null ? "" : acm.getArea());
+				clasf += (clasf.isEmpty() ? "" : "\n") + (acm.getClassification() == null ? "" : acm.getClassification());
+				major += (major.isEmpty() ? "" : "\n") + (acm.getMajor() == null ? "" : acm.getMajor());
+			}
 			for (Problem p: resp.outJson.problems) {
 				if (p.crn == null) {
 					iProgress.warn("[" + student.getExternalId() + "] " + p.message);
 					csv.add(new CSVField[] {
 							new CSVField(puid),
 							new CSVField(student.getName()),
+							new CSVField(area),
+							new CSVField(clasf),
+							new CSVField(major),
 							new CSVField(""),
 							new CSVField(""),
 							new CSVField(p.code),
@@ -390,6 +412,9 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 					csv.add(new CSVField[] {
 							new CSVField(puid),
 							new CSVField(student.getName()),
+							new CSVField(area),
+							new CSVField(clasf),
+							new CSVField(major),
 							new CSVField(getCourseNameForCrn(student, p.crn)),
 							new CSVField(p.crn),
 							new CSVField(p.code),
