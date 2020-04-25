@@ -2012,7 +2012,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					check.setOverrides(response.overrides);
 					check.setFlag(EligibilityFlag.SR_TIME_CONF, check.hasOverride("TIME"));
 					check.setFlag(EligibilityFlag.SR_LIMIT_CONF, check.hasOverride("CLOS"));
-					check.setFlag(EligibilityFlag.CAN_CHANGE_GRADE_MODE, check.hasOverride("GMODE") || check.hasOverride("VARCR"));
+					check.setFlag(EligibilityFlag.CAN_CHANGE_GRADE_MODE, check.hasOverride("GMODE"));
+					check.setFlag(EligibilityFlag.CAN_CHANGE_VAR_CREDIT, check.hasOverride("VARCR"));
 				}
 			} else {
 				check.setFlag(EligibilityFlag.CAN_SPECREG, false);

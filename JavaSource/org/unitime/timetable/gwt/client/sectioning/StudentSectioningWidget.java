@@ -1978,8 +1978,23 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iEnroll.setVisible(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL));
 			iSubmitSpecReg.setVisible(result.isCanEnroll() && !iEnroll.isVisible() && iSpecRegCx.isCanSubmit() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
 			iSubmitSpecReg.setEnabled(result.isCanEnroll() && !iEnroll.isVisible() && iSpecRegCx.isCanSubmit() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
-			iChangeGradeModes.setEnabled(hasGradeMode && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_CHANGE_GRADE_MODE));
-			iChangeGradeModes.setVisible(hasGradeMode && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_CHANGE_GRADE_MODE));
+			if (hasGradeMode && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_CHANGE_GRADE_MODE, EligibilityFlag.CAN_CHANGE_VAR_CREDIT)) {
+				iChangeGradeModes.setEnabled(true);
+				iChangeGradeModes.setVisible(true);
+				if (!iEligibilityCheck.hasFlag(EligibilityFlag.CAN_CHANGE_GRADE_MODE)) {
+					iChangeGradeModes.setHTML(MESSAGES.buttonChangeVariableCredits());
+					iChangeGradeModes.setTitle(MESSAGES.hintChangeVariableCredits());
+				} else if (!iEligibilityCheck.hasFlag(EligibilityFlag.CAN_CHANGE_VAR_CREDIT)) {
+					iChangeGradeModes.setHTML(MESSAGES.buttonChangeGradeModes());
+					iChangeGradeModes.setTitle(MESSAGES.hintChangeGradeModes());
+				} else {
+					iChangeGradeModes.setHTML(MESSAGES.buttonChangeGradeModesAndVariableCredits());
+					iChangeGradeModes.setTitle(MESSAGES.hintChangeGradeModesAndVariableCredits());
+				}
+			} else {
+				iChangeGradeModes.setEnabled(false);
+				iChangeGradeModes.setVisible(false);
+			}
 			if (iEligibilityCheck != null && iEligibilityCheck.hasCheckboxMessage()) {
 				if (iCustomCheckbox == null) {
 					iCustomCheckbox = new CheckBox(iEligibilityCheck.getCheckboxMessage(), true);
@@ -3462,6 +3477,15 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					addHistory();
 				}
 			};
+		}
+		if (iEligibilityCheck != null) {
+			if (!iEligibilityCheck.hasFlag(EligibilityFlag.CAN_CHANGE_GRADE_MODE)) {
+				iChangeGradeModesDialog.setText(MESSAGES.dialogChangeVariableCredit());
+			} else if (!iEligibilityCheck.hasFlag(EligibilityFlag.CAN_CHANGE_VAR_CREDIT)) {
+				iChangeGradeModesDialog.setText(MESSAGES.dialogChangeGradeMode());
+			} else {
+				iChangeGradeModesDialog.setText(MESSAGES.dialogChangeGradeModeAndVariableCredit());
+			}
 		}
 		iChangeGradeModesDialog.changeGradeModes(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), lastEnrollment, approvals);
 	}

@@ -455,7 +455,13 @@ public interface StudentSectioningMessages extends Messages {
 	String buttonEnroll();
 	
 	@DefaultMessage("<u>G</u>rade Modes &amp; Credits")
+	String buttonChangeGradeModesAndVariableCredits();
+	
+	@DefaultMessage("<u>G</u>rade Modes")
 	String buttonChangeGradeModes();
+	
+	@DefaultMessage("<u>V</u>ariable Credits")
+	String buttonChangeVariableCredits();
 	
 	@DefaultMessage("Submit Approval Requests")
 	String buttonSubmitSpecReg();
@@ -465,6 +471,12 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Change grade mode of one or more courses.")
 	String hintChangeGradeModes();
+	
+	@DefaultMessage("Change grade mode or variable credit of one or more courses.")
+	String hintChangeGradeModesAndVariableCredits();
+	
+	@DefaultMessage("Change variable credit hours of one or more courses.")
+	String hintChangeVariableCredits();
 	
 	@DefaultMessage("Sumbit the above enrollment changes to Special Registration.")
 	String hintSpecialRegistration();
@@ -2344,18 +2356,24 @@ public interface StudentSectioningMessages extends Messages {
 	String hintCriticalGroup(String courseOrGroup);
 	
 	@DefaultMessage("Grade Modes & Variable Credits")
+	String dialogChangeGradeModeAndVariableCredit();
+	
+	@DefaultMessage("Grade Modes")
 	String dialogChangeGradeMode();
 	
-	@DefaultMessage("Retrieving available grade modes and variable credits...")
+	@DefaultMessage("Variable Credits")
+	String dialogChangeVariableCredit();
+	
+	@DefaultMessage("Retrieving available grade modes and/or variable credits...")
 	String waitRetrieveGradeModes();
 	
-	@DefaultMessage("Requesting grade mode and credit changes...")
+	@DefaultMessage("Requesting grade mode and/or credit changes...")
 	String waitChangeGradeModes();
 	
-	@DefaultMessage("Unable to get available grade modes and variable credits: {0}")
+	@DefaultMessage("Unable to get available grade modes and/or variable credits: {0}")
 	String exceptionRetrieveGradeModes(String message);
 	
-	@DefaultMessage("Failed to request grade mode and/or credit changes: {0}")
+	@DefaultMessage("Failed to request grade mode and/or variable credit changes: {0}")
 	String exceptionChangeGradeModes(String message);
 	
 	@DefaultMessage("No grade mode or credit changes are available.")

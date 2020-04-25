@@ -83,5 +83,20 @@ public class AriaMultiButton extends AriaButton {
 		for (AriaButton clone: iClones)
 			clone.setVisible(visible);
 	}
+	
+	@Override
+	public void setHTML(String html) {
+		super.setHTML(html);
+		if (iClones != null)
+			for (AriaButton clone: iClones)
+				clone.setHTML(html);
+	}
+	
+	@Override
+	public void setTitle(String title) {
+		super.setTitle(title);
+		for (AriaButton clone: iClones)
+			clone.setTitle(title);
+	}
 
 }
