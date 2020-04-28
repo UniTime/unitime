@@ -1675,12 +1675,12 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		return dbStatus != null && dbStatus.hasOption(StudentSectioningStatus.Option.reqval);
 	}
 	
-	protected boolean hasPendingOverride(org.unitime.timetable.model.Student student) {
-		if (student.getOverrideExternalId() != null && student.getMaxCreditOverrideStatus() == CourseRequestOverrideStatus.PENDING) return true;
+	protected boolean hasOverride(org.unitime.timetable.model.Student student) {
+		if (student.getOverrideExternalId() != null) return true;
 		if (student.getMaxCredit() == null) return true;
 		for (CourseDemand cd: student.getCourseDemands()) {
 			for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests()) {
-				if (cr.getOverrideExternalId() != null && cr.getCourseRequestOverrideStatus() == CourseRequestOverrideStatus.PENDING)
+				if (cr.getOverrideExternalId() != null)
 					return true;
 			}
 		}
@@ -1689,7 +1689,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 	
 	public boolean updateStudent(OnlineSectioningServer server, OnlineSectioningHelper helper, org.unitime.timetable.model.Student student, OnlineSectioningLog.Action.Builder action) throws SectioningException {
 		// No pending overrides -> nothing to do
-		if (student == null || !hasPendingOverride(student)) return false;
+		if (student == null || !hasOverride(student)) return false;
 		
 		ClientResource resource = null;
 		try {
@@ -1832,7 +1832,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		if (!isValidationEnabled(student)) return false;
 
 		// When there is a pending override, try to update student first
-		if (hasPendingOverride(student))
+		if (hasOverride(student))
 			updateStudent(server, helper, student, action);
 
 		// All course requests are approved -> nothing to do
@@ -2555,7 +2555,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		int batchNumber = 1;
 		for (int i = 0; i < students.size(); i++) {
 			org.unitime.timetable.model.Student student = students.get(i);
-			if (student == null || !hasPendingOverride(student)) continue;
+			if (student == null || !hasOverride(student)) continue;
 			if (!isValidationEnabled(student)) continue;
 			String id = getBannerId(student);
 			id2student.put(id, student);
