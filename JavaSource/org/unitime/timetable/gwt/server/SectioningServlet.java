@@ -161,7 +161,6 @@ import org.unitime.timetable.onlinesectioning.custom.CustomDegreePlansHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomSpecialRegistrationHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.custom.Customization;
-import org.unitime.timetable.onlinesectioning.custom.DefaultCourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.RequestStudentUpdates;
 import org.unitime.timetable.onlinesectioning.match.AbstractCourseMatcher;
@@ -223,51 +222,20 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	private static StudentSectioningConstants CONSTANTS = Localization.create(StudentSectioningConstants.class);
 	private static SecurityMessages SEC_MSG = Localization.create(SecurityMessages.class);
 	private static Logger sLog = Logger.getLogger(SectioningServlet.class);
-	private CourseDetailsProvider iCourseDetailsProvider;
-	private CourseMatcherProvider iCourseMatcherProvider;
-	private ExternalTermProvider iExternalTermProvider;
 	
 	public SectioningServlet() {
 	}
 	
 	private CourseDetailsProvider getCourseDetailsProvider() {
-		if (iCourseDetailsProvider == null) {
-			try {
-				String providerClass = ApplicationProperty.CustomizationCourseDetails.value();
-				if (providerClass != null)
-					iCourseDetailsProvider = (CourseDetailsProvider)Class.forName(providerClass).newInstance();
-			} catch (Exception e) {
-				sLog.warn("Failed to initialize course detail provider: " + e.getMessage());
-				iCourseDetailsProvider = new DefaultCourseDetailsProvider();
-			}
-		}
-		return iCourseDetailsProvider;
+		return Customization.CourseDetailsProvider.getProvider();
 	}
 	
 	private CourseMatcherProvider getCourseMatcherProvider() {
-		if (iCourseMatcherProvider == null) {
-			try {
-				String providerClass = ApplicationProperty.CustomizationCourseMatcher.value();
-				if (providerClass != null)
-					iCourseMatcherProvider = (CourseMatcherProvider)Class.forName(providerClass).newInstance();
-			} catch (Exception e) {
-				sLog.warn("Failed to initialize course matcher provider: " + e.getMessage());
-			}
-		}
-		return iCourseMatcherProvider;
+		return Customization.CourseMatcherProvider.getProvider();
 	}
 	
 	private ExternalTermProvider getExternalTermProvider() {
-		if (iExternalTermProvider == null) {
-			try {
-				String providerClass = ApplicationProperty.CustomizationExternalTerm.value();
-				if (providerClass != null)
-					iExternalTermProvider = (ExternalTermProvider)Class.forName(providerClass).newInstance();
-			} catch (Exception e) {
-				sLog.warn("Failed to initialize external term provider: " + e.getMessage());
-			}
-		}
-		return iExternalTermProvider;
+		return Customization.ExternalTermProvider.getProvider();
 	}
 	
 	private @Autowired AuthenticationManager authenticationManager;
@@ -484,7 +452,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		
 		if (studentId != null) {
 			CourseMatcherProvider provider = getCourseMatcherProvider();
-			if (provider != null) matcher.setParentCourseMatcher(provider.getCourseMatcher(getSessionContext(), studentId));
+			if (provider != null) matcher.setParentCourseMatcher(provider.getCourseMatcher(server, getSessionContext(), studentId));
 		}
 		
 		return matcher;

@@ -32,14 +32,20 @@ public class Holder<T> {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	String iName;
 	ApplicationProperty iProperty;
+	String iDefaultProvider = null;
 	T iProvider;
 	String iProviderClass;
 	Logger iLog;
 	
-	public Holder(Class<T> name, ApplicationProperty property) {
+	public Holder(Class<T> name, ApplicationProperty property, Class<? extends T> defaultProvider) {
 		iLog = Logger.getLogger(name);
 		iName = name.getSimpleName().replaceAll("(?<=[^A-Z])([A-Z])"," $1");
 		iProperty = property;
+		iDefaultProvider = (defaultProvider == null ? null : defaultProvider.getName());
+	}
+	
+	public Holder(Class<T> name, ApplicationProperty property) {
+		this(name, property, null);
 	}
 	
 	private void disposeProvider() {
@@ -47,6 +53,7 @@ public class Holder<T> {
 			try {
 				iLog.info("Disposing old provider");
 				iProvider.getClass().getMethod("dispose").invoke(iProvider);
+			} catch (NoSuchMethodException e) {
 			} catch (Exception e) {
 				iLog.warn("Failed to dispose: " + e.getMessage(), e);
 			}
@@ -57,6 +64,7 @@ public class Holder<T> {
 	
 	public synchronized T getProvider() {
 		String providerClass = iProperty.value();
+		if (providerClass == null || providerClass.isEmpty()) providerClass = iDefaultProvider;
 		if (providerClass == null || providerClass.isEmpty()) {
 			if (iProvider != null)
 				disposeProvider();

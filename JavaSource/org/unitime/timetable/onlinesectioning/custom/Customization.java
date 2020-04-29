@@ -32,11 +32,17 @@ public enum Customization {
 	DegreePlansProvider(DegreePlansProvider.class, ApplicationProperty.CustomizationDegreePlans),
 	SpecialRegistrationProvider(SpecialRegistrationProvider.class, ApplicationProperty.CustomizationSpecialRegistration),
 	StudentEnrollmentProvider(StudentEnrollmentProvider.class, ApplicationProperty.CustomizationStudentEnrollments),
+	CourseMatcherProvider(CourseMatcherProvider.class, ApplicationProperty.CustomizationCourseMatcher),
+	CourseDetailsProvider(CourseDetailsProvider.class, ApplicationProperty.CustomizationCourseDetails, DefaultCourseDetailsProvider.class),
+	ExternalTermProvider(ExternalTermProvider.class, ApplicationProperty.CustomizationExternalTerm),
 	;
 	
 	private Holder<?> iHolder;
 	<T> Customization(Class<T> name, ApplicationProperty property) {
 		iHolder = new Holder<T>(name, property);
+	}
+	<T> Customization(Class<T> name, ApplicationProperty property, Class<? extends T> defaultProvider) {
+		iHolder = new Holder<T>(name, property, defaultProvider);
 	}
 	
 	public <T> T getProvider() {

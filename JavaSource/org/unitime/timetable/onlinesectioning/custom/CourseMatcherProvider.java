@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.onlinesectioning.custom;
 
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
 import org.unitime.timetable.security.SessionContext;
 
@@ -33,5 +34,5 @@ public interface CourseMatcherProvider {
 	 * @param studentId current student unique id
 	 * @return course matcher instance, null if no additional filtering is to be made
 	 */
-	public CourseMatcher getCourseMatcher(SessionContext context, Long studentId);
+	public CourseMatcher getCourseMatcher(OnlineSectioningServer server, SessionContext context, Long studentId);
 }
