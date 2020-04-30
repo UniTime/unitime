@@ -71,6 +71,7 @@ import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Subpart;
 import org.cpsolver.studentsct.model.Unavailability;
+import org.cpsolver.studentsct.model.Request.RequestPriority;
 import org.cpsolver.studentsct.reservation.CourseReservation;
 import org.cpsolver.studentsct.reservation.CurriculumOverride;
 import org.cpsolver.studentsct.reservation.CurriculumReservation;
@@ -231,6 +232,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private int iDayOfWeekOffset = 0;
     private Query iOnlineOnlyStudentQuery = null;
     private String iOnlineOnlyInstructionalModeRegExp;
+    private String iMPPCoursesRegExp = null;
+    private static enum IgnoreNotAssigned { all, other, none }
+    private IgnoreNotAssigned iIgnoreNotAssigned = IgnoreNotAssigned.other;
     
     public StudentSectioningDatabaseLoader(StudentSectioningModel model, org.cpsolver.ifs.assignment.Assignment<Request, Enrollment> assignment) {
         super(model, assignment);
@@ -339,6 +343,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         if (projQuery != null && !projQuery.isEmpty()) {
         	iProjectedStudentQuery = new Query(projQuery);
         	iProgress.info("Projected students filter: " + iProjectedStudentQuery); 
+        }
+        
+        iMPPCoursesRegExp = model.getProperties().getProperty("Load.MPPCoursesRegExp", null);
+        iIgnoreNotAssigned = IgnoreNotAssigned.valueOf(model.getProperties().getProperty("Load.IgnoreNotAssigned", iIgnoreNotAssigned.name()).toLowerCase());
+        if (iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty()) {
+        	iProgress.info("MPP courses: " + iMPPCoursesRegExp + " (ignoring " + iIgnoreNotAssigned + " not assigned)");
         }
     }
     
@@ -791,6 +801,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     		section.setName(course.getUniqueId(), suffix);
                     }
                     section.setCancelled(c.isCancelled());
+                    if (section.isCancelled() && iAllowToKeepCurrentEnrollment && iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty() && !courseName.matches(iMPPCoursesRegExp) && !c.getStudentEnrollments().isEmpty()) {
+                    	iProgress.info("Class " + c.getClassLabel(iShowClassSuffix, iShowConfigName) + " is cancelled but has enrollments, the class will be treated as disabled.");
+                    	section.setCancelled(false); section.setEnabled(false);
+                    }
                     class2section.put(c.getUniqueId(), section);
                     classTable.put(c.getUniqueId(), section);
                 }
@@ -1175,6 +1189,20 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	return null;
         }
         
+        if (iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty()) {
+        	boolean match = false;
+        	for (CourseDemand cd: s.getCourseDemands())
+        		for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests())
+        			if (cr.getCourseOffering().getCourseName().matches(iMPPCoursesRegExp)) {
+        				if (iIgnoreNotAssigned == IgnoreNotAssigned.all && cr.getClassEnrollments().isEmpty()) continue;
+        				match = true;
+        			}
+        	if (!match) {
+        		skipStudent(s, courseTable, classTable);
+            	return null;
+        	}
+        }
+        
         iProgress.debug("Loading student "+s.getUniqueId()+" (id="+s.getExternalUniqueId()+", name="+iStudentNameFormat.format(s)+")");
         Student student = new Student(s.getUniqueId().longValue());
         student.setExternalId(s.getExternalUniqueId());
@@ -1227,7 +1255,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 		});
 		Set<CourseOffering> alternatives = new HashSet<CourseOffering>();
 		demands.addAll(s.getCourseDemands());
-		float credit = 0f;
+		float credit = 0f, assignedCredit = 0f;
         for (CourseDemand cd: demands) {
             if (cd.getFreeTime()!=null) {
             	TimeLocation ft = new TimeLocation(
@@ -1271,6 +1299,14 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     if (course==null) {
                         iProgress.warn("Student " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ") requests course " + cr.getCourseOffering().getCourseName() + " that is not loaded.");
                         continue;
+                    }
+                    if (iIgnoreNotAssigned == IgnoreNotAssigned.all && cr.getClassEnrollments().isEmpty()) {
+                    	iProgress.info("Requested course " + cr.getCourseOffering().getCourseName() + " is not assigned for " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ")");
+                		continue;
+                    }
+                    if (iIgnoreNotAssigned == IgnoreNotAssigned.other && cr.getClassEnrollments().isEmpty() && iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty() && !course.getName().matches(iMPPCoursesRegExp)) {
+                    	iProgress.info("Requested course " + cr.getCourseOffering().getCourseName() + " is not assigned for " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ")");
+                    	continue;
                     }
                     CourseCreditUnitConfig creditCfg = cr.getCourseOffering().getCredit();
                     if (creditCfg != null && creditThisRequest < creditCfg.getMinCredit()) creditThisRequest = creditCfg.getMinCredit();
@@ -1372,10 +1408,15 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 }
                 if (courses.isEmpty()) continue;
                 credit += creditThisRequest;
+                boolean alternative = cd.isAlternative() || (iMaxCreditChecking && maxCredit > 0 && credit > maxCredit);
+                if (alternative && iIgnoreNotAssigned == IgnoreNotAssigned.all)
+                	alternative = false;
+                if (alternative && iIgnoreNotAssigned == IgnoreNotAssigned.other && iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty() && !courses.get(0).getName().matches(iMPPCoursesRegExp))
+                	alternative = false;
                 CourseRequest request = new CourseRequest(
                         cd.getUniqueId(),
                         cd.getPriority(),
-                        cd.isAlternative() || (iMaxCreditChecking && maxCredit > 0 && credit > maxCredit),
+                        alternative,
                         student,
                         courses,
                         cd.isWaitlist(), 
@@ -1384,9 +1425,18 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 request.getSelectedChoices().addAll(selChoices);
                 request.getRequiredChoices().addAll(reqChoices);
                 request.getWaitlistedChoices().addAll(wlChoices);
-                if (assignedConfig!=null && assignedSections.size() == assignedConfig.getSubparts().size()) {
+                Course assignedCourse = null;
+                if (assignedConfig != null)
+                	for (Course c: assignedConfig.getOffering().getCourses()) {
+                		if (request.getCourses().contains(c)) { assignedCourse = c; break; }
+                	}
+                if (assignedConfig!=null &&
+                		(assignedSections.size() == assignedConfig.getSubparts().size() ||
+                		(getModel().isMPP() && getModel().getKeepInitialAssignments()) ||
+                		(iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty() && assignedCourse != null && !assignedCourse.getCourseNumber().matches(iMPPCoursesRegExp)))) {
                     Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections, getAssignment());
                     request.setInitialAssignment(enrollment);
+                    assignedCredit += enrollment.getCredit();
                 }
                 if (!cd.isAlternative() && maxCredit > 0 && credit > maxCredit) {
                 	if (iMaxCreditChecking)
@@ -1475,9 +1525,18 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     	continue courses;
                     }
                 }
-                if (assignedConfig!=null && assignedSections.size() == assignedConfig.getSubparts().size()) {
+                Course assignedCourse = null;
+                if (assignedConfig != null)
+                	for (Course c: assignedConfig.getOffering().getCourses()) {
+                		if (request.getCourses().contains(c)) { assignedCourse = c; break; }
+                	}
+                if (assignedConfig!=null &&
+                		(assignedSections.size() == assignedConfig.getSubparts().size() ||
+                		(getModel().isMPP() && getModel().getKeepInitialAssignments()) ||
+                		(iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty() && assignedCourse != null && !assignedCourse.getCourseNumber().matches(iMPPCoursesRegExp)))) {
                     Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections, getAssignment());
                     request.setInitialAssignment(enrollment);
+                    assignedCredit += enrollment.getCredit();
                 }
                 if (assignedConfig!=null && assignedSections.size() != assignedConfig.getSubparts().size()) {
                 	iProgress.error("There is a problem assigning " + request.getName() + " to " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + "): wrong number of classes (" +
@@ -1486,13 +1545,20 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	}
         }
         
+        if (iAllowToKeepCurrentEnrollment && assignedCredit > student.getMaxCredit()) {
+        	iProgress.warn("Student " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ") has " + assignedCredit + " credits assigned but his/her maximum is " + student.getMaxCredit());
+        	student.setMaxCredit(assignedCredit);
+        }
+        
         return student;
     }
     
     public void assignStudent(Student student) {
 		for (Request r: student.getRequests()) {
-			if (r.getInitialAssignment() != null && student.isAvailable(r.getInitialAssignment()) && r.getModel().conflictValues(getAssignment(), r.getInitialAssignment()).isEmpty())
+			if (r.getInitialAssignment() != null && student.isAvailable(r.getInitialAssignment()) && r.getModel().conflictValues(getAssignment(), r.getInitialAssignment()).isEmpty()) {
+				if (iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty() && r instanceof CourseRequest && r.getInitialAssignment().getCourse().getName().matches(iMPPCoursesRegExp)) continue;
 				getAssignment().assign(0, r.getInitialAssignment());
+			}
 		}
     }
     
@@ -1500,6 +1566,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 		float credit = 0f;
     	for (Request r: student.getRequests()) {
     		if (getAssignment().getValue(r) != null || r.getInitialAssignment() == null || !(r instanceof CourseRequest)) continue;
+    		if (iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty() && r.getInitialAssignment().getCourse().getName().matches(iMPPCoursesRegExp)) continue;
     		if (!student.isAvailable(r.getInitialAssignment())) {
     			iProgress.error("There is a problem assigning " + r.getName() + " to " + student.getName() + " (" + student.getExternalId() + "): Student not available.");
     			continue;
@@ -1652,20 +1719,28 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     			freetime ++;
     		}
     	}
-    	if ((getModel().isMPP() && getModel().getKeepInitialAssignments() && assigned > 0) || (iMoveCriticalCoursesUp && critical > 0) || (iMoveFreeTimesDown && freetime > 0)) {
+    	if ((getModel().isMPP() && getModel().getKeepInitialAssignments() && assigned > 0) || (iMoveCriticalCoursesUp && critical > 0) || (iMoveFreeTimesDown && freetime > 0) || (iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty())) {
 			Collections.sort(student.getRequests(), new Comparator<Request>() {
 				@Override
 				public int compare(Request r1, Request r2) {
 					if (r1.isAlternative() != r2.isAlternative()) return r1.isAlternative() ? 1 : -1;
-					if (getModel().isMPP() && getModel().getKeepInitialAssignments()) {
+					if (iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty()) {
+						boolean a1 = (r1 instanceof CourseRequest && r1.getInitialAssignment() != null && getAssignment().getValue(r1) != null && !r1.getInitialAssignment().getCourse().getName().matches(iMPPCoursesRegExp));
+						boolean a2 = (r2 instanceof CourseRequest && r2.getInitialAssignment() != null && getAssignment().getValue(r2) != null && !r2.getInitialAssignment().getCourse().getName().matches(iMPPCoursesRegExp));
+						if (a1 != a2) {
+							return a1 ? -1 : 1;
+						}
+					} else if (getModel().isMPP() && getModel().getKeepInitialAssignments()) {
 						boolean a1 = (r1 instanceof CourseRequest && r1.getInitialAssignment() != null && getAssignment().getValue(r1) != null);
 						boolean a2 = (r2 instanceof CourseRequest && r2.getInitialAssignment() != null && getAssignment().getValue(r2) != null);
 						if (a1 != a2) return a1 ? -1 : 1;
 					}
 					if (iMoveCriticalCoursesUp) {
-						boolean c1 = (r1 instanceof CourseRequest && r1.isCritical());
-						boolean c2 = (r2 instanceof CourseRequest && r2.isCritical());
-						if (c1 != c2) return c1 ? -1 : 1;
+						RequestPriority p1 = r1.getRequestPriority();
+						RequestPriority p2 = r2.getRequestPriority();
+						if (p1 != p2) {
+							return (p1 == null ? RequestPriority.Normal : p1).compareTo(p2 == null ? RequestPriority.Normal : p2);
+						}
 					}
 					if (iMoveFreeTimesDown) {
 						boolean f1 = (r1 instanceof FreeTimeRequest);
@@ -2355,6 +2430,16 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	checkForConflicts(student);
         }
         
+        if (iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty() && getModel().getKeepInitialAssignments()) {
+        	setPhase("Removing initial assignment for matching course(s) ...", getModel().variables().size());
+        	for (Request request: getModel().variables()) {
+        		incProgress();
+        		if (request instanceof CourseRequest && request.getInitialAssignment() != null && request.getInitialAssignment().getCourse().getName().matches(iMPPCoursesRegExp)) {
+        			request.setInitialAssignment(null);
+        		}
+        	}
+        }
+        
         if (getModel().isMPP() && getModel().getKeepInitialAssignments()) {
         	setPhase("Moving assigned requests first...", getModel().getStudents().size());
             for (Student student: getModel().getStudents()) {
@@ -2369,6 +2454,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             }
         } else if (iMoveFreeTimesDown) {
         	setPhase("Moving free times last...", getModel().getStudents().size());
+            for (Student student: getModel().getStudents()) {
+            	incProgress();
+            	reorderStudentRequests(student);
+            }
+        } else if (iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty()) {
+        	setPhase("Moving assigned requests not matching the course(s) first...", getModel().getStudents().size());
             for (Student student: getModel().getStudents()) {
             	incProgress();
             	reorderStudentRequests(student);
