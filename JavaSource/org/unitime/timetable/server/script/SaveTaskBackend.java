@@ -119,29 +119,30 @@ public class SaveTaskBackend implements GwtRpcImplementation<SaveTaskDetailsRpcR
 			
 			int base = CalendarUtils.date2dayOfYear(t.getSession().getSessionStartYear(), t.getSession().getSessionBeginDateTime());
 			List<TaskExecution> executions = new ArrayList<TaskExecution>(t.getSchedule());
-			for (TaskExecutionInterface exec: task.getExecutions()) {
-				TaskExecution execution = null;
-				int index = exec.getDayOfYear() - base;
-				exec.setExecutionDate(getScheduleDate(t.getSession(), index, exec.getSlot()));
-				//if (exec.getDayOfYear() == null) exec.setDayOfYear(CalendarUtils.date2dayOfYear(t.getSession().getSessionStartYear(), exec.getExecutionDate()));
-				// int index = exec.getDayOfYear() - base;
-				for (Iterator<TaskExecution> i = executions.iterator(); i.hasNext(); ) {
-					TaskExecution e = i.next();
-					if (e.getExecutionPeriod().equals(exec.getSlot()) && e.getExecutionDate().equals(index)) {
-						execution = e; i.remove(); break;
+			if (task.hasExecutions())
+				for (TaskExecutionInterface exec: task.getExecutions()) {
+					TaskExecution execution = null;
+					int index = exec.getDayOfYear() - base;
+					exec.setExecutionDate(getScheduleDate(t.getSession(), index, exec.getSlot()));
+					//if (exec.getDayOfYear() == null) exec.setDayOfYear(CalendarUtils.date2dayOfYear(t.getSession().getSessionStartYear(), exec.getExecutionDate()));
+					// int index = exec.getDayOfYear() - base;
+					for (Iterator<TaskExecution> i = executions.iterator(); i.hasNext(); ) {
+						TaskExecution e = i.next();
+						if (e.getExecutionPeriod().equals(exec.getSlot()) && e.getExecutionDate().equals(index)) {
+							execution = e; i.remove(); break;
+						}
+					}
+					if (execution == null) {
+						execution = new TaskExecution();
+						execution.setCreatedDate(ts);
+						execution.setExecutionDate(index);
+						execution.setExecutionPeriod(exec.getSlot());
+						execution.setScheduledDate(getScheduleDate(t.getSession(), index, exec.getSlot()));
+						execution.setExecutionStatus(ExecutionStatus.CREATED.ordinal());
+						execution.setTask(t);
+						t.getSchedule().add(execution);
 					}
 				}
-				if (execution == null) {
-					execution = new TaskExecution();
-					execution.setCreatedDate(ts);
-					execution.setExecutionDate(index);
-					execution.setExecutionPeriod(exec.getSlot());
-					execution.setScheduledDate(getScheduleDate(t.getSession(), index, exec.getSlot()));
-					execution.setExecutionStatus(ExecutionStatus.CREATED.ordinal());
-					execution.setTask(t);
-					t.getSchedule().add(execution);
-				}
-			}
 			for (TaskExecution e: executions) {
 				if (e.getExecutionStatus() == ExecutionStatus.CREATED.ordinal()) {
 					t.getSchedule().remove(e);

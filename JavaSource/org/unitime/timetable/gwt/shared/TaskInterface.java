@@ -300,7 +300,7 @@ public class TaskInterface implements GwtRpcResponse, Comparable<TaskInterface> 
 	
     public static TreeSet<MultiExecutionInterface> getMultiExecutions(Collection<TaskExecutionInterface> executions, boolean checkPast) {
         TreeSet<MultiExecutionInterface> ret = new TreeSet<MultiExecutionInterface>();
-        HashSet<TaskExecutionInterface> executionSet = new HashSet<TaskExecutionInterface>(executions);
+        HashSet<TaskExecutionInterface> executionSet = (executions == null ? new HashSet<TaskExecutionInterface>() : new HashSet<TaskExecutionInterface>(executions));
         while (!executionSet.isEmpty()) {
         	TaskExecutionInterface execution = null;
             for (TaskExecutionInterface t : executionSet)

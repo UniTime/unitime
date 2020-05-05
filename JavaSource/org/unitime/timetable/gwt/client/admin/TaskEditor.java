@@ -83,6 +83,7 @@ public class TaskEditor extends UniTimeDialogBox {
 	private VerticalPanel iEmailPanel;
 	private SimpleForm iForm;
 	private ScrollPanel iScroll;
+	private boolean iHasPastExecutions = false;
 	
 	public TaskEditor(TaskInterface task, TaskOptionsInterface options) {
 		super(false, true);
@@ -123,6 +124,8 @@ public class TaskEditor extends UniTimeDialogBox {
 			for (TaskExecutionInterface e: iTask.getExecutions()) {
 				if (e.getStatus() == ExecutionStatus.CREATED)
 					dates.add(ServerDateTimeFormat.toLocalDate(e.getExecutionDate()));
+				else
+					iHasPastExecutions = true;
 			}
 			iDates.setValue(dates);
 		}
@@ -241,7 +244,7 @@ public class TaskEditor extends UniTimeDialogBox {
 			iTask.setScript(script);
 		}
 		List<Integer> dates = iDates.getSelectedDays();
-		if (dates == null || dates.isEmpty()) {
+		if (dates == null || (!iHasPastExecutions && dates.isEmpty())) {
 			iBottom.setErrorMessage(MESSAGES.errorNoDateSelected());
 			return false;
 		}
