@@ -1886,6 +1886,14 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		} else {
 			iName.clearHint();
 		}
+		if (getProperties() != null && getProperties().getExpectedAttendanceRequired() && getEventType() == EventType.Special) {
+			if (iLimit.toInteger() == null) {
+				UniTimeNotifications.error(MESSAGES.reqAttendance());
+				if (valid)
+					iHeader.setErrorMessage(MESSAGES.reqAttendance());
+				valid = false;
+			}
+		}
 		if (iMainLName.getWidget().getText().isEmpty() && getEventType() != EventType.Unavailabile) {
 			UniTimeNotifications.error(MESSAGES.reqMainContactLastName());
 			if (valid)

@@ -3904,6 +3904,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Event name is required.")
 	String reqEventName();
 	
+	@DefaultMessage("Expected attendance is required.")
+	String reqAttendance();
+	
 	@DefaultMessage("Main contact last name is required.")
 	String reqMainContactLastName();
 

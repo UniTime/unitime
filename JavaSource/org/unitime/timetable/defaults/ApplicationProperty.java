@@ -1310,6 +1310,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Course-related Events: default value for the student attendance required toggle")
 	EventCourseEventsDefaultStudentAttendance("unitime.events.courseEventDefaultStudentAttendance"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Events: expected attendance must be set when creating a new event")
+	EventExpectedAttendanceRequired("unitime.events.expectedAttendanceRequired"),
 
 	@Type(Class.class)
 	@Implements(Email.class)

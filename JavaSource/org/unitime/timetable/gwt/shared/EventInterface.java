@@ -2053,6 +2053,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private Set<EventServiceProviderInterface> iEventServiceProviders = null;
 		private Integer iFirstDayOfWeek = null;
 		private boolean iCourseEventDefaultStudentAttendance = false;
+		private boolean iExpectedAttendanceRequired = false;
 	
 		public EventPropertiesRpcResponse() {}
 		
@@ -2151,6 +2152,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		
 		public void setCourseEventDefaultStudentAttendance(boolean courseEventDefaultStudentAttendance) { iCourseEventDefaultStudentAttendance = courseEventDefaultStudentAttendance; }
 		public boolean getCourseEventDefaultStudentAttendance() { return iCourseEventDefaultStudentAttendance; }
+		
+		public void setExpectedAttendanceRequired(boolean expectedAttendanceRequired) { iExpectedAttendanceRequired = expectedAttendanceRequired; }
+		public boolean getExpectedAttendanceRequired() { return iExpectedAttendanceRequired; }
 	}
 	
 	public static class EventDetailRpcRequest extends EventRpcRequest<EventInterface> {
