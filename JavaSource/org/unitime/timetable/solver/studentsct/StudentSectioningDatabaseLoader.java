@@ -1,5 +1,4 @@
 /*
- * Licensed to The Apereo Foundation under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
  * additional information regarding copyright ownership.
  *
@@ -55,6 +54,7 @@ import org.cpsolver.ifs.util.IdGenerator;
 import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.studentsct.StudentSectioningLoader;
 import org.cpsolver.studentsct.StudentSectioningModel;
+import org.cpsolver.studentsct.constraint.FixedAssignments;
 import org.cpsolver.studentsct.model.AcademicAreaCode;
 import org.cpsolver.studentsct.model.AreaClassificationMajor;
 import org.cpsolver.studentsct.model.Choice;
@@ -1433,10 +1433,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 if (assignedConfig!=null &&
                 		(assignedSections.size() == assignedConfig.getSubparts().size() ||
                 		(getModel().isMPP() && getModel().getKeepInitialAssignments()) ||
-                		(iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty() && assignedCourse != null && !assignedCourse.getCourseNumber().matches(iMPPCoursesRegExp)))) {
+                		(iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty() && assignedCourse != null && !assignedCourse.getName().matches(iMPPCoursesRegExp)))) {
                     Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections, getAssignment());
                     request.setInitialAssignment(enrollment);
                     assignedCredit += enrollment.getCredit();
+                    if (iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty() && assignedCourse != null && !assignedCourse.getName().matches(iMPPCoursesRegExp))
+                    	request.setFixedValue(enrollment);
                 }
                 if (!cd.isAlternative() && maxCredit > 0 && credit > maxCredit) {
                 	if (iMaxCreditChecking)
@@ -1533,10 +1535,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 if (assignedConfig!=null &&
                 		(assignedSections.size() == assignedConfig.getSubparts().size() ||
                 		(getModel().isMPP() && getModel().getKeepInitialAssignments()) ||
-                		(iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty() && assignedCourse != null && !assignedCourse.getCourseNumber().matches(iMPPCoursesRegExp)))) {
+                		(iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty() && assignedCourse != null && !assignedCourse.getName().matches(iMPPCoursesRegExp)))) {
                     Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections, getAssignment());
                     request.setInitialAssignment(enrollment);
                     assignedCredit += enrollment.getCredit();
+                    if (iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty() && assignedCourse != null && !assignedCourse.getName().matches(iMPPCoursesRegExp))
+                    	request.setFixedValue(enrollment);
                 }
                 if (assignedConfig!=null && assignedSections.size() != assignedConfig.getSubparts().size()) {
                 	iProgress.error("There is a problem assigning " + request.getName() + " to " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + "): wrong number of classes (" +
@@ -2548,6 +2552,17 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             
             if (iFixWeights)
             	fixWeights(hibSession, courseTable.values());
+            
+            if (iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty()) {
+            	boolean hasFixed = false;
+                for (Request r: getModel().variables()) {
+                    if (r instanceof CourseRequest && ((CourseRequest)r).isFixed()) {
+                        hasFixed = true; break;
+                    }
+                }
+                if (hasFixed)
+                    getModel().addGlobalConstraint(new FixedAssignments());
+            }
             
             getModel().createAssignmentContexts(getAssignment(), true);
         }

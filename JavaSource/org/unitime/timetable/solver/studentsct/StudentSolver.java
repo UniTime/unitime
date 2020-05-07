@@ -1164,4 +1164,19 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
     			} catch (Exception ex) {}
     		}
     }
+    
+    @Override
+    public void clear() {
+    	java.util.concurrent.locks.Lock lock = currentSolution().getLock().writeLock();
+        lock.lock();
+        try {
+            for (Request request: currentSolution().getModel().variables()) {
+            	if (request instanceof CourseRequest && ((CourseRequest)request).isFixed()) continue;
+            	currentSolution().getAssignment().unassign(0, request);
+            }
+            currentSolution().clearBest();
+        } finally {
+        	lock.unlock();
+        }
+    }
 }
