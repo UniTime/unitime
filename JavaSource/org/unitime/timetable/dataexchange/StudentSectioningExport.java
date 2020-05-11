@@ -28,6 +28,10 @@ import java.util.TreeSet;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
+import org.unitime.timetable.model.AdvisorClassPref;
+import org.unitime.timetable.model.AdvisorCourseRequest;
+import org.unitime.timetable.model.AdvisorInstrMthPref;
+import org.unitime.timetable.model.AdvisorSectioningPref;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseRequest;
@@ -164,6 +168,68 @@ public class StudentSectioningExport extends BaseExport {
 	        				first = false;
 	        			}
 	        		}
+	        	}
+	        	
+	        	// Advisor recommendations
+	        	Element recommendationsEl = studentEl.addElement("updateAdvisorRecommendations");
+	        	Element recEl = null;
+	        	for (AdvisorCourseRequest acr: new TreeSet<AdvisorCourseRequest>(student.getAdvisorCourseRequests())) {
+	        		Element acrEl = null;
+	        		if (acr.getPriority() == -1) {
+	        			if (acr.getNotes() != null)
+	        				recommendationsEl.addAttribute("notes",  acr.getNotes());
+	        			continue;
+	        		} else if (acr.getAlternative() == 0) {
+	        			recEl = recommendationsEl.addElement("recommendation");
+	        			if (acr.isSubstitute())
+	        				recEl.addAttribute("substitute", "true");
+	        			acrEl = recEl;
+	        		} else {
+	        			acrEl = recEl.addElement("alternative");
+	        		}
+	        		if (acr.getCredit() != null) acrEl.addAttribute("credit", acr.getCredit());
+	        		if (acr.getNotes() != null) acrEl.addAttribute("notes", acr.getNotes());
+	        		if (acr.getCourse() != null) acrEl.addAttribute("course", acr.getCourse());
+	        		if (acr.getFreeTime() != null) {
+	        			Element freeTimeEl = acrEl.addElement("freeTime");
+	        			String days = "";
+	        	        for (int i=0;i<Constants.DAY_NAMES_SHORT.length;i++) {
+	        	        	if ((acr.getFreeTime().getDayCode() & Constants.DAY_CODES[i]) != 0) {
+	        	        		days += Constants.DAY_NAMES_SHORT[i];
+	        	        	}
+	        	        }
+	        	        freeTimeEl.addAttribute("days", days);
+	        	        freeTimeEl.addAttribute("startTime", startSlot2startTime(acr.getFreeTime().getStartSlot()));
+	        	        freeTimeEl.addAttribute("endTime", startSlot2startTime(acr.getFreeTime().getStartSlot() + acr.getFreeTime().getLength()));
+	        	        freeTimeEl.addAttribute("length", String.valueOf(Constants.SLOT_LENGTH_MIN * acr.getFreeTime().getLength()));
+	        		}
+	        		if (acr.getCourseOffering() != null) {
+	        			acrEl.addAttribute("subjectArea", acr.getCourseOffering().getSubjectAreaAbbv());
+	        			acrEl.addAttribute("courseNumber", acr.getCourseOffering().getCourseNbr());
+        				if (acr.getCritical() != null)
+        					acrEl.addAttribute("critical", CourseDemand.Critical.values()[acr.getCritical()].name().toLowerCase());
+        				if (acr.getPreferences() != null && !acr.getPreferences().isEmpty()) {
+        					Element prefEl = acrEl.addElement("preferences");
+        					for (AdvisorSectioningPref p: acr.getPreferences()) {
+        						if (p instanceof AdvisorClassPref) {
+        							AdvisorClassPref scp = (AdvisorClassPref)p;
+        							Element classEl = prefEl.addElement("class");
+        							String extId = scp.getClazz().getExternalId(acr.getCourseOffering());
+    	        	        		if (extId != null && !extId.isEmpty())
+    	        	        			classEl.addAttribute("externalId", extId);
+    	        	        		classEl.addAttribute("type", scp.getClazz().getSchedulingSubpart().getItypeDesc().trim());
+    	        	        		classEl.addAttribute("suffix", getClassSuffix(scp.getClazz()));
+    	        	        		if (scp.isRequired()) classEl.addAttribute("required", "true");
+        						} else if (p instanceof AdvisorInstrMthPref) {
+        							AdvisorInstrMthPref imp = (AdvisorInstrMthPref)p;
+        							Element imEl = prefEl.addElement("instructional-method");
+        							imEl.addAttribute("externalId", imp.getInstructionalMethod().getReference());
+        							imEl.addAttribute("name", imp.getInstructionalMethod().getLabel());
+        							if (imp.isRequired()) imEl.addAttribute("required", "true");
+        						}
+        					}
+        				}
+        			}
 	        	}
 	        }
 	        

@@ -38,6 +38,10 @@ import org.unitime.timetable.dataexchange.StudentEnrollmentImport.Pair;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
+import org.unitime.timetable.model.AdvisorClassPref;
+import org.unitime.timetable.model.AdvisorCourseRequest;
+import org.unitime.timetable.model.AdvisorInstrMthPref;
+import org.unitime.timetable.model.AdvisorSectioningPref;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
@@ -283,6 +287,7 @@ public class StudentSectioningImport extends BaseImport {
 		            student.setSchedulePreference(0);
 		            student.setClassEnrollments(new HashSet<StudentClassEnrollment>());
 		            student.setCourseDemands(new HashSet<CourseDemand>());
+		            student.setAdvisorCourseRequests(new HashSet<AdvisorCourseRequest>());
 		            Element name = demographicsElement.element("name");
 		            if (name != null) {
 		                student.setFirstName(name.attributeValue("first"));
@@ -932,6 +937,202 @@ public class StudentSectioningImport extends BaseImport {
             		updatedStudents.add(student.getUniqueId());
             	}
             	
+            	Element recommendationsEl = studentElement.element("updateAdvisorRecommendations");
+            	if (recommendationsEl != null) {
+            		Date ts = new Date();
+            		Set<AdvisorCourseRequest> remaining = new TreeSet<AdvisorCourseRequest>(student.getAdvisorCourseRequests());
+            		String notes = recommendationsEl.attributeValue("notes");
+            		if (notes != null) {
+            			AdvisorCourseRequest acr = null;
+            			for (Iterator<AdvisorCourseRequest> i = remaining.iterator(); i.hasNext(); ) { 
+            				AdvisorCourseRequest adept = i.next();
+            				if (adept.getPriority() == -1) {
+            					acr = adept; i.remove();
+            				}
+            			}
+            			if (acr == null) {
+            				acr = new AdvisorCourseRequest();
+            				acr.setStudent(student);
+            				acr.setPriority(-1);
+            				acr.setAlternative(0);
+            				acr.setSubstitute(false);
+            				acr.setTimestamp(ts);
+            				acr.setCredit(null);
+            				acr.setCritical(0);
+            				acr.setChangedBy(StudentClassEnrollment.SystemChange.IMPORT.toString());
+            				student.getAdvisorCourseRequests().add(acr);
+            			}
+            			acr.setNotes(notes);
+            			getHibSession().saveOrUpdate(acr);
+            		}
+                	int priority = 0;
+                	for (Iterator i = recommendationsEl.elementIterator("recommendation"); i.hasNext(); ) { 
+                		Element recEl = (Element)i.next();
+                		AdvisorCourseRequest acr = null;
+            			for (Iterator<AdvisorCourseRequest> j = remaining.iterator(); j.hasNext(); ) { 
+            				AdvisorCourseRequest adept = j.next();
+            				if (adept.getPriority() == priority && adept.getAlternative() == 0) {
+            					acr = adept; j.remove();
+            				}
+            			}
+            			if (acr == null) {
+            				acr = new AdvisorCourseRequest();
+							acr.setStudent(student);
+							acr.setChangedBy(StudentClassEnrollment.SystemChange.IMPORT.toString());
+							acr.setTimestamp(ts);
+							acr.setPriority(priority);
+            				acr.setAlternative(0);
+            				student.getAdvisorCourseRequests().add(acr);
+            			}
+            			acr.setSubstitute("true".equalsIgnoreCase(recEl.attributeValue("substitute", "false")));
+            			acr.setCredit(recEl.attributeValue("credit"));
+						acr.setNotes(recEl.attributeValue("notes"));
+						acr.setCourse(recEl.attributeValue("course"));
+						if (recEl.attributeValue("subjectArea") != null) {
+							CourseOffering course = name2course.get(recEl.attributeValue("subjectArea") + " " + recEl.attributeValue("courseNumber"));
+                            if (course == null)
+                                warn("Course " + recEl.attributeValue("subjectArea") + " " + recEl.attributeValue("courseNumber") + " not found.");
+                            else {
+                            	acr.setCourseOffering(course);
+                            	importPreferences(acr, recEl, course, course2extId2class.get(course.getUniqueId()), course2name2class.get(course.getUniqueId()), ref2im, name2im);
+                            }
+						} else {
+							acr.setCourseOffering(null);
+							if (acr.getPreferences() != null && !acr.getPreferences().isEmpty())
+								acr.getPreferences().clear();
+						}
+						Element ftEl = recEl.element("freeTime");
+						if (ftEl != null) {
+							String days = ftEl.attributeValue("days");
+                            String startTime = ftEl.attributeValue("startTime");
+                            String length = ftEl.attributeValue("length");
+                            String endTime = ftEl.attributeValue("endTime");
+                            TimeLocation time = makeTime(student.getSession().getDefaultDatePattern(), days, startTime, endTime, length);
+                            FreeTime free = acr.getFreeTime();
+                            if (free == null) {
+                            	free = new FreeTime();
+        						acr.setFreeTime(free);
+        					}
+        					free.setCategory(time.getBreakTime());
+        					free.setDayCode(time.getDayCode());
+        					free.setStartSlot(time.getStartSlot());
+        					free.setLength(time.getLength());
+        					free.setSession(student.getSession());
+        					free.setName(time.getLongName(true));
+        					getHibSession().saveOrUpdate(free);	
+						} else {
+							if (acr.getFreeTime() != null) {
+								getHibSession().delete(acr.getFreeTime());
+								acr.setFreeTime(null);
+							}
+						}
+						String critical = recEl.attributeValue("critical");
+						if (critical == null)
+    						acr.setCritical(null);
+    					else if ("true".equals(critical))
+    						acr.setCritical(CourseDemand.Critical.CRITICAL.ordinal());
+    					else if ("false".equals(critical))
+    						acr.setCritical(CourseDemand.Critical.NORMAL.ordinal());
+    					else {
+    						for (CourseDemand.Critical c: CourseDemand.Critical.values()) {
+    							if (c.name().equalsIgnoreCase(critical) || String.valueOf(c.ordinal()).equals(critical)) {
+    								acr.setCritical(c.ordinal());
+    								break;
+    							}        								
+    						}
+    					}
+						getHibSession().saveOrUpdate(acr);
+						int alterantive = 1;
+						AdvisorCourseRequest parent = acr;
+						for (Iterator j = recEl.elementIterator("alternative"); j.hasNext(); ) { 
+	                		Element acrEl = (Element)j.next();
+	                		acr = null;
+	            			for (Iterator<AdvisorCourseRequest> k = remaining.iterator(); k.hasNext(); ) { 
+	            				AdvisorCourseRequest adept = k.next();
+	            				if (adept.getPriority() == priority && adept.getAlternative() == alterantive) {
+	            					acr = adept; k.remove();
+	            				}
+	            			}
+	            			if (acr == null) {
+	            				acr = new AdvisorCourseRequest();
+								acr.setStudent(student);
+								acr.setChangedBy(StudentClassEnrollment.SystemChange.IMPORT.toString());
+								acr.setTimestamp(ts);
+								acr.setPriority(priority);
+	            				acr.setAlternative(alterantive);
+	            				student.getAdvisorCourseRequests().add(acr);
+	            			}
+	            			acr.setSubstitute(parent.isSubstitute());
+	            			acr.setCredit(null);
+							acr.setNotes(null);
+							acr.setCourse(acrEl.attributeValue("course"));
+							if (acrEl.attributeValue("subjectArea") != null) {
+								CourseOffering course = name2course.get(acrEl.attributeValue("subjectArea") + " " + acrEl.attributeValue("courseNumber"));
+	                            if (course == null)
+	                                warn("Course " + acrEl.attributeValue("subjectArea") + " " + acrEl.attributeValue("courseNumber") + " not found.");
+	                            else {
+	                            	acr.setCourseOffering(course);
+	                            	importPreferences(acr, acrEl, course, course2extId2class.get(course.getUniqueId()), course2name2class.get(course.getUniqueId()), ref2im, name2im);
+	                            }
+							} else {
+								acr.setCourseOffering(null);
+								if (acr.getPreferences() != null && !acr.getPreferences().isEmpty())
+									acr.getPreferences().clear();
+							}
+							ftEl = acrEl.element("freeTime");
+							if (ftEl != null) {
+								String days = ftEl.attributeValue("days");
+	                            String startTime = ftEl.attributeValue("startTime");
+	                            String length = ftEl.attributeValue("length");
+	                            String endTime = ftEl.attributeValue("endTime");
+	                            TimeLocation time = makeTime(student.getSession().getDefaultDatePattern(), days, startTime, endTime, length);
+	                            FreeTime free = acr.getFreeTime();
+	                            if (free == null) {
+	                            	free = new FreeTime();
+	        						acr.setFreeTime(free);
+	        					}
+	        					free.setCategory(time.getBreakTime());
+	        					free.setDayCode(time.getDayCode());
+	        					free.setStartSlot(time.getStartSlot());
+	        					free.setLength(time.getLength());
+	        					free.setSession(student.getSession());
+	        					free.setName(time.getLongName(true));
+	        					getHibSession().saveOrUpdate(free);	
+							} else {
+								if (acr.getFreeTime() != null) {
+									getHibSession().delete(acr.getFreeTime());
+									acr.setFreeTime(null);
+								}
+							}
+							critical = acrEl.attributeValue("critical");
+							if (critical == null)
+	    						acr.setCritical(null);
+	    					else if ("true".equals(critical))
+	    						acr.setCritical(CourseDemand.Critical.CRITICAL.ordinal());
+	    					else if ("false".equals(critical))
+	    						acr.setCritical(CourseDemand.Critical.NORMAL.ordinal());
+	    					else {
+	    						for (CourseDemand.Critical c: CourseDemand.Critical.values()) {
+	    							if (c.name().equalsIgnoreCase(critical) || String.valueOf(c.ordinal()).equals(critical)) {
+	    								acr.setCritical(c.ordinal());
+	    								break;
+	    							}        								
+	    						}
+	    					}
+	            			alterantive ++;
+	            			getHibSession().saveOrUpdate(acr);
+						}
+            			priority ++;
+                	}
+                	for (AdvisorCourseRequest acr: remaining) {
+            			if (acr.getFreeTime() != null)
+            				getHibSession().delete(acr.getFreeTime());
+            			student.getAdvisorCourseRequests().remove(acr);
+            			getHibSession().delete(acr);
+            		}
+            	}
+            	
+            	
             	getHibSession().update(student);
 	        }
 	            
@@ -1106,6 +1307,107 @@ public class StudentSectioningImport extends BaseImport {
 		}
 		for (InstructionalMethod meth: requiredIMs) {
 			StudentInstrMthPref imp = new StudentInstrMthPref();
+			imp.setCourseRequest(cr);
+			imp.setRequired(true);
+			imp.setInstructionalMethod(meth);
+			imp.setLabel(meth.getLabel());
+			cr.getPreferences().add(imp);
+		}
+	}
+	
+	protected void importPreferences(AdvisorCourseRequest cr, Element requestEl, CourseOffering course, Map<String, Set<Class_>> extId2class, Map<String, Set<Class_>> name2class, Map<String, InstructionalMethod> ref2im, Map<String, InstructionalMethod> name2im) {
+		Element prefEl = requestEl.element("preferences");
+		if (cr.getPreferences() == null) {
+			cr.setPreferences(new HashSet<AdvisorSectioningPref>());
+		} else {
+			for (Iterator<AdvisorSectioningPref> i = cr.getPreferences().iterator(); i.hasNext(); ) {
+				iHibSession.delete(i.next());
+				i.remove();
+			}
+		}
+		if (prefEl == null) return;
+		Set<Class_> preferredClasses = new HashSet<Class_>();
+		Set<Class_> requiredClasses = new HashSet<Class_>();
+		for (Iterator i = prefEl.elementIterator("class"); i.hasNext(); ) {
+			Element classElement = (Element)i.next();
+			Set<Class_> classes = null;
+            
+    		String classExternalId  = classElement.attributeValue("externalId");
+    		if (classExternalId != null && extId2class != null) {
+    			classes = extId2class.get(classExternalId);
+    			if (classes == null)
+    				classes = name2class.get(classExternalId);
+    		}
+    		
+    		if (classes == null && name2class != null) {
+        		String type = classElement.attributeValue("type");
+        		String suffix = classElement.attributeValue("suffix");
+        		if (type != null && suffix != null)
+        			classes = name2class.get(type.trim() + " " + suffix);
+    		}
+    		
+    		if (classes == null && course != null) {
+    			warn(course.getCourseName() + ": Class " + (classExternalId != null ? classExternalId : classElement.attributeValue("type") + " " + classElement.attributeValue("suffix")) + " not found.");
+    			continue;
+    		}
+    		
+    		if ("true".equalsIgnoreCase(classElement.attributeValue("required", "false")))
+    			requiredClasses.addAll(classes);
+    		else
+    			preferredClasses.addAll(classes);
+		}
+		for (Class_ clazz: preferredClasses) {
+			AdvisorClassPref scp = new AdvisorClassPref();
+			scp.setCourseRequest(cr);
+			scp.setClazz(clazz);
+			scp.setLabel(clazz.getClassPrefLabel(cr.getCourseOffering()));
+			scp.setRequired(false);
+			cr.getPreferences().add(scp);
+		}
+		for (Class_ clazz: requiredClasses) {
+			AdvisorClassPref scp = new AdvisorClassPref();
+			scp.setCourseRequest(cr);
+			scp.setClazz(clazz);
+			scp.setLabel(clazz.getClassPrefLabel(cr.getCourseOffering()));
+			scp.setRequired(true);
+			cr.getPreferences().add(scp);
+		}
+		Set<InstructionalMethod> preferredIMs = new HashSet<InstructionalMethod>();
+		Set<InstructionalMethod> requiredIMs = new HashSet<InstructionalMethod>();
+		for (Iterator i = prefEl.elementIterator("instructional-method"); i.hasNext(); ) {
+			Element imElement = (Element)i.next();
+			
+			InstructionalMethod meth = null;
+			
+			String imExternalId = imElement.attributeValue("externalId", imElement.attributeValue("id"));
+    		if (imExternalId != null)
+    			meth = ref2im.get(imExternalId);
+    		
+    		if (meth == null) {
+    			String imName = imElement.attributeValue("name");
+    			if (imName != null)
+    				meth = name2im.get(imName);
+    		}
+    		
+    		if (meth == null) {
+    			warn(course.getCourseName() + ": Instructional Method " + (imExternalId != null ? imExternalId : imElement.attributeValue("name")) + " not found.");
+    			continue;
+    		}
+    		if ("true".equalsIgnoreCase(imElement.attributeValue("required", "false")))
+    			requiredIMs.add(meth);
+    		else
+    			preferredIMs.add(meth);
+		}
+		for (InstructionalMethod meth: preferredIMs) {
+			AdvisorInstrMthPref imp = new AdvisorInstrMthPref();
+			imp.setCourseRequest(cr);
+			imp.setRequired(false);
+			imp.setInstructionalMethod(meth);
+			imp.setLabel(meth.getLabel());
+			cr.getPreferences().add(imp);
+		}
+		for (InstructionalMethod meth: requiredIMs) {
+			AdvisorInstrMthPref imp = new AdvisorInstrMthPref();
 			imp.setCourseRequest(cr);
 			imp.setRequired(true);
 			imp.setInstructionalMethod(meth);
