@@ -1639,6 +1639,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
        			}
            		if (iAllowToKeepCurrentEnrollment) {
                		Reservation reservation = new ReservationOverride(--iMakeupReservationId, enrl.getOffering(), student.getId());
+               		reservation.setPriority(0); // top priority -- use this reservation to get in!
                		if (hasLimit) reservation.setCanAssignOverLimit(true);
                		if (hasOverlap) reservation.setAllowOverlap(true);
     				if (hasDisabled) reservation.setAllowDisabled(hasDisabled);
