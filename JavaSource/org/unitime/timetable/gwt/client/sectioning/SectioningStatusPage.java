@@ -1354,9 +1354,10 @@ public class SectioningStatusPage extends Composite {
 								}
 							}
 							sendEmail(studentIds.iterator(), iStudentStatusDialog.getSubject(), iStudentStatusDialog.getMessage(), iStudentStatusDialog.getCC(), 0,
-									iStudentStatusDialog.getIncludeCourseRequests(), iStudentStatusDialog.getIncludeClassSchedule(), iStudentStatusDialog.getIncludeAdvisorRequests());
+									iStudentStatusDialog.getIncludeCourseRequests(), iStudentStatusDialog.getIncludeClassSchedule(), iStudentStatusDialog.getIncludeAdvisorRequests(),
+									iStudentStatusDialog.isOptionalEmailToggle());
 						}
-					});
+					}, (iProperties == null ? null : iProperties.getEmailOptionalToggle()));
 				}
 			});
 			hSelect.addOperation(new Operation() {
@@ -3208,10 +3209,10 @@ public class SectioningStatusPage extends Composite {
 		}
 	}
 	
-	private void sendEmail(final Iterator<Long> studentIds, final String subject, final String message, final String cc, final int fails, final boolean courseRequests, final boolean classSchedule, final boolean advisorRequests) {
+	private void sendEmail(final Iterator<Long> studentIds, final String subject, final String message, final String cc, final int fails, final boolean courseRequests, final boolean classSchedule, final boolean advisorRequests, final Boolean toggle) {
 		if (!studentIds.hasNext()) return;
 		final Long studentId = studentIds.next();
-		iSectioningService.sendEmail(null, studentId, subject, message, cc, courseRequests, classSchedule, advisorRequests, new AsyncCallback<Boolean>() {
+		iSectioningService.sendEmail(null, studentId, subject, message, cc, courseRequests, classSchedule, advisorRequests, toggle, new AsyncCallback<Boolean>() {
 
 			@Override
 			public void onFailure(Throwable caught) {
@@ -3238,7 +3239,7 @@ public class SectioningStatusPage extends Composite {
 						}
 					}
 				}
-				sendEmail(studentIds, subject, message, cc, fails + 1, courseRequests, classSchedule, advisorRequests);
+				sendEmail(studentIds, subject, message, cc, fails + 1, courseRequests, classSchedule, advisorRequests, toggle);
 			}
 
 			@Override
@@ -3256,7 +3257,7 @@ public class SectioningStatusPage extends Composite {
 							i.setEmailDate(null);
 						}
 					}
-					sendEmail(studentIds, subject, message, cc, fails, courseRequests, classSchedule, advisorRequests);
+					sendEmail(studentIds, subject, message, cc, fails, courseRequests, classSchedule, advisorRequests, toggle);
 				}
 			}
 		});

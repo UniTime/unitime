@@ -36,6 +36,7 @@ public class SectioningStatusCookie {
 	private boolean iEmailIncludeCourseRequests = false, iEmailIncludeClassSchedule = true, iEmailAdvisorRequests = false;
 	private String iEmailSubject = "", iEmailCC = "";
 	private boolean iAdvisorRequestsEmailStudent;
+	private boolean iOptionalEmailToggle = false;
 	
 	private SectioningStatusCookie() {
 		try {
@@ -58,6 +59,7 @@ public class SectioningStatusCookie {
 				iEmailSubject = params[idx++];
 				iEmailAdvisorRequests = "1".equals(params[idx++]);
 				iAdvisorRequestsEmailStudent = "1".equals(params[idx++]);
+				iOptionalEmailToggle = "1".equals(params[idx++]);
 			}
 		} catch (Exception e) {
 		}
@@ -76,7 +78,7 @@ public class SectioningStatusCookie {
 		cookie += "|" + iStudentTab;
 		cookie += "|" + iSortByGroup[0] + "|" + iSortByGroup[1];
 		cookie += "|" + (iEmailIncludeCourseRequests ? "1" : "0") + "|" + (iEmailIncludeClassSchedule ? "1" : "0") + "|" + iEmailCC + "|" + iEmailSubject
-				+ "|" + (iEmailAdvisorRequests ? "1" : "0") + "|" + (iAdvisorRequestsEmailStudent ? "1" : "0");
+				+ "|" + (iEmailAdvisorRequests ? "1" : "0") + "|" + (iAdvisorRequestsEmailStudent ? "1" : "0") + "|" + (iOptionalEmailToggle ? "1" : "0");
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:StudentStatus", cookie, expires);
 	}
@@ -142,4 +144,7 @@ public class SectioningStatusCookie {
 	
 	public boolean isAdvisorRequestsEmailStudent() { return iAdvisorRequestsEmailStudent; }
 	public void setAdvisorRequestsEmailStudent(boolean email) { iAdvisorRequestsEmailStudent = email; save(); }
+	
+	public boolean isOptionalEmailToggle() { return iOptionalEmailToggle; }
+	public void setOptionalEmailToggle(boolean toggle) { iOptionalEmailToggle = toggle; save(); }
 }

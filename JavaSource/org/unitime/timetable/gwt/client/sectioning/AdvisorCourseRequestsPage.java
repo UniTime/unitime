@@ -852,6 +852,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 								sSectioningService.sendEmail(iDetails.getSessionId(), iDetails.getStudentId(),
 										dialog.getSubject(), dialog.getMessage(), dialog.getCC(),
 										dialog.getIncludeCourseRequests(), dialog.getIncludeClassSchedule(), dialog.getIncludeAdvisorRequests(),
+										dialog.isOptionalEmailToggle(),
 										new AsyncCallback<Boolean>() {
 											@Override
 											public void onFailure(Throwable caught) {
@@ -863,7 +864,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 											}
 								});
 							}
-						});
+						}, iDetails.getEmailOptionalToggle());
 					}
 				}
 			}

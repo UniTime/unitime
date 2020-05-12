@@ -163,6 +163,7 @@ import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHold
 import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.RequestStudentUpdates;
+import org.unitime.timetable.onlinesectioning.custom.StudentEmailProvider;
 import org.unitime.timetable.onlinesectioning.match.AbstractCourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -2568,7 +2569,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 
 	@Override
-	public Boolean sendEmail(Long sessionId, Long studentId, String subject, String message, String cc, Boolean courseRequests, Boolean classSchedule, Boolean advisorRequests) throws SectioningException, PageAccessException {
+	public Boolean sendEmail(Long sessionId, Long studentId, String subject, String message, String cc, Boolean courseRequests, Boolean classSchedule, Boolean advisorRequests, Boolean optional) throws SectioningException, PageAccessException {
 		try {
 			if (sessionId == null) sessionId = getStatusPageSessionId();
 			
@@ -2598,6 +2599,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			email.setEmailSubject(subject == null || subject.isEmpty() ?
 					(classSchedule ? MSG.defaulSubject() : courseRequests ? MSG.defaulSubjectCourseRequests() : advisorRequests ? MSG.defaulSubjectAdvisorRequests() : MSG.defaulSubjectOther())
 					: subject);
+			email.setOptional(optional);
 			email.setMessage(message);
 			return server.execute(email, currentUser());
 		} catch (PageAccessException e) {
@@ -2931,6 +2933,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			properties.setValidateStudentOverrides(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingValidateStudentOverrides));
 			properties.setRecheckCriticalCourses(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingRecheckCriticalCourses));
 			properties.setAdvisorCourseRequests(getSessionContext().hasPermission(sessionId, Right.AdvisorCourseRequests) && session != null && session.getStatusType().canPreRegisterStudents());
+			if (properties.isEmail() && Customization.StudentEmailProvider.hasProvider()) {
+				StudentEmailProvider email = Customization.StudentEmailProvider.getProvider();
+				properties.setEmailOptionalToggle(email.isOptional(sessionId));
+			}
 			if (getSessionContext().hasPermission(sessionId, Right.StudentSchedulingChangeStudentGroup))
 				for (StudentGroup g: (List<StudentGroup>)StudentGroupDAO.getInstance().getSession().createQuery(
 						"from StudentGroup g where g.type.advisorsCanSet = true and g.session = :sessionId order by g.groupAbbreviation"
@@ -3370,6 +3376,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		
 		ret.setCanUpdate(false);
 		ret.setDegreePlan(CustomDegreePlansHolder.hasProvider());
+		if (Customization.StudentEmailProvider.hasProvider()) {
+			StudentEmailProvider email = Customization.StudentEmailProvider.getProvider();
+			ret.setEmailOptionalToggle(email.isOptional(sessionId));
+		}
+		 
 		if (getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdmin)) {
 			ret.setCanUpdate(true);
 		} else if (getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdvisor)) {

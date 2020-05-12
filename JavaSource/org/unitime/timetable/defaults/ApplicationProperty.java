@@ -66,6 +66,7 @@ import org.unitime.timetable.onlinesectioning.custom.DegreePlansProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.SectionUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationProvider;
+import org.unitime.timetable.onlinesectioning.custom.StudentEmailProvider;
 import org.unitime.timetable.onlinesectioning.custom.SectionLimitProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider;
 import org.unitime.timetable.spring.ldap.SpringLdapExternalUidLookup;
@@ -1226,6 +1227,12 @@ public enum ApplicationProperty {
 	@Deprecated
 	@Description("Customization: section limit provider (interface SectionLimitProvider, deprecated)")
 	CustomizationSectionLimit("unitime.custom.SectionLimitProvider"),
+	
+	@Type(Class.class)
+	@Implements(StudentEmailProvider.class)
+	@Description("Customization: student email provider (interface StudentEmailProvider, can be used to change student email address before sending emails from student scheduling)")
+	@Since(4.6)
+	CustomizationStudentEmail("unitime.custom.StudentEmailProvider"),
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")

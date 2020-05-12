@@ -1285,6 +1285,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Include:")
 	String emailInclude();
+	
+	@DefaultMessage("Custom:")
+	String emailCustom();
 
 	@DefaultMessage("Send")
 	String emailSend();

@@ -53,6 +53,7 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 	public static final GwtMessages GWT_MESSAGES = GWT.create(GwtMessages.class);
 	private UniTimeTextBox iSubject, iCC;
 	private CheckBox iCourseRequests, iClassSchedule, iAdvisorRequests;
+	private CheckBox iOptionalEmailToggle = null;
 	private TextArea iMessage, iNote;
 	private Set<StudentStatusInfo> iStates;
 	private ListBox iStatus;
@@ -125,6 +126,8 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 			public void onClick(ClickEvent event) {
 				hide();
 				SectioningStatusCookie.getInstance().setEmailDefaults(getIncludeCourseRequests(), getIncludeClassSchedule(), getIncludeAdvisorRequests(), getCC(), getSubject());
+				if (iOptionalEmailToggle != null)
+					SectioningStatusCookie.getInstance().setOptionalEmailToggle(iOptionalEmailToggle.getValue());
 				if (iConfirmation != null && !iConfirmation.isAllMyStudents()) {
 					UniTimeConfirmationDialog.confirmFocusNo(MESSAGES.confirmSendEmail(iConfirmation.getStudentCount()), iCommand);
 				} else {
@@ -251,7 +254,7 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 		center();
 	}
 	
-	public void sendStudentEmail(Command command) {
+	public void sendStudentEmail(Command command, String optionalToggle) {
 		iCommand = command;
 		iForm.clear();
 		iForm.addRow(MESSAGES.emailSubject(), iSubject);
@@ -265,6 +268,15 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 		P panel = new P();
 		panel.add(iAdvisorRequests); panel.add(iCourseRequests); panel.add(iClassSchedule);
 		iForm.addRow(MESSAGES.emailInclude(), panel);
+		
+		if (optionalToggle != null && !optionalToggle.isEmpty()) {
+			iOptionalEmailToggle = new CheckBox(optionalToggle, true);
+			iOptionalEmailToggle.setValue(SectioningStatusCookie.getInstance().isOptionalEmailToggle());
+			iForm.addRow(MESSAGES.emailCustom(), iOptionalEmailToggle);
+		} else {
+			iOptionalEmailToggle = null;
+		}
+		
 		iForm.addBottomRow(iButtons);
 		iButtons.setEnabled("set-note", false);
 		iButtons.setEnabled("send-email", true);
@@ -381,5 +393,9 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 	public CheckBox getCourseRequestsCheckBox() { return iCourseRequests; }
 	public CheckBox getClassScheduleCheckBox() { return iClassSchedule; }
 	public CheckBox getAdvisorRequestsCheckBox() { return iAdvisorRequests; }
-
+	
+	public Boolean isOptionalEmailToggle() {
+		if (iOptionalEmailToggle == null) return null;
+		return iOptionalEmailToggle.getValue();
+	}
 }

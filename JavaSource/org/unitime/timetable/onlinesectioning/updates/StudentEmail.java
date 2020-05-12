@@ -86,6 +86,8 @@ import org.unitime.timetable.onlinesectioning.advisors.AdvisorConfirmationPDF;
 import org.unitime.timetable.onlinesectioning.advisors.AdvisorGetCourseRequests;
 import org.unitime.timetable.onlinesectioning.basic.GetRequest;
 import org.unitime.timetable.onlinesectioning.custom.CourseUrlProvider;
+import org.unitime.timetable.onlinesectioning.custom.Customization;
+import org.unitime.timetable.onlinesectioning.custom.StudentEmailProvider;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -141,6 +143,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	private boolean iIncludeClassSchedule = true;
 	private boolean iIncludeAdvisorRequests = false;
 	private boolean iIncludeAdvisorRequestsPDF = false;
+	private Boolean iOptional = false;
 	
 	public StudentEmail forStudent(Long studentId) {
 		iStudentId = studentId;
@@ -169,6 +172,11 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	
 	public StudentEmail includeAdvisorRequestsPDF() {
 		iIncludeAdvisorRequestsPDF = true;
+		return this;
+	}
+	
+	public StudentEmail setOptional(Boolean optional) {
+		iOptional = optional;
 		return this;
 	}
 	
@@ -242,8 +250,19 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			boolean ret = false;
 			
 			org.unitime.timetable.model.Student dbStudent = StudentDAO.getInstance().get(getStudentId(), helper.getHibSession());
-			if (dbStudent != null && dbStudent.getEmail() != null && !dbStudent.getEmail().isEmpty()) {
-				action.getStudentBuilder().setName(dbStudent.getEmail());
+			String studentEmail = null;
+			if (dbStudent != null) {
+				if (Customization.StudentEmailProvider.hasProvider()) {
+					StudentEmailProvider ep = Customization.StudentEmailProvider.getProvider();
+					studentEmail = ep.getEmailAddress(server, helper, dbStudent, iOptional);
+				} else {
+					studentEmail = dbStudent.getEmail();
+				}
+			} else {
+				studentEmail = student.getEmail();
+			}
+			if (studentEmail != null && !studentEmail.isEmpty()) {
+				action.getStudentBuilder().setName(helper.getStudentNameFormat().format(dbStudent));
 				boolean emailEnabled = true;
 				if (iPermisionCheck) {
 					StudentSectioningStatus status = dbStudent.getEffectiveStatus();
@@ -263,8 +282,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					if (html != null) {
 						Email email = Email.createEmail();
 
-						email.addRecipient(dbStudent.getEmail(), helper.getStudentNameFormat().format(dbStudent));
-						helper.logOption("recipient", dbStudent.getEmail());
+						email.addRecipient(studentEmail, helper.getStudentNameFormat().format(dbStudent));
+						helper.logOption("recipient", studentEmail);
 						
 						String firstCarbonCopy = null;
 						if (getCC() != null && !getCC().isEmpty()) {

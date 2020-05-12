@@ -35,6 +35,7 @@ public enum Customization {
 	CourseMatcherProvider(CourseMatcherProvider.class, ApplicationProperty.CustomizationCourseMatcher),
 	CourseDetailsProvider(CourseDetailsProvider.class, ApplicationProperty.CustomizationCourseDetails, DefaultCourseDetailsProvider.class),
 	ExternalTermProvider(ExternalTermProvider.class, ApplicationProperty.CustomizationExternalTerm),
+	StudentEmailProvider(StudentEmailProvider.class, ApplicationProperty.CustomizationStudentEmail),
 	;
 	
 	private Holder<?> iHolder;
