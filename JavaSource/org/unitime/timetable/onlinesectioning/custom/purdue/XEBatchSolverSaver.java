@@ -570,6 +570,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 			if (iConditionalAddDrop)
 				req.conditionalAddDrop = "Y";
 			
+			boolean change = false;
 			for (String id: crns) {
 				if (id == null) continue;
 				if (!registered.containsKey(id) && noadd.contains(id)) {
@@ -594,7 +595,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 					if (registered.containsKey(id)) {
 						if (added.add(id)) keep(req, id);
 					} else {
-						if (added.add(id)) add(req, id, notregistered.contains(id));
+						if (added.add(id)) { add(req, id, notregistered.contains(id)); change = true; }
 					}
 				}
 			}
@@ -626,10 +627,17 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 				} else {
 					drop(req, id);
 					dropped.add(id);
+					change = true;
 				}
 			}
 			Map<String, Set<String>> appliedOverrides = new HashMap<String, Set<String>>();
 			
+			if (!change) {
+				iProgress.debug("[" + student.getExternalId() + "] no change detected, POST skipped");
+				action.setResult(OnlineSectioningLog.Action.ResultType.NULL);
+				return;
+			}
+
 			if (iAutoTimeOverrides) {
 				for (String crn: getTimeConflicts(student))
 					addOverride(student, req, crn, "TIME-CNFLT", appliedOverrides);
@@ -687,7 +695,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 					}
 					String id = reg.courseReferenceNumber;
 					checked.add(id);
-					String op = (added.contains(id) ? "Add" : "Drop");
+					String op = (added.contains(id) ? (registered.containsKey(id) ? "Keep" : "Add") : "Drop");
 					if (notregistered.contains(id)) continue;
 					String error = null;
 					if (reg.crnErrors != null && !reg.crnErrors.isEmpty()) 
@@ -697,6 +705,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 							else
 								error += "\n" + e.messageType + ": " + e.message;;
 						}
+					if (added.contains(id) && registered.containsKey(id) && error == null) continue;
 					csv.add(new CSVField[] {
 							new CSVField(puid),
 							new CSVField(student.getName()),
