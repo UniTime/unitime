@@ -962,6 +962,16 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         }
         if (io.isByReservationOnly())
         	new DummyReservation(offering);
+        
+        if (iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty()) {
+        	boolean match = false;
+        	for (Course course: offering.getCourses())
+        		if (course.getName().matches(iMPPCoursesRegExp)) { match = true; break; }
+        	if (!match)
+        		for (Reservation r: offering.getReservations())
+        			r.setExpired(true);
+        }
+        
         return offering;
     }
     
