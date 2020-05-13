@@ -250,18 +250,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			boolean ret = false;
 			
 			org.unitime.timetable.model.Student dbStudent = StudentDAO.getInstance().get(getStudentId(), helper.getHibSession());
-			String studentEmail = null;
-			if (dbStudent != null) {
-				if (Customization.StudentEmailProvider.hasProvider()) {
-					StudentEmailProvider ep = Customization.StudentEmailProvider.getProvider();
-					studentEmail = ep.getEmailAddress(server, helper, dbStudent, iOptional);
-				} else {
-					studentEmail = dbStudent.getEmail();
-				}
-			} else {
-				studentEmail = student.getEmail();
-			}
-			if (studentEmail != null && !studentEmail.isEmpty()) {
+			if (dbStudent != null && dbStudent.getEmail() != null && !dbStudent.getEmail().isEmpty()) {
 				action.getStudentBuilder().setName(helper.getStudentNameFormat().format(dbStudent));
 				boolean emailEnabled = true;
 				if (iPermisionCheck) {
@@ -280,10 +269,16 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				if (emailEnabled) {
 					final String html = generateMessage(dbStudent, server, helper);
 					if (html != null) {
-						Email email = Email.createEmail();
+						Email email = null;
+						if (Customization.StudentEmailProvider.hasProvider()) {
+							StudentEmailProvider provider = Customization.StudentEmailProvider.getProvider();
+							email = provider.createEmail(server, helper, iOptional);
+						} else {
+							email = Email.createEmail();
+						}
 
-						email.addRecipient(studentEmail, helper.getStudentNameFormat().format(dbStudent));
-						helper.logOption("recipient", studentEmail);
+						email.addRecipient(dbStudent.getEmail(), helper.getStudentNameFormat().format(dbStudent));
+						helper.logOption("recipient", dbStudent.getEmail());
 						
 						String firstCarbonCopy = null;
 						if (getCC() != null && !getCC().isEmpty()) {
