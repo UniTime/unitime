@@ -841,7 +841,10 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 					iStatusBox.info(MESSAGES.advisorRequestsSubmitOK() + statusLink);
 					if (isSendEmailConformation()) {
 						final StudentStatusDialog dialog = new StudentStatusDialog(new HashSet<StudentStatusInfo>(), null);
-						dialog.setCC(iDetails.hasAdvisorEmail() ? iDetails.getAdvisorEmail().replace("\n", ", ") : "");
+						if (SectioningStatusCookie.getInstance().hasEmailCC())
+							dialog.setCC(SectioningStatusCookie.getInstance().getEmailCC());
+						else
+							dialog.setCC(iDetails.hasAdvisorEmail() ? iDetails.getAdvisorEmail().replace("\n", ", ") : "");
 						dialog.setSubject(MESSAGES.defaulSubjectAdvisorRequests().replace("%session%", iTerm.getText()));
 						dialog.setIncludeAdvisorRequests(true);
 						dialog.setIncludeClassSchedule(false);
