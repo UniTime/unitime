@@ -36,7 +36,7 @@ public class SectioningStatusCookie {
 	private boolean iEmailIncludeCourseRequests = false, iEmailIncludeClassSchedule = true, iEmailAdvisorRequests = false;
 	private String iEmailSubject = "", iEmailCC = "";
 	private boolean iAdvisorRequestsEmailStudent;
-	private boolean iOptionalEmailToggle = false;
+	private Boolean iOptionalEmailToggle = null;
 	
 	private SectioningStatusCookie() {
 		try {
@@ -59,10 +59,16 @@ public class SectioningStatusCookie {
 				iEmailSubject = params[idx++];
 				iEmailAdvisorRequests = "1".equals(params[idx++]);
 				iAdvisorRequestsEmailStudent = "1".equals(params[idx++]);
-				iOptionalEmailToggle = "1".equals(params[idx++]);
+				iOptionalEmailToggle = parseBoolean(params[idx++]);
 			}
 		} catch (Exception e) {
 		}
+	}
+	
+	private static Boolean parseBoolean(String value) {
+		if ("1".equals(value)) return true;
+		if ("0".equals(value)) return false;
+		return null;
 	}
 	
 	public static SectioningStatusCookie getInstance() { 
@@ -78,7 +84,8 @@ public class SectioningStatusCookie {
 		cookie += "|" + iStudentTab;
 		cookie += "|" + iSortByGroup[0] + "|" + iSortByGroup[1];
 		cookie += "|" + (iEmailIncludeCourseRequests ? "1" : "0") + "|" + (iEmailIncludeClassSchedule ? "1" : "0") + "|" + iEmailCC + "|" + iEmailSubject
-				+ "|" + (iEmailAdvisorRequests ? "1" : "0") + "|" + (iAdvisorRequestsEmailStudent ? "1" : "0") + "|" + (iOptionalEmailToggle ? "1" : "0");
+				+ "|" + (iEmailAdvisorRequests ? "1" : "0") + "|" + (iAdvisorRequestsEmailStudent ? "1" : "0")
+				+ "|" + (iOptionalEmailToggle == null ? "N" : iOptionalEmailToggle.booleanValue() ? "1" : "0");
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:StudentStatus", cookie, expires);
 	}
@@ -133,18 +140,21 @@ public class SectioningStatusCookie {
 	public String getEmailSubject() { return iEmailSubject; }
 	public boolean hasEmailSubject() { return iEmailSubject != null && !iEmailSubject.isEmpty(); }
 	
-	public void setEmailDefaults(boolean includeCourseRequests, boolean includeClassSchedule, boolean includeAdvisorRequests, String cc, String subject) {
+	public void setEmailDefaults(boolean includeCourseRequests, boolean includeClassSchedule, boolean includeAdvisorRequests, String cc, String subject, Boolean optionalEmailToggle) {
 		iEmailIncludeCourseRequests = includeCourseRequests;
 		iEmailIncludeClassSchedule = includeClassSchedule;
 		iEmailAdvisorRequests = includeAdvisorRequests;
 		iEmailCC = cc;
 		iEmailSubject = subject;
+		if (optionalEmailToggle != null)
+			iOptionalEmailToggle = optionalEmailToggle;
 		save();
 	}
 	
 	public boolean isAdvisorRequestsEmailStudent() { return iAdvisorRequestsEmailStudent; }
 	public void setAdvisorRequestsEmailStudent(boolean email) { iAdvisorRequestsEmailStudent = email; save(); }
 	
-	public boolean isOptionalEmailToggle() { return iOptionalEmailToggle; }
-	public void setOptionalEmailToggle(boolean toggle) { iOptionalEmailToggle = toggle; save(); }
+	public boolean isOptionalEmailToggle(boolean defaultValue) {
+		return (iOptionalEmailToggle == null ? defaultValue : iOptionalEmailToggle.booleanValue());
+	}
 }

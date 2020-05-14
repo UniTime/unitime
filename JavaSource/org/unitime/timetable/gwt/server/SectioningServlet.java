@@ -2935,7 +2935,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			properties.setAdvisorCourseRequests(getSessionContext().hasPermission(sessionId, Right.AdvisorCourseRequests) && session != null && session.getStatusType().canPreRegisterStudents());
 			if (properties.isEmail() && Customization.StudentEmailProvider.hasProvider()) {
 				StudentEmailProvider email = Customization.StudentEmailProvider.getProvider();
-				properties.setEmailOptionalToggle(email.isOptional(sessionId));
+				properties.setEmailOptionalToggleCaption(email.getToggleCaptionIfOptional());
+				properties.setEmailOptionalToggleDefault(email.isOptionCheckedByDefault());
 			}
 			if (getSessionContext().hasPermission(sessionId, Right.StudentSchedulingChangeStudentGroup))
 				for (StudentGroup g: (List<StudentGroup>)StudentGroupDAO.getInstance().getSession().createQuery(
@@ -3378,7 +3379,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		ret.setDegreePlan(CustomDegreePlansHolder.hasProvider());
 		if (Customization.StudentEmailProvider.hasProvider()) {
 			StudentEmailProvider email = Customization.StudentEmailProvider.getProvider();
-			ret.setEmailOptionalToggle(email.isOptional(sessionId));
+			ret.setEmailOptionalToggleCaption(email.getToggleCaptionIfOptional());
+			ret.setEmailOptionalToggleDefault(email.isOptionCheckedByDefault());
 		}
 		 
 		if (getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdmin)) {

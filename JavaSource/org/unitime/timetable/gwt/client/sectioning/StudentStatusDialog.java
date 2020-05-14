@@ -125,9 +125,7 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 			@Override
 			public void onClick(ClickEvent event) {
 				hide();
-				SectioningStatusCookie.getInstance().setEmailDefaults(getIncludeCourseRequests(), getIncludeClassSchedule(), getIncludeAdvisorRequests(), getCC(), getSubject());
-				if (iOptionalEmailToggle != null)
-					SectioningStatusCookie.getInstance().setOptionalEmailToggle(iOptionalEmailToggle.getValue());
+				SectioningStatusCookie.getInstance().setEmailDefaults(getIncludeCourseRequests(), getIncludeClassSchedule(), getIncludeAdvisorRequests(), getCC(), getSubject(), isOptionalEmailToggle());
 				if (iConfirmation != null && !iConfirmation.isAllMyStudents()) {
 					UniTimeConfirmationDialog.confirmFocusNo(MESSAGES.confirmSendEmail(iConfirmation.getStudentCount()), iCommand);
 				} else {
@@ -254,7 +252,7 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 		center();
 	}
 	
-	public void sendStudentEmail(Command command, String optionalToggle) {
+	public void sendStudentEmail(Command command, String optionalToggleCaption, boolean optionalToggleDefault) {
 		iCommand = command;
 		iForm.clear();
 		iForm.addRow(MESSAGES.emailSubject(), iSubject);
@@ -269,9 +267,9 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 		panel.add(iAdvisorRequests); panel.add(iCourseRequests); panel.add(iClassSchedule);
 		iForm.addRow(MESSAGES.emailInclude(), panel);
 		
-		if (optionalToggle != null && !optionalToggle.isEmpty()) {
-			iOptionalEmailToggle = new CheckBox(optionalToggle, true);
-			iOptionalEmailToggle.setValue(SectioningStatusCookie.getInstance().isOptionalEmailToggle());
+		if (optionalToggleCaption != null && !optionalToggleCaption.isEmpty()) {
+			iOptionalEmailToggle = new CheckBox(optionalToggleCaption, true);
+			iOptionalEmailToggle.setValue(SectioningStatusCookie.getInstance().isOptionalEmailToggle(optionalToggleDefault));
 			iForm.addRow(MESSAGES.emailCustom(), iOptionalEmailToggle);
 		} else {
 			iOptionalEmailToggle = null;

@@ -14,6 +14,7 @@ public interface StudentEmailProvider {
 	/**
 	 * If optional, return display message that needs to be toggled. Return null otherwise.
 	 */
-	public String isOptional(Long sessionId);
-
+	public String getToggleCaptionIfOptional();
+	
+	public boolean isOptionCheckedByDefault();
 }

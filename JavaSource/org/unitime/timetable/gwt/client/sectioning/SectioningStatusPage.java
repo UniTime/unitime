@@ -1357,7 +1357,7 @@ public class SectioningStatusPage extends Composite {
 									iStudentStatusDialog.getIncludeCourseRequests(), iStudentStatusDialog.getIncludeClassSchedule(), iStudentStatusDialog.getIncludeAdvisorRequests(),
 									iStudentStatusDialog.isOptionalEmailToggle());
 						}
-					}, (iProperties == null ? null : iProperties.getEmailOptionalToggle()));
+					}, (iProperties == null ? null : iProperties.getEmailOptionalToggleCaption()), (iProperties == null ? false : iProperties.getEmailOptionalToggleDefault()));
 				}
 			});
 			hSelect.addOperation(new Operation() {

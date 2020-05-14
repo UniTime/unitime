@@ -378,7 +378,7 @@ public class EnrollmentTable extends Composite {
 												}
 									});
 								}
-							}, null);
+							}, null, false);
 							
 						}
 					});

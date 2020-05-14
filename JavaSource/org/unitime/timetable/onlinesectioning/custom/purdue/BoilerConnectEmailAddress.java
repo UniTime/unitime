@@ -16,13 +16,31 @@ public class BoilerConnectEmailAddress implements StudentEmailProvider {
 
 	@Override
 	public Email createEmail(OnlineSectioningServer server, OnlineSectioningHelper helper, Boolean optional) {
-		if (optional == null || !optional.booleanValue()) return new JavaMailWrapper();
-		return new BoilerConnectEmail(helper.getAction());
+		if (optional == null) {
+			if (isAlwaysUse())
+				return new BoilerConnectEmail(helper.getAction());
+			else
+				return new JavaMailWrapper();
+		} else if (optional.booleanValue()) {
+			return new BoilerConnectEmail(helper.getAction());
+		} else {
+			return new JavaMailWrapper();
+		}
 	}
 
 	@Override
-	public String isOptional(Long sessionId) {
-		return ApplicationProperties.getProperty("purdue.boilerconnect.toggle", "Send via BoilerConnect (use <i>@boilerconnect.purdue.edu</i> email address)");
+	public String getToggleCaptionIfOptional() {
+		if (isAlwaysUse()) return null;
+		return ApplicationProperties.getProperty("purdue.boilerconnect.toggleCaption", "Send via BoilerConnect (<i>user@boilerconnect.purdue.edu</i> email address)");
+	}
+
+	@Override
+	public boolean isOptionCheckedByDefault() {
+		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.boilerconnect.toggleDefault", "true"));
+	}
+	
+	public boolean isAlwaysUse() {
+		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.boilerconnect.isAlwaysUse", "false"));
 	}
 
 	static class BoilerConnectEmail extends JavaMailWrapper {

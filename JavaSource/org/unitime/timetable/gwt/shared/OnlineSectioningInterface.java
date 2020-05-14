@@ -166,7 +166,8 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private boolean iRecheckCriticalCourses = false;
 		private boolean iAdvisorCourseRequests = false;
 		private Set<StudentGroupInfo> iEditableGroups = null;
-		private String iEmailOptionalToggle = null;
+		private String iEmailOptionalToggleCaption = null;
+		private boolean iEmailOptionalToggleDefault = false;
 		
 		public SectioningProperties() {
 		}
@@ -220,9 +221,12 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			iEditableGroups.add(group);
 		}
 		
-		public boolean hasEmailOptionalToggle() { return iEmailOptionalToggle != null && !iEmailOptionalToggle.isEmpty(); }
-		public String getEmailOptionalToggle() { return iEmailOptionalToggle; }
-		public void setEmailOptionalToggle(String emailOptionalToggle) { iEmailOptionalToggle = emailOptionalToggle; }
+		public boolean hasEmailOptionalToggleCaption() { return iEmailOptionalToggleCaption != null && !iEmailOptionalToggleCaption.isEmpty(); }
+		public String getEmailOptionalToggleCaption() { return iEmailOptionalToggleCaption; }
+		public void setEmailOptionalToggleCaption(String captionIfOptional) { iEmailOptionalToggleCaption = captionIfOptional; }
+		
+		public boolean getEmailOptionalToggleDefault() { return iEmailOptionalToggleDefault; }
+		public void setEmailOptionalToggleDefault(boolean defaultValue) { iEmailOptionalToggleDefault = defaultValue; }
 	}
 	
 	public static class StudentGroupInfo implements IsSerializable, Serializable, Comparable<StudentGroupInfo> {
@@ -503,7 +507,8 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private boolean iCanUpdate, iDegreePlan, iCanEmail = false;
 		private CourseRequestInterface iRequest = null;
 		private CourseRequestInterface iStudentRequest = null;
-		private String iEmailOptionalToggle = null;
+		private String iEmailOptionalToggleCaption = null;
+		private boolean iEmailOptionalToggleDefault = false;
 		
 		public AdvisingStudentDetails() {}
 		public AdvisingStudentDetails(AdvisingStudentDetails clone) {
@@ -517,7 +522,8 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			iCanUpdate = clone.iCanUpdate;
 			iDegreePlan = clone.iDegreePlan;
 			iCanEmail = clone.iCanEmail;
-			iEmailOptionalToggle = clone.iEmailOptionalToggle;
+			iEmailOptionalToggleCaption = clone.iEmailOptionalToggleCaption;
+			iEmailOptionalToggleDefault = clone.iEmailOptionalToggleDefault;
 		}
 		
 		public Long getStudentId() { return iStudentId; }
@@ -572,9 +578,12 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public boolean hasStudentRequest() { return iStudentRequest != null && !iStudentRequest.isEmpty(); }
 		public void setStudentRequest(CourseRequestInterface request) { iStudentRequest = request; }
 		
-		public boolean hasEmailOptionalToggle() { return iEmailOptionalToggle != null && !iEmailOptionalToggle.isEmpty(); }
-		public String getEmailOptionalToggle() { return iEmailOptionalToggle; }
-		public void setEmailOptionalToggle(String emailOptionalToggle) { iEmailOptionalToggle = emailOptionalToggle; }
+		public boolean hasEmailOptionalToggleCaption() { return iEmailOptionalToggleCaption != null && !iEmailOptionalToggleCaption.isEmpty(); }
+		public String getEmailOptionalToggleCaption() { return iEmailOptionalToggleCaption; }
+		public void setEmailOptionalToggleCaption(String captionIfOptional) { iEmailOptionalToggleCaption = captionIfOptional; }
+		
+		public boolean getEmailOptionalToggleDefault() { return iEmailOptionalToggleDefault; }
+		public void setEmailOptionalToggleDefault(boolean defaultValue) { iEmailOptionalToggleDefault = defaultValue; }
 	}
 	
 	public static class AdvisorCourseRequestSubmission implements IsSerializable, Serializable {

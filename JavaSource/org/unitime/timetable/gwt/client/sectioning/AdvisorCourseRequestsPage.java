@@ -867,7 +867,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 											}
 								});
 							}
-						}, iDetails.getEmailOptionalToggle());
+						}, iDetails.getEmailOptionalToggleCaption(), iDetails.getEmailOptionalToggleDefault());
 					}
 				}
 			}
