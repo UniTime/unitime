@@ -498,29 +498,18 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		
 		boolean maxi = false;
 		if (errors != null) {
-			Set<ErrorMessage> added = new HashSet<ErrorMessage>();
-			for (Change ch: request.changes) {
-				for (ErrorMessage m: errors)
-					if (ch.crn.equals(m.getSection()) && added.add(m)) {
-						if (ch.errors == null) ch.errors = new ArrayList<ChangeError>();
-						ChangeError er = new ChangeError();
-						er.code = m.getCode();
-						er.message = m.getMessage();
-						ch.errors.add(er);
-					}
-			}
+			Map<String, Change> changes = new HashMap<String, Change>();
+			for (Change ch: request.changes)
+				changes.put(ch.crn, ch);
 			for (ErrorMessage m: errors) {
-				if (m.getCourse() != null && added.add(m)) {
-					Change ch = new Change();
+				Change ch = (m.getSection() != null ? changes.get(m.getSection()) : m.getCourse() != null ? changes.get(m.getCourse()) : null);
+				if (ch == null && m.getCourse() != null) {
+					ch = new Change();
 					ch.subject = m.getCourse().substring(0, m.getCourse().lastIndexOf(' '));
 					ch.courseNbr = m.getCourse().substring(m.getCourse().lastIndexOf(' ') + 1);
 					ch.crn = m.getSection();
 					ch.operation = ChangeOperation.KEEP;
 					ch.errors = new ArrayList<ChangeError>();
-					ChangeError er = new ChangeError();
-					er.code = m.getCode();
-					er.message = m.getMessage();
-					ch.errors.add(er);
 					request.changes.add(ch);
 					XCourseId course = server.getCourse(m.getCourse());
 					if (course != null) {
@@ -528,7 +517,17 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 						if (offering != null)
 							ch.credit = offering.getCourse(course.getCourseId()).getCreditAbbv();
 					}
+					if (m.getSection() != null)
+						changes.put(m.getSection(), ch);
+					else
+						changes.put(m.getCourse(), ch);
 				}
+				if (ch == null) continue;
+				if (ch.errors == null) ch.errors = new ArrayList<ChangeError>();
+				ChangeError er = new ChangeError();
+				er.code = m.getCode();
+				er.message = m.getMessage();
+				ch.errors.add(er);
 				if ("MAXI".equals(m.getCode())) maxi = true;
 			}
 		}
