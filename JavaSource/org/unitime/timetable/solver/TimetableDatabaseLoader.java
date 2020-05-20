@@ -50,6 +50,7 @@ import org.cpsolver.coursett.constraint.JenrlConstraint;
 import org.cpsolver.coursett.constraint.MinimizeNumberOfUsedGroupsOfTime;
 import org.cpsolver.coursett.constraint.MinimizeNumberOfUsedRoomsConstraint;
 import org.cpsolver.coursett.constraint.RoomConstraint;
+import org.cpsolver.coursett.constraint.SoftInstructorConstraint;
 import org.cpsolver.coursett.constraint.SpreadConstraint;
 import org.cpsolver.coursett.constraint.FlexibleConstraint.FlexibleConstraintType;
 import org.cpsolver.coursett.model.Configuration;
@@ -218,6 +219,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private boolean iShowClassSuffix = false, iShowConfigName = false;
     private boolean iLoadCommittedReservations = false;
     private boolean iInstructorDistributionsAcrossDepartments = false;
+    private boolean iFixedTimesMPP = false;
+    private boolean iWeakenDistributions = false;
+    private boolean iSoftInstructorConstraints = false;
+    private boolean iAllowProhibitedRooms = false;
 
     public static enum CommittedStudentConflictsMode {
     		Ignore,
@@ -248,6 +253,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         iAutoSameStudents = getModel().getProperties().getPropertyBoolean("General.AutoSameStudents",iAutoSameStudents);
         iAutoPrecedence = getModel().getProperties().getProperty("General.AutoPrecedence");
         iMppAssignment = getModel().getProperties().getPropertyBoolean("General.MPP",iMppAssignment);
+        iFixedTimesMPP = getModel().getProperties().getPropertyBoolean("General.MPP.FixedTimes",iFixedTimesMPP);
+        iWeakenDistributions = getModel().getProperties().getPropertyBoolean("General.WeakenDistributions", iWeakenDistributions);
+        iSoftInstructorConstraints = getModel().getProperties().getPropertyBoolean("General.SoftInstructorConstraints", iSoftInstructorConstraints);
+        iAllowProhibitedRooms = getModel().getProperties().getPropertyBoolean("General.AllowProhibitedRooms", iAllowProhibitedRooms);
         iInteractiveMode = getModel().getProperties().getPropertyBoolean("General.InteractiveMode", iInteractiveMode);
         iAssignSingleton = getModel().getProperties().getPropertyBoolean("General.AssignSingleton", iAssignSingleton);
         iMaxRoomCombinations = getModel().getProperties().getPropertyInt("General.MaxRoomCombinations", iMaxRoomCombinations);
@@ -596,7 +605,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	return roomLocations;
     }
     
-    private Lecture loadClass(Class_ clazz, org.hibernate.Session hibSession) {
+    private Lecture loadClass(Class_ clazz, Assignment assignment, org.hibernate.Session hibSession) {
     	if (clazz.isCancelled()) {
     		iProgress.message(msglevel("cancelledClass", Progress.MSGLEVEL_WARN), MSG.warnCancelledClass(getClassLabel(clazz)));
     		return null;
@@ -680,15 +689,15 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         		
         		if (groupPref.getPreferenceProlog().equals(PreferenceLevel.sProhibited)) {
                 	iProgress.trace("group is prohibited :-(");
-                	if (iInteractiveMode)
+                	if (iInteractiveMode || iAllowProhibitedRooms)
                         pref.addPreferenceProlog(PreferenceLevel.sProhibited);
                     else
                         add=false;
         		}
         		
                 if (reqGroup && !groupPref.getPreferenceProlog().equals(PreferenceLevel.sRequired)) {
-                	iProgress.trace("building is not required :-(");
-                    if (iInteractiveMode)
+                	iProgress.trace("group is not required :-(");
+                    if (iInteractiveMode || iAllowProhibitedRooms)
                     	pref.addPreferenceProlog(PreferenceLevel.sProhibited);
                     else
                         add=false;
@@ -697,7 +706,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 if (!reqGroup && (groupPref.getPreferenceProlog().equals(PreferenceLevel.sRequired))) {
                 	iProgress.trace("group is required, removing all previous rooms (they are not required)");
                 	reqGroup=true; 
-                    if (iInteractiveMode) {
+                    if (iInteractiveMode || iAllowProhibitedRooms) {
                         for (RoomLocation r: roomLocations) {
                             r.setPreference(r.getPreference()+100);
                         }
@@ -711,6 +720,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 // --- room preference ------------
         		String roomPref = null;
         		
+        		boolean strDiscRoom = false;
         		PreferenceLevel roomPreference = getRoomPreference(clazz.getManagingDept().getUniqueId(),room.getUniqueId());
         		if (roomPreference!=null) {
         			roomPref = roomPreference.getPrefProlog();
@@ -722,12 +732,14 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         			
         			if (PreferenceLevel.sStronglyDiscouraged.equals(roomPref)) {
         				roomPref = PreferenceLevel.sProhibited;
+        				strDiscRoom = true;
         			}
     			}
     			
     			for (Iterator i2=roomPrefs.iterator();i2.hasNext();) {
         			RoomPref p = (RoomPref)i2.next();
         			if (room.equals(p.getRoom())) {
+        				strDiscRoom = false;
         				roomPref = p.getPrefLevel().getPrefProlog();
         				iProgress.trace("room preference is "+p.getPrefLevel().getPrefName());
         				break;
@@ -736,7 +748,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         		
                 if (roomPref!=null && roomPref.equals(PreferenceLevel.sProhibited)) {
                 	iProgress.trace("room is prohibited :-(");
-                	if (iInteractiveMode)
+                	if (iInteractiveMode || (iAllowProhibitedRooms && !strDiscRoom))
                         pref.addPreferenceProlog(PreferenceLevel.sProhibited);
                     else
                         add=false;
@@ -744,7 +756,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 
                 if (reqRoom && (roomPref==null || !roomPref.equals(PreferenceLevel.sRequired))) {
                 	iProgress.trace("room is not required :-(");
-                    if (iInteractiveMode)
+                    if (iInteractiveMode || iAllowProhibitedRooms)
                     	pref.addPreferenceProlog(PreferenceLevel.sProhibited);
                     else
                         add=false;
@@ -753,7 +765,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 if (!reqRoom && (roomPref!=null && roomPref.equals(PreferenceLevel.sRequired))) {
                 	iProgress.trace("room is required, removing all previous rooms (they are not required)");
                     reqRoom=true; 
-                    if (iInteractiveMode) {
+                    if (iInteractiveMode || iAllowProhibitedRooms) {
                         for (RoomLocation r: roomLocations) {
                             r.setPreference(r.getPreference()+100);
                         }
@@ -777,7 +789,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         		
                 if (bldgPref!=null && bldgPref.equals(PreferenceLevel.sProhibited)) {
                 	iProgress.trace("building is prohibited :-(");
-                    if (iInteractiveMode)
+                    if (iInteractiveMode || iAllowProhibitedRooms)
                     	pref.addPreferenceProlog(PreferenceLevel.sProhibited);
                     else
                         add=false;
@@ -785,7 +797,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 
                 if (reqBldg && (bldgPref==null || !bldgPref.equals(PreferenceLevel.sRequired))) {
                 	iProgress.trace("building is not required :-(");
-                    if (iInteractiveMode)
+                    if (iInteractiveMode || iAllowProhibitedRooms)
                     	pref.addPreferenceProlog(PreferenceLevel.sProhibited);
                     else
                         add=false;
@@ -794,7 +806,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 if (!reqBldg && (bldgPref!=null && bldgPref.equals(PreferenceLevel.sRequired))) {
                 	iProgress.trace("building is required, removing all previous rooms (they are not required)");
                     reqBldg = true;
-                    if (iInteractiveMode) {
+                    if (iInteractiveMode || iAllowProhibitedRooms) {
                         for (RoomLocation r: roomLocations) {
                             r.setPreference(r.getPreference()+100);
                         }
@@ -826,7 +838,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 pref.addPreferenceInt(featurePref.getPreferenceInt());
                 
                 if (!acceptableFeatures) {
-                    if (iInteractiveMode)
+                    if (iInteractiveMode || iAllowProhibitedRooms)
                     	pref.addPreferenceProlog(PreferenceLevel.sProhibited);
                     else
                         add=false;
@@ -876,116 +888,30 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 iProgress.message(msglevel("zeroRoomsButPref", Progress.MSGLEVEL_WARN), MSG.warnZeroRoomsButPref(getClassLabel(clazz)));
         }
         
-        int minPerWeek = clazz.getSchedulingSubpart().getMinutesPerWk().intValue();
-        
-        boolean onlyReq = false;
-        for (Iterator i1=timePrefs.iterator();i1.hasNext();) {
-        	TimePref timePref = (TimePref)i1.next();
-        	TimePatternModel pattern = timePref.getTimePatternModel();
-        	if (pattern.isExactTime() || pattern.countPreferences(PreferenceLevel.sRequired)>0)
-        		onlyReq = true;
-        }
-        if (onlyReq) {
-        	iProgress.trace("time pattern has requred times");
-        }
-        
-        ClassDurationType dtype = clazz.getSchedulingSubpart().getInstrOfferingConfig().getEffectiveDurationType();
-        DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
-        for (Iterator i1=timePrefs.iterator();i1.hasNext();) {
-        	TimePref timePref = (TimePref)i1.next();
-        	TimePatternModel pattern = timePref.getTimePatternModel();
-        	if (pattern.isExactTime()) {
-                if (datePattern.getType() == DatePattern.sTypePatternSet) {
-                	Set<DatePatternPref> datePatternPrefs = (Set<DatePatternPref>)clazz.effectivePreferences(DatePatternPref.class);
-                	boolean hasReq = false;
-                	for (DatePatternPref p: datePatternPrefs) {
-                		if (PreferenceLevel.sRequired.equals(p.getPrefLevel().getPrefProlog())) { hasReq = true; break; }
-                	}
-                	for (DatePattern child: datePattern.findChildren()) {
-                		int minsPerMeeting = dm.getExactTimeMinutesPerMeeting(clazz.getSchedulingSubpart().getMinutesPerWk(), child, pattern.getExactDays());
-                		int length = ExactTimeMins.getNrSlotsPerMtg(minsPerMeeting);
-                		int breakTime = ExactTimeMins.getBreakTime(minsPerMeeting);
-                		String pr = PreferenceLevel.sNeutral;
-                		for (DatePatternPref p: datePatternPrefs) {
-                			if (p.getDatePattern().equals(child)) pr = p.getPrefLevel().getPrefProlog();
-                		}
-                		int prVal = 0;
-                		if (!PreferenceLevel.sNeutral.equals(pr) && !PreferenceLevel.sRequired.equals(pr)) {
-                			prVal = PreferenceLevel.prolog2int(pr);
-                		}
-                		if (iInteractiveMode) {
-                			if (hasReq && !PreferenceLevel.sRequired.equals(pr)) prVal += 100;
-                			if (PreferenceLevel.sProhibited.equals(pr)) prVal += 100;
-                			
-                		} else {
-                			if (hasReq && !PreferenceLevel.sRequired.equals(pr)) continue;
-                			if (PreferenceLevel.sProhibited.equals(pr)) continue;
-                		}
-                        TimeLocation  loc = new TimeLocation(
-                        		pattern.getExactDays(), pattern.getExactStartSlot(), length,
-                        		PreferenceLevel.sIntLevelNeutral, 0, PreferenceLevel.prolog2int(pr), 
-                        		child.getUniqueId(), child.getName(), child.getPatternBitSet(),
-                        		breakTime);
-                        loc.setTimePatternId(pattern.getTimePattern().getUniqueId());
-                        if (!PreferenceLevel.sNeutral.equals(pr) && !PreferenceLevel.sRequired.equals(pr)) {
-                        	loc.setNormalizedPreference(iAlterDatePatternWeight * prVal);
-                        }
-                        if (loc.getStartSlot() + loc.getLength() > Constants.SLOTS_PER_DAY) {
-                        	iProgress.message(msglevel("timeOverMidnight", Progress.MSGLEVEL_ERROR), MSG.warnExactTimeOverMidnight(getClassLabel(clazz), loc.getName(iUseAmPm)));
-                        	continue;
-                        }
-                        timeLocations.add(loc);
-                	}
-                } else {
-            		int minsPerMeeting = dm.getExactTimeMinutesPerMeeting(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, pattern.getExactDays());
-            		int length = ExactTimeMins.getNrSlotsPerMtg(minsPerMeeting);
-            		int breakTime = ExactTimeMins.getBreakTime(minsPerMeeting);
-                    TimeLocation  loc = new TimeLocation(pattern.getExactDays(),pattern.getExactStartSlot(),length,PreferenceLevel.sIntLevelNeutral,0,datePattern.getUniqueId(),datePattern.getName(),datePattern.getPatternBitSet(),breakTime);
-                    loc.setTimePatternId(pattern.getTimePattern().getUniqueId());
-                    if (loc.getStartSlot() + loc.getLength() > Constants.SLOTS_PER_DAY) {
-                    	iProgress.message(msglevel("timeOverMidnight", Progress.MSGLEVEL_ERROR), MSG.warnExactTimeOverMidnight(getClassLabel(clazz), loc.getName(iUseAmPm)));
-                    	continue;
-                    }
-                    timeLocations.add(loc);
-                }
-        		
-                continue;
-        	}
-        	
-        	patterns.add(pattern.getTimePattern());
+        if (assignment != null && assignment.getTimeLocation() != null) {
+    		timeLocations.clear();
+    		timeLocations.add(assignment.getTimeLocation());
+			iProgress.debug(getClassLabel(clazz) + " is fixed in " + assignment.getTimeLocation().getLongName(iUseAmPm));
+    	} else {
+            int minPerWeek = clazz.getSchedulingSubpart().getMinutesPerWk().intValue();
             
-            if (iWeakenTimePreferences) {
-                pattern.weakenHardPreferences();
-                onlyReq = false;
+            boolean onlyReq = false;
+            for (Iterator i1=timePrefs.iterator();i1.hasNext();) {
+            	TimePref timePref = (TimePref)i1.next();
+            	TimePatternModel pattern = timePref.getTimePatternModel();
+            	if (pattern.isExactTime() || pattern.countPreferences(PreferenceLevel.sRequired)>0)
+            		onlyReq = true;
             }
-        	
-            if (!dm.isValidCombination(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, timePref.getTimePattern())) {
-        		iProgress.message(msglevel("noTimePattern", Progress.MSGLEVEL_WARN), MSG.warnWrongTimePattern(getClassLabel(clazz), clazz.getSchedulingSubpart().getMinutesPerWk(), (dtype == null ? MSG.defaultDurationTypeName() : dtype.getLabel()), pattern.getName()));
-        		minPerWeek = pattern.getMinPerMtg()*pattern.getNrMeetings();
-        		if (iFixMinPerWeek)
-        			clazz.getSchedulingSubpart().setMinutesPerWk(new Integer(minPerWeek));
-        	}
+            if (onlyReq) {
+            	iProgress.trace("time pattern has required times");
+            }
             
-            for (int time=0;time<pattern.getNrTimes(); time++) {
-            	if (pattern.getStartSlot(time) + pattern.getSlotsPerMtg() > Constants.SLOTS_PER_DAY) {
-            		iProgress.message(msglevel("timeOverMidnight", Progress.MSGLEVEL_WARN), MSG.warnTimeOverMidnight(pattern.getName(), getClassLabel(clazz), pattern.getStartTime(time)));
-            		continue;
-            	}
-                for (int day=0;day<pattern.getNrDays(); day++) {
-                    String pref = pattern.getPreference(day,time);
-                	iProgress.trace("checking time "+pattern.getDayHeader(day)+" "+pattern.getTimeHeaderShort(time)+" ("+pref+")");
-                	if (!dm.isValidSelection(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, timePref.getTimePattern(), pattern.getDayCode(day))) {
-                		iProgress.trace("time is not valid :-(");
-                		continue;
-                	}
-                    if (!iInteractiveMode && pref.equals(PreferenceLevel.sProhibited)) {
-                    	iProgress.trace("time is prohibited :-(");
-                    	continue;
-                    }
-                    if (!iInteractiveMode && onlyReq && !pref.equals(PreferenceLevel.sRequired)) {
-                    	iProgress.trace("time is not required :-(");
-                    	continue;
-                    }
+            ClassDurationType dtype = clazz.getSchedulingSubpart().getInstrOfferingConfig().getEffectiveDurationType();
+            DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
+            for (Iterator i1=timePrefs.iterator();i1.hasNext();) {
+            	TimePref timePref = (TimePref)i1.next();
+            	TimePatternModel pattern = timePref.getTimePatternModel();
+            	if (pattern.isExactTime()) {
                     if (datePattern.getType() == DatePattern.sTypePatternSet) {
                     	Set<DatePatternPref> datePatternPrefs = (Set<DatePatternPref>)clazz.effectivePreferences(DatePatternPref.class);
                     	boolean hasReq = false;
@@ -993,8 +919,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                     		if (PreferenceLevel.sRequired.equals(p.getPrefLevel().getPrefProlog())) { hasReq = true; break; }
                     	}
                     	for (DatePattern child: datePattern.findChildren()) {
-                    		if (!dm.isValidSelection(clazz.getSchedulingSubpart().getMinutesPerWk(), child, timePref.getTimePattern(), pattern.getDayCode(day)))
-                    			continue;
+                    		int minsPerMeeting = dm.getExactTimeMinutesPerMeeting(clazz.getSchedulingSubpart().getMinutesPerWk(), child, pattern.getExactDays());
+                    		int length = ExactTimeMins.getNrSlotsPerMtg(minsPerMeeting);
+                    		int breakTime = ExactTimeMins.getBreakTime(minsPerMeeting);
                     		String pr = PreferenceLevel.sNeutral;
                     		for (DatePatternPref p: datePatternPrefs) {
                     			if (p.getDatePattern().equals(child)) pr = p.getPrefLevel().getPrefProlog();
@@ -1011,16 +938,133 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                     			if (hasReq && !PreferenceLevel.sRequired.equals(pr)) continue;
                     			if (PreferenceLevel.sProhibited.equals(pr)) continue;
                     		}
-                    		TimeLocation  loc = new TimeLocation(
+                            TimeLocation  loc = new TimeLocation(
+                            		pattern.getExactDays(), pattern.getExactStartSlot(), length,
+                            		PreferenceLevel.sIntLevelNeutral, 0, PreferenceLevel.prolog2int(pr), 
+                            		child.getUniqueId(), child.getName(), child.getPatternBitSet(),
+                            		breakTime);
+                            loc.setTimePatternId(pattern.getTimePattern().getUniqueId());
+                            if (!PreferenceLevel.sNeutral.equals(pr) && !PreferenceLevel.sRequired.equals(pr)) {
+                            	loc.setNormalizedPreference(iAlterDatePatternWeight * prVal);
+                            }
+                            if (loc.getStartSlot() + loc.getLength() > Constants.SLOTS_PER_DAY) {
+                            	iProgress.message(msglevel("timeOverMidnight", Progress.MSGLEVEL_ERROR), MSG.warnExactTimeOverMidnight(getClassLabel(clazz), loc.getName(iUseAmPm)));
+                            	continue;
+                            }
+                            timeLocations.add(loc);
+                    	}
+                    } else {
+                		int minsPerMeeting = dm.getExactTimeMinutesPerMeeting(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, pattern.getExactDays());
+                		int length = ExactTimeMins.getNrSlotsPerMtg(minsPerMeeting);
+                		int breakTime = ExactTimeMins.getBreakTime(minsPerMeeting);
+                        TimeLocation  loc = new TimeLocation(pattern.getExactDays(),pattern.getExactStartSlot(),length,PreferenceLevel.sIntLevelNeutral,0,datePattern.getUniqueId(),datePattern.getName(),datePattern.getPatternBitSet(),breakTime);
+                        loc.setTimePatternId(pattern.getTimePattern().getUniqueId());
+                        if (loc.getStartSlot() + loc.getLength() > Constants.SLOTS_PER_DAY) {
+                        	iProgress.message(msglevel("timeOverMidnight", Progress.MSGLEVEL_ERROR), MSG.warnExactTimeOverMidnight(getClassLabel(clazz), loc.getName(iUseAmPm)));
+                        	continue;
+                        }
+                        timeLocations.add(loc);
+                    }
+            		
+                    continue;
+            	}
+            	
+            	patterns.add(pattern.getTimePattern());
+                
+                if (iWeakenTimePreferences) {
+                    pattern.weakenHardPreferences();
+                    onlyReq = false;
+                }
+            	
+                if (!dm.isValidCombination(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, timePref.getTimePattern())) {
+            		iProgress.message(msglevel("noTimePattern", Progress.MSGLEVEL_WARN), MSG.warnWrongTimePattern(getClassLabel(clazz), clazz.getSchedulingSubpart().getMinutesPerWk(), (dtype == null ? MSG.defaultDurationTypeName() : dtype.getLabel()), pattern.getName()));
+            		minPerWeek = pattern.getMinPerMtg()*pattern.getNrMeetings();
+            		if (iFixMinPerWeek)
+            			clazz.getSchedulingSubpart().setMinutesPerWk(new Integer(minPerWeek));
+            	}
+                
+                for (int time=0;time<pattern.getNrTimes(); time++) {
+                	if (pattern.getStartSlot(time) + pattern.getSlotsPerMtg() > Constants.SLOTS_PER_DAY) {
+                		iProgress.message(msglevel("timeOverMidnight", Progress.MSGLEVEL_WARN), MSG.warnTimeOverMidnight(pattern.getName(), getClassLabel(clazz), pattern.getStartTime(time)));
+                		continue;
+                	}
+                    for (int day=0;day<pattern.getNrDays(); day++) {
+                        String pref = pattern.getPreference(day,time);
+                    	iProgress.trace("checking time "+pattern.getDayHeader(day)+" "+pattern.getTimeHeaderShort(time)+" ("+pref+")");
+                    	if (!dm.isValidSelection(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, timePref.getTimePattern(), pattern.getDayCode(day))) {
+                    		iProgress.trace("time is not valid :-(");
+                    		continue;
+                    	}
+                        if (!iInteractiveMode && pref.equals(PreferenceLevel.sProhibited)) {
+                        	iProgress.trace("time is prohibited :-(");
+                        	continue;
+                        }
+                        if (!iInteractiveMode && onlyReq && !pref.equals(PreferenceLevel.sRequired)) {
+                        	iProgress.trace("time is not required :-(");
+                        	continue;
+                        }
+                        if (datePattern.getType() == DatePattern.sTypePatternSet) {
+                        	Set<DatePatternPref> datePatternPrefs = (Set<DatePatternPref>)clazz.effectivePreferences(DatePatternPref.class);
+                        	boolean hasReq = false;
+                        	for (DatePatternPref p: datePatternPrefs) {
+                        		if (PreferenceLevel.sRequired.equals(p.getPrefLevel().getPrefProlog())) { hasReq = true; break; }
+                        	}
+                        	for (DatePattern child: datePattern.findChildren()) {
+                        		if (!dm.isValidSelection(clazz.getSchedulingSubpart().getMinutesPerWk(), child, timePref.getTimePattern(), pattern.getDayCode(day)))
+                        			continue;
+                        		String pr = PreferenceLevel.sNeutral;
+                        		for (DatePatternPref p: datePatternPrefs) {
+                        			if (p.getDatePattern().equals(child)) pr = p.getPrefLevel().getPrefProlog();
+                        		}
+                        		int prVal = 0;
+                        		if (!PreferenceLevel.sNeutral.equals(pr) && !PreferenceLevel.sRequired.equals(pr)) {
+                        			prVal = PreferenceLevel.prolog2int(pr);
+                        		}
+                        		if (iInteractiveMode) {
+                        			if (hasReq && !PreferenceLevel.sRequired.equals(pr)) prVal += 100;
+                        			if (PreferenceLevel.sProhibited.equals(pr)) prVal += 100;
+                        			
+                        		} else {
+                        			if (hasReq && !PreferenceLevel.sRequired.equals(pr)) continue;
+                        			if (PreferenceLevel.sProhibited.equals(pr)) continue;
+                        		}
+                        		TimeLocation  loc = new TimeLocation(
+                                        pattern.getDayCode(day),
+                                        pattern.getStartSlot(time),
+                                        pattern.getSlotsPerMtg(),
+                                        PreferenceLevel.prolog2int(pattern.getPreference(day, time)),
+                                        pattern.getNormalizedPreference(day,time,iNormalizedPrefDecreaseFactor),
+                                        PreferenceLevel.prolog2int(pr),
+                                        child.getUniqueId(),
+                                        child.getName(),
+                                        child.getPatternBitSet(),
+                                        pattern.getBreakTime());
+                                loc.setTimePatternId(pattern.getTimePattern().getUniqueId());
+                            	if (iAlterTimePatternWeight!=0.0) {
+                            		String altPref = iAlterTimePatternModel.getCombinedPreference(loc.getDayCode(), loc.getStartSlot(), loc.getLength(), TimePatternModel.sMixAlgMinMax);
+                            		if (!altPref.equals(PreferenceLevel.sNeutral)) {
+                            			loc.setNormalizedPreference(loc.getNormalizedPreference()+iAlterTimePatternWeight*PreferenceLevel.prolog2int(altPref));
+                            		}
+                            	}
+                                if (iInteractiveMode && onlyReq && !pref.equals(PreferenceLevel.sRequired)) {
+                                    loc.setPreference(PreferenceLevel.sIntLevelProhibited);
+                                    loc.setNormalizedPreference(PreferenceLevel.sIntLevelProhibited);
+                                }
+                                if (!PreferenceLevel.sNeutral.equals(pr) && !PreferenceLevel.sRequired.equals(pr)) {
+                                	loc.setNormalizedPreference(loc.getNormalizedPreference() + iAlterDatePatternWeight * prVal);
+                                }
+                                timeLocations.add(loc);
+                        	}
+                        } else {
+                            TimeLocation  loc = new TimeLocation(
                                     pattern.getDayCode(day),
                                     pattern.getStartSlot(time),
                                     pattern.getSlotsPerMtg(),
                                     PreferenceLevel.prolog2int(pattern.getPreference(day, time)),
                                     pattern.getNormalizedPreference(day,time,iNormalizedPrefDecreaseFactor),
-                                    PreferenceLevel.prolog2int(pr),
-                                    child.getUniqueId(),
-                                    child.getName(),
-                                    child.getPatternBitSet(),
+                                    datePattern.getUniqueId(),
+                                    datePattern.getName(),
+                                    datePattern.getPatternBitSet(),
                                     pattern.getBreakTime());
                             loc.setTimePatternId(pattern.getTimePattern().getUniqueId());
                         	if (iAlterTimePatternWeight!=0.0) {
@@ -1033,89 +1077,63 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                                 loc.setPreference(PreferenceLevel.sIntLevelProhibited);
                                 loc.setNormalizedPreference(PreferenceLevel.sIntLevelProhibited);
                             }
-                            if (!PreferenceLevel.sNeutral.equals(pr) && !PreferenceLevel.sRequired.equals(pr)) {
-                            	loc.setNormalizedPreference(loc.getNormalizedPreference() + iAlterDatePatternWeight * prVal);
-                            }
-                            timeLocations.add(loc);
-                    	}
-                    } else {
-                        TimeLocation  loc = new TimeLocation(
-                                pattern.getDayCode(day),
-                                pattern.getStartSlot(time),
-                                pattern.getSlotsPerMtg(),
-                                PreferenceLevel.prolog2int(pattern.getPreference(day, time)),
-                                pattern.getNormalizedPreference(day,time,iNormalizedPrefDecreaseFactor),
-                                datePattern.getUniqueId(),
-                                datePattern.getName(),
-                                datePattern.getPatternBitSet(),
-                                pattern.getBreakTime());
-                        loc.setTimePatternId(pattern.getTimePattern().getUniqueId());
-                    	if (iAlterTimePatternWeight!=0.0) {
-                    		String altPref = iAlterTimePatternModel.getCombinedPreference(loc.getDayCode(), loc.getStartSlot(), loc.getLength(), TimePatternModel.sMixAlgMinMax);
-                    		if (!altPref.equals(PreferenceLevel.sNeutral)) {
-                    			loc.setNormalizedPreference(loc.getNormalizedPreference()+iAlterTimePatternWeight*PreferenceLevel.prolog2int(altPref));
-                    		}
-                    	}
-                        if (iInteractiveMode && onlyReq && !pref.equals(PreferenceLevel.sRequired)) {
-                            loc.setPreference(PreferenceLevel.sIntLevelProhibited);
-                            loc.setNormalizedPreference(PreferenceLevel.sIntLevelProhibited);
+                            timeLocations.add(loc);                    	
                         }
-                        timeLocations.add(loc);                    	
                     }
                 }
             }
-        }
-        if (iInteractiveMode) {
-        	for (TimePattern pattern: TimePattern.findApplicable(iSession, false, false, false, minPerWeek, datePattern, dm, clazz.getManagingDept())) {
-        		if (patterns.contains(pattern)) continue;
-        		TimePatternModel model = pattern.getTimePatternModel();
-        		iProgress.trace("adding prohibited pattern "+model.getName());
-                for (int time=0;time<model.getNrTimes(); time++) {
-                    for (int day=0;day<model.getNrDays(); day++) {
-                    	if (datePattern.getType() == DatePattern.sTypePatternSet) {
-                        	Set<DatePatternPref> datePatternPrefs = (Set<DatePatternPref>)clazz.effectivePreferences(DatePatternPref.class);
-                        	for (DatePattern child: datePattern.findChildren()) {
-                        		if (!dm.isValidSelection(clazz.getSchedulingSubpart().getMinutesPerWk(), child, pattern, model.getDayCode(day))) continue;
-                        		String pr = PreferenceLevel.sNeutral;
-                        		for (DatePatternPref p: datePatternPrefs)
-                        			if (p.getDatePattern().equals(child)) pr = p.getPrefLevel().getPrefProlog();
-                        		TimeLocation  loc = new TimeLocation(
+            if (iInteractiveMode) {
+            	for (TimePattern pattern: TimePattern.findApplicable(iSession, false, false, false, minPerWeek, datePattern, dm, clazz.getManagingDept())) {
+            		if (patterns.contains(pattern)) continue;
+            		TimePatternModel model = pattern.getTimePatternModel();
+            		iProgress.trace("adding prohibited pattern "+model.getName());
+                    for (int time=0;time<model.getNrTimes(); time++) {
+                        for (int day=0;day<model.getNrDays(); day++) {
+                        	if (datePattern.getType() == DatePattern.sTypePatternSet) {
+                            	Set<DatePatternPref> datePatternPrefs = (Set<DatePatternPref>)clazz.effectivePreferences(DatePatternPref.class);
+                            	for (DatePattern child: datePattern.findChildren()) {
+                            		if (!dm.isValidSelection(clazz.getSchedulingSubpart().getMinutesPerWk(), child, pattern, model.getDayCode(day))) continue;
+                            		String pr = PreferenceLevel.sNeutral;
+                            		for (DatePatternPref p: datePatternPrefs)
+                            			if (p.getDatePattern().equals(child)) pr = p.getPrefLevel().getPrefProlog();
+                            		TimeLocation  loc = new TimeLocation(
+                                            model.getDayCode(day),
+                                            model.getStartSlot(time),
+                                            model.getSlotsPerMtg(),
+                                            PreferenceLevel.prolog2int(model.getPreference(day, time)),
+                                            model.getNormalizedPreference(day,time,iNormalizedPrefDecreaseFactor),
+                                            PreferenceLevel.prolog2int(pr),
+                                            child.getUniqueId(),
+                                            child.getName(),
+                                            child.getPatternBitSet(),
+                                            model.getBreakTime());
+                                    loc.setTimePatternId(model.getTimePattern().getUniqueId());
+                                    loc.setPreference(1000);
+                                    loc.setNormalizedPreference(1000.0);
+                                    timeLocations.add(loc);
+                        		}
+                        	} else {
+                        		if (!dm.isValidSelection(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, pattern, model.getDayCode(day))) continue;
+                                TimeLocation  loc = new TimeLocation(
                                         model.getDayCode(day),
                                         model.getStartSlot(time),
                                         model.getSlotsPerMtg(),
                                         PreferenceLevel.prolog2int(model.getPreference(day, time)),
                                         model.getNormalizedPreference(day,time,iNormalizedPrefDecreaseFactor),
-                                        PreferenceLevel.prolog2int(pr),
-                                        child.getUniqueId(),
-                                        child.getName(),
-                                        child.getPatternBitSet(),
-                                        model.getBreakTime());
+                                        datePattern.getUniqueId(),
+                                        datePattern.getName(),
+                                        datePattern.getPatternBitSet(),
+                                        model.getBreakTime()); 
                                 loc.setTimePatternId(model.getTimePattern().getUniqueId());
                                 loc.setPreference(1000);
                                 loc.setNormalizedPreference(1000.0);
                                 timeLocations.add(loc);
-                    		}
-                    	} else {
-                    		if (!dm.isValidSelection(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, pattern, model.getDayCode(day))) continue;
-                            TimeLocation  loc = new TimeLocation(
-                                    model.getDayCode(day),
-                                    model.getStartSlot(time),
-                                    model.getSlotsPerMtg(),
-                                    PreferenceLevel.prolog2int(model.getPreference(day, time)),
-                                    model.getNormalizedPreference(day,time,iNormalizedPrefDecreaseFactor),
-                                    datePattern.getUniqueId(),
-                                    datePattern.getName(),
-                                    datePattern.getPatternBitSet(),
-                                    model.getBreakTime()); 
-                            loc.setTimePatternId(model.getTimePattern().getUniqueId());
-                            loc.setPreference(1000);
-                            loc.setNormalizedPreference(1000.0);
-                            timeLocations.add(loc);
-                    	}
+                        	}
+                        }
                     }
-                }
-        	}
-        }
+            	}
+            }
+    	}
         
         if (timeLocations.isEmpty()) {
         	iProgress.message(msglevel("noTime", Progress.MSGLEVEL_WARN), MSG.warnNoTime(getClassLabel(clazz)));
@@ -1243,6 +1261,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	Set<Location> rooms = assignment.getRooms();
 
     	if (lecture==null) return;
+    	
     	Placement initialPlacement = null;
     	for (Iterator i2=lecture.values(getAssignment()).iterator();i2.hasNext();) {
     		Placement placement = (Placement)i2.next();
@@ -1417,7 +1436,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	InstructorConstraint ic = (InstructorConstraint)iInstructors.get(instructor.getUniqueId());
     	if (ic==null) {
             boolean ignDist = (instructor.isIgnoreToFar()!=null && instructor.isIgnoreToFar().booleanValue());
-    		ic = new InstructorConstraint(instructor.getUniqueId(),instructor.getExternalUniqueId(),instructor.getName(iInstructorFormat),ignDist);
+            if (iSoftInstructorConstraints)
+            	ic = new SoftInstructorConstraint(instructor.getUniqueId(),instructor.getExternalUniqueId(),instructor.getName(iInstructorFormat),ignDist);
+            else
+            	ic = new InstructorConstraint(instructor.getUniqueId(),instructor.getExternalUniqueId(),instructor.getName(iInstructorFormat),ignDist);
             ic.setType(instructor.getPositionType()==null?new Long(Long.MAX_VALUE):new Long(instructor.getPositionType().getSortOrder()));
     		//loadInstructorAvailability(instructor, ic, hibSession);
 			getModel().addConstraint(ic);
@@ -1541,6 +1563,16 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private Constraint createGroupConstraint(Long id, DistributionType type, PreferenceLevel pref, Object owner) {
+    	if (iWeakenDistributions && PreferenceLevel.sRequired.equals(pref.getPrefProlog())) {
+    		PreferenceLevel sp = PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyPreferred);
+    		if (sp != null && type.isAllowed(sp))
+    			pref = sp;
+    	}
+    	if (iWeakenDistributions && PreferenceLevel.sProhibited.equals(pref.getPrefProlog())) {
+    		PreferenceLevel sd = PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyDiscouraged);
+    		if (sd != null && type.isAllowed(sd))
+    			pref = sd;
+    	}
     	Constraint gc = null;
     	if (type.getReference().matches("_(.+)_")){
     		for (FlexibleConstraintType fcType: FlexibleConstraintType.values()) {
@@ -2689,11 +2721,28 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		iProgress.debug("classes to load: "+iAllClasses.size());
 		
 		setPhase(MSG.phaseLoadingClasses(),iAllClasses.size());
+		Map<Long, Assignment> assignments = null;
+		if (iFixedTimesMPP) {
+			assignments = new HashMap<Long, Assignment>();
+			if (solutions!=null) {
+	        	for (int idx = 0; idx < iSolverGroupId.length; idx++) {
+	        		Solution solution = (Solution)solutions.get(iSolverGroupId[idx]);
+	        		if (solution==null) continue;
+	            	for (Assignment assignment: solution.getAssignments())
+	            		assignments.put(assignment.getClassId(), assignment);
+	        	}
+	        } else if (iLoadCommittedAssignments) {
+	        	for (Class_ clazz: iAllClasses) {
+	        		if (clazz.getCommittedAssignment() != null)
+	        			assignments.put(clazz.getUniqueId(), clazz.getCommittedAssignment());
+	        	}
+	        }
+		}
 		int ord = 0;
 		HashSet<SchedulingSubpart> subparts = new HashSet<SchedulingSubpart>();
 		for (Iterator i1=iAllClasses.iterator();i1.hasNext();) {
 			Class_ clazz = (Class_)i1.next();
-			Lecture lecture = loadClass(clazz,hibSession);
+			Lecture lecture = loadClass(clazz, assignments == null ? null : assignments.get(clazz.getUniqueId()), hibSession);
 			subparts.add(clazz.getSchedulingSubpart());
 			if (lecture!=null) 
 				lecture.setOrd(ord++);
