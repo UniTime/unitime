@@ -1176,7 +1176,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             iProgress.message(msglevel("bigDomain", Progress.MSGLEVEL_WARN), MSG.warnBigDomain(getClassLabel(lecture), estNrValues));
     	}
     	
-        if (lecture.values(getAssignment()).isEmpty()) {
+        if (lecture.computeValues(getAssignment(), getModel().isAllowBreakHard()).isEmpty()) {
         	if (!iInteractiveMode) {
         		iProgress.message(msglevel("noPlacement", Progress.MSGLEVEL_WARN), MSG.warnNoPlacement(getClassLabel(lecture)));
                 for (DepartmentalInstructor instructor: instructors) {
