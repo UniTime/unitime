@@ -3466,4 +3466,34 @@ public class SectioningStatusPage extends Composite {
 		@Override
 		public Collection<Group> getValue() { return iGroups; }
 	}
+	
+	static {
+		createTriggers();
+	}
+	
+	public static native void createTriggers()/*-{
+		$wnd.gwtPropertyClick = function(source) {
+			var textArea = $doc.createElement("textarea");
+			try {
+				textArea.value = JSON.stringify(JSON.parse(source.innerText), null, 2);  
+			} catch (err) {
+				textArea.value = source.innerText;
+			}
+			textArea.style.top = "0";
+			textArea.style.left = "0";
+			textArea.style.position = "fixed";
+			$doc.body.appendChild(textArea);
+			textArea.focus();
+			textArea.select();
+			try {
+				$doc.execCommand('copy');
+				var resource = @org.unitime.timetable.gwt.client.sectioning.SectioningStatusPage::MESSAGES;
+				var msg = resource.@org.unitime.timetable.gwt.resources.StudentSectioningMessages::changeLogPropertyValueCopiedToClipbard()();
+				$wnd.gwtShowMessage(msg);
+			} catch (err) {
+				$wnd.console.error('Oops, unable to copy', err);
+			}
+			$doc.body.removeChild(textArea);
+		};
+	}-*/;
 }

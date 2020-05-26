@@ -3614,6 +3614,7 @@ unitime-RoomSharingWidget .legend .blank {
 	text-overflow: ellipsis;
 	overflow: hidden;
 	white-space: pre;
+	cursor: pointer;
 }
 
 .unitime-ChangeLog .proto {

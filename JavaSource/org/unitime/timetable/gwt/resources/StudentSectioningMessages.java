@@ -2772,4 +2772,10 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Course {0} is enrolled.")
 	String titleCourseEnrolled(String course);
+	
+	@DefaultMessage("Click to copy to clipboard.")
+	String changeLogClickToCopyToClipboard();
+	
+	@DefaultMessage("Property value copied to clipboard.")
+	String changeLogPropertyValueCopiedToClipbard();
 }

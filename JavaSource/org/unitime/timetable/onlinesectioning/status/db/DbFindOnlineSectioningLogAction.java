@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
@@ -147,7 +148,7 @@ public class DbFindOnlineSectioningLogAction extends FindOnlineSectioningLogActi
 					html += "<tr><td><b>Time Stamp:</b></td><td>" + df.format(log.getTimeStamp()) + "</td></tr>";
 					for (OnlineSectioningLog.Property p: action.getOptionList()) {
 						if ("student-email".equals(log.getOperation()) && p.getKey().equalsIgnoreCase("email")) continue;
-						html += "<tr><td><b>" + Constants.toInitialCase(p.getKey()) + ":</b></td><td><div class='property'>" + (p.hasValue() ? p.getValue() : "") + "</div></td></tr>";
+						html += "<tr><td><b>" + Constants.toInitialCase(p.getKey()) + ":</b></td><td><div class='property' onclick='gwtPropertyClick(this);' title='" + MSG.changeLogClickToCopyToClipboard() + "'>" + (p.hasValue() ? StringEscapeUtils.escapeHtml(p.getValue()) : "") + "</div></td></tr>";
 					}
 					if (action.hasCpuTime()) {
 						html += "<tr><td><b>" + MSG.colCpuTime() + ":</b></td><td>" + nf.format(0.000000001 * action.getCpuTime()) + "</td></tr>";

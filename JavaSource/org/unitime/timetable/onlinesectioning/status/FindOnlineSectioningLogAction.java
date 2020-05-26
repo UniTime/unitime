@@ -177,7 +177,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					html += "<tr><td><b>Time Stamp:</b></td><td>" + df.format(log.getTimeStamp()) + "</td></tr>";
 					for (OnlineSectioningLog.Property p: action.getOptionList()) {
 						if ("student-email".equals(log.getOperation()) && p.getKey().equalsIgnoreCase("email")) continue;
-						html += "<tr><td><b>" + Constants.toInitialCase(p.getKey()) + ":</b></td><td><div class='property'>" + (p.hasValue() ? p.getValue() : "") + "</div></td></tr>";
+						html += "<tr><td><b>" + Constants.toInitialCase(p.getKey()) + ":</b></td><td><div class='property' onclick='gwtPropertyClick(this);' title='" + MSG.changeLogClickToCopyToClipboard() + ">" + (p.hasValue() ? StringEscapeUtils.escapeHtml(p.getValue()) : "") + "</div></td></tr>";
 					}
 					if (action.hasCpuTime()) {
 						html += "<tr><td><b>" + MSG.colCpuTime() + ":</b></td><td>" + nf.format(0.000000001 * action.getCpuTime()) + "</td></tr>";
