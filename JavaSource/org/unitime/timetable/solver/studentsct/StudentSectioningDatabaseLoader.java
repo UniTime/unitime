@@ -235,6 +235,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private String iMPPCoursesRegExp = null;
     private static enum IgnoreNotAssigned { all, other, none }
     private IgnoreNotAssigned iIgnoreNotAssigned = IgnoreNotAssigned.other;
+    private boolean iFixAssignedEnrollments = false;
     
     public StudentSectioningDatabaseLoader(StudentSectioningModel model, org.cpsolver.ifs.assignment.Assignment<Request, Enrollment> assignment) {
         super(model, assignment);
@@ -350,6 +351,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         if (iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty()) {
         	iProgress.info("MPP courses: " + iMPPCoursesRegExp + " (ignoring " + iIgnoreNotAssigned + " not assigned)");
         }
+        iFixAssignedEnrollments = model.getProperties().getPropertyBoolean("Load.FixAssignedEnrollments", iFixAssignedEnrollments);
     }
     
     public void load() {
@@ -1449,6 +1451,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     assignedCredit += enrollment.getCredit();
                     if (iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty() && assignedCourse != null && !assignedCourse.getName().matches(iMPPCoursesRegExp))
                     	request.setFixedValue(enrollment);
+                    else if (iFixAssignedEnrollments)
+                    	request.setFixedValue(enrollment);
                 }
                 if (!cd.isAlternative() && maxCredit > 0 && credit > maxCredit) {
                 	if (iMaxCreditChecking)
@@ -1550,6 +1554,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     request.setInitialAssignment(enrollment);
                     assignedCredit += enrollment.getCredit();
                     if (iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty() && assignedCourse != null && !assignedCourse.getName().matches(iMPPCoursesRegExp))
+                    	request.setFixedValue(enrollment);
+                    else if (iFixAssignedEnrollments)
                     	request.setFixedValue(enrollment);
                 }
                 if (assignedConfig!=null && assignedSections.size() != assignedConfig.getSubparts().size()) {
@@ -2564,7 +2570,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             if (iFixWeights)
             	fixWeights(hibSession, courseTable.values());
             
-            if (iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty()) {
+            if ((iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty()) || iFixAssignedEnrollments) {
             	boolean hasFixed = false;
                 for (Request r: getModel().variables()) {
                     if (r instanceof CourseRequest && ((CourseRequest)r).isFixed()) {
