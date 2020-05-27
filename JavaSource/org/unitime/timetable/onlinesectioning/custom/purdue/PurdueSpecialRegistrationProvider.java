@@ -1494,6 +1494,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							for (ChangeError err: ch.errors) {
 								if ("TIME".equals(err.code)) ret.setHasTimeConflict(true);
 								if ("CLOS".equals(err.code)) ret.setHasSpaceConflict(true);
+								if ("CORQ".equals(err.code)) ret.setHasLinkedConflict(true);
 								if (err.code != null && err.code.startsWith("EX-")) ret.setExtended(true);
 								if ("MAXI".equals(err.code) && maxi != null) continue;
 								String message = err.message;
@@ -2011,6 +2012,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					check.setOverrides(response.overrides);
 					check.setFlag(EligibilityFlag.SR_TIME_CONF, check.hasOverride("TIME"));
 					check.setFlag(EligibilityFlag.SR_LIMIT_CONF, check.hasOverride("CLOS"));
+					check.setFlag(EligibilityFlag.SR_LINK_CONF, check.hasOverride("CORQ"));
 					check.setFlag(EligibilityFlag.CAN_CHANGE_GRADE_MODE, check.hasOverride("GMODE"));
 					check.setFlag(EligibilityFlag.CAN_CHANGE_VAR_CREDIT, check.hasOverride("VARCR"));
 				}

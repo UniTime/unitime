@@ -44,6 +44,7 @@ public class XIndividualReservation extends XReservation {
 	private Integer iLimit = null;
     private Boolean iExpired = null;
     private boolean iOverride = false;
+    private Boolean iBreakLinkedSections = null;
     
     public XIndividualReservation() {
         super();
@@ -70,6 +71,7 @@ public class XIndividualReservation extends XReservation {
         setAllowOverlap(reservation.getOverrideType().isAllowTimeConflict());
         setCanAssignOverLimit(reservation.getOverrideType().isAllowOverLimit());
         iExpired = reservation.getOverrideType().isExpired();
+	    iBreakLinkedSections = reservation.getOverrideType().isBreakLinkedSections();
     }
     
     public XIndividualReservation(XOffering offering, IndividualOverrideReservation reservation) {
@@ -87,12 +89,14 @@ public class XIndividualReservation extends XReservation {
         super(XReservationType.Individual, reservation);
         iOverride = false;
         iStudentIds.addAll(reservation.getStudentIds());
+        iBreakLinkedSections = reservation.canBreakLinkedSections();
     }
     
     public XIndividualReservation(ReservationOverride reservation) {
         super(XReservationType.IndividualOverride, reservation);
         iOverride = true;
         iStudentIds.addAll(reservation.getStudentIds());
+        iBreakLinkedSections = reservation.canBreakLinkedSections();
     }
 
     public XIndividualReservation(GroupReservation reservation) {
@@ -102,6 +106,7 @@ public class XIndividualReservation extends XReservation {
         iLimit = (int)Math.round(reservation.getReservationLimit());
         if (reservation.isAllowDisabled())
         	setAllowDisabled(true);
+        iBreakLinkedSections = reservation.canBreakLinkedSections();
     }
     
     @Override
@@ -135,6 +140,11 @@ public class XIndividualReservation extends XReservation {
     	return (getType() == XReservationType.IndividualOverride && iExpired != null ? iExpired.booleanValue() : super.isExpired());
     }
     
+    @Override
+    public boolean canBreakLinkedSections() {
+    	return (iBreakLinkedSections == null ? false : iBreakLinkedSections.booleanValue());
+    }
+    
 	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
     	super.readExternal(in);
@@ -161,6 +171,14 @@ public class XIndividualReservation extends XReservation {
     		iExpired = null;
     		iOverride = false;
     	}
+		switch (in.readByte()) {
+		case 0:
+			iBreakLinkedSections = false; break;
+		case 1:
+			iBreakLinkedSections = true; break;
+		default:
+			iBreakLinkedSections = null; break;
+		}
 	}
 
 	@Override
@@ -177,6 +195,7 @@ public class XIndividualReservation extends XReservation {
 			out.writeByte(iExpired == null ? 2 : iExpired.booleanValue() ? 1 : 0);
 			out.writeBoolean(iOverride);
 		}
+		out.writeByte(iBreakLinkedSections == null ? 2 : iBreakLinkedSections.booleanValue() ? 1 : 0);
 	}
 	
 	public static class XIndividualReservationSerializer implements Externalizer<XIndividualReservation> {

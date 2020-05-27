@@ -92,6 +92,8 @@ public class XReservationId implements Serializable, Externalizable {
 	public Long getReservationId() { return iReservationId; }
 	
 	public boolean isOverride() { return false; }
+	
+	public boolean canBreakLinkedSections() { return false; }
 
     @Override
     public int hashCode() {

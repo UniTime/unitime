@@ -55,6 +55,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private boolean iSpecRegDisclaimerAccepted = false;
 		private boolean iSpecRegTimeConfs = false;
 		private boolean iSpecRegSpaceConfs = false;
+		private boolean iSpecRegLinkedConfs = false;
 		private boolean iSpecRegChangeRequestNote = false;
 		private SpecialRegistrationStatus iSpecRegStatus = null;
 		private String iNote;
@@ -72,6 +73,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			iSpecRegDisclaimerAccepted = cx.iSpecRegDisclaimerAccepted;
 			iSpecRegTimeConfs = cx.iSpecRegTimeConfs;
 			iSpecRegSpaceConfs = cx.iSpecRegSpaceConfs;
+			iSpecRegLinkedConfs = cx.iSpecRegLinkedConfs;
 			iSpecRegStatus = cx.iSpecRegStatus;
 			iNote = cx.iNote;
 			iCanRequire = cx.iCanRequire;
@@ -90,6 +92,8 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void setTimeConflictsAllowed(boolean allow) { iSpecRegTimeConfs = allow; }
 		public boolean areSpaceConflictsAllowed() { return iSpecRegSpaceConfs; }
 		public void setSpaceConflictsAllowed(boolean allow) { iSpecRegSpaceConfs = allow; }
+		public boolean areLinkedConflictsAllowed() { return iSpecRegLinkedConfs; }
+		public void setLinkedConflictsAllowed(boolean allow) { iSpecRegLinkedConfs = allow; }
 		public SpecialRegistrationStatus getStatus() { return iSpecRegStatus; }
 		public void setStatus(SpecialRegistrationStatus status) { iSpecRegStatus = status; }
 		public String getNote() { return iNote; }
@@ -103,6 +107,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void update(EligibilityCheck check) {
 			iSpecRegTimeConfs = check != null && check.hasFlag(EligibilityFlag.SR_TIME_CONF);
 			iSpecRegSpaceConfs = check != null && check.hasFlag(EligibilityFlag.SR_LIMIT_CONF);
+			iSpecRegLinkedConfs = check != null && check.hasFlag(EligibilityFlag.SR_LINK_CONF);
 			iSpecReg = check != null && check.hasFlag(EligibilityFlag.CAN_SPECREG);
 			iDisclaimer = (check != null ? check.getOverrideRequestDisclaimer() : null);
 			iCanRequire = check == null || check.hasFlag(EligibilityFlag.CAN_REQUIRE);
@@ -115,6 +120,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			iSpecRegDisclaimerAccepted = false;
 			iSpecRegTimeConfs = false;
 			iSpecRegSpaceConfs = false;
+			iSpecRegLinkedConfs = false;
 			iSpecRegStatus = null;
 			iDisclaimer = null;
 			iCanRequire = true;
@@ -264,7 +270,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private String iNote;
 		private List<ClassAssignmentInterface.ClassAssignment> iChanges;
 		private boolean iCanCancel = false;
-		private boolean iHasTimeConflict, iHasSpaceConflict, iExtended;
+		private boolean iHasTimeConflict, iHasSpaceConflict, iExtended, iHasLinkedConflict;
 		private ArrayList<ErrorMessage> iErrors = null;
 		private Float iMaxCredit = null;
 		
@@ -513,6 +519,9 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		
 		public boolean hasSpaceConflict() { return iHasSpaceConflict; }
 		public void setHasSpaceConflict(boolean hasSpaceConflict) { iHasSpaceConflict = hasSpaceConflict; }
+		
+		public boolean hasLinkedConflict() { return iHasLinkedConflict; }
+		public void setHasLinkedConflict(boolean hasLinkedConflict) { iHasLinkedConflict = hasLinkedConflict; }
 		
 		public boolean isExtended() { return iExtended; }
 		public void setExtended(boolean extended) { iExtended = extended; }

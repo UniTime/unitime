@@ -148,6 +148,7 @@ public class XCourse extends XCourseId {
 	}
 	public boolean areTimeConflictOverridesAllowed() { return isOverrideEnabled("TIME"); }
 	public boolean areSpaceConflictOverridesAllowed() { return isOverrideEnabled("CLOS"); }
+	public boolean areLinkedConflictOverridesAllowed() { return isOverrideEnabled("CORQ"); }
 
     /** Course note */
     public String getNote() { return iNote; }

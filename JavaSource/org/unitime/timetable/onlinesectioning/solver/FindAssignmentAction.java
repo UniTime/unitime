@@ -154,7 +154,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	public List<ClassAssignmentInterface> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		long t0 = System.currentTimeMillis();
 		OverExpectedCriterion overExpected = server.getOverExpectedCriterion();
-		if ((getRequest().areSpaceConflictsAllowed() || getRequest().areTimeConflictsAllowed() || getSpecialRegistration() != null) && server.getConfig().getPropertyBoolean("OverExpected.MinimizeConflicts", false)) {
+		if ((getRequest().areSpaceConflictsAllowed() || getRequest().areTimeConflictsAllowed() || getRequest().areLinkedConflictsAllowed() || getSpecialRegistration() != null) && server.getConfig().getPropertyBoolean("OverExpected.MinimizeConflicts", false)) {
 			overExpected = new MinimizeConflicts(server.getConfig(), overExpected);
 		}
 		OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig(), overExpected);
@@ -250,7 +250,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							offering.fillInUnavailabilities(student);
 					}
 			}
-			if (getRequest().areTimeConflictsAllowed() || getRequest().areSpaceConflictsAllowed() || getSpecialRegistration() != null) {
+			if (getRequest().areTimeConflictsAllowed() || getRequest().areSpaceConflictsAllowed() || getRequest().areLinkedConflictsAllowed() || getSpecialRegistration() != null) {
 				// Experimental: provide student with a blank override that allows for overlaps as well as over-limit
 				for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
 					Request r = (Request)e.next();
@@ -260,8 +260,11 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							XCourse xc = server.getCourse(course.getId());
 							boolean time = getRequest().areTimeConflictsAllowed() && xc.areTimeConflictOverridesAllowed();
 							boolean space = getRequest().areSpaceConflictsAllowed() && xc.areSpaceConflictOverridesAllowed();
-							if (time || space || getSpecialRegistration() != null)
-								new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), -100, space, 1, true, true, time, true, true);
+							boolean linked = getRequest().areLinkedConflictsAllowed() && xc.areLinkedConflictOverridesAllowed();
+							if (time || space || linked || getSpecialRegistration() != null) {
+								OnlineReservation dummy = new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), -100, space, 1, true, true, time, true, true);
+								dummy.setBreakLinkedSections(linked);
+							}
 						}
 					}
 				}
@@ -654,6 +657,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					applicable, reservation.mustBeUsed(), reservation.isAllowOverlap(), reservation.isExpired(), reservation.isOverride());
 			clonedReservation.setAllowDisabled(reservation.isAllowDisabled());
 			clonedReservation.setNeverIncluded(reservation.neverIncluded());
+			clonedReservation.setBreakLinkedSections(reservation.canBreakLinkedSections());
 			for (Long configId: reservation.getConfigsIds())
 				clonedReservation.addConfig(configs.get(configId));
 			for (Map.Entry<Long, Set<Long>> entry: reservation.getSections().entrySet()) {

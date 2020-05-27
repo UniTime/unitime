@@ -55,6 +55,7 @@ import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.studentsct.StudentSectioningLoader;
 import org.cpsolver.studentsct.StudentSectioningModel;
 import org.cpsolver.studentsct.constraint.FixedAssignments;
+import org.cpsolver.studentsct.constraint.LinkedSections;
 import org.cpsolver.studentsct.model.AcademicAreaCode;
 import org.cpsolver.studentsct.model.AreaClassificationMajor;
 import org.cpsolver.studentsct.model.Choice;
@@ -827,6 +828,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		r.setMustBeUsed(type.isMustBeUsed());
         		r.setAllowOverlap(type.isAllowTimeConflict());
         		r.setCanAssignOverLimit(type.isAllowOverLimit());
+        		r.setBreakLinkedSections(type.isBreakLinkedSections());
         	} else if (reservation instanceof IndividualOverrideReservation) {
         		List<Long> studentIds = new ArrayList<Long>();
         		for (org.unitime.timetable.model.Student s: ((org.unitime.timetable.model.IndividualReservation)reservation).getStudents())
@@ -1458,7 +1460,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 	if (iMaxCreditChecking)
                 		iProgress.info("Request " + request + " is treated as alternative (" + credit + " > " + maxCredit + ") for " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ")");
                 	else
-                		iProgress.info("Request " + request + " is over the max cerdit limit for " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ")");
+                		iProgress.info("Request " + request + " is over the max credit limit for " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ")");
                 }
                 if (assignedConfig!=null && assignedSections.size() != assignedConfig.getSubparts().size()) {
                 	iProgress.error("There is a problem assigning " + request.getName() + " to " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ") wrong number of classes (" +
@@ -1605,7 +1607,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 					if (reservation.isApplicable(student) && reservation.mustBeUsed())
 						hasMustUse = true;
 				}
-				boolean hasLimit = false, hasOverlap = false, hasDisabled = false;
+				boolean hasLimit = false, hasOverlap = false, hasDisabled = false, hasLinked = false;
 	           	for (Iterator<Section> i = enrl.getSections().iterator(); i.hasNext();) {
 	           		Section section = i.next();
 	           		if (section.getTime() != null) {
@@ -1653,6 +1655,14 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
        				student.setMaxCredit(credit);
        				iProgress.info("Max credit increased to " + credit + " for " + student.getName() + " (" + student.getExternalId() + ") ");
        			}
+       			if (enrl.getReservation() != null && enrl.getReservation().canBreakLinkedSections()) {
+       				hasLinked = true;
+       			} else {
+       				for (LinkedSections ls: enrl.getStudent().getLinkedSections()) {
+           				if (ls.inConflict(getAssignment(), enrl) != null)
+           					hasLinked = true;
+           			}
+       			}
            		if (iAllowToKeepCurrentEnrollment) {
                		Reservation reservation = new ReservationOverride(--iMakeupReservationId, enrl.getOffering(), student.getId());
                		reservation.setPriority(0); // top priority -- use this reservation to get in!
@@ -1660,6 +1670,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                		if (hasOverlap) reservation.setAllowOverlap(true);
     				if (hasDisabled) reservation.setAllowDisabled(hasDisabled);
     				if (hasMustUse) { reservation.setMustBeUsed(true); reservation.setExpired(false); }
+    				if (hasLinked) { reservation.setBreakLinkedSections(true); }
     				else { reservation.setExpired(true); }
     				Set<String> props = new TreeSet<String>();
     				if (reservation.mustBeUsed()) props.add("mustBeUsed");
@@ -1667,6 +1678,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     				if (reservation.canAssignOverLimit()) props.add("allowOverLimit");
     				if (reservation.isAllowDisabled()) props.add("allowDisabled");
     				if (reservation.isExpired()) props.add("expired");
+    				if (reservation.canBreakLinkedSections()) props.add("canBreakLinkedSections");
     				iProgress.info("Created an override reservation for " + cr.getName() + " of " + student.getName() + " (" + student.getExternalId() + ") " + props);
     				for (Section section: enrl.getSections())
     					reservation.addSection(section);

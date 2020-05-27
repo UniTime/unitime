@@ -170,7 +170,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 			helper.warn("Failed to lookup critical courses: " + e.getMessage(), e);
 		}
 		
-		Set<ErrorMessage> checkErrors = (getRequest().areTimeConflictsAllowed() || getRequest().areSpaceConflictsAllowed() ? new TreeSet<ErrorMessage>() : null);
+		Set<ErrorMessage> checkErrors = (getRequest().areTimeConflictsAllowed() || getRequest().areSpaceConflictsAllowed() || getRequest().areLinkedConflictsAllowed() ? new TreeSet<ErrorMessage>() : null);
 		Lock lock = server.lockStudent(getStudentId(), offeringIds, name());
 		GradeModes gradeModes = new GradeModes();
 		try {

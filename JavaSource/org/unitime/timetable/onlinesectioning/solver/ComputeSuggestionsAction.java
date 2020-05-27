@@ -122,7 +122,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 	public List<ClassAssignmentInterface> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		long t0 = System.currentTimeMillis();
 		OverExpectedCriterion overExpected = server.getOverExpectedCriterion();
-		if ((getRequest().areSpaceConflictsAllowed() || getRequest().areTimeConflictsAllowed()) && server.getConfig().getPropertyBoolean("OverExpected.MinimizeConflicts", false)) {
+		if ((getRequest().areSpaceConflictsAllowed() || getRequest().areTimeConflictsAllowed() || getRequest().areLinkedConflictsAllowed()) && server.getConfig().getPropertyBoolean("OverExpected.MinimizeConflicts", false)) {
 			overExpected = new MinimizeConflicts(server.getConfig(), overExpected);
 		}
 		OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig(), overExpected);
@@ -263,13 +263,16 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 			if (r instanceof CourseRequest) {
 				CourseRequest cr = (CourseRequest)r;
 				// Experimental: provide student with a blank override that allows for overlaps as well as over-limit
-				if (getRequest().areTimeConflictsAllowed() || getRequest().areSpaceConflictsAllowed()) {
+				if (getRequest().areTimeConflictsAllowed() || getRequest().areSpaceConflictsAllowed() || getRequest().areLinkedConflictsAllowed()) {
 					for (Course course: cr.getCourses()) {
 						XCourse xc = server.getCourse(course.getId());
 						boolean time = getRequest().areTimeConflictsAllowed() && xc.areTimeConflictOverridesAllowed();
 						boolean space = getRequest().areSpaceConflictsAllowed() && xc.areSpaceConflictOverridesAllowed();
-						if (time || space)
-							new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), -100, space, 1, true, true, time, true, true);
+						boolean linked = getRequest().areLinkedConflictsAllowed() && xc.areLinkedConflictOverridesAllowed();
+						if (time || space || linked) {
+							OnlineReservation dummy = new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), -100, space, 1, true, true, time, true, true);
+							dummy.setBreakLinkedSections(linked);
+						}
 					}
 				}
 

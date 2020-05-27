@@ -490,6 +490,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		fillInAlternatives(cr);
 		cr.setTimeConflictsAllowed(iSpecReg.isEnabled() && iSpecReg.isDisclaimerAccepted() && iSpecReg.areTimeConflictsAllowed());
 		cr.setSpaceConflictsAllowed(iSpecReg.isEnabled() && iSpecReg.isDisclaimerAccepted() && iSpecReg.areSpaceConflictsAllowed());
+		cr.setLinkedConflictsAllowed(iSpecReg.isEnabled() && iSpecReg.isDisclaimerAccepted() && iSpecReg.areLinkedConflictsAllowed());
 		if (iLastCheck != null) cr.setConfirmations(iLastCheck.getMessages());
 		cr.removeInactiveDuplicates();
 		return cr;

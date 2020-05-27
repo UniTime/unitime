@@ -478,7 +478,7 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		AllowOverLimit("closed", false, false, true, true, true),
 		AllowOverLimitTimeConflict("time-limit-cnflt", false, true, true, true, true),
 		ClassificationOverride("class", false, false, false, true, false),
-		CoReqOverride("co-req", false, false, false, true, false),
+		CoReqOverride("co-req", false, false, false, true, false, true),
 		CohortOverride("cohort", false, false, false, true, false),
 		CollegeRestrictionOverride("college", false, false, false, true, false),
 		DegreeOverride("degree", false, false, false, true, false),
@@ -495,10 +495,15 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		String iReference;
 		boolean iMustBeUsed = false, iAllowTimeConflict = false, iAllowOverLimit = false, iEditable = false;
 		Boolean iExpired = false;
+		boolean iBreakLinkedSections = false;
 		OverrideType(String reference, boolean mustBeUsed, boolean timeConflict, boolean overLimit, Boolean expired, boolean editable) {
 			iReference = reference;
 			iMustBeUsed = mustBeUsed; iAllowTimeConflict = timeConflict; iAllowOverLimit = overLimit; iExpired = expired;
 			iEditable = editable;
+		}
+		OverrideType(String reference, boolean mustBeUsed, boolean timeConflict, boolean overLimit, Boolean expired, boolean editable, boolean breakLinkedSections) {
+			this(reference, mustBeUsed, timeConflict, overLimit, expired, editable);
+			iBreakLinkedSections = breakLinkedSections;
 		}
 		
 		public String getReference() { return iReference; }
@@ -508,6 +513,7 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		public Boolean isExpired() { return iExpired; }
 		public boolean isCanHaveExpirationDate() { return iExpired == null; }
 		public boolean isEditable() { return iEditable; }
+		public boolean isBreakLinkedSections() { return iBreakLinkedSections; }
 	}
 	
 	public static class ReservationFilterRpcRequest extends FilterRpcRequest {

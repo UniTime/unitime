@@ -852,7 +852,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					iSpecialRegAssignment = null;
 					if (specReg.hasChanges() && !specReg.isGradeModeChange() && !specReg.isCreditChange()) {
 						final CourseRequestInterface courseRequests = iCourseRequests.getRequest();
-						courseRequests.setTimeConflictsAllowed(specReg.hasTimeConflict()); courseRequests.setSpaceConflictsAllowed(specReg.hasSpaceConflict());
+						courseRequests.setTimeConflictsAllowed(specReg.hasTimeConflict());
+						courseRequests.setSpaceConflictsAllowed(specReg.hasSpaceConflict());
+						courseRequests.setLinkedConflictsAllowed(specReg.hasLinkedConflict());
 						Set<Long> specRegDrops = new HashSet<Long>();
 						Set<Long> specRegAdds = new HashSet<Long>();
 						for (ClassAssignmentInterface.ClassAssignment ch: specReg.getChanges())
@@ -865,7 +867,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
 						iSectioningService.section(iOnline, courseRequests, iLastResult, specReg.getChanges(), new AsyncCallback<ClassAssignmentInterface>() {
 							public void onSuccess(ClassAssignmentInterface result) {
-								if (specReg.hasSpaceConflict() || specReg.hasTimeConflict()) iSpecRegCx.setDisclaimerAccepted(true);
+								if (specReg.hasSpaceConflict() || specReg.hasTimeConflict() || specReg.hasLinkedConflict()) iSpecRegCx.setDisclaimerAccepted(true);
 								fillIn(result);
 								iCourseRequests.setRequest(courseRequests);
 								addHistory();
