@@ -257,7 +257,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course Requests")
 	String courseRequestsCourses();
 	
-	@DefaultMessage("Course Recommendations")
+	@DefaultMessage("Advisor Course Recommendations")
 	String advisorRequestsCourses();
 	
 	@DefaultMessage("&darr; Wait-List")
@@ -275,7 +275,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Substitute Course Requests")
 	String courseRequestsAlternatives();
 	
-	@DefaultMessage("Substitute Course Recommendations")
+	@DefaultMessage("Substitute Advisor Course Recommendations")
 	String advisorRequestsAlternatives();
 	
 	@DefaultMessage("(used only if a course requested above is not available)")
