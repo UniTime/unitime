@@ -576,7 +576,7 @@ public class SolutionReportAction extends Action {
         				(noHtml?"":"<font color='"+PreferenceLevel.prolog2color(g.getPreference())+"'>")+
         				PreferenceLevel.getPreferenceLevel(g.getPreference()).getPrefName()+
         				(noHtml?"":"</font>"),
-        				String.valueOf(Math.round(g.getDistance()))+"m",
+        				(g.getDistance() < 0 ? String.valueOf(Math.round(- g.getDistance())) + "min" : g.getDistance() == 0 ? "N/A" : String.valueOf(Math.round(g.getDistance())) + "m"),
         				(noHtml?g.getFirst().getClazz().getName()+"\n"+g.getSecond().getClazz().getName():
         				g.getFirst().getClazz().toHtml(true,true)+"<BR>"+g.getSecond().getClazz().toHtml(true,true)),
         				(noHtml?g.getFirst().getTime().getName(true)+"\n"+g.getSecond().getTime().getName(true):

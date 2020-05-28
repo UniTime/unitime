@@ -406,7 +406,7 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
     			table.addRow(new TableRowInterface(
     					new TableCellInterface<String>(g.getInstructorName()),
     					new TableCellInterface<String>(PreferenceLevel.getPreferenceLevel(g.getPreference()).getPrefName()).setColor(PreferenceLevel.prolog2color(g.getPreference())),
-        				new TableCellInterface<Double>(g.getDistance(), sDoubleFormat.format(g.getDistance())),
+        				new TableCellInterface<Double>(g.getDistance(), g.getDistance() == 0.0 ? MESSAGES.notApplicable() : g.getDistance() < 0.0 ? MESSAGES.breakTime(sDF.format(- g.getDistance())) : MESSAGES.roomDistance(sDoubleFormat.format(g.getDistance()))),
         				classes,
         				dates,
         				times,
