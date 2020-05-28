@@ -1589,11 +1589,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     	for (Request r: student.getRequests()) {
     		if (getAssignment().getValue(r) != null || r.getInitialAssignment() == null || !(r instanceof CourseRequest)) continue;
     		if (iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty() && r.getInitialAssignment().getCourse().getName().matches(iMPPCoursesRegExp)) continue;
-    		if (!student.isAvailable(r.getInitialAssignment())) {
-    			iProgress.error("There is a problem assigning " + r.getName() + " to " + student.getName() + " (" + student.getExternalId() + "): Student not available.");
-    			continue;
-    		}
-    		if (r.getModel().conflictValues(getAssignment(), r.getInitialAssignment()).isEmpty()) {
+    		if (student.isAvailable(r.getInitialAssignment()) && r.getModel().conflictValues(getAssignment(), r.getInitialAssignment()).isEmpty()) {
     			getAssignment().assign(0, r.getInitialAssignment());
     			continue;
     		}
@@ -1608,6 +1604,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 						hasMustUse = true;
 				}
 				boolean hasLimit = false, hasOverlap = false, hasDisabled = false, hasLinked = false;
+				if (!student.isAvailable(enrl)) {
+					hasOverlap = true;
+				}
 	           	for (Iterator<Section> i = enrl.getSections().iterator(); i.hasNext();) {
 	           		Section section = i.next();
 	           		if (section.getTime() != null) {
@@ -1695,6 +1694,15 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
            		Section section = i.next();
            		iProgress.info("  " + section.getSubpart().getName() + " " + section.getName() + (section.getTime() == null ? "" : " " + section.getTime().getLongName(iUseAmPm)));
            		if (section.getTime() != null) {
+           			if (!student.isAvailable(section)) {
+           				for (Unavailability unavailability: student.getUnavailabilities())
+           		            if (unavailability.isOverlapping(section)) {
+           		            	Section sectionx = unavailability.getSection();
+           		            	iProgress.info("    student is not available due to " + sectionx.getSubpart().getConfig().getOffering().getName() + " " + sectionx.getSubpart().getName() + " " +
+               							sectionx.getName() + " " + sectionx.getTime().getLongName(iUseAmPm));
+           		            }
+           				hasOverlap = true;
+           			}
                		for (Request q: student.getRequests()) {
                			Enrollment enrlx = getAssignment().getValue(q);
                			if (enrlx == null || !(q instanceof CourseRequest)) continue;
