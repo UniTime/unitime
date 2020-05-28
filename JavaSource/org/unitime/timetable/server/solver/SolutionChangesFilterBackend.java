@@ -57,6 +57,7 @@ public class SolutionChangesFilterBackend implements GwtRpcImplementation<Soluti
 		reference.addOption("0", MESSAGES.compareWithBestSolution());
 		reference.addOption("1", MESSAGES.compareWithInitialSolution());
 		reference.addOption("2", MESSAGES.compareWithSelectedSolution());
+		reference.addOption("3", MESSAGES.compareWithCommittedSolution());
 		reference.setDefaultValue(context.getUser().getProperty("SolutionChanges.reference", "0"));
 		reference.setLabel(MESSAGES.propCompareSolutionWith());
 		response.addParameter(reference);

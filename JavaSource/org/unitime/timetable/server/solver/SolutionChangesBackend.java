@@ -49,6 +49,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
@@ -98,7 +99,7 @@ public class SolutionChangesBackend implements GwtRpcImplementation<SolutionChan
         		changes = solver.getChangesToBest();
         } else if (reference == 1) {
         	changes = solver.getChangesToInitial();
-        } else {
+        } else if (reference == 2) {
         	String solutionIdsStr = (String)context.getAttribute(SessionAttribute.SelectedSolution);
         	if (solutionIdsStr == null || solutionIdsStr.isEmpty()) {
         		response.setMessage(MESSAGES.errorNoSolutionSelected());
@@ -111,6 +112,22 @@ public class SolutionChangesBackend implements GwtRpcImplementation<SolutionChan
     					changes.addAll(ch);
     			}
     		}
+        } else {
+        	changes = new ArrayList<RecordedAssignment>();
+        	boolean hasCommittedSolution = false;
+        	for (Long ownerId: solver.getProperties().getPropertyLongArry("General.SolverGroupId", null)) {
+        		Long solutionId = (Long)SolutionDAO.getInstance().getSession().createQuery(
+        				"select uniqueId from Solution where owner.uniqueId = :ownerId and commited = true"
+        				).setLong("ownerId", ownerId).setMaxResults(1).uniqueResult();
+        		if (solutionId != null) {
+        			hasCommittedSolution = true;
+        			List<RecordedAssignment> ch = solver.getChangesToSolution(solutionId);
+    				if (ch != null)
+    					changes.addAll(ch);
+        		}
+        	}
+        	if (!hasCommittedSolution)
+        		response.setMessage(MESSAGES.errorListSolutionsNoCommitted());
         }
 		
 		if (changes != null)

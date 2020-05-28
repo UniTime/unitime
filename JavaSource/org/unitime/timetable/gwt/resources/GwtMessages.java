@@ -6231,6 +6231,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Selected Solution")
 	String compareWithSelectedSolution();
 	
+	@DefaultMessage("Committed Solution")
+	String compareWithCommittedSolution();
+	
 	@DefaultMessage("?")
 	String listSolutionsUnknown();
 	
