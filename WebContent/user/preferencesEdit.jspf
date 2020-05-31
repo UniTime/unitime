@@ -662,6 +662,19 @@
 	   	</logic:notEmpty>
 	</logic:equal>
 	
+	<logic:equal value="true" parameter="dateAvail">
+		<logic:notEmpty scope="request" name="UnavailableDays.pattern">
+			<tr><td colspan='2'>&nbsp;</td></tr>
+			<tr><td colspan='2'>
+				<tt:section-header title="<%=MSG.sectionTitleUnavailableDates()%>"/>
+			</td></tr>
+			<tr><td colspan='2'>
+				<bean:write name="UnavailableDays.pattern" scope="request" filter="false"/>
+			</td></tr>
+		</logic:notEmpty>
+	</logic:equal>
+	
+	
 	<INPUT type="hidden" name="deleteType" id="deleteType" value="">
 	<INPUT type="hidden" name="deleteId" id="deleteId" value="">
 	<INPUT type="hidden" name="reloadCause" id="reloadCause" value="">

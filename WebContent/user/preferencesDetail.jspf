@@ -329,6 +329,12 @@
 		</TR>
 	</logic:notEmpty>
 	
+	<logic:notEmpty scope="request" name="UnavailableDays.pattern">
+		<tr><td valign="top" style="padding-top:20px;"><loc:message name="propertyUnavailableDates"></loc:message></td><td>
+			<bean:write name="UnavailableDays.pattern" scope="request" filter="false"/>
+		</td></tr>
+	</logic:notEmpty>
+	
 		<TR>
 			<TD valign="middle" colspan='3' align='left'>
 				<logic:equal name="<%=frmName%>" property="hasNotAvailable" value="false">

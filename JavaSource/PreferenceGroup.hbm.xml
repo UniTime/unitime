@@ -1011,6 +1011,19 @@
                 column="max_load"
                 type="java.lang.Float"
                 not-null="false"/>
+            
+            <property
+            	name="unavailableDays"
+            	column="unavailable_days"
+            	type="java.lang.String"
+            	length="366"
+            	not-null="false"/>
+            
+            <property
+            	name="unavailableOffset"
+            	column="unavailable_offset"
+            	type="java.lang.Integer"
+            	not-null="false"/>
         </union-subclass>
         <union-subclass name="Exam" table="exam">
             <many-to-one

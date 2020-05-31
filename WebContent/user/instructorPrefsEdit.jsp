@@ -119,7 +119,8 @@
 			</TD>
 		</TR>
 		</logic:messagesPresent>
-
+		
+<!-- Unavailabilities -->
 <!-- Preferences -->
 		<jsp:include page="preferencesEdit.jspf">
 			<jsp:param name="frmName" value="<%=frmName%>"/>
@@ -127,8 +128,8 @@
 			<jsp:param name="datePatternPref" value="false"/>
 			<jsp:param name="timePref" value="false"/>
 			<jsp:param name="timeAvail" value="true"/>
+			<jsp:param name="dateAvail" value="true"/>
 		</jsp:include>
-		
 <!-- buttons -->
 		<TR>
 			<TD colspan='2'>

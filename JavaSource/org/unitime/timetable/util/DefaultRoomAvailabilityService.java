@@ -434,9 +434,11 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
 
 	@Override
 	public Collection<TimeBlock> getInstructorAvailability(Long instructorId, Date startTime, Date endTime, String excludeType) {
-        if (!iInstructorAvailabilityEnabled) return null;
         DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(instructorId);
-        if (instructor == null || instructor.getExternalUniqueId() == null) return null;
+        if (!iInstructorAvailabilityEnabled || instructor == null || instructor.getExternalUniqueId() == null) {
+        	if (instructor != null) return instructor.listUnavailableDays();
+        	return null;
+        }
         EventDateMapping.Class2EventDateMap class2eventDateMap = (sClassType.equals(excludeType) ? EventDateMapping.getMapping(instructor.getDepartment().getSession().getUniqueId()) : null);
         TimeFrame time = new TimeFrame(startTime, endTime);
         synchronized(iCache) {
@@ -515,6 +517,8 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                     }
             	}
             }
+            if (instructor.hasUnavailabilities())
+            	ret.addAll(instructor.listUnavailableDays());
             return ret;
         }
 	}

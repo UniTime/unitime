@@ -52,6 +52,8 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 	private String iEmail;
 	private Boolean iIgnoreToFar;
 	private Float iMaxLoad;
+	private String iUnavailableDays;
+	private Integer iUnavailableOffset;
 
 	private PositionType iPositionType;
 	private Department iDepartment;
@@ -73,6 +75,8 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 	public static String PROP_EMAIL = "email";
 	public static String PROP_IGNORE_TOO_FAR = "ignoreToFar";
 	public static String PROP_MAX_LOAD = "maxLoad";
+	public static String PROP_UNAVAILABLE_DAYS = "unavailableDays";
+	public static String PROP_UNAVAILABLE_OFFSET = "unavailableOffset";
 
 	public BaseDepartmentalInstructor() {
 		initialize();
@@ -115,6 +119,12 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 
 	public Float getMaxLoad() { return iMaxLoad; }
 	public void setMaxLoad(Float maxLoad) { iMaxLoad = maxLoad; }
+
+	public String getUnavailableDays() { return iUnavailableDays; }
+	public void setUnavailableDays(String unavailableDays) { iUnavailableDays = unavailableDays; }
+
+	public Integer getUnavailableOffset() { return iUnavailableOffset; }
+	public void setUnavailableOffset(Integer unavailableOffset) { iUnavailableOffset = unavailableOffset; }
 
 	public PositionType getPositionType() { return iPositionType; }
 	public void setPositionType(PositionType positionType) { iPositionType = positionType; }
@@ -194,6 +204,8 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 			"\n	PositionType: " + getPositionType() +
 			"\n	Role: " + getRole() +
 			"\n	TeachingPreference: " + getTeachingPreference() +
+			"\n	UnavailableDays: " + getUnavailableDays() +
+			"\n	UnavailableOffset: " + getUnavailableOffset() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

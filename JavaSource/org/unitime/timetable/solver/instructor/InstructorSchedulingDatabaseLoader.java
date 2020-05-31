@@ -344,6 +344,9 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
 						));
 			}
     	}
+    	if (di.hasUnavailabilities()) {
+    		
+    	}
     	return ret;
     }
     
@@ -372,6 +375,9 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     		}
     		for (EnrolledClass ec: loadUnavailability(hibSession, i))
     			instructor.addTimePreference(new Preference<TimeLocation>(ec, Constants.sPreferenceLevelProhibited));
+    		if (i.hasUnavailabilities())
+    			for (TimeLocation t: i.listUnavailableTimes())
+    				instructor.addTimePreference(new Preference<TimeLocation>(t, Constants.sPreferenceLevelProhibited));
     		getModel().addInstructor(instructor);
     		iInstructors.put(i.getUniqueId(), instructor);
     		iProgress.incProgress();

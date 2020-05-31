@@ -181,6 +181,11 @@ public class InstructorSchedulingBackendHelper {
 			ci.setDate(ec.getDatePatternName());
 			info.addEnrollment(ci);
 		}
+		if (instructor.hasUnavailabilities()) {
+			PreferenceInfo pi = new PreferenceInfo(-instructor.getUniqueId(), instructor.getUnavailableDaysText(", "), Constants.sPreferenceProhibited);
+			pi.setComparable(String.format("%03d:%05d", 255, 0));
+			info.addTimePreference(pi);
+		}
 		StringBuffer pattern = new StringBuffer(slot2pref.length);
 		for (int i = 0; i < slot2pref.length; i++) {
 			int min = slot2pref[i][0];
@@ -293,13 +298,22 @@ public class InstructorSchedulingBackendHelper {
     		}
         	request.addInstructor(info);
         	info.setAssignmentIndex(index++);
-    		if (checkConflicts && !noOverlap.isEmpty())
+    		if (checkConflicts && !noOverlap.isEmpty()) {
     			check: for (EnrolledClass ec: InstructorSchedulingDatabaseLoader.loadUnavailability(hibSession, instructor)) {
     				for (TimeLocation time: noOverlap)
     					if (time.hasIntersection(ec)) {
     						info.setConflict(true); break check;
     					}
     			}
+    		}
+    		if (checkConflicts && !noOverlap.isEmpty() && instructor.hasUnavailabilities() && !info.isConflict()) {
+				check: for (TimeLocation ec: instructor.listUnavailableTimes()) {
+					for (TimeLocation time: noOverlap)
+    					if (time.hasIntersection(ec)) {
+    						info.setConflict(true); break check;
+    					}
+				}
+    		}
     	}
 		return request;
 	}
@@ -366,6 +380,11 @@ public class InstructorSchedulingBackendHelper {
 			ci.setTime(ec.getDayHeader() + " " + ec.getStartTimeHeader(CONSTANTS.useAmPm()) + " - " + ec.getEndTimeHeader(CONSTANTS.useAmPm()));
 			ci.setDate(ec.getDatePatternName());
 			info.addEnrollment(ci);
+		}
+		if (instructor.hasUnavailabilities()) {
+			PreferenceInfo pi = new PreferenceInfo(-instructor.getUniqueId(), instructor.getUnavailableDaysText(", "), Constants.sPreferenceProhibited);
+			pi.setComparable(String.format("%03d:%05d", 255, 0));
+			info.addTimePreference(pi);
 		}
 		StringBuffer pattern = new StringBuffer(slot2pref.length);
 		for (int i = 0; i < slot2pref.length; i++) {
@@ -470,6 +489,16 @@ public class InstructorSchedulingBackendHelper {
 			for (TimeLocation time: canOverlap)
 				if (time.hasIntersection(ec))
 					comb.addPreferenceInt(Constants.sPreferenceLevelStronglyDiscouraged);
+		}
+		if (instructor.hasUnavailabilities()) {
+			for (TimeLocation ec: instructor.listUnavailableTimes()) {
+				for (TimeLocation time: noOverlap)
+					if (time.hasIntersection(ec))
+						comb.addPreferenceInt(Constants.sPreferenceLevelProhibited);
+				for (TimeLocation time: canOverlap)
+					if (time.hasIntersection(ec))
+						comb.addPreferenceInt(Constants.sPreferenceLevelStronglyDiscouraged);
+			}
 		}
 		return comb;
 	}

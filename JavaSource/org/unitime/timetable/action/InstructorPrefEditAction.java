@@ -210,6 +210,8 @@ public class InstructorPrefEditAction extends PreferencesAction {
                     
             		super.doUpdate(request, frm, inst, s, timeVertical,
             				Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING, Preference.Type.DISTRIBUTION);
+            		
+        			inst.setUnavailablePatternAndOffset(request);
                     
                     ChangeLog.addChange(
                             null, 
@@ -322,7 +324,9 @@ public class InstructorPrefEditAction extends PreferencesAction {
 	 */
 	private void doLoad(HttpServletRequest request, InstructorEditForm frm, DepartmentalInstructor inst, String instructorId) {
         // populate form
-		frm.setInstructorId(instructorId);		
+		frm.setInstructorId(instructorId);
+		
+		request.setAttribute("UnavailableDays.pattern", inst.getUnavailablePatternHtml(true));
 
 		frm.setName(
 				inst.getName(UserProperty.NameFormat.get(sessionContext.getUser())) + 

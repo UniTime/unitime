@@ -79,6 +79,7 @@ public class InstructorListBuilder {
 			boolean hasCoursePrefs = false;
 			boolean hasTeachPref = false;
 			boolean hasMaxLoad = false;
+			boolean hasUnavailableDates = false;
 			TreeSet<InstructorAttributeType> attributeTypes = new TreeSet<InstructorAttributeType>(new Comparator<InstructorAttributeType>() {
 				@Override
 				public int compare(InstructorAttributeType o1, InstructorAttributeType o2) {
@@ -89,6 +90,7 @@ public class InstructorListBuilder {
 				DepartmentalInstructor di = (DepartmentalInstructor)i.next();
 				if (!di.getPreferences(InstructorCoursePref.class).isEmpty()) hasCoursePrefs = true;
 				if (di.getMaxLoad() != null && di.getMaxLoad() > 0f) hasMaxLoad = true;
+				if (di.hasUnavailabilities()) hasUnavailableDates = true;
 				if (di.getTeachingPreference() != null && !PreferenceLevel.sProhibited.equals(di.getTeachingPreference().getPrefProlog())) hasTeachPref = true;
 				for (InstructorAttribute at: di.getAttributes())
 					if (at.getType() != null)
@@ -107,7 +109,7 @@ public class InstructorListBuilder {
 					MSG.columnInstructorExamAssignments(),
 					MSG.columnInstructorIgnoreTooFar()};
 			
-			String[] headers = new String[fixedHeaders1.length + (hasCoursePrefs ? 1 : 0) + (hasTeachPref ? 1 : 0) + (hasMaxLoad ? 1 : 0) + attributeTypes.size() + fixedHeaders2.length];
+			String[] headers = new String[fixedHeaders1.length + (hasCoursePrefs ? 1 : 0) + (hasTeachPref ? 1 : 0) + (hasMaxLoad ? 1 : 0) + (hasUnavailableDates ? 1 : 0) + attributeTypes.size() + fixedHeaders2.length];
 			String[] aligns = new String[headers.length];
 			boolean[] asc = new boolean[headers.length];
 			int idx = 0;
@@ -125,6 +127,12 @@ public class InstructorListBuilder {
 			}
 			if (hasTeachPref) {
 				headers[idx] = MSG.columnTeachingPreference();
+				aligns[idx] = "left";
+				asc[idx] = true;
+				idx++;
+			}
+			if (hasUnavailableDates) {
+				headers[idx] = MSG.columnUnavailableDates();
 				aligns[idx] = "left";
 				asc[idx] = true;
 				idx++;
@@ -270,6 +278,12 @@ public class InstructorListBuilder {
 					idx ++;
 				}
 				
+				if (hasUnavailableDates) {
+					line[idx] = (di.hasUnavailabilities() ? di.getUnavailableDaysText("<br>") : "");
+					cmp[idx] = line[idx];
+					idx++;
+				}
+				
 				// max load
 				if (hasMaxLoad) {
 					if (di.getMaxLoad() == null) {
@@ -373,6 +387,7 @@ public class InstructorListBuilder {
 		boolean hasCoursePrefs = false;
 		boolean hasTeachPref = false;
 		boolean hasMaxLoad = false;
+		boolean hasUnavailableDates = false;
 		TreeSet<InstructorAttributeType> attributeTypes = new TreeSet<InstructorAttributeType>(new Comparator<InstructorAttributeType>() {
 			@Override
 			public int compare(InstructorAttributeType o1, InstructorAttributeType o2) {
@@ -383,6 +398,7 @@ public class InstructorListBuilder {
 			DepartmentalInstructor di = (DepartmentalInstructor)i.next();
 			if (!di.getPreferences(InstructorCoursePref.class).isEmpty()) hasCoursePrefs = true;
 			if (di.getMaxLoad() != null && di.getMaxLoad() > 0f) hasMaxLoad = true;
+			if (di.hasUnavailabilities()) hasUnavailableDates = true;
 			if (di.getTeachingPreference() != null && !PreferenceLevel.sProhibited.equals(di.getTeachingPreference().getPrefProlog())) hasTeachPref = true;
 			for (InstructorAttribute at: di.getAttributes())
 				if (at.getType() != null)
@@ -401,7 +417,7 @@ public class InstructorListBuilder {
 				MSG.columnInstructorExamAssignmentsPDF(),
 				MSG.columnInstructorIgnoreTooFarPDF()};
 		
-		String[] headers = new String[fixedHeaders1.length + (hasCoursePrefs ? 1 : 0) + (hasTeachPref ? 1 : 0) + (hasMaxLoad ? 1 : 0) + attributeTypes.size() + fixedHeaders2.length];
+		String[] headers = new String[fixedHeaders1.length + (hasCoursePrefs ? 1 : 0) + (hasTeachPref ? 1 : 0) + (hasMaxLoad ? 1 : 0) + (hasUnavailableDates ? 1 : 0) + attributeTypes.size() + fixedHeaders2.length];
 		String[] aligns = new String[headers.length];
 		boolean[] asc = new boolean[headers.length];
 		int idx = 0;
@@ -419,6 +435,12 @@ public class InstructorListBuilder {
 		}
 		if (hasTeachPref) {
 			headers[idx] = MSG.columnTeachingPreferencePDF();
+			aligns[idx] = "left";
+			asc[idx] = true;
+			idx++;
+		}
+		if (hasUnavailableDates) {
+			headers[idx] = MSG.columnUnavailableDatesPDF();
 			aligns[idx] = "left";
 			asc[idx] = true;
 			idx++;
@@ -567,6 +589,12 @@ public class InstructorListBuilder {
 				line[idx] = "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefProlog()) + " " + pref.getPrefName();
 				cmp[idx] = pref.getPrefId();
 				idx ++;
+			}
+			
+			if (hasUnavailableDates) {
+				line[idx] = (di.hasUnavailabilities() ? di.getUnavailableDaysText("\n") : "");
+				cmp[idx] = line[idx];
+				idx++;
 			}
 			
 			// max load

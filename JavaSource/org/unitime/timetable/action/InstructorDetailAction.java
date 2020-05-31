@@ -577,6 +577,9 @@ public class InstructorDetailAction extends PreferencesAction {
         // populate form
 		frm.setInstructorId(instructorId);
 		
+		if (inst.hasUnavailabilities())
+			request.setAttribute("UnavailableDays.pattern", inst.getUnavailablePatternHtml(false));
+		
 		NameFormat nameFormat = NameFormat.fromReference(sessionContext.getUser().getProperty(UserProperty.NameFormat));
 		frm.setName(nameFormat.format(inst));
 		

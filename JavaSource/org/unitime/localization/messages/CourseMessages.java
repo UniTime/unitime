@@ -2981,4 +2981,28 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Showing the actual student class enrollments, click here to change to projected student conflicts.")
 	String studentConflictsShowingActualConflicts();
+	
+	@DefaultMessage("Unavailable Dates")
+	String sectionTitleUnavailableDates();
+	
+	@DefaultMessage("Unavailable Dates:")
+	String propertyUnavailableDates();
+	
+	@DefaultMessage("Not Available")
+	String dateNotAvailable();
+	
+	@DefaultMessage("Available")
+	String dateAvailable();
+	
+	@DefaultMessage("Unavailable<BR>Dates")
+	String columnUnavailableDates();
+	
+	@DefaultMessage("Unavailable\nDates")
+	String columnUnavailableDatesPDF();
+	
+	@DefaultMessage("Instructor Not Available")
+	String instructorNotAvailableName();
+	
+	@DefaultMessage("Availability")
+	String instructorNotAvailableType();
 }

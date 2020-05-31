@@ -13887,4 +13887,12 @@
 		<mysql>alter table %SCHEMA%.advisor_crsreq modify critical int(10)</mysql>
 		<pgsql>alter table %SCHEMA%.advisor_crsreq alter critical type integer using case when critical then 1 when not critical then 0 else null end</pgsql>
 	</update>
+	<update version="230" date="29-May-2020" comment="Instructor Unavailable Days">
+		<plsql>alter table %SCHEMA%.departmental_instructor add unavailable_days varchar2(366 char)</plsql>
+		<mysql>alter table %SCHEMA%.departmental_instructor add unavailable_days varchar(366) null</mysql>
+		<pgsql>alter table %SCHEMA%.departmental_instructor add unavailable_days varchar(366) null</pgsql>
+		<plsql>alter table %SCHEMA%.departmental_instructor add unavailable_offset number(10)</plsql>
+		<mysql>alter table %SCHEMA%.departmental_instructor add unavailable_offset int(10) null</mysql>
+		<pgsql>alter table %SCHEMA%.departmental_instructor add unavailable_offset integer null</pgsql>
+	</update>
 </dbupdate>
