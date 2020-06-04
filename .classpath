@@ -4,7 +4,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
-	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
+	<classpathentry kind="con" path="com.gwtplugins.gwt.eclipse.core.GWT_CONTAINER"/>
 
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/activation-1.1.jar" sourcepath="3rd_party/sources/activation-1.1-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-beanutils-1.8.0.jar" sourcepath="3rd_party/sources/commons-beanutils-1.8.0-sources.jar"/>
