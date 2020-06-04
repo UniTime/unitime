@@ -17,42 +17,7 @@
 			</arguments>
 		</buildCommand>
 		<buildCommand>
-			<name>com.genuitec.eclipse.j2eedt.core.WebClasspathBuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-		<buildCommand>
 			<name>org.eclipse.jdt.core.javabuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-		<buildCommand>
-			<name>com.genuitec.eclipse.j2eedt.core.J2EEProjectValidator</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-		<buildCommand>
-			<name>com.genuitec.eclipse.j2eedt.core.DeploymentDescriptorValidator</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-		<buildCommand>
-			<name>com.ibm.etools.validation.validationbuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-		<buildCommand>
-			<name>com.ibm.sse.model.structuredbuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-		<buildCommand>
-			<name>com.genuitec.eclipse.ast.deploy.core.DeploymentBuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-		<buildCommand>
-			<name>com.genuitec.eclipse.hibernate.HibernateBuilder</name>
 			<arguments>
 			</arguments>
 		</buildCommand>
@@ -62,26 +27,22 @@
 			</arguments>
 		</buildCommand>
 		<buildCommand>
-			<name>com.google.gdt.eclipse.core.webAppProjectValidator</name>
+			<name>com.gwtplugins.gdt.eclipse.core.webAppProjectValidator</name>
 			<arguments>
 			</arguments>
 		</buildCommand>
 		<buildCommand>
-			<name>com.google.gwt.eclipse.core.gwtProjectValidator</name>
+			<name>com.gwtplugins.gwt.eclipse.core.gwtProjectValidator</name>
 			<arguments>
 			</arguments>
 		</buildCommand>
 	</buildSpec>
 	<natures>
 		<nature>org.eclipse.jem.workbench.JavaEMFNature</nature>
-		<nature>com.genuitec.eclipse.hibernate.hibernatenature</nature>
-		<nature>com.genuitec.eclipse.ast.deploy.core.deploymentnature</nature>
-		<nature>com.genuitec.eclipse.j2eedt.core.webnature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
-		<nature>com.genuitec.eclipse.cross.easystruts.eclipse.easystrutsnature</nature>
-		<nature>com.google.gwt.eclipse.core.gwtNature</nature>
 		<nature>org.eclipse.wst.common.project.facet.core.nature</nature>
 		<nature>org.eclipse.wst.common.modulecore.ModuleCoreNature</nature>
 		<nature>org.eclipse.wst.jsdt.core.jsNature</nature>
+		<nature>com.gwtplugins.gwt.eclipse.core.gwtNature</nature>
 	</natures>
 </projectDescription>
