@@ -83,7 +83,8 @@ public class SectioningStatusCookie {
 			cookie += "|" + iSortBy[i];
 		cookie += "|" + iStudentTab;
 		cookie += "|" + iSortByGroup[0] + "|" + iSortByGroup[1];
-		cookie += "|" + (iEmailIncludeCourseRequests ? "1" : "0") + "|" + (iEmailIncludeClassSchedule ? "1" : "0") + "|" + iEmailCC + "|" + iEmailSubject
+		cookie += "|" + (iEmailIncludeCourseRequests ? "1" : "0") + "|" + (iEmailIncludeClassSchedule ? "1" : "0")
+				+ "|" + (iEmailCC == null ? "" : iEmailCC) + "|" + (iEmailSubject == null ? "" : iEmailSubject)
 				+ "|" + (iEmailAdvisorRequests ? "1" : "0") + "|" + (iAdvisorRequestsEmailStudent ? "1" : "0")
 				+ "|" + (iOptionalEmailToggle == null ? "N" : iOptionalEmailToggle.booleanValue() ? "1" : "0");
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
