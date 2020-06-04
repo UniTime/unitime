@@ -1263,7 +1263,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		}
 
 		public XStudent student() { return iStudent; }
-		public String status() {  return (iStudent.getStatus() == null ? iDefaultStatus : iStudent.getStatus()); }
+		public String status() {  return (iStudent == null || iStudent.getStatus() == null ? iDefaultStatus : iStudent.getStatus()); }
 		public OnlineSectioningServer server() { return iServer; }
 		
 		@Override
