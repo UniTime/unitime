@@ -37,6 +37,7 @@ import org.cpsolver.ifs.assignment.AssignmentComparator;
 import org.cpsolver.ifs.assignment.AssignmentMap;
 import org.cpsolver.studentsct.extension.StudentQuality;
 import org.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
+import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
@@ -45,6 +46,7 @@ import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.model.Subpart;
 import org.cpsolver.studentsct.online.MaxOverExpectedConstraint;
 import org.cpsolver.studentsct.online.OnlineReservation;
 import org.cpsolver.studentsct.online.OnlineSectioningModel;
@@ -272,6 +274,14 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 						if (time || space || linked) {
 							OnlineReservation dummy = new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), -100, space, 1, true, true, time, true, true);
 							dummy.setBreakLinkedSections(linked);
+							for (Config g: course.getOffering().getConfigs()) {
+								dummy.addConfig(g);
+								for (Subpart s: g.getSubparts()) {
+									for (Section x: s.getSections()) {
+										dummy.addSection(x, false);
+									}
+								}
+							}
 						}
 					}
 				}

@@ -264,6 +264,14 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							if (time || space || linked || getSpecialRegistration() != null) {
 								OnlineReservation dummy = new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), -100, space, 1, true, true, time, true, true);
 								dummy.setBreakLinkedSections(linked);
+								for (Config g: course.getOffering().getConfigs()) {
+									dummy.addConfig(g);
+									for (Subpart s: g.getSubparts()) {
+										for (Section x: s.getSections()) {
+											dummy.addSection(x, false);
+										}
+									}
+								}
 							}
 						}
 					}
