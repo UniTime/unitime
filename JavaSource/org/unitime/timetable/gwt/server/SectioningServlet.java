@@ -91,6 +91,7 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpeci
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpart;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.model.Advisor;
+import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -423,6 +424,24 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		Set<Long> courseIds = null;
 		if (getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdvisor)) {
 			allCourseTypes = true;
+			if (studentId != null) {
+				if (server != null && !(server instanceof DatabaseServer)) {
+					courseIds = server.getRequestedCourseIds(studentId);
+				} else {
+					Student student = StudentDAO.getInstance().get(studentId);
+					if (student != null) {
+						courseIds = new HashSet<Long>();
+						for (CourseDemand cd: student.getCourseDemands()) {
+							for (CourseRequest cr: cd.getCourseRequests()) {
+								courseIds.add(cr.getCourseOffering().getUniqueId());
+							}
+						}
+						for (AdvisorCourseRequest acr: student.getAdvisorCourseRequests()) {
+							if (acr.getCourseOffering() != null) courseIds.add(acr.getCourseOffering().getUniqueId());
+						}
+					}
+				}
+			}
 		} else {
 			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 			try {
@@ -442,6 +461,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							for (CourseRequest cr: cd.getCourseRequests()) {
 								courseIds.add(cr.getCourseOffering().getUniqueId());
 							}
+						}
+						for (AdvisorCourseRequest acr: student.getAdvisorCourseRequests()) {
+							if (acr.getCourseOffering() != null) courseIds.add(acr.getCourseOffering().getUniqueId());
 						}
 					}
 				}

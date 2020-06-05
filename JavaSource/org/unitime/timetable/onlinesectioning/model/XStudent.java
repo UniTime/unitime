@@ -415,6 +415,10 @@ public class XStudent extends XStudentId implements Externalizable {
     		if (request instanceof XCourseRequest)
     			for (XCourseId course: ((XCourseRequest)request).getCourseIds())
     				courseIds.add(course.getCourseId());
+    	if (hasAdvisorRequests())
+    		for (XAdvisorRequest request: getAdvisorRequests())
+    			if (request.hasCourseId())
+    				courseIds.add(request.getCourseId().getCourseId());
     	return courseIds;
     }
     
