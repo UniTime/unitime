@@ -95,29 +95,45 @@ public class IndividualStudentTimeOverlaps implements StudentSectioningReport {
         }
     }
     
-    public CSVFile createTable(final Assignment<Request, Enrollment> assignment, boolean includeLastLikeStudents, boolean includeRealStudents, final boolean useAmPm, boolean includeAllowedOverlaps, boolean ignoreBreakTimeConflicts) {
+    public int nrSharedDays(TimeLocation t1, TimeLocation t2, int dayOfWeekOffset) {
+    	if (t1 == null || t2 == null) return 0;
+    	int count = 0;
+    	int idx = -1;
+        while ((idx = t1.getWeekCode().nextSetBit(1 + idx)) >= 0) {
+            int dow = (idx + dayOfWeekOffset) % 7;
+            if ((t1.getDayCode() & Constants.DAY_CODES[dow]) != 0) {
+            	if (t2.getWeekCode().get(idx) && (t2.getDayCode() & Constants.DAY_CODES[dow]) != 0)
+            		count ++;
+            }
+        }
+        return count;
+    }
+    
+    public CSVFile createTable(final Assignment<Request, Enrollment> assignment, boolean includeLastLikeStudents, boolean includeRealStudents, final boolean useAmPm, boolean includeAllowedOverlaps, boolean ignoreBreakTimeConflicts, int dayOfWeekOffset) {
         CSVFile csv = new CSVFile();
         if (includeAllowedOverlaps) {
             csv.setHeader(new CSVFile.CSVField[] {
+            		new CSVFile.CSVField("__Student"),
             		new CSVFile.CSVField("Student\nId"),
             		new CSVFile.CSVField("Student\nName"),
             		new CSVFile.CSVField("Student\nEmail"),
             		new CSVFile.CSVField("Allowed\nOverlap"),
-            		new CSVFile.CSVField("Course"), new CSVFile.CSVField("Class"), new CSVFile.CSVField("Meeting Time"),
+            		new CSVFile.CSVField("Course"), new CSVFile.CSVField("Class"), new CSVFile.CSVField("Meeting Time"), new CSVFile.CSVField("Date Pattern"),
             		new CSVFile.CSVField("Subpart\nOverlap"), new CSVFile.CSVField("Time\nOverride"),
-            		new CSVFile.CSVField("Conflicting\nCourse"), new CSVFile.CSVField("Conflicting\nClass"), new CSVFile.CSVField("Conflicting\nMeeting Time"),
+            		new CSVFile.CSVField("Conflicting\nCourse"), new CSVFile.CSVField("Conflicting\nClass"), new CSVFile.CSVField("Conflicting\nMeeting Time"), new CSVFile.CSVField("Conflicting\nDate Pattern"),
             		new CSVFile.CSVField("Subpart\nOverlap"), new CSVFile.CSVField("Time\nOverride"),
             		new CSVFile.CSVField("Ignore\nConflict"),
-                    new CSVFile.CSVField("Overlap\n[min]")
+                    new CSVFile.CSVField("Overlap\n[min]"), new CSVFile.CSVField("Overlapping\nMeetings")
                     });
         } else {
             csv.setHeader(new CSVFile.CSVField[] {
+            		new CSVFile.CSVField("__Student"),
             		new CSVFile.CSVField("Student\nId"),
             		new CSVFile.CSVField("Student\nName"),
             		new CSVFile.CSVField("Student\nEmail"),
-            		new CSVFile.CSVField("Course"), new CSVFile.CSVField("Class"), new CSVFile.CSVField("Meeting Time"),
-            		new CSVFile.CSVField("Conflicting\nCourse"), new CSVFile.CSVField("Conflicting\nClass"), new CSVFile.CSVField("Conflicting\nMeeting Time"),
-                    new CSVFile.CSVField("Overlap\n[min]")
+            		new CSVFile.CSVField("Course"), new CSVFile.CSVField("Class"), new CSVFile.CSVField("Meeting Time"), new CSVFile.CSVField("Date Pattern"),
+            		new CSVFile.CSVField("Conflicting\nCourse"), new CSVFile.CSVField("Conflicting\nClass"), new CSVFile.CSVField("Conflicting\nMeeting Time"), new CSVFile.CSVField("Conflicting\nDate Pattern"),
+                    new CSVFile.CSVField("Overlap\n[min]"), new CSVFile.CSVField("Overlapping\nMeetings")
                     });
         }
         
@@ -146,6 +162,7 @@ public class IndividualStudentTimeOverlaps implements StudentSectioningReport {
         	                	if (!includeAllowedOverlaps && (e1.isAllowOverlap() || e2.isAllowOverlap() || !s1.isOverlapping(s2))) continue;
         	                	
                 				List<CSVFile.CSVField> line = new ArrayList<CSVFile.CSVField>();
+                				line.add(new CSVFile.CSVField(student.getId()));
                 	            line.add(new CSVFile.CSVField(student.getExternalId()));
                 	            line.add(new CSVFile.CSVField(student.getName()));
                 	            org.unitime.timetable.model.Student s = StudentDAO.getInstance().get(student.getId());
@@ -157,6 +174,7 @@ public class IndividualStudentTimeOverlaps implements StudentSectioningReport {
                 	            line.add(new CSVFile.CSVField(e1.getCourse().getName()));
                 	            line.add(new CSVFile.CSVField(s1.getSubpart().getName() + " " + s1.getName(e1.getCourse().getId())));
                 	            line.add(new CSVFile.CSVField(s1.getTime() == null ? "" : s1.getTime().getDayHeader() + " " + s1.getTime().getStartTimeHeader(useAmPm) + " - " + s1.getTime().getEndTimeHeader(useAmPm)));
+                	            line.add(new CSVFile.CSVField(s1.getTime() == null ? "" : s1.getTime().getDatePatternName()));
                 	            if (includeAllowedOverlaps) {
                 	            	line.add(new CSVFile.CSVField(s1.getSubpart().isAllowOverlap()));
                 	            	line.add(new CSVFile.CSVField(e1.getReservation() != null && e1.getReservation().isAllowOverlap()));
@@ -165,6 +183,7 @@ public class IndividualStudentTimeOverlaps implements StudentSectioningReport {
                 	            line.add(new CSVFile.CSVField(e2.getCourse().getName()));
                 	            line.add(new CSVFile.CSVField(s2.getSubpart().getName() + " " + s2.getName(e2.getCourse().getId())));
                 	            line.add(new CSVFile.CSVField(s2.getTime() == null ? "" : s2.getTime().getDayHeader() + " " + s2.getTime().getStartTimeHeader(useAmPm) + " - " + s2.getTime().getEndTimeHeader(useAmPm)));
+                	            line.add(new CSVFile.CSVField(s2.getTime() == null ? "" : s2.getTime().getDatePatternName()));
                 	            if (includeAllowedOverlaps) {
                 	            	line.add(new CSVFile.CSVField(s2.getSubpart().isAllowOverlap()));
                 	            	line.add(new CSVFile.CSVField(e2.getReservation() != null && e2.getReservation().isAllowOverlap()));
@@ -173,6 +192,7 @@ public class IndividualStudentTimeOverlaps implements StudentSectioningReport {
                 	            if (includeAllowedOverlaps)
                 	            	line.add(new CSVFile.CSVField(s1.isToIgnoreStudentConflictsWith(s2.getId())));
                 	            line.add(new CSVFile.CSVField(sDF1.format(share(s1, s2, ignoreBreakTimeConflicts))));
+                	            line.add(new CSVFile.CSVField(nrSharedDays(s1.getTime(), s2.getTime(), dayOfWeekOffset)));
                 	            
                 	            csv.addLine(line);
         	                }
@@ -192,7 +212,8 @@ public class IndividualStudentTimeOverlaps implements StudentSectioningReport {
         		properties.getPropertyBoolean("real", true),
         		properties.getPropertyBoolean("useAmPm", true),
         		properties.getPropertyBoolean("includeAllowedOverlaps", true),
-        		properties.getPropertyBoolean("ignoreBreakTimeConflicts", false)
+        		properties.getPropertyBoolean("ignoreBreakTimeConflicts", false),
+        		properties.getPropertyInt("DatePattern.DayOfWeekOffset", 0)
         		);
     }
 }

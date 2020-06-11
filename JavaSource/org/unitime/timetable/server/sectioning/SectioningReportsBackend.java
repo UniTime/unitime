@@ -31,6 +31,8 @@ import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.basic.GenerateSectioningReport;
@@ -39,6 +41,8 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
+import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.DateUtils;
 
 /**
  * @author Tomas Muller
@@ -56,6 +60,11 @@ public class SectioningReportsBackend implements GwtRpcImplementation<Sectioning
 		boolean online = parameters.getPropertyBoolean("online", false);
 		parameters.setProperty("useAmPm", CONSTANTS.useAmPm() ? "true" : "false");
 		parameters.setProperty("dateformat", CONSTANTS.timeStampFormat());
+		Session session = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId());
+		if (session != null) {
+			parameters.setProperty("DatePattern.DayOfWeekOffset",
+					String.valueOf(Constants.getDayOfWeek(DateUtils.getDate(1, session.getPatternStartMonth(), session.getSessionStartYear()))));
+		}
 
 		if (online) {
 			context.checkPermission(Right.SchedulingReports);

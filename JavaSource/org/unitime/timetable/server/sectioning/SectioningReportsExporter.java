@@ -40,6 +40,7 @@ import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.Exporter;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -49,6 +50,8 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.service.StudentSectioningSolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
+import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.DateUtils;
 
 /**
  * @author Tomas Muller
@@ -80,6 +83,12 @@ public class SectioningReportsExporter implements Exporter {
 			sessionId = helper.getSessionContext().getUser().getCurrentAcademicSessionId();
 		if (sessionId == null)
 			throw new GwtRpcException("No academic session provided.");
+		
+		Session session = SessionDAO.getInstance().get(sessionId);
+		if (session != null) {
+			parameters.setProperty("DatePattern.DayOfWeekOffset",
+					String.valueOf(Constants.getDayOfWeek(DateUtils.getDate(1, session.getPatternStartMonth(), session.getSessionStartYear()))));
+		}
 		
 		CSVFile csv = null;
 		String online = helper.getParameter("online");
@@ -134,11 +143,11 @@ public class SectioningReportsExporter implements Exporter {
             String term = config.getProperty("Data.Term");
             String year = config.getProperty("Data.Year");
             String initiative = config.getProperty("Data.Initiative");
-            String session = null;
+            String sessionLabel = "";
             if (term != null && year != null && initiative != null)
-                session = term + year + initiative;
-            else
-            	session = SessionDAO.getInstance().get(sessionId).getReference();
+            	sessionLabel = term + year + initiative;
+            else if (session != null)
+            	sessionLabel = session.getReference();
             SimpleDateFormat df = new SimpleDateFormat(parameters.getProperty("dateformat", "MM/dd/yyyy hh:mmaa"));
             Long startTimeStamp = config.getPropertyLong("General.StartTime", null);
             String started = (startTimeStamp == null ? null : df.format(new Date(startTimeStamp)));
@@ -146,7 +155,7 @@ public class SectioningReportsExporter implements Exporter {
             String published = (publishTimeStamp == null ? null : df.format(new Date(publishTimeStamp)));
             String publishId = config.getProperty("StudentSct.PublishId");
             out.printLine("Id", "Term", "Started", "Published");
-            out.printLine(publishId, session, started, published);
+            out.printLine(publishId, sessionLabel, started, published);
             out.printLine();
 		}
 				
