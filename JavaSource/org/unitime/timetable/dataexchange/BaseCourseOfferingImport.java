@@ -1695,6 +1695,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				Boolean enabledForStudentScheduling = getOptionalBooleanAttribute(classElement, "studentScheduling", getOptionalBooleanAttribute(classElement, "displayInScheduleBook", true));
 				boolean cancelled = getOptionalBooleanAttribute(classElement, "cancelled", false);
 				Integer itypeId = findItypeForString(type).getItype();
+				Integer nbrRooms = getOptionalIntegerAttribute(classElement, "nbrRooms");
 				
 				Class_ clazz = null;
 				Class_ origClass = null;
@@ -1771,6 +1772,11 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' display in schedule book changed");
 						changed = true;						
 					}
+					if (nbrRooms != null && !nbrRooms.equals(clazz.getNbrRooms())) {
+						clazz.setNbrRooms(nbrRooms);
+						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' number of rooms changed");
+						changed = true;
+					}
 					if (cancelled != clazz.isCancelled()) {
 						clazz.setCancelled(cancelled);
 						if (cancelled)
@@ -1794,7 +1800,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					clazz.setExpectedCapacity(limit);
 					clazz.setMaxExpectedCapacity(limit);
 					clazz.setRoomRatio(new Float(1.0));
-					clazz.setNbrRooms(new Integer(1));
+					if (nbrRooms != null)
+						clazz.setNbrRooms(nbrRooms);
+					else
+						clazz.setNbrRooms(new Integer(1));
 					clazz.setEnabledForStudentScheduling(enabledForStudentScheduling);
 					clazz.setSchedulePrintNote(scheduleNote);
 					clazz.setCancelled(cancelled);
@@ -1876,7 +1885,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						changed = true;
 					}
 					int numRooms = 1;
-					if (clazz.getNbrRooms() != null && !clazz.getNbrRooms().equals(new Integer(numRooms))){
+					if (nbrRooms == null && clazz.getNbrRooms() != null && !clazz.getNbrRooms().equals(new Integer(numRooms))){
 						clazz.setNbrRooms(new Integer(numRooms));
 						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " number of rooms changed");
 						changed = true;
@@ -1893,7 +1902,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					if (locations != null && !locations.isEmpty()){
 						numRooms += locations.size();
 					}
-					if (clazz.getNbrRooms() != null && !clazz.getNbrRooms().equals(new Integer(numRooms))){
+					if (nbrRooms == null && clazz.getNbrRooms() != null && !clazz.getNbrRooms().equals(new Integer(numRooms))){
 						clazz.setNbrRooms(new Integer(numRooms));
 						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " number of rooms changed");
 						changed = true;
