@@ -138,6 +138,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
         					clonedSection.setNote(section.getNote());
         					clonedSection.setCancelled(section.isCancelled());
         					clonedSection.setEnabled(section.isEnabledForScheduling());
+        					clonedSection.setOnline(section.isOnline());
         					for (XDistribution distribution: offering.getDistributions()) {
         						if (distribution.getDistributionType() == XDistributionType.IngoreConflicts && distribution.hasSection(section.getSectionId()))
         							for (Long id: distribution.getSectionIds())

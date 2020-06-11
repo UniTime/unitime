@@ -78,7 +78,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     private String iExternalId = null;
     private Map<Long, String> iExternalIdByCourse = new HashMap<Long, String>();
     private boolean iEnabledForScheduling = true;
-    private boolean iCancelled = false;
+    private boolean iCancelled = false, iOnline = false;
     private Map<Long, Float> iCreditByCourse = null;
 
     public XSection() {
@@ -153,6 +153,14 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
             		iInstructors.add(new XInstructor(di, tcr, helper));
         	}
         }
+        iOnline = true;
+        if (assignment != null) {
+        	iOnline = true;
+        	for (Location loc: assignment.getRooms())
+        		if (!loc.isIgnoreRoomCheck()) {
+        			iOnline = false; break;
+        		}
+        }
     }
     
     public XSection(Section section) {
@@ -168,6 +176,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     	iNote = section.getNote();
     	iTime = section.getTime() == null ? null : new XTime(section.getTime());
     	iCancelled = section.isCancelled();
+    	iOnline = section.isOnline();
     	iEnabledForScheduling = section.isEnabled();
     	if (section.getNameByCourse() != null)
     		for (Map.Entry<Long, String> e: section.getNameByCourse().entrySet()) {
@@ -444,6 +453,10 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     	return iCancelled;
     }
     
+    public boolean isOnline() {
+    	return iOnline;
+    }
+    
     /**
      * True, if this section overlaps with the given assignment in time and
      * space
@@ -533,6 +546,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
 			iExternalIdByCourse.put(in.readLong(), (String)in.readObject());
 		iEnabledForScheduling = in.readBoolean();
 		iCancelled = in.readBoolean();
+		iOnline = in.readBoolean();
 		
 		int nrCreditsByCourse = in.readInt();
 		if (nrCreditsByCourse > 0) {
@@ -584,6 +598,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
 		}
 		out.writeBoolean(iEnabledForScheduling);
 		out.writeBoolean(iCancelled);
+		out.writeBoolean(iOnline);
 		
 		if (iCreditByCourse != null) {
 			out.writeInt(iCreditByCourse.size());

@@ -626,6 +626,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					clonedSection.setEnrollment(enrl);
 					clonedSection.setCancelled(section.isCancelled());
 					clonedSection.setEnabled(student || section.isEnabledForScheduling());
+					clonedSection.setOnline(section.isOnline());
 					for (XDistribution distribution: offering.getDistributions())
 						if (distribution.getDistributionType() == XDistributionType.IngoreConflicts && distribution.hasSection(section.getSectionId()))
 							for (Long id: distribution.getSectionIds())

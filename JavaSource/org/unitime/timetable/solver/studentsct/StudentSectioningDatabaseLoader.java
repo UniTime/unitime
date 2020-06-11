@@ -798,6 +798,14 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         	section.setEnabled(false);
                 		}
                     }
+                    if (a == null) {
+                    	section.setOnline(true);
+                    } else if (a != null) {
+                    	boolean hasRoom = false;
+                    	for (Location loc: a.getRooms())
+                    		if (!loc.isIgnoreRoomCheck()) hasRoom = true;
+                    	section.setOnline(!hasRoom);
+                    }
                     for (CourseOffering course: io.getCourseOfferings()) {
                     	String suffix = c.getClassSuffix(course);
                     	if (suffix != null)
