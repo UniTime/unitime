@@ -569,6 +569,7 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 		dp.setName(getName());
 		dp.setType(getType());
 		dp.setVisible(isVisible());
+		dp.setNumberOfWeeks(dp.getNumberOfWeeks());
 		return dp;
 	}
 	
