@@ -232,8 +232,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private int iClassesFixedDateIndex = 0;
     private int iDayOfWeekOffset = 0;
     private Query iOnlineOnlyStudentQuery = null;
+    private String iOnlineOnlyCourseNameRegExp;
     private String iOnlineOnlyInstructionalModeRegExp;
     private String iMPPCoursesRegExp = null;
+    private boolean iOnlineOnlyExclusiveCourses = false;
     private static enum IgnoreNotAssigned { all, other, none }
     private IgnoreNotAssigned iIgnoreNotAssigned = IgnoreNotAssigned.other;
     private boolean iFixAssignedEnrollments = false;
@@ -326,7 +328,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iMoveFreeTimesDown = model.getProperties().getPropertyBoolean("Load.MoveFreeTimesDown", iMoveFreeTimesDown);
 
         String onlineOnlyStudentFilter = model.getProperties().getProperty("Load.OnlineOnlyStudentFilter", null);
-        iOnlineOnlyInstructionalModeRegExp = model.getProperties().getProperty("Load.OnlineOnlyInstructionalModeRegExp", "");
+        iOnlineOnlyInstructionalModeRegExp = model.getProperties().getProperty("Load.OnlineOnlyInstructionalModeRegExp");
+        iOnlineOnlyCourseNameRegExp = model.getProperties().getProperty("Load.OnlineOnlyCourseNameRegExp");
+        iOnlineOnlyExclusiveCourses = model.getProperties().getPropertyBoolean("Load.OnlineOnlyExclusiveCourses", false);
         if (onlineOnlyStudentFilter != null && !onlineOnlyStudentFilter.isEmpty()) {
         	iOnlineOnlyStudentQuery = new Query(onlineOnlyStudentFilter);
         	iProgress.info("Online-only student filter: " + iOnlineOnlyStudentQuery); 
@@ -2391,50 +2395,87 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         }
         
         if (!onlineOnlyStudents.isEmpty()) {
-        	Map<Offering, Set<Long>> offering2students = new HashMap<Offering, Set<Long>>();
+        	Map<Course, Set<Long>> course2students = new HashMap<Course, Set<Long>>();
     		for (Student s: onlineOnlyStudents) {
     			for (Request r: s.getRequests())
     				if (r instanceof CourseRequest)
     					for (Course c: ((CourseRequest)r).getCourses()) {
-    						Set<Long> set = offering2students.get(c.getOffering());
+    						Set<Long> set = course2students.get(c);
     						if (set == null) {
     							set = new HashSet<Long>();
-    							offering2students.put(c.getOffering(), set);
+    							course2students.put(c, set);
     						}
     						set.add(s.getId());
     					}
     		}
-    		setPhase("Creating online-only reservations...", offering2students.size());
-        	for (Map.Entry<Offering, Set<Long>> e: offering2students.entrySet()) {
+    		setPhase("Creating online-only reservations...", course2students.size());
+        	for (Map.Entry<Course, Set<Long>> e: course2students.entrySet()) {
          		incProgress();
-        		Offering offering = e.getKey();
-        		List<Config> configs = new ArrayList<Config>();
-        		for (Config config: offering.getConfigs()) {
-        			if (iOnlineOnlyInstructionalModeRegExp.isEmpty()) {
-        				if (config.getInstructionalMethodReference() == null || config.getInstructionalMethodReference().isEmpty())
-        					configs.add(config);	
-        			} else {
-        				if (config.getInstructionalMethodReference() != null && config.getInstructionalMethodReference().matches(iOnlineOnlyInstructionalModeRegExp)) {
-        					configs.add(config);
-        				}
+         		Course course = e.getKey();
+         		if (iOnlineOnlyCourseNameRegExp != null && !iOnlineOnlyCourseNameRegExp.isEmpty() && !course.getName().matches(iOnlineOnlyCourseNameRegExp)) {
+         			ReservationOverride r = new ReservationOverride(--iMakeupReservationId, course.getOffering(), e.getValue());
+            		r.setAllowOverlap(false);
+            		r.setAllowDisabled(false);
+            		r.setCanAssignOverLimit(false);
+            		r.setExpired(true);
+            		r.setMustBeUsed(true);
+            		r.setPriority(DummyReservation.DEFAULT_PRIORITY);
+            		r.setNeverIncluded(true);
+         		} else  if (iOnlineOnlyInstructionalModeRegExp != null) {
+            		Offering offering = course.getOffering();
+            		List<Config> configs = new ArrayList<Config>();
+            		for (Config config: offering.getConfigs()) {
+            			if (iOnlineOnlyInstructionalModeRegExp.isEmpty()) {
+            				if (config.getInstructionalMethodReference() == null || config.getInstructionalMethodReference().isEmpty())
+            					configs.add(config);	
+            			} else {
+            				if (config.getInstructionalMethodReference() != null && config.getInstructionalMethodReference().matches(iOnlineOnlyInstructionalModeRegExp)) {
+            					configs.add(config);
+            				}
+            			}
+            		}
+            		if (configs.size() == offering.getConfigs().size()) {
+            			// student can take any configuration -> no need for an override
+            			continue;
+            		}
+            		ReservationOverride r = new ReservationOverride(--iMakeupReservationId, offering, e.getValue());
+            		r.setAllowOverlap(false);
+            		r.setAllowDisabled(false);
+            		r.setCanAssignOverLimit(false);
+            		r.setExpired(true);
+            		r.setMustBeUsed(true);
+            		r.setPriority(DummyReservation.DEFAULT_PRIORITY);
+            		r.setNeverIncluded(configs.isEmpty());
+            		for (Config config: configs)
+            			r.addConfig(config);
+         		}
+        	}
+        }
+        if (iOnlineOnlyStudentQuery != null && iOnlineOnlyExclusiveCourses && iOnlineOnlyCourseNameRegExp != null && !iOnlineOnlyCourseNameRegExp.isEmpty()) {
+        	setPhase("Creating inverse online-only reservations...", getModel().getOfferings().size());
+        	for (Offering offering: getModel().getOfferings()) {
+        		incProgress();
+        		for (Course course: offering.getCourses()) {
+        			if (course.getName().matches(iOnlineOnlyCourseNameRegExp)) {
+            			Set<Long> studentIds = new HashSet<Long>();
+            			for (CourseRequest cr: course.getRequests()) {
+            				if (!onlineOnlyStudents.contains(cr.getStudent()))
+            					studentIds.add(cr.getStudent().getId());
+            			}
+            			if (!studentIds.isEmpty()) {
+            				ReservationOverride r = new ReservationOverride(--iMakeupReservationId, offering, studentIds);
+                    		r.setAllowOverlap(false);
+                    		r.setAllowDisabled(false);
+                    		r.setCanAssignOverLimit(false);
+                    		r.setExpired(true);
+                    		r.setMustBeUsed(true);
+                    		r.setPriority(DummyReservation.DEFAULT_PRIORITY);
+                    		r.setNeverIncluded(true);
+            			}
         			}
         		}
-        		if (configs.size() == offering.getConfigs().size()) {
-        			// student can take any configuration -> no need for an override
-        			continue;
-        		}
-        		Set<Long> students = e.getValue();
-        		ReservationOverride r = new ReservationOverride(--iMakeupReservationId, offering, students);
-        		r.setAllowOverlap(false);
-        		r.setAllowDisabled(false);
-        		r.setCanAssignOverLimit(false);
-        		r.setExpired(true);
-        		r.setMustBeUsed(true);
-        		r.setPriority(DummyReservation.DEFAULT_PRIORITY);
-        		r.setNeverIncluded(configs.isEmpty());
-        		for (Config config: configs)
-        			r.addConfig(config);
         	}
+        	
         }
         
         List<DistributionPref> distPrefs = hibSession.createQuery(

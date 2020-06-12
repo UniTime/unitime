@@ -55,7 +55,12 @@ public class OnlineOnlyCourseMatcherProvider implements CourseMatcherProvider {
 			XStudent student = server.getStudent(studentId);
 			if (student == null) return null;
 			if (new Query(filter).match(new StudentMatcher(student, server.getAcademicSession().getDefaultSectioningStatus(), server, false)))
-				return new OnlineOnlyCourseMatcher(ApplicationProperty.OnlineSchedulingParameter.value("Load.OnlineOnlyInstructionalModeRegExp", ""));
+				return new OnlineOnlyCourseMatcher(
+						ApplicationProperty.OnlineSchedulingParameter.value("Load.OnlineOnlyInstructionalModeRegExp"),
+						ApplicationProperty.OnlineSchedulingParameter.value("Load.OnlineOnlyCourseNameRegExp")
+						);
+			else if ("true".equalsIgnoreCase(ApplicationProperty.OnlineSchedulingParameter.value("Load.OnlineOnlyExclusiveCourses", "false")))
+				return new NotOnlineOnlyCourseMatcher(ApplicationProperty.OnlineSchedulingParameter.value("Load.OnlineOnlyCourseNameRegExp"));
 			return null;
 		} else {
 			Student student = StudentDAO.getInstance().get(studentId);
@@ -64,7 +69,12 @@ public class OnlineOnlyCourseMatcherProvider implements CourseMatcherProvider {
 				if ("true".equalsIgnoreCase(ApplicationProperty.OnlineSchedulingParameter.value("OnlineOnlyAdminOverride", "false")))  return null;
 			}
 			if (new Query(filter).match(new DbStudentMatcher(student)))
-				return new OnlineOnlyCourseMatcher(ApplicationProperty.OnlineSchedulingParameter.value("Load.OnlineOnlyInstructionalModeRegExp", ""));
+				return new OnlineOnlyCourseMatcher(
+						ApplicationProperty.OnlineSchedulingParameter.value("Load.OnlineOnlyInstructionalModeRegExp"),
+						ApplicationProperty.OnlineSchedulingParameter.value("Load.OnlineOnlyCourseNameRegExp")
+						);
+			else if ("true".equalsIgnoreCase(ApplicationProperty.OnlineSchedulingParameter.value("Load.OnlineOnlyExclusiveCourses", "false")))
+				return new NotOnlineOnlyCourseMatcher(ApplicationProperty.OnlineSchedulingParameter.value("Load.OnlineOnlyCourseNameRegExp"));
 			return null;
 		}
 	}
@@ -73,9 +83,11 @@ public class OnlineOnlyCourseMatcherProvider implements CourseMatcherProvider {
 		private static final long serialVersionUID = 1L;
 		private transient OnlineSectioningServer iServer;
 		private String iInstructionalMode;
+		private String iCourseRegExp;
 		
-		public OnlineOnlyCourseMatcher(String im) {
+		public OnlineOnlyCourseMatcher(String im, String cn) {
 			iInstructionalMode = im;
+			iCourseRegExp = cn;
 		}
 
 		@Override
@@ -86,35 +98,64 @@ public class OnlineOnlyCourseMatcherProvider implements CourseMatcherProvider {
 
 		@Override
 		public boolean match(XCourseId course) {
-			if (getServer() != null && !(getServer() instanceof DatabaseServer)) {
-				XOffering offering = getServer().getOffering(course.getOfferingId());
-				if (offering != null) {
-					for (XConfig config: offering.getConfigs()) {
-	        			if (iInstructionalMode.isEmpty()) {
-	        				if (config.getInstructionalMethod() == null || config.getInstructionalMethod().getReference() == null || config.getInstructionalMethod().getReference().isEmpty())
-	        					return true;
-	        			} else {
-	        				if (config.getInstructionalMethod() != null && config.getInstructionalMethod().getReference() != null && config.getInstructionalMethod().getReference().matches(iInstructionalMode))
-	        					return true;
-	        			}
-	        		}
-				}
-			} else {
-				InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(course.getOfferingId());
-				if (offering != null) {
-					for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
-						if (iInstructionalMode.isEmpty()) {
-							if (config.getInstructionalMethod() == null || config.getInstructionalMethod().getReference() == null || config.getInstructionalMethod().getReference().isEmpty())
-	        					return true;
-						} else {
-							if (config.getInstructionalMethod() != null && config.getInstructionalMethod().getReference() != null && config.getInstructionalMethod().getReference().matches(iInstructionalMode))
-	        					return true;
+			if (iCourseRegExp != null && !iCourseRegExp.isEmpty() && !course.getCourseName().matches(iCourseRegExp)) {
+				return false;
+			} else if (iInstructionalMode != null) {
+				if (getServer() != null && !(getServer() instanceof DatabaseServer)) {
+					XOffering offering = getServer().getOffering(course.getOfferingId());
+					if (offering != null) {
+						for (XConfig config: offering.getConfigs()) {
+		        			if (iInstructionalMode.isEmpty()) {
+		        				if (config.getInstructionalMethod() == null || config.getInstructionalMethod().getReference() == null || config.getInstructionalMethod().getReference().isEmpty())
+		        					return true;
+		        			} else {
+		        				if (config.getInstructionalMethod() != null && config.getInstructionalMethod().getReference() != null && config.getInstructionalMethod().getReference().matches(iInstructionalMode))
+		        					return true;
+		        			}
+		        		}
+					}
+				} else {
+					InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(course.getOfferingId());
+					if (offering != null) {
+						for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
+							if (iInstructionalMode.isEmpty()) {
+								if (config.getInstructionalMethod() == null || config.getInstructionalMethod().getReference() == null || config.getInstructionalMethod().getReference().isEmpty())
+		        					return true;
+							} else {
+								if (config.getInstructionalMethod() != null && config.getInstructionalMethod().getReference() != null && config.getInstructionalMethod().getReference().matches(iInstructionalMode))
+		        					return true;
+							}
 						}
 					}
 				}
+				return false;
+			} else {
+				return true;
 			}
-			return false;
+		}
+	}
+	
+	public static class NotOnlineOnlyCourseMatcher implements CourseMatcher {
+		private static final long serialVersionUID = 1L;
+		private transient OnlineSectioningServer iServer;
+		private String iCourseRegExp;
+		
+		public NotOnlineOnlyCourseMatcher(String cn) {
+			iCourseRegExp = cn;
 		}
 
+		@Override
+		public void setServer(OnlineSectioningServer server) { iServer = server; }
+
+		@Override
+		public OnlineSectioningServer getServer() { return iServer; }
+
+		@Override
+		public boolean match(XCourseId course) {
+			if (iCourseRegExp != null && !iCourseRegExp.isEmpty() && course.getCourseName().matches(iCourseRegExp)) {
+				return false;
+			}
+			return true;
+		}
 	}
 }
