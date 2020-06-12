@@ -127,9 +127,16 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	private AdvisorCourseRequestsTable iAdvisorRequests;
 	
 	private CheckBox iEmailConfirmationHeader, iEmailConfirmationFooter;
+	private TakesValue<Long> iStudentId;
 	
 	public AdvisorCourseRequestsPage() {
 		super(6);
+		iStudentId = new TakesValue<Long>() {
+			@Override
+			public void setValue(Long value) {}
+			@Override
+			public Long getValue() { return iDetails == null ? null : iDetails.getStudentId(); }
+		};
 		UniTimePageHeader.getInstance().getLeft().setVisible(false);
 		UniTimePageHeader.getInstance().getLeft().setPreventDefault(true);
 		addStyleName("unitime-AdvisorCourseRequests");
@@ -318,7 +325,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		addHeaderRow(requests);
 		
 		for (int i = 0; i < 9; i++) {
-			final AdvisorCourseRequestLine line = new AdvisorCourseRequestLine(iSession, i, false, null, iSpecRegCx);
+			final AdvisorCourseRequestLine line = new AdvisorCourseRequestLine(iSession, i, false, null, iSpecRegCx, iStudentId);
 			line.insert(this, getRowCount());
 			iCourses.add(line);
 			if (i > 0) {
@@ -346,7 +353,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		alternatives.setMessage(MESSAGES.courseRequestsAlternativesNote());
 		addHeaderRow(alternatives);
 		for (int i = 0; i < 2; i++) {
-			final AdvisorCourseRequestLine line = new AdvisorCourseRequestLine(iSession, i, true, null, iSpecRegCx);
+			final AdvisorCourseRequestLine line = new AdvisorCourseRequestLine(iSession, i, true, null, iSpecRegCx, iStudentId);
 			line.insert(this, getRowCount());
 			iAlternatives.add(line);
 			if (i == 0) {
@@ -544,7 +551,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 							classes.setDataProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
 								@Override
 								public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {
-									sSectioningService.listClasses(true, iSession.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
+									sSectioningService.listClasses(true, iSession.getAcademicSessionId(), iStudentId.getValue(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 								}
 							});
 							if (iDegreePlanDialog == null) {
@@ -660,7 +667,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	
 	private void addCourseLine() {
 		int i = iCourses.size();
-		final AdvisorCourseRequestLine line = new AdvisorCourseRequestLine(iSession, i, false, null, iSpecRegCx);
+		final AdvisorCourseRequestLine line = new AdvisorCourseRequestLine(iSession, i, false, null, iSpecRegCx, iStudentId);
 		iCourses.add(line);
 		AdvisorCourseRequestLine prev = iCourses.get(i - 1);
 		prev.getCourses().get(0).setHint("");
@@ -683,7 +690,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	
 	private void addAlternativeLine() {
 		int i = iAlternatives.size();
-		final AdvisorCourseRequestLine line = new AdvisorCourseRequestLine(iSession, i, true, null, iSpecRegCx);
+		final AdvisorCourseRequestLine line = new AdvisorCourseRequestLine(iSession, i, true, null, iSpecRegCx, iStudentId);
 		iAlternatives.add(line);
 		AdvisorCourseRequestLine prev = (i == 0 ? iCourses.get(iCourses.size() - 1) : iAlternatives.get(i - 1));
 		if (prev != null) {

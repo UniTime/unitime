@@ -491,7 +491,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							classes.setDataProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
 								@Override
 								public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {
-									iSectioningService.listClasses(iOnline, iSessionSelector.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
+									iSectioningService.listClasses(iOnline, iSessionSelector.getAcademicSessionId(), null, source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 								}
 							});
 							if (iDegreePlanDialog == null) {
@@ -2871,7 +2871,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			courses.setDataProvider(new DataProvider<String, Collection<CourseAssignment>>() {
 				@Override
 				public void getData(String source, AsyncCallback<Collection<CourseAssignment>> callback) {
-					iSectioningService.listCourseOfferings(iSessionSelector.getAcademicSessionId(), source, null, callback);
+					iSectioningService.listCourseOfferings(iSessionSelector.getAcademicSessionId(), null, source, null, callback);
 				}
 			});
 			CourseFinderDetails details = new CourseFinderDetails();
@@ -2885,7 +2885,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			classes.setDataProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
 				@Override
 				public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {
-					iSectioningService.listClasses(iOnline, iSessionSelector.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
+					iSectioningService.listClasses(iOnline, iSessionSelector.getAcademicSessionId(), null, source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 				}
 			});
 			courses.setCourseDetails(details, classes);

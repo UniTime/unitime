@@ -506,7 +506,7 @@ public class OnlineSectioningTest extends Composite {
 		
 		private void listClasses(final String course, final Callback<Collection<ClassAssignment>> callback) {
 			debug("listClasses(" + course + ")");
-			iSectioningService.listClasses(true, iSessionId, course, new AsyncCallback<Collection<ClassAssignment>>() {
+			iSectioningService.listClasses(true, iSessionId, null, course, new AsyncCallback<Collection<ClassAssignment>>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					warn("&nbsp;&nbsp;listClasses(" + course + ") failed: " + caught.getMessage());
@@ -538,7 +538,7 @@ public class OnlineSectioningTest extends Composite {
 		
 		private void listCourseOfferings(final String course, final Callback<Collection<CourseAssignment>> callback) {
 			debug("listCourseOfferings(" + course + ")");
-			iSectioningService.listCourseOfferings(iSessionId, course, 20, new AsyncCallback<Collection<CourseAssignment>>() {
+			iSectioningService.listCourseOfferings(iSessionId, null, course, 20, new AsyncCallback<Collection<CourseAssignment>>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					warn("&nbsp;&nbsp;listCourseOfferings(" + course + ") failed: " + caught.getMessage());

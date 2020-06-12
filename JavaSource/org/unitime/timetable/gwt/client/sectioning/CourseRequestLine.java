@@ -488,7 +488,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 					iCourseFinderMultipleCourses.setDataProvider(new DataProvider<String, Collection<CourseAssignment>>() {
 						@Override
 						public void getData(String source, AsyncCallback<Collection<CourseAssignment>> callback) {
-							sSectioningService.listCourseOfferings(iSessionProvider.getAcademicSessionId(), source, null, callback);
+							sSectioningService.listCourseOfferings(iSessionProvider.getAcademicSessionId(), null, source, null, callback);
 						}
 					});
 					CourseFinderDetails details = new CourseFinderDetails();
@@ -502,7 +502,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 					classes.setDataProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
 						@Override
 						public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {
-							sSectioningService.listClasses(iOnline, iSessionProvider.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
+							sSectioningService.listClasses(iOnline, iSessionProvider.getAcademicSessionId(), null, source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 						}
 					});
 					iCourseFinderMultipleCourses.setCourseDetails(details, classes);
@@ -520,13 +520,13 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			setSuggestions(new DataProvider<String, Collection<CourseAssignment>>() {
 				@Override
 				public void getData(String source, AsyncCallback<Collection<CourseAssignment>> callback) {
-					sSectioningService.listCourseOfferings(iSessionProvider.getAcademicSessionId(), source, 20, callback);
+					sSectioningService.listCourseOfferings(iSessionProvider.getAcademicSessionId(), null, source, 20, callback);
 				}
 			});
 			setSectionsProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
 				@Override
 				public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {
-					sSectioningService.listClasses(iOnline, iSessionProvider.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
+					sSectioningService.listClasses(iOnline, iSessionProvider.getAcademicSessionId(), null, source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 				}
 			});
 			

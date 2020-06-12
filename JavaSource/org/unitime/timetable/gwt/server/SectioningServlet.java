@@ -267,13 +267,13 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		return server;
 	}
 
-	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(Long sessionId, String query, Integer limit) throws SectioningException, PageAccessException {
+	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(Long sessionId, Long studentId, String query, Integer limit) throws SectioningException, PageAccessException {
 		if (sessionId==null) throw new SectioningException(MSG.exceptionNoAcademicSession());
 		setLastSessionId(sessionId);
 		
 		OnlineSectioningServer server = getServerInstance(sessionId, false);
 		
-		CourseMatcher matcher = getCourseMatcher(sessionId, server);
+		CourseMatcher matcher = getCourseMatcher(sessionId, studentId, server);
 		
 		if (server == null) {
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
@@ -417,10 +417,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 	}
 	
-	public CourseMatcher getCourseMatcher(Long sessionId, OnlineSectioningServer server) {
+	public CourseMatcher getCourseMatcher(Long sessionId, Long studentId, OnlineSectioningServer server) {
 		boolean noCourseType = true, allCourseTypes = false;
 		Set<String> allowedCourseTypes = new HashSet<String>();
-		Long studentId = getStudentId(sessionId);
+		if (studentId == null)
+			studentId = getStudentId(sessionId);
 		Set<Long> courseIds = null;
 		if (getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdvisor)) {
 			allCourseTypes = true;
@@ -482,7 +483,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public Collection<ClassAssignmentInterface.ClassAssignment> listClasses(boolean online, Long sessionId, String course) throws SectioningException, PageAccessException {
+	public Collection<ClassAssignmentInterface.ClassAssignment> listClasses(boolean online, Long sessionId, Long studentId, String course) throws SectioningException, PageAccessException {
 		if (sessionId==null) throw new SectioningException(MSG.exceptionNoAcademicSession());
 		if (!online) {
 			OnlineSectioningServer server = getStudentSolver();
@@ -492,7 +493,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				return server.execute(server.createAction(ListClasses.class).forCourseAndStudent(course, getStudentId(sessionId)), currentUser());
 		}
 		setLastSessionId(sessionId);
-		Long studentId = getStudentId(sessionId);
+		if (studentId == null)
+			studentId = getStudentId(sessionId);
 		OnlineSectioningServer server = getServerInstance(sessionId, false);
 		Set<Long> allowedClasses = null;
 		if (server == null) {
@@ -803,11 +805,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			if (server == null) {
 				if (!sectioning && CustomCourseRequestsValidationHolder.hasProvider()) {
 					OnlineSectioningServer dummy = getServerInstance(request.getAcademicSessionId(), true);
-					return dummy.execute(dummy.createAction(CheckCourses.class).forRequest(request).withMatcher(getCourseMatcher(request.getAcademicSessionId(), server)).withCustomValidation(true), currentUser());
+					return dummy.execute(dummy.createAction(CheckCourses.class).forRequest(request).withMatcher(getCourseMatcher(request.getAcademicSessionId(), request.getStudentId(), server)).withCustomValidation(true), currentUser());
 				}
 				org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 				CheckCoursesResponse response = new CheckCoursesResponse();
-				CourseMatcher matcher = getCourseMatcher(request.getAcademicSessionId(), server);
+				CourseMatcher matcher = getCourseMatcher(request.getAcademicSessionId(), request.getStudentId(), server);
 				Long studentId = getStudentId(request.getAcademicSessionId());
 				for (CourseRequestInterface.Request cr: request.getCourses()) {
 					if (cr.hasRequestedCourse()) {
@@ -829,7 +831,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				}
 				return response;
 			} else {
-				return server.execute(server.createAction(CheckCourses.class).forRequest(request).withMatcher(getCourseMatcher(request.getAcademicSessionId(), server)).withCustomValidation(!sectioning), currentUser());
+				return server.execute(server.createAction(CheckCourses.class).forRequest(request).withMatcher(getCourseMatcher(request.getAcademicSessionId(), request.getStudentId(), server)).withCustomValidation(!sectioning), currentUser());
 			}
 		} catch (PageAccessException e) {
 			throw e;

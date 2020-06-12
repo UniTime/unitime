@@ -59,10 +59,10 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * @author Tomas Muller
  */
 public interface SectioningServiceAsync {
-	void listCourseOfferings(Long sessionId, String query, Integer limit, AsyncCallback<Collection<ClassAssignmentInterface.CourseAssignment>> callback) throws SectioningException, PageAccessException;
+	void listCourseOfferings(Long sessionId, Long studentId, String query, Integer limit, AsyncCallback<Collection<ClassAssignmentInterface.CourseAssignment>> callback) throws SectioningException, PageAccessException;
 	void listAcademicSessions(boolean sectioning, AsyncCallback<Collection<AcademicSessionProvider.AcademicSessionInfo>> callback) throws SectioningException, PageAccessException;
 	void retrieveCourseDetails(Long sessionId, String course, AsyncCallback<String> callback) throws SectioningException, PageAccessException;
-	void listClasses(boolean online, Long sessionId, String course, AsyncCallback<Collection<ClassAssignmentInterface.ClassAssignment>> callback) throws SectioningException, PageAccessException;
+	void listClasses(boolean online, Long sessionId, Long studentId, String course, AsyncCallback<Collection<ClassAssignmentInterface.ClassAssignment>> callback) throws SectioningException, PageAccessException;
 	void retrieveCourseOfferingId(Long sessionId, String course, AsyncCallback<Long> callback) throws SectioningException, PageAccessException;
 	void section(boolean online, CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;
 	void checkCourses(boolean online, boolean sectioning, CourseRequestInterface request, AsyncCallback<CheckCoursesResponse> callback) throws SectioningException, PageAccessException;
