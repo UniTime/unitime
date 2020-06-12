@@ -46,35 +46,35 @@ public class OnlineOnlyCourseMatcherProvider implements CourseMatcherProvider {
 
 	@Override
 	public CourseMatcher getCourseMatcher(OnlineSectioningServer server, SessionContext context, Long studentId) {
-		String filter = ApplicationProperty.OnlineSchedulingParameter.value("Load.OnlineOnlyStudentFilter", null);
+		String filter = ApplicationProperty.OnlineSchedulingParameter.value("Filter.OnlineOnlyStudentFilter", null);
 		if (filter == null || filter.isEmpty()) return null;
 		if (server != null && !(server instanceof DatabaseServer)) {
 			if (context.hasPermissionAnySession(server.getAcademicSession(), Right.StudentSchedulingAdvisor)) {
-				if ("true".equalsIgnoreCase(ApplicationProperty.OnlineSchedulingParameter.value("OnlineOnlyAdminOverride", "false")))  return null;
+				if ("true".equalsIgnoreCase(ApplicationProperty.OnlineSchedulingParameter.value("Filter.OnlineOnlyAdminOverride", "false")))  return null;
 			}
 			XStudent student = server.getStudent(studentId);
 			if (student == null) return null;
 			if (new Query(filter).match(new StudentMatcher(student, server.getAcademicSession().getDefaultSectioningStatus(), server, false)))
 				return new OnlineOnlyCourseMatcher(
-						ApplicationProperty.OnlineSchedulingParameter.value("Load.OnlineOnlyInstructionalModeRegExp"),
-						ApplicationProperty.OnlineSchedulingParameter.value("Load.OnlineOnlyCourseNameRegExp")
+						ApplicationProperty.OnlineSchedulingParameter.value("Filter.OnlineOnlyInstructionalModeRegExp"),
+						ApplicationProperty.OnlineSchedulingParameter.value("Filter.OnlineOnlyCourseNameRegExp")
 						);
-			else if ("true".equalsIgnoreCase(ApplicationProperty.OnlineSchedulingParameter.value("Load.OnlineOnlyExclusiveCourses", "false")))
-				return new NotOnlineOnlyCourseMatcher(ApplicationProperty.OnlineSchedulingParameter.value("Load.OnlineOnlyCourseNameRegExp"));
+			else if ("true".equalsIgnoreCase(ApplicationProperty.OnlineSchedulingParameter.value("Filter.OnlineOnlyExclusiveCourses", "false")))
+				return new NotOnlineOnlyCourseMatcher(ApplicationProperty.OnlineSchedulingParameter.value("Filter.OnlineOnlyCourseNameRegExp"));
 			return null;
 		} else {
 			Student student = StudentDAO.getInstance().get(studentId);
 			if (student == null) return null;
 			if (context.hasPermissionAnySession(student.getSession(), Right.StudentSchedulingAdvisor)) {
-				if ("true".equalsIgnoreCase(ApplicationProperty.OnlineSchedulingParameter.value("OnlineOnlyAdminOverride", "false")))  return null;
+				if ("true".equalsIgnoreCase(ApplicationProperty.OnlineSchedulingParameter.value("Filter.OnlineOnlyAdminOverride", "false")))  return null;
 			}
 			if (new Query(filter).match(new DbStudentMatcher(student)))
 				return new OnlineOnlyCourseMatcher(
-						ApplicationProperty.OnlineSchedulingParameter.value("Load.OnlineOnlyInstructionalModeRegExp"),
-						ApplicationProperty.OnlineSchedulingParameter.value("Load.OnlineOnlyCourseNameRegExp")
+						ApplicationProperty.OnlineSchedulingParameter.value("Filter.OnlineOnlyInstructionalModeRegExp"),
+						ApplicationProperty.OnlineSchedulingParameter.value("Filter.OnlineOnlyCourseNameRegExp")
 						);
-			else if ("true".equalsIgnoreCase(ApplicationProperty.OnlineSchedulingParameter.value("Load.OnlineOnlyExclusiveCourses", "false")))
-				return new NotOnlineOnlyCourseMatcher(ApplicationProperty.OnlineSchedulingParameter.value("Load.OnlineOnlyCourseNameRegExp"));
+			else if ("true".equalsIgnoreCase(ApplicationProperty.OnlineSchedulingParameter.value("Filter.OnlineOnlyExclusiveCourses", "false")))
+				return new NotOnlineOnlyCourseMatcher(ApplicationProperty.OnlineSchedulingParameter.value("Filter.OnlineOnlyCourseNameRegExp"));
 			return null;
 		}
 	}
