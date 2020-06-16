@@ -476,6 +476,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private Long iSessionId;
 		private String iStudentName;
 		private String iStudentExternalId;
+		private String iStudentEmail;
 		private String iSessionName;
 		
 		public StudentInfo() {}
@@ -490,6 +491,8 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public void setStudentName(String name) { iStudentName = name; }
 		public String getStudentExternalId() { return iStudentExternalId; }
 		public void setStudentExternalId(String id) { iStudentExternalId = id; }
+		public String getStudentEmail() { return iStudentEmail; }
+		public void setStudentEmail(String email) { iStudentEmail = email; }
 		
 		public String getSessionName() { return iSessionName; }
 		public void setSessionName(String name) { iSessionName = name; }
@@ -501,6 +504,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private Long iSessionId;
 		private String iStudentName;
 		private String iStudentExternalId;
+		private String iStudentEmail;
 		private String iSessionName;
 		private String iAdvisorEmail;
 		private StudentStatusInfo iCurrentStatus;
@@ -517,6 +521,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			iStudentId = clone.iStudentId;
 			iStudentName = clone.iStudentName;
 			iStudentExternalId = clone.iStudentExternalId;
+			iStudentEmail = clone.iStudentEmail;
 			iSessionName = clone.iSessionName;
 			iAdvisorEmail = clone.iAdvisorEmail;
 			iCurrentStatus = clone.iCurrentStatus;
@@ -537,6 +542,8 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public void setStudentName(String name) { iStudentName = name; }
 		public String getStudentExternalId() { return iStudentExternalId; }
 		public void setStudentExternalId(String id) { iStudentExternalId = id; }
+		public String getStudentEmail() { return iStudentEmail; }
+		public void setStudentEmail(String email) { iStudentEmail = email; }
 		
 		public String getSessionName() { return iSessionName; }
 		public void setSessionName(String name) { iSessionName = name; }

@@ -102,7 +102,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	private static DateTimeFormat sDF = DateTimeFormat.getFormat(CONSTANTS.requestDateFormat());
 	private UniTimeHeaderPanel header, footer;
 	private Lookup iLookupDialog = null;
-	private Label iStudentName, iStudentExternalId, iTerm;
+	private Label iStudentName, iStudentExternalId, iTerm, iStudentEmail;
 	private Label iAdvisorEmail = null;
 	private AdvisorAcademicSessionSelector iSession = null;
 	private SpecialRegistrationContext iSpecRegCx = null;
@@ -177,6 +177,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		
 		iStudentName = new Label(); iStudentName.addStyleName("student-name");
 		iStudentExternalId = new Label(); iStudentExternalId.addStyleName("student-id");
+		iStudentEmail = new Label(); iStudentEmail.addStyleName("student-email");
 		
 		addDoubleRow(MESSAGES.propStudentName(), iStudentName, 1,
 				MESSAGES.propStudentExternalId(), iStudentExternalId, 3);
@@ -186,8 +187,9 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		iAdvisorEmail = new Label(); iAdvisorEmail.addStyleName("advisor-email");
 		
 		iTerm = new Label(); iTerm.addStyleName("term");
-		addDoubleRow(MESSAGES.propAdvisorEmail(), iAdvisorEmail, 1,
+		addDoubleRow(MESSAGES.propStudentEmail(), iStudentEmail, 1,
 				MESSAGES.propAcademicSession(), iTerm, 3);
+		
 		iSession.addAcademicSessionChangeHandler(new AcademicSessionChangeHandler() {
 			@Override
 			public void onAcademicSessionChange(AcademicSessionChangeEvent event) {
@@ -212,6 +214,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 						iEmailConfirmationFooter.setVisible(result.isCanUpdate() && result.isCanEmail());
 						iAdvisorEmail.setText(result.getAdvisorEmail() == null ? "" : result.getAdvisorEmail());
 						iStudentName.setText(result.getStudentName());
+						iStudentEmail.setText(result.getStudentEmail() == null ? "" : result.getStudentEmail());
 						iStudentExternalId.setText(result.getStudentExternalId());
 						fillInStudentRequests();
 						if (result.isCanUpdate()) {
@@ -287,7 +290,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		
 		iStatus = new ListBox();
 		iStatus.addStyleName("status");
-		iStatusLine = addDoubleRow("", new Label(), 1,
+		iStatusLine = addDoubleRow(MESSAGES.propAdvisorEmail(), iAdvisorEmail, 1,
 				MESSAGES.propStudentStatus(), iStatus, 3);
 		
 		UniTimeHeaderPanel studentReqs = new UniTimeHeaderPanel(MESSAGES.studentCourseRequests());
@@ -616,6 +619,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				iLookupDialog.setOptions("mustHaveExternalId,source=students,session=" + result.getSessionId());
 				iStudentName.setText(result.getStudentName());
 				iStudentExternalId.setText(result.getStudentExternalId());
+				iStudentEmail.setText(result.getStudentEmail() == null ? "" : result.getStudentEmail());
 				if (result.getSessionId().equals(iSession.getAcademicSessionId())) {
 					iSession.selectSession(iSession.getAcademicSessionInfo(), true);
 				} else {
@@ -723,6 +727,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		if (person == null || person.getId() == null || person.getId().isEmpty()) {
 			iStudentName.setText("");
 			iStudentExternalId.setText("");
+			iStudentEmail.setText("");
 			iTerm.setText("");
 			header.setEnabled("submit", false);
 			header.setEnabled("print", false);
@@ -735,6 +740,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		} else {
 			iStudentName.setText(person.getName());
 			iStudentExternalId.setText(person.getId());
+			iStudentEmail.setText(person.getEmail() == null ? "" : person.getEmail());
 			clearRequests();
 			iSession.selectSessionNoCheck();
 			clearStudentRequests();

@@ -85,6 +85,7 @@ public class AdvisorConfirmationExporter implements Exporter {
 		details.setStudentName(student.getName(NameFormat.LAST_FIRST_MIDDLE.reference()));
 		details.setStudentExternalId(student.getExternalUniqueId());
 		details.setSessionName(student.getSession().getLabel());
+		details.setStudentEmail(student.getEmail());
 		
 		if (isAdvisor) {
 			Advisor advisor = Advisor.findByExternalId(helper.getSessionContext().getUser().getExternalUserId(), sessionId);

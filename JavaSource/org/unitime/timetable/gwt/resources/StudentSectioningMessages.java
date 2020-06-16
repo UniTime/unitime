@@ -2515,6 +2515,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Student’s Name:")
 	String propStudentName();
 	
+	@DefaultMessage("Email:")
+	String propStudentEmail();
+	
 	@DefaultMessage("Id:")
 	String propStudentExternalId();
 	

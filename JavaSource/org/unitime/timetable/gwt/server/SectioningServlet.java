@@ -3356,6 +3356,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		ret.setStudentId(student.getUniqueId());
 		ret.setStudentName(student.getName(NameFormat.LAST_FIRST_MIDDLE.reference()));
 		ret.setStudentExternalId(student.getExternalUniqueId());
+		ret.setStudentEmail(student.getEmail());
 		ret.setSessionName(student.getSession().getLabel());
 		
 		return ret;
@@ -3377,6 +3378,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		ret.setStudentId(student.getUniqueId());
 		ret.setStudentName(student.getName(NameFormat.LAST_FIRST_MIDDLE.reference()));
 		ret.setStudentExternalId(student.getExternalUniqueId());
+		ret.setStudentEmail(student.getEmail());
 		ret.setSessionName(student.getSession().getLabel());
 		
 		TimetableManager manager = TimetableManager.findByExternalId(getSessionContext().getUser().getExternalUserId());

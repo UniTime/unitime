@@ -103,36 +103,37 @@ public class AdvisorConfirmationPDF {
 		header.completeRow();
 		
 		if (getDetails().getStudentExternalId() != null) {
+			// row 1
 			header.addCell(header(MSG.propStudentName()));
 			header.addCell(cell(getDetails().getStudentName()));
 			header.addCell(header(MSG.propStudentExternalId()));
 			header.addCell(cell(getDetails().getStudentExternalId()));
-			PdfPCell eh = header(MSG.propAdvisorEmail());
-			if (getDetails().getStatus() != null) eh.setRowspan(2);
-			header.addCell(eh);
-			PdfPCell ec = cell(getDetails().getAdvisorEmail());
-			if (getDetails().getStatus() != null) ec.setRowspan(2);
-			header.addCell(ec);
+			// row 2
+			header.addCell(header(MSG.propStudentEmail()));
+			header.addCell(cell(getDetails().getStudentEmail()));
 			header.addCell(header(MSG.propAcademicSession()));
 			header.addCell(cell(getDetails().getSessionName()));
-			if (getDetails().getStatus() != null) {
-				header.addCell(header(MSG.propStudentStatus()));
-				header.addCell(cell(getDetails().getStatus().getLabel()));
-			}
+			// row 3
+			header.addCell(header(MSG.propAdvisorEmail()));
+			header.addCell(cell(getDetails().getAdvisorEmail()));
+			header.addCell(header(getDetails().getStatus() == null ? "" : MSG.propStudentStatus()));
+			header.addCell(cell(getDetails().getStatus() == null ? "" : getDetails().getStatus().getLabel()));
 		} else {
+			// row 1
 			header.addCell(header(MSG.propStudentName()));
 			header.addCell(cell(getDetails().getStudentName()));
 			header.addCell(header(MSG.propAcademicSession()));
 			header.addCell(cell(getDetails().getSessionName()));
+			// row 2
+			header.addCell(header(MSG.propStudentEmail()));
+			header.addCell(cell(getDetails().getStudentEmail()));
+			PdfPCell sh = header(getDetails().getStatus() == null ? "" : MSG.propStudentStatus());
+			sh.setRowspan(2); header.addCell(sh);
+			PdfPCell sc = cell(getDetails().getStatus() == null ? "" : getDetails().getStatus().getLabel());
+			sc.setRowspan(2); header.addCell(sc);
+			// row 3
 			header.addCell(header(MSG.propAdvisorEmail()));
 			header.addCell(cell(getDetails().getAdvisorEmail()));
-			if (getDetails().getStatus() != null) {
-				header.addCell(header(MSG.propStudentStatus()));
-				header.addCell(cell(getDetails().getStatus().getLabel()));
-			} else {
-				header.addCell(header(""));
-				header.addCell(cell(""));
-			}
 		}
 		
 		document.add(header);
