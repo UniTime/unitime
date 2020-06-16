@@ -677,7 +677,7 @@ public class SuggestionsTable extends UniTimeTable<Suggestion> implements TakesV
 				for (String criterion: new TreeSet<String>(suggestion.getCriteria().keySet())) {
 					double value = suggestion.getCriterion(criterion);
 					double base = suggestion.getBaseCriterion(criterion);
-					if (value != base) {
+					if (Math.abs(value - base) >= 0.001) {
 						P obj = new P("objective");
 						obj.setHTML(criterion + ": " + dispNumber(value, base));
 						add(obj);

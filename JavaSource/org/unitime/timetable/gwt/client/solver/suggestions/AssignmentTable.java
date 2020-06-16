@@ -434,7 +434,7 @@ public class AssignmentTable extends UniTimeTable<ClassAssignmentDetails>{
 					for (String criterion: new TreeSet<String>(details.getObjectives().keySet())) {
 						double value = details.getAssignedObjective(criterion);
 						double base = details.getObjective(criterion);
-						if (value != base) {
+						if (Math.abs(value - base) >= 0.001) {
 							P obj = new P("objective");
 							obj.setHTML(criterion + ": " + dispNumber(value, base));
 							objectives.add(obj);
@@ -444,7 +444,7 @@ public class AssignmentTable extends UniTimeTable<ClassAssignmentDetails>{
 					for (String criterion: new TreeSet<String>(details.getObjectives().keySet())) {
 						double value = 0.0;
 						double base = details.getObjective(criterion);
-						if (value != base) {
+						if (Math.abs(value - base) >= 0.001) {
 							P obj = new P("objective");
 							obj.setHTML(criterion + ": " + dispNumber(value, base));
 							objectives.add(obj);
@@ -455,7 +455,7 @@ public class AssignmentTable extends UniTimeTable<ClassAssignmentDetails>{
 				for (String criterion: new TreeSet<String>(details.getAssignedObjectives().keySet())) {
 					double value = details.getAssignedObjective(criterion);
 					double base = 0.0;
-					if (value != base) {
+					if (Math.abs(value - base) >= 0.001) {
 						P obj = new P("objective");
 						obj.setHTML(criterion + ": " + dispNumber(value, base));
 						objectives.add(obj);
