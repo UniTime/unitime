@@ -280,7 +280,11 @@
  			</#if>
  		</#if>
  		<#if line.icon?? && line.icon?has_content>
- 			<td style="${style}"><img src='http://www.unitime.org/icons/${line.icon}' width='16' height='16' alt='' title='${line.iconText}' style='padding-right:3px;'> ${line.status}</td>
+ 			<#if line.iconText??>
+ 				<td style="${style}"><img src='http://www.unitime.org/icons/${line.icon}' width='16' height='16' alt='' title='${line.iconText}' style='padding-right:3px;'> ${line.status}</td>
+ 			<#else>
+ 				<td style="${style}"><img src='http://www.unitime.org/icons/${line.icon}' width='16' height='16' alt='' style='padding-right:3px;'> ${line.status}</td>
+ 			</#if>
  		<#else>
  			<td style="${style}">${line.status}</td>
  		</#if>
