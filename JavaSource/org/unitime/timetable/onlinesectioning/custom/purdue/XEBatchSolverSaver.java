@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,9 +44,12 @@ import org.cpsolver.ifs.solver.Solver;
 import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.cpsolver.studentsct.StudentSectioningSaver;
+import org.cpsolver.studentsct.model.AcademicAreaCode;
 import org.cpsolver.studentsct.model.AreaClassificationMajor;
+import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
@@ -63,6 +68,8 @@ import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.server.Query;
+import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.interfaces.ExternalClassLookupInterface;
 import org.unitime.timetable.model.Class_;
@@ -80,6 +87,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.status.SectioningStatusFilterAction.Credit;
 import org.unitime.timetable.solver.studentsct.InMemoryReport;
 import org.unitime.timetable.solver.studentsct.StudentSolver;
 import org.unitime.timetable.util.Constants;
@@ -128,6 +136,8 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
     private Hashtable<Long,Class_> iClasses = null;
 	private List<XStudent> iUpdatedStudents = new ArrayList<XStudent>();
 	
+	private Query iStudentQuery = null;
+	
 	public XEBatchSolverSaver(Solver solver) {
         super(solver);
         iInitiative = solver.getProperties().getProperty("Data.Initiative");
@@ -170,6 +180,12 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		iNrThreads = solver.getProperties().getPropertyInt("Save.XE.NrSaveThreads", 10);
 		iCSV = new InMemoryReport("XE", "Last XE Enrollment Results (" + Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP_SHORT).format(new Date()) + ")");
 		((StudentSolver)solver).setReport(iCSV);
+		
+		String query = solver.getProperties().getProperty("Save.StudentQuery", null);
+        if (query != null && !query.isEmpty()) {
+        	iStudentQuery = new Query(query);
+        	iProgress.info("Student filter: " + iStudentQuery); 
+        }
 	}
 
 	@Override
@@ -280,6 +296,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 			for (Student student: students) {
 	            incProgress();
 	            if (student.isDummy()) continue;
+	            if (iStudentQuery != null && !iStudentQuery.match(new StudentMatcher(student))) continue;
 	            saveStudent(student);
 	        }
 		} else {
@@ -1046,6 +1063,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		    "PROG", "PROGRAM",
 		    "TIME", "TIME-CNFLT",
 		    "CHRT", "COHORT",
+		    "REPH", "REPEATMHRS",
 		    };
 	
 	protected String getDefaultOverride(Student student, String crn, String messageType) {
@@ -1112,6 +1130,183 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 			} finally {
 				_RootDAO.closeCurrentThreadSessions();
 			}
+		}
+	}
+	
+	public class StudentMatcher implements TermMatcher {
+		private Student iStudent;
+		
+		public StudentMatcher(Student student) {
+			iStudent = student;
+		}
+
+		public Student student() { return iStudent; }
+		public String status() {  return (iStudent == null || iStudent.getStatus() == null ? iSession.getDefaultSectioningStatus() : iStudent.getStatus()); }
+		
+		@Override
+		public boolean match(String attr, String term) {
+			if (attr == null && term.isEmpty()) return true;
+			if ("limit".equals(attr)) return true;
+			if ("area".equals(attr)) {
+				for (AreaClassificationMajor acm: student().getAreaClassificationMajors())
+					if (eq(acm.getArea(), term)) return true;
+			} else if ("clasf".equals(attr) || "classification".equals(attr)) {
+				for (AreaClassificationMajor acm: student().getAreaClassificationMajors())
+					if (eq(acm.getClassification(), term)) return true;
+			} else if ("major".equals(attr)) {
+				for (AreaClassificationMajor acm: student().getAreaClassificationMajors())
+					if (eq(acm.getMajor(), term)) return true;
+			} else if ("group".equals(attr)) {
+				for (AcademicAreaCode aac: student().getMinors())
+					if (!"A".equals(aac.getArea()) && eq(aac.getCode(), term)) return true;
+			} else if ("accommodation".equals(attr)) {
+				for (AcademicAreaCode aac: student().getMinors())
+					if ("A".equals(aac.getArea()) && eq(aac.getCode(), term)) return true;
+			} else if  ("student".equals(attr)) {
+				return has(student().getName(), term) || eq(student().getExternalId(), term) || eq(student().getName(), term);
+			} else if  ("advisor".equals(attr)) {
+				for (Instructor a: student().getAdvisors())
+					if (eq(a.getExternalId(), term)) return true;
+				return false;
+			} else if ("registered".equals(attr)) {
+				if (eq("true", term) || eq("1",term))
+					return false;
+				else
+					return true;
+			} else if ("status".equals(attr)) {
+				if ("default".equalsIgnoreCase(term) || "Not Set".equalsIgnoreCase(term))
+					return student().getStatus() == null;
+				return term.equalsIgnoreCase(status());
+			} else if ("credit".equals(attr)) {
+				float min = 0, max = Float.MAX_VALUE;
+				Credit prefix = Credit.eq;
+				String number = term;
+				if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+				else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+				else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+				else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+				else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+				String im = null;
+				try {
+					float a = Float.parseFloat(number);
+					switch (prefix) {
+						case eq: min = max = a; break; // = a
+						case le: max = a; break; // <= a
+						case ge: min = a; break; // >= a
+						case lt: max = a - 1; break; // < a
+						case gt: min = a + 1; break; // > a
+					}
+				} catch (NumberFormatException e) {
+					Matcher m = Pattern.compile("([0-9]+\\.?[0-9]*)([^0-9\\.].*)").matcher(number);
+					if (m.matches()) {
+						float a = Float.parseFloat(m.group(1));
+						im = m.group(2).trim();
+						switch (prefix) {
+							case eq: min = max = a; break; // = a
+							case le: max = a; break; // <= a
+							case ge: min = a; break; // >= a
+							case lt: max = a - 1; break; // < a
+							case gt: min = a + 1; break; // > a
+						}
+					}
+				}
+				if (term.contains("..")) {
+					try {
+						String a = term.substring(0, term.indexOf('.'));
+						String b = term.substring(term.indexOf("..") + 2);
+						min = Float.parseFloat(a); max = Float.parseFloat(b);
+					} catch (NumberFormatException e) {
+						Matcher m = Pattern.compile("([0-9]+\\.?[0-9]*)\\.\\.([0-9]+\\.?[0-9]*)([^0-9].*)").matcher(term);
+						if (m.matches()) {
+							min = Float.parseFloat(m.group(1));
+							max = Float.parseFloat(m.group(2));
+							im = m.group(3).trim();
+						}
+					}
+				}
+				float credit = 0;
+				for (Request r: student().getRequests()) {
+					if (r instanceof CourseRequest) {
+						CourseRequest cr = (CourseRequest)r;
+						Enrollment e = cr.getAssignment(getAssignment()); 
+						if (e == null) continue;
+						Config g = e.getConfig();
+						if (g != null) {
+							if ("!".equals(im) && g.getInstructionalMethodReference() != null && !g.getInstructionalMethodReference().equals(iSession.getDefaultInstructionalMethod())) continue;
+							if (im != null && !"!".equals(im) && (g.getInstructionalMethodReference() == null || !im.equalsIgnoreCase(g.getInstructionalMethodReference()))) continue;
+							credit += e.getCredit();
+						}
+					}
+				}
+				return min <= credit && credit <= max;
+			} else if ("overlap".equals(attr)) {
+				int min = 0, max = Integer.MAX_VALUE;
+				Credit prefix = Credit.eq;
+				String number = term;
+				if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+				else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+				else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+				else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+				else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+				try {
+					int a = Integer.parseInt(number);
+					switch (prefix) {
+						case eq: min = max = a; break; // = a
+						case le: max = a; break; // <= a
+						case ge: min = a; break; // >= a
+						case lt: max = a - 1; break; // < a
+						case gt: min = a + 1; break; // > a
+					}
+				} catch (NumberFormatException e) {}
+				if (term.contains("..")) {
+					try {
+						String a = term.substring(0, term.indexOf('.'));
+						String b = term.substring(term.indexOf("..") + 2);
+						min = Integer.parseInt(a); max = Integer.parseInt(b);
+					} catch (NumberFormatException e) {}
+				}
+				int share = 0;
+				for (Request r: student().getRequests()) {
+					if (r instanceof CourseRequest) {
+						CourseRequest cr = (CourseRequest)r;
+						Enrollment e = cr.getAssignment(getAssignment()); 
+						if (e == null) continue;
+						for (Section section: e.getSections()) {
+							if (section.getTime() == null) continue;
+							for (Request q: student().getRequests()) {
+								if (q instanceof CourseRequest) {
+									Enrollment otherEnrollment = q.getAssignment(getAssignment());
+									if (otherEnrollment == null) continue;
+									for (Section otherSection: otherEnrollment.getSections()) {
+										if (otherSection.equals(section) || otherSection.getTime() == null) continue;
+										if (otherSection.getTime() != null && section.getTime().hasIntersection(otherSection.getTime()) && !section.isToIgnoreStudentConflictsWith(otherSection.getId()) && section.getId() < otherSection.getId()) {
+											share += section.getTime().nrSharedDays(otherSection.getTime()) * section.getTime().nrSharedHours(otherSection.getTime());
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				return min <= share && share <= max;
+			} else if (attr != null) {
+				for (AcademicAreaCode aac: student().getMinors())
+					if (eq(aac.getArea(), attr.replace('_', ' ')) && eq(aac.getCode(), term)) return true;
+			}
+			return false;
+		}
+		
+		private boolean eq(String name, String term) {
+			if (name == null) return false;
+			return name.equalsIgnoreCase(term);
+		}
+
+		private boolean has(String name, String term) {
+			if (name == null) return false;
+			if (eq(name, term)) return true;
+			for (String t: name.split(" |,"))
+				if (t.equalsIgnoreCase(term)) return true;
+			return false;
 		}
 	}
 }
