@@ -49,6 +49,7 @@ import org.restlet.data.Protocol;
 import org.restlet.resource.ClientResource;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -66,6 +67,7 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CheckRestrictionsResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Problem;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ResponseStatus;
+import org.unitime.timetable.onlinesectioning.custom.purdue.XEBatchSolverSaver.StudentMatcher;
 import org.unitime.timetable.solver.studentsct.InMemoryReport;
 import org.unitime.timetable.solver.studentsct.StudentSolver;
 import org.unitime.timetable.util.Formats;
@@ -100,6 +102,8 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 	
 	private Hashtable<Long,CourseOffering> iCourses = null;
     private Hashtable<Long,Class_> iClasses = null;
+    
+    private Query iStudentQuery = null;
 	
 	public PurdueBatchSolverValidator(Solver solver) {
         super(solver);
@@ -121,6 +125,12 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 		iNrThreads = solver.getProperties().getPropertyInt("Save.XE.NrSaveThreads", 10);
 		iCSV = new InMemoryReport("VALIDATION", "Last Validation Results (" + Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP_SHORT).format(new Date()) + ")");
 		((StudentSolver)solver).setReport(iCSV);
+		
+		String query = solver.getProperties().getProperty("Save.StudentQuery", null);
+        if (query != null && !query.isEmpty()) {
+        	iStudentQuery = new Query(query);
+        	iProgress.info("Student filter: " + iStudentQuery); 
+        }
 	}
 
 	@Override
@@ -194,18 +204,24 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
         }
         incProgress();
             
-		setPhase("Validating students...", getModel().getStudents().size());
+        List<Student> students = new ArrayList<Student>(getModel().getStudents().size());
+		for (Student student: getModel().getStudents()) {
+            if (student.isDummy()) continue;
+            if (iStudentQuery != null && !iStudentQuery.match(new StudentMatcher(student, iSession, getAssignment()))) continue;
+            students.add(student);
+		}
+		setPhase("Validating students...", students.size());
 		if (iNrThreads <= 1) {
-			for (Student student: getModel().getStudents()) {
+			for (Student student: students) {
 	            incProgress();
 	            if (student.isDummy()) continue;
 	            validateStudent(student);
 	        }
 		} else {
 			List<Worker> workers = new ArrayList<Worker>();
-			Iterator<Student> students = getModel().getStudents().iterator();
+			Iterator<Student> studentsIterator = students.iterator();
 			for (int i = 0; i < iNrThreads; i++)
-				workers.add(new Worker(i, students));
+				workers.add(new Worker(i, studentsIterator));
 			for (Worker worker: workers) worker.start();
 			for (Worker worker: workers) {
 				try {

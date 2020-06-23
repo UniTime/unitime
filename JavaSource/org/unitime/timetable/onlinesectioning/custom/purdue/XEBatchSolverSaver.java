@@ -40,6 +40,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.solver.Solver;
 import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
@@ -275,8 +276,14 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
         }
         incProgress();
             
-		setPhase("Enrolling students...", getModel().getStudents().size());
-		List<Student> students = new ArrayList<Student>(getModel().getStudents());
+		List<Student> students = new ArrayList<Student>(getModel().getStudents().size());
+		for (Student student: getModel().getStudents()) {
+            if (student.isDummy()) continue;
+            if (iStudentQuery != null && !iStudentQuery.match(new StudentMatcher(student, iSession, getAssignment()))) continue;
+            students.add(student);
+		}
+		setPhase("Enrolling students...", students.size());
+		
 		Collections.sort(students, new Comparator<Student>() {
 			@Override
 			public int compare(Student s1, Student s2) {
@@ -295,8 +302,6 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		if (iNrThreads <= 1) {
 			for (Student student: students) {
 	            incProgress();
-	            if (student.isDummy()) continue;
-	            if (iStudentQuery != null && !iStudentQuery.match(new StudentMatcher(student))) continue;
 	            saveStudent(student);
 	        }
 		} else {
@@ -1123,8 +1128,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 						student = iStudents.next();
 						iProgress.incProgress();
 					}
-					if (!student.isDummy())
-						saveStudent(student);
+					saveStudent(student);
 				}
 				iProgress.debug(getName() + " has finished.");
 			} finally {
@@ -1133,11 +1137,15 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		}
 	}
 	
-	public class StudentMatcher implements TermMatcher {
+	public static class StudentMatcher implements TermMatcher {
 		private Student iStudent;
+		private AcademicSessionInfo iSession;
+		private Assignment<Request, Enrollment> iAssignment;
 		
-		public StudentMatcher(Student student) {
+		public StudentMatcher(Student student, AcademicSessionInfo session, Assignment<Request, Enrollment> assignment) {
 			iStudent = student;
+			iSession = session;
+			iAssignment = assignment;
 		}
 
 		public Student student() { return iStudent; }
@@ -1228,7 +1236,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 				for (Request r: student().getRequests()) {
 					if (r instanceof CourseRequest) {
 						CourseRequest cr = (CourseRequest)r;
-						Enrollment e = cr.getAssignment(getAssignment()); 
+						Enrollment e = cr.getAssignment(iAssignment); 
 						if (e == null) continue;
 						Config g = e.getConfig();
 						if (g != null) {
@@ -1269,13 +1277,13 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 				for (Request r: student().getRequests()) {
 					if (r instanceof CourseRequest) {
 						CourseRequest cr = (CourseRequest)r;
-						Enrollment e = cr.getAssignment(getAssignment()); 
+						Enrollment e = cr.getAssignment(iAssignment); 
 						if (e == null) continue;
 						for (Section section: e.getSections()) {
 							if (section.getTime() == null) continue;
 							for (Request q: student().getRequests()) {
 								if (q instanceof CourseRequest) {
-									Enrollment otherEnrollment = q.getAssignment(getAssignment());
+									Enrollment otherEnrollment = q.getAssignment(iAssignment);
 									if (otherEnrollment == null) continue;
 									for (Section otherSection: otherEnrollment.getSections()) {
 										if (otherSection.equals(section) || otherSection.getTime() == null) continue;
