@@ -217,6 +217,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private boolean iCorrectConfigLimit = false;
 	private boolean iUseSnapShotLimits = false;
 	private String iPriorityStudentGroupReference = null;
+	private Query iPriorityStudentsQuery = null;
 	private Query iProjectedStudentQuery = null;
     
     private Progress iProgress = null;
@@ -269,6 +270,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iIncludeUnavailabilities = model.getProperties().getPropertyBoolean("Load.IncludeUnavailabilities", iIncludeUnavailabilities);
         iShortDistanceAccomodationReference = model.getProperties().getProperty("Distances.ShortDistanceAccommodationReference", "SD");
         iPriorityStudentGroupReference = model.getProperties().getProperty("Load.PriorityStudentGroupReference", null);
+        String priorityStudentFilter = model.getProperties().getProperty("Load.PriorityStudentFilter", null);
+        if (priorityStudentFilter != null && !priorityStudentFilter.isEmpty()) {
+        	iPriorityStudentsQuery = new Query(priorityStudentFilter);
+        	iProgress.info("Priority student filter: " + iPriorityStudentsQuery); 
+        }
+        
         iCheckOverrideStatus = model.getProperties().getPropertyBoolean("Load.CheckOverrideStatus", iCheckOverrideStatus);
         iValidateOverrides = model.getProperties().getPropertyBoolean("Load.ValidateOverrides", iValidateOverrides);
         if ((iValidateOverrides || iCheckOverrideStatus) && ApplicationProperty.CustomizationCourseRequestsValidation.value() != null) {
@@ -1234,11 +1241,14 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         student.setExternalId(s.getExternalUniqueId());
         student.setName(iStudentNameFormat.format(s));
         student.setStatus(s.getSectioningStatus() == null ? null : s.getSectioningStatus().getReference());
-        if (iPriorityStudentGroupReference != null)
+        if (iPriorityStudentsQuery != null && iPriorityStudentsQuery.match(new DbStudentMatcher(s))) {
+        	student.setPriority(true);
+        } else if (iPriorityStudentGroupReference != null) {
         	for (StudentGroup g: s.getGroups()) {
         		if (iPriorityStudentGroupReference.equals(g.getGroupAbbreviation()))
         			student.setPriority(true);
         	}
+        }
         if (iLoadStudentInfo) loadStudentInfo(student,s);
         if (iShortDistanceAccomodationReference != null)
         	for (StudentAccomodation ac: s.getAccomodations())
