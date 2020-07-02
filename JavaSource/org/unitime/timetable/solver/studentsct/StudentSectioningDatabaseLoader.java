@@ -617,7 +617,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             limitDisabled += (configLimit - configEnabled);
         }
         if (limitDisabled > 0)
-        	limit += Math.min(limitDisabled, reservedDisabledSpace);
+        	if (reservedDisabledSpace < 0)
+        		limit += limitDisabled;
+        	else
+        		limit += Math.min(limitDisabled, reservedDisabledSpace);
         
         if (updated && co.getReservation() == null) {
         	iProgress.debug("Course limit of " + co.getCourseName() + " decreased to " + limit + " (disabled: " + limitDisabled + ", reserved: " + reservedDisabledSpace + ").");
