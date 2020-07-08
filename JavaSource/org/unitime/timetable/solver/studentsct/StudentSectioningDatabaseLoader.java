@@ -1476,10 +1476,21 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections, getAssignment());
                     request.setInitialAssignment(enrollment);
                     assignedCredit += enrollment.getCredit();
-                    if (iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty() && assignedCourse != null && !assignedCourse.getName().matches(iMPPCoursesRegExp))
-                    	request.setFixedValue(enrollment);
-                    else if (iFixAssignedEnrollments)
-                    	request.setFixedValue(enrollment);
+                    if (iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty() && assignedCourse != null && !assignedCourse.getName().matches(iMPPCoursesRegExp)) {
+                    	if (iAllowToKeepCurrentEnrollment)
+                    		request.setFixedValue(enrollment);
+                    	else {
+                    		boolean cancelled = false;
+                        	for (Section section: enrollment.getSections())
+                        		if (section.isCancelled()) { cancelled = true; break; }
+                        	if (!cancelled) request.setFixedValue(enrollment);
+                    	}
+                    } else if (iFixAssignedEnrollments) {
+                    	boolean cancelled = false;
+                    	for (Section section: enrollment.getSections())
+                    		if (section.isCancelled()) { cancelled = true; break; }
+                    	if (!cancelled) request.setFixedValue(enrollment);
+                    }
                 }
                 if (!cd.isAlternative() && maxCredit > 0 && credit > maxCredit) {
                 	if (iMaxCreditChecking)
@@ -1581,9 +1592,20 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     request.setInitialAssignment(enrollment);
                     assignedCredit += enrollment.getCredit();
                     if (iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty() && assignedCourse != null && !assignedCourse.getName().matches(iMPPCoursesRegExp))
-                    	request.setFixedValue(enrollment);
-                    else if (iFixAssignedEnrollments)
-                    	request.setFixedValue(enrollment);
+                    	if (iAllowToKeepCurrentEnrollment)
+                    		request.setFixedValue(enrollment);
+                    	else {
+                    		boolean cancelled = false;
+                        	for (Section section: enrollment.getSections())
+                        		if (section.isCancelled()) { cancelled = true; break; }
+                        	if (!cancelled) request.setFixedValue(enrollment);
+                    	}
+                    else if (iFixAssignedEnrollments) {
+                    	boolean cancelled = false;
+                    	for (Section section: enrollment.getSections())
+                    		if (section.isCancelled()) { cancelled = true; break; }
+                    	if (!cancelled) request.setFixedValue(enrollment);
+                    }
                 }
                 if (assignedConfig!=null && assignedSections.size() != assignedConfig.getSubparts().size()) {
                 	iProgress.error("There is a problem assigning " + request.getName() + " to " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + "): wrong number of classes (" +
