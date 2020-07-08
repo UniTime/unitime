@@ -3206,7 +3206,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                     if (student==null) continue;
                     
                     Lecture lecture = (Lecture)iLectures.get(clazzId);
-                    if (lecture!=null) {
+                    if (lecture != null && lecture.getConfiguration() != null) {
 
                 		Set<Lecture> preEnrollments = iPreEnrollments.get(student);
                 		if (preEnrollments == null) {
