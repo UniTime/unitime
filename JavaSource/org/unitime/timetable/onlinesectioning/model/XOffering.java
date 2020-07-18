@@ -862,6 +862,7 @@ public class XOffering implements Serializable, Externalizable {
 				break;
 			case Individual:
 			case IndividualOverride:
+			case IndividualGroup:
 				iReservations.add(new XIndividualReservation(in));
 				break;
 			case LearningCommunity:
@@ -890,7 +891,10 @@ public class XOffering implements Serializable, Externalizable {
 		
 		out.writeInt(iReservations.size());
 		for (XReservation reservation: iReservations) {
-			out.writeInt(reservation.getType().ordinal());
+			if (reservation.getType() == XReservationType.Group && reservation instanceof XIndividualReservation)
+				out.writeInt(XReservationType.IndividualGroup.ordinal());
+			else
+				out.writeInt(reservation.getType().ordinal());
 			reservation.writeExternal(out);
 		}
 		
