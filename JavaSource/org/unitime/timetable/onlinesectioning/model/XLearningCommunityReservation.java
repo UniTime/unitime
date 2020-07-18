@@ -142,6 +142,8 @@ public class XLearningCommunityReservation extends XReservation {
 		if (iGroup != null) {
 			out.writeBoolean(true);
 			iGroup.writeExternal(out);
+		} else {
+			out.writeBoolean(false);
 		}
 		
 		out.writeInt(iStudentIds.size());
