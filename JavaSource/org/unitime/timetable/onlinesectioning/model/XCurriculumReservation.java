@@ -169,7 +169,7 @@ public class XCurriculumReservation extends XReservation {
     	
     	iLimit = in.readInt();
     	
-    	if (getType() == XReservationType.GroupOverride) {
+    	if (getType() == XReservationType.CurriculumOverride) {
     		switch (in.readByte()) {
     		case 0:
     			iExpired = false; break;
