@@ -628,7 +628,7 @@ public class XOffering implements Serializable, Externalizable {
 	
 	public Course toCourse(Long courseId, XStudent student, OnlineSectioningServer server) {
 		Course course = toCourse(courseId, student, server.getExpectations(getOfferingId()), getDistributions(), server.getEnrollments(getOfferingId()));
-		if (!(server instanceof StudentSolver)) {
+		if (!(server instanceof StudentSolver) && student != null) {
 			String filter = server.getConfig().getProperty("Load.OnlineOnlyStudentFilter", null);
 			if (filter != null && !filter.isEmpty()) {
 				if (new Query(filter).match(new StudentMatcher(student, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
