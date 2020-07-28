@@ -73,6 +73,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	private Date iTimeStamp = null;
 	private int iSequence = 0;
 	private Set<EventServiceProviderInterface> iRequestedServices = null;
+	private Long iClassId = null, iSessionId = null;
 	
 	public static enum ResourceType implements IsSerializable {
 		ROOM("Room Timetable","room", true),
@@ -388,6 +389,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		return ret;
 	}
 	
+	public Long getSessionId() { return iSessionId; }
+	public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+	public Long getClassId() { return iClassId; }
+	public void setClassId(Long classId) { iClassId = classId; }
+	
 	public int hashCode() { return getId().hashCode(); }
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof EventInterface)) return false;
@@ -678,6 +684,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private Long iStartTime, iStopTime;
 		private Set<MeetingConflictInterface> iConflicts;
 		private Set<ContactInterface> iMeetingContacts;
+		private String iStyle = null;
 		
 		public MeetingInterface() {}
 		
@@ -802,6 +809,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setStopTime(Long stopTime) { iStopTime = stopTime; }
 		public Long getStartTime() { return iStartTime; }
 		public void setStartTime(Long startTime) { iStartTime = startTime; }
+		public String getStyle() { return (iStyle == null ? "" : iStyle); }
+		public boolean hasStyle() { return iStyle != null && !iStyle.isEmpty(); }
+		public void setStyle(String style) { iStyle = style; }
 		
 		public boolean hasConflicts() {
 			return iConflicts != null && !iConflicts.isEmpty();
@@ -1108,6 +1118,14 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	    public String getMeetingContacts(String separator, GwtMessages msg) {
 	    	return iMeetings.first().getMeetingContacts(separator, msg);
 	    }
+	    
+	    public String getStyle() {
+	    	return iMeetings.first().getStyle();
+	    }
+	    
+	    public boolean hasStyle() {
+	    	return iMeetings.first().hasStyle();
+	    }
 	}
 	
 	public static TreeSet<MultiMeetingInterface> getMultiMeetings(Collection<MeetingInterface> meetings, boolean checkPast, boolean checkMeetingContacts) {
@@ -1131,6 +1149,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
             		m.getLocationName().equals(meeting.getLocationName()) &&
             		(!checkMeetingContacts || m.sameMeetingContacts(meeting)) &&
             		(!checkPast || m.isPast() == meeting.isPast()) && 
+            		(!checkPast || m.getStyle().equals(meeting.getStyle())) &&
             		(m.getApprovalStatus() == meeting.getApprovalStatus()) &&
             		(flags == null || flag == flags.getDateFlag(type, m.getMeetingDate()))) {
             		if (m.getDayOfYear() - meeting.getDayOfYear() < 7) dow.add(m.getDayOfWeek());
@@ -2677,7 +2696,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 				EventFlag.SHOW_TITLE.flag() + 
 				EventFlag.SHOW_APPROVAL.flag() +
 				EventFlag.SHOW_MEETING_CONTACTS.flag() +
-				EventFlag.SHOW_REQUESTED_SERVICES.flag();
+				EventFlag.SHOW_REQUESTED_SERVICES.flag() +
+				EventFlag.SHOW_NOTE.flag();
 	
 	public static class SessionMonth implements IsSerializable {
 		public static enum Flag implements IsSerializable {

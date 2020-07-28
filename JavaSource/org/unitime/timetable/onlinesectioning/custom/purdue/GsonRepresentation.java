@@ -69,7 +69,7 @@ public class GsonRepresentation<T> extends WriterRepresentation {
         iObject = object;
         iObjectClass = ((Class<T>) ((object == null) ? null : object.getClass()));
     }
-
+    
     public GsonBuilder getBuilder() {
         if (iBuilder == null) {
         	iBuilder = new GsonBuilder()
@@ -97,7 +97,11 @@ public class GsonRepresentation<T> extends WriterRepresentation {
     				try {
     					return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(json.getAsJsonPrimitive().getAsString());
     				} catch (ParseException e) {
-    					throw new JsonParseException(e.getMessage(), e);
+    					try {
+        					return new SimpleDateFormat("yyyy-MM-dd").parse(json.getAsJsonPrimitive().getAsString());
+        				} catch (ParseException f) {
+        					throw new JsonParseException(e.getMessage(), e);
+        				}
     				}
     			}
     		});

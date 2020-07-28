@@ -46,6 +46,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventLookupRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventServiceProviderInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
@@ -89,6 +90,9 @@ import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamEventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentGroupDAO;
+import org.unitime.timetable.onlinesectioning.custom.CustomClassAttendanceProvider;
+import org.unitime.timetable.onlinesectioning.custom.CustomClassAttendanceProvider.StudentClassAttendance;
+import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
@@ -1570,6 +1574,9 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    		ClassEvent ce = ClassEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
 				    		Class_ clazz = ce.getClazz();
 				    		
+				    		event.setClassId(clazz.getUniqueId());
+				    		event.setSessionId(clazz.getSessionId());
+				    		
 				    		Set<Long>[] r = (restrictions == null ? null : restrictions.get(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId()));
 				    		if (r != null && hide(r, clazz)) continue;
 				    		
@@ -2831,6 +2838,30 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						EventInterface unavailability = generateUnavailabilityEvent(location, null);
 						if (unavailability != null)
 							ret.add(unavailability);
+					}
+				}
+				
+				if (request.getResourceType() == ResourceType.PERSON && Customization.CustomClassAttendanceProvider.hasProvider()) {
+					CustomClassAttendanceProvider provider = Customization.CustomClassAttendanceProvider.getProvider();
+					Map<Long, StudentClassAttendance> attendances = new HashMap<Long, StudentClassAttendance>();
+					Set<Long> ignoreSessionIds = new HashSet<Long>();
+					for (EventInterface e: ret) {
+						if (e.getType() == EventType.Class && e.getClassId() != null && e.getSessionId() != null && !ignoreSessionIds.contains(e.getSessionId())) {
+							StudentClassAttendance attendance = attendances.get(e.getSessionId());
+							if (attendance == null) {
+								Student student = Student.findByExternalId(e.getSessionId(), request.getResourceExternalId());
+								if (student == null) {
+									ignoreSessionIds.add(e.getSessionId()); continue;
+								}
+								attendance = provider.getCustomClassAttendanceForStudent(student, null, context);
+								if (attendance == null) {
+									ignoreSessionIds.add(e.getSessionId()); continue;
+								} else {
+									attendances.put(e.getSessionId(), attendance);
+								}
+							}
+							attendance.updateAttendance(e);
+						}
 					}
 				}
 				

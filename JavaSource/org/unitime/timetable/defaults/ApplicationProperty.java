@@ -61,6 +61,7 @@ import org.unitime.timetable.onlinesectioning.custom.CourseRequestsProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseRequestsValidationProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider;
+import org.unitime.timetable.onlinesectioning.custom.CustomClassAttendanceProvider;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseLookup;
 import org.unitime.timetable.onlinesectioning.custom.DegreePlansProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
@@ -1234,6 +1235,12 @@ public enum ApplicationProperty {
 	@Since(4.6)
 	CustomizationStudentEmail("unitime.custom.StudentEmailProvider"),
 	
+	@Type(Class.class)
+	@Implements(CustomClassAttendanceProvider.class)
+	@Description("Customization: custom class attendance provider (interface CustomClassAttendanceProvider)")
+	@Since(4.6)
+	CustomizationCustomClassAttendance("unitime.custom.CustomClassAttendanceProvider"),
+	
 	@Type(Boolean.class)
 	@DefaultValue("false")
 	@Description("Curriculum: convert academic area, classification and major codes and names to initial case")
@@ -1288,6 +1295,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Event ICS Calendar: include instructor names in the event description")
 	EventCalendarDisplayInstructorsInDescription("unitime.events.ics_instructors_in_description"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Event ICS Calendar: include event note in the event description")
+	EventCalendarDisplayNoteInDescription("unitime.events.ics_note_in_description"),
 
 	@Type(Boolean.class)
 	@DefaultValue("true")

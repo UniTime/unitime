@@ -53,13 +53,17 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
+import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.advisors.AdvisorGetCourseRequests;
+import org.unitime.timetable.onlinesectioning.custom.CustomClassAttendanceProvider;
+import org.unitime.timetable.onlinesectioning.custom.CustomClassAttendanceProvider.StudentClassAttendance;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsValidationHolder;
+import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentError;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentFailure;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
@@ -252,6 +256,8 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 			setReadOnly = ApplicationProperty.OnlineSchedulingMakeAssignedRequestReadOnlyIfAdmin.isTrue();
 		
 		List<CourseSection> unavailabilities = fillUnavailabilitiesIn(ret, student, server, helper, stored);
+		CustomClassAttendanceProvider provider = Customization.CustomClassAttendanceProvider.getProvider();
+		StudentClassAttendance attendance = provider.getCustomClassAttendanceForStudent(StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession()), helper, null);
 		
 		float credit = 0f;
 		if (student.getMaxCredit() != null)
@@ -433,6 +439,8 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 						a.setHasAlternatives(hasAlt);
 						a.addNote(course.getNote());
 						a.addNote(section.getNote());
+						if (attendance != null)
+							a.addNote(attendance.getClassNote(section.getExternalId(course.getCourseId())));
 						a.setCredit(subpart.getCredit(course.getCourseId()));
 						a.setCreditRange(subpart.getCreditMin(course.getCourseId()), subpart.getCreditMax(course.getCourseId()));
 						Float creditOverride = section.getCreditOverride(course.getCourseId());
@@ -545,6 +553,8 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 						a.setSubpartId(section.getSubpartId());
 						a.addNote(course.getNote());
 						a.addNote(section.getNote());
+						if (attendance != null)
+							a.addNote(attendance.getClassNote(section.getExternalId(course.getCourseId())));
 						a.setCredit(subpart.getCredit(course.getCourseId()));
 						a.setCreditRange(subpart.getCreditMin(course.getCourseId()), subpart.getCreditMax(course.getCourseId()));
 						Float creditOverride = section.getCreditOverride(course.getCourseId());

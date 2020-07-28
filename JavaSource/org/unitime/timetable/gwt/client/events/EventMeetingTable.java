@@ -874,6 +874,8 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 							span = "rejected-meeting";
 						else if (m.isPast())
 							span = "past-meeting";
+						else if (m.hasStyle())
+							span = m.getStyle();
 						for (int i = 0; i < mtgs.length; i++) {
 							mtgs[i] += (mtgs[i].isEmpty() ? "" : "<br>") + (prev != null && span.equals(prevSpan) && prev[i == 6 ? i - 1 : i].equals(mtg[i == 6 ? i - 1 : i]) && (i != 7 || !mtg[i].isEmpty()) ? MESSAGES.repeatingSymbol() : (!span.isEmpty() ? "<span class='" + span + "'>" : "") + mtg[i] + (!span.isEmpty() ? "</span>" : ""));							
 						}
@@ -1117,6 +1119,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 					MultiLineStringCell note = new MultiLineStringCell(event.getEventNote("\n").split("\\n"));
 					note.setTitle(event.getEventNote("\n"));
 					note.addStyleName("note");
+					note.getElement().getStyle().clearWhiteSpace();
 					row.add(note);
 				} else {
 					row.add(new HTML("&nbsp;"));	
@@ -1136,6 +1139,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 					MultiLineStringCell note = new MultiLineStringCell(event.getEventNote("\n").split("\\n"));
 					note.setTitle(event.getEventNote("\n"));
 					note.addStyleName("note");
+					note.getElement().getStyle().clearWhiteSpace();
 					row.add(note);
 				} else {
 					row.add(new HTML("&nbsp;"));	
@@ -1241,6 +1245,9 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			if (meeting.isPast() || (data.hasParent() && data.getParent().hasMeeting() && data.getParent().getMeeting().isPast()))
 				for (int i = row.size() - 8; i < row.size(); i++)
 					row.get(i).addStyleName("past-meeting");
+			else if (meeting.hasStyle() || (data.hasParent() && data.getParent().hasMeeting() && data.getParent().getMeeting().hasStyle()))
+				for (int i = row.size() - 8; i < row.size(); i++)
+					row.get(i).addStyleName(meeting.getStyle());
 		} else {
 			String[] mtgs = new String[] {"", "", "", "", "", "", "", ""};
 			String prevApproval = null;
@@ -1292,6 +1299,8 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 					span = "rejected-meeting";
 				else if (m.isPast())
 					span = "past-meeting";
+				else if (m.hasStyle())
+					span = m.getStyle();
 				for (int i = 0; i < mtgs.length; i++) {
 					mtgs[i] += (mtgs[i].isEmpty() ? "" : "<br>") + (prev != null && span.equals(prevSpan) && prev[i == 6 ? i - 1 : i].equals(mtg[i == 6 ? i - 1 : i]) && (i != 7 || !mtg[i].isEmpty()) ? MESSAGES.repeatingSymbol() : (!span.isEmpty() ? "<span class='" + span + "'>" : "") + mtg[i] + (!span.isEmpty() ? "</span>" : ""));
 				}

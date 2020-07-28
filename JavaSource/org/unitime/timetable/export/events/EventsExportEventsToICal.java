@@ -322,6 +322,9 @@ public class EventsExportEventsToICal extends EventsExporter {
 				for (ContactInterface instructor: event.getInstructors())
 					description += "\n" + instructor.getName(MESSAGES);
 			}
+			if (event.hasNotes() && ApplicationProperty.EventCalendarDisplayNoteInDescription.isTrue()) {
+				description += "\n" + event.getEventNote("\n"); 
+			}
 			vevent.setSummary(name);
             vevent.setDescription(description);
             
@@ -392,7 +395,7 @@ public class EventsExportEventsToICal extends EventsExporter {
 			} else {
 				iStart = new DateTime(meeting.getMeetingDate()).plusMinutes((5 * meeting.getStartSlot()) + meeting.getStartOffset());
 			}
-			if (meeting.getStartTime() != null) {
+			if (meeting.getStopTime() != null) {
 				iEnd = new DateTime(meeting.getStopTime());
 			} else {
 				iEnd = new DateTime(meeting.getMeetingDate()).plusMinutes((5 * meeting.getEndSlot()) + meeting.getEndOffset());

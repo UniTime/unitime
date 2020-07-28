@@ -671,6 +671,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public String getNote() { return (iNote == null ? "" : iNote); }
 		public void setNote(String note) { iNote = note; }
 		public void addNote(String note) {
+			if (note == null || note.isEmpty()) return;
 			addNote(note, "\n");
 		}
 		public void addNote(String note, String separator) {

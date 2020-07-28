@@ -153,7 +153,9 @@ import org.unitime.timetable.onlinesectioning.basic.ListCourseOfferings;
 import org.unitime.timetable.onlinesectioning.basic.ListEnrollments;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseMatcherProvider;
+import org.unitime.timetable.onlinesectioning.custom.CustomClassAttendanceProvider;
 import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.CriticalCourses;
+import org.unitime.timetable.onlinesectioning.custom.CustomClassAttendanceProvider.StudentClassAttendance;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseLookupHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsValidationHolder;
@@ -1580,6 +1582,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						enrollments.addAll(hibSession.createQuery(
 								"from StudentClassEnrollment e where e.student.uniqueId = :studentId order by e.courseOffering.subjectAreaAbbv, e.courseOffering.courseNbr"
 								).setLong("studentId", studentId).list());
+						CustomClassAttendanceProvider provider = Customization.CustomClassAttendanceProvider.getProvider();
+						StudentClassAttendance attendance = provider.getCustomClassAttendanceForStudent(student, null, getSessionContext());
 						for (StudentClassEnrollment enrollment: enrollments) {
 							CourseAssignment course = courses.get(enrollment.getCourseOffering().getUniqueId());
 							if (course == null) {
@@ -1615,8 +1619,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								if (clazz.getParentSection() == null)
 									clazz.setParentSection(enrollment.getClazz().getParentClass().getSectionNumberString(hibSession));
 							}
+							if (enrollment.getCourseOffering().getScheduleBookNote() != null)
+								clazz.addNote(enrollment.getCourseOffering().getScheduleBookNote());
 							if (enrollment.getClazz().getSchedulePrintNote() != null)
 								clazz.addNote(enrollment.getClazz().getSchedulePrintNote());
+							if (attendance != null)
+								clazz.addNote(attendance.getClassNote(clazz.getExternalId()));
 							Placement placement = enrollment.getClazz().getCommittedAssignment() == null ? null : enrollment.getClazz().getCommittedAssignment().getPlacement();
 							int minLimit = enrollment.getClazz().getExpectedCapacity();
 		                	int maxLimit = enrollment.getClazz().getMaxExpectedCapacity();

@@ -2638,6 +2638,14 @@ div.gwt-MenuBarPopup {
 	color: gray;
 }
 
+.unitime-EventMeetings .f2f-meeting {
+	color: blue;
+}
+
+.unitime-EventMeetings .online-meeting {
+	font-style: italic;
+}
+
 .unitime-EventMeetings .not-approved {
 	font-style: italic;
 	color: red;
@@ -2712,8 +2720,8 @@ div.gwt-MenuBarPopup {
 }
 
 .unitime-EventMeetings .note {
-	max-width: 200px;
-	white-space: nowrap;
+	max-width: 300px;
+	white-space: pre-wrap;
 	text-overflow: ellipsis;
 	overflow: hidden;
 }

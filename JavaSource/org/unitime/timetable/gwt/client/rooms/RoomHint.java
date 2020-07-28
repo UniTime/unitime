@@ -188,6 +188,7 @@ public class RoomHint {
 	
 	/** Never use from GWT code */
 	public static void _showRoomHint(JavaScriptObject source, String locationId, String prefix, String distance, String note) {
+		if (locationId == null || locationId.isEmpty() || "null".equals(locationId)) return;
 		showHint((Element) source.cast(), Long.valueOf(locationId), prefix, distance, note, true);
 	}
 
