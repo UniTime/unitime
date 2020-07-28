@@ -52,6 +52,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.custom.CustomCriticalCoursesHolder;
 import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.CriticalCourses;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 
@@ -189,6 +190,11 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 											dbStudent.getAdvisorCourseRequests().add(acr);
 										}
 										acr.setCourseOffering(rc.hasCourseId() ? CourseOfferingDAO.getInstance().get(rc.getCourseId(), helper.getHibSession()) : null);
+										if (acr.getCourseOffering() != null && !acr.getCourseOffering().getInstructionalOffering().getSessionId().equals(server.getAcademicSession().getUniqueId())) {
+											XCourseId course = server.getCourse(acr.getCourseOffering().getCourseName());
+											helper.warn(acr.getCourseOffering().getCourseName() + " is from a wrong academic session" + (course == null ? ", course link removed." : ", found " + course.getCourseName() + " instead."));
+											acr.setCourseOffering(course == null ? null : CourseOfferingDAO.getInstance().get(course.getCourseId(), helper.getHibSession()));
+										}
 										acr.setCourse(rc.getCourseName());
 										acr.setPriority(priority); acr.setAlternative(alt); acr.setSubstitute(false);
 										if (acr.getFreeTime() != null) {
@@ -259,6 +265,11 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 											dbStudent.getAdvisorCourseRequests().add(acr);
 										}
 										acr.setCourseOffering(rc.hasCourseId() ? CourseOfferingDAO.getInstance().get(rc.getCourseId(), helper.getHibSession()) : null);
+										if (acr.getCourseOffering() != null && !acr.getCourseOffering().getInstructionalOffering().getSessionId().equals(server.getAcademicSession().getUniqueId())) {
+											XCourseId course = server.getCourse(acr.getCourseOffering().getCourseName());
+											helper.warn(acr.getCourseOffering().getCourseName() + " is from a wrong academic session" + (course == null ? ", course link removed." : ", found " + course.getCourseName() + " instead."));
+											acr.setCourseOffering(course == null ? null : CourseOfferingDAO.getInstance().get(course.getCourseId(), helper.getHibSession()));
+										}
 										acr.setCourse(rc.getCourseName());
 										acr.setPriority(priority); acr.setAlternative(alt); acr.setSubstitute(true);
 										if (alt == 0) {
