@@ -44,6 +44,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
@@ -55,6 +56,7 @@ import org.unitime.timetable.onlinesectioning.custom.CustomClassAttendanceProvid
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.CalendarUtils;
+import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.Formats.Format;
 import org.unitime.timetable.util.NameFormat;
@@ -208,7 +210,7 @@ public class PurdueClassAttendance implements CustomClassAttendanceProvider {
 			helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(response));
 			
 			if (response.data != null && "success".equals(response.status)) {
-				return new PurdueStudentClassAttendance(response.data, student.getSession().getSessionStartYear());
+				return new PurdueStudentClassAttendance(response.data, student.getSession());
 			} else if (response.message != null) {
 				helper.warn(response.message);
 			}
@@ -279,10 +281,28 @@ public class PurdueClassAttendance implements CustomClassAttendanceProvider {
 	public static class PurdueStudentClassAttendance implements StudentClassAttendance {
 		private StudentMeetings iMeetings;
 		private int iStartYear;
+		private int iStartMonth;
+		private String iHolidays = null;
+		private boolean iSkipBreaks;
 		
-		PurdueStudentClassAttendance(StudentMeetings meetings, int startYear) {
+		PurdueStudentClassAttendance(StudentMeetings meetings, Session session) {
 			iMeetings = meetings;
-			iStartYear = startYear;
+			iStartYear = session.getSessionStartYear();
+			iStartMonth = session.getStartMonth();
+			iHolidays = session.getHolidays();
+			iSkipBreaks = "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.classAttendance.skipBreaks", "true"));
+		}
+		
+		protected boolean isHoliday(Date date) {
+			if (!iSkipBreaks) return false;
+			try {
+				if (iHolidays == null) return false;
+				int idx = CalendarUtils.date2dayOfYear(iStartYear, date) - DateUtils.getDayOfYear(1, iStartMonth, iStartYear) - 1;
+				if (idx < 0 || idx >= iHolidays.length()) return false;
+				return ((int)(iHolidays.charAt(idx) - '0')) != 0;
+			} catch (IndexOutOfBoundsException e) {
+				return false;
+			}
 		}
 		
 		protected StudentSectionMeetings getMeetings(String externalId) {
@@ -320,11 +340,33 @@ public class PurdueClassAttendance implements CustomClassAttendanceProvider {
 			}
 		}
 		
-		protected Date getFirstMeetingDate(MeetingDetail m) {
+		protected Date getFirstMeetingDate(MeetingDetail m, EventInterface event) {
 			Calendar c = Calendar.getInstance(); c.setTime(m.startDate);
 			int index = 0;
+			int startSlot = 12 * (m.startTime / 100) + (m.startTime % 100) / 5;
+			int endSlot =  12 * (m.endTime / 100) + (m.endTime % 100) / 5;
 			while (!c.getTime().after(m.endDate)) {
 				if (c.get(Calendar.DAY_OF_WEEK) == m.meetDay.getDayOfWeek()) {
+					if (event != null) {
+						boolean match = false;
+						for (MeetingInterface meeting: event.getMeetings()) {
+							if (meeting.getDayOfYear() == CalendarUtils.date2dayOfYear(iStartYear, c.getTime()) &&
+								startSlot < meeting.getEndSlot() && meeting.getStartSlot() < endSlot &&
+								meeting.getLocationName().equalsIgnoreCase(("OFFCAMP".equals(m.bldg) ? "" : m.bldg + " ") + m.room)) {
+								match = true;
+								break;
+							}
+						}
+						if (!match) {
+							c.add(Calendar.DAY_OF_YEAR, 1);
+							continue;
+						}
+					} else {
+						if (isHoliday(c.getTime())) {
+							c.add(Calendar.DAY_OF_YEAR, 1);
+							continue;
+						}
+					}
 					index ++;
 					boolean meet = true;
 					if ("Every Other Week".equals(m.occurance)) {
@@ -339,12 +381,34 @@ public class PurdueClassAttendance implements CustomClassAttendanceProvider {
 			return null;
 		}
 		
-		protected Date getLastMeetingDate(MeetingDetail m) {
+		protected Date getLastMeetingDate(MeetingDetail m, EventInterface event) {
 			Calendar c = Calendar.getInstance(); c.setTime(m.startDate);
 			int index = 0;
 			Date last = null;
+			int startSlot = 12 * (m.startTime / 100) + (m.startTime % 100) / 5;
+			int endSlot =  12 * (m.endTime / 100) + (m.endTime % 100) / 5;
 			while (!c.getTime().after(m.endDate)) {
 				if (c.get(Calendar.DAY_OF_WEEK) == m.meetDay.getDayOfWeek()) {
+					if (event != null) {
+						boolean match = false;
+						for (MeetingInterface meeting: event.getMeetings()) {
+							if (meeting.getDayOfYear() == CalendarUtils.date2dayOfYear(iStartYear, c.getTime()) &&
+								startSlot < meeting.getEndSlot() && meeting.getStartSlot() < endSlot &&
+								meeting.getLocationName().equalsIgnoreCase(("OFFCAMP".equals(m.bldg) ? "" : m.bldg + " ") + m.room)) {
+								match = true;
+								break;
+							}
+						}
+						if (!match) {
+							c.add(Calendar.DAY_OF_YEAR, 1);
+							continue;
+						}
+					} else {
+						if (isHoliday(c.getTime())) {
+							c.add(Calendar.DAY_OF_YEAR, 1);
+							continue;
+						}
+					}
 					index ++;
 					boolean meet = true;
 					if ("Every Other Week".equals(m.occurance)) {
@@ -359,9 +423,10 @@ public class PurdueClassAttendance implements CustomClassAttendanceProvider {
 			return last;
 		}
 		
-		protected String toString(MeetingDetail m) {
-			Date first = getFirstMeetingDate(m);
-			Date last = getLastMeetingDate(m);
+		protected String toString(MeetingDetail m, EventInterface classEvent) {
+			Date first = getFirstMeetingDate(m, classEvent);
+			Date last = getLastMeetingDate(m, classEvent);
+			if (classEvent != null && first == null) return null;
 			Format<Date> f = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
 			return m.occurance + " " + CONST.days()[m.meetDay.ordinal()] + " " +
 				getTime(m.startTime) + " - " + getTime(m.endTime) + "\n    " +
@@ -423,21 +488,27 @@ public class PurdueClassAttendance implements CustomClassAttendanceProvider {
 			return meetings;
 		}
 		
-		protected String getMessage(StudentSectionMeetings ssm) {
+		protected String getMessage(StudentSectionMeetings ssm, EventInterface classEvent) {
 			String message = ApplicationProperties.getProperty("purdue.classAttendance.messageFace2FacePlan", "Face-to-face attendance plan ({group}):").replace("{group}", ssm.meetings.get(0).groupName);
+			boolean hasMessage = false;
 			for (MeetingDetail m: ssm.meetings) {
-				message += "\n  " + toString(m);
+				String msg = toString(m, classEvent);
+				if (msg != null) {
+					message += "\n  " + msg;
+					hasMessage = true;
+				}
 			}
-			return message;
+			if (hasMessage) return message;
+			return null;
 		}
 
 		@Override
 		public String getClassNote(String externalId) {
 			StudentSectionMeetings ssm = getMeetings(externalId);
-			if (ssm != null) return getMessage(ssm);
+			if (ssm != null) return getMessage(ssm, null);
 			return null;
 		}
-		
+			
 		protected MeetingInterface match(List<MeetingInterface> meetings, MeetingInterface meeting) {
 			for (MeetingInterface m: meetings) {
 				if (m.overlapsWith(meeting) && m.getLocationName().equals(meeting.getLocationName())) {
@@ -465,14 +536,15 @@ public class PurdueClassAttendance implements CustomClassAttendanceProvider {
 					onl.setIgnoreRoomCheck(online.isIgnoreRoomCheck());
 					onl.setDisplayName(online.getDisplayName());
 				}
-				
-				NoteInterface n = new NoteInterface();
-				n.setDate(new Date());
-				n.setNote(getMessage(ssm));
-				classEvent.addNote(n);
+				String note = getMessage(ssm, iSkipBreaks ? classEvent : null);
+				if (note != null) {
+					NoteInterface n = new NoteInterface();
+					n.setDate(new Date());
+					n.setNote(note);
+					classEvent.addNote(n);
+				}
 				long id = 0;
-				List<MeetingInterface> meetings = toMeetings(ssm, 
-						"true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.classAttendance.skipBreaks", "true")) ? classEvent : null);
+				List<MeetingInterface> meetings = toMeetings(ssm, iSkipBreaks ? classEvent : null);
 				for (MeetingInterface m: new ArrayList<MeetingInterface>(classEvent.getMeetings())) {
 					MeetingInterface match = match(meetings, m);
 					if (match == null) {
