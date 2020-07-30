@@ -78,6 +78,7 @@ public class SectioningReportTypesBackend implements GwtRpcImplementation<Sectio
 		TABLEAU_REPORT(SCT_MSG.reportTableauReport(), TableauReport.class.getName(), "pritify", "false"),
 		TABLEAU_SIMPLE(SCT_MSG.reportTableauSimpleReport(), TableauReport.class.getName(), "pritify", "false", "simple", "true"),
 		CRITICAL(SCT_MSG.reportCriticalCoursesReport(), CriticalCoursesReport.class.getName(), "pritify", "false"),
+		STATISTICS(SCT_MSG.reportSolutionStatistics(), StudentSchedulingSolutionStatisticsReport.class.getName(), "pritify", "false"),
 		;
 		
 		String iName, iImplementation;

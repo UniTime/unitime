@@ -1967,6 +1967,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Enrolled\nChoice")
 	String reportEnrolledChoice();
 	
+	@DefaultMessage("Solution Statistics")
+	String reportSolutionStatistics();
+	
 	@DefaultMessage("{0} (TA)")
 	String teachingAssignment(String className);
 	
