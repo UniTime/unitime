@@ -369,7 +369,7 @@ public class PurdueClassAttendance implements CustomClassAttendanceProvider {
 				("OFFCAMP".equals(m.bldg) ? "" : m.bldg + " ") + m.room;
 		}
 		
-		protected List<MeetingInterface> toMeetings(StudentSectionMeetings ssm) {
+		protected List<MeetingInterface> toMeetings(StudentSectionMeetings ssm, EventInterface event) {
 			List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
 			for (MeetingDetail m: ssm.meetings) {
 				int startSlot = 12 * (m.startTime / 100) + (m.startTime % 100) / 5;
@@ -380,6 +380,21 @@ public class PurdueClassAttendance implements CustomClassAttendanceProvider {
 				int index = 0;
 				while (!c.getTime().after(m.endDate)) {
 					if (c.get(Calendar.DAY_OF_WEEK) == m.meetDay.getDayOfWeek()) {
+						if (event != null) {
+							boolean match = false;
+							for (MeetingInterface meeting: event.getMeetings()) {
+								if (meeting.getDayOfYear() == CalendarUtils.date2dayOfYear(iStartYear, c.getTime()) &&
+									startSlot < meeting.getEndSlot() && meeting.getStartSlot() < endSlot &&
+									meeting.getLocationName().equalsIgnoreCase(("OFFCAMP".equals(m.bldg) ? "" : m.bldg + " ") + m.room)) {
+									match = true;
+									break;
+								}
+							}
+							if (!match) {
+								c.add(Calendar.DAY_OF_YEAR, 1);
+								continue;
+							}
+						}
 						index ++;
 						boolean meet = true;
 						if ("Every Other Week".equals(m.occurance)) {
@@ -456,7 +471,8 @@ public class PurdueClassAttendance implements CustomClassAttendanceProvider {
 				n.setNote(getMessage(ssm));
 				classEvent.addNote(n);
 				long id = 0;
-				List<MeetingInterface> meetings = toMeetings(ssm);
+				List<MeetingInterface> meetings = toMeetings(ssm, 
+						"true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.classAttendance.skipBreaks", "true")) ? classEvent : null);
 				for (MeetingInterface m: new ArrayList<MeetingInterface>(classEvent.getMeetings())) {
 					MeetingInterface match = match(meetings, m);
 					if (match == null) {
