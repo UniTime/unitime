@@ -50,6 +50,7 @@ import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.studentsct.model.Request.RequestPriority;
 import org.cpsolver.studentsct.online.OnlineSectioningModel;
 import org.cpsolver.studentsct.report.StudentSectioningReport;
 import org.cpsolver.studentsct.reservation.CourseReservation;
@@ -62,6 +63,7 @@ import org.cpsolver.studentsct.reservation.LearningCommunityReservation;
 import org.cpsolver.studentsct.reservation.Reservation;
 import org.cpsolver.studentsct.reservation.ReservationOverride;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -300,6 +302,13 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 						}
 						if (!req.isEmpty()) {
 							CourseRequest clonnedRequest = new CourseRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), clonnedStudent, req, cr.isWaitlist(), cr.getTimeStamp() == null ? null : cr.getTimeStamp().getTime());
+							if (cr.isCritical()) {
+								if (cr.getCritical() == CourseDemand.Critical.CRITICAL.ordinal())
+									clonnedRequest.setRequestPriority(RequestPriority.Critical);
+								else if (cr.getCritical() == CourseDemand.Critical.IMPORTANT.ordinal())
+									clonnedRequest.setRequestPriority(RequestPriority.Important);
+							}
+							cr.fillChoicesIn(clonnedRequest);
 							XEnrollment enrollment = cr.getEnrollment();
 							if (enrollment != null) {
 								Config config = configs.get(enrollment.getConfigId());
@@ -309,8 +318,10 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 									if (section != null) assignments.add(section);
 								}
 								Reservation reservation = (enrollment.getReservation() == null ? null : reservations.get(enrollment.getReservation().getReservationId()));
-								if (config != null && !sections.isEmpty())
-									assignment.assign(0, new Enrollment(clonnedRequest, 0, courses.get(enrollment.getCourseId()), config, assignments, reservation));
+								if (config != null && !sections.isEmpty()) {
+									Course course = courses.get(enrollment.getCourseId());
+									assignment.assign(0, new Enrollment(clonnedRequest, clonnedRequest.getCourses().indexOf(course), course, config, assignments, reservation));
+								}
 							}
 						}
 					}

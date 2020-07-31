@@ -27,13 +27,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.cpsolver.coursett.Constants;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.RoomLocation;
+import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.cpsolver.studentsct.StudentSectioningModel;
-import org.cpsolver.studentsct.extension.StudentQuality;
+import org.cpsolver.studentsct.extension.DistanceConflict;
 import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
+import org.cpsolver.studentsct.extension.TimeOverlapsCounter.Conflict;
 import org.cpsolver.studentsct.model.AcademicAreaCode;
 import org.cpsolver.studentsct.model.AreaClassificationMajor;
 import org.cpsolver.studentsct.model.Choice;
@@ -41,8 +46,10 @@ import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.FreeTimeRequest;
 import org.cpsolver.studentsct.model.Offering;
 import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Request.RequestPriority;
 import org.cpsolver.studentsct.model.Student;
@@ -269,7 +276,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         }),
         REQUESTED_COURSES(
         		new String[] {
-        				"Requested Courses", "- fixed",
+        				"Requested Courses", "- pre-enrolled",
         				"Courses per Student", "Assigned Courses", "- 1st choice", "- 2nd choice", "- 3rd choice", "- 4th+ choice"},
         		new String[] {
         				"Total number of requested courses by all students (not counting substitutes or alternatives)",
@@ -282,7 +289,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
             @Override
             public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
                 int requests = 0, students = 0, assigned = 0;
-                int fixed = 0;
+                int fixed = 0, initial = 0;
                 int[] assignedChoice = new int[] {0, 0, 0, 0};
                 int assignedChoiceTotal = 0;
                 for (Student student: model.getStudents()) {
@@ -293,6 +300,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                         if (!r.isAlternative()) requests ++;
                         if (!r.isAlternative() && ((CourseRequest)r).isFixed()) fixed++;
                         Enrollment e = r.getAssignment(assignment);
+                        if (r.getInitialAssignment() != null && r.getInitialAssignment().equals(e)) initial ++;
                         if (e != null) {
                             assigned ++;
                             assignedChoice[Math.min(e.getTruePriority(), assignedChoice.length - 1)] ++;
@@ -300,6 +308,8 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                         }
                     }
                 }
+                if (fixed == 0 && initial > 0)
+                	fixed = initial;
                 if (requests == 0)
                 	return new String[] {
                             sIntFormat.format(requests),
@@ -503,11 +513,13 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                 };
             }
         }, true),
-        BALANCING("Unbalanced sections", "Classes dis-balanced by 10% or more",
+        BALANCING(new String[] {"Unbalanced sections", "- average disbalance"},
+        		new String[] {"Classes dis-balanced by 10% or more", "Average difference between target and actual enrollment in the section"},
         	new Statistic() {
             @Override
             public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
-                int disb10Sections = 0;
+            	double disbWeight = 0;
+            	int disb10Sections = 0;
                 int totalSections = 0;
                 for (Offering offering: model.getOfferings()) {
                     for (Config config: offering.getConfigs()) {
@@ -526,6 +538,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                                         if (group.matches(e.getStudent())) sectEnrl += e.getRequest().getWeight();
                                     }
                                     double desired = ratio * section.getLimit();
+                                    disbWeight += Math.abs(sectEnrl - desired);
                                     if (Math.abs(desired - sectEnrl) >= Math.max(1.0, 0.1 * section.getLimit())) {
                                         disb10Sections++;
                                     }
@@ -539,6 +552,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                                         if (group.matches(e.getStudent())) sectEnrl += e.getRequest().getWeight();
                                     }
                                     double desired = enrl / subpart.getSections().size();
+                                    disbWeight += Math.abs(sectEnrl - desired);
                                     if (Math.abs(desired - sectEnrl) >= Math.max(1.0, 0.1 * desired)) {
                                         disb10Sections++;
                                     }
@@ -548,82 +562,289 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                         }
                     }
                 }
-                return new String[] { sPercentFormat.format(100.0 * disb10Sections / totalSections) + "%" };
+                return new String[] {
+                		sPercentFormat.format(100.0 * disb10Sections / totalSections) + "%",
+                		sDoubleFormat.format(disbWeight / totalSections)
+                };
             }
-        }),
-        DISTANCE(new String[] {"Distance conflicts", "- students with a free time conflict", "- average minutes", "- students with a course time conflict", "- average minutes"},
-        		new String[] {
-        				"Total number of distance conflicts",
-        				"Total number of students with a free time conflict",
-        				"For those with a free time conflict, the average number of overlapping minutes",
-        				"Total number of students with a course conflict",
-        				"For those with a course time conflict, the average number of overlapping minutes"
-        		},
+        }, true),
+        DISTANCE(new String[] {"Distance conflicts", "- students with distance conflicts", "- average distance in minutes",
+        		"Distance conflicts (SD)", "- students with distance conflicts", "- average distance in minutes"
+        }, new String[] {"Total number of distance conflicts",
+        		"Total number of students with one or more distance conflicts",
+        		"Average distance between two classes in minutes per conflict",
+        		"Total number of distance conflicts (students needed short distances)",
+        		"Total number of SD students with one or more distance conflicts",
+        		"Average distance between two classes in minutes per conflict"},
         		new Statistic() {
-            @Override
-            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
-                if (model.getStudentQuality() != null) {
-                	int dc = 0;
-                	Set<Student> dcFt = new HashSet<Student>();
-                	Set<Student> dcCourse = new HashSet<Student>();
-                    int ftMin = 0, courseMin = 0;
-                    for (StudentQuality.Conflict c: model.getStudentQuality().getContext(assignment).computeAllConflicts(StudentQuality.Type.CourseTimeOverlap, assignment)) {
-                        if (group.matches(c.getStudent())) {
-                        	dcCourse.add(c.getStudent());
-                            courseMin += 5 * c.getPenalty();
-                            dc ++;
-                        }
-                    }
-                    for (StudentQuality.Conflict c: model.getStudentQuality().getContext(assignment).computeAllConflicts(StudentQuality.Type.FreeTimeOverlap, assignment)) {
-                        if (group.matches(c.getStudent())) {
-                        	dcFt.add(c.getStudent());
-                            ftMin += 5 * c.getPenalty();
-                            dc ++;
-                        }
-                    }
-                    for (StudentQuality.Conflict c: model.getStudentQuality().getContext(assignment).computeAllConflicts(StudentQuality.Type.Unavailability, assignment)) {
-                    	if (group.matches(c.getStudent())) {
-                            dc ++;
-                        }
-                    }
-                    return new String[] {
-                            sIntFormat.format(dc),
-                            sIntFormat.format(dcFt.size()),
-                            (dcFt.isEmpty() ? "" : sDoubleFormat.format(((double)ftMin) / dcFt.size())),
-                            sIntFormat.format(dcCourse.size()),
-                            (dcCourse.isEmpty() ? "" : sDoubleFormat.format(((double)courseMin) / dcCourse.size()))
-                    };
-                } else if (model.getTimeOverlaps() != null && model.getTimeOverlaps().getTotalNrConflicts(assignment) != 0) {
-                	int dc = 0;
-                	Set<Student> dcFt = new HashSet<Student>();
-                	Set<Student> dcCourse = new HashSet<Student>();
-                	int ftMin = 0, courseMin = 0;
-                    Set<TimeOverlapsCounter.Conflict> conf = model.getTimeOverlaps().getContext(assignment).computeAllConflicts(assignment);
-                    for (TimeOverlapsCounter.Conflict c: conf) {
-                        if (group.matches(c.getStudent())) {
-                            if (c.getR1() instanceof CourseRequest && c.getR2() instanceof CourseRequest) {
-                                courseMin += 5 * c.getShare();
-                                dcCourse.add(c.getStudent());
-                                dc ++;
-                            } else if (c.getS2() instanceof Unavailability) {
-                            	dc ++;
-                            } else {
-                                ftMin += 5 * c.getShare();
-                                dcFt.add(c.getStudent());
-                                dc ++;
+        	
+            protected int getDistanceInMinutes(StudentSectioningModel model, RoomLocation r1, RoomLocation r2) {
+                if (r1.getId().compareTo(r2.getId()) > 0) return getDistanceInMinutes(model, r2, r1);
+                if (r1.getId().equals(r2.getId()) || r1.getIgnoreTooFar() || r2.getIgnoreTooFar())
+                    return 0;
+                if (r1.getPosX() == null || r1.getPosY() == null || r2.getPosX() == null || r2.getPosY() == null)
+                    return model.getDistanceMetric().getMaxTravelDistanceInMinutes();
+                return  model.getDistanceMetric().getDistanceInMinutes(r1.getId(), r1.getPosX(), r1.getPosY(), r2.getId(), r2.getPosX(), r2.getPosY());
+            }
+
+            protected int getDistanceInMinutes(StudentSectioningModel model, Placement p1, Placement p2) {
+                if (p1.isMultiRoom()) {
+                    if (p2.isMultiRoom()) {
+                        int dist = 0;
+                        for (RoomLocation r1 : p1.getRoomLocations()) {
+                            for (RoomLocation r2 : p2.getRoomLocations()) {
+                                dist = Math.max(dist, getDistanceInMinutes(model, r1, r2));
                             }
                         }
+                        return dist;
+                    } else {
+                        if (p2.getRoomLocation() == null)
+                            return 0;
+                        int dist = 0;
+                        for (RoomLocation r1 : p1.getRoomLocations()) {
+                            dist = Math.max(dist, getDistanceInMinutes(model, r1, p2.getRoomLocation()));
+                        }
+                        return dist;
                     }
-                    return new String[] {
-                            sIntFormat.format(dc),
-                            sIntFormat.format(dcFt.size()),
-                            (dcFt.isEmpty() ? "" : sDoubleFormat.format(((double)ftMin) / dcFt.size())),
-                            sIntFormat.format(dcCourse.size()),
-                            (dcCourse.isEmpty() ? "" : sDoubleFormat.format(((double)courseMin) / dcCourse.size()))
-                    };
+                } else if (p2.isMultiRoom()) {
+                    if (p1.getRoomLocation() == null)
+                        return 0;
+                    int dist = 0;
+                    for (RoomLocation r2 : p2.getRoomLocations()) {
+                        dist = Math.max(dist, getDistanceInMinutes(model, p1.getRoomLocation(), r2));
+                    }
+                    return dist;
                 } else {
-                    return new String[] { "N/A", "", "" };
+                    if (p1.getRoomLocation() == null || p2.getRoomLocation() == null)
+                        return 0;
+                    return getDistanceInMinutes(model, p1.getRoomLocation(), p2.getRoomLocation());
                 }
+            }
+        	
+        	public boolean inConflict(StudentSectioningModel model, Student student, Section s1, Section s2) {
+                if (s1.getPlacement() == null || s2.getPlacement() == null)
+                    return false;
+                TimeLocation t1 = s1.getTime();
+                TimeLocation t2 = s2.getTime();
+                if (!t1.shareDays(t2) || !t1.shareWeeks(t2))
+                    return false;
+                int a1 = t1.getStartSlot(), a2 = t2.getStartSlot();
+                if (student.isNeedShortDistances()) {
+                    if (model.getDistanceMetric().doComputeDistanceConflictsBetweenNonBTBClasses()) {
+                        if (a1 + t1.getNrSlotsPerMeeting() <= a2) {
+                            int dist = getDistanceInMinutes(model, s1.getPlacement(), s2.getPlacement());
+                            if (dist > Constants.SLOT_LENGTH_MIN * (a2 - a1 - t1.getLength()))
+                                return true;
+                        } else if (a2 + t2.getNrSlotsPerMeeting() <= a1) {
+                            int dist = getDistanceInMinutes(model, s1.getPlacement(), s2.getPlacement());
+                            if (dist > Constants.SLOT_LENGTH_MIN * (a1 - a2 - t2.getLength()))
+                                return true;
+                        }
+                    } else {
+                        if (a1 + t1.getNrSlotsPerMeeting() == a2) {
+                            int dist = getDistanceInMinutes(model, s1.getPlacement(), s2.getPlacement());
+                            if (dist > 0) return true;
+                        } else if (a2 + t2.getNrSlotsPerMeeting() == a1) {
+                            int dist = getDistanceInMinutes(model, s1.getPlacement(), s2.getPlacement());
+                            if (dist > 0) return true;
+                        }
+                    }
+                    return false;
+                }
+                if (model.getDistanceMetric().doComputeDistanceConflictsBetweenNonBTBClasses()) {
+                    if (a1 + t1.getNrSlotsPerMeeting() <= a2) {
+                        int dist = getDistanceInMinutes(model, s1.getPlacement(), s2.getPlacement());
+                        if (dist > t1.getBreakTime() + Constants.SLOT_LENGTH_MIN * (a2 - a1 - t1.getLength()))
+                            return true;
+                    } else if (a2 + t2.getNrSlotsPerMeeting() <= a1) {
+                        int dist = getDistanceInMinutes(model, s1.getPlacement(), s2.getPlacement());
+                        if (dist > t2.getBreakTime() + Constants.SLOT_LENGTH_MIN * (a1 - a2 - t2.getLength()))
+                            return true;
+                    }
+                } else {
+                    if (a1 + t1.getNrSlotsPerMeeting() == a2) {
+                        int dist = getDistanceInMinutes(model, s1.getPlacement(), s2.getPlacement());
+                        if (dist > t1.getBreakTime())
+                            return true;
+                    } else if (a2 + t2.getNrSlotsPerMeeting() == a1) {
+                        int dist = getDistanceInMinutes(model, s1.getPlacement(), s2.getPlacement());
+                        if (dist > t2.getBreakTime())
+                            return true;
+                    }
+                }
+                return false;
+            }
+
+        	public Set<DistanceConflict.Conflict> conflicts(StudentSectioningModel model, Enrollment e1) {
+                Set<DistanceConflict.Conflict> ret = new HashSet<DistanceConflict.Conflict>();
+                if (!e1.isCourseRequest())
+                    return ret;
+                for (Section s1 : e1.getSections()) {
+                    for (Section s2 : e1.getSections()) {
+                        if (s1.getId() < s2.getId() && inConflict(model, e1.getStudent(), s1, s2))
+                            ret.add(new DistanceConflict.Conflict(e1.getStudent(), e1, s1, e1, s2));
+                    }
+                }
+                return ret;
+            }
+        	
+        	public Set<DistanceConflict.Conflict> conflicts(StudentSectioningModel model, Enrollment e1, Enrollment e2) {
+                Set<DistanceConflict.Conflict> ret = new HashSet<DistanceConflict.Conflict>();
+                if (!e1.isCourseRequest() || !e2.isCourseRequest() || !e1.getStudent().equals(e2.getStudent()))
+                    return ret;
+                for (Section s1 : e1.getSections()) {
+                    for (Section s2 : e2.getSections()) {
+                        if (inConflict(model, e1.getStudent(), s1, s2))
+                            ret.add(new DistanceConflict.Conflict(e1.getStudent(), e1, s1, e2, s2));
+                    }
+                }
+                return ret;
+            }
+        	
+        	public Set<DistanceConflict.Conflict> computeAllConflicts(StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+                Set<DistanceConflict.Conflict> ret = new HashSet<DistanceConflict.Conflict>();
+                for (Request r1 : model.variables()) {
+                    Enrollment e1 = assignment.getValue(r1);
+                    if (e1 == null || !(r1 instanceof CourseRequest))
+                        continue;
+                    ret.addAll(conflicts(model, e1));
+                    for (Request r2 : r1.getStudent().getRequests()) {
+                        Enrollment e2 = assignment.getValue(r2);
+                        if (e2 == null || r1.getId() >= r2.getId() || !(r2 instanceof CourseRequest))
+                            continue;
+                        ret.addAll(conflicts(model, e1, e2));
+                    }
+                }
+                return ret;
+            }
+        	
+        	@Override
+            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+        		if (model.getDistanceMetric() == null)
+        			return new String[] {"N/A", "", ""};
+        		Set<DistanceConflict.Conflict> conflicts = computeAllConflicts(model, assignment);
+        		Set<Student> students = new HashSet<Student>(), studentsSD = new HashSet<Student>();
+            	double distance = 0, distanceSD = 0;
+            	int total = 0, totalSD = 0;
+            	for (DistanceConflict.Conflict conflict: conflicts) {
+            		if (group.matches(conflict.getStudent())) {
+            			if (conflict.getStudent().isNeedShortDistances()) {
+            				totalSD ++;
+            				studentsSD.add(conflict.getStudent());
+            				distanceSD += Placement.getDistanceInMinutes(model.getDistanceMetric(), conflict.getS1().getPlacement(), conflict.getS2().getPlacement());
+            			} else {
+                			total ++;
+                			students.add(conflict.getStudent());
+                			distance += Placement.getDistanceInMinutes(model.getDistanceMetric(), conflict.getS1().getPlacement(), conflict.getS2().getPlacement());
+            			}
+            		}
+            	}
+        		return new String[] {
+        				sIntFormat.format(total),
+        				sIntFormat.format(students.size()),
+        				(total == 0 ? "" : sDoubleFormat.format(distance / total)),
+        				sIntFormat.format(totalSD),
+        				sIntFormat.format(studentsSD.size()),
+        				(totalSD == 0 ? "" : sDoubleFormat.format(distanceSD / totalSD))
+        		};
+        	}
+        }, true),
+        OVERLAP(new String[] {"Free time conflict", "- students in conflict", "- average minutes", "Course time conflict", "- students in conflict", "- average minutes", "Teaching conflicts", "- students in conflict", "- average minutes"},
+        		new String[] {
+        				"Total number of free time conflicts",
+        				"Total number of students with a free time conflict",
+        				"For students with a free time conflict, the average number of overlapping minutes per student",
+        				"Total number of course time conflicts",
+        				"Total number of students with a course time conflict",
+        				"For students with a course time conflict, the average number of overlapping minutes per student",
+        				"Total number of teaching time conflicts",
+        				"Total number of students with a teaching conflict",
+        				"For students with a teaching time conflict, the average number of overlapping minutes per student"
+        		},
+        		new Statistic() {
+        	
+        	public boolean inConflict(SctAssignment a1, SctAssignment a2) {
+                if (a1.getTime() == null || a2.getTime() == null) return false;
+                if (a1 instanceof Section && a2 instanceof Section && ((Section)a1).isToIgnoreStudentConflictsWith(a2.getId())) return false;
+                return a1.getTime().hasIntersection(a2.getTime());
+            }
+        	
+        	public int share(SctAssignment a1, SctAssignment a2) {
+                if (!inConflict(a1, a2)) return 0;
+                return a1.getTime().nrSharedDays(a2.getTime()) * a1.getTime().nrSharedHours(a2.getTime());
+            }
+        	
+        	public Set<Conflict> conflicts(Enrollment e1, Enrollment e2) {
+                Set<Conflict> ret = new HashSet<Conflict>();
+                if (!e1.getStudent().equals(e2.getStudent())) return ret;
+                if (e1.getRequest() instanceof FreeTimeRequest && e2.getRequest() instanceof FreeTimeRequest) return ret;
+                for (SctAssignment s1 : e1.getAssignments()) {
+                    for (SctAssignment s2 : e2.getAssignments()) {
+                        if (inConflict(s1, s2))
+                            ret.add(new Conflict(e1.getStudent(), share(s1, s2), e1, s1, e2, s2));
+                    }
+                }
+                return ret;
+            }
+
+        	public Set<Conflict> computeAllConflicts(StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+                Set<Conflict> ret = new HashSet<Conflict>();
+                for (Request r1 : model.variables()) {
+                    Enrollment e1 = assignment.getValue(r1);
+                    if (e1 == null || r1 instanceof FreeTimeRequest) continue;
+                    for (Request r2 : r1.getStudent().getRequests()) {
+                        Enrollment e2 = assignment.getValue(r2);
+                        if (r2 instanceof FreeTimeRequest) {
+                            FreeTimeRequest ft = (FreeTimeRequest)r2;
+                            ret.addAll(conflicts(e1, ft.createEnrollment()));
+                        } else if (e2 != null && r1.getId() < r2.getId()) {
+                            ret.addAll(conflicts(e1, e2));
+                        }                    
+                    }
+                    for (Unavailability unavailability: e1.getStudent().getUnavailabilities())
+                        for (SctAssignment section: e1.getAssignments())
+                            if (inConflict(section, unavailability))
+                                ret.add(new Conflict(e1.getStudent(), share(section, unavailability), e1, section, unavailability.createEnrollment(), unavailability));
+                }
+                return ret;
+            }
+        	
+            @Override
+            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+            	Set<Student> timeFt = new HashSet<Student>();
+            	Set<Student> timeCourse = new HashSet<Student>();
+            	Set<Student> timeUnav = new HashSet<Student>();
+            	int ftMin = 0, courseMin = 0, unavMin = 0;
+            	int totFt = 0, totCourse = 0, totUn = 0;
+                Set<TimeOverlapsCounter.Conflict> conf = computeAllConflicts(model, assignment);
+                for (TimeOverlapsCounter.Conflict c: conf) {
+                    if (group.matches(c.getStudent())) {
+                        if (c.getR1() instanceof CourseRequest && c.getR2() instanceof CourseRequest) {
+                        	totCourse ++;
+                            courseMin += 5 * c.getShare();
+                            timeCourse.add(c.getStudent());
+                        } else if (c.getS2() instanceof Unavailability) {
+                        	totUn ++;
+                        	unavMin += 5 * c.getShare();
+                        	timeUnav.add(c.getStudent());
+                        } else {
+                        	totFt ++;
+                            ftMin += 5 * c.getShare();
+                            timeFt.add(c.getStudent());
+                        }
+                    }
+                }
+                return new String[] {
+                		sIntFormat.format(totFt),
+                        sIntFormat.format(timeFt.size()),
+                        (timeFt.isEmpty() ? "" : sDoubleFormat.format(((double)ftMin) / timeFt.size())),
+                        sIntFormat.format(totCourse),
+                        sIntFormat.format(timeCourse.size()),
+                        (timeCourse.isEmpty() ? "" : sDoubleFormat.format(((double)courseMin) / timeCourse.size())),
+                        sIntFormat.format(totUn),
+                        sIntFormat.format(timeUnav.size()),
+                        (timeUnav.isEmpty() ? "" : sDoubleFormat.format(((double)unavMin) / timeUnav.size()))
+                };
             }
         }, true),
         CREDITS(new String[] { "Students requesting 12+ credits", "- 12+ credits assigned", "Students requesting 15+ credits", "- 15+ credits assigned" },
@@ -676,16 +897,37 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                 };
             }
         }, true),
-        F2F(new String[] {"Students with no face-to-face classes", "Students with <50% classes face-to-face"},
+        F2F(new String[] {
+        			"Arranged Hours Assignments", "- percentage of all assignments",
+        			"Online Assignments", "- percentage of all assignments",
+        			"Students with no face-to-face classes", "- percentage of all undergrad students",
+        			"Students with <50% classes face-to-face", "- percentage of all undergrad students"},
         		new String[] {
-        			"Total number of undergraduate students with no face-to-face classes.",
-        			"Total number of undergraduate students with less than half of their schedule face-to-face."
+        			"Number of class assignments that are Arranged Hours", "Percentage of all class assignments",
+        			"Number of class assignments that are Online (no time, time with no room, or time with ONLINE room)", "Percentage of all class assignments",
+        			"Total number of undergraduate students with no face-to-face classes.", "Percentage of all undergraduate students",
+        			"Total number of undergraduate students with less than half of their schedule face-to-face.", "Percentage of all undergraduate students",
         		},
         		new Statistic() {
             @Override
             public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
-                int online = 0;
+            	int arrClass = 0, onlineClass = 0, allClass = 0;
+            	for (Student student: model.getStudents()) {
+            		if (!group.matches(student)) continue;
+            		for (Request r: student.getRequests()) {
+            			Enrollment e = r.getAssignment(assignment);
+            			if (e != null && e.isCourseRequest()) {
+            				for (Section section: e.getSections()) {
+            					if (section.isOnline()) onlineClass ++;
+            					if (section.getTime() == null) arrClass ++;
+            					allClass ++;
+            				}
+            			}
+            		}
+            	}
+            	int online = 0;
                 int half = 0;
+                int total = 0;
                 for (Student student: model.getStudents()) {
                     if (!group.matches(student)) continue;
                     boolean gr = false;
@@ -704,43 +946,167 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                             }
                     }
                     if (sections > 0) {
-                        if (onlineSections == sections) {
-                        	online ++;
-                        	/*
-                        	if (group == StudentGroup.REBATCH) {
-                        		System.out.println(student.getExternalId() + ": " + student.getName() + " [" + sections + "]");
-                        		for (AreaClassificationMajor acm: student.getAreaClassificationMajors()) {
-                        			System.out.println("-- " + acm.getArea() + "/" + acm.getMajor() + " " + acm.getClassification());
-                                }
-                        		for (AcademicAreaCode aac: student.getMinors()) {
-                        			System.out.println("-- " + aac.getCode());
-                        		}
-                        	}
-                        	*/
-                        } else {
-                        	/*
-                        	if (group == StudentGroup.SCONTONL || group == StudentGroup.SCOVIDONL) {
-                        		System.out.println(student.getExternalId() + ": " + student.getName() + " [" + sections + "]");
-                        		for (AreaClassificationMajor acm: student.getAreaClassificationMajors()) {
-                        			System.out.println("-- " + acm.getArea() + "/" + acm.getMajor() + " " + acm.getClassification());
-                                }
-                        		for (AcademicAreaCode aac: student.getMinors()) {
-                        			System.out.println("-- " + aac.getCode());
-                        		}
-                        	}*/
-                        }
+                        total ++;
+                        if (onlineSections == sections) online ++;
                         if (onlineSections > 0.5 * sections) half++;
                     }
                 }
-                if (half == 0) return new String[] { "", ""};
                 return new String[] {
-                        sIntFormat.format(online),
-                        sIntFormat.format(half)
+                		sIntFormat.format(arrClass), sPercentFormat.format(100.0 * arrClass / allClass) + "%",
+                		(onlineClass == 0 ? "" : sIntFormat.format(onlineClass)), 
+                		(onlineClass == 0 ? "" : sPercentFormat.format(100.0 * onlineClass / allClass) + "%"),
+                        (online == 0 ? "" : sIntFormat.format(online)),
+                        (online == 0 ? "" : sPercentFormat.format(100.0 * online / total) + "%"),
+                        (half == 0 ? "" : sIntFormat.format(half)),
+                        (half == 0 ? "" : sPercentFormat.format(100.0 * half / total) + "%")
                 };
             }
+        }, true),
+        FULL_OFFERINGS(
+        		new String[] {
+        				"Full Offerings", "- percentage of all requested offerings", "- percentage of all assignments",
+        				"Offerings with ≤ 2% available", "- percentage of all requested offerings", "- percentage of all assignments",
+        				"Offerings with ≤ 5% available", "- percentage of all requested offerings", "- percentage of all assignments",
+        				"Offerings with ≤ 10% available", "- percentage of all requested offerings", "- percentage of all assignments",
+        				"Full Sections", "- percentage of all sections", "- percentage of all assignments",
+        				"Disabled Sections", "- percentage of all sections", "- percentage of all assignments",
+        				"Sections with ≤ 2% available", "- percentage of all sections", "- percentage of all assignments",
+        				"Sections with ≤ 5% available", "- percentage of all sections", "- percentage of all assignments",
+        				"Sections with ≤ 10% available", "- percentage of all sections", "- percentage of all assignments",
+        				},
+        		new String[] {
+        				"Number of instructional offerings that are completely full (only counting courses that are requested by the students)",
+        					"Percentage full offerings vs all requested offerings",
+        					"Percentage of all course assignments that are for courses that are full",
+        				"Number of instructional offerings that have 2% or less space available", "", "",
+        				"Number of instructional offerings that have 5% or less space available", "", "",
+        				"Number of instructional offerings that have 10% or less space available", "", "",
+        				"Number of sections that have no space available (only counting sections from courses that are requested by the students)",
+        					"Percentage full sections vs all sections of the requested courses",
+        					"Percentage of all class assignments that are in sections that are full",
+        				"Number of sections that are disabled",
+        					"Percentage disabled sections vs all sections of the requested courses",
+    						"Percentage of all class assignments that are in sections that are disabled",
+        				"Number of sections that have 2% or less space available", "", "",
+        				"Number of sections that have 5% or less space available", "", "",
+        				"Number of sections that have 10% or less space available", "", "",
+        				},
+        new Statistic() {
+        	
+        	protected int getEnrollments(StudentGroup group, Section section, Assignment<Request, Enrollment> assignment) {
+        		int enrl = 0;
+        		for (Enrollment e: section.getEnrollments(assignment)) {
+                    if (group.matches(e.getStudent())) enrl ++;
+                }
+        		return enrl;
+        	}
+        	
+        	protected int getEnrollments(StudentGroup group, Config config, Assignment<Request, Enrollment> assignment) {
+        		int enrl = 0;
+        		for (Enrollment e: config.getEnrollments(assignment)) {
+                    if (group.matches(e.getStudent())) enrl ++;
+                }
+        		return enrl;
+        	}
+        	
+			@Override
+			public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+				
+		        int nbrSections = 0, nbrFullSections = 0, nbrSections98 = 0, nbrSections95 = 0, nbrSections90 = 0, nbrSectionsDis = 0;
+		        int enrlSections = 0, enrlFullSections = 0, enrlSections98 = 0, enrlSections95 = 0, enrlSections90 = 0, enrlSectionsDis = 0;
+		        int nbrOfferings = 0, nbrFullOfferings = 0, nbrOfferings98 = 0, nbrOfferings95 = 0, nbrOfferings90 = 0;
+		        int enrlOfferings = 0, enrlOfferingsFull = 0, enrlOfferings98 = 0, enrlOfferings95 = 0, enrlOfferings90 = 0;
+		        for (Offering offering: model.getOfferings()) {
+		        	if (group != StudentGroup.ALL || true) {
+		        		int crs = 0;
+		        		for (Course course: offering.getCourses()) {
+		        			for (CourseRequest cr: course.getRequests()) {
+		        				if (group.matches(cr.getStudent())) crs++;
+		        			}
+		        		}
+		        		if (crs == 0) continue;
+		        	}
+		            int offeringLimit = 0, offeringEnrollment = 0, offeringMatchingEnrollment = 0;
+		            for (Config config: offering.getConfigs()) {
+		                int configLimit = config.getLimit();
+		                for (Subpart subpart: config.getSubparts()) {
+		                    int subpartLimit = 0;
+		                    for (Section section: subpart.getSections()) {
+		                        if (section.isCancelled()) continue;
+		                        int enrl = section.getEnrollments(assignment).size();
+		                        int matchingEnrl = (group == StudentGroup.ALL ? section.getEnrollments(assignment).size() : getEnrollments(group, section, assignment));
+		                        if (section.getLimit() < 0 || subpartLimit < 0)
+		                            subpartLimit = -1;
+		                        else
+		                            subpartLimit += (section.isEnabled() ? section.getLimit() : enrl);
+		                        nbrSections ++;
+		                        enrlSections += matchingEnrl;
+		                        if (section.getLimit() >= 0 && section.getLimit() <= enrl) {
+		                            nbrFullSections ++;
+		                            enrlFullSections += matchingEnrl;
+		                        }
+		                        if (!section.isEnabled()) { //&& (enrl > 0 || section.getLimit() >= 0)) {
+		                            nbrSectionsDis ++;
+		                            enrlSectionsDis += matchingEnrl;
+		                        }
+		                        if (section.getLimit() >= 0 && (section.getLimit() - enrl) <= Math.round(0.02 * section.getLimit())) {
+		                            nbrSections98 ++;
+		                            enrlSections98 += matchingEnrl;
+		                        }
+		                        if (section.getLimit() >= 0 && (section.getLimit() - enrl) <= Math.round(0.05 * section.getLimit())) {
+		                            nbrSections95 ++;
+		                            enrlSections95 += matchingEnrl;
+		                        }
+		                        if (section.getLimit() >= 0 && (section.getLimit() - enrl) <= Math.round(0.10 * section.getLimit())) {
+		                            nbrSections90 ++;
+		                            enrlSections90 += matchingEnrl;
+		                        }
+		                    }
+		                    if (configLimit < 0 || subpartLimit < 0)
+		                        configLimit = -1;
+		                    else
+		                        configLimit = Math.min(configLimit, subpartLimit);
+		                }
+		                if (offeringLimit < 0 || configLimit < 0)
+		                    offeringLimit = -1;
+		                else
+		                    offeringLimit += configLimit;
+		                offeringEnrollment += config.getEnrollments(assignment).size();
+		                offeringMatchingEnrollment += (group == StudentGroup.ALL ? config.getEnrollments(assignment).size() : getEnrollments(group, config, assignment));
+		            }
+		            nbrOfferings ++;
+		            enrlOfferings += offeringMatchingEnrollment;
+		            
+		            if (offeringLimit >=0 && offeringEnrollment >= offeringLimit) {
+		                nbrFullOfferings ++;
+		                enrlOfferingsFull += offeringMatchingEnrollment;
+		            }
+		            if (offeringLimit >= 0 && (offeringLimit - offeringEnrollment) <= Math.round(0.02 * offeringLimit)) {
+		                nbrOfferings98++;
+		                enrlOfferings98 += offeringMatchingEnrollment;
+		            }
+		            if (offeringLimit >= 0 && (offeringLimit - offeringEnrollment) <= Math.round(0.05 * offeringLimit)) {
+		                nbrOfferings95++;
+		                enrlOfferings95 += offeringMatchingEnrollment;
+		            }
+		            if (offeringLimit >= 0 && (offeringLimit - offeringEnrollment) <= Math.round(0.10 * offeringLimit)) {
+		                nbrOfferings90++;
+		                enrlOfferings90 += offeringMatchingEnrollment;
+		            }
+		        }
+		        return new String[] {
+		        		sIntFormat.format(nbrFullOfferings), sPercentFormat.format(100.0 * nbrFullOfferings / nbrOfferings) + "%", sPercentFormat.format(100.0 * enrlOfferingsFull / enrlOfferings) + "%",
+		        		sIntFormat.format(nbrOfferings98), sPercentFormat.format(100.0 * nbrOfferings98 / nbrOfferings) + "%", sPercentFormat.format(100.0 * enrlOfferings98 / enrlOfferings) + "%",
+		        		sIntFormat.format(nbrOfferings95), sPercentFormat.format(100.0 * nbrOfferings95 / nbrOfferings) + "%", sPercentFormat.format(100.0 * enrlOfferings95 / enrlOfferings) + "%",
+		        		sIntFormat.format(nbrOfferings90), sPercentFormat.format(100.0 * nbrOfferings90 / nbrOfferings) + "%", sPercentFormat.format(100.0 * enrlOfferings90 / enrlOfferings) + "%",
+		        		sIntFormat.format(nbrFullSections), sPercentFormat.format(100.0 * nbrFullSections / nbrSections) + "%", sPercentFormat.format(100.0 * enrlFullSections / enrlSections) + "%",
+		        		sIntFormat.format(nbrSectionsDis), sPercentFormat.format(100.0 * nbrSectionsDis / nbrSections) + "%", sPercentFormat.format(100.0 * enrlSectionsDis / enrlSections) + "%",
+		        		sIntFormat.format(nbrSections98), sPercentFormat.format(100.0 * nbrSections98 / nbrSections) + "%", sPercentFormat.format(100.0 * enrlSections98 / enrlSections) + "%",
+		        		sIntFormat.format(nbrSections95), sPercentFormat.format(100.0 * nbrSections95 / nbrSections) + "%", sPercentFormat.format(100.0 * enrlSections95 / enrlSections) + "%",
+		        		sIntFormat.format(nbrSections90), sPercentFormat.format(100.0 * nbrSections90 / nbrSections) + "%", sPercentFormat.format(100.0 * enrlSections90 / enrlSections) + "%",
+		        };
+			}
         }),
-    
-        
         ;
         String[] iNames;
         String[] iNotes;
