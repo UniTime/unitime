@@ -2784,4 +2784,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Property value copied to clipboard.")
 	String changeLogPropertyValueCopiedToClipbard();
+	
+	@DefaultMessage("Your UniTime session may have expired. Click here to log in again.")
+	String sessionExpiredClickToLogin();
 }

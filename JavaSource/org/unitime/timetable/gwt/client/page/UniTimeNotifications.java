@@ -38,6 +38,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.ScrollEvent;
@@ -58,17 +59,25 @@ public class UniTimeNotifications {
 		else
 			return NOTIFICATIONS;
 	}
-
+	
 	public static void info(String text) {
+		info(text, null);
+	}
+
+	public static void info(String text, Command callback) {
 		AriaStatus.getInstance().setText(text);
 		sLogger.log(Level.FINEST, text);
-		getDisplay().addNotification(text, NotificationType.INFO);
+		getDisplay().addNotification(text, NotificationType.INFO, callback);
 	}
 	
 	public static void warn(String text) {
+		warn(text, null);
+	}
+	
+	public static void warn(String text, Command callback) {
 		AriaStatus.getInstance().setText(text);
 		sLogger.log(Level.FINER, text);
-		getDisplay().addNotification(text, NotificationType.WARN);
+		getDisplay().addNotification(text, NotificationType.WARN, callback);
 	}
 	
 	public static void error(Throwable t) {
@@ -76,8 +85,12 @@ public class UniTimeNotifications {
 		Throwable u = ToolBox.unwrap(t);
 		error(u.getMessage(), u);
 	}
-
+	
 	public static void error(String text, Throwable t) {
+		error(text, t, null);
+	}
+
+	public static void error(String text, Throwable t, Command callback) {
 		AriaStatus.getInstance().setText(text);
 		if (t == null) {
 			sLogger.log(Level.FINE, text);
@@ -93,11 +106,15 @@ public class UniTimeNotifications {
 				sLogger.log(Level.SEVERE, text, t);
 			}
 		}
-		getDisplay().addNotification(text, NotificationType.ERROR);
+		getDisplay().addNotification(text, NotificationType.ERROR, callback);
 	}
 	
 	public static void error(String text) {
-		error(text, null);
+		error(text, null, null);
+	}
+	
+	public static void error(String text, Command callback) {
+		error(text, null, callback);
 	}
 
 	public static native void createTriggers()/*-{
@@ -119,7 +136,7 @@ public class UniTimeNotifications {
 	}
 	
 	public static interface Display {
-		public void addNotification(String html, NotificationType type);		
+		public void addNotification(String html, NotificationType type, Command callback);		
 	}
 	
 	public static interface MobileDisplay extends Display {}
@@ -157,7 +174,7 @@ public class UniTimeNotifications {
 			iAnimation = new NotificationAnimation();		
 		}
 		
-		protected void addNotification(final Notification notification) {
+		protected void addNotification(final Notification notification, final Command callback) {
 			RootPanel.get().add(notification, Window.getScrollLeft() + Window.getClientWidth() - 445, Window.getScrollTop() + Window.getClientHeight());
 			iAnimation.cancel();
 			for (Iterator<Notification> i = iNotifications.iterator(); i.hasNext(); ) {
@@ -182,6 +199,7 @@ public class UniTimeNotifications {
 					notification.hide();
 					iNotifications.remove(notification);
 					move();
+					if (callback != null) callback.execute();
 				}
 			});
 			timer.schedule(10000);
@@ -204,16 +222,16 @@ public class UniTimeNotifications {
 		
 
 		@Override
-		public void addNotification(String html, NotificationType type) {
+		public void addNotification(String html, NotificationType type, Command callback) {
 			switch (type) {
 			case ERROR:
-				addNotification(new Notification(html, "unitime-NotificationError"));
+				addNotification(new Notification(html, "unitime-NotificationError"), callback);
 				break;
 			case WARN:
-				addNotification(new Notification(html, "unitime-NotificationWarning"));
+				addNotification(new Notification(html, "unitime-NotificationWarning"), callback);
 				break;
 			case INFO:
-				addNotification(new Notification(html, "unitime-NotificationInfo"));
+				addNotification(new Notification(html, "unitime-NotificationInfo"), callback);
 				break;
 			}
 		}

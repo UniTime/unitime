@@ -24,7 +24,11 @@ import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Cursor;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.ui.Image;
 
 /**
@@ -54,6 +58,7 @@ public class ScheduleStatus extends P {
 	private Level iLevel;
 	private Image iImage;
 	private P iMessage;
+	private Command iOnClickCommand;
 	
 	public ScheduleStatus() {
 		super("unitime-ScheduleStatus");
@@ -61,9 +66,16 @@ public class ScheduleStatus extends P {
 		iImage = new Image(); iImage.setStyleName("image");
 		iMessage = new P("message");
 		add(iImage); add(iMessage);
+		addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				if (iOnClickCommand != null) iOnClickCommand.execute();
+			}
+		});
 	}
 	
-	public void setMessage(Level level, String message) {
+	public void setMessage(Level level, String message, Command command) {
+		iOnClickCommand = command;
 		if (iLevel != null) removeStyleName(iLevel.getStyleName());
 		if (message == null || message.isEmpty()) {
 			iLevel = null;
@@ -77,6 +89,14 @@ public class ScheduleStatus extends P {
 			iImage.setAltText(message);
 			setVisible(true);
 		}
+		if (iOnClickCommand != null)
+			getElement().getStyle().setCursor(Cursor.POINTER);
+		else
+			getElement().getStyle().clearCursor();
+	}
+	
+	public void setMessage(Level level, String message) {
+		setMessage(level, message, null);
 	}
 	
 	public Level getLevel() { return iLevel; }
@@ -117,6 +137,11 @@ public class ScheduleStatus extends P {
 		UniTimeNotifications.error(message, t);
 	}
 	
+	public void error(String message, Throwable t, Command callback) {
+		setMessage(Level.ERROR,  message, callback);
+		UniTimeNotifications.error(message, t, callback);
+	}
+	
 	public void error(Throwable t) {
 		error(t.getMessage(), t);
 	}
@@ -133,5 +158,9 @@ public class ScheduleStatus extends P {
 	
 	public void clear() {
 		setMessage(null, null);
+	}
+	
+	public void setOnClickCommand(Command command) {
+		iOnClickCommand = command;
 	}
 }

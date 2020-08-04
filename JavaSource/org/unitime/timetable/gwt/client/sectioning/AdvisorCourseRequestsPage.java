@@ -43,6 +43,7 @@ import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
@@ -74,6 +75,7 @@ import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.resources.client.ImageResource;
@@ -634,7 +636,13 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 			@Override
 			public void onFailure(Throwable caught) {
 				LoadingWidget.getInstance().hide();
-				iStatusBox.error(MESSAGES.advisorRequestsLoadFailed(caught.getMessage()), caught);
+				iStatusBox.error(MESSAGES.advisorRequestsLoadFailed(caught.getMessage()) + "\n" + MESSAGES.sessionExpiredClickToLogin(), caught, new Command() {
+					@Override
+					public void execute() {
+						Window.open("login.do?menu=hide&m=" + URL.encodeQueryString(MESSAGES.sessionExpiredClickToLogin())
+						+"&target=" + URL.encodeQueryString(Window.Location.getHref()), "_self", "");
+					}
+				});
 			}
 		});
 	}
@@ -888,7 +896,18 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 			@Override
 			public void onFailure(Throwable caught) {
 				LoadingWidget.getInstance().hide();
-				iStatusBox.error(MESSAGES.advisorRequestsSubmitFailed(caught.getMessage()), caught);
+				if (caught instanceof PageAccessException) {
+					iStatusBox.error(MESSAGES.advisorRequestsSubmitFailed(caught.getMessage()) + "\n" + MESSAGES.sessionExpiredClickToLogin(), caught, new Command() {
+						@Override
+						public void execute() {
+							Window.open("login.do?menu=hide&target=close.jsp", "", 
+							"toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, " +
+							"width=720px, height=400px, top=" + ((Window.getClientHeight() - 400) / 2) + "px, left=" + ((Window.getClientWidth() - 720) / 2) + "px");
+						}
+					});
+				} else {
+					iStatusBox.error(MESSAGES.advisorRequestsSubmitFailed(caught.getMessage()), caught);
+				}
 			}
 		});
 	}

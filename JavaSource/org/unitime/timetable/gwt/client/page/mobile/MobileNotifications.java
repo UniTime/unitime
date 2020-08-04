@@ -31,6 +31,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasStyleName;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.IsWidget;
@@ -51,16 +52,16 @@ public class MobileNotifications implements UniTimeNotifications.Display {
 	}
 	
 	@Override
-	public void addNotification(String html, NotificationType type) {
+	public void addNotification(String html, NotificationType type, Command callback) {
 		switch (type) {
 		case ERROR:
-			addNotification(new Notification(html, "error"));
+			addNotification(new Notification(html, "error", callback));
 			break;
 		case WARN:
-			addNotification(new Notification(html, "warn"));
+			addNotification(new Notification(html, "warn", callback));
 			break;
 		case INFO:
-			addNotification(new Notification(html, "info"));
+			addNotification(new Notification(html, "info", callback));
 			break;
 		}
 	}
@@ -98,8 +99,9 @@ public class MobileNotifications implements UniTimeNotifications.Display {
 
 	public class Notification implements IsWidget, HasText, HasStyleName {
 		String iText, iStyle;
-		Notification(String text, String style) {
-			iText = text; iStyle = style;
+		Command iCallback;
+		Notification(String text, String style, Command callback) {
+			iText = text; iStyle = style; iCallback = callback;
 		}
 		
 		@Override
@@ -120,6 +122,7 @@ public class MobileNotifications implements UniTimeNotifications.Display {
 				public void onClick(ClickEvent event) {
 					iNotifications.remove(Notification.this);
 					populate(null);
+					if (iCallback != null) iCallback.execute();
 				}
 			});
 			return p;
