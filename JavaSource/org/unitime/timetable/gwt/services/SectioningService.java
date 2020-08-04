@@ -99,6 +99,7 @@ public interface SectioningService extends RemoteService {
 	List<ClassAssignmentInterface.SectioningAction> changeLog(String query) throws SectioningException, PageAccessException;
 	Boolean massCancel(List<Long> studentIds, String status, String subject, String message, String cc) throws SectioningException, PageAccessException;
 	Boolean requestStudentUpdate(List<Long> studentIds) throws SectioningException, PageAccessException;
+	Boolean reloadStudent(List<Long> studentIds) throws SectioningException, PageAccessException;
 	List<DegreePlanInterface> listDegreePlans(boolean online, Long sessionId, Long studentId) throws SectioningException, PageAccessException;
 	ClassAssignmentInterface.Student lookupStudent(boolean online, String studentId) throws SectioningException, PageAccessException;
 	ClassAssignmentInterface.Student lookupStudent(boolean online, Long studentId) throws SectioningException, PageAccessException;

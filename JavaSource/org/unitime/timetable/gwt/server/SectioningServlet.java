@@ -1583,7 +1583,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								"from StudentClassEnrollment e where e.student.uniqueId = :studentId order by e.courseOffering.subjectAreaAbbv, e.courseOffering.courseNbr"
 								).setLong("studentId", studentId).list());
 						CustomClassAttendanceProvider provider = Customization.CustomClassAttendanceProvider.getProvider();
-						StudentClassAttendance attendance = provider.getCustomClassAttendanceForStudent(student, null, getSessionContext());
+						StudentClassAttendance attendance = (provider == null ? null : provider.getCustomClassAttendanceForStudent(student, null, getSessionContext()));
 						for (StudentClassEnrollment enrollment: enrollments) {
 							CourseAssignment course = courses.get(enrollment.getCourseOffering().getUniqueId());
 							if (course == null) {
@@ -2961,6 +2961,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			properties.setEmail(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingEmailStudent));
 			properties.setChangeStatus(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingChangeStudentStatus));
 			properties.setRequestUpdate(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingRequestStudentUpdate));
+			properties.setReloadStudent(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingReloadStudent));
 			properties.setCheckStudentOverrides(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingCheckStudentOverrides));
 			properties.setValidateStudentOverrides(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingValidateStudentOverrides));
 			properties.setRecheckCriticalCourses(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingRecheckCriticalCourses));
@@ -2988,6 +2989,16 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		getSessionContext().checkPermission(server.getAcademicSession(), Right.StudentSchedulingRequestStudentUpdate);
 		
 		return server.execute(server.createAction(RequestStudentUpdates.class).forStudents(studentIds), currentUser());
+	}
+	
+	@Override
+	public Boolean reloadStudent(List<Long> studentIds) throws SectioningException, PageAccessException {
+		OnlineSectioningServer server = getServerInstance(getStatusPageSessionId(), false);
+		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+		
+		getSessionContext().checkPermission(server.getAcademicSession(), Right.StudentSchedulingReloadStudent);
+		
+		return server.execute(server.createAction(ReloadStudent.class).forStudents(studentIds), currentUser());
 	}
 	
 	@Override

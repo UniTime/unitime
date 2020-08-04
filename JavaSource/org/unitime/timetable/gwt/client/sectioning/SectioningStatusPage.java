@@ -1424,11 +1424,43 @@ public class SectioningStatusPage extends Composite {
 			hSelect.addOperation(new Operation() {
 				@Override
 				public String getName() {
-					return MESSAGES.requestStudentUpdate();
+					return MESSAGES.reloadStudent();
 				}
 				@Override
 				public boolean hasSeparator() {
 					return true;
+				}
+				@Override
+				public boolean isApplicable() {
+					return iSelectedStudentIds.size() > 0 && iProperties != null && iProperties.isReloadStudent();
+				}
+				@Override
+				public void execute() {
+					List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
+					LoadingWidget.getInstance().show(MESSAGES.reloadingStudent());
+					iSectioningService.reloadStudent(studentIds, new AsyncCallback<Boolean>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+							UniTimeNotifications.error(caught);
+						}
+
+						@Override
+						public void onSuccess(Boolean result) {
+							LoadingWidget.getInstance().hide();
+							UniTimeNotifications.info(MESSAGES.reloadStudentSuccess());
+						}
+					});
+				}
+			});
+			hSelect.addOperation(new Operation() {
+				@Override
+				public String getName() {
+					return MESSAGES.requestStudentUpdate();
+				}
+				@Override
+				public boolean hasSeparator() {
+					return !iProperties.isReloadStudent();
 				}
 				@Override
 				public boolean isApplicable() {
@@ -1460,7 +1492,7 @@ public class SectioningStatusPage extends Composite {
 				}
 				@Override
 				public boolean hasSeparator() {
-					return !iProperties.isRequestUpdate();
+					return !iProperties.isRequestUpdate() && !iProperties.isReloadStudent();
 				}
 				@Override
 				public boolean isApplicable() {
@@ -1493,7 +1525,7 @@ public class SectioningStatusPage extends Composite {
 				}
 				@Override
 				public boolean hasSeparator() {
-					return !iProperties.isRequestUpdate() && !iProperties.isCheckStudentOverrides();
+					return !iProperties.isRequestUpdate() && !iProperties.isCheckStudentOverrides() && !iProperties.isReloadStudent();
 				}
 				@Override
 				public boolean isApplicable() {
@@ -1526,7 +1558,7 @@ public class SectioningStatusPage extends Composite {
 				}
 				@Override
 				public boolean hasSeparator() {
-					return !iProperties.isRequestUpdate() && !iProperties.isCheckStudentOverrides() && !iProperties.isValidateStudentOverrides();
+					return !iProperties.isRequestUpdate() && !iProperties.isCheckStudentOverrides() && !iProperties.isValidateStudentOverrides() && !iProperties.isReloadStudent();
 				}
 				@Override
 				public boolean isApplicable() {

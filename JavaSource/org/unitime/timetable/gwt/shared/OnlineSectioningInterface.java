@@ -161,6 +161,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private boolean iAdmin = false, iAdvisor = false;
 		private boolean iEmail = false, iMassCancel = false, iChangeStatus = false;
 		private boolean iRequestUpdate = false;
+		private boolean iReloadStudent = false;
 		private boolean iChangeLog = false;
 		private boolean iCheckStudentOverrides = false;
 		private boolean iValidateStudentOverrides = false;
@@ -195,6 +196,9 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public void setRequestUpdate(boolean requestUpdate) { iRequestUpdate = requestUpdate; }
 		public boolean isRequestUpdate() { return iRequestUpdate; }
 		
+		public void setReloadStudent(boolean reloadStudent) { iReloadStudent = reloadStudent; }
+		public boolean isReloadStudent() { return iReloadStudent; }
+		
 		public void setCheckStudentOverrides(boolean checkOverrides) { iCheckStudentOverrides = checkOverrides; }
 		public boolean isCheckStudentOverrides() { return iCheckStudentOverrides; }
 		
@@ -211,7 +215,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public boolean isChangeLog() { return iChangeLog; }
 		
 		public boolean isCanSelectStudent() {
-			return iEmail || iMassCancel || iChangeStatus || iRequestUpdate || iCheckStudentOverrides || iValidateStudentOverrides;
+			return iEmail || iMassCancel || iChangeStatus || iRequestUpdate || iCheckStudentOverrides || iValidateStudentOverrides || iReloadStudent;
 		}
 		
 		public boolean hasEditableGroups() { return iEditableGroups != null && !iEditableGroups.isEmpty(); }

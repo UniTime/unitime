@@ -306,6 +306,28 @@ public class StudentSchedulingPermissions {
 		}
 	}
 	
+	@PermissionForRight(Right.StudentSchedulingReloadStudent)
+	public static class StudentSchedulingReloadStudent extends SimpleSessionPermission {
+		@Autowired PermissionSession permissionSession;
+		@Autowired SolverServerService solverServerService;
+		
+		protected boolean hasInstance(Long sessionId) {
+			if (sessionId == null) return false;
+			return solverServerService.getOnlineStudentSchedulingContainer().hasSolver(sessionId.toString());
+		}
+		
+		@Override
+		public boolean check(UserContext user, Session source) {
+			if (!permissionSession.check(user, source, DepartmentStatusType.Status.StudentsAssistant, DepartmentStatusType.Status.StudentsOnline))
+				return false;
+			
+			if (!hasInstance(user.getCurrentAcademicSessionId()))
+				return false;
+			
+			return true;
+		}
+	}
+	
 	@PermissionForRight(Right.StudentSchedulingCheckStudentOverrides)
 	public static class StudentSchedulingCheckStudentOverrides extends SimpleSessionPermission {
 		@Override

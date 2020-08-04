@@ -1607,6 +1607,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Requested Credit")
 	String rowRequestedCredit();
 	
+	@DefaultMessage("Reload Student")
+	String reloadStudent();
+	
 	@DefaultMessage("Request Update")
 	String requestStudentUpdate();
 	
@@ -1622,6 +1625,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Requesting student update...")
 	String requestingStudentUpdate();
 	
+	@DefaultMessage("Reloading student(s)...")
+	String reloadingStudent();
+	
 	@DefaultMessage("Checking override status...")
 	String checkingOverrideStatus();
 	
@@ -1636,6 +1642,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Student update successfully requested. Please wait a while for the synchronization to take place.")
 	String requestStudentUpdateSuccess();
+	
+	@DefaultMessage("Student(s) successfully reloaded. Click Search to see the changes.")
+	String reloadStudentSuccess();
 	
 	@DefaultMessage("Student overrides successfully rechecked.")
 	String checkStudentOverridesSuccess();
