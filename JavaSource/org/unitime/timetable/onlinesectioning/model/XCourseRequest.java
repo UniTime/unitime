@@ -528,8 +528,11 @@ public class XCourseRequest extends XRequest {
         	iOptions = new HashMap<XCourseId, byte[]>();
         	for (int i = 0; i < nrOptions; i++) {
         		Long courseId = in.readLong();
-        		byte[] data = new byte[in.readInt()];
-        		in.read(data);
+        		int len = in.readInt();
+        		byte[] data = new byte[len];
+        		int read = 0;
+        		while (read < len)
+        			read += in.read(data, read, len);
 				for (XCourseId course: iCourseIds)
     				if (course.getCourseId().equals(courseId)) {
     					iOptions.put(course, data);
@@ -612,7 +615,7 @@ public class XCourseRequest extends XRequest {
 				out.writeLong(entry.getKey().getCourseId());
 				byte[] value = entry.getValue();
 				out.writeInt(value.length);
-				out.write(value);
+				out.write(value, 0, value.length);
 			}
 		
 		out.writeInt(iPreferences == null ? 0 : iPreferences.size());
