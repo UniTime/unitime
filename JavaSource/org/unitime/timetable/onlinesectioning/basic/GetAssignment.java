@@ -257,7 +257,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 		
 		List<CourseSection> unavailabilities = fillUnavailabilitiesIn(ret, student, server, helper, stored);
 		CustomClassAttendanceProvider provider = Customization.CustomClassAttendanceProvider.getProvider();
-		StudentClassAttendance attendance = provider.getCustomClassAttendanceForStudent(StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession()), helper, null);
+		StudentClassAttendance attendance = (provider == null ? null : provider.getCustomClassAttendanceForStudent(StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession()), helper, null));
 		
 		float credit = 0f;
 		if (student.getMaxCredit() != null)

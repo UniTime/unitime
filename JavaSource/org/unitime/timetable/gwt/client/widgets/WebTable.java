@@ -676,8 +676,8 @@ public class WebTable extends Composite implements HasMobileScroll {
 		public IconCell(ImageResource resource, final String title, String text) {
 			super(null);
 			iIcon = new Image(resource);
-			iIcon.setTitle(title);
-			iIcon.setAltText(title);
+			iIcon.setTitle(title.replaceAll("\\<[^>]*>",""));
+			iIcon.setAltText(title.replaceAll("\\<[^>]*>",""));
 			if (text != null && !text.isEmpty()) {
 				iLabel = new HTML(text, false);
 				iPanel = new HorizontalPanel();
@@ -692,7 +692,7 @@ public class WebTable extends Composite implements HasMobileScroll {
 					@Override
 					public void onClick(ClickEvent event) {
 						event.stopPropagation();
-						UniTimeConfirmationDialog.info(title);
+						UniTimeConfirmationDialog.info(title, true);
 					}
 				});
 			}
@@ -701,8 +701,8 @@ public class WebTable extends Composite implements HasMobileScroll {
 		public IconCell(ImageResource resource, final String title, String text, boolean reverse) {
 			super(null);
 			iIcon = new Image(resource);
-			iIcon.setTitle(title);
-			iIcon.setAltText(title);
+			iIcon.setTitle(title.replaceAll("\\<[^>]*>",""));
+			iIcon.setAltText(title.replaceAll("\\<[^>]*>",""));
 			if (text != null && !text.isEmpty()) {
 				iLabel = new HTML(text, false);
 				iPanel = new HorizontalPanel();
@@ -726,7 +726,7 @@ public class WebTable extends Composite implements HasMobileScroll {
 					@Override
 					public void onClick(ClickEvent event) {
 						event.stopPropagation();
-						UniTimeConfirmationDialog.info(title);
+						UniTimeConfirmationDialog.info(title, true);
 					}
 				});
 			}
@@ -809,7 +809,7 @@ public class WebTable extends Composite implements HasMobileScroll {
 					@Override
 					public void onClick(ClickEvent event) {
 						event.stopPropagation();
-						UniTimeConfirmationDialog.info(title);
+						UniTimeConfirmationDialog.info(title, true);
 					}
 				});
 			} else {
@@ -821,7 +821,7 @@ public class WebTable extends Composite implements HasMobileScroll {
 						@Override
 						public void onClick(ClickEvent event) {
 							event.stopPropagation();
-							UniTimeConfirmationDialog.info(title);
+							UniTimeConfirmationDialog.info(title, true);
 						}
 					});
 				}

@@ -156,6 +156,7 @@ public class PurdueClassAttendance implements CustomClassAttendanceProvider {
 
 	@Override
 	public StudentClassAttendance getCustomClassAttendanceForStudent(Student student, OnlineSectioningHelper helper, SessionContext context) {
+		if (student == null) return null;
 		boolean logHelper = false;
 		if (helper == null) {
 			OnlineSectioningLog.Entity.Builder user = Entity.newBuilder().setExternalId(context == null || context.getUser() == null ? "System" : context.getUser().getExternalUserId()).setType(Entity.EntityType.MANAGER);
@@ -489,7 +490,7 @@ public class PurdueClassAttendance implements CustomClassAttendanceProvider {
 		}
 		
 		protected String getMessage(StudentSectionMeetings ssm, EventInterface classEvent) {
-			String message = ApplicationProperties.getProperty("purdue.classAttendance.messageFace2FacePlan", "Face-to-face attendance plan ({group}):").replace("{group}", ssm.meetings.get(0).groupName);
+			String message = ApplicationProperties.getProperty("purdue.classAttendance.messageFace2FacePlan", "In-person course meetings ({group}):").replace("{group}", ssm.meetings.get(0).groupName);
 			boolean hasMessage = false;
 			for (MeetingDetail m: ssm.meetings) {
 				String msg = toString(m, classEvent);
@@ -498,7 +499,11 @@ public class PurdueClassAttendance implements CustomClassAttendanceProvider {
 					hasMessage = true;
 				}
 			}
-			if (hasMessage) return message;
+			if (hasMessage) {
+				if (classEvent == null)
+					message += ApplicationProperties.getProperty("purdue.classAttendance.footerMessage", "\nFor more details, see your <a href='gwt.jsp?page=personal' target='_blank'>Personal Schedule</a>.");
+				return message;
+			}
 			return null;
 		}
 
@@ -523,7 +528,7 @@ public class PurdueClassAttendance implements CustomClassAttendanceProvider {
 			StudentSectionMeetings ssm = getMeetings(classEvent);
 			if (ssm != null) {
 				ResourceInterface onl = new ResourceInterface();
-				onl.setName(ApplicationProperties.getProperty("purdue.classAttendance.onlineRoom", "ONLINE"));
+				onl.setName(ApplicationProperties.getProperty("purdue.classAttendance.onlineRoom", "Remote"));
 				onl.setType(ResourceType.ROOM);
 				Location online = Location.findByName(SessionDAO.getInstance().getSession(), classEvent.getSessionId(), onl.getName());
 				if (online != null) {
