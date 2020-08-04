@@ -574,14 +574,21 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			try {
 				Set<Long> courseIds = CustomCourseLookupHolder.getProvider().getCourseIds(server.getAcademicSession(), helper.getHibSession(), request.getOption("lookup"), true);
 				if (courseIds != null && !courseIds.isEmpty()) {
+					String where = null;
 					String course = "";
 					int id = 0;
 					for (Long c: courseIds) {
 						course += (course.isEmpty() ? "" : ",") + ":Xcx" + id;
 						query.addParameter("lookup", "Xcx" + id, c);
 						id++;
+						if ((id % 1000) == 0) {
+							where = (where == null ? "" : where + " or ") + "co.uniqueId in (" + course + ")";
+							course = "";
+						}
 					}
-					query.addWhere("lookup", "co.uniqueId in (" + course + ")");
+					if (!course.isEmpty())
+						where = (where == null ? "" : where + " or ") + "co.uniqueId in (" + course + ")"; 
+					query.addWhere("lookup", where);
 					query.addFrom("lookup", "inner join s.courseDemands cd inner join cd.courseRequests cr inner join cr.courseOffering co");					
 				}
 			} catch (Exception e) {}
