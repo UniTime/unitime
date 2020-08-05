@@ -95,6 +95,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 	private TextArea iNote = null;
 	private List<CheckBox> iDisclaimers = new ArrayList<CheckBox>();
 	private Float iCurrentCredit, iMaxCredit;
+	private Long iStudentId, iSessionId;
 	
 	public ChangeGradeModesDialog(ScheduleStatus status) {
 		super(true, true);
@@ -193,6 +194,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 		iApproval.clear();
 		iEnrollment = enrollment;
 		iApprovals = approvals;
+		iSessionId = sessionId; iStudentId = studentId;
 		iSectioningService.retrieveGradeModes(new RetrieveAvailableGradeModesRequest(sessionId, studentId), new AsyncCallback<RetrieveAvailableGradeModesResponse>() {
 
 			@Override
@@ -435,6 +437,8 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 		request.setCurrentCredit(iCurrentCredit);
 		request.setMaxCredit(iMaxCredit);
 		request.setNote(iNote.getValue());
+		request.setSessionId(iSessionId);
+		request.setStudentId(iStudentId);
 		for (GradeModeChange cell: iChanges) {
 			SpecialRegistrationGradeMode change = cell.getChange();
 			if (change == null) continue;
