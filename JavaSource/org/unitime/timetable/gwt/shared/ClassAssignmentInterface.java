@@ -702,7 +702,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			}
 			if (hasNote()) {
 				if (!ret.isEmpty()) ret += (overlapStyle == null ? "\n" : "<br>");
-				ret += (overlapStyle == null ? getNote().replaceAll("\\<[^>]*>","") : getNote().replace("\n", "<br>"));
+				ret += (overlapStyle == null ? getNote() : getNote().replace("\n", "<br>"));
 			}
 			return ret;
 		}

@@ -803,25 +803,25 @@ public class WebTable extends Composite implements HasMobileScroll {
 			super(null);
 			if (Window.getClientWidth() <= 800 && title != null && !title.isEmpty()) {
 				iIcon = new Image(RESOURCES.note());
-				iIcon.setTitle(title);
-				iIcon.setAltText(title);
+				iIcon.setTitle(title.replaceAll("\\<[^>]*>",""));
+				iIcon.setAltText(title.replaceAll("\\<[^>]*>",""));
 				iIcon.addClickHandler(new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
 						event.stopPropagation();
-						UniTimeConfirmationDialog.info(title, true);
+						UniTimeConfirmationDialog.info(text, true);
 					}
 				});
 			} else {
 				iNote = new P("unitime-Note");
 				iNote.setHTML(text);
 				if (title != null)  {
-					iNote.setTitle(title);
+					iNote.setTitle(title.replaceAll("\\<[^>]*>",""));
 					iNote.addClickHandler(new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
 							event.stopPropagation();
-							UniTimeConfirmationDialog.info(title, true);
+							UniTimeConfirmationDialog.info(text, true);
 						}
 					});
 				}
