@@ -3555,7 +3555,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				.setString("id", studentExternalId).setCacheable(true).list()) {
 			Session session = student.getSession();
 			if (session.getStatusType().isTestSession()) continue;
-			if (session.getStatusType().canPreRegisterStudents()) {
+			if (session.getStatusType().canPreRegisterStudents() || session.getStatusType().canOnlineSectionStudents()) {
 				if (!getSessionContext().hasPermissionAnySession(session, Right.AdvisorCourseRequests)) continue;
 				AcademicSessionInfo info = new AcademicSessionInfo(session);
 				ret.add(new AcademicSessionProvider.AcademicSessionInfo(
