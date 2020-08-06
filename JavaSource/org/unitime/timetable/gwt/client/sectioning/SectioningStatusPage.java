@@ -712,6 +712,7 @@ public class SectioningStatusPage extends Composite {
 				if (iProperties.isChangeLog() && iOnline)
 					iTabBar.addTab(MESSAGES.tabChangeLog(), true);
 				iEnrollmentTable.setEmail(!iOnline && iProperties.isEmail());
+				iEnrollmentTable.setAdvisorRecommendations(iProperties.isAdvisorCourseRequests());
 				checkLastQuery();
 			}
 

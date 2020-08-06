@@ -125,6 +125,7 @@ public class EnrollmentTable extends Composite {
 	private boolean iOnline;
 	private boolean iShowFilter = false;
 	private boolean iEmail = false;
+	private boolean iACR = false;
 	
 	public EnrollmentTable(final boolean showHeader, boolean online) {
 		this(showHeader, online, false);
@@ -224,6 +225,8 @@ public class EnrollmentTable extends Composite {
 	
 	public void setEmail(boolean email) { iEmail = email; }
 	
+	public void setAdvisorRecommendations(boolean acr) { iACR = acr; }
+	
 	public void showStudentSchedule(final Long studentId) {
 		iSectioningService.lookupStudent(iOnline, studentId, new AsyncCallback<ClassAssignmentInterface.Student>() {
 			@Override
@@ -282,13 +285,15 @@ public class EnrollmentTable extends Composite {
 				dialog.setEscapeToHide(true);
 				dialog.sinkEvents(Event.ONKEYUP);
 				buttons.setMessage(iStudentSchedule.getCreditMessage());
-				buttons.addButton("acrf", MESSAGES.buttonAdvisorCourseRequests(), new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						Window.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=acrf#" + student.getId(), "_blank", "");
-					}
-				});
-				buttons.setEnabled("acrf", student.isCanSelect() && student.getSessionId() != null); // && iOnline
+				if (iACR) {
+					buttons.addButton("acrf", MESSAGES.buttonAdvisorCourseRequests(), new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							Window.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=acrf#" + student.getId(), "_blank", "");
+						}
+					});
+					buttons.setEnabled("acrf", student.isCanSelect() && student.getSessionId() != null);
+				}
 				buttons.addButton("registration", MESSAGES.buttonRegistration(), new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent e) {

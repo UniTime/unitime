@@ -2972,7 +2972,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			properties.setCheckStudentOverrides(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingCheckStudentOverrides));
 			properties.setValidateStudentOverrides(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingValidateStudentOverrides));
 			properties.setRecheckCriticalCourses(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingRecheckCriticalCourses));
-			properties.setAdvisorCourseRequests(getSessionContext().hasPermission(sessionId, Right.AdvisorCourseRequests) && session != null && session.getStatusType().canPreRegisterStudents());
+			properties.setAdvisorCourseRequests(getSessionContext().hasPermission(sessionId, Right.AdvisorCourseRequests) && session != null && 
+					(session.getStatusType().canPreRegisterStudents() || session.getStatusType().canOnlineSectionStudents()));
 			if (properties.isEmail() && Customization.StudentEmailProvider.hasProvider()) {
 				StudentEmailProvider email = Customization.StudentEmailProvider.getProvider();
 				properties.setEmailOptionalToggleCaption(email.getToggleCaptionIfOptional());
