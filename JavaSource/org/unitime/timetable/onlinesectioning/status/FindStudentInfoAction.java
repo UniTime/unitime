@@ -83,7 +83,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 	protected Set<Long> iCoursesIcoordinate, iCoursesIcanApprove, iMyStudents;
 	protected Set<String> iSubjectAreas;
 	protected boolean iCanShowExtIds = false, iCanRegister = false, iCanUseAssistant = false;
-	protected boolean iIsAdmin = false, iIsAdvisor = false, iCanEditMyStudents = false, iCanEditOtherStudents = false;
+	protected boolean iIsAdmin = false, iIsAdvisor = false, iCanEditMyStudents = false, iCanEditOtherStudents = false, iCanSelect = false;
 	
 	public FindStudentInfoAction withParams(String query, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove, Set<Long> myStudents, Set<String> subjects, boolean canShowExtIds, boolean canRegister, boolean canUseAssistant) {
 		iQuery = new Query(query);
@@ -101,9 +101,10 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		return this;
 	}
 	
-	public FindStudentInfoAction withPermissions(boolean isAdmin, boolean isAdvisor, boolean canEditMyStudents, boolean canEditOtherStudents) {
+	public FindStudentInfoAction withPermissions(boolean isAdmin, boolean isAdvisor, boolean canEditMyStudents, boolean canEditOtherStudents, boolean canSelectOtherRole) {
 		iIsAdmin = isAdmin; iIsAdvisor = isAdvisor;
 		iCanEditMyStudents = canEditMyStudents; iCanEditOtherStudents = canEditOtherStudents;
+		iCanSelect = canSelectOtherRole;
 		return this;
 	}
 	
@@ -137,6 +138,8 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		if (iIsAdmin) return true;
 		if (iIsAdvisor) {
 			if (iCanEditOtherStudents || (iCanEditMyStudents && isMyStudent(student))) return true;
+		} else {
+			if (iCanSelect) return true;
 		}
 		return false;
 	}

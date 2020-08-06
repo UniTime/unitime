@@ -79,7 +79,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 	protected boolean iConsentToDoCourse;
 	protected boolean iCanShowExtIds = false, iCanRegister = false, iCanUseAssistant = false;
 	protected Set<Long> iMyStudents;
-	protected boolean iIsAdmin = false, iIsAdvisor = false, iCanEditMyStudents = false, iCanEditOtherStudents = false;
+	protected boolean iIsAdmin = false, iIsAdvisor = false, iCanEditMyStudents = false, iCanEditOtherStudents = false, iCanSelect = false;
 	
 	public FindEnrollmentAction withParams(String query, Long courseId, Long classId, boolean isConsentToDoCourse, boolean canShowExtIds, boolean canRegister, boolean canUseAssistant, Set<Long> myStudents) {
 		iQuery = new Query(query);
@@ -93,9 +93,10 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 		return this;
 	}
 	
-	public FindEnrollmentAction withPermissions(boolean isAdmin, boolean isAdvisor, boolean canEditMyStudents, boolean canEditOtherStudents) {
+	public FindEnrollmentAction withPermissions(boolean isAdmin, boolean isAdvisor, boolean canEditMyStudents, boolean canEditOtherStudents, boolean canSelectOtherRole) {
 		iIsAdmin = isAdmin; iIsAdvisor = isAdvisor;
 		iCanEditMyStudents = canEditMyStudents; iCanEditOtherStudents = canEditOtherStudents;
+		iCanSelect = canSelectOtherRole;
 		return this;
 	}
 	
@@ -121,6 +122,8 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 		if (iIsAdmin) return true;
 		if (iIsAdvisor) {
 			if (iCanEditOtherStudents || (iCanEditMyStudents && isMyStudent(student))) return true;
+		} else {
+			if (iCanSelect) return true;
 		}
 		return false;
 	}

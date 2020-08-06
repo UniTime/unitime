@@ -2002,7 +2002,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							.withPermissions(getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdmin),
 									getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdvisor),
 									getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyMyStudents),
-									getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyAllStudents)),
+									getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyAllStudents),
+									getSessionContext().hasPermission(Right.StudentSchedulingChangeStudentStatus) || getSessionContext().hasPermission(Right.StudentSchedulingEmailStudent)),
 							currentUser()
 					);
 				}
@@ -2020,7 +2021,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						.withPermissions(getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdmin),
 								getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdvisor),
 								getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyMyStudents),
-								getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyAllStudents)),
+								getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyAllStudents),
+								getSessionContext().hasPermission(Right.StudentSchedulingChangeStudentStatus) || getSessionContext().hasPermission(Right.StudentSchedulingEmailStudent)),
 						currentUser()
 				);
 			} else {
@@ -2033,7 +2035,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						.withPermissions(getSessionContext().hasPermissionAnySession(server.getAcademicSession().getUniqueId(), Right.StudentSchedulingAdmin),
 								getSessionContext().hasPermissionAnySession(server.getAcademicSession().getUniqueId(), Right.StudentSchedulingAdvisor),
 								getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyMyStudents),
-								getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyAllStudents)), currentUser());
+								getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyAllStudents),
+								getSessionContext().hasPermission(Right.StudentSchedulingChangeStudentStatus) || getSessionContext().hasPermission(Right.StudentSchedulingEmailStudent)),
+						currentUser());
 			}
 		} catch (PageAccessException e) {
 			throw e;
@@ -2108,7 +2112,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							.withPermissions(getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdmin),
 									getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdvisor),
 									getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyMyStudents),
-									getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyAllStudents)),
+									getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyAllStudents),
+									getSessionContext().hasPermission(Right.StudentSchedulingChangeStudentStatus) || getSessionContext().hasPermission(Right.StudentSchedulingEmailStudent)),
 							currentUser());
 				}
 				
@@ -2122,7 +2127,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						.withPermissions(getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdmin),
 								getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdvisor),
 								getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyMyStudents),
-								getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyAllStudents)),
+								getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyAllStudents),
+								getSessionContext().hasPermission(Right.StudentSchedulingChangeStudentStatus) || getSessionContext().hasPermission(Right.StudentSchedulingEmailStudent)),
 						currentUser());
 			} else {
 				OnlineSectioningServer server = getStudentSolver();
@@ -2139,7 +2145,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						.withPermissions(getSessionContext().hasPermissionAnySession(server.getAcademicSession().getUniqueId(), Right.StudentSchedulingAdmin),
 								getSessionContext().hasPermissionAnySession(server.getAcademicSession().getUniqueId(), Right.StudentSchedulingAdvisor),
 								getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyMyStudents),
-								getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyAllStudents)),
+								getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyAllStudents),
+								getSessionContext().hasPermission(Right.StudentSchedulingChangeStudentStatus) || getSessionContext().hasPermission(Right.StudentSchedulingEmailStudent)),
 						currentUser());
 			}
 		} catch (PageAccessException e) {

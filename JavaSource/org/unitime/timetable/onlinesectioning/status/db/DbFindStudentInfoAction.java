@@ -77,6 +77,8 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		if (iIsAdmin) return true;
 		if (iIsAdvisor) {
 			if (iCanEditOtherStudents || (iCanEditMyStudents && isMyStudent(student))) return true;
+		} else {
+			if (iCanSelect) return true;
 		}
 		return false;
 	}
