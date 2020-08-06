@@ -809,7 +809,7 @@ public class WebTable extends Composite implements HasMobileScroll {
 					@Override
 					public void onClick(ClickEvent event) {
 						event.stopPropagation();
-						UniTimeConfirmationDialog.info(text, true);
+						UniTimeConfirmationDialog.info(title, true);
 					}
 				});
 			} else {
@@ -821,7 +821,7 @@ public class WebTable extends Composite implements HasMobileScroll {
 						@Override
 						public void onClick(ClickEvent event) {
 							event.stopPropagation();
-							UniTimeConfirmationDialog.info(text, true);
+							UniTimeConfirmationDialog.info(title, true);
 						}
 					});
 				}
