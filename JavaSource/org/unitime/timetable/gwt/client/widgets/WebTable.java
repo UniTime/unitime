@@ -676,8 +676,6 @@ public class WebTable extends Composite implements HasMobileScroll {
 		public IconCell(ImageResource resource, final String title, String text) {
 			super(null);
 			iIcon = new Image(resource);
-			iIcon.setTitle(title.replaceAll("\\<[^>]*>",""));
-			iIcon.setAltText(title.replaceAll("\\<[^>]*>",""));
 			if (text != null && !text.isEmpty()) {
 				iLabel = new HTML(text, false);
 				iPanel = new HorizontalPanel();
@@ -688,6 +686,8 @@ public class WebTable extends Composite implements HasMobileScroll {
 				iPanel.setCellVerticalAlignment(iIcon, HasVerticalAlignment.ALIGN_MIDDLE);
 			}
 			if (title != null && !title.isEmpty()) {
+				iIcon.setTitle(title.replaceAll("\\<[^>]*>",""));
+				iIcon.setAltText(title.replaceAll("\\<[^>]*>",""));
 				iIcon.addClickHandler(new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
@@ -701,8 +701,6 @@ public class WebTable extends Composite implements HasMobileScroll {
 		public IconCell(ImageResource resource, final String title, String text, boolean reverse) {
 			super(null);
 			iIcon = new Image(resource);
-			iIcon.setTitle(title.replaceAll("\\<[^>]*>",""));
-			iIcon.setAltText(title.replaceAll("\\<[^>]*>",""));
 			if (text != null && !text.isEmpty()) {
 				iLabel = new HTML(text, false);
 				iPanel = new HorizontalPanel();
@@ -722,6 +720,8 @@ public class WebTable extends Composite implements HasMobileScroll {
 				iPanel.setCellVerticalAlignment(iIcon, HasVerticalAlignment.ALIGN_MIDDLE);
 			}
 			if (title != null && !title.isEmpty()) {
+				iIcon.setTitle(title.replaceAll("\\<[^>]*>",""));
+				iIcon.setAltText(title.replaceAll("\\<[^>]*>",""));
 				iIcon.addClickHandler(new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
