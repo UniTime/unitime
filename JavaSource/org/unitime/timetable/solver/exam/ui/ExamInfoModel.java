@@ -123,6 +123,8 @@ public class ExamInfoModel implements Serializable {
                 if (assignment.getRooms() != null) {
                 	for (ExamRoomInfo room : assignment.getRooms()) {
                 		
+                		if (!room.isHard()) continue;
+                		
                         Set<Long> canShareRoom = (assignment.getRooms().size() == 1 ? getCanShareRoomExams(assignment.getExamId()) : new HashSet<Long>());
                 		int size = assignment.getNrStudents();
                 		
@@ -684,7 +686,7 @@ public class ExamInfoModel implements Serializable {
             
             Set<Long> exams = locationTable.get(room.getUniqueId());
             boolean roomConflict = false;
-            if (exams != null && !exams.isEmpty()) {
+            if (exams != null && !exams.isEmpty() && !room.isIgnoreRoomCheck()) {
             	for (Long other: exams) {
             		if (!canShareRoom.contains(other)) {
             			roomConflict = true;
@@ -702,7 +704,7 @@ public class ExamInfoModel implements Serializable {
             
             if (!match(room.getLabel(),filter)) continue;
             
-            if (RoomAvailability.getInstance()!=null) {
+            if (!room.isIgnoreRoomCheck() && RoomAvailability.getInstance()!=null) {
                 Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(
                         room.getUniqueId(),
                         period.getStartTime(), period.getEndTime(), 
@@ -814,6 +816,8 @@ public class ExamInfoModel implements Serializable {
                     style += "background-color:rgb(168,187,225);";
                 if (original!=null && original.contains(room))
                     style += "text-decoration:underline;";
+                if (!room.isHard())
+                	style += "font-style:italic;";
                 String mouse = 
                     "onMouseOver=\"roomOver(this,"+room.getLocationId()+");\" "+
                     "onMouseOut=\"roomOut("+room.getLocationId()+");\" "+

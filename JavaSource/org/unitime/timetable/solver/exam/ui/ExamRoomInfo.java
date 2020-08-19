@@ -42,6 +42,7 @@ public class ExamRoomInfo implements Serializable, Comparable<ExamRoomInfo>{
     private Double iX = null, iY = null;
     private transient Location iLocation = null;
     private transient static DistanceMetric sDistanceMetric = null;
+    private boolean iHard = true;
     
     public ExamRoomInfo(ExamRoom room, int preference) {
         iId = room.getId();
@@ -50,6 +51,7 @@ public class ExamRoomInfo implements Serializable, Comparable<ExamRoomInfo>{
         iExamCapacity = room.getAltSize();
         iPreference = preference;
         iX = room.getCoordX(); iY = room.getCoordY();
+        iHard = room.isHard();
     }
     
     public ExamRoomInfo(Location location, int preference) {
@@ -61,6 +63,7 @@ public class ExamRoomInfo implements Serializable, Comparable<ExamRoomInfo>{
         iPreference = preference;
         iX = location.getCoordinateX();
         iY = location.getCoordinateY();
+        iHard = !location.isIgnoreRoomCheck();
     }
     
     public Long getLocationId() { return iId; }
@@ -70,6 +73,7 @@ public class ExamRoomInfo implements Serializable, Comparable<ExamRoomInfo>{
     public int getCapacity() { return iCapacity; }
     public int getExamCapacity() { return iExamCapacity; }
     public int getCapacity(ExamInfo exam) { return (exam.getSeatingType()==Exam.sSeatingTypeExam?getExamCapacity():getCapacity());}
+    public boolean isHard() { return iHard; }
     public Location getLocation() {
         if (iLocation==null) iLocation = new LocationDAO().get(getLocationId());
         return iLocation;

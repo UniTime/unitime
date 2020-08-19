@@ -211,6 +211,7 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
                     location.getExamCapacity(),
                     location.getCoordinateX(),
                     location.getCoordinateY());
+            if (location.isIgnoreRoomCheck()) room.setHard(false);
             getModel().addConstraint(room);
             getModel().getRooms().add(room);
             iRooms.put(room.getId(),room);
@@ -1045,6 +1046,7 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
         for (Iterator i=iAllRooms.iterator();i.hasNext();) {
             iProgress.incProgress();
             Location location = (Location)i.next();
+            if (location.isIgnoreRoomCheck()) continue;
             ExamRoom roomEx = iRooms.get(location.getUniqueId());
             if (roomEx==null) continue;
             Collection<TimeBlock> times = getRoomAvailability(availability, location, bounds[0], bounds[1], exclude);

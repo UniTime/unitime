@@ -1066,7 +1066,7 @@ public class ExamGridTable {
 	    RoomExamGridModel(Location location, Collection<ExamAssignmentInfo> assignments, Date[] bounds) {
 	        super(location.getUniqueId(), location.getLabel(), location.getCapacity(), assignments);
 	        iExamPrefs = location.getExamPreferences(iForm.getExamType());
-	        if (RoomAvailability.getInstance()!=null) {
+	        if (!location.isIgnoreRoomCheck() && RoomAvailability.getInstance()!=null) {
 	            iUnavailabilities = RoomAvailability.getInstance().getRoomAvailability(
 	                    location.getUniqueId(), 
 	                    bounds[0], bounds[1], 
