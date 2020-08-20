@@ -46,6 +46,7 @@ import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.type.LongType;
 import org.unitime.commons.Debug;
 import org.unitime.commons.Email;
 import org.unitime.localization.impl.Localization;
@@ -242,8 +243,12 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         }
         return false;
     }
+    
+    public boolean commitSolution(List<String> messages, org.hibernate.Session hibSession, String sendNotificationPuid) {
+    	return commitSolution(messages, hibSession, sendNotificationPuid, null);
+    }
 
-	public boolean commitSolution(List<String> messages, org.hibernate.Session hibSession, String sendNotificationPuid) {
+	public boolean commitSolution(List<String> messages, org.hibernate.Session hibSession, String sendNotificationPuid, Long[] ownerIds) {
 		List solutions = hibSession.createCriteria(Solution.class).add(Restrictions.eq("owner",getOwner())).list();
 		Solution uncommittedSolution = null;
 		for (Iterator i=solutions.iterator();i.hasNext();) {
@@ -257,43 +262,85 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		if (DEBUG) sLog.debug("commit["+getUniqueId()+","+getOwner().getName()+"] -------------------------------------------------------");
 			
 		boolean isOK = true;
-		for (Object[] o: (List<Object[]>)hibSession.createQuery(
-				"select r, a1, a2 from Location r inner join r.assignments a1 inner join r.assignments a2 "+
-				"where a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId != :ownerId and " +
-				"bit_and(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
-				"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
-				.setLong("ownerId",getOwner().getUniqueId())
-				.setLong("solutionId",getUniqueId())
-				.setInteger("exactType", TimePattern.sTypeExactTime)
-				.list()) {
-			Location room = (Location)o[0];
-			Assignment a = (Assignment)o[1];
-			Assignment b = (Assignment)o[2];
-			if (!room.isIgnoreRoomCheck() && a.getTimeLocation().hasIntersection(b.getTimeLocation()) && !shareRooms(a, b)) {
-				messages.add(MESSAGES.failedCommitRoomConflict(a.getClassName(), a.getTimeLocation().getName(CONSTANTS.useAmPm()), b.getClassName(), b.getTimeLocation().getName(CONSTANTS.useAmPm()), room.getLabel()));
-				isOK=false;
+		if (ownerIds != null && ownerIds.length > 1 && ownerIds.length <= 1000) {
+			for (Object[] o: (List<Object[]>)hibSession.createQuery(
+					"select r, a1, a2 from Location r inner join r.assignments a1 inner join r.assignments a2 "+
+					"where a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId not in :ownerIds and " +
+					"bit_and(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
+					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
+					.setParameterList("ownerIds", ownerIds, LongType.INSTANCE)
+					.setLong("solutionId",getUniqueId())
+					.setInteger("exactType", TimePattern.sTypeExactTime)
+					.list()) {
+				Location room = (Location)o[0];
+				Assignment a = (Assignment)o[1];
+				Assignment b = (Assignment)o[2];
+				if (!room.isIgnoreRoomCheck() && a.getTimeLocation().hasIntersection(b.getTimeLocation()) && !shareRooms(a, b)) {
+					messages.add(MESSAGES.failedCommitRoomConflict(a.getClassName(), a.getTimeLocation().getName(CONSTANTS.useAmPm()), b.getClassName(), b.getTimeLocation().getName(CONSTANTS.useAmPm()), room.getLabel()));
+					isOK=false;
+				}
 			}
-		}
-		
-		for (Object[] o: (List<Object[]>)hibSession.createQuery(
-				"select i1, a1, a2 from ClassInstructor c1 inner join c1.instructor i1 inner join c1.classInstructing.assignments a1, " +
-						"ClassInstructor c2 inner join c2.instructor i2 inner join c2.classInstructing.assignments a2 where c1.lead = true and c2.lead = true and " +
-						"i1.department.solverGroup.uniqueId = :ownerId and i2.department.solverGroup.uniqueId != :ownerId and i2.department.session = :sessionId and " +
-						"i1.externalUniqueId is not null and i1.externalUniqueId = i2.externalUniqueId and " + 
-						"a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId != :ownerId and " +
-						"bit_and(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
-						"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
-						.setLong("ownerId",getOwner().getUniqueId())
-						.setLong("solutionId",getUniqueId())
-						.setLong("sessionId",getOwner().getSession().getUniqueId())
-						.setInteger("exactType", TimePattern.sTypeExactTime)
-						.list()) {
-			DepartmentalInstructor instructor = (DepartmentalInstructor)o[0];
-			Assignment a = (Assignment)o[1];
-			Assignment b = (Assignment)o[2];
-			if (a.getTimeLocation().hasIntersection(b.getTimeLocation()) && !shareRooms(a,b)) {
-				messages.add(MESSAGES.failedCommitInstructorConflict(a.getClassName(), a.getTimeLocation().getName(CONSTANTS.useAmPm()), b.getClassName(), b.getTimeLocation().getName(CONSTANTS.useAmPm()), instructor.nameLastNameFirst()));
-				isOK=false;
+			
+			for (Object[] o: (List<Object[]>)hibSession.createQuery(
+					"select i1, a1, a2 from ClassInstructor c1 inner join c1.instructor i1 inner join c1.classInstructing.assignments a1, " +
+							"ClassInstructor c2 inner join c2.instructor i2 inner join c2.classInstructing.assignments a2 where c1.lead = true and c2.lead = true and " +
+							"i1.department.solverGroup != i2.department.solverGroup and i2.department.session = :sessionId and " +
+							"i1.externalUniqueId is not null and i1.externalUniqueId = i2.externalUniqueId and " + 
+							"a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId not in :ownerIds and " +
+							"bit_and(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
+							"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
+							.setParameterList("ownerIds", ownerIds, LongType.INSTANCE)
+							.setLong("solutionId",getUniqueId())
+							.setLong("sessionId",getOwner().getSession().getUniqueId())
+							.setInteger("exactType", TimePattern.sTypeExactTime)
+							.list()) {
+				DepartmentalInstructor instructor = (DepartmentalInstructor)o[0];
+				Assignment a = (Assignment)o[1];
+				Assignment b = (Assignment)o[2];
+				if (a.getTimeLocation().hasIntersection(b.getTimeLocation()) && !shareRooms(a,b)) {
+					messages.add(MESSAGES.failedCommitInstructorConflict(a.getClassName(), a.getTimeLocation().getName(CONSTANTS.useAmPm()), b.getClassName(), b.getTimeLocation().getName(CONSTANTS.useAmPm()), instructor.nameLastNameFirst()));
+					isOK=false;
+				}
+			}
+		} else {
+			for (Object[] o: (List<Object[]>)hibSession.createQuery(
+					"select r, a1, a2 from Location r inner join r.assignments a1 inner join r.assignments a2 "+
+					"where a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId != :ownerId and " +
+					"bit_and(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
+					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
+					.setLong("ownerId",getOwner().getUniqueId())
+					.setLong("solutionId",getUniqueId())
+					.setInteger("exactType", TimePattern.sTypeExactTime)
+					.list()) {
+				Location room = (Location)o[0];
+				Assignment a = (Assignment)o[1];
+				Assignment b = (Assignment)o[2];
+				if (!room.isIgnoreRoomCheck() && a.getTimeLocation().hasIntersection(b.getTimeLocation()) && !shareRooms(a, b)) {
+					messages.add(MESSAGES.failedCommitRoomConflict(a.getClassName(), a.getTimeLocation().getName(CONSTANTS.useAmPm()), b.getClassName(), b.getTimeLocation().getName(CONSTANTS.useAmPm()), room.getLabel()));
+					isOK=false;
+				}
+			}
+			
+			for (Object[] o: (List<Object[]>)hibSession.createQuery(
+					"select i1, a1, a2 from ClassInstructor c1 inner join c1.instructor i1 inner join c1.classInstructing.assignments a1, " +
+							"ClassInstructor c2 inner join c2.instructor i2 inner join c2.classInstructing.assignments a2 where c1.lead = true and c2.lead = true and " +
+							"i1.department.solverGroup.uniqueId = :ownerId and i2.department.solverGroup.uniqueId != :ownerId and i2.department.session = :sessionId and " +
+							"i1.externalUniqueId is not null and i1.externalUniqueId = i2.externalUniqueId and " + 
+							"a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId != :ownerId and " +
+							"bit_and(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
+							"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
+							.setLong("ownerId",getOwner().getUniqueId())
+							.setLong("solutionId",getUniqueId())
+							.setLong("sessionId",getOwner().getSession().getUniqueId())
+							.setInteger("exactType", TimePattern.sTypeExactTime)
+							.list()) {
+				DepartmentalInstructor instructor = (DepartmentalInstructor)o[0];
+				Assignment a = (Assignment)o[1];
+				Assignment b = (Assignment)o[2];
+				if (a.getTimeLocation().hasIntersection(b.getTimeLocation()) && !shareRooms(a,b)) {
+					messages.add(MESSAGES.failedCommitInstructorConflict(a.getClassName(), a.getTimeLocation().getName(CONSTANTS.useAmPm()), b.getClassName(), b.getTimeLocation().getName(CONSTANTS.useAmPm()), instructor.nameLastNameFirst()));
+					isOK=false;
+				}
 			}
 		}
 		

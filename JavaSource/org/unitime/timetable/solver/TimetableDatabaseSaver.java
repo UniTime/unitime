@@ -183,7 +183,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     			for (int i=0;i<solutionIds.length;i++) {
     				Solution solution = (new SolutionDAO()).get(solutionIds[i]);
     				List<String> messages = new ArrayList<String>();
-    				solution.commitSolution(messages,hibSession, getModel().getProperties().getProperty("General.OwnerPuid"));
+    				solution.commitSolution(messages,hibSession, getModel().getProperties().getProperty("General.OwnerPuid"), iSolverGroupId);
     				touchedSolutions.add(solution);
     				for (String m: messages) {
     					iProgress.error(MSG.errorUnableToCommit(m));
