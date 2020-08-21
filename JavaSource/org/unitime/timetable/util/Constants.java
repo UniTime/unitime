@@ -426,6 +426,7 @@ public class Constants extends org.cpsolver.coursett.Constants {
 	
 	public static String toTime(int minutesSinceMidnight) {
 	    int hour = minutesSinceMidnight/60;
+	    if (hour > 24) hour -= 24;
 	    int min = minutesSinceMidnight%60;
 	    if (CONSTANTS.useAmPm())
 	    	return (hour==0?12:hour>12?hour-12:hour)+":"+(min<10?"0":"")+min+(hour<24 && hour>=12?"p":"a");

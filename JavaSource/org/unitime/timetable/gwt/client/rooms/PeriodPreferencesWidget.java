@@ -155,6 +155,7 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 	
 	public static String slot2short(int slot) {
 		int h = slot / 12;
+		if (h > 24) h -= 24;
         int m = 5 * (slot % 12);
         if (CONSTANTS.useAmPm())
         	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? "a" : h >= 12 ? "p" : "a");

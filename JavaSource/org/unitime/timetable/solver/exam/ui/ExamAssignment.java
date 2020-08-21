@@ -239,6 +239,7 @@ public class ExamAssignment extends ExamInfo implements Serializable {
         min += getLength();
         int endHour = min / 60;
         int endMin = min % 60;
+        if (endHour > 24) endHour -= 24;
         return sDateFormat.format(getPeriod().getStartDate())+" "+
             s2Z.format(startHour==0?12:startHour>12?startHour-12:startHour)+":"+s2Z.format(startMin)+(startHour<24 && startHour>=12?"p":"a")+" - "+
             s2Z.format(endHour==0?12:endHour>12?endHour-12:endHour)+":"+s2Z.format(endMin)+(endHour<24 && endHour>=12?"p":"a");
@@ -309,6 +310,7 @@ public class ExamAssignment extends ExamInfo implements Serializable {
         min += getLength();
         int endHour = min / 60;
         int endMin = min % 60;
+        if (endHour > 24) endHour -= 24;
         return 
             s2Z.format(startHour==0?12:startHour>12?startHour-12:startHour)+":"+s2Z.format(startMin)+(startHour<24 && startHour>=12?"p":"a")+" - "+
             s2Z.format(endHour==0?12:endHour>12?endHour-12:endHour)+":"+s2Z.format(endMin)+(endHour<24 && endHour>=12?"p":"a");

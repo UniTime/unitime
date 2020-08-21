@@ -141,6 +141,7 @@ public class TimeGrid extends Composite {
 	private List<P> iDayLabels = new ArrayList<P>();
 	
 	public TimeGrid(HashMap<Long, String> colors, int[] days, int cellWidth, int cellHeight, boolean print, boolean scroll, int start, int end, EventPropertiesProvider properties) {
+		if (end > 24) { start = 0; end = 24; }
 		iPropertiesProvider = properties;
 		iColors = colors;
 		iDays = days;
@@ -559,6 +560,10 @@ public class TimeGrid extends Composite {
 	}
 	
 	protected Meeting addMeeting(EventInterface event, MeetingInterface firstMeeting, int day, int startSlot, int length, int startOffset, int endOffset, String name, ArrayList<String> note, String color, int firstWeekIndex, int nrMeetings, ArrayList<Meeting> meetings, String dates, String rooms) {
+		if (startSlot + length > 288) {
+			endOffset = Math.min(0, endOffset + 5 * (startSlot + length - 288));
+			length = 288 - startSlot;
+		}
 		switch (iMode) {
 		case PROPORTIONAL: {
 			boolean used[] = new boolean[iTotalNrColumns + nrMeetings];
@@ -804,6 +809,17 @@ public class TimeGrid extends Composite {
 					eventName, 
 					notes, color, weekIndex(meeting), !isVerticalSplitByWeek() && iMode == Mode.OVERLAP ? rooms.size() : days.size(), done, dateString, roomString);
 			if (m != null) done.add(m);
+			if (meeting.getEndSlot() > 288 && !meeting.hasGridIndex()) {
+				m = addMeeting(
+						event, meeting,
+						(meeting.getDayOfWeek() + 1) % 7, 0, 
+						meeting.getEndSlot() - 288,
+						Math.max(meeting.getStartOffset() - 5 * (288 - meeting.getStartSlot()), 0),
+						Math.max(meeting.getEndOffset(), - 5 * (meeting.getEndSlot() - 288)), 
+						eventName, 
+						notes, color, weekIndex(meeting), !isVerticalSplitByWeek() && iMode == Mode.OVERLAP ? rooms.size() : days.size(), done, dateString, roomString);
+				if (m != null) done.add(m);
+			}
 		}
 		iMeetings.add(done);
 		return done;
@@ -879,7 +895,7 @@ public class TimeGrid extends Composite {
 	        }
 	        if (event.getType() != EventType.Unavailabile || (event.getId() != null && event.getId() >= 0l))
 	        	footer.setHTML(notes);
-	        add(footer);
+	        if (start != 0 || endOffset != - 5 * length) add(footer);
 	        
 			double totalHeight = iCellHeight * length / 12.0 - 3;
 			double setupHeight = iCellHeight * startOffset / 60.0;

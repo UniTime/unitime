@@ -728,11 +728,13 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setDayOfWeek(int dayOfWeek) { iDayOfWeek = dayOfWeek; }
 		public int getGridIndex() { return iGridIndex == null ? iDayOfWeek : iGridIndex; }
 		public void setGridIndex(Integer index) { iGridIndex = index; }
+		public boolean hasGridIndex() { return iGridIndex != null; }
 		public int getDayOfYear() { return iDayOfYear; }
 		public void setDayOfYear(int dayOfYear) { iDayOfYear = dayOfYear; }
 		public String getStartTime(GwtConstants constants, boolean useOffsets) {
 			int min = 5 * iStartSlot + (useOffsets ? iStartOffset : 0);
 			int h = min / 60;
+			if (h > 24) h -= 24;
 	        int m = min % 60;
 	        if (constants != null && min == 0)
 	        	return constants.timeMidnight();
@@ -747,6 +749,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public String getEndTime(GwtConstants constants, boolean useOffsets) {
 			int min = 5 * iEndSlot + (useOffsets ? iEndOffset : 0);
 			int h = min / 60;
+			if (h > 24) h -= 24;
 	        int m = min % 60;
 	        if (constants != null && min == 720)
 	        	return constants.timeNoon();
