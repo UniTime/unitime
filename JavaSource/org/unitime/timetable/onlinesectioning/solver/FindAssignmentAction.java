@@ -261,7 +261,11 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							boolean time = getRequest().areTimeConflictsAllowed() && xc.areTimeConflictOverridesAllowed();
 							boolean space = getRequest().areSpaceConflictsAllowed() && xc.areSpaceConflictOverridesAllowed();
 							boolean linked = getRequest().areLinkedConflictsAllowed() && xc.areLinkedConflictOverridesAllowed();
-							if (time || space || linked || getSpecialRegistration() != null) {
+							boolean hasNeverIncludedReservation = false;
+							for (Reservation res: course.getOffering().getReservations()) {
+								if (res.neverIncluded()) hasNeverIncludedReservation = true;
+							}
+							if (!hasNeverIncludedReservation && (time || space || linked || getSpecialRegistration() != null)) {
 								OnlineReservation dummy = new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), -100, space, 1, true, true, time, true, true);
 								dummy.setBreakLinkedSections(linked);
 								for (Config g: course.getOffering().getConfigs()) {
