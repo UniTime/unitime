@@ -635,6 +635,10 @@ public class XOffering implements Serializable, Externalizable {
 					String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
 					String im = server.getConfig().getProperty("Load.OnlineOnlyInstructionalModeRegExp");
 					if (cn != null && !cn.isEmpty() && !course.getName().matches(cn)) {
+						for (org.cpsolver.studentsct.reservation.Reservation r: course.getOffering().getReservations()) {
+							if (r.mustBeUsed() && r instanceof OnlineReservation && r.isApplicable(null))
+								r.setMustBeUsed(false);
+						}
 						org.cpsolver.studentsct.reservation.Reservation clonedReservation = new OnlineReservation(XReservationType.IndividualOverride.ordinal(), -3l, course.getOffering(), DummyReservation.DEFAULT_PRIORITY, false, 1,true, true, false, true, true);
 	        			clonedReservation.setNeverIncluded(true);
 					} else if (im != null) {
@@ -659,6 +663,10 @@ public class XOffering implements Serializable, Externalizable {
 				} else if (server.getConfig().getPropertyBoolean("Load.OnlineOnlyExclusiveCourses", false)) {
 					String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
 					if (cn != null && !cn.isEmpty() && course.getName().matches(cn)) {
+						for (org.cpsolver.studentsct.reservation.Reservation r: course.getOffering().getReservations()) {
+							if (r.mustBeUsed() && r instanceof OnlineReservation && r.isApplicable(null))
+								r.setMustBeUsed(false);
+						}
 						org.cpsolver.studentsct.reservation.Reservation clonedReservation = new OnlineReservation(XReservationType.IndividualOverride.ordinal(), -3l, course.getOffering(), DummyReservation.DEFAULT_PRIORITY, false, 1,true, true, false, true, true);
 	        			clonedReservation.setNeverIncluded(true);
 					}

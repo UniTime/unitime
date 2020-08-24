@@ -714,6 +714,10 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
 					String im = server.getConfig().getProperty("Load.OnlineOnlyInstructionalModeRegExp");
 					if (cn != null && !cn.isEmpty() && !course.getCourseName().matches(cn)) {
+						for (Reservation r: clonedOffering.getReservations()) {
+							if (r.mustBeUsed() && r instanceof OnlineReservation && r.isApplicable(null))
+								r.setMustBeUsed(false);
+						}
 						Reservation clonedReservation = new OnlineReservation(XReservationType.IndividualOverride.ordinal(), -3l, clonedOffering, DummyReservation.DEFAULT_PRIORITY, false, 1,true, true, false, true, true);
 						clonedReservation.setNeverIncluded(true);
 						hasMustUse = true;
@@ -741,6 +745,10 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					// exclusive
 					String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
 					if (cn != null && !cn.isEmpty() && course.getCourseName().matches(cn)) {
+						for (Reservation r: clonedOffering.getReservations()) {
+							if (r.mustBeUsed() && r instanceof OnlineReservation && r.isApplicable(null))
+								r.setMustBeUsed(false);
+						}
 						Reservation clonedReservation = new OnlineReservation(XReservationType.IndividualOverride.ordinal(), -3l, clonedOffering, DummyReservation.DEFAULT_PRIORITY, false, 1,true, true, false, true, true);
 						clonedReservation.setNeverIncluded(true);
 						hasMustUse = true;
