@@ -733,11 +733,19 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		        			hasMustUse = true;
 		        		}
 					}
+				} else if (server.getConfig().getPropertyBoolean("Load.OnlineOnlyExclusiveCourses", false)) {
+					// exclusive
+					String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
+					if (cn != null && !cn.isEmpty() && course.getCourseName().matches(cn)) {
+						Reservation clonedReservation = new OnlineReservation(XReservationType.IndividualOverride.ordinal(), -3l, clonedOffering, DummyReservation.DEFAULT_PRIORITY, false, 1,true, true, false, true, true);
+						clonedReservation.setNeverIncluded(true);
+						hasMustUse = true;
+					}
 				}
 			}
 		}
 		// There are reservations >> allow user to keep the current enrollment by providing a dummy reservation for it
-		if (!offering.getReservations().isEmpty() && hasAssignment)
+		if (clonedOffering.hasReservations() && hasAssignment)
 			for (XEnrollment enrollment: enrollments.getEnrollmentsForCourse(courseId))
 				if (enrollment.getStudentId().equals(studentId)) {
 					Reservation clonedReservation = new OnlineReservation(XReservationType.Dummy.ordinal(), -2l, clonedOffering, 1000, false, 1, true, hasMustUse, false, true, true);
