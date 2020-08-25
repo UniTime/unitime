@@ -532,7 +532,7 @@ public class XCourseRequest extends XRequest {
         		byte[] data = new byte[len];
         		int read = 0;
         		while (read < len)
-        			read += in.read(data, read, len);
+        			read += in.read(data, read, len - read);
 				for (XCourseId course: iCourseIds)
     				if (course.getCourseId().equals(courseId)) {
     					iOptions.put(course, data);
