@@ -400,7 +400,10 @@ public class CrossListsModifyAction extends Action {
 	                // Update course reservation
 	                int indx = frm.getIndex(origCrs);
 	                try {
-	                	co.setReservation(ids.size() > 1 ? Integer.valueOf(frm.getLimits(indx)) : null);
+	                	if (ApplicationProperty.ModifyCrossListSingleCourseLimit.isTrue())
+	                		co.setReservation(Integer.valueOf(frm.getLimits(indx)));
+	                	else
+	                		co.setReservation(ids.size() > 1 ? Integer.valueOf(frm.getLimits(indx)) : null);
 	                } catch (NumberFormatException e) {
 	                	co.setReservation(null);
 	                }

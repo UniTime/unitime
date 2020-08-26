@@ -17,6 +17,7 @@
  * limitations under the License.
  * 
 --%>
+<%@page import="org.unitime.timetable.defaults.ApplicationProperty"%>
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.model.CourseOffering" %>
@@ -228,7 +229,7 @@
 						<TD align="center" class="BottomBorderGray">
 							&nbsp;
 							<html:hidden property='<%= "resvId[" + ctr + "]" %>'/>
-							<% if ( ((java.util.List)cos).size() == 1 ) { %>
+							<% if ( ((java.util.List)cos).size() == 1 && ApplicationProperty.ModifyCrossListSingleCourseLimit.isFalse()) { %>
 								<bean:write name="crossListsModifyForm" property='<%= "limits[" + ctr + "]" %>' />
 								<html:hidden property='<%= "limits[" + ctr + "]" %>' />
 							<% } else { %>

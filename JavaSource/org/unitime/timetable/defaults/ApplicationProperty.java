@@ -2608,6 +2608,11 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
+	@Description("Instructional Offering Cross Lists: allow course limit (reservation) to be set for a single course offering.")
+	ModifyCrossListSingleCourseLimit("unitime.crossList.singleCourseLimit"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
 	@Description("Student Course Requests: show courses that are not offered (when the online scheduling server is not running).")
 	CourseRequestsShowNotOffered("unitime.courseRequests.showNotOffered"),
 	
