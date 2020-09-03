@@ -3444,7 +3444,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			else if (getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyMyStudents) && advisor != null && advisor.getStudents().contains(student))
 				ret.setCanUpdate(true);
 		}
-		if (!student.getSession().getStatusType().canPreRegisterStudents()) {
+		if (!student.getSession().getStatusType().canPreRegisterStudents() && !student.getSession().getStatusType().canOnlineSectionStudents()) {
 			ret.setCanUpdate(false);
 			ret.setDegreePlan(false);
 		}
