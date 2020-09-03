@@ -320,6 +320,48 @@ public class CommitedClassAssignmentProxy implements ClassAssignmentProxy {
 		if (clazz == null || clazz.isCancelled()) return null;
 		Set<TimeBlock> conflicts = new TreeSet<TimeBlock>(new TimeBlockComparator());
 		
+		Assignment assignment = getAssignment(clazz);
+		Set<Long> ignorePermIds = new HashSet<Long>();
+		if (assignment != null && assignment.getRooms() != null && !assignment.getRooms().isEmpty() && RoomAvailability.getInstance() != null) {
+        	Date[] bounds = DatePattern.getBounds(clazz.getSessionId());
+ 			boolean changePast = ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue();
+ 			boolean ignorePast = ApplicationProperty.ClassAssignmentIgnorePastMeetings.isTrue();
+ 			Calendar cal = Calendar.getInstance(Locale.US);
+    		cal.setTime(new Date());
+    		cal.set(Calendar.HOUR_OF_DAY, 0);
+    		cal.set(Calendar.MINUTE, 0);
+    		cal.set(Calendar.SECOND, 0);
+    		cal.set(Calendar.MILLISECOND, 0);
+    		Date today = cal.getTime();
+    		ClassTimeInfo period = new ClassTimeInfo(assignment);
+    		
+			for (Location room : assignment.getRooms()) {
+				if (room.isIgnoreRoomCheck()) {
+					ignorePermIds.add(room.getPermanentId());
+				} else {
+		    		Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(
+		                    room.getUniqueId(),
+		                    bounds[0], bounds[1], 
+		                    RoomAvailabilityInterface.sClassType);
+		    		if (times != null && !times.isEmpty()) {
+		    			Collection<TimeBlock> timesToCheck = null;
+		    			if (!changePast || ignorePast) {
+		        			timesToCheck = new Vector();
+		        			for (TimeBlock time: times) {
+		        				if (!time.getEndTime().before(today))
+		        					timesToCheck.add(time);
+		        			}
+		        		} else {
+		        			timesToCheck = times;
+		        		}
+		        		List<TimeBlock> overlaps = period.allOverlaps(timesToCheck);
+		        		if (overlaps != null)
+		    				conflicts.addAll(overlaps);
+		    		}
+				}
+    		}
+        }
+		
 		if (RoomAvailability.getInstance() != null && RoomAvailability.getInstance() instanceof DefaultRoomAvailabilityService) {
 			EventDateMapping.Class2EventDateMap class2eventDateMap = EventDateMapping.getMapping(clazz.getManagingDept().getSessionId());
  			boolean changePast = ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue();
@@ -347,51 +389,13 @@ public class CommitedClassAssignmentProxy implements ClassAssignmentProxy {
  						).setLong("classId", classId).setCacheable(true).list();
  			}
 			for (Meeting m: meetings) {
+				if (m.getLocationPermanentId() != null && ignorePermIds.contains(m.getLocationPermanentId())) continue;
 				MeetingTimeBlock block = new MeetingTimeBlock(m, class2eventDateMap);
 	            if (block.getStartTime() != null)
 	            	conflicts.add(block);
 			}
 			return conflicts;
 		}
-
-		Assignment assignment = getAssignment(clazz);
-		if (assignment != null && assignment.getRooms() != null && !assignment.getRooms().isEmpty() && RoomAvailability.getInstance() != null) {
-        	Date[] bounds = DatePattern.getBounds(clazz.getSessionId());
- 			boolean changePast = ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue();
- 			boolean ignorePast = ApplicationProperty.ClassAssignmentIgnorePastMeetings.isTrue();
- 			Calendar cal = Calendar.getInstance(Locale.US);
-    		cal.setTime(new Date());
-    		cal.set(Calendar.HOUR_OF_DAY, 0);
-    		cal.set(Calendar.MINUTE, 0);
-    		cal.set(Calendar.SECOND, 0);
-    		cal.set(Calendar.MILLISECOND, 0);
-    		Date today = cal.getTime();
-    		ClassTimeInfo period = new ClassTimeInfo(assignment);
-    		
-			for (Location room : assignment.getRooms()) {
-				if (!room.isIgnoreRoomCheck()) {
-		    		Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(
-		                    room.getUniqueId(),
-		                    bounds[0], bounds[1], 
-		                    RoomAvailabilityInterface.sClassType);
-		    		if (times != null && !times.isEmpty()) {
-		    			Collection<TimeBlock> timesToCheck = null;
-		    			if (!changePast || ignorePast) {
-		        			timesToCheck = new Vector();
-		        			for (TimeBlock time: times) {
-		        				if (!time.getEndTime().before(today))
-		        					timesToCheck.add(time);
-		        			}
-		        		} else {
-		        			timesToCheck = times;
-		        		}
-		        		List<TimeBlock> overlaps = period.allOverlaps(timesToCheck);
-		        		if (overlaps != null)
-		    				conflicts.addAll(overlaps);
-		    		}
-				}
-    		}
-        }
 		
 		return conflicts;
 	}

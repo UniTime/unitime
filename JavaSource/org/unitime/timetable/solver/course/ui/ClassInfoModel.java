@@ -1295,36 +1295,38 @@ public class ClassInfoModel implements Serializable {
                 	}
                 }
 
-                if (room2events!=null) {
-                	Set<Event> conflicts = room2events.get(room.getPermanentId());
-                	if (conflicts!=null && !conflicts.isEmpty()) {
-            			if (room.getLabel().equals(filter)) iForm.setMessage(MSG.messageRoomNotAvailable2(room.getLabel(), period.getLongName(), conflicts.toString()));
-        				sLog.info(MSG.messageRoomNotAvailable2(room.getLabel(), period.getLongName(), conflicts.toString()));
-        				continue rooms;
-                	}
-                } else if (RoomAvailability.getInstance()!=null) {
-            		Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(
-                            room.getUniqueId(),
-                            bounds[0], bounds[1], 
-                            RoomAvailabilityInterface.sClassType);
-            		if (times != null && !times.isEmpty()) {
-                		Collection<TimeBlock> timesToCheck = null;
-                		if (!changePast || ignorePast) {
-                			timesToCheck = new Vector();
-                			for (TimeBlock time: times) {
-                				if (!time.getEndTime().before(today))
-                					timesToCheck.add(time);
-                			}
-                		} else {
-                			timesToCheck = times;
-                		}
-                		TimeBlock time = period.overlaps(timesToCheck);
-                		if (time!=null) {
-                			if (room.getLabel().equals(filter)) iForm.setMessage(MSG.messageRoomNotAvailable2(room.getLabel(), period.getLongName(), time.toString()));
-            				sLog.info(MSG.messageRoomNotAvailable2(room.getLabel(), period.getLongName(), time.toString()));
+                if (!room.isIgnoreRoomCheck()) {
+                    if (room2events!=null) {
+                    	Set<Event> conflicts = room2events.get(room.getPermanentId());
+                    	if (conflicts!=null && !conflicts.isEmpty()) {
+                			if (room.getLabel().equals(filter)) iForm.setMessage(MSG.messageRoomNotAvailable2(room.getLabel(), period.getLongName(), conflicts.toString()));
+            				sLog.info(MSG.messageRoomNotAvailable2(room.getLabel(), period.getLongName(), conflicts.toString()));
             				continue rooms;
+                    	}
+                    } else if (RoomAvailability.getInstance()!=null) {
+                		Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(
+                                room.getUniqueId(),
+                                bounds[0], bounds[1], 
+                                RoomAvailabilityInterface.sClassType);
+                		if (times != null && !times.isEmpty()) {
+                    		Collection<TimeBlock> timesToCheck = null;
+                    		if (!changePast || ignorePast) {
+                    			timesToCheck = new Vector();
+                    			for (TimeBlock time: times) {
+                    				if (!time.getEndTime().before(today))
+                    					timesToCheck.add(time);
+                    			}
+                    		} else {
+                    			timesToCheck = times;
+                    		}
+                    		TimeBlock time = period.overlaps(timesToCheck);
+                    		if (time!=null) {
+                    			if (room.getLabel().equals(filter)) iForm.setMessage(MSG.messageRoomNotAvailable2(room.getLabel(), period.getLongName(), time.toString()));
+                				sLog.info(MSG.messageRoomNotAvailable2(room.getLabel(), period.getLongName(), time.toString()));
+                				continue rooms;
+                    		}
                 		}
-            		}
+                    }	
                 }
                 
                 rooms.addElement(new ClassRoomInfo(room, prefInt, note));
