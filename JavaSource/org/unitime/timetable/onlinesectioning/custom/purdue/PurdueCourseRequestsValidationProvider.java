@@ -274,7 +274,9 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 	
 	protected Enrollment firstEnrollment(CourseRequest request, Assignment<Request, Enrollment> assignment, Course course, Config config, HashSet<Section> sections, int idx) {
         if (config.getSubparts().size() == idx) {
-        	return new Enrollment(request, request.getCourses().indexOf(course), null, config, new HashSet<SctAssignment>(sections), null);
+        	Enrollment e = new Enrollment(request, request.getCourses().indexOf(course), null, config, new HashSet<SctAssignment>(sections), null);
+        	if (request.isNotAllowed(e)) return null;
+        	return e;
         } else {
             Subpart subpart = config.getSubparts().get(idx);
             List<Section> sectionsThisSubpart = subpart.getSections();
@@ -286,6 +288,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
                     continue;
                 if (section.isOverlapping(sections))
                     continue;
+                if (request.isNotAllowed(course, section))
+                	continue;
                 matchingSectionsThisSubpart.add(section);
             }
             for (Section section: matchingSectionsThisSubpart) {
@@ -521,6 +525,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					
 					// 3. makup a value
 					for (Config config: course.getOffering().getConfigs()) {
+						if (cr.isNotAllowed(course, config)) continue;
 						Enrollment x = firstEnrollment(cr, assignment, course, config, new HashSet<Section>(), 0);
 						if (x != null) {
 							for (Section section: x.getSections()) {
@@ -2014,6 +2019,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					
 					// 3. makup a value
 					for (Config config: course.getOffering().getConfigs()) {
+						if (cr.isNotAllowed(course, config)) continue;
 						Enrollment x = firstEnrollment(cr, assignment, course, config, new HashSet<Section>(), 0);
 						if (x != null) {
 							for (Section section: x.getSections()) {
