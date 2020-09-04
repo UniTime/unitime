@@ -79,8 +79,10 @@ import org.cpsolver.studentsct.reservation.CurriculumReservation;
 import org.cpsolver.studentsct.reservation.DummyReservation;
 import org.cpsolver.studentsct.reservation.GroupReservation;
 import org.cpsolver.studentsct.reservation.IndividualReservation;
+import org.cpsolver.studentsct.reservation.IndividualRestriction;
 import org.cpsolver.studentsct.reservation.Reservation;
 import org.cpsolver.studentsct.reservation.ReservationOverride;
+import org.cpsolver.studentsct.reservation.Restriction;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
@@ -235,6 +237,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private Query iOnlineOnlyStudentQuery = null;
     private String iOnlineOnlyCourseNameRegExp;
     private String iOnlineOnlyInstructionalModeRegExp;
+    private String iResidentialInstructionalModeRegExp;
     private String iMPPCoursesRegExp = null;
     private boolean iOnlineOnlyExclusiveCourses = false;
     private static enum IgnoreNotAssigned { all, other, none }
@@ -336,6 +339,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 
         String onlineOnlyStudentFilter = model.getProperties().getProperty("Load.OnlineOnlyStudentFilter", null);
         iOnlineOnlyInstructionalModeRegExp = model.getProperties().getProperty("Load.OnlineOnlyInstructionalModeRegExp");
+        iResidentialInstructionalModeRegExp = model.getProperties().getProperty("Load.ResidentialInstructionalModeRegExp");
         iOnlineOnlyCourseNameRegExp = model.getProperties().getProperty("Load.OnlineOnlyCourseNameRegExp");
         iOnlineOnlyExclusiveCourses = model.getProperties().getPropertyBoolean("Load.OnlineOnlyExclusiveCourses", false);
         if (onlineOnlyStudentFilter != null && !onlineOnlyStudentFilter.isEmpty()) {
@@ -1701,6 +1705,11 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
        				student.setMaxCredit(credit);
        				iProgress.info("Max credit increased to " + credit + " for " + student.getName() + " (" + student.getExternalId() + ") ");
        			}
+       			if (cr.isNotAllowed(enrl)) {
+       				IndividualRestriction restriction = new IndividualRestriction(--iMakeupReservationId, enrl.getOffering(), student.getId());
+       				for (Section section: enrl.getSections())
+       					restriction.addSection(section);
+       			}
        			if (enrl.getReservation() != null && enrl.getReservation().canBreakLinkedSections()) {
        				hasLinked = true;
        			} else {
@@ -2443,20 +2452,13 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     						set.add(s.getId());
     					}
     		}
-    		setPhase("Creating online-only reservations...", course2students.size());
+    		setPhase("Creating online-only restrictions...", course2students.size());
         	for (Map.Entry<Course, Set<Long>> e: course2students.entrySet()) {
          		incProgress();
          		Course course = e.getKey();
          		if (iOnlineOnlyCourseNameRegExp != null && !iOnlineOnlyCourseNameRegExp.isEmpty() && !course.getName().matches(iOnlineOnlyCourseNameRegExp)) {
-         			ReservationOverride r = new ReservationOverride(--iMakeupReservationId, course.getOffering(), e.getValue());
-            		r.setAllowOverlap(false);
-            		r.setAllowDisabled(false);
-            		r.setCanAssignOverLimit(false);
-            		r.setExpired(true);
-            		r.setMustBeUsed(true);
-            		r.setPriority(DummyReservation.DEFAULT_PRIORITY);
-            		r.setNeverIncluded(true);
-         		} else  if (iOnlineOnlyInstructionalModeRegExp != null) {
+         			new IndividualRestriction(--iMakeupReservationId, course.getOffering(), e.getValue()); 
+         		} else if (iOnlineOnlyInstructionalModeRegExp != null) {
             		Offering offering = course.getOffering();
             		List<Config> configs = new ArrayList<Config>();
             		for (Config config: offering.getConfigs()) {
@@ -2473,21 +2475,14 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             			// student can take any configuration -> no need for an override
             			continue;
             		}
-            		ReservationOverride r = new ReservationOverride(--iMakeupReservationId, offering, e.getValue());
-            		r.setAllowOverlap(false);
-            		r.setAllowDisabled(false);
-            		r.setCanAssignOverLimit(false);
-            		r.setExpired(true);
-            		r.setMustBeUsed(true);
-            		r.setPriority(DummyReservation.DEFAULT_PRIORITY);
-            		r.setNeverIncluded(configs.isEmpty());
+            		Restriction r = new IndividualRestriction(--iMakeupReservationId, course.getOffering(), e.getValue());
             		for (Config config: configs)
             			r.addConfig(config);
          		}
         	}
         }
         if (iOnlineOnlyStudentQuery != null && iOnlineOnlyExclusiveCourses && iOnlineOnlyCourseNameRegExp != null && !iOnlineOnlyCourseNameRegExp.isEmpty()) {
-        	setPhase("Creating inverse online-only reservations...", getModel().getOfferings().size());
+        	setPhase("Creating inverse online-only restrictions...", getModel().getOfferings().size());
         	for (Offering offering: getModel().getOfferings()) {
         		incProgress();
         		for (Course course: offering.getCourses()) {
@@ -2498,19 +2493,44 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             					studentIds.add(cr.getStudent().getId());
             			}
             			if (!studentIds.isEmpty()) {
-            				ReservationOverride r = new ReservationOverride(--iMakeupReservationId, offering, studentIds);
-                    		r.setAllowOverlap(false);
-                    		r.setAllowDisabled(false);
-                    		r.setCanAssignOverLimit(false);
-                    		r.setExpired(true);
-                    		r.setMustBeUsed(true);
-                    		r.setPriority(DummyReservation.DEFAULT_PRIORITY);
-                    		r.setNeverIncluded(true);
+            				new IndividualRestriction(--iMakeupReservationId, course.getOffering(), studentIds);
             			}
         			}
         		}
         	}
-        	
+        }
+        if (iOnlineOnlyStudentQuery != null && iOnlineOnlyExclusiveCourses && iResidentialInstructionalModeRegExp != null) {
+        	setPhase("Creating residential restrictions...", getModel().getOfferings().size());
+        	for (Offering offering: getModel().getOfferings()) {
+        		incProgress();
+        		List<Config> configs = new ArrayList<Config>();
+        		for (Config config: offering.getConfigs()) {
+        			if (iResidentialInstructionalModeRegExp.isEmpty()) {
+        				if (config.getInstructionalMethodReference() == null || config.getInstructionalMethodReference().isEmpty())
+        					configs.add(config);	
+        			} else {
+        				if (config.getInstructionalMethodReference() != null && config.getInstructionalMethodReference().matches(iResidentialInstructionalModeRegExp)) {
+        					configs.add(config);
+        				}
+        			}
+        		}
+        		if (configs.size() == offering.getConfigs().size()) {
+        			// student can take any configuration -> no need for an override
+        			continue;
+        		}
+        		Set<Long> studentIds = new HashSet<Long>();
+        		for (Course course: offering.getCourses()) {
+        			for (CourseRequest cr: course.getRequests()) {
+        				if (!onlineOnlyStudents.contains(cr.getStudent()))
+        					studentIds.add(cr.getStudent().getId());
+        			}
+        		}
+    			if (!studentIds.isEmpty()) {
+    				Restriction r = new IndividualRestriction(--iMakeupReservationId, offering, studentIds);
+    				for (Config config: configs)
+    					r.addConfig(config);
+    			}
+        	}
         }
         
         List<DistributionPref> distPrefs = hibSession.createQuery(

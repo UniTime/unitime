@@ -57,7 +57,9 @@ import org.cpsolver.studentsct.online.selection.BestPenaltyCriterion;
 import org.cpsolver.studentsct.online.selection.MultiCriteriaBranchAndBoundSelection;
 import org.cpsolver.studentsct.online.selection.MultiCriteriaBranchAndBoundSuggestions;
 import org.cpsolver.studentsct.online.selection.SuggestionsBranchAndBound;
+import org.cpsolver.studentsct.reservation.IndividualRestriction;
 import org.cpsolver.studentsct.reservation.Reservation;
+import org.cpsolver.studentsct.reservation.Restriction;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -286,6 +288,13 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 										dummy.addSection(x, false);
 									}
 								}
+							}
+						}
+						if ((time || space || linked) && server.getConfig().getPropertyBoolean("Restrictions.AllowOverride", false)) {
+							if (course.getOffering().hasRestrictions()) {
+								Restriction restriction = new IndividualRestriction(-3l, course.getOffering(), student.getId());
+								for (Config c: course.getOffering().getConfigs())
+									restriction.addConfig(c);
 							}
 						}
 					}

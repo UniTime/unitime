@@ -50,10 +50,14 @@ import org.cpsolver.studentsct.model.Unavailability;
 import org.cpsolver.studentsct.online.OnlineConfig;
 import org.cpsolver.studentsct.online.OnlineReservation;
 import org.cpsolver.studentsct.online.OnlineSection;
+import org.cpsolver.studentsct.reservation.CourseRestriction;
 import org.cpsolver.studentsct.reservation.CurriculumOverride;
+import org.cpsolver.studentsct.reservation.CurriculumRestriction;
 import org.cpsolver.studentsct.reservation.DummyReservation;
 import org.cpsolver.studentsct.reservation.GroupReservation;
+import org.cpsolver.studentsct.reservation.IndividualRestriction;
 import org.cpsolver.studentsct.reservation.ReservationOverride;
+import org.cpsolver.studentsct.reservation.Restriction;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.gwt.server.Query;
@@ -87,6 +91,7 @@ public class XOffering implements Serializable, Externalizable {
     private List<XCourse> iCourses = new ArrayList<XCourse>();
     private List<XReservation> iReservations = new ArrayList<XReservation>();
     private List<XDistribution> iDistrubutions = new ArrayList<XDistribution>();
+    private List<XRestriction> iRestrictions = new ArrayList<XRestriction>();
 
     public XOffering() {
     }
@@ -157,6 +162,15 @@ public class XOffering implements Serializable, Externalizable {
         	}  else if (reservation instanceof DummyReservation) {
         		iReservations.add(new XDummyReservation(this));
         	}
+    	}
+    	for (org.cpsolver.studentsct.reservation.Restriction restriction: offering.getRestrictions()) {
+    		if (restriction instanceof IndividualRestriction) {
+    			iRestrictions.add(new XIndividualRestriction((IndividualRestriction)restriction));
+    		} else if (restriction instanceof CurriculumRestriction) {
+    			iRestrictions.add(new XCurriculumRestriction((CurriculumRestriction)restriction));
+    		} else if (restriction instanceof CourseRestriction) {
+    			iRestrictions.add(new XCourseRestriction((CourseRestriction)restriction));
+    		}    		
     	}
 		Set<Set<Long>> ignConf = new HashSet<Set<Long>>();
 		long id = 1;
@@ -334,6 +348,8 @@ public class XOffering implements Serializable, Externalizable {
     
     /** Reservations associated with this offering */
     public List<XReservation> getReservations() { return iReservations; }
+    
+    public List<XRestriction> getRestrictions() { return iRestrictions; }
     
     /**
      * Get reservations that require this section
@@ -521,6 +537,8 @@ public class XOffering implements Serializable, Externalizable {
     /** True if there are reservations for this offering */
     public boolean hasReservations() { return !iReservations.isEmpty(); }
     
+    public boolean hasRestrictions() { return !iRestrictions.isEmpty(); }
+    
     @Override
     public boolean equals(Object o) {
         if (o == null || !(o instanceof XOffering)) return false;
@@ -635,12 +653,7 @@ public class XOffering implements Serializable, Externalizable {
 					String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
 					String im = server.getConfig().getProperty("Load.OnlineOnlyInstructionalModeRegExp");
 					if (cn != null && !cn.isEmpty() && !course.getName().matches(cn)) {
-						for (org.cpsolver.studentsct.reservation.Reservation r: course.getOffering().getReservations()) {
-							if (r.mustBeUsed() && r instanceof OnlineReservation && r.isApplicable(null))
-								r.setMustBeUsed(false);
-						}
-						org.cpsolver.studentsct.reservation.Reservation clonedReservation = new OnlineReservation(XReservationType.IndividualOverride.ordinal(), -3l, course.getOffering(), DummyReservation.DEFAULT_PRIORITY, false, 1,true, true, false, true, true);
-	        			clonedReservation.setNeverIncluded(true);
+						new IndividualRestriction(-1l, course.getOffering(), student.getStudentId());
 					} else if (im != null) {
 						List<Config> matchingConfigs = new ArrayList<Config>();
 		        		for (Config config: course.getOffering().getConfigs()) {
@@ -654,21 +667,33 @@ public class XOffering implements Serializable, Externalizable {
 		        			}
 		        		}
 		        		if (matchingConfigs.size() != course.getOffering().getConfigs().size()) {
-		        			org.cpsolver.studentsct.reservation.Reservation clonedReservation = new OnlineReservation(XReservationType.IndividualOverride.ordinal(), -3l, course.getOffering(), DummyReservation.DEFAULT_PRIORITY, false, 1,true, true, false, true, true);
-		        			if (matchingConfigs.size() == 0) clonedReservation.setNeverIncluded(true);
-		        			else for (Config c: matchingConfigs)
-		        				clonedReservation.addConfig(c);
+		        			Restriction clonnedRestriction = new IndividualRestriction(-1l, course.getOffering(), student.getStudentId());
+		        			for (Config c: matchingConfigs)
+		        				clonnedRestriction.addConfig(c);
 		        		}
 					}
 				} else if (server.getConfig().getPropertyBoolean("Load.OnlineOnlyExclusiveCourses", false)) {
 					String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
+					String im = server.getConfig().getProperty("Load.ResidentialInstructionalModeRegExp");
 					if (cn != null && !cn.isEmpty() && course.getName().matches(cn)) {
-						for (org.cpsolver.studentsct.reservation.Reservation r: course.getOffering().getReservations()) {
-							if (r.mustBeUsed() && r instanceof OnlineReservation && r.isApplicable(null))
-								r.setMustBeUsed(false);
-						}
-						org.cpsolver.studentsct.reservation.Reservation clonedReservation = new OnlineReservation(XReservationType.IndividualOverride.ordinal(), -3l, course.getOffering(), DummyReservation.DEFAULT_PRIORITY, false, 1,true, true, false, true, true);
-	        			clonedReservation.setNeverIncluded(true);
+						new IndividualRestriction(-1l, course.getOffering(), student.getStudentId());
+					} else if (im != null) {
+						List<Config> matchingConfigs = new ArrayList<Config>();
+		        		for (Config config: course.getOffering().getConfigs()) {
+		        			if (im.isEmpty()) {
+		        				if (config.getInstructionalMethodReference() == null || config.getInstructionalMethodReference().isEmpty())
+		        					matchingConfigs.add(config);	
+		        			} else {
+		        				if (config.getInstructionalMethodReference() != null && config.getInstructionalMethodReference().matches(im)) {
+		        					matchingConfigs.add(config);
+		        				}
+		        			}
+		        		}
+		        		if (matchingConfigs.size() != course.getOffering().getConfigs().size()) {
+		        			Restriction clonnedRestriction = new IndividualRestriction(-1l, course.getOffering(), student.getStudentId());
+		        			for (Config c: matchingConfigs)
+		        				clonnedRestriction.addConfig(c);
+		        		}
 					}
 				}
 			}
@@ -788,6 +813,19 @@ public class XOffering implements Serializable, Externalizable {
 				clonedReservation.getSections().put(subparts.get(entry.getKey()), clonedSections);
 			}
 		}
+		for (XRestriction restriction: getRestrictions()) {
+			if (restriction.isApplicable(student, course)) {
+				IndividualRestriction clonnedRestriction = new IndividualRestriction(restriction.getRestrictionId(), clonedOffering, student.getStudentId());
+				for (Long configId: restriction.getConfigsIds())
+					clonnedRestriction.addConfig(configs.get(configId));
+				for (Map.Entry<Long, Set<Long>> entry: restriction.getSections().entrySet()) {
+					Set<Section> clonedSections = new HashSet<Section>();
+					for (Long sectionId: entry.getValue())
+						clonedSections.add(sections.get(sectionId));
+					clonnedRestriction.getSections().put(subparts.get(entry.getKey()), clonedSections);
+				}
+			}
+		}
 		
 		return clonedCourse;
     }
@@ -885,6 +923,21 @@ public class XOffering implements Serializable, Externalizable {
 			}
 		}
 		
+		int nrRestrictions = in.readInt();
+		for (int i = 0; i < nrRestrictions; i++) {
+			switch (XReservationType.values()[in.readInt()]) {
+			case Course:
+				iRestrictions.add(new XCourseRestriction(in));
+				break;
+			case Curriculum:
+				iRestrictions.add(new XCurriculumRestriction(in));
+				break;
+			case Individual:
+				iRestrictions.add(new XIndividualRestriction(in));
+				break;
+			}
+		}
+		
 		int nrDistributions = in.readInt();
 		for (int i = 0; i < nrDistributions; i++)
 			iDistrubutions.add(new XDistribution(in));
@@ -910,6 +963,12 @@ public class XOffering implements Serializable, Externalizable {
 			else
 				out.writeInt(reservation.getType().ordinal());
 			reservation.writeExternal(out);
+		}
+		
+		out.writeInt(iRestrictions.size());
+		for (XRestriction restriction: iRestrictions) {
+			out.writeInt(restriction.getType().ordinal());
+			restriction.writeExternal(out);
 		}
 		
 		out.writeInt(iDistrubutions.size());

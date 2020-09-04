@@ -58,7 +58,9 @@ import org.cpsolver.studentsct.online.OnlineSectioningModel;
 import org.cpsolver.studentsct.online.selection.MultiCriteriaBranchAndBoundSelection;
 import org.cpsolver.studentsct.online.selection.OnlineSectioningSelection;
 import org.cpsolver.studentsct.online.selection.SuggestionSelection;
+import org.cpsolver.studentsct.reservation.IndividualRestriction;
 import org.cpsolver.studentsct.reservation.Reservation;
+import org.cpsolver.studentsct.reservation.Restriction;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.restlet.Client;
@@ -1888,16 +1890,22 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				if (!sections.isEmpty())
 					preferredSections.put(clonnedRequest, sections);
 				for (Course clonnedCourse: clonnedRequest.getCourses()) {
-					if (!clonnedCourse.getOffering().hasReservations()) continue;
 					if (enrollment != null && enrollment.getCourseId().equals(clonnedCourse.getId())) {
-						boolean hasMustUse = false;
-						for (Reservation reservation: clonnedCourse.getOffering().getReservations()) {
-							if (reservation.isApplicable(s) && reservation.mustBeUsed())
-								hasMustUse = true;
+						if (clonnedCourse.getOffering().hasReservations()) {
+							boolean hasMustUse = false;
+							for (Reservation reservation: clonnedCourse.getOffering().getReservations()) {
+								if (reservation.isApplicable(s) && reservation.mustBeUsed())
+									hasMustUse = true;
+							}
+							Reservation reservation = new OnlineReservation(XReservationType.Dummy.ordinal(), -original.getStudentId(), clonnedCourse.getOffering(), 1000, false, 1, true, hasMustUse, false, true, true);
+							for (Section section: sections)
+								reservation.addSection(section);
 						}
-						Reservation reservation = new OnlineReservation(XReservationType.Dummy.ordinal(), -original.getStudentId(), clonnedCourse.getOffering(), 1000, false, 1, true, hasMustUse, false, true, true);
-						for (Section section: sections)
-							reservation.addSection(section);
+						if (clonnedCourse.getOffering().hasRestrictions()) {
+							Restriction restriction = new IndividualRestriction(-4l, clonnedCourse.getOffering(), original.getStudentId());
+							for (Section section: sections)
+								restriction.addSection(section);
+						}
 						break;
 					}
 				}

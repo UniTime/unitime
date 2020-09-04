@@ -71,8 +71,9 @@ import org.cpsolver.studentsct.online.selection.BestPenaltyCriterion;
 import org.cpsolver.studentsct.online.selection.MultiCriteriaBranchAndBoundSelection;
 import org.cpsolver.studentsct.online.selection.OnlineSectioningSelection;
 import org.cpsolver.studentsct.online.selection.SuggestionSelection;
-import org.cpsolver.studentsct.reservation.DummyReservation;
+import org.cpsolver.studentsct.reservation.IndividualRestriction;
 import org.cpsolver.studentsct.reservation.Reservation;
+import org.cpsolver.studentsct.reservation.Restriction;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
@@ -105,6 +106,7 @@ import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XReservation;
 import org.unitime.timetable.onlinesectioning.model.XReservationType;
+import org.unitime.timetable.onlinesectioning.model.XRestriction;
 import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
@@ -276,6 +278,13 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 											dummy.addSection(x, false);
 										}
 									}
+								}
+							}
+							if ((time || space || linked) && server.getConfig().getPropertyBoolean("Restrictions.AllowOverride", false)) {
+								if (course.getOffering().hasRestrictions()) {
+									Restriction restriction = new IndividualRestriction(-3l, course.getOffering(), student.getId());
+									for (Config c: course.getOffering().getConfigs())
+										restriction.addConfig(c);
 								}
 							}
 						}
@@ -708,6 +717,20 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				clonedReservation.getSections().put(subparts.get(entry.getKey()), clonedSections);
 			}
 		}
+		for (XRestriction restriction: offering.getRestrictions()) {
+			boolean applicable = originalStudent != null && restriction.isApplicable(originalStudent, course);
+			if (applicable) {
+				IndividualRestriction clonnedRestriction = new IndividualRestriction(restriction.getRestrictionId(), clonedOffering, originalStudent.getStudentId());
+				for (Long configId: restriction.getConfigsIds())
+					clonnedRestriction.addConfig(configs.get(configId));
+				for (Map.Entry<Long, Set<Long>> entry: restriction.getSections().entrySet()) {
+					Set<Section> clonedSections = new HashSet<Section>();
+					for (Long sectionId: entry.getValue())
+						clonedSections.add(sections.get(sectionId));
+					clonnedRestriction.getSections().put(subparts.get(entry.getKey()), clonedSections);
+				}
+			}
+		}
 		if (!(server instanceof StudentSolver) && originalStudent != null) {
 			String filter = server.getConfig().getProperty("Load.OnlineOnlyStudentFilter", null);
 			if (filter != null && !filter.isEmpty()) {
@@ -715,13 +738,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
 					String im = server.getConfig().getProperty("Load.OnlineOnlyInstructionalModeRegExp");
 					if (cn != null && !cn.isEmpty() && !course.getCourseName().matches(cn)) {
-						for (Reservation r: clonedOffering.getReservations()) {
-							if (r.mustBeUsed() && r instanceof OnlineReservation && r.isApplicable(null))
-								r.setMustBeUsed(false);
-						}
-						Reservation clonedReservation = new OnlineReservation(XReservationType.IndividualOverride.ordinal(), -3l, clonedOffering, DummyReservation.DEFAULT_PRIORITY, false, 1,true, true, false, true, true);
-						clonedReservation.setNeverIncluded(true);
-						hasMustUse = true;
+						new IndividualRestriction(-1l, clonedOffering, originalStudent.getStudentId());
 					} else if (im != null) {
 						List<Config> matchingConfigs = new ArrayList<Config>();
 		        		for (Config config: clonedOffering.getConfigs()) {
@@ -735,24 +752,34 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		        			}
 		        		}
 		        		if (matchingConfigs.size() != clonedOffering.getConfigs().size()) {
-		        			Reservation clonedReservation = new OnlineReservation(XReservationType.IndividualOverride.ordinal(), -3l, clonedOffering, DummyReservation.DEFAULT_PRIORITY, false, 1,true, true, false, true, true);
-		        			if (matchingConfigs.size() == 0) clonedReservation.setNeverIncluded(true);
-		        			else for (Config c: matchingConfigs)
-		        				clonedReservation.addConfig(c);
-		        			hasMustUse = true;
+		        			Restriction clonnedRestriction = new IndividualRestriction(-1l, clonedOffering, originalStudent.getStudentId());
+		        			for (Config c: matchingConfigs)
+		        				clonnedRestriction.addConfig(c);
 		        		}
 					}
 				} else if (server.getConfig().getPropertyBoolean("Load.OnlineOnlyExclusiveCourses", false)) {
 					// exclusive
 					String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
+					String im = server.getConfig().getProperty("Load.ResidentialInstructionalModeRegExp");
 					if (cn != null && !cn.isEmpty() && course.getCourseName().matches(cn)) {
-						for (Reservation r: clonedOffering.getReservations()) {
-							if (r.mustBeUsed() && r instanceof OnlineReservation && r.isApplicable(null))
-								r.setMustBeUsed(false);
-						}
-						Reservation clonedReservation = new OnlineReservation(XReservationType.IndividualOverride.ordinal(), -3l, clonedOffering, DummyReservation.DEFAULT_PRIORITY, false, 1,true, true, false, true, true);
-						clonedReservation.setNeverIncluded(true);
-						hasMustUse = true;
+						new IndividualRestriction(-1l, clonedOffering, originalStudent.getStudentId());
+					} else if (im != null) {
+						List<Config> matchingConfigs = new ArrayList<Config>();
+		        		for (Config config: clonedOffering.getConfigs()) {
+		        			if (im.isEmpty()) {
+		        				if (config.getInstructionalMethodReference() == null || config.getInstructionalMethodReference().isEmpty())
+		        					matchingConfigs.add(config);	
+		        			} else {
+		        				if (config.getInstructionalMethodReference() != null && config.getInstructionalMethodReference().matches(im)) {
+		        					matchingConfigs.add(config);
+		        				}
+		        			}
+		        		}
+		        		if (matchingConfigs.size() != clonedOffering.getConfigs().size()) {
+		        			Restriction clonnedRestriction = new IndividualRestriction(-1l, clonedOffering, originalStudent.getStudentId());
+		        			for (Config c: matchingConfigs)
+		        				clonnedRestriction.addConfig(c);
+		        		}
 					}
 				}
 			}
@@ -767,6 +794,16 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 						clonedReservation.addSection(sections.get(sectionId));
 					break;
 				}
+		if (clonedOffering.hasRestrictions() && hasAssignment) {
+			for (XEnrollment enrollment: enrollments.getEnrollmentsForCourse(courseId))
+				if (enrollment.getStudentId().equals(studentId)) {
+					IndividualRestriction clonnerRestriction = new IndividualRestriction(-2l, clonedOffering, studentId);
+					clonnerRestriction.addConfig(configs.get(enrollment.getConfigId()));
+					for (Long sectionId: enrollment.getSectionIds())
+						clonnerRestriction.addSection(sections.get(sectionId));
+					break;
+				}
+		}
 		return clonedCourse;
 	}
 	
