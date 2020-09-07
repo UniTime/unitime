@@ -651,12 +651,14 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		private String iDefaultStatus;
 		private OnlineSectioningServer iServer;
 		private boolean iMyStudent;
+		private XEnrollment iEnrollment;
 		
 		public CourseRequestMatcher(AcademicSessionInfo session, XCourse info, XStudent student, XOffering offering, XCourseRequest request, boolean isConsentToDoCourse, boolean isMyStudent, CourseLookup lookup, OnlineSectioningServer server) {
 			super(info, isConsentToDoCourse, lookup);
 			iFirstDate = session.getDatePatternFirstDate();
 			iStudent = student;
 			iRequest = request;
+			iEnrollment = request.getEnrollment();
 			iDefaultStatus = session.getDefaultSectioningStatus();
 			iOffering = offering;
 			iServer = server;
@@ -664,7 +666,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		}
 		
 		public XCourseRequest request() { return iRequest; }
-		public XEnrollment enrollment() { return iRequest.getEnrollment(); }
+		public XEnrollment enrollment() { return iEnrollment; }
 		public XStudent student() { return iStudent; }
 		public String status() { return student().getStatus() == null ? iDefaultStatus : student().getStatus(); }
 		public OnlineSectioningServer server() { return iServer; }
@@ -677,6 +679,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		public XOffering offering() {
 			return iOffering;
 		}
+		public CourseRequestMatcher setEnrollment(XEnrollment e) { iEnrollment = e; return this; }
 		
 		@Override
 		public Boolean match(String attr, String term) {
@@ -1059,6 +1062,26 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					if (p.isRequired() && eq(p.getLabel(), term)) return true;
 				}
 				return false;
+			}
+			
+			if ("im".equals(attr)) {
+				if (enrollment() == null) {
+					for (XConfig config: offering().getConfigs()) {
+						if (config.getInstructionalMethod() == null && term.equals(server().getAcademicSession().getDefaultInstructionalMethod()))
+							return true;
+						if (config.getInstructionalMethod() != null && term.equals(config.getInstructionalMethod().getReference()))
+							return true;
+					}
+					return false;
+				} else {
+					XConfig config = offering().getConfig(enrollment().getConfigId());
+					if (config == null) return false;
+					if (config.getInstructionalMethod() == null) {
+						return term.equals(server().getAcademicSession().getDefaultInstructionalMethod());
+					} else {
+						return term.equals(config.getInstructionalMethod().getReference());
+					}
+				}
 			}
 			
 			if (enrollment() != null) {

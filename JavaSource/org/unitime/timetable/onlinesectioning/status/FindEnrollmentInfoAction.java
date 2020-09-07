@@ -504,7 +504,9 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				}
 				Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 				CourseRequest r = SectioningRequest.convert(assignment, request, server);
+				CourseRequestMatcher m = new CourseRequestMatcher(session, info, student, offering, request, isConsentToDoCourse, isMyStudent(student), lookup, server);
 				values: for (Enrollment en: r.values(assignment)) {
+					if (!query().match(m.setEnrollment(new XEnrollment(en)))) continue;
 					for (Request x: r.getStudent().getRequests()) {
 						Enrollment xe = assignment.getValue(x);
 						if (!x.equals(r) && xe != null && xe.isOverlapping(en)) {

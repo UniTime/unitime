@@ -77,7 +77,9 @@ public class DbFindOnlineSectioningLogAction extends FindOnlineSectioningLogActi
 					(getQuery().hasAttribute("minor") ? "left outer join s.areaClasfMinors n " : "") + 
 					(getQuery().hasAttribute("group") ? "left outer join s.groups g " : "") + 
 					(getQuery().hasAttribute("accommodation") ? "left outer join s.accomodations a " : "") + 
-					(getQuery().hasAttribute("course") || getQuery().hasAttribute("lookup") ? "left outer join s.courseDemands cd left outer join cd.courseRequests cr " : "") + join +
+					(getQuery().hasAttribute("course") || getQuery().hasAttribute("lookup") || getQuery().hasAttribute("im") ? "left outer join s.courseDemands cd left outer join cd.courseRequests cr " : "") +
+					(getQuery().hasAttribute("im") ? "left outer join cr.courseOffering.instructionalOffering.instrOfferingConfigs cfg left outer join cfg.instructionalMethod im " : "") +
+					join +
 					"where l.session.uniqueId = :sessionId and l.session = s.session and l.student = s.externalUniqueId " +
 					"and (" + getQuery().toString(formatter) + ") " +
 					(getQuery().hasAttribute("operation") ? "" : 

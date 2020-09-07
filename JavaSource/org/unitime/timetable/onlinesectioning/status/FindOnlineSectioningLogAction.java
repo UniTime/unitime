@@ -105,7 +105,9 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					(getQuery().hasAttribute("minor") ? "left outer join s.areaClasfMinors n " : "") + 
 					(getQuery().hasAttribute("group") ? "left outer join s.groups g " : "") + 
 					(getQuery().hasAttribute("accommodation") ? "left outer join s.accomodations a " : "") +
-					(getQuery().hasAttribute("course") || getQuery().hasAttribute("lookup") ? "left outer join s.courseDemands cd left outer join cd.courseRequests cr " : "") + join +
+					(getQuery().hasAttribute("course") || getQuery().hasAttribute("lookup") || getQuery().hasAttribute("im") ? "left outer join s.courseDemands cd left outer join cd.courseRequests cr " : "") +
+					(getQuery().hasAttribute("im") ? "left outer join cr.courseOffering.instructionalOffering.instrOfferingConfigs cfg left outer join cfg.instructionalMethod im " : "") +
+					join +
 					"where l.session.uniqueId = :sessionId and l.session = s.session and l.student = s.externalUniqueId " +
 					"and (" + getQuery().toString(formatter) + ") " +
 					(getQuery().hasAttribute("operation") ? "" : 
@@ -474,6 +476,12 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					}
 				}
 				return "1 = 1";
+			} else if ("im".equalsIgnoreCase(attr)) {
+				if (body != null && body.equals(iSession.getDefaultInstructionalMethod())) {
+					return "im is null or im.reference = '" + body + "'";
+				} else {
+					return "im.reference = '" + body + "'";
+				}
 			} else if (attr == null && !body.isEmpty()) {
 				return "lower(s.firstName || ' ' || s.middleName || ' ' || s.lastName) like '%" + body.toLowerCase() + "%'";
 			} else {

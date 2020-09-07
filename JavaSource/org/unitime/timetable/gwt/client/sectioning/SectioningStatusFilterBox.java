@@ -275,6 +275,10 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 		req.setVisible(false); 
 		addFilter(req);
 		
+		FilterBox.StaticSimpleFilter im = new FilterBox.StaticSimpleFilter("im", GWT_MESSAGES.tagInstructionalMethod());
+		im.setMultipleSelection(true);
+		addFilter(im);
+		
 		addFilter(new FilterBox.StaticSimpleFilter("lookup", GWT_MESSAGES.tagLookup()));
 		
 		addFilter(new FilterBox.CustomFilter("Other", GWT_MESSAGES.tagOther(), courseLab, iCourse, studentLab, iStudent) {

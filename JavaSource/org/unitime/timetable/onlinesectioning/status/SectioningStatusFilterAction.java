@@ -48,6 +48,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
@@ -104,7 +105,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		List<Entity> areas = new ArrayList<Entity>();
 		for (Object[] o: (List<Object[]>)query.select("aac.academicArea.uniqueId, aac.academicArea.academicAreaAbbreviation, aac.academicArea.title, count(distinct s.uniqueId)")
 				.order("aac.academicArea.academicAreaAbbreviation, aac.academicArea.title").group("aac.academicArea.uniqueId, aac.academicArea.academicAreaAbbreviation, aac.academicArea.title")
-				.exclude("area").exclude("major").exclude("course").exclude("lookup").exclude("prefer").exclude("require").query(helper.getHibSession()).list()) {
+				.exclude("area").exclude("major").exclude("course").exclude("lookup").exclude("prefer").exclude("require").exclude("im").query(helper.getHibSession()).list()) {
 			Entity a = new Entity(
 					(Long)o[0],
 					(String)o[1],
@@ -118,7 +119,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			List<Entity> majors = new ArrayList<Entity>();
 			for (Object[] o: (List<Object[]>)query.select("aac.major.uniqueId, aac.major.code, aac.major.name, count(distinct s)")
 					.order("aac.major.code, aac.major.name").group("aac.major.uniqueId, aac.major.code, aac.major.name")
-					.exclude("major").exclude("course").exclude("lookup").exclude("prefer").exclude("require").query(helper.getHibSession()).list()) {
+					.exclude("major").exclude("course").exclude("lookup").exclude("prefer").exclude("require").exclude("im").query(helper.getHibSession()).list()) {
 				Entity m = new Entity(
 						(Long)o[0],
 						(String)o[1],
@@ -132,7 +133,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		List<Entity> classifications = new ArrayList<Entity>();
 		for (Object[] o: (List<Object[]>)query.select("aac.academicClassification.uniqueId, aac.academicClassification.code, aac.academicClassification.name, count(distinct s)")
 				.order("aac.academicClassification.code, aac.academicClassification.name").group("aac.academicClassification.uniqueId, aac.academicClassification.code, aac.academicClassification.name")
-				.exclude("classification").exclude("course").exclude("lookup").exclude("prefer").exclude("require").query(helper.getHibSession()).list()) {
+				.exclude("classification").exclude("course").exclude("lookup").exclude("prefer").exclude("require").exclude("im").query(helper.getHibSession()).list()) {
 			Entity c = new Entity(
 					(Long)o[0],
 					(String)o[1],
@@ -146,7 +147,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		for (Object[] o: (List<Object[]>)query.select("g.uniqueId, g.groupAbbreviation, g.groupName, count(distinct s)")
 				.from("inner join s.groups g").where("g.type is null")
 				.order("g.groupAbbreviation, g.groupName").group("g.uniqueId, g.groupAbbreviation, g.groupName")
-				.exclude("group").exclude("course").exclude("lookup").exclude("prefer").exclude("require").query(helper.getHibSession()).list()) {
+				.exclude("group").exclude("course").exclude("lookup").exclude("prefer").exclude("require").exclude("im").query(helper.getHibSession()).list()) {
 			Entity c = new Entity(
 					(Long)o[0],
 					(String)o[1],
@@ -162,7 +163,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 					.from("inner join s.groups gt").where("gt.type = :groupTypeId")
 					.set("groupTypeId", type.getUniqueId())
 					.order("gt.groupAbbreviation, gt.groupName").group("gt.uniqueId, gt.groupAbbreviation, gt.groupName")
-					.exclude(type.getReference().replace(' ', '_')).exclude("course").exclude("lookup").exclude("prefer").exclude("require").query(helper.getHibSession()).list()) {
+					.exclude(type.getReference().replace(' ', '_')).exclude("course").exclude("lookup").exclude("prefer").exclude("require").exclude("im").query(helper.getHibSession()).list()) {
 				Entity c = new Entity(
 						(Long)o[0],
 						(String)o[1],
@@ -179,7 +180,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		for (Object[] o: (List<Object[]>)query.select("a.uniqueId, a.abbreviation, a.name, count(distinct s)")
 				.from("inner join s.accomodations a")
 				.order("a.abbreviation, a.name").group("a.uniqueId, a.abbreviation, a.name")
-				.exclude("accommodation").exclude("course").exclude("lookup").exclude("prefer").exclude("require").query(helper.getHibSession()).list()) {
+				.exclude("accommodation").exclude("course").exclude("lookup").exclude("prefer").exclude("require").exclude("im").query(helper.getHibSession()).list()) {
 			Entity c = new Entity(
 					(Long)o[0],
 					(String)o[1],
@@ -338,6 +339,11 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		requires.add(new Entity(1l, "Met Requirement", MESSAGES.termMetRequirement(), "translated-value", MESSAGES.termMetRequirement()));
 		requires.add(new Entity(2l, "Unmet Requirement", MESSAGES.termUnmetRequirement(), "translated-value", MESSAGES.termUnmetRequirement()));
 		response.add("require", requires);
+		
+		List<Entity> instructionalMethods = new ArrayList<Entity>();
+		for (InstructionalMethod im: InstructionalMethod.findAll())
+			instructionalMethods.add(new Entity(im.getUniqueId(), im.getReference(), im.getLabel()));
+		response.add("im", instructionalMethods);
 		
 		return response;
 	}
@@ -880,6 +886,26 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				query.addWhere("require", "rp.label in (" + where + ") and rp.required = true");
 		}
 		
+		if (request.hasOptions("im")) {
+			String ims = "";
+			boolean hasDefault = false;
+			int id = 0;
+			for (String im: request.getOptions("im")) {
+				if (im.equals(server.getAcademicSession().getDefaultInstructionalMethod()))
+					hasDefault = true;
+				ims += (ims.isEmpty() ? "" : ",") + ":Xim" + id;
+				query.addParameter("im", "Xim" + id, im);
+				id++;
+			}
+			if (hasDefault) {
+				query.addWhere("im", "im is null or im.reference in (" + ims + ")");
+				query.addFrom("im", "inner join s.courseDemands cd inner join cd.courseRequests cr inner join cr.courseOffering co inner join co.instructionalOffering.instrOfferingConfigs cfg left outer join cfg.instructionalMethod im");
+			} else {
+				query.addWhere("im", "cfg.instructionalMethod.reference in (" + ims + ")");
+				query.addFrom("im", "inner join s.courseDemands cd inner join cd.courseRequests cr inner join cr.courseOffering co inner join co.instructionalOffering.instrOfferingConfigs cfg");
+			}
+		}
+		
 		return query;
 	}
 	
@@ -1101,6 +1127,26 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		
 		if (request.hasOptions("require")) {
 			query.addFrom("require", "inner join cr.preferences rp");
+		}
+		
+		if (request.hasOptions("im")) {
+			String ims = "";
+			boolean hasDefault = false;
+			int id = 0;
+			for (String im: request.getOptions("im")) {
+				if (im.equals(server.getAcademicSession().getDefaultInstructionalMethod()))
+					hasDefault = true;
+				ims += (ims.isEmpty() ? "" : ",") + ":Xim" + id;
+				query.addParameter("im", "Xim" + id, im);
+				id++;
+			}
+			if (hasDefault) {
+				query.addWhere("im", "im is null or im.reference in (" + ims + ")");
+				query.addFrom("im", "inner join co.instructionalOffering.instrOfferingConfigs cfg left outer join cfg.instructionalMethod im");
+			} else {
+				query.addWhere("im", "cfg.instructionalMethod.reference in (" + ims + ")");
+				query.addFrom("im", "inner join co.instructionalOffering.instrOfferingConfigs cfg");
+			}
 		}
 
 		return query;

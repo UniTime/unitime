@@ -5791,6 +5791,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("require")
 	String tagRequire();
 	
+	@DefaultMessage("instructional method")
+	String tagInstructionalMethod();
+	
 	@DefaultMessage("lookup")
 	String tagLookup();
 	

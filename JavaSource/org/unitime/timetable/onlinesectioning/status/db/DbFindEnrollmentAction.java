@@ -107,7 +107,7 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 				for (StudentClassEnrollment e: crm.enrollment()) {
 					if (e.getClazz().getUniqueId().equals(classId())) { match = true; break; }
 				}
-				if (!match) continue;
+				if (!match && !crm.enrollment().isEmpty()) continue;
 			}
 			if (!query().match(crm)) continue;
 			if (crm.enrollment().isEmpty() && !crm.canAssign()) continue;

@@ -443,7 +443,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				int other = 0;
 
 				for (CourseRequest request: requests) {
-					DbCourseRequestMatcher m = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(request.getCourseDemand().getStudent()), helper.getStudentNameFormat(), lookup);
+					DbCourseRequestMatcher m = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(request.getCourseDemand().getStudent()), helper.getStudentNameFormat(), lookup, section);
 					boolean contains = false;
 					for (StudentClassEnrollment x: m.enrollment()) {
 						if (x.getClazz().equals(section)) { contains = true; break; }
@@ -463,7 +463,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				}
 
 				for (CourseRequest request: requests) {
-					DbCourseRequestMatcher m = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(request.getCourseDemand().getStudent()), helper.getStudentNameFormat(), lookup);
+					DbCourseRequestMatcher m = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(request.getCourseDemand().getStudent()), helper.getStudentNameFormat(), lookup, section);
 					if (!m.enrollment().isEmpty() || !request.getCourseOffering().equals(course)) continue;
 					if (!m.canAssign()) continue;
 					if (checkOverrides && !request.isRequestApproved()) continue;
@@ -659,15 +659,22 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 		private Reservation iReservation = null;
 		private boolean iReservationGuessed = false;
 		private boolean iMyStudent = false;
+		private Class_ iClazz = null;
 		
 		public DbCourseRequestMatcher(AcademicSessionInfo session, CourseRequest request, boolean isConsentToDoCourse, boolean myStudent, NameFormat format, CourseLookup lookup) {
+			this(session, request, isConsentToDoCourse, myStudent, format, lookup, null);
+		}
+		
+		public DbCourseRequestMatcher(AcademicSessionInfo session, CourseRequest request, boolean isConsentToDoCourse, boolean myStudent, NameFormat format, CourseLookup lookup, Class_ clazz) {
 			super(request.getCourseOffering(), isConsentToDoCourse, lookup);
+			iSession = session;
 			iStudent = request.getCourseDemand().getStudent();
 			iRequest = request;
 			iDefaultStatus = session.getDefaultSectioningStatus();
 			iOffering = request.getCourseOffering().getInstructionalOffering();
 			iFormat = format;
 			iMyStudent = myStudent;
+			iClazz = clazz;
 		}
 		
 		public AcademicSessionInfo session() { return iSession; }
@@ -697,6 +704,13 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				iReservationGuessed = true;
 			}
 			return iReservation;
+		}
+		public InstrOfferingConfig config() {
+			for (StudentClassEnrollment e: enrollment()) {
+				return e.getClazz().getSchedulingSubpart().getInstrOfferingConfig();
+			}	
+			if (iClazz != null) return iClazz.getSchedulingSubpart().getInstrOfferingConfig();
+			return null;
 		}
 		
 		protected Reservation guessReservation() {
@@ -1103,6 +1117,25 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					if (eq(p.getLabel(), term)) return true;
 				}
 				return false;
+			}
+			
+			if ("im".equals(attr)) {
+				InstrOfferingConfig thisConfig = config();
+				if (thisConfig != null) {
+					if (thisConfig.getInstructionalMethod() == null) {
+						return term.equals(session().getDefaultInstructionalMethod());
+					} else {
+						return term.equals(thisConfig.getInstructionalMethod().getReference());
+					}
+				} else {
+					for (InstrOfferingConfig config: offering().getInstrOfferingConfigs()) {
+						if (config.getInstructionalMethod() == null && term.equals(session().getDefaultInstructionalMethod()))
+							return true;
+						if (config.getInstructionalMethod() != null && term.equals(config.getInstructionalMethod().getReference()))
+							return true;
+					}
+					return false;
+				}
 			}
 			
 			if (!enrollment().isEmpty()) {
