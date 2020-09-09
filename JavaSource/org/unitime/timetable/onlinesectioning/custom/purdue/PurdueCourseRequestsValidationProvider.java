@@ -1117,6 +1117,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							if ("NO_ALT".equals(m.getCode())) continue;
 							if ("DROP_CRIT".equals(m.getCode())) continue;
 							if ("OVERLAP".equals(m.getCode())) continue;
+							if ("NOT-ONLINE".equals(m.getCode())) continue;
+							if ("NOT-RESIDENTIAL".equals(m.getCode())) continue;
 							if (!m.hasCourse()) continue;
 							if (!m.isError() && (course.getCourseId().equals(m.getCourseId()) || course.getCourseName().equals(m.getCourse()))) {
 								ChangeError e = new ChangeError();
@@ -1151,6 +1153,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							if ("NO_ALT".equals(m.getCode())) continue;
 							if ("DROP_CRIT".equals(m.getCode())) continue;
 							if ("OVERLAP".equals(m.getCode())) continue;
+							if ("NOT-ONLINE".equals(m.getCode())) continue;
+							if ("NOT-RESIDENTIAL".equals(m.getCode())) continue;
 							if (!m.hasCourse()) continue;
 							if (!m.isError() && (course.getCourseId().equals(m.getCourseId()) || course.getCourseName().equals(m.getCourse()))) {
 								ChangeError e = new ChangeError();
