@@ -127,13 +127,18 @@ public interface StudentCourseDemands {
 		Long iId;
 		String iName;
 		double iWeight;
+		boolean iKeepTogether = true;
 		
-		public Group(Long id, String name, double weight) {
-			iId = id; iName = name; iWeight = weight;
+		public Group(Long id, String name, double weight, boolean keepTogether) {
+			iId = id; iName = name; iWeight = weight; iKeepTogether = keepTogether;
 		}
 		
 		public Group(Long id, String name) {
-			this(id, name, 1.0);
+			this(id, name, 1.0, true);
+		}
+		
+		public Group(Long id, String name, boolean keepTogether) {
+			this(id, name, 1.0, keepTogether);
 		}
 		
 		public Long getId() { return iId; }
@@ -141,6 +146,8 @@ public interface StudentCourseDemands {
 		public double getWeight() { return iWeight; }
 		
 		public String toString() { return getName(); }
+		
+		public boolean isKeepTogether() { return iKeepTogether; }
 		
 		@Override
 		public int hashCode() {
@@ -196,8 +203,7 @@ public interface StudentCourseDemands {
 			else if (cnt > 1)
 				iWeight = (float) Math.pow(rule, 1.0 / cnt);
 			for (StudentGroup g: student.getGroups())
-				if (g.getType() == null || g.getType().isKeepTogether())
-					iGroups.add(new Group(g.getUniqueId(), g.getGroupAbbreviation()));
+				iGroups.add(new Group(g.getUniqueId(), g.getGroupAbbreviation(), g.getType() == null || g.getType().isKeepTogether()));
 		}
 		
 		public WeightedStudentId(Long studentId, CurriculumClassification cc, ProjectionsProvider projections) {

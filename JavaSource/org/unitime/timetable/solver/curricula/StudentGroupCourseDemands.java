@@ -98,7 +98,7 @@ public class StudentGroupCourseDemands implements StudentCourseDemands, NeedsStu
 			}
 			for (int i = 0; i < madeupStudents; i++) {
 				WeightedStudentId ws = new WeightedStudentId(-iLastStudentId.newId());
-				ws.setWeight(weight); ws.getGroups().add(new Group(g.getUniqueId(), g.getGroupAbbreviation()));
+				ws.setWeight(weight); ws.getGroups().add(new Group(g.getUniqueId(), g.getGroupAbbreviation(), g.getType() == null || g.getType().isKeepTogether()));
 				demands.add(ws);
 			}
 		}

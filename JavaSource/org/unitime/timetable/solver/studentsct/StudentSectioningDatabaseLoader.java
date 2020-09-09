@@ -1706,6 +1706,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
        				iProgress.info("Max credit increased to " + credit + " for " + student.getName() + " (" + student.getExternalId() + ") ");
        			}
        			if (cr.isNotAllowed(enrl)) {
+       				iProgress.info("Created an override restriction for " + cr.getName() + " of " + student.getName() + " (" + student.getExternalId() + ") ");
        				IndividualRestriction restriction = new IndividualRestriction(--iMakeupReservationId, enrl.getOffering(), student.getId());
        				for (Section section: enrl.getSections())
        					restriction.addSection(section);
@@ -2982,7 +2983,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 		}
 	}
     
-    public class ProjectedStudentMatcher implements TermMatcher {
+    public static class ProjectedStudentMatcher implements TermMatcher {
 		private WeightedStudentId iStudent;
 		
 		public ProjectedStudentMatcher(WeightedStudentId student) {

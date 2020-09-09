@@ -100,6 +100,7 @@ import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.LearningCommunityReservation;
 import org.unitime.timetable.model.Location;
@@ -129,6 +130,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbStudentMatcher;
 import org.unitime.timetable.solver.course.weights.ClassWeightProvider;
 import org.unitime.timetable.solver.course.weights.DefaultClassWeights;
 import org.unitime.timetable.solver.curricula.LastLikeStudentCourseDemands;
@@ -139,6 +141,7 @@ import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedCours
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedStudentId;
 import org.unitime.timetable.solver.curricula.StudentGroupCourseDemands;
 import org.unitime.timetable.solver.jgroups.SolverServerImplementation;
+import org.unitime.timetable.solver.studentsct.StudentSectioningDatabaseLoader.ProjectedStudentMatcher;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
@@ -175,6 +178,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 	private Hashtable<InstructionalOffering, List<Configuration>> iAltConfigurations = new Hashtable<InstructionalOffering, List<Configuration>>();
 	private Hashtable<InstructionalOffering, Hashtable<InstrOfferingConfig, Set<SchedulingSubpart>>> iOfferings = new Hashtable<InstructionalOffering, Hashtable<InstrOfferingConfig,Set<SchedulingSubpart>>>();
     private Hashtable<CourseOffering, Set<Student>> iCourse2students = new Hashtable<CourseOffering, Set<Student>>();
+    private Set<Student> iOnlineOnlyStudents = new HashSet<Student>();
 
     private boolean iDeptBalancing = true;
     private boolean iSubjectBalancing = false;
@@ -223,6 +227,11 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private boolean iWeakenDistributions = false;
     private boolean iSoftInstructorConstraints = false;
     private boolean iAllowProhibitedRooms = false;
+    
+    private org.unitime.timetable.gwt.server.Query iOnlineOnlyStudentQuery = null;
+    private String iOnlineOnlyInstructionalModeRegExp;
+    private String iResidentialInstructionalModeRegExp;
+    private String iOnlineOnlyStudentSuffix;
 
     public static enum CommittedStudentConflictsMode {
     		Ignore,
@@ -334,6 +343,15 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         iUseAmPm = getModel().getProperties().getPropertyBoolean("General.UseAmPm", iUseAmPm);
         iShowClassSuffix = ApplicationProperty.SolverShowClassSufix.isTrue();
         iShowConfigName = ApplicationProperty.SolverShowConfiguratioName.isTrue();
+        
+        String onlineOnlyStudentFilter = model.getProperties().getProperty("Load.OnlineOnlyStudentFilter", null);
+        iOnlineOnlyInstructionalModeRegExp = model.getProperties().getProperty("Load.OnlineOnlyInstructionalModeRegExp");
+        iResidentialInstructionalModeRegExp = model.getProperties().getProperty("Load.ResidentialInstructionalModeRegExp");
+        iOnlineOnlyStudentSuffix = model.getProperties().getProperty("Load.OnlineOnlyStudentSuffix", "OL");
+        if (onlineOnlyStudentFilter != null && !onlineOnlyStudentFilter.isEmpty()) {
+        	iOnlineOnlyStudentQuery = new org.unitime.timetable.gwt.server.Query(onlineOnlyStudentFilter);
+        	iProgress.info("Online-only student filter: " + iOnlineOnlyStudentQuery); 
+        }
     }
     
     public int msglevel(String type, int defaultLevel) {
@@ -2436,6 +2454,64 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     			iProgress.debug(course.getCourseName() + ": Student " + student.getId() + " cannot attend classes " + prohibited);
     			student.addCanNotEnroll(offering.getUniqueId(), prohibited);
     		}
+    		
+    		if (iOnlineOnlyInstructionalModeRegExp != null) {
+				if (iOnlineOnlyStudents.contains(student)) {
+					if (iOnlineOnlyInstructionalModeRegExp != null) {
+						for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
+							InstructionalMethod im = config.getEffectiveInstructionalMethod();
+							if (iOnlineOnlyInstructionalModeRegExp.isEmpty()) {
+	            				if (im != null && im.getReference() != null && !im.getReference().isEmpty()) {
+	            					iProgress.debug(course.getCourseName() + ": Online-only student " + student.getId() + " cannot attend config " + config.getName() + " (" + im.getReference() + ")");
+	            					for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+	            						for (Class_ clazz: subpart.getClasses()) {
+	            							Lecture lecture = iLectures.get(clazz.getUniqueId());
+	                            			if (lecture != null && (iLoadCommittedReservations || !lecture.isCommitted()))
+	                            				student.addCanNotEnroll(lecture);
+	            						}
+	            				}
+	            			} else {
+	            				if (im == null || im.getReference() == null || !im.getReference().matches(iOnlineOnlyInstructionalModeRegExp)) {
+	            					iProgress.debug(course.getCourseName() + ": Online-only student " + student.getId() + " cannot attend config " + config.getName() + (im == null ? "" : " (" + im.getReference() + ")"));
+	            					for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+	            						for (Class_ clazz: subpart.getClasses()) {
+	            							Lecture lecture = iLectures.get(clazz.getUniqueId());
+	                            			if (lecture != null && (iLoadCommittedReservations || !lecture.isCommitted()))
+	                            				student.addCanNotEnroll(lecture);
+	            						}
+	            				}
+	            			}
+						}
+					}
+				} else {
+					if (iResidentialInstructionalModeRegExp != null) {
+						for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
+							InstructionalMethod im = config.getEffectiveInstructionalMethod();
+							if (iResidentialInstructionalModeRegExp.isEmpty()) {
+	            				if (im != null && im.getReference() != null && !im.getReference().isEmpty()) {
+	            					iProgress.debug(course.getCourseName() + ": Residential student " + student.getId() + " cannot attend config " + config.getName() + " (" + im.getReference() + ")");
+	            					for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+	            						for (Class_ clazz: subpart.getClasses()) {
+	            							Lecture lecture = iLectures.get(clazz.getUniqueId());
+	                            			if (lecture != null && (iLoadCommittedReservations || !lecture.isCommitted()))
+	                            				student.addCanNotEnroll(lecture);
+	            						}
+	            				}
+	            			} else {
+	            				if (im == null || im.getReference() == null || !im.getReference().matches(iResidentialInstructionalModeRegExp)) {
+	            					iProgress.debug(course.getCourseName() + ": Residential student " + student.getId() + " cannot attend config " + config.getName() + (im == null ? "" : " (" + im.getReference() + ")"));
+	            					for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+	            						for (Class_ clazz: subpart.getClasses()) {
+	            							Lecture lecture = iLectures.get(clazz.getUniqueId());
+	                            			if (lecture != null && (iLoadCommittedReservations || !lecture.isCommitted()))
+	                            				student.addCanNotEnroll(lecture);
+	            						}
+	            				}
+	            			}
+						}
+					}
+				}
+			}
     	}
     	
     	student.addOffering(course.getInstructionalOffering().getUniqueId(), weight, priority);
@@ -2908,6 +2984,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			iStudentGroupCourseDemands.init(hibSession, iProgress, iSession, iOfferings.keySet());
 
     	setPhase(MSG.phaseLoadingStudents(),iOfferings.size());
+    	
     	for (InstructionalOffering offering: iOfferings.keySet()) {
     		
     		boolean unlimitedOffering = false;
@@ -3075,6 +3152,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         				iStudents.put(studentId.getStudentId(), student);
         				iWeightedStudents.put(studentId.getStudentId(), studentId);
         				for (Group g: studentId.getGroups()) {
+        					if (!g.isKeepTogether()) continue;
         					StudentGroup group = iGroups.get(g.getId());
         					if (group == null) {
         						group = new StudentGroup(g.getId(), g.getWeight(), g.getName());
@@ -3083,6 +3161,14 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         					}
         					group.addStudent(student);
         					student.addGroup(group);
+        				}
+        				if (iOnlineOnlyStudentQuery != null && (
+        					(studentId.getStudent() != null && iOnlineOnlyStudentQuery.match(new DbStudentMatcher(studentId.getStudent()))) ||
+            				(studentId.getStudent() == null && iOnlineOnlyStudentQuery.match(new ProjectedStudentMatcher(studentId)))
+            				)) {
+        					iOnlineOnlyStudents.add(student);
+        					if (student.getCurriculum() != null && iOnlineOnlyStudentSuffix != null && !iOnlineOnlyStudentSuffix.isEmpty())
+        						student.setCurriculum(student.getCurriculum() + " " + iOnlineOnlyStudentSuffix);
         				}
         			}
         			if (studentId.getPrimaryOfferingId() != null)
@@ -3168,6 +3254,64 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                         }
         				iProgress.debug(course.getCourseName() + ": Student " + student.getId() + " cannot attend classes " + prohibited);
         				student.addCanNotEnroll(offering.getUniqueId(), prohibited);
+        			}
+        			
+        			if (iOnlineOnlyInstructionalModeRegExp != null) {
+        				if (iOnlineOnlyStudents.contains(student)) {
+        					if (iOnlineOnlyInstructionalModeRegExp != null) {
+        						for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
+        							InstructionalMethod im = config.getEffectiveInstructionalMethod();
+        							if (iOnlineOnlyInstructionalModeRegExp.isEmpty()) {
+        	            				if (im != null && im.getReference() != null && !im.getReference().isEmpty()) {
+        	            					iProgress.debug(course.getCourseName() + ": Online-only student " + student.getId() + " cannot attend config " + config.getName() + " (" + im.getReference() + ")");
+        	            					for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+        	            						for (Class_ clazz: subpart.getClasses()) {
+        	            							Lecture lecture = iLectures.get(clazz.getUniqueId());
+        	                            			if (lecture != null && (iLoadCommittedReservations || !lecture.isCommitted()))
+        	                            				student.addCanNotEnroll(lecture);
+        	            						}
+        	            				}
+        	            			} else {
+        	            				if (im == null || im.getReference() == null || !im.getReference().matches(iOnlineOnlyInstructionalModeRegExp)) {
+        	            					iProgress.debug(course.getCourseName() + ": Online-only student " + student.getId() + " cannot attend config " + config.getName() + (im == null ? "" : " (" + im.getReference() + ")"));
+        	            					for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+        	            						for (Class_ clazz: subpart.getClasses()) {
+        	            							Lecture lecture = iLectures.get(clazz.getUniqueId());
+        	                            			if (lecture != null && (iLoadCommittedReservations || !lecture.isCommitted()))
+        	                            				student.addCanNotEnroll(lecture);
+        	            						}
+        	            				}
+        	            			}
+        						}
+        					}
+        				} else {
+        					if (iResidentialInstructionalModeRegExp != null) {
+        						for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
+        							InstructionalMethod im = config.getEffectiveInstructionalMethod();
+        							if (iResidentialInstructionalModeRegExp.isEmpty()) {
+        	            				if (im != null && im.getReference() != null && !im.getReference().isEmpty()) {
+        	            					iProgress.debug(course.getCourseName() + ": Residential student " + student.getId() + " cannot attend config " + config.getName() + " (" + im.getReference() + ")");
+        	            					for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+        	            						for (Class_ clazz: subpart.getClasses()) {
+        	            							Lecture lecture = iLectures.get(clazz.getUniqueId());
+        	                            			if (lecture != null && (iLoadCommittedReservations || !lecture.isCommitted()))
+        	                            				student.addCanNotEnroll(lecture);
+        	            						}
+        	            				}
+        	            			} else {
+        	            				if (im == null || im.getReference() == null || !im.getReference().matches(iResidentialInstructionalModeRegExp)) {
+        	            					iProgress.debug(course.getCourseName() + ": Residential student " + student.getId() + " cannot attend config " + config.getName() + (im == null ? "" : " (" + im.getReference() + ")"));
+        	            					for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+        	            						for (Class_ clazz: subpart.getClasses()) {
+        	            							Lecture lecture = iLectures.get(clazz.getUniqueId());
+        	                            			if (lecture != null && (iLoadCommittedReservations || !lecture.isCommitted()))
+        	                            				student.addCanNotEnroll(lecture);
+        	            						}
+        	            				}
+        	            			}
+        						}
+        					}
+        				}
         			}
         		}
         	}
