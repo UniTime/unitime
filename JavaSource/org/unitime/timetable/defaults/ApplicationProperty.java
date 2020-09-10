@@ -1484,6 +1484,11 @@ public enum ApplicationProperty {
 	@Since(3.5)
 	HibernateClusterEnabled("unitime.hibernate.cluster"),
 	
+	@Type(Boolean.class)
+	@Description("Hibernate: hibernate L2 cache configuration file")
+	@Since(4.5)
+	HibernateCacheConfiguration("unitime.hibernate.cache.config"),
+	
 	@DefaultValue("hibernate-jgroups-tcp.xml")
 	@Description("Clustering: hibernate L2 cache cluster configuration")
 	@Since(3.5)

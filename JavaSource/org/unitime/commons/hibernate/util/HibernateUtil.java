@@ -33,6 +33,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jetty.deploy.App;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -204,7 +205,9 @@ public class HibernateUtil {
         if (idgen!=null)
             setProperty(document, "tmtbl.uniqueid.generator", idgen);
 
-        if (ApplicationProperty.HibernateClusterEnabled.isFalse())
+        if (ApplicationProperty.HibernateCacheConfiguration.value() != null)
+        	setProperty(document, "net.sf.ehcache.configurationResourceName", ApplicationProperty.HibernateCacheConfiguration.value());
+        else if (ApplicationProperty.HibernateClusterEnabled.isFalse())
         	setProperty(document, "net.sf.ehcache.configurationResourceName", "ehcache-nocluster.xml");
 
         // Remove second level cache
@@ -339,7 +342,9 @@ public class HibernateUtil {
             String idgen = ApplicationProperty.DatabaseUniqueIdGenerator.value();
             if (idgen!=null) setProperty(document, "tmtbl.uniqueid.generator", idgen);
             
-            if (ApplicationProperty.HibernateClusterEnabled.isFalse())
+            if (ApplicationProperty.HibernateCacheConfiguration.value() != null)
+            	setProperty(document, "net.sf.ehcache.configurationResourceName", ApplicationProperty.HibernateCacheConfiguration.value());
+            else if (ApplicationProperty.HibernateClusterEnabled.isFalse())
             	setProperty(document, "net.sf.ehcache.configurationResourceName", "ehcache-nocluster.xml");
             
             for (Enumeration e=ApplicationProperties.getProperties().propertyNames();e.hasMoreElements();) {
