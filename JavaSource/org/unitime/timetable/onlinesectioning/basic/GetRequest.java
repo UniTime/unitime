@@ -244,7 +244,8 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 				CustomCourseRequestsValidationHolder.getProvider().check(server, helper, request);
 			
 			if (student.getLastStudentChange() == null && !(server instanceof StudentSolver) && iAdvisorRequests && (!iSectioning || !hasEnrollments)) {
-				request.applyAdvisorRequests(AdvisorGetCourseRequests.getRequest(student, server, helper));
+				if (request.applyAdvisorRequests(AdvisorGetCourseRequests.getRequest(student, server, helper)))
+					request.setPopupMessage(ApplicationProperty.PopupMessageCourseRequestsPrepopulatedWithAdvisorRecommendations.value());
 			}
 			
 			return request;

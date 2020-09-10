@@ -2739,6 +2739,12 @@ public enum ApplicationProperty {
 	@Description("Advisor Course Recommendations: advisors can only change status if the student is in a status that they can use (both current and the new status is available to advisors)")
 	@Since(4.5)
 	AdvisorCourseRequestsRestrictedStatusChange("unitime.acrf.restrictedStatusChange"),
+	
+	@Type(String.class)
+	@DefaultValue("You Course Requests have been pre-populated with advisor recommendations. Please review the requested courses and hit the <b>Submit Requests</b> button to finalize your pre-registration.")
+	@Description("Student Course Requests: popup message when the page shows pre-populated course requests based on the advisor recommendations")
+	@Since(4.5)
+	PopupMessageCourseRequestsPrepopulatedWithAdvisorRecommendations("unitime.acrf.showingRecommendationsPopup"),
 	;
 
 	String iKey;

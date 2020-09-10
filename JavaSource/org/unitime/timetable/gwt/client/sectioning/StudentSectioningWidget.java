@@ -2350,6 +2350,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							iStatus.warning(iEligibilityCheck.getMessage() + "\n" + request.getErrorMessaeg());
 						else
 							iStatus.warning(request.getErrorMessaeg());
+					if (request.hasPopupMessage())
+						UniTimeConfirmationDialog.info(request.getPopupMessage(), true);
 				}
 			}
 		};

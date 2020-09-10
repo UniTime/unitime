@@ -2421,8 +2421,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					if (r != null && !r.isEmpty()) return r;
 				}
 				
-				if (includeAdvisorRequests && student.getLastChangedByStudent() == null)
-					request.applyAdvisorRequests(AdvisorGetCourseRequests.getRequest(student.getUniqueId(), hibSession));
+				if (includeAdvisorRequests && student.getLastChangedByStudent() == null) {
+					if (request.applyAdvisorRequests(AdvisorGetCourseRequests.getRequest(student.getUniqueId(), hibSession)))
+						request.setPopupMessage(ApplicationProperty.PopupMessageCourseRequestsPrepopulatedWithAdvisorRecommendations.value());
+				}
 				
 				return request;
 			} catch (PageAccessException e) {

@@ -64,6 +64,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	private String iSpecRegDashboardUrl = null;
 	private String iRequestorNote = null;
 	private String iRequestId = null;
+	private String iPopupMessage = null;
 	
 	public CourseRequestInterface() {}
 
@@ -134,6 +135,14 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	public boolean hasCreditNote() { return iCreditNote != null && !iCreditNote.isEmpty() && !" ".equals(iCreditNote); }
 	public String getCreditNote() { return iCreditNote; }
 	public void setCreditNote(String note) { iCreditNote = note; }
+	
+	public boolean hasPopupMessage() { return iPopupMessage != null && !iPopupMessage.isEmpty(); }
+	public void setPopupMessage(String message) {
+		if (message == null || message.isEmpty()) return;
+		if (iPopupMessage == null) iPopupMessage = message;
+		else if (!iPopupMessage.contains(message)) iPopupMessage += "\n" + message;
+	}
+	public String getPopupMessage() { return iPopupMessage; }
 	
 	public boolean addCourse(RequestedCourse course) {
 		iLastCourse = course;
@@ -1441,16 +1450,19 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		}
 	}
 	
-	public void applyAdvisorRequests(CourseRequestInterface req) {
-		if (req == null || req.isEmpty()) return;
+	public boolean applyAdvisorRequests(CourseRequestInterface req) {
+		if (req == null || req.isEmpty()) return false;
+		boolean changed = false;
 		for (Request r: req.getCourses()) {
 			if (!r.hasRequestedCourse()) continue;
 			boolean skip = false;
 			for (RequestedCourse rc: r.getRequestedCourse()) {
 				if (rc.isCourse() && getRequestPriority(rc) != null) { skip = true; break; }
 			}
-			if (!skip)
+			if (!skip) {
 				getCourses().add(r);
+				changed = true;
+			}
 		}
 		for (Request r: req.getAlternatives()) {
 			if (!r.hasRequestedCourse()) continue;
@@ -1458,8 +1470,11 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			for (RequestedCourse rc: r.getRequestedCourse()) {
 				if (rc.isCourse() && getRequestPriority(rc) != null) { skip = true; break; }
 			}
-			if (!skip)
+			if (!skip) {
 				getAlternatives().add(r);
+				changed = true;
+			}
 		}
+		return changed;
 	}
 }
