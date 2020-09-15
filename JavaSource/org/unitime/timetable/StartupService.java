@@ -21,13 +21,10 @@ package org.unitime.timetable;
 
 import org.apache.log4j.Logger;
 import org.hibernate.SessionFactory;
-import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
-import org.hibernate.internal.SessionFactoryImpl;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.hibernate.connection.DisposableConnectionProvider;
 import org.unitime.timetable.events.EventExpirationService;
 import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.model.SolverInfo;
@@ -127,14 +124,6 @@ public class StartupService implements InitializingBean, DisposableBean {
 		    			SessionFactory sf = sSessionFactory;
 		    			if (sf != null) {
 		    				sSessionFactory = null;
-		    				if (sf instanceof SessionFactoryImpl) {
-		    					ConnectionProvider cp = ((SessionFactoryImpl)sf).getConnectionProvider();
-		    					if (cp instanceof DisposableConnectionProvider) {
-		    						try {
-		    							((DisposableConnectionProvider)cp).destroy();
-		    						} catch (Exception e) {}
-		    					}
-		    				}
 		    				sf.close();
 		    			}
 		    		}

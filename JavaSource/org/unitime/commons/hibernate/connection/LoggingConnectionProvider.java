@@ -25,17 +25,20 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.util.ToolBox;
+import org.hibernate.HibernateException;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
+import org.hibernate.exception.spi.Configurable;
+import org.hibernate.service.spi.Stoppable;
 
 /**
  * @author Tomas Muller
  */
-public class LoggingConnectionProvider implements DisposableConnectionProvider {
+public class LoggingConnectionProvider implements ConnectionProvider, Stoppable, Configurable {
 	private static final long serialVersionUID = 1L;
 	private List<Lease> iLeases = new ArrayList<Lease>();
 	private LeasedConnectionsLogger iLogger = null;
@@ -71,11 +74,6 @@ public class LoggingConnectionProvider implements DisposableConnectionProvider {
 	@Override
 	public boolean supportsAggressiveRelease() {
 		return iConnectionProvider.supportsAggressiveRelease();
-	}
-	
-	@Override
-	public void destroy() {
-		iLogger.interrupt();
 	}
 	
 	public static class Lease {
@@ -170,6 +168,7 @@ public class LoggingConnectionProvider implements DisposableConnectionProvider {
 					iLog.warn("Logging failed: " + e.getMessage(), e);
 				}
 			}
+			iLog.info("Database connection pool logging has stopped.");
 		}
 		
 		@Override
@@ -188,5 +187,18 @@ public class LoggingConnectionProvider implements DisposableConnectionProvider {
 	@Override
 	public <T> T unwrap(Class<T> clazz) {
 		return iConnectionProvider.unwrap(clazz);
+	}
+
+	@Override
+	public void stop() {
+		iLogger.interrupt();
+		if (iConnectionProvider instanceof Stoppable)
+			((Stoppable)iConnectionProvider).stop();
+	}
+
+	@Override
+	public void configure(Properties properties) throws HibernateException {
+		if (iConnectionProvider instanceof Configurable)
+			((Configurable)iConnectionProvider).configure(properties);
 	}
 }

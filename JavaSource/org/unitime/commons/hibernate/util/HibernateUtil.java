@@ -48,7 +48,6 @@ import org.hibernate.dialect.function.StandardSQLFunction;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.internal.util.ConfigHelper;
 import org.hibernate.mapping.Formula;
 import org.hibernate.mapping.PersistentClass;
@@ -58,7 +57,6 @@ import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.service.spi.ServiceBinding;
 import org.hibernate.type.IntegerType;
 import org.unitime.commons.LocalContext;
-import org.unitime.commons.hibernate.connection.DisposableConnectionProvider;
 import org.unitime.commons.hibernate.connection.LoggingConnectionProvider;
 import org.unitime.commons.hibernate.connection.LoggingDBCPConnectionProvider;
 import org.unitime.commons.hibernate.id.UniqueIdGenerator;
@@ -276,12 +274,15 @@ public class HibernateUtil {
         sLog.debug("  -- configuration set to _BaseRootDAO");
 
         StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().applySettings(cfg.getProperties()).build();
-        sSessionFactory = cfg.buildSessionFactory(serviceRegistry);
         if (ApplicationProperty.ConnectionLogging.isTrue()) {
-        	ServiceBinding<ConnectionProvider> cp = ((StandardServiceRegistryImpl)serviceRegistry).locateServiceBinding(ConnectionProvider.class);
-        	if (cp != null && cp.getService() != null && !(cp.getService() instanceof LoggingDBCPConnectionProvider))
-        		cp.setService(new LoggingConnectionProvider(cp.getService()));
+        	ConnectionProvider cp = serviceRegistry.getService(ConnectionProvider.class);
+        	if (cp != null && !(cp instanceof LoggingDBCPConnectionProvider)) {
+        		ServiceBinding<ConnectionProvider> scp = ((StandardServiceRegistryImpl)serviceRegistry).locateServiceBinding(ConnectionProvider.class);
+            	if (scp != null)
+            		scp.setService(new LoggingConnectionProvider(serviceRegistry.getService(ConnectionProvider.class)));
+        	}
         }
+        sSessionFactory = cfg.buildSessionFactory(serviceRegistry);
         sLog.debug("  -- session factory created");
         
         (new _BaseRootDAO() {
@@ -302,16 +303,6 @@ public class HibernateUtil {
     
     public static void closeHibernate() {
 		if (sSessionFactory!=null) {
-			if (sSessionFactory instanceof SessionFactoryImpl) {
-				ConnectionProvider cp = ((SessionFactoryImpl)sSessionFactory).getConnectionProvider();
-				if (cp instanceof DisposableConnectionProvider) {
-					try {
-						((DisposableConnectionProvider)cp).destroy();
-					} catch (Exception e) {
-						sLog.error("Failed to destroy connection provider: " + e.getMessage());
-					}
-				}
-			}
 			sSessionFactory.close();
 			sSessionFactory=null;
 		}

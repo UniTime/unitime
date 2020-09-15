@@ -28,6 +28,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
 import org.hibernate.cfg.Environment;
+import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
+import org.hibernate.exception.spi.Configurable;
+import org.hibernate.service.spi.Stoppable;
 import org.unitime.timetable.model.base._BaseRootDAO;
 
 /**
@@ -69,7 +72,7 @@ import org.unitime.timetable.model.base._BaseRootDAO;
  * @see org.hibernate.connection.ConnectionProvider
  * @author Dirk Verbeeck
  */
-public class DBCPConnectionProvider implements DisposableConnectionProvider {
+public class DBCPConnectionProvider implements ConnectionProvider, Stoppable, Configurable {
 	private static final long serialVersionUID = 1L;
 	
 	private static final Log log = LogFactory.getLog(DBCPConnectionProvider.class);
@@ -79,6 +82,7 @@ public class DBCPConnectionProvider implements DisposableConnectionProvider {
     // Old Environment property for backward-compatibility (property removed in Hibernate3)
     private static final String DBCP_PS_MAXACTIVE = "hibernate.dbcp.ps.maxActive";
 
+    @Override
     public void configure(Properties props) throws HibernateException {
         try {
             log.debug("Configure DBCPConnectionProvider");
@@ -228,7 +232,7 @@ public class DBCPConnectionProvider implements DisposableConnectionProvider {
     }
 
     @Override
-    public void destroy() throws HibernateException {
+    public void stop() throws HibernateException {
         log.debug("Close DBCPConnectionProvider");
         logStatistics();
         try {

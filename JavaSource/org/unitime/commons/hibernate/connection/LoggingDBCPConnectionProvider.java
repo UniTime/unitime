@@ -72,8 +72,8 @@ public class LoggingDBCPConnectionProvider extends DBCPConnectionProvider {
 	}
 	
 	@Override
-	public void destroy() throws HibernateException {
-		super.destroy();
+	public void stop() throws HibernateException {
+		super.stop();
 		iLogger.interrupt();
 	}
 	

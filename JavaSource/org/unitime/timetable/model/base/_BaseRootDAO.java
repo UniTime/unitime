@@ -78,12 +78,15 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
         HibernateUtil.configureHibernateFromRootDAO(configFileName, configuration);
         sConfiguration = configuration;
         StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties()).build();
-        setSessionFactory(configuration.buildSessionFactory(serviceRegistry));
         if (ApplicationProperty.ConnectionLogging.isTrue()) {
-        	ServiceBinding<ConnectionProvider> cp = ((StandardServiceRegistryImpl)serviceRegistry).locateServiceBinding(ConnectionProvider.class);
-        	if (cp != null && cp.getService() != null && !(cp.getService() instanceof LoggingDBCPConnectionProvider))
-        		cp.setService(new LoggingConnectionProvider(cp.getService()));
+        	ConnectionProvider cp = serviceRegistry.getService(ConnectionProvider.class);
+        	if (cp != null && !(cp instanceof LoggingDBCPConnectionProvider)) {
+        		ServiceBinding<ConnectionProvider> scp = ((StandardServiceRegistryImpl)serviceRegistry).locateServiceBinding(ConnectionProvider.class);
+            	if (scp != null)
+            		scp.setService(new LoggingConnectionProvider(serviceRegistry.getService(ConnectionProvider.class)));
+        	}
         }
+        setSessionFactory(configuration.buildSessionFactory(serviceRegistry));
         
         HibernateUtil.addBitwiseOperationsToDialect();
         HibernateUtil.addAddDateToDialect();
