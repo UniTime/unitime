@@ -30,12 +30,20 @@ import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.boot.registry.internal.StandardServiceRegistryImpl;
 import org.hibernate.SessionFactory;
 
 import org.hibernate.cfg.Configuration;
 import org.hibernate.criterion.Order;
+import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
+import org.hibernate.service.spi.ServiceBinding;
+import org.unitime.commons.hibernate.connection.LoggingConnectionProvider;
+import org.unitime.commons.hibernate.connection.LoggingDBCPConnectionProvider;
 import org.unitime.commons.hibernate.util.DatabaseUpdate;
 import org.unitime.commons.hibernate.util.HibernateUtil;
+import org.unitime.timetable.defaults.ApplicationProperty;
 
 /**
  * @author Tomas Muller
@@ -64,13 +72,19 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 		initialize(configFileName, getNewConfiguration(null));
 	}
 
-	@SuppressWarnings("deprecation")
 	public static void initialize (String configFileName, Configuration configuration) {
 		if (configFileName == null && sSessionFactory != null) return;
         if (sSessionFactoryMap != null && sSessionFactoryMap.get(configFileName) != null) return;
         HibernateUtil.configureHibernateFromRootDAO(configFileName, configuration);
         sConfiguration = configuration;
-        setSessionFactory(configuration.buildSessionFactory());
+        StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties()).build();
+        setSessionFactory(configuration.buildSessionFactory(serviceRegistry));
+        if (ApplicationProperty.ConnectionLogging.isTrue()) {
+        	ServiceBinding<ConnectionProvider> cp = ((StandardServiceRegistryImpl)serviceRegistry).locateServiceBinding(ConnectionProvider.class);
+        	if (cp != null && cp.getService() != null && !(cp.getService() instanceof LoggingDBCPConnectionProvider))
+        		cp.setService(new LoggingConnectionProvider(cp.getService()));
+        }
+        
         HibernateUtil.addBitwiseOperationsToDialect();
         HibernateUtil.addAddDateToDialect();
         DatabaseUpdate.update();

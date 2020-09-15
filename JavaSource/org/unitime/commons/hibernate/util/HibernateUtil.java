@@ -33,9 +33,11 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jetty.deploy.App;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.boot.registry.internal.StandardServiceRegistryImpl;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.MySQLDialect;
@@ -53,9 +55,12 @@ import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Property;
 import org.hibernate.mapping.Selectable;
 import org.hibernate.metadata.ClassMetadata;
+import org.hibernate.service.spi.ServiceBinding;
 import org.hibernate.type.IntegerType;
 import org.unitime.commons.LocalContext;
 import org.unitime.commons.hibernate.connection.DisposableConnectionProvider;
+import org.unitime.commons.hibernate.connection.LoggingConnectionProvider;
+import org.unitime.commons.hibernate.connection.LoggingDBCPConnectionProvider;
 import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -270,7 +275,13 @@ public class HibernateUtil {
     	}).setConf(cfg);
         sLog.debug("  -- configuration set to _BaseRootDAO");
 
-        sSessionFactory = cfg.buildSessionFactory();
+        StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().applySettings(cfg.getProperties()).build();
+        sSessionFactory = cfg.buildSessionFactory(serviceRegistry);
+        if (ApplicationProperty.ConnectionLogging.isTrue()) {
+        	ServiceBinding<ConnectionProvider> cp = ((StandardServiceRegistryImpl)serviceRegistry).locateServiceBinding(ConnectionProvider.class);
+        	if (cp != null && cp.getService() != null && !(cp.getService() instanceof LoggingDBCPConnectionProvider))
+        		cp.setService(new LoggingConnectionProvider(cp.getService()));
+        }
         sLog.debug("  -- session factory created");
         
         (new _BaseRootDAO() {
