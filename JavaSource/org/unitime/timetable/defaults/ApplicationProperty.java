@@ -2721,7 +2721,7 @@ public enum ApplicationProperty {
 	AdvisorCourseRequestsPDFLogo("unitime.acrf.pdflogo"),
 	
 	@Type(String.class)
-	@DefaultValue("Students are responsible for meeting course prerequisites and fulfilling degree requirements, and are ultimately responsible for their own educational plan and academic success.")
+	@DefaultValue("Students are responsible for reviewing the advisor recommendations and submitting their registration, meeting course prerequisites and fulfilling degree requirements, and are ultimately responsible for their own educational plan and academic success. No changes are automatically made to student registration based on these advisor recommendations. ")
 	@Description("Advisor Course Recommendations: PDF disclaimer")
 	@Since(4.5)
 	AdvisorCourseRequestsPDFDisclaimer("unitime.acrf.pdfdisclaimer"),
@@ -2746,7 +2746,7 @@ public enum ApplicationProperty {
 	AdvisorCourseRequestsRestrictedStatusChange("unitime.acrf.restrictedStatusChange"),
 	
 	@Type(String.class)
-	@DefaultValue("You Course Requests have been pre-populated with advisor recommendations. Please review the requested courses and hit the <b>Submit Requests</b> button to finalize your pre-registration.")
+	@DefaultValue("Your Course Requests have been pre-populated with advisor recommendations. Please review the requested courses and hit the <b>Submit Requests</b> button to finalize your pre-registration.")
 	@Description("Student Course Requests: popup message when the page shows pre-populated course requests based on the advisor recommendations")
 	@Since(4.5)
 	PopupMessageCourseRequestsPrepopulatedWithAdvisorRecommendations("unitime.acrf.showingRecommendationsPopup"),
