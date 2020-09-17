@@ -21,14 +21,18 @@ package org.unitime.timetable.gwt.client.sectioning;
 
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.P;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Image;
 
 /**
@@ -36,6 +40,7 @@ import com.google.gwt.user.client.ui.Image;
  */
 public class ScheduleStatus extends P {
 	static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
+	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static enum Level {
 		INFO("unitime-ScheduleMessage", RESOURCES.statusInfo()),
 		WARNING("unitime-ScheduleWarningMessage", RESOURCES.statusWarning()),
@@ -128,12 +133,38 @@ public class ScheduleStatus extends P {
 			UniTimeNotifications.error(message);
 	}
 	
+	public void error(String message, boolean popup, Throwable t) {
+		if (t != null && t instanceof PageAccessException && message != null && !message.contains(MESSAGES.sessionExpiredClickToLogin())) {
+			setMessage(Level.ERROR, message + "\n" + MESSAGES.sessionExpiredClickToLogin(), new Command() {
+				@Override
+				public void execute() {
+					Window.open("selectPrimaryRole.do?m=" + URL.encodeQueryString(MESSAGES.sessionExpiredClickToLogin())
+					+"&target=" + URL.encodeQueryString(Window.Location.getHref()), "_self", "");
+				}
+			});
+		} else {
+			setMessage(Level.ERROR, message);
+		}
+		if (popup)
+			UniTimeNotifications.error(message);
+	}
+	
 	public void error(String message) {
 		error(message, true);
 	}
 	
 	public void error(String message, Throwable t) {
-		setMessage(Level.ERROR,  message);
+		if (t != null && t instanceof PageAccessException && message != null && !message.contains(MESSAGES.sessionExpiredClickToLogin())) {
+			setMessage(Level.ERROR, message + "\n" + MESSAGES.sessionExpiredClickToLogin(), new Command() {
+				@Override
+				public void execute() {
+					Window.open("selectPrimaryRole.do?m=" + URL.encodeQueryString(MESSAGES.sessionExpiredClickToLogin())
+					+"&target=" + URL.encodeQueryString(Window.Location.getHref()), "_self", "");
+				}
+			});
+		} else {
+			setMessage(Level.ERROR, message);
+		}
 		UniTimeNotifications.error(message, t);
 	}
 	

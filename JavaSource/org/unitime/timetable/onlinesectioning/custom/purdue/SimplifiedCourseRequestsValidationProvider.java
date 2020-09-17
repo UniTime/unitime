@@ -47,6 +47,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestPriority;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -617,7 +618,7 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 	@Override
 	public void validate(OnlineSectioningServer server, OnlineSectioningHelper helper, CourseRequestInterface request, CheckCoursesResponse response) throws SectioningException {
 		XStudent original = (request.getStudentId() == null ? null : server.getStudent(request.getStudentId()));
-		if (original == null) throw new SectioningException(MESSAGES.exceptionEnrollNotStudent(server.getAcademicSession().toString()));
+		if (original == null) throw new PageAccessException(MESSAGES.exceptionEnrollNotStudent(server.getAcademicSession().toString()));
 		// Do not validate when validation is disabled
 		if (!isValidationEnabled(server, helper, original)) return;
 		

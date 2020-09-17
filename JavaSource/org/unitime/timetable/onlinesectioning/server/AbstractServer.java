@@ -53,6 +53,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverParameter;
@@ -401,7 +402,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 			}
 			return ret;
 		} catch (Exception e) {
-			if (e instanceof SectioningException) {
+			if (e instanceof SectioningException || e instanceof PageAccessException) {
 				if (e.getCause() == null) {
 					h.info("Execution failed: " + e.getMessage());
 				} else {
@@ -423,6 +424,8 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 			}
 			if (e instanceof SectioningException)
 				throw (SectioningException)e;
+			if (e instanceof PageAccessException)
+				throw (PageAccessException)e;
 			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 		} finally {
 			if (h.getAction() != null) {

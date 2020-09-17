@@ -1170,7 +1170,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							public void onFailure(Throwable caught) {
 								LoadingWidget.getInstance().hide();
 								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG))
-									iStatus.error(MESSAGES.enrollFailed(caught.getMessage()), (caught instanceof SectioningException && ((SectioningException)caught).isCanRequestOverride() ? false : true));
+									iStatus.error(MESSAGES.enrollFailed(caught.getMessage()), (caught instanceof SectioningException && ((SectioningException)caught).isCanRequestOverride() ? false : true), caught);
 								else
 									iStatus.error(MESSAGES.enrollFailed(caught.getMessage()), caught);
 								updateHistory();

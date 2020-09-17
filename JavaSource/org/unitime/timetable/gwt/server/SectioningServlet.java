@@ -1196,11 +1196,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			studentId = request.getStudentId();
 		if (server != null) {
 			if (studentId == null)
-				throw new SectioningException(MSG.exceptionEnrollNotStudent(server.getAcademicSession().toString()));
+				throw new PageAccessException(MSG.exceptionEnrollNotStudent(server.getAcademicSession().toString()));
 			return server.execute(server.createAction(SaveStudentRequests.class).forStudent(studentId).withRequest(request).withCustomValidation(true), currentUser());
 		} else {
 			if (studentId == null)
-				throw new SectioningException(MSG.exceptionEnrollNotStudent(SessionDAO.getInstance().get(request.getAcademicSessionId()).getLabel()));
+				throw new PageAccessException(MSG.exceptionEnrollNotStudent(SessionDAO.getInstance().get(request.getAcademicSessionId()).getLabel()));
 			org.hibernate.Session hibSession = StudentDAO.getInstance().getSession();
 			try {
 				Student student = StudentDAO.getInstance().get(studentId, hibSession);
@@ -1236,6 +1236,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			if (sessionId == null) sessionId = getLastSessionId();
 			if (sessionId != null) request.setStudentId(getStudentId(sessionId));
 		}
+		if (request.getStudentId() == null) throw new PageAccessException(MSG.exceptionNoStudent());
 		
 		Long sessionId = canEnroll(online, request.getAcademicSessionId(), request.getStudentId());
 		if (!request.getAcademicSessionId().equals(sessionId))
@@ -2392,7 +2393,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (server != null)
 					return server.execute(server.createAction(GetRequest.class), currentUser());
 			}
-			if (studentId == null) throw new SectioningException(MSG.exceptionNoStudent());
+			if (studentId == null) throw new PageAccessException(MSG.exceptionNoStudent());
 		}
 		if (!online) {
 			OnlineSectioningServer server = getStudentSolver();
@@ -3607,7 +3608,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	public CourseRequestInterface getAdvisorRequests(Long sessionId, Long studentId) throws SectioningException, PageAccessException {
 		if (studentId == null) {
 			studentId = getStudentId(sessionId);
-			if (studentId == null) throw new SectioningException(MSG.exceptionNoStudent());
+			if (studentId == null) throw new PageAccessException(MSG.exceptionNoStudent());
 		}
 		OnlineSectioningServer server = getServerInstance(sessionId == null ? canEnroll(false, studentId) : sessionId, true);
 		if (server == null)
