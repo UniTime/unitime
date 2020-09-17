@@ -1542,7 +1542,6 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
 					String im = server.getConfig().getProperty("Load.OnlineOnlyInstructionalModeRegExp");
 					for (XRequest r: original.getRequests()) {
-						if (r.isAlternative()) continue; // no alternate course requests
 						if (r instanceof XCourseRequest) {
 							XCourseRequest cr = (XCourseRequest)r;
 							for (XCourseId course: cr.getCourseIds()) {
@@ -1579,7 +1578,6 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
 					String im = server.getConfig().getProperty("Load.ResidentialInstructionalModeRegExp");
 					for (XRequest r: original.getRequests()) {
-						if (r.isAlternative()) continue; // no alternate course requests
 						if (r instanceof XCourseRequest) {
 							XCourseRequest cr = (XCourseRequest)r;
 							for (XCourseId course: cr.getCourseIds()) {
@@ -1649,7 +1647,6 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
 					String im = server.getConfig().getProperty("Load.OnlineOnlyInstructionalModeRegExp");
 					for (XRequest r: original.getRequests()) {
-						if (r.isAlternative()) continue; // no alternate course requests
 						if (r instanceof XCourseRequest) {
 							XCourseRequest cr = (XCourseRequest)r;
 							for (XCourseId course: cr.getCourseIds()) {
@@ -1685,7 +1682,6 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
 					String im = server.getConfig().getProperty("Load.ResidentialInstructionalModeRegExp");
 					for (XRequest r: original.getRequests()) {
-						if (r.isAlternative()) continue; // no alternate course requests
 						if (r instanceof XCourseRequest) {
 							XCourseRequest cr = (XCourseRequest)r;
 							for (XCourseId course: cr.getCourseIds()) {
