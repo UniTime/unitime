@@ -80,6 +80,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.resources.CPSolverMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface.HasRoom;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Building;
@@ -164,6 +165,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 	private long iFakeLectureId = 0;
 	
 	private Hashtable<Long, RoomConstraint> iRooms = new Hashtable<Long, RoomConstraint>();
+	private Hashtable<Long, RoomConstraint> iRoomsByPermId = new Hashtable<Long, RoomConstraint>();
 	private Hashtable<Object, InstructorConstraint> iInstructors = new Hashtable<Object, InstructorConstraint>();
 	private Hashtable<InstructorConstraint, List<DistributionType>> iInstructorDistributions = new Hashtable<InstructorConstraint, List<DistributionType>>();
 	private Hashtable<Long, Lecture> iLectures = new Hashtable<Long, Lecture>();
@@ -1442,6 +1444,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 
     		getModel().addConstraint(rc);
     		iRooms.put(location.getUniqueId(),rc);
+    		iRoomsByPermId.put(location.getPermanentId(), rc);
     	}
     	return rc;
     }
@@ -3925,10 +3928,29 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 if (length<=0) continue;
                 TimeLocation timeLocation = new TimeLocation(dayCode, startSlot, length, 0, 0, null, df.format(time.getStartTime()), weekCode, 0);
                 List<TimeLocation> timeLocations = new ArrayList<TimeLocation>(1); timeLocations.add(timeLocation);
+                Placement placement = null;
+                List<RoomLocation> roomLocations = new ArrayList<RoomLocation>(1);
+                if (time instanceof HasRoom && ((HasRoom)time).getLocationId() != null) {
+                	HasRoom r = (HasRoom) time;
+                	RoomConstraint room = iRooms.get(r.getLocationId());
+                	if (room == null && r.getPermanentId() != null)
+                		room = iRoomsByPermId.get(r.getPermanentId());
+                	RoomLocation roomLocation = null;
+                	if (room != null) {
+                		roomLocation = new RoomLocation(room.getResourceId(), room.getName(), room.getBuildingId(), 0, room.getCapacity(), room.getPosX(), room.getPosY(),
+                                room.getIgnoreTooFar(), room);
+                	} else {
+                		roomLocation = new RoomLocation(r.getLocationId(), r.getLabel(), null, 0, 0, r.getCoordinateX(), r.getCoordinateY(), r.isIgnoreTooFar(), null);
+                	}
+                	roomLocations.add(roomLocation);
+                	placement = new Placement(null,timeLocation, roomLocation);
+                } else {
+                	placement = new Placement(null,timeLocation,(RoomLocation)null);
+                }
                 Lecture lecture = new Lecture(
                         new Long(--iFakeLectureId), null, null, time.getEventName(), 
-                        timeLocations, new ArrayList<RoomLocation>(), 0, 
-                        new Placement(null,timeLocation,(RoomLocation)null), 0, 0, 1.0);
+                        timeLocations, roomLocations, placement.getNrRooms(), 
+                        placement, 0, 0, 1.0);
                 lecture.setNote(time.getEventType());
                 Placement p = (Placement)lecture.getInitialAssignment();
                 lecture.setBestAssignment(p, 0);

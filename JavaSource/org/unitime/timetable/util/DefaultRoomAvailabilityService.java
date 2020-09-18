@@ -338,7 +338,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
             if (blocks==null) {
                 blocks = new TreeSet(); iInstructorAvailability.put(instructorExternalId, blocks);
             }
-            MeetingTimeBlock block = new MeetingTimeBlock(m, class2eventDateMap);
+            MeetingTimeBlock block = new MeetingTimeBlockWithRoom(m, class2eventDateMap);
             if (block.getStartTime() != null)
             	blocks.add(block);
         }
@@ -430,6 +430,57 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
             if (cmp!=0) return cmp;
             return getEventName().compareTo(block.getEventName());
         }
+
+    }
+    
+    public static class MeetingTimeBlockWithRoom extends MeetingTimeBlock implements HasRoom {
+		private static final long serialVersionUID = 917189228937342264L;
+		Long iLocationId;
+        String iLocationLabel;
+        Double iCoordX, iCoordY;
+        boolean iIgnoreTooFar, iIgnoreRoomCheck;
+
+    	public MeetingTimeBlockWithRoom(Meeting m, EventDateMapping.Class2EventDateMap class2eventDateMap) {
+    		super(m, class2eventDateMap);
+            Location location = m.getLocation();
+            if (location != null) {
+            	iLocationId = location.getUniqueId();
+            	iLocationLabel = location.getLabel();
+            	iCoordX = location.getCoordinateX();
+            	iCoordY = location.getCoordinateY();
+            	iIgnoreTooFar = location.isIgnoreTooFar();
+            	iIgnoreRoomCheck = location.isIgnoreRoomCheck();
+            }
+    	}
+
+		@Override
+		public Long getLocationId() {
+			return iLocationId;
+		}
+		@Override
+		public Long getPermanentId() {
+			return getLocationPermanentId();
+		}
+		@Override
+		public String getLabel() {
+			return iLocationLabel;
+		}
+		@Override
+		public Double getCoordinateX() {
+			return iCoordX;
+		}
+		@Override
+		public Double getCoordinateY() {
+			return iCoordY;
+		}
+		@Override
+		public boolean isIgnoreTooFar() {
+			return iIgnoreTooFar;
+		}
+		@Override
+		public boolean isIgnoreRoomCheck() {
+			return iIgnoreRoomCheck;
+		}
     }
 
 	@Override
@@ -473,7 +524,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                     .setInteger("startSlot", time.getStartSlot())
                     .setInteger("endSlot", time.getEndSlot())
                     .setCacheable(true).list()) {
-                MeetingTimeBlock block = new MeetingTimeBlock(m, class2eventDateMap);
+                MeetingTimeBlock block = new MeetingTimeBlockWithRoom(m, class2eventDateMap);
                 if (block.getStartTime() != null)
                 	ret.add(block);
             }
@@ -492,7 +543,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                             .setInteger("startSlot", time.getStartSlot())
                             .setInteger("endSlot", time.getEndSlot())
                             .setCacheable(true).list()) {
-                        MeetingTimeBlock block = new MeetingTimeBlock(m, class2eventDateMap);
+                        MeetingTimeBlock block = new MeetingTimeBlockWithRoom(m, class2eventDateMap);
                         if (block.getStartTime() != null)
                         	ret.add(block);
                     }
@@ -511,7 +562,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                             .setInteger("startSlot", time.getStartSlot())
                             .setInteger("endSlot", time.getEndSlot())
                             .setCacheable(true).list()) {
-                        MeetingTimeBlock block = new MeetingTimeBlock(m, class2eventDateMap);
+                        MeetingTimeBlock block = new MeetingTimeBlockWithRoom(m, class2eventDateMap);
                         if (block.getStartTime() != null)
                         	ret.add(block);
                     }

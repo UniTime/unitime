@@ -51,6 +51,16 @@ public interface RoomAvailabilityInterface {
         public Date getEndTime();
     }
     
+    public interface HasRoom extends Serializable {
+    	public Long getLocationId();
+    	public Long getPermanentId();
+    	public String getLabel();
+    	public Double getCoordinateX();
+    	public Double getCoordinateY();
+    	public boolean isIgnoreTooFar();
+    	public boolean isIgnoreRoomCheck();
+    }
+    
     public static class TimeBlockComparator implements Comparator<TimeBlock> {
     	public int compare(TimeBlock t1, TimeBlock t2) {
     		int cmp = t1.getEventName().compareToIgnoreCase(t2.getEventName());
