@@ -30,7 +30,7 @@
 	<category>
 		<title>Student Scheduling</title>
 		<item>
-			<name>Advisor Course Requests</name>
+			<name>Advisor Course Recommendations</name>
 			<description>
 				<line>A page for the advisor to fill with a student while advising him/her on what courses to take the next term.</line>
 				<line>It looks a lot like the Student Course Requests page, with a few fields added (credits per course, notes, etc.).</line>
@@ -61,6 +61,13 @@
 			</description>
 		</item>
 		<item>
+			<name>Priority Students</name>
+			<description>
+				<line>Added ability to identify priority students (to be assigned first) by a filter query.</line>
+				<line>Improved handling of priority students by the solver.</line>
+			</description>
+		</item>
+		<item>
 			<name>Reservation Restrictions</name>
 			<description>
 				<line>Added ability to define on a reservation whether it is inclusive or not.</line>
@@ -72,17 +79,41 @@
 			</description>
 		</item>
 		<item>
-			<name>Gradable Subpart</name>
+			<name>Grade Mode / Variable Credit Customization</name>
 			<description>
 				<line>Added ability to show course credit information on a particular section (not just the first one).</line>
-				<line>Gradable subpat (on which the credit is shown) can be provided using the ExternalClassNameHelperInterface interface, implementing HasGradableSubpart sub-interface.</line>
+				<line>Gradable subpart (on which the credit is shown) can be provided using the ExternalClassNameHelperInterface interface, implementing HasGradableSubpart sub-interface.</line>
+				<line>Banner Integration: Show credit information on the gradable section.</line>
+				<line>Banner Integration: For variable credit courses, display assigned credit returned by XE API.</line>
+				<line>Special Registration: Added ability to request credit change on a variable credit course.</line>
 			</description>
 		</item>
 		<item>
-			<name>Banner Integration: Assigned Credit</name>
+			<name>Online-Only Students / Courses</name>
 			<description>
-				<line>Show credit information on the gradable section.</line>
-				<line>For variable credit courses, display assigned credit returned by XE API.</line>
+				<line>Added ability to identify some students as online-only (e.g., with a student group) and restrict them to certain courses or course configurations.</line>
+				<line>The restriction can be on courses (using regular expression for course name), or on course configurations (using regular expression on instructional method reference).</line>
+				<line>Added ability to hide courses that do not have an online-only option from the online-only students and vice versa (students can not look them up on the Course Requests or Scheduling Assistant page).</line>
+				<line>Added ability for the solver to keep out students from courses or course configurations they cannot take.</line>
+			</description>
+		</item>
+		<item>
+			<name>Minimal Perturbation Problem Improvements</name>
+			<description>
+				<line>Improved ability to re-section not-assigned course requests while the rest is kept untouched.</line>
+				<line>Existing enrollments can be fixed and left unchanged, even when they are not consistent.</line>
+				<line>Single Course MPP: Added ability to re-section only students in the given course or courses, while everything else is left untouched.</line>
+			</description>
+		</item>		
+		<item>
+			<name>Other Changes &amp; Improvements</name>
+			<description>
+				<line>Scheduling Dashboard: Added an ability to filter by instructional method.</line>
+				<line>Custom integration with a custom student attendance planning tool, showing additional meeting information on a class that a student has enrolled.</line>
+				<line>Added ability to save/validate only a subset of students loaded in the student scheduling solver.</line>
+				<line>Added ability to put a small penalization on online sections.
+					<line>That is sections that do not have a time, that have time and no room, or that have time but the room does not check for conflicts (like the ONLINE room).</line>
+				</line>
 			</description>
 		</item>
 	</category>
@@ -97,6 +128,44 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Fixed Time MPP</name>
+			<description>
+				<line>A new ability to assign new rooms while the existing time assignments are left unchanged.</line>
+				<line>Fixed Times: all assigned classes have only the assigned time in the domain (time preferences are completely ignored).</line>
+				<line>Weakened Distributions: allow hard distribution preferences to be weakened (strongly discouraged instead of prohibited etc.)</line>
+				<line>Instructor Conflicts: instructor conflicts can be allowed but penalized.</line>
+				<line>Prohibited Rooms: allowed prohibited rooms in the domain (except of rooms that are too small, or not being available for the department).</line>
+			</description>
+		</item>
+		<item>
+			<name>Other Changes &amp; Improvements</name>
+			<description>
+				<line>Class Assignment: When checking for event conflicts, ignore conflicts for rooms that have the conflict checking disabled.</line>
+				<line>Instructional Offering Cross Lists: Added ability to edit Reserved space (course limit) even when there is only a single course in the cross-list.</line>
+				<line>Course Timetabling Save &amp; Commit: when saving &amp; committing two or more problems together, do not check for conflicts between problems that are being committed.</line>
+				<line>Instructor Availability: When checking instructor availability based on events (and possibly classes from other academic sessions), also check for distance conflicts between the class and the unavailability.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Examination Timetabling</title>
+		<item>
+			<name>Other Changes &amp; Improvements</name>
+			<description>
+				<line>Added support for rooms that do not check for conflicts (e.g., the ONLINE room).</line>
+				<line>Allow for examination periods to run over midnight.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Event Management</title>
+		<item>
+			<name>Other Changes &amp; Improvements</name>
+			<description>
+				<line>Added ability to make the Expected Attendance a required field.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other</title>
@@ -105,6 +174,21 @@
 			<description>
 				<line>Basic support for right-to-left languages.</line>
 				<line>Enable by using ar locale.</line>
+			</description>
+		</item>
+		<item>
+			<name>APIs</name>
+			<description>
+				<line>HQL Reports: Added ability to export HQL reports in JSON format using the API.</line>
+				<line>Data Exchange: Course Offerings XML import and export extended to include number of rooms of a class.</line>
+				<line>Data Exchange: Include export and import of advisor recommendations with the Student Course Requests XML.</line>
+			</description>
+		</item>
+		<item>
+			<name>Other Changes &amp; Improvements</name>
+			<description>
+				<line>People Lookup: Added ability to search the whole subtree in the LDAP search.</line>
+				<line>Task Scheduler: make sure current month is included if it is within 12 months before session start or after session end.</line>
 			</description>
 		</item>
 	</category>
