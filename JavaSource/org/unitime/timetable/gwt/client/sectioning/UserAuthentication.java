@@ -91,6 +91,7 @@ public class UserAuthentication implements UserAuthenticationProvider {
 	private boolean iLoggedIn = false;
 	private boolean iGuest = false;
 	private String iLastUser = null;
+	private String iLastPin = null;
 	private boolean iAllowGuest = false;
 	
 	private Command iOnLoginCommand = null;
@@ -266,6 +267,7 @@ public class UserAuthentication implements UserAuthenticationProvider {
 				});
 			}
 			public void onSuccess(String result) {
+				iLastPin = (iPin == null ? null : iPin.getText());
 				iUserName.setEnabled(true);
 				iUserPassword.setEnabled(true);
 				if (iPin != null)
@@ -426,6 +428,10 @@ public class UserAuthentication implements UserAuthenticationProvider {
 	
 	public String getUser() {
 		return iLastUser;
+	}
+	
+	public String getPin() {
+		return iLastPin;
 	}
 	
 	public void setUser(final String user, final AsyncCallback<Boolean> callback) {

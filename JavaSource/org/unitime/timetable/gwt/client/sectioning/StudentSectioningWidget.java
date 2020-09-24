@@ -86,6 +86,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseSt
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
 import org.unitime.timetable.gwt.shared.UserAuthenticationProvider;
 
@@ -177,7 +178,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private ArrayList<HistoryItem> iHistory = new ArrayList<HistoryItem>();
 	private boolean iInRestore = false;
 	private boolean iTrackHistory = true;
-	private boolean iOnline;
+	private StudentSectioningContext iContext;
 	private SpecialRegistrationContext iSpecRegCx = new SpecialRegistrationContext();
 	private StudentSectioningPage.Mode iMode = null;
 	private OnlineSectioningInterface.EligibilityCheck iEligibilityCheck = null;
@@ -196,7 +197,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 
 	public StudentSectioningWidget(boolean online, AcademicSessionProvider sessionSelector, UserAuthenticationProvider userAuthentication, StudentSectioningPage.Mode mode, boolean history) {
 		iMode = mode;
-		iOnline = online;
+		iContext = new StudentSectioningContext();
+		iContext.setOnline(online);
+		iContext.setSectioning(mode.isSectioning());
+		iContext.setSessionId(sessionSelector.getAcademicSessionId());
 		iSessionSelector = sessionSelector;
 		iUserAuthentication = userAuthentication;
 		iTrackHistory = history;
@@ -204,7 +208,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iPanel = new VerticalPanel();
 		iPanel.addStyleName("unitime-SchedulingAssistant");
 		
-		iCourseRequests = new CourseRequestsTable(iSessionSelector, iMode.isSectioning(), iOnline, iSpecRegCx);
+		iCourseRequests = new CourseRequestsTable(iContext, iSpecRegCx);
 		iCourseRequests.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<CourseRequestInterface> event) {
@@ -456,7 +460,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			@Override
 			public void onClick(ClickEvent event) {
 				LoadingWidget.getInstance().show(MESSAGES.waitListDegreePlans());
-				iSectioningService.listDegreePlans(iOnline, iSessionSelector.getAcademicSessionId(), null, new AsyncCallback<List<DegreePlanInterface>>() {
+				iSectioningService.listDegreePlans(iContext, new AsyncCallback<List<DegreePlanInterface>>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
@@ -484,14 +488,14 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							details.setDataProvider(new DataProvider<CourseAssignment, String>() {
 								@Override
 								public void getData(CourseAssignment source, AsyncCallback<String> callback) {
-									iSectioningService.retrieveCourseDetails(iSessionSelector.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
+									iSectioningService.retrieveCourseDetails(iContext, source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 								}
 							});
 							CourseFinderClasses classes = new CourseFinderClasses(false, iSpecRegCx);
 							classes.setDataProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
 								@Override
 								public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {
-									iSectioningService.listClasses(iOnline, iSessionSelector.getAcademicSessionId(), null, source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
+									iSectioningService.listClasses(iContext, source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 								}
 							});
 							if (iDegreePlanDialog == null) {
@@ -539,7 +543,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			@Override
 			public void onClick(ClickEvent event) {
 				LoadingWidget.getInstance().show(MESSAGES.waitAdvisorRequests());
-				iSectioningService.getAdvisorRequests(iSessionSelector.getAcademicSessionId(), null, new AsyncCallback<CourseRequestInterface>() {
+				iSectioningService.getAdvisorRequests(iContext, new AsyncCallback<CourseRequestInterface>() {
 
 					@Override
 					public void onFailure(Throwable caught) {
@@ -615,8 +619,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (result) {
 							final String requestorNote = note.getMessage();
 							UpdateSpecialRegistrationRequest request = new UpdateSpecialRegistrationRequest(
-									iSessionSelector.getAcademicSessionId(),
-									iEligibilityCheck.getStudentId(),
+									iContext,
 									rc.getRequestId(),
 									requestorNote, true);
 							iSectioningService.updateSpecialRequest(request, new AsyncCallback<UpdateSpecialRegistrationResponse>() {
@@ -667,8 +670,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (result) {
 							final String requestorNote = note.getMessage();
 							UpdateSpecialRegistrationRequest req = new UpdateSpecialRegistrationRequest(
-									iSessionSelector.getAcademicSessionId(),
-									iEligibilityCheck.getStudentId(),
+									iContext,
 									request.getRequestId(),
 									requestorNote, true);
 							iSectioningService.updateSpecialRequest(req, new AsyncCallback<UpdateSpecialRegistrationResponse>() {
@@ -717,8 +719,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (result) {
 							final String requestorNote = note.getMessage();
 							UpdateSpecialRegistrationRequest request = new UpdateSpecialRegistrationRequest(
-									iSessionSelector.getAcademicSessionId(),
-									iEligibilityCheck.getStudentId(),
+									iContext,
 									reg.getRequestId(),
 									requestorNote, true);
 							iSectioningService.updateSpecialRequest(request, new AsyncCallback<UpdateSpecialRegistrationResponse>() {
@@ -865,7 +866,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							else if (!ch.isCourseAssigned() && !specRegAdds.contains(ch.getCourseId()))
 								courseRequests.dropCourse(new RequestedCourse(ch.getCourseId(), CONSTANTS.showCourseTitle() ? ch.getCourseNameWithTitle() : ch.getCourseName()));
 						LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
-						iSectioningService.section(iOnline, courseRequests, iLastResult, specReg.getChanges(), new AsyncCallback<ClassAssignmentInterface>() {
+						iSectioningService.section(courseRequests, iLastResult, specReg.getChanges(), new AsyncCallback<ClassAssignmentInterface>() {
 							public void onSuccess(ClassAssignmentInterface result) {
 								if (specReg.hasSpaceConflict() || specReg.hasTimeConflict() || specReg.hasLinkedConflict()) iSpecRegCx.setDisclaimerAccepted(true);
 								fillIn(result);
@@ -885,10 +886,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			}
 
 			public void doCancel(String requestId, final AsyncCallback<Boolean> callback) {
-				CancelSpecialRegistrationRequest req = new CancelSpecialRegistrationRequest();
+				CancelSpecialRegistrationRequest req = new CancelSpecialRegistrationRequest(iContext);
 				req.setRequestId(requestId);
-				req.setSessionId(iSessionSelector.getAcademicSessionId());
-				req.setStudentId(iEligibilityCheck.getStudentId());
 				iSectioningService.cancelSpecialRequest(req, new AsyncCallback<CancelSpecialRegistrationResponse>() {
 					@Override
 					public void onSuccess(CancelSpecialRegistrationResponse result) {
@@ -1025,7 +1024,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			public void onClick(ClickEvent event) {
 				clearMessage();
 				LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
-				iSectioningService.section(iOnline, iCourseRequests.getRequest(), null, new AsyncCallback<ClassAssignmentInterface>() {
+				iSectioningService.section(iCourseRequests.getRequest(), null, new AsyncCallback<ClassAssignmentInterface>() {
 					public void onFailure(Throwable caught) {
 						iStatus.error(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
 						LoadingWidget.getInstance().hide();
@@ -1048,7 +1047,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						updateHistory();
 						if (result) {
 							LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
-							iSectioningService.section(iOnline, iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
+							iSectioningService.section(iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
 								public void onFailure(Throwable caught) {
 									iStatus.error(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
 									LoadingWidget.getInstance().hide();
@@ -1067,7 +1066,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						}
 					}
 					public void onFailure(Throwable caught) {
-						iStatus.error(MESSAGES.validationFailedWithMessage(caught.getMessage()), caught);
+						if (caught != null)
+							iStatus.error(MESSAGES.validationFailedWithMessage(caught.getMessage()), caught);
+						else
+							iStatus.error(MESSAGES.validationFailed());
 						LoadingWidget.getInstance().hide();
 						updateHistory();
 					}
@@ -1088,7 +1090,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							iStartOver.setEnabled(false);
 							iSpecRegCx.reset(iEligibilityCheck);
 							addHistory();
-							lastRequest(iSessionSelector.getAcademicSessionId(), null, true, false);
+							lastRequest(false);
 						}
 					});
 				} else {
@@ -1098,7 +1100,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					iStartOver.setEnabled(false);
 					iSpecRegCx.reset(iEligibilityCheck);
 					addHistory();
-					lastRequest(iSessionSelector.getAcademicSessionId(), null, true, false);
+					lastRequest(false);
 				}
 			}
 		});
@@ -1134,7 +1136,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						clearMessage();
 						LoadingWidget.getInstance().show(MESSAGES.waitEnroll());
 						final ArrayList<ClassAssignmentInterface.ClassAssignment> lastEnrollment = new ArrayList<ClassAssignmentInterface.ClassAssignment>(iLastResult);
-						iSectioningService.enroll(iOnline, iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
+						iSectioningService.enroll(iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
 							public void onSuccess(ClassAssignmentInterface result) {
 								LoadingWidget.getInstance().hide();
 								iSavedAssignment = result;
@@ -1147,8 +1149,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									iStatus.done(MESSAGES.enrollOK());
 								updateHistory();
 								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.RECHECK_AFTER_ENROLLMENT)) {
-									iSectioningService.checkEligibility(iOnline, iMode.isSectioning(), iSessionSelector.getAcademicSessionId(),
-											iEligibilityCheck.getStudentId(), (String)null,
+									iSectioningService.checkEligibility(iContext,
 											new AsyncCallback<OnlineSectioningInterface.EligibilityCheck>() {
 												@Override
 												public void onFailure(Throwable caught) {
@@ -1203,7 +1204,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 													}
 												}
 											};
-											iPinDialog.checkEligibility(iOnline, iMode.isSectioning(), iSessionSelector.getAcademicSessionId(), null, callback, iSessionSelector.getAcademicSessionInfo());
+											iPinDialog.checkEligibility(iContext, callback, iSessionSelector.getAcademicSessionInfo());
 										}
 									}
 									if (se.hasErrors()) iLastAssignment.setErrors(se.getErrors());
@@ -1375,7 +1376,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	
 	public void openSuggestionsBox(int rowIndex) {
 		if (iSuggestionsBox == null) {
-			iSuggestionsBox = new SuggestionsBox(iAssignmentGrid.getColorProvider(), iOnline, iSpecRegCx);
+			iSuggestionsBox = new SuggestionsBox(iAssignmentGrid.getColorProvider(), iSpecRegCx);
 			
 			iSuggestionsBox.addCloseHandler(new CloseHandler<PopupPanel>() {
 				public void onClose(CloseEvent<PopupPanel> event) {
@@ -1404,7 +1405,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					iCourseRequests.dropCourse(event.getAssignment());
 					LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
 					CourseRequestInterface r = iCourseRequests.getRequest(); r.setNoChange(true);
-					iSectioningService.section(iOnline, r, iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
+					iSectioningService.section(r, iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
 						public void onFailure(Throwable caught) {
 							LoadingWidget.getInstance().hide();
 							iStatus.error(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
@@ -1640,7 +1641,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								iCourseRequests.setWaitList(course.getCourseId(), event.getValue());
 								LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
 								CourseRequestInterface r = iCourseRequests.getRequest(); r.setNoChange(true);
-								iSectioningService.section(iOnline, r, iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
+								iSectioningService.section(r, iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
 									public void onFailure(Throwable caught) {
 										iStatus.error(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
 										LoadingWidget.getInstance().hide();
@@ -2108,15 +2109,21 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		clear(true);
 	}
 	
-	public void checkEligibility(final Long sessionId, final Long studentId, final boolean saved, final AsyncCallback<OnlineSectioningInterface.EligibilityCheck> ret) {
+	public void checkEligibility(final AsyncCallback<OnlineSectioningInterface.EligibilityCheck> ret) {
+		checkEligibility(ret, null);
+	}
+	
+	public void checkEligibility(final AsyncCallback<OnlineSectioningInterface.EligibilityCheck> ret, String pin) {
 		LoadingWidget.getInstance().show(MESSAGES.courseRequestsLoading());
 		iStartOver.setVisible(false); iStartOver.setEnabled(false);
 		iSpecRegCx.reset();
-		iSectioningService.checkEligibility(iOnline, iMode.isSectioning(), sessionId, studentId, null, new AsyncCallback<OnlineSectioningInterface.EligibilityCheck>() {
+		iContext.setPin(pin);
+		iSectioningService.checkEligibility(iContext, new AsyncCallback<OnlineSectioningInterface.EligibilityCheck>() {
 			@Override
 			public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
 				clearMessage(false);
 				iEligibilityCheck = result;
+				iContext.setStudentId(result == null ? null : result.getStudentId());
 				iSpecRegCx.update(result);
 				iCourseRequests.setCanWaitList(result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
 				iCourseRequests.setArrowsVisible(!result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.NO_REQUEST_ARROWS));
@@ -2145,7 +2152,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.HAS_ADVISOR_REQUESTS)) {
 									iAdvisorReqs.setVisible(true); iAdvisorReqs.setEnabled(true);
 								}
-								lastRequest(sessionId, studentId, saved, true);
+								lastRequest(true);
 								if (ret != null) ret.onSuccess(iEligibilityCheck);
 							}
 							@Override
@@ -2153,6 +2160,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								iCourseRequests.setCanWaitList(result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
 								iCourseRequests.setArrowsVisible(!result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.NO_REQUEST_ARROWS));
 								iEligibilityCheck = result;
+								iContext.setStudentId(result == null ? null : result.getStudentId());
+								
 								iSpecRegCx.update(result);
 								iSchedule.setVisible(iMode.isSectioning()); iSchedule.setEnabled(iMode.isSectioning());
 								iSave.setVisible(!iMode.isSectioning()); iSave.setEnabled(!iMode.isSectioning() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_REGISTER));
@@ -2162,7 +2171,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.HAS_ADVISOR_REQUESTS)) {
 									iAdvisorReqs.setVisible(true); iAdvisorReqs.setEnabled(true);
 								}
-								lastRequest(sessionId, studentId, saved, true);
+								lastRequest(true);
 								if (ret != null) ret.onSuccess(iEligibilityCheck);
 							}
 							@Override
@@ -2176,7 +2185,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								}
 							}
 						};
-						iPinDialog.checkEligibility(iOnline, iMode.isSectioning(), sessionId, null, callback, iSessionSelector.getAcademicSessionInfo());
+						iPinDialog.checkEligibility(iContext, callback, iSessionSelector.getAcademicSessionInfo());
 					} else {
 						iSchedule.setVisible(iMode.isSectioning()); iSchedule.setEnabled(iMode.isSectioning());
 						iSave.setVisible(!iMode.isSectioning()); iSave.setEnabled(!iMode.isSectioning() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_REGISTER));
@@ -2186,7 +2195,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.HAS_ADVISOR_REQUESTS)) {
 							iAdvisorReqs.setVisible(true); iAdvisorReqs.setEnabled(true);
 						}
-						lastRequest(sessionId, studentId, saved, true);
+						lastRequest(true);
 						if (ret != null) ret.onSuccess(iEligibilityCheck);
 					}
 				} else {
@@ -2218,7 +2227,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		});
 	}
 	
-	private void lastResult(final CourseRequestInterface request, final Long sessionId, final Long studentId, boolean saved, final boolean changeViewIfNeeded) {
+	private void lastResult(final CourseRequestInterface request, final boolean changeViewIfNeeded) {
 		AsyncCallback<ClassAssignmentInterface> callback = new AsyncCallback<ClassAssignmentInterface>() {
 			public void onFailure(Throwable caught) {
 				iStatus.error(caught.getMessage(), caught);
@@ -2258,7 +2267,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								ArrayList<ClassAssignmentInterface.ClassAssignment> classes = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 								for (ClassAssignmentInterface.CourseAssignment course: saved.getCourseAssignments())
 									classes.addAll(course.getClassAssignments());
-								iSectioningService.section(iOnline, request, classes, new AsyncCallback<ClassAssignmentInterface>() {
+								iSectioningService.section(request, classes, new AsyncCallback<ClassAssignmentInterface>() {
 									public void onFailure(Throwable caught) {
 										LoadingWidget.getInstance().hide();
 									}
@@ -2276,7 +2285,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.HAS_SPECREG)) { // && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG)
 					iSpecialRegistrationsPanel.showWaiting();
 					iSectioningService.retrieveAllSpecialRequests(
-							new RetrieveAllSpecialRegistrationsRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId()),
+							new RetrieveAllSpecialRegistrationsRequest(iContext),
 							new AsyncCallback<List<RetrieveSpecialRegistrationResponse>>() {
 								@Override
 								public void onFailure(Throwable caught) {
@@ -2299,13 +2308,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			}
 		};
 		iSpecialRegistrationsPanel.clearRegistrations();
-		if (saved)
-			iSectioningService.savedResult(iOnline, request.getAcademicSessionId(), request.getStudentId(), callback);
-		else
-			iSectioningService.lastResult(iOnline, request.getAcademicSessionId(), callback);
+		iSectioningService.savedResult(iContext, callback);
 	}
 	
-	public void lastRequest(final Long sessionId, final Long studentId, final boolean saved, final boolean changeViewIfNeeded) {
+	public void lastRequest(final boolean changeViewIfNeeded) {
 		if (!LoadingWidget.getInstance().isShowing())
 			LoadingWidget.getInstance().show(MESSAGES.courseRequestsLoading());
 		
@@ -2320,7 +2326,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				if (request.isSaved())
 					iSavedRequest = request;
 				else if (!iMode.isSectioning() && iSavedRequest == null) {
-					iSectioningService.savedRequest(iOnline, iMode.isSectioning(), sessionId, studentId, new AsyncCallback<CourseRequestInterface>() {
+					iSectioningService.savedRequest(iContext, new AsyncCallback<CourseRequestInterface>() {
 						@Override
 						public void onFailure(Throwable caught) {
 							iStatus.error(caught.getMessage(), caught);
@@ -2340,7 +2346,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				iCourseRequests.setRequest(request);
 				updateHistory();
 				if (iSchedule.isVisible() || iRequests.isVisible()) {
-					lastResult(request, sessionId, studentId, saved, changeViewIfNeeded);
+					lastResult(request, changeViewIfNeeded);
 				} else {
 					LoadingWidget.getInstance().hide();
 					iStartOver.setVisible(true);
@@ -2356,10 +2362,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			}
 		};
 		
-		if (saved)
-			iSectioningService.savedRequest(iOnline, iMode.isSectioning(), sessionId, studentId, callback);
-		else
-			iSectioningService.lastRequest(iOnline, iMode.isSectioning(), sessionId, callback);
+		iSectioningService.savedRequest(iContext, callback);
 	}
 
 	public void showSuggestionsAsync(final int rowIndex) {
@@ -2378,7 +2381,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		private CourseRequestInterface iRequest;
 		private ClassAssignmentInterface iAssignment;
 		private boolean iFirstPage;
-		private Long iSessionId;
 		private String iUser;
 		private String iMessage = null;
 		private ScheduleStatus.Level iMessageLevel = null;
@@ -2390,7 +2392,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iRequest = iCourseRequests.getRequest();
 			iAssignment = iLastAssignment;
 			iFirstPage = iSchedule.isVisible();
-			iSessionId = iSessionSelector.getAcademicSessionId();
 			iUser = iUserAuthentication.getUser();
 			iMessage = iStatus.getMessage(); iMessageLevel = iStatus.getLevel();
 			iTab = iAssignmentTab.getSelectedTab();
@@ -2399,7 +2400,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		}
 		
 		public void restore() {
-			if (isChanged() && ((iUser != null && !iUser.equals(iUserAuthentication.getUser())) || (iSessionId != null && !iSessionId.equals(iSessionSelector.getAcademicSessionId())))) {
+			if (isChanged() && ((iUser != null && !iUser.equals(iUserAuthentication.getUser())) || (iRequest.getSessionId() != null && !iRequest.getSessionId().equals(iSessionSelector.getAcademicSessionId())))) {
 				UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), iMode.isSectioning() ? MESSAGES.queryLeaveChangesOnClassSchedule() : MESSAGES.queryLeaveChangesOnCourseRequests(), new Command() {
 					@Override
 					public void execute() {
@@ -2416,10 +2417,12 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iUserAuthentication.setUser(iUser, new AsyncCallback<Boolean>() {
 				public void onSuccess(Boolean result) {
 					if (result) {
-						iSessionSelector.selectSession(iSessionId, new AsyncCallback<Boolean>() {
+						iSessionSelector.selectSession(iRequest.getSessionId(), new AsyncCallback<Boolean>() {
 							public void onSuccess(Boolean result) {
 								if (result) {
 									iSpecRegCx.copy(iSRCx);
+									iContext.setSessionId(iRequest.getSessionId());
+									iContext.setStudentId(iRequest.getStudentId());
 									iSpecialRegAssignment = iSRassignment;
 									if (iSpecialRegistrationsPanel.isVisible()) {
 										iSpecialRegistrationsPanel.populate(iSpecialRegistrationsPanel.getRegistrations(), iSavedAssignment);
@@ -2637,7 +2640,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	}
 	
 	public void clearMessage(boolean showEligibility) {
-		if (iEligibilityCheck != null && iOnline && showEligibility) {
+		if (iEligibilityCheck != null && iContext.isOnline() && showEligibility) {
 			if (iEligibilityCheck.hasFlag(EligibilityFlag.PIN_REQUIRED))
 				iStatus.error(MESSAGES.exceptionAuthenticationPinNotProvided(), false);
 			else if (iEligibilityCheck.hasMessage() && (iMode.isSectioning() && !iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL)))
@@ -2873,21 +2876,21 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			courses.setDataProvider(new DataProvider<String, Collection<CourseAssignment>>() {
 				@Override
 				public void getData(String source, AsyncCallback<Collection<CourseAssignment>> callback) {
-					iSectioningService.listCourseOfferings(iSessionSelector.getAcademicSessionId(), null, source, null, callback);
+					iSectioningService.listCourseOfferings(iContext, source, null, callback);
 				}
 			});
 			CourseFinderDetails details = new CourseFinderDetails();
 			details.setDataProvider(new DataProvider<CourseAssignment, String>() {
 				@Override
 				public void getData(CourseAssignment source, AsyncCallback<String> callback) {
-					iSectioningService.retrieveCourseDetails(iSessionSelector.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
+					iSectioningService.retrieveCourseDetails(iContext, source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 				}
 			});
 			CourseFinderClasses classes = new CourseFinderClasses(true, iSpecRegCx, courses.getRequiredCheckbox());
 			classes.setDataProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
 				@Override
 				public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {
-					iSectioningService.listClasses(iOnline, iSessionSelector.getAcademicSessionId(), null, source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
+					iSectioningService.listClasses(iContext, source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 				}
 			});
 			courses.setCourseDetails(details, classes);
@@ -2907,7 +2910,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								iCourseRequests.dropCourse(event.getSelectedItem());
 								LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
 								CourseRequestInterface r = iCourseRequests.getRequest(); r.setNoChange(true);
-								iSectioningService.section(iOnline, r, iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
+								iSectioningService.section(r, iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
 									public void onFailure(Throwable caught) {
 										LoadingWidget.getInstance().hide();
 										iStatus.error(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
@@ -2923,7 +2926,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						});
 					} else {
 						if (iQuickAddSuggestions == null) {
-							iQuickAddSuggestions = new SuggestionsBox(iAssignmentGrid.getColorProvider(), iOnline, iSpecRegCx);
+							iQuickAddSuggestions = new SuggestionsBox(iAssignmentGrid.getColorProvider(), iSpecRegCx);
 							iQuickAddSuggestions.addCloseHandler(new CloseHandler<PopupPanel>() {
 								public void onClose(CloseEvent<PopupPanel> event) {
 									Scheduler.get().scheduleDeferred(new ScheduledCommand() {
@@ -2996,7 +2999,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					clearMessage();
 					LoadingWidget.getInstance().show(MESSAGES.waitSpecialRegistration());
 					iSectioningService.submitSpecialRequest(
-							new SubmitSpecialRegistrationRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iSpecRegCx.getRequestId(), iCourseRequests.getRequest(),
+							new SubmitSpecialRegistrationRequest(iContext, iSpecRegCx.getRequestId(), iCourseRequests.getRequest(),
 									iLastEnrollment != null ? iLastEnrollment : iLastResult, errors, note.getMessage(), eligibilityResponse.getCredit()),
 							new AsyncCallback<SubmitSpecialRegistrationResponse>() {
 								@Override
@@ -3068,7 +3071,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		LoadingWidget.getInstance().show(MESSAGES.waitOverridesCheck());
 		iSpecialRegAssignment = null;
 		iSectioningService.checkSpecialRequestEligibility(
-				new SpecialRegistrationEligibilityRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iSpecRegCx.getRequestId(), iLastEnrollment, iLastAssignment == null ? null : iLastAssignment.getErrors()),
+				new SpecialRegistrationEligibilityRequest(iContext, iSpecRegCx.getRequestId(), iLastEnrollment, iLastAssignment == null ? null : iLastAssignment.getErrors()),
 				new AsyncCallback<SpecialRegistrationEligibilityResponse>() {
 					@Override
 					public void onFailure(Throwable caught) {
@@ -3105,7 +3108,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		});
 		dialog.center();
 		iSectioningService.checkSpecialRequestEligibility(
-				new SpecialRegistrationEligibilityRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iSpecRegCx.getRequestId(), iLastEnrollment, iLastAssignment == null ? null : iLastAssignment.getErrors()),
+				new SpecialRegistrationEligibilityRequest(iContext, iSpecRegCx.getRequestId(), iLastEnrollment, iLastAssignment == null ? null : iLastAssignment.getErrors()),
 				new AsyncCallback<SpecialRegistrationEligibilityResponse>() {
 					@Override
 					public void onFailure(Throwable caught) {
@@ -3448,7 +3451,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	
 	protected void changeGradeModes(ArrayList<ClassAssignmentInterface.ClassAssignment> lastEnrollment, List<RetrieveSpecialRegistrationResponse> approvals) {
 		if (iChangeGradeModesDialog == null) {
-			iChangeGradeModesDialog = new ChangeGradeModesDialog(iStatus) {
+			iChangeGradeModesDialog = new ChangeGradeModesDialog(iContext, iStatus) {
 				protected void onChange(ChangeGradeModesResponse response) {
 					if (response.hasGradeModes()) {
 						for (CourseAssignment course: iSavedAssignment.getCourseAssignments())
@@ -3491,6 +3494,14 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				iChangeGradeModesDialog.setText(MESSAGES.dialogChangeGradeModeAndVariableCredit());
 			}
 		}
-		iChangeGradeModesDialog.changeGradeModes(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), lastEnrollment, approvals);
+		iChangeGradeModesDialog.changeGradeModes(lastEnrollment, approvals);
+	}
+	
+	public void setSessionId(Long sessionId) {
+		iContext.setSessionId(sessionId);
+	}
+	
+	public void setStudentId(Long studentId) {
+		iContext.setStudentId(studentId);
 	}
 }

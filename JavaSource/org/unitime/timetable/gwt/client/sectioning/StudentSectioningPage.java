@@ -220,7 +220,9 @@ public class StudentSectioningPage extends Composite {
 					widget.clearMessage();
 					widget.clear();
 				}
-				widget.checkEligibility(event.getNewAcademicSessionId(), null, true, null);
+				widget.setSessionId(event.getNewAcademicSessionId());
+				widget.setStudentId(null);
+				widget.checkEligibility(null, userAuthentication.getPin());
 				userAuthentication.setLookupOptions("mustHaveExternalId,source=students,session=" + event.getNewAcademicSessionId());
 			}
 		});

@@ -46,12 +46,12 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
-import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
 import com.google.gwt.core.client.GWT;
@@ -79,22 +79,19 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 	
 	private boolean iAlternate;
 	private int iPriority;
-	private AcademicSessionProvider iSessionProvider;
+	private StudentSectioningContext iContext;
 	private List<CourseSelectionBox> iCourses = new ArrayList<CourseSelectionBox>();
 	private AriaCheckBox iWaitList = null;
 	private CourseRequestLine iPrevious = null, iNext = null;
 	private Validator<CourseSelection> iValidator = null;
 	private SpecialRegistrationContext iSpecReg;
-	private boolean iSectioning, iOnline;
 	private ImageButton iDelete;
 	
-	public CourseRequestLine(boolean online, AcademicSessionProvider session, int priority, boolean alternate, Validator<CourseSelection> validator, boolean sectioning, SpecialRegistrationContext specreg) {
+	public CourseRequestLine(StudentSectioningContext context, int priority, boolean alternate, Validator<CourseSelection> validator, SpecialRegistrationContext specreg) {
 		super("unitime-CourseRequestLine");
-		iOnline = online;
-		iSessionProvider = session;
+		iContext = context;
 		iValidator = validator;
 		iPriority = priority;
-		iSectioning = sectioning;
 		iAlternate = alternate;
 		iSpecReg = specreg;
 		
@@ -488,21 +485,21 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 					iCourseFinderMultipleCourses.setDataProvider(new DataProvider<String, Collection<CourseAssignment>>() {
 						@Override
 						public void getData(String source, AsyncCallback<Collection<CourseAssignment>> callback) {
-							sSectioningService.listCourseOfferings(iSessionProvider.getAcademicSessionId(), null, source, null, callback);
+							sSectioningService.listCourseOfferings(iContext, source, null, callback);
 						}
 					});
 					CourseFinderDetails details = new CourseFinderDetails();
 					details.setDataProvider(new DataProvider<CourseAssignment, String>() {
 						@Override
 						public void getData(CourseAssignment source, AsyncCallback<String> callback) {
-							sSectioningService.retrieveCourseDetails(iSessionProvider.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
+							sSectioningService.retrieveCourseDetails(iContext, source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 						}
 					});
 					CourseFinderClasses classes = new CourseFinderClasses(true, iSpecReg, iCourseFinderMultipleCourses.getRequiredCheckbox());
 					classes.setDataProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
 						@Override
 						public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {
-							sSectioningService.listClasses(iOnline, iSessionProvider.getAcademicSessionId(), null, source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
+							sSectioningService.listClasses(iContext, source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 						}
 					});
 					iCourseFinderMultipleCourses.setCourseDetails(details, classes);
@@ -520,13 +517,13 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			setSuggestions(new DataProvider<String, Collection<CourseAssignment>>() {
 				@Override
 				public void getData(String source, AsyncCallback<Collection<CourseAssignment>> callback) {
-					sSectioningService.listCourseOfferings(iSessionProvider.getAcademicSessionId(), null, source, 20, callback);
+					sSectioningService.listCourseOfferings(iContext, source, 20, callback);
 				}
 			});
 			setSectionsProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
 				@Override
 				public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {
-					sSectioningService.listClasses(iOnline, iSessionProvider.getAcademicSessionId(), null, source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
+					sSectioningService.listClasses(iContext, source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 				}
 			});
 			
@@ -590,7 +587,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 				FilterOperation moveUp = new FilterOperation(RESOURCES.filterSwap(), 'S') {
 					@Override
 					public void onBeforeResize(CourseRequestFilterBox filter) {
-						setVisible(isCanChangeAlternatives() && (!iSectioning || isEnabled()) && !filter.getText().isEmpty() && iCourses.size() != getIndex() + 1);
+						setVisible(isCanChangeAlternatives() && (!iContext.isSectioning() || isEnabled()) && !filter.getText().isEmpty() && iCourses.size() != getIndex() + 1);
 					}
 				};
 				moveUp.setTitle(MESSAGES.altFilterSwapWithAlternative());
@@ -653,7 +650,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 				FilterOperation addAlternative = new FilterOperation(RESOURCES.filterAddAlternative(), 'A') {
 					@Override
 					public void onBeforeResize(CourseRequestFilterBox filter) {
-						setVisible(isCanChangeAlternatives() && (!iSectioning || isEnabled()) && getValue().isCourse() && iCourses.size() == getIndex() + 1);
+						setVisible(isCanChangeAlternatives() && (!iContext.isSectioning() || isEnabled()) && getValue().isCourse() && iCourses.size() == getIndex() + 1);
 					}
 				};
 				addAlternative.setTitle(MESSAGES.altFilterAddAlternative());
@@ -677,7 +674,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 					@Override
 					public void onBeforeResize(CourseRequestFilterBox filter) {
 						CourseSelectionBox next = getNext();
-						setVisible(isCanChangeAlternatives() && (!iSectioning || isEnabled()) && !filter.getText().isEmpty() && next != null && next.getValue().isCourse());
+						setVisible(isCanChangeAlternatives() && (!iContext.isSectioning() || isEnabled()) && !filter.getText().isEmpty() && next != null && next.getValue().isCourse());
 					}
 				};
 				moveDown.setTitle(MESSAGES.altFilterSwapWithAlternative());
@@ -727,7 +724,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 				FilterOperation addAlternative = new FilterOperation(RESOURCES.filterAddAlternative(), 'A') {
 					@Override
 					public void onBeforeResize(CourseRequestFilterBox filter) {
-						setVisible(isCanChangeAlternatives() && (!iSectioning || isEnabled()) && getValue().isCourse() && iCourses.size() == 1);
+						setVisible(isCanChangeAlternatives() && (!iContext.isSectioning() || isEnabled()) && getValue().isCourse() && iCourses.size() == 1);
 					}
 				};
 				addAlternative.setTitle(MESSAGES.altFilterAddAlternative());
@@ -749,7 +746,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			final FilterOperation activate = new FilterOperation(RESOURCES.filterActivate(), null) {
 				@Override
 				public void onBeforeResize(CourseRequestFilterBox filter) {
-					setVisible(iSectioning && isEnabled() && isInactive());
+					setVisible(iContext.isSectioning() && isEnabled() && isInactive());
 				}
 			};
 			activate.setTitle(MESSAGES.altFilterActivate());
@@ -763,7 +760,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			});
 			addOperation(activate, false);
 			
-			if (!iSectioning) {
+			if (!iContext.isSectioning()) {
 				iStatus = new FilterStatus(RESOURCES.requestEnrolled()); iStatus.clearStatus();
 				addStatus(iStatus);
 				iError.addClickHandler(new ClickHandler() {
@@ -840,7 +837,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 		@Override
 		public void setValue(RequestedCourse rc) {
 			super.setValue(rc);
-			if (iSectioning || rc == null || rc.getStatus() == null) {
+			if (iContext.isSectioning() || rc == null || rc.getStatus() == null) {
 				clearStatus();
 			} else {
 				switch (rc.getStatus()) {

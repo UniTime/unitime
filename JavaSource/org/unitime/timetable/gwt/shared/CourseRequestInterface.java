@@ -36,15 +36,15 @@ import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreeCourseInterface;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
  * @author Tomas Muller
  */
-public class CourseRequestInterface implements IsSerializable, Serializable {
+public class CourseRequestInterface extends StudentSectioningContext implements IsSerializable, Serializable {
 	private static final long serialVersionUID = 1L;
-	private Long iSessionId, iStudentId;
 	private ArrayList<Request> iCourses = new ArrayList<Request>();
 	private ArrayList<Request> iAlternatives = new ArrayList<Request>();
 	private boolean iSaved = false;
@@ -67,13 +67,10 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	private String iPopupMessage = null;
 	
 	public CourseRequestInterface() {}
+	public CourseRequestInterface(StudentSectioningContext cx) {
+		super(cx);
+	}
 
-	public Long getAcademicSessionId() { return iSessionId; }
-	public void setAcademicSessionId(Long sessionId) { iSessionId = sessionId; }
-	
-	public Long getStudentId() { return iStudentId; }
-	public void setStudentId(Long studentId) { iStudentId = studentId; }
-	
 	public ArrayList<Request> getCourses() { return iCourses; }
 	public Request getCourse(int index) {
 		if (iCourses != null && index < iCourses.size())
@@ -936,7 +933,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	}
 	
 	public String toString() {
-		String ret = "CourseRequests(student = " + iStudentId + ", session = " + iSessionId + ", requests = {";
+		String ret = "CourseRequests(student = " + getStudentId() + ", session = " + getSessionId() + ", requests = {";
 		int idx = 1;
 		for (Request r: iCourses)
 			ret += "\n   " + (idx++) + ". " + r;

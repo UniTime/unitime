@@ -42,6 +42,7 @@ import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.ChangeGradeModesRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.ChangeGradeModesResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAvailableGradeModesRequest;
@@ -95,12 +96,13 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 	private TextArea iNote = null;
 	private List<CheckBox> iDisclaimers = new ArrayList<CheckBox>();
 	private Float iCurrentCredit, iMaxCredit;
-	private Long iStudentId, iSessionId;
+	private StudentSectioningContext iContext;
 	
-	public ChangeGradeModesDialog(ScheduleStatus status) {
+	public ChangeGradeModesDialog(StudentSectioningContext context, ScheduleStatus status) {
 		super(true, true);
 		addStyleName("unitime-ChangeGradeModesDialog");
 		setText(MESSAGES.dialogChangeGradeMode());
+		iContext = context;
 		iStatus = status;
 		
 		iForm = new SimpleForm();
@@ -185,7 +187,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 		return null;
 	}
 	
-	public void changeGradeModes(Long sessionId, Long studentId, ArrayList<ClassAssignmentInterface.ClassAssignment> enrollment, List<RetrieveSpecialRegistrationResponse> approvals) {
+	public void changeGradeModes(ArrayList<ClassAssignmentInterface.ClassAssignment> enrollment, List<RetrieveSpecialRegistrationResponse> approvals) {
 		LoadingWidget.getInstance().show(MESSAGES.waitRetrieveGradeModes());
 		iChanges.clear();
 		iVarChanges.clear();
@@ -194,8 +196,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 		iApproval.clear();
 		iEnrollment = enrollment;
 		iApprovals = approvals;
-		iSessionId = sessionId; iStudentId = studentId;
-		iSectioningService.retrieveGradeModes(new RetrieveAvailableGradeModesRequest(sessionId, studentId), new AsyncCallback<RetrieveAvailableGradeModesResponse>() {
+		iSectioningService.retrieveGradeModes(new RetrieveAvailableGradeModesRequest(iContext), new AsyncCallback<RetrieveAvailableGradeModesResponse>() {
 
 			@Override
 			public void onFailure(Throwable caught) {
@@ -433,12 +434,10 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 	protected void onChange(ChangeGradeModesResponse response) {}
 	
 	protected void onSubmit() {
-		ChangeGradeModesRequest request = new ChangeGradeModesRequest();
+		ChangeGradeModesRequest request = new ChangeGradeModesRequest(iContext);
 		request.setCurrentCredit(iCurrentCredit);
 		request.setMaxCredit(iMaxCredit);
 		request.setNote(iNote.getValue());
-		request.setSessionId(iSessionId);
-		request.setStudentId(iStudentId);
 		for (GradeModeChange cell: iChanges) {
 			SpecialRegistrationGradeMode change = cell.getChange();
 			if (change == null) continue;

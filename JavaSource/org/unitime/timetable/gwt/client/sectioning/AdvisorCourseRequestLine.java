@@ -46,12 +46,12 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
-import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
 import com.google.gwt.core.client.GWT;
@@ -70,7 +70,6 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -91,7 +90,7 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 	
 	private boolean iAlternate;
 	private int iPriority;
-	private AcademicSessionProvider iSessionProvider;
+	private StudentSectioningContext iContext;
 	private List<CourseSelectionBox> iCourses = new ArrayList<CourseSelectionBox>();
 	private AdvisorCourseRequestLine iPrevious = null, iNext = null;
 	private Validator<CourseSelection> iValidator = null;
@@ -100,16 +99,14 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 	private UniTimeTextBox iCredit;
 	private TextArea iNotes;
 	private Timer iTimer;
-	private TakesValue<Long> iStudentId;
 	
-	public AdvisorCourseRequestLine(AcademicSessionProvider session, int priority, boolean alternate, Validator<CourseSelection> validator, SpecialRegistrationContext specreg, TakesValue<Long> studentId) {
+	public AdvisorCourseRequestLine(StudentSectioningContext context, int priority, boolean alternate, Validator<CourseSelection> validator, SpecialRegistrationContext specreg) {
 		iP = new P("unitime-AdvisorCourseRequestLine");
-		iSessionProvider = session;
+		iContext = context;
 		iValidator = validator;
 		iPriority = priority;
 		iAlternate = alternate;
 		iSpecReg = specreg;
-		iStudentId = studentId;
 		
 		P line = new P("line");
 		P title = new P("title"); title.setText(alternate ? MESSAGES.courseRequestsAlternate(priority + 1) : MESSAGES.courseRequestsPriority(priority + 1));
@@ -551,21 +548,21 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 					iCourseFinderMultipleCourses.setDataProvider(new DataProvider<String, Collection<CourseAssignment>>() {
 						@Override
 						public void getData(String source, AsyncCallback<Collection<CourseAssignment>> callback) {
-							sSectioningService.listCourseOfferings(iSessionProvider.getAcademicSessionId(), iStudentId.getValue(), source, null, callback);
+							sSectioningService.listCourseOfferings(iContext, source, null, callback);
 						}
 					});
 					CourseFinderDetails details = new CourseFinderDetails();
 					details.setDataProvider(new DataProvider<CourseAssignment, String>() {
 						@Override
 						public void getData(CourseAssignment source, AsyncCallback<String> callback) {
-							sSectioningService.retrieveCourseDetails(iSessionProvider.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
+							sSectioningService.retrieveCourseDetails(iContext, source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 						}
 					});
 					CourseFinderClasses classes = new CourseFinderClasses(true, iSpecReg, iCourseFinderMultipleCourses.getRequiredCheckbox());
 					classes.setDataProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
 						@Override
 						public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {
-							sSectioningService.listClasses(true, iSessionProvider.getAcademicSessionId(), iStudentId.getValue(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
+							sSectioningService.listClasses(iContext, source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 						}
 					});
 					iCourseFinderMultipleCourses.setCourseDetails(details, classes);
@@ -583,13 +580,13 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 			setSuggestions(new DataProvider<String, Collection<CourseAssignment>>() {
 				@Override
 				public void getData(String source, AsyncCallback<Collection<CourseAssignment>> callback) {
-					sSectioningService.listCourseOfferings(iSessionProvider.getAcademicSessionId(), iStudentId.getValue(), source, 20, callback);
+					sSectioningService.listCourseOfferings(iContext, source, 20, callback);
 				}
 			});
 			setSectionsProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
 				@Override
 				public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {
-					sSectioningService.listClasses(true, iSessionProvider.getAcademicSessionId(), iStudentId.getValue(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
+					sSectioningService.listClasses(iContext, source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 				}
 			});
 			

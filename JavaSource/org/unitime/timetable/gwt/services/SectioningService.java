@@ -51,6 +51,7 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisingStuden
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisorCourseRequestSubmission;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentInfo;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -61,23 +62,21 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
  */
 @RemoteServiceRelativePath("sectioning.gwt")
 public interface SectioningService extends RemoteService {
-	Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(Long sessionId, Long studentId, String query, Integer limit) throws SectioningException, PageAccessException;
+	Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(StudentSectioningContext cx, String query, Integer limit) throws SectioningException, PageAccessException;
 	Collection<AcademicSessionProvider.AcademicSessionInfo> listAcademicSessions(boolean sectioning) throws SectioningException, PageAccessException;
-	String retrieveCourseDetails(Long sessionId, String course) throws SectioningException, PageAccessException;
-	Collection<ClassAssignmentInterface.ClassAssignment> listClasses(boolean online, Long sessionId, Long studentId, String course) throws SectioningException, PageAccessException;
+	String retrieveCourseDetails(StudentSectioningContext cx, String course) throws SectioningException, PageAccessException;
+	Collection<ClassAssignmentInterface.ClassAssignment> listClasses(StudentSectioningContext cx, String course) throws SectioningException, PageAccessException;
 	Long retrieveCourseOfferingId(Long sessionId, String course) throws SectioningException, PageAccessException;
-	CheckCoursesResponse checkCourses(boolean online, boolean sectioning, CourseRequestInterface request) throws SectioningException, PageAccessException;
-	ClassAssignmentInterface section(boolean online, CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException, PageAccessException;
-	Collection<ClassAssignmentInterface> computeSuggestions(boolean online, CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> currentAssignment, int selectedAssignment, String filter) throws SectioningException, PageAccessException;
+	CheckCoursesResponse checkCourses(CourseRequestInterface request) throws SectioningException, PageAccessException;
+	ClassAssignmentInterface section(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException, PageAccessException;
+	Collection<ClassAssignmentInterface> computeSuggestions(CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> currentAssignment, int selectedAssignment, String filter) throws SectioningException, PageAccessException;
 	String logIn(String userName, String password, String pin) throws SectioningException, PageAccessException;
 	Boolean logOut() throws SectioningException, PageAccessException;
 	String whoAmI() throws SectioningException, PageAccessException;
-	OnlineSectioningInterface.EligibilityCheck checkEligibility(boolean online, boolean sectioning, Long sessionId, Long studentId, String pin) throws SectioningException, PageAccessException;
+	OnlineSectioningInterface.EligibilityCheck checkEligibility(StudentSectioningContext cx) throws SectioningException, PageAccessException;
 	AcademicSessionProvider.AcademicSessionInfo lastAcademicSession(boolean sectioning) throws SectioningException, PageAccessException;
-	CourseRequestInterface lastRequest(boolean online, boolean sectioning, Long sessionId) throws SectioningException, PageAccessException;
-	ClassAssignmentInterface lastResult(boolean online, Long sessionId) throws SectioningException, PageAccessException;
 	CourseRequestInterface saveRequest(CourseRequestInterface request) throws SectioningException, PageAccessException;
-    ClassAssignmentInterface enroll(boolean online, CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException, PageAccessException;
+    ClassAssignmentInterface enroll(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException, PageAccessException;
     SectioningProperties getProperties(Long sessionId) throws SectioningException, PageAccessException;
 	List<ClassAssignmentInterface.Enrollment> listEnrollments(Long offeringId) throws SectioningException, PageAccessException;
 	ClassAssignmentInterface getEnrollment(boolean online, Long studentId) throws SectioningException, PageAccessException;
@@ -88,9 +87,9 @@ public interface SectioningService extends RemoteService {
 	List<ClassAssignmentInterface.StudentInfo> findStudentInfos(boolean online, String query, SectioningStatusFilterRpcRequest filter) throws SectioningException, PageAccessException;
 	List<ClassAssignmentInterface.Enrollment> findEnrollments(boolean online, String query, SectioningStatusFilterRpcRequest filter, Long courseId, Long classId) throws SectioningException, PageAccessException;
 	List<String[]> querySuggestions(boolean online, String query, int limit) throws SectioningException, PageAccessException;
-	Long canEnroll(boolean online, Long studentId) throws SectioningException, PageAccessException;
-	CourseRequestInterface savedRequest(boolean online,boolean sectioning, Long sessionId, Long studentId) throws SectioningException, PageAccessException;
-	ClassAssignmentInterface savedResult(boolean online, Long sessionId, Long studentId) throws SectioningException, PageAccessException;
+	Long canEnroll(StudentSectioningContext cx) throws SectioningException, PageAccessException;
+	CourseRequestInterface savedRequest(StudentSectioningContext cx) throws SectioningException, PageAccessException;
+	ClassAssignmentInterface savedResult(StudentSectioningContext cx) throws SectioningException, PageAccessException;
 	Boolean selectSession(Long sessionId) throws SectioningException, PageAccessException;
 	List<StudentStatusInfo> lookupStudentSectioningStates() throws SectioningException, PageAccessException;
 	Boolean sendEmail(Long sessionId, Long studentId, String subject, String message, String cc, Boolean courseRequests, Boolean classSchedule, Boolean advisorRequests, Boolean optional) throws SectioningException, PageAccessException;
@@ -100,7 +99,7 @@ public interface SectioningService extends RemoteService {
 	Boolean massCancel(List<Long> studentIds, String status, String subject, String message, String cc) throws SectioningException, PageAccessException;
 	Boolean requestStudentUpdate(List<Long> studentIds) throws SectioningException, PageAccessException;
 	Boolean reloadStudent(List<Long> studentIds) throws SectioningException, PageAccessException;
-	List<DegreePlanInterface> listDegreePlans(boolean online, Long sessionId, Long studentId) throws SectioningException, PageAccessException;
+	List<DegreePlanInterface> listDegreePlans(StudentSectioningContext cx) throws SectioningException, PageAccessException;
 	ClassAssignmentInterface.Student lookupStudent(boolean online, String studentId) throws SectioningException, PageAccessException;
 	ClassAssignmentInterface.Student lookupStudent(boolean online, Long studentId) throws SectioningException, PageAccessException;
 	Boolean checkStudentOverrides(List<Long> studentIds) throws SectioningException, PageAccessException;
@@ -110,7 +109,7 @@ public interface SectioningService extends RemoteService {
 	SubmitSpecialRegistrationResponse submitSpecialRequest(SubmitSpecialRegistrationRequest request) throws SectioningException, PageAccessException;
 	SpecialRegistrationEligibilityResponse checkSpecialRequestEligibility(SpecialRegistrationEligibilityRequest request) throws SectioningException, PageAccessException;
 	List<RetrieveSpecialRegistrationResponse> retrieveAllSpecialRequests(RetrieveAllSpecialRegistrationsRequest request) throws SectioningException, PageAccessException;
-	ClassAssignmentInterface section(boolean online, CourseRequestInterface request, List<ClassAssignmentInterface.ClassAssignment> currentAssignment, List<ClassAssignmentInterface.ClassAssignment> specialRegistration) throws SectioningException, PageAccessException;
+	ClassAssignmentInterface section(CourseRequestInterface request, List<ClassAssignmentInterface.ClassAssignment> currentAssignment, List<ClassAssignmentInterface.ClassAssignment> specialRegistration) throws SectioningException, PageAccessException;
 	CancelSpecialRegistrationResponse cancelSpecialRequest(CancelSpecialRegistrationRequest request) throws SectioningException, PageAccessException;
 	RetrieveAvailableGradeModesResponse retrieveGradeModes(RetrieveAvailableGradeModesRequest request) throws SectioningException, PageAccessException;
 	ChangeGradeModesResponse changeGradeModes(ChangeGradeModesRequest request) throws SectioningException, PageAccessException;
@@ -121,5 +120,5 @@ public interface SectioningService extends RemoteService {
 	AdvisingStudentDetails getStudentAdvisingDetails(Long sessionId, String studentExternalId) throws SectioningException, PageAccessException;
 	StudentInfo getStudentInfo(Long studentId) throws SectioningException, PageAccessException;
 	AdvisorCourseRequestSubmission submitAdvisingDetails(AdvisingStudentDetails details, boolean emailStudent) throws SectioningException, PageAccessException;
-	CourseRequestInterface getAdvisorRequests(Long sessionId, Long studentId) throws SectioningException, PageAccessException;
+	CourseRequestInterface getAdvisorRequests(StudentSectioningContext cx) throws SectioningException, PageAccessException;
 }

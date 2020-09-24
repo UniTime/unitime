@@ -63,11 +63,8 @@ public enum SessionAttribute {
 	
 	OnlineSchedulingDummyServer("OnlineSectioning.DummyServer", "Online Student Scheduling: database server for academic sessions that are not loaded in"),
 	OnlineSchedulingUser("user", "Online Student Scheduling: looked up user"),
-	OnlineSchedulingPIN("pin", "Online Student Scheduling: last entered PIN"),
 	OnlineSchedulingEligibility("eligibility", "Online Student Scheduling: output of the last eligibility check"),
-	OnlineSchedulingLastRequest("request", "Online Student Scheduling: last course request"),
 	OnlineSchedulingLastSession("sessionId", "Online Student Scheduling: last academic session id"),
-	OnlineSchedulingLastSpecialRequest("specreq", "Online Student Scheduling: last special request id"),
 	
 	ClassInfoModel("ClassInfo.model", "Class Assignment page model"),
 	ExamInfoModel("ExamInfo.model", "Examination Assignment page model"),

@@ -117,25 +117,12 @@ public class SectioningStatusFilterBackend implements GwtRpcImplementation<Secti
 		if (user == null)
 			throw new PageAccessException(context.isHttpSessionNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
 		if (user.getCurrentAcademicSessionId() == null) {
-			Long sessionId = getLastSessionId(context);
+			Long sessionId = (Long)context.getAttribute(SessionAttribute.OnlineSchedulingLastSession);
 			if (sessionId != null) return sessionId;
 		} else {
 			return user.getCurrentAcademicSessionId();
 		}
 		throw new SectioningException(MSG.exceptionNoAcademicSession());
-	}
-	
-	public Long getLastSessionId(SessionContext context) {
-		Long lastSessionId = (Long)context.getAttribute(SessionAttribute.OnlineSchedulingLastSession);
-		if (lastSessionId == null) {
-			UserContext user = context.getUser();
-			if (user != null) {
-				Long sessionId = user.getCurrentAcademicSessionId();
-				if (sessionId != null)
-					lastSessionId = sessionId;
-			}
-		}
-		return lastSessionId;
 	}
 	
 	private OnlineSectioningLog.Entity currentUser(SessionContext context) {

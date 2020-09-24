@@ -481,7 +481,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Sumbit the above enrollment changes to Special Registration.")
 	String hintSpecialRegistration();
 	
-	@DefaultMessage("<u>E</u>xport PDF")
+	@DefaultMessage("<u>P</u>rint")
 	String buttonPrint();
 	
 	@DefaultMessage("Print the currently selected schedule.")
@@ -489,6 +489,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("E<u>x</u>port")
 	String buttonExport();
+	
+	@DefaultMessage("E<u>x</u>port PDF")
+	String buttonExportPdf();
 	
 	@DefaultMessage("M<u>o</u>re<span class='unitime-ButtonArrow'>&#9660;</span>")
 	String buttonMoreOperations();

@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.model.Student;
@@ -75,10 +76,12 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 		
 		if (op.hasFlag(Flag.NO_SESSION)) {
 			helper.getSessionContext().checkPermissionAnyAuthority(Right.ApiOnlineStudentScheduliung);
-			op.execute(getSectioningService(), helper, type, null, null);
+			op.execute(getSectioningService(), helper, type, null);
 			return;
 		}
 		
+		StudentSectioningContext cx = new StudentSectioningContext();
+
 		Long sessionId = helper.getAcademicSessionId();
 		if (sessionId == null && helper.getSessionContext().getUser() != null)
 			sessionId = helper.getSessionContext().getUser().getCurrentAcademicSessionId();
@@ -95,6 +98,7 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 			}
 		
 		helper.getSessionContext().setAttribute(SessionAttribute.OnlineSchedulingLastSession, sessionId);
+		cx.setSessionId(cx.getSessionId());
 		
 		String studentId = helper.getParameter("studentId");
 		UniTimePrincipal principal = null;
@@ -121,10 +125,12 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 		}
 		
 		String pin = helper.getParameter("pin");
-		if (pin != null)
-			helper.getSessionContext().setAttribute(SessionAttribute.OnlineSchedulingPIN, pin);
+		if (pin != null) cx.setPin(pin);
+		cx.setOnline(helper.getOptinalParameterBoolean("online", true));
+		cx.setSectioning(helper.getOptinalParameterBoolean("sectioning", false));
+		cx.setStudentId(principal == null ? null : principal.getStudentId(cx.getSessionId()));
 		
-		op.execute(getSectioningService(), helper, type, sessionId, principal == null ? null : principal.getStudentId(sessionId));
+		op.execute(getSectioningService(), helper, type, cx);
 	}
 
 	@Override
@@ -148,76 +154,77 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 	}
 	
 	public static interface OpExecution<R> {
-		public R execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException;
+		public R execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException;
+	}
+	
+	protected static CourseRequestInterface getRequest(StudentSectioningContext cx, ApiHelper helper) throws IOException {
+		CourseRequestInterface request = helper.getRequest(CourseRequestInterface.class);
+		checkRequest(request, cx);
+		return request;
+	}
+	
+	protected static void checkRequest(CourseRequestInterface request, StudentSectioningContext cx) throws IOException {
+		request.setAcademicSessionId(cx.getSessionId());
+		if (request.getStudentId() == null && cx.getStudentId() != null)
+			request.setStudentId(cx.getStudentId());
+		if (!request.hasOnline()) request.setOnline(cx.isOnline());
+		if (!request.hasSectioning()) request.setSectioning(cx.isSectioning());
+		if (!request.hasPin()) request.setPin(cx.getPin());
 	}
 	
 	public static enum Operation {
 		listCourseOfferings(new OpExecution<Collection<ClassAssignmentInterface.CourseAssignment>>() {
 			@Override
-			public Collection<ClassAssignmentInterface.CourseAssignment> execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
-				return service.listCourseOfferings(sessionId, studentId, helper.getOptinalParameter("query", ""), helper.getOptinalParameterInteger("limit", null));
+			public Collection<ClassAssignmentInterface.CourseAssignment> execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
+				return service.listCourseOfferings(cx, helper.getOptinalParameter("query", ""), helper.getOptinalParameterInteger("limit", null));
 			}
 		}, Flag.GET),
 		listAcademicSessions(new OpExecution<Collection<AcademicSessionProvider.AcademicSessionInfo>>() {
 			@Override
-			public Collection<AcademicSessionProvider.AcademicSessionInfo> execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
+			public Collection<AcademicSessionProvider.AcademicSessionInfo> execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
 				return service.listAcademicSessions(helper.getOptinalParameterBoolean("sectioning", true));
 			}
 		}, Flag.GET, Flag.NO_SESSION),
 		retrieveCourseDetails(new OpExecution<String>() {
 			@Override
-			public String execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
-				return service.retrieveCourseDetails(sessionId, helper.getRequiredParameter("course"));
+			public String execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
+				return service.retrieveCourseDetails(cx, helper.getRequiredParameter("course"));
 			}
 		}, Flag.GET),
 		listClasses(new OpExecution<Collection<ClassAssignmentInterface.ClassAssignment>>() {
 			@Override
-			public Collection<ClassAssignmentInterface.ClassAssignment> execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
-				return service.listClasses(helper.getOptinalParameterBoolean("online", true), sessionId, studentId, helper.getRequiredParameter("course"));
+			public Collection<ClassAssignmentInterface.ClassAssignment> execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
+				return service.listClasses(cx, helper.getRequiredParameter("course"));
 			}
 		}, Flag.GET),
 		retrieveCourseOfferingId(new OpExecution<Long>() {
 			@Override
-			public Long execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
-				return service.retrieveCourseOfferingId(sessionId, helper.getRequiredParameter("course"));
+			public Long execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
+				return service.retrieveCourseOfferingId(cx.getSessionId(), helper.getRequiredParameter("course"));
 			}
 		}, Flag.GET),
 		checkCourses(new OpExecution<CheckCoursesResponse>() {
 			@Override
-			public CheckCoursesResponse execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
-				CourseRequestInterface request = helper.getRequest(CourseRequestInterface.class);
-				request.setAcademicSessionId(sessionId);
-				if (request.getStudentId() == null && studentId != null)
-					request.setStudentId(studentId);
-				return service.checkCourses(helper.getOptinalParameterBoolean("online", true), helper.getOptinalParameterBoolean("sectioning", false), request);
+			public CheckCoursesResponse execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
+				return service.checkCourses(getRequest(cx, helper));
 			}
 		}, Flag.POST),
 		section(new OpExecution<ClassAssignmentInterface>() {
 			@Override
-			public ClassAssignmentInterface execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
+			public ClassAssignmentInterface execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
 				SectionRequest request = helper.getRequest(SectionRequest.class);
-				if (request.request != null) {
-					request.request.setAcademicSessionId(sessionId);
-					if (request.request.getStudentId() == null && studentId != null)
-						request.request.setStudentId(studentId);
-				}
+				if (request.request != null) checkRequest(request.request, cx);
 				return service.section(
-						helper.getOptinalParameterBoolean("online", request.online == null ? true : request.online),
 						request.request,
 						request.currentAssignment);
 			}
 		}, Flag.POST),
 		computeSuggestions(new OpExecution<Collection<ClassAssignmentInterface>>() {
 			@Override
-			public Collection<ClassAssignmentInterface> execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
+			public Collection<ClassAssignmentInterface> execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
 				SectionRequest request = helper.getRequest(SectionRequest.class);
-				if (request.request != null) {
-					request.request.setAcademicSessionId(sessionId);
-					if (request.request.getStudentId() == null && studentId != null)
-						request.request.setStudentId(studentId);
-				}
+				if (request.request != null) checkRequest(request.request, cx);
 				return service.computeSuggestions(
-						helper.getOptinalParameterBoolean("online", request.online == null ? true : request.online),
 						request.request,
 						request.currentAssignment,
 						helper.getOptinalParameterInteger("selectedAssignment", request.selectedAssignment == null ? 0 : request.selectedAssignment),
@@ -226,67 +233,54 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 		}, Flag.POST),
 		checkEligibility(new OpExecution<OnlineSectioningInterface.EligibilityCheck>() {
 			@Override
-			public OnlineSectioningInterface.EligibilityCheck execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
-				return service.checkEligibility(
-						helper.getOptinalParameterBoolean("online", true),
-						helper.getOptinalParameterBoolean("sectioning", false),
-						sessionId,
-						studentId,
-						helper.getOptinalParameter("pin", null));
+			public OnlineSectioningInterface.EligibilityCheck execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
+				return service.checkEligibility(cx);
 			}
 		}, Flag.GET),
 		saveRequest(new OpExecution<CourseRequestInterface>() {
 			@Override
-			public CourseRequestInterface execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
-				CourseRequestInterface request = helper.getRequest(CourseRequestInterface.class);
-				request.setAcademicSessionId(sessionId);
-				if (request.getStudentId() == null && studentId != null)
-					request.setStudentId(studentId);
-				return service.saveRequest(request);
+			public CourseRequestInterface execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
+				return service.saveRequest(getRequest(cx, helper));
 			}
 		}, Flag.POST),
 		enroll(new OpExecution<ClassAssignmentInterface>() {
 			@Override
-			public ClassAssignmentInterface execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
+			public ClassAssignmentInterface execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
 				SectionRequest request = helper.getRequest(SectionRequest.class);
-				if (request.request != null) {
-					request.request.setAcademicSessionId(sessionId);
-					if (request.request.getStudentId() == null && studentId != null)
-						request.request.setStudentId(studentId);
-				}
+				if (request.request != null)
+					checkRequest(request.request, cx);
 				return service.enroll(
-						helper.getOptinalParameterBoolean("online", request.online == null ? true : request.online),
 						request.request,
 						request.currentAssignment);
 			}
 		}, Flag.POST),
 		getProperties(new OpExecution<OnlineSectioningInterface.SectioningProperties>() {
 			@Override
-			public OnlineSectioningInterface.SectioningProperties execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
-				return service.getProperties(sessionId);
+			public OnlineSectioningInterface.SectioningProperties execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
+				return service.getProperties(cx.getSessionId());
 			}
 		}, Flag.GET),
 		listEnrollments(new OpExecution<List<ClassAssignmentInterface.Enrollment>>() {
 			@Override
-			public List<ClassAssignmentInterface.Enrollment> execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
+			public List<ClassAssignmentInterface.Enrollment> execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
 				return service.listEnrollments(helper.getRequiredParameterLong("offeringId"));
 			}
 		}, Flag.GET),
 		getEnrollment(new OpExecution<ClassAssignmentInterface>() {
 			@Override
-			public ClassAssignmentInterface execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
-				return service.getEnrollment(helper.getOptinalParameterBoolean("online", true), studentId);
+			public ClassAssignmentInterface execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
+				return service.getEnrollment(helper.getOptinalParameterBoolean("online", true), cx.getStudentId());
 			}
 		}, Flag.GET),
 		canApprove(new OpExecution<List<Long>>() {
 			@Override
-			public List<Long> execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
+			public List<Long> execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
 				return service.canApprove(helper.getRequiredParameterLong("classOrOfferingId"));
 			}
 		}, Flag.GET),
 		approveEnrollments(new OpExecution<String>() {
 			@Override
-			public String execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
+			public String execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
 				ApproveEnrollmentsRequest request = null;
 				if (Flag.POST == type)
 					request = helper.getRequest(ApproveEnrollmentsRequest.class);
@@ -295,8 +289,8 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 				if (request.studentIds == null) {
 					request.studentIds = new ArrayList<Long>();
 				}
-				if (request.studentIds.isEmpty() && studentId != null)
-					request.studentIds.add(studentId);
+				if (request.studentIds.isEmpty() && cx.getStudentId() != null)
+					request.studentIds.add(cx.getStudentId());
 				return service.approveEnrollments(
 						helper.getOptinalParameterLong("classOrOfferingId", request.classOrOfferingId),
 						request.studentIds);
@@ -304,7 +298,7 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 		}, Flag.GET, Flag.POST),
 		rejectEnrollments(new OpExecution<Boolean>() {
 			@Override
-			public Boolean execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
+			public Boolean execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
 				ApproveEnrollmentsRequest request = null;
 				if (Flag.POST == type)
 					request = helper.getRequest(ApproveEnrollmentsRequest.class);
@@ -313,8 +307,8 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 				if (request.studentIds == null) {
 					request.studentIds = new ArrayList<Long>();
 				}
-				if (request.studentIds.isEmpty() && studentId != null)
-					request.studentIds.add(studentId);
+				if (request.studentIds.isEmpty() && cx.getStudentId() != null)
+					request.studentIds.add(cx.getStudentId());
 				return service.rejectEnrollments(
 						helper.getOptinalParameterLong("classOrOfferingId", request.classOrOfferingId),
 						request.studentIds);
@@ -322,7 +316,7 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 		}, Flag.GET, Flag.POST),
 		findEnrollmentInfos(new OpExecution<List<ClassAssignmentInterface.EnrollmentInfo>>() {
 			@Override
-			public List<ClassAssignmentInterface.EnrollmentInfo> execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
+			public List<ClassAssignmentInterface.EnrollmentInfo> execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
 				FindInfosRequest request = null;
 				if (type == Flag.POST)
 					request = helper.getRequest(FindInfosRequest.class);
@@ -337,7 +331,7 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 		}, Flag.GET, Flag.POST),
 		findStudentInfos(new OpExecution<List<ClassAssignmentInterface.StudentInfo>>() {
 			@Override
-			public List<ClassAssignmentInterface.StudentInfo> execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
+			public List<ClassAssignmentInterface.StudentInfo> execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
 				FindInfosRequest request = null;
 				if (type == Flag.POST)
 					request = helper.getRequest(FindInfosRequest.class);
@@ -351,7 +345,7 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 		}, Flag.GET, Flag.POST),
 		findEnrollments(new OpExecution<List<ClassAssignmentInterface.Enrollment>>() {
 			@Override
-			public List<ClassAssignmentInterface.Enrollment> execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
+			public List<ClassAssignmentInterface.Enrollment> execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
 				FindInfosRequest request = null;
 				if (type == Flag.POST)
 					request = helper.getRequest(FindInfosRequest.class);
@@ -367,38 +361,38 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 		}, Flag.GET, Flag.POST),
 		querySuggestions(new OpExecution<List<String[]>>() {
 			@Override
-			public List<String[]> execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
+			public List<String[]> execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
 				return service.querySuggestions(helper.getOptinalParameterBoolean("online", true), helper.getOptinalParameter("query", ""), helper.getOptinalParameterInteger("limit", null));
 			}
 		}, Flag.GET),
 		canEnroll(new OpExecution<Long>() {
 			@Override
-			public Long execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
-				return service.canEnroll(helper.getOptinalParameterBoolean("online", true), studentId);
+			public Long execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
+				return service.canEnroll(cx);
 			}
 		}, Flag.GET),
 		savedRequest(new OpExecution<CourseRequestInterface>() {
 			@Override
-			public CourseRequestInterface execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
-				return service.savedRequest(helper.getOptinalParameterBoolean("online", true), helper.getOptinalParameterBoolean("sectioning", true), sessionId, studentId);
+			public CourseRequestInterface execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
+				return service.savedRequest(cx);
 			}
 		}, Flag.GET),
 		savedResult(new OpExecution<ClassAssignmentInterface>() {
 			@Override
-			public ClassAssignmentInterface execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
-				return service.savedResult(helper.getOptinalParameterBoolean("online", true), sessionId, studentId);
+			public ClassAssignmentInterface execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
+				return service.savedResult(cx);
 			}
 		}, Flag.GET),
 		lookupStudentSectioningStates(new OpExecution<List<StudentStatusInfo>>() {
 			@Override
-			public List<StudentStatusInfo> execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
+			public List<StudentStatusInfo> execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
 				return service.lookupStudentSectioningStates();
 			}
 		}, Flag.GET),
 		sendEmail(new OpExecution<Boolean>() {
 			@Override
-			public Boolean execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
-				return service.sendEmail(sessionId, studentId, helper.getOptinalParameter("subject", null), helper.getOptinalParameter("message", null), helper.getOptinalParameter("cc", null),
+			public Boolean execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
+				return service.sendEmail(cx.getSessionId(), cx.getStudentId(), helper.getOptinalParameter("subject", null), helper.getOptinalParameter("message", null), helper.getOptinalParameter("cc", null),
 						helper.getOptinalParameterBoolean("courseRequests", null),
 						helper.getOptinalParameterBoolean("classSchedule", null),
 						helper.getOptinalParameterBoolean("advisorRequests", false),
@@ -408,27 +402,27 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 		}, Flag.GET, Flag.POST),
 		changeStatus(new OpExecution<Boolean>() {
 			@Override
-			public Boolean execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
+			public Boolean execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
 				ChangeStatusRequest request = helper.getRequest(ChangeStatusRequest.class);
 				if (request == null)
 					request = new ChangeStatusRequest();
 				if (request.studentIds == null)
 					request.studentIds = new ArrayList<Long>();
-				if (request.studentIds.isEmpty() && studentId != null)
-					request.studentIds.add(studentId);
+				if (request.studentIds.isEmpty() && cx.getStudentId() != null)
+					request.studentIds.add(cx.getStudentId());
 				return service.changeStatus(request.studentIds, helper.getOptinalParameter("note", request.status), helper.getOptinalParameter("status", request.status));
 			}
 		}, Flag.GET, Flag.POST),
 		changeLog(new OpExecution<List<ClassAssignmentInterface.SectioningAction>>() {
 			@Override
-			public List<ClassAssignmentInterface.SectioningAction> execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
-				String sid = helper.getOptinalParameter("studentId", null);
+			public List<ClassAssignmentInterface.SectioningAction> execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
+				String sid = helper.getOptinalParameter("cx.getStudentId()", null);
 				return service.changeLog(helper.getOptinalParameter("query", (sid == null ? "" : "id:" + sid)));
 			}
 		}, Flag.GET),
 		massCancel(new OpExecution<Boolean>() {
 			@Override
-			public Boolean execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
+			public Boolean execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
 				MassCancelRequest request = null;
 				if (type == Flag.POST)
 					request = helper.getRequest(MassCancelRequest.class);
@@ -436,8 +430,8 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 					request = new MassCancelRequest();
 				if (request.studentIds == null)
 					request.studentIds = new ArrayList<Long>();
-				if (request.studentIds.isEmpty() && studentId != null)
-					request.studentIds.add(studentId);
+				if (request.studentIds.isEmpty() && cx.getStudentId() != null)
+					request.studentIds.add(cx.getStudentId());
 				return service.massCancel(
 						request.studentIds,
 						helper.getOptinalParameter("status", request.status),
@@ -448,7 +442,7 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 		}, Flag.GET, Flag.POST),
 		requestStudentUpdate(new OpExecution<Boolean>() {
 			@Override
-			public Boolean execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
+			public Boolean execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
 				StudentIdsRequest request = null;
 				if (type == Flag.POST)
 					request = helper.getRequest(StudentIdsRequest.class);
@@ -456,15 +450,15 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 					request = new StudentIdsRequest();
 				if (request.studentIds == null)
 					request.studentIds = new ArrayList<Long>();
-				if (request.studentIds.isEmpty() && studentId != null)
-					request.studentIds.add(studentId);
+				if (request.studentIds.isEmpty() && cx.getStudentId() != null)
+					request.studentIds.add(cx.getStudentId());
 				return service.requestStudentUpdate(request.studentIds);
 			}
 		}, Flag.GET, Flag.POST),
 		listDegreePlans(new OpExecution<List<DegreePlanInterface>>() {
 			@Override
-			public List<DegreePlanInterface> execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
-				return service.listDegreePlans(helper.getOptinalParameterBoolean("online", true), sessionId, studentId);
+			public List<DegreePlanInterface> execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
+				return service.listDegreePlans(cx);
 			}
 		}, Flag.GET),
 		;
@@ -483,8 +477,8 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 			return f.has(iFlags);
 		}
 		
-		public void execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
-			helper.setResponse(iExecution.execute(service, helper, type, sessionId, studentId));
+		public void execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
+			helper.setResponse(iExecution.execute(service, helper, type, cx));
 		}
 	}
 

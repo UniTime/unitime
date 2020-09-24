@@ -108,7 +108,6 @@ public class SuggestionsBox extends UniTimeDialogBox {
 	private int iIndex;
 	private CourseRequestInterface iRequest;
 	private AriaButton iSearch;
-	private boolean iOnline;
 	private AriaButton iQuickDrop;
 	private F iFilterPanel;
 	private CheckBox iAllChoices = null;
@@ -120,11 +119,10 @@ public class SuggestionsBox extends UniTimeDialogBox {
 	private boolean iUseGwtConfirmations = false;
 	private SpecialRegistrationContext iSpecReg;
 	
-	public SuggestionsBox(TimeGrid.ColorProvider color, boolean online, SpecialRegistrationContext specReg) {
+	public SuggestionsBox(TimeGrid.ColorProvider color, SpecialRegistrationContext specReg) {
 		super(true, false);
 		addStyleName("unitime-SuggestionsBox");
 		
-		iOnline = online;
 		iSpecReg = specReg;
 		
 		setText("Alternatives");
@@ -226,7 +224,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 								iRequest.setTimeConflictsAllowed(iAllChoices.getValue() && iSpecReg.areTimeConflictsAllowed());
 								iRequest.setSpaceConflictsAllowed(iAllChoices.getValue() && iSpecReg.areSpaceConflictsAllowed());
 								iRequest.setLinkedConflictsAllowed(iAllChoices.getValue() && iSpecReg.areLinkedConflictsAllowed());
-								iSectioningService.computeSuggestions(iOnline, iRequest, iCurrent, iIndex, iFilter.getText(), iCallback);
+								iSectioningService.computeSuggestions(iRequest, iCurrent, iIndex, iFilter.getText(), iCallback);
 							}
 						});
 					} else {
@@ -235,7 +233,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 						iRequest.setTimeConflictsAllowed(iAllChoices.getValue() && iSpecReg.areTimeConflictsAllowed());
 						iRequest.setSpaceConflictsAllowed(iAllChoices.getValue() && iSpecReg.areSpaceConflictsAllowed());
 						iRequest.setLinkedConflictsAllowed(iAllChoices.getValue() && iSpecReg.areLinkedConflictsAllowed());
-						iSectioningService.computeSuggestions(iOnline, iRequest, iCurrent, iIndex, iFilter.getText(), iCallback);
+						iSectioningService.computeSuggestions(iRequest, iCurrent, iIndex, iFilter.getText(), iCallback);
 					}
 				}
 			});
@@ -315,7 +313,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 									iRequest.setTimeConflictsAllowed(iAllChoices.getValue() && iSpecReg.areTimeConflictsAllowed());
 									iRequest.setSpaceConflictsAllowed(iAllChoices.getValue() && iSpecReg.areSpaceConflictsAllowed());
 									iRequest.setLinkedConflictsAllowed(iAllChoices.getValue() && iSpecReg.areLinkedConflictsAllowed());
-									iSectioningService.computeSuggestions(iOnline, iRequest, iCurrent, iIndex, iFilter.getText(), iCallback);
+									iSectioningService.computeSuggestions(iRequest, iCurrent, iIndex, iFilter.getText(), iCallback);
 								}
 					});			
 				}
@@ -613,7 +611,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 						iRequest.setTimeConflictsAllowed(iAllChoices != null && iAllChoices.getValue() && iSpecReg.areTimeConflictsAllowed());
 						iRequest.setSpaceConflictsAllowed(iAllChoices != null && iAllChoices.getValue() && iSpecReg.areSpaceConflictsAllowed());
 						iRequest.setLinkedConflictsAllowed(iAllChoices != null && iAllChoices.getValue() && iSpecReg.areLinkedConflictsAllowed());
-						iSectioningService.computeSuggestions(iOnline, iRequest, iCurrent, iIndex, iFilter.getText(), iCallback);
+						iSectioningService.computeSuggestions(iRequest, iCurrent, iIndex, iFilter.getText(), iCallback);
 					}
 				}
 			}
@@ -626,7 +624,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 				iRequest.setTimeConflictsAllowed(iAllChoices != null && iAllChoices.getValue() && iSpecReg.areTimeConflictsAllowed());
 				iRequest.setSpaceConflictsAllowed(iAllChoices != null && iAllChoices.getValue() && iSpecReg.areSpaceConflictsAllowed());
 				iRequest.setLinkedConflictsAllowed(iAllChoices != null && iAllChoices.getValue() && iSpecReg.areLinkedConflictsAllowed());
-				iSectioningService.computeSuggestions(iOnline, iRequest, iCurrent, iIndex, iFilter.getText(), iCallback);
+				iSectioningService.computeSuggestions(iRequest, iCurrent, iIndex, iFilter.getText(), iCallback);
 			}
 		});
 		
@@ -794,7 +792,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		iRequest.setTimeConflictsAllowed(iAllChoices != null && iAllChoices.getValue() && iSpecReg.isEnabled() && iSpecReg.areTimeConflictsAllowed());
 		iRequest.setSpaceConflictsAllowed(iAllChoices != null && iAllChoices.getValue() && iSpecReg.isEnabled() && iSpecReg.areSpaceConflictsAllowed());
 		iRequest.setLinkedConflictsAllowed(iAllChoices != null && iAllChoices.getValue() && iSpecReg.isEnabled() && iSpecReg.areLinkedConflictsAllowed());
-		iSectioningService.computeSuggestions(iOnline, request, rows, index, iFilter.getText(), iCallback);
+		iSectioningService.computeSuggestions(request, rows, index, iFilter.getText(), iCallback);
 	}
 	
 	public void open(final CourseRequestInterface request, final ArrayList<ClassAssignmentInterface.ClassAssignment> rows, RequestedCourse course, boolean useGwtConfirmations, AsyncCallback<ClassAssignmentInterface> callback) {
@@ -823,7 +821,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		}
 		request.setTimeConflictsAllowed(false);
 		request.setSpaceConflictsAllowed(false);
-		iSectioningService.computeSuggestions(iOnline, request, rows, -1, iFilter.getText(), new AsyncCallback<Collection<ClassAssignmentInterface>>() {
+		iSectioningService.computeSuggestions(request, rows, -1, iFilter.getText(), new AsyncCallback<Collection<ClassAssignmentInterface>>() {
 			@Override
 			public void onSuccess(Collection<ClassAssignmentInterface> result) {
 				if (result == null || result.isEmpty()) {
@@ -871,7 +869,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 							request.setTimeConflictsAllowed(iSpecReg.areTimeConflictsAllowed());
 							request.setSpaceConflictsAllowed(iSpecReg.areSpaceConflictsAllowed());
 							request.setLinkedConflictsAllowed(iSpecReg.areLinkedConflictsAllowed());
-							iSectioningService.computeSuggestions(iOnline, request, rows, -1, iFilter.getText(), new AsyncCallback<Collection<ClassAssignmentInterface>>() {
+							iSectioningService.computeSuggestions(request, rows, -1, iFilter.getText(), new AsyncCallback<Collection<ClassAssignmentInterface>>() {
 								@Override
 								public void onSuccess(Collection<ClassAssignmentInterface> result) {
 									if (result == null || result.isEmpty()) {

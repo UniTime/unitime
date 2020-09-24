@@ -34,7 +34,6 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
-import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
@@ -43,6 +42,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
@@ -69,12 +69,10 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	
 	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
 	
-	private AcademicSessionProvider iSessionProvider;
+	private StudentSectioningContext iContext;
 	private ArrayList<CourseRequestLine> iCourses;
 	private ArrayList<CourseRequestLine> iAlternatives;
 	private Label iTip;
-	private boolean iSectioning;
-	private boolean iOnline;
 	private SpecialRegistrationContext iSpecReg;
 	private CheckCoursesResponse iLastCheck;
 	
@@ -85,11 +83,9 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	private boolean iArrowsVisible = true;
 	private Image iCreditStatusIcon = null;
 
-	public CourseRequestsTable(AcademicSessionProvider sessionProvider, boolean sectioning, boolean online, SpecialRegistrationContext specreg) {
+	public CourseRequestsTable(StudentSectioningContext context, SpecialRegistrationContext specreg) {
 		super("unitime-CourseRequests");
-		iSectioning = sectioning;
-		iOnline = online;
-		iSessionProvider = sessionProvider;
+		iContext = context;
 		iSpecReg = specreg;
 		
 		iHeader = new P("header");
@@ -121,7 +117,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		};
 
 		for (int i = 0; i < CONSTANTS.numberOfCourses(); i++) {
-			final CourseRequestLine line = new CourseRequestLine(iOnline, iSessionProvider, i, false, iCheckForDuplicities, iSectioning, iSpecReg);
+			final CourseRequestLine line = new CourseRequestLine(iContext, i, false, iCheckForDuplicities, iSpecReg);
 			iCourses.add(line);
 			if (i > 0) {
 				CourseRequestLine prev = iCourses.get(i - 1);
@@ -169,7 +165,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		}
 
 		for (int i=0; i<CONSTANTS.numberOfAlternatives(); i++) {
-			final CourseRequestLine line = new CourseRequestLine(iOnline, iSessionProvider, i, true, iCheckForDuplicities, iSectioning, iSpecReg);
+			final CourseRequestLine line = new CourseRequestLine(iContext, i, true, iCheckForDuplicities, iSpecReg);
 			iAlternatives.add(line);
 			if (i == 0) {
 				CourseRequestLine prev = iCourses.get(iCourses.size() - 1);
@@ -196,7 +192,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	
 	private void addCourseLine() {
 		int i = iCourses.size();
-		final CourseRequestLine line = new CourseRequestLine(iOnline, iSessionProvider, i, false, iCheckForDuplicities, iSectioning, iSpecReg);
+		final CourseRequestLine line = new CourseRequestLine(iContext, i, false, iCheckForDuplicities, iSpecReg);
 		iCourses.add(line);
 		CourseRequestLine prev = iCourses.get(i - 1);
 		prev.getCourses().get(0).setHint("");
@@ -231,7 +227,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			add(iAltHeader);
 		}
 		int i = iAlternatives.size();
-		final CourseRequestLine line = new CourseRequestLine(iOnline, iSessionProvider, i, true, iCheckForDuplicities, iSectioning, iSpecReg);
+		final CourseRequestLine line = new CourseRequestLine(iContext, i, true, iCheckForDuplicities, iSpecReg);
 		iAlternatives.add(line);
 		CourseRequestLine prev = (i == 0 ? iCourses.get(iCourses.size() - 1) : iAlternatives.get(i - 1));
 		if (prev != null) {
@@ -285,15 +281,14 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 				String message = line.validate();
 				if (message != null) failed = message;
 			}
-			final CourseRequestInterface cr = new CourseRequestInterface();
-			cr.setAcademicSessionId(iSessionProvider.getAcademicSessionId());
+			final CourseRequestInterface cr = new CourseRequestInterface(iContext);
 			if (cr.getAcademicSessionId() == null)
 				throw new SectioningException(MESSAGES.sessionSelectorNoSession());
 			fillInCourses(cr); fillInAlternatives(cr);
 			if (updateLastRequest != null)
 				cr.setUpdateLastRequest(updateLastRequest);
 			final boolean success = (failed == null);
-			iSectioningService.checkCourses(iOnline, iSectioning, cr,
+			iSectioningService.checkCourses(cr,
 					new AsyncCallback<CheckCoursesResponse>() {
 						public void onSuccess(final CheckCoursesResponse result) {
 							iLastCheck = result;
@@ -484,8 +479,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	}
 	
 	public CourseRequestInterface getRequest() {
-		CourseRequestInterface cr = new CourseRequestInterface();
-		cr.setAcademicSessionId(iSessionProvider.getAcademicSessionId());
+		CourseRequestInterface cr = new CourseRequestInterface(iContext);
 		fillInCourses(cr);
 		fillInAlternatives(cr);
 		cr.setTimeConflictsAllowed(iSpecReg.isEnabled() && iSpecReg.isDisclaimerAccepted() && iSpecReg.areTimeConflictsAllowed());

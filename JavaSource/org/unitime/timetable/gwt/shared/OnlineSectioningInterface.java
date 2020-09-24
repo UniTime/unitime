@@ -621,5 +621,40 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public boolean isUpdated() { return iUpdated; }
 		public void setUpdated(boolean updated) { iUpdated = updated; }
 	}
-
+	
+	public static class StudentSectioningContext implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		private Boolean iOnline = null, iSectioning = null;
+		private Long iSessionId = null, iStudentId = null;
+		private String iPin = null;
+		
+		public StudentSectioningContext() {}
+		public StudentSectioningContext(StudentSectioningContext cx) {
+			iOnline = cx.iOnline;
+			iSectioning = cx.iSectioning;
+			iSessionId = cx.iSessionId;
+			iStudentId = cx.iStudentId;
+			iPin = cx.iPin;
+		}
+		
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		public Long getSessionId() { return iSessionId; }
+		public Long getAcademicSessionId() { return iSessionId; }
+		public void setAcademicSessionId(Long sessionId) { iSessionId = sessionId; }
+		
+		public void setStudentId(Long studentId) { iStudentId = studentId; }
+		public Long getStudentId() { return iStudentId; }
+		
+		public boolean hasOnline() { return iOnline != null; }
+		public boolean isOnline() { return iOnline != null && iOnline.booleanValue(); }
+		public void setOnline(boolean online) { iOnline = online; }
+		
+		public boolean hasSectioning() { return iSectioning != null; }
+		public boolean isSectioning() { return iSectioning != null && iSectioning.booleanValue(); }
+		public void setSectioning(boolean sectioning) { iSectioning = sectioning; }
+		
+		public void setPin(String pin) { iPin = pin; }
+		public String getPin() { return iPin; }
+		public boolean hasPin() { return iPin != null && !iPin.isEmpty(); }
+	}
 }

@@ -42,6 +42,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 
 import com.google.gwt.core.client.GWT;
@@ -274,17 +275,16 @@ public class OnlineSectioningTest extends Composite {
 		private int iIndex = 0;
 		private boolean iStopped = false;
 		private String[] iChoices;
-		private Long iSessionId, iStudentId;
+		private StudentSectioningContext iContext = new StudentSectioningContext();
 		
 		public Test(int index) {
 			iIndex = index;
 			iChoices = iCourses.getWidget().getText().split("\\n");
-			iSessionId = Long.parseLong(iSessions.getWidget().getValue(iSessions.getWidget().getSelectedIndex()));
-			iStudentId = null;
+			iContext.setSessionId(Long.parseLong(iSessions.getWidget().getValue(iSessions.getWidget().getSelectedIndex())));
 		}
 		
 		public void setStudentId(Long studentId) {
-			iStudentId = studentId;
+			iContext.setStudentId(studentId);
 		}
 
 		@Override
@@ -300,9 +300,7 @@ public class OnlineSectioningTest extends Composite {
 						lookupCourses(new ArrayList<String>(), 3 + (int)(Random.nextDouble() * 5), new Callback<List<String>>() {
 							@Override
 							public void execute(final List<String> courses, Throwable failure) {
-								final CourseRequestInterface request = new CourseRequestInterface();
-								request.setAcademicSessionId(iSessionId);
-								request.setStudentId(iStudentId);
+								final CourseRequestInterface request = new CourseRequestInterface(iContext);
 								for (String course: courses) {
 									CourseRequestInterface.Request r = new CourseRequestInterface.Request();
 									RequestedCourse rc = new RequestedCourse();
@@ -364,7 +362,8 @@ public class OnlineSectioningTest extends Composite {
 		
 		private void checkEligibility(final Callback<EligibilityCheck> callback) {
 			debug("checkEligibility()");	
-			iSectioningService.checkEligibility(true, true, iSessionId, iStudentId, iPin.getWidget().getText(),  new AsyncCallback<EligibilityCheck>() {
+			iContext.setPin(iPin.getWidget().getText());
+			iSectioningService.checkEligibility(iContext, new AsyncCallback<EligibilityCheck>() {
 				@Override
 				public void onSuccess(EligibilityCheck result) {
 					callback.execute(result, null);
@@ -386,7 +385,7 @@ public class OnlineSectioningTest extends Composite {
 			ArrayList<ClassAssignment> assignments = new ArrayList<ClassAssignment>();
 			for (CourseAssignment cx: assignment.getCourseAssignments())
 				assignments.addAll(cx.getClassAssignments());
-			iSectioningService.enroll(true, request, assignments, new AsyncCallback<ClassAssignmentInterface>() {
+			iSectioningService.enroll(request, assignments, new AsyncCallback<ClassAssignmentInterface>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					warn("&nbsp;&nbsp;enroll(" + assignment.getCourseAssignments() + ") failed: " + caught.getMessage());
@@ -413,7 +412,7 @@ public class OnlineSectioningTest extends Composite {
 			}
 			int idx = (int)(Random.nextDouble() * assignments.size());
 			debug("computeSuggestions(" + request + "," + assignments + "," + idx + ")");
-			iSectioningService.computeSuggestions(true, request, assignments, idx, null, new AsyncCallback<Collection<ClassAssignmentInterface>>() {
+			iSectioningService.computeSuggestions(request, assignments, idx, null, new AsyncCallback<Collection<ClassAssignmentInterface>>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					warn("&nbsp;&nbsp;computeSuggestions(" + request + ") failed: " + caught.getMessage());
@@ -433,7 +432,7 @@ public class OnlineSectioningTest extends Composite {
 		
 		public void section(final CourseRequestInterface request, ArrayList<ClassAssignment> assignment, final Callback<ClassAssignmentInterface> callback) {
 			debug("section(" + request + "," + assignment + ")");
-			iSectioningService.section(true, request, assignment, new AsyncCallback<ClassAssignmentInterface>() {
+			iSectioningService.section(request, assignment, new AsyncCallback<ClassAssignmentInterface>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					warn("&nbsp;&nbsp;listClasses(" + request + ") failed: " + caught.getMessage());
@@ -449,7 +448,7 @@ public class OnlineSectioningTest extends Composite {
 		
 		private void checkCourses(final CourseRequestInterface request, final Callback<CheckCoursesResponse> callback) {
 			debug("checkCourses(" + request + ")");	
-			iSectioningService.checkCourses(true, false, request, new AsyncCallback<CheckCoursesResponse>() {
+			iSectioningService.checkCourses(request, new AsyncCallback<CheckCoursesResponse>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					warn("&nbsp;&nbsp;checkCourses(" + request + ") failed: " + caught.getMessage());
@@ -506,7 +505,7 @@ public class OnlineSectioningTest extends Composite {
 		
 		private void listClasses(final String course, final Callback<Collection<ClassAssignment>> callback) {
 			debug("listClasses(" + course + ")");
-			iSectioningService.listClasses(true, iSessionId, null, course, new AsyncCallback<Collection<ClassAssignment>>() {
+			iSectioningService.listClasses(iContext, course, new AsyncCallback<Collection<ClassAssignment>>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					warn("&nbsp;&nbsp;listClasses(" + course + ") failed: " + caught.getMessage());
@@ -522,7 +521,7 @@ public class OnlineSectioningTest extends Composite {
 		
 		private void retrieveCourseDetails(final String course, final Callback<String> callback) {
 			debug("retrieveCourseDetails(" + course + ")");
-			iSectioningService.retrieveCourseDetails(iSessionId, course, new AsyncCallback<String>() {
+			iSectioningService.retrieveCourseDetails(iContext, course, new AsyncCallback<String>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					warn("&nbsp;&nbsp;retrieveCourseDetails(" + course + ") failed: " + caught.getMessage());
@@ -538,7 +537,7 @@ public class OnlineSectioningTest extends Composite {
 		
 		private void listCourseOfferings(final String course, final Callback<Collection<CourseAssignment>> callback) {
 			debug("listCourseOfferings(" + course + ")");
-			iSectioningService.listCourseOfferings(iSessionId, null, course, 20, new AsyncCallback<Collection<CourseAssignment>>() {
+			iSectioningService.listCourseOfferings(iContext, course, 20, new AsyncCallback<Collection<CourseAssignment>>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					warn("&nbsp;&nbsp;listCourseOfferings(" + course + ") failed: " + caught.getMessage());

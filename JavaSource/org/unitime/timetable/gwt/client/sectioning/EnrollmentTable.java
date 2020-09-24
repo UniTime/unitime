@@ -464,7 +464,7 @@ public class EnrollmentTable extends Composite {
 			}
 			@Override
 			public void onSuccess(String result) {
-				widget.checkEligibility(student.getSessionId(), student.getId(), true, new AsyncCallback<EligibilityCheck>() {
+				widget.checkEligibility(new AsyncCallback<EligibilityCheck>() {
 
 					@Override
 					public void onFailure(Throwable caught) {
@@ -532,7 +532,7 @@ public class EnrollmentTable extends Composite {
 			}
 			@Override
 			public void onSuccess(String result) {
-				widget.checkEligibility(student.getSessionId(), student.getId(), true, new AsyncCallback<EligibilityCheck>() {
+				widget.checkEligibility(new AsyncCallback<EligibilityCheck>() {
 
 					@Override
 					public void onFailure(Throwable caught) {

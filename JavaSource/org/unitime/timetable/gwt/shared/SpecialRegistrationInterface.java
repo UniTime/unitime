@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeModes;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
@@ -135,28 +136,21 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public ChangeRequestorNoteInterface getChangeRequestorNoteInterface() { return iChangeRequestorNote; }
 	}
 	
-	public static class SpecialRegistrationEligibilityRequest implements IsSerializable, Serializable {
+	public static class SpecialRegistrationEligibilityRequest extends StudentSectioningContext implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
-		private Long iSessionId;
-		private Long iStudentId;
 		private String iRequestId;
 		private Collection<ClassAssignmentInterface.ClassAssignment> iClassAssignments;
 		private ArrayList<ErrorMessage> iErrors = null;
 		
 		public SpecialRegistrationEligibilityRequest() {}
-		public SpecialRegistrationEligibilityRequest(Long sessionId, Long studentId, String requestId, Collection<ClassAssignmentInterface.ClassAssignment> assignments, Collection<ErrorMessage> errors) {
+		public SpecialRegistrationEligibilityRequest(StudentSectioningContext cx, String requestId, Collection<ClassAssignmentInterface.ClassAssignment> assignments, Collection<ErrorMessage> errors) {
+			super(cx);
 			iClassAssignments = assignments;
-			iStudentId = studentId;
-			iSessionId = sessionId;
 			iRequestId = requestId;
 			if (errors != null)
 				iErrors = new ArrayList<ErrorMessage>(errors);
 		}
 		
-		public Long getSessionId() { return iSessionId; }
-		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
-		public Long getStudentId() { return iStudentId; }
-		public void setStudentId(Long studentId) { iStudentId = studentId; }
 		public String getRequestId() { return iRequestId; }
 		public boolean hasRequestId() { return iRequestId != null && !iRequestId.isEmpty(); }
 		public void setRequestId(String requestId) { iRequestId = requestId; }
@@ -557,10 +551,8 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		}
 	}
 	
-	public static class SubmitSpecialRegistrationRequest implements IsSerializable, Serializable {
+	public static class SubmitSpecialRegistrationRequest extends StudentSectioningContext implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
-		private Long iSessionId;
-		private Long iStudentId;
 		private String iRequestId;
 		private CourseRequestInterface iCourses;
 		private Collection<ClassAssignmentInterface.ClassAssignment> iClassAssignments;
@@ -569,10 +561,9 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private Float iCredit;
 		
 		public SubmitSpecialRegistrationRequest() {}
-		public SubmitSpecialRegistrationRequest(Long sessionId, Long studentId, String requestId, CourseRequestInterface courses, Collection<ClassAssignmentInterface.ClassAssignment> assignments, Collection<ErrorMessage> errors, String note, Float credit) {
+		public SubmitSpecialRegistrationRequest(StudentSectioningContext cx, String requestId, CourseRequestInterface courses, Collection<ClassAssignmentInterface.ClassAssignment> assignments, Collection<ErrorMessage> errors, String note, Float credit) {
+			super(cx);
 			iRequestId = requestId;
-			iStudentId = studentId;
-			iSessionId = sessionId;
 			iCourses = courses;
 			iClassAssignments = assignments;
 			if (errors != null)
@@ -585,10 +576,6 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void setClassAssignments(Collection<ClassAssignmentInterface.ClassAssignment> assignments) { iClassAssignments = assignments; }
 		public CourseRequestInterface getCourses() { return iCourses; }
 		public void setCourses(CourseRequestInterface courses) { iCourses = courses; }
-		public Long getSessionId() { return iSessionId; }
-		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
-		public Long getStudentId() { return iStudentId; }
-		public void setStudentId(Long studentId) { iStudentId = studentId; }
 		public String getRequestId() { return iRequestId; }
 		public void setRequestId(String requestId) { iRequestId = requestId; }
 		public void addError(ErrorMessage error) {
@@ -653,46 +640,26 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public boolean isCancelledRequest(String requestId) { return iCancelledRequestIds != null && iCancelledRequestIds.contains(requestId); }
 	}
 	
-	public static class RetrieveAllSpecialRegistrationsRequest implements IsSerializable, Serializable {
+	public static class RetrieveAllSpecialRegistrationsRequest extends StudentSectioningContext implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
-		private Long iSessionId;
-		private Long iStudentId;
 		
 		public RetrieveAllSpecialRegistrationsRequest() {}
-		public RetrieveAllSpecialRegistrationsRequest(Long sessionId, Long studentId) {
-			iStudentId = studentId;
-			iSessionId = sessionId;
+		public RetrieveAllSpecialRegistrationsRequest(StudentSectioningContext cx) {
+			super(cx);
 		}
-		
-		public Long getSessionId() { return iSessionId; }
-		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
-		public Long getStudentId() { return iStudentId; }
-		public void setStudentId(Long studentId) { iStudentId = studentId; }
 	}
 	
-	public static class CancelSpecialRegistrationRequest implements IsSerializable, Serializable {
+	public static class CancelSpecialRegistrationRequest extends StudentSectioningContext implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
-		private Long iSessionId;
-		private Long iStudentId;
-		private String iRequestKey;
 		private String iRequestId;
 		
 		public CancelSpecialRegistrationRequest() {}
-		public CancelSpecialRegistrationRequest(Long sessionId, Long studentId, String requestKey, String requestId) {
-			iRequestKey = requestKey;
-			iRequestId = requestId;
-			iStudentId = studentId;
-			iSessionId = sessionId;
+		public CancelSpecialRegistrationRequest(StudentSectioningContext cx) {
+			super(cx);
 		}
 		
-		public Long getSessionId() { return iSessionId; }
-		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
-		public Long getStudentId() { return iStudentId; }
-		public void setStudentId(Long studentId) { iStudentId = studentId; }
 		public String getRequestId() { return iRequestId; }
 		public void setRequestId(String requestId) { iRequestId = requestId; }
-		public String getRequestKey() { return iRequestKey; }
-		public void setRequestKey(String requestKey) { iRequestKey = requestKey; }
 	}
 	
 	public static class CancelSpecialRegistrationResponse implements IsSerializable, Serializable {
@@ -711,21 +678,13 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void setMessage(String message) { iMessage = message; }
 	}
 	
-	public static class RetrieveAvailableGradeModesRequest implements GwtRpcRequest<RetrieveAvailableGradeModesResponse>, Serializable {
+	public static class RetrieveAvailableGradeModesRequest extends StudentSectioningContext implements GwtRpcRequest<RetrieveAvailableGradeModesResponse>, Serializable {
 		private static final long serialVersionUID = 1L;
-		private Long iSessionId;
-		private Long iStudentId;
 		
 		public RetrieveAvailableGradeModesRequest() {}
-		public RetrieveAvailableGradeModesRequest(Long sessionId, Long studentId) {
-			iStudentId = studentId;
-			iSessionId = sessionId;
+		public RetrieveAvailableGradeModesRequest(StudentSectioningContext cx) {
+			super(cx);
 		}
-		
-		public Long getSessionId() { return iSessionId; }
-		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
-		public Long getStudentId() { return iStudentId; }
-		public void setStudentId(Long studentId) { iStudentId = studentId; }
 	}
 	
 	public static class RetrieveAvailableGradeModesResponse implements GwtRpcResponse, Serializable {
@@ -952,19 +911,16 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public Set<Float> getAvailableCredits() { return iAvailableCredits; }
 	}
 	
-	public static class ChangeGradeModesRequest implements GwtRpcRequest<ChangeGradeModesResponse>, Serializable {
+	public static class ChangeGradeModesRequest extends StudentSectioningContext implements GwtRpcRequest<ChangeGradeModesResponse>, Serializable {
 		private static final long serialVersionUID = 1L;
-		private Long iSessionId;
-		private Long iStudentId;
 		List<SpecialRegistrationGradeModeChange> iChanges = new ArrayList<SpecialRegistrationGradeModeChange>();
 		List<SpecialRegistrationCreditChange> iCreditChanges = new ArrayList<SpecialRegistrationCreditChange>();
 		private String iNote;
 		private Float iMaxCredit, iCurrentCredit;
 		
 		public ChangeGradeModesRequest() {}
-		public ChangeGradeModesRequest(Long sessionId, Long studentId) {
-			iStudentId = studentId;
-			iSessionId = sessionId;
+		public ChangeGradeModesRequest(StudentSectioningContext cx) {
+			super(cx);
 		}
 		
 		public boolean hasGradeModeChanges() { return !iChanges.isEmpty(); }
@@ -1015,10 +971,6 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			return false;
 		}
 		
-		public Long getSessionId() { return iSessionId; }
-		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
-		public Long getStudentId() { return iStudentId; }
-		public void setStudentId(Long studentId) { iStudentId = studentId; }
 		public void setNote(String note) { iNote = note; }
 		public String getNote() { return iNote; }
 		public boolean hasNote() { return iNote != null && !iNote.isEmpty(); }
@@ -1091,27 +1043,20 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public boolean changeRequestorNote(RetrieveSpecialRegistrationResponse registration);
 	}
 	
-	public static class UpdateSpecialRegistrationRequest implements IsSerializable, Serializable {
+	public static class UpdateSpecialRegistrationRequest extends StudentSectioningContext implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
-		private Long iSessionId;
-		private Long iStudentId;
 		private String iRequestId;
 		private String iNote;
 		private boolean iPreReg = false;
 		
 		public UpdateSpecialRegistrationRequest() {}
-		public UpdateSpecialRegistrationRequest(Long sessionId, Long studentId, String requestId, String note, boolean preReg) {
+		public UpdateSpecialRegistrationRequest(StudentSectioningContext cx, String requestId, String note, boolean preReg) {
+			super(cx);
 			iRequestId = requestId;
-			iStudentId = studentId;
-			iSessionId = sessionId;
 			iNote = note;
 			iPreReg = preReg;
 		}
 		
-		public Long getSessionId() { return iSessionId; }
-		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
-		public Long getStudentId() { return iStudentId; }
-		public void setStudentId(Long studentId) { iStudentId = studentId; }
 		public String getRequestId() { return iRequestId; }
 		public void setRequestId(String requestId) { iRequestId = requestId; }
 		public String getNote() { return iNote; }

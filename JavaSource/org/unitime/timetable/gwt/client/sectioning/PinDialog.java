@@ -30,6 +30,7 @@ import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
 import org.unitime.timetable.gwt.shared.SectioningException;
 
 import com.google.gwt.core.client.GWT;
@@ -59,8 +60,7 @@ public class PinDialog extends AriaDialogBox {
 	private PinCallback iCallback = null;
 	private Label iPinLabel = null;
 	
-	private boolean iOnline, iSectioning;
-	private Long iSessionId, iStudentId;
+	private StudentSectioningContext iContext;
 
 	public PinDialog() {
 		super();
@@ -124,10 +124,10 @@ public class PinDialog extends AriaDialogBox {
 	}
 	
 	protected void sendPin() {
-		final String pin = iPin.getText();
+		iContext.setPin(iPin.getText());
 		hide();
 		LoadingWidget.getInstance().show(MESSAGES.waitEligibilityCheck());
-		sSectioningService.checkEligibility(iOnline, iSectioning, iSessionId, iStudentId, pin, new AsyncCallback<EligibilityCheck>() {
+		sSectioningService.checkEligibility(iContext, new AsyncCallback<EligibilityCheck>() {
 			
 			@Override
 			public void onSuccess(EligibilityCheck result) {
@@ -155,11 +155,8 @@ public class PinDialog extends AriaDialogBox {
 		});
 	}
 	
-	public void checkEligibility(boolean online, boolean sectioning, Long sessionId, Long studentId, PinCallback callback, AcademicSessionInfo session) {
-		iOnline = online;
-		iSectioning = sectioning;
-		iSessionId = sessionId;
-		iStudentId = studentId;
+	public void checkEligibility(StudentSectioningContext context, PinCallback callback, AcademicSessionInfo session) {
+		iContext = context;
 		iCallback = callback;
 		if (session != null) {
 			setText(MESSAGES.dialogPinForSession(session.getTerm(), session.getYear()));
