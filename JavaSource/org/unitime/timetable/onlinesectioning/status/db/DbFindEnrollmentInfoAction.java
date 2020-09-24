@@ -26,6 +26,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,6 +54,7 @@ import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseDemand.Critical;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
+import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -60,7 +62,9 @@ import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Reservation;
+import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
@@ -92,6 +96,16 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 	
 	public boolean isMyStudent(Student student) {
 		return iMyStudents != null && iMyStudents.contains(student.getUniqueId());
+	}
+	
+	protected String datePatternName(DatePattern pattern, String datePatternFormat) {
+    	if ("never".equals(datePatternFormat)) return pattern.getName();
+    	if ("extended".equals(datePatternFormat) && pattern.getType() != DatePattern.sTypeExtended) return pattern.getName();
+    	if ("alternate".equals(datePatternFormat) && pattern.getType() == DatePattern.sTypeAlternate) return pattern.getName();
+		Formats.Format<Date> dpf = Formats.getDateFormat(Formats.Pattern.DATE_PATTERN);
+		Date first = pattern.getStartDate();
+		Date last = pattern.getEndDate();
+		return dpf.format(first) + (first.equals(last) ? "" : " - " + dpf.format(last));
 	}
 
 	@Override
@@ -527,11 +541,18 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					a.setLength(assignment.getSlotPerMtg());
 					a.setBreakTime(assignment.getBreakTime());
 					a.setDatePattern(assignment.getDatePattern().getName());
-				}
-				if (assignment != null && !assignment.getRooms().isEmpty()) {
-					for (Location rm: assignment.getRooms()) {
+					for (Location rm: assignment.getRooms())
 						a.addRoom(rm.getUniqueId(), rm.getLabelWithDisplayName());
-					}
+				} else {
+		        	for (Iterator<?> i = section.effectivePreferences(RoomPref.class).iterator(); i.hasNext(); ) {
+		        		RoomPref p = (RoomPref)i.next();
+		        		if (PreferenceLevel.sRequired.equals(p.getPrefLevel().getPrefProlog())) {
+		        			a.addRoom(p.getRoom().getUniqueId(), p.getRoom().getLabel());
+		        		}
+		        	}
+		        	DatePattern dp = section.effectiveDatePattern();
+		        	if (dp != null)
+		        		a.setDatePattern(datePatternName(dp, helper.getDatePatternFormat()));
 				}
 				if (section.isDisplayInstructor() && !section.getClassInstructors().isEmpty()) {
 					for (ClassInstructor instructor: section.getClassInstructors()) {
