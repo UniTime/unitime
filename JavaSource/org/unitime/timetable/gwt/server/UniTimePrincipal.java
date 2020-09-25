@@ -69,8 +69,13 @@ public class UniTimePrincipal implements Principal, Serializable {
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 	
-	public Long getStudentId(Long sessionId) { return iStudentId.get(sessionId); }
-	public void addStudentId(Long sessionId, Long studentId) { iStudentId.put(sessionId, studentId); }
+	public Long getStudentId(Long sessionId) {
+		return (sessionId == null ? null : iStudentId.get(sessionId));
+	}
+	public void addStudentId(Long sessionId, Long studentId) {
+		if (sessionId != null && studentId != null)
+			iStudentId.put(sessionId, studentId);
+	}
 	
 	public int hashCode() { return iExternalId.hashCode(); }
 	public boolean equals(Object o) {
