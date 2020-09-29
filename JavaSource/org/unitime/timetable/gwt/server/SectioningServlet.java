@@ -791,6 +791,14 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				return server.execute(server.createAction(CheckCourses.class).forRequest(request), currentUser(request));
 			}
 			
+			if (!request.isSectioning()) {
+				if (request.getStudentId() == null) throw new PageAccessException(MSG.exceptionNoStudent());
+				getSessionContext().checkPermissionAnyAuthority(request.getStudentId(), "Student", Right.StudentSchedulingCanRegister);
+				EligibilityCheck last = getLastEligibilityCheck(request);
+				if (last != null && !last.hasFlag(EligibilityFlag.CAN_REGISTER))
+					throw new SectioningException(last.hasMessage() ? last.getMessage() : MSG.exceptionInsufficientPrivileges());
+			}
+			
 			OnlineSectioningServer server = getServerInstance(request.getAcademicSessionId(), false);
 			if (server == null) {
 				if (!request.isSectioning() && CustomCourseRequestsValidationHolder.hasProvider()) {
@@ -1079,6 +1087,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	
 	public CourseRequestInterface saveRequest(CourseRequestInterface request) throws SectioningException, PageAccessException {
 		checkContext(request);
+		if (request.getStudentId() == null) throw new PageAccessException(MSG.exceptionNoStudent());
+		getSessionContext().checkPermissionAnyAuthority(request.getStudentId(), "Student", Right.StudentSchedulingCanRegister);
+		EligibilityCheck last = getLastEligibilityCheck(request);
+		if (last != null && !last.hasFlag(EligibilityFlag.CAN_REGISTER))
+			throw new SectioningException(last.hasMessage() ? last.getMessage() : MSG.exceptionInsufficientPrivileges());
+		
 		OnlineSectioningServer server = getServerInstance(request.getAcademicSessionId(), true);
 		Long studentId = request.getStudentId();
 		if (studentId == null)
