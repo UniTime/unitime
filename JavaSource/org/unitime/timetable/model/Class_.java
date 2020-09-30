@@ -55,6 +55,7 @@ import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.SectioningInfoDAO;
 import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
@@ -65,7 +66,6 @@ import org.unitime.timetable.solver.course.ui.ClassInstructorInfo;
 import org.unitime.timetable.solver.course.ui.ClassRoomInfo;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.util.DefaultExternalClassNameHelper;
 import org.unitime.timetable.util.duration.DurationModel;
 import org.unitime.timetable.webutil.Navigation;
 
@@ -75,7 +75,6 @@ import org.unitime.timetable.webutil.Navigation;
  */
 public class Class_ extends BaseClass_ {
     private static final long serialVersionUID = 1L;
-    private static ExternalClassNameHelperInterface externalClassNameHelper = null;
     private static CourseMessages MSG = Localization.create(CourseMessages.class);
     protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 
@@ -1646,29 +1645,7 @@ public class Class_ extends BaseClass_ {
 	}
 
 	public static ExternalClassNameHelperInterface getExternalClassNameHelper() {
-		if (externalClassNameHelper == null){
-            String className = ApplicationProperty.ClassNamingHelper.value();
-        	if (className != null && className.trim().length() > 0){
-        		try {
-					externalClassNameHelper = (ExternalClassNameHelperInterface) (Class.forName(className).newInstance());
-				} catch (InstantiationException e) {
-					Debug.error("Failed to instantiate instance of: " + className + " using the default class name helper.");
-					e.printStackTrace();
-	        		externalClassNameHelper = new DefaultExternalClassNameHelper();
-				} catch (IllegalAccessException e) {
-					Debug.error("Illegal Access Exception on: " + className + " using the default class name helper.");
-					e.printStackTrace();
-	        		externalClassNameHelper = new DefaultExternalClassNameHelper();
-				} catch (ClassNotFoundException e) {
-					Debug.error("Failed to find class: " + className + " using the default class name helper.");
-					e.printStackTrace();
-	        		externalClassNameHelper = new DefaultExternalClassNameHelper();
-				}
-        	} else {
-        		externalClassNameHelper = new DefaultExternalClassNameHelper();
-        	}
-		}
-		return externalClassNameHelper;
+		return Customization.ClassNamingHelper.getProvider();
 	}
     
 	public String getClassLabel(CourseOffering courseOffering) {

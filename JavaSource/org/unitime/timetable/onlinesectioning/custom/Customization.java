@@ -20,6 +20,8 @@
 package org.unitime.timetable.onlinesectioning.custom;
 
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface;
+import org.unitime.timetable.util.DefaultExternalClassNameHelper;
 
 /**
  * @author Tomas Muller
@@ -38,6 +40,7 @@ public enum Customization {
 	StudentEmailProvider(StudentEmailProvider.class, ApplicationProperty.CustomizationStudentEmail),
 	CustomClassAttendanceProvider(CustomClassAttendanceProvider.class, ApplicationProperty.CustomizationCustomClassAttendance),
 	StudentHoldsCheckProvider(StudentHoldsCheckProvider.class, ApplicationProperty.CustomizationStudentHoldsCheck),
+	ClassNamingHelper(ExternalClassNameHelperInterface.class, ApplicationProperty.ClassNamingHelper, DefaultExternalClassNameHelper.class),
 	;
 	
 	private Holder<?> iHolder;
