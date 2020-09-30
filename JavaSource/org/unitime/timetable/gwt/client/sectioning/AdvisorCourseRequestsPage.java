@@ -126,6 +126,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	private int iStatusLine = 0;
 	
 	private ScheduleStatus iStatusBox = null;
+	private ScheduleStatus iStudentStatus = null;
 	private WebTable iRequests;
 	private AdvisorCourseRequestsTable iAdvisorRequests;
 	private StudentSectioningContext iContext;
@@ -217,6 +218,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 						iStudentEmail.setText(result.getStudentEmail() == null ? "" : result.getStudentEmail());
 						iStudentExternalId.setText(result.getStudentExternalId());
 						fillInStudentRequests();
+						if (result != null && result.getStudentRequest() != null && result.getRequest().hasErrorMessage())
+							iStudentStatus.error(result.getRequest().getErrorMessaeg(), false);
 						if (result.isCanUpdate()) {
 							clearAdvisorRequests();
 							setRequest(result.getRequest());
@@ -292,6 +295,9 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		iStatus.addStyleName("status");
 		iStatusLine = addDoubleRow(MESSAGES.propAdvisorEmail(), iAdvisorEmail, 1,
 				MESSAGES.propStudentStatus(), iStatus, 3);
+		
+		iStudentStatus = new ScheduleStatus();
+		addRow(iStudentStatus);
 		
 		UniTimeHeaderPanel studentReqs = new UniTimeHeaderPanel(MESSAGES.studentCourseRequests());
 		iStudentRequestHeaderLine = addHeaderRow(studentReqs);
@@ -744,6 +750,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 			iDegreePlan.setVisible(false); iDegreePlan.setEnabled(false);
 			iEmailConfirmationHeader.setVisible(false);
 			iEmailConfirmationFooter.setVisible(false);
+			iStudentStatus.clear();
 			clearRequests();
 			clearStudentRequests();
 			clearAdvisorRequests();
@@ -751,6 +758,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 			iStudentName.setText(person.getName());
 			iStudentExternalId.setText(person.getId());
 			iStudentEmail.setText(person.getEmail() == null ? "" : person.getEmail());
+			iStudentStatus.clear();
 			clearRequests();
 			iSession.selectSessionNoCheck();
 			clearStudentRequests();

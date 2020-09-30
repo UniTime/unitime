@@ -64,6 +64,7 @@ import org.unitime.timetable.onlinesectioning.custom.CustomClassAttendanceProvid
 import org.unitime.timetable.onlinesectioning.custom.CustomClassAttendanceProvider.StudentClassAttendance;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsValidationHolder;
 import org.unitime.timetable.onlinesectioning.custom.Customization;
+import org.unitime.timetable.onlinesectioning.custom.StudentHoldsCheckProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentError;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentFailure;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
@@ -98,6 +99,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 	private boolean iIncludeRequest = false;
 	private boolean iCustomCheck = false;
 	private boolean iIncludeAdvisorRequest = false;
+	private boolean iCheckHolds = false;
 	
 	public GetAssignment forStudent(Long studentId) {
 		iStudentId = studentId;
@@ -128,6 +130,11 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 		iCustomCheck = customCheck;
 		return this;
 	}
+	
+	public GetAssignment checkHolds(boolean check) {
+		iCheckHolds = check;
+		return this;
+	}
 
 	@Override
 	public ClassAssignmentInterface execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
@@ -142,6 +149,13 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 			
 			if (iIncludeAdvisorRequest)
 				ret.setAdvisorRequest(AdvisorGetCourseRequests.getRequest(student, server, helper));
+			
+			if (iCheckHolds && ret.hasRequest() && Customization.StudentHoldsCheckProvider.hasProvider()) {
+				try {
+					StudentHoldsCheckProvider provider = Customization.StudentHoldsCheckProvider.getProvider();
+					ret.getRequest().setErrorMessage(provider.getStudentHoldError(server, helper, student));
+				} catch (Exception e) {}
+			}
 			
 			return ret;
 		} finally {

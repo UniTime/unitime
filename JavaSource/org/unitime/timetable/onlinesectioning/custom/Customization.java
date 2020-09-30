@@ -37,6 +37,7 @@ public enum Customization {
 	ExternalTermProvider(ExternalTermProvider.class, ApplicationProperty.CustomizationExternalTerm),
 	StudentEmailProvider(StudentEmailProvider.class, ApplicationProperty.CustomizationStudentEmail),
 	CustomClassAttendanceProvider(CustomClassAttendanceProvider.class, ApplicationProperty.CustomizationCustomClassAttendance),
+	StudentHoldsCheckProvider(StudentHoldsCheckProvider.class, ApplicationProperty.CustomizationStudentHoldsCheck),
 	;
 	
 	private Holder<?> iHolder;

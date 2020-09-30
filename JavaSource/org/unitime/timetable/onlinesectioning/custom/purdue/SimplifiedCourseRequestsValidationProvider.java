@@ -65,6 +65,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Action.Builder
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.CourseRequestsValidationProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
+import org.unitime.timetable.onlinesectioning.custom.StudentHoldsCheckProvider;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ApiMode;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CheckEligibilityResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.EligibilityProblem;
@@ -74,6 +75,7 @@ import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
 import org.unitime.timetable.util.Formats;
@@ -92,7 +94,7 @@ import com.google.gson.JsonSerializer;
 /**
  * @author Tomas Muller
  */
-public class SimplifiedCourseRequestsValidationProvider implements CourseRequestsValidationProvider {
+public class SimplifiedCourseRequestsValidationProvider implements CourseRequestsValidationProvider, StudentHoldsCheckProvider {
 	private static Logger sLog = Logger.getLogger(SimplifiedCourseRequestsValidationProvider.class);
 	private static StudentSectioningMessages MESSAGES = Localization.create(StudentSectioningMessages.class);
 	protected static Format<Number> sCreditFormat = Formats.getNumberFormat("0.##");
@@ -198,6 +200,12 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 	
 	protected String getBannerId(org.unitime.timetable.model.Student student) {
 		String id = student.getExternalUniqueId();
+		while (id.length() < 9) id = "0" + id;
+		return id;
+	}
+	
+	protected String getBannerId(XStudentId student) {
+		String id = student.getExternalId();
 		while (id.length() < 9) id = "0" + id;
 		return id;
 	}
@@ -954,6 +962,159 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 			iClient.stop();
 		} catch (Exception e) {
 			sLog.error(e.getMessage(), e);
+		}
+	}
+
+	@Override
+	public String getStudentHoldError(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudentId student) throws SectioningException {
+		if (isUseXE()) {
+			ClientResource resource = null;
+			try {
+				String pin = helper.getPin();
+				AcademicSessionInfo session = server.getAcademicSession();
+				String term = getBannerTerm(session);
+				boolean manager = helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER;
+				boolean admin = manager && isBannerAdmin();
+				if (helper.isDebugEnabled())
+					helper.debug("Checking eligility for " + student.getName() + " (term: " + term + ", id:" + getBannerId(student) + (admin ? ", admin" : pin != null ? ", pin:" + pin : "") + ")");
+
+				// First, check student registration status
+				resource = new ClientResource(getBannerSite());
+				resource.setNext(iClient);
+				resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(manager), getBannerPassword(manager));
+				Gson gson = getGson(helper);
+				XEInterface.RegisterResponse original = null;
+
+				resource.addQueryParameter("term", term);
+				resource.addQueryParameter("bannerId", getBannerId(student));
+				helper.getAction().addOptionBuilder().setKey("term").setValue(term);
+				helper.getAction().addOptionBuilder().setKey("bannerId").setValue(getBannerId(student));
+				if (admin || isPreregAdmin()) {
+					String param = getAdminParameter();
+					resource.addQueryParameter(param, "SB");
+					helper.getAction().addOptionBuilder().setKey(param).setValue("SB");
+				} else if (pin != null && !pin.isEmpty()) {
+					resource.addQueryParameter("altPin", pin);
+					helper.getAction().addOptionBuilder().setKey("pin").setValue(pin);
+				}
+				long t0 = System.currentTimeMillis();
+				try {
+					resource.get(MediaType.APPLICATION_JSON);
+				} catch (ResourceException exception) {
+					helper.getAction().setApiException(exception.getMessage());
+					try {
+						XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject();
+						helper.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
+						XEInterface.Error error = response.getError();
+						if (error != null && error.message != null) {
+							throw new SectioningException(error.message);
+						} else if (error != null && error.description != null) {
+							throw new SectioningException(error.description);
+						} else if (error != null && error.errorMessage != null) {
+							throw new SectioningException(error.errorMessage);
+						} else {
+							throw exception;
+						}
+					} catch (SectioningException e) {
+						helper.getAction().setApiException(e.getMessage());
+						throw e;
+					} catch (Throwable t) {
+						throw exception;
+					}
+				} finally {
+					helper.getAction().setApiGetTime(System.currentTimeMillis() - t0);
+				}
+				List<XEInterface.RegisterResponse> current = new GsonRepresentation<List<XEInterface.RegisterResponse>>(resource.getResponseEntity(), XEInterface.RegisterResponse.TYPE_LIST).getObject();
+				helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(current));
+				if (current != null && !current.isEmpty())
+					original = current.get(0);
+				
+				// Check status, memorize enrolled sections
+				if (original != null && helper.isDebugEnabled())
+					helper.debug("Current registration: " + gson.toJson(original));
+				
+				String bannerErrors = getBannerErrors();
+				String error = null;
+				if (original != null && original.failureReasons != null) {
+					for (String m: original.failureReasons) {
+						if (bannerErrors == null || m.matches(bannerErrors)) {
+							if (error == null)
+								error = m;
+							else
+								error += (error.endsWith(".") ? " " : ", ") + m;
+						}
+					}
+				}
+				return error;
+			} catch (SectioningException e) {
+				helper.info("Banner eligibility failed: " + e.getMessage());
+				throw e;
+			} catch (Exception e) {
+				helper.warn("Banner eligibility failed: " + e.getMessage(), e);
+				throw new SectioningException(e.getMessage());
+			} finally {
+				if (resource != null) {
+					if (resource.getResponse() != null) resource.getResponse().release();
+					resource.release();
+				}
+			}	
+		} else {
+			ClientResource resource = null;
+			try {
+				resource = new ClientResource(getSpecialRegistrationApiSiteCheckEligibility());
+				resource.setNext(iClient);
+				
+				AcademicSessionInfo session = server.getAcademicSession();
+				String term = getBannerTerm(session);
+				String campus = getBannerCampus(session);
+				resource.addQueryParameter("term", term);
+				resource.addQueryParameter("campus", campus);
+				resource.addQueryParameter("studentId", getBannerId(student));
+				resource.addQueryParameter("mode", getSpecialRegistrationApiMode().name());
+				helper.getAction().addOptionBuilder().setKey("term").setValue(term);
+				helper.getAction().addOptionBuilder().setKey("campus").setValue(campus);
+				helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
+				resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
+				
+				long t0 = System.currentTimeMillis();
+				
+				resource.get(MediaType.APPLICATION_JSON);
+				
+				helper.getAction().setApiGetTime(System.currentTimeMillis() - t0);
+				
+				CheckEligibilityResponse eligibility = (CheckEligibilityResponse)new GsonRepresentation<CheckEligibilityResponse>(resource.getResponseEntity(), CheckEligibilityResponse.class).getObject();
+				Gson gson = getGson(helper);
+				
+				if (helper.isDebugEnabled())
+					helper.debug("Eligibility: " + gson.toJson(eligibility));
+				helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(eligibility));
+				
+				if (ResponseStatus.success != eligibility.status)
+					throw new SectioningException(eligibility.message == null || eligibility.message.isEmpty() ? "Failed to check student eligibility (" + eligibility.status + ")." : eligibility.message);
+				
+				if (eligibility.data != null && eligibility.data.eligibilityProblems != null) {
+					String m = null;
+					for (EligibilityProblem p: eligibility.data.eligibilityProblems)
+						if (m == null)
+							m = p.message;
+						else
+							m += "\n" + p.message;
+					return m;
+				}
+				return null;
+			} catch (SectioningException e) {
+				helper.getAction().setApiException(e.getMessage());
+				throw (SectioningException)e;
+			} catch (Exception e) {
+				helper.getAction().setApiException(e.getMessage() == null ? "Null" : e.getMessage());
+				sLog.error(e.getMessage(), e);
+				throw new SectioningException(e.getMessage());
+			} finally {
+				if (resource != null) {
+					if (resource.getResponse() != null) resource.getResponse().release();
+					resource.release();
+				}
+			}
 		}
 	}
 }

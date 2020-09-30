@@ -997,6 +997,9 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		}
 	}
 	
+	public String getErrorMessage() { return iAssignment.getRequest().getErrorMessaeg(); }
+	public boolean hasErrorMessage() { return iAssignment != null && iAssignment.hasRequest() && iAssignment.getRequest().hasErrorMessage(); }
+	
 	public void checkAccessKeys(NativePreviewEvent event) {
 		if (event.getTypeInt() == Event.ONKEYUP && (event.getNativeEvent().getAltKey() || event.getNativeEvent().getCtrlKey())) {
 			for (Map.Entry<Character, Integer> entry: iTabAccessKeys.entrySet())

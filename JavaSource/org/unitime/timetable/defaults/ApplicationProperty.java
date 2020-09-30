@@ -70,6 +70,7 @@ import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationProvider
 import org.unitime.timetable.onlinesectioning.custom.StudentEmailProvider;
 import org.unitime.timetable.onlinesectioning.custom.SectionLimitProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider;
+import org.unitime.timetable.onlinesectioning.custom.StudentHoldsCheckProvider;
 import org.unitime.timetable.spring.ldap.SpringLdapExternalUidLookup;
 import org.unitime.timetable.spring.ldap.SpringLdapExternalUidTranslation;
 
@@ -1240,6 +1241,12 @@ public enum ApplicationProperty {
 	@Description("Customization: custom class attendance provider (interface CustomClassAttendanceProvider)")
 	@Since(4.6)
 	CustomizationCustomClassAttendance("unitime.custom.CustomClassAttendanceProvider"),
+	
+	@Type(Class.class)
+	@Implements(StudentHoldsCheckProvider.class)
+	@Description("Customization: student holds check provider (interface StudentHoldsCheckProvider)")
+	@Since(4.6)
+	CustomizationStudentHoldsCheck("unitime.custom.StudentHoldsCheckProvider"),
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")

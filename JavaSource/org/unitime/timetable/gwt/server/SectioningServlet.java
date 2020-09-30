@@ -168,6 +168,7 @@ import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.RequestStudentUpdates;
 import org.unitime.timetable.onlinesectioning.custom.StudentEmailProvider;
+import org.unitime.timetable.onlinesectioning.custom.StudentHoldsCheckProvider;
 import org.unitime.timetable.onlinesectioning.match.AbstractCourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -1635,12 +1636,22 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						ret.setRequest(getRequest(student));
 						ret.setCanSetCriticalOverrides(getSessionContext().hasPermission(student, Right.StudentSchedulingChangeCriticalOverride));
 						ret.setAdvisorRequest(AdvisorGetCourseRequests.getRequest(student.getUniqueId(), hibSession));
-						
+						if (Customization.StudentHoldsCheckProvider.hasProvider()) {
+							try {
+								OnlineSectioningHelper helper = new OnlineSectioningHelper(hibSession, currentUser());
+								try {
+									StudentHoldsCheckProvider holds = Customization.StudentHoldsCheckProvider.getProvider();
+									ret.getRequest().setErrorMessage(holds.getStudentHoldError(
+											getServerInstance(student.getSession().getUniqueId(), true), helper, new XStudentId(student, helper)));
+								} catch (Exception e) {
+									helper.warn("Failed to lookup critical courses: " + e.getMessage(), e);
+								}
+							} catch (Exception e) {}
+						}
 						return ret;
 					} else {
-						ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(studentId).withRequest(true).withCustomCheck(true).withAdvisorRequest(true), currentUser());
+						ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(studentId).withRequest(true).withCustomCheck(true).withAdvisorRequest(true).checkHolds(true), currentUser());
 						ret.setCanSetCriticalOverrides(getSessionContext().hasPermission(student, Right.StudentSchedulingChangeCriticalOverride));
-						
 						return ret;
 					}
 				} finally {
@@ -3350,7 +3361,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		OnlineSectioningServer server = getServerInstance(sessionId, true);
 		if (server != null) {
 			ret.setRequest(server.execute(server.createAction(AdvisorGetCourseRequests.class)
-					.forStudent(student.getUniqueId()).checkDemands(true), currentUser()));
+					.forStudent(student.getUniqueId()).checkDemands(true).checkHolds(ret.isCanUpdate()), currentUser()));
 		}
 		
 		if (server != null && !(server instanceof DatabaseServer)) {
@@ -3359,7 +3370,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		} else if (ret.isCanUpdate()) {
 			ret.setStudentRequest(getRequest(student));
 		}
-
+		
 		return ret;
 	}
 

@@ -55,6 +55,8 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.custom.Customization;
+import org.unitime.timetable.onlinesectioning.custom.StudentHoldsCheckProvider;
 import org.unitime.timetable.onlinesectioning.model.XAdvisorRequest;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -82,6 +84,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 	protected static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Long iStudentId;
 	private boolean iCheckExistingDemands = false;
+	private boolean iCheckHolds = false;
 	
 	public AdvisorGetCourseRequests forStudent(Long id) {
 		iStudentId = id;
@@ -90,6 +93,11 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 	
 	public AdvisorGetCourseRequests checkDemands(boolean check) {
 		iCheckExistingDemands = check;
+		return this;
+	}
+	
+	public AdvisorGetCourseRequests checkHolds(boolean check) {
+		iCheckHolds = check;
 		return this;
 	}
 
@@ -179,6 +187,13 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 		
 		for (OnlineSectioningLog.Request log: OnlineSectioningHelper.toProto(request))
 			action.addRequest(log);
+		
+		if (iCheckHolds && Customization.StudentHoldsCheckProvider.hasProvider()) {
+			try {
+				StudentHoldsCheckProvider provider = Customization.StudentHoldsCheckProvider.getProvider();
+				request.setErrorMessage(provider.getStudentHoldError(server, helper, student));
+			} catch (Exception e) {}
+		}
 
 		return request;
 

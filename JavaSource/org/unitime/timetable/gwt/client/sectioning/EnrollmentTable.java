@@ -266,6 +266,11 @@ public class EnrollmentTable extends Composite {
 				form.addRow(iStudentSchedule);
 				final UniTimeHeaderPanel buttons = new UniTimeHeaderPanel();
 				form.addBottomRow(buttons);
+				if (result.hasRequest() && result.getRequest().hasErrorMessage()) {
+					ScheduleStatus status = new ScheduleStatus();
+					status.error(result.getRequest().getErrorMessaeg(), false);
+					form.addRow(status);
+				}
 				final UniTimeDialogBox dialog = new UniTimeDialogBox(true, false) {
 					@Override
 					protected void onPreviewNativeEvent(NativePreviewEvent event) {
