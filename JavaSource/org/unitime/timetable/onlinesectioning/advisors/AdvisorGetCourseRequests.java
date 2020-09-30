@@ -67,6 +67,7 @@ import org.unitime.timetable.onlinesectioning.model.XLearningCommunityReservatio
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XReservation;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.solver.studentsct.StudentSolver;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest.XPreference;
@@ -192,7 +193,9 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 			try {
 				StudentHoldsCheckProvider provider = Customization.StudentHoldsCheckProvider.getProvider();
 				request.setErrorMessage(provider.getStudentHoldError(server, helper, student));
-			} catch (Exception e) {}
+			} catch (Exception e) {
+				helper.warn(MSG.exceptionFailedEligibilityCheck(e.getMessage()), e);
+			}
 		}
 
 		return request;
@@ -312,6 +315,15 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 		
 		for (OnlineSectioningLog.Request log: OnlineSectioningHelper.toProto(request))
 			action.addRequest(log);
+		
+		if (iCheckHolds && Customization.StudentHoldsCheckProvider.hasProvider()) {
+			try {
+				StudentHoldsCheckProvider provider = Customization.StudentHoldsCheckProvider.getProvider();
+				request.setErrorMessage(provider.getStudentHoldError(server, helper, new XStudentId(student, helper)));
+			} catch (Exception e) {
+				helper.warn(MSG.exceptionFailedEligibilityCheck(e.getMessage()), e);
+			}
+		}
 
 		return request;
 	}
