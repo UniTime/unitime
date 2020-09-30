@@ -191,7 +191,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		response.add("accommodation", acc);
 		
 		List<Entity> states = new ArrayList<Entity>();
-		int defaultStatus = ((Number)query.select("count(distinct s)").where("s.sectioningStatus is null").exclude("status").query(helper.getHibSession()).uniqueResult()).intValue();
+		int defaultStatus = ((Number)query.select("count(distinct s)").where("s.sectioningStatus is null").exclude("status").exclude("credit").query(helper.getHibSession()).uniqueResult()).intValue();
 		if (defaultStatus > 0) {
 			Session session = SessionDAO.getInstance().get(server.getAcademicSession().getUniqueId(), helper.getHibSession());
 			Entity s;
@@ -205,7 +205,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		}
 		for (Object[] o: (List<Object[]>)query.select("s.sectioningStatus.uniqueId, s.sectioningStatus.reference, s.sectioningStatus.label, count(distinct s)")
 				.order("s.sectioningStatus.reference, s.sectioningStatus.label").group("s.sectioningStatus.uniqueId, s.sectioningStatus.reference, s.sectioningStatus.label")
-				.exclude("status").query(helper.getHibSession()).list()) {
+				.exclude("status").exclude("credit").query(helper.getHibSession()).list()) {
 			Entity s = new Entity(
 					(Long)o[0],
 					(String)o[1],
@@ -263,11 +263,11 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			for (CourseRequest.CourseRequestOverrideStatus status: CourseRequest.CourseRequestOverrideStatus.values()) {
 				overrides.add(new Entity(new Long(-1 - status.ordinal()), Constants.toInitialCase(status.name()), CONSTANTS.overrideType()[status.ordinal()], "translated-value", CONSTANTS.overrideType()[status.ordinal()])); 
 			}
-			for (Object[] o: (List<Object[]>)query.select("s.overrideStatus, count(distinct s)").where("s.overrideStatus is not null").order("s.overrideStatus").group("s.overrideStatus").exclude("override").query(helper.getHibSession()).list()) {
+			for (Object[] o: (List<Object[]>)query.select("s.overrideStatus, count(distinct s)").where("s.overrideStatus is not null").order("s.overrideStatus").group("s.overrideStatus").exclude("credit").exclude("override").query(helper.getHibSession()).list()) {
 				Entity e = overrides.get((Integer)o[0]);
 				e.setCount(((Number)o[1]).intValue());
 			}
-			for (Object[] o: (List<Object[]>)query.select("xcr.overrideStatus, count(distinct xcr)").where("xcr.overrideStatus is not null").order("xcr.overrideStatus").group("xcr.overrideStatus").from("inner join s.courseDemands xcd inner join xcd.courseRequests xcr").exclude("override").query(helper.getHibSession()).list()) {
+			for (Object[] o: (List<Object[]>)query.select("xcr.overrideStatus, count(distinct xcr)").where("xcr.overrideStatus is not null").order("xcr.overrideStatus").group("xcr.overrideStatus").from("inner join s.courseDemands xcd inner join xcd.courseRequests xcr").exclude("credit").exclude("override").query(helper.getHibSession()).list()) {
 				Entity e = overrides.get((Integer)o[0]);
 				e.setCount(e.getCount() + ((Number)o[1]).intValue());
 			}
@@ -287,7 +287,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			int myStudents = ((Number)query.select("count(distinct s)")
 					.where("s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = :Xuser and adv.role.reference = :Xrole and adv.session.uniqueId = s.session.uniqueId)")
 					.set("Xuser", iRequest.getOption("user")).set("Xrole", iRequest.getOption("role"))
-					.exclude("mode").query(helper.getHibSession()).uniqueResult()).intValue();
+					.exclude("mode").exclude("credit").query(helper.getHibSession()).uniqueResult()).intValue();
 			if (myStudents > 0) {
 				Entity myE = new Entity(-1l, "My Students", MESSAGES.modeMyStudents(), "translated-value", MESSAGES.modeMyStudents());
 				myE.setCount(myStudents);
@@ -295,7 +295,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				int myAdvised = ((Number)query.select("count(distinct s)")
 						.where("s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = :Xuser and adv.role.reference = :Xrole and adv.session.uniqueId = s.session.uniqueId) and s.advisorCourseRequests is not empty")
 						.set("Xuser", iRequest.getOption("user")).set("Xrole", iRequest.getOption("role"))
-						.exclude("mode").query(helper.getHibSession()).uniqueResult()).intValue();
+						.exclude("mode").exclude("credit").query(helper.getHibSession()).uniqueResult()).intValue();
 				if (myAdvised > 0) {
 					Entity myA = new Entity(-1l, "My Advised", MESSAGES.modeMyStudentsAdvised(), "translated-value", MESSAGES.modeMyStudentsAdvised());
 					myA.setCount(myAdvised);
@@ -310,14 +310,14 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		}
 		int advised = ((Number)query.select("count(distinct s)")
 				.where("s.advisorCourseRequests is not empty")
-				.exclude("mode").query(helper.getHibSession()).uniqueResult()).intValue();
+				.exclude("mode").exclude("credit").query(helper.getHibSession()).uniqueResult()).intValue();
 		if (advised > 0) {
 			Entity adv = new Entity(-1l, "Advised", MESSAGES.modeAdvised(), "translated-value", MESSAGES.modeAdvised());
 			adv.setCount(advised);
 			modes.add(adv);
 			int notAdvised = ((Number)query.select("count(distinct s)")
 					.where("s.advisorCourseRequests is empty")
-					.exclude("mode").query(helper.getHibSession()).uniqueResult()).intValue();
+					.exclude("mode").exclude("credit").query(helper.getHibSession()).uniqueResult()).intValue();
 			if (notAdvised > 0) {
 				Entity notAdv = new Entity(-1l, "Not Advised", MESSAGES.modeNotAdvised(), "translated-value", MESSAGES.modeNotAdvised());
 				notAdv.setCount(notAdvised);
