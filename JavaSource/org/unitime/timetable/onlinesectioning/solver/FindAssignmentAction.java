@@ -501,13 +501,6 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			}
 		}
 		
-		/*
-		DataProperties config = new DataProperties(server.getConfig());
-		config.setProperty("Neighbour.BranchAndBoundTimeout", "-1");
-		BranchBoundSelection selection = new BranchBoundSelection(config);
-		selection.setModel(model);
-		BranchBoundNeighbour neighbour = selection.getSelection(assignment, student).select();
-		*/
 		OnlineSectioningSelection selection = null;
 		if (server.getConfig().getPropertyBoolean("StudentWeights.MultiCriteria", true)) {
 			selection = new MultiCriteriaBranchAndBoundSelection(server.getConfig());
@@ -542,27 +535,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				" with " + server.getConfig().getPropertyInt("Neighbour.BranchAndBoundTimeout", 1000) +" ms time limit.");
 
         neighbour.assign(assignment, 0);
-        helper.info("Solution: " + ToolBox.dict2string(model.getInfo(assignment), 2));
-        
-        if (server instanceof StudentSolver) {
-    		StudentSolver solver = (StudentSolver)server;
-    		StudentSectioningModel m = (StudentSectioningModel)solver.currentSolution().getModel();
-    		for (Student s: m.getStudents()) {
-    			if (s.getExternalId().equals(student.getExternalId())) {
-    				double total = 0;
-    				for (Request r: s.getRequests()) {
-    		        	Enrollment e = solver.currentSolution().getAssignment().getValue(r);
-    		        	if (e != null) {
-    		        		helper.info(e.toDouble(assignment) + ": " + e);
-    		        		total += e.toDouble(assignment);
-    		        	}
-    		        	if (e != null && e.getReservation() != null)
-    		        		helper.info(" -- " + e.getReservation());
-    		        }
-    				helper.info("Total: " + total);
-    			}
-    		}	
-        }
+        helper.debug("Solution: " + ToolBox.dict2string(model.getInfo(assignment), 2));
 		
     	OnlineSectioningLog.Enrollment.Builder solution = OnlineSectioningLog.Enrollment.newBuilder();
     	solution.setType(OnlineSectioningLog.Enrollment.EnrollmentType.COMPUTED);
