@@ -1022,10 +1022,11 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 						throw exception;
 					}
 				} finally {
-					helper.getAction().setApiGetTime(System.currentTimeMillis() - t0);
+					if (!helper.getAction().hasApiGetTime())
+						helper.getAction().setApiGetTime(System.currentTimeMillis() - t0);
 				}
 				List<XEInterface.RegisterResponse> current = new GsonRepresentation<List<XEInterface.RegisterResponse>>(resource.getResponseEntity(), XEInterface.RegisterResponse.TYPE_LIST).getObject();
-				helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(current));
+				helper.getAction().addOptionBuilder().setKey("holds-response").setValue(gson.toJson(current));
 				if (current != null && !current.isEmpty())
 					original = current.get(0);
 				
@@ -1080,14 +1081,15 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 				
 				resource.get(MediaType.APPLICATION_JSON);
 				
-				helper.getAction().setApiGetTime(System.currentTimeMillis() - t0);
+				if (!helper.getAction().hasApiGetTime())
+					helper.getAction().setApiGetTime(System.currentTimeMillis() - t0);
 				
 				CheckEligibilityResponse eligibility = (CheckEligibilityResponse)new GsonRepresentation<CheckEligibilityResponse>(resource.getResponseEntity(), CheckEligibilityResponse.class).getObject();
 				Gson gson = getGson(helper);
 				
 				if (helper.isDebugEnabled())
 					helper.debug("Eligibility: " + gson.toJson(eligibility));
-				helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(eligibility));
+				helper.getAction().addOptionBuilder().setKey("holds-response").setValue(gson.toJson(eligibility));
 				
 				if (ResponseStatus.success != eligibility.status)
 					throw new SectioningException(eligibility.message == null || eligibility.message.isEmpty() ? "Failed to check student eligibility (" + eligibility.status + ")." : eligibility.message);
