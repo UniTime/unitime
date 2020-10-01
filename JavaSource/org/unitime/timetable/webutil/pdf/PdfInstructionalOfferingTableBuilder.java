@@ -899,10 +899,11 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (prefGroup instanceof Class_) {
     		Class_ c = (Class_) prefGroup;
     		if (c.getSchedulePrintNote()!=null) {
-    			if (c.getSchedulePrintNote().length() <= 20 || user == null || CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.SchedulePrintNoteDisplay))){
-    				addText(cell, c.getSchedulePrintNote(), false, false, Element.ALIGN_LEFT, color, true);
+    			String note = c.getSchedulePrintNote().replaceAll("\\<.*?\\>", "");
+    			if (note.length() <= 20 || user == null || CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.SchedulePrintNoteDisplay))){
+    				addText(cell, note, false, false, Element.ALIGN_LEFT, color, true);
     			} else {
-    				addText(cell, c.getSchedulePrintNote().substring(0,20) + "...", false, false, Element.ALIGN_LEFT, color, true);   				
+    				addText(cell, note.substring(0,20) + "...", false, false, Element.ALIGN_LEFT, color, true);   				
     			}
     		}
     	}
@@ -921,10 +922,11 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 			if (coI.getScheduleBookNote()!=null && coI.getScheduleBookNote().trim().length()>0) {
 				if (note.length()>0)
 					note.append("\n");
-				if (coI.getScheduleBookNote().length() <= 20 || Constants.showCrsOffrAsFullText(user)){
-					note.append(coI.getScheduleBookNote());
+				String n = coI.getScheduleBookNote().replaceAll("\\<.*?\\>", "");
+				if (n.length() <= 20 || Constants.showCrsOffrAsFullText(user)){
+					note.append(n);
 				} else {
-					note.append(coI.getScheduleBookNote().substring(0, 20) + "...");
+					note.append(n.substring(0, 20) + "...");
 				}
 			}
 		}
@@ -940,10 +942,11 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (prefGroup instanceof Class_) {
     		Class_ c = (Class_) prefGroup;
     		if (c.getNotes()!=null) {
-    			if (c.getNotes().length() <= 30  || user == null || CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))){
-    				addText(cell, c.getNotes(), false, false, Element.ALIGN_LEFT, color, true);
+    			String note = c.getNotes().replaceAll("\\<.*?\\>", "");
+    			if (note.length() <= 30  || user == null || CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))){
+    				addText(cell, note, false, false, Element.ALIGN_LEFT, color, true);
     			} else {
-    				addText(cell, c.getNotes().substring(0, 30) + "...", false, false, Element.ALIGN_LEFT, color, true);
+    				addText(cell, note.substring(0, 30) + "...", false, false, Element.ALIGN_LEFT, color, true);
     			}
     		}
     	}
@@ -956,10 +959,11 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	PdfPCell cell = createCell();
 
     	if (c.getNotes()!=null) {
-			if (c.getNotes().length() <= 30  || user == null || CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))){
-				addText(cell, c.getNotes(), false, false, Element.ALIGN_LEFT, color, true);
+    		String note = c.getNotes().replaceAll("\\<.*?\\>", "");
+			if (note.length() <= 30  || user == null || CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))){
+				addText(cell, note, false, false, Element.ALIGN_LEFT, color, true);
 			} else {
-				addText(cell, c.getNotes().substring(0, 30) + "...", false, false, Element.ALIGN_LEFT, color, true);
+				addText(cell, note.substring(0, 30) + "...", false, false, Element.ALIGN_LEFT, color, true);
 			}
 		}
     	

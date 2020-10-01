@@ -294,9 +294,7 @@
 		<logic:notEmpty name="<%=frmName%>" property="schedulePrintNote">
 		<TR>
 			<TD valign="top"><loc:message name="propertyStudentScheduleNote"/></TD>
-			<TD>
-				<bean:write name="<%=frmName%>" property="schedulePrintNote" />
-			</TD>
+			<TD style="white-space: pre-wrap;"><bean:write name="<%=frmName%>" property="schedulePrintNote" filter="false"/></TD>
 		</TR>
 		</logic:notEmpty>
 

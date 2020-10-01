@@ -1013,15 +1013,17 @@ public class WebInstructionalOfferingTableBuilder {
     	if (prefGroup instanceof Class_) {
     		Class_ c = (Class_) prefGroup;
     		if (c.getSchedulePrintNote()!=null && !c.getSchedulePrintNote().trim().isEmpty()) {
+    			String note = c.getSchedulePrintNote().replaceAll("\\<.*?\\>", "");
     			if (CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.SchedulePrintNoteDisplay))) {
-	    			cell = initNormalCell(c.getSchedulePrintNote().replace("\n", "<br>"), isEditable);
+	    			cell = initNormalCell(c.getSchedulePrintNote(), isEditable);
 	    			cell.setAlign("left");
     			} else if (CommonValues.NoteAsShortText.eq(user.getProperty(UserProperty.SchedulePrintNoteDisplay))) {
-        			String note = (c.getSchedulePrintNote().length() <= 20 ? c.getSchedulePrintNote() : c.getSchedulePrintNote().substring(0, 20) + "...");
-    				cell = initNormalCell(note.replace("\n", "<br>"), isEditable);
+        			note = (note.length() <= 20 ? note : note.substring(0, 20) + "...");
+    				cell = initNormalCell(note, isEditable);
+    				cell.setStyle("white-space: pre-wrap;");
 	    			cell.setAlign("left");
     			} else {
-    	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasSchedulePrintNote() + "' title='" + c.getSchedulePrintNote() + "' align='absmiddle' src='images/note.png'>", isEditable);
+    	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasSchedulePrintNote() + "' title='" + HtmlUtils.htmlEscape(note) + "' align='absmiddle' src='images/note.png'>", isEditable);
     	    		cell.setAlign("center");
     			}
     		} else {
@@ -1108,9 +1110,12 @@ public class WebInstructionalOfferingTableBuilder {
 	    String note = "";
 	    for (CourseOffering co: io.getCourseOfferings()) {
 	    	if (co.getScheduleBookNote() != null && !co.getScheduleBookNote().trim().isEmpty()) {
-	    		if (!note.isEmpty()) note += "<br>";
+	    		if (!note.isEmpty()) note += "\n";
 	    		if (CommonValues.NoteAsShortText.eq(user.getProperty(UserProperty.CourseOfferingNoteDisplay))) {
-	    			note += (co.getScheduleBookNote().length() <= 20 ? co.getScheduleBookNote() : co.getScheduleBookNote().substring(0, 20) + "...");
+	    			String n = co.getScheduleBookNote().replaceAll("\\<.*?\\>", "");
+	    			note += (n.length() <= 20 ? n : n.substring(0, 20) + "...");
+	    		} else if (CommonValues.NoteAsIcon.eq(user.getProperty(UserProperty.CourseOfferingNoteDisplay))) {
+	    			note += co.getScheduleBookNote().replaceAll("\\<.*?\\>", "");
 				} else {
 					note += co.getScheduleBookNote();
 				}
@@ -1120,10 +1125,11 @@ public class WebInstructionalOfferingTableBuilder {
 			cell = this.initNormalCell("&nbsp;" ,isEditable);
 		} else {
 			if (CommonValues.NoteAsIcon.eq(user.getProperty(UserProperty.CourseOfferingNoteDisplay))) {
-	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasCourseOfferingNote() + "' title='" + note.replace("<br>", "\n") + "' align='absmiddle' src='images/note.png'>", isEditable);
+	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasCourseOfferingNote() + "' title='" + HtmlUtils.htmlEscape(note) + "' align='absmiddle' src='images/note.png'>", isEditable);
 	    		cell.setAlign("center");	
 			} else {
-				cell = initNormalCell(note.replace("\n", "<br>"), isEditable);
+				cell = initNormalCell(note, isEditable);
+				cell.setStyle("white-space: pre-wrap;");
 				cell.setAlign("left");
 			}
 		}
@@ -1135,15 +1141,18 @@ public class WebInstructionalOfferingTableBuilder {
     	if (prefGroup instanceof Class_) {
     		Class_ c = (Class_) prefGroup;
     		if (c.getNotes() != null && !c.getNotes().trim().isEmpty()) {
+    			String note = c.getNotes().replaceAll("\\<.*?\\>", "");
     			if (CommonValues.NoteAsShortText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))) {
-    				String note = (c.getNotes().length() <= 20 ? c.getNotes() : c.getNotes().substring(0, 20) + "...");
-    				cell = initNormalCell(note.replaceAll("\n","<br>"), isEditable);
+    				note = (note.length() <= 20 ? note : note.substring(0, 20) + "...");
+    				cell = initNormalCell(note, isEditable);
+    				cell.setStyle("white-space: pre-wrap;");
         			cell.setAlign("left");
     			} else if (CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))) {
-    				cell = initNormalCell(c.getNotes().replaceAll("\n","<br>"), isEditable);
+    				cell = initNormalCell(c.getNotes(), isEditable);
+    				cell.setStyle("white-space: pre-wrap;");
         			cell.setAlign("left");
     			} else {
-    	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasNoteToMgr() + "' title='" + HtmlUtils.htmlEscape(c.getNotes()) + "' align='absmiddle' src='images/note.png'>", isEditable);
+    	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasNoteToMgr() + "' title='" + HtmlUtils.htmlEscape(note) + "' align='absmiddle' src='images/note.png'>", isEditable);
     	    		cell.setAlign("center");
     			}
     		} else { 
@@ -1158,15 +1167,17 @@ public class WebInstructionalOfferingTableBuilder {
     private TableCell buildNote(InstructionalOffering offering, boolean isEditable, UserContext user){
     	TableCell cell = null;
 		if (offering.getNotes() != null && !offering.getNotes().trim().isEmpty()) {
+			String note = offering.getNotes().replaceAll("\\<.*?\\>", "");
 			if (CommonValues.NoteAsShortText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))) {
-				String note = (offering.getNotes().length() <= 20 ? offering.getNotes() : offering.getNotes().substring(0, 20) + "...");
-				cell = initNormalCell(note.replaceAll("\n","<br>"), isEditable);
+				note = (note.length() <= 20 ? note : note.substring(0, 20) + "...");
+				cell = initNormalCell(note, isEditable);
     			cell.setAlign("left");
 			} else if (CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))) {
-				cell = initNormalCell(offering.getNotes().replaceAll("\n","<br>"), isEditable);
+				cell = initNormalCell(offering.getNotes(), isEditable);
+				cell.setStyle("white-space: pre-wrap;");
     			cell.setAlign("left");
 			} else {
-	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasNoteToMgr() + "' title='" + HtmlUtils.htmlEscape(offering.getNotes()) + "' align='absmiddle' src='images/note.png'>", isEditable);
+	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasNoteToMgr() + "' title='" + HtmlUtils.htmlEscape(note) + "' align='absmiddle' src='images/note.png'>", isEditable);
 	    		cell.setAlign("center");
 			}
 		} else { 

@@ -580,7 +580,14 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (prefGroup instanceof Class_) {
     		Class_ c = (Class_) prefGroup;
     		if (c.getSchedulePrintNote()!=null) {
-    			addText(cell, c.getSchedulePrintNote(), true);
+    			String note = c.getSchedulePrintNote().replaceAll("\\<.*?\\>", "");
+    			if (user == null || CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.SchedulePrintNoteDisplay))) {
+    				addText(cell, c.getSchedulePrintNote(), true);
+    			} else if (note.length() <= 30){
+					addText(cell, note, true);
+				} else {
+					addText(cell, note.substring(0, 30) + "...", true);
+				}
     		}
     	}
     	
@@ -595,9 +602,15 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 		for (Iterator i=s.iterator(); i.hasNext(); ) {
 			CourseOffering coI = (CourseOffering) i.next();
 			if (coI.getScheduleBookNote()!=null && coI.getScheduleBookNote().trim().length()>0) {
-				if (note.length()>0)
-					note.append("\n");
-				note.append(coI.getScheduleBookNote());
+				if (note.length()>0) note.append("\n");
+				String n = coI.getScheduleBookNote().replaceAll("\\<.*?\\>", "");
+				if (user == null || CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.CourseOfferingNoteDisplay))) {
+					note.append(coI.getScheduleBookNote());
+				} else if (n.length() <= 30){
+					note.append(n);
+				} else {
+					note.append(n.substring(0, 30) + "...");
+				}
 			}
 		}
 		
@@ -611,10 +624,13 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (prefGroup instanceof Class_) {
     		Class_ c = (Class_) prefGroup;
     		if (c.getNotes()!=null) {
-    			if (c.getNotes().length() <= 30  || user == null || CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))){
+    			String note = c.getNotes().replaceAll("\\<.*?\\>", "");
+    			if (user == null || CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))) {
     				addText(cell, c.getNotes(), true);
+    			} else if (note.length() <= 30){
+    				addText(cell, note, true);
     			} else {
-    				addText(cell, c.getNotes().substring(0, 30) + "...", true);
+    				addText(cell, note.substring(0, 30) + "...", true);
     			}
     		}
     	}
@@ -626,10 +642,13 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	CSVField cell = createCell();
 
     	if (c.getNotes()!=null) {
-			if (c.getNotes().length() <= 30  || user == null || CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))){
+    		String note = c.getNotes().replaceAll("\\<.*?\\>", "");
+    		if (user == null || CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))) {
 				addText(cell, c.getNotes(), true);
+			} else if (note.length() <= 30){
+				addText(cell, note, true);
 			} else {
-				addText(cell, c.getNotes().substring(0, 30) + "...", true);
+				addText(cell, note.substring(0, 30) + "...", true);
 			}
 		}
     	

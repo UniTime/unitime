@@ -299,7 +299,7 @@
 							</TD>
 						</logic:equal>
 						<logic:equal name="instructionalOfferingDetailForm" property="hasScheduleBookNote" value="true">
-							<TD class="BottomBorderGray">&nbsp;<bean:write name="co" property="scheduleBookNote"/></TD>
+							<TD class="BottomBorderGray" style="white-space: pre-wrap;"><bean:write name="co" property="scheduleBookNote" filter="false"/></TD>
 						</logic:equal>
 						<logic:equal name="instructionalOfferingDetailForm" property="hasDemandOfferings" value="true">
 							<TD class="BottomBorderGray">&nbsp;
