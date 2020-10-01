@@ -258,6 +258,14 @@ public class WebInstructionalOfferingTableBuilder {
     	else
     		return (getDisplayInstructorPrefs() ? 2 : 0);
     }
+    public Boolean iShowOriginalDivSecs = null;
+    public void setShowOriginalDivSecs(boolean showOriginalDivSecs) {
+    	iShowOriginalDivSecs = showOriginalDivSecs;
+    }
+    public boolean isShowOriginalDivSecs() {
+    	if (iShowOriginalDivSecs == null) return ApplicationProperty.ClassSetupEditExternalIds.isTrue();
+    	return iShowOriginalDivSecs;
+    }
      
     public void setUserSettings(UserContext user) {
 		setTimeVertival(RequiredTimeTable.getTimeGridVertical(user));
@@ -919,7 +927,7 @@ public class WebInstructionalOfferingTableBuilder {
     	if (prefGroup instanceof Class_) {
     		Class_ aClass = (Class_) prefGroup;
     		//String divSec = aClass.getDivSecNumber();
-    		String divSec = aClass.getClassSuffix(co);
+    		String divSec = (isShowOriginalDivSecs() ? aClass.getClassSuffix() : aClass.getClassSuffix(co));
     		cell = initNormalCell((divSec==null?"&nbsp;":divSec), isEditable);
             cell.setAlign("right");	
     	} else {

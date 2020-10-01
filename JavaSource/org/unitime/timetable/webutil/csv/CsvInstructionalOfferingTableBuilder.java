@@ -518,7 +518,7 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (prefGroup instanceof Class_) {
     		Class_ aClass = (Class_) prefGroup;
     		// String divSec = aClass.getDivSecNumber();
-    		String divSec = aClass.getClassSuffix(co);
+    		String divSec = (isShowOriginalDivSecs() ? aClass.getClassSuffix() : aClass.getClassSuffix(co));
     		if (divSec!=null)
     			addText(cell, divSec, true);
     	}

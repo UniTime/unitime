@@ -29,6 +29,7 @@ import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Assignment;
@@ -68,6 +69,7 @@ public class CsvClassAssignmentExport {
 				new CSVField("INSTRUCTOR"),
 				new CSVField("SCHEDULE_NOTE")
 			});
+		boolean showOriginalDivSec = ApplicationProperty.ClassSetupEditExternalIds.isTrue(); 
 		
 		for (Iterator i=classes.iterator();i.hasNext();) {
 			Object[] o = (Object[])i.next(); Class_ clazz = (Class_)o[0]; CourseOffering co = (CourseOffering)o[1];
@@ -79,7 +81,7 @@ public class CsvClassAssignmentExport {
 				DepartmentalInstructor instructor = ci.getInstructor();
 				leadsSb.append(instructor.getName(instructorFormat));
 			}
-            String divSec = clazz.getClassSuffix(co);
+            String divSec = (showOriginalDivSec ? clazz.getClassSuffix() : clazz.getClassSuffix(co));
 			Assignment assignment = null;
 			try {
 				assignment = proxy.getAssignment(clazz);
@@ -152,6 +154,7 @@ public class CsvClassAssignmentExport {
                 new CSVField("INSTR_TYPE"),
                 new CSVField("CROSS_LIST")
             });
+        boolean showOriginalDivSec = ApplicationProperty.ClassSetupEditExternalIds.isTrue();
         
         int idx = 1;
         for (Iterator i=classes.iterator();i.hasNext();) {
@@ -206,7 +209,7 @@ public class CsvClassAssignmentExport {
                     crossListSb.append(co.getCourseName());
                 }
             }
-            String divSec = clazz.getClassSuffix(course);
+            String divSec = (showOriginalDivSec ? clazz.getClassSuffix() : clazz.getClassSuffix(course));
             Assignment assignment = null;
             try {
                 assignment = proxy.getAssignment(clazz);
