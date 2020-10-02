@@ -726,6 +726,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	
 	protected boolean isPageChanged() {
 		if (iDetails != null && !iDetails.isCanUpdate()) return false;
+		if (!iNotes.getText().equals(iDetails == null || iDetails.getRequest() == null || !iDetails.getRequest().hasCreditNote() ? "" : iDetails.getRequest().getCreditNote()))
+			return true;
 		if (iDetails == null || iDetails.getRequest() == null)
 			return !getRequest().isEmpty();
 		else {
@@ -832,7 +834,11 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				iAlternatives.get(idx).setValue(request.getAlternatives().get(idx), true);
 			if (request.hasCreditNote()) {
 				iNotes.setText(request.getCreditNote());
+				if (request.hasPin() && !iNotes.getText().contains(MESSAGES.advisorNotePin(request.getPin())))
+					iNotes.setText(request.getCreditNote() + "\n" + MESSAGES.advisorNotePin(request.getPin()));
 				resizeNotes();
+			} else if (request.hasPin()) {
+				iNotes.setText(MESSAGES.advisorNotePin(request.getPin()));
 			}
 		}
 		updateTotalCredits();

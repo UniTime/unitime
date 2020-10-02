@@ -2799,4 +2799,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Your UniTime session may have expired. Click here to log in again.")
 	String sessionExpiredClickToLogin();
+	
+	@DefaultMessage("PIN: {0}")
+	String advisorNotePin(String pin);
 }

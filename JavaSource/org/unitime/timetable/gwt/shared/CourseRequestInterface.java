@@ -65,6 +65,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	private String iRequestorNote = null;
 	private String iRequestId = null;
 	private String iPopupMessage = null;
+	private String iPin = null;
 	
 	public CourseRequestInterface() {}
 	public CourseRequestInterface(StudentSectioningContext cx) {
@@ -132,6 +133,9 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	public boolean hasCreditNote() { return iCreditNote != null && !iCreditNote.isEmpty() && !" ".equals(iCreditNote); }
 	public String getCreditNote() { return iCreditNote; }
 	public void setCreditNote(String note) { iCreditNote = note; }
+	public boolean hasPin() { return iPin != null && !iPin.isEmpty(); }
+	public void setPin(String pin) { iPin = pin; }
+	public String getPin() { return iPin; }
 	
 	public boolean hasPopupMessage() { return iPopupMessage != null && !iPopupMessage.isEmpty(); }
 	public void setPopupMessage(String message) {

@@ -193,6 +193,9 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 			try {
 				StudentHoldsCheckProvider provider = Customization.StudentHoldsCheckProvider.getProvider();
 				request.setErrorMessage(provider.getStudentHoldError(server, helper, student));
+				for (OnlineSectioningLog.Property p: helper.getAction().getOptionList())
+					if ("PIN".equals(p.getKey())) 
+						request.setPin(p.getValue());
 			} catch (Exception e) {
 				helper.warn(MSG.exceptionFailedEligibilityCheck(e.getMessage()), e);
 			}
@@ -320,6 +323,9 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 			try {
 				StudentHoldsCheckProvider provider = Customization.StudentHoldsCheckProvider.getProvider();
 				request.setErrorMessage(provider.getStudentHoldError(server, helper, new XStudentId(student, helper)));
+				for (OnlineSectioningLog.Property p: helper.getAction().getOptionList())
+					if ("PIN".equals(p.getKey())) 
+						request.setPin(p.getValue());
 			} catch (Exception e) {
 				helper.warn(MSG.exceptionFailedEligibilityCheck(e.getMessage()), e);
 			}

@@ -1103,6 +1103,11 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 							m += "\n" + p.message;
 					return m;
 				}
+				
+				if (eligibility.data != null && eligibility.data.PIN != null && !eligibility.data.PIN.isEmpty() && !"NA".equals(eligibility.data.PIN)) {
+					helper.getAction().addOptionBuilder().setKey("PIN").setValue(eligibility.data.PIN);
+				}
+				
 				return null;
 			} catch (SectioningException e) {
 				helper.getAction().setApiException(e.getMessage());

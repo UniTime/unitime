@@ -309,6 +309,8 @@ public class SpecialRegistrationInterface {
 		public Boolean eligible;
 		/** Detected eligibility problems (in pre-reg: e.g., student has a HOLD) */
 		public List<EligibilityProblem> eligibilityProblems;
+		/** Student PIN (NA when not available) */
+		public String PIN;
 	}
 	
 	/**
