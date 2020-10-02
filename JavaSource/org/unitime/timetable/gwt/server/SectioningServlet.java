@@ -842,10 +842,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 	
 	public static CourseOffering lookupCourse(org.hibernate.Session hibSession, Long sessionId, Long studentId, String courseName, CourseMatcher courseMatcher) {
+		boolean excludeNotOffered = ApplicationProperty.CourseRequestsShowNotOffered.isFalse();
 		if (studentId != null) {
 			for (CourseOffering co: (List<CourseOffering>)hibSession.createQuery(
 					"select cr.courseOffering from CourseRequest cr where " +
 					"cr.courseDemand.student.uniqueId = :studentId and " +
+					(excludeNotOffered ? "cr.courseOffering.instructionalOffering.notOffered is false and " : "") +
 					"(lower(cr.courseOffering.subjectArea.subjectAreaAbbreviation || ' ' || cr.courseOffering.courseNbr) = :course or " +
 					"lower(cr.courseOffering.subjectArea.subjectAreaAbbreviation || ' ' || cr.courseOffering.courseNbr || ' - ' || cr.courseOffering.title) = :course)")
 					.setString("course", courseName.toLowerCase())
@@ -856,6 +858,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 		for (CourseOffering co: (List<CourseOffering>)hibSession.createQuery(
 				"select c from CourseOffering c where " +
+				(excludeNotOffered ? "c.instructionalOffering.notOffered is false and " : "") + 
 				"c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and " +
 				"(lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course or lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' - ' || c.title) = :course)")
 				.setString("course", courseName.toLowerCase())
