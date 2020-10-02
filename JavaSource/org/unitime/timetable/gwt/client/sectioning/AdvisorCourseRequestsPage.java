@@ -834,7 +834,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				iAlternatives.get(idx).setValue(request.getAlternatives().get(idx), true);
 			if (request.hasCreditNote()) {
 				iNotes.setText(request.getCreditNote());
-				if (request.hasPin() && !iNotes.getText().contains(MESSAGES.advisorNotePin(request.getPin())))
+				if (request.hasPin() && !iNotes.getText().contains(request.getPin()))
 					iNotes.setText(request.getCreditNote() + "\n" + MESSAGES.advisorNotePin(request.getPin()));
 				resizeNotes();
 			} else if (request.hasPin()) {

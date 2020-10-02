@@ -198,6 +198,10 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specReg.XEeligibility", "false"));
 	}
 	
+	protected boolean isCheckForPin() {
+		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specReg.checkForPin", "true"));
+	}
+	
 	protected String getBannerId(org.unitime.timetable.model.Student student) {
 		String id = student.getExternalUniqueId();
 		while (id.length() < 9) id = "0" + id;
@@ -1104,7 +1108,7 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 					return m;
 				}
 				
-				if (eligibility.data != null && eligibility.data.PIN != null && !eligibility.data.PIN.isEmpty() && !"NA".equals(eligibility.data.PIN)) {
+				if (isCheckForPin() && eligibility.data != null && eligibility.data.PIN != null && !eligibility.data.PIN.isEmpty() && !"NA".equals(eligibility.data.PIN)) {
 					helper.getAction().addOptionBuilder().setKey("PIN").setValue(eligibility.data.PIN);
 				}
 				
