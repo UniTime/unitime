@@ -279,7 +279,7 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 						} else {
 							line.add(new Label());
 						}
-						line.add(new Label(record.getNote() == null ? "" : record.getNote()));
+						line.add(new HTML(record.getNote() == null ? "" : record.getNote()));
 						if (record.hasNote()) hasNote = true;
 						if (record.hasTitle()) {
 							if (record.hasNote()) {
@@ -395,7 +395,8 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 					iInstructionalMethodsPanel.add(ch);
 				}
 			}
-			iInstructionalMethodsPanel.add(iRequired);
+			if (iRequired != null)
+				iInstructionalMethodsPanel.add(iRequired);
 		}
 	}
 
