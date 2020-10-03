@@ -38,6 +38,7 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.InstructorEditForm;
@@ -211,7 +212,8 @@ public class InstructorPrefEditAction extends PreferencesAction {
             		super.doUpdate(request, frm, inst, s, timeVertical,
             				Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING, Preference.Type.DISTRIBUTION);
             		
-        			inst.setUnavailablePatternAndOffset(request);
+            		if ("Enabled".equalsIgnoreCase(ApplicationProperty.InstructorUnavailbeDays.value()) || "Preferences".equalsIgnoreCase(ApplicationProperty.InstructorUnavailbeDays.value()))
+            			inst.setUnavailablePatternAndOffset(request);
                     
                     ChangeLog.addChange(
                             null, 
@@ -326,7 +328,8 @@ public class InstructorPrefEditAction extends PreferencesAction {
         // populate form
 		frm.setInstructorId(instructorId);
 		
-		request.setAttribute("UnavailableDays.pattern", inst.getUnavailablePatternHtml(true));
+		if ("Enabled".equalsIgnoreCase(ApplicationProperty.InstructorUnavailbeDays.value()) || "Preferences".equalsIgnoreCase(ApplicationProperty.InstructorUnavailbeDays.value()))
+			request.setAttribute("UnavailableDays.pattern", inst.getUnavailablePatternHtml(true));
 
 		frm.setName(
 				inst.getName(UserProperty.NameFormat.get(sessionContext.getUser())) + 

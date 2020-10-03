@@ -38,6 +38,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.InstructorEditForm;
 import org.unitime.timetable.model.ChangeLog;
@@ -221,7 +222,10 @@ public class InstructorAssignmentPrefAction extends PreferencesAction {
 	 */
 	private void doLoad(HttpServletRequest request, InstructorEditForm frm, DepartmentalInstructor inst, String instructorId) {
         // populate form
-		frm.setInstructorId(instructorId);		
+		frm.setInstructorId(instructorId);
+		
+		if ("Enabled".equalsIgnoreCase(ApplicationProperty.InstructorUnavailbeDays.value()) || "Assignments".equalsIgnoreCase(ApplicationProperty.InstructorUnavailbeDays.value()))
+			request.setAttribute("UnavailableDays.pattern", inst.getUnavailablePatternHtml(true));
 
 		frm.setName(
 				inst.getName(UserProperty.NameFormat.get(sessionContext.getUser())) + 
@@ -279,6 +283,9 @@ public class InstructorAssignmentPrefAction extends PreferencesAction {
 			}
 			
     		super.doUpdate(request, frm, inst, inst.getPreferences(), false, Preference.Type.TIME, Preference.Type.DISTRIBUTION, Preference.Type.COURSE);
+    		
+    		if ("Enabled".equalsIgnoreCase(ApplicationProperty.InstructorUnavailbeDays.value()) || "Assignments".equalsIgnoreCase(ApplicationProperty.InstructorUnavailbeDays.value()))
+    			inst.setUnavailablePatternAndOffset(request);
 			
 			hibSession.saveOrUpdate(inst);
 

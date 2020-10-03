@@ -2757,6 +2757,15 @@ public enum ApplicationProperty {
 	@Description("Student Course Requests: popup message when the page shows pre-populated course requests based on the advisor recommendations")
 	@Since(4.5)
 	PopupMessageCourseRequestsPrepopulatedWithAdvisorRecommendations("unitime.acrf.showingRecommendationsPopup"),
+	
+	@DefaultValue("Preferences")
+	@Values({"Disabled", "Preferences", "Assignments", "Enabled"})
+	@Description("Instructors: alow editing unavailable dates, possible values:\n"
+			+ "- Disabled ... editing of unavailable dates is disabled,\n"
+			+ "- Preferences ... enabled and available on the Instructor Preferences page,\n"
+			+ "- Assignments ... enabled and available on the Instructor Assignment Preferences page,\n"
+			+ "- Enabled ... enabled and available on both Instructor Preferences and Instructor Assignment Preferences pages")
+	InstructorUnavailbeDays("tmtbl.instructor.unavaibleDates"),
 	;
 
 	String iKey;
