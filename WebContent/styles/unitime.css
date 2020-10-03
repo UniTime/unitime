@@ -6562,6 +6562,19 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-ApplicationConfigTable .unitime-LegacyWebTable td {
 	white-space: pre-wrap;
+	word-break: break-all; 
+}
+
+.unitime-ApplicationConfigTable .unitime-LegacyWebTable td:first-child {
+	max-width: calc(20vw - 2px);
+}
+
+.unitime-ApplicationConfigTable .unitime-LegacyWebTable td:nth-child(2) {
+	max-width: calc(50vw - 5px);
+}
+
+.unitime-ApplicationConfigTable .unitime-LegacyWebTable td:nth-child(3) {
+	max-width: calc(30vw - 3px);
 }
 
 .unitime-StudentStatusDialog {
