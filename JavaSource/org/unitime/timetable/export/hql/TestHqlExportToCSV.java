@@ -22,6 +22,7 @@ package org.unitime.timetable.export.hql;
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.hibernate.MappingException;
@@ -97,6 +98,8 @@ public class TestHqlExportToCSV implements Exporter {
 				hql = hql.replace("%" + o.name() + "%", "(" + value + ")");
 			}
         }
+        if (hql.indexOf("%USER%") >= 0)
+        	hql = hql.replace("%USER%", StringEscapeUtils.escapeSql(helper.getSessionContext().getUser().getExternalUserId()));
 
 		BufferedPrinter out = new BufferedPrinter(new CSVPrinter(helper, false));
 		helper.setup(out.getContentType(), reference(), false);

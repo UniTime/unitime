@@ -159,6 +159,8 @@ public class HibernateQueryTestAction extends Action {
 					query = query.replace("%" + o.name() + "%", "(" + value + ")");
 				}
 	        }
+	        if (query.indexOf("%USER%") >= 0)
+	        	query = query.replace("%USER%", StringEscapeUtils.escapeSql(sessionContext.getUser().getExternalUserId()));
 	        
         	BufferedPrinter out = new BufferedPrinter(new CSVPrinter(response.getWriter(), false));
         	response.setContentType(out.getContentType() + "; charset=UTF-8");
@@ -204,6 +206,8 @@ public class HibernateQueryTestAction extends Action {
 						query = query.replace("%" + o.name() + "%", "(" + value + ")");
 					}
 		        }
+		        if (query.indexOf("%USER%") >= 0)
+		        	query = query.replace("%USER%", StringEscapeUtils.escapeSql(sessionContext.getUser().getExternalUserId()));
 		        _RootDAO rdao = new _RootDAO();
 		        Session hibSession = rdao.getSession();
 		        Query q = hibSession.createQuery(query);

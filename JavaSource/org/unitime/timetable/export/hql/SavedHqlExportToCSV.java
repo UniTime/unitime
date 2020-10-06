@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.hibernate.MappingException;
@@ -222,6 +223,8 @@ public class SavedHqlExportToCSV implements Exporter {
 					hql = hql.replace("%" + o.name() + "%", "(" + value + ")");
 				}
 			}
+			if (hql.indexOf("%USER%") >= 0)
+				hql = hql.replace("%USER%", StringEscapeUtils.escapeSql(user.getExternalUserId()));
 			org.hibernate.Session hibSession = SavedHQLDAO.getInstance().getSession();
 			org.hibernate.Query q = hibSession.createQuery(hql);
 			if (maxRows > 0)
