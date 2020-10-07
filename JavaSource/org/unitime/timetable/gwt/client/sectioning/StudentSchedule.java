@@ -521,7 +521,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 	
 	protected void fillInRequests() {
 		ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
-		boolean hasPref = false, hasWarn = false, hasWait = false, hasStat = false, hasCrit = iAssignment.isCanSetCriticalOverrides();
+		boolean hasPref = false, hasWarn = false, hasWait = false, hasCrit = iAssignment.isCanSetCriticalOverrides();
 		NumberFormat df = NumberFormat.getFormat("0.#");
 		if (iAssignment.hasRequest()) {
 			CheckCoursesResponse check = new CheckCoursesResponse(iAssignment.getRequest().getConfirmations());
@@ -584,10 +584,10 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						if (rc.getStatus() != null) {
 							switch (rc.getStatus()) {
 							case ENROLLED: status = MESSAGES.reqStatusEnrolled(); break;
-							case OVERRIDE_APPROVED: status = MESSAGES.reqStatusApproved(); hasStat = true; break;
-							case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); hasStat = true; break;
-							case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); hasStat = true; break;
-							case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); hasStat = true; break;
+							case OVERRIDE_APPROVED: status = MESSAGES.reqStatusApproved(); break;
+							case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); break;
+							case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); break;
+							case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); break;
 							}
 						}
 						if (status.isEmpty()) status = MESSAGES.reqStatusRegistered();
@@ -696,10 +696,10 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						if (rc.getStatus() != null) {
 							switch (rc.getStatus()) {
 							case ENROLLED: status = MESSAGES.reqStatusEnrolled(); break;
-							case OVERRIDE_APPROVED: status = MESSAGES.reqStatusApproved(); hasStat = true; break;
-							case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); hasStat = true; break;
-							case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); hasStat = true; break;
-							case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); hasStat = true; break;
+							case OVERRIDE_APPROVED: status = MESSAGES.reqStatusApproved(); break;
+							case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); break;
+							case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); break;
+							case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); break;
 							}
 						}
 						if (status.isEmpty()) status = MESSAGES.reqStatusRegistered();
@@ -804,7 +804,6 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				status = MESSAGES.reqStatusRegistered();
 				break;
 			}
-			if (!status.isEmpty()) hasStat = true;
 			if (iAssignment.getRequest().hasRequestorNote()) {
 				note = (note == null ? "" : note + "<br>") + iAssignment.getRequest().getRequestorNote().replace("\n", "<br>");
 				noteTitle = (noteTitle == null ? "" : noteTitle + "\n") + MESSAGES.requestNote(iAssignment.getRequest().getRequestorNote());
@@ -842,7 +841,6 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		iRequests.setData(rowArray);
 		iRequests.setColumnVisible(4, hasPref);
 		iRequests.setColumnVisible(5, hasWarn);
-		iRequests.setColumnVisible(6, hasStat);
 		iRequests.setColumnVisible(7, hasCrit);
 		iRequests.setColumnVisible(8, hasWait);
 	}
