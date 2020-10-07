@@ -53,6 +53,7 @@ import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Request.RequestPriority;
 import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.model.Student.StudentPriority;
 import org.cpsolver.studentsct.model.Subpart;
 import org.cpsolver.studentsct.model.Unavailability;
 import org.cpsolver.studentsct.report.StudentSectioningReport;
@@ -129,11 +130,13 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
     }
     
     public static class PriorityFilter implements StudentFilter {
-        public PriorityFilter() {
+    	private StudentPriority iPriority;
+        public PriorityFilter(StudentPriority p) {
+        	iPriority = p;
         }
         @Override
         public boolean matches(Student student) {
-            return student.isPriority();
+            return student.getPriority() == iPriority;
         }
     }
     
@@ -198,14 +201,19 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
     
     public static enum StudentGroup implements StudentFilter {
         ALL("All Students", new AndFilter(new NotFilter(new DummyOrNoRequestsFilter()), new NotFilter(new OnlineLateFilter()))),
-        DUMMY("Projected Students", new DummyFilter()),
-        PRIORITY("Priority Students", new PriorityFilter()),
+        DUMMY("Projected", new DummyFilter()),
+        PRIORITY("Priority", new PriorityFilter(StudentPriority.Priority)),
+        SENIOR("Seniors", new PriorityFilter(StudentPriority.Senior)),
+        JUNIOR("Juniors", new PriorityFilter(StudentPriority.Junior)),
+        SOPHOMORE("Sophomores", new PriorityFilter(StudentPriority.Sophomore)),
+        RESHMEN("Frehmen", new PriorityFilter(StudentPriority.Frehmen)),
+        NORMAL("Non-priority", new PriorityFilter(StudentPriority.Normal)),
         REBATCH("RE-BATCH", new AndFilter(new NotFilter(new DummyOrNoRequestsFilter()), new AndFilter(new GroupFilter("RE-BATCH"), new NotFilter(new GroupFilter("SCONTONL")), new NotFilter(new GroupFilter("SCOVIDONL"))))),
         SCONTONL("SCONTONL", new AndFilter(new NotFilter(new DummyOrNoRequestsFilter()), new GroupFilter("SCONTONL"), new NotFilter(new OnlineLateFilter()))),
         SCOVIDONL("SCOVIDONL", new AndFilter(new NotFilter(new DummyOrNoRequestsFilter()), new GroupFilter("SCOVIDONL"), new NotFilter(new OnlineLateFilter()))),
         PREREG("PREREG", new AndFilter(new NotFilter(new DummyOrNoRequestsFilter()), new AndFilter(new GroupFilter("PREREG"), new NotFilter(new GroupFilter("SCONTONL")), new NotFilter(new GroupFilter("SCOVIDONL")), new NotFilter(new GroupFilter("RE-BATCH")), new NotFilter(new StarFilter())))),
         STAR("STAR", new AndFilter(new NotFilter(new DummyOrNoRequestsFilter()), new AndFilter(new StarFilter(), new NotFilter(new GroupFilter("SCONTONL")), new NotFilter(new GroupFilter("SCOVIDONL")), new NotFilter(new GroupFilter("RE-BATCH"))))),
-        OTHER("Other Students", new AndFilter(new NotFilter(new DummyOrNoRequestsFilter()), new NotFilter(new OrFilter(new GroupFilter("RE-BATCH"), new GroupFilter("SCONTONL"), new GroupFilter("SCOVIDONL"), new GroupFilter("PREREG"), new StarFilter())))),
+        OTHER("Other", new AndFilter(new NotFilter(new DummyOrNoRequestsFilter()), new NotFilter(new OrFilter(new GroupFilter("RE-BATCH"), new GroupFilter("SCONTONL"), new GroupFilter("SCOVIDONL"), new GroupFilter("PREREG"), new StarFilter())))),
         ;
         String iName;
         StudentFilter iFilter;
