@@ -118,6 +118,19 @@
             column="req_ts"
             type="java.util.Date"
             not-null="false"/>
+            
+        <property
+            name="pin"
+            column="pin"
+            type="java.lang.String"
+            not-null="false"
+            length="40"/>
+            
+        <property
+            name="pinReleased"
+            column="pin_released"
+            type="java.lang.Boolean"
+            not-null="false"/>
         
         <many-to-one
             name="session"

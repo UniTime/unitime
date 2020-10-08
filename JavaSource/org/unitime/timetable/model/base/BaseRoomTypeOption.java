@@ -78,7 +78,7 @@ public abstract class BaseRoomTypeOption implements Serializable {
 	}
 
 	public String toString() {
-		return "RoomTypeOption[" + (getRoomType() == null ? "null" : getRoomType().getUniqueId()) + ", " + (getDepartment() == null ? "null" : getDepartment().getUniqueId()) + "]";
+		return "RoomTypeOption[" + getRoomType() + ", " + getDepartment() + "]";
 	}
 
 	public String toDebugString() {

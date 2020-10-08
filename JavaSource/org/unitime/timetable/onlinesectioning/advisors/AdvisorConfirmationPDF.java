@@ -116,8 +116,15 @@ public class AdvisorConfirmationPDF {
 			// row 3
 			header.addCell(header(MSG.propAdvisorEmail()));
 			header.addCell(cell(getDetails().getAdvisorEmail()));
-			header.addCell(header(getDetails().getStatus() == null ? "" : MSG.propStudentStatus()));
+			header.addCell(header(MSG.propStudentStatus()));
 			header.addCell(cell(getDetails().getStatus() == null ? "" : getDetails().getStatus().getLabel()));
+			// row 4
+			if (getDetails().getRequest().hasReleasedPin()) {
+				header.addCell(header(""));
+				header.addCell(cell(""));
+				header.addCell(header(MSG.propStudentPin()));
+				header.addCell(cell(getDetails().getRequest().getPin()));
+			}
 		} else {
 			// row 1
 			header.addCell(header(MSG.propStudentName()));
@@ -127,13 +134,22 @@ public class AdvisorConfirmationPDF {
 			// row 2
 			header.addCell(header(MSG.propStudentEmail()));
 			header.addCell(cell(getDetails().getStudentEmail()));
-			PdfPCell sh = header(getDetails().getStatus() == null ? "" : MSG.propStudentStatus());
-			sh.setRowspan(2); header.addCell(sh);
-			PdfPCell sc = cell(getDetails().getStatus() == null ? "" : getDetails().getStatus().getLabel());
-			sc.setRowspan(2); header.addCell(sc);
+			if (getDetails().getRequest().hasReleasedPin()) {
+				header.addCell(header(MSG.propStudentStatus()));
+				header.addCell(cell(getDetails().getStatus() == null ? "" : getDetails().getStatus().getLabel()));
+			} else {
+				PdfPCell sh = header(getDetails().getStatus() == null ? "" : MSG.propStudentStatus());
+				sh.setRowspan(2); header.addCell(sh);
+				PdfPCell sc = cell(getDetails().getStatus() == null ? "" : getDetails().getStatus().getLabel());
+				sc.setRowspan(2); header.addCell(sc);
+			}
 			// row 3
 			header.addCell(header(MSG.propAdvisorEmail()));
 			header.addCell(cell(getDetails().getAdvisorEmail()));
+			if (getDetails().getRequest().hasReleasedPin()) {
+				header.addCell(header(MSG.propStudentPin()));
+				header.addCell(cell(getDetails().getRequest().getPin()));
+			}
 		}
 		
 		document.add(header);

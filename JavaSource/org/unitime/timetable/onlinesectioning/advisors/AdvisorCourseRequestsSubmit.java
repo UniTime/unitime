@@ -389,6 +389,16 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 								action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
 							}
 						}
+						
+						if (getDetails().getRequest().hasPin()) {
+							student.setPinReleased(getDetails().getRequest().isPinReleased());
+							student.setPin(getDetails().getRequest().getPin());
+							dbStudent.setPinReleased(getDetails().getRequest().isPinReleased());
+							dbStudent.setPin(getDetails().getRequest().getPin());
+							action.addOptionBuilder().setKey("PIN").setValue(getDetails().getRequest().getPin() + (getDetails().getRequest().isPinReleased() ? "" : " NOT RELEASED"));
+							helper.getHibSession().saveOrUpdate(dbStudent);
+						}
+						
 						if (student != null) {
 							student.setAdvisorRequests(dbStudent, helper, server.getAcademicSession().getFreeTimePattern());
 							server.update(student, false);

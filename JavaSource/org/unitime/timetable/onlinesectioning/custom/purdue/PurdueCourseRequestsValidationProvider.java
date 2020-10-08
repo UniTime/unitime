@@ -91,6 +91,7 @@ import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
+import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -2598,6 +2599,27 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					check.setMessage(MESSAGES.exceptionFailedEligibilityCheck(m));
 			}
 			
+			String pin = null;
+			if (eligibility.data != null && eligibility.data.PIN != null && !eligibility.data.PIN.isEmpty() && !"NA".equals(eligibility.data.PIN))
+				pin = eligibility.data.PIN;
+			Float maxCredit = null;
+			if (eligibility.maxCredit != null && eligibility.maxCredit > 0)
+				maxCredit = eligibility.maxCredit;
+			if ((maxCredit != null && !maxCredit.equals(student.getMaxCredit())) || (pin != null && !pin.equals(student.getPin()))) {
+				org.unitime.timetable.model.Student dbStudent = StudentDAO.getInstance().get(student.getUniqueId(), helper.getHibSession());
+				if (maxCredit != null) dbStudent.setMaxCredit(maxCredit);
+				if (pin != null) dbStudent.setPin(pin);
+				helper.getHibSession().update(dbStudent);
+				helper.getHibSession().flush();
+				if (!(server instanceof DatabaseServer)) {
+					XStudent xs = server.getStudent(student.getUniqueId());
+					if (xs != null) {
+						if (maxCredit != null) xs.setMaxCredit(maxCredit);
+						if (pin != null) xs.setPin(pin);
+						server.update(xs, false);
+					}
+				}
+			}
 		} catch (SectioningException e) {
 			helper.getAction().setApiException(e.getMessage());
 			throw (SectioningException)e;

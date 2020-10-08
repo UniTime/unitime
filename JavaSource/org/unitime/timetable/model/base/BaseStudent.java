@@ -60,6 +60,8 @@ public abstract class BaseStudent implements Serializable {
 	private Integer iOverrideStatus;
 	private String iOverrideExternalId;
 	private Date iOverrideTimeStamp;
+	private String iPin;
+	private Boolean iPinReleased;
 	private Date iScheduleEmailedDate;
 
 	private Session iSession;
@@ -90,6 +92,8 @@ public abstract class BaseStudent implements Serializable {
 	public static String PROP_REQ_STATUS = "overrideStatus";
 	public static String PROP_REQ_EXTID = "overrideExternalId";
 	public static String PROP_REQ_TS = "overrideTimeStamp";
+	public static String PROP_PIN = "pin";
+	public static String PROP_PIN_RELEASED = "pinReleased";
 	public static String PROP_SCHEDULE_EMAILED = "scheduleEmailedDate";
 
 	public BaseStudent() {
@@ -144,6 +148,13 @@ public abstract class BaseStudent implements Serializable {
 
 	public Date getOverrideTimeStamp() { return iOverrideTimeStamp; }
 	public void setOverrideTimeStamp(Date overrideTimeStamp) { iOverrideTimeStamp = overrideTimeStamp; }
+
+	public String getPin() { return iPin; }
+	public void setPin(String pin) { iPin = pin; }
+
+	public Boolean isPinReleased() { return iPinReleased; }
+	public Boolean getPinReleased() { return iPinReleased; }
+	public void setPinReleased(Boolean pinReleased) { iPinReleased = pinReleased; }
 
 	public Date getScheduleEmailedDate() { return iScheduleEmailedDate; }
 	public void setScheduleEmailedDate(Date scheduleEmailedDate) { iScheduleEmailedDate = scheduleEmailedDate; }
@@ -260,6 +271,8 @@ public abstract class BaseStudent implements Serializable {
 			"\n	OverrideMaxCredit: " + getOverrideMaxCredit() +
 			"\n	OverrideStatus: " + getOverrideStatus() +
 			"\n	OverrideTimeStamp: " + getOverrideTimeStamp() +
+			"\n	Pin: " + getPin() +
+			"\n	PinReleased: " + getPinReleased() +
 			"\n	ScheduleEmailedDate: " + getScheduleEmailedDate() +
 			"\n	SchedulePreference: " + getSchedulePreference() +
 			"\n	SectioningStatus: " + getSectioningStatus() +

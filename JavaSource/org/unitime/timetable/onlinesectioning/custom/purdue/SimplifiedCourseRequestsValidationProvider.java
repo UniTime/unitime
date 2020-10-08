@@ -242,6 +242,7 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 			ClientResource resource = null;
 			try {
 				String pin = helper.getPin();
+				if ((pin == null || pin.isEmpty()) && student.hasReleasedPin()) pin = student.getPin();
 				AcademicSessionInfo session = server.getAcademicSession();
 				String term = getBannerTerm(session);
 				boolean manager = helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER;
@@ -391,21 +392,27 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 						check.setMessage(MESSAGES.exceptionFailedEligibilityCheck(m));
 					}
 				}
-				
-				if (student.getUniqueId() != null && eligibility.maxCredit != null && eligibility.maxCredit > 0 && eligibility.maxCredit != student.getMaxCredit()) {
+				String pin = null;
+				if (eligibility.data != null && eligibility.data.PIN != null && !eligibility.data.PIN.isEmpty() && !"NA".equals(eligibility.data.PIN))
+					pin = eligibility.data.PIN;
+				Float maxCredit = null;
+				if (eligibility.maxCredit != null && eligibility.maxCredit > 0)
+					maxCredit = eligibility.maxCredit;
+				if ((maxCredit != null && !maxCredit.equals(student.getMaxCredit())) || (pin != null && !pin.equals(student.getPin()))) {
 					Student dbStudent = StudentDAO.getInstance().get(student.getUniqueId(), helper.getHibSession());
-					dbStudent.setMaxCredit(eligibility.maxCredit);
+					if (maxCredit != null) dbStudent.setMaxCredit(maxCredit);
+					if (pin != null) dbStudent.setPin(pin);
 					helper.getHibSession().update(dbStudent);
 					helper.getHibSession().flush();
 					if (!(server instanceof DatabaseServer)) {
 						XStudent xs = server.getStudent(student.getUniqueId());
 						if (xs != null) {
-							xs.setMaxCredit(eligibility.maxCredit);
+							if (maxCredit != null) xs.setMaxCredit(maxCredit);
+							if (pin != null) xs.setPin(pin);
 							server.update(xs, false);
 						}
 					}
 				}
-				
 			} catch (SectioningException e) {
 				helper.getAction().setApiException(e.getMessage());
 				throw (SectioningException)e;
@@ -975,6 +982,8 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 			ClientResource resource = null;
 			try {
 				String pin = helper.getPin();
+				if ((pin == null || pin.isEmpty()) && student instanceof XStudent && ((XStudent)student).hasReleasedPin())
+					pin =  ((XStudent)student).getPin();
 				AcademicSessionInfo session = server.getAcademicSession();
 				String term = getBannerTerm(session);
 				boolean manager = helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER;

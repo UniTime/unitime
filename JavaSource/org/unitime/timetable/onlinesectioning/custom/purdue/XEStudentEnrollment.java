@@ -249,6 +249,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		ClientResource resource = null;
 		try {
 			String pin = helper.getPin();
+			if ((pin == null || pin.isEmpty()) && student.hasReleasedPin()) pin = student.getPin();
 			AcademicSessionInfo session = server.getAcademicSession();
 			String term = getBannerTerm(session);
 			String campus = getBannerCampus(session);
@@ -427,6 +428,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		ClientResource resource = null;
 		try {
 			String pin = helper.getPin();
+			if ((pin == null || pin.isEmpty()) && student.hasReleasedPin()) pin = student.getPin();
 			AcademicSessionInfo session = server.getAcademicSession();
 			String term = getBannerTerm(session);
 			String campus = getBannerCampus(session);

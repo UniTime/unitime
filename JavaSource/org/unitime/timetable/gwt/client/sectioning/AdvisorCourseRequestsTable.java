@@ -243,7 +243,10 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 			max += request.getAdvisorCreditMax();
 		}
 		WebTable.Cell credit = new WebTable.Cell(min < max ? MESSAGES.creditRange(min, max) : MESSAGES.credit(min));
-		WebTable.NoteCell note = new WebTable.NoteCell(iAdvisorRequests.hasCreditNote() ? iAdvisorRequests.getCreditNote() : "", null);
+		String noteMessage = (iAdvisorRequests.hasCreditNote() ? iAdvisorRequests.getCreditNote() : "");
+		if (iAdvisorRequests.hasReleasedPin() && !noteMessage.contains(iAdvisorRequests.getPin()))
+			noteMessage += (noteMessage.isEmpty() ? "" : "\n") + MESSAGES.advisorNotePin(iAdvisorRequests.getPin());
+		WebTable.NoteCell note = new WebTable.NoteCell(noteMessage, null);
 		note.setColSpan(3);
 		credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		WebTable.Row crow = new WebTable.Row(

@@ -6867,3 +6867,20 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-StudentSchedule {
 	width: 100%;
 }
+
+.unitime-AdvisorCourseRequests .gwt-CheckBox label{
+	vertical-align: top;
+}
+
+.unitime-AdvisorCourseRequests .gwt-CheckBox input[type="checkbox"]{
+	margin-left: 0px;
+}
+
+.unitime-Pin {
+	cursor: pointer;
+}
+
+.unitime-PinNotReleased {
+	color: gray;
+	font-style: italic;
+}

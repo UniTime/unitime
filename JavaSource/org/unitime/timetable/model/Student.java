@@ -315,4 +315,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     	}
     	return ret;
     }
+    
+    public boolean hasReleasedPin() { return getPin() != null && !getPin().isEmpty() && isPinReleased() != null && isPinReleased().booleanValue(); }
+    public String getReleasedPin() { return (hasReleasedPin() ? getPin() : null); }
 }

@@ -189,6 +189,9 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 		for (OnlineSectioningLog.Request log: OnlineSectioningHelper.toProto(request))
 			action.addRequest(log);
 		
+		request.setPin(student.getPin());
+		request.setPinReleased(student.isPinReleased());
+		
 		if (iCheckHolds && Customization.StudentHoldsCheckProvider.hasProvider()) {
 			try {
 				StudentHoldsCheckProvider provider = Customization.StudentHoldsCheckProvider.getProvider();
@@ -200,6 +203,9 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 				helper.warn(MSG.exceptionFailedEligibilityCheck(e.getMessage()), e);
 			}
 		}
+		
+		// has pin but was not advised yet >> set the pin released default to true
+		if (request.hasPin() && !student.hasAdvisorRequests()) request.setPinReleased(true);
 
 		return request;
 
@@ -319,6 +325,9 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 		for (OnlineSectioningLog.Request log: OnlineSectioningHelper.toProto(request))
 			action.addRequest(log);
 		
+		request.setPin(student.getPin());
+		request.setPinReleased(student.isPinReleased() != null && student.isPinReleased().booleanValue());
+		
 		if (iCheckHolds && Customization.StudentHoldsCheckProvider.hasProvider()) {
 			try {
 				StudentHoldsCheckProvider provider = Customization.StudentHoldsCheckProvider.getProvider();
@@ -330,7 +339,10 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 				helper.warn(MSG.exceptionFailedEligibilityCheck(e.getMessage()), e);
 			}
 		}
-
+		
+		// has pin but was not advised yet >> set the pin released default to true
+		if (request.hasPin() && acrs.isEmpty()) request.setPinReleased(true);
+		
 		return request;
 	}
 	
@@ -477,6 +489,13 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 		}
 	}
 	
+	public static CourseRequestInterface getRequest(Student student, org.hibernate.Session hibSession) {
+		CourseRequestInterface request = getRequest(student.getUniqueId(), hibSession);
+		request.setPin(student.getPin());
+		request.setPinReleased(student.isPinReleased() != null && student.isPinReleased().booleanValue());
+		return request;
+	}
+	
 	public static CourseRequestInterface getRequest(Long studentId, org.hibernate.Session hibSession) {
 		CourseRequestInterface request = new CourseRequestInterface();
 		request.setStudentId(studentId);
@@ -498,6 +517,8 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 		
 		CourseRequestInterface request = new CourseRequestInterface();
 		request.setStudentId(student.getStudentId());
+		request.setPin(student.getPin());
+		request.setPinReleased(student.isPinReleased());
 		
 		fillCourseRequests(request, student.getAdvisorRequests(), server);
 		

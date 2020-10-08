@@ -2022,15 +2022,23 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			
 			if (response.hasNonCanceledRequest != null && response.hasNonCanceledRequest.booleanValue())
 				check.setFlag(EligibilityFlag.HAS_SPECREG, true);
-			
-			if (response != null && response.maxCredit != null && !response.maxCredit.equals(student.getMaxCredit())) {
+
+			String pin = null;
+			if (response.data != null && response.data.PIN != null && !response.data.PIN.isEmpty() && !"NA".equals(response.data.PIN))
+				pin = response.data.PIN;
+			Float maxCredit = null;
+			if (response.maxCredit != null && response.maxCredit > 0)
+				maxCredit = response.maxCredit;
+			if (student.getStudentId() != null && ((maxCredit != null && !maxCredit.equals(student.getMaxCredit())) || (pin != null && !pin.equals(student.getPin())))) {
 				Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
 				if (dbStudent != null) {
-					dbStudent.setMaxCredit(response.maxCredit);
+					if (maxCredit != null) dbStudent.setMaxCredit(maxCredit);
+					if (pin != null) dbStudent.setPin(pin);
 					helper.getHibSession().update(dbStudent);
 					helper.getHibSession().flush();
 				}
-				student.setMaxCredit(response.maxCredit);
+				if (maxCredit != null) student.setMaxCredit(maxCredit);
+				if (pin != null) student.setPin(pin);
 				server.update(student, false);
 			}
 		} catch (SectioningException e) {

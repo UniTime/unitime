@@ -2545,6 +2545,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Additional Notes:")
 	String propAdvisorNotes();
 	
+	@DefaultMessage("PIN:")
+	String propStudentPin();
+	
 	@DefaultMessage("Lookup Student")
 	String dialogStudentLookup();
 	
@@ -2802,4 +2805,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("PIN: {0}")
 	String advisorNotePin(String pin);
+	
+	@DefaultMessage("Not released to the student.")
+	String pinNotReleasedToStudent();
 }

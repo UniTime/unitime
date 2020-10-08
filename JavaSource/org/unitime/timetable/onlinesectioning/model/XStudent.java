@@ -81,6 +81,8 @@ public class XStudent extends XStudentId implements Externalizable {
     private List<XAdvisor> iAdvisors = new ArrayList<XAdvisor>();
     private Date iLastStudentChange = null;
     private List<XAdvisorRequest> iAdvisorRequests = null;
+    private String iPin;
+    private boolean iPinReleased = false;
 
     public XStudent() {
     	super();
@@ -169,6 +171,9 @@ public class XStudent extends XStudentId implements Externalizable {
         	iMaxCreditOverride = new XOverride(student.getOverrideExternalId(), student.getOverrideTimeStamp(), student.getOverrideStatus(), student.getOverrideMaxCredit());
         
         setAdvisorRequests(student, helper, freeTimePattern);
+        
+        iPin = student.getPin();
+        iPinReleased = (student.isPinReleased() != null && student.isPinReleased().booleanValue());
     }
     
     public void setAdvisorRequests(Student student, OnlineSectioningHelper helper, BitSet freeTimePattern) {
@@ -290,6 +295,13 @@ public class XStudent extends XStudentId implements Externalizable {
     		}
     	}
     }
+    
+    public String getPin() { return iPin; }
+    public void setPin(String pin) { iPin = pin; }
+    public boolean isPinReleased() { return iPinReleased; }
+    public void setPinReleased(boolean released) { iPinReleased = released; }
+    public boolean hasReleasedPin() { return isPinReleased() && getPin() != null && !getPin().isEmpty(); }
+    public String getReleasedPin() { return (hasReleasedPin() ? getPin() : null); }
     
     public List<XInstructorAssignment> getInstructorAssignments() { return iInstructorAssignments; }
     public boolean hasInstructorAssignments() { return iInstructorAssignments != null && !iInstructorAssignments.isEmpty(); }
@@ -473,6 +485,8 @@ public class XStudent extends XStudentId implements Externalizable {
 			for (int i = 0; i < nrAdvisorRequests; i++)
 				iAdvisorRequests.add(new XAdvisorRequest(in));
 		}
+		iPin = (String)in.readObject();
+		iPinReleased = in.readBoolean();
 	}
 
 	@Override
@@ -528,6 +542,9 @@ public class XStudent extends XStudentId implements Externalizable {
 			for (XAdvisorRequest ar: iAdvisorRequests)
 				ar.writeExternal(out);
 		}
+		
+		out.writeObject(iPin);
+		out.writeBoolean(iPinReleased);
 	}
 	
 	public static class XStudentSerializer implements Externalizer<XStudent> {

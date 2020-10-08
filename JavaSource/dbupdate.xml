@@ -13900,4 +13900,12 @@
 	    <mysql>alter table %SCHEMA%.sct_solution_log modify info varchar(10000) not null</mysql>
 	    <pgsql>alter table %SCHEMA%.sct_solution_log alter column info type varchar(10000)</pgsql>
 	</update>
+	<update version="232" date="08-Oct-2020" comment="Student PIN">
+	    <plsql>alter table %SCHEMA%.student add pin varchar2(40 char)</plsql>
+	    <mysql>alter table %SCHEMA%.student add pin varchar(40)</mysql>
+	    <pgsql>alter table %SCHEMA%.student add pin varchar(40)</pgsql>
+	    <plsql>alter table %SCHEMA%.student add pin_released number(1)</plsql>
+	    <mysql>alter table %SCHEMA%.student add pin_released int(1)</mysql>
+	    <pgsql>alter table %SCHEMA%.student add pin_released boolean</pgsql>
+	</update>
 </dbupdate>

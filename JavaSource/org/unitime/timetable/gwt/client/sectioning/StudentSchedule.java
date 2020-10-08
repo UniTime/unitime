@@ -495,7 +495,10 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 			}
 			WebTable.Cell credit = new WebTable.Cell(min < max ? MESSAGES.creditRange(min, max) : MESSAGES.credit(min));
 			credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-			WebTable.NoteCell note = new WebTable.NoteCell(iAssignment.getAdvisorRequest().hasCreditNote() ? iAssignment.getAdvisorRequest().getCreditNote() : "&nbsp;", null);
+			String noteMessage = (iAssignment.getAdvisorRequest().hasCreditNote() ? iAssignment.getAdvisorRequest().getCreditNote() : "");
+			if (iAssignment.getAdvisorRequest().hasReleasedPin() && !noteMessage.contains(iAssignment.getAdvisorRequest().getPin()))
+				noteMessage += (noteMessage.isEmpty() ? "" : "\n") + MESSAGES.advisorNotePin(iAssignment.getAdvisorRequest().getPin());
+			WebTable.NoteCell note = new WebTable.NoteCell(noteMessage, null);
 			note.setColSpan(4);
 			WebTable.Row crow = new WebTable.Row(
 					new WebTable.Cell(MESSAGES.rowTotalPriorityCreditHours(), 2, null),
@@ -506,7 +509,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 			for (WebTable.Cell cell: crow.getCells()) cell.setStyleName("top-border-solid");
 			crow.getCell(0).setStyleName("top-border-solid text-bold");
 			crow.setId("C");
-			rows.add(crow);			
+			rows.add(crow);
 		}
 		
 		WebTable.Row[] rowArray = new WebTable.Row[rows.size()];

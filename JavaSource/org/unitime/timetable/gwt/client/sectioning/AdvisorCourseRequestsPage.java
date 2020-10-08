@@ -112,6 +112,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	private Label iTotalCredit = null;
 	private ListBox iStatus = null;
 	private TextArea iNotes = null;
+	private CheckBox iPinReleased = null;
+	private Label iPin = null;
 	
 	private ArrayList<AdvisorCourseRequestLine> iCourses;
 	private ArrayList<AdvisorCourseRequestLine> iAlternatives;
@@ -123,6 +125,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	
 	private int iStudentRequestHeaderLine = 0;
 	private int iAdisorRequestsHeaderLine = 0;
+	private int iPinLine = 0;
 	private int iStatusLine = 0;
 	
 	private ScheduleStatus iStatusBox = null;
@@ -295,6 +298,24 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		iStatus.addStyleName("status");
 		iStatusLine = addDoubleRow(MESSAGES.propAdvisorEmail(), iAdvisorEmail, 1,
 				MESSAGES.propStudentStatus(), iStatus, 3);
+		
+		iPinReleased = new CheckBox(MESSAGES.propStudentPin());
+		iPin = new Label(); iPin.addStyleName("unitime-Pin");
+		iPin.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				iPinReleased.setValue(!iPinReleased.getValue());
+				pinReleaseChanged();
+			}
+		});
+		iPinLine = addDoubleRow(new Label(), new Label(), 1, iPinReleased, iPin, 3);
+		getRowFormatter().setVisible(iPinLine, true);
+		iPinReleased.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				pinReleaseChanged();
+			}
+		});
 		
 		iStudentStatus = new ScheduleStatus();
 		addRow(iStudentStatus);
@@ -609,6 +630,16 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		});
 	}
 	
+	protected void pinReleaseChanged() {
+		if (iPinReleased.getValue()) {
+			iPin.setText(iDetails == null || iDetails.getRequest() == null || !iDetails.getRequest().hasPin() ? "" : iDetails.getRequest().getPin());
+			iPin.removeStyleName("unitime-PinNotReleased");
+		} else {
+			iPin.setText(MESSAGES.pinNotReleasedToStudent());
+			iPin.addStyleName("unitime-PinNotReleased");
+		}
+	}
+	
 	protected void loadStudent(String studentId) {
 		header.setEnabled("submit", false);
 		header.setEnabled("print", false);
@@ -679,6 +710,9 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 			line.setValue(null);
 		iStatusBox.clear();
 		iNotes.setText("");
+		iPinReleased.setValue(false);
+		pinReleaseChanged();
+		getRowFormatter().setVisible(iPinLine, false);
 		resizeNotes();
 		updateTotalCredits();
 	}
@@ -834,11 +868,13 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				iAlternatives.get(idx).setValue(request.getAlternatives().get(idx), true);
 			if (request.hasCreditNote()) {
 				iNotes.setText(request.getCreditNote());
-				if (request.hasPin() && !iNotes.getText().contains(request.getPin()))
-					iNotes.setText(request.getCreditNote() + "\n" + MESSAGES.advisorNotePin(request.getPin()));
 				resizeNotes();
-			} else if (request.hasPin()) {
-				iNotes.setText(MESSAGES.advisorNotePin(request.getPin()));
+			}
+			if (request.hasPin()) {
+				iPin.setText(request.getPin());
+				iPinReleased.setValue(request.isPinReleased());
+				pinReleaseChanged();
+				getRowFormatter().setVisible(iPinLine, true);
 			}
 		}
 		updateTotalCredits();
@@ -865,6 +901,10 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		final AdvisingStudentDetails details = new AdvisingStudentDetails(iDetails);
 		details.setRequest(details.isCanUpdate() ? getRequest() : iAdvisorRequests.getValue());
 		details.setStatus(iDetails.getStatus(iStatus.getSelectedValue()));
+		if (getRowFormatter().isVisible(iPinLine) && details.getRequest() != null) {
+			details.getRequest().setPinReleased(iPinReleased.getValue());
+			details.getRequest().setPin(iDetails.getRequest().getPin());
+		}
 		LoadingWidget.getInstance().show(details.isCanUpdate() ? MESSAGES.advisorCourseRequestsSaving() : MESSAGES.advisorCourseRequestsExporting());
 		sSectioningService.submitAdvisingDetails(details, false, new AsyncCallback<AdvisorCourseRequestSubmission>() {
 			@Override

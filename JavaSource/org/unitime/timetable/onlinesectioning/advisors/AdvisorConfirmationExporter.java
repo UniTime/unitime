@@ -139,7 +139,7 @@ public class AdvisorConfirmationExporter implements Exporter {
 			details.setStatus(info);
 		}
 		
-		details.setRequest(AdvisorGetCourseRequests.getRequest(student.getUniqueId(), AdvisorCourseRequestDAO.getInstance().getSession()));
+		details.setRequest(AdvisorGetCourseRequests.getRequest(student, AdvisorCourseRequestDAO.getInstance().getSession()));
 		
 		helper.setup("application/pdf", "crf-" + student.getSession().getAcademicTerm() + student.getSession().getAcademicYear() +
 				(isAdvisor ? "-" + student.getName(NameFormat.LAST_FIRST_MIDDLE.reference()).replaceAll("[&$\\+,/:;=\\?@<>\\[\\]\\{\\}\\|\\^\\~%#`\\t\\s\\n\\r \\\\]", "") + "-" + student.getExternalUniqueId() : "") + ".pdf", false);

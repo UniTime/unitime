@@ -65,6 +65,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	private String iRequestorNote = null;
 	private String iRequestId = null;
 	private String iPopupMessage = null;
+	private Boolean iPinReleased = null;
 	
 	public CourseRequestInterface() {}
 	public CourseRequestInterface(StudentSectioningContext cx) {
@@ -300,6 +301,10 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		}
 		return total;
 	}
+	
+	public boolean isPinReleased() { return iPinReleased != null && iPinReleased.booleanValue(); }
+	public void setPinReleased(boolean pinReleased) { iPinReleased = pinReleased; }
+	public boolean hasReleasedPin() { return isPinReleased() && hasPin(); }
 	
 	@Override
 	public boolean equals(Object o) {

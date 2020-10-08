@@ -1638,7 +1638,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						
 						ret.setRequest(getRequest(student));
 						ret.setCanSetCriticalOverrides(getSessionContext().hasPermission(student, Right.StudentSchedulingChangeCriticalOverride));
-						ret.setAdvisorRequest(AdvisorGetCourseRequests.getRequest(student.getUniqueId(), hibSession));
+						ret.setAdvisorRequest(AdvisorGetCourseRequests.getRequest(student, hibSession));
 						if (Customization.StudentHoldsCheckProvider.hasProvider()) {
 							try {
 								OnlineSectioningHelper helper = new OnlineSectioningHelper(hibSession, currentUser());
@@ -2331,7 +2331,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				}
 				
 				if (includeAdvisorRequests && student.getLastChangedByStudent() == null) {
-					if (request.applyAdvisorRequests(AdvisorGetCourseRequests.getRequest(student.getUniqueId(), hibSession)))
+					if (request.applyAdvisorRequests(AdvisorGetCourseRequests.getRequest(student, hibSession)))
 						request.setPopupMessage(ApplicationProperty.PopupMessageCourseRequestsPrepopulatedWithAdvisorRecommendations.value());
 				}
 				
