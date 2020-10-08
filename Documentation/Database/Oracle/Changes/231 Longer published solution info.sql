@@ -18,7 +18,10 @@
  * 
 */
 
-alter table sct_solution_log modify info varchar2(10000 char);
+alter table sct_solution_log add info2 clob;
+update sct_solution_log set info2 = info;
+alter table sct_solution_log drop column info;
+alter table sct_solution_log rename column info2 to info;
 
 /*
  * Update database version
