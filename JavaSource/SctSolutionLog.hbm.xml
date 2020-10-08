@@ -57,7 +57,7 @@
             column="info"
             type="java.lang.String"
             not-null="true"
-            length="2000"/>
+            length="10000"/>
 
         <property
             name="data"

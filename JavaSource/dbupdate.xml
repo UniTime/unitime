@@ -13543,7 +13543,7 @@
 	    <plsql>alter table %SCHEMA%.course_request add req_intent number(10)</plsql>
 		<mysql>alter table %SCHEMA%.course_request add req_intent bigint(10)</mysql>
 	</update>
-	<update version="218" date="20-Mar-2019" comments="Longer published solution info">
+	<update version="218" date="20-Mar-2019" comment="Longer published solution info">
 	    <plsql>alter table %SCHEMA%.sct_solution_log modify info varchar2(4000 char)</plsql>
 	    <mysql>alter table %SCHEMA%.sct_solution_log modify info varchar(4000) not null</mysql>
 	</update>
@@ -13894,5 +13894,10 @@
 		<plsql>alter table %SCHEMA%.departmental_instructor add unavailable_offset number(10)</plsql>
 		<mysql>alter table %SCHEMA%.departmental_instructor add unavailable_offset int(10) null</mysql>
 		<pgsql>alter table %SCHEMA%.departmental_instructor add unavailable_offset integer null</pgsql>
+	</update>
+	<update version="231" date="08-Oct-2020" comment="Longer published solution info">
+	    <plsql>alter table %SCHEMA%.sct_solution_log modify info varchar2(10000 char)</plsql>
+	    <mysql>alter table %SCHEMA%.sct_solution_log modify info varchar(10000) not null</mysql>
+	    <pgsql>alter table %SCHEMA%.sct_solution_log alter column info type varchar(10000)</pgsql>
 	</update>
 </dbupdate>
