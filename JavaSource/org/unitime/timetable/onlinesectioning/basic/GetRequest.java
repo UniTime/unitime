@@ -37,6 +37,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.advisors.AdvisorGetCourseRequests;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsValidationHolder;
+import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -59,6 +60,7 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 	private boolean iCustomValidation = false;
 	private boolean iCustomRequests = true;
 	private boolean iAdvisorRequests = true;
+	private CourseMatcher iMatcher = null;
 	
 	public GetRequest forStudent(Long studentId, boolean sectioning) {
 		iStudentId = studentId;
@@ -81,13 +83,18 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 	public GetRequest withAdvisorRequests(boolean adv) {
 		iAdvisorRequests = adv; return this;
 	}
+	
+	public GetRequest withCourseMatcher(CourseMatcher matcher) {
+		iMatcher = matcher; return this;
+	}
 
 	@Override
 	public CourseRequestInterface execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		if (iStudentId == null) {
 			if (CustomCourseRequestsHolder.hasProvider() && iCustomRequests) {
+				if (iMatcher != null) iMatcher.setServer(server);
 				CourseRequestInterface request = CustomCourseRequestsHolder.getProvider().getCourseRequests(
-						server, helper, new XStudent(null, helper.getStudentExternalId(), helper.getUser().getName()));
+						server, helper, new XStudent(null, helper.getStudentExternalId(), helper.getUser().getName()), iMatcher);
 				if (request != null) return request;
 			}
 			throw new SectioningException(MSG.exceptionNoStudent());
@@ -102,7 +109,8 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 			action.getStudentBuilder().setName(student.getName());
 
 			if (student.getRequests().isEmpty() && CustomCourseRequestsHolder.hasProvider() && iCustomRequests) {
-				CourseRequestInterface request = CustomCourseRequestsHolder.getProvider().getCourseRequests(server, helper, student);
+				if (iMatcher != null) iMatcher.setServer(server);
+				CourseRequestInterface request = CustomCourseRequestsHolder.getProvider().getCourseRequests(server, helper, student, iMatcher);
 				if (request != null && !request.isEmpty()) return request;
 			}
 			

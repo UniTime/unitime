@@ -49,6 +49,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Action.Builder;
 import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
+import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseLookupHolder;
 import org.unitime.timetable.onlinesectioning.custom.DegreePlansProvider;
 import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
@@ -259,14 +260,14 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 		return student.getMajors();
 	}
 	
-	protected DegreeCourseInterface getCourse(OnlineSectioningServer server, String subjectArea, String courseNbr, boolean critical) {
+	protected DegreeCourseInterface getCourse(OnlineSectioningServer server, String subjectArea, String courseNbr, boolean critical, CourseMatcher matcher) {
 		DegreeCourseInterface course = new DegreeCourseInterface();
 		course.setSubject(subjectArea);
 		course.setCourse(courseNbr);
 		course.setId(subjectArea + " " + courseNbr);
 		course.setCritical(critical);
 		course.setSelected(false);
-		Collection<? extends XCourseId> ids = server.findCourses(subjectArea + " " + courseNbr, -1, null);
+		Collection<? extends XCourseId> ids = server.findCourses(subjectArea + " " + courseNbr, -1, matcher);
 		if (ids != null) {
 			for (XCourseId id: ids) {
 				XCourse xc = (id instanceof XCourse ? (XCourse) id : server.getCourse(id.getCourseId()));
@@ -306,13 +307,20 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 		return course;
 	}
 	
-	protected List<XCourse> getPlaceHolderCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, String phType, String phName) {
+	protected List<XCourse> getPlaceHolderCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, String phType, String phName, CourseMatcher matcher) {
 		// check provider
 		if (!CustomCourseLookupHolder.hasProvider()) return null;
 		// check placeholder type code
 		if (phType == null || !phType.matches(getUccPlaceHolderType()))
 			return null;
-		return CustomCourseLookupHolder.getProvider().getCourses(server, helper, phName, getCriticalPlaceHolderAllowPartialMatch());
+		List<XCourse> courses = CustomCourseLookupHolder.getProvider().getCourses(server, helper, phName, getCriticalPlaceHolderAllowPartialMatch());
+		
+		if (matcher == null || courses == null || courses.isEmpty()) return courses;
+		List<XCourse> ret = new ArrayList<XCourse>();
+		for (XCourse course: courses)
+			if (matcher.match(course))
+				ret.add(course);
+		return ret;
 	}
 	
 	protected boolean isCriticalPlaceholder(String phValue) {
@@ -320,7 +328,7 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 	}
 
 	@Override
-	public List<DegreePlanInterface> getDegreePlans(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) throws SectioningException {
+	public List<DegreePlanInterface> getDegreePlans(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, CourseMatcher matcher) throws SectioningException {
 		String sqlCourses = getPlannedCoursesSQL();
 		String sqlPlaceholders = getPlannedPlaceholdersSQL();
 		Builder action = helper.getAction();
@@ -368,7 +376,7 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 						plans.put(progCode, plan);
 					}
 					if (choiceGroupId == null || choiceGroupId.isEmpty()) {
-						plan.getGroup().addCourse(getCourse(server, subject, courseNbr, isCritical));
+						plan.getGroup().addCourse(getCourse(server, subject, courseNbr, isCritical, matcher));
 					} else {
 						DegreeGroupInterface group = plan.getGroup().getGroup(choiceGroupId);
 						if (group == null) {
@@ -378,7 +386,7 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 							group.setCritical(isCritical);
 							plan.getGroup().addGroup(group);
 						}
-						group.addCourse(getCourse(server, subject, courseNbr, isCritical));
+						group.addCourse(getCourse(server, subject, courseNbr, isCritical, matcher));
 					}
 				}
 				if (sqlPlaceholders != null && !sqlPlaceholders.isEmpty()) {
@@ -410,7 +418,7 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 								plan.setActive(true);
 							plans.put(progCode, plan);
 						}
-						List<XCourse> phc = getPlaceHolderCourses(server, helper, placType, placName);
+						List<XCourse> phc = getPlaceHolderCourses(server, helper, placType, placName, matcher);
 						if (phc != null && !phc.isEmpty()) {
 							DegreePlanInterface.DegreeGroupInterface phg = new DegreePlanInterface.DegreeGroupInterface();
 							phg.setChoice(true);

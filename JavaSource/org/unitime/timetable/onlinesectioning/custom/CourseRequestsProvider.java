@@ -23,6 +23,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 
 /**
@@ -30,7 +31,7 @@ import org.unitime.timetable.onlinesectioning.model.XStudentId;
  */
 public interface CourseRequestsProvider {
 	
-	public CourseRequestInterface getCourseRequests(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudentId student) throws SectioningException;
+	public CourseRequestInterface getCourseRequests(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudentId student, CourseMatcher matcher) throws SectioningException;
 	
 	public void dispose();
 

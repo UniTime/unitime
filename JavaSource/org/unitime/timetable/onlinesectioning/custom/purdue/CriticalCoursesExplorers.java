@@ -32,6 +32,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Action.Builder;
+import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
@@ -98,18 +99,18 @@ public class CriticalCoursesExplorers extends CriticalCoursesQuery {
 	}
 	
 	@Override
-	public List<DegreePlanInterface> getDegreePlans(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) throws SectioningException {
+	public List<DegreePlanInterface> getDegreePlans(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, CourseMatcher matcher) throws SectioningException {
 		if (isFallBackToDegreeWorks()) {
-			List<DegreePlanInterface> plans = super.getDegreePlans(server, helper, student);
+			List<DegreePlanInterface> plans = super.getDegreePlans(server, helper, student, matcher);
 			if (plans == null || plans.isEmpty())
-				return iDGW.getDegreePlans(server, helper, student);
+				return iDGW.getDegreePlans(server, helper, student, matcher);
 			else {
-				List<DegreePlanInterface> dgw = iDGW.getDegreePlans(server, helper, student);
+				List<DegreePlanInterface> dgw = iDGW.getDegreePlans(server, helper, student, matcher);
 				if (dgw != null) plans.addAll(dgw);
 				return plans;
 			}
 		} else {
-			return super.getDegreePlans(server, helper, student);
+			return super.getDegreePlans(server, helper, student, matcher);
 		}
 	}
 	

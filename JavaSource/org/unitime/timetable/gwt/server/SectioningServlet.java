@@ -2316,6 +2316,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (server != null) {
 			return server.execute(server.createAction(GetRequest.class).forStudent(cx.getStudentId(), cx.isSectioning())
 					.withCustomValidation(!cx.isSectioning())
+					.withCourseMatcher(getCourseMatcher(cx, server))
 					.withAdvisorRequests(includeAdvisorRequests), currentUser(cx));
 		} else {
 			org.hibernate.Session hibSession = StudentDAO.getInstance().getSession();
@@ -2326,7 +2327,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				
 				if (request.isEmpty() && CustomCourseRequestsHolder.hasProvider()) {
 					OnlineSectioningHelper helper = new OnlineSectioningHelper(hibSession, currentUser(cx));
-					CourseRequestInterface r = CustomCourseRequestsHolder.getProvider().getCourseRequests(getServerInstance(cx.getSessionId(), true), helper, new XStudentId(student, helper));
+					CourseRequestInterface r = CustomCourseRequestsHolder.getProvider().getCourseRequests(getServerInstance(cx.getSessionId(), true), helper,
+							new XStudentId(student, helper), getCourseMatcher(cx, server));
 					if (r != null && !r.isEmpty()) return r;
 				}
 				
@@ -2983,7 +2985,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				throw new SectioningException(MSG.exceptionNoServerForSession());
 		}
 		
-		return server.execute(server.createAction(GetDegreePlans.class).forStudent(cx.getStudentId()), currentUser(cx));
+		CourseMatcher matcher = getCourseMatcher(cx, server);
+		return server.execute(server.createAction(GetDegreePlans.class).forStudent(cx.getStudentId()).withMatcher(matcher), currentUser(cx));
 	}
 
 	@Override

@@ -28,6 +28,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.CustomDegreePlansHolder;
 import org.unitime.timetable.onlinesectioning.custom.DegreePlansProvider;
+import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 
 /**
@@ -39,9 +40,15 @@ public class GetDegreePlans implements OnlineSectioningAction<List<DegreePlanInt
 	public GetDegreePlans() {}
 	
 	protected Long iStudentId;
+	protected CourseMatcher iMatcher;
 	
 	public GetDegreePlans forStudent(Long studentId) {
 		iStudentId = studentId;
+		return this;
+	}
+
+	public GetDegreePlans withMatcher(CourseMatcher matcher) {
+		iMatcher = matcher;
 		return this;
 	}
 
@@ -50,6 +57,8 @@ public class GetDegreePlans implements OnlineSectioningAction<List<DegreePlanInt
 		DegreePlansProvider provider = CustomDegreePlansHolder.getProvider();
 		if (provider == null) return null;
 		
+		if (iMatcher != null) iMatcher.setServer(server);
+		
 		OnlineSectioningLog.Action.Builder action = helper.getAction();
 		
 		if (iStudentId != null)
@@ -57,12 +66,12 @@ public class GetDegreePlans implements OnlineSectioningAction<List<DegreePlanInt
 		
 		XStudent student = (iStudentId == null ? null : server.getStudent(iStudentId));
 		if (student == null)
-			return provider.getDegreePlans(server, helper, new XStudent(null, helper.getStudentExternalId(), helper.getUser().getName()));
+			return provider.getDegreePlans(server, helper, new XStudent(null, helper.getStudentExternalId(), helper.getUser().getName()), iMatcher);
 		
 		action.getStudentBuilder().setExternalId(student.getExternalId());
 		action.getStudentBuilder().setName(student.getName());
 		
-		return provider.getDegreePlans(server, helper, student);
+		return provider.getDegreePlans(server, helper, student, iMatcher);
 	}
 
 	@Override
