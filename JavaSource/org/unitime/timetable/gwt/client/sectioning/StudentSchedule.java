@@ -803,8 +803,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				iconText += (iconText == null ? "" : iconText + "\n") + MESSAGES.creditStatusApproved();
 				break;
 			case SAVED:
-				icon = RESOURCES.requestSaved();
-				status = MESSAGES.reqStatusRegistered();
+				icon = null;
+				status = "";
 				break;
 			}
 			if (iAssignment.getRequest().hasRequestorNote()) {

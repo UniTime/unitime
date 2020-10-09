@@ -1002,7 +1002,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	
 	protected void fillInStudentRequests() {
 		ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
-		boolean hasPref = false, hasWarn = false, hasWait = false, hasStat = false, hasCrit = false;
+		boolean hasPref = false, hasWarn = false, hasWait = false, hasCrit = false;
 		NumberFormat df = NumberFormat.getFormat("0.#");
 		if (iDetails != null && iDetails.hasStudentRequest()) {
 			CheckCoursesResponse check = new CheckCoursesResponse(iDetails.getStudentRequest().getConfirmations());
@@ -1065,10 +1065,10 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 						if (rc.getStatus() != null) {
 							switch (rc.getStatus()) {
 							case ENROLLED: status = MESSAGES.reqStatusEnrolled(); break;
-							case OVERRIDE_APPROVED: status = MESSAGES.reqStatusApproved(); hasStat = true; break;
-							case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); hasStat = true; break;
-							case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); hasStat = true; break;
-							case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); hasStat = true; break;
+							case OVERRIDE_APPROVED: status = MESSAGES.reqStatusApproved(); break;
+							case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); break;
+							case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); break;
+							case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); break;
 							}
 						}
 						if (status.isEmpty()) status = MESSAGES.reqStatusRegistered();
@@ -1177,10 +1177,10 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 						if (rc.getStatus() != null) {
 							switch (rc.getStatus()) {
 							case ENROLLED: status = MESSAGES.reqStatusEnrolled(); break;
-							case OVERRIDE_APPROVED: status = MESSAGES.reqStatusApproved(); hasStat = true; break;
-							case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); hasStat = true; break;
-							case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); hasStat = true; break;
-							case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); hasStat = true; break;
+							case OVERRIDE_APPROVED: status = MESSAGES.reqStatusApproved(); break;
+							case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); break;
+							case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); break;
+							case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); break;
 							}
 						}
 						if (status.isEmpty()) status = MESSAGES.reqStatusRegistered();
@@ -1281,11 +1281,10 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				iconText += (iconText == null ? "" : iconText + "\n") + MESSAGES.creditStatusApproved();
 				break;
 			case SAVED:
-				icon = RESOURCES.requestSaved();
-				status = MESSAGES.reqStatusRegistered();
+				icon = null;
+				status = "";
 				break;
 			}
-			if (!status.isEmpty()) hasStat = true;
 			if (iDetails.getStudentRequest().hasRequestorNote()) {
 				note = (note == null ? "" : note + "<br>") + iDetails.getStudentRequest().getRequestorNote().replace("\n", "<br>");
 				noteTitle = (noteTitle == null ? "" : noteTitle + "\n") + MESSAGES.requestNote(iDetails.getStudentRequest().getRequestorNote());
@@ -1323,7 +1322,6 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		iRequests.setData(rowArray);
 		iRequests.setColumnVisible(4, hasPref);
 		iRequests.setColumnVisible(5, hasWarn);
-		iRequests.setColumnVisible(6, hasStat);
 		iRequests.setColumnVisible(7, hasCrit);
 		iRequests.setColumnVisible(8, hasWait);
 		

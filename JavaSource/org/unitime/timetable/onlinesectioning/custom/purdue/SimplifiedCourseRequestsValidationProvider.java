@@ -525,6 +525,7 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 					}
 			}
 		}
+		if (!request.isEmpty()) request.setMaxCreditOverrideStatus(RequestedCourseStatus.SAVED);
 		if (minCreditLimit != null && minCredit > 0 && minCredit < Float.parseFloat(minCreditLimit) && (original.getMaxCredit() == null || original.getMaxCredit() > Float.parseFloat(minCreditLimit))) {
 			request.setCreditWarning(
 					ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
