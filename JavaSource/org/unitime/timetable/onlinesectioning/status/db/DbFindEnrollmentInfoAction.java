@@ -118,7 +118,6 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 		if (courseId() == null) {
 			Set<Long> students = new HashSet<Long>();
 			Set<Long> matchingStudents = new HashSet<Long>();
-			Set<Long> allStudents = new HashSet<Long>();
 			
 			int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0, gUnasgPrim = 0;
 			int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0, gtUnasgPrim = 0;
@@ -141,6 +140,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			for (Map.Entry<CourseOffering, List<CourseRequest>> entry: requests.entrySet()) {
 				CourseOffering course = entry.getKey();
 				InstructionalOffering offering = course.getInstructionalOffering();
+				Set<Long> allStudents = new HashSet<Long>();
 				
 				boolean isConsentToDoCourse = isConsentToDoCourse(course);
 				EnrollmentInfo e = new EnrollmentInfo();
