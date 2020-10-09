@@ -4358,7 +4358,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-DegreePlanDialog .plan {
-	width: 790px;
+	width: 800px;
 	height: 300px;
 }
 
@@ -6883,4 +6883,8 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-PinNotReleased {
 	color: gray;
 	font-style: italic;
+}
+
+.unitine-DegreePlanTable .gwt-CheckBox {
+	white-space: nowrap;
 }
