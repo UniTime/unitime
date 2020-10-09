@@ -560,6 +560,9 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 								request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-ONLINE",
 										ApplicationProperties.getProperty("purdue.specreg.messages.onlineStudentReqResidentialCourse", "No online-only option.").replace("{course}", course.getCourseName()),
 										ORD_UNITIME);
+								RequestPriority rp = request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName()));
+								if (rp != null)
+									rp.getRequest().getRequestedCourse(rp.getChoice()).setInactive(true);
 							} else if (im != null) {
 								boolean hasMatchingConfig = false;
 								InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(course.getOfferingId(), helper.getHibSession());
@@ -579,6 +582,9 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 									request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-ONLINE",
 											ApplicationProperties.getProperty("purdue.specreg.messages.onlineStudentReqResidentialCourse", "No online-only option.").replace("{course}", course.getCourseName()),
 											ORD_UNITIME);
+									RequestPriority rp = request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName()));
+									if (rp != null)
+										rp.getRequest().getRequestedCourse(rp.getChoice()).setInactive(true);
 								}
 							}
 						}
@@ -596,6 +602,9 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 								request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-RESIDENTIAL",
 										ApplicationProperties.getProperty("purdue.specreg.messages.residentialStudentReqOnlineCourse", "No residential option.").replace("{course}", course.getCourseName()),
 										ORD_UNITIME);
+								RequestPriority rp = request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName()));
+								if (rp != null)
+									rp.getRequest().getRequestedCourse(rp.getChoice()).setInactive(true);
 							} else if (im != null) {
 								boolean hasMatchingConfig = false;
 								InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(course.getOfferingId(), helper.getHibSession());
@@ -615,6 +624,9 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 									request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-RESIDENTIAL",
 											ApplicationProperties.getProperty("purdue.specreg.messages.residentialStudentReqOnlineCourse", "No residential option.").replace("{course}", course.getCourseName()),
 											ORD_UNITIME);
+									RequestPriority rp = request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName()));
+									if (rp != null)
+										rp.getRequest().getRequestedCourse(rp.getChoice()).setInactive(true);
 								}
 							}
 						}
