@@ -1201,8 +1201,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			}
 			switch (requests.getMaxCreditOverrideStatus()) {
 			case CREDIT_HIGH:
-				icon = "stop.png";
-				status = MSG.reqStatusRejected();
+				icon = "attention.png";
+				status = MSG.reqStatusWarning();
 				iconText += "\n" + MSG.creditStatusTooHigh();
 				break;
 			case OVERRIDE_REJECTED:

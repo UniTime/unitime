@@ -224,7 +224,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						
 						switch (iSavedRequest.getMaxCreditOverrideStatus()) {
 						case CREDIT_HIGH:
-							iTotalCreditRequestsStatus.setResource(RESOURCES.requestError());
+							iTotalCreditRequestsStatus.setResource(RESOURCES.requestNeeded());
 							iTotalCreditRequestsStatus.setAltText(cw + "\n" + MESSAGES.creditStatusTooHigh() + note);
 							iTotalCreditRequestsStatus.setTitle(iTotalCreditRequestsStatus.getAltText());
 							iTotalCreditRequestsStatus.setVisible(true);
@@ -3366,8 +3366,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			}
 			switch (savedRequests.getMaxCreditOverrideStatus()) {
 			case CREDIT_HIGH:
-				icon = RESOURCES.requestError();
-				status = MESSAGES.reqStatusRejected();
+				icon = RESOURCES.requestNeeded();
+				status = MESSAGES.reqStatusWarning();
 				iconText += "\n" + MESSAGES.creditStatusTooHigh();
 				break;
 			case OVERRIDE_REJECTED:

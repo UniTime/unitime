@@ -1246,8 +1246,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 			}
 			switch (iDetails.getStudentRequest().getMaxCreditOverrideStatus()) {
 			case CREDIT_HIGH:
-				icon = RESOURCES.requestError();
-				status = MESSAGES.reqStatusRejected();
+				icon = RESOURCES.requestNeeded();
+				status = MESSAGES.reqStatusWarning();
 				note = "<span class='text-red'>" + note + "</span>";
 				iconText += "\n" + MESSAGES.creditStatusTooHigh();
 				break;
