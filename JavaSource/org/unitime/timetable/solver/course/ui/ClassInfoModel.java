@@ -191,6 +191,7 @@ public class ClassInfoModel implements Serializable {
 	            	for (DepartmentalInstructor di: DepartmentalInstructor.getAllForInstructor(instructor.getInstructor().getInstructor())) {
 		            	for (ClassInstructor ci : di.getClasses()) {
 		            		if (ci.equals(instructor.getInstructor())) continue;
+		            		if (!ci.isLead()) continue;
 		            		Assignment a = ci.getClassInstructing().getCommittedAssignment();
 		            		if (a == null || a.getClazz().isCancelled()) continue;
 		            		if (assignment.getTime() != null && assignment.getTime().overlaps(new ClassTimeInfo(a)) && !a.getClazz().canShareInstructor(assignment.getClazz())) {
