@@ -6907,3 +6907,45 @@ unitime-RoomSharingWidget .legend .blank {
 .unitine-DegreePlanTable .gwt-CheckBox {
 	white-space: nowrap;
 }
+
+.unitime-TeachingScheduleInstructorAssignments .line {
+	display: block;
+	height: 22px;
+}
+
+.unitime-TeachingScheduleInstructorAssignments .unitime-Widget {
+	display: inline-block;
+}
+
+.unitime-TeachingScheduleInstructorAssignments .gwt-Image {
+	vertical-align: top;
+	margin-top: 2px;
+}
+
+.unitime-TeachingScheduleAssignments .last-line {
+	border-bottom: 1px dashed #9CB0CE; 
+}
+
+.unitime-TeachingScheduleDivisions {
+	width: 100%;
+}
+
+.unitime-TeachingScheduleDivisions .error {
+	color: red;
+}
+
+.unitime-TeachingScheduleAssignments {
+	width: 100%;
+}
+
+.unitime-TeachingScheduleAssignments .error {
+	color: red;
+}
+
+.unitime-InstructorMeetingAssignment {
+	width: 100%;
+}
+
+.unitime-InstructorMeetingAssignment .error {
+	color: red;
+}

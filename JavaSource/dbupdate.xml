@@ -13916,4 +13916,125 @@
 	    <mysql>alter table %SCHEMA%.advisor_crsreq add waitlist int(1)</mysql>
 	    <pgsql>alter table %SCHEMA%.advisor_crsreq add waitlist boolean</pgsql>
 	</update>
+	<update version="234" date="11-Oct-2020" comment="Teaching Schedule">
+		<mysql>
+			create table %SCHEMA%.course_division (
+				uniqueid decimal(20,0) primary key not null,
+				offering_id decimal(20,0) not null,
+				config_id decimal(20,0) not null,
+				itype int(2) not null,
+				attribute_id decimal(20,0) null,
+				name varchar(100),
+				nr_groups bigint(10) not null,
+				nr_hours bigint(10) not null,
+				nr_parallels bigint(10) not null,
+				ord bigint(10) not null
+			) engine = INNODB
+		</mysql>
+		<mysql>
+			create table %SCHEMA%.course_div_meeting (
+				uniqueid decimal(20,0) primary key not null,
+				division_id decimal(20,0) not null,
+				meeting_id decimal(20,0) not null,
+				first_hour bigint(10) not null,
+				last_hour bigint(10) not null,
+				class_idx bigint(10) not null,
+				group_idx bigint(10) not null,
+				note varchar(200)
+			) engine = INNODB
+		</mysql>
+		<mysql>
+			create table %SCHEMA%.course_div_meeting_instructor (
+				course_meeting_id decimal(20,0) not null,
+				instructor_id decimal(20,0) not null,
+				primary key (course_meeting_id, instructor_id)
+				) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.course_division (
+				uniqueid number(20) constraint nn_coursediv_id not null,
+				offering_id number(20) constraint nn_coursediv_offering not null,
+				config_id number(20) constraint nn_coursediv_config not null,
+				itype number(2) constraint nn_coursediv_itype not null,
+				attribute_id number(20) null,
+				name varchar2(100 char),
+				nr_groups number(10) constraint nn_coursediv_groups not null,
+				nr_hours number(10) constraint nn_coursediv_hours not null,
+				nr_parallels number(10) constraint nn_coursediv_paral not null,
+				ord number(10) not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.course_division add constraint pk_course_division primary key (uniqueid)</plsql>
+		<plsql>
+			create table %SCHEMA%.course_div_meeting (
+				uniqueid number(20) constraint nn_coursedivm_id not null,
+				division_id number(20) constraint nn_coursedivm_division not null,
+				meeting_id number(20) constraint nn_coursedivm_meeting not null,
+				first_hour number(10) constraint nn_coursedivm_firsth not null,
+				last_hour number(10) constraint nn_coursedivm_lasth not null,
+				class_idx number(10) constraint nn_coursedivm_class not null,
+				group_idx number(10) constraint nn_coursedivm_group not null,
+				note varchar2(200 char)
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.course_div_meeting add constraint pk_course_meeting primary key (uniqueid)</plsql>
+		<plsql>
+			create table %SCHEMA%.course_div_meeting_instructor (
+				course_meeting_id number(20) constraint nn_coursedivin_meeting not null,
+				instructor_id number(20) constraint nn_coursedivin_instr not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.course_div_meeting_instructor add constraint pk_course_meeting_instructor primary key (course_meeting_id, instructor_id)</plsql>
+		<pgsql>
+			create table %SCHEMA%.course_division (
+				uniqueid bigint not null,
+				offering_id bigint not null,
+				config_id bigint not null,
+				itype integer not null,
+				attribute_id bigint null,
+				name varchar(100),
+				nr_groups integer not null,
+				nr_hours integer not null,
+				nr_parallels integer not null,
+				ord integer not null
+			)
+		</pgsql>
+		<pgsql>alter table %SCHEMA%.course_division add constraint pk_course_division primary key (uniqueid)</pgsql>
+		<pgsql>
+			create table %SCHEMA%.course_div_meeting (
+				uniqueid bigint not null,
+				division_id bigint not null,
+				meeting_id bigint not null,
+				first_hour integer not null,
+				last_hour integer not null,
+				class_idx integer not null,
+				group_idx integer not null,
+				note varchar(200)
+			)
+		</pgsql>
+		<pgsql>alter table %SCHEMA%.course_div_meeting add constraint pk_course_meeting primary key (uniqueid)</pgsql>
+		<pgsql>
+			create table %SCHEMA%.course_div_meeting_instructor (
+				course_meeting_id bigint not null,
+				instructor_id bigint not null
+			)
+		</pgsql>
+		<pgsql>alter table %SCHEMA%.course_div_meeting_instructor add constraint pk_course_meeting_instructor primary key (course_meeting_id, instructor_id)</pgsql>
+		<sql>alter table %SCHEMA%.course_division add constraint fk_coursediv_offering foreign key (offering_id)
+			references %SCHEMA%.instructional_offering (uniqueid) on delete cascade</sql>
+		<sql>alter table %SCHEMA%.course_division add constraint fk_coursediv_config foreign key (config_id)
+			references %SCHEMA%.instr_offering_config (uniqueid) on delete cascade</sql>
+		<sql>alter table %SCHEMA%.course_division add constraint fk_coursediv_itype foreign key (itype)
+			references %SCHEMA%.itype_desc (itype) on delete cascade</sql>
+		<sql>alter table %SCHEMA%.course_division add constraint fk_coursediv_attribute foreign key (attribute_id)
+			references %SCHEMA%.attribute (uniqueid) on delete cascade</sql>
+		<sql>alter table %SCHEMA%.course_div_meeting add constraint fk_coursedivm_div foreign key (division_id)
+			references %SCHEMA%.course_division (uniqueid) on delete cascade</sql>
+		<sql>alter table %SCHEMA%.course_div_meeting add constraint fk_coursedivm_meeting foreign key (meeting_id)
+			references %SCHEMA%.meeting (uniqueid) on delete cascade</sql>
+		<sql>alter table %SCHEMA%.course_div_meeting_instructor add constraint fk_coursedivin_meeting foreign key (course_meeting_id)
+			references %SCHEMA%.course_div_meeting (uniqueid) on delete cascade</sql>
+		<sql>alter table %SCHEMA%.course_div_meeting_instructor add constraint fk_coursedivin_instructor foreign key (instructor_id)
+			references %SCHEMA%.departmental_instructor (uniqueid) on delete cascade</sql>
+	</update>
 </dbupdate>

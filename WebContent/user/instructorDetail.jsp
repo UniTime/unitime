@@ -317,6 +317,15 @@
 			</TD>
 		</TR>
 		</sec:authorize>
+		
+		<sec:authorize access="hasPermission(#deptCode, 'Department', 'TeachingSchedules')">
+		<TR>
+			<TD colspan="2">
+				<a name="assignments"></a>
+				<div id='UniTimeGWT:TeachingSchedule' style="display: none;"><bean:write name="<%=frmName%>" property="instructorId" /></div>
+			</TD>
+		</TR>
+		</sec:authorize>
 
 		<tt:last-change type='DepartmentalInstructor'>
 			<bean:write name="<%=frmName%>" property="instructorId"/>

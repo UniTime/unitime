@@ -59,9 +59,14 @@ import org.unitime.timetable.gwt.client.solver.SolverLogPage;
 import org.unitime.timetable.gwt.client.solver.SolverPage;
 import org.unitime.timetable.gwt.client.solver.SuggestionsPage;
 import org.unitime.timetable.gwt.client.solver.TimetablePage;
+import org.unitime.timetable.gwt.client.teachingschedule.TeachingScheduleDetailPage;
+import org.unitime.timetable.gwt.client.teachingschedule.TeachingScheduleEditPage;
+import org.unitime.timetable.gwt.client.teachingschedule.TeachingSchedulesPage;
 import org.unitime.timetable.gwt.client.test.OnlineSectioningTest;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.resources.TeachingScheduleMessages;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -265,6 +270,21 @@ public enum Pages {
 	acrf(new PageFactory() {
 		public Widget create() { return new AdvisorCourseRequestsPage(); }
 		public String name(GwtMessages messages) { return messages.pageAdvisorCourseRequests(); }
+		}),
+	editTeachingSchedule(new PageFactory() {
+		TeachingScheduleMessages tsm = GWT.create(TeachingScheduleMessages.class);
+		public Widget create() { return new TeachingScheduleEditPage(); }
+		public String name(GwtMessages messages) { return tsm.pageEditTeachingSchedule(); }
+		}),
+	teachingSchedule(new PageFactory() {
+		TeachingScheduleMessages tsm = GWT.create(TeachingScheduleMessages.class);
+		public Widget create() { return new TeachingScheduleDetailPage(); }
+		public String name(GwtMessages messages) { return tsm.pageDetailTeachingSchedule(); }
+		}),
+	teachingSchedules(new PageFactory() {
+		TeachingScheduleMessages tsm = GWT.create(TeachingScheduleMessages.class);
+		public Widget create() { return new TeachingSchedulesPage(); }
+		public String name(GwtMessages messages) { return tsm.pageTeachingSchedules(); }
 		}),
 	;
 	

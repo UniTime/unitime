@@ -675,6 +675,10 @@ public enum Right {
     CanLookupLdap,
     CanLookupAdvisors,
 
+	/** Teaching Schedules */
+	TeachingSchedules(Department.class),
+	EditTeachingSchedule(Department.class),
+
 	/** Obsolete */
     
 	SolutionInformationDefinitions,

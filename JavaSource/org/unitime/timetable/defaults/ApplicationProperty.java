@@ -2778,6 +2778,7 @@ public enum ApplicationProperty {
 			+ "- Preferences ... enabled and available on the Instructor Preferences page,\n"
 			+ "- Assignments ... enabled and available on the Instructor Assignment Preferences page,\n"
 			+ "- Enabled ... enabled and available on both Instructor Preferences and Instructor Assignment Preferences pages")
+	@Since(4.5)
 	InstructorUnavailbeDays("tmtbl.instructor.unavaibleDates"),
 	
 	@Type(Boolean.class)
@@ -2785,6 +2786,14 @@ public enum ApplicationProperty {
 	@Description("Student Groups: When set to true, the Student Groups admin page will work faster, but it will not be possible to edit multiple student groups at once.")
 	@Since(4.5)
 	AdminStudentGroupsLazyStudents("unitime.admin.studentGroups.lazyLoad"),
+
+	@DefaultValue("45")
+	@Description("Teaching Schedule: Length of a standard hour in minutes (break time not counted).")
+	TeachingScheduleHour("unitime.teachingschedule.teachingHourMins"),
+	
+	@DefaultValue("5")
+	@Description("Teaching Schedule: Length of a standard hour break time in minutes.")
+	TeachingScheduleBreak("unitime.teachingschedule.teachingHourBreak"),
 	
 	@DefaultValue("None")
 	@Values({"None, WaitList, NoSubs"})

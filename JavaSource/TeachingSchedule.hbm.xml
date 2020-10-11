@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="TeachingScheduleDivision" table="course_division">
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">pref_group_seq</param>
+            </generator>
+        </id>
+        
+        <many-to-one
+            name="offering"
+            class="InstructionalOffering"
+            column="offering_id"
+            not-null="true"
+            foreign-key="fk_coursediv_offering"/>
+        
+        <many-to-one
+        	name="config"
+            class="InstrOfferingConfig"
+            column="config_id"
+            not-null="true"
+            foreign-key="fk_coursediv_config"/>
+            
+        <many-to-one
+        	name="itype"
+        	class="ItypeDesc"
+        	column="itype"
+        	not-null="true"
+        	foreign-key="fk_coursediv_itype"/>
+
+        <many-to-one
+        	name="attribute"
+            class="InstructorAttribute"
+            column="attribute_id"
+            not-null="false"
+            foreign-key="fk_coursediv_attribute"/>
+        
+        <property
+            name="name"
+            column="name"
+            type="java.lang.String"
+            not-null="false"
+            length="100"/>
+
+        <property
+            name="groups"
+            column="nr_groups"
+            type="java.lang.Integer"
+            not-null="true"/>
+
+        <property
+            name="hours"
+            column="nr_hours"
+            type="java.lang.Integer"
+            not-null="true"/>
+
+        <property
+            name="parallels"
+            column="nr_parallels"
+            type="java.lang.Integer"
+            not-null="true"/>
+
+        <property
+            name="order"
+            column="ord"
+            type="java.lang.Integer"
+            not-null="true"/>
+
+        <set
+            name="assignments"
+            lazy="true"
+            cascade="all"
+            inverse="true">
+
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="division_id" foreign-key="fk_coursediv_div"/>
+            <one-to-many class="TeachingScheduleAssignment"/>
+        </set>
+    </class>
+
+    <class name="TeachingScheduleAssignment" table="course_div_meeting">
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">pref_group_seq</param>
+            </generator>
+        </id>
+
+        <many-to-one
+            name="division"
+            class="TeachingScheduleDivision"
+            column="division_id"
+            not-null="true"
+            foreign-key="fk_coursedivm_div"/>
+            
+        <many-to-one
+        	name="meeting"
+            class="Meeting"
+            column="meeting_id"
+            not-null="true"
+            foreign-key="fk_coursedivm_meeting"/>
+
+        <property
+            name="firstHour"
+            column="first_hour"
+            type="java.lang.Integer"
+            not-null="true"/>
+
+        <property
+            name="lastHour"
+            column="last_hour"
+            type="java.lang.Integer"
+            not-null="true"/>
+
+        <property
+            name="classIndex"
+            column="class_idx"
+            type="java.lang.Integer"
+            not-null="true"/>
+
+        <property
+            name="groupIndex"
+            column="group_idx"
+            type="java.lang.Integer"
+            not-null="true"/>
+            
+        <property
+            name="note"
+            column="note"
+            type="java.lang.String"
+            not-null="false"
+            length="200"/>
+            
+        <set
+            name="instructors"
+            table="course_div_meeting_instructor"
+            lazy="true">
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="course_meeting_id" foreign-key="fk_coursedivin_meeting"/>
+            <many-to-many
+                class="org.unitime.timetable.model.DepartmentalInstructor"
+                column="instructor_id"
+                foreign-key="fk_coursedivin_instructor"/>
+        </set>
+    </class>
+</hibernate-mapping>

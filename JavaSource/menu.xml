@@ -137,6 +137,16 @@
 					<hasPermission name="ClassAssignments"/>
 				</condition>
 			</item>
+			<separator>
+				<condition>
+					<hasPermission name="TeachingSchedules"/>
+				</condition>
+			</separator>
+			<item name="Teaching Schedules" page="teachingSchedules" type="gwt">
+				<condition>
+					<hasPermission name="TeachingSchedules"/>
+				</condition>
+			</item>
 		</menu>
 		<menu name="Course Timetabling" title="Course Timetabling Solver">
 			<condition>
