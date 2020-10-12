@@ -42,4 +42,24 @@ public class TeachingScheduleAssignment extends BaseTeachingScheduleAssignment {
         c.set(Calendar.MINUTE, min%60);
         return c.getTime();
 	}
+	
+	public String getGroupName() {
+		String name = getDivision().getItype().getAbbv().trim();
+		if (getDivision().getOffering().getInstrOfferingConfigs().size() > 1)
+			name += " " + getDivision().getConfig().getName();
+		if (getDivision().getGroups() > 1) {
+			return name + " " + (getClassIndex() < 9 ? "0" : "") + (1 + getClassIndex()) + (char)('A' + getGroupIndex());
+		} else if (getClassIndex() > 0) {
+			return name + " " + (getClassIndex() < 9 ? "0" : "") + (1 + getClassIndex());
+		} else {
+			for (SchedulingSubpart ss: getDivision().getConfig().getSchedulingSubparts()) {
+				if (ss.getItype().equals(getDivision().getItype())) {
+					if (ss.getClasses().size() > 1)
+						return name + " " + (getClassIndex() < 9 ? "0" : "") + (1 + getClassIndex());
+					break;
+				}
+			}
+			return name;
+		}
+	}
 }

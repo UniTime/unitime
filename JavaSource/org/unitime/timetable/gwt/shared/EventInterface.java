@@ -170,6 +170,31 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			}
 		return note;
 	}
+	public boolean hasMeetingNote(Long meetingId) {
+		if (hasNotes())
+			for (NoteInterface n: getNotes()) {
+				if (meetingId != null && n.getMeetingId() != null && !n.getMeetingId().equals(meetingId)) return true;
+			}
+		return false;
+	}
+	public boolean hasMeetingNote(MeetingInterface meeting) {
+		return hasMeetingNote(meeting == null ? null : meeting.getId());
+	}
+	public String getEventNote(String linebreak, Long meetingId) {
+		String note = "";
+		if (hasNotes())
+			for (NoteInterface n: getNotes()) {
+				if (meetingId != null && n.getMeetingId() != null && !n.getMeetingId().equals(meetingId)) continue;
+				if (n.getNote() != null && !n.getNote().isEmpty()) {
+					if (!note.isEmpty()) note += linebreak;
+					note += n.getNote();
+				}
+			}
+		return note;
+	}
+	public String getEventNote(String linebreak, MeetingInterface meeting) {
+		return getEventNote(linebreak, meeting == null ? null : meeting.getId());
+	}
 	public NoteInterface getLastNote() {
 		if (iNotes == null) return null;
 		NoteInterface last = null;
@@ -1311,6 +1336,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	private String iNote;
     	private String iAttachment;
     	private String iLink;
+    	private Long iMeetingId;
     	
     	public static enum NoteType implements IsSerializable {
     		Create("Create"),
@@ -1358,6 +1384,10 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	public boolean hasLink() { return iLink != null && !iLink.isEmpty(); }
     	public String getLink() { return iLink; }
     	public void setLink(String link) { iLink = link; }
+    	
+    	public Long getMeetingId() { return iMeetingId; }
+    	public void setMeetingId(Long meetingId) { iMeetingId = meetingId; }
+    	public boolean hasMeetingId() { return iMeetingId != null; }
     	
 		@Override
 		public int compareTo(NoteInterface note) {

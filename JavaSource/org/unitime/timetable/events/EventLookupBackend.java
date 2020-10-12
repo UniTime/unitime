@@ -91,6 +91,7 @@ import org.unitime.timetable.model.dao.ExamEventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentGroupDAO;
 import org.unitime.timetable.onlinesectioning.custom.CustomClassAttendanceProvider;
+import org.unitime.timetable.onlinesectioning.custom.CustomClassAttendanceProvider.InstructorClassAttendance;
 import org.unitime.timetable.onlinesectioning.custom.CustomClassAttendanceProvider.StudentClassAttendance;
 import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.security.rights.Right;
@@ -768,6 +769,10 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							meetings.addAll(query.select("distinct m").type("ClassEvent").from("inner join e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.offeringCoordinators cc")
 									.where("cc.instructor.externalUniqueId = :externalId").where("cc.instructor.department.session.uniqueId = s.uniqueId")
 									.set("externalId", request.getResourceExternalId()).limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+						if (instructor && (limit <= 0 || meetings.size() < limit))
+							meetings.addAll(query.select("distinct m").type("ClassEvent").from("TeachingScheduleAssignment tsa inner join tsa.instructors i")
+									.where("i.externalUniqueId = :externalId").where("i.department.session.uniqueId = s.uniqueId").where("tsa.meeting = m")
+									.set("externalId", request.getResourceExternalId()).limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
 					} else {
 						if (student && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query.select("distinct m").type("ClassEvent").from("inner join e.clazz.studentEnrollments enrl")
@@ -784,6 +789,10 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									.where("cc.instructor.externalUniqueId = :externalId").set("externalId", request.getResourceExternalId())
 									.where("cc.instructor.department.session = s")
 									.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+						if (instructor && (limit <= 0 || meetings.size() < limit))
+							meetings.addAll(query.select("distinct m").type("ClassEvent").from("TeachingScheduleAssignment tsa inner join tsa.instructors i")
+									.where("i.externalUniqueId = :externalId").where("tsa.meeting = m")
+									.set("externalId", request.getResourceExternalId()).limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
 					}
 
 					if (allSessions) {
@@ -2845,22 +2854,39 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					CustomClassAttendanceProvider provider = Customization.CustomClassAttendanceProvider.getProvider();
 					Map<Long, StudentClassAttendance> attendances = new HashMap<Long, StudentClassAttendance>();
 					Set<Long> ignoreSessionIds = new HashSet<Long>();
+					Map<Long, InstructorClassAttendance> instructorAttendances = new HashMap<Long, InstructorClassAttendance>();
+					Set<Long> ignoreInstructorSessionIds = new HashSet<Long>();
 					for (EventInterface e: ret) {
 						if (e.getType() == EventType.Class && e.getClassId() != null && e.getSessionId() != null && !ignoreSessionIds.contains(e.getSessionId())) {
 							StudentClassAttendance attendance = attendances.get(e.getSessionId());
 							if (attendance == null) {
 								Student student = Student.findByExternalId(e.getSessionId(), request.getResourceExternalId());
 								if (student == null) {
-									ignoreSessionIds.add(e.getSessionId()); continue;
-								}
-								attendance = provider.getCustomClassAttendanceForStudent(student, null, context);
-								if (attendance == null) {
-									ignoreSessionIds.add(e.getSessionId()); continue;
+									ignoreSessionIds.add(e.getSessionId());
 								} else {
-									attendances.put(e.getSessionId(), attendance);
+									attendance = provider.getCustomClassAttendanceForStudent(student, null, context);
+									if (attendance == null) {
+										ignoreSessionIds.add(e.getSessionId());
+									} else {
+										attendances.put(e.getSessionId(), attendance);
+									}
 								}
 							}
-							attendance.updateAttendance(e);
+							if (attendance != null)
+								attendance.updateAttendance(e);
+						}
+						if (e.getType() == EventType.Class && e.getClassId() != null && e.getSessionId() != null) {
+							InstructorClassAttendance attendance = instructorAttendances.get(e.getSessionId());
+							if (attendance == null) {
+								attendance = provider.getCustomClassAttendanceForInstructor(request.getResourceExternalId(), e.getSessionId(), null, context);
+								if (attendance == null) {
+									ignoreInstructorSessionIds.add(e.getSessionId());
+								} else {
+									instructorAttendances.put(e.getSessionId(), attendance);
+								}
+							}
+							if (attendance != null)
+								attendance.updateAttendance(e);
 						}
 					}
 				}

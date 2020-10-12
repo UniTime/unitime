@@ -1116,11 +1116,19 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				row.add(new Label(event.getInstruction() == null ? event.getType().getAbbreviation(CONSTANTS) : event.getInstruction(), false));
 				row.add(new MultiLineStringCell(title));
 				if (event.hasEventNote() && getMode().hasFlag(ModeFlag.ShowEventDetails)) {
-					MultiLineStringCell note = new MultiLineStringCell(event.getEventNote("\n").split("\\n"));
-					note.setTitle(event.getEventNote("\n"));
-					note.addStyleName("note");
-					note.getElement().getStyle().clearWhiteSpace();
-					row.add(note);
+					if (event.hasMeetingNote(meeting)) {
+						HTML note = new HTML(event.getEventNote("<br>", meeting));
+						note.setTitle(event.getEventNote("\n", meeting));
+						note.addStyleName("note");
+						note.getElement().getStyle().clearWhiteSpace();
+						row.add(note);
+					} else {
+						MultiLineStringCell note = new MultiLineStringCell(event.getEventNote("\n", meeting).split("\\n"));
+						note.setTitle(event.getEventNote("\n", meeting));
+						note.addStyleName("note");
+						note.getElement().getStyle().clearWhiteSpace();
+						row.add(note);
+					}
 				} else {
 					row.add(new HTML("&nbsp;"));	
 				}
@@ -1136,11 +1144,19 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				row.add(new Label(event.getType().getAbbreviation(CONSTANTS), false));
 				row.add(new HTML("&nbsp;"));
 				if (event.hasEventNote() && getMode().hasFlag(ModeFlag.ShowEventDetails)) {
-					MultiLineStringCell note = new MultiLineStringCell(event.getEventNote("\n").split("\\n"));
-					note.setTitle(event.getEventNote("\n"));
-					note.addStyleName("note");
-					note.getElement().getStyle().clearWhiteSpace();
-					row.add(note);
+					if (event.hasMeetingNote(meeting)) {
+						HTML note = new HTML(event.getEventNote("<br>", meeting));
+						note.setTitle(event.getEventNote("\n", meeting));
+						note.addStyleName("note");
+						note.getElement().getStyle().clearWhiteSpace();
+						row.add(note);
+					} else {
+						MultiLineStringCell note = new MultiLineStringCell(event.getEventNote("\n", meeting).split("\\n"));
+						note.setTitle(event.getEventNote("\n", meeting));
+						note.addStyleName("note");
+						note.getElement().getStyle().clearWhiteSpace();
+						row.add(note);
+					}
 				} else {
 					row.add(new HTML("&nbsp;"));	
 				}
@@ -1776,6 +1792,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		if (getMode().hasFlag(ModeFlag.ShowMeetings) && getMode().hasFlag(ModeFlag.ShowEventDetails)) {
 			Long eventId = null, conflictId = null;
 			Set<Integer> eventCols = getEventColumns();
+			int noteCol = getHeader(MESSAGES.colNote()).getColumn();
 			int line = 0;
 			for (int row = 1; row < getRowCount(); row++) {
 				EventMeetingRow data = getData(row);
@@ -1801,7 +1818,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 							if (w instanceof MultiLineCell)
 								((MultiLineCell)w).showLine(line, hasNext);
 							else
-								w.setVisible(false);
+								w.setVisible(col == noteCol ? true : false);
 						}
 					}
 				} else {
@@ -1820,7 +1837,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 							if (w instanceof MultiLineCell)
 								((MultiLineCell)w).showLine(line, hasNext);
 							else
-								w.setVisible(false);
+								w.setVisible(col == noteCol ? true : false);
 						}
 					}
 				}

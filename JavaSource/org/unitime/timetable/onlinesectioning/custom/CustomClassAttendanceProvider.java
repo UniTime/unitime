@@ -30,9 +30,15 @@ import org.unitime.timetable.security.SessionContext;
 public interface CustomClassAttendanceProvider {
 	
 	public StudentClassAttendance getCustomClassAttendanceForStudent(Student student, OnlineSectioningHelper helper, SessionContext context);
+	
+	public InstructorClassAttendance getCustomClassAttendanceForInstructor(String externalUniqueId, Long sessionId, OnlineSectioningHelper helper, SessionContext context);
 
 	public interface StudentClassAttendance {
 		public String getClassNote(String externalId);
+		public void updateAttendance(EventInterface classEvent);
+	}
+	
+	public interface InstructorClassAttendance {
 		public void updateAttendance(EventInterface classEvent);
 	}
 }

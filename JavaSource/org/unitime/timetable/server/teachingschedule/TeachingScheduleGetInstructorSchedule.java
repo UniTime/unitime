@@ -76,7 +76,7 @@ public class TeachingScheduleGetInstructorSchedule implements GwtRpcImplementati
 		
 		String instructorNameFormat = context.getUser().getProperty(UserProperty.NameFormat);
 		ret.setInstructorId(instructor.getUniqueId());
-		ret.setMaxLoad(Math.round(instructor.getMaxLoad()));
+		ret.setMaxLoad(instructor.getMaxLoad() == null ? 0 : Math.round(instructor.getMaxLoad()));
 		ret.setName(instructor.getName(instructorNameFormat));
 
 		for (TeachingScheduleAssignment cm: (List<TeachingScheduleAssignment>)hibSession.createQuery(
@@ -87,7 +87,7 @@ public class TeachingScheduleGetInstructorSchedule implements GwtRpcImplementati
 			o.setName(cm.getDivision().getOffering().getCourseName());
 			o.setType(cm.getDivision().getItype().getDesc().trim());
 			o.setDivision(cm.getDivision().getName());
-			o.setGroup(getGroupName(cm));
+			o.setGroup(cm.getGroupName());
 			o.setNote(cm.getNote());
 			o.setClassMeetingId(m.getUniqueId());
 			o.setDayOfYear(CalendarUtils.date2dayOfYear(year, m.getMeetingDate()));
@@ -158,18 +158,5 @@ public class TeachingScheduleGetInstructorSchedule implements GwtRpcImplementati
 			Collections.sort(ret.getAssignmetns());
 		
 		return ret;
-	}
-	
-	protected String getGroupName(TeachingScheduleAssignment cm) {
-		String name = cm.getDivision().getItype().getAbbv().trim();
-		if (cm.getDivision().getOffering().getInstrOfferingConfigs().size() > 1)
-			name += " " + cm.getDivision().getConfig().getName();
-		if (cm.getDivision().getGroups() > 1) {
-			return name + " " + (cm.getClassIndex() < 9 ? "0" : "") + (1 + cm.getClassIndex()) + (char)('A' + cm.getGroupIndex());
-		} else if (cm.getDivision().getGroups() > 1) {
-			return name + " " + (cm.getClassIndex() < 9 ? "0" : "") + (1 + cm.getClassIndex());
-		} else {
-			return name;
-		}
 	}
 }

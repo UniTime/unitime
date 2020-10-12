@@ -582,5 +582,9 @@ public class PurdueClassAttendance implements CustomClassAttendanceProvider {
 			}
 		}
 	}
-	
+
+	@Override
+	public InstructorClassAttendance getCustomClassAttendanceForInstructor(String externalUniqueId, Long sessionId, OnlineSectioningHelper helper, SessionContext context) {
+		return null;
+	}
 }
