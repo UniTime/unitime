@@ -6868,11 +6868,11 @@ unitime-RoomSharingWidget .legend .blank {
 	width: 100%;
 }
 
-.unitime-AdvisorCourseRequests .gwt-CheckBox label{
+.unitime-PinToggle label{
 	vertical-align: top;
 }
 
-.unitime-AdvisorCourseRequests .gwt-CheckBox input[type="checkbox"]{
+.unitime-PinToggle input[type="checkbox"]{
 	margin-left: 0px;
 }
 

@@ -299,7 +299,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		iStatusLine = addDoubleRow(MESSAGES.propAdvisorEmail(), iAdvisorEmail, 1,
 				MESSAGES.propStudentStatus(), iStatus, 3);
 		
-		iPinReleased = new CheckBox(MESSAGES.propStudentPin());
+		iPinReleased = new CheckBox(MESSAGES.propStudentPin()); iPinReleased.addStyleName("unitime-PinToggle");
 		iPin = new Label(); iPin.addStyleName("unitime-Pin");
 		iPin.addClickHandler(new ClickHandler() {
 			@Override
