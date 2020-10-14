@@ -112,4 +112,18 @@ public class UsersApiToken implements ApiToken {
 			throw new IllegalArgumentException("Failed to decode API token: " + e.getMessage(), e);
 		}
 	}
+	
+	@Override
+	public String getUserId(String token) {
+		try {
+			String decoded = decode(token);
+			int split = decoded.indexOf('|');
+			String externalId = decoded.substring(0, split);
+			return externalId;
+		} catch (IllegalArgumentException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new IllegalArgumentException("Failed to decode API token: " + e.getMessage(), e);
+		}
+	}
 }

@@ -29,5 +29,7 @@ public interface ApiToken {
 	public String getToken(String externalId, String secret);
 	
 	public UserContext getContext(String token);
+	
+	public String getUserId(String token);
 
 }

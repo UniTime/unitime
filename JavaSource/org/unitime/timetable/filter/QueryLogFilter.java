@@ -32,6 +32,7 @@ import java.util.Vector;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -46,10 +47,13 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.unitime.timetable.api.ApiToken;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.QueryLog;
 import org.unitime.timetable.model.dao.QueryLogDAO;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.context.AnonymousUserContext;
 import org.unitime.timetable.spring.gwt.GwtDispatcherServlet;
 import org.unitime.timetable.spring.gwt.GwtDispatcherServlet.GwtCallInfo;
 
@@ -83,8 +87,12 @@ public class QueryLogFilter implements Filter {
 		return null;
 	}
 	
+	private String getUserIdFromToken(ServletContext context, String token) {
+		ApiToken apiToken = (context == null ? null : (ApiToken)WebApplicationContextUtils.getWebApplicationContext(context).getBean("apiToken"));
+		return (apiToken == null ? null : apiToken.getUserId(token));
+	}
+	
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain ) throws ServletException, IOException {
-
 		String sessionId = null;
 		String userId = null;
 		try {
@@ -94,8 +102,15 @@ public class QueryLogFilter implements Filter {
 				UserContext user = getUser();
 				if (user != null)
 					userId = user.getTrueExternalUserId();
+				if (user == null || user instanceof AnonymousUserContext) {
+					String token = request.getParameter("token");
+					if (token != null && ApplicationProperty.ApiCanUseAPIToken.isTrue())
+						userId = getUserIdFromToken(request.getServletContext(), token);
+				}
 			}
-		} catch (IllegalStateException e) {}
+		} catch (IllegalStateException e) {
+		} catch (IllegalArgumentException e) {
+		}
 		
 		long t0 = JProf.currentTimeMillis();
 		Throwable exception = null;
