@@ -2766,6 +2766,13 @@ public enum ApplicationProperty {
 			+ "- Assignments ... enabled and available on the Instructor Assignment Preferences page,\n"
 			+ "- Enabled ... enabled and available on both Instructor Preferences and Instructor Assignment Preferences pages")
 	InstructorUnavailbeDays("tmtbl.instructor.unavaibleDates"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Student Groups: When set to true, the Student Groups admin page will work faster, but it will not be possible to edit multiple student groups at once.")
+	@Since(4.5)
+	AdminStudentGroupsLazyStudents("unitime.admin.studentGroups.lazyLoad"),
+	
 	;
 
 	String iKey;

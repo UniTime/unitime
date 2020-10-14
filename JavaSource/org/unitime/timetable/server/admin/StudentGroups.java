@@ -33,6 +33,7 @@ import org.hibernate.criterion.Order;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
@@ -54,12 +55,14 @@ import org.unitime.timetable.model.dao.StudentGroupDAO;
 import org.unitime.timetable.model.dao.StudentGroupTypeDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.server.admin.AdminTable.HasFilter;
+import org.unitime.timetable.server.admin.AdminTable.HasLazyFields;
 
 /**
  * @author Tomas Muller
  */
 @Service("gwtAdminTable[type=group]")
-public class StudentGroups implements AdminTable {
+public class StudentGroups implements AdminTable, HasLazyFields, HasFilter {
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	
 	@Override
@@ -70,32 +73,55 @@ public class StudentGroups implements AdminTable {
 	@Override
 	@PreAuthorize("checkPermission('StudentGroups')")
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
+		return load((String[])null, context, hibSession);
+	}
+	
+	protected List<StudentGroup> getGroups(String[] filter, SessionContext context, Session hibSession) {
+		if (filter == null || filter[0] == null || filter[0].isEmpty()) {
+			return StudentGroupDAO.getInstance().findBySession(hibSession, context.getUser().getCurrentAcademicSessionId());
+		} else if ("null".equals(filter[0])) {
+			context.getUser().setProperty("Admin.StudentGroups.LastGroupTypeId", "null");
+			return StudentGroupDAO.getInstance().findByType(hibSession, context.getUser().getCurrentAcademicSessionId(), null);
+		} else {
+			context.getUser().setProperty("Admin.StudentGroups.LastGroupTypeId", filter[0]);
+			return StudentGroupDAO.getInstance().findByType(hibSession, context.getUser().getCurrentAcademicSessionId(), Long.valueOf(filter[0]));
+		}
+	}
+	
+	@Override
+	@PreAuthorize("checkPermission('StudentGroups')")
+	public SimpleEditInterface load(String[] filter, SessionContext context, Session hibSession) {
 		List<ListItem> types = new ArrayList<ListItem>();
 		types.add(new ListItem("", MESSAGES.itemNoStudentGroupType()));
 		for (StudentGroupType type: StudentGroupTypeDAO.getInstance().findAll(Order.asc("label"))) {
 			types.add(new ListItem(type.getUniqueId().toString(), type.getLabel()));
 		}
+		boolean lazy = ApplicationProperty.AdminStudentGroupsLazyStudents.isTrue();
 		SimpleEditInterface data = new SimpleEditInterface(
 				new Field(MESSAGES.fieldExternalId(), FieldType.text, 120, 40, Flag.READ_ONLY),
 				new Field(MESSAGES.fieldCode(), FieldType.text, 200, 30, Flag.UNIQUE),
 				new Field(MESSAGES.fieldName(), FieldType.text, 500, 90, Flag.UNIQUE),
 				new Field(MESSAGES.fieldStudentGroupType(), FieldType.list, 100, types),
 				new Field(MESSAGES.fieldExpectedSize(), FieldType.number, 80, 10),
-				new Field(MESSAGES.fieldStudents(), FieldType.students, 200));
+				(lazy ? new Field(MESSAGES.fieldStudents(), FieldType.students, 200, Flag.LAZY) : new Field(MESSAGES.fieldStudents(), FieldType.students, 200)));
 		data.setSortBy(1,2);
-		for (StudentGroup group: StudentGroupDAO.getInstance().findBySession(hibSession, context.getUser().getCurrentAcademicSessionId())) {
+		for (StudentGroup group: getGroups(filter, context, hibSession)) {
 			Record r = data.addRecord(group.getUniqueId());
 			r.setField(0, group.getExternalUniqueId());
 			r.setField(1, group.getGroupAbbreviation());
 			r.setField(2, group.getGroupName());
 			r.setField(3, group.getType() == null ? "" : group.getType().getUniqueId().toString());
 			r.setField(4, group.getExpectedSize() == null ? "" : group.getExpectedSize().toString());
-			String students = "";
-			for (Student student: new TreeSet<Student>(group.getStudents())) {
-				if (!students.isEmpty()) students += "\n";
-				students += student.getExternalUniqueId() + " " + student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
+			if (lazy) {
+				r.setField(5, String.valueOf(group.getStudents().size()));
+			} else {
+				String students = "";
+				for (Student student: new TreeSet<Student>(group.getStudents())) {
+					if (!students.isEmpty()) students += "\n";
+					students += student.getExternalUniqueId() + " " + student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
+				}
+				r.setField(5, students, group.getExternalUniqueId() == null);
 			}
-			r.setField(5, students, group.getExternalUniqueId() == null);
 			r.setDeletable(group.getExternalUniqueId() == null);
 		}
 		data.setEditable(context.hasPermission(Right.StudentGroupEdit));
@@ -105,8 +131,14 @@ public class StudentGroups implements AdminTable {
 	@Override
 	@PreAuthorize("checkPermission('StudentGroupEdit')")
 	public void save(SimpleEditInterface data, SessionContext context, Session hibSession) {
+		save(null, data, context, hibSession);
+	}
+	
+	@Override
+	@PreAuthorize("checkPermission('StudentGroupEdit')")
+	public void save(String[] filter, SimpleEditInterface data, SessionContext context, Session hibSession) {
 		Set<Long> studentIds = new HashSet<Long>();
-		for (StudentGroup group: StudentGroupDAO.getInstance().findBySession(hibSession, context.getUser().getCurrentAcademicSessionId())) {
+		for (StudentGroup group: getGroups(filter, context, hibSession)) {
 			Record r = data.getRecord(group.getUniqueId());
 			if (r == null)
 				delete(group, context, hibSession, studentIds);
@@ -264,4 +296,34 @@ public class StudentGroups implements AdminTable {
 			StudentSectioningQueue.studentChanged(hibSession, context.getUser(), context.getUser().getCurrentAcademicSessionId(), studentIds);
 	}
 
+	@Override
+	@PreAuthorize("checkPermission('StudentGroupEdit')")
+	public void load(Record record, SessionContext context, Session hibSession) {
+		if (record.getUniqueId() != null) {
+			StudentGroup group = StudentGroupDAO.getInstance().get(record.getUniqueId());
+			if (group != null) {
+				String students = "";
+				for (Student student: new TreeSet<Student>(group.getStudents())) {
+					if (!students.isEmpty()) students += "\n";
+					students += student.getExternalUniqueId() + " " + student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
+				}
+				record.setField(5, students, group.getExternalUniqueId() == null);
+			}
+		}
+	}
+
+	@Override
+	public SimpleEditInterface.Filter getFilter(SessionContext context, Session hibSession) {
+		List<ListItem> types = new ArrayList<ListItem>();
+		types.add(new ListItem("", MESSAGES.itemAll()));
+		types.add(new ListItem("null", MESSAGES.itemNoStudentGroupType()));
+		for (StudentGroupType type: StudentGroupTypeDAO.getInstance().findAll(Order.asc("label"))) {
+			types.add(new ListItem(type.getUniqueId().toString(), type.getLabel()));
+		}
+		SimpleEditInterface.Filter filter = new SimpleEditInterface.Filter(new Field(MESSAGES.fieldStudentGroupType(), FieldType.list, 100, types));
+		String lastId = context.getUser().getProperty("Admin.StudentGroups.LastGroupTypeId");
+		if (lastId != null)
+			filter.getDefaultValue().setField(0, lastId);
+		return filter;
+	}
 }
