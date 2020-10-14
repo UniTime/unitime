@@ -48,6 +48,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 		NEGATIVE,
 		SHOW_PARENT_IF_EMPTY,
 		DEFAULT_CHECKED,
+		LAZY,
 		;
 		
 		public int toInt() { return 1 << ordinal(); }
@@ -388,6 +389,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 		public boolean isAllowNegative() { return Flag.NEGATIVE.has(iFlags); }
 		public boolean isShowParentWhenEmpty() { return Flag.SHOW_PARENT_IF_EMPTY.has(iFlags); }
 		public boolean isCheckedByDefault() { return Flag.DEFAULT_CHECKED.has(iFlags); }
+		public boolean isLazy() { return Flag.LAZY.has(iFlags); }
 		
 		public int hashCode() {
 			return getName().hashCode();
@@ -437,27 +439,64 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 	}
 	
 	public static class LoadDataRpcRequest extends SimpleEditRpcRequest implements GwtRpcRequest<SimpleEditInterface> {
+		private String[] iFilter;
+		
 		public LoadDataRpcRequest() {}
+		
+		public void setFilter(String[] filter) { iFilter = filter; }
+		public String[] getFilter() { return iFilter; }
 		
 		public static LoadDataRpcRequest loadData(String type) {
 			LoadDataRpcRequest request = new LoadDataRpcRequest();
 			request.setType(type);
 			return request;
 		}
+		public static LoadDataRpcRequest loadData(String type, String[] filter) {
+			LoadDataRpcRequest request = new LoadDataRpcRequest();
+			request.setType(type);
+			request.setFilter(filter);
+			return request;
+		}
 	}
 	
 	public static class SaveDataRpcRequest extends SimpleEditRpcRequest implements GwtRpcRequest<SimpleEditInterface> {
 		private SimpleEditInterface iData;
+		private String[] iFilter;
 		
 		public SaveDataRpcRequest() {}
 
 		public SimpleEditInterface getData() { return iData; }
 		public void setData(SimpleEditInterface data) { iData = data; }
+		public void setFilter(String[] filter) { iFilter = filter; }
+		public String[] getFilter() { return iFilter; }
 
 		public static SaveDataRpcRequest saveData(String type, SimpleEditInterface data) {
 			SaveDataRpcRequest request = new SaveDataRpcRequest();
 			request.setType(type);
 			request.setData(data);
+			return request;
+		}
+		public static SaveDataRpcRequest saveData(String type, SimpleEditInterface data, String[] filter) {
+			SaveDataRpcRequest request = new SaveDataRpcRequest();
+			request.setType(type);
+			request.setData(data);
+			request.setFilter(filter);
+			return request;
+		}
+	}
+	
+	public static class LoadRecordRpcRequest extends SimpleEditRpcRequest implements GwtRpcRequest<Record> {
+		private Record iRecord;
+		
+		public LoadRecordRpcRequest() {}
+
+		public Record getRecord() { return iRecord; }
+		public void setRecord(Record record) { iRecord = record; }
+
+		public static LoadRecordRpcRequest loadRecord(String type, Record record) {
+			LoadRecordRpcRequest request = new LoadRecordRpcRequest();
+			request.setType(type);
+			request.setRecord(record);
 			return request;
 		}
 	}
@@ -485,6 +524,36 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 			DeleteRecordRpcRequest request = new DeleteRecordRpcRequest();
 			request.setType(type);
 			request.setRecord(record);
+			return request;
+		}
+	}
+	
+	public static class Filter implements GwtRpcResponse {
+		Field[] iFields;
+		Record iDefaultValue;
+		
+		public Filter() {}
+		public Filter(Field... fields) {
+			iFields = fields;
+			iDefaultValue = new Record(null, fields.length);
+		}
+		
+		public Field[] getFields() { return iFields; }
+		public Record getDefaultValue() { return iDefaultValue; }
+		
+		public int indexOf(String name) {
+			for (int i = 0; i < iFields.length; i++)
+				if (iFields[i].getName().equals(name)) return i;
+			return -1;
+		}
+	}
+	
+	public static class GetFilterRpcRequest extends SimpleEditRpcRequest implements GwtRpcRequest<Filter> {
+		public GetFilterRpcRequest() {}
+
+		public static GetFilterRpcRequest getFilter(String type) {
+			GetFilterRpcRequest request = new GetFilterRpcRequest();
+			request.setType(type);
 			return request;
 		}
 	}

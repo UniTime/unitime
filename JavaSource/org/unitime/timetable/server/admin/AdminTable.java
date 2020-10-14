@@ -37,4 +37,14 @@ public interface AdminTable {
 	public abstract void update(SimpleEditInterface.Record record, SessionContext context, org.hibernate.Session hibSession);
 	
 	public abstract void delete(SimpleEditInterface.Record record, SessionContext context, org.hibernate.Session hibSession);
+	
+	public interface HasFilter {
+		public SimpleEditInterface.Filter getFilter(SessionContext context, org.hibernate.Session hibSession);
+		public SimpleEditInterface load(String[] filter, SessionContext context, org.hibernate.Session hibSession);
+		public void save(String[] filter, SimpleEditInterface data, SessionContext context, org.hibernate.Session hibSession);
+	}
+	
+	public interface HasLazyFields {
+		public void load(SimpleEditInterface.Record record, SessionContext context, org.hibernate.Session hibSession);
+	}
 }

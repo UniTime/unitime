@@ -2070,6 +2070,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Loading data ...")
 	String waitLoadingData();
 	
+	@DefaultMessage("Loading record ...")
+	String waitLoadingRecord();
+	
 	@DefaultMessage("Saving curricula ...")
 	String waitSavingCurricula();
 	

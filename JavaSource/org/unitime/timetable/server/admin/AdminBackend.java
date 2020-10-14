@@ -35,6 +35,8 @@ import org.unitime.timetable.gwt.shared.SimpleEditInterface.PageName;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Record;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.server.admin.AdminTable.HasFilter;
+import org.unitime.timetable.server.admin.AdminTable.HasLazyFields;
 
 /**
  * @author Tomas Muller
@@ -63,7 +65,13 @@ public class AdminBackend {
 			try {
 				tx = hibSession.beginTransaction();
 				
-				SimpleEditInterface data = getTable(applicationContext, request.getType()).load(context, hibSession);
+				SimpleEditInterface data = null;
+				AdminTable at = getTable(applicationContext, request.getType());
+				if (request.getFilter() != null && at instanceof HasFilter) {
+					data = ((HasFilter)at).load(request.getFilter(), context, hibSession);
+				} else {
+					data = at.load(context, hibSession);
+				}
 				
 				hibSession.flush();
 				tx.commit(); tx = null;
@@ -101,7 +109,12 @@ public class AdminBackend {
 				
 				SimpleEditInterface data = request.getData();
 				
-				getTable(applicationContext, request.getType()).save(request.getData(), context, hibSession);
+				AdminTable at = getTable(applicationContext, request.getType());
+				if (request.getFilter() != null && at instanceof HasFilter) {
+					((HasFilter)at).save(request.getFilter(), request.getData(), context, hibSession);
+				} else {
+					at.save(request.getData(), context, hibSession);
+				}
 				
 				hibSession.flush();
 				tx.commit(); tx = null;
@@ -181,6 +194,79 @@ public class AdminBackend {
 				tx.commit(); tx = null;
 				
 				return request.getRecord();
+			} catch (PageAccessException e) {
+				throw e;
+			} catch (GwtRpcException e) {
+				throw e;
+			} catch (Exception e) {
+				sLog.error(e.getMessage(), e);
+				throw new GwtRpcException(e.getMessage(), e);
+			} finally {
+				try {
+					if (tx != null && tx.isActive()) {
+						tx.rollback();
+					}
+				} catch (Exception e) {}
+			}
+		}
+	}
+	
+	@GwtRpcImplements(SimpleEditInterface.LoadRecordRpcRequest.class)
+	public static class LoadRecordBackend implements GwtRpcImplementation<SimpleEditInterface.LoadRecordRpcRequest, SimpleEditInterface.Record> {
+		@Autowired ApplicationContext applicationContext;
+
+		@Override
+		public SimpleEditInterface.Record execute(SimpleEditInterface.LoadRecordRpcRequest request, SessionContext context) {
+			org.hibernate.Session hibSession = new _RootDAO().getSession();
+			Transaction tx = null;
+			try {
+				tx = hibSession.beginTransaction();
+				
+				AdminTable at = getTable(applicationContext, request.getType());
+				if (at instanceof HasLazyFields)
+					((HasLazyFields)at).load(request.getRecord(), context, hibSession);
+				
+				hibSession.flush();
+				tx.commit(); tx = null;
+				
+				return request.getRecord();
+			} catch (PageAccessException e) {
+				throw e;
+			} catch (GwtRpcException e) {
+				throw e;
+			} catch (Exception e) {
+				sLog.error(e.getMessage(), e);
+				throw new GwtRpcException(e.getMessage(), e);
+			} finally {
+				try {
+					if (tx != null && tx.isActive()) {
+						tx.rollback();
+					}
+				} catch (Exception e) {}
+			}
+		}
+	}
+	
+	@GwtRpcImplements(SimpleEditInterface.GetFilterRpcRequest.class)
+	public static class GetFilterBackend implements GwtRpcImplementation<SimpleEditInterface.GetFilterRpcRequest, SimpleEditInterface.Filter> {
+		@Autowired ApplicationContext applicationContext;
+
+		@Override
+		public SimpleEditInterface.Filter execute(SimpleEditInterface.GetFilterRpcRequest request, SessionContext context) {
+			org.hibernate.Session hibSession = new _RootDAO().getSession();
+			Transaction tx = null;
+			SimpleEditInterface.Filter ret = null;
+			try {
+				tx = hibSession.beginTransaction();
+				
+				AdminTable at = getTable(applicationContext, request.getType());
+				if (at instanceof HasFilter)
+					ret = ((HasFilter)at).getFilter(context, hibSession);
+				
+				hibSession.flush();
+				tx.commit(); tx = null;
+				
+				return ret;
 			} catch (PageAccessException e) {
 				throw e;
 			} catch (GwtRpcException e) {

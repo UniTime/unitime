@@ -120,6 +120,7 @@ public class SimpleEditPage extends Composite {
 	private String iType;
 	private PageName iPageName = null;
 	private UniTimeTable<Record> iTable;
+	private boolean iHasLazy = false;
 	
 	private SimpleEditInterface iData;
 	private SimplePanel iSimple;
@@ -128,6 +129,7 @@ public class SimpleEditPage extends Composite {
 	private TextArea iStudentsText = null;
 	private Lookup iLookup;
 	private boolean[] iVisible = null;
+	private SimpleEditInterface.Record iFilter = null;
 	
 	private AcademicSessionProvider iAcademicSessionProvider = new AcademicSessionProvider() {
 		@Override
@@ -171,7 +173,7 @@ public class SimpleEditPage extends Composite {
 					public void execute() {
 						iData.getRecords().clear();
 						iData.getRecords().addAll(iTable.getData());
-						RPC.execute(SimpleEditInterface.SaveDataRpcRequest.saveData(iType, iData), new AsyncCallback<SimpleEditInterface>() {
+						RPC.execute(SimpleEditInterface.SaveDataRpcRequest.saveData(iType, iData, iFilter == null ? null : iFilter.getValues()), new AsyncCallback<SimpleEditInterface>() {
 							@Override
 							public void onFailure(Throwable caught) {
 								LoadingWidget.hideLoading();
@@ -197,6 +199,7 @@ public class SimpleEditPage extends Composite {
 			public void onClick(ClickEvent event) {
 				iEditable = true;
 				iHeader.setEnabled("edit", false);
+				iHeader.setEnabled("search", false);
 				LoadingWidget.showLoading(MESSAGES.waitPlease());
 				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 					@Override
@@ -212,6 +215,7 @@ public class SimpleEditPage extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				iEditable = false;
+				iHeader.setEnabled("search", iFilter != null);
 				LoadingWidget.showLoading(MESSAGES.waitPlease());
 				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 					@Override
@@ -232,6 +236,13 @@ public class SimpleEditPage extends Composite {
 
 		iPanel = new SimpleForm();
 		iHeader = new UniTimeHeaderPanel();
+		iHeader.addButton("search", MESSAGES.buttonSearch(), 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				load(null);
+			}
+		}); 
+		iHeader.setEnabled("search", false);
 		iHeader.addButton("add", MESSAGES.buttonAdd(), 75, add);
 		iHeader.addButton("edit", MESSAGES.buttonEdit(), 75, edit);
 		iHeader.addButton("save", MESSAGES.buttonSave(), 75, save);
@@ -286,7 +297,7 @@ public class SimpleEditPage extends Composite {
 					}
 				}
 				if (iEditable || !iData.isEditable() || event.getData() == null || !event.getData().isEditable()) return;
-				detail(event.getData());
+				detailCheckLazy(event.getData());
 			}
 		});
 		
@@ -314,7 +325,7 @@ public class SimpleEditPage extends Composite {
 			public void onSuccess(PageName result) {
 				iPageName = result;
 				UniTimePageLabel.getInstance().setPageName(iPageName.plural());
-				load(null);
+				init();
 			}
 		});
 	}
@@ -343,6 +354,29 @@ public class SimpleEditPage extends Composite {
 			previous = rec;
 		}
 		return null;
+	}
+	
+	private void detailCheckLazy(final Record record) {
+		if (iHasLazy) {
+			iHeader.setMessage(MESSAGES.waitLoadingRecord());
+			LoadingWidget.showLoading(MESSAGES.waitLoadingRecord());
+			RPC.execute(SimpleEditInterface.LoadRecordRpcRequest.loadRecord(iType, record), new AsyncCallback<Record>() {
+				@Override
+				public void onSuccess(Record result) {
+					LoadingWidget.hideLoading();
+					record.copyFrom(result);
+					detail(record);
+				}
+				@Override
+				public void onFailure(Throwable caught) {
+					LoadingWidget.hideLoading();
+					iHeader.setErrorMessage(MESSAGES.failedLoadData(caught.getMessage()));
+					UniTimeNotifications.error(caught.getMessage(), caught);
+				}
+			});
+		} else {
+			detail(record);
+		}
 	}
 	
 	private void detail(final Record record) {
@@ -445,7 +479,7 @@ public class SimpleEditPage extends Composite {
 							refreshTable();
 							Record prev = previous(record);
 							if (prev != null) {
-								detail(prev);
+								detailCheckLazy(prev);
 							} else {
 								iSimple.setWidget(iPanel);
 							}
@@ -481,7 +515,7 @@ public class SimpleEditPage extends Composite {
 							refreshTable();
 							Record next = next(record);
 							if (next != null) {
-								detail(next);
+								detailCheckLazy(next);
 							} else {
 								iSimple.setWidget(iPanel);
 							}
@@ -574,6 +608,41 @@ public class SimpleEditPage extends Composite {
 		saveOrder();
 	}
 	
+	public void init() {
+		RPC.execute(SimpleEditInterface.GetFilterRpcRequest.getFilter(iType), new AsyncCallback<SimpleEditInterface.Filter>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				LoadingWidget.hideLoading();
+				iHeader.setErrorMessage(MESSAGES.failedLoadData(caught.getMessage()));
+				UniTimeNotifications.error(MESSAGES.failedLoadData(caught.getMessage()), caught);
+				ToolBox.checkAccess(caught);
+			}
+
+			@Override
+			public void onSuccess(SimpleEditInterface.Filter result) {
+				if (result == null) {
+					load(null);
+				} else {
+					iHeader.setEnabled("add", false);
+					iHeader.setEnabled("edit", false);
+					iHeader.setEnabled("save", false);
+					iHeader.setEnabled("back", false);
+					iFilter = result.getDefaultValue();
+					iPanel.clear();
+					iPanel.addHeaderRow(iHeader);
+					int idx = 0;
+					for (Field field: result.getFields()) {
+						iPanel.addRow(field.getName() + ":", new MyCell(true, field, iFilter, idx, true));
+						idx ++;
+					}
+					iPanel.addRow(iTable);
+					iPanel.addNotPrintableBottomRow(iBottom);
+					iHeader.setEnabled("search", true);
+				}
+			}
+		});
+	}
+	
 	public void load(final AsyncCallback<Boolean> callback) {
 		iBottom.setVisible(false);
 		iHeader.setEnabled("add", false);
@@ -584,8 +653,8 @@ public class SimpleEditPage extends Composite {
 		LoadingWidget.showLoading(MESSAGES.waitLoadingData());
 		
 		iTable.clearTable();
-
-		RPC.execute(SimpleEditInterface.LoadDataRpcRequest.loadData(iType), new AsyncCallback<SimpleEditInterface>() {
+		
+		RPC.execute(SimpleEditInterface.LoadDataRpcRequest.loadData(iType, iFilter == null ? null : iFilter.getValues()), new AsyncCallback<SimpleEditInterface>() {
 
 			@Override
 			public void onSuccess(SimpleEditInterface result) {
@@ -665,7 +734,9 @@ public class SimpleEditPage extends Composite {
 	private List<UniTimeTableHeader> header(boolean top) {
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		int col = 0;
+		iHasLazy = false; 
 		for (final Field field: iData.getFields()) {
+			if (field.isLazy()) iHasLazy = true;
 			String name = field.getName();
 			if (hasDetails() && name.contains("|"))
 				name = name.replace("|", "<br>&nbsp;&nbsp;");
@@ -674,6 +745,8 @@ public class SimpleEditPage extends Composite {
 			header.add(cell);
 			final int index = col;
 			if (field.getType() == FieldType.number)
+				cell.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+			if (field.getType() == FieldType.students)
 				cell.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			if (field.getType() == FieldType.parent) {
 				cell.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
@@ -948,8 +1021,13 @@ public class SimpleEditPage extends Composite {
 		if (iData.isEditable()) {
 			iHeader.setEnabled("back", iEditable);
 			iHeader.setEnabled("save", iEditable);
-			iHeader.setEnabled("edit", !iEditable);
+			iHeader.setEnabled("edit", !iEditable && !iHasLazy);
 			iHeader.setEnabled("add", !iEditable && iData.isAddable());
+			iHeader.setEnabled("search", !iEditable && iFilter != null);
+		}
+		if (iFilter != null) {
+			for (int i = 0; i < iFilter.getValues().length; i++)
+				iPanel.getRowFormatter().setVisible(1 + i, iHeader.isEnabled("search"));
 		}
 		
 		for (int i = 0; i < iVisible.length; i++) 
@@ -1377,6 +1455,22 @@ public class SimpleEditPage extends Composite {
 					if (detail) {
 						HTML html = new HTML(getValue().replaceAll("\\n", "<br>"));
 						initWidget(html);
+					} else if (iField.isLazy()) {
+						if (getValue().isEmpty()) {
+							Label label = new Label("0");
+							initWidget(label);
+						} else if (getValue().contains(" ") || getValue().contains("\\n")) {
+							Label label = new Label(String.valueOf(getValue().isEmpty() ? 0 : getValue().split("\\n").length));
+							initWidget(label);
+						} else {
+							try {
+								Label label = new Label(getValue());
+								initWidget(label);
+							} catch (NumberFormatException e) {
+								Label label = new Label(String.valueOf(getValue().isEmpty() ? 0 : getValue().split("\\n").length));
+								initWidget(label);
+							}
+						}
 					} else {
 						Label label = new Label(String.valueOf(getValue().isEmpty() ? 0 : getValue().split("\\n").length));
 						initWidget(label);
