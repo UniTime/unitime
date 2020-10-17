@@ -760,6 +760,16 @@ public class TeachingScheduleAPI {
 		public boolean overlaps(MeetingTime time) {
 			return iDayOfWeek == time.iDayOfWeek && (iEndSlot > time.iStartSlot) && (time.iEndSlot > iStartSlot);
 		}
+		@Override
+		public int hashCode() {
+			return new Integer(getDayOfWeek() * 82944 + getStartSlot() * 288 + getEndSlot()).hashCode();
+		}
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof MeetingTime)) return false;
+			MeetingTime t = (MeetingTime)o;
+			return t.getDayOfWeek() == getDayOfWeek() && t.getStartSlot() == getStartSlot() && t.getEndSlot() == getEndSlot();
+		}
 	}
 	
 	public static class MeetingAssignment implements IsSerializable {

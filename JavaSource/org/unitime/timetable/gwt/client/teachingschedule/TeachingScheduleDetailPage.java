@@ -98,9 +98,16 @@ public class TeachingScheduleDetailPage extends SimpleForm {
 				ToolBox.open("gwt.jsp?page=editTeachingSchedule" + (iCourseDivisionsTable.getOffering() != null ? "&course=" + iCourseDivisionsTable.getOffering().getCourseId() : ""));
 			}
 		});
+		iTitleAndButtons.addButton("export", MESSAGES.buttonExportXls(), 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				ToolBox.open("export?output=teaching-schedule.xls&&course=" + iCourseDivisionsTable.getOffering().getCourseId());
+			}
+		});
 		addHeaderRow(iTitleAndButtons);
 		iTitleAndButtons.setEnabled("delete", false);
 		iTitleAndButtons.setEnabled("edit", false);
+		iTitleAndButtons.setEnabled("export", false);
 		
 		iCourseBox = new TeachingScheduleCourseSelectionBox();
 		iCourseBox.setWidth("130px");
@@ -157,6 +164,7 @@ public class TeachingScheduleDetailPage extends SimpleForm {
 	public void populate(TeachingSchedule offering) {
 		iTitleAndButtons.setEnabled("delete", offering != null);
 		iTitleAndButtons.setEnabled("edit", offering != null);
+		iTitleAndButtons.setEnabled("export", offering != null);
 		clear();
 		iCourseDivisionsTable.setOffering(offering, true);
 		if (offering == null) {

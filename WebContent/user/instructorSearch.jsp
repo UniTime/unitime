@@ -107,6 +107,15 @@
 					</html:form>
 					</TD>
 				</sec:authorize>
+				<sec:authorize access="hasPermission(#deptUniqueId, 'Department', 'TeachingSchedules')">
+					<TD style="padding-left: 3px;">
+						<html:submit onclick="document.location='export?output=teaching-instructors.xls&department=${deptUniqueId}'; return false;" styleClass="btn"
+							accesskey="<%=MSG.accessExportXls() %>" 
+							title="<%=MSG.titleExportXls(MSG.accessExportXls()) %>">
+							<loc:message name="actionExportXls" />
+						</html:submit>
+					</TD>
+				</sec:authorize>				
 			</TR></TABLE>
 			</logic:notEmpty>
 		</tt:section-header>

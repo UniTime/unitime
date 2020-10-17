@@ -45,6 +45,15 @@
 						</html:submit>
 					</html:form>
 					</TD>
+					<TD>
+					<html:form action="instructorList" styleClass="FormWithNoPadding">			
+						<html:submit property="op" styleClass="btn" 
+							accesskey="<%=MSG.accessExportCsv() %>" 
+							title="<%=MSG.titleExportCsv(MSG.accessExportCsv()) %>">
+							<loc:message name="actionExportCsv" />
+						</html:submit>
+					</html:form>
+					</TD>					
 				</sec:authorize>
 				<sec:authorize access="hasPermission(#deptUniqueId, 'Department', 'ManageInstructors')">
 					<TD>
@@ -66,6 +75,15 @@
 							<loc:message name="actionAddNewInstructor" />
 						</html:submit>
 					</html:form>
+					</TD>
+				</sec:authorize>
+				<sec:authorize access="hasPermission(#deptUniqueId, 'Department', 'TeachingSchedules')">
+					<TD>
+						<html:submit onclick="document.location='export?output=teaching-instructors.xls&department=${deptUniqueId}'; return false;" styleClass="btn"
+							accesskey="<%=MSG.accessExportXls() %>" 
+							title="<%=MSG.titleExportXls(MSG.accessExportXls()) %>">
+							<loc:message name="actionExportXls" />
+						</html:submit>
 					</TD>
 				</sec:authorize>
 			</TR></TABLE>

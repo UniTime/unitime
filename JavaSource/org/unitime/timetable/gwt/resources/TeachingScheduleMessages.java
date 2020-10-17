@@ -76,6 +76,9 @@ public interface TeachingScheduleMessages extends Messages {
 	@DefaultMessage("<u>A</u>dd New")
 	String buttonAddNew();
 	
+	@DefaultMessage("Export <u>X</u>LS")
+	String buttonExportXls();
+	
 	@DefaultMessage("Attribute")
 	String colDivisionAttribute();
 	
