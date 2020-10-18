@@ -1345,13 +1345,16 @@ public class TeachingScheduleAPI {
 				if (ma.hasInstructors()) {
 					for (Long instructorId: ma.getInstructor()) {
 						Instructor instructor = offering.getInstructor(instructorId);
+						Set<String> checked = new HashSet<String>();
+						checked.add(ma.getClassMeetingId() + ":" + ma.getFirstHour() + ":" + ma.getLastHour());
 						int load = ma.getLastHour() - ma.getFirstHour() + 1;
 						for (InstructorMeetingAssignment other: instructor.getAssignmetns()) {
-							load += other.getLoad();
+							if (checked.add(other.getClassMeetingId() + ":" + other.getHours().getStartSlot() + ":" + other.getHours().getEndSlot()))
+								load += other.getLoad();
 						}
 						for (Clazz c: offering.getClasses()) {
 							for (MeetingAssignment other: c.getMeetingAssignments()) {
-								if (other.hasInstructor(instructor) && !other.equals(ma))
+								if (other.hasInstructor(instructor) && checked.add(other.getClassMeetingId() + ":" + other.getFirstHour() + ":" + other.getLastHour()))
 									load += other.getLastHour() - other.getFirstHour() + 1;
 							}
 						}
@@ -1365,15 +1368,22 @@ public class TeachingScheduleAPI {
 		
 		public void validate(Instructor instructor, Collection<ValidationError> errors) {
 			int total = 0, load = 0;
+			Set<String> checked = new HashSet<String>();
 			for (InstructorMeetingAssignment ma: instructor.getAssignmetns()) {
-				total += ma.getLoad();
-				if (ma.getDivision() == null)
-					load += ma.getLoad();
+				String id = ma.getClassMeetingId() + ":" + ma.getHours().getStartSlot() + ":" + ma.getHours().getEndSlot();
+				if (checked.add(id)) {
+					total += ma.getLoad();
+					if (ma.getDivision() == null)
+						load += ma.getLoad();
+				}
 			}
 			if (total > instructor.getMaxLoad()) {
+				checked.clear();
 				for (InstructorMeetingAssignment ma: instructor.getAssignmetns()) {
 					if (ma.getDivision() == null) continue;
-					load += ma.getLoad();
+					String id = ma.getClassMeetingId() + ":" + ma.getHours().getStartSlot() + ":" + ma.getHours().getEndSlot();
+					if (checked.add(id))
+						load += ma.getLoad();
 					if (load > instructor.getMaxLoad())
 						errors.add(new ValidationError(ErrorType.INSTRUCTOR_HIGH_LOAD, instructor, ma, total + " > " + instructor.getMaxLoad()));
 				}
