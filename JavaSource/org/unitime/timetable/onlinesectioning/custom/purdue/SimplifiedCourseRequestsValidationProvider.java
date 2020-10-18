@@ -1120,6 +1120,10 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 				if (ResponseStatus.success != eligibility.status)
 					throw new SectioningException(eligibility.message == null || eligibility.message.isEmpty() ? "Failed to check student eligibility (" + eligibility.status + ")." : eligibility.message);
 				
+				if (isCheckForPin() && eligibility.data != null && eligibility.data.PIN != null && !eligibility.data.PIN.isEmpty() && !"NA".equals(eligibility.data.PIN)) {
+					helper.getAction().addOptionBuilder().setKey("PIN").setValue(eligibility.data.PIN);
+				}
+
 				if (eligibility.data != null && eligibility.data.eligibilityProblems != null) {
 					String m = null;
 					for (EligibilityProblem p: eligibility.data.eligibilityProblems)
@@ -1129,11 +1133,7 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 							m += "\n" + p.message;
 					return m;
 				}
-				
-				if (isCheckForPin() && eligibility.data != null && eligibility.data.PIN != null && !eligibility.data.PIN.isEmpty() && !"NA".equals(eligibility.data.PIN)) {
-					helper.getAction().addOptionBuilder().setKey("PIN").setValue(eligibility.data.PIN);
-				}
-				
+
 				return null;
 			} catch (SectioningException e) {
 				helper.getAction().setApiException(e.getMessage());
