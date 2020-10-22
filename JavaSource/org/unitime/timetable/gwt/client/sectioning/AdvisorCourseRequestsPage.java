@@ -226,6 +226,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 						if (result.isCanUpdate()) {
 							clearAdvisorRequests();
 							setRequest(result.getRequest());
+							setPin(result.getRequest());
 							iStatus.clear();
 							if (result.getStatus() != null) {
 								iStatus.addItem(result.getStatus().getLabel(), result.getStatus().getReference());
@@ -710,11 +711,14 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 			line.setValue(null);
 		iStatusBox.clear();
 		iNotes.setText("");
+		resizeNotes();
+		updateTotalCredits();
+	}
+	
+	private void clearPin() {
 		iPinReleased.setValue(false);
 		pinReleaseChanged();
 		getRowFormatter().setVisible(iPinLine, false);
-		resizeNotes();
-		updateTotalCredits();
 	}
 	
 	private void addCourseLine() {
@@ -788,6 +792,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 			iEmailConfirmationFooter.setVisible(false);
 			iStudentStatus.clear();
 			clearRequests();
+			clearPin();
 			clearStudentRequests();
 			clearAdvisorRequests();
 		} else {
@@ -796,6 +801,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 			iStudentEmail.setText(person.getEmail() == null ? "" : person.getEmail());
 			iStudentStatus.clear();
 			clearRequests();
+			clearPin();
 			iSession.selectSessionNoCheck();
 			clearStudentRequests();
 			clearAdvisorRequests();
@@ -870,14 +876,19 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				iNotes.setText(request.getCreditNote());
 				resizeNotes();
 			}
-			if (request.hasPin()) {
-				iPin.setText(request.getPin());
-				iPinReleased.setValue(request.isPinReleased());
-				pinReleaseChanged();
-				getRowFormatter().setVisible(iPinLine, true);
-			}
 		}
 		updateTotalCredits();
+	}
+	
+	public void setPin(CourseRequestInterface request) {
+		if (request != null && request.hasPin()) {
+			iPin.setText(request.getPin());
+			iPinReleased.setValue(request.isPinReleased());
+			pinReleaseChanged();
+			getRowFormatter().setVisible(iPinLine, true);
+		} else {
+			clearPin();
+		}
 	}
 	
 	public static final native String download(byte[] bytes, String name) /*-{
