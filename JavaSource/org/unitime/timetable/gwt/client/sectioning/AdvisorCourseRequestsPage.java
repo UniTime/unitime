@@ -733,7 +733,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		if (next != null) {
 			line.setNext(next); next.setPrevious(line);
 		}
-		line.insert(this, insertRow(8 + iCourses.size()));
+		line.insert(this, insertRow(10 + iCourses.size()));
 		line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Request> event) {
@@ -752,7 +752,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		if (prev != null) {
 			line.setPrevious(prev); prev.setNext(line);
 		}
-		line.insert(this, insertRow(8 + iCourses.size() + 2 + iAlternatives.size()));
+		line.insert(this, insertRow(10 + iCourses.size() + 2 + iAlternatives.size()));
 		line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Request> event) {
