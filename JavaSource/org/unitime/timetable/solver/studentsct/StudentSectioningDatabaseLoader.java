@@ -151,11 +151,15 @@ import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Action.ResultType;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity;
 import org.unitime.timetable.onlinesectioning.custom.CourseRequestsValidationProvider;
 import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider;
 import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.CriticalCourses;
+import org.unitime.timetable.onlinesectioning.custom.Customization;
+import org.unitime.timetable.onlinesectioning.custom.StudentHoldsCheckProvider;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbStudentMatcher;
 import org.unitime.timetable.solver.TimetableDatabaseLoader;
 import org.unitime.timetable.solver.curricula.LastLikeStudentCourseDemands;
@@ -244,6 +248,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private static enum IgnoreNotAssigned { all, other, none }
     private IgnoreNotAssigned iIgnoreNotAssigned = IgnoreNotAssigned.other;
     private boolean iFixAssignedEnrollments = false;
+    private boolean iSkipStudentsWithHold = false;
+    private StudentHoldsCheckProvider iStudentHoldsCheckProvider = null;
     
     public StudentSectioningDatabaseLoader(StudentSectioningModel model, org.cpsolver.ifs.assignment.Assignment<Request, Enrollment> assignment) {
         super(model, assignment);
@@ -377,6 +383,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	iProgress.info("MPP courses: " + iMPPCoursesRegExp + " (ignoring " + iIgnoreNotAssigned + " not assigned)");
         }
         iFixAssignedEnrollments = model.getProperties().getPropertyBoolean("Load.FixAssignedEnrollments", iFixAssignedEnrollments);
+        
+        iSkipStudentsWithHold = model.getProperties().getPropertyBoolean("Load.SkipStudentsWithHold", iSkipStudentsWithHold);
+        if (iSkipStudentsWithHold && Customization.StudentHoldsCheckProvider.hasProvider())
+        	iStudentHoldsCheckProvider = Customization.StudentHoldsCheckProvider.getProvider();
     }
     
     public void load() {
@@ -1249,6 +1259,15 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	if (!match) {
         		skipStudent(s, courseTable, classTable);
             	return null;
+        	}
+        }
+        
+        if (iStudentHoldsCheckProvider != null && iSkipStudentsWithHold) {
+        	String error = getStudentHoldError(hibSession, s);
+        	if (error != null) {
+        		iProgress.info(iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + "): " + error);
+        		skipStudent(s, courseTable, classTable);
+        		return null;
         	}
         }
         
@@ -2899,6 +2918,54 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 		}
 		return 0;
 	}
+    
+    protected String getStudentHoldError(org.hibernate.Session hibSession, org.unitime.timetable.model.Student s) {
+    	if (iValidator == null) {
+    		iValidator = new StudentSolver(getModel().getProperties(), null);
+    		iValidator.setInitalSolution(new Solution(getModel(), getAssignment()));
+    	}
+    	OnlineSectioningLog.Entity user = Entity.newBuilder().setExternalId(iOwnerId).setType(Entity.EntityType.MANAGER).build(); 
+    	OnlineSectioningHelper helper = new OnlineSectioningHelper(hibSession, user);
+    	OnlineSectioningLog.Action.Builder action = helper.getAction();
+    	action.setOperation("check-hold");
+		action.setSession(OnlineSectioningLog.Entity.newBuilder()
+    			.setUniqueId(iSessionId)
+    			.setName(iTerm + iYear + iInitiative)
+    			);
+    	action.setStartTime(System.currentTimeMillis());
+    	action.setUser(user);
+    	action.setStudent(OnlineSectioningLog.Entity.newBuilder()
+				.setUniqueId(s.getUniqueId())
+				.setExternalId(s.getExternalUniqueId())
+				.setName(iStudentNameFormat.format(s))
+				.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
+		long c0 = OnlineSectioningHelper.getCpuTime();
+		String error = null;
+		try {
+			error = iStudentHoldsCheckProvider.getStudentHoldError(iValidator, helper, new XStudentId(s, helper));
+		} catch (Exception e) {
+			action.setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
+			if (e.getCause() != null) {
+				action.addMessage(OnlineSectioningLog.Message.newBuilder()
+						.setLevel(OnlineSectioningLog.Message.Level.FATAL)
+						.setText(e.getCause().getClass().getName() + ": " + e.getCause().getMessage()));
+			} else {
+				action.addMessage(OnlineSectioningLog.Message.newBuilder()
+						.setLevel(OnlineSectioningLog.Message.Level.FATAL)
+						.setText(e.getMessage() == null ? "null" : e.getMessage()));
+			}
+		} finally {
+			action.setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
+			action.setEndTime(System.currentTimeMillis());
+			action.setResult(error == null ? ResultType.TRUE : ResultType.FALSE);
+			if (error != null)
+				action.addMessage(OnlineSectioningLog.Message.newBuilder()
+						.setLevel(OnlineSectioningLog.Message.Level.INFO)
+						.setText(error));
+			OnlineSectioningLogger.getInstance().record(OnlineSectioningLog.Log.newBuilder().addAction(action).build());
+		}
+		return error;
+    }
     
     protected void checkCriticalCourses(org.hibernate.Session hibSession, org.unitime.timetable.model.Student s) {
     	if (iValidator == null) {
