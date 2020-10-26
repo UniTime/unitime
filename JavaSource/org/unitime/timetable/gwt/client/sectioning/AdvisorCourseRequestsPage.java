@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.client.widgets.CourseFinderClasses;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderDetails;
 import org.unitime.timetable.gwt.client.widgets.DataProvider;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -63,6 +64,7 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisorCourseR
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
 import com.google.gwt.core.client.GWT;
@@ -114,6 +116,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	private TextArea iNotes = null;
 	private CheckBox iPinReleased = null;
 	private Label iPin = null;
+	private P iWaitListHeader = null;
 	
 	private ArrayList<AdvisorCourseRequestLine> iCourses;
 	private ArrayList<AdvisorCourseRequestLine> iAlternatives;
@@ -220,6 +223,18 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 						iStudentName.setText(result.getStudentName());
 						iStudentEmail.setText(result.getStudentEmail() == null ? "" : result.getStudentEmail());
 						iStudentExternalId.setText(result.getStudentExternalId());
+						iAdvisorRequests.setMode(result.getWaitListMode());
+						switch (result.getWaitListMode()) {
+						case None: iWaitListHeader.setHTML("&nbsp;"); break;
+						case NoSubs:
+							iWaitListHeader.setHTML(MESSAGES.headNoSubs());
+							iRequests.getTable().setHTML(0, 8, MESSAGES.colNoSubs());
+							break;
+						case WaitList:
+							iWaitListHeader.setHTML(MESSAGES.headWaitList());
+							iRequests.getTable().setHTML(0, 8, MESSAGES.colWaitList());
+							break;
+						}
 						fillInStudentRequests();
 						if (result != null && result.getStudentRequest() != null && result.getRequest().hasErrorMessage())
 							iStudentStatus.error(result.getRequest().getErrorMessaeg(), false);
@@ -353,6 +368,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		UniTimeHeaderPanel requests = new UniTimeHeaderPanel(MESSAGES.advisorRequestsCourses());
 		requests.setMessage(MESSAGES.headCreditHoursNotes());
 		requests.addStyleName("requests-header");
+		iWaitListHeader = new P("waitlist-header"); iWaitListHeader.setHTML(MESSAGES.headWaitList());
+		requests.insertRight(iWaitListHeader, true);
 		addHeaderRow(requests);
 		
 		for (int i = 0; i < 9; i++) {
@@ -705,8 +722,10 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	}
 	
 	private void clearRequests() {
-		for (AdvisorCourseRequestLine line: iCourses)
+		for (AdvisorCourseRequestLine line: iCourses) {
 			line.setValue(null);
+			line.setWaitListVisible(iDetails == null || iDetails.getWaitListMode() != WaitListMode.None);
+		}
 		for (AdvisorCourseRequestLine line: iAlternatives)
 			line.setValue(null);
 		iStatusBox.clear();
@@ -724,6 +743,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	private void addCourseLine() {
 		int i = iCourses.size();
 		final AdvisorCourseRequestLine line = new AdvisorCourseRequestLine(iContext, i, false, null, iSpecRegCx);
+		line.setWaitListVisible(iDetails == null || iDetails.getWaitListMode() != WaitListMode.None);
 		iCourses.add(line);
 		AdvisorCourseRequestLine prev = iCourses.get(i - 1);
 		prev.getCourses().get(0).setHint("");
@@ -1334,7 +1354,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		iRequests.setColumnVisible(4, hasPref);
 		iRequests.setColumnVisible(5, hasWarn);
 		iRequests.setColumnVisible(7, hasCrit);
-		iRequests.setColumnVisible(8, hasWait);
+		iRequests.setColumnVisible(8, hasWait && (iDetails == null || iDetails.getWaitListMode() != WaitListMode.None));
 		
 		getRowFormatter().setVisible(iStudentRequestHeaderLine, iDetails != null && iDetails.hasStudentRequest());
 		getRowFormatter().setVisible(iStudentRequestHeaderLine + 1, iDetails != null && iDetails.hasStudentRequest());

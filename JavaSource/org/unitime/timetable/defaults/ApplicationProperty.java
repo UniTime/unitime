@@ -2442,6 +2442,12 @@ public enum ApplicationProperty {
 	@Description("Student Solver Dashboard: allow wait-listing toggle)")
 	@Since(4.4)
 	SolverDashboardAllowWaitList("unitime.solverDashboard.allowWaitList"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Student Solver Dashboard: allow no-subs toggle)")
+	@Since(4.5)
+	SolverDashboardAllowNoSubs("unitime.solverDashboard.allowNoSubs"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
@@ -2772,6 +2778,11 @@ public enum ApplicationProperty {
 	@Description("Student Groups: When set to true, the Student Groups admin page will work faster, but it will not be possible to edit multiple student groups at once.")
 	@Since(4.5)
 	AdminStudentGroupsLazyStudents("unitime.admin.studentGroups.lazyLoad"),
+	
+	@DefaultValue("None")
+	@Values({"None, WaitList, NoSubs"})
+	@Description("Advisor Course Recommendation: Allow for wait-lists, no-subs or none of the two.")
+	AdvisorRecommendationsWaitListMode("unitime.acr.waitlist"),
 	
 	;
 

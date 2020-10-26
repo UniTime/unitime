@@ -42,6 +42,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Conflict;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
 import org.unitime.timetable.gwt.shared.EventInterface.EventEnrollmentsRpcRequest;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseEvent;
@@ -270,7 +271,7 @@ public class EventEnrollmentExport implements Exporter {
 				line.add(enrollment.getReservation() == null ? "" : enrollment.getReservation());
 			if (!subparts.isEmpty()) {
 				if (!enrollment.hasClasses()) {
-					line.add(enrollment.isWaitList() ? MESSAGES.courseWaitListed() : MESSAGES.courseNotEnrolled());
+					line.add(enrollment.isWaitList() && enrollment.getStudent().getWaitListMode() == WaitListMode.WaitList ? MESSAGES.courseWaitListed() : MESSAGES.courseNotEnrolled());
 					for (int i = 1; i < subparts.size(); i++) line.add("");
 				} else for (String subpart: subparts) {
 					line.add(enrollment.getClasses(subpart, ", ", suffix));

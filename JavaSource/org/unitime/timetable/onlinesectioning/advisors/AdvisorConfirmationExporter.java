@@ -24,11 +24,13 @@ import java.io.IOException;
 import org.hibernate.CacheMode;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.Exporter;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisingStudentDetails;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.Student;
@@ -140,6 +142,7 @@ public class AdvisorConfirmationExporter implements Exporter {
 		}
 		
 		details.setRequest(AdvisorGetCourseRequests.getRequest(student, AdvisorCourseRequestDAO.getInstance().getSession()));
+		details.setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value()));
 		
 		helper.setup("application/pdf", "crf-" + student.getSession().getAcademicTerm() + student.getSession().getAcademicYear() +
 				(isAdvisor ? "-" + student.getName(NameFormat.LAST_FIRST_MIDDLE.reference()).replaceAll("[&$\\+,/:;=\\?@<>\\[\\]\\{\\}\\|\\^\\~%#`\\t\\s\\n\\r \\\\]", "") + "-" + student.getExternalUniqueId() : "") + ".pdf", false);

@@ -50,6 +50,7 @@ public class XAdvisorRequest implements Comparable<XAdvisorRequest>, Serializabl
 	private int iCritical;
 	private XTime iFreeTime;
 	private List<XPreference> iPreferences = null;
+	private Boolean iWaitList;
 	
 	public XAdvisorRequest(AdvisorCourseRequest acr, OnlineSectioningHelper helper, BitSet freeTimePattern) {
 		iPriority = acr.getPriority();
@@ -68,6 +69,7 @@ public class XAdvisorRequest implements Comparable<XAdvisorRequest>, Serializabl
 			for (AdvisorSectioningPref p:acr.getPreferences())
 				iPreferences.add(new XPreference(acr, p));
 		}
+		iWaitList = acr.getWaitlist();
 	}
 	
 	public XAdvisorRequest(ObjectInput in) throws IOException, ClassNotFoundException {
@@ -99,6 +101,7 @@ public class XAdvisorRequest implements Comparable<XAdvisorRequest>, Serializabl
 			for (int i = 0; i < prefs; i++)
 				iPreferences.add(new XPreference(in));
 		}
+		iWaitList = (Boolean)in.readObject();
 	}
 
 	@Override
@@ -129,6 +132,7 @@ public class XAdvisorRequest implements Comparable<XAdvisorRequest>, Serializabl
 			for (XPreference p: iPreferences)
 				p.writeExternal(out);
 		}
+		out.writeObject(iWaitList);
 	}
 	
 	public int getPriority() { return iPriority; }
@@ -148,6 +152,7 @@ public class XAdvisorRequest implements Comparable<XAdvisorRequest>, Serializabl
 	public boolean isCritical() { return iCritical > 0; }
 	public boolean hasPreferences() { return iPreferences != null && !iPreferences.isEmpty(); }
 	public List<XPreference> getPreferences() { return iPreferences; }
+	public Boolean getWaitList() { return iWaitList; }
 	
 	public float getCreditMin() {
 		if (iCredit == null || iCredit.isEmpty()) return 0f;

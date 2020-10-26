@@ -247,7 +247,8 @@
  		<#if requests.hasPref><td style="${style}">${msg.colPreferences()}</td></#if>
  		<#if requests.hasWarn><td style="${style}">${msg.colWarnings()}</td></#if>
  		<td style="${style}">${msg.colStatus()}</td>
- 		<#if requests.hasWait><td style="${style}">${msg.colWaitList()}</td></#if>
+ 		<#if requests.hasWait && wlMode == 'WaitList'><td style="${style}">${msg.colWaitList()}</td></#if>
+ 		<#if requests.hasWait && wlMode == 'NoSubs'><td style="${style}">${msg.colNoSubs()}</td></#if>
  	</tr>
 </#macro>
 
@@ -288,9 +289,14 @@
  		<#else>
  			<td style="${style}">${line.status}</td>
  		</#if>
- 		<#if requests.hasWait><td style="${style}">
+ 		<#if requests.hasWait && wlMode == 'WaitList'><td style="${style}">
  			<#if line.waitlist>
  				<img src='http://www.unitime.org/icons/action_check.png' width='16' height='16' title='${msg.descriptionRequestWaitListed()}' alt='${msg.courseWaitListed()}'>
+ 			</#if>
+ 		</td></#if>
+ 		<#if requests.hasWait && wlMode == 'NoSubs'><td style="${style}">
+ 			<#if line.waitlist>
+ 				<img src='http://www.unitime.org/icons/action_check.png' width='16' height='16' title='${msg.descriptionRequestWaitListed()}' alt='${msg.courseNoSubs()}'>
  			</#if>
  		</td></#if>
  	</tr>
@@ -305,6 +311,8 @@
  		<td style="${style}" align="right">${msg.colCredit()}</td>
  		<#if advisor.hasPref><td style="${style}">${msg.colPreferences()}</td></#if>
  		<td style="${style}">${msg.colNotes()}</td>
+ 		<#if advisor.hasWait && awlMode == 'WaitList'><td style="${style}">${msg.colWaitList()}</td></#if>
+ 		<#if advisor.hasWait && awlMode == 'NoSubs'><td style="${style}">${msg.colNoSubs()}</td></#if>
  	</tr>
 </#macro>
 
@@ -336,5 +344,15 @@
  				<td style="${style}" rowSpan="${line.rows}"></td>
  			</#if>
  		</#if>
+ 		<#if advisor.hasWait && awlMode == 'WaitList'><td style="${style}">
+ 			<#if line.waitlist>
+ 				<img src='http://www.unitime.org/icons/action_check.png' width='16' height='16' title='${msg.descriptionRequestWaitListed()}' alt='${msg.courseWaitListed()}'>
+ 			</#if>
+ 		</td></#if>
+ 		<#if advisor.hasWait && awlMode == 'NoSubs'><td style="${style}">
+ 			<#if line.waitlist>
+ 				<img src='http://www.unitime.org/icons/action_check.png' width='16' height='16' title='${msg.descriptionRequestWaitListed()}' alt='${msg.courseNoSubs()}'>
+ 			</#if>
+ 		</td></#if>
  	</tr>
 </#macro>

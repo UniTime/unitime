@@ -166,6 +166,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Wait-List")
 	String colWaitList();
 	
+	@DefaultMessage("No-Subs")
+	String colNoSubs();
+	
 	@DefaultMessage("Critical")
 	String colCritical();
 	
@@ -192,7 +195,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("<br>Admin")
 	String colCanAdminChange();
-
+	
 	/* Academic Session Selector messages
 	 */
 	@DefaultMessage("No academic session is selected.")
@@ -265,6 +268,12 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Wait-List &darr;")
 	String courseRequestsWaitListNoArrows();
+	
+	@DefaultMessage("&darr; No-Subs")
+	String courseRequestsNoSubstitutions();
+	
+	@DefaultMessage("No-Subs &darr;")
+	String courseRequestsNoSubstitutionsNoArrows();
 
 	@DefaultMessage("{0}. Priority")
 	String courseRequestsPriority(int i);
@@ -677,6 +686,9 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Wait-Listed")
 	String courseWaitListed();
+	
+	@DefaultMessage("No Substitutions")
+	String courseNoSubs();
 	
 	@DefaultMessage("Course is not requested.")
 	String courseNotRequested();
@@ -1171,7 +1183,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("<sup><font color='#2066CE'>w)</font></sup>")
 	String htmlWaitListSign();
-	
+		
 	@DefaultMessage(" (r)")
 	String csvReservationSign();
 	
@@ -1223,10 +1235,10 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage(" ({0}p)")
 	String csvFirstWaitListedPrioritySign(int priority);
 	
-	@DefaultMessage("r) Space available only with a reservation.<br>w) Wait-listed requests.")
+	@DefaultMessage("r) Space available only with a reservation.<br>w) Wait-listed or No-Subs requests.")
 	String sectioningStatusReservationHint();
 	
-	@DefaultMessage("(p) denotes priority of the first wait-listed course request.")
+	@DefaultMessage("(p) denotes priority of the first wait-listed/no-subs course request.")
 	String sectioningStatusPriorityHint();
 	
 	@DefaultMessage("Enrollment disabled.")
@@ -1540,6 +1552,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Course Wait-Lists:")
 	String propWaitLists();
+	
+	@DefaultMessage("Allow No-Subs:")
+	String propNoSubs();
 	
 	@DefaultMessage("Email Notification:")
 	String propEmailNotification();
@@ -2020,7 +2035,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Advised")
 	String modeAdvised();
 	
-	@DefaultMessage("Request is wait-listed.")
+	@DefaultMessage("Request is wait-listed or marked as no-subs.")
 	String descriptionRequestWaitListed();
 	
 	@DefaultMessage("Course request is critical.")
@@ -2160,6 +2175,12 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Courses can NOT be wait-listed in UniTime.")
 	String messageStatusCanNotWaitList();
+	
+	@DefaultMessage("Show the No-Subs toggle in the Course Requests table.")
+	String messageStatusCanNoSubs();
+	
+	@DefaultMessage("Do not show the No-Subs toggle in the Course Requests table.")
+	String messageStatusCanNotNoSubs();
 	
 	@DefaultMessage("Sections or Instructional Methods can be required by the student.")
 	String messageStatusCanRequire();
@@ -2553,6 +2574,12 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Credit Hours&nbsp;&nbsp;&nbsp;Notes")
 	String headCreditHoursNotes();
+		
+	@DefaultMessage("Wait-List")
+	String headWaitList();
+	
+	@DefaultMessage("No-Subs")
+	String headNoSubs();
 	
 	@DefaultMessage("{0,number,0.#}")
 	String credit(float total);
@@ -2583,6 +2610,12 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Date:      _______________")
 	String pdfSignatureDate();
+	
+	@DefaultMessage("X")
+	String pdfCourseWaitListed();
+	
+	@DefaultMessage("")
+	String pdfCourseNotWaitListed();
 	
 	@DefaultMessage("A<u>d</u>visor Recommendations")
 	String buttonAdvisorCourseRequests();

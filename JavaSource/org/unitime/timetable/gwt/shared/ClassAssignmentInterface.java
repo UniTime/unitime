@@ -35,6 +35,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationOperation;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationStatus;
 import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
@@ -809,6 +810,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Set<Group> iGroups;
 		private boolean iCanShowExternalId = false, iCanSelect = false;
 		private boolean iCanUseAssitant = false, iCanRegister = false;
+		private WaitListMode iMode = null;
 		
 		public Student() {}
 
@@ -1003,6 +1005,13 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 				ret += iArea.get(i) + " " + iClassification.get(i);
 			}
 			return ret;
+		}
+		public WaitListMode getWaitListMode() {
+			if (iMode == null) return WaitListMode.None;
+			return iMode;
+		}
+		public void setWaitListMode(WaitListMode mode) {
+			iMode = mode;
 		}
 	}
 	public static class Enrollment implements IsSerializable, Serializable {
@@ -1390,10 +1399,12 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 				iStatus = "";
 				iStudent.setCanRegister(true);
 				iStudent.setCanUseAssistant(true);
+				iStudent.setWaitListMode(null);
 			} else {
 				iStatus = status.getReference();
 				iStudent.setCanRegister(status.isCanRegister());
 				iStudent.setCanUseAssistant(status.isCanUseAssistant());
+				iStudent.setWaitListMode(status.getWaitListMode());
 			}
 		}
 		

@@ -13911,4 +13911,9 @@
 	    <mysql>alter table %SCHEMA%.student add pin_released int(1)</mysql>
 	    <pgsql>alter table %SCHEMA%.student add pin_released boolean</pgsql>
 	</update>
+	<update version="233" date="22-Oct-2020" comment="ACR Waitlist">
+	    <plsql>alter table %SCHEMA%.advisor_crsreq add waitlist number(1)</plsql>
+	    <mysql>alter table %SCHEMA%.advisor_crsreq add waitlist int(1)</mysql>
+	    <pgsql>alter table %SCHEMA%.advisor_crsreq add waitlist boolean</pgsql>
+	</update>
 </dbupdate>

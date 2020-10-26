@@ -81,10 +81,10 @@ public class StudentGroups implements AdminTable, HasLazyFields, HasFilter {
 			return StudentGroupDAO.getInstance().findBySession(hibSession, context.getUser().getCurrentAcademicSessionId());
 		} else if ("null".equals(filter[0])) {
 			context.getUser().setProperty("Admin.StudentGroups.LastGroupTypeId", "null");
-			return StudentGroupDAO.getInstance().findByType(hibSession, context.getUser().getCurrentAcademicSessionId(), null);
+			return StudentGroup.findByType(hibSession, context.getUser().getCurrentAcademicSessionId(), null);
 		} else {
 			context.getUser().setProperty("Admin.StudentGroups.LastGroupTypeId", filter[0]);
-			return StudentGroupDAO.getInstance().findByType(hibSession, context.getUser().getCurrentAcademicSessionId(), Long.valueOf(filter[0]));
+			return StudentGroup.findByType(hibSession, context.getUser().getCurrentAcademicSessionId(), Long.valueOf(filter[0]));
 		}
 	}
 	

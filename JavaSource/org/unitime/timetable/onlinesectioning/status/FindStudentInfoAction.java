@@ -39,6 +39,7 @@ import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.AdvisedInfoInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.StudentInfo;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningStatus;
@@ -48,6 +49,7 @@ import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.match.AbstractStudentMatcher;
 import org.unitime.timetable.onlinesectioning.model.XAdvisorRequest;
 import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
@@ -159,6 +161,9 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		CourseLookup lookup = new CourseLookup(session);
 		Set<String> regStates = new HashSet<String>();
 		Set<String> assStates = new HashSet<String>();
+		boolean waitListEnabled = CustomStudentEnrollmentHolder.isAllowWaitListing();
+		Set<String> wlStates = new HashSet<String>();
+		Set<String> noSubStates = new HashSet<String>();
 		Session dbSession = SessionDAO.getInstance().get(session.getUniqueId());
 		for (StudentSectioningStatus status: StudentSectioningStatusDAO.getInstance().findAll(helper.getHibSession())) {
 			if (StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.enabled)
@@ -169,6 +174,10 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 				|| (iIsAdmin && StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.regadmin))
 				|| (iIsAdvisor && StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.regadvisor))
 				) regStates.add(status.getReference());
+			if (waitListEnabled && StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.waitlist))
+				wlStates.add(status.getReference());
+			else if (StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.nosubs))
+				noSubStates.add(status.getReference());
 		}
 		DistanceMetric dm = server.getDistanceMetric();
 		boolean solver = (server instanceof StudentSolver);
@@ -206,6 +215,12 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						st.setExternalId(student.getExternalId());
 						st.setCanShowExternalId(iCanShowExtIds);
 						String status = (student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
+						if ((status == null && waitListEnabled) || (status != null && wlStates.contains(status)))
+							st.setWaitListMode(WaitListMode.WaitList);
+						else if (status != null && noSubStates.contains(status))
+							st.setWaitListMode(WaitListMode.NoSubs);
+						else
+							st.setWaitListMode(WaitListMode.None);
 						st.setCanRegister(iCanRegister && (status == null || regStates.contains(status)));
 						st.setCanUseAssistant(iCanUseAssistant && (status == null || assStates.contains(status)));
 						st.setCanSelect(isCanSelect(student));
@@ -549,6 +564,12 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 					st.setExternalId(student.getExternalId());
 					st.setCanShowExternalId(iCanShowExtIds);
 					String status = (student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
+					if ((status == null && waitListEnabled) || (status != null && wlStates.contains(status)))
+						st.setWaitListMode(WaitListMode.WaitList);
+					else if (status != null && noSubStates.contains(status))
+						st.setWaitListMode(WaitListMode.NoSubs);
+					else
+						st.setWaitListMode(WaitListMode.None);
 					st.setCanRegister(iCanRegister && (status == null || regStates.contains(status)));
 					st.setCanUseAssistant(iCanUseAssistant && (status == null || assStates.contains(status)));
 					st.setCanSelect(isCanSelect(student));
@@ -585,6 +606,12 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 					st.setExternalId(student.getExternalId());
 					st.setCanShowExternalId(iCanShowExtIds);
 					String status = (student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
+					if ((status == null && waitListEnabled) || (status != null && wlStates.contains(status)))
+						st.setWaitListMode(WaitListMode.WaitList);
+					else if (status != null && noSubStates.contains(status))
+						st.setWaitListMode(WaitListMode.NoSubs);
+					else
+						st.setWaitListMode(WaitListMode.None);
 					st.setCanRegister(iCanRegister && (status == null || regStates.contains(status)));
 					st.setCanUseAssistant(iCanUseAssistant && (status == null || assStates.contains(status)));
 					st.setCanSelect(isCanSelect(student));

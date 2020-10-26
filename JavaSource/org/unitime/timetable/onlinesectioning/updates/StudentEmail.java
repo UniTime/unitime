@@ -71,10 +71,12 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisingStudentDetails;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.StudentSectioningStatus.Option;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -86,6 +88,7 @@ import org.unitime.timetable.onlinesectioning.advisors.AdvisorConfirmationPDF;
 import org.unitime.timetable.onlinesectioning.advisors.AdvisorGetCourseRequests;
 import org.unitime.timetable.onlinesectioning.basic.GetRequest;
 import org.unitime.timetable.onlinesectioning.custom.CourseUrlProvider;
+import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.onlinesectioning.custom.StudentEmailProvider;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
@@ -568,6 +571,15 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		input.put("dfConsentApproval", sConsentApprovalDateFormat);
 		
 		StudentSectioningStatus status = student.getEffectiveStatus();
+		WaitListMode wlMode = WaitListMode.None;
+		if (CustomStudentEnrollmentHolder.isAllowWaitListing() && (status == null || status.hasOption(Option.waitlist))) {
+			wlMode = WaitListMode.WaitList;
+		} else if (status != null && status.hasOption(Option.nosubs)) {
+			wlMode = WaitListMode.NoSubs;
+		}
+		input.put("wlMode", wlMode.name());
+		input.put("awlMode", ApplicationProperty.AdvisorRecommendationsWaitListMode.value());
+		
 		if (iIncludeCourseRequests) {
 			CourseRequestInterface requests = server.createAction(GetRequest.class)
 					.forStudent(student.getUniqueId())
@@ -595,6 +607,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					details.setStudentId(student.getUniqueId());
 					details.setStudentName(student.getName(NameFormat.LAST_FIRST_MIDDLE.reference()));
 					details.setSessionName(student.getSession().getLabel());
+					details.setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value()));
 					Advisor advisor = Advisor.findByExternalId(helper.getUser().getExternalId(), server.getAcademicSession().getUniqueId());
 					if (advisor != null)
 						details.setAdvisorEmail(advisor.getEmail());
@@ -657,7 +670,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		}
 		
 		if (iIncludeClassSchedule) {
-			Table classes = generateListOfClasses(student, server, helper);
+			Table classes = generateListOfClasses(student, server, helper, wlMode);
 			input.put("classes", classes);
 			
 			// Total credit
@@ -1284,6 +1297,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		for (Request request: requests.getCourses()) {
 			if (request.hasRequestedCourse()) {
 				boolean first = true;
+				if (request.isWaitList()) courseRequests.hasWait = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					if (rc.isCourse()) {
 						Collection<Preference> prefs = null;
@@ -1310,6 +1324,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						line.note = note;
 						line.first = (priority > 1 && first);
 						line.rows = (first ? request.getRequestedCourse().size() : 0);
+						line.waitlist = (first && request.isWaitList());
 						courseRequests.add(line);
 					} else if (rc.isFreeTime()) {
 						String  free = "";
@@ -1328,6 +1343,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						line.prefs = "";
 						line.first = (priority > 1 && first);
 						line.rows = (first ? request.getRequestedCourse().size() : 0);
+						line.waitlist = false;
 						courseRequests.add(line);
 					}
 					first = false;
@@ -1379,6 +1395,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						line.first = first;
 						line.firstalt = (first && priority == 1);
 						line.rows = (first ? request.getRequestedCourse().size() : 0);
+						line.waitlist = (first && request.isWaitList());
 						courseRequests.add(line);
 					} else if (rc.isFreeTime()) {
 						CourseRequestLine line = new CourseRequestLine();
@@ -1398,6 +1415,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						line.first = first;
 						line.firstalt = (first && priority == 1);
 						line.rows = (first ? request.getRequestedCourse().size() : 0);
+						line.waitlist = false;
 						courseRequests.add(line);
 					}
 					first = false;
@@ -1438,7 +1456,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		return courseRequests;
 	}
 	
-	Table generateListOfClasses(org.unitime.timetable.model.Student student, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+	Table generateListOfClasses(org.unitime.timetable.model.Student student, OnlineSectioningServer server, OnlineSectioningHelper helper, WaitListMode wlMode) {
 		Table listOfClasses = new Table();
 		AcademicSessionInfo session = server.getAcademicSession();
 		for (XRequest request: getStudent().getRequests()) {
@@ -1448,7 +1466,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				if (enrollment == null) {
 					if (!getStudent().canAssign(cr)) continue;
 					XCourse course = server.getCourse(cr.getCourseIds().get(0).getCourseId());
-					listOfClasses.add(new TableCourseLine(cr, course, getCourseUrl(session, course)));
+					listOfClasses.add(new TableCourseLine(cr, course, getCourseUrl(session, course), wlMode == WaitListMode.WaitList));
 				} else {
 					XOffering offering = server.getOffering(enrollment.getOfferingId());
 					XCourse course = offering.getCourse(enrollment.getCourseId());
@@ -1897,11 +1915,17 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		protected XCourse iCourse;
 		protected Table iTable;
 		protected String iUrl;
+		protected boolean iWaitListEnabled;
 		
-		public TableCourseLine(XCourseRequest request, XCourse course, URL url) {
+		public TableCourseLine(XCourseRequest request, XCourse course, URL url, boolean waitlistEnabled) {
 			iRequest = request;
 			iCourse = course;
 			iUrl = (url == null ? null : url.toString());
+			iWaitListEnabled = waitlistEnabled;
+		}
+		
+		public TableCourseLine(XCourseRequest request, XCourse course, URL url) {
+			this(request, course, url, false);
 		}
 
 		public XRequest getRequest() { return iRequest; }
@@ -1934,9 +1958,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		@Override
 		public String getNote() {
 			if (iRequest.isAlternative())
-				return (iRequest.isWaitlist() ? MSG.emailWaitListedAlternativeRequest() : MSG.emailNotEnrolledAlternativeRequest());
+				return (iRequest.isWaitlist() && iWaitListEnabled ? MSG.emailWaitListedAlternativeRequest() : MSG.emailNotEnrolledAlternativeRequest());
 			else
-				return (iRequest.isWaitlist() ? MSG.emailWaitListedRequest() : MSG.emailNotEnrolledRequest());
+				return (iRequest.isWaitlist() && iWaitListEnabled ? MSG.emailWaitListedRequest() : MSG.emailNotEnrolledRequest());
 		}
 		
 		@Override

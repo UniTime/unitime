@@ -159,7 +159,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 												free.setName(ft.toString());
 												acr.setCourseOffering(null);
 												acr.setCourse(CONST.freePrefix() + ft.toString(CONST.shortDays(), CONST.useAmPm()));
-												acr.setPriority(priority); acr.setAlternative(alt); acr.setSubstitute(false);
+												acr.setPriority(priority); acr.setAlternative(alt); acr.setSubstitute(false); acr.setWaitlist(null);
 												if (alt == 0) {
 													acr.setCredit(request.getAdvisorCredit());
 													acr.setNotes(request.getAdvisorNote());
@@ -204,8 +204,12 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 										if (alt == 0) {
 											acr.setCredit(request.getAdvisorCredit());
 											acr.setNotes(request.getAdvisorNote());
+											if (request.hasWaitList())
+												acr.setWaitlist(request.isWaitList());
+											else
+												acr.setWaitlist(null);
 										} else {
-											acr.setCredit(null); acr.setNotes(null); 
+											acr.setCredit(null); acr.setNotes(null); acr.setWaitlist(null); 
 										}
 										acr.setCritical(acr.isCritical(critical));
 										acr.updatePreferences(rc, helper.getHibSession());
@@ -239,6 +243,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 									acr.setChangedBy(helper.getUser().getExternalId());
 									acr.setTimestamp(ts);
 									acr.setCritical(0);
+									acr.setWaitlist(null);
 									helper.getHibSession().saveOrUpdate(acr);
 								}
 								priority ++;
@@ -283,6 +288,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 											acr.setFreeTime(null);
 										}
 										acr.setCritical(acr.isCritical(critical));
+										acr.setWaitlist(null);
 										acr.updatePreferences(rc, helper.getHibSession());
 										helper.getHibSession().saveOrUpdate(acr);
 										alt++;
@@ -313,6 +319,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 									acr.setChangedBy(helper.getUser().getExternalId());
 									acr.setTimestamp(ts);
 									acr.setCritical(0);
+									acr.setWaitlist(null);
 									helper.getHibSession().saveOrUpdate(acr);
 								}
 								priority ++;
@@ -343,6 +350,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 								acr.setChangedBy(helper.getUser().getExternalId());
 								acr.setTimestamp(ts);
 								acr.setCritical(0);
+								acr.setWaitlist(null);
 								helper.getHibSession().saveOrUpdate(acr);
 							}
 						}

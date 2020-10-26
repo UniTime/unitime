@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningStatus;
@@ -44,6 +45,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -114,6 +116,9 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 			
 			Set<String> regStates = new HashSet<String>();
 			Set<String> assStates = new HashSet<String>();
+			boolean waitListEnabled = CustomStudentEnrollmentHolder.isAllowWaitListing();
+			Set<String> wlStates = new HashSet<String>();
+			Set<String> noSubStates = new HashSet<String>();
 			AcademicSessionInfo session = server.getAcademicSession();
 			Session dbSession = SessionDAO.getInstance().get(session.getUniqueId());
 			for (StudentSectioningStatus status: StudentSectioningStatusDAO.getInstance().findAll(helper.getHibSession())) {
@@ -125,6 +130,10 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 					|| (iIsAdmin && StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.regadmin))
 					|| (iIsAdvisor && StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.regadvisor))
 					) regStates.add(status.getReference());
+				if (waitListEnabled && StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.waitlist))
+					wlStates.add(status.getReference());
+				else if (StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.nosubs))
+					noSubStates.add(status.getReference());
 			}
 
 			XEnrollments requests = server.getEnrollments(iOfferingId);
@@ -149,6 +158,12 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 					st.setSessionId(server.getAcademicSession().getUniqueId());
 					st.setExternalId(student.getExternalId());
 					st.setCanShowExternalId(iCanShowExtIds);
+					if ((status == null && waitListEnabled) || (status != null && wlStates.contains(status)))
+						st.setWaitListMode(WaitListMode.WaitList);
+					else if (status != null && noSubStates.contains(status))
+						st.setWaitListMode(WaitListMode.NoSubs);
+					else
+						st.setWaitListMode(WaitListMode.None);
 					st.setCanRegister(iCanRegister && (status == null || regStates.contains(status)));
 					st.setCanUseAssistant(iCanUseAssistant && (status == null || assStates.contains(status)));
 					st.setName(student.getName());

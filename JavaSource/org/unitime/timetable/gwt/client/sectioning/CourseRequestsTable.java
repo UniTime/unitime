@@ -254,9 +254,12 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			line.setWaitListVisible(canWaitList);
 	}
 	
-	public void setArrowsVisible(boolean arrowsVisible) {
+	public void setArrowsVisible(boolean arrowsVisible, boolean noSubs) {
 		iArrowsVisible = arrowsVisible;
-		iHeaderWaitlist.setHTML(arrowsVisible ? MESSAGES.courseRequestsWaitList() : MESSAGES.courseRequestsWaitListNoArrows());
+		if (noSubs)
+			iHeaderWaitlist.setHTML(arrowsVisible ? MESSAGES.courseRequestsNoSubstitutions() : MESSAGES.courseRequestsNoSubstitutionsNoArrows());
+		else
+			iHeaderWaitlist.setHTML(arrowsVisible ? MESSAGES.courseRequestsWaitList() : MESSAGES.courseRequestsWaitListNoArrows());
 		iHeader.setStyleName("noarrows", !arrowsVisible);
 		for (CourseRequestLine line: iCourses)
 			line.setArrowsVisible(arrowsVisible);

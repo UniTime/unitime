@@ -119,6 +119,7 @@ public class StudentSchedulingStatusExport extends BaseExport {
 		case reqval: return "requestValidation";
 		case canreq: return "canRequire";
 		case noschedule: return "noSchedule";
+		case nosubs: return "noSubs";
 		default: return option.name();
 		}
 	}

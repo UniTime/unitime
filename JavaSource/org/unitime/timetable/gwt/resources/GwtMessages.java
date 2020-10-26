@@ -4755,6 +4755,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Wait-Listing")
 	String toggleWaitList();
 	
+	@DefaultMessage("No-Subs")
+	String toggleNoSubs();
+	
 	@DefaultMessage("No Batch")
 	String toggleNoBatch();
 	

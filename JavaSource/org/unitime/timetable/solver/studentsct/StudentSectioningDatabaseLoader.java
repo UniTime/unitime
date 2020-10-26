@@ -2371,12 +2371,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         if (iIncludeCourseDemands || iProjections) {
             List students = hibSession.createQuery(
                     "select distinct s from Student s " +
-                    "left join fetch s.courseDemands as cd "+
+/*                    "left join fetch s.courseDemands as cd "+
                     "left join fetch cd.courseRequests as cr "+
                     "left join fetch cr.classWaitLists as cw " +
                     "left join fetch s.classEnrollments as e " +
                     "left join fetch s.waitlists as w " +
-                    (iLoadStudentInfo ? "left join fetch s.areaClasfMajors as a left join fetch s.groups as g " : "") +
+                    (iLoadStudentInfo ? "left join fetch s.areaClasfMajors as a left join fetch s.groups as g " : "") +*/
                     "where s.session.uniqueId=:sessionId").
                     setLong("sessionId",session.getUniqueId().longValue()).
                     setFetchSize(1000).list();

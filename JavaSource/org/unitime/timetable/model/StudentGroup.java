@@ -94,6 +94,10 @@ public class StudentGroup extends BaseStudentGroup {
              setCacheable(true).
              uniqueResult(); 
     }
-
-
+    
+    public static List<StudentGroup> findByType(org.hibernate.Session hibSession, Long sessionId, Long typeId) {
+		if (typeId == null)
+			return hibSession.createQuery("from StudentGroup x where x.session.uniqueId = :sessionId and x.type is null").setLong("sessionId", sessionId).list();
+		return hibSession.createQuery("from StudentGroup x where x.session.uniqueId = :sessionId and x.type.uniqueId = :typeId").setLong("sessionId", sessionId).setLong("typeId", typeId).list();
+	}
 }

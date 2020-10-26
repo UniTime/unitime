@@ -106,6 +106,12 @@
             type="java.lang.Integer"
             not-null="false"/>
 
+        <property
+            name="waitlist"
+            column="waitlist"
+            type="java.lang.Boolean"
+            not-null="false"/>
+
 		<set
             name="preferences"
             table="sect_pref"

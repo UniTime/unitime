@@ -47,6 +47,7 @@ public abstract class BaseAdvisorCourseRequest implements Serializable {
 	private String iCourse;
 	private String iNotes;
 	private Integer iCritical;
+	private Boolean iWaitlist;
 
 	private Student iStudent;
 	private CourseOffering iCourseOffering;
@@ -63,6 +64,7 @@ public abstract class BaseAdvisorCourseRequest implements Serializable {
 	public static String PROP_COURSE = "course";
 	public static String PROP_NOTES = "notes";
 	public static String PROP_CRITICAL = "critical";
+	public static String PROP_WAITLIST = "waitlist";
 
 	public BaseAdvisorCourseRequest() {
 		initialize();
@@ -105,6 +107,10 @@ public abstract class BaseAdvisorCourseRequest implements Serializable {
 
 	public Integer getCritical() { return iCritical; }
 	public void setCritical(Integer critical) { iCritical = critical; }
+
+	public Boolean isWaitlist() { return iWaitlist; }
+	public Boolean getWaitlist() { return iWaitlist; }
+	public void setWaitlist(Boolean waitlist) { iWaitlist = waitlist; }
 
 	public Student getStudent() { return iStudent; }
 	public void setStudent(Student student) { iStudent = student; }
@@ -152,6 +158,7 @@ public abstract class BaseAdvisorCourseRequest implements Serializable {
 			"\n	Substitute: " + getSubstitute() +
 			"\n	Timestamp: " + getTimestamp() +
 			"\n	UniqueId: " + getUniqueId() +
+			"\n	Waitlist: " + getWaitlist() +
 			"]";
 	}
 }

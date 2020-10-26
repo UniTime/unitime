@@ -31,6 +31,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -125,7 +126,13 @@ public class AdvisorCourseRequestsDialog extends UniTimeDialogBox {
 		return false;
 	}
 	
-	public void open(CourseRequestInterface requests) {
+	public void open(CourseRequestInterface requests, boolean waitList, boolean noSubs) {
+		if (waitList)
+			iTable.setMode(WaitListMode.WaitList);
+		else if (noSubs)
+			iTable.setMode(WaitListMode.NoSubs);
+		else
+			iTable.setMode(WaitListMode.None);
 		iTable.setValue(requests);
 		center();
 	}

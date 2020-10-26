@@ -582,7 +582,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								super.doApply();
 								addHistory();
 							}
-						}.open(result);
+						}.open(result, iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST), iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_NO_SUBS));
 					}
 					
 				});
@@ -1631,7 +1631,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					
 					WebTable.CheckboxCell waitList = null;
 					Boolean w = iCourseRequests.getWaitList(course.getCourseId());
-					if (w != null) {
+					if (w != null && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST)) {
 						waitList = new WebTable.CheckboxCell(w, MESSAGES.toggleWaitList(), ARIA.titleRequestedWaitListForCourse(MESSAGES.course(course.getSubject(), course.getCourseNbr())));
 						waitList.getWidget().setStyleName("toggle");
 						((CheckBox)waitList.getWidget()).addValueChangeHandler(new ValueChangeHandler<Boolean>() {
@@ -2125,8 +2125,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				iEligibilityCheck = result;
 				iContext.setStudentId(result == null ? null : result.getStudentId());
 				iSpecRegCx.update(result);
-				iCourseRequests.setCanWaitList(result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
-				iCourseRequests.setArrowsVisible(!result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.NO_REQUEST_ARROWS));
+				iCourseRequests.setCanWaitList(result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST)
+						|| result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_NO_SUBS));
+				iCourseRequests.setArrowsVisible(!result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.NO_REQUEST_ARROWS),
+						result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_NO_SUBS)
+						&& !result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
 				if (result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_USE_ASSISTANT)) {
 					if (result.hasMessage() && (iMode.isSectioning() && !result.hasFlag(EligibilityFlag.CAN_ENROLL))) {
 						iStatus.error(iEligibilityCheck.getMessage());
@@ -2157,8 +2160,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							}
 							@Override
 							public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
-								iCourseRequests.setCanWaitList(result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
-								iCourseRequests.setArrowsVisible(!result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.NO_REQUEST_ARROWS));
+								iCourseRequests.setCanWaitList(result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST)
+										|| result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_NO_SUBS));
+								iCourseRequests.setArrowsVisible(!result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.NO_REQUEST_ARROWS),
+										result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_NO_SUBS)
+										&& !result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
 								iEligibilityCheck = result;
 								iContext.setStudentId(result == null ? null : result.getStudentId());
 								
@@ -2670,8 +2676,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	protected void setElibibilityCheckDuringEnrollment(EligibilityCheck check) {
 		iEligibilityCheck = check;
 		iSpecRegCx.update(check);
-		iCourseRequests.setCanWaitList(check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
-		iCourseRequests.setArrowsVisible(!check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.NO_REQUEST_ARROWS));
+		iCourseRequests.setCanWaitList(check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST)
+				|| check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_NO_SUBS));
+		iCourseRequests.setArrowsVisible(!check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.NO_REQUEST_ARROWS),
+				check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_NO_SUBS)
+				&& !check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
 		if (check.hasFlag(EligibilityFlag.CAN_ENROLL)) {
 			iEnroll.setVisible(true);
 			if (check.hasCheckboxMessage()) {

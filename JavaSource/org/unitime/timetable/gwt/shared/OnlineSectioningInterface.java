@@ -52,7 +52,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			CAN_USE_ASSISTANT,
 			CAN_ENROLL,
 			PIN_REQUIRED,
-			CAN_WAITLIST,
+			CAN_WAITLIST, CAN_NO_SUBS,
 			RECHECK_AFTER_ENROLLMENT,
 			RECHECK_BEFORE_ENROLLMENT,
 			CAN_RESET,
@@ -284,13 +284,14 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private boolean iAssistantPage = false, iRequestsPage = false;
 		private boolean iRegStudent = false, iRegAdvisor = false, iRegAdmin = false;
 		private boolean iEnrlStudent = false, iEnrlAdvisor = false, iEnrlAdmin = false;
-		private boolean iWaitList = false, iEmail = false, iCanRequire = false;
+		private boolean iWaitList = false, iNoSubs = false, iEmail = false, iCanRequire = false;
 		private boolean iSpecReg = false, iReqValidation = false, iNoSchedule = false;
 		private String iCourseTypes;
 		private String iEffectiveStart, iEffectiveStop;
 		private String iMessage;
 		private String iFallback;
 		private boolean iCanUseAssitant = false, iCanRegister = false;
+		private WaitListMode iMode = null;
 		
 		public StudentStatusInfo() {}
 		
@@ -323,6 +324,8 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		
 		public void setWaitList(boolean waitlist) { iWaitList = waitlist; }
 		public boolean isWaitList() { return iWaitList; }
+		public void setNoSubs(boolean noSubs) { iNoSubs = noSubs; }
+		public boolean isNoSubs() { return iNoSubs; }
 		public void setEmail(boolean email) { iEmail = email; }
 		public boolean isEmail() { return iEmail; }
 		public void setCanRequire(boolean canRequire) { iCanRequire = canRequire; }
@@ -368,6 +371,12 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		
 		public void setCanRegister(boolean canRegister) { iCanRegister = canRegister; }
 		public boolean isCanRegister() { return iCanRegister; }
+		
+		public WaitListMode getWaitListMode() {
+			if (iMode == null) return WaitListMode.None;
+			return iMode;
+		}
+		public void setWaitListMode(WaitListMode mode) { iMode = mode; }
 		
 		@Override
 		public String toString() { return getReference(); }
@@ -518,6 +527,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private CourseRequestInterface iStudentRequest = null;
 		private String iEmailOptionalToggleCaption = null;
 		private boolean iEmailOptionalToggleDefault = false;
+		private WaitListMode iMode = null;
 		
 		public AdvisingStudentDetails() {}
 		public AdvisingStudentDetails(AdvisingStudentDetails clone) {
@@ -534,6 +544,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			iCanEmail = clone.iCanEmail;
 			iEmailOptionalToggleCaption = clone.iEmailOptionalToggleCaption;
 			iEmailOptionalToggleDefault = clone.iEmailOptionalToggleDefault;
+			iMode = clone.iMode;
 		}
 		
 		public Long getStudentId() { return iStudentId; }
@@ -596,6 +607,12 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		
 		public boolean getEmailOptionalToggleDefault() { return iEmailOptionalToggleDefault; }
 		public void setEmailOptionalToggleDefault(boolean defaultValue) { iEmailOptionalToggleDefault = defaultValue; }
+		
+		public WaitListMode getWaitListMode() {
+			if (iMode == null) return WaitListMode.None;
+			return iMode;
+		}
+		public void setWaitListMode(WaitListMode mode) { iMode = mode; }
 	}
 	
 	public static class AdvisorCourseRequestSubmission implements IsSerializable, Serializable {
@@ -657,4 +674,8 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public String getPin() { return iPin; }
 		public boolean hasPin() { return iPin != null && !iPin.isEmpty(); }
 	}
+	
+	public static enum WaitListMode implements IsSerializable, Serializable {
+		WaitList, NoSubs, None
+	};
 }

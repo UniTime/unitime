@@ -36,6 +36,7 @@ import org.cpsolver.ifs.util.DistanceMetric;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.AdvisedInfoInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.StudentInfo;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.Assignment;
@@ -54,9 +55,11 @@ import org.unitime.timetable.model.StudentInstrMthPref;
 import org.unitime.timetable.model.StudentNote;
 import org.unitime.timetable.model.StudentSectioningPref;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.StudentSectioningStatus.Option;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.status.FindStudentInfoAction;
 import org.unitime.timetable.onlinesectioning.status.SectioningStatusFilterAction;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseLookup;
@@ -131,6 +134,13 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					st.setExternalId(student.getExternalUniqueId());
 					st.setCanShowExternalId(iCanShowExtIds);
 					StudentSectioningStatus status = student.getEffectiveStatus();
+					if (CustomStudentEnrollmentHolder.isAllowWaitListing() && (status == null || status.hasOption(Option.waitlist))) {
+						st.setWaitListMode(WaitListMode.WaitList);
+					} else if (status != null && status.hasOption(Option.nosubs)) {
+						st.setWaitListMode(WaitListMode.NoSubs);
+					} else {
+						st.setWaitListMode(WaitListMode.None);
+					}
 					st.setCanRegister(iCanRegister && (status == null
 							|| status.hasOption(StudentSectioningStatus.Option.regenabled)
 							|| (iIsAdmin && status.hasOption(StudentSectioningStatus.Option.regadmin))
@@ -508,6 +518,13 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 				st.setExternalId(student.getExternalUniqueId());
 				st.setCanShowExternalId(iCanShowExtIds);
 				StudentSectioningStatus status = student.getEffectiveStatus();
+				if (CustomStudentEnrollmentHolder.isAllowWaitListing() && (status == null || status.hasOption(Option.waitlist))) {
+					st.setWaitListMode(WaitListMode.WaitList);
+				} else if (status != null && status.hasOption(Option.nosubs)) {
+					st.setWaitListMode(WaitListMode.NoSubs);
+				} else {
+					st.setWaitListMode(WaitListMode.None);
+				}
 				st.setCanRegister(iCanRegister && (status == null
 						|| status.hasOption(StudentSectioningStatus.Option.regenabled)
 						|| (iIsAdmin && status.hasOption(StudentSectioningStatus.Option.regadmin))

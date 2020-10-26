@@ -60,6 +60,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Student;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.gwt.shared.UserAuthenticationProvider;
 
@@ -231,6 +232,7 @@ public class EnrollmentTable extends Composite {
 		iSectioningService.lookupStudent(iOnline, studentId, new AsyncCallback<ClassAssignmentInterface.Student>() {
 			@Override
 			public void onSuccess(final Student student) {
+				iStudentSchedule.setWaitListMode(student.getWaitListMode());
 				LoadingWidget.getInstance().show(MESSAGES.pleaseWait());
 				showStudentSchedule(student, new AsyncCallback<Boolean>() {
 					@Override
@@ -252,6 +254,7 @@ public class EnrollmentTable extends Composite {
 	}
 	
 	public void showStudentSchedule(final ClassAssignmentInterface.Student student, final AsyncCallback<Boolean> callback) {
+		iStudentSchedule.setWaitListMode(student.getWaitListMode());
 		iSectioningService.getEnrollment(iOnline, student.getId(), new AsyncCallback<ClassAssignmentInterface>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -721,9 +724,9 @@ public class EnrollmentTable extends Composite {
 		case ENROLLED:
 			return !e.hasClasses();
 		case WAIT_LISTED:
-			return e.hasClasses() || !e.isWaitList();
+			return e.hasClasses() || !(e.isWaitList() && e.getStudent().getWaitListMode() == WaitListMode.WaitList);
 		case NOT_ENROLLED:
-			return e.hasClasses() || e.isWaitList(); 
+			return e.hasClasses() || (e.isWaitList() && e.getStudent().getWaitListMode() == WaitListMode.WaitList); 
 		default:
 			return true;
 		}
@@ -736,7 +739,7 @@ public class EnrollmentTable extends Composite {
 		for (ClassAssignmentInterface.Enrollment enrollment: enrollments) {
 			if (enrollment.hasClasses())
 				enrolled++;
-			else if (enrollment.isWaitList())
+			else if (enrollment.isWaitList() && enrollment.getStudent().getWaitListMode() == WaitListMode.WaitList)
 				waitlisted++;
 			else
 				unassigned++;
@@ -1197,7 +1200,7 @@ public class EnrollmentTable extends Composite {
 				line.add(new HTML(enrollment.getReservation() == null ? "&nbsp;" : enrollment.getReservation(), false));
 			if (!subparts.isEmpty()) {
 				if (!enrollment.hasClasses()) {
-					line.add(new WarningLabel(enrollment.isWaitList() ? MESSAGES.courseWaitListed() : MESSAGES.courseNotEnrolled(), subparts.size()));
+					line.add(new WarningLabel(enrollment.isWaitList() && enrollment.getStudent().getWaitListMode() == WaitListMode.WaitList ? MESSAGES.courseWaitListed() : MESSAGES.courseNotEnrolled(), subparts.size()));
 				} else for (String subpart: subparts) {
 					line.add(new HTML(enrollment.getClasses(subpart, ", ", suffix), false));
 				}

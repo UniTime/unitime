@@ -73,6 +73,7 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentGroupIn
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationRequest;
@@ -2413,6 +2414,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		info.setCanAdminEnroll(status.hasOption(StudentSectioningStatus.Option.admin));
 		info.setCanAdminRegister(status.hasOption(StudentSectioningStatus.Option.regadmin));
 		info.setWaitList(status.hasOption(StudentSectioningStatus.Option.waitlist));
+		info.setNoSubs(status.hasOption(StudentSectioningStatus.Option.nosubs));
 		info.setCanRequire(status.hasOption(StudentSectioningStatus.Option.canreq));
 		info.setEmail(status.hasOption(StudentSectioningStatus.Option.email));
 		info.setNoSchedule(status.hasOption(StudentSectioningStatus.Option.noschedule));
@@ -2471,6 +2473,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					|| (admin && StudentSectioningStatus.hasEffectiveOption(status, null, StudentSectioningStatus.Option.regadmin))
 					|| (advisor && StudentSectioningStatus.hasEffectiveOption(status, null, StudentSectioningStatus.Option.regadvisor)));
 		}
+		if (CustomStudentEnrollmentHolder.isAllowWaitListing() && StudentSectioningStatus.hasEffectiveOption(status, null, StudentSectioningStatus.Option.waitlist))
+			info.setWaitListMode(WaitListMode.WaitList);
+		else if (StudentSectioningStatus.hasEffectiveOption(status, null, StudentSectioningStatus.Option.nosubs))
+			info.setWaitListMode(WaitListMode.NoSubs);
+		else
+			info.setWaitListMode(WaitListMode.None);
 		return info;
 	}
 
@@ -2513,6 +2521,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			StudentStatusInfo info = toStudentStatusInfo(s, courseTypes, admin, advisor);
 			info.setEmail(email && s.hasOption(StudentSectioningStatus.Option.email));
 			info.setWaitList(waitlist && s.hasOption(StudentSectioningStatus.Option.waitlist));
+			info.setWaitList(s.hasOption(StudentSectioningStatus.Option.nosubs));
 			info.setSpecialRegistration(specreg && s.hasOption(StudentSectioningStatus.Option.specreg));
 			info.setRequestValiadtion(reqval && s.hasOption(StudentSectioningStatus.Option.reqval));
 			info.setCanRequire(s.hasOption(StudentSectioningStatus.Option.canreq));
@@ -2792,6 +2801,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				check.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, true);
 				check.setFlag(EligibilityFlag.CAN_ENROLL, !server.isPublished());
 				check.setFlag(EligibilityFlag.CAN_WAITLIST, ApplicationProperty.SolverDashboardAllowWaitList.isTrue());
+				check.setFlag(EligibilityFlag.CAN_NO_SUBS, ApplicationProperty.SolverDashboardAllowNoSubs.isTrue());
 				check.setFlag(EligibilityFlag.CAN_RESET, ApplicationProperty.SolverDashboardAllowScheduleReset.isTrue());
 				check.setFlag(EligibilityFlag.CONFIRM_DROP, ApplicationProperty.OnlineSchedulingConfirmCourseDrop.isTrue());
 				check.setFlag(EligibilityFlag.QUICK_ADD_DROP, ApplicationProperty.OnlineSchedulingQuickAddDrop.isTrue());
@@ -2844,6 +2854,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								(check.hasFlag(EligibilityFlag.IS_ADMIN) && status.hasOption(StudentSectioningStatus.Option.regadmin)) ||
 								(check.hasFlag(EligibilityFlag.IS_ADVISOR) && status.hasOption(StudentSectioningStatus.Option.regadvisor)));
 						check.setFlag(EligibilityFlag.CAN_WAITLIST, status.hasOption(StudentSectioningStatus.Option.waitlist));
+						check.setFlag(EligibilityFlag.CAN_NO_SUBS, status.hasOption(StudentSectioningStatus.Option.nosubs));
 						check.setMessage(status.getMessage());
 					}
 					check.setFlag(EligibilityFlag.CAN_REGISTER, getSessionContext().hasPermissionAnyAuthority(student, Right.StudentSchedulingCanRegister));
@@ -3005,6 +3016,14 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				? getSessionContext().hasPermission(Right.SchedulingAssistant) && getSessionContext().hasPermission(student, Right.StudentSchedulingCanEnroll)
 				: getStudentSolver() != null);
 		st.setName(student.getName(ApplicationProperty.OnlineSchedulingStudentNameFormat.value()));
+		StudentSectioningStatus status = student.getEffectiveStatus();
+		if (CustomStudentEnrollmentHolder.isAllowWaitListing() && (status == null || status.hasOption(Option.waitlist))) {
+			st.setWaitListMode(WaitListMode.WaitList);
+		} else if (status != null && status.hasOption(Option.nosubs)) {
+			st.setWaitListMode(WaitListMode.NoSubs);
+		} else {
+			st.setWaitListMode(WaitListMode.None);
+		}
 		for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(student.getAreaClasfMajors())) {
 			st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation());
 			st.addClassification(acm.getAcademicClassification().getCode());
@@ -3087,6 +3106,14 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				? getSessionContext().hasPermission(Right.SchedulingAssistant) && getSessionContext().hasPermission(student, Right.StudentSchedulingCanEnroll)
 				: getStudentSolver() != null);
 		st.setName(student.getName(ApplicationProperty.OnlineSchedulingStudentNameFormat.value()));
+		StudentSectioningStatus status = student.getEffectiveStatus();
+		if (CustomStudentEnrollmentHolder.isAllowWaitListing() && (status == null || status.hasOption(Option.waitlist))) {
+			st.setWaitListMode(WaitListMode.WaitList);
+		} else if (status != null && status.hasOption(Option.nosubs)) {
+			st.setWaitListMode(WaitListMode.NoSubs);
+		} else {
+			st.setWaitListMode(WaitListMode.None);
+		}
 		for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(student.getAreaClasfMajors())) {
 			st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation());
 			st.addClassification(acm.getAcademicClassification().getCode());
@@ -3296,6 +3323,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			ret.setEmailOptionalToggleCaption(email.getToggleCaptionIfOptional());
 			ret.setEmailOptionalToggleDefault(email.isOptionCheckedByDefault());
 		}
+		try {
+			ret.setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value()));
+		} catch (Exception e) {}
 		 
 		if (getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdmin)) {
 			ret.setCanUpdate(true);

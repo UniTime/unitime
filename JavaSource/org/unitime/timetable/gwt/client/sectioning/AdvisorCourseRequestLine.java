@@ -72,6 +72,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.TextArea;
@@ -97,6 +98,7 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 	private SpecialRegistrationContext iSpecReg;
 	private ImageButton iDelete;
 	private UniTimeTextBox iCredit;
+	private CheckBox iWaitList;
 	private TextArea iNotes;
 	private Timer iTimer;
 	
@@ -179,6 +181,13 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 				iTimer.schedule(10);
 			}
 		});
+		
+		if (!alternate) {
+			iWaitList = new CheckBox(); iWaitList.addStyleName("waitlist");
+			iNotes.addStyleName("notes-with-waitlist");
+		} else {
+			iNotes.addStyleName("notes-no-waitlist");
+		}
 	}
 	
 	public void insert(FlexTable table, int row) {
@@ -188,8 +197,28 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 		table.getFlexCellFormatter().getElement(row, 1).getStyle().setWidth(45, Unit.PX);
 		table.setWidget(row, 2, iNotes);
 		table.getFlexCellFormatter().setColSpan(row, 2, 2);
-		table.setWidget(row, 3, iButtons);
-		table.getFlexCellFormatter().getElement(row, 3).getStyle().setWidth(75, Unit.PX);
+		if (iWaitList != null) {
+			table.getFlexCellFormatter().setColSpan(row, 2, 1);
+			table.setWidget(row, 3, iWaitList);
+			table.setWidget(row, 4, iButtons);
+			table.getFlexCellFormatter().getElement(row, 4).getStyle().setWidth(75, Unit.PX);
+		} else {
+			table.setWidget(row, 3, iButtons);
+			table.getFlexCellFormatter().getElement(row, 3).getStyle().setWidth(75, Unit.PX);
+		}
+	}
+	
+	public void setWaitListVisible(boolean visible) {
+		if (iWaitList != null) {
+			iWaitList.setVisible(visible);
+			if (visible) {
+				iNotes.addStyleName("notes-with-waitlist");
+				iNotes.removeStyleName("notes-no-waitlist");
+			} else {
+				iNotes.addStyleName("notes-no-waitlist");
+				iNotes.removeStyleName("notes-with-waitlist");
+			}
+		}
 	}
 	
 	public void setPrevious(AdvisorCourseRequestLine previous) {
@@ -387,6 +416,7 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 			iCourses.get(0).setValue(null);
 			iCredit.setValue("");
 			iNotes.setValue("");
+			if (iWaitList != null) iWaitList.setValue(false);
 			for (int i = iCourses.size() - 1; i > 0; i--) {
 				deleteAlternative(i);
 			}
@@ -445,6 +475,10 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 		ret.setFilter(iCourses.get(0).getCourseFinder().getFilter());
 		ret.setAdvisorCredit(iCredit.getValue());
 		ret.setAdvisorNote(iNotes.getValue());
+		if (iWaitList == null || !iWaitList.isVisible())
+			ret.setWaitList(null);
+		else
+			ret.setWaitList(iWaitList.getValue());
 		return (ret.isEmpty() && !ret.hasAdvisorCredit() && !ret.hasAdvisorNote() ? null : ret);
 	}
 
@@ -481,6 +515,7 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 				deleteAlternative(i);
 			iCredit.setValue("");
 			iNotes.setValue("");
+			if (iWaitList != null) iWaitList.setValue(false);
 		} else {
 			int index = 0;
 			if (value.hasRequestedCourse())
@@ -500,6 +535,7 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 			if (value.hasFilter()) iCourses.get(0).getCourseFinder().setFilter(value.getFilter());
 			iCredit.setValue(value.hasAdvisorCredit() ? value.getAdvisorCredit() : "");
 			iNotes.setValue(value.hasAdvisorNote() ? value.getAdvisorNote() : "");
+			if (iWaitList != null) iWaitList.setValue(value.isWaitList());
 		}
 		if (iDelete != null) {
 			iDelete.setVisible(value == null || value.isCanDelete());

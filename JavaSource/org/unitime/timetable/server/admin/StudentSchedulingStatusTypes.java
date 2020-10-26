@@ -78,6 +78,7 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		RegAdmin(MESSAGES.toggleRegAdmin(), StudentSectioningStatus.Option.regadmin),
 		Email(MESSAGES.toggleEmail(), StudentSectioningStatus.Option.email),
 		WaitListing(MESSAGES.toggleWaitList(), StudentSectioningStatus.Option.waitlist),
+		NoSubs(MESSAGES.toggleNoSubs(), StudentSectioningStatus.Option.nosubs),
 		NoBatch(MESSAGES.toggleNoBatch(), StudentSectioningStatus.Option.nobatch),
 		AdvisorCanSet(MESSAGES.toggleAdvisorCanSetStatus(), StudentSectioningStatus.Option.advcanset),
 		CReqValidation(MESSAGES.toggleCourseRequestValidation(), StudentSectioningStatus.Option.reqval),

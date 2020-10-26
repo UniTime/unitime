@@ -6699,6 +6699,11 @@ unitime-RoomSharingWidget .legend .blank {
 	min-width: 280px;
 }
 
+.unitime-AdvisorCourseRequests .waitlist {
+	display: block;
+	padding-top: 4px;
+}
+
 .unitime-AdvisorCourseRequestLine {
 	white-space: nowrap;
 }
@@ -6804,13 +6809,27 @@ unitime-RoomSharingWidget .legend .blank {
 	width: 50px;
 }
 
-.unitime-AdvisorCourseRequests .unitime-TextArea {
+.unitime-AdvisorCourseRequests .notes-no-waitlist {
 	width: 265px;
 	margin-top: 2px;
 }
 
+.unitime-AdvisorCourseRequests .notes-with-waitlist {
+	width: 240px;
+	margin-top: 2px;
+}
+
 .unitime-AdvisorCourseRequests .requests-header .message {
-	margin-left: -180px;
+	margin-left: -80px;
+}
+
+.unitime-AdvisorCourseRequests .waitlist-header {
+	font-size: small;
+	font-style: italic;
+	font-weight: normal;
+	display: block;
+	width: 90px;
+	line-height: 25px;
 }
 
 .unitime-AdvisorCourseRequests .total-credit-label {

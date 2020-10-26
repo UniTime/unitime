@@ -31,6 +31,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.TakesValue;
@@ -42,6 +43,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<CourseRequestInterface> {
 	protected static StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	private CourseRequestInterface iAdvisorRequests;
+	private WaitListMode iMode;
 	
 	public AdvisorCourseRequestsTable() {
 		setEmptyMessage(MESSAGES.emptyRequests());
@@ -52,9 +54,25 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 				new WebTable.Cell(MESSAGES.colCredit(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colPreferences(), 1, "100px"),
 				new WebTable.Cell(MESSAGES.colCritical(), 1, "20px"),
+				new WebTable.Cell(MESSAGES.colWaitList(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colNotes(), 1, "300px")));
 		addStyleName("unitime-AdvisorCourseRequestsTable");
 		setSelectSameIdRows(true);
+	}
+	
+	public void setMode(WaitListMode mode) {
+		iMode = mode;
+		switch (iMode) { 
+		case None:
+			setColumnVisible(6, false);
+			break;
+		case NoSubs:
+			getTable().setHTML(0, 6, MESSAGES.colNoSubs());
+			break;
+		case WaitList:
+			getTable().setHTML(0, 6, MESSAGES.colWaitList());
+			break;
+		}
 	}
 
 	@Override
@@ -63,10 +81,12 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 		ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 		boolean hasPref = false;
 		boolean hasCrit = false;
+		boolean hasWL = false;
 		int priority = 1;
 		for (Request request: iAdvisorRequests.getCourses()) {
 			if (request.hasRequestedCourse()) {
 				if (request.isCritical() || request.isImportant()) hasCrit = true;
+				if (request.isWaitList()) hasWL = true;
 				boolean first = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					WebTable.Row row = null;
@@ -97,6 +117,7 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 								new WebTable.Cell(ToolBox.toString(prefs), true),
 								request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
 								request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") : new WebTable.Cell(""),
+								request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell(""),
 								note
 								);
 						} else {
@@ -106,6 +127,7 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 								new WebTable.Cell(""),
 								new WebTable.Cell(ToolBox.toString(prefs), true),
+								new WebTable.Cell(""),
 								new WebTable.Cell("")
 								);
 						}
@@ -124,6 +146,7 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 								new WebTable.Cell(MESSAGES.courseRequestsPriority(priority)),
 								new WebTable.Cell(CONSTANTS.freePrefix() + free, 2, null),
 								credit,
+								new WebTable.Cell(""),
 								new WebTable.Cell(""),
 								new WebTable.Cell(""),
 								note
@@ -155,6 +178,7 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 					new WebTable.Cell(""),
 					new WebTable.Cell(""),
 					credit,
+					new WebTable.Cell(""),
 					new WebTable.Cell(""),
 					new WebTable.Cell(""),
 					note
@@ -197,6 +221,7 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 								credit,
 								new WebTable.Cell(ToolBox.toString(prefs), true),
+								new WebTable.Cell(""),
 								request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
 								request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") : new WebTable.Cell(""),
 								note
@@ -208,6 +233,7 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 								new WebTable.Cell(""),
 								new WebTable.Cell(ToolBox.toString(prefs), true),
+								new WebTable.Cell(""),
 								new WebTable.Cell("")
 								);
 						}
@@ -230,6 +256,7 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 					credit,
 					new WebTable.Cell(""),
 					new WebTable.Cell(""),
+					new WebTable.Cell(""),
 					note
 					);
 				for (WebTable.Cell cell: row.getCells()) cell.setStyleName(priority == 1 ? "top-border-solid" : "top-border-dashed");
@@ -247,7 +274,7 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 		if (iAdvisorRequests.hasReleasedPin() && !noteMessage.contains(iAdvisorRequests.getPin()))
 			noteMessage += (noteMessage.isEmpty() ? "" : "\n") + MESSAGES.advisorNotePin(iAdvisorRequests.getPin());
 		WebTable.NoteCell note = new WebTable.NoteCell(noteMessage, null);
-		note.setColSpan(3);
+		note.setColSpan(4);
 		credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		WebTable.Row crow = new WebTable.Row(
 				new WebTable.Cell(MESSAGES.rowTotalPriorityCreditHours(), 2, null),
@@ -267,6 +294,7 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 		setData(rowArray);
 		setColumnVisible(4, hasPref);
 		setColumnVisible(5, hasCrit);
+		setColumnVisible(6, hasWL && (iMode == null || iMode != WaitListMode.None));
 	}
 
 	@Override

@@ -28,6 +28,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpart;
 import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.Assignment;
@@ -52,10 +53,12 @@ import org.unitime.timetable.model.StudentEnrollmentMessage;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.StudentSectioningStatus.Option;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.status.FindEnrollmentAction;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseLookup;
 import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbCourseRequestMatcher;
@@ -120,6 +123,13 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 			st.setExternalId(student.getExternalUniqueId());
 			st.setCanShowExternalId(iCanShowExtIds);
 			StudentSectioningStatus status = student.getEffectiveStatus();
+			if (CustomStudentEnrollmentHolder.isAllowWaitListing() && (status == null || status.hasOption(Option.waitlist))) {
+				st.setWaitListMode(WaitListMode.WaitList);
+			} else if (status != null && status.hasOption(Option.nosubs)) {
+				st.setWaitListMode(WaitListMode.NoSubs);
+			} else {
+				st.setWaitListMode(WaitListMode.None);
+			}
 			st.setCanRegister(iCanRegister && (status == null
 					|| status.hasOption(StudentSectioningStatus.Option.regenabled)
 					|| (iIsAdmin && status.hasOption(StudentSectioningStatus.Option.regadmin))

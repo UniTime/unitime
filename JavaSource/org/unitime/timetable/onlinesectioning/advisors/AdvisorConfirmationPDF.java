@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisingStudentDetails;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
@@ -154,11 +155,19 @@ public class AdvisorConfirmationPDF {
 		
 		document.add(header);
 		
-		if (getDetails().getRequest().getCourses() != null && !getDetails().getRequest().getCourses().isEmpty())
-			document.add(courseTable(true));
+		if (getDetails().getRequest().getCourses() != null && !getDetails().getRequest().getCourses().isEmpty()) {
+			boolean hasWaitList = false;
+			for (Request r: getDetails().getRequest().getCourses()) {
+				if (r.isWaitList()) { hasWaitList = true; break; }
+			}
+			document.add(courseTable(true,
+					hasWaitList && getDetails().getWaitListMode() == WaitListMode.NoSubs ? MSG.colNoSubs() :
+					hasWaitList && getDetails().getWaitListMode() == WaitListMode.WaitList ? MSG.colWaitList() :
+					null));
+		}
 		
 		if (getDetails().getRequest().getAlternatives() != null && !getDetails().getRequest().getAlternatives().isEmpty())
-			document.add(courseTable(false));
+			document.add(courseTable(false, null));
 		
 		if (getDetails().getRequest().hasCreditNote()) {
 			Paragraph p = new Paragraph(getDetails().getRequest().getCreditNote(), PdfFont.getSmallFont());
@@ -196,14 +205,17 @@ public class AdvisorConfirmationPDF {
 		out.flush(); out.close();
 	}
 	
-	private PdfPTable courseTable(boolean primary) {
+	private PdfPTable courseTable(boolean primary, String waitList) {
 		Font font = PdfFont.getSmallFont();
 		float wP = font.getBaseFont().getWidth(primary ? MSG.courseRequestsPriority(100) : MSG.courseRequestsAlternate(100)) * 0.001f * font.getSize();
 		float wA = 20f + font.getBaseFont().getWidth(MSG.courseRequestsAlternative(100)) * 0.001f * font.getSize() - wP;
 		float wC = 5f + font.getBaseFont().getWidth("999 - 999") * 0.001f * font.getSize();
+		float wW = (waitList == null ? 0f : 5f + Math.max(font.getBaseFont().getWidth(MSG.colWaitList())  * 0.001f * font.getSize(), font.getBaseFont().getWidth(MSG.colNoSubs())  * 0.001f * font.getSize()));
 		float pw = PageSize.LETTER.getWidth() - 72f;
-		float wX = (pw - wP - wA - wC);
-		PdfPTable cr = new PdfPTable(new float[] {wP, wA, wX * 0.4f, wC, wX * 0.6f});
+		float wX = (pw - wP - wA - wC - wW);
+		PdfPTable cr = (waitList == null ?
+				new PdfPTable(new float[] {wP, wA, wX * 0.4f, wC, wX * 0.6f}):
+				new PdfPTable(new float[] {wP, wA, wX * 0.4f, wC, wX * 0.6f, wW}));
 		cr.setHeaderRows(1);
 		cr.setWidthPercentage(100f);
 		cr.setKeepTogether(true);
@@ -226,6 +238,12 @@ public class AdvisorConfirmationPDF {
 			c.setVerticalAlignment(Element.ALIGN_BOTTOM);
 			c.setBorder(PdfPCell.BOTTOM); c.setBorderWidth(0.1f);
 			cr.addCell(c);
+			if (waitList != null) {
+				c = italic(waitList);
+				c.setVerticalAlignment(Element.ALIGN_BOTTOM);
+				c.setBorder(PdfPCell.BOTTOM); c.setBorderWidth(0.1f);
+				cr.addCell(c);
+			}
 		} else {
 			PdfPCell c = new PdfPCell();
 			c.setBorder(0);
@@ -236,7 +254,7 @@ public class AdvisorConfirmationPDF {
 			x.setFont(PdfFont.getSmallFont(false, true));
 			ch.add(x);
 			ch.setAlignment(Element.ALIGN_LEFT);
-			ch.setSpacingBefore(10f); ch.setSpacingAfter(2f); c.addElement(ch); c.setColspan(5);
+			ch.setSpacingBefore(10f); ch.setSpacingAfter(2f); c.addElement(ch); c.setColspan(waitList == null ? 5 : 6);
 			c.setBorder(PdfPCell.BOTTOM); c.setBorderWidth(0.1f);
 			cr.addCell(c);
 		}
@@ -261,6 +279,13 @@ public class AdvisorConfirmationPDF {
 				PdfPCell note = cell(r.getAdvisorNote());
 				note.setBorder(PdfPCell.BOTTOM); note.setBorderWidth(0.1f);
 				cr.addCell(note);
+				
+				if (waitList != null) {
+					PdfPCell wl = cell(r.isWaitList() ? MSG.pdfCourseWaitListed() : MSG.pdfCourseNotWaitListed());
+					((Paragraph)wl.getCompositeElements().get(0)).setAlignment(Element.ALIGN_CENTER);
+					wl.setBorder(PdfPCell.BOTTOM | PdfPCell.LEFT); wl.setBorderWidth(0.1f);
+					cr.addCell(wl);
+				}
 				continue;
 			} else {
 				for (RequestedCourse rc: r.getRequestedCourse()) {
@@ -287,8 +312,15 @@ public class AdvisorConfirmationPDF {
 						PdfPCell note = cell(r.getAdvisorNote());
 						note.setBorder(PdfPCell.BOTTOM); note.setBorderWidth(0.1f);
 						note.setRowspan(r.getRequestedCourse().size());
-						
 						cr.addCell(note);
+						
+						if (waitList != null) {
+							PdfPCell wl = cell(r.isWaitList() ? MSG.pdfCourseWaitListed() : MSG.pdfCourseNotWaitListed());
+							((Paragraph)wl.getCompositeElements().get(0)).setAlignment(Element.ALIGN_CENTER);
+							wl.setBorder(PdfPCell.BOTTOM | PdfPCell.LEFT); wl.setBorderWidth(0.1f);
+							wl.setRowspan(r.getRequestedCourse().size());
+							cr.addCell(wl);
+						}
 					} else {
 						PdfPCell h = cell(MSG.courseRequestsAlternative(alt));
 						h.setColspan(2);
@@ -342,7 +374,7 @@ public class AdvisorConfirmationPDF {
 			cr.addCell(credit);
 			credit = number(credTx);
 			cr.addCell(credit);
-			credit = cell("");
+			credit = cell(""); credit.setColspan(2);
 			cr.addCell(credit);
 		}
 		return cr;

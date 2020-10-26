@@ -188,6 +188,7 @@ public class StudentSectioningExport extends BaseExport {
 	        			acrEl = recEl.addElement("alternative");
 	        		}
 	        		if (acr.getCredit() != null) acrEl.addAttribute("credit", acr.getCredit());
+	        		if (acr.getWaitlist() != null) acrEl.addAttribute("waitlist", acr.getWaitlist() ? "true" : "false");
 	        		if (acr.getNotes() != null) acrEl.addAttribute("notes", acr.getNotes());
 	        		if (acr.getCourse() != null) acrEl.addAttribute("course", acr.getCourse());
 	        		if (acr.getFreeTime() != null) {

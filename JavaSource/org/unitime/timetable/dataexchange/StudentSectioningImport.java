@@ -986,6 +986,11 @@ public class StudentSectioningImport extends BaseImport {
             			}
             			acr.setSubstitute("true".equalsIgnoreCase(recEl.attributeValue("substitute", "false")));
             			acr.setCredit(recEl.attributeValue("credit"));
+            			String wl = recEl.attributeValue("waitlist");
+            			if (wl == null)
+            				acr.setWaitlist(null);
+            			else
+            				acr.setWaitlist("true".equalsIgnoreCase(wl));
 						acr.setNotes(recEl.attributeValue("notes"));
 						acr.setCourse(recEl.attributeValue("course"));
 						if (recEl.attributeValue("subjectArea") != null) {
@@ -1065,6 +1070,7 @@ public class StudentSectioningImport extends BaseImport {
 	            			acr.setSubstitute(parent.isSubstitute());
 	            			acr.setCredit(null);
 							acr.setNotes(null);
+							acr.setWaitlist(null);
 							acr.setCourse(acrEl.attributeValue("course"));
 							if (acrEl.attributeValue("subjectArea") != null) {
 								CourseOffering course = name2course.get(acrEl.attributeValue("subjectArea") + " " + acrEl.attributeValue("courseNumber"));
