@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -160,7 +161,7 @@ public class CustomCourseRequestsValidationHolder {
 					List<Worker> workers = new ArrayList<Worker>();
 					Iterator<Long> studentIds = getStudentIds().iterator();
 					for (int i = 0; i < nrThreads; i++)
-						workers.add(new Worker(i, studentIds) {
+						workers.add(new Worker(i, server.getAcademicSession().getUniqueId(), studentIds) {
 							@Override
 							protected void process(Long studentId) {
 								if (revalidateStudent(server, new OnlineSectioningHelper(helper), studentId)) {
@@ -240,9 +241,11 @@ public class CustomCourseRequestsValidationHolder {
 	
 	protected static abstract class Worker extends Thread {
 		private Iterator<Long> iStudentsIds;
+		private Long iSessionId;
 		
-		public Worker(int index, Iterator<Long> studentsIds) {
+		public Worker(int index, Long sessionId, Iterator<Long> studentsIds) {
 			setName("Validator-" + (1 + index));
+			iSessionId = sessionId;
 			iStudentsIds = studentsIds;
 		}
 		
@@ -251,6 +254,7 @@ public class CustomCourseRequestsValidationHolder {
 		@Override
 	    public void run() {
 			try {
+				ApplicationProperties.setSessionId(iSessionId);
 				while (true) {
 					Long studentId = null;
 					synchronized (iStudentsIds) {
@@ -260,6 +264,7 @@ public class CustomCourseRequestsValidationHolder {
 					process(studentId);
 				}
 			} finally {
+				ApplicationProperties.setSessionId(null);
 				_RootDAO.closeCurrentThreadSessions();
 			}
 		}

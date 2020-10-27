@@ -56,6 +56,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -511,21 +512,27 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 		@Override
 	    public void run() {
 			iProgress.debug(getName() + " has started.");
-			while (true) {
-				Student student = null;
-				synchronized (iStudents) {
-					if (!iCanContinue) {
-						iProgress.debug(getName() + " has stopped.");
-						return;
+			try {
+				ApplicationProperties.setSessionId(iSession.getUniqueId());
+				while (true) {
+					Student student = null;
+					synchronized (iStudents) {
+						if (!iCanContinue) {
+							iProgress.debug(getName() + " has stopped.");
+							return;
+						}
+						if (!iStudents.hasNext()) break;
+						student = iStudents.next();
+						iProgress.incProgress();
 					}
-					if (!iStudents.hasNext()) break;
-					student = iStudents.next();
-					iProgress.incProgress();
+					if (!student.isDummy())
+						validateStudent(student);
 				}
-				if (!student.isDummy())
-					validateStudent(student);
+				iProgress.debug(getName() + " has finished.");
+			} finally {
+				ApplicationProperties.setSessionId(null);
+				_RootDAO.closeCurrentThreadSessions();
 			}
-			iProgress.debug(getName() + " has finished.");
 		}
 	}
 }

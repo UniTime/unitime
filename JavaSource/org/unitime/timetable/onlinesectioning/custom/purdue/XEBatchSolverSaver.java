@@ -1117,6 +1117,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 	    public void run() {
 			try {
 				iProgress.debug(getName() + " has started.");
+				ApplicationProperties.setSessionId(iSession.getUniqueId());
 				while (true) {
 					Student student = null;
 					synchronized (iStudents) {
@@ -1132,6 +1133,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 				}
 				iProgress.debug(getName() + " has finished.");
 			} finally {
+				ApplicationProperties.setSessionId(null);
 				_RootDAO.closeCurrentThreadSessions();
 			}
 		}

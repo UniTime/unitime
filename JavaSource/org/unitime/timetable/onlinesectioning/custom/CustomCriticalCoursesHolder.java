@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.AdvisorCourseRequest;
@@ -92,7 +93,7 @@ public class CustomCriticalCoursesHolder {
 					List<Worker> workers = new ArrayList<Worker>();
 					Iterator<Long> studentIds = getStudentIds().iterator();
 					for (int i = 0; i < nrThreads; i++)
-						workers.add(new Worker(i, studentIds) {
+						workers.add(new Worker(i, server.getAcademicSession().getUniqueId(), studentIds) {
 							@Override
 							protected void process(Long studentId) {
 								if (recheckStudent(server, new OnlineSectioningHelper(helper), studentId)) {
@@ -193,9 +194,11 @@ public class CustomCriticalCoursesHolder {
 	
 	protected static abstract class Worker extends Thread {
 		private Iterator<Long> iStudentsIds;
+		private Long iSessionId;
 		
-		public Worker(int index, Iterator<Long> studentsIds) {
+		public Worker(int index, Long sessionId, Iterator<Long> studentsIds) {
 			setName("CriticalCourses-" + (1 + index));
+			iSessionId = sessionId;
 			iStudentsIds = studentsIds;
 		}
 		
@@ -204,6 +207,7 @@ public class CustomCriticalCoursesHolder {
 		@Override
 	    public void run() {
 			try {
+				ApplicationProperties.setSessionId(iSessionId);
 				while (true) {
 					Long studentId = null;
 					synchronized (iStudentsIds) {
@@ -213,6 +217,7 @@ public class CustomCriticalCoursesHolder {
 					process(studentId);
 				}
 			} finally {
+				ApplicationProperties.setSessionId(null);
 				_RootDAO.closeCurrentThreadSessions();
 			}
 		}

@@ -2849,6 +2849,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 			iProgress.debug(getName() + " has started.");
 			org.hibernate.Session hibSession = null;
 			try {
+				ApplicationProperties.setSessionId(iSessionId);
 				hibSession = StudentDAO.getInstance().createNewSession();
 				while (true) {
 					org.unitime.timetable.model.Student student = null;
@@ -2868,6 +2869,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 					}
 				}
 			} finally {
+				ApplicationProperties.setSessionId(null);
 				hibSession.close();
 			}
 			iProgress.debug(getName() + " has finished.");
@@ -3042,6 +3044,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 			iProgress.debug(getName() + " has started.");
 			org.hibernate.Session hibSession = null;
 			try {
+				ApplicationProperties.setSessionId(iSessionId);
 				hibSession = StudentDAO.getInstance().createNewSession();
 				while (true) {
 					org.unitime.timetable.model.Student student = null;
@@ -3061,6 +3064,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 					}
 				}
 			} finally {
+				ApplicationProperties.setSessionId(null);
 				hibSession.close();
 			}
 			iProgress.debug(getName() + " has finished.");
