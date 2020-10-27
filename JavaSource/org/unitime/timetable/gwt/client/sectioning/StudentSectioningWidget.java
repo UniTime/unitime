@@ -3142,7 +3142,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				new WebTable.Cell(StudentSectioningWidget.MESSAGES.colPreferences(), 1, "100px"),
 				new WebTable.Cell(StudentSectioningWidget.MESSAGES.colWarnings(), 1, "200px"),
 				new WebTable.Cell(StudentSectioningWidget.MESSAGES.colStatus(), 1, "20px"),
-				new WebTable.Cell(StudentSectioningWidget.MESSAGES.colWaitList(), 1, "20px")
+				new WebTable.Cell(iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_NO_SUBS) ? StudentSectioningWidget.MESSAGES.colNoSubs() : StudentSectioningWidget.MESSAGES.colWaitList(), 1, "20px")
 				));
 
 		ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
