@@ -3249,7 +3249,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		checkContext(request);
 		if (request.getSessionId() == null) throw new PageAccessException(MSG.exceptionNoAcademicSession());
 		if (request.getStudentId() == null) throw new PageAccessException(MSG.exceptionNoStudent());
-		getSessionContext().checkPermissionAnyAuthority(request.getStudentId(), "Student", Right.StudentSchedulingCanEnroll);
+		if (request.isPreReg())
+			getSessionContext().checkPermissionAnySession(request.getSessionId(), "Session", Right.CourseRequests);
+		else
+			getSessionContext().checkPermissionAnySession(request.getSessionId(), "Session", Right.SchedulingAssistant);
 		
 		OnlineSectioningServer server = getServerInstance(request.getSessionId(), true);
 		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
