@@ -250,6 +250,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private boolean iFixAssignedEnrollments = false;
     private boolean iSkipStudentsWithHold = false;
     private StudentHoldsCheckProvider iStudentHoldsCheckProvider = null;
+    private boolean iUseAdvisorWaitLists = false;
     
     public StudentSectioningDatabaseLoader(StudentSectioningModel model, org.cpsolver.ifs.assignment.Assignment<Request, Enrollment> assignment) {
         super(model, assignment);
@@ -387,6 +388,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iSkipStudentsWithHold = model.getProperties().getPropertyBoolean("Load.SkipStudentsWithHold", iSkipStudentsWithHold);
         if (iSkipStudentsWithHold && Customization.StudentHoldsCheckProvider.hasProvider())
         	iStudentHoldsCheckProvider = Customization.StudentHoldsCheckProvider.getProvider();
+        
+        iUseAdvisorWaitLists = model.getProperties().getPropertyBoolean("Load.UseAdvisorWaitLists", iUseAdvisorWaitLists);
     }
     
     public void load() {
@@ -2093,6 +2096,21 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	student.getAdvisors().add(new Instructor(0, a.getExternalUniqueId(), a.getLastName() == null ? null : iInstructorNameFormat.format(a), a.getEmail()));
     }
     
+    public void loadAdvisorWaitLists(Student student, org.unitime.timetable.model.Student s) {
+    	for (AdvisorCourseRequest acr: s.getAdvisorCourseRequests()) {
+    		if (acr.getWaitlist() != null && acr.getWaitlist().booleanValue() && acr.getCourseOffering() != null) {
+    			for (Request r: student.getRequests()) {
+    				if (r.isAlternative() || !(r instanceof CourseRequest)) continue;
+    				CourseRequest cr = (CourseRequest)r;
+    				if (cr.getCourse(acr.getCourseOffering().getUniqueId()) != null) {
+    					cr.setWaitlist(true);
+    					iProgress.debug(iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + "): " + cr.getName() + " marked as wait-listed.");
+    				}
+    			}
+    		}
+    	}
+    }
+    
     public void loadRequestGroups(Student student, org.unitime.timetable.model.Student s) {
         for (StudentGroup g: s.getGroups()) {
         	if (iRequestGroupRegExp != null && !iRequestGroupRegExp.isEmpty() && !g.getGroupName().matches(iRequestGroupRegExp)) continue;
@@ -2394,6 +2412,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty() && s.getWaitlists().isEmpty()) continue;
                 Student student = loadStudent(hibSession, s, courseTable, classTable);
                 if (student == null) continue;
+                if (iUseAdvisorWaitLists)
+                	loadAdvisorWaitLists(student, s);
                 if (iOnlineOnlyStudentQuery != null && iOnlineOnlyStudentQuery.match(new DbStudentMatcher(s)))
                 	onlineOnlyStudents.add(student);
                 updateCurriculumCounts(student);
