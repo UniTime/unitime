@@ -62,6 +62,7 @@ import org.hibernate.Transaction;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.restlet.Client;
+import org.restlet.Context;
 import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
@@ -196,6 +197,9 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		protocols.add(Protocol.HTTP);
 		protocols.add(Protocol.HTTPS);
 		iClient = new Client(protocols);
+		Context cx = new Context();
+		cx.getParameters().add("readTimeout", ApplicationProperties.getProperty("banner.xe.readTimeout", "60000"));
+		iClient.setContext(cx);
 		iCSV.setHeader(new CSVField[] {
 				new CSVField("PUID"),
 				new CSVField("Name"),

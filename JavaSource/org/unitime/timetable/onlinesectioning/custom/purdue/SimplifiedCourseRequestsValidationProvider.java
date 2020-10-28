@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.restlet.Client;
+import org.restlet.Context;
 import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
@@ -107,6 +108,9 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 		protocols.add(Protocol.HTTP);
 		protocols.add(Protocol.HTTPS);
 		iClient = new Client(protocols);
+		Context cx = new Context();
+		cx.getParameters().add("readTimeout", getSpecialRegistrationApiReadTimeout());
+		iClient.setContext(cx);
 		try {
 			String clazz = ApplicationProperty.CustomizationExternalTerm.value();
 			if (clazz == null || clazz.isEmpty())
@@ -117,6 +121,10 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 			sLog.error("Failed to create external term provider, using the default one instead.", e);
 			iExternalTermProvider = new BannerTermProvider();
 		}
+	}
+	
+	protected String getSpecialRegistrationApiReadTimeout() {
+		return ApplicationProperties.getProperty("purdue.specreg.readTimeout", "60000");
 	}
 	
 	protected String getSpecialRegistrationApiSite() {

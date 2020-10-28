@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 import org.cpsolver.ifs.heuristics.RouletteWheelSelection;
 import org.restlet.Client;
+import org.restlet.Context;
 import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
@@ -90,6 +91,9 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		protocols.add(Protocol.HTTP);
 		protocols.add(Protocol.HTTPS);
 		iClient = new Client(protocols);
+		Context cx = new Context();
+		cx.getParameters().add("readTimeout", getDegreeWorksApiReadTimeout());
+		iClient.setContext(cx);
 		try {
 			String clazz = ApplicationProperty.CustomizationExternalTerm.value();
 			if (clazz == null || clazz.isEmpty())
@@ -100,6 +104,10 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 			sLog.error("Failed to create external term provider, using the default one instead.", e);
 			iExternalTermProvider = new BannerTermProvider();
 		}
+	}
+	
+	protected String getDegreeWorksApiReadTimeout() {
+		return ApplicationProperties.getProperty("banner.dgw.readTimeout", "60000");
 	}
 	
 	protected String getDegreeWorksApiSite() {

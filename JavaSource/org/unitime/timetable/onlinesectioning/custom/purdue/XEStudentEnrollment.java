@@ -34,6 +34,7 @@ import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.restlet.Client;
+import org.restlet.Context;
 import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
@@ -94,6 +95,9 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		protocols.add(Protocol.HTTP);
 		protocols.add(Protocol.HTTPS);
 		iClient = new Client(protocols);
+		Context cx = new Context();
+		cx.getParameters().add("readTimeout", getBannerReadTimeout());
+		iClient.setContext(cx);
 		try {
 			String clazz = ApplicationProperty.CustomizationExternalTerm.value();
 			if (clazz == null || clazz.isEmpty())
@@ -127,6 +131,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				return ("true".equalsIgnoreCase(value) ? ConditionalDropType.HAS_DROP : ConditionalDropType.NEVER);
 			}
 		}
+	}
+	
+	protected String getBannerReadTimeout() {
+		return ApplicationProperties.getProperty("banner.xe.readTimeout", "60000");
 	}
 	
 	protected String getBannerSite() {

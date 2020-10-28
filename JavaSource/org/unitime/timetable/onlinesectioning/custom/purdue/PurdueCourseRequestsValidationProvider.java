@@ -172,6 +172,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		iClient = new Client(protocols);
 		Context cx = new Context();
 		cx.getParameters().add("readTimeout", getSpecialRegistrationApiReadTimeout());
+		iClient.setContext(cx);
 		try {
 			String clazz = ApplicationProperty.CustomizationExternalTerm.value();
 			if (clazz == null || clazz.isEmpty())

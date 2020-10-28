@@ -45,6 +45,7 @@ import org.hibernate.Transaction;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.restlet.Client;
+import org.restlet.Context;
 import org.restlet.data.Protocol;
 import org.restlet.resource.ClientResource;
 import org.unitime.timetable.ApplicationProperties;
@@ -141,6 +142,9 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 		protocols.add(Protocol.HTTP);
 		protocols.add(Protocol.HTTPS);
 		iClient = new Client(protocols);
+		Context cx = new Context();
+		cx.getParameters().add("readTimeout", getSpecialRegistrationApiReadTimeout());
+		iClient.setContext(cx);
 		iCSV.setHeader(new CSVField[] {
 				new CSVField("PUID"),
 				new CSVField("Name"),
@@ -298,6 +302,10 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 			}
 		});
 		return builder.create();
+	}
+	
+	protected String getSpecialRegistrationApiReadTimeout() {
+		return ApplicationProperties.getProperty("purdue.specreg.readTimeout", "60000");
 	}
 	
 	protected String getSpecialRegistrationApiSite() {
