@@ -291,7 +291,6 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private String iMessage;
 		private String iFallback;
 		private boolean iCanUseAssitant = false, iCanRegister = false;
-		private WaitListMode iMode = null;
 		
 		public StudentStatusInfo() {}
 		
@@ -371,12 +370,6 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		
 		public void setCanRegister(boolean canRegister) { iCanRegister = canRegister; }
 		public boolean isCanRegister() { return iCanRegister; }
-		
-		public WaitListMode getWaitListMode() {
-			if (iMode == null) return WaitListMode.None;
-			return iMode;
-		}
-		public void setWaitListMode(WaitListMode mode) { iMode = mode; }
 		
 		@Override
 		public String toString() { return getReference(); }

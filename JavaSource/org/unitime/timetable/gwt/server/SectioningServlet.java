@@ -1450,6 +1450,13 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					Student student = StudentDAO.getInstance().get(studentId, hibSession);
 					if (student == null) 
 						throw new SectioningException(MSG.exceptionBadStudentId());
+					StudentSectioningStatus status = student.getEffectiveStatus();
+					WaitListMode wlMode = WaitListMode.None;
+					if (CustomStudentEnrollmentHolder.isAllowWaitListing() && (status == null || status.hasOption(Option.waitlist))) {
+						wlMode = WaitListMode.WaitList;
+					} else if (status != null && status.hasOption(Option.nosubs)) {
+						wlMode = WaitListMode.NoSubs;
+					}
 					OnlineSectioningServer server = getServerInstance(student.getSession().getUniqueId(), false);
 					if (server == null) {
 						Comparator<StudentClassEnrollment> cmp = new Comparator<StudentClassEnrollment>() {
@@ -1652,10 +1659,18 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								}
 							} catch (Exception e) {}
 						}
+						if (ret.getAdvisorRequest() != null)
+							ret.getAdvisorRequest().setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value()));
+						if (ret.getRequest() != null)
+							ret.getRequest().setWaitListMode(wlMode);
 						return ret;
 					} else {
 						ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(studentId).withRequest(true).withCustomCheck(true).withAdvisorRequest(true).checkHolds(true), currentUser());
 						ret.setCanSetCriticalOverrides(getSessionContext().hasPermission(student, Right.StudentSchedulingChangeCriticalOverride));
+						if (ret.getAdvisorRequest() != null)
+							ret.getAdvisorRequest().setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value()));
+						if (ret.getRequest() != null)
+							ret.getRequest().setWaitListMode(wlMode);
 						return ret;
 					}
 				} finally {
@@ -2473,12 +2488,6 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					|| (admin && StudentSectioningStatus.hasEffectiveOption(status, null, StudentSectioningStatus.Option.regadmin))
 					|| (advisor && StudentSectioningStatus.hasEffectiveOption(status, null, StudentSectioningStatus.Option.regadvisor)));
 		}
-		if (CustomStudentEnrollmentHolder.isAllowWaitListing() && StudentSectioningStatus.hasEffectiveOption(status, null, StudentSectioningStatus.Option.waitlist))
-			info.setWaitListMode(WaitListMode.WaitList);
-		else if (StudentSectioningStatus.hasEffectiveOption(status, null, StudentSectioningStatus.Option.nosubs))
-			info.setWaitListMode(WaitListMode.NoSubs);
-		else
-			info.setWaitListMode(WaitListMode.None);
 		return info;
 	}
 
@@ -3411,6 +3420,17 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			ret.setStudentRequest(getRequest(student));
 		}
 		
+		if (ret.hasStudentRequest()) {
+			StudentSectioningStatus status = student.getEffectiveStatus();
+			if (CustomStudentEnrollmentHolder.isAllowWaitListing() && (status == null || status.hasOption(Option.waitlist))) {
+				ret.getStudentRequest().setWaitListMode(WaitListMode.WaitList);
+			} else if (status != null && status.hasOption(Option.nosubs)) {
+				ret.getStudentRequest().setWaitListMode(WaitListMode.NoSubs);
+			} else {
+				ret.getStudentRequest().setWaitListMode(WaitListMode.None);
+			}
+		}
+		
 		return ret;
 	}
 
@@ -3504,6 +3524,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (server == null)
 			if (server == null) throw new SectioningException(MSG.exceptionNoAcademicSession());
 		
-		return server.execute(server.createAction(AdvisorGetCourseRequests.class).forStudent(cx.getStudentId()).checkDemands(false), currentUser(cx));
+		CourseRequestInterface ret = server.execute(server.createAction(AdvisorGetCourseRequests.class).forStudent(cx.getStudentId()).checkDemands(false), currentUser(cx));
+		try {
+			ret.setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value()));
+		} catch (Exception e) {}
+		return ret;
 	}
 }

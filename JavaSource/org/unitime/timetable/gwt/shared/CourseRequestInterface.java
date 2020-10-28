@@ -37,6 +37,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreeCourseInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -66,6 +67,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	private String iRequestId = null;
 	private String iPopupMessage = null;
 	private Boolean iPinReleased = null;
+	private WaitListMode iMode = null;
 	
 	public CourseRequestInterface() {}
 	public CourseRequestInterface(StudentSectioningContext cx) {
@@ -1478,5 +1480,16 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			}
 		}
 		return changed;
+	}
+	
+	public boolean hasWaitListMode() {
+		return iMode != null;
+	}
+	public WaitListMode getWaitListMode() {
+		if (iMode == null) return WaitListMode.None;
+		return iMode;
+	}
+	public void setWaitListMode(WaitListMode mode) {
+		iMode = mode;
 	}
 }

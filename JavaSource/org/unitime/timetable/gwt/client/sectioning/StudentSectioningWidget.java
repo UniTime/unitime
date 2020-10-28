@@ -582,7 +582,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								super.doApply();
 								addHistory();
 							}
-						}.open(result, iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST), iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_NO_SUBS));
+						}.open(result);
 					}
 					
 				});

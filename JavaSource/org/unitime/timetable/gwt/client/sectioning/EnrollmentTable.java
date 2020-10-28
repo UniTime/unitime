@@ -232,7 +232,6 @@ public class EnrollmentTable extends Composite {
 		iSectioningService.lookupStudent(iOnline, studentId, new AsyncCallback<ClassAssignmentInterface.Student>() {
 			@Override
 			public void onSuccess(final Student student) {
-				iStudentSchedule.setWaitListMode(student.getWaitListMode());
 				LoadingWidget.getInstance().show(MESSAGES.pleaseWait());
 				showStudentSchedule(student, new AsyncCallback<Boolean>() {
 					@Override
@@ -254,7 +253,6 @@ public class EnrollmentTable extends Composite {
 	}
 	
 	public void showStudentSchedule(final ClassAssignmentInterface.Student student, final AsyncCallback<Boolean> callback) {
-		iStudentSchedule.setWaitListMode(student.getWaitListMode());
 		iSectioningService.getEnrollment(iOnline, student.getId(), new AsyncCallback<ClassAssignmentInterface>() {
 			@Override
 			public void onFailure(Throwable caught) {

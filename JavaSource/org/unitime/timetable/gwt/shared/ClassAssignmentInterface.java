@@ -1399,12 +1399,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 				iStatus = "";
 				iStudent.setCanRegister(true);
 				iStudent.setCanUseAssistant(true);
-				iStudent.setWaitListMode(null);
 			} else {
 				iStatus = status.getReference();
 				iStudent.setCanRegister(status.isCanRegister());
 				iStudent.setCanUseAssistant(status.isCanUseAssistant());
-				iStudent.setWaitListMode(status.getWaitListMode());
 			}
 		}
 		

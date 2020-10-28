@@ -172,15 +172,16 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		initWidget(iTabs);
 	}
 	
-	public void setWaitListMode(WaitListMode mode) {
+	public void setWaitListMode(WaitListMode mode, boolean advisorRequests, boolean studentRequests) {
 		switch (mode) {
 		case WaitList:
-			iRequests.getTable().setHTML(0, 8, MESSAGES.colWaitList());
-			iAdvReqs.getTable().setHTML(0, 6, MESSAGES.colWaitList());
+			if (studentRequests) iRequests.getTable().setHTML(0, 8, MESSAGES.colWaitList());
+			if (advisorRequests) iAdvReqs.getTable().setHTML(0, 6, MESSAGES.colWaitList());
 			break;
 		case NoSubs:
-			iRequests.getTable().setHTML(0, 8, MESSAGES.colNoSubs());
-			iAdvReqs.getTable().setHTML(0, 6, MESSAGES.colNoSubs());
+		default:
+			if (studentRequests) iRequests.getTable().setHTML(0, 8, MESSAGES.colNoSubs());
+			if (advisorRequests) iAdvReqs.getTable().setHTML(0, 6, MESSAGES.colNoSubs());
 			break;
 		}
 	}
@@ -305,6 +306,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		boolean hasChanges = false;
 		iTabs.getTabBar().setTabEnabled(0, iAssignment.hasAdvisorRequest());
 		if (iAssignment.hasAdvisorRequest()) {
+			setWaitListMode(iAssignment.getAdvisorRequest().getWaitListMode(), true, false);
 			int priority = 1;
 			for (Request request: iAssignment.getAdvisorRequest().getCourses()) {
 				if (request.hasRequestedCourse()) {
@@ -552,6 +554,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		boolean hasPref = false, hasWarn = false, hasWait = false, hasCrit = iAssignment.isCanSetCriticalOverrides();
 		NumberFormat df = NumberFormat.getFormat("0.#");
 		if (iAssignment.hasRequest()) {
+			setWaitListMode(iAssignment.getRequest().getWaitListMode(), false, true);
 			CheckCoursesResponse check = new CheckCoursesResponse(iAssignment.getRequest().getConfirmations());
 			hasWarn = iAssignment.getRequest().hasConfirmations();
 			int priority = 1;
