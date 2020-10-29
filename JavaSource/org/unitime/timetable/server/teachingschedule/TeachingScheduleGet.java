@@ -141,6 +141,8 @@ public class TeachingScheduleGet implements GwtRpcImplementation<TeachingSchedul
 							group.addMeeting(meeting);
 						}
 					}
+					if (c.getClassSuffix() != null && !c.getClassSuffix().isEmpty())
+						group.setClassSuffix(classIndex, c.getClassSuffix());
 					classIndex++;
 				}
 			}
@@ -275,7 +277,7 @@ public class TeachingScheduleGet implements GwtRpcImplementation<TeachingSchedul
 				ma.setNote(cm.getNote());
 				Clazz clazz = ret.getClass(group, cm.getClassIndex(), cm.getGroupIndex());
 				if (clazz == null) {
-					clazz = new Clazz(group, cm.getClassIndex(), cm.getGroupIndex());
+					clazz = new Clazz(group, cm.getClassIndex(), cm.getGroupIndex(), group.getClassSuffix(cm.getClassIndex()));
 					if (clazz.hasMeetingAssignments())
 						clazz.getMeetingAssignments().clear();
 					ret.addClass(clazz);

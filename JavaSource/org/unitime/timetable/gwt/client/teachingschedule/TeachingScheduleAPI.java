@@ -207,7 +207,7 @@ public class TeachingScheduleAPI {
 					for (int classIndex = 0; classIndex < g.getNrClasses(); classIndex++)
 						for (int groupIndex = 0; groupIndex < g.getNrGroups(); groupIndex++)
 							if (getClass(g, classIndex, groupIndex) == null) {
-								iClasses.add(new Clazz(g, classIndex, groupIndex));
+								iClasses.add(new Clazz(g, classIndex, groupIndex, g.getClassSuffix(classIndex)));
 								changed = true;
 							}
 				}
@@ -294,6 +294,9 @@ public class TeachingScheduleAPI {
 		private int iHours;
 		private List<TeachingMeeting> iMeetings = null;
 		private List<CourseDivision> iDivisions = null;
+		private Map<Integer, String> iClassSuffixes;
+		
+		public CourseGroup() {}
 		
 		public Long getConfigId() { return iConfigId; }
 		public void setConfigId(Long id) { iConfigId = id; }
@@ -368,6 +371,16 @@ public class TeachingScheduleAPI {
 			if (o == null || !(o instanceof CourseGroup)) return false;
 			CourseGroup cg = (CourseGroup)o;
 			return getTypeId().equals(cg.getTypeId()) && getConfigId().equals(cg.getConfigId());
+		}
+		
+		public String getClassSuffix(int classIndex) {
+			if (iClassSuffixes == null) return null;
+			return iClassSuffixes.get(classIndex);
+		}
+		public void setClassSuffix(int classIndex, String classSuffix) {
+			if (classSuffix == null || classSuffix.isEmpty()) return;
+			if (iClassSuffixes == null) iClassSuffixes = new HashMap<Integer, String>();
+			iClassSuffixes.put(classIndex, classSuffix);
 		}
 	}
 	
@@ -667,11 +680,13 @@ public class TeachingScheduleAPI {
 		private Long iConfigId;
 		private int iClassIndex, iGroupIndex;
 		private String iName;
+		private String iClassSuffix;
 		
 		public Clazz() {}
-		public Clazz(CourseGroup g, int classIndex, int groupIndex) {
+		public Clazz(CourseGroup g, int classIndex, int groupIndex, String classSuffix) {
 			iConfigId = g.getConfigId();
 			iTypeId = g.getTypeId();
+			iClassSuffix = classSuffix;
 			iClassIndex = classIndex;
 			iGroupIndex = groupIndex;
 			iMeetingAssignments = new ArrayList<MeetingAssignment>();
@@ -685,11 +700,11 @@ public class TeachingScheduleAPI {
 		
 		public void updateName(CourseGroup g) {
 			if (g.getNrGroups() > 1) {
-				iName = g.getType() + " " + g.getConfigName() + (iClassIndex < 9 ? "0" : "") + (1 + iClassIndex) + (char)('A' + iGroupIndex);
+				iName = g.getType() + " " + g.getConfigName() + (hasClassSuffix() ? getClassSuffix() : ((iClassIndex < 9 ? "0" : "") + (1 + iClassIndex))) + (char)('A' + iGroupIndex);
 			} else if (g.getNrClasses() > 1) {
-				iName = g.getType() + " " + g.getConfigName() + (iClassIndex < 9 ? "0" : "") + (1 + iClassIndex);
+				iName = g.getType() + " " + g.getConfigName() + (hasClassSuffix() ? getClassSuffix() : ((iClassIndex < 9 ? "0" : "") + (1 + iClassIndex)));
 			} else {
-				iName = g.getType() + " " + g.getConfigName();
+				iName = g.getType() + " " + g.getConfigName() + (hasClassSuffix() ? getClassSuffix() : "");
 			}
 		}
 		public void setName(String name) { iName = name; }
@@ -699,6 +714,10 @@ public class TeachingScheduleAPI {
 		public void setConfigId(Long id) { iConfigId = id; }
 		public Integer getTypeId() { return iTypeId; }
 		public void setTypeId(Integer id) { iTypeId = id; }
+		
+		public void setClassSuffix(String classSuffix) { iClassSuffix = classSuffix; }
+		public String getClassSuffix() { return iClassSuffix; }
+		public boolean hasClassSuffix() { return iClassSuffix != null && !iClassSuffix.isEmpty(); }
 		
 		public int getClassIndex() { return iClassIndex; }
 		public void setClassIndex(int classIndex) { iClassIndex = classIndex; }
@@ -1282,7 +1301,7 @@ public class TeachingScheduleAPI {
 							continue m;
 						}
 						if (nrDivs < ma.getDivision().getNrParalel()) {
-							errors.add(new ValidationError(ErrorType.PARALLELS_TOO_FEW, group, nrDivs + " > " + ma.getDivision().getNrParalel(), clazz, ma, offering.getMeeting(ma)));
+							errors.add(new ValidationError(ErrorType.PARALLELS_TOO_FEW, group, nrDivs + " < " + ma.getDivision().getNrParalel(), clazz, ma, offering.getMeeting(ma)));
 							continue m;
 						}
 					}

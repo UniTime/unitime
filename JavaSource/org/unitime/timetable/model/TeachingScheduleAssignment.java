@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import org.unitime.timetable.model.base.BaseTeachingScheduleAssignment;
+import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.util.Constants;
 
 public class TeachingScheduleAssignment extends BaseTeachingScheduleAssignment {
@@ -44,21 +45,33 @@ public class TeachingScheduleAssignment extends BaseTeachingScheduleAssignment {
 	}
 	
 	public String getGroupName() {
-		String name = getDivision().getItype().getAbbv().trim();
+		String classSuffix = null;
+		if (getMeeting() != null) {
+			Event event = getMeeting().getEvent();
+			if (event instanceof ClassEvent)
+				classSuffix = ((ClassEvent)event).getClazz().getClassSuffix();
+			else
+				classSuffix = ClassEventDAO.getInstance().get(event.getUniqueId()).getClazz().getClassSuffix();
+		}
+		String name = getDivision().getItype().getAbbv().trim() + " ";
 		if (getDivision().getOffering().getInstrOfferingConfigs().size() > 1)
-			name += " " + getDivision().getConfig().getName();
+			name += getDivision().getConfig().getName();
 		if (getDivision().getGroups() > 1) {
-			return name + " " + (getClassIndex() < 9 ? "0" : "") + (1 + getClassIndex()) + (char)('A' + getGroupIndex());
+			return name + (classSuffix != null && !classSuffix.isEmpty() ? classSuffix : ((getClassIndex() < 9 ? "0" : "") + (1 + getClassIndex()))) + (char)('A' + getGroupIndex());
 		} else if (getClassIndex() > 0) {
-			return name + " " + (getClassIndex() < 9 ? "0" : "") + (1 + getClassIndex());
+			return name + (classSuffix != null && !classSuffix.isEmpty() ? classSuffix : ((getClassIndex() < 9 ? "0" : "") + (1 + getClassIndex())));
 		} else {
 			for (SchedulingSubpart ss: getDivision().getConfig().getSchedulingSubparts()) {
 				if (ss.getItype().equals(getDivision().getItype())) {
 					if (ss.getClasses().size() > 1)
-						return name + " " + (getClassIndex() < 9 ? "0" : "") + (1 + getClassIndex());
+						return name + (classSuffix != null && !classSuffix.isEmpty() ? classSuffix : ((getClassIndex() < 9 ? "0" : "") + (1 + getClassIndex())));
 					break;
 				}
 			}
+			if (classSuffix != null && !classSuffix.isEmpty())
+				name += classSuffix;
+			else
+				name = name.trim();
 			return name;
 		}
 	}
