@@ -53,6 +53,8 @@ import org.unitime.timetable.interfaces.ExternalSolutionCommitAction;
 import org.unitime.timetable.interfaces.ExternalUidLookup;
 import org.unitime.timetable.interfaces.ExternalUidTranslation;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningActionFactory;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
@@ -2862,6 +2864,14 @@ public enum ApplicationProperty {
 		return value(null, null);
 	}
 	
+	public String value(AcademicSessionInfo session) {
+		return valueOfSession(session == null ? null : session.getUniqueId());
+	}
+	
+	public String value(Session session) {
+		return valueOfSession(session == null ? null : session.getUniqueId());
+	}
+	
 	public String value(String reference) {
 		return value(reference, null);
 	}
@@ -2874,6 +2884,28 @@ public enum ApplicationProperty {
 		if (oldKeys != null)
 			for (String key: oldKeys) {
 				value = ApplicationProperties.getProperty(reference == null ? key : key.replace("%", reference));
+				if (value != null) return value;
+			}
+		
+		return defaultValueOverride != null ? defaultValueOverride : defaultValue();
+	}
+	
+	public String valueOfSession(Long sessionId) {
+		return valueOfSession(sessionId, null, null);
+	}
+	
+	public String valueOfSession(Long sessionId, String reference) {
+		return valueOfSession(sessionId, reference, null);
+	}
+	
+	public String valueOfSession(Long sessionId, String reference, String defaultValueOverride) {
+		String value = ApplicationProperties.getProperty(sessionId, key(reference));
+		if (value != null) return value;
+		
+		String[] oldKeys = replaces();
+		if (oldKeys != null)
+			for (String key: oldKeys) {
+				value = ApplicationProperties.getProperty(sessionId, reference == null ? key : key.replace("%", reference));
 				if (value != null) return value;
 			}
 		

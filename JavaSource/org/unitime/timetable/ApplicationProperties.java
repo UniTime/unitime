@@ -218,8 +218,16 @@ public class ApplicationProperties {
 	    return getProperty(key, null);
 	}
 	
+	public static String getProperty(Long sessionId, String key) {
+	    return getProperty(sessionId, key, null);
+	}
+	
 	public static String getProperty(ApplicationProperty property) {
 		return property.value();
+	}
+	
+	public static String getProperty(Long sessionId, ApplicationProperty property) {
+		return property.valueOfSession(sessionId);
 	}
 
 	/**
@@ -229,10 +237,13 @@ public class ApplicationProperties {
 	 * @return default value if invalid key / key does not exist
 	 */
 	public static String getProperty(String key, String defaultValue) {
+		return getProperty(ApplicationProperties.getSessionId(), key, defaultValue);
+	}
+
+	public static String getProperty(Long sessionId, String key, String defaultValue) {
 	    if(key==null || key.trim().length()==0)
 	        return defaultValue;
 	    
-	    Long sessionId = ApplicationProperties.getSessionId();
 	    if (sessionId != null) {
 	    	String value = getSessionProperties(sessionId).getProperty(key);
 	    	if (value != null) return value;
