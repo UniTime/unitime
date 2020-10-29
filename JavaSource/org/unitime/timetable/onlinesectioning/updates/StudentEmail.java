@@ -578,7 +578,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			wlMode = WaitListMode.NoSubs;
 		}
 		input.put("wlMode", wlMode.name());
-		input.put("awlMode", ApplicationProperty.AdvisorRecommendationsWaitListMode.value());
+		input.put("awlMode", ApplicationProperty.AdvisorRecommendationsWaitListMode.value(server.getAcademicSession()));
 		
 		if (iIncludeCourseRequests) {
 			CourseRequestInterface requests = server.createAction(GetRequest.class)
@@ -607,7 +607,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					details.setStudentId(student.getUniqueId());
 					details.setStudentName(student.getName(NameFormat.LAST_FIRST_MIDDLE.reference()));
 					details.setSessionName(student.getSession().getLabel());
-					details.setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value()));
+					details.setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value(server.getAcademicSession())));
 					Advisor advisor = Advisor.findByExternalId(helper.getUser().getExternalId(), server.getAcademicSession().getUniqueId());
 					if (advisor != null)
 						details.setAdvisorEmail(advisor.getEmail());

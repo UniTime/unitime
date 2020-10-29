@@ -1660,7 +1660,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							} catch (Exception e) {}
 						}
 						if (ret.getAdvisorRequest() != null)
-							ret.getAdvisorRequest().setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value()));
+							ret.getAdvisorRequest().setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value(student.getSession())));
 						if (ret.getRequest() != null)
 							ret.getRequest().setWaitListMode(wlMode);
 						return ret;
@@ -1668,7 +1668,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(studentId).withRequest(true).withCustomCheck(true).withAdvisorRequest(true).checkHolds(true), currentUser());
 						ret.setCanSetCriticalOverrides(getSessionContext().hasPermission(student, Right.StudentSchedulingChangeCriticalOverride));
 						if (ret.getAdvisorRequest() != null)
-							ret.getAdvisorRequest().setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value()));
+							ret.getAdvisorRequest().setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value(student.getSession())));
 						if (ret.getRequest() != null)
 							ret.getRequest().setWaitListMode(wlMode);
 						return ret;
@@ -3336,7 +3336,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			ret.setEmailOptionalToggleDefault(email.isOptionCheckedByDefault());
 		}
 		try {
-			ret.setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value()));
+			ret.setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value(student.getSession())));
 		} catch (Exception e) {}
 		 
 		if (getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdmin)) {
@@ -3521,12 +3521,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (cx.getStudentId() == null)
 			throw new PageAccessException(MSG.exceptionNoStudent());
 		OnlineSectioningServer server = getServerInstance(cx.getSessionId() == null ? canEnroll(cx) : cx.getSessionId(), true);
-		if (server == null)
-			if (server == null) throw new SectioningException(MSG.exceptionNoAcademicSession());
+		if (server == null) throw new SectioningException(MSG.exceptionNoAcademicSession());
 		
 		CourseRequestInterface ret = server.execute(server.createAction(AdvisorGetCourseRequests.class).forStudent(cx.getStudentId()).checkDemands(false), currentUser(cx));
 		try {
-			ret.setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value()));
+			ret.setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value(server.getAcademicSession())));
 		} catch (Exception e) {}
 		return ret;
 	}
