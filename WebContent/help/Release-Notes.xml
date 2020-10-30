@@ -40,6 +40,7 @@
 				<line>Allows for student status change when submitted; no need for the advisor to use the dashboard to change the student status.</line>
 				<line>UniTime keeps record of these advisor course requests for possible auditing/reporting (what students requested versus what they have been advised, list students that have been already advised that did not fill their course requests in, etc.).</line>
 				<line>Student Course Requests page can be pre-populated with these courses, or a student can review the courses filled in by the advisor.</line>
+				<line>Optionally, course recommendation may contain wait-listing toggles (based on unitime.acr.waitlist parameter).</line>
 			</description>
 		</item>
 		<item>
@@ -65,6 +66,7 @@
 			<description>
 				<line>Added ability to identify priority students (to be assigned first) by a filter query.</line>
 				<line>Improved handling of priority students by the solver.</line>
+				<line>Up to 5 priority tiers can be defined (Priority, Senior, Junior, Sophomore, and Frehmen).</line>
 			</description>
 		</item>
 		<item>
@@ -113,6 +115,18 @@
 				<line>Added ability to save/validate only a subset of students loaded in the student scheduling solver.</line>
 				<line>Added ability to put a small penalization on online sections.
 					<line>That is sections that do not have a time, that have time and no room, or that have time but the room does not check for conflicts (like the ONLINE room).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>No Substitutions</name>
+			<description>
+				<line>Added ability to reuse the wait-listing toggle as No-Subs (no substitutions) when wait-listing is disabled.
+					<line>Course requests that are marked as No-Subs cannot be replaced by a substitute course.</line>
+					<line>There is a new parameter of student schedule status (students may or may not be allowed to mark courses as No-Subs).</line>
+				</line>
+				<line>It is also possible to only allow advisor recommendations to mark courses as No-Subs (students are not allow to see/set No-Subs or Wait-List toggles).
+					<line>In this case, solver parameter Load.UseAdvisorWaitLists must be set to true to check for these during the data load.</line>
 				</line>
 			</description>
 		</item>
