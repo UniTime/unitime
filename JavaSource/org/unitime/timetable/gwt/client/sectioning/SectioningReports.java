@@ -142,7 +142,9 @@ public class SectioningReports extends Composite {
 						if (iHead.getCell(x).contains("%") && number)
 							text = PF.format(Double.parseDouble(text));
 						else if (text.matches("[\\-]?[0-9]+\\.[0-9]+") && number)
-							text = DF.format(Double.parseDouble(text)); 
+							text = DF.format(Double.parseDouble(text));
+						else if (text.matches("[\\-]?[0-9]+(,[0-9][0-9][0-9])*(\\.[0-9]+)? ?%?"))
+							number = true;
 						line.add(number ? new NumberCell(hide ? "" : text) : new HTML(hide ? "" : text));
 						prevHide = hide;
 					}
@@ -412,7 +414,9 @@ public class SectioningReports extends Composite {
 					if (iHead.getCell(x).contains("%") && number)
 						text = PF.format(Double.parseDouble(text));
 					else if (text.matches("[\\-]?[0-9]+\\.[0-9]+") && number)
-						text = DF.format(Double.parseDouble(text)); 
+						text = DF.format(Double.parseDouble(text));
+					else if (text.matches("[\\-]?[0-9]+(,[0-9][0-9][0-9])*(\\.[0-9]+)? ?%?"))
+						number = true;
 					line.add(number ? new NumberCell(hide ? "" : text) : new HTML(hide ? "" : text));
 					prevHide = hide;
 				}
