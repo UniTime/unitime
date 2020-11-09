@@ -1136,6 +1136,8 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 					saveStudent(student);
 				}
 				iProgress.debug(getName() + " has finished.");
+			} catch (Exception e) {
+				iProgress.error(getName() + " has failed: " + e.getMessage(), e);
 			} finally {
 				ApplicationProperties.setSessionId(null);
 				_RootDAO.closeCurrentThreadSessions();

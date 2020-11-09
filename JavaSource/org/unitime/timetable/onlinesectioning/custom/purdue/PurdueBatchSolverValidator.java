@@ -537,6 +537,8 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 						validateStudent(student);
 				}
 				iProgress.debug(getName() + " has finished.");
+			} catch (Exception e) {
+				iProgress.error(getName() + " has failed: " + e.getMessage(), e);
 			} finally {
 				ApplicationProperties.setSessionId(null);
 				_RootDAO.closeCurrentThreadSessions();
