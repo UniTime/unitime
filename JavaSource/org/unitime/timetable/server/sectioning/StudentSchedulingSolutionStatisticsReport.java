@@ -158,17 +158,26 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         }
     }
     
-    public static class OnlineLateFilter implements StudentFilter {
+    public static class OnlineFilter implements StudentFilter {
+        public OnlineFilter() {
+        }
+        @Override
+        public boolean matches(Student student) {
+        	for (AcademicAreaCode aac: student.getMinors()) {
+                if ("SCOVIDONL".equalsIgnoreCase(aac.getCode())) return true;
+                if ("SCONTONL".equalsIgnoreCase(aac.getCode())) return true;
+                if ("SCOVIDPMPE".equalsIgnoreCase(aac.getCode())) return true;
+        	}
+        	return false;
+        }
+    }
+    
+    public static class OnlineLateFilter extends OnlineFilter {
         public OnlineLateFilter() {
         }
         @Override
         public boolean matches(Student student) {
-        	boolean online = false;
-        	for (AcademicAreaCode aac: student.getMinors()) {
-                if ("SCONTONL".equalsIgnoreCase(aac.getCode())) { online = true; break; }
-                if ("SCOVIDONL".equalsIgnoreCase(aac.getCode())) { online = true; break; }
-        	}
-        	if (!online) return false;
+        	if (!super.matches(student)) return false;
         	boolean hasOL = false;
         	boolean hasRS = false;
         	for (Request r: student.getRequests()) {
@@ -199,21 +208,32 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         }
     }
     
+    private static StudentFilter FILTER_ALL = new AndFilter(new NotFilter(new DummyOrNoRequestsFilter()), new NotFilter(new OnlineLateFilter()));
+    private static StudentFilter FILTER_ALL_RES = new AndFilter(new NotFilter(new DummyOrNoRequestsFilter()), new NotFilter(new OnlineFilter()));
+    
     public static enum StudentGroup implements StudentFilter {
-        ALL("All Students", new AndFilter(new NotFilter(new DummyOrNoRequestsFilter()), new NotFilter(new OnlineLateFilter()))),
+        ALL("All Students", FILTER_ALL),
+        
         DUMMY("Projected", new DummyFilter()),
-        PRIORITY("Priority", new PriorityFilter(StudentPriority.Priority)),
-        SENIOR("Seniors", new PriorityFilter(StudentPriority.Senior)),
-        JUNIOR("Juniors", new PriorityFilter(StudentPriority.Junior)),
-        SOPHOMORE("Sophomores", new PriorityFilter(StudentPriority.Sophomore)),
-        RESHMEN("Frehmen", new PriorityFilter(StudentPriority.Frehmen)),
-        NORMAL("Non-priority", new PriorityFilter(StudentPriority.Normal)),
-        REBATCH("RE-BATCH", new AndFilter(new NotFilter(new DummyOrNoRequestsFilter()), new AndFilter(new GroupFilter("RE-BATCH"), new NotFilter(new GroupFilter("SCONTONL")), new NotFilter(new GroupFilter("SCOVIDONL"))))),
-        SCONTONL("SCONTONL", new AndFilter(new NotFilter(new DummyOrNoRequestsFilter()), new GroupFilter("SCONTONL"), new NotFilter(new OnlineLateFilter()))),
-        SCOVIDONL("SCOVIDONL", new AndFilter(new NotFilter(new DummyOrNoRequestsFilter()), new GroupFilter("SCOVIDONL"), new NotFilter(new OnlineLateFilter()))),
-        PREREG("PREREG", new AndFilter(new NotFilter(new DummyOrNoRequestsFilter()), new AndFilter(new GroupFilter("PREREG"), new NotFilter(new GroupFilter("SCONTONL")), new NotFilter(new GroupFilter("SCOVIDONL")), new NotFilter(new GroupFilter("RE-BATCH")), new NotFilter(new StarFilter())))),
-        STAR("STAR", new AndFilter(new NotFilter(new DummyOrNoRequestsFilter()), new AndFilter(new StarFilter(), new NotFilter(new GroupFilter("SCONTONL")), new NotFilter(new GroupFilter("SCOVIDONL")), new NotFilter(new GroupFilter("RE-BATCH"))))),
-        OTHER("Other", new AndFilter(new NotFilter(new DummyOrNoRequestsFilter()), new NotFilter(new OrFilter(new GroupFilter("RE-BATCH"), new GroupFilter("SCONTONL"), new GroupFilter("SCOVIDONL"), new GroupFilter("PREREG"), new StarFilter())))),
+        // ONLINE_LATE("Online-Late", new OnlineLateFilter()),
+        
+        PRIORITY("Priority", new AndFilter(new PriorityFilter(StudentPriority.Priority), FILTER_ALL)),
+        SENIOR("Seniors", new AndFilter(new PriorityFilter(StudentPriority.Senior), FILTER_ALL)),
+        JUNIOR("Juniors", new AndFilter(new PriorityFilter(StudentPriority.Junior), FILTER_ALL)),
+        SOPHOMORE("Sophomores", new AndFilter(new PriorityFilter(StudentPriority.Sophomore), FILTER_ALL)),
+        RESHMEN("Frehmen", new AndFilter(new PriorityFilter(StudentPriority.Frehmen), FILTER_ALL)),
+        NORMAL("Non-priority", new AndFilter(new PriorityFilter(StudentPriority.Normal), FILTER_ALL)),
+        
+        REBATCH("RE-BATCH", new AndFilter(new GroupFilter("RE-BATCH"), FILTER_ALL_RES)),
+        ONLINE("Online", new AndFilter(new OnlineFilter(), FILTER_ALL)),
+        	GR_SCONTONL("SCONTONL", new AndFilter(new GroupFilter("SCONTONL"), FILTER_ALL)),
+        	GR_SCOVIDONL("SCOVIDONL", new AndFilter(new GroupFilter("SCOVIDONL"), FILTER_ALL)),
+        	GR_SCOVIDPMPE("SCOVIDPMPE", new AndFilter(new GroupFilter("SCOVIDPMPE"), FILTER_ALL)),
+        PREREG("PREREG", new AndFilter(new GroupFilter("PREREG"), FILTER_ALL_RES, new NotFilter(new StarFilter()))),
+        STAR("STAR", new AndFilter(new StarFilter(), FILTER_ALL_RES, new NotFilter(new GroupFilter("RE-BATCH")))),
+        	GR_STAR("On-campus STAR", new AndFilter(new GroupFilter("STAR"), FILTER_ALL_RES, new NotFilter(new GroupFilter("RE-BATCH")))),
+        	GR_VSTAR("Virtual STAR", new AndFilter(new GroupFilter("VSTAR"), FILTER_ALL_RES, new NotFilter(new GroupFilter("RE-BATCH")))),
+        OTHER("Other", new AndFilter(FILTER_ALL_RES, new NotFilter(new GroupFilter("RE-BATCH")), new NotFilter(new GroupFilter("PREREG")), new NotFilter(new StarFilter()))),
         ;
         String iName;
         StudentFilter iFilter;
@@ -906,11 +926,13 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
             }
         }, true),
         F2F(new String[] {
+        			"Residential Students",
         			"Arranged Hours Assignments", "- percentage of all assignments",
         			"Online Assignments", "- percentage of all assignments",
         			"Students with no face-to-face classes", "- percentage of all undergrad students",
         			"Students with <50% classes face-to-face", "- percentage of all undergrad students"},
         		new String[] {
+        			"Number of students that are NOT online-only (only residential students are counted in the following numbers)",
         			"Number of class assignments that are Arranged Hours", "Percentage of all class assignments",
         			"Number of class assignments that are Online (no time, time with no room, or time with ONLINE room)", "Percentage of all class assignments",
         			"Total number of undergraduate students with no face-to-face classes.", "Percentage of all undergraduate students",
@@ -920,8 +942,11 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
             @Override
             public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
             	int arrClass = 0, onlineClass = 0, allClass = 0;
+            	int residentialStudents = 0;
             	for (Student student: model.getStudents()) {
             		if (!group.matches(student)) continue;
+            		if (!FILTER_ALL_RES.matches(student)) { continue; }
+            		residentialStudents ++;
             		for (Request r: student.getRequests()) {
             			Enrollment e = r.getAssignment(assignment);
             			if (e != null && e.isCourseRequest()) {
@@ -938,6 +963,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                 int total = 0;
                 for (Student student: model.getStudents()) {
                     if (!group.matches(student)) continue;
+                    if (!FILTER_ALL_RES.matches(student)) continue;
                     boolean gr = false;
                     for (AreaClassificationMajor acm: student.getAreaClassificationMajors()) {
                     	if (acm.getClassification().startsWith("G") || acm.getClassification().startsWith("P")) gr = true;
@@ -960,7 +986,9 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                     }
                 }
                 return new String[] {
-                		sIntFormat.format(arrClass), sPercentFormat.format(100.0 * arrClass / allClass) + "%",
+                		sIntFormat.format(residentialStudents),
+                		(residentialStudents == 0 ? "" : sIntFormat.format(arrClass)),
+                		(residentialStudents == 0 ? "" : sPercentFormat.format(100.0 * arrClass / allClass) + "%"),
                 		(onlineClass == 0 ? "" : sIntFormat.format(onlineClass)), 
                 		(onlineClass == 0 ? "" : sPercentFormat.format(100.0 * onlineClass / allClass) + "%"),
                         (online == 0 ? "" : sIntFormat.format(online)),
