@@ -1279,18 +1279,18 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         student.setExternalId(s.getExternalUniqueId());
         student.setName(iStudentNameFormat.format(s));
         student.setStatus(s.getSectioningStatus() == null ? null : s.getSectioningStatus().getReference());
-        for (StudentPriority priority: StudentPriority.values()) {
+        priorities: for (StudentPriority priority: StudentPriority.values()) {
         	if (priority == StudentPriority.Normal) break;
         	Query query = iPriorityStudentQuery.get(priority);
         	String groupRef = iPriorityStudentGroupReference.get(priority);
         	if (query != null && query.match(new DbStudentMatcher(s))) {
             	student.setPriority(priority);
-            	break;
+            	break priorities;
         	} else if (groupRef != null) {
         		for (StudentGroup g: s.getGroups()) {
             		if (groupRef.equals(g.getGroupAbbreviation())) {
             			student.setPriority(priority);
-            			break;
+            			break priorities;
             		}
             	}
         	}
