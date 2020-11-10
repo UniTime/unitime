@@ -507,6 +507,11 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Course Offerings: automatically upper case course offering numbers")
 	CourseOfferingNumberUpperCase("tmtbl.courseNumber.upperCase"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Course Offerings: search for a match in course title too")
+	CourseOfferingTitleSearch("tmtbl.courseNumber.searchTitle"),
 
 	@DefaultValue("^[0-9][0-9][0-9]([A-Za-z]){0,1}$")
 	@Description("Course Offerings: required matching pattern (e.g., 3 numbers followed by an optional letter)")

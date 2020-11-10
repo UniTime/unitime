@@ -48,7 +48,7 @@
 			</TD>
 			<TH valign="middle">Course Number:</TH>
 			<TD valign="middle">
-				<tt:course-number property="courseNbr" configuration="subjectId=\${subjectId};notOffered=exclude" size="10"
+				<tt:course-number property="courseNbr" configuration="subjectId=\${subjectId};notOffered=exclude" size="15"
 					title="Course numbers can be specified using wildcard (*). E.g. 2*"/>
 			</TD>
 			<TD valign="middle" nowrap>

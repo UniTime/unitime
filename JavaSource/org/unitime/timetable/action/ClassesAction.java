@@ -151,7 +151,16 @@ public class ClassesAction extends Action {
                 else {
                     sa = SubjectArea.findByAbbv(myForm.getSession(), myForm.getSubjectArea());
                     if (sa!=null) {
-                        if (myForm.getCourseNumber()!=null && myForm.getCourseNumber().length()>0) {
+                    	if (ApplicationProperty.CourseOfferingTitleSearch.isTrue() && myForm.getCourseNumber() != null && myForm.getCourseNumber().length() > 2) {
+                    		classes = Class_DAO.getInstance().getSession().createQuery(
+                                    "select distinct c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering io inner join io.courseOfferings co where " +
+                                    "c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and "+
+                                    "co.subjectArea.uniqueId=:subjectAreaId and (co.courseNbr like :courseNbr or lower(co.title) like ('%' || lower(:courseNbr) || '%'))").
+                            setLong("sessionId",myForm.getSession()).
+                            setLong("subjectAreaId",sa.getUniqueId()).
+                            setString("courseNbr",myForm.getCourseNumber().replaceAll("\\*", "%")).
+                            setCacheable(true).list();
+                		} else if (myForm.getCourseNumber()!=null && myForm.getCourseNumber().length()>0) {
                             classes = Class_DAO.getInstance().getSession().createQuery(
                                     "select distinct c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering io inner join io.courseOfferings co where " +
                                     "c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and "+
@@ -285,7 +294,9 @@ public class ClassesAction extends Action {
     public boolean match(ClassesForm form, CourseOffering co) {
         if ("--ALL--".equals(form.getSubjectArea())) return true;
         if (!co.getSubjectArea().getSubjectAreaAbbreviation().equals(form.getSubjectArea())) return false;
-        if (form.getCourseNumber()!=null && form.getCourseNumber().length()>0) {
+        if (ApplicationProperty.CourseOfferingTitleSearch.isTrue() && form.getCourseNumber() != null && form.getCourseNumber().length() > 2) {
+        	return co.getCourseNbr().matches(form.getCourseNumber().replaceAll("\\*", ".*")) || (co.getTitle() != null && co.getTitle().toLowerCase().contains(form.getCourseNumber().toLowerCase()));
+        } else if (form.getCourseNumber()!=null && form.getCourseNumber().length()>0) {
             return co.getCourseNbr().matches(form.getCourseNumber().replaceAll("\\*", ".*"));
         }
         return true;

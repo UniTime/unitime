@@ -374,7 +374,7 @@
 						<html:optionsCollection property="filterSubjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
 					</html:select>
 					<B><loc:message name="filterCourseNumber"/></B>
-					<tt:course-number property="filterCourseNbr" configuration="subjectId=\${subjectId};notOffered=exclude" size="10"/>
+					<tt:course-number property="filterCourseNbr" configuration="subjectId=\${subjectId};notOffered=exclude" size="15"/>
 					&nbsp;&nbsp;&nbsp;
 					<html:submit property="op" 
 						onclick="displayLoading();"

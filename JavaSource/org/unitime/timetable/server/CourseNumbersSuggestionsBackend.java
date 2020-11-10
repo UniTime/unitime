@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.client.widgets.CourseNumbersSuggestBox.SuggestionInterface;
 import org.unitime.timetable.gwt.client.widgets.CourseNumbersSuggestBox.SuggestionRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
@@ -66,7 +67,9 @@ public class CourseNumbersSuggestionsBackend implements GwtRpcImplementation<Sug
             			"where co.subjectArea.session.uniqueId = :sessionId and co.subjectArea.subjectAreaAbbreviation = :subjectAbbv " +
             			("include".equals(params.get("notOffered")) ? "" : "and co.instructionalOffering.notOffered = false ") +
             			("exclude".equals(params.get("crossListed")) ? "and co.isControl = true " : "") +
-            			"and co.courseNbr like :q order by co.courseNbr")
+            			(ApplicationProperty.CourseOfferingTitleSearch.isTrue() && request.getQuery().length() > 2
+            			? "and (co.courseNbr like :q or lower(co.title) like lower('%' || :q))"
+            			: "and co.courseNbr like :q") + " order by co.courseNbr")
             			.setLong("sessionId", sessionId)
             			.setString("subjectAbbv", params.get("subjectAbbv"))
             			.setString("q", request.getQuery() + "%")
@@ -86,7 +89,9 @@ public class CourseNumbersSuggestionsBackend implements GwtRpcImplementation<Sug
             			"where co.subjectArea.uniqueId = :subjectId " +
             			("include".equals(params.get("notOffered")) ? "" : "and co.instructionalOffering.notOffered = false ") +
             			("exclude".equals(params.get("crossListed")) ? "and co.isControl = true " : "") +
-            			"and co.courseNbr like :q order by co.courseNbr")
+            			(ApplicationProperty.CourseOfferingTitleSearch.isTrue() && request.getQuery().length() > 2
+            			? "and (co.courseNbr like :q or lower(co.title) like lower('%' || :q))"
+            			: "and co.courseNbr like :q") + " order by co.courseNbr")
             			.setLong("subjectId", subjectId)
             			.setString("q", request.getQuery() + "%")
             			.setCacheable(true).setMaxResults(request.getLimit()).list()) {

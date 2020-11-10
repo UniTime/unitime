@@ -333,7 +333,7 @@
 				<B><loc:message name="filterCourseNumber"/></B>
 			</TD>
 			<TD valign="top">
-				<tt:course-number property="courseNbr" configuration="subjectId=\${subjectId};notOffered=exclude" size="10"
+				<tt:course-number property="courseNbr" configuration="subjectId=\${subjectId};notOffered=exclude" size="15"
 					title="Course numbers can be specified using wildcard (*). E.g. 2*"/>
 				<!-- html:text property="courseNbr" size="10" maxlength="10" / -->
 			</TD>

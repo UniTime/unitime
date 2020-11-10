@@ -48,7 +48,7 @@
 				<html:options property="subjectAreas"/>
 			</html:select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			Course Number:
-			<tt:course-number property="courseNumber" configuration="sessionId=\${sessionId};subjectAbbv=\${subjectAbbv};notOffered=exclude" size="10"
+			<tt:course-number property="courseNumber" configuration="sessionId=\${sessionId};subjectAbbv=\${subjectAbbv};notOffered=exclude" size="15"
 				title="Course numbers can be specified using wildcard (*). E.g. 2*"/>
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			<html:submit onclick="op.value='Apply'; this.disabled=true; if (document.getElementById('s2')) document.getElementById('s2').disabled=true; displayLoading(); form.submit();" styleId="s1" accesskey="A" value="Apply" title="Apply (Alt+A)"/>

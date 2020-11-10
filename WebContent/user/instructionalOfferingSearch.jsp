@@ -283,7 +283,7 @@
 			</TD>
 			<TH valign="top" nowrap><loc:message name="filterCourseNumber"/></TH>
 			<TD valign="top" nowrap>
-				<tt:course-number property="courseNbr" configuration="subjectId=\${subjectAreaIds};notOffered=include" size="10"
+				<tt:course-number property="courseNbr" configuration="subjectId=\${subjectAreaIds};notOffered=include" size="15"
 					title="Course numbers can be specified using wildcard (*). E.g. 2*"/>
 			</TD>
 			<TD valign="top" nowrap>

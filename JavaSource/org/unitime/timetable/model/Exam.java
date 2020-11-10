@@ -232,6 +232,18 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     
     public static List findExamsOfCourse(Long subjectAreaId, String courseNbr, Long examTypeId) {
         if (courseNbr==null || courseNbr.trim().length()==0) return findExamsOfSubjectArea(subjectAreaId, examTypeId);
+        if (ApplicationProperty.CourseOfferingTitleSearch.isTrue() && courseNbr != null && courseNbr.length() > 2) {
+            return new ExamDAO().getSession().createQuery(
+                    "select distinct x from Exam x inner join x.owners o where " +
+                    "o.course.subjectArea.uniqueId=:subjectAreaId and x.examType.uniqueId=:examTypeId and ("+
+                    (courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr":"o.course.courseNbr=:courseNbr") +
+                    " or lower(o.course.title) like lower('%' || :courseNbr || '%'))")
+                    .setLong("subjectAreaId", subjectAreaId)
+                    .setString("courseNbr", courseNbr.trim().replaceAll("\\*", "%"))
+                    .setLong("examTypeId", examTypeId)
+                    .setCacheable(true)
+                    .list();
+        }
         return new ExamDAO().getSession().createQuery(
                 "select distinct x from Exam x inner join x.owners o where " +
                 "o.course.subjectArea.uniqueId=:subjectAreaId and x.examType.uniqueId=:examTypeId and "+

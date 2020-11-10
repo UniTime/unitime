@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.hibernate.Query;
 import org.unitime.commons.web.WebTable;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
@@ -55,34 +56,43 @@ import com.lowagie.text.pdf.PdfWriter;
 public class ExamDistributionPrefsTableBuilder {
 	
 	public String getDistPrefsTable(HttpServletRequest request, SessionContext context, Long subjectAreaId, String courseNbr, Long examTypeId) throws Exception {
-	    Query q = new DistributionPrefDAO().getSession().createQuery(
-	            "select distinct dp from DistributionPref dp " +
+		String query = "select distinct dp from DistributionPref dp " +
 	            "inner join dp.distributionObjects do, Exam x inner join x.owners o " +
-	            "where "+
-	            (courseNbr==null || courseNbr.trim().length()==0?"":courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr and ":"o.course.courseNbr=:courseNbr and ")+
-	            (subjectAreaId==null?"":" o.course.subjectArea.uniqueId=:subjectAreaId and ")+
+	            "where ";
+		if (ApplicationProperty.CourseOfferingTitleSearch.isTrue() && courseNbr != null && courseNbr.trim().length() > 2) {
+			query += "(" + (courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr ":"o.course.courseNbr=:courseNbr ") +
+					" or lower(o.course.title) like lower('%' || :courseNbr || '%')) and ";
+		} else if (courseNbr != null && !courseNbr.trim().isEmpty()) {
+			query += (courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr and ":"o.course.courseNbr=:courseNbr and ");
+		}
+		query += (subjectAreaId==null?"":" o.course.subjectArea.uniqueId=:subjectAreaId and ")+
 	            "dp.distributionType.examPref = true and "+
-	            "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId")
+	            "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId";
+	    Query q = new DistributionPrefDAO().getSession().createQuery(query)
 	            .setLong("sessionId", context.getUser().getCurrentAcademicSessionId())
 	    		.setLong("examTypeId", examTypeId);
 	    if (subjectAreaId!=null)
 	        q.setLong("subjectAreaId", subjectAreaId);
-	    if (courseNbr!=null && courseNbr.trim().length()!=0)
+	    if (courseNbr!=null && !courseNbr.trim().isEmpty())
 	        q.setString("courseNbr", courseNbr.trim().replaceAll("\\*", "%"));
 	    List distPrefs = q.setCacheable(true).list();
 		return toHtmlTable(request, context, distPrefs, null); 
 	}
 
     public void getDistPrefsTableAsPdf(OutputStream out, HttpServletRequest request, SessionContext context, Long subjectAreaId, String courseNbr, Long examTypeId) throws Exception {
-        
-        Query q = new DistributionPrefDAO().getSession().createQuery(
-                "select distinct dp from DistributionPref dp " +
+    	String query =  "select distinct dp from DistributionPref dp " +
                 "inner join dp.distributionObjects do, Exam x inner join x.owners o " +
-                "where "+
-                (courseNbr==null || courseNbr.trim().length()==0?"":courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr and ":"o.course.courseNbr=:courseNbr and ")+
-                (subjectAreaId==null?"":" o.course.subjectArea.uniqueId=:subjectAreaId and ")+
+                "where ";
+    	if (ApplicationProperty.CourseOfferingTitleSearch.isTrue() && courseNbr != null && courseNbr.trim().length() > 2) {
+			query += "(" + (courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr ":"o.course.courseNbr=:courseNbr ") +
+					" or lower(o.course.title) like lower('%' || :courseNbr || '%')) and ";
+		} else if (courseNbr != null && !courseNbr.trim().isEmpty()) {
+			query += (courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr and ":"o.course.courseNbr=:courseNbr and ");
+		}
+    	query += (subjectAreaId==null?"":" o.course.subjectArea.uniqueId=:subjectAreaId and ")+
                 "dp.distributionType.examPref = true and "+
-                "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId")
+                "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId";
+        Query q = new DistributionPrefDAO().getSession().createQuery(query)
                 .setLong("sessionId", context.getUser().getCurrentAcademicSessionId())
                 .setLong("examTypeId", examTypeId);
         if (subjectAreaId!=null)

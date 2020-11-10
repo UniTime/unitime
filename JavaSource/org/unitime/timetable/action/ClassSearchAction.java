@@ -333,21 +333,20 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 				}
 				query.append(subjectIds[i]);
 			}
-			query.append(") ");			
-	        if (form.getCourseNbr() != null && form.getCourseNbr().length() > 0){
-	            String courseNbr = form.getCourseNbr();
-	            query.append(" and co.courseNbr ");
-			    if (courseNbr.indexOf('*')>=0) {
-		            query.append(" like '");
-		            courseNbr = courseNbr.replace('*', '%');
-			    }
-			    else {
-		            query.append(" = '");
-			    }
-	            if (ApplicationProperty.CourseOfferingNumberUpperCase.isTrue())
-	            	courseNbr = courseNbr.toUpperCase();
-	            query.append(courseNbr);
-	            query.append("'  ");
+			query.append(") ");
+			String courseNbr = form.getCourseNbr();
+			if (ApplicationProperty.CourseOfferingTitleSearch.isTrue() && courseNbr != null && courseNbr.length() > 2) {
+				if (courseNbr.indexOf('*') >= 0) {
+					query.append(" and (co.courseNbr like :courseNbr or lower(co.title) like lower(:courseNbr))");
+				} else {
+					query.append(" and (co.courseNbr = :courseNbr or lower(co.title) like ('%' || lower(:courseNbr) || '%'))");
+				}
+			} else if (form.getCourseNbr() != null && form.getCourseNbr().length() > 0){
+				if (courseNbr.indexOf('*') >= 0) {
+					query.append(" and co.courseNbr like :courseNbr ");
+				} else {
+					query.append(" and co.courseNbr = :courseNbr ");
+				}
 	        }
 
 	        if (doFilterManager) {
@@ -369,6 +368,11 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 	        }
 			Query q = hibSession.createQuery(query.toString());
 			q.setFetchSize(1000);
+			if (courseNbr != null && courseNbr.length() > 0) {
+				if (ApplicationProperty.CourseOfferingNumberUpperCase.isTrue())
+	            	courseNbr = courseNbr.toUpperCase();
+				q.setString("courseNbr", courseNbr.replace('*', '%'));
+			}
 			q.setCacheable(true);
 	        TreeSet ts = new TreeSet(new ClassCourseComparator(form.getSortBy(), classAssignmentProxy, form.getSortByKeepSubparts()));
 			long sTime = new java.util.Date().getTime();

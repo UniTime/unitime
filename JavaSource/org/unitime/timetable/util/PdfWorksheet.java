@@ -173,7 +173,13 @@ public class PdfWorksheet {
         for (SubjectArea sa: subjectAreas)
         	subjectIds.add(sa.getUniqueId());
         String query = "select co from CourseOffering co where  co.subjectArea.uniqueId in :subjectIds";
-        if (courseNumber != null && !courseNumber.trim().isEmpty()) {
+        if (ApplicationProperty.CourseOfferingTitleSearch.isTrue() && courseNumber != null && courseNumber.length() > 2) {
+			if (courseNumber.indexOf('*') >= 0) {
+				query += " and (co.courseNbr like :courseNbr or lower(co.title) like lower(:courseNbr))";
+			} else {
+				query += " and (co.courseNbr = :courseNbr or lower(co.title) like ('%' || lower(:courseNbr) || '%'))";
+			}
+		} else if (courseNumber != null && !courseNumber.trim().isEmpty()) {
 			if (courseNumber.indexOf('*') >= 0) {
 				query += " and co.courseNbr like :courseNbr ";
 			} else {

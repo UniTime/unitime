@@ -35,6 +35,7 @@ import org.springframework.web.util.HtmlUtils;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseDistributionPref;
 import org.unitime.timetable.model.dao.DistributionPrefDAO;
 import org.unitime.timetable.model.dao.PreferenceGroupDAO;
@@ -333,7 +334,7 @@ public class DistributionPref extends BaseDistributionPref {
     	sb.append(" inner join dp.distributionObjects as do, ");
     	sb.append(" Class_ as c ");
     	sb.append(" inner join c.schedulingSubpart as ss inner join ss.instrOfferingConfig.instructionalOffering as io ");
-    	if(subjectAreaId != null || ownerId != null){
+    	if(subjectAreaId != null || ownerId != null || (courseNbr!=null && !courseNbr.trim().isEmpty())){
     		sb.append(" inner join io.courseOfferings as co ");
     	}
     	sb.append("where ");
@@ -356,19 +357,32 @@ public class DistributionPref extends BaseDistributionPref {
     	}
     	if(subjectAreaId != null){
     	    sb.append(" and co.subjectArea.uniqueId=:subjectAreaId ");
-    	    
-    		if (courseNbr!=null && courseNbr.trim().length()>0) {
-    		    sb.append(" and co.courseNbr ");
-    		    if (courseNbr.indexOf('*')>=0) {
-    	            sb.append(" like ");
-    	            courseNbr = courseNbr.replace('*', '%').toUpperCase();
-    		    }
-    		    else {
-    	            sb.append(" = ");
-    		    }
-                sb.append(":courseNbr");
-    		}		
     	}
+    	if (ApplicationProperty.CourseOfferingTitleSearch.isTrue() && courseNbr != null && courseNbr.trim().length() > 2) {
+	    	sb.append(" and (co.courseNbr ");
+		    if (courseNbr.indexOf('*')>=0) {
+	            sb.append(" like ");
+	            courseNbr = courseNbr.replace('*', '%');
+		    }
+		    else {
+	            sb.append(" = ");
+		    }
+            sb.append(":courseNbr or lower(co.title) like lower('%' || :courseNbr || '%'))");
+            if (ApplicationProperty.CourseOfferingNumberUpperCase.isTrue())
+            	courseNbr = courseNbr.toUpperCase();
+	    } else if (courseNbr!=null && !courseNbr.trim().isEmpty()) {
+		    sb.append(" and co.courseNbr ");
+		    if (courseNbr.indexOf('*')>=0) {
+	            sb.append(" like ");
+	            courseNbr = courseNbr.replace('*', '%');
+		    }
+		    else {
+	            sb.append(" = ");
+		    }
+		    if (ApplicationProperty.CourseOfferingNumberUpperCase.isTrue())
+            	courseNbr = courseNbr.toUpperCase();
+            sb.append(":courseNbr");
+		}
 	
     	Query q = (new DistributionPrefDAO()).
 			getSession().
@@ -378,11 +392,10 @@ public class DistributionPref extends BaseDistributionPref {
     		q.setLong("ownerId", ownerId.longValue());
     	if (uniqueId!=null)
     		q.setLong("uniqueId", uniqueId.longValue());
-    	if (subjectAreaId!=null) {
+    	if (subjectAreaId!=null) 
     		q.setLong("subjectAreaId", subjectAreaId.longValue());
-    		if (courseNbr!=null && courseNbr.trim().length()>0)
-    		    q.setString("courseNbr", courseNbr.toUpperCase());
-    	}
+		if (courseNbr!=null && !courseNbr.trim().isEmpty())
+		    q.setString("courseNbr", courseNbr);
     	return q.list();
     }
     
@@ -393,7 +406,7 @@ public class DistributionPref extends BaseDistributionPref {
         sb.append(" from ");
         sb.append(" DistributionPref as dp, ");
         sb.append(" DepartmentalInstructor as di ");
-        if (subjectAreaId!=null) {
+        if (subjectAreaId!=null || (courseNbr!=null && !courseNbr.isEmpty())) {
             sb.append(" inner join di.classes as ci inner join ci.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as co ");
         }
         sb.append("where ");
@@ -403,17 +416,32 @@ public class DistributionPref extends BaseDistributionPref {
             sb.append(" and ci.lead = true ");
             sb.append(" and co.isControl = true ");
             sb.append(" and co.subjectArea.uniqueId = :subjectAreaId ");
-            if (courseNbr!=null && courseNbr.trim().length()>0) {
-                sb.append(" and co.courseNbr ");
-                if (courseNbr.indexOf('*')>=0) {
-                    sb.append(" like ");
-                    courseNbr = courseNbr.replace('*', '%').toUpperCase();
-                } else {
-                    sb.append(" = ");
-                }
-                sb.append(":courseNbr");
-            }       
-        } else if (ownerId != null) {
+        }
+        if (ApplicationProperty.CourseOfferingTitleSearch.isTrue() && courseNbr != null && courseNbr.length() > 2) {
+	    	sb.append(" and (co.courseNbr ");
+		    if (courseNbr.indexOf('*')>=0) {
+	            sb.append(" like ");
+	            courseNbr = courseNbr.replace('*', '%');
+		    }
+		    else {
+	            sb.append(" = ");
+		    }
+            sb.append(":courseNbr or lower(co.title) like lower('%' || :courseNbr || '%'))");
+            if (ApplicationProperty.CourseOfferingNumberUpperCase.isTrue())
+            	courseNbr = courseNbr.toUpperCase();
+	    } else if (courseNbr!=null && !courseNbr.isEmpty()) {
+            sb.append(" and co.courseNbr ");
+            if (courseNbr.indexOf('*')>=0) {
+                sb.append(" like ");
+                courseNbr = courseNbr.replace('*', '%');
+            } else {
+                sb.append(" = ");
+            }
+            sb.append(":courseNbr");
+            if (ApplicationProperty.CourseOfferingNumberUpperCase.isTrue())
+            	courseNbr = courseNbr.toUpperCase();
+        }
+        if (ownerId != null) {
             sb.append(" and di.department.uniqueId = :ownerId ");
         }
 
@@ -423,11 +451,12 @@ public class DistributionPref extends BaseDistributionPref {
         q.setLong("sessionId", sessionId.longValue());
         if (subjectAreaId!=null) {
             q.setLong("subjectAreaId", subjectAreaId.longValue());
-            if (courseNbr!=null && courseNbr.trim().length()>0)
-                q.setString("courseNbr", courseNbr.toUpperCase());
-        } else if (ownerId!=null) {
+        }
+        if (ownerId!=null) {
             q.setLong("ownerId", ownerId.longValue());
         }
+        if (courseNbr!=null && !courseNbr.isEmpty())
+            q.setString("courseNbr", courseNbr);
         return q.list();
     }
     

@@ -232,7 +232,13 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 
 		query.append(" where io.session.uniqueId=:sessionId ");
 
-		if (courseNbr != null && courseNbr.length() > 0){
+		if (ApplicationProperty.CourseOfferingTitleSearch.isTrue() && courseNbr != null && courseNbr.length() > 2) {
+			if (courseNbr.indexOf('*') >= 0) {
+				query.append(" and (co.courseNbr like :courseNbr or lower(co.title) like lower(:courseNbr))");
+			} else {
+				query.append(" and (co.courseNbr = :courseNbr or lower(co.title) like ('%' || lower(:courseNbr) || '%'))");
+			}
+		} else if (courseNbr != null && courseNbr.length() > 0){
 			if (courseNbr.indexOf('*') >= 0) {
 				query.append(" and co.courseNbr like :courseNbr ");
 			} else {
@@ -241,7 +247,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 		}
 
 		query.append(" and co.subjectArea.uniqueId = :subjectAreaId ");
-
+		
 		Query q = hibSession.createQuery(query.toString());
 		q.setFetchSize(1000);
 		q.setLong("subjectAreaId", subjectAreaId);
