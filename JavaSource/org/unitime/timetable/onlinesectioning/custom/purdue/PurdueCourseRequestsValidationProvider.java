@@ -2067,8 +2067,9 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		if (!isValidationEnabled(student)) return false;
 
 		// When there is a pending override, try to update student first
+		boolean studentUpdated = false;
 		if (hasOverride(student))
-			updateStudent(server, helper, student, action);
+			studentUpdated = updateStudent(server, helper, student, action);
 
 		// All course requests are approved -> nothing to do
 		if (!hasNotApprovedCourseRequestOverride(student) && !"true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.forceRevalidation", "false"))) return false;
@@ -2567,7 +2568,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					
 		if (changed || studentChanged) helper.getHibSession().flush();
 		
-		return changed || studentChanged;
+		return changed || studentChanged || studentUpdated;
 	}
 
 	@Override
