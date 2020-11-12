@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<script name="Distribution Types: Create Same Dates Constraints" permission="Distribution Types" engine="ECMAScript" created="Tue Nov 10 15:41:10 CET 2020">
+  <description><![CDATA[Same Weeks: Given classes must be taught on the same dates. If one of the classes meets more often, the class meeting less often can only meet on the dates when the other class is meeting.<br>
+When prohibited or (strongly) discouraged: given classes cannot be taught on the same days (there cannot be a date when both classes are meeting).<br>
+Note: unlike with the same days/weeks constraint, this constraint consider individual meeting dates of both classes.]]></description>
+  <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
+var type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', 'SAME_DATES').uniqueResult();
+if (type == null) {
+  log.info('Creating Same Dates constraint...');
+  type = new org.unitime.timetable.model.DistributionType();
+  type.setReference('SAME_DATES');
+} else {
+  log.warn('Constraint Same Dates already exists.');
+}
+type.setLabel('Same Dates');
+type.setSequencingRequired(false);
+type.setRequirementId(++reqId);
+type.setAllowedPref('P43210R');
+type.setDescr('Given classes must be taught on the same dates. If one of the classes meets more often, the class meeting less often can only meet on the dates when the other class is meeting.<br>When prohibited or (strongly) discouraged: given classes cannot be taught on the same days (there cannot be a date when both classes are meeting).<br>Note: unlike with the same days/weeks constraint, this constraint consider individual meeting dates of both classes.');
+type.setAbbreviation('Same Dates');
+type.setInstructorPref(false);
+type.setExamPref(false);
+type.setVisible(true);
+hibSession.saveOrUpdate(type);]]></body>
+</script>
