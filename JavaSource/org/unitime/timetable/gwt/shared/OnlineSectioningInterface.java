@@ -521,6 +521,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private String iEmailOptionalToggleCaption = null;
 		private boolean iEmailOptionalToggleDefault = false;
 		private WaitListMode iMode = null;
+		private boolean iCanRequire = false;
 		
 		public AdvisingStudentDetails() {}
 		public AdvisingStudentDetails(AdvisingStudentDetails clone) {
@@ -538,6 +539,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			iEmailOptionalToggleCaption = clone.iEmailOptionalToggleCaption;
 			iEmailOptionalToggleDefault = clone.iEmailOptionalToggleDefault;
 			iMode = clone.iMode;
+			iCanRequire = clone.iCanRequire;
 		}
 		
 		public Long getStudentId() { return iStudentId; }
@@ -606,6 +608,9 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			return iMode;
 		}
 		public void setWaitListMode(WaitListMode mode) { iMode = mode; }
+		
+		public boolean isCanRequire() { return iCanRequire; }
+		public void setCanRequire(boolean canRequire) { iCanRequire = canRequire; }
 	}
 	
 	public static class AdvisorCourseRequestSubmission implements IsSerializable, Serializable {

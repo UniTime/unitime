@@ -214,6 +214,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 						LoadingWidget.getInstance().hide();
 						iDetails = result;
 						iContext.setStudentId(iDetails == null ? null : iDetails.getStudentId());
+						iSpecRegCx.setCanRequire(iDetails == null || iDetails.isCanRequire());
 						header.setEnabled("submit", result.isCanUpdate());
 						header.setEnabled("print", !result.isCanUpdate());
 						iDegreePlan.setVisible(result.isDegreePlan()); iDegreePlan.setEnabled(result.isDegreePlan());

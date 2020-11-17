@@ -3352,6 +3352,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			ret.setDegreePlan(false);
 		}
 		ret.setCanEmail(getSessionContext().hasPermissionAnySession(student.getSession(), Right.StudentSchedulingEmailStudent));
+		ret.setCanRequire(getSessionContext().hasPermissionAnySession(student, Right.StudentSchedulingCanRequirePreferences));
 		
 		List<CourseType> courseTypes = CourseTypeDAO.getInstance().getSession().createQuery(
 				"select distinct t from CourseOffering c inner join c.courseType t where c.instructionalOffering.session = :sessionId order by t.reference"

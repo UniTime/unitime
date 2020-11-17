@@ -103,6 +103,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void setDisclaimer(String disclaimer) { iDisclaimer = disclaimer; }
 		public boolean hasDisclaimer() { return iDisclaimer != null && !iDisclaimer.isEmpty(); }
 		public boolean isCanRequire() { return iCanRequire; }
+		public void setCanRequire(boolean canRequire) { iCanRequire = canRequire; }
 		public boolean isAllowChangeRequestNote() { return iSpecRegChangeRequestNote; }
 		public void setAllowChangeRequestNote(boolean changeRequestNote) { iSpecRegChangeRequestNote = changeRequestNote; } 
 		public void update(EligibilityCheck check) {
