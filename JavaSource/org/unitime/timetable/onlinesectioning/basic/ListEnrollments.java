@@ -213,12 +213,15 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 								e.setReservation(MSG.reservationCourse());
 								break;
 							case Curriculum:
+							case CurriculumOverride:
 								e.setReservation(MSG.reservationCurriculum());
 								break;
 							case Group:
+							case GroupOverride:
 								e.setReservation(MSG.reservationGroup());
 								break;
 							case Individual:
+							case IndividualOverride:
 								e.setReservation(MSG.reservationIndividual());
 								break;
 							case LearningCommunity:

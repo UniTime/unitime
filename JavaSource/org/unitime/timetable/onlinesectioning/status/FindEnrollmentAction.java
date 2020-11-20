@@ -255,15 +255,18 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 				if (request.getEnrollment().getReservation() != null) {
 					switch (request.getEnrollment().getReservation().getType()) {
 					case Individual:
+					case IndividualOverride:
 						e.setReservation(MSG.reservationIndividual());
 						break;
 					case Group:
+					case GroupOverride:
 						e.setReservation(MSG.reservationGroup());
 						break;
 					case Course:
 						e.setReservation(MSG.reservationCourse());
 						break;
 					case Curriculum:
+					case CurriculumOverride:
 						e.setReservation(MSG.reservationCurriculum());
 						break;
 					case LearningCommunity:
