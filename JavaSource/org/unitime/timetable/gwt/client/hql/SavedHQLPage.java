@@ -1296,10 +1296,10 @@ public class SavedHQLPage extends Composite {
 				param = param.replace('|', ':');
 				Widget w = iForm.getWidget(iParametersRow + i, 1); i++;
 				iParams.put(p.getName(), param);
-				if (w instanceof HasText) {
-					((HasText)w).setText(param);
-				} else if (w instanceof CheckBox) {
+				if (w instanceof CheckBox) {
 					((CheckBox)w).setValue("true".equalsIgnoreCase(param));
+				} else if (w instanceof HasText) {
+					((HasText)w).setText(param);
 				} else if (w instanceof SingleDateSelector) {
 					((SingleDateSelector)w).setText(param);
 				} else if (w instanceof ListBox) {
