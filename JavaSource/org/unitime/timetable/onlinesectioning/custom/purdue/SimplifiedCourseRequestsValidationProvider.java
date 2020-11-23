@@ -240,6 +240,10 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 		return builder.create();
 	}
 	
+	public boolean isDisableRegistrationWhenNotEligible() {
+		return "true".equals(ApplicationProperties.getProperty("purdue.specreg.disableRegistrationWhenNotEligible", "true"));
+	}
+	
 	@Override
 	public void checkEligibility(OnlineSectioningServer server, OnlineSectioningHelper helper, EligibilityCheck check, Student student) throws SectioningException {
 		if (student == null || !check.hasFlag(EligibilityCheck.EligibilityFlag.CAN_REGISTER)) return;
@@ -326,7 +330,8 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 					}
 				}
 				if (error != null) {
-					check.setFlag(EligibilityCheck.EligibilityFlag.CAN_REGISTER, false);
+					if (isDisableRegistrationWhenNotEligible())
+						check.setFlag(EligibilityCheck.EligibilityFlag.CAN_REGISTER, helper.isAdmin());
 					check.setMessage(MESSAGES.exceptionFailedEligibilityCheck(error));
 				}
 				if (student.getUniqueId() != null && original != null && original.maxHours != null && original.maxHours > 0 && original.maxHours != student.getMaxCredit()) {
@@ -396,7 +401,8 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 						else
 							m += "\n" + p.message;
 					if (m != null) {
-						check.setFlag(EligibilityCheck.EligibilityFlag.CAN_REGISTER, false);
+						if (isDisableRegistrationWhenNotEligible())
+							check.setFlag(EligibilityCheck.EligibilityFlag.CAN_REGISTER, helper.isAdmin());
 						check.setMessage(MESSAGES.exceptionFailedEligibilityCheck(m));
 					}
 				}

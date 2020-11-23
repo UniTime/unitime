@@ -2570,6 +2570,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		
 		return changed || studentChanged || studentUpdated;
 	}
+	
+	public boolean isDisableRegistrationWhenNotEligible() {
+		return "true".equals(ApplicationProperties.getProperty("purdue.specreg.disableRegistrationWhenNotEligible", "true"));
+	}
 
 	@Override
 	public void checkEligibility(OnlineSectioningServer server, OnlineSectioningHelper helper, EligibilityCheck check, org.unitime.timetable.model.Student student) throws SectioningException {
@@ -2612,7 +2616,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				throw new SectioningException(eligibility.message == null || eligibility.message.isEmpty() ? "Failed to check student eligibility (" + eligibility.status + ")." : eligibility.message);
 			
 			if (eligibility.data == null || eligibility.data.eligible == null || !eligibility.data.eligible.booleanValue()) {
-				check.setFlag(EligibilityCheck.EligibilityFlag.CAN_REGISTER, helper.isAdmin());
+				if (isDisableRegistrationWhenNotEligible())
+					check.setFlag(EligibilityCheck.EligibilityFlag.CAN_REGISTER, helper.isAdmin());
 			}
 			if (eligibility.data != null && eligibility.data.eligibilityProblems != null) {
 				String m = null;
