@@ -33,6 +33,7 @@ import org.unitime.timetable.gwt.shared.ScriptInterface.LoadAllScriptsRpcRequest
 import org.unitime.timetable.gwt.shared.ScriptInterface.ScriptParameterInterface;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RefTableEntry;
 import org.unitime.timetable.model.Room;
@@ -103,6 +104,9 @@ public class LoadAllScriptsBackend implements GwtRpcImplementation<LoadAllScript
 					String clazz = p.getType().substring("reference(".length(), p.getType().length() - 1);
 					if ("StudentSectioningStatus".equals(clazz)) {
 						for (StudentSectioningStatus entry: StudentSectioningStatus.findAll(context.getUser().getCurrentAcademicSessionId()))
+							parameter.addOption(entry.getReference(), entry.getLabel());
+					} else if ("LearningManagementSystemInfo".equals(clazz)) {
+						for (LearningManagementSystemInfo entry: LearningManagementSystemInfo.findAll(context.getUser().getCurrentAcademicSessionId()))
 							parameter.addOption(entry.getReference(), entry.getLabel());
 					} else {
 						for (RefTableEntry entry: (List<RefTableEntry>)RefTableEntryDAO.getInstance().getSession().createQuery("from " + clazz).setCacheable(true).list()) {

@@ -30,6 +30,7 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface.HQLQueriesRpcRequest;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface.Query;
+import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.RefTableEntry;
 import org.unitime.timetable.model.SavedHQL;
 import org.unitime.timetable.model.SavedHQLParameter;
@@ -74,6 +75,9 @@ public class HQLQueriesBackend implements GwtRpcImplementation<HQLQueriesRpcRequ
 						String clazz = p.getType().substring("reference(".length(), p.getType().length() - 1);
 						if ("StudentSectioningStatus".equals(clazz)) {
 							for (StudentSectioningStatus entry: StudentSectioningStatus.findAll(context.getUser().getCurrentAcademicSessionId()))
+								parameter.addOption(entry.getReference(), entry.getLabel());
+						} else if ("LearningManagementSystemInfo".equals(clazz)) {
+							for (LearningManagementSystemInfo entry: LearningManagementSystemInfo.findAll(context.getUser().getCurrentAcademicSessionId()))
 								parameter.addOption(entry.getReference(), entry.getLabel());
 						} else {
 							for (RefTableEntry entry: (List<RefTableEntry>)RefTableEntryDAO.getInstance().getSession().createQuery("from " + clazz).setCacheable(true).list()) {
