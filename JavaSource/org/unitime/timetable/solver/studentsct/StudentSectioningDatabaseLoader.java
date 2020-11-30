@@ -2620,6 +2620,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	}
         }
         
+        for (LinkedSections c: getModel().getLinkedSections())
+        	c.createConstraints();
+        
         setPhase("Assigning students...", getModel().getStudents().size());
         for (Student student: getModel().getStudents()) {
         	incProgress();
