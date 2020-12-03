@@ -24,8 +24,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.Lookup;
@@ -1648,6 +1650,7 @@ public class SimpleEditPage extends Composite {
 		String valid = null;
 		DateTimeFormat dateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 		Map<Integer, Map<String, MyCell>> uniqueMap = new HashMap<Integer, Map<String, MyCell>>();
+		Map<Integer, Map<String, String>> fallbackMap = new HashMap<Integer, Map<String, String>>();
 		for (int row = 0; row < iTable.getRowCount(); row++) {
 			SimpleEditInterface.Record record = iTable.getData(row);
 			if (record == null || record.isEmpty()) continue;
@@ -1678,41 +1681,60 @@ public class SimpleEditPage extends Composite {
 							}
 						}
 					}
-				} else if (field.isNotEmpty() || (isParent(record) && field.isParentNotEmpty())) {
+				} 
+				if (field.isNotEmpty() || (isParent(record) && field.isParentNotEmpty())) {
 					if (value == null || value.isEmpty()) {
 						widget.setError(MESSAGES.errorMustBeSet(field.getName()));
 						if (valid == null && detailRecord == null) {
 							valid = MESSAGES.errorMustBeSet(field.getName());
 						}
 					}
-				} else {
-					switch (field.getType()) {
-					case date:
-						Date date = null;
-						try {
-							date = (value == null || value.isEmpty() ? null : dateFormat.parse(value));
-						} catch (Exception e) {
-							widget.setError(MESSAGES.errorNotValidDate(value));
-							if (valid == null && detailRecord == null) {
-								valid = MESSAGES.errorNotValidDate(value);
-							}
-						}
-						if (date == null && field.isNotEmpty()) {
-							widget.setError(MESSAGES.errorMustBeSet(field.getName()));
-							if (valid == null && detailRecord == null) {
-								valid = MESSAGES.errorMustBeSet(field.getName());
-							}
-						}
-						break;
-					case textarea:
-						if (value != null && value.length() > field.getLength()) {
-							widget.setError(MESSAGES.errorTooLong(field.getName()));
-							if (valid == null && detailRecord == null) {
-								valid = MESSAGES.errorTooLong(field.getName());
-							}
-						}
-						break;
+				}
+				if (field.isNoCycle() && value != null && !value.isEmpty() && record.getUniqueId() != null) {
+					Map<String, String> fallbacks = fallbackMap.get(col);
+					if (fallbacks == null) {
+						fallbacks = new HashMap<String, String>(); fallbackMap.put(col, fallbacks);
 					}
+					fallbacks.put(record.getUniqueId().toString(), value);
+					Set<String> visited = new HashSet<String>();
+					String fallback = value; visited.add(record.getUniqueId().toString()); visited.add(value);
+					while (fallback != null) {
+						fallback = fallbacks.get(fallback);
+						if (fallback != null && !visited.add(fallback)) {
+							widget.setError(MESSAGES.errorCanNotCycle(field.getName()));
+							if (valid == null && detailRecord == null) {
+								valid = MESSAGES.errorCanNotCycle(field.getName());
+							}
+							break;
+						}
+					}
+				}
+				switch (field.getType()) {
+				case date:
+					Date date = null;
+					try {
+						date = (value == null || value.isEmpty() ? null : dateFormat.parse(value));
+					} catch (Exception e) {
+						widget.setError(MESSAGES.errorNotValidDate(value));
+						if (valid == null && detailRecord == null) {
+							valid = MESSAGES.errorNotValidDate(value);
+						}
+					}
+					if (date == null && field.isNotEmpty()) {
+						widget.setError(MESSAGES.errorMustBeSet(field.getName()));
+						if (valid == null && detailRecord == null) {
+							valid = MESSAGES.errorMustBeSet(field.getName());
+						}
+					}
+					break;
+				case textarea:
+					if (value != null && value.length() > field.getLength()) {
+						widget.setError(MESSAGES.errorTooLong(field.getName()));
+						if (valid == null && detailRecord == null) {
+							valid = MESSAGES.errorTooLong(field.getName());
+						}
+					}
+					break;
 				}
 			}
 		}
@@ -1744,41 +1766,60 @@ public class SimpleEditPage extends Composite {
 							}
 						}
 					}
-				} else if (field.isNotEmpty() || (isParent(record) && field.isParentNotEmpty())) {
+				} 
+				if (field.isNotEmpty() || (isParent(record) && field.isParentNotEmpty())) {
 					if (value == null || value.isEmpty()) {
 						widget.setError(MESSAGES.errorMustBeSet(field.getName()));
 						if (valid == null) {
 							valid = MESSAGES.errorMustBeSet(field.getName());
 						}
 					}
-				} else {
-					switch (field.getType()) {
-					case date:
-						Date date = null;
-						try {
-							date = (value == null || value.isEmpty() ? null : dateFormat.parse(value));
-						} catch (Exception e) {
-							widget.setError(MESSAGES.errorNotValidDate(value));
-							if (valid == null) {
-								valid = MESSAGES.errorNotValidDate(value);
-							}
-						}
-						if (date == null && field.isNotEmpty()) {
-							widget.setError(MESSAGES.errorMustBeSet(field.getName()));
-							if (valid == null) {
-								valid = MESSAGES.errorMustBeSet(field.getName());
-							}
-						}
-						break;
-					case textarea:
-						if (value != null && value.length() > field.getLength()) {
-							widget.setError(MESSAGES.errorTooLong(field.getName()));
-							if (valid == null) {
-								valid = MESSAGES.errorTooLong(field.getName());
-							}
-						}
-						break;
+				}
+				if (field.isNoCycle() && value != null && !value.isEmpty() && record.getUniqueId() != null) {
+					Map<String, String> fallbacks = fallbackMap.get(col);
+					if (fallbacks == null) {
+						fallbacks = new HashMap<String, String>(); fallbackMap.put(col, fallbacks);
 					}
+					fallbacks.put(record.getUniqueId().toString(), value);
+					Set<String> visited = new HashSet<String>();
+					String fallback = value; visited.add(record.getUniqueId().toString()); visited.add(value);
+					while (fallback != null) {
+						fallback = fallbacks.get(fallback);
+						if (fallback != null && !visited.add(fallback)) {
+							widget.setError(MESSAGES.errorCanNotCycle(field.getName()));
+							if (valid == null) {
+								valid = MESSAGES.errorCanNotCycle(field.getName());
+							}
+							break;
+						}
+					}
+				}
+				switch (field.getType()) {
+				case date:
+					Date date = null;
+					try {
+						date = (value == null || value.isEmpty() ? null : dateFormat.parse(value));
+					} catch (Exception e) {
+						widget.setError(MESSAGES.errorNotValidDate(value));
+						if (valid == null) {
+							valid = MESSAGES.errorNotValidDate(value);
+						}
+					}
+					if (date == null && field.isNotEmpty()) {
+						widget.setError(MESSAGES.errorMustBeSet(field.getName()));
+						if (valid == null) {
+							valid = MESSAGES.errorMustBeSet(field.getName());
+						}
+					}
+					break;
+				case textarea:
+					if (value != null && value.length() > field.getLength()) {
+						widget.setError(MESSAGES.errorTooLong(field.getName()));
+						if (valid == null) {
+							valid = MESSAGES.errorTooLong(field.getName());
+						}
+					}
+					break;
 				}
 			}
 		}

@@ -124,7 +124,7 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		fields[idx++] = new Field(MESSAGES.fieldStudentStatusEffectiveStartTime(), FieldType.time, 50);
 		fields[idx++] = new Field(MESSAGES.fieldStudentStatusEffectiveEndDate(), FieldType.date, 80);
 		fields[idx++] = new Field(MESSAGES.fieldStudentStatusEffectiveEndTime(), FieldType.time, 50);
-		fields[idx++] = new Field(MESSAGES.fieldStudentStatusFallback(), FieldType.list, 100, fallbacks);
+		fields[idx++] = new Field(MESSAGES.fieldStudentStatusFallback(), FieldType.list, 100, fallbacks, Flag.NO_CYCLE);
 		fields[idx++] = new Field(MESSAGES.fieldSession(), FieldType.toggle, 40);
 		
 		SimpleEditInterface data = new SimpleEditInterface(fields);

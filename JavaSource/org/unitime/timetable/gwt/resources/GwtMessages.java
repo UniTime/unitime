@@ -2583,6 +2583,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Duplicate course {0}")
 	String errorDuplicateCourse(String course);
 	
+	@DefaultMessage("{0} cannot form a cycle.")
+	String errorCanNotCycle(String field);
+	
 	@DefaultMessage("No data.")
 	String errorNoData();
 	
