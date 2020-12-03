@@ -280,6 +280,20 @@ public class XCourseRequest extends XRequest {
         return iCourseIds;
     }
     
+    /**
+     * If the course request contains two or more courses that are cross-listed with each other,
+     * return true for the second and later course of the same offering.
+     * @param id course id
+     * @return true if there is a higher alternativity course with of the same offering
+     */
+    public boolean isDuplicateOffering(XCourseId id) {
+    	for (XCourseId other: iCourseIds) {
+    		if (other.equals(id)) return false;
+    		if (id.getOfferingId().equals(other.getOfferingId())) return true;
+    	}
+    	return false;
+    }
+    
     public boolean hasCourse(Long courseId) {
     	for (XCourseId id: iCourseIds)
     		if (id.getCourseId().equals(courseId)) return true;

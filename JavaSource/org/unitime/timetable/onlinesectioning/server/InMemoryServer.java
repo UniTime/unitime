@@ -230,8 +230,10 @@ public class InMemoryServer extends AbstractLockingServer {
 							}
 				}
 				for (XRequest request: student.getRequests())
-					if (request instanceof XCourseRequest)
-						for (XCourseId course: ((XCourseRequest)request).getCourseIds()) {
+					if (request instanceof XCourseRequest) {
+						XCourseRequest cr = (XCourseRequest)request;
+						for (XCourseId course: cr.getCourseIds()) {
+							if (cr.isDuplicateOffering(course)) continue;
 							List<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
 							if (requests == null) {
 								requests = new ArrayList<XCourseRequest>();
@@ -239,6 +241,7 @@ public class InMemoryServer extends AbstractLockingServer {
 							}
 							requests.add((XCourseRequest)request);
 						}
+					}
 			}
 		} finally {
 			lock.release();
@@ -379,6 +382,7 @@ public class InMemoryServer extends AbstractLockingServer {
 					
 					// put new requests
 					for (XCourseId course: cr.getCourseIds()) {
+						if (cr.isDuplicateOffering(course)) continue;
 						List<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
 						if (requests == null) {
 							requests = new ArrayList<XCourseRequest>();
@@ -416,6 +420,7 @@ public class InMemoryServer extends AbstractLockingServer {
 					
 					// put new requests
 					for (XCourseId course: cr.getCourseIds()) {
+						if (cr.isDuplicateOffering(course)) continue;
 						List<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
 						if (requests == null) {
 							requests = new ArrayList<XCourseRequest>();
