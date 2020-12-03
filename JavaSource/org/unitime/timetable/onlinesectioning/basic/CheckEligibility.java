@@ -169,8 +169,7 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 					iCheck.setFlag(EligibilityFlag.CAN_ENROLL, false);
 				}
 
-				StudentSectioningStatus s = student.getSectioningStatus();
-				while (s != null && s.isPast() && s.getFallBackStatus() != null) s = s.getFallBackStatus();
+				StudentSectioningStatus s = StudentSectioningStatus.getPresentStatus(student.getSectioningStatus());
 				
 				if (s != null && s.getMessage() != null)
 					iCheck.setMessage(s.getMessage());

@@ -217,4 +217,17 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 					"from StudentSectioningStatus where session is null or session = :sessionId order by label"
 					).setLong("sessionId", sessionId).setCacheable(true).list();
 	}
+	
+	public static StudentSectioningStatus getPresentStatus(StudentSectioningStatus status) {
+		int depth = 10;
+		while (status != null && status.isPast() && status.getFallBackStatus() != null) {
+			status = status.getFallBackStatus();
+			if (depth-- == 0) return null;
+		}
+		return status;
+	}
+	
+	public static StudentSectioningStatus getPresentStatus(String reference, Long sessionId, org.hibernate.Session hibSession) {
+		return getPresentStatus(getStatus(reference, sessionId, hibSession));
+	}
 }

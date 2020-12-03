@@ -2067,8 +2067,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		String status = student.getStatus();
 		if (status == null) status = server.getAcademicSession().getDefaultSectioningStatus();
 		if (status == null) return true;
-		StudentSectioningStatus dbStatus = StudentSectioningStatus.getStatus(status, server.getAcademicSession().getUniqueId(), helper.getHibSession());
-		while (dbStatus != null && dbStatus.isPast() && dbStatus.getFallBackStatus() != null) dbStatus = dbStatus.getFallBackStatus();
+		StudentSectioningStatus dbStatus = StudentSectioningStatus.getPresentStatus(status, server.getAcademicSession().getUniqueId(), helper.getHibSession());
 		return dbStatus != null && dbStatus.hasOption(StudentSectioningStatus.Option.specreg);
 	}
 
