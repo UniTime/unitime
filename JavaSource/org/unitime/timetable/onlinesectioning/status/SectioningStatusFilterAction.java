@@ -1092,8 +1092,8 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 
 	public List<XStudent> getStudens(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		List<XStudent> students = new ArrayList<XStudent>();
-		for (XStudent student: (List<XStudent>)getQuery(iRequest, server, helper).select("distinct s").query(helper.getHibSession()).list()) {
-			students.add(new XStudent(student));
+		for (Student student: (List<Student>)getQuery(iRequest, server, helper).select("distinct s").query(helper.getHibSession()).list()) {
+			students.add(new XStudent(student, helper, server.getAcademicSession().getFreeTimePattern()));
 		}
 		return students;
 	}

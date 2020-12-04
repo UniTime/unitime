@@ -57,6 +57,13 @@ public class XOverride implements Serializable, Externalizable {
 		readExternal(in);
 	}
 	
+	public XOverride(XOverride override) {
+		iExternalId = override.iExternalId;
+		iTimeStamp = override.iTimeStamp;
+		iStatus = override.iStatus;
+		iValue = override.iValue;
+	}
+	
 	public String getExternalId() { return iExternalId; }
 	
 	public Date getTimeStamp() { return iTimeStamp; }

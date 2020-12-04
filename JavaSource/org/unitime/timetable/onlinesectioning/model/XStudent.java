@@ -212,6 +212,12 @@ public class XStudent extends XStudentId implements Externalizable {
     	iAdvisors.addAll(student.getAdvisors());
     	if (student.hasAdvisorRequests())
     		iAdvisorRequests = new ArrayList<XAdvisorRequest>(student.getAdvisorRequests());
+    	iInstructorAssignments.addAll(student.getInstructorAssignments());
+    	iPin = student.iPin;
+    	iPinReleased = student.iPinReleased;
+    	iMaxCredit = student.iMaxCredit;
+    	iMaxCreditOverride = student.iMaxCreditOverride;
+    	iLastNote = student.iLastNote;
     }
     
     public XStudent(XStudent student, Collection<CourseDemand> demands, OnlineSectioningHelper helper, BitSet freeTimePattern) {
@@ -229,6 +235,12 @@ public class XStudent extends XStudentId implements Externalizable {
     	iAdvisors.addAll(student.getAdvisors());
     	if (student.hasAdvisorRequests())
     		iAdvisorRequests = new ArrayList<XAdvisorRequest>(student.getAdvisorRequests());
+    	iInstructorAssignments.addAll(student.getInstructorAssignments());
+    	iPin = student.iPin;
+    	iPinReleased = student.iPinReleased;
+    	iMaxCredit = student.iMaxCredit;
+    	iMaxCreditOverride = student.iMaxCreditOverride;
+    	iLastNote = student.iLastNote;
 
     	if (demands != null)
         	for (CourseDemand cd: demands) {
