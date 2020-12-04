@@ -3488,6 +3488,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						}
 						Collections.sort(requests);
 						iSpecialRegistrationsPanel.populate(requests, iSavedAssignment);
+						if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG)) {
+							iEligibilityCheck.setFlag(EligibilityFlag.HAS_SPECREG, true);
+						}
 					}
 					fillIn(iSavedAssignment);
 					addHistory();
