@@ -175,20 +175,28 @@ public class InquiryAction extends Action {
 	            	}
 	            	
 	            	ContactCategory cc = ContactCategoryDAO.getInstance().get(myForm.getType());
+	            	String replyTo = null, replyToName = null;
 	            	if (cc != null && cc.getEmail() != null && !cc.getEmail().isEmpty()) {
 	    				String suffix = ApplicationProperty.EmailDefaultAddressSuffix.value();
 	    				for (String address: cc.getEmail().split("[\n,]")) {
 	    					if (!address.trim().isEmpty()) {
-	    						if (suffix != null && address.indexOf('@') < 0)
+	    						if (suffix != null && address.indexOf('@') < 0) {
 	    							email.addRecipient(address.trim() + suffix, null);
-	    						else
+	    							if (replyTo == null) replyTo = address.trim() + suffix;
+	    						} else {
 	    							email.addRecipient(address.trim(), null);
+	    							if (replyTo == null) replyTo = address.trim();
+	    						}
 	    					}
 	    				}
-	            	} else if (ApplicationProperty.EmailInquiryAddress.value() != null)
+	            	} else if (ApplicationProperty.EmailInquiryAddress.value() != null) {
                     	email.addRecipient(ApplicationProperty.EmailInquiryAddress.value(), ApplicationProperty.EmailInquiryAddressName.value());
-                    else
+                    	replyTo = ApplicationProperty.EmailInquiryAddress.value();
+                    	replyToName = ApplicationProperty.EmailInquiryAddressName.value();
+	            	} else
                     	email.addNotify();
+	            	if (replyTo != null)
+	            		email.setReplyTo(replyTo, replyToName);
                     
                     boolean autoreply = ApplicationProperty.EmailInquiryAutoreply.isTrue();
                     
@@ -239,6 +247,8 @@ public class InquiryAction extends Action {
                             } else {
                             	email.addRecipient(sessionContext.getUser().getUsername() + ApplicationProperty.EmailInquiryAddressSuffix.value(), sessionContext.getUser().getName());
                             }
+        	            	if (replyTo != null)
+        	            		email.setReplyTo(replyTo, replyToName);
                             
                             email.send();
                     	} catch (Exception e) {}

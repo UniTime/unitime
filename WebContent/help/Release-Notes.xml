@@ -28,6 +28,19 @@
 	<version>4.5.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Administration</title>
+		<item>
+			<name>Contact Us</name>
+			<description>
+				<line>Contact Us Email: Set reply-to email address to the email recipient.</line>
+			</description>
+		</item>
+	</category>
+</release>
+<release>
+	<version>4.5.124</version>
+	<release-date>Sat, 5 Dec 2020</release-date>
+	<category>
 		<title>Student Scheduling</title>
 		<item>
 			<name>Advisor Course Recommendations</name>
