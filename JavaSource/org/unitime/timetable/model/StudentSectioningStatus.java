@@ -28,6 +28,7 @@ import java.util.Set;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.model.base.BaseStudentSectioningStatus;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
@@ -116,9 +117,10 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 	public static Set<String> getMatchingStatuses(Option option, Long sessionId) {
 		org.hibernate.Session hibSession = StudentSectioningStatusDAO.getInstance().createNewSession();
 		try {
+			Session session = SessionDAO.getInstance().get(sessionId, hibSession);
 			Set<String> statuses = new HashSet<String>();
 			for (StudentSectioningStatus status: StudentSectioningStatus.findAll(hibSession, sessionId)) {
-				if (status.hasOption(option) && status.isEffectiveNow())
+				if (StudentSectioningStatus.hasEffectiveOption(status, session, option))
 					statuses.add(status.getReference());
 			}
 			return statuses;
