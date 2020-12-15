@@ -1035,12 +1035,16 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						float originalCreditHour = request.getCreditHour();
 						float creditHour = 0f;
 						XSection creditSection = null;
+						String last = null; 
 						for (XSection section: request.getSections()) {
-							Float credit = gradeModes.getCreditHour(section.getExternalId(request.getCourse().getCourseId()));
+							String crn = section.getExternalId(request.getCourse().getCourseId());
+							if (crn == null || crn.equals(last)) continue;
+							Float credit = gradeModes.getCreditHour(crn);
 							if (credit != null) {
 								creditHour += credit;
 								if (creditSection == null || credit > 0f) creditSection = section;
 							}
+							last = crn;
 						}
 						if (Math.abs(creditHour - originalCreditHour) > 0.01 && creditSection != null) {
 							fails.add(new EnrollmentFailure(request.getCourse(), creditSection,
@@ -1050,7 +1054,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						}
 					}
 				}
-			}	
+			}
 			
 			if (helper.isDebugEnabled())
 				helper.debug("Return: " + fails);

@@ -423,8 +423,8 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		}
 		
 		public Float getCreditHour(ClassAssignment a) {
-			if (a.getExternalId() == null) return 0f;
-			if (a.getParentSection() != null && a.getParentSection().equals(a.getSection())) return 0f;
+			if (a.getExternalId() == null) return null;
+			if (a.getParentSection() != null && a.getParentSection().equals(a.getSection())) return null;
 			return iCreditHours.get(a.getExternalId());
 		}
 		
