@@ -1179,4 +1179,19 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
         	lock.unlock();
         }
     }
+
+	@Override
+	public CourseDeadlines getCourseDeadlines(Long courseId) {
+		return new CourseDeadlines() {
+			private static final long serialVersionUID = 1L;
+			@Override
+			public boolean isEnabled() {
+				return true;
+			}
+			@Override
+			public boolean checkDeadline(XTime sectionTime, Deadline type) {
+				return true;
+			}
+		};
+	}
 }

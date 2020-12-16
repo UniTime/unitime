@@ -57,6 +57,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private boolean iSpecRegTimeConfs = false;
 		private boolean iSpecRegSpaceConfs = false;
 		private boolean iSpecRegLinkedConfs = false;
+		private boolean iSpecRegDeadlineConfs = false;
 		private boolean iSpecRegChangeRequestNote = false;
 		private SpecialRegistrationStatus iSpecRegStatus = null;
 		private String iNote;
@@ -75,6 +76,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			iSpecRegTimeConfs = cx.iSpecRegTimeConfs;
 			iSpecRegSpaceConfs = cx.iSpecRegSpaceConfs;
 			iSpecRegLinkedConfs = cx.iSpecRegLinkedConfs;
+			iSpecRegDeadlineConfs = cx.iSpecRegDeadlineConfs;
 			iSpecRegStatus = cx.iSpecRegStatus;
 			iNote = cx.iNote;
 			iCanRequire = cx.iCanRequire;
@@ -95,6 +97,9 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void setSpaceConflictsAllowed(boolean allow) { iSpecRegSpaceConfs = allow; }
 		public boolean areLinkedConflictsAllowed() { return iSpecRegLinkedConfs; }
 		public void setLinkedConflictsAllowed(boolean allow) { iSpecRegLinkedConfs = allow; }
+		public boolean areDeadlineConflictsAllowed() { return iSpecRegDeadlineConfs; }
+		public void setDeadlineConflictsAllowed(boolean allow) { iSpecRegDeadlineConfs = allow; }
+
 		public SpecialRegistrationStatus getStatus() { return iSpecRegStatus; }
 		public void setStatus(SpecialRegistrationStatus status) { iSpecRegStatus = status; }
 		public String getNote() { return iNote; }
@@ -110,6 +115,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			iSpecRegTimeConfs = check != null && check.hasFlag(EligibilityFlag.SR_TIME_CONF);
 			iSpecRegSpaceConfs = check != null && check.hasFlag(EligibilityFlag.SR_LIMIT_CONF);
 			iSpecRegLinkedConfs = check != null && check.hasFlag(EligibilityFlag.SR_LINK_CONF);
+			iSpecRegDeadlineConfs = check != null && check.hasFlag(EligibilityFlag.SR_EXTENDED);
 			iSpecReg = check != null && check.hasFlag(EligibilityFlag.CAN_SPECREG);
 			iDisclaimer = (check != null ? check.getOverrideRequestDisclaimer() : null);
 			iCanRequire = check == null || check.hasFlag(EligibilityFlag.CAN_REQUIRE);
@@ -123,6 +129,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			iSpecRegTimeConfs = false;
 			iSpecRegSpaceConfs = false;
 			iSpecRegLinkedConfs = false;
+			iSpecRegDeadlineConfs = false;
 			iSpecRegStatus = null;
 			iDisclaimer = null;
 			iCanRequire = true;

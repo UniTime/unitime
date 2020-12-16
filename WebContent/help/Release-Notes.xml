@@ -28,11 +28,19 @@
 	<version>4.5.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
-		<title>Student Scheduling</title>
+		<title>Online Student Scheduling</title>
 		<item>
 			<name>Wait-Listing</name>
 			<description>
 				<line>Status Check: Follow the status fall-backs when checking for wait-list option.</line>
+			</description>
+		</item>
+		<item>
+			<name>Deadlines</name>
+			<description>
+				<line>Added ability to avoid classes that are past the deadline when computing an online schedule or suggestions.</line>
+				<line>To be enabled by XX solver configuration property (defaults to false).</line>
+				<line>Deadlines are not checked when extended adds are allowed by the special registration and student agrees to explore conflicting schedule.</line>
 			</description>
 		</item>
 	</category>
@@ -128,7 +136,7 @@
 				<line>Existing enrollments can be fixed and left unchanged, even when they are not consistent.</line>
 				<line>Single Course MPP: Added ability to re-section only students in the given course or courses, while everything else is left untouched.</line>
 			</description>
-		</item>		
+		</item>
 		<item>
 			<name>Other Changes &amp; Improvements</name>
 			<description>

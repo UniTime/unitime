@@ -130,6 +130,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 		Set<Long> lockedCourses = new HashSet<Long>();
 		List<EnrollmentFailure> failures = null;
 		boolean includeRequestInTheReturnMessage = false;
+		getRequest().removeDuplicates();
 		for (ClassAssignmentInterface.ClassAssignment ca: getAssignment())
 			if (ca != null && !ca.isFreeTime() && !ca.isDummy() && !ca.isTeachingAssignment()) {
 				XCourse course = server.getCourse(ca.getCourseId());

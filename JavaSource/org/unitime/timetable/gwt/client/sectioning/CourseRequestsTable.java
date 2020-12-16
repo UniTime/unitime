@@ -488,6 +488,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		cr.setTimeConflictsAllowed(iSpecReg.isEnabled() && iSpecReg.isDisclaimerAccepted() && iSpecReg.areTimeConflictsAllowed());
 		cr.setSpaceConflictsAllowed(iSpecReg.isEnabled() && iSpecReg.isDisclaimerAccepted() && iSpecReg.areSpaceConflictsAllowed());
 		cr.setLinkedConflictsAllowed(iSpecReg.isEnabled() && iSpecReg.isDisclaimerAccepted() && iSpecReg.areLinkedConflictsAllowed());
+		cr.setDeadlineConflictsAllowed(iSpecReg.isEnabled() && iSpecReg.isDisclaimerAccepted() && iSpecReg.areDeadlineConflictsAllowed());
 		if (iLastCheck != null) cr.setConfirmations(iLastCheck.getMessages());
 		cr.removeInactiveDuplicates();
 		return cr;

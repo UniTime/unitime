@@ -608,7 +608,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 			return week <= deadline; // no time, just compare week and the deadline
 		
 		int offset = 0;
-		long time = getAcademicSession().getDatePatternFirstDate().getTime() + (long) sectionTime.getWeeks().nextSetBit(0) * (1000l * 60l * 60l * 24l);
+		long time = getAcademicSession().getDatePatternFirstDate().getTime() + (long) sectionTime.getWeeks().nextSetBit(0) * (1000l * 60l * 60l * 24l) + 43200000l;
 		if (time >= start) {
 			offset = (int)((time - start) / (1000 * 60 * 60 * 24 * 7));
 		} else {
@@ -616,6 +616,35 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 		}
 		
 		return week <= deadline + offset;
+	}
+	
+	@Override
+	public CourseDeadlines getCourseDeadlines(Long courseId) {
+		boolean enabled = ApplicationProperty.OnlineSchedulingCheckDeadlines.isTrue();
+		XCourse info = getCourse(courseId);
+		int newDeadline = 0, changeDeadline = 0, dropDeadline = 0;
+		if (info != null && info.getLastWeekToEnroll() != null)
+			newDeadline = info.getLastWeekToEnroll();
+		else
+			newDeadline = getAcademicSession().getLastWeekToEnroll();
+		if (info != null && info.getLastWeekToChange() != null)
+			changeDeadline = info.getLastWeekToChange();
+		else
+			changeDeadline = getAcademicSession().getLastWeekToChange();
+		if (info != null && info.getLastWeekToDrop() != null)
+			dropDeadline = info.getLastWeekToDrop();
+		else
+			dropDeadline = getAcademicSession().getLastWeekToDrop();
+
+		long start = getAcademicSession().getSessionBeginDate().getTime();
+		long now = new Date().getTime();
+		int week = 0;
+		if (now >= start) {
+			week = (int)((now - start) / (1000 * 60 * 60 * 24 * 7)) + 1;
+		} else {
+			week = -(int)((start - now) / (1000 * 60 * 60 * 24 * 7));
+		}
+		return new CourseDeadlinesImpl(enabled, newDeadline, changeDeadline, dropDeadline, week, start, getAcademicSession().getDatePatternFirstDate().getTime());
 	}
 	
 	private static class ServerConfig extends DataProperties {
@@ -814,5 +843,47 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 		if (courseId != null) return getCourse(courseId);
 		else if (courseName != null) return getCourse(courseName);
 		else return null;
+	}
+	
+	public static class CourseDeadlinesImpl implements CourseDeadlines {
+		private static final long serialVersionUID = 1L;
+		private boolean iEnabled;
+		private int iNewDeadline = 0, iChangeDeadline = 0, iDropDeadline = 0;
+		private int iWeek = 0;
+		private long iStart, iFirstDate;
+		
+		public CourseDeadlinesImpl(boolean enabled, int newDeadline, int changeDeadline, int dropDeadline, int week, long start, long firstDate) {
+			iEnabled = enabled;
+			iNewDeadline = newDeadline; iChangeDeadline = changeDeadline; iDropDeadline = dropDeadline;
+			iWeek = week;
+			iStart = start; iFirstDate = firstDate;
+		}
+		
+		public boolean isEnabled() { return iEnabled; }
+		
+		protected int getDeadline(Deadline type) {
+			switch (type) {
+			case NEW: return iNewDeadline;
+			case CHANGE: return iChangeDeadline;
+			case DROP: return iDropDeadline;
+			default: return iNewDeadline;
+			}
+		}
+		
+		public boolean checkDeadline(XTime sectionTime, Deadline type) {
+			int deadline = getDeadline(type);
+			if (sectionTime == null)
+				return iWeek <= deadline; // no time, just compare week and the deadline
+			
+			int offset = 0;
+			long time = iFirstDate + (long) sectionTime.getWeeks().nextSetBit(0) * (1000l * 60l * 60l * 24l) + 43200000l;
+			if (time >= iStart) {
+				offset = (int)((time - iStart) / (1000 * 60 * 60 * 24 * 7));
+			} else {
+				offset = -(int)((iStart - time) / (1000 * 60 * 60 * 24 * 7)) - 1;
+			}
+			
+			return iWeek <= deadline + offset;
+		}
 	}
 }

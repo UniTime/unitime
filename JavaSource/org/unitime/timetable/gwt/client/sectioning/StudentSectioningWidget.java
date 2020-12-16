@@ -856,6 +856,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						courseRequests.setTimeConflictsAllowed(specReg.hasTimeConflict());
 						courseRequests.setSpaceConflictsAllowed(specReg.hasSpaceConflict());
 						courseRequests.setLinkedConflictsAllowed(specReg.hasLinkedConflict());
+						courseRequests.setDeadlineConflictsAllowed(specReg.isExtended());
 						Set<Long> specRegDrops = new HashSet<Long>();
 						Set<Long> specRegAdds = new HashSet<Long>();
 						for (ClassAssignmentInterface.ClassAssignment ch: specReg.getChanges())

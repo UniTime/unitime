@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.onlinesectioning;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -154,6 +155,7 @@ public interface OnlineSectioningServer {
 	public static enum Deadline { NEW, CHANGE, DROP };
 	
 	public boolean checkDeadline(Long courseId, XTime sectionTime, Deadline type);
+	public CourseDeadlines getCourseDeadlines(Long courseId);
 	
 	public void unload();
 	
@@ -169,5 +171,10 @@ public interface OnlineSectioningServer {
 	public static interface ServerCallback<E> {
 		public void onFailure(Throwable exception);
 		public void onSuccess(E result);
+	}
+	
+	public static interface CourseDeadlines extends Serializable {
+		public boolean isEnabled();
+		public boolean checkDeadline(XTime sectionTime, Deadline type);
 	}
 }
