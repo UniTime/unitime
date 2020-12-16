@@ -195,7 +195,9 @@ public class InquiryAction extends Action {
                     	replyToName = ApplicationProperty.EmailInquiryAddressName.value();
 	            	} else
                     	email.addNotify();
-	            	if (replyTo != null)
+	            	if (sessionContext != null && sessionContext.isAuthenticated() && sessionContext.getUser().getEmail() != null)
+	            		email.setReplyTo(sessionContext.getUser().getEmail(), sessionContext.getUser().getName());
+	            	else if (replyTo != null)
 	            		email.setReplyTo(replyTo, replyToName);
                     
                     boolean autoreply = ApplicationProperty.EmailInquiryAutoreply.isTrue();

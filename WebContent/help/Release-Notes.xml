@@ -49,7 +49,7 @@
 		<item>
 			<name>Contact Us</name>
 			<description>
-				<line>Contact Us Email: Set reply-to email address to the email recipient.</line>
+				<line>Contact Us Email: Set reply-to email address to the current user's email (if we have an email address on file), or to the Contact Us recipient email (otherwise).</line>
 			</description>
 		</item>
 	</category>
