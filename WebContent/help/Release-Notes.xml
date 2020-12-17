@@ -30,6 +30,16 @@
 	<category>
 		<title>Online Student Scheduling</title>
 		<item>
+			<name>Past Sections</name>
+			<description>
+				<line>Added ability to mark sections that are in the past, that is sections that start before the General.ClassesPastDate date.</line>
+				<line>The use of past sections can be minimized (using StudentWeights.PastFactor student weight).</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Online Student Scheduling</title>
+		<item>
 			<name>Wait-Listing</name>
 			<description>
 				<line>Status Check: Follow the status fall-backs when checking for wait-list option.</line>
@@ -39,8 +49,17 @@
 			<name>Deadlines</name>
 			<description>
 				<line>Added ability to avoid classes that are past the deadline when computing an online schedule or suggestions.</line>
-				<line>To be enabled by XX solver configuration property (defaults to false).</line>
+				<line>To be enabled by FindAssignment.CheckDeadlines solver configuration property (defaults to false).</line>
 				<line>Deadlines are not checked when extended adds are allowed by the special registration and student agrees to explore conflicting schedule.</line>
+			</description>
+		</item>
+		<item>
+			<name>Past Sections</name>
+			<description>
+				<line>Added ability to mark sections that are in the past.</line>
+				<line>When enabled (FindAssignment.AvoidPastSections is true), the Scheduling Assistant will try to minimize the use of sections that are in the past.
+						<line>That is before today, possibly adjusted by the number of days in FindAssignment.AvoidPastOffset.</line>
+				</line>
 			</description>
 		</item>
 	</category>
@@ -49,7 +68,7 @@
 		<item>
 			<name>Contact Us</name>
 			<description>
-				<line>Contact Us Email: Set reply-to email address to the current user's email (if we have an email address on file), or to the Contact Us recipient email (otherwise).</line>
+				<line>Contact Us Email: Set reply-to email address to the email recipient.</line>
 			</description>
 		</item>
 	</category>

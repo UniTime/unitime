@@ -39,6 +39,7 @@ import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.FreeTime;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimePattern;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
@@ -369,6 +370,29 @@ public class XTime implements Serializable, Externalizable {
 			return new XTime(input);
 		}
     	
+    }
+    
+    transient Integer iFirstMeeting = null;
+    public int getFirstMeeting(int dayOfWeekOffset) {
+        if (iFirstMeeting == null) {
+        	if (getDays() != 0) {
+                int idx = -1;
+                while ((idx = getWeeks().nextSetBit(1 + idx)) >= 0) {
+                    int dow = (idx + dayOfWeekOffset) % 7;
+                    if ((getDays() & Constants.DAY_CODES[dow]) != 0) break;
+                }
+                iFirstMeeting = idx;
+        	} else {
+        		iFirstMeeting = getWeeks().nextSetBit(0);
+        	}
+        }
+        return iFirstMeeting;
+    }
+    
+    public boolean isPast(int currentDateIdnex, AcademicSessionInfo session) {
+    	if (currentDateIdnex <= 0) return false;
+    	int fm = getFirstMeeting(session.getDayOfWeekOffset());
+    	return fm >= 0 && fm < currentDateIdnex;
     }
 
 	@Override

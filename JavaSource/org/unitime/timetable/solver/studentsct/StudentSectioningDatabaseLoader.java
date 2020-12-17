@@ -251,6 +251,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private boolean iSkipStudentsWithHold = false;
     private StudentHoldsCheckProvider iStudentHoldsCheckProvider = null;
     private boolean iUseAdvisorWaitLists = false;
+    private Date iClassesPastDate = null;
+    private int iClassesPastDateIndex = 0;
     
     public StudentSectioningDatabaseLoader(StudentSectioningModel model, org.cpsolver.ifs.assignment.Assignment<Request, Enrollment> assignment) {
         super(model, assignment);
@@ -372,6 +374,19 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	}
         }
         
+        String classesPastDate = getModel().getProperties().getProperty("General.ClassesPastDate", "");
+        if (!classesPastDate.isEmpty()) {
+        	if ("today".equalsIgnoreCase(classesPastDate)) {
+        		iClassesPastDate = new Date();
+        	} else {
+            	try {
+            		iClassesPastDate = new SimpleDateFormat("yyyy-MM-dd").parse(classesPastDate);
+            	} catch (Exception e) {
+            		iProgress.warn("Failed to parse classes past date " + classesPastDate + ". The date must be in the yyyy-mm-dd format.");
+            	}
+        	}
+        }
+        
         String projQuery = model.getProperties().getProperty("Load.ProjectedStudentQuery", null);
         if (projQuery != null && !projQuery.isEmpty()) {
         	iProjectedStudentQuery = new Query(projQuery);
@@ -430,6 +445,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		iClassesFixedDateIndex = Days.daysBetween(new LocalDate(firstDay), new LocalDate(iClassesFixedDate)).getDays();
         		iDayOfWeekOffset = Constants.getDayOfWeek(firstDay);
         		iProgress.info("Classes Fixed Date: " + iClassesFixedDate + " (date pattern index: " + iClassesFixedDateIndex + ")");
+        	}
+        	if (iClassesPastDate != null) {
+        		Date firstDay = DateUtils.getDate(1, session.getPatternStartMonth(), session.getSessionStartYear());
+        		iClassesPastDateIndex = Days.daysBetween(new LocalDate(firstDay), new LocalDate(iClassesPastDate)).getDays();
+        		iDayOfWeekOffset = Constants.getDayOfWeek(firstDay);
+        		iProgress.info("Classes Past Date: " + iClassesPastDate + " (date pattern index: " + iClassesPastDateIndex + ")");
         	}
 
         	iProgress.info("Loading data for "+iInitiative+" "+iTerm+iYear+"...");
@@ -836,6 +857,17 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 		if (firstMeeting >= 0 && firstMeeting < iClassesFixedDateIndex) {
                 			iProgress.info("Class " + c.getClassLabel(iShowClassSuffix, iShowConfigName) + " Arranged Hours " + c.effectiveDatePattern().getName() + " starts before the fixed date, it is marked as disabled for student scheduling.");
                         	section.setEnabled(false);
+                		}
+                    }
+                    if (iClassesPastDateIndex > 0 && p != null && p.getTimeLocation() != null && p.getTimeLocation().getFirstMeeting(iDayOfWeekOffset) < iClassesPastDateIndex) {
+                    	iProgress.info("Class " + c.getClassLabel(iShowClassSuffix, iShowConfigName) + " " + p.getLongName(iUseAmPm) + " starts before the past date, it should be avoided.");
+                    	section.setPast(true);
+                    }
+                    if (iClassesPastDateIndex > 0 && a == null && c.effectiveDatePattern() != null) {
+                    	int firstMeeting = c.effectiveDatePattern().getPatternBitSet().nextSetBit(0);
+                		if (firstMeeting >= 0 && firstMeeting < iClassesPastDateIndex) {
+                			iProgress.info("Class " + c.getClassLabel(iShowClassSuffix, iShowConfigName) + " Arranged Hours " + c.effectiveDatePattern().getName() + " starts before the past date, it should be avoided.");
+                			section.setPast(true);
                 		}
                     }
                     if (a == null) {

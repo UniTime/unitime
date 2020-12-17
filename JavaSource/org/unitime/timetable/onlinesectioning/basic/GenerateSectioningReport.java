@@ -162,6 +162,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
         					clonedSection.setCancelled(section.isCancelled());
         					clonedSection.setEnabled(section.isEnabledForScheduling());
         					clonedSection.setOnline(section.isOnline());
+        					clonedSection.setPast(section.isPast());
         					for (XDistribution distribution: offering.getDistributions()) {
         						if (distribution.getDistributionType() == XDistributionType.IngoreConflicts && distribution.hasSection(section.getSectionId())) {
         							for (Long id: distribution.getSectionIds())

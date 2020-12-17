@@ -23,8 +23,11 @@ import java.io.Serializable;
 import java.util.BitSet;
 import java.util.Date;
 
+import org.joda.time.Days;
+import org.joda.time.LocalDate;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.security.Qualifiable;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 
 /**
@@ -43,6 +46,7 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Ser
 	private int iWkEnroll = 1, iWkChange = 1, iWkDrop = 4;
 	private String iDefaultStatus = null;
 	private String iDefaultInstructionalMethod = null;
+	private int iDayOfWeekOffset;
 	
 	public AcademicSessionInfo(Session session) {
 		update(session);
@@ -60,6 +64,7 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Ser
 		iFreeTimePattern = getFreeTimeBitSet(session);
 		iSessionBegin = session.getSessionBeginDateTime();
 		iDatePatternFirstDate = getDatePatternFirstDay(session);
+		iDayOfWeekOffset = Constants.getDayOfWeek(iDatePatternFirstDate);
 		iSectioningEnabled = session.getStatusType().canOnlineSectionStudents();
 		iWkEnroll = session.getLastWeekToEnroll();
 		iWkChange = session.getLastWeekToChange();
@@ -100,6 +105,7 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Ser
 	public BitSet getFreeTimePattern() { return iFreeTimePattern; }
 	public Date getDatePatternFirstDate() { return iDatePatternFirstDate; }
 	public Date getSessionBeginDate() { return iSessionBegin; }
+	public int getDayOfWeekOffset() { return iDayOfWeekOffset; }
 	
 	public int compareTo(AcademicSessionInfo a) {
 		int cmp = iSessionBegin.compareTo(a.iSessionBegin);

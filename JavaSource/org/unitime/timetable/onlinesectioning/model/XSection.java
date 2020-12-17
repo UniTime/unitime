@@ -78,7 +78,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     private String iExternalId = null;
     private Map<Long, String> iExternalIdByCourse = new HashMap<Long, String>();
     private boolean iEnabledForScheduling = true;
-    private boolean iCancelled = false, iOnline = false;
+    private boolean iCancelled = false, iOnline = false, iPast = false;
     private Map<Long, Float> iCreditByCourse = null;
 
     public XSection() {
@@ -161,6 +161,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
         			iOnline = false; break;
         		}
         }
+        iPast = false;
     }
     
     public XSection(Section section) {
@@ -178,6 +179,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     	iCancelled = section.isCancelled();
     	iOnline = section.isOnline();
     	iEnabledForScheduling = section.isEnabled();
+    	iPast = section.isPast();
     	if (section.getNameByCourse() != null)
     		for (Map.Entry<Long, String> e: section.getNameByCourse().entrySet()) {
     			iNameByCourse.put(e.getKey(), e.getValue());
@@ -457,6 +459,10 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     	return iOnline;
     }
     
+    public boolean isPast() {
+    	return iPast;
+    }
+    
     /**
      * True, if this section overlaps with the given assignment in time and
      * space
@@ -547,6 +553,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
 		iEnabledForScheduling = in.readBoolean();
 		iCancelled = in.readBoolean();
 		iOnline = in.readBoolean();
+		iPast = in.readBoolean();
 		
 		int nrCreditsByCourse = in.readInt();
 		if (nrCreditsByCourse > 0) {
@@ -599,6 +606,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
 		out.writeBoolean(iEnabledForScheduling);
 		out.writeBoolean(iCancelled);
 		out.writeBoolean(iOnline);
+		out.writeBoolean(iPast);
 		
 		if (iCreditByCourse != null) {
 			out.writeInt(iCreditByCourse.size());
