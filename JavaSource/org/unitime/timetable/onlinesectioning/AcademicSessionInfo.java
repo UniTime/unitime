@@ -23,8 +23,6 @@ import java.io.Serializable;
 import java.util.BitSet;
 import java.util.Date;
 
-import org.joda.time.Days;
-import org.joda.time.LocalDate;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.util.Constants;

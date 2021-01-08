@@ -21,7 +21,6 @@ package org.unitime.timetable.gwt.client.widgets;
 
 import java.util.Date;
 
-import org.unitime.timetable.gwt.client.widgets.IntervalSelector;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;

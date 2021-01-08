@@ -69,7 +69,6 @@ import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.solver.TimetableDatabaseLoader;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.duration.DurationModel;
 
 import com.lowagie.text.Document;

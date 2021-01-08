@@ -22,6 +22,7 @@ package org.unitime.timetable.model;
 import org.unitime.timetable.model.base.BaseAdvisorInstrMthPref;
 
 public class AdvisorInstrMthPref extends BaseAdvisorInstrMthPref {
+	private static final long serialVersionUID = 1L;
 
 	public AdvisorInstrMthPref() {
 		super();

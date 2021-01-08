@@ -30,7 +30,6 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignmen
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.basic.ListCourseOfferings;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XInstructor;

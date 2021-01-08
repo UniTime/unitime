@@ -38,13 +38,6 @@ import org.unitime.timetable.onlinesectioning.server.InMemoryServer;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
-import org.unitime.timetable.solver.jgroups.AbstractSolverServer;
-import org.unitime.timetable.solver.jgroups.CourseSolverContainer;
-import org.unitime.timetable.solver.jgroups.ExaminationSolverContainer;
-import org.unitime.timetable.solver.jgroups.OnlineStudentSchedulingContainer;
-import org.unitime.timetable.solver.jgroups.SolverContainer;
-import org.unitime.timetable.solver.jgroups.SolverServer;
-import org.unitime.timetable.solver.jgroups.StudentSolverContainer;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 
 /**

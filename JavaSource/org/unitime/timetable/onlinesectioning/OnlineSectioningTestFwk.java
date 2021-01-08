@@ -45,7 +45,6 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.reports.OnlineSectioningReport.Counter;
 import org.unitime.timetable.onlinesectioning.server.InMemoryServer;
 import org.unitime.timetable.onlinesectioning.updates.PersistExpectedSpacesAction;

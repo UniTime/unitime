@@ -27,7 +27,6 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.custom.CourseMatcherProvider;
 import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;

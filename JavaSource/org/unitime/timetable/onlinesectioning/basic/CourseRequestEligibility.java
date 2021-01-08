@@ -33,7 +33,6 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
-import org.unitime.timetable.onlinesectioning.basic.CheckEligibility;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsValidationHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 

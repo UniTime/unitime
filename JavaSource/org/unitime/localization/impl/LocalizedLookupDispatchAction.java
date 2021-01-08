@@ -26,7 +26,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionMapping;
-import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.Messages;
 import org.unitime.timetable.spring.struts.SpringAwareLookupDispatchAction;
 

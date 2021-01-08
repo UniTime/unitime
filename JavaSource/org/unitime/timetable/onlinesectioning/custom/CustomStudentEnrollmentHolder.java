@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.onlinesectioning.custom;
 
-import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider;
-
 public class CustomStudentEnrollmentHolder {
 	public static StudentEnrollmentProvider getProvider() {
 		return Customization.StudentEnrollmentProvider.getProvider();
