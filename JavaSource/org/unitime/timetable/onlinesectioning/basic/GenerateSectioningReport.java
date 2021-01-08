@@ -38,7 +38,6 @@ import org.cpsolver.ifs.util.DistanceMetric;
 import org.cpsolver.studentsct.StudentSectioningModel;
 import org.cpsolver.studentsct.extension.DistanceConflict;
 import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
-import org.cpsolver.studentsct.model.AcademicAreaCode;
 import org.cpsolver.studentsct.model.AreaClassificationMajor;
 import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
@@ -49,6 +48,7 @@ import org.cpsolver.studentsct.model.Offering;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.model.StudentGroup;
 import org.cpsolver.studentsct.model.Subpart;
 import org.cpsolver.studentsct.model.Request.RequestPriority;
 import org.cpsolver.studentsct.online.OnlineSectioningModel;
@@ -280,7 +280,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 				clonnedStudent.setNeedShortDistances(student.hasAccomodation(dm.getShortDistanceAccommodationReference()));
 				clonnedStudent.setAllowDisabled(student.isAllowDisabled());
 				for (XStudent.XGroup g: student.getGroups()) {
-					clonnedStudent.getMinors().add(new AcademicAreaCode(g.getType() == null ? "" : g.getType(), g.getAbbreviation(), g.getTitle()));
+					clonnedStudent.getGroups().add(new StudentGroup(g.getType(), g.getAbbreviation(), g.getTitle()));
 					List<GroupReservation> list = groups.get(g);
 					if (list != null)
 						for (GroupReservation gr: list)
@@ -288,6 +288,8 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 				}
 				for (XAreaClassificationMajor acm: student.getMajors())
 					clonnedStudent.getAreaClassificationMajors().add(new AreaClassificationMajor(acm.getArea(), acm.getClassification(), acm.getMajor()));
+				for (String acc: student.getAccomodations())
+					clonnedStudent.getAccommodations().add(acc);
 				for (XRequest r: student.getRequests()) {
 					if (r instanceof XFreeTimeRequest) {
 						XFreeTimeRequest ft = (XFreeTimeRequest)r;

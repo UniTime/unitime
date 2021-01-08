@@ -39,7 +39,7 @@ import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.studentsct.StudentSectioningLoader;
 import org.cpsolver.studentsct.StudentSectioningModel;
 import org.cpsolver.studentsct.Test;
-import org.cpsolver.studentsct.model.AcademicAreaCode;
+import org.cpsolver.studentsct.model.AreaClassificationMajor;
 import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
@@ -463,10 +463,10 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
     
     public void loadStudentInfo(Student student, org.unitime.timetable.model.Student s) {
         for (StudentAreaClassificationMajor aac: s.getAreaClasfMajors()) {
-            student.getAcademicAreaClasiffications().add(new AcademicAreaCode(aac.getAcademicArea().getAcademicAreaAbbreviation(),aac.getAcademicClassification().getCode()));
-            sLog.debug("  -- aac: "+aac.getAcademicArea().getAcademicAreaAbbreviation()+":"+aac.getAcademicClassification().getCode());
-            student.getMajors().add(new AcademicAreaCode(aac.getAcademicArea().getAcademicAreaAbbreviation(), aac.getMajor().getCode()));
-            sLog.debug("  -- mj: "+aac.getAcademicArea().getAcademicAreaAbbreviation()+":"+aac.getMajor().getCode());
+        	student.getAreaClassificationMajors().add(new AreaClassificationMajor(
+        			aac.getAcademicArea().getAcademicAreaAbbreviation(),
+        			aac.getAcademicClassification().getCode(),
+        			aac.getMajor().getCode()));
         }
     }
 

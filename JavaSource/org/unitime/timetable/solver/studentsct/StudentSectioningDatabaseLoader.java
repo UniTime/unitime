@@ -56,7 +56,6 @@ import org.cpsolver.studentsct.StudentSectioningLoader;
 import org.cpsolver.studentsct.StudentSectioningModel;
 import org.cpsolver.studentsct.constraint.FixedAssignments;
 import org.cpsolver.studentsct.constraint.LinkedSections;
-import org.cpsolver.studentsct.model.AcademicAreaCode;
 import org.cpsolver.studentsct.model.AreaClassificationMajor;
 import org.cpsolver.studentsct.model.Choice;
 import org.cpsolver.studentsct.model.Config;
@@ -1930,8 +1929,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     		AreaClassificationMajor acm = student.getAreaClassificationMajors().get(0);
     		return acm.getArea() + ":" + acm.getClassification() + ":" + acm.getMajor();
     	}
-    	return (student.getAcademicAreaClasiffications().isEmpty() ? "" : student.getAcademicAreaClasiffications().get(0).getArea() + ":" + student.getAcademicAreaClasiffications().get(0).getCode()) + ":" +
-			(student.getMajors().isEmpty() ? "" : student.getMajors().get(0).getCode());
+    	return "";
     }
     
     private String curriculum(org.unitime.timetable.model.Student student) {
@@ -2120,10 +2118,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	student.getAreaClassificationMajors().add(new AreaClassificationMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode()));
         }
         for (StudentGroup g: s.getGroups()) {
-        	student.getMinors().add(new AcademicAreaCode(g.getType() == null ? "" : g.getType().getReference(), g.getGroupAbbreviation(), g.getGroupName()));
+        	student.getGroups().add(new org.cpsolver.studentsct.model.StudentGroup(g.getType() == null ? null : g.getType().getReference(), g.getGroupAbbreviation(), g.getGroupName()));
         }
         for (StudentAccomodation a: s.getAccomodations())
-        	student.getMinors().add(new AcademicAreaCode("A", a.getAbbreviation(), a.getName()));
+        	student.getAccommodations().add(a.getAbbreviation());
         for (Advisor a: s.getAdvisors())
         	student.getAdvisors().add(new Instructor(0, a.getExternalUniqueId(), a.getLastName() == null ? null : iInstructorNameFormat.format(a), a.getEmail()));
     }

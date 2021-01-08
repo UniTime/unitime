@@ -39,7 +39,6 @@ import org.cpsolver.studentsct.StudentSectioningModel;
 import org.cpsolver.studentsct.extension.DistanceConflict;
 import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import org.cpsolver.studentsct.extension.TimeOverlapsCounter.Conflict;
-import org.cpsolver.studentsct.model.AcademicAreaCode;
 import org.cpsolver.studentsct.model.AreaClassificationMajor;
 import org.cpsolver.studentsct.model.Choice;
 import org.cpsolver.studentsct.model.Config;
@@ -123,8 +122,8 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         }
         @Override
         public boolean matches(Student student) {
-            for (AcademicAreaCode aac: student.getMinors())
-                if (iGroup.equalsIgnoreCase(aac.getCode())) return true;
+            for (org.cpsolver.studentsct.model.StudentGroup g: student.getGroups())
+                if (iGroup.equalsIgnoreCase(g.getReference())) return true;
             return false;
         }
     }
@@ -163,10 +162,10 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         }
         @Override
         public boolean matches(Student student) {
-        	for (AcademicAreaCode aac: student.getMinors()) {
-                if ("SCOVIDONL".equalsIgnoreCase(aac.getCode())) return true;
-                if ("SCONTONL".equalsIgnoreCase(aac.getCode())) return true;
-                if ("SCOVIDPMPE".equalsIgnoreCase(aac.getCode())) return true;
+        	for (org.cpsolver.studentsct.model.StudentGroup aac: student.getGroups()) {
+                if ("SCOVIDONL".equalsIgnoreCase(aac.getReference())) return true;
+                if ("SCONTONL".equalsIgnoreCase(aac.getReference())) return true;
+                if ("SCOVIDPMPE".equalsIgnoreCase(aac.getReference())) return true;
         	}
         	return false;
         }
@@ -200,9 +199,9 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         }
         @Override
         public boolean matches(Student student) {
-        	for (AcademicAreaCode aac: student.getMinors()) {
-                if (aac.getCode() != null && aac.getCode().startsWith("STAR")) return true;
-                if (aac.getCode() != null && aac.getCode().startsWith("VSTAR")) return true;
+        	for (org.cpsolver.studentsct.model.StudentGroup aac: student.getGroups()) {
+                if (aac.getReference() != null && aac.getReference().startsWith("STAR")) return true;
+                if (aac.getReference() != null && aac.getReference().startsWith("VSTAR")) return true;
         	}
         	return false;
         }

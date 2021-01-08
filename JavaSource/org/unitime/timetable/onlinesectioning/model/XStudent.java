@@ -37,7 +37,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.cpsolver.ifs.assignment.Assignment;
-import org.cpsolver.studentsct.model.AcademicAreaCode;
 import org.cpsolver.studentsct.model.AreaClassificationMajor;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
@@ -287,16 +286,11 @@ public class XStudent extends XStudentId implements Externalizable {
     	for (AreaClassificationMajor acm: student.getAreaClassificationMajors()) {
     		iMajors.add(new XAreaClassificationMajor(acm.getArea(), acm.getClassification(), acm.getMajor()));
     	}
-    	for (int i = 0; i < Math.min(student.getAcademicAreaClasiffications().size(), student.getMajors().size()); i++) {
-    		iMajors.add(new XAreaClassificationMajor(student.getMajors().get(i).getArea(), student.getAcademicAreaClasiffications().get(i).getCode(), student.getMajors().get(i).getCode()));
-    	}
     	if (iMajors.size() > 1) Collections.sort(iMajors);
-    	for (AcademicAreaCode aac: student.getMinors()) {
-    		if ("A".equals(aac.getArea()))
-				iAccomodations.add(aac.getCode());
-			else
-				iGroups.add(new XGroup(aac));
-    	}
+    	for (org.cpsolver.studentsct.model.StudentGroup gr: student.getGroups())
+    		iGroups.add(new XGroup(gr));
+    	for (String acc: student.getAccommodations())
+    		iAccomodations.add(acc);
     	for (Instructor advisor: student.getAdvisors())
     		iAdvisors.add(new XAdvisor(advisor.getExternalId(), advisor.getName(), advisor.getEmail()));
     	for (Request request: student.getRequests()) {
@@ -583,10 +577,10 @@ public class XStudent extends XStudentId implements Externalizable {
 			iTitle = (g.getGroupName() == null ? null : g.getGroupName());
 		}
 		
-		public XGroup(AcademicAreaCode g) {
-			iType = (g.getArea() == null || g.getArea().isEmpty() ? null : g.getArea());
-			iAbbreaviation = g.getCode();
-			iTitle = (g.getLabel() == null ? null : g.getLabel());
+		public XGroup(org.cpsolver.studentsct.model.StudentGroup g) {
+			iType = (g.getType() == null || g.getType().isEmpty() ? null : g.getType());
+			iAbbreaviation = g.getReference();
+			iTitle = (g.getName() == null ? null : g.getName());
 		}
 		
 		public XGroup(ObjectInput in) throws IOException, ClassNotFoundException {

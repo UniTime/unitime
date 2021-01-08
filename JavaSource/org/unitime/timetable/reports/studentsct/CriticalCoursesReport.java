@@ -26,13 +26,13 @@ import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.studentsct.StudentSectioningModel;
-import org.cpsolver.studentsct.model.AcademicAreaCode;
 import org.cpsolver.studentsct.model.AreaClassificationMajor;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.model.StudentGroup;
 import org.cpsolver.studentsct.report.StudentSectioningReport;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -63,9 +63,8 @@ public class CriticalCoursesReport implements StudentSectioningReport {
     protected String group(Student student) {
         String group = "";
         Set<String> groups = new TreeSet<String>();
-        for (AcademicAreaCode aac: student.getMinors())
-                if (!"A".equals(aac.getArea()))
-                	groups.add(aac.getCode());
+        for (StudentGroup g: student.getGroups())
+        	groups.add(g.getReference());
         for (String g: groups)
         	group += (group.isEmpty() ? "" : ", ") + g;
         return group;           

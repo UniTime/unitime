@@ -21,6 +21,7 @@ package org.unitime.timetable.server.sectioning;
 
 import java.util.Collection;
 
+import org.cpsolver.studentsct.report.AccommodationConflictsTable;
 import org.cpsolver.studentsct.report.DistanceConflictTable;
 import org.cpsolver.studentsct.report.RequestGroupTable;
 import org.cpsolver.studentsct.report.RequestPriorityTable;
@@ -79,6 +80,7 @@ public class SectioningReportTypesBackend implements GwtRpcImplementation<Sectio
 		TABLEAU_SIMPLE(SCT_MSG.reportTableauSimpleReport(), TableauReport.class.getName(), "pritify", "false", "simple", "true"),
 		CRITICAL(SCT_MSG.reportCriticalCoursesReport(), CriticalCoursesReport.class.getName(), "pritify", "false"),
 		STATISTICS(SCT_MSG.reportSolutionStatistics(), StudentSchedulingSolutionStatisticsReport.class.getName(), "pritify", "false"),
+		ACCOMMODATIONS(SCT_MSG.reportAccommodationConflicts(), AccommodationConflictsTable.class.getName()),
 		;
 		
 		String iName, iImplementation;

@@ -45,7 +45,6 @@ import org.cpsolver.ifs.solver.Solver;
 import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.cpsolver.studentsct.StudentSectioningSaver;
-import org.cpsolver.studentsct.model.AcademicAreaCode;
 import org.cpsolver.studentsct.model.AreaClassificationMajor;
 import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.CourseRequest;
@@ -55,6 +54,7 @@ import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.model.StudentGroup;
 import org.cpsolver.studentsct.reservation.LearningCommunityReservation;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
@@ -1173,11 +1173,11 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 				for (AreaClassificationMajor acm: student().getAreaClassificationMajors())
 					if (eq(acm.getMajor(), term)) return true;
 			} else if ("group".equals(attr)) {
-				for (AcademicAreaCode aac: student().getMinors())
-					if (!"A".equals(aac.getArea()) && eq(aac.getCode(), term)) return true;
+				for (StudentGroup aac: student().getGroups())
+					if (eq(aac.getReference(), term)) return true;
 			} else if ("accommodation".equals(attr)) {
-				for (AcademicAreaCode aac: student().getMinors())
-					if ("A".equals(aac.getArea()) && eq(aac.getCode(), term)) return true;
+				for (String aac: student().getAccommodations())
+					if (eq(aac, term)) return true;
 			} else if  ("student".equals(attr)) {
 				return has(student().getName(), term) || eq(student().getExternalId(), term) || eq(student().getName(), term);
 			} else if  ("advisor".equals(attr)) {
@@ -1306,8 +1306,8 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 				}
 				return min <= share && share <= max;
 			} else if (attr != null) {
-				for (AcademicAreaCode aac: student().getMinors())
-					if (eq(aac.getArea(), attr.replace('_', ' ')) && eq(aac.getCode(), term)) return true;
+				for (StudentGroup aac: student().getGroups())
+					if (eq(aac.getType(), attr.replace('_', ' ')) && eq(aac.getReference(), term)) return true;
 			}
 			return false;
 		}
