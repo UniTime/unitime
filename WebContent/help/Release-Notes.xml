@@ -28,12 +28,24 @@
 	<version>4.5.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
-		<title>Online Student Scheduling</title>
+		<title>Batch Student Scheduling</title>
 		<item>
 			<name>Past Sections</name>
 			<description>
 				<line>Added ability to mark sections that are in the past, that is sections that start before the General.ClassesPastDate date.</line>
 				<line>The use of past sections can be minimized (using StudentWeights.PastFactor student weight).</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Accommodations</name>
+			<description>
+				<line>Besides of students requiring short distances, additional criteria based on student accommodations were created:
+					<line>Students requiring short distances (SD accommodation, there is a conflict when classes are back-to-back and distance in minutes is above zero)</line>
+					<line>Students needing some time free (FT accommodation, a higher penalization for free-time conflicts)</line>
+					<line>Students needing back-to-back classes (BTB accommodation, a penalization for classes that are more than 30 minutes of each other)</line>
+					<line>Students needing breaks between classes (BBC accommodation, a penalization for classes that are back-to-back, or within 30 minutes of each other)</line>
+				</line>
+				<line>Please note that these accommodations are only enabled when the new Student Schedule Quality extension is being used (StudentSct.ScheduleQuality = true).</line>
 			</description>
 		</item>
 	</category>

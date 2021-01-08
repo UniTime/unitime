@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE script PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/Script.dtd">
+<!--
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ -->
+ <script name="Student Scheduling: Student Accommodations Solver Configuration Parameters" permission="Script Edit" engine="ECMAScript" created="Fri Jan 08 14:52:27 CET 2021">
+  <description><![CDATA[This script registers all the student scheduling solver parameters related to student accommodations.]]></description>
+  <body><![CDATA[function createGroup(name, description, type) {
+  var group = hibSession.createQuery("from SolverParameterGroup where name=:name")
+    .setString("name", name).uniqueResult();
+  if (group == null) {
+    group = new org.unitime.timetable.model.SolverParameterGroup();
+    group.setName(name);
+    var order = 0;
+    for (var i = hibSession.createQuery("from SolverParameterGroup").list().iterator(); i.hasNext();) {
+      var g = i.next();
+      if (order <= g.getOrder()) order = g.getOrder() + 1;
+    }
+    group.setOrder(order);
+    group.setParameters(new java.util.HashSet());
+  }
+  group.setDescription(description);
+  group.setType(type);
+  hibSession.saveOrUpdate(group);
+  return group;
+}
+
+function createParameter(name, description, type, value, visible, group) {
+  var param = hibSession.createQuery("from SolverParameterDef where name=:name and group.name = :group")
+    .setString("name", name).setString("group", group.getName()).uniqueResult();
+  if (param == null) {
+    param = new org.unitime.timetable.model.SolverParameterDef();
+    param.setName(name);
+    var order = 0;
+    for (var i = group.getParameters().iterator(); i.hasNext(); ) {
+      var p = i.next();
+      if (order <= p.getOrder()) order = p.getOrder() + 1;
+    }
+    param.setOrder(order);
+    param.setGroup(group);
+    group.getParameters().add(param);
+  }
+  param.setType(type);
+  param.setDescription(description);
+  param.setDefault(value);
+  param.setVisible(visible);
+  hibSession.saveOrUpdate(param);
+  return param;
+}
+
+function moveParameter(name, description, type, value, visible, group) {
+  var param = hibSession.createQuery("from SolverParameterDef where name=:name and group.type = :type")
+    .setString("name", name).setInteger("type", group.getType()).uniqueResult();
+  if (param == null)
+    return createParameter(name, description, type, value, visible, group);
+  param.getGroup().getParameters().remove(param);
+  param.setGroup(group);
+  var order = 0;
+  for (var i = group.getParameters().iterator(); i.hasNext(); ) {
+    var p = i.next();
+    if (order <= p.getOrder()) order = p.getOrder() + 1;
+  }
+  group.getParameters().add(param);
+  param.setOrder(order);
+  param.setType(type);
+  param.setDescription(description);
+  param.setVisible(visible);
+  hibSession.saveOrUpdate(param);
+  return param;
+}
+
+var group = createGroup("StudentSctAccommodations", "Student Accommodations", 2);
+moveParameter('Distances.ShortDistanceAccommodationReference', 'SD: Short distance accommodation reference', 'text', 'SD', true, group);
+moveParameter('StudentWeights.ShortDistanceConflict', 'SD: Short distance conflict weight', 'double', '0.2000', true, group);
+createParameter('Accommodations.FreeTimeReference', 'FT: Free time accommodation reference', 'text', 'FT', true, group);
+createParameter('Accommodations.FreeTimeOverlapFactor', 'FT: Free time overlap weight', 'double', '1.0000', true, group);
+createParameter('Accommodations.BackToBackReference', 'BTB: Back-to-back accommodation reference', 'text', 'BTB', true, group);
+createParameter('Accommodations.BackToBackFactor', 'BTB: Classes not back-to-back conflict weight', 'double', '0.1000', true, group);
+createParameter('Accommodations.BreakBetweenClassesReference', 'BBC: Break between classes accommodation reference', 'text', 'BBC', true, group);
+createParameter('Accommodations.BreaksBetweenClassesFactor', 'BBC: Back-to-back conflict weight', 'double', '0.1000', true, group);
+createParameter('Accommodations.BackToBackDistance', 'BTB/BBC: Max back-to-back distance (number of slots)', 'integer', '6', true, group);
+]]></body>
+</script>
