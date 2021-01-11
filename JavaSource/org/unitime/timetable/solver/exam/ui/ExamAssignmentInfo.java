@@ -100,6 +100,23 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                     dc.getStudents().add(student.getId());
                 }
             }
+            for (org.cpsolver.exam.model.ExamPeriod p: model.getPeriods()) {
+            	if (!p.equals(placement.getPeriod()) && p.hasIntersection(placement.getPeriod())) {
+            		for (ExamStudent student: exam.getStudents()) {
+                        for (Iterator i=student.getExams(assignment, p).iterator();i.hasNext();) {
+                            Exam other = (Exam)i.next();
+                            if (other.equals(exam)) continue;
+                            if (!placement.getPeriod().hasIntersection(exam, other, p)) continue;
+                            DirectConflict dc = directs.get(other);
+                            if (dc==null) {
+                                dc = new DirectConflict(new ExamAssignment(assignment.getValue(other), assignment));
+                                directs.put(other, dc);
+                            } else dc.incNrStudents();
+                            dc.getStudents().add(student.getId());
+                        }
+                    }
+            	}
+            }
             iDirects.addAll(directs.values());
             double btbDist = ((StudentDistanceBackToBackConflicts)model.getCriterion(StudentDistanceBackToBackConflicts.class)).getBackToBackDistance();
             boolean dayBreakBackToBack = ((StudentBackToBackConflicts)model.getCriterion(StudentBackToBackConflicts.class)).isDayBreakBackToBack();
@@ -111,6 +128,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                         for (Iterator i=exams.iterator();i.hasNext();) {
                             Exam other = (Exam)i.next();
                             if (other.equals(exam)) continue;
+                            if (placement.getPeriod().hasIntersection(exam, other, placement.getPeriod().prev())) continue;
                             double distance = placement.getDistanceInMeters(assignment.getValue(other));
                             BackToBackConflict btb = backToBacks.get(other);
                             if (btb==null) {
@@ -128,6 +146,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                         for (Iterator i=exams.iterator();i.hasNext();) {
                             Exam other = (Exam)i.next();
                             if (other.equals(exam)) continue;
+                            if (placement.getPeriod().hasIntersection(exam, other, placement.getPeriod().next())) continue;
                             BackToBackConflict btb = backToBacks.get(other);
                             double distance = placement.getDistanceInMeters(assignment.getValue(other));
                             if (btb==null) {
@@ -176,6 +195,23 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                     dc.getStudents().add(instructor.getId());
                 }
             }
+            for (org.cpsolver.exam.model.ExamPeriod p: model.getPeriods()) {
+            	if (!p.equals(placement.getPeriod()) && p.hasIntersection(placement.getPeriod())) {
+            		for (ExamInstructor instructor: exam.getInstructors()) {
+            			for (Iterator i=instructor.getExams(assignment, placement.getPeriod()).iterator();i.hasNext();) {
+                            Exam other = (Exam)i.next();
+                            if (other.equals(exam)) continue;
+                            if (!placement.getPeriod().hasIntersection(exam, other, p)) continue;
+                            DirectConflict dc = idirects.get(other);
+                            if (dc==null) {
+                                dc = new DirectConflict(new ExamAssignment(assignment.getValue(other), assignment));
+                                idirects.put(other, dc);
+                            } else dc.incNrStudents();
+                            dc.getStudents().add(instructor.getId());
+                        }
+                    }
+            	}
+            }
             iInstructorDirects.addAll(idirects.values());
 
             Hashtable<Exam,BackToBackConflict> ibackToBacks = new Hashtable();
@@ -186,6 +222,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                         for (Iterator i=exams.iterator();i.hasNext();) {
                             Exam other = (Exam)i.next();
                             if (other.equals(exam)) continue;
+                            if (placement.getPeriod().hasIntersection(exam, other, placement.getPeriod().prev())) continue;
                             double distance = placement.getDistanceInMeters(assignment.getValue(other));
                             BackToBackConflict btb = ibackToBacks.get(other);
                             if (btb==null) {
@@ -203,6 +240,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                         for (Iterator i=exams.iterator();i.hasNext();) {
                             Exam other = (Exam)i.next();
                             if (other.equals(exam)) continue;
+                            if (placement.getPeriod().hasIntersection(exam, other, placement.getPeriod().next())) continue;
                             BackToBackConflict btb = ibackToBacks.get(other);
                             double distance = placement.getDistanceInMeters(assignment.getValue(other));
                             if (btb==null) {
@@ -637,7 +675,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                 if (other.equals(getExam())) continue;
                 ExamPeriod otherPeriod = getAssignedPeriod(other, table);
                 if (otherPeriod==null) continue;
-                if (getPeriod().equals(otherPeriod)) { //direct conflict
+                if (getPeriod().equals(otherPeriod) || getPeriod().overlap(exam, other, otherPeriod)) { //direct conflict
                     DirectConflict dc = directs.get(other);
                     if (dc==null) {
                         dc = new DirectConflict(getAssignment(other, table, owner2students, onwer2course2students));
@@ -694,7 +732,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                 if (other.equals(getExam())) continue;
                 ExamPeriod otherPeriod = getAssignedPeriod(other, table);
                 if (otherPeriod==null) continue;
-                if (getPeriod().equals(otherPeriod)) { //direct conflict
+                if (getPeriod().equals(otherPeriod) || getPeriod().overlap(exam, other, otherPeriod)) { //direct conflict
                     DirectConflict dc = idirects.get(other);
                     if (dc==null) {
                         dc = new DirectConflict(getAssignment(other, table, owner2students, onwer2course2students));
@@ -1583,7 +1621,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             	if (other.equals(getExam())) continue;
                 ExamPeriod otherPeriod = other.getAssignedPeriod();
                 if (otherPeriod==null) continue;
-                if (getPeriod().equals(otherPeriod)) { //direct conflict
+                if (getPeriod().equals(otherPeriod) || getPeriod().overlap(exam, other, otherPeriod)) { //direct conflict
                     DirectConflict dc = new DirectConflict(new ExamAssignment(other));
                     dc.getStudents().add(student.getUniqueId());
                     iNrDirectConflicts++;

@@ -1310,6 +1310,10 @@ public class ExamAssignmentReportAction extends Action {
                                     if (firstSection) {
                                         seating += conflict.getOtherExam().getSeatingTypeLabel();
                                         room += conflict.getOtherExam().getRoomsName(html, ", ");
+                                        if (!exam.getPeriod().equals(conflict.getOtherExam().getPeriod())) {
+                                        	date += conflict.getOtherExam().getDate(html);
+                                            time += conflict.getOtherExam().getTime(html);
+                                        }
                                     }
                                     firstSection = false;
                                 }
@@ -1359,8 +1363,8 @@ public class ExamAssignmentReportAction extends Action {
                                             exam.getExamName()+nl+conflict.getOtherExam().getExamName(),
                                             exam.getNrStudents()+nl+conflict.getOtherExam().getNrStudents(),
                                             exam.getSeatingTypeLabel()+nl+conflict.getOtherExam().getSeatingTypeLabel(),
-                                            exam.getDate(html)+nl,
-                                            exam.getTime(html)+nl,
+                                            exam.getDate(html)+nl+(exam.getPeriod().equals(conflict.getOtherExam().getPeriod()) ? "" : conflict.getOtherExam().getDate(html)),
+                                            exam.getTime(html)+nl+(exam.getPeriod().equals(conflict.getOtherExam().getPeriod()) ? "" : conflict.getOtherExam().getTime(html)),
                                             exam.getRoomsName(html, ", ")+nl+conflict.getOtherExam().getRoomsName(html, ", "),
                                             ""
                                         }, new Comparable[] {

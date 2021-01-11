@@ -75,6 +75,16 @@
 			</description>
 		</item>
 	</category>
+		<category>
+		<title>Examination Timetabling</title>
+		<item>
+			<name>Overlapping Periods</name>
+			<description>
+				<line>Added ability to check for direct (student or instructor) conflicts between two examination periods that overlap in time.</line>
+				<line>This is only enabled when solver configuration parameter Exams.CheckForPeriodOverlaps is set to true (defaults to false).</line>
+			</description>
+		</item>
+	</category>
 	<category>
 		<title>Administration</title>
 		<item>

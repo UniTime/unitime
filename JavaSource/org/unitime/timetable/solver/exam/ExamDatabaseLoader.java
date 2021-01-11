@@ -193,6 +193,7 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
                     period.getStartTimeLabel()+" - "+period.getEndTimeLabel(), 
                     Constants.SLOT_LENGTH_MIN*period.getLength(), 
                     pref2weight(pref));
+            p.setStartTime(Constants.SLOT_LENGTH_MIN * period.getStartSlot() + Constants.FIRST_SLOT_TIME_MIN);
             if (PreferenceLevel.sProhibited.equals(pref)) iProhibitedPeriods.add(p);
             iPeriods.put(period.getUniqueId(),p);
         }

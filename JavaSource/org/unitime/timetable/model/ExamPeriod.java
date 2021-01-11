@@ -244,6 +244,16 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         return getStartSlot() - nrTravelSlots < meeting.getStopPeriod() && meeting.getStartPeriod() < getStartSlot() + getLength() + nrTravelSlots;
     }
     
+    protected int getStartMins() {
+    	return Constants.SLOT_LENGTH_MIN * getStartSlot() + Constants.FIRST_SLOT_TIME_MIN;
+    }
+    
+    public boolean overlap(Exam x1, Exam x2, ExamPeriod period) {
+    	if (equals(period)) return false;
+    	if (!getStartDate().equals(period.getStartDate())) return false;
+    	return getStartMins() < period.getStartMins() + x2.getLength() && period.getStartMins() < getStartMins() + x1.getLength();
+    }
+    
     public List<Meeting> findOverlappingClassMeetings() {
         return findOverlappingClassMeetings(ApplicationProperty.ExaminationTravelTimeClass.intValue());
     }
