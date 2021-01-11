@@ -2791,6 +2791,11 @@ public enum ApplicationProperty {
 	@Description("Advisor Course Recommendation: Allow for wait-lists, no-subs or none of the two.")
 	AdvisorRecommendationsWaitListMode("unitime.acr.waitlist"),
 	
+	@DefaultValue("false")
+	@Description("Examination Events: generate event's allocated time based on the examination length (instead of the period length)")
+	@Parameter("examination type")
+	ExamEventAllocatedTimeBasedExamLength("unitime.examEvent.allocatesTimeBasedExamLength.%"),
+	
 	;
 
 	String iKey;

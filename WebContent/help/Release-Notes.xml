@@ -84,6 +84,15 @@
 				<line>This is only enabled when solver configuration parameter Exams.CheckForPeriodOverlaps is set to true (defaults to false).</line>
 			</description>
 		</item>
+		<item>
+			<name>Examination Events</name>
+			<description>
+				<line>Added ability generate event's allocated time based on the examination length instead of the examination period length.
+					<line>When enabled, a one hour long exam will only allocate one hour (plus the offsets) even when placed in a period of two hours.</line>
+				</line>
+				<line>To be enabled (for an examination problem) by unitime.examEvent.allocatesTimeBasedExamLength.REF application property, where REF is the examination problem reference.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>

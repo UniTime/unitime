@@ -727,8 +727,11 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
      	return(getStartSlot().intValue() - getEventStartOffset().intValue());
     }
     
-    public int getExamEventStopSlot(){
-    	return(getEndSlot() + getEventStopOffset().intValue());
+    public int getExamEventStopSlot(Exam exam){
+    	if (ApplicationProperty.ExamEventAllocatedTimeBasedExamLength.isTrue(getExamType().getReference()))
+    		return getStartSlot() + exam.getLength() / Constants.SLOT_LENGTH_MIN + getEventStopOffset();
+    	else
+    		return(getEndSlot() + getEventStopOffset().intValue());
     }
     
     public int getExamEventStartOffsetForExam(Exam exam){
@@ -743,10 +746,13 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     	return ((Number)ExamPeriodDAO.getInstance().getSession().createQuery("select count(x) from Exam x where x.assignedPeriod.uniqueId = :id").setLong("id", getUniqueId()).setCacheable(true).uniqueResult()).intValue() > 0;
     }
     
-    public int getExamEventStopOffsetForExam(Exam exam){
-    	return(exam.getLength()
-    			- (Constants.SLOT_LENGTH_MIN*getLength())
-    			- (getEventStopOffset()*Constants.SLOT_LENGTH_MIN)
-    			+ exam.examOffset());
+    public int getExamEventStopOffsetForExam(Exam exam) {
+    	if (ApplicationProperty.ExamEventAllocatedTimeBasedExamLength.isTrue(getExamType().getReference()))
+    		return exam.examOffset() - Constants.SLOT_LENGTH_MIN * getEventStopOffset() + (exam.getLength() % Constants.SLOT_LENGTH_MIN);
+    	else
+    		return(exam.getLength()
+    				- (Constants.SLOT_LENGTH_MIN*getLength())
+    				- (getEventStopOffset()*Constants.SLOT_LENGTH_MIN)
+    				+ exam.examOffset());
     }
 }
