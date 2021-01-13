@@ -102,6 +102,15 @@
 				<line>Contact Us Email: Set reply-to email address to the email recipient.</line>
 			</description>
 		</item>
+		<item>
+			<name>Spring Integration</name>
+			<description>
+				<line>Spring Integration is now disabled by default (to avoid issues with data/unitime/import folder).</line>
+				<line>To enable Spring Integration, set unitime.spring.context.integration=no-integration.xml in catalina.properties.
+					<line>This will enable the data exchange imports in the data/unitime/import folder as well as the ability to configure receiving Event Management email responses.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>
