@@ -127,11 +127,11 @@ public class ReservationExport extends BaseExport {
 	        		}
 	        		if (reservation instanceof IndividualOverrideReservation) {
 	        			IndividualOverrideReservation override = (IndividualOverrideReservation)reservation;
-	        			reservationEl.addElement("override", "true");
-	        			reservationEl.addElement("expired", override.isAlwaysExpired() ? "true" : "false");
-	        			reservationEl.addElement("allowOverlap", override.isAllowOverlap() ? "true" : "false");
-	        			reservationEl.addElement("overLimit", override.isCanAssignOverLimit() ? "true" : "false");
-	        			reservationEl.addElement("mustBeUsed", override.isMustBeUsed() ? "true" : "false");
+	        			reservationEl.addAttribute("override", "true");
+	        			reservationEl.addAttribute("expired", override.isAlwaysExpired() ? "true" : "false");
+	        			reservationEl.addAttribute("allowOverlap", override.isAllowOverlap() ? "true" : "false");
+	        			reservationEl.addAttribute("overLimit", override.isCanAssignOverLimit() ? "true" : "false");
+	        			reservationEl.addAttribute("mustBeUsed", override.isMustBeUsed() ? "true" : "false");
 	        		}
 	        	} else if (reservation instanceof LearningCommunityReservation) {
 	        		reservationEl.addAttribute("type", "lc");
@@ -149,11 +149,11 @@ public class ReservationExport extends BaseExport {
 	        		groupEl.addAttribute("code", group.getGroupAbbreviation());
 	        		if (reservation instanceof GroupOverrideReservation) {
 	        			GroupOverrideReservation override = (GroupOverrideReservation)reservation;
-	        			reservationEl.addElement("override", "true");
-	        			reservationEl.addElement("expired", override.isAlwaysExpired() ? "true" : "false");
-	        			reservationEl.addElement("allowOverlap", override.isAllowOverlap() ? "true" : "false");
-	        			reservationEl.addElement("overLimit", override.isCanAssignOverLimit() ? "true" : "false");
-	        			reservationEl.addElement("mustBeUsed", override.isMustBeUsed() ? "true" : "false");
+	        			reservationEl.addAttribute("override", "true");
+	        			reservationEl.addAttribute("expired", override.isAlwaysExpired() ? "true" : "false");
+	        			reservationEl.addAttribute("allowOverlap", override.isAllowOverlap() ? "true" : "false");
+	        			reservationEl.addAttribute("overLimit", override.isCanAssignOverLimit() ? "true" : "false");
+	        			reservationEl.addAttribute("mustBeUsed", override.isMustBeUsed() ? "true" : "false");
 	        		}
 	        	} else if (reservation instanceof CurriculumReservation) {
 	        		reservationEl.addAttribute("type", "curriculum");
@@ -184,11 +184,11 @@ public class ReservationExport extends BaseExport {
 	        		}
 	        		if (reservation instanceof CurriculumOverrideReservation) {
 	        			CurriculumOverrideReservation override = (CurriculumOverrideReservation)reservation;
-	        			reservationEl.addElement("override", "true");
-	        			reservationEl.addElement("expired", override.isAlwaysExpired() ? "true" : "false");
-	        			reservationEl.addElement("allowOverlap", override.isAllowOverlap() ? "true" : "false");
-	        			reservationEl.addElement("overLimit", override.isCanAssignOverLimit() ? "true" : "false");
-	        			reservationEl.addElement("mustBeUsed", override.isMustBeUsed() ? "true" : "false");
+	        			reservationEl.addAttribute("override", "true");
+	        			reservationEl.addAttribute("expired", override.isAlwaysExpired() ? "true" : "false");
+	        			reservationEl.addAttribute("allowOverlap", override.isAllowOverlap() ? "true" : "false");
+	        			reservationEl.addAttribute("overLimit", override.isCanAssignOverLimit() ? "true" : "false");
+	        			reservationEl.addAttribute("mustBeUsed", override.isMustBeUsed() ? "true" : "false");
 	        		}
 	        	} else if (reservation instanceof CourseReservation) {
 	        		if (course.getReservation() != null)
