@@ -203,14 +203,14 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 	}
 
 	public static class CurriculumReservation extends ReservationInterface {
-		private Area iCurriculum;
+		private Areas iCurriculum;
 		
 		public CurriculumReservation() {
 			super();
 		}
 		
-		public Area getCurriculum() { return iCurriculum; }
-		public void setCurriculum(Area curriculum) { iCurriculum = curriculum; }
+		public Areas getCurriculum() { return iCurriculum; }
+		public void setCurriculum(Areas curriculum) { iCurriculum = curriculum; }
 		
 		public String toString() { return getCurriculum().toString(); }
 		
@@ -243,6 +243,7 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		private String iAbbv;
 		private String iName;
 		private Integer iLimit = null;
+		private Long iParentId = null;
 		
 		public IdName() {}
 		
@@ -254,6 +255,8 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		public void setAbbv(String abbv) { iAbbv = abbv; }
 		public Integer getLimit() { return iLimit; }
 		public void setLimit(Integer limit) { iLimit = limit; }
+		public Long getParentId() { return iParentId; }
+		public void setParentId(Long id) { iParentId = id; }
 		
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof IdName)) return false;
@@ -444,13 +447,31 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 	public static class Area extends IdName {
 		private List<IdName> iClassifications = new ArrayList<IdName>();
 		private List<IdName> iMajors = new ArrayList<IdName>();
+		private List<IdName> iMinors = new ArrayList<IdName>();
 
 		public Area() { super(); }
 		
 		public List<IdName> getClassifications() { return iClassifications; }
 		public List<IdName> getMajors() { return iMajors; }
+		public List<IdName> getMinors() { return iMinors; }
 		
 		public String toString() { return super.toString() + " " + getClassifications().toString() + " " + getMajors().toString(); }
+	}
+	
+	public static class Areas implements IsSerializable {
+		private List<IdName> iAreas = new ArrayList<IdName>();
+		private List<IdName> iClassifications = new ArrayList<IdName>();
+		private List<IdName> iMajors = new ArrayList<IdName>();
+		private List<IdName> iMinors = new ArrayList<IdName>();
+
+		public Areas() {}
+		
+		public List<IdName> getAreas() { return iAreas; }
+		public List<IdName> getClassifications() { return iClassifications; }
+		public List<IdName> getMajors() { return iMajors; }
+		public List<IdName> getMinors() { return iMinors; }
+		
+		public String toString() { return getAreas().toString() + " " + getClassifications().toString() + " " + getMajors().toString(); }
 	}
 	
 	public static class Curriculum extends IdName {

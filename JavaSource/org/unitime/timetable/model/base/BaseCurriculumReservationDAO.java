@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.util.List;
-
 import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.CurriculumReservationDAO;
@@ -40,10 +38,5 @@ public abstract class BaseCurriculumReservationDAO extends _RootDAO<CurriculumRe
 
 	public Class<CurriculumReservation> getReferenceClass() {
 		return CurriculumReservation.class;
-	}
-
-	@SuppressWarnings("unchecked")
-	public List<CurriculumReservation> findByArea(org.hibernate.Session hibSession, Long areaId) {
-		return hibSession.createQuery("from CurriculumReservation x where x.area.uniqueId = :areaId").setLong("areaId", areaId).list();
 	}
 }

@@ -22,7 +22,9 @@ package org.unitime.timetable.gwt.client.reservations;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.client.ToolBox;
@@ -51,6 +53,7 @@ import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Course;
 import org.unitime.timetable.gwt.shared.ReservationInterface.CourseReservation;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Area;
+import org.unitime.timetable.gwt.shared.ReservationInterface.Areas;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Curriculum;
 import org.unitime.timetable.gwt.shared.ReservationInterface.DefaultExpirationDates;
 import org.unitime.timetable.gwt.shared.ReservationInterface.IdName;
@@ -102,7 +105,8 @@ public class ReservationEdit extends Composite {
 	private RestrictionsTable iRestrictions;
 	private HashMap<Long, Area> iAreas = new HashMap<Long, Area>();
 	private HashMap<Long, Curriculum> iCurricula = new HashMap<Long, Curriculum>();
-	private ListBox iClassifications, iMajors;
+	private ListBox iClassifications, iMajors, iMinors;
+	private int iMinorRow = 0;
 	private UniTimeWidget<ListBox> iType, iArea, iCourse, iGroup, iCurriculum;
 	private UniTimeWidget<TextArea> iStudents;
 	private ReservationInterface iReservation;
@@ -497,8 +501,10 @@ public class ReservationEdit extends Composite {
 		
 		iArea = new UniTimeWidget<ListBox>(new ListBox());
 		iArea.getWidget().setStyleName("unitime-TextBox");
-		iArea.getWidget().addItem(MESSAGES.itemSelect(), "");
-		iArea.getWidget().setSelectedIndex(0);
+		iArea.getWidget().setWidth("300px");
+		iArea.getWidget().setMultipleSelect(true);
+		iArea.getWidget().setVisibleItemCount(3);
+		iArea.getWidget().setHeight("100px");
 		iPanel.addRow(MESSAGES.propAcademicArea(), iArea);
 		iAreaLine = iPanel.getRowCount() - 1;
 		iClassifications = new ListBox();
@@ -515,6 +521,13 @@ public class ReservationEdit extends Composite {
 		iMajors.setVisibleItemCount(3);
 		iMajors.setHeight("100px");
 		iPanel.addRow(MESSAGES.propMajors(), iMajors);
+		iMinors = new ListBox();
+		iMinors.setMultipleSelect(true);
+		iMinors.setWidth("300px");
+		iMinors.setStyleName("unitime-TextBox");
+		iMinors.setVisibleItemCount(3);
+		iMinors.setHeight("100px");
+		iMinorRow = iPanel.addRow(MESSAGES.propMinors(), iMinors);
 		iCurriculum.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
@@ -525,7 +538,7 @@ public class ReservationEdit extends Composite {
 		iArea.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
-				areaChanged();
+				areaChangedKeepSelection();
 				iArea.clearHint();
 			}
 		});
@@ -554,6 +567,12 @@ public class ReservationEdit extends Composite {
 			}
 		});
 		iMajors.addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				iCurriculum.getWidget().setSelectedIndex(0);
+			}
+		});
+		iMinors.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
 				iCurriculum.getWidget().setSelectedIndex(0);
@@ -708,11 +727,13 @@ public class ReservationEdit extends Composite {
 			iRestrictions.clear();
 			iType.getWidget().setSelectedIndex(0);
 			iGroup.getWidget().setSelectedIndex(0);
-			iArea.getWidget().setSelectedIndex(0);
+			for (int i = 0; i < iArea.getWidget().getItemCount(); i++)
+				iArea.getWidget().setItemSelected(i, false);
 			iClassifications.clear();
 			iStudents.getWidget().setText("");
 			iCourse.getWidget().clear();
 			iMajors.clear();
+			iMinors.clear();
 			iType.setReadOnly(false);
 			iCurricula.clear();
 			iCurriculum.getWidget().clear();
@@ -801,10 +822,18 @@ public class ReservationEdit extends Composite {
 			}
 			@Override
 			public void onSuccess(List<Curriculum> result) {
+				int nrAreasSelected = 0;
+				String lastSelectedAreaId = null;
+				for (int i = 0; i < iArea.getWidget().getItemCount(); i++) {
+					if (iArea.getWidget().isItemSelected(i)) {
+						nrAreasSelected ++;
+						lastSelectedAreaId = iArea.getWidget().getValue(i);
+					}
+				}
 				curricula: for (Curriculum curriculum: result) {
 					iCurricula.put(curriculum.getId(), curriculum);
 					iCurriculum.getWidget().addItem(curriculum.getAbbv() + " - " + curriculum.getName() + " (" + curriculum.getLimit() + ")", curriculum.getId().toString());
-					if (curriculum.getArea().getId().toString().equals(iArea.getWidget().getValue(iArea.getWidget().getSelectedIndex()))) {
+					if (nrAreasSelected == 1 && curriculum.getArea().getId().toString().equals(lastSelectedAreaId)) {
 						majors: for (int i = 0; i < iMajors.getItemCount(); i++) {
 							if (iMajors.isItemSelected(i)) {
 								for (IdName m: curriculum.getMajors()) {
@@ -876,22 +905,39 @@ public class ReservationEdit extends Composite {
 	
 	private void areaChanged() {
 		iMajors.clear();
+		iMinors.clear();
 		iClassifications.clear();
-		String id = iArea.getWidget().getValue(iArea.getWidget().getSelectedIndex());
-		if (!id.isEmpty()) {
-			Area c = iAreas.get(Long.valueOf(id));
-			for (IdName major: c.getMajors()) {
-				iMajors.addItem(major.getAbbv() + " - " + major.getName(), major.getId().toString());
-			}
-			for (IdName clasf: c.getClassifications()) {
-				iClassifications.addItem(clasf.getAbbv() + " - " + clasf.getName(), clasf.getId().toString());
+		int nrAreasSelected = 0;
+		String lastSelectedArea = "";
+		for (int i = 0; i < iArea.getWidget().getItemCount(); i++)
+			if (iArea.getWidget().isItemSelected(i)) nrAreasSelected++;
+		for (int i = 0; i < iArea.getWidget().getItemCount(); i++) {
+			if (iArea.getWidget().isItemSelected(i)) {
+				String id = iArea.getWidget().getValue(i);
+				Area c = iAreas.get(Long.valueOf(id));
+				for (IdName major: c.getMajors()) {
+					iMajors.addItem((nrAreasSelected >1 ? c.getAbbv() + "/":"") + major.getAbbv() + " - " + major.getName(), major.getId().toString());
+				}
+				for (IdName minor: c.getMinors()) {
+					iMinors.addItem((nrAreasSelected >1 ? c.getAbbv() + "/":"") + minor.getAbbv() + " - " + minor.getName(), minor.getId().toString());
+				}
+				if (iClassifications.getItemCount() == 0)
+					for (IdName clasf: c.getClassifications()) {
+						iClassifications.addItem(clasf.getAbbv() + " - " + clasf.getName(), clasf.getId().toString());
+					}
+				lastSelectedArea = id;
 			}
 		}
+		iPanel.getRowFormatter().setVisible(iMinorRow, iMinors.getItemCount() > 0);
 		String curId = (iCurriculum.getWidget().getSelectedIndex() < 0 ? "" : iCurriculum.getWidget().getValue(iCurriculum.getWidget().getSelectedIndex()));
 		if (!curId.isEmpty()) {
-			Curriculum c = iCurricula.get(Long.valueOf(curId));
-			if (!c.getArea().getId().toString().equals(id))
+			if (nrAreasSelected != 1)
 				iCurriculum.getWidget().setSelectedIndex(0);
+			else {
+				Curriculum c = iCurricula.get(Long.valueOf(curId));
+				if (!c.getArea().getId().toString().equals(lastSelectedArea))
+					iCurriculum.getWidget().setSelectedIndex(0);
+			}
 		}
 	}
 	
@@ -899,12 +945,11 @@ public class ReservationEdit extends Composite {
 		String id = iCurriculum.getWidget().getValue(iCurriculum.getWidget().getSelectedIndex());
 		if (!id.isEmpty()) {
 			iMajors.clear();
+			iMinors.clear();
 			iClassifications.clear();
 			Curriculum c = iCurricula.get(Long.valueOf(id));
 			for (int i = 0; i < iArea.getWidget().getItemCount(); i++) {
-				if (c.getArea().getId().toString().equals(iArea.getWidget().getValue(i))) {
-					iArea.getWidget().setSelectedIndex(i); break;
-				}
+				iArea.getWidget().setItemSelected(i, c.getArea().getId().toString().equals(iArea.getWidget().getValue(i)));
 			}
 			areaChanged();
 			for (int i = 0; i < iMajors.getItemCount(); i++) {
@@ -914,6 +959,9 @@ public class ReservationEdit extends Composite {
 					if (m.getId().toString().equals(majorId)) { hasMajor = true; break; }
 				iMajors.setItemSelected(i, hasMajor);
 			}
+			for (int i = 0; i < iMinors.getItemCount(); i++) {
+				iMinors.setItemSelected(i, false);
+			}
 			for (int i = 0; i < iClassifications.getItemCount(); i++) {
 				String clasfId = iClassifications.getValue(i);
 				boolean hasClasf = false;
@@ -922,6 +970,59 @@ public class ReservationEdit extends Composite {
 				iClassifications.setItemSelected(i, hasClasf);
 			}
 			iLimit.getWidget().setValue(c.getLimit() == null ? "" : c.getLimit().toString(), true);
+		}
+	}
+	
+	private void areaChangedKeepSelection() {
+		Set<String> majors = new HashSet<String>();
+		for (int i = 0; i < iMajors.getItemCount(); i++)
+			if (iMajors.isItemSelected(i)) majors.add(iMajors.getValue(i));
+		Set<String> minors = new HashSet<String>();
+		for (int i = 0; i < iMinors.getItemCount(); i++)
+			if (iMinors.isItemSelected(i)) minors.add(iMinors.getValue(i));
+		Set<String> classifications = new HashSet<String>();
+		for (int i = 0; i < iClassifications.getItemCount(); i++)
+			if (iClassifications.isItemSelected(i)) classifications.add(iClassifications.getValue(i));
+		areaChanged();
+		if (!majors.isEmpty()) {
+			for (int i = 0; i < iMajors.getItemCount(); i++)
+				if (majors.contains(iMajors.getValue(i))) iMajors.setItemSelected(i, true);
+		}
+		if (iMajors.getSelectedIndex() < 0 && iReservation != null && iReservation instanceof ReservationInterface.CurriculumReservation) {
+			Areas areas = ((ReservationInterface.CurriculumReservation)iReservation).getCurriculum();
+			if (areas != null && areas.getMajors() != null)
+				for (IdName id: areas.getMajors())
+					for (int i = 0; i < iMajors.getItemCount(); i++)
+						if (id.getId().toString().equals(iMajors.getValue(i))) {
+							iMajors.setItemSelected(i, true);
+							break;
+						}
+		}
+		if (!minors.isEmpty())
+			for (int i = 0; i < iMinors.getItemCount(); i++)
+				if (minors.contains(iMinors.getValue(i))) iMinors.setItemSelected(i, true);
+		if (iMinors.getSelectedIndex() < 0 && iReservation != null && iReservation instanceof ReservationInterface.CurriculumReservation) {
+			Areas areas = ((ReservationInterface.CurriculumReservation)iReservation).getCurriculum();
+			if (areas != null && areas.getMinors() != null)
+				for (IdName id: areas.getMinors())
+					for (int i = 0; i < iMinors.getItemCount(); i++)
+						if (id.getId().toString().equals(iMinors.getValue(i))) {
+							iMinors.setItemSelected(i, true);
+							break;
+						}
+		}
+		if (!classifications.isEmpty())
+			for (int i = 0; i < iClassifications.getItemCount(); i++)
+				if (classifications.contains(iClassifications.getValue(i))) iClassifications.setItemSelected(i, true);
+		if (iClassifications.getSelectedIndex() < 0 && iReservation != null && iReservation instanceof ReservationInterface.CurriculumReservation) {
+			Areas areas = ((ReservationInterface.CurriculumReservation)iReservation).getCurriculum();
+			if (areas != null && areas.getClassifications() != null)
+				for (IdName id: areas.getClassifications())
+					for (int i = 0; i < iClassifications.getItemCount(); i++)
+						if (id.getId().toString().equals(iClassifications.getValue(i))) {
+							iClassifications.setItemSelected(i, true);
+							break;
+						}
 		}
 	}
 	
@@ -960,8 +1061,14 @@ public class ReservationEdit extends Composite {
 			select(iCourse.getWidget(), ((ReservationInterface.LCReservation) iReservation).getCourse().getId().toString());
 		} else if (iReservation instanceof ReservationInterface.CurriculumReservation) {
 			select(iType.getWidget(), iReservation.isOverride() ? "curriculum-override" : "curriculum");
-			Area curriculum = ((ReservationInterface.CurriculumReservation) iReservation).getCurriculum();
-			select(iArea.getWidget(), curriculum.getId().toString());
+			Areas curriculum = ((ReservationInterface.CurriculumReservation) iReservation).getCurriculum();
+			for (int i = 0; i < iArea.getWidget().getItemCount(); i++) {
+				Long id = Long.valueOf(iArea.getWidget().getValue(i));
+				boolean selected = false;
+				for (IdName aa: curriculum.getAreas())
+					if (aa.getId().equals(id)) selected = true;
+				iArea.getWidget().setItemSelected(i, selected);
+			}
 			areaChanged();
 			for (int i = 0; i < iMajors.getItemCount(); i++) {
 				Long id = Long.valueOf(iMajors.getValue(i));
@@ -969,6 +1076,13 @@ public class ReservationEdit extends Composite {
 				for (IdName mj: curriculum.getMajors())
 					if (mj.getId().equals(id)) selected = true;
 				iMajors.setItemSelected(i, selected);
+			}
+			for (int i = 0; i < iMinors.getItemCount(); i++) {
+				Long id = Long.valueOf(iMinors.getValue(i));
+				boolean selected = false;
+				for (IdName mj: curriculum.getMinors())
+					if (mj.getId().equals(id)) selected = true;
+				iMinors.setItemSelected(i, selected);
 			}
 			for (int i = 0; i < iClassifications.getItemCount(); i++) {
 				Long id = Long.valueOf(iClassifications.getValue(i));
@@ -1087,20 +1201,33 @@ public class ReservationEdit extends Composite {
 		} else if ("curriculum".equals(type) || "curriculum-override".equals(type)) {
 			r = new ReservationInterface.CurriculumReservation();
 			r.setOverride("curriculum-override".equals(type));
-			String aid = iArea.getWidget().getValue(iArea.getWidget().getSelectedIndex());
-			if (aid.isEmpty()) {
+			Areas curriculum = new Areas();
+			for (int i = 0; i < iArea.getWidget().getItemCount(); i++ ) {
+				if (iArea.getWidget().isItemSelected(i)) {
+					Area area = new Area();
+					area.setId(Long.valueOf(iArea.getWidget().getValue(i)));
+					area.setName(iArea.getWidget().getItemText(i));
+					curriculum.getAreas().add(area);
+				}
+			}
+			if (curriculum.getAreas().isEmpty()) {
 				iArea.setErrorHint(MESSAGES.hintAcademicAreaNotProvided());
 				ok = false;
 			} else {
-				Area curriculum = new Area();
-				curriculum.setId(Long.valueOf(aid));
-				curriculum.setName(iArea.getWidget().getItemText(iArea.getWidget().getSelectedIndex()));
 				for (int i = 0; i < iMajors.getItemCount(); i++ ) {
 					if (iMajors.isItemSelected(i)) {
 						IdName mj = new IdName();
 						mj.setId(Long.valueOf(iMajors.getValue(i)));
 						mj.setName(iMajors.getItemText(i));
 						curriculum.getMajors().add(mj);
+					}
+				}
+				for (int i = 0; i < iMinors.getItemCount(); i++ ) {
+					if (iMinors.isItemSelected(i)) {
+						IdName mj = new IdName();
+						mj.setId(Long.valueOf(iMinors.getValue(i)));
+						mj.setName(iMinors.getItemText(i));
+						curriculum.getMinors().add(mj);
 					}
 				}
 				for (int i = 0; i < iClassifications.getItemCount(); i++ ) {

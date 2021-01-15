@@ -65,6 +65,7 @@ import org.unitime.timetable.model.LearningCommunityReservation;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.OverrideReservation;
 import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Student;
@@ -82,6 +83,7 @@ import org.unitime.timetable.model.dao.CurriculumDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.PosMajorDAO;
+import org.unitime.timetable.model.dao.PosMinorDAO;
 import org.unitime.timetable.model.dao.ReservationDAO;
 import org.unitime.timetable.model.dao.StudentGroupDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -140,9 +142,19 @@ public class ReservationServlet implements ReservationService {
 						mj.setId(major.getUniqueId());
 						mj.setAbbv(major.getCode());
 						mj.setName(Constants.curriculaToInitialCase(major.getName()));
+						mj.setParentId(area.getUniqueId());
 						curriculum.getMajors().add(mj);
 					}
+					for (PosMinor minor: area.getPosMinors()) {
+						ReservationInterface.IdName mj = new ReservationInterface.IdName();
+						mj.setId(minor.getUniqueId());
+						mj.setAbbv(minor.getCode());
+						mj.setName(Constants.curriculaToInitialCase(minor.getName()));
+						mj.setParentId(area.getUniqueId());
+						curriculum.getMinors().add(mj);
+					}
 					Collections.sort(curriculum.getMajors());
+					Collections.sort(curriculum.getMinors());
 					curriculum.getClassifications().addAll(classifications);
 					results.add(curriculum);
 				}
@@ -396,10 +408,18 @@ public class ReservationServlet implements ReservationService {
 		} else if (reservation instanceof CurriculumReservation) {
 			CurriculumReservation cr = (CurriculumReservation) reservation;
 			r = new ReservationInterface.CurriculumReservation();
-			ReservationInterface.Area curriculum = new ReservationInterface.Area();
-			curriculum.setId(cr.getArea().getUniqueId());
-			curriculum.setAbbv(cr.getArea().getAcademicAreaAbbreviation());
-			curriculum.setName(Constants.curriculaToInitialCase(cr.getArea().getTitle()));
+			ReservationInterface.Areas curriculum = new ReservationInterface.Areas();
+			String aaCodes = "";
+			String aaIds = "";
+			for (AcademicArea area: cr.getAreas()) {
+				ReservationInterface.IdName aa = new ReservationInterface.IdName();
+				aa.setId(area.getUniqueId());
+				aa.setAbbv(area.getAcademicAreaAbbreviation());
+				aa.setName(Constants.curriculaToInitialCase(area.getTitle()));
+				curriculum.getAreas().add(aa);
+				aaCodes += (aaCodes.isEmpty() ? "" : ",") + "'" + area.getAcademicAreaAbbreviation() + "'";
+				aaIds += (aaIds.isEmpty() ? "" : ",") + area.getUniqueId();
+			}
 			String cfCodes = "";
 			String cfIds = "";
 			for (AcademicClassification classification: cr.getClassifications()) {
@@ -418,10 +438,42 @@ public class ReservationServlet implements ReservationService {
 				mj.setId(major.getUniqueId());
 				mj.setAbbv(major.getCode());
 				mj.setName(Constants.curriculaToInitialCase(major.getName()));
+				for (AcademicArea aa: major.getAcademicAreas())
+					if (cr.getAreas().contains(aa)) {
+						mj.setParentId(aa.getUniqueId());
+						break;
+					}
 				curriculum.getMajors().add(mj);
 				mjCodes += (mjCodes.isEmpty() ? "" : ",") + "'" + major.getCode() + "'";
 				mjIds += (mjIds.isEmpty() ? "" : ",") + major.getUniqueId();
 			}
+			String mnCodes = "";
+			String mnIds = "";
+			for (PosMinor minor: cr.getMinors()) {
+				ReservationInterface.IdName mn = new ReservationInterface.IdName();
+				mn.setId(minor.getUniqueId());
+				mn.setAbbv(minor.getCode());
+				mn.setName(Constants.curriculaToInitialCase(minor.getName()));
+				for (AcademicArea aa: minor.getAcademicAreas())
+					if (cr.getAreas().contains(aa)) {
+						mn.setParentId(aa.getUniqueId());
+						break;
+					}
+				curriculum.getMinors().add(mn);
+				mnCodes += (mnCodes.isEmpty() ? "" : ",") + "'" + minor.getCode() + "'";
+				mnIds += (mnIds.isEmpty() ? "" : ",") + minor.getUniqueId();
+			}
+			if (curriculum.getAreas().size() > 1)
+				Collections.sort(curriculum.getAreas(), new Comparator<ReservationInterface.IdName>() {
+					@Override
+					public int compare(ReservationInterface.IdName s1, ReservationInterface.IdName s2) {
+						int cmp = s1.getAbbv().compareTo(s2.getAbbv());
+						if (cmp != 0) return cmp;
+						cmp = s1.getName().compareTo(s2.getName());
+						if (cmp != 0) return cmp;
+						return s1.getId().compareTo(s2.getId());
+					}
+				});
 			Collections.sort(curriculum.getMajors(), new Comparator<ReservationInterface.IdName>() {
 				@Override
 				public int compare(ReservationInterface.IdName s1, ReservationInterface.IdName s2) {
@@ -442,18 +494,42 @@ public class ReservationServlet implements ReservationService {
 					return s1.getId().compareTo(s2.getId());
 				}
 			});
+			Collections.sort(curriculum.getMinors(), new Comparator<ReservationInterface.IdName>() {
+				@Override
+				public int compare(ReservationInterface.IdName s1, ReservationInterface.IdName s2) {
+					int cmp = s1.getAbbv().compareTo(s2.getAbbv());
+					if (cmp != 0) return cmp;
+					cmp = s1.getName().compareTo(s2.getName());
+					if (cmp != 0) return cmp;
+					return s1.getId().compareTo(s2.getId());
+				}
+			});
 			((ReservationInterface.CurriculumReservation) r).setCurriculum(curriculum);
-			Number enrollment = (Number)hibSession.createQuery(
-					"select count(distinct e.student) " +
-					"from StudentClassEnrollment e inner join e.student.areaClasfMajors a inner join a.major m where " +
-					"e.courseOffering.instructionalOffering.uniqueId = :offeringId " +
-					"and a.academicArea.uniqueId = :areaId" + 
-					(mjIds.isEmpty() ? "" : " and m.uniqueId in (" + mjIds + ")") +
-					(cfIds.isEmpty() ? "" : " and a.academicClassification.uniqueId in (" + cfIds + ")"))
-					.setLong("offeringId", reservation.getInstructionalOffering().getUniqueId())
-					.setLong("areaId", cr.getArea().getUniqueId()).setCacheable(true).uniqueResult();
-			if (enrollment.intValue() > 0)
-				r.setEnrollment(enrollment.intValue());
+			if (!mjIds.isEmpty() || mnIds.isEmpty()) {
+				Number enrollment = (Number)hibSession.createQuery(
+						"select count(distinct e.student) " +
+						"from StudentClassEnrollment e inner join e.student.areaClasfMajors a inner join a.major m where " +
+						"e.courseOffering.instructionalOffering.uniqueId = :offeringId " +
+						(mjIds.isEmpty() ? "" : " and m.uniqueId in (" + mjIds + ")") +
+						(cfIds.isEmpty() ? "" : " and a.academicClassification.uniqueId in (" + cfIds + ")") +
+						(aaIds.isEmpty() ? "" : " and a.academicArea.uniqueId in (" + aaIds + ")"))
+						.setLong("offeringId", reservation.getInstructionalOffering().getUniqueId())
+						.setCacheable(true).uniqueResult();
+				if (enrollment.intValue() > 0)
+					r.setEnrollment(enrollment.intValue());
+			}
+			if (!mnIds.isEmpty()) {
+				Number enrollment = (Number)hibSession.createQuery(
+						"select count(distinct e.student) " +
+						"from StudentClassEnrollment e inner join e.student.areaClasfMinors a inner join a.minor m where " +
+						"e.courseOffering.instructionalOffering.uniqueId = :offeringId and m.uniqueId in (" + mnIds + ")" +
+						(cfIds.isEmpty() ? "" : " and a.academicClassification.uniqueId in (" + cfIds + ")") +
+						(aaIds.isEmpty() ? "" : " and a.academicArea.uniqueId in (" + aaIds + ")"))
+						.setLong("offeringId", reservation.getInstructionalOffering().getUniqueId())
+						.setCacheable(true).uniqueResult();
+				if (enrollment.intValue() > 0)
+					r.setEnrollment(enrollment.intValue() + (r.getEnrollment() == null ? 0 : r.getEnrollment().intValue()));
+			}
 			/*
 			Number lastLike = (Number)hibSession.createQuery(
 					"select count(distinct s) from " +
@@ -472,25 +548,48 @@ public class ReservationServlet implements ReservationService {
 			*/
 			float projection = 0f;
 			int lastLike = 0;
-			Hashtable<String,HashMap<String, Float>> rules = getRules(hibSession, cr.getArea().getUniqueId());
-			for (Object[] o: (List<Object[]>)hibSession.createQuery(
-					"select count(distinct s), m.code, f.code from " +
-					"LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.major m " +
-					"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co left outer join co.demandOffering do where " +
-					"x.subjectArea.session.uniqueId = :sessionId and co.instructionalOffering.uniqueId = :offeringId and "+
-					"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
-					"(do is not null and do.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and do.permId=x.coursePermId) or (x.coursePermId is null and do.courseNbr=x.courseNbr))))"+
-					"and r.academicAreaAbbreviation = :areaAbbv" +
-					(mjCodes.isEmpty() ? "" : " and m.code in (" + mjCodes + ")") +
-					(cfCodes.isEmpty() ? "" : " and f.code in (" + cfCodes + ")") +
-					" group by m.code, f.code")
-					.setLong("sessionId", getAcademicSessionId())
-					.setLong("offeringId", reservation.getInstructionalOffering().getUniqueId())
-					.setString("areaAbbv", cr.getArea().getAcademicAreaAbbreviation()).setCacheable(true).list()) {
-				int nrStudents = ((Number)o[0]).intValue();
-				lastLike += nrStudents;
-				projection += getProjection(rules, (String)o[1], (String)o[2]) * nrStudents;
-			}
+			if (!mjIds.isEmpty() || mnIds.isEmpty())
+				for (AcademicArea area: cr.getAreas()) {
+					Hashtable<String,HashMap<String, Float>> rules = getRules(hibSession, area.getUniqueId());
+					for (Object[] o: (List<Object[]>)hibSession.createQuery(
+							"select count(distinct s), m.code, f.code from " +
+							"LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.major m " +
+							"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co left outer join co.demandOffering do where " +
+							"x.subjectArea.session.uniqueId = :sessionId and co.instructionalOffering.uniqueId = :offeringId and "+
+							"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
+							"(do is not null and do.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and do.permId=x.coursePermId) or (x.coursePermId is null and do.courseNbr=x.courseNbr))))"+
+							"and r.academicAreaAbbreviation = :areaAbbv" +
+							(mjCodes.isEmpty() ? "" : " and m.code in (" + mjCodes + ")") +
+							(cfCodes.isEmpty() ? "" : " and f.code in (" + cfCodes + ")") +
+							" group by m.code, f.code")
+							.setLong("sessionId", getAcademicSessionId())
+							.setLong("offeringId", reservation.getInstructionalOffering().getUniqueId())
+							.setString("areaAbbv", area.getAcademicAreaAbbreviation()).setCacheable(true).list()) {
+						int nrStudents = ((Number)o[0]).intValue();
+						lastLike += nrStudents;
+						projection += getProjection(rules, (String)o[1], (String)o[2]) * nrStudents;
+					}				
+				}
+			if (!mnIds.isEmpty())
+				for (AcademicArea area: cr.getAreas()) {
+					for (Object[] o: (List<Object[]>)hibSession.createQuery(
+							"select count(distinct s), m.code, f.code from " +
+							"LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMinors a inner join a.minor m " +
+							"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co left outer join co.demandOffering do where " +
+							"x.subjectArea.session.uniqueId = :sessionId and co.instructionalOffering.uniqueId = :offeringId and "+
+							"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
+							"(do is not null and do.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and do.permId=x.coursePermId) or (x.coursePermId is null and do.courseNbr=x.courseNbr))))"+
+							"and r.academicAreaAbbreviation = :areaAbbv" +
+							(mnIds.isEmpty() ? "" : " and m.code in (" + mnIds + ")") +
+							(cfCodes.isEmpty() ? "" : " and f.code in (" + cfCodes + ")") +
+							" group by m.code, f.code")
+							.setLong("sessionId", getAcademicSessionId())
+							.setLong("offeringId", reservation.getInstructionalOffering().getUniqueId())
+							.setString("areaAbbv", area.getAcademicAreaAbbreviation()).setCacheable(true).list()) {
+						int nrStudents = ((Number)o[0]).intValue();
+						lastLike += nrStudents;
+					}				
+				}
 			if (lastLike > 0) {
 				r.setLastLike(lastLike);
 				r.setProjection(Math.round(projection));
@@ -812,9 +911,15 @@ public class ReservationServlet implements ReservationService {
 				} else if (r instanceof StudentGroupReservation) {
 					((StudentGroupReservation)r).setGroup(StudentGroupDAO.getInstance().get(((ReservationInterface.GroupReservation) reservation).getGroup().getId(), hibSession));
 				} else if (r instanceof CurriculumReservation) {
-					ReservationInterface.Area curriculum = ((ReservationInterface.CurriculumReservation)reservation).getCurriculum();
+					ReservationInterface.Areas curriculum = ((ReservationInterface.CurriculumReservation)reservation).getCurriculum();
 					CurriculumReservation cr = (CurriculumReservation)r;
-					cr.setArea(AcademicAreaDAO.getInstance().get(curriculum.getId(), hibSession));
+					if (cr.getAreas() == null)
+						cr.setAreas(new HashSet<AcademicArea>());
+					else
+						cr.getAreas().clear();
+					for (ReservationInterface.IdName aa: curriculum.getAreas()) {
+						cr.getAreas().add(AcademicAreaDAO.getInstance().get(aa.getId(), hibSession));
+					}
 					if (cr.getMajors() == null)
 						cr.setMajors(new HashSet<PosMajor>());
 					else
@@ -828,6 +933,13 @@ public class ReservationServlet implements ReservationService {
 						cr.getClassifications().clear();
 					for (ReservationInterface.IdName clasf: curriculum.getClassifications()) {
 						cr.getClassifications().add(AcademicClassificationDAO.getInstance().get(clasf.getId(), hibSession));
+					}
+					if (cr.getMinors() == null)
+						cr.setMinors(new HashSet<PosMinor>());
+					else
+						cr.getMinors().clear();
+					for (ReservationInterface.IdName mn: curriculum.getMinors()) {
+						cr.getMinors().add(PosMinorDAO.getInstance().get(mn.getId(), hibSession));
 					}
 				}
 				hibSession.saveOrUpdate(r);
@@ -1024,6 +1136,7 @@ public class ReservationServlet implements ReservationService {
 			} finally {
 				hibSession.close();
 			}
+			Collections.sort(results);
 			return results;
 		} catch (PageAccessException e) {
 			throw e;

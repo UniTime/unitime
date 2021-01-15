@@ -13916,4 +13916,73 @@
 	    <mysql>alter table %SCHEMA%.advisor_crsreq add waitlist int(1)</mysql>
 	    <pgsql>alter table %SCHEMA%.advisor_crsreq add waitlist boolean</pgsql>
 	</update>
+	<update version="234" date="12-Jan-2021" comment="Curriculum Reservation Changes">
+		<plsql>
+			create table %SCHEMA%.reservation_minor (
+				reservation_id number(20,0) constraint nn_res_minor_id not null,
+				minor_id number(20,0) constraint nn_res_minor_minor not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.reservation_minor add constraint pk_reservation_minor primary key (reservation_id, minor_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.reservation_minor (
+				reservation_id decimal(20,0) not null,
+				minor_id decimal(20,0) not null,
+				primary key (reservation_id, minor_id)
+			) engine = INNODB
+		</mysql>
+		<pgsql>
+			create table %SCHEMA%.reservation_minor (
+				reservation_id bigint not null,
+				minor_id bigint not null
+			)
+		</pgsql>
+		<pgsql>alter table %SCHEMA%.reservation_minor add constraint pk_reservation_minor primary key (reservation_id, minor_id)</pgsql>
+		<sql>
+			alter table %SCHEMA%.reservation_minor add constraint fk_res_minors_minor foreign key (minor_id)
+			references %SCHEMA%.pos_minor (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.reservation_minor add constraint fk_res_minors_reservation foreign key (reservation_id)
+			references %SCHEMA%.reservation (uniqueid) on delete cascade
+		</sql>
+
+		<plsql>
+			create table %SCHEMA%.reservation_acad_area (
+				reservation_id number(20,0) constraint nn_res_acad_area_id not null,
+				area_id number(20,0) constraint nn_res_acad_area_area not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.reservation_acad_area add constraint pk_reservation_acad_area primary key (reservation_id, area_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.reservation_acad_area (
+				reservation_id decimal(20,0) not null,
+				area_id decimal(20,0) not null,
+				primary key (reservation_id, area_id)
+			) engine = INNODB
+		</mysql>
+		<pgsql>
+			create table %SCHEMA%.reservation_acad_area (
+				reservation_id bigint not null,
+				area_id bigint not null
+			)
+		</pgsql>
+		<pgsql>alter table %SCHEMA%.reservation_acad_area add constraint pk_reservation_acad_area primary key (reservation_id, area_id)</pgsql>
+		<sql>
+			alter table %SCHEMA%.reservation_acad_area add constraint fk_res_acad_areas_area foreign key (area_id)
+			references %SCHEMA%.academic_area (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.reservation_acad_area add constraint fk_res_acad_areas_reservation foreign key (reservation_id)
+			references %SCHEMA%.reservation (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			insert into %SCHEMA%.reservation_acad_area
+			select uniqueid, area_id from %SCHEMA%.reservation where area_id is not null
+		</sql>
+		<plsql>alter table %SCHEMA%.reservation drop constraint fk_reservation_area</plsql>
+		<mysql>alter table %SCHEMA%.reservation drop foreign key fk_reservation_area</mysql>
+		<pgsql>alter table %SCHEMA%.reservation drop constraint fk_reservation_area</pgsql>
+		<sql>alter table %SCHEMA%.reservation drop column area_id</sql>
+	</update>
 </dbupdate>

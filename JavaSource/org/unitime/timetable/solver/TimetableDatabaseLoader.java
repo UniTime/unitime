@@ -2387,6 +2387,13 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     						break;
     					}
     				}
+    				if (!match && !studentId.getMinors().isEmpty())
+						for (AreaClasfMajor acm: studentId.getMinors()) {
+    						if (cr.hasArea(acm.getArea()) && cr.hasClassification(acm.getClasf()) && cr.hasMinor(acm.getMajor())) {
+    							match = true;
+    							break;
+    						}
+    					}
     				if (!match) continue;
     			} else if (reservation instanceof LearningCommunityReservation) {
     				LearningCommunityReservation lcr = (LearningCommunityReservation)reservation;
@@ -3200,6 +3207,13 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         							break;
         						}
         					}
+        					if (!match && !studentId.getMinors().isEmpty())
+        						for (AreaClasfMajor acm: studentId.getMinors()) {
+            						if (cr.hasArea(acm.getArea()) && cr.hasClassification(acm.getClasf()) && cr.hasMinor(acm.getMajor())) {
+            							match = true;
+            							break;
+            						}
+            					}
         					if (!match) continue;
         				} else if (reservation instanceof StudentGroupReservation) {
         					StudentGroupReservation gr = (StudentGroupReservation)reservation;

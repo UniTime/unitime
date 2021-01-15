@@ -43,6 +43,7 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.LearningCommunityReservation;
 import org.unitime.timetable.model.OverrideReservation;
 import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
@@ -114,6 +115,17 @@ public class ReservationImport  extends BaseImport {
         			majorsByCode.put(area.getAcademicAreaAbbreviation() + "|" + major.getCode(), major);
         		if (major.getExternalUniqueId() != null)
         			majorsByExtId.put(major.getExternalUniqueId(), major);
+        	}
+        	
+        	Hashtable<String, PosMinor> minorsByCode = new Hashtable<String, PosMinor>();
+        	Hashtable<String, PosMinor> minorsByExtId = new Hashtable<String, PosMinor>();
+        	for (PosMinor minor: (List<PosMinor>)getHibSession().createQuery(
+        			"select a from PosMinor a where a.session.uniqueId = :sessionId")
+        			.setLong("sessionId", session.getUniqueId()).list()) {
+        		for (AcademicArea area: minor.getAcademicAreas())
+        			minorsByCode.put(area.getAcademicAreaAbbreviation() + "|" + minor.getCode(), minor);
+        		if (minor.getExternalUniqueId() != null)
+        			minorsByExtId.put(minor.getExternalUniqueId(), minor);
         	}
 
         	Hashtable<String, AcademicClassification> clasfsByCode = new Hashtable<String, AcademicClassification>();
@@ -320,6 +332,7 @@ public class ReservationImport  extends BaseImport {
                     }
                 } else if ("curriculum".equals(type)) {
                 	CurriculumReservation curriculum = (CurriculumReservation)reservation;
+                	curriculum.setAreas(new HashSet<AcademicArea>());
                     for (Iterator j = reservationElement.elementIterator("academicArea"); j.hasNext(); ) {
                     	Element areaEl = (Element)j.next();
                     	String extId = areaEl.attributeValue("externalId");
@@ -328,11 +341,10 @@ public class ReservationImport  extends BaseImport {
                     	if (area == null) {
                     		warn("Unable to find academic area " + (extId == null ? area : extId));
                     	} else {
-                    		curriculum.setArea(area);
-                    		break;
+                    		curriculum.getAreas().add(area);
                     	}
                     }
-                    if (curriculum.getArea() == null) {
+                    if (curriculum.getAreas().isEmpty()) {
                     	warn("Curriculum reservation of course " + course.getCourseName() + " has no academic area.");
                     }
                     curriculum.setClassifications(new HashSet<AcademicClassification>());
@@ -352,11 +364,33 @@ public class ReservationImport  extends BaseImport {
                     	Element majorEl = (Element)j.next();
                     	String extId = majorEl.attributeValue("externalId");
                     	String code = majorEl.attributeValue("code");
-                    	PosMajor major = (extId == null ? majorsByCode.get(curriculum.getArea().getAcademicAreaAbbreviation() + "|" + code) : majorsByExtId.get(extId));
+                    	PosMajor major = (extId != null ? majorsByExtId.get(extId) : null);
+                    	if (major == null)
+                    		for (AcademicArea area: curriculum.getAreas()) {
+                    			major = majorsByCode.get(area.getAcademicAreaAbbreviation() + "|" + code);
+                    			if (major != null) break;
+                    		}
                     	if (major == null) {
-                    		warn("Unable to find major " + (extId == null ? curriculum.getArea().getAcademicAreaAbbreviation() + " " + code : extId));
+                    		warn("Unable to find major " + (extId == null ? code : extId));
                     	} else {
                     		curriculum.getMajors().add(major);
+                    	}
+                    }
+                    curriculum.setMinors(new HashSet<PosMinor>());
+                    for (Iterator j = reservationElement.elementIterator("minor"); j.hasNext(); ) {
+                    	Element minorEl = (Element)j.next();
+                    	String extId = minorEl.attributeValue("externalId");
+                    	String code = minorEl.attributeValue("code");
+                    	PosMinor minor = (extId != null ? minorsByExtId.get(extId) : null);
+                    	if (minor == null)
+                    		for (AcademicArea area: curriculum.getAreas()) {
+                    			minor = minorsByCode.get(area.getAcademicAreaAbbreviation() + "|" + code);
+                    			if (minor != null) break;
+                    		}
+                    	if (minor == null) {
+                    		warn("Unable to find major " + (extId == null ? code : extId));
+                    	} else {
+                    		curriculum.getMinors().add(minor);
                     	}
                     }
                 } else if ("course".equals(type)) {

@@ -28,10 +28,12 @@ import java.util.Set;
 import org.cpsolver.studentsct.reservation.CurriculumOverride;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
+import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.CurriculumOverrideReservation;
 import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.PosMinor;
 
 /**
  * @author Tomas Muller
@@ -40,9 +42,10 @@ import org.unitime.timetable.model.PosMajor;
 public class XCurriculumReservation extends XReservation {
 	private static final long serialVersionUID = 1L;
 	private int iLimit;
-    private String iAcadArea;
+    private Set<String> iAcadAreas  = new HashSet<String>();
     private Set<String> iClassifications = new HashSet<String>();
     private Set<String> iMajors = new HashSet<String>();
+    private Set<String> iMinors = new HashSet<String>();
     private Boolean iExpired;
     private boolean iOverride = false;
     
@@ -58,21 +61,27 @@ public class XCurriculumReservation extends XReservation {
     public XCurriculumReservation(XOffering offering, CurriculumReservation reservation) {
     	super(XReservationType.Curriculum, offering, reservation);
     	iLimit = (reservation.getLimit() == null ? -1 : reservation.getLimit());
-    	iAcadArea = reservation.getArea().getAcademicAreaAbbreviation();
+    	for (AcademicArea area: reservation.getAreas())
+    		iAcadAreas.add(area.getAcademicAreaAbbreviation());
     	for (AcademicClassification clasf: reservation.getClassifications())
     		iClassifications.add(clasf.getCode());
     	for (PosMajor major: reservation.getMajors())
     		iMajors.add(major.getCode());
+    	for (PosMinor minor: reservation.getMinors())
+    		iMinors.add(minor.getCode());
     }
     
     public XCurriculumReservation(XOffering offering, CurriculumOverrideReservation reservation) {
     	super(XReservationType.CurriculumOverride, offering, reservation);
         iLimit = (reservation.getLimit() == null ? -1 : reservation.getLimit());
-        iAcadArea = reservation.getArea().getAcademicAreaAbbreviation();
+        for (AcademicArea area: reservation.getAreas())
+    		iAcadAreas.add(area.getAcademicAreaAbbreviation());
     	for (AcademicClassification clasf: reservation.getClassifications())
     		iClassifications.add(clasf.getCode());
     	for (PosMajor major: reservation.getMajors())
     		iMajors.add(major.getCode());
+    	for (PosMinor minor: reservation.getMinors())
+    		iMinors.add(minor.getCode());
     	iOverride = reservation.isAlwaysExpired();
         setMustBeUsed(reservation.isMustBeUsed());
         setAllowOverlap(reservation.isAllowOverlap());
@@ -83,21 +92,27 @@ public class XCurriculumReservation extends XReservation {
     public XCurriculumReservation(org.cpsolver.studentsct.reservation.CurriculumReservation reservation) {
     	super(XReservationType.Curriculum, reservation);
     	iLimit = (int)Math.round(reservation.getReservationLimit());
-    	iAcadArea = reservation.getAcademicArea();
+    	if (reservation.getAcademicAreas() != null)
+    		iAcadAreas.addAll(reservation.getAcademicAreas());
     	if (reservation.getClassifications() != null)
     		iClassifications.addAll(reservation.getClassifications());
     	if (reservation.getMajors() != null)
     		iMajors.addAll(reservation.getMajors());
+    	if (reservation.getMinors() != null)
+    		iMinors.addAll(reservation.getMinors());
     }
     
     public XCurriculumReservation(CurriculumOverride reservation) {
     	super(XReservationType.CurriculumOverride, reservation);
     	iLimit = (int)Math.round(reservation.getReservationLimit());
-    	iAcadArea = reservation.getAcademicArea();
+    	if (reservation.getAcademicAreas() != null)
+    		iAcadAreas.addAll(reservation.getAcademicAreas());
     	if (reservation.getClassifications() != null)
     		iClassifications.addAll(reservation.getClassifications());
     	if (reservation.getMajors() != null)
     		iMajors.addAll(reservation.getMajors());
+    	if (reservation.getMinors() != null)
+    		iMinors.addAll(reservation.getMinors());
     	iOverride = true;
     }
 
@@ -113,8 +128,8 @@ public class XCurriculumReservation extends XReservation {
     /**
      * Academic area
      */
-    public String getAcademicArea() {
-        return iAcadArea;
+    public Set<String> getAcademicAreas() {
+        return iAcadAreas;
     }
     
     /**
@@ -122,6 +137,13 @@ public class XCurriculumReservation extends XReservation {
      */
     public Set<String> getMajors() {
         return iMajors;
+    }
+    
+    /**
+     * Minors
+     */
+    public Set<String> getMinors() {
+        return iMinors;
     }
     
     /**
@@ -144,18 +166,28 @@ public class XCurriculumReservation extends XReservation {
      */
     @Override
     public boolean isApplicable(XStudent student, XCourseId course) {
-        for (XAreaClassificationMajor acm: student.getMajors()) {
-            if (getAcademicArea().equals(acm.getArea()) &&
-            	(getClassifications().isEmpty() || getClassifications().contains(acm.getClassification())) &&
-            	(getMajors().isEmpty() || getMajors().contains(acm.getMajor()))) return true;
-        }
+    	if (!getMajors().isEmpty() || getMinors().isEmpty())
+    		for (XAreaClassificationMajor acm: student.getMajors()) {
+                if (getAcademicAreas().contains(acm.getArea()) &&
+                	(getClassifications().isEmpty() || getClassifications().contains(acm.getClassification())) &&
+                	(getMajors().isEmpty() || getMajors().contains(acm.getMajor()))) return true;
+            }
+    	if (!getMinors().isEmpty())
+    		for (XAreaClassificationMajor acm: student.getMinors()) {
+                if (getAcademicAreas().contains(acm.getArea()) &&
+                	(getClassifications().isEmpty() || getClassifications().contains(acm.getClassification())) &&
+                	(getMinors().contains(acm.getMajor()))) return true;
+            }
         return false;
     }
     
     @Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
     	super.readExternal(in);
-    	iAcadArea = (String)in.readObject();
+    	int nrAcadAreas = in.readInt();
+    	iAcadAreas.clear();
+    	for (int i = 0; i < nrAcadAreas; i++)
+    		iAcadAreas.add((String)in.readObject());
     	
     	int nrClassifications = in.readInt();
     	iClassifications.clear();
@@ -167,6 +199,11 @@ public class XCurriculumReservation extends XReservation {
     	for (int i = 0; i < nrMajors; i++)
     		iMajors.add((String)in.readObject());
     	
+    	int nrMinors = in.readInt();
+    	iMinors.clear();
+    	for (int i = 0; i < nrMinors; i++)
+    		iMinors.add((String)in.readObject());
+
     	iLimit = in.readInt();
     	
     	if (getType() == XReservationType.CurriculumOverride) {
@@ -188,7 +225,9 @@ public class XCurriculumReservation extends XReservation {
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		super.writeExternal(out);
-		out.writeObject(iAcadArea);
+		out.writeInt(iAcadAreas.size());
+		for (String area: iAcadAreas)
+			out.writeObject(area);
 		
 		out.writeInt(iClassifications.size());
 		for (String clasf: iClassifications)
@@ -197,6 +236,10 @@ public class XCurriculumReservation extends XReservation {
 		out.writeInt(iMajors.size());
 		for (String major: iMajors)
 			out.writeObject(major);
+		
+		out.writeInt(iMinors.size());
+		for (String minor: iMinors)
+			out.writeObject(minor);
 		
 		out.writeInt(iLimit);
 		

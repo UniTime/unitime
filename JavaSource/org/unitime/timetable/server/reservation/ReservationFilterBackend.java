@@ -186,14 +186,15 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 		if (request.hasOptions("type") && request.getOptions("type").contains("Curriculum")) {
 			Map<Long, Entity> areas = new HashMap<Long, Entity>();
 			for (Reservation reservation: (List<Reservation>)query.select("distinct r").where("r.class in (CurriculumReservation, CurriculumOverrideReservation)").exclude("area").query(hibSession).list()) {
-				AcademicArea acedmicArea = ((CurriculumReservation)reservation).getArea();
-				Entity area = areas.get(acedmicArea.getUniqueId());
-				if (area == null) {
-					area = new Entity(acedmicArea.getUniqueId(), acedmicArea.getAcademicAreaAbbreviation(),
-							Constants.curriculaToInitialCase(acedmicArea.getTitle()));
-					areas.put(area.getUniqueId(), area);
+				for (AcademicArea academicArea: ((CurriculumReservation)reservation).getAreas()) {
+					Entity area = areas.get(academicArea.getUniqueId());
+					if (area == null) {
+						area = new Entity(academicArea.getUniqueId(), academicArea.getAcademicAreaAbbreviation(),
+								Constants.curriculaToInitialCase(academicArea.getTitle()));
+						areas.put(area.getUniqueId(), area);
+					}
+					area.incCount();	
 				}
-				area.incCount();
 			}
 			response.add("area", new TreeSet<Entity>(areas.values()));
 		}
@@ -299,7 +300,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 		
 		String fetch = "inner join fetch r.instructionalOffering io inner join io.courseOfferings co " +
 				"left join fetch r.classes xclz left join fetch r.configurations xcfg " +
-				"left join fetch r.area xarea left join fetch r.majors xmjr left join fetch r.classifications xclf " +
+				"left join fetch r.areas xarea left join fetch r.majors xmjr left join fetch r.classifications xclf " +
 				"left join fetch r.course xcrs left join fetch r.students xstd left join fetch r.group xgrp";
 		
 		for (Reservation reservation: (List<Reservation>)getQuery(request, context).select("distinct r").from(fetch).query(hibSession).list())
@@ -452,7 +453,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 				query.addParameter("area", "area" + id, t);
 				id ++;
 			}
-			query.addWhere("area", "r.area.academicAreaAbbreviation " + (id == 1 ? "= " + areas : "in (" + areas + ")"));
+			query.addWhere("area", "xarea.academicAreaAbbreviation " + (id == 1 ? "= " + areas : "in (" + areas + ")"));
 		}
 		
 		if (request.hasOptions("group")) {
@@ -698,8 +699,9 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 			if ("area".equals(attr)) {
 				if (iReservation instanceof CurriculumReservation) {
 					CurriculumReservation cr = (CurriculumReservation)iReservation;
-					if (eq(cr.getArea().getAcademicAreaAbbreviation(), term) || has(cr.getArea().getTitle(), term))
-						return true;
+					for (AcademicArea area: cr.getAreas())
+						if (eq(area.getAcademicAreaAbbreviation(), term) || has(area.getTitle(), term))
+							return true;
 				}
 			}
 			if ("class".equals(attr)) {

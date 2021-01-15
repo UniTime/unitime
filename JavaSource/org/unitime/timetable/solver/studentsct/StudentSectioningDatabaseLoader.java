@@ -94,6 +94,7 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.gwt.shared.ReservationInterface.OverrideType;
+import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.AdvisorCourseRequest;
@@ -119,6 +120,7 @@ import org.unitime.timetable.model.LearningCommunityReservation;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.OverrideReservation;
 import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomPref;
@@ -127,6 +129,7 @@ import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.StudentAreaClassificationMajor;
+import org.unitime.timetable.model.StudentAreaClassificationMinor;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentClassPref;
 import org.unitime.timetable.model.StudentGroup;
@@ -977,32 +980,44 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		if (type != null && type.getAllowDisabledSection() == StudentGroupType.AllowDisabledSection.WithGroupReservation) r.setAllowDisabled(true);
         	} else if (reservation instanceof CurriculumOverrideReservation) {
         		org.unitime.timetable.model.CurriculumReservation cr = (org.unitime.timetable.model.CurriculumReservation)reservation;
+        		List<String> areas = new ArrayList<String>();
+        		for (AcademicArea area: cr.getAreas())
+        			areas.add(area.getAcademicAreaAbbreviation());
         		List<String> classifications = new ArrayList<String>();
         		for (AcademicClassification clasf: cr.getClassifications())
         			classifications.add(clasf.getCode());
         		List<String> majors = new ArrayList<String>();
         		for (PosMajor major: cr.getMajors())
         			majors.add(major.getCode());
+        		List<String> minors = new ArrayList<String>();
+        		for (PosMinor minor: cr.getMinors())
+        			minors.add(minor.getCode());
         		if (((CurriculumOverrideReservation)reservation).isAlwaysExpired())
         			r = new CurriculumOverride(reservation.getUniqueId(), (reservation.getLimit() == null ? -1.0 : reservation.getLimit()),
-            				offering, cr.getArea().getAcademicAreaAbbreviation(), classifications, majors);
+            				offering, areas, classifications, majors, minors);
         		else
         			r = new CurriculumReservation(reservation.getUniqueId(), (reservation.getLimit() == null ? -1.0 : reservation.getLimit()),
-            				offering, cr.getArea().getAcademicAreaAbbreviation(), classifications, majors);
+            				offering, areas, classifications, majors, minors);
         		r.setPriority(reservation.getPriority());
         		r.setMustBeUsed(reservation.isMustBeUsed());
         		r.setAllowOverlap(reservation.isAllowOverlap());
         		r.setCanAssignOverLimit(reservation.isCanAssignOverLimit());
         	} else if (reservation instanceof org.unitime.timetable.model.CurriculumReservation) {
         		org.unitime.timetable.model.CurriculumReservation cr = (org.unitime.timetable.model.CurriculumReservation)reservation;
+        		List<String> areas = new ArrayList<String>();
+        		for (AcademicArea area: cr.getAreas())
+        			areas.add(area.getAcademicAreaAbbreviation());
         		List<String> classifications = new ArrayList<String>();
         		for (AcademicClassification clasf: cr.getClassifications())
         			classifications.add(clasf.getCode());
         		List<String> majors = new ArrayList<String>();
         		for (PosMajor major: cr.getMajors())
         			majors.add(major.getCode());
+        		List<String> minors = new ArrayList<String>();
+        		for (PosMinor minor: cr.getMinors())
+        			minors.add(minor.getCode());
         		r = new CurriculumReservation(reservation.getUniqueId(), (reservation.getLimit() == null ? -1.0 : reservation.getLimit()),
-        				offering, cr.getArea().getAcademicAreaAbbreviation(), classifications, majors);
+        				offering, areas, classifications, majors, minors);
         		r.setPriority(ApplicationProperty.ReservationPriorityCurriculum.intValue());
         		r.setAllowOverlap(ApplicationProperty.ReservationAllowOverlapCurriculum.isTrue());
         		r.setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitCurriculum.isTrue());
@@ -2116,6 +2131,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             // student.getAcademicAreaClasiffications().add(new AcademicAreaCode(acm.getAcademicArea().getAcademicAreaAbbreviation(),acm.getAcademicClassification().getCode()));
             // student.getMajors().add(new AcademicAreaCode(acm.getAcademicArea().getAcademicAreaAbbreviation(),acm.getMajor().getCode()));
         	student.getAreaClassificationMajors().add(new AreaClassificationMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode()));
+        }
+        for (StudentAreaClassificationMinor acm: s.getAreaClasfMinors()) {
+        	student.getAreaClassificationMinors().add(new AreaClassificationMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMinor().getCode()));
         }
         for (StudentGroup g: s.getGroups()) {
         	student.getGroups().add(new org.cpsolver.studentsct.model.StudentGroup(g.getType() == null ? null : g.getType().getReference(), g.getGroupAbbreviation(), g.getGroupName()));

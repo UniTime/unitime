@@ -67,7 +67,6 @@ public abstract class BaseCurriculumOverrideReservation extends CurriculumReserv
 
 	public String toDebugString() {
 		return "CurriculumOverrideReservation[" +
-			"\n	Area: " + getArea() +
 			"\n	ExpirationDate: " + getExpirationDate() +
 			"\n	Flags: " + getFlags() +
 			"\n	Inclusive: " + getInclusive() +

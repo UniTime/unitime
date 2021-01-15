@@ -170,13 +170,17 @@
             name="CurriculumReservation"
             abstract="false"
             discriminator-value="2">
-            
-        	<many-to-one
-            	name="area"
-            	class="AcademicArea"
-        	    column="area_id"
-    	        not-null="true"
-	            foreign-key="fk_reservation_area"/>
+	        
+	        <set
+        	    name="areas"
+            	table="reservation_acad_area"
+        	    inverse="false"
+    	        lazy="true">
+
+	            <cache include="non-lazy" usage="transactional"/>
+            	<key column="reservation_id" foreign-key="fk_res_acad_areas_reservation"/>
+        	    <many-to-many class="AcademicArea" column="area_id" foreign-key="fk_res_acad_areas_area"/>
+    	    </set>
 
     	    <set
         	    name="majors"
@@ -199,6 +203,17 @@
         	    <key column="reservation_id" foreign-key="fk_res_clasf_reservation"/>
     	        <many-to-many class="AcademicClassification" column="acad_clasf_id" foreign-key="fk_res_clasf_clasf"/>
 	        </set>
+	        
+    	    <set
+        	    name="minors"
+            	table="reservation_minor"
+        	    inverse="false"
+    	        lazy="true">
+
+	            <cache include="non-lazy" usage="transactional"/>
+            	<key column="reservation_id" foreign-key="fk_res_minors_reservation"/>
+        	    <many-to-many class="PosMinor" column="minor_id" foreign-key="fk_res_minors_minor"/>
+    	    </set>
 	        
 	        <subclass
 	        	name="CurriculumOverrideReservation"

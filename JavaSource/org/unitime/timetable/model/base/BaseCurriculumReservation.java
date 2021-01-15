@@ -27,6 +27,7 @@ import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.Reservation;
 
 /**
@@ -36,9 +37,10 @@ import org.unitime.timetable.model.Reservation;
 public abstract class BaseCurriculumReservation extends Reservation implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	private AcademicArea iArea;
+	private Set<AcademicArea> iAreas;
 	private Set<PosMajor> iMajors;
 	private Set<AcademicClassification> iClassifications;
+	private Set<PosMinor> iMinors;
 
 
 	public BaseCurriculumReservation() {
@@ -52,8 +54,12 @@ public abstract class BaseCurriculumReservation extends Reservation implements S
 
 	protected void initialize() {}
 
-	public AcademicArea getArea() { return iArea; }
-	public void setArea(AcademicArea area) { iArea = area; }
+	public Set<AcademicArea> getAreas() { return iAreas; }
+	public void setAreas(Set<AcademicArea> areas) { iAreas = areas; }
+	public void addToareas(AcademicArea academicArea) {
+		if (iAreas == null) iAreas = new HashSet<AcademicArea>();
+		iAreas.add(academicArea);
+	}
 
 	public Set<PosMajor> getMajors() { return iMajors; }
 	public void setMajors(Set<PosMajor> majors) { iMajors = majors; }
@@ -67,6 +73,13 @@ public abstract class BaseCurriculumReservation extends Reservation implements S
 	public void addToclassifications(AcademicClassification academicClassification) {
 		if (iClassifications == null) iClassifications = new HashSet<AcademicClassification>();
 		iClassifications.add(academicClassification);
+	}
+
+	public Set<PosMinor> getMinors() { return iMinors; }
+	public void setMinors(Set<PosMinor> minors) { iMinors = minors; }
+	public void addTominors(PosMinor posMinor) {
+		if (iMinors == null) iMinors = new HashSet<PosMinor>();
+		iMinors.add(posMinor);
 	}
 
 	public boolean equals(Object o) {
@@ -86,7 +99,6 @@ public abstract class BaseCurriculumReservation extends Reservation implements S
 
 	public String toDebugString() {
 		return "CurriculumReservation[" +
-			"\n	Area: " + getArea() +
 			"\n	ExpirationDate: " + getExpirationDate() +
 			"\n	Inclusive: " + getInclusive() +
 			"\n	InstructionalOffering: " + getInstructionalOffering() +

@@ -185,7 +185,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
         				break;
         			case Curriculum:
         				XCurriculumReservation curriculumR = (XCurriculumReservation) reservation;
-        				clonedReservation = new CurriculumReservation(reservation.getReservationId(), reservation.getLimit(), clonedOffering, curriculumR.getAcademicArea(), curriculumR.getClassifications(), curriculumR.getMajors());
+        				clonedReservation = new CurriculumReservation(reservation.getReservationId(), reservation.getLimit(), clonedOffering, curriculumR.getAcademicAreas(), curriculumR.getClassifications(), curriculumR.getMajors(), curriculumR.getMinors());
         				break;
         			case Group:
         				if (reservation instanceof XIndividualReservation) {
@@ -244,9 +244,9 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
         			case CurriculumOverride:
         				XCurriculumReservation curR = (XCurriculumReservation) reservation;
         				if (curR.isOverride())
-        					clonedReservation = new CurriculumOverride(reservation.getReservationId(), reservation.getLimit(), clonedOffering, curR.getAcademicArea(), curR.getClassifications(), curR.getMajors());
+        					clonedReservation = new CurriculumOverride(reservation.getReservationId(), reservation.getLimit(), clonedOffering, curR.getAcademicAreas(), curR.getClassifications(), curR.getMajors(), curR.getMinors());
         				else
-        					clonedReservation = new CurriculumReservation(reservation.getReservationId(), reservation.getLimit(), clonedOffering, curR.getAcademicArea(), curR.getClassifications(), curR.getMajors());
+        					clonedReservation = new CurriculumReservation(reservation.getReservationId(), reservation.getLimit(), clonedOffering, curR.getAcademicAreas(), curR.getClassifications(), curR.getMajors(), curR.getMinors());
         				((CurriculumReservation)clonedReservation).setMustBeUsed(curR.mustBeUsed());
         				((CurriculumReservation)clonedReservation).setAllowOverlap(curR.isAllowOverlap());
         				((CurriculumReservation)clonedReservation).setCanAssignOverLimit(curR.canAssignOverLimit());

@@ -52,6 +52,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.StudentAreaClassificationMajor;
+import org.unitime.timetable.model.StudentAreaClassificationMinor;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupType;
@@ -66,6 +67,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 public class XStudent extends XStudentId implements Externalizable {
 	private static final long serialVersionUID = 1L;
     private List<XAreaClassificationMajor> iMajors = new ArrayList<XAreaClassificationMajor>();
+    private List<XAreaClassificationMajor> iMinors = new ArrayList<XAreaClassificationMajor>();
     private List<XGroup> iGroups = new ArrayList<XGroup>();
     private List<String> iAccomodations = new ArrayList<String>();
     private List<XRequest> iRequests = new ArrayList<XRequest>();
@@ -106,6 +108,10 @@ public class XStudent extends XStudentId implements Externalizable {
         	iMajors.add(new XAreaClassificationMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode()));
         }
     	if (iMajors.size() > 1) Collections.sort(iMajors);
+    	for (StudentAreaClassificationMinor acm: student.getAreaClasfMinors()) {
+        	iMinors.add(new XAreaClassificationMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMinor().getCode()));
+        }
+    	if (iMinors.size() > 1) Collections.sort(iMinors);
         for (StudentGroup group: student.getGroups()) {
         	iGroups.add(new XGroup(group));
         	StudentGroupType type = group.getType();
@@ -204,6 +210,7 @@ public class XStudent extends XStudentId implements Externalizable {
     	iEmailTimeStamp = student.getEmailTimeStamp();
     	iLastStudentChange = student.getLastStudentChange();
     	iMajors.addAll(student.getMajors());
+    	iMinors.addAll(student.getMinors());
     	iGroups.addAll(student.getGroups());
     	iAccomodations.addAll(student.getAccomodations());
     	iRequests.addAll(student.getRequests());
@@ -226,6 +233,7 @@ public class XStudent extends XStudentId implements Externalizable {
     	iEmailTimeStamp = student.getEmailTimeStamp();
     	iLastStudentChange = student.getLastStudentChange();
     	iMajors.addAll(student.getMajors());
+    	iMinors.addAll(student.getMinors());
     	iGroups.addAll(student.getGroups());
     	iAccomodations.addAll(student.getAccomodations());
     	iMaxCredit = student.getMaxCredit();
@@ -287,6 +295,10 @@ public class XStudent extends XStudentId implements Externalizable {
     		iMajors.add(new XAreaClassificationMajor(acm.getArea(), acm.getClassification(), acm.getMajor()));
     	}
     	if (iMajors.size() > 1) Collections.sort(iMajors);
+    	for (AreaClassificationMajor acm: student.getAreaClassificationMinors()) {
+    		iMinors.add(new XAreaClassificationMajor(acm.getArea(), acm.getClassification(), acm.getMajor()));
+    	}
+    	if (iMinors.size() > 1) Collections.sort(iMinors);
     	for (org.cpsolver.studentsct.model.StudentGroup gr: student.getGroups())
     		iGroups.add(new XGroup(gr));
     	for (String acc: student.getAccommodations())
@@ -348,6 +360,13 @@ public class XStudent extends XStudentId implements Externalizable {
      */
     public List<XAreaClassificationMajor> getMajors() {
         return iMajors;
+    }
+    
+    /**
+     * List of academic area, classification, and minor codes ({@link XAreaClassificationMajor}) for the given student
+     */
+    public List<XAreaClassificationMajor> getMinors() {
+        return iMinors;
     }
 
     /**
@@ -454,6 +473,11 @@ public class XStudent extends XStudentId implements Externalizable {
 		for (int i = 0; i < nrMajors; i++)
 			iMajors.add(new XAreaClassificationMajor(in));
 		
+		int nrMinors = in.readInt();
+		iMinors.clear();
+		for (int i = 0; i < nrMinors; i++)
+			iMinors.add(new XAreaClassificationMajor(in));
+		
 		int nrGroups = in.readInt();
 		iGroups.clear();
 		for (int i = 0; i < nrGroups; i++)
@@ -502,6 +526,10 @@ public class XStudent extends XStudentId implements Externalizable {
 		out.writeInt(iMajors.size());
 		for (XAreaClassificationMajor major: iMajors)
 			major.writeExternal(out);
+		
+		out.writeInt(iMinors.size());
+		for (XAreaClassificationMajor minor: iMinors)
+			minor.writeExternal(out);
 		
 		out.writeInt(iGroups.size());
 		for (XGroup group: iGroups)

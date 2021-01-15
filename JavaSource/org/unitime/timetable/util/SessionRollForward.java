@@ -2996,6 +2996,18 @@ public class SessionRollForward {
 	        	}
 	        }
 	        
+	        Map<String, Map<String, PosMinor>> minors = new Hashtable<String, Map<String, PosMinor>>();
+	        for (PosMinor minor: PosMinorDAO.getInstance().findBySession(hibSession, rollForwardSessionForm.getSessionToRollForwardTo())) {
+	        	for (AcademicArea area: minor.getAcademicAreas()) {
+	        		Map<String, PosMinor> code2minor = minors.get(area.getAcademicAreaAbbreviation());
+	        		if (code2minor == null) {
+	        			code2minor = new Hashtable<String, PosMinor>();
+	        			minors.put(area.getAcademicAreaAbbreviation(), code2minor);
+	        		}
+	        		code2minor.put(minor.getCode(), minor);
+	        	}
+	        }
+	        
 			for (SubjectArea subject: subjects) {
 				hibSession.createQuery("delete CurriculumReservation r where r.instructionalOffering.uniqueId in (select c.instructionalOffering.uniqueId from CourseOffering c where c.subjectArea.uniqueId = :subjectId and c.isControl = true)"
 						).setLong("subjectId", subject.getUniqueId()).executeUpdate();
@@ -3004,7 +3016,7 @@ public class SessionRollForward {
 						"select distinct r from CurriculumReservation r inner join r.instructionalOffering.courseOfferings c where " +
 						"c.isControl = true and c.subjectArea.subjectAreaAbbreviation = :subject and c.subjectArea.department.session.uniqueId = :sessionId")
 						.setString("subject", subject.getSubjectAreaAbbreviation()).setLong("sessionId", rollForwardSessionForm.getSessionToRollReservationsForwardFrom()).list()) {
-					CurriculumReservation toReservation = rollCurriculumReservationForward(reservation, subject.getSession(), startDate, expiration, areas, classifications, majors);
+					CurriculumReservation toReservation = rollCurriculumReservationForward(reservation, subject.getSession(), startDate, expiration, areas, classifications, majors, minors);
 					if (toReservation != null)
 						hibSession.saveOrUpdate(toReservation);
 				}
@@ -3164,7 +3176,7 @@ public class SessionRollForward {
 		return toReservation;
 	}
 	
-	protected CurriculumReservation rollCurriculumReservationForward(CurriculumReservation fromReservation, Session toSession, Date startDate, Date expiration, Map<String, AcademicArea> areas, Map<String, AcademicClassification> classifications, Map<String, Map<String, PosMajor>> majors) {
+	protected CurriculumReservation rollCurriculumReservationForward(CurriculumReservation fromReservation, Session toSession, Date startDate, Date expiration, Map<String, AcademicArea> areas, Map<String, AcademicClassification> classifications, Map<String, Map<String, PosMajor>> majors, Map<String, Map<String, PosMinor>> minors) {
 		CurriculumReservation toReservation = new CurriculumReservation();
 		if (fromReservation instanceof CurriculumOverrideReservation) {
 			toReservation = new CurriculumOverrideReservation();
@@ -3173,9 +3185,12 @@ public class SessionRollForward {
 	
 		if (!rollReservationForward(fromReservation, toReservation, toSession, startDate, expiration)) return null;
 		
-		AcademicArea area = areas.get(fromReservation.getArea().getAcademicAreaAbbreviation());
-		if (area == null) return null;
-		toReservation.setArea(area);
+		toReservation.setAreas(new HashSet<AcademicArea>());
+		for (AcademicArea fromArea: fromReservation.getAreas()) {
+			AcademicArea toArea = areas.get(fromArea.getAcademicAreaAbbreviation());
+			if (toArea != null) toReservation.getAreas().add(toArea);
+		}
+		if (toReservation.getAreas().isEmpty()) return null;
 		
 		toReservation.setClassifications(new HashSet<AcademicClassification>());
 		for (AcademicClassification fromClasf: fromReservation.getClassifications()) {
@@ -3184,12 +3199,21 @@ public class SessionRollForward {
 		}
 		
 		toReservation.setMajors(new HashSet<PosMajor>());
-		Map<String, PosMajor> mj = majors.get(area.getAcademicAreaAbbreviation());
-		if (mj != null)
-			for (PosMajor fromMajor: fromReservation.getMajors()) {
-				PosMajor toMajor = mj.get(fromMajor.getCode());
-				if (toMajor != null) toReservation.getMajors().add(toMajor);
-			}
+		toReservation.setMinors(new HashSet<PosMinor>());
+		for (AcademicArea area: fromReservation.getAreas()) {
+			Map<String, PosMajor> mj = majors.get(area.getAcademicAreaAbbreviation());
+			if (mj != null)
+				for (PosMajor fromMajor: fromReservation.getMajors()) {
+					PosMajor toMajor = mj.get(fromMajor.getCode());
+					if (toMajor != null) toReservation.getMajors().add(toMajor);
+				}
+			Map<String, PosMinor> mn = minors.get(area.getAcademicAreaAbbreviation());
+			if (mn != null)
+				for (PosMinor fromMinor: fromReservation.getMinors()) {
+					PosMinor toMinor = mn.get(fromMinor.getCode());
+					if (toMinor != null) toReservation.getMinors().add(toMinor);
+				}
+		}
 		
 		return toReservation;
 	}

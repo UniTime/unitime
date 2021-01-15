@@ -48,6 +48,15 @@
 				<line>Please note that these accommodations are only enabled when the new Student Schedule Quality extension is being used (StudentSct.ScheduleQuality = true).</line>
 			</description>
 		</item>
+		<item>
+			<name>Curriculum Reservations</name>
+			<description>
+				<line>Added ability for a curriculum reservation and overrides to have multiple majors.</line>
+				<line>Added ability for the curriculum reservations and overrides to match on student minors.
+					<line>When a reservation has both majors and minors, a student must have at least one matching minor OR one matching major.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Online Student Scheduling</title>

@@ -45,7 +45,7 @@ import org.unitime.timetable.gwt.shared.ReservationInterface.Clazz;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Config;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Course;
 import org.unitime.timetable.gwt.shared.ReservationInterface.CourseReservation;
-import org.unitime.timetable.gwt.shared.ReservationInterface.Area;
+import org.unitime.timetable.gwt.shared.ReservationInterface.Areas;
 import org.unitime.timetable.gwt.shared.ReservationInterface.CurriculumReservation;
 import org.unitime.timetable.gwt.shared.ReservationInterface.GroupReservation;
 import org.unitime.timetable.gwt.shared.ReservationInterface.IdName;
@@ -319,16 +319,38 @@ public class ReservationTable extends Composite {
 				line.add(new Label(group.getAbbv() + " - " + group.getName() + " (" + group.getLimit() + ")", false));
 			} else if (reservation instanceof CurriculumReservation) {
 				line.add(new Label(MESSAGES.reservationCurriculumAbbv()));
-				Area curriculum = ((CurriculumReservation) reservation).getCurriculum();
+				Areas curriculum = ((CurriculumReservation) reservation).getCurriculum();
 				VerticalPanel owner = new VerticalPanel();
-				owner.add(new Label(curriculum.getAbbv() + " - " + curriculum.getName()));
+				for (IdName area: curriculum.getAreas()) {
+					Label l = new Label(area.getAbbv() + " - " + area.getName());
+					owner.add(l);
+					for (IdName major: curriculum.getMajors()) {
+						if (!area.getId().equals(major.getParentId())) continue;
+						Label o = new Label(major.getAbbv() + " - " + major.getName());
+						o.getElement().getStyle().setMarginLeft(10, Unit.PX);
+						owner.add(o);
+					}
+					for (IdName minor: curriculum.getMinors()) {
+						if (!area.getId().equals(minor.getParentId())) continue;
+						Label o = new Label(minor.getAbbv() + " - " + minor.getName());
+						o.getElement().getStyle().setMarginLeft(10, Unit.PX);
+						owner.add(o);
+					}
+				}
 				for (IdName clasf: curriculum.getClassifications()) {
 					Label l = new Label(clasf.getAbbv() + " - " + clasf.getName());
 					l.getElement().getStyle().setMarginLeft(10, Unit.PX);
 					owner.add(l);
 				}
 				for (IdName major: curriculum.getMajors()) {
+					if (major.getParentId() != null) continue;
 					Label l = new Label(major.getAbbv() + " - " + major.getName());
+					l.getElement().getStyle().setMarginLeft(10, Unit.PX);
+					owner.add(l);
+				}
+				for (IdName minor: curriculum.getMinors()) {
+					if (minor.getParentId() != null) continue;
+					Label l = new Label(minor.getAbbv() + " - " + minor.getName());
 					l.getElement().getStyle().setMarginLeft(10, Unit.PX);
 					owner.add(l);
 				}

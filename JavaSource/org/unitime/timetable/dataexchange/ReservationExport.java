@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
+import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -42,6 +43,7 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.LearningCommunityReservation;
 import org.unitime.timetable.model.OverrideReservation;
 import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
@@ -156,10 +158,12 @@ public class ReservationExport extends BaseExport {
 	        	} else if (reservation instanceof CurriculumReservation) {
 	        		reservationEl.addAttribute("type", "curriculum");
 	        		CurriculumReservation curRes = (CurriculumReservation)reservation;
-	        		Element acadAreaEl = reservationEl.addElement("academicArea");
-	        		if (curRes.getArea().getExternalUniqueId() != null)
-	        			acadAreaEl.addAttribute("externalId", curRes.getArea().getExternalUniqueId());
-	        		acadAreaEl.addAttribute("abbreviation", curRes.getArea().getAcademicAreaAbbreviation());
+	        		for (AcademicArea area: curRes.getAreas()) {
+		        		Element acadAreaEl = reservationEl.addElement("academicArea");
+		        		if (area.getExternalUniqueId() != null)
+		        			acadAreaEl.addAttribute("externalId", area.getExternalUniqueId());
+		        		acadAreaEl.addAttribute("abbreviation", area.getAcademicAreaAbbreviation());
+	        		}
 	        		for (AcademicClassification clasf: curRes.getClassifications()) {
 	        			Element clasfEl = reservationEl.addElement("academicClassification");
 		        		if (clasf.getExternalUniqueId() != null)
@@ -171,6 +175,12 @@ public class ReservationExport extends BaseExport {
 		        		if (major.getExternalUniqueId() != null)
 		        			majorEl.addAttribute("externalId", major.getExternalUniqueId());
 		        		majorEl.addAttribute("code", major.getCode());
+	        		}
+	        		for (PosMinor minor: curRes.getMinors()) {
+	        			Element minorEl = reservationEl.addElement("minor");
+		        		if (minor.getExternalUniqueId() != null)
+		        			minorEl.addAttribute("externalId", minor.getExternalUniqueId());
+		        		minorEl.addAttribute("code", minor.getCode());
 	        		}
 	        		if (reservation instanceof CurriculumOverrideReservation) {
 	        			CurriculumOverrideReservation override = (CurriculumOverrideReservation)reservation;

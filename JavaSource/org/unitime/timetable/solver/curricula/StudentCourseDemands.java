@@ -34,6 +34,7 @@ import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAreaClassificationMajor;
+import org.unitime.timetable.model.StudentAreaClassificationMinor;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 
@@ -172,6 +173,7 @@ public interface StudentCourseDemands {
 		private long iStudentId;
 		private float iWeight;
 		private Set<AreaClasfMajor> iMajors = new TreeSet<AreaClasfMajor>();
+		private Set<AreaClasfMajor> iMinors = new TreeSet<AreaClasfMajor>();
 		private Set<String> iCurricula = new TreeSet<String>();
 		private Set<Group> iGroups = new HashSet<Group>();
 		private Long iPrimaryOfferingId = null;
@@ -181,6 +183,7 @@ public interface StudentCourseDemands {
 			iStudentId = student.iStudentId;
 			iWeight = weight;
 			iMajors.addAll(student.iMajors);
+			iMinors.addAll(student.iMinors);
 			iCurricula.addAll(student.iCurricula);
 			iGroups.addAll(student.iGroups);
 			iStudent = student.iStudent;
@@ -198,6 +201,8 @@ public interface StudentCourseDemands {
 					cnt ++;
 				}
 			}
+			for (StudentAreaClassificationMinor acm: student.getAreaClasfMinors())
+				iMinors.add(new AreaClasfMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMinor().getCode()));
 			if (cnt == 1)
 				iWeight = rule;
 			else if (cnt > 1)
@@ -284,6 +289,7 @@ public interface StudentCourseDemands {
 		public Long getPrimaryOfferingId() { return iPrimaryOfferingId; }
 		
 		public Set<AreaClasfMajor> getMajors() { return iMajors; }
+		public Set<AreaClasfMajor> getMinors() { return iMinors; }
 		
 		public Set<Group> getGroups() { return iGroups; }
 		public Group getGroup(String name) {
