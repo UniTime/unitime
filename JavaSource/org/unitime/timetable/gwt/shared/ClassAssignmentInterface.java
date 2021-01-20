@@ -806,7 +806,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private long iId;
 		private Long iSessionId = null;
 		private String iExternalId, iName, iEmail;
-		private List<String> iArea, iClassification, iMajor, iAccommodation, iAdvisor;
+		private List<String> iArea, iClassification, iMajor, iAccommodation, iAdvisor, iMinor;
 		private Set<Group> iGroups;
 		private boolean iCanShowExternalId = false, iCanSelect = false;
 		private boolean iCanUseAssitant = false, iCanRegister = false;
@@ -905,6 +905,22 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			iAdvisor.add(advisor);
 		}
 		public List<String> getAdvisors() { return iAdvisor; }
+		
+		public boolean hasMinor() { return iMinor != null && !iMinor.isEmpty(); }
+		public String getMinor(String delim) { 
+			if (iMinor == null) return "";
+			String ret = "";
+			for (String minor: iMinor) {
+				if (!ret.isEmpty()) ret += delim;
+				ret += minor;
+			}
+			return ret;
+		}
+		public void addMinor(String minor) {
+			if (iMinor == null) iMinor = new ArrayList<String>();
+			iMinor.add(minor);
+		}
+		public List<String> getMinors() { return iMinor; }
 		
 		public boolean hasGroup() { return hasGroups(null); }
 		public String getGroup(String delim) { return getGroup(null, delim); }

@@ -48,6 +48,7 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.StudentAreaClassificationMajor;
+import org.unitime.timetable.model.StudentAreaClassificationMinor;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentEnrollmentMessage;
 import org.unitime.timetable.model.StudentGroup;
@@ -146,6 +147,9 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 				st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation());
 				st.addClassification(acm.getAcademicClassification().getCode());
 				st.addMajor(acm.getMajor().getCode());
+			}
+			for (StudentAreaClassificationMinor acm: new TreeSet<StudentAreaClassificationMinor>(student.getAreaClasfMinors())) {
+				st.addMinor(acm.getMinor().getCode());
 			}
 			for (StudentAccomodation acc: student.getAccomodations()) {
 				st.addAccommodation(acc.getAbbreviation());

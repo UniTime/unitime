@@ -39,6 +39,7 @@ import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.StudentAreaClassificationMajor;
+import org.unitime.timetable.model.StudentAreaClassificationMinor;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
@@ -109,6 +110,9 @@ public class DbFindOnlineSectioningLogAction extends FindOnlineSectioningLogActi
 						st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation());
 						st.addClassification(acm.getAcademicClassification().getCode());
 						st.addMajor(acm.getMajor().getCode());
+					}
+					for (StudentAreaClassificationMinor acm: new TreeSet<StudentAreaClassificationMinor>(student.getAreaClasfMinors())) {
+						st.addMinor(acm.getMinor().getCode());
 					}
 					for (StudentAccomodation acc: student.getAccomodations()) {
 						st.addAccommodation(acc.getAbbreviation());

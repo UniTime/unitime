@@ -1971,6 +1971,14 @@ public class SectioningStatusPage extends Composite {
 			addSortOperation(hMajor, StudentComparator.SortBy.MAJOR, MESSAGES.colMajor());
 		}
 		
+		UniTimeTableHeader hMinor = null;
+		if (iStudentInfoVisibleColumns.hasMinor) {
+			hMinor = new UniTimeTableHeader(MESSAGES.colMinor());
+			//hMajor.setWidth("100px");
+			header.add(hMinor);
+			addSortOperation(hMinor, StudentComparator.SortBy.MINOR, MESSAGES.colMinor());
+		}
+		
 		UniTimeTableHeader hGroup = null;
 		if (iStudentInfoVisibleColumns.hasGroup) {
 			iGroupColumn = header.size() - 1;
@@ -2283,6 +2291,8 @@ public class SectioningStatusPage extends Composite {
 			}
 			if (iStudentInfoVisibleColumns.hasMajor)
 				line.add(new HTML(info.getStudent().getMajor("<br>"), false));
+			if (iStudentInfoVisibleColumns.hasMinor)
+				line.add(new HTML(info.getStudent().getMinor("<br>"), false));
 			if (iStudentInfoVisibleColumns.hasGroup)
 				line.add(new Groups(info.getStudent().getGroups()));
 			for (String type: iStudentInfoVisibleColumns.groupTypes)
@@ -2302,6 +2312,8 @@ public class SectioningStatusPage extends Composite {
 				line.add(new HTML("&nbsp;", false));
 			}
 			if (iStudentInfoVisibleColumns.hasMajor)
+				line.add(new HTML("&nbsp;", false));
+			if (iStudentInfoVisibleColumns.hasMinor)
 				line.add(new HTML("&nbsp;", false));
 			if (iStudentInfoVisibleColumns.hasGroup)
 				line.add(new HTML("&nbsp;", false));
@@ -3048,6 +3060,7 @@ public class SectioningStatusPage extends Composite {
 			ADVISED_PERC,
 			ADVISED_CRIT,
 			ADVISED_ASSGN,
+			MINOR,
 			;
 		}
 		
@@ -3082,6 +3095,8 @@ public class SectioningStatusPage extends Composite {
 				cmp = e1.getStudent().getMajor("|").compareTo(e2.getStudent().getMajor("|"));
 				if (cmp != 0) return cmp;
 				return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
+			case MINOR:
+				return e1.getStudent().getMinor("|").compareTo(e2.getStudent().getMinor("|"));
 			case GROUP:
 				cmp = e1.getStudent().getGroup(iGroup, "|").compareTo(e2.getStudent().getGroup(iGroup, "|"));
 				if (cmp != 0) return cmp;
@@ -3428,7 +3443,7 @@ public class SectioningStatusPage extends Composite {
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
 				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false, hasReqCred = false, hasDistances = false, hasOverlaps = false,
 				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false, hasOverride = false, hasExtId = false,
-				hasAdvisor = false, hasAdvisedInfo = false;
+				hasAdvisor = false, hasAdvisedInfo = false, hasMinor = false;
 		int selectableStudents = 0;
 		Set<String> groupTypes = new TreeSet<String>();
 		
@@ -3462,6 +3477,7 @@ public class SectioningStatusPage extends Composite {
 				if (e.getStudent().hasGroups()) groupTypes.addAll(e.getStudent().getGroupTypes());
 				if (e.getStudent().hasAdvisor()) hasAdvisor = true;
 				if (e.getAdvisedInfo() != null) hasAdvisedInfo = true;
+				if (e.getStudent().hasMinor()) hasMinor = true;
 			}
 		}
 	}

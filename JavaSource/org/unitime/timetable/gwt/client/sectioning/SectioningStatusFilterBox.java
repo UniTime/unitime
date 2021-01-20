@@ -92,6 +92,7 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 		
 		addFilter(new FilterBox.StaticSimpleFilter("area", GWT_MESSAGES.tagAcademicArea()));
 		addFilter(new FilterBox.StaticSimpleFilter("major", GWT_MESSAGES.tagMajor()));
+		addFilter(new FilterBox.StaticSimpleFilter("minor", GWT_MESSAGES.tagMinor()));
 		addFilter(new FilterBox.StaticSimpleFilter("classification", GWT_MESSAGES.tagClassification()));
 		addFilter(new FilterBox.StaticSimpleFilter("group", GWT_MESSAGES.tagStudentGroup()));
 		addFilter(new FilterBox.StaticSimpleFilter("accommodation", GWT_MESSAGES.tagStudentAccommodation()));

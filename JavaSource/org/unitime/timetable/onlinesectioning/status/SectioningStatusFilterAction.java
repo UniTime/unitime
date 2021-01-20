@@ -102,22 +102,46 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		
 		StudentQuery query = getQuery(iRequest, server, helper);
 		
-		List<Entity> areas = new ArrayList<Entity>();
+		Map<Long, Entity> areas = new HashMap<Long, Entity>();
 		for (Object[] o: (List<Object[]>)query.select("aac.academicArea.uniqueId, aac.academicArea.academicAreaAbbreviation, aac.academicArea.title, count(distinct s.uniqueId)")
 				.order("aac.academicArea.academicAreaAbbreviation, aac.academicArea.title").group("aac.academicArea.uniqueId, aac.academicArea.academicAreaAbbreviation, aac.academicArea.title")
-				.exclude("area").exclude("major").exclude("course").exclude("lookup").exclude("prefer").exclude("require").exclude("im").exclude("credit").query(helper.getHibSession()).list()) {
+				.exclude("area").exclude("major").exclude("minor").exclude("course").exclude("lookup").exclude("prefer").exclude("require").exclude("im").exclude("credit").query(helper.getHibSession()).list()) {
 			Entity a = new Entity(
 					(Long)o[0],
 					(String)o[1],
 					(String)o[2]);
 			a.setCount(((Number)o[3]).intValue());
-			areas.add(a);
+			areas.put(a.getUniqueId(), a);
 		}
-		response.add("area", areas);
+		for (Object[] o: (List<Object[]>)query.select("aam.academicArea.uniqueId, aam.academicArea.academicAreaAbbreviation, aam.academicArea.title, count(distinct s.uniqueId)")
+				.from("StudentAreaClassificationMinor aam")
+				.where("aam.student = s")
+				.order("aam.academicArea.academicAreaAbbreviation, aam.academicArea.title").group("aam.academicArea.uniqueId, aam.academicArea.academicAreaAbbreviation, aam.academicArea.title")
+				.exclude("area").exclude("major").exclude("minor").exclude("course").exclude("lookup").exclude("prefer").exclude("require").exclude("im").exclude("credit").query(helper.getHibSession()).list()) {
+			Entity a = areas.get((Long)o[0]);
+			if (a == null) {
+				a = new Entity((Long)o[0], (String)o[1], (String)o[2]);
+				a.setCount(((Number)o[3]).intValue());
+				areas.put(a.getUniqueId(), a);
+			} else {
+				a.setCount(a.getCount() + ((Number)o[3]).intValue());
+			}
+			areas.put(a.getUniqueId(), a);
+		}
+		response.add("area", new TreeSet<Entity>(areas.values()));
 		
-		if (iRequest.hasOption("area")) {
+		if (iRequest.hasOptions("area")) {
+			StudentQuery q = new StudentQuery(query);
+			int id = 0;
+			String area = "";
+			for (String a: iRequest.getOptions("area")) {
+				area += (area.isEmpty() ? "" : ",") + ":Xar" + id;
+				q.addParameter("area", "Xar" + id, a);
+				id++;
+			}
+			q.addWhere("xxx", "aac.academicArea.academicAreaAbbreviation in (" + area + ")");
 			List<Entity> majors = new ArrayList<Entity>();
-			for (Object[] o: (List<Object[]>)query.select("aac.major.uniqueId, aac.major.code, aac.major.name, count(distinct s)")
+			for (Object[] o: (List<Object[]>)q.select("aac.major.uniqueId, aac.major.code, aac.major.name, count(distinct s)")
 					.order("aac.major.code, aac.major.name").group("aac.major.uniqueId, aac.major.code, aac.major.name")
 					.exclude("major").exclude("course").exclude("lookup").exclude("prefer").exclude("require").exclude("im").exclude("credit").query(helper.getHibSession()).list()) {
 				Entity m = new Entity(
@@ -128,6 +152,31 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				majors.add(m);
 			}
 			response.add("major", majors);
+		}
+		
+		if (iRequest.hasOptions("area")) {
+			StudentQuery q = new StudentQuery(query);
+			int id = 0;
+			String area = "";
+			for (String a: iRequest.getOptions("area")) {
+				area += (area.isEmpty() ? "" : ",") + ":Xar" + id;
+				q.addParameter("area", "Xar" + id, a);
+				id++;
+			}
+			q.addFrom("area", "StudentAreaClassificationMinor aam");
+			q.addWhere("area", "aam.student = s and aam.academicArea.academicAreaAbbreviation in (" + area + ")");
+			List<Entity> minors = new ArrayList<Entity>();
+			for (Object[] o: (List<Object[]>)q.select("aam.minor.uniqueId, aam.minor.code, aam.minor.name, count(distinct s)")
+					.order("aam.minor.code, aam.minor.name").group("aam.minor.uniqueId, aam.minor.code, aam.minor.name")
+					.exclude("minor").exclude("classification").exclude("course").exclude("lookup").exclude("prefer").exclude("require").exclude("im").exclude("credit").query(helper.getHibSession()).list()) {
+				Entity m = new Entity(
+						(Long)o[0],
+						(String)o[1],
+						(String)o[2]);
+				m.setCount(((Number)o[3]).intValue());
+				minors.add(m);
+			}
+			response.add("minor", minors);
 		}
 		
 		List<Entity> classifications = new ArrayList<Entity>();
@@ -619,8 +668,8 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			} catch (Exception e) {}
 		}
 		
+		String area = "";
 		if (request.hasOptions("area")) {
-			String area = "";
 			int id = 0;
 			for (String a: request.getOptions("area")) {
 				area += (area.isEmpty() ? "" : ",") + ":Xar" + id;
@@ -650,6 +699,24 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				id++;
 			}
 			query.addWhere("major", "aac.major.code in (" + major + ")");
+		}
+		
+		if (request.hasOptions("minor")) {
+			String minor = "";
+			int id = 0;
+			for (String m: request.getOptions("minor")) {
+				minor += (minor.isEmpty() ? "" : ",") + ":Xmn" + id;
+				query.addParameter("minor", "Xmn" + id, m);
+				id++;
+			}
+			if (!area.isEmpty()) {
+				query.addFrom("area", "StudentAreaClassificationMinor aam");
+				query.addWhere("area", "aam.student = s and (aac.academicArea.academicAreaAbbreviation in (" + area + ") or aam.academicArea.academicAreaAbbreviation in (" + area + "))");
+				query.addWhere("minor", "aam.minor.code in (" + minor + ")");
+			} else {
+				query.addFrom("minor", "StudentAreaClassificationMinor aam");
+				query.addWhere("minor", "aam.student = s and aam.minor.code in (" + minor + ")");
+			}
 		}
 		
 		int gid = 0;
@@ -1014,7 +1081,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			}
 			
 			public QueryInstance from(String from) { iFrom = from; return this; }
-			public QueryInstance where(String where) { 
+			public QueryInstance where(String where) {
 				if (iWhere == null)
 					iWhere = "(" + where + ")";
 				else

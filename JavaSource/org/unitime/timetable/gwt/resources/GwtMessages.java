@@ -5719,6 +5719,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("major")
 	String tagMajor();
 	
+	@DefaultMessage("minor")
+	String tagMinor();
+	
 	@DefaultMessage("classification")
 	String tagClassification();
 	
