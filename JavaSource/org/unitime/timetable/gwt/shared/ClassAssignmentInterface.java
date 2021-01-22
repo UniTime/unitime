@@ -1161,6 +1161,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Integer iOverrideNeeded, iTotalOverrideNeeded;
 		private ClassAssignment iAssignment;
 		private int iLevel = 0;
+		private Boolean iControl;
+		private Long iMasterCourseId;
+		private String iMasterSubject, iMasterCourseNbr;
 		
 		public EnrollmentInfo() {}
 		
@@ -1312,6 +1315,18 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			for (int i = 0; i < iLevel; i++) indent += ind;
 			return indent;
 		}
+		
+		public void setControl(Boolean control) { iControl = control; }
+		public Boolean isControl() { return iControl; }
+		
+		public Long getMasterCouresId() { return (iMasterCourseId != null ? iMasterCourseId : iCourseId); }
+		public void setMasterCourseId(Long courseId) { iMasterCourseId = courseId; }
+
+		public String getMasterSubject() { return (iMasterSubject != null ? iMasterSubject : iSubject); }
+		public void setMasterSubject(String subject) { iMasterSubject = subject; }
+
+		public String getMasterCourseNbr() { return (iMasterCourseNbr != null ? iMasterCourseNbr : iCourseNbr); }
+		public void setMasterCourseNbr(String courseNbr) { iMasterCourseNbr = courseNbr; }
 	}
 	
 	public static class StudentInfo implements IsSerializable, Serializable {

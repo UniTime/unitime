@@ -1154,7 +1154,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 .unitime-TimeGridMessage {
 	background: #dfe7f2;
 	padding: 1px 10px 1px 10px;
-	margin: 0px 0px 1px 0px;'
+	margin: 0px 0px 1px 0px;
 }
 
 .blue {
@@ -6204,6 +6204,10 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-EnrollmentsTable .course-line {
 	background-color: #f3f3f3;
+}
+
+.unitime-EnrollmentsTable .crosslist-line {
+	color: #5477ab;
 }
 
 .unitime-EnrollmentsTable tr:last-child {

@@ -89,6 +89,8 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Overflow;
+import com.google.gwt.dom.client.Style.TextDecoration;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.Style.WhiteSpace;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -522,9 +524,9 @@ public class SectioningStatusPage extends Composite {
 				if (event.getData() == null || event.getData().getCourseId() == null) return; // header or footer
 				iCourseTable.clearHover();
 				setLoading(true);
-				final Long id = (event.getData().getConfigId() == null ? event.getData().getOfferingId() : -event.getData().getClazzId());
+				final Long id = (event.getData().getConfigId() == null || event.getData().getConfigId() < 0l ? event.getData().getOfferingId() : -event.getData().getClazzId());
 				iError.setVisible(false);
-				if (event.getData().getConfigId() == null)
+				if (event.getData().getConfigId() == null || event.getData().getConfigId() < 0l)
 					LoadingWidget.getInstance().show(MESSAGES.loadingEnrollments(MESSAGES.course(event.getData().getSubject(), event.getData().getCourseNbr())));
 				else
 					LoadingWidget.getInstance().show(MESSAGES.loadingEnrollments(MESSAGES.clazz(event.getData().getSubject(), event.getData().getCourseNbr(), event.getData().getSubpart(), event.getData().getClazz())));
@@ -586,7 +588,7 @@ public class SectioningStatusPage extends Composite {
 							iEnrollmentTable.clear();
 							iEnrollmentTable.setId(id);
 							iEnrollmentTable.populate(result, null);
-							if (event.getData().getConfigId() == null)
+							if (event.getData().getConfigId() == null || event.getData().getConfigId() < 0l)
 								iEnrollmentDialog.setText(MESSAGES.titleEnrollments(MESSAGES.course(event.getData().getSubject(), event.getData().getCourseNbr())));
 							else
 								iEnrollmentDialog.setText(MESSAGES.titleEnrollments(MESSAGES.clazz(event.getData().getSubject(), event.getData().getCourseNbr(), event.getData().getSubpart(), event.getData().getClazz())));
@@ -1046,6 +1048,8 @@ public class SectioningStatusPage extends Composite {
 								for (EnrollmentInfo e: classes) {
 									iCourseTable.insertRow(r);
 									iCourseTable.setRow(r, e, line(e));
+									if (e.getConfigId() == -1l)
+										iCourseTable.getRowFormatter().getElement(r).addClassName("crosslist-line");
 									r++;
 								}
 							} else {
@@ -1070,6 +1074,8 @@ public class SectioningStatusPage extends Composite {
 										for (EnrollmentInfo e: result) {
 											iCourseTable.insertRow(r);
 											iCourseTable.setRow(r, e, line(e));
+											if (e.getConfigId() == -1l)
+												iCourseTable.getRowFormatter().getElement(r).addClassName("crosslist-line");
 											r++;
 										}
 									}
@@ -1096,6 +1102,15 @@ public class SectioningStatusPage extends Composite {
 				line.add(new Label());
 			}
 			line.add(new Label(e.getSubject(), false));
+			line.add(new Label(e.getCourseNbr(), false));
+			line.add(new TitleCell(e.getTitle() == null ? "" : e.getTitle()));
+			line.add(new Label(e.getConsent() == null ? "" : e.getConsent(), false));
+		} else if (e.getConfigId() == -1l) {
+			line.add(new Label());
+			line.add(new HTML(e.getSubject(), false));
+			if (e.isControl() != null && e.isControl().booleanValue())
+				line.get(line.size() - 1).getElement().getStyle().setTextDecoration(TextDecoration.UNDERLINE);
+			line.get(line.size() - 1).getElement().getStyle().setPaddingLeft(5, Unit.PX);
 			line.add(new Label(e.getCourseNbr(), false));
 			line.add(new TitleCell(e.getTitle() == null ? "" : e.getTitle()));
 			line.add(new Label(e.getConsent() == null ? "" : e.getConsent(), false));
@@ -1244,8 +1259,11 @@ public class SectioningStatusPage extends Composite {
 			if (e.getCourseId() != null && iSelectedCourseIds.contains(e.getCourseId())) {
 				List<EnrollmentInfo> classes = iClassInfos.get(e.getCourseId());
 				if (classes != null) {
-					for (EnrollmentInfo c: classes)
+					for (EnrollmentInfo c: classes) {
 						iCourseTable.addRow(c, line(c));
+						if (c.getConfigId() == -1l)
+							iCourseTable.getRowFormatter().getElement(iCourseTable.getRowCount() - 1).addClassName("crosslist-line");
+					}
 				}
 			}
 		}
@@ -2930,10 +2948,14 @@ public class SectioningStatusPage extends Composite {
 			if (e1.getCourseId() == null) return (iAsc ? 1 : -1);
 			if (e2.getCourseId() == null) return (iAsc ? -1 : 1);
 			
-			if (e1.getCourseId().equals(e2.getCourseId())) { // Same course
+			if (e1.getMasterCouresId().equals(e2.getMasterCouresId())) { // Same course
 				// Course line first
 				if (e1.getConfigId() == null) return (iAsc ? -1 : 1);
 				if (e2.getConfigId() == null) return (iAsc ? 1 : -1);
+				// Cross-listed courses second
+				if (e1.getConfigId() == -1l && e2.getConfigId() != -1l) return (iAsc ? -1 : 1);
+				if (e1.getConfigId() != -1l && e2.getConfigId() == -1l) return (iAsc ? 1 : -1);
+				// Compare classes
 				return compareClasses(e1, e2);
 			} else { // Different course
 				return compareCourses(e1, e2);
@@ -2950,7 +2972,7 @@ public class SectioningStatusPage extends Composite {
 			case SUBJECT:
 				break;
 			case COURSE:
-				cmp = e1.getCourseNbr().compareTo(e2.getCourseNbr());
+				cmp = e1.getMasterCourseNbr().compareTo(e2.getMasterCourseNbr());
 				if (cmp != 0) return cmp;
 				break;
 			case TITLE:
@@ -3021,11 +3043,18 @@ public class SectioningStatusPage extends Composite {
 			}
 			
 			// Default sort
+			cmp = e1.getMasterSubject().compareTo(e2.getMasterSubject());
+			if (cmp != 0) return cmp;
+			
+			cmp = e1.getMasterCourseNbr().compareTo(e2.getMasterCourseNbr());
+			if (cmp != 0) return cmp;
+			
 			cmp = e1.getSubject().compareTo(e2.getSubject());
 			if (cmp != 0) return cmp;
 			
 			cmp = e1.getCourseNbr().compareTo(e2.getCourseNbr());
 			if (cmp != 0) return cmp;
+
 
 			return 0;
 		}

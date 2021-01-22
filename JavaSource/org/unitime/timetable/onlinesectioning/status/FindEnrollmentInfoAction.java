@@ -204,6 +204,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				e.setCourseNbr(course.getCourseNumber());
 				e.setTitle(course.getTitle());
 				e.setConsent(course.getConsentAbbv());
+				e.setControl(course.isControlling());
 
 				int match = 0;
 				int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0;
@@ -522,6 +523,167 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 						students.add(student.getStudentId());
 					}
 				}
+			}
+			
+			if (offering.getCourses().size() > 1) {
+				for (XCourse other: offering.getCourses()) {
+					if (other.equals(course)) continue;
+					EnrollmentInfo e = new EnrollmentInfo();
+					e.setCourseId(other.getCourseId());
+					e.setOfferingId(offering.getOfferingId());
+					e.setSubject(other.getSubjectArea());
+					e.setCourseNbr(other.getCourseNumber());
+					e.setTitle(other.getTitle());
+					e.setConsent(other.getConsentAbbv());
+					e.setControl(other.isControlling());
+					e.setConfigId(-1l);
+					e.setMasterCourseId(course.getCourseId());
+					e.setMasterSubject(course.getSubjectArea());
+					e.setMasterCourseNbr(course.getCourseNumber());
+					
+					int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0;
+					int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0;
+					int conNeed = 0, tConNeed = 0, ovrNeed = 0, tOvrNeed = 0;
+					
+					for (XCourseRequest request: enrollments.getRequests()) {
+						if (!request.hasCourse(other.getCourseId())) continue;
+						if (request.getEnrollment() != null && !request.getEnrollment().getCourseId().equals(other.getCourseId())) continue;
+						if (checkOverrides && request.getEnrollment() == null) {
+							XOverride override = request.getOverride(other);
+							if (override != null && !override.isApproved()) continue;
+						}
+						if (studentIds != null && !studentIds.contains(request.getStudentId())) {
+							if (request.getEnrollment() != null) {
+								tEnrl ++;
+								if (request.getEnrollment().getReservation() != null) tRes ++;
+								if (other.getConsentLabel() != null && request.getEnrollment().getApproval() == null) tConNeed ++;
+							} else {
+								XStudent student = server.getStudent(request.getStudentId());
+								if (student != null && student.canAssign(request)) {
+									tUnasg ++;
+									if (!request.isAlternative() && request.isPrimary(other)) {
+										tUnasgPrim ++;
+										if (request.isWaitlist())
+											tWait ++;
+									}
+								}
+							}
+							continue;
+						}
+						
+						XStudent student = server.getStudent(request.getStudentId());
+						if (student == null) continue;
+						CourseRequestMatcher m = new CourseRequestMatcher(session, other, student, offering, request, isConsentToDoCourse, isMyStudent(student), lookup, server);
+						if (query().match(m)) {
+							if (m.enrollment() != null) {
+								enrl ++;
+								if (m.enrollment().getReservation() != null) res ++;
+								if (other.getConsentLabel() != null && m.enrollment().getApproval() == null) conNeed ++;
+							} else if (m.student().canAssign(m.request())) {
+								unasg ++;
+								if (!m.request().isAlternative() && m.request().isPrimary(other)) {
+									unasgPrim ++;
+									if (m.request().isWaitlist())
+										wait ++;
+								}
+							}
+							if (m.request().isOverridePending(other)) ovrNeed ++;
+						} else if (solver) {
+							if (request.getEnrollment() != null) {
+								tEnrl ++;
+								if (request.getEnrollment().getReservation() != null) tRes ++;
+								if (other.getConsentLabel() != null && request.getEnrollment().getApproval() == null) tConNeed ++;
+							} else {
+								if (student != null && student.canAssign(request)) {
+									tUnasg ++;
+									if (!request.isAlternative() && request.isPrimary(other)) {
+										tUnasgPrim ++;
+										if (request.isWaitlist())
+											tWait ++;
+									}
+								}
+							}
+							continue;
+						}
+						
+						if (m.enrollment() != null) {
+							tEnrl ++;
+							if (m.enrollment().getReservation() != null) tRes ++;
+							if (other.getConsentLabel() != null && m.enrollment().getApproval() == null) tConNeed ++;
+						} else if (m.student().canAssign(m.request())) {
+							tUnasg ++;
+							if (!m.request().isAlternative() && m.request().isPrimary(other)) {
+								tUnasgPrim ++;
+								if (m.request().isWaitlist())
+									tWait ++;
+							}
+						}
+						if (m.request().isOverridePending(other)) tOvrNeed ++;
+					}
+					
+					int limit = 0;
+					for (XConfig config: offering.getConfigs()) {
+						if (config.getLimit() < 0) {
+							limit = -1; break;
+						} else {
+							limit += config.getLimit();
+						}
+					}
+
+					e.setLimit(other.getLimit());
+					e.setProjection(other.getProjected());
+					int av = (int)Math.max(0, offering.getUnreservedSpace(enrollments));
+					if (other.getLimit() >= 0 && av > other.getLimit() - enrollments.countEnrollmentsForCourse(other.getCourseId()))
+						av = other.getLimit() - enrollments.countEnrollmentsForCourse(other.getCourseId());
+					if (av == Integer.MAX_VALUE) av = -1;
+					e.setAvailable(av);
+					if (av >= 0) {
+						int otherEnrl = 0;
+						for (XCourse c: offering.getCourses())
+							if (!c.equals(other))
+								otherEnrl += enrollments.countEnrollmentsForCourse(c.getCourseId());
+						e.setOther(Math.min(other.getLimit() - enrollments.countEnrollmentsForCourse(other.getCourseId()) - av, otherEnrl));
+						int lim = 0;
+						for (XConfig f: offering.getConfigs()) {
+							if (lim < 0 || f.getLimit() < 0)
+								lim = -1;
+							else
+								lim += f.getLimit();
+						}
+						if (lim >= 0 && lim < other.getLimit())
+							e.setOther(e.getOther() + other.getLimit() - limit);
+					}
+					
+					e.setEnrollment(enrl);
+					e.setReservation(res);
+					e.setWaitlist(wait);
+					e.setUnassigned(unasg);
+					e.setUnassignedPrimary(unasgPrim);
+					
+					e.setTotalEnrollment(tEnrl);
+					e.setTotalReservation(tRes);
+					e.setTotalWaitlist(tWait);
+					e.setTotalUnassigned(tUnasg);
+					e.setTotalUnassignedPrimary(tUnasgPrim);
+					
+					e.setConsentNeeded(conNeed);
+					e.setTotalConsentNeeded(tConNeed);
+					e.setOverrideNeeded(ovrNeed);
+					e.setTotalOverrideNeeded(tOvrNeed);
+
+					ret.add(e);
+				}
+				final Comparator noc = new NaturalOrderComparator();
+				Collections.sort(ret, new Comparator<EnrollmentInfo>() {
+					@Override
+					public int compare(EnrollmentInfo e1, EnrollmentInfo e2) {
+						int cmp = noc.compare(e1.getSubject(), e2.getSubject());
+						if (cmp != 0) return cmp;
+						cmp = e1.getCourseNbr().compareTo(e2.getCourseNbr());
+						if (cmp != 0) return cmp;
+						return 0;
+					}
+				});
 			}
 			
 			for (XSection section: sections) {

@@ -151,6 +151,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				e.setCourseNbr(course.getCourseNbr());
 				e.setTitle(course.getTitle());
 				e.setConsent(course.getConsentType() == null ? null : course.getConsentType().getAbbv());
+				e.setControl(course.isIsControl());
 
 				int match = 0;
 				int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0;
@@ -347,6 +348,135 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					"from CourseRequest where courseOffering.instructionalOffering.uniqueId = :offeringId"
 					).setLong("offeringId", offering.getUniqueId()).setCacheable(true).list();
 			OverExpectedCriterion overExp = server.getOverExpectedCriterion();
+			boolean checkOverrides = !query().hasAttribute("override");
+			
+			if (offering.getCourseOfferings().size() > 1) {
+				Set<Long> allStudents = new HashSet<Long>();
+				for (CourseOffering other: offering.getCourseOfferings()) {
+					if (course.equals(other)) continue;
+
+					boolean isConsentToDoCourse = isConsentToDoCourse(other);
+					EnrollmentInfo e = new EnrollmentInfo();
+					e.setCourseId(other.getUniqueId());
+					e.setOfferingId(offering.getUniqueId());
+					e.setSubject(other.getSubjectAreaAbbv());
+					e.setCourseNbr(other.getCourseNbr());
+					e.setTitle(other.getTitle());
+					e.setConsent(other.getConsentType() == null ? null : other.getConsentType().getAbbv());
+					e.setControl(other.isIsControl());
+					e.setMasterCourseId(course.getUniqueId());
+					e.setMasterSubject(course.getSubjectAreaAbbv());
+					e.setMasterCourseNbr(course.getCourseNbr());
+					e.setConfigId(-1l);
+
+					int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0;
+					int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0;
+					int conNeed = 0, tConNeed = 0, ovrNeed = 0, tOvrNeed = 0;
+					
+					for (CourseRequest request: requests) {
+						if (!request.getCourseOffering().equals(other)) continue;
+						if (checkOverrides && !request.isRequestApproved() && request.getClassEnrollments().isEmpty()) continue;
+						
+						DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(request.getCourseDemand().getStudent()), helper.getStudentNameFormat(), lookup);
+						if (query().match(crm)) {
+							if (!crm.enrollment().isEmpty()) {
+								enrl ++;
+								if (crm.reservation() != null) res ++;
+								if (request.getCourseOffering().getConsentType() != null && crm.approval() == null) conNeed ++;
+							} else if (crm.canAssign()) {
+								unasg ++;
+								if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) {
+									unasgPrim ++;
+									if (request.getCourseDemand().isWaitlist())
+										wait ++;
+								}
+							}
+							if (request.isRequestPending()) ovrNeed ++;
+						}
+						if (allStudents.add(crm.student().getUniqueId())) {
+							if (!crm.enrollment().isEmpty()) {
+								tEnrl ++;
+								if (crm.reservation() != null) tRes ++;
+								if (request.getCourseOffering().getConsentType() != null && crm.approval() == null) tConNeed ++;
+							} else if (crm.canAssign()) {
+								tUnasg ++;
+								if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) {
+									tUnasgPrim ++;
+									if (request.getCourseDemand().isWaitlist())
+										tWait ++;
+								}
+							}
+							if (request.isRequestPending()) tOvrNeed ++;
+						}
+					}
+					
+					int limit = 0;
+					for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
+						if (config.isUnlimitedEnrollment()) {
+							limit = -1; break;
+						} else {
+							limit += config.getLimit();
+						}
+					}
+
+					e.setLimit(other.getReservation() != null ? other.getReservation() : limit);
+					e.setProjection(other.getProjectedDemand() != null ? other.getProjectedDemand().intValue() : other.getDemand() != null ? other.getDemand().intValue() : 0);
+					int av = (int)Math.max(0, offering.getUnreservedSpace());
+					if (e.getLimit() >= 0 && av > e.getLimit() - other.getEnrollment())
+						av = e.getLimit() - other.getEnrollment();
+					if (av == Integer.MAX_VALUE) av = -1;
+					e.setAvailable(av);
+					if (av >= 0) {
+						int otherEnrl = 0;
+						for (CourseOffering c: offering.getCourseOfferings())
+							if (!c.equals(other))
+								otherEnrl += c.getEnrollment();
+						e.setOther(Math.min(e.getLimit() - other.getEnrollment() - av, otherEnrl));
+						int lim = 0;
+						for (InstrOfferingConfig f: offering.getInstrOfferingConfigs()) {
+							if (lim < 0 || f.isUnlimitedEnrollment())
+								lim = -1;
+							else
+								lim += f.getLimit();
+						}
+						if (lim >= 0 && lim < e.getLimit())
+							e.setOther(e.getOther() + e.getLimit() - limit);
+					}
+					
+					e.setEnrollment(enrl);
+					e.setReservation(res);
+					e.setWaitlist(wait);
+					e.setUnassigned(unasg);
+					e.setUnassignedPrimary(unasgPrim);
+					
+					e.setTotalEnrollment(tEnrl);
+					e.setTotalReservation(tRes);
+					e.setTotalWaitlist(tWait);
+					e.setTotalUnassigned(tUnasg);
+					e.setTotalUnassignedPrimary(tUnasgPrim);
+					
+					e.setConsentNeeded(conNeed);
+					e.setTotalConsentNeeded(tConNeed);
+					e.setOverrideNeeded(ovrNeed);
+					e.setTotalOverrideNeeded(tOvrNeed);
+
+					ret.add(e);
+					if (limit() != null && ret.size() >= limit()) break;
+				}
+				
+				final Comparator noc = new NaturalOrderComparator();
+				Collections.sort(ret, new Comparator<EnrollmentInfo>() {
+					@Override
+					public int compare(EnrollmentInfo e1, EnrollmentInfo e2) {
+						int cmp = noc.compare(e1.getSubject(), e2.getSubject());
+						if (cmp != 0) return cmp;
+						cmp = e1.getCourseNbr().compareTo(e2.getCourseNbr());
+						if (cmp != 0) return cmp;
+						return 0;
+					}
+				});
+			}
+			
 			boolean isConsentToDoCourse = isConsentToDoCourse(course);
 			List<Class_> sections = new ArrayList<Class_>();
 			for (InstrOfferingConfig config: offering.getInstrOfferingConfigs())
@@ -422,7 +552,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			        return s1.getUniqueId().compareTo(s2.getUniqueId());
 				}
 			});
-			boolean checkOverrides = !query().hasAttribute("override");
+
 			for (Class_ section: sections) {
 				EnrollmentInfo e = new EnrollmentInfo();
 				e.setCourseId(course.getUniqueId());

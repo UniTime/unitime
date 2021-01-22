@@ -206,6 +206,22 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 							number(e.getConsentNeeded(), e.getTotalConsentNeeded()),
 							number(e.getOverrideNeeded(), e.getTotalOverrideNeeded())
 							);
+				} else if (e.getConfigId() == -1l) {
+					out.printLine(
+							"  " + e.getSubject(),
+							e.getCourseNbr(),
+							e.getTitle(),"",
+							e.getConsent(),
+							(e.getCourseId() == null ? number(e.getAvailable(), e.getLimit()) : available(e)),
+							number(null, e.getProjection()),
+							number(null, e.getSnapshot()),
+							number(e.getEnrollment(), e.getTotalEnrollment()),
+							waitlist(e),
+							number(e.getUnassignedAlternative(), e.getTotalUnassignedAlternative()),
+							number(e.getReservation(), e.getTotalReservation()),
+							number(e.getConsentNeeded(), e.getTotalConsentNeeded()),
+							number(e.getOverrideNeeded(), e.getTotalOverrideNeeded())
+							);
 				} else {
 					out.printLine(
 							"  " + (e.getSubpart() == null ? "" : e.getIndent("  ") + e.getSubpart()),
