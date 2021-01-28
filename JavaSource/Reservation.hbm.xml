@@ -192,6 +192,17 @@
             	<key column="reservation_id" foreign-key="fk_res_majors_reservation"/>
         	    <many-to-many class="PosMajor" column="major_id" foreign-key="fk_res_majors_major"/>
     	    </set>
+    	    
+    	     <set
+        	    name="concentrations"
+            	table="reservation_major_conc"
+        	    inverse="false"
+    	        lazy="true">
+
+	            <cache include="non-lazy" usage="transactional"/>
+            	<key column="reservation_id" foreign-key="fk_res_mj_conc_res"/>
+        	    <many-to-many class="PosMajorConcentration" column="concentration_id" foreign-key="fk_res_mj_conc_conc"/>
+    	    </set>
         
 	        <set
             	name="classifications"

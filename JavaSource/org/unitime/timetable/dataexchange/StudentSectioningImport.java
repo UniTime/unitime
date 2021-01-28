@@ -51,6 +51,7 @@ import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.FreeTime;
 import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.PosMajorConcentration;
 import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
@@ -160,6 +161,13 @@ public class StudentSectioningImport extends BaseImport {
             		"from PosMajor where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
             	for (AcademicArea area: major.getAcademicAreas())
             		code2major.put(area.getAcademicAreaAbbreviation() + ":" + major.getCode(), major);
+            }
+            
+            Map<String, PosMajorConcentration> code2concentration = new Hashtable<String, PosMajorConcentration>();
+            for (PosMajorConcentration conc: (List<PosMajorConcentration>)getHibSession().createQuery(
+            		"from PosMajorConcentration where major.session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            	for (AcademicArea area: conc.getMajor().getAcademicAreas())
+            		code2concentration.put(area.getAcademicAreaAbbreviation() + ":" + conc.getMajor().getCode() + ":" + conc.getCode(), conc);
             }
             
             Map<String, PosMinor> code2minor = new Hashtable<String, PosMinor>();
@@ -372,6 +380,7 @@ public class StudentSectioningImport extends BaseImport {
                     	for (Iterator i3 = e.elementIterator("major"); i3.hasNext();) {
         	    			Element g = (Element) i3.next();
         	    			String code = g.attributeValue("code");
+        	    			String concentration = g.attributeValue("concentration");
         	    			if (sMajors.remove(area + ":" + clasf + ":" + code) == null) {
         	    				PosMajor m = code2major.get(area + ":" + code);
         	    				if (m == null) {
@@ -383,6 +392,7 @@ public class StudentSectioningImport extends BaseImport {
     	        				acm.setAcademicClassification(f);
     	        				acm.setMajor(m);
     	        				acm.setStudent(student);
+    	        				acm.setConcentration(concentration == null ? null : code2concentration.get(area + ":" + code + ":" + concentration));
     	        				student.getAreaClasfMajors().add(acm);
     	        				if (student.getUniqueId() != null)
                         			updatedStudents.add(student.getUniqueId());

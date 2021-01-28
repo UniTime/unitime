@@ -22,7 +22,9 @@ package org.unitime.timetable.onlinesectioning.model;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.cpsolver.studentsct.reservation.CurriculumOverride;
@@ -33,6 +35,7 @@ import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.CurriculumOverrideReservation;
 import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.PosMajorConcentration;
 import org.unitime.timetable.model.PosMinor;
 
 /**
@@ -46,6 +49,7 @@ public class XCurriculumReservation extends XReservation {
     private Set<String> iClassifications = new HashSet<String>();
     private Set<String> iMajors = new HashSet<String>();
     private Set<String> iMinors = new HashSet<String>();
+    private Map<String, Set<String>> iConcentrations = new HashMap<String, Set<String>>();
     private Boolean iExpired;
     private boolean iOverride = false;
     
@@ -69,6 +73,14 @@ public class XCurriculumReservation extends XReservation {
     		iMajors.add(major.getCode());
     	for (PosMinor minor: reservation.getMinors())
     		iMinors.add(minor.getCode());
+    	for (PosMajorConcentration conc: reservation.getConcentrations()) {
+			Set<String> concentrations = iConcentrations.get(conc.getMajor().getCode());
+			if (concentrations == null) {
+				concentrations = new HashSet<String>();
+				iConcentrations.put(conc.getMajor().getCode(), concentrations);
+			}
+			concentrations.add(conc.getCode());
+    	}
     }
     
     public XCurriculumReservation(XOffering offering, CurriculumOverrideReservation reservation) {
@@ -82,6 +94,14 @@ public class XCurriculumReservation extends XReservation {
     		iMajors.add(major.getCode());
     	for (PosMinor minor: reservation.getMinors())
     		iMinors.add(minor.getCode());
+    	for (PosMajorConcentration conc: reservation.getConcentrations()) {
+			Set<String> concentrations = iConcentrations.get(conc.getMajor().getCode());
+			if (concentrations == null) {
+				concentrations = new HashSet<String>();
+				iConcentrations.put(conc.getMajor().getCode(), concentrations);
+			}
+			concentrations.add(conc.getCode());
+    	}
     	iOverride = reservation.isAlwaysExpired();
         setMustBeUsed(reservation.isMustBeUsed());
         setAllowOverlap(reservation.isAllowOverlap());
@@ -100,6 +120,12 @@ public class XCurriculumReservation extends XReservation {
     		iMajors.addAll(reservation.getMajors());
     	if (reservation.getMinors() != null)
     		iMinors.addAll(reservation.getMinors());
+    	for (String major: reservation.getMajors()) {
+    		Set<String> concentrations = reservation.getConcentrations(major);
+    		if (concentrations != null) {
+    			iConcentrations.put(major, new HashSet<String>(concentrations));
+    		}
+    	}
     }
     
     public XCurriculumReservation(CurriculumOverride reservation) {
@@ -113,6 +139,12 @@ public class XCurriculumReservation extends XReservation {
     		iMajors.addAll(reservation.getMajors());
     	if (reservation.getMinors() != null)
     		iMinors.addAll(reservation.getMinors());
+    	for (String major: reservation.getMajors()) {
+    		Set<String> concentrations = reservation.getConcentrations(major);
+    		if (concentrations != null) {
+    			iConcentrations.put(major, new HashSet<String>(concentrations));
+    		}
+    	}
     	iOverride = true;
     }
 
@@ -153,6 +185,10 @@ public class XCurriculumReservation extends XReservation {
         return iClassifications;
     }
     
+    public Set<String> getConcentrations(String major) {
+    	return iConcentrations.get(major);
+    }
+    
     @Override
     public boolean isOverride() { return iOverride; }
     
@@ -170,7 +206,14 @@ public class XCurriculumReservation extends XReservation {
     		for (XAreaClassificationMajor acm: student.getMajors()) {
                 if (getAcademicAreas().contains(acm.getArea()) &&
                 	(getClassifications().isEmpty() || getClassifications().contains(acm.getClassification())) &&
-                	(getMajors().isEmpty() || getMajors().contains(acm.getMajor()))) return true;
+                	(getMajors().isEmpty() || getMajors().contains(acm.getMajor()))) {
+                	Set<String> conc = iConcentrations.get(acm.getMajor());
+                    if (conc != null && !conc.isEmpty()) {
+                        return acm.getConcentration() != null && conc.contains(acm.getConcentration());
+                    } else {
+                        return true;
+                    }
+                }
             }
     	if (!getMinors().isEmpty())
     		for (XAreaClassificationMajor acm: student.getMinors()) {
@@ -220,6 +263,8 @@ public class XCurriculumReservation extends XReservation {
     		iExpired = null;
     		iOverride = false;
     	}
+    	
+    	iConcentrations = (Map<String, Set<String>>)in.readObject();
 	}
 
 	@Override
@@ -247,6 +292,8 @@ public class XCurriculumReservation extends XReservation {
 			out.writeByte(iExpired == null ? 2 : iExpired.booleanValue() ? 1 : 0);
 			out.writeBoolean(iOverride);
 		}
+		
+		out.writeObject(iConcentrations);
 	}
 	
 	public static class XCurriculumReservationSerializer implements Externalizer<XCurriculumReservation> {

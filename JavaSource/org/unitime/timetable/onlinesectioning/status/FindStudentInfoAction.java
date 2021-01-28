@@ -229,6 +229,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 							st.addArea(acm.getArea());
 							st.addClassification(acm.getClassification());
 							st.addMajor(acm.getMajor());
+							st.addConcentration(acm.getConcentration());
 						}
 						for (XAreaClassificationMajor acm: student.getMinors()) {
 							st.addMinor(acm.getMajor());
@@ -581,6 +582,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						st.addArea(acm.getArea());
 						st.addClassification(acm.getClassification());
 						st.addMajor(acm.getMajor());
+						st.addConcentration(acm.getConcentration());
 					}
 					for (XAreaClassificationMajor acm: student.getMinors()) {
 						st.addMinor(acm.getMajor());
@@ -626,6 +628,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						st.addArea(acm.getArea());
 						st.addClassification(acm.getClassification());
 						st.addMajor(acm.getMajor());
+						st.addConcentration(acm.getConcentration());
 					}
 					for (XAreaClassificationMajor acm: student.getMinors()) {
 						st.addMinor(acm.getMajor());

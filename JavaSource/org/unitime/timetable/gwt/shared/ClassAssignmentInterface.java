@@ -806,7 +806,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private long iId;
 		private Long iSessionId = null;
 		private String iExternalId, iName, iEmail;
-		private List<String> iArea, iClassification, iMajor, iAccommodation, iAdvisor, iMinor;
+		private List<String> iArea, iClassification, iMajor, iAccommodation, iAdvisor, iMinor, iConcentration;
 		private Set<Group> iGroups;
 		private boolean iCanShowExternalId = false, iCanSelect = false;
 		private boolean iCanUseAssitant = false, iCanRegister = false;
@@ -888,6 +888,27 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			iMajor.add(major);
 		}
 		public List<String> getMajors() { return iMajor; }
+		
+		public boolean hasConcentration() {
+			if (iConcentration == null || iConcentration.isEmpty()) return false;
+			for (String conc: iConcentration)
+				if (!conc.isEmpty()) return true;
+			return false;
+		}
+		public String getConcentration(String delim) { 
+			if (iConcentration == null) return "";
+			String ret = "";
+			for (String conc: iConcentration) {
+				if (!ret.isEmpty()) ret += delim;
+				ret += conc;
+			}
+			return ret;
+		}
+		public void addConcentration(String conc) {
+			if (iConcentration == null) iConcentration = new ArrayList<String>();
+			iConcentration.add(conc == null ? "" : conc);
+		}
+		public List<String> getConcentrations() { return iConcentration; }
 		
 		public boolean hasAdvisor() { return iAdvisor != null && !iAdvisor.isEmpty(); }
 		public String getAdvisor(String delim) { 

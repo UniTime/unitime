@@ -13985,4 +13985,85 @@
 		<pgsql>alter table %SCHEMA%.reservation drop constraint fk_reservation_area</pgsql>
 		<sql>alter table %SCHEMA%.reservation drop column area_id</sql>
 	</update>
+	<update version="235" date="26-Jan-2021" comment="Major Concentrations">
+		<plsql>
+			create table %SCHEMA%.pos_major_conc (
+				uniqueid number(20,0) constraint nn_pos_conc_id not null,
+				major_id number(20,0) constraint nn_pos_conc_major not null,
+				external_uid varchar2(40 char),
+				code varchar2(40 char) constraint nn_pos_conc_code not null,
+				name varchar2(100 char) constraint nn_pos_conc_name not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.pos_major_conc add constraint pk_pos_major_conc primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.pos_major_conc (
+				uniqueid decimal(20,0) primary key not null,
+				major_id decimal(20,0) not null,
+				external_uid varchar(40),
+				code varchar(40) not null,
+				name varchar(100) not null
+			) engine = INNODB
+		</mysql>
+		<pgsql>
+			create table %SCHEMA%.pos_major_conc (
+				uniqueid bigint not null,
+				major_id bigint not null,
+				external_uid varchar(40),
+				code varchar(40) not null,
+				name varchar(100) not null
+			)
+		</pgsql>
+		<pgsql>alter table %SCHEMA%.pos_major_conc add constraint pk_pos_major_conc primary key (uniqueid)</pgsql>
+		<sql>
+			alter table %SCHEMA%.pos_major_conc add constraint fk_pos_conc_major foreign key (major_id)
+			references %SCHEMA%.pos_major (uniqueid) on delete cascade
+		</sql>
+		<plsql>alter table %SCHEMA%.student_area_clasf_major add concentration_id number(20,0)</plsql>
+	    <mysql>alter table %SCHEMA%.student_area_clasf_major add concentration_id decimal(20,0)</mysql>
+	    <pgsql>alter table %SCHEMA%.student_area_clasf_major add concentration_id bigint</pgsql>
+	    <sql>
+			alter table %SCHEMA%.student_area_clasf_major add constraint fk_student_acmaj_conc foreign key (concentration_id)
+			references %SCHEMA%.pos_major_conc (uniqueid) on delete set null
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'Concentrations'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'Majors'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'ConcentrationEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'MajorEdit'
+		</sql>
+		<plsql>
+			create table %SCHEMA%.reservation_major_conc (
+				reservation_id number(20,0) constraint nn_res_conc_id not null,
+				concentration_id number(20,0) constraint nn_res_conc_conc not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.reservation_major_conc add constraint pk_reservation_major_conc primary key (reservation_id, concentration_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.reservation_major_conc (
+				reservation_id decimal(20,0) not null,
+				concentration_id decimal(20,0) not null,
+				primary key (reservation_id, concentration_id)
+			) engine = INNODB
+		</mysql>
+		<pgsql>
+			create table %SCHEMA%.reservation_major_conc (
+				reservation_id bigint not null,
+				concentration_id bigint not null
+			)
+		</pgsql>
+		<pgsql>alter table %SCHEMA%.reservation_major_conc add constraint pk_reservation_major_conc primary key (reservation_id, concentration_id)</pgsql>
+		<sql>
+			alter table %SCHEMA%.reservation_major_conc add constraint fk_res_mj_conc_conc foreign key (concentration_id)
+			references %SCHEMA%.pos_major_conc (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.reservation_major_conc add constraint fk_res_mj_conc_res foreign key (reservation_id)
+			references %SCHEMA%.reservation (uniqueid) on delete cascade
+		</sql>
+	</update>
 </dbupdate>

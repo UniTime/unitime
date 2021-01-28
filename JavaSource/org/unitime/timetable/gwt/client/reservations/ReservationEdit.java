@@ -105,8 +105,8 @@ public class ReservationEdit extends Composite {
 	private RestrictionsTable iRestrictions;
 	private HashMap<Long, Area> iAreas = new HashMap<Long, Area>();
 	private HashMap<Long, Curriculum> iCurricula = new HashMap<Long, Curriculum>();
-	private ListBox iClassifications, iMajors, iMinors;
-	private int iMinorRow = 0;
+	private ListBox iClassifications, iMajors, iMinors, iConcentrations;
+	private int iMinorRow = 0, iConcentrationRow = 0;
 	private UniTimeWidget<ListBox> iType, iArea, iCourse, iGroup, iCurriculum;
 	private UniTimeWidget<TextArea> iStudents;
 	private ReservationInterface iReservation;
@@ -521,6 +521,13 @@ public class ReservationEdit extends Composite {
 		iMajors.setVisibleItemCount(3);
 		iMajors.setHeight("100px");
 		iPanel.addRow(MESSAGES.propMajors(), iMajors);
+		iConcentrations = new ListBox();
+		iConcentrations.setMultipleSelect(true);
+		iConcentrations.setWidth("300px");
+		iConcentrations.setStyleName("unitime-TextBox");
+		iConcentrations.setVisibleItemCount(3);
+		iConcentrations.setHeight("100px");
+		iConcentrationRow = iPanel.addRow(MESSAGES.propConcentrations(), iConcentrations);
 		iMinors = new ListBox();
 		iMinors.setMultipleSelect(true);
 		iMinors.setWidth("300px");
@@ -567,6 +574,13 @@ public class ReservationEdit extends Composite {
 			}
 		});
 		iMajors.addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				iCurriculum.getWidget().setSelectedIndex(0);
+				majorChangedKeepSelection();
+			}
+		});
+		iConcentrations.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
 				iCurriculum.getWidget().setSelectedIndex(0);
@@ -733,6 +747,7 @@ public class ReservationEdit extends Composite {
 			iStudents.getWidget().setText("");
 			iCourse.getWidget().clear();
 			iMajors.clear();
+			iConcentrations.clear();
 			iMinors.clear();
 			iType.setReadOnly(false);
 			iCurricula.clear();
@@ -939,6 +954,38 @@ public class ReservationEdit extends Composite {
 					iCurriculum.getWidget().setSelectedIndex(0);
 			}
 		}
+		majorChanged();
+	}
+	
+	protected Area getSelectedArea(Long majorId) {
+		for (int i = 0; i < iArea.getWidget().getItemCount(); i++) {
+			if (iArea.getWidget().isItemSelected(i)) {
+				String id = iArea.getWidget().getValue(i);
+				Area c = iAreas.get(Long.valueOf(id));
+				if (c.getMajor(majorId) != null)
+					return c;
+			}
+		}
+		return null;
+	}
+	
+	private void majorChanged() {
+		iConcentrations.clear();
+		int nrMajorsSelected = 0;
+		for (int i = 0; i < iMajors.getItemCount(); i++)
+			if (iMajors.isItemSelected(i)) nrMajorsSelected++;
+		for (int i = 0; i < iMajors.getItemCount(); i++) {
+			if (iMajors.isItemSelected(i)) {
+				Long majorId = Long.valueOf(iMajors.getValue(i));
+				Area c = getSelectedArea(majorId);
+				IdName m = c.getMajor(majorId);
+				for (IdName conc: c.getConcentrations()) {
+					if (conc.getParentId().equals(majorId))
+						iConcentrations.addItem((nrMajorsSelected > 1 ? c.getAbbv() + "/" + m.getAbbv() + "-":"") + conc.getAbbv() + " - " + conc.getName(), conc.getId().toString());
+				}
+			}
+		}
+		iPanel.getRowFormatter().setVisible(iConcentrationRow, iConcentrations.getItemCount() > 0);
 	}
 	
 	private void curriculumChanged() {
@@ -970,6 +1017,7 @@ public class ReservationEdit extends Composite {
 				iClassifications.setItemSelected(i, hasClasf);
 			}
 			iLimit.getWidget().setValue(c.getLimit() == null ? "" : c.getLimit().toString(), true);
+			majorChanged();
 		}
 	}
 	
@@ -1021,6 +1069,27 @@ public class ReservationEdit extends Composite {
 					for (int i = 0; i < iClassifications.getItemCount(); i++)
 						if (id.getId().toString().equals(iClassifications.getValue(i))) {
 							iClassifications.setItemSelected(i, true);
+							break;
+						}
+		}
+		majorChangedKeepSelection();
+	}
+	
+	protected void majorChangedKeepSelection() {
+		Set<String> concentrations = new HashSet<String>();
+		for (int i = 0; i < iConcentrations.getItemCount(); i++)
+			if (iConcentrations.isItemSelected(i)) concentrations.add(iConcentrations.getValue(i));
+		majorChanged();
+		if (!concentrations.isEmpty())
+			for (int i = 0; i < iConcentrations.getItemCount(); i++)
+				if (concentrations.contains(iConcentrations.getValue(i))) iConcentrations.setItemSelected(i, true);
+		if (iConcentrations.getSelectedIndex() < 0 && iReservation != null && iReservation instanceof ReservationInterface.CurriculumReservation) {
+			Areas areas = ((ReservationInterface.CurriculumReservation)iReservation).getCurriculum();
+			if (areas != null && areas.getConcentrations() != null)
+				for (IdName id: areas.getConcentrations())
+					for (int i = 0; i < iConcentrations.getItemCount(); i++)
+						if (id.getId().toString().equals(iConcentrations.getValue(i))) {
+							iConcentrations.setItemSelected(i, true);
 							break;
 						}
 		}
@@ -1090,6 +1159,14 @@ public class ReservationEdit extends Composite {
 				for (IdName clasf: curriculum.getClassifications())
 					if (clasf.getId().equals(id)) selected = true;
 				iClassifications.setItemSelected(i, selected);
+			}
+			majorChanged();
+			for (int i = 0; i < iConcentrations.getItemCount(); i++) {
+				Long id = Long.valueOf(iConcentrations.getValue(i));
+				boolean selected = false;
+				for (IdName mj: curriculum.getConcentrations())
+					if (mj.getId().equals(id)) selected = true;
+				iConcentrations.setItemSelected(i, selected);
 			}
 		}
 		typeChanged(false);
@@ -1236,6 +1313,14 @@ public class ReservationEdit extends Composite {
 						clasf.setId(Long.valueOf(iClassifications.getValue(i)));
 						clasf.setName(iClassifications.getItemText(i));
 						curriculum.getClassifications().add(clasf);
+					}
+				}
+				for (int i = 0; i < iConcentrations.getItemCount(); i++ ) {
+					if (iConcentrations.isItemSelected(i)) {
+						IdName cc = new IdName();
+						cc.setId(Long.valueOf(iConcentrations.getValue(i)));
+						cc.setName(iConcentrations.getItemText(i));
+						curriculum.getConcentrations().add(cc);
 					}
 				}
 				((ReservationInterface.CurriculumReservation) r).setCurriculum(curriculum);

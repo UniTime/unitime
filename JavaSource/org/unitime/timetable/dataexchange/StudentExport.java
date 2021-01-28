@@ -102,10 +102,12 @@ public class StudentExport extends BaseExport {
     	if (!student.getAreaClasfMajors().isEmpty()) {
     		Element e = studentEl.addElement("studentMajors");
         	for (StudentAreaClassificationMajor aac: student.getAreaClasfMajors()) {
-        		e.addElement("major")
+        		Element majorElement = e.addElement("major")
         		.addAttribute("academicArea", aac.getAcademicArea().getAcademicAreaAbbreviation())
         		.addAttribute("academicClass", aac.getAcademicClassification().getCode())
         		.addAttribute("code", aac.getMajor().getCode());
+        		if (aac.getConcentration() != null)
+        			majorElement.addAttribute("concentration", aac.getConcentration().getCode());
         	}
     	}
 

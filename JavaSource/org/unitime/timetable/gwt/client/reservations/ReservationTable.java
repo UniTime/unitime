@@ -329,6 +329,12 @@ public class ReservationTable extends Composite {
 						Label o = new Label(major.getAbbv() + " - " + major.getName());
 						o.getElement().getStyle().setMarginLeft(10, Unit.PX);
 						owner.add(o);
+						for (IdName conc: curriculum.getConcentrations()) {
+							if (!major.getId().equals(conc.getParentId())) continue;
+							Label c = new Label(conc.getAbbv() + " - " + conc.getName());
+							c.getElement().getStyle().setMarginLeft(20, Unit.PX);
+							owner.add(c);
+						}
 					}
 					for (IdName minor: curriculum.getMinors()) {
 						if (!area.getId().equals(minor.getParentId())) continue;
@@ -347,6 +353,12 @@ public class ReservationTable extends Composite {
 					Label l = new Label(major.getAbbv() + " - " + major.getName());
 					l.getElement().getStyle().setMarginLeft(10, Unit.PX);
 					owner.add(l);
+					for (IdName conc: curriculum.getConcentrations()) {
+						if (!major.getId().equals(conc.getParentId())) continue;
+						Label c = new Label(conc.getAbbv() + " - " + conc.getName());
+						c.getElement().getStyle().setMarginLeft(20, Unit.PX);
+						owner.add(c);
+					}
 				}
 				for (IdName minor: curriculum.getMinors()) {
 					if (minor.getParentId() != null) continue;

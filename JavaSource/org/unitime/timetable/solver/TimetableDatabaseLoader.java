@@ -2382,7 +2382,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     				CurriculumReservation cr = (CurriculumReservation)reservation;
     				boolean match = false;
     				for (AreaClasfMajor acm: studentId.getMajors()) {
-    					if (cr.hasArea(acm.getArea()) && cr.hasClassification(acm.getClasf()) && cr.hasMajor(acm.getMajor())) {
+    					if (cr.hasArea(acm.getArea()) && cr.hasClassification(acm.getClasf()) && cr.hasMajor(acm.getMajor()) && cr.hasConcentration(acm.getMajor(), acm.getConcentration())) {
     						match = true;
     						break;
     					}
@@ -3202,7 +3202,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         					CurriculumReservation cr = (CurriculumReservation)reservation;
         					boolean match = false;
         					for (AreaClasfMajor acm: studentId.getMajors()) {
-        						if (cr.hasArea(acm.getArea()) && cr.hasClassification(acm.getClasf()) && cr.hasMajor(acm.getMajor())) {
+        						if (cr.hasArea(acm.getArea()) && cr.hasClassification(acm.getClasf()) && cr.hasMajor(acm.getMajor()) && cr.hasConcentration(acm.getMajor(), acm.getConcentration())) {
         							match = true;
         							break;
         						}

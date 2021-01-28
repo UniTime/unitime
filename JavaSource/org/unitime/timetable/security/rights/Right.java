@@ -451,6 +451,9 @@ public enum Right {
 
     Majors(Session.class),
     MajorEdit(Session.class),
+    
+    Concentrations(Session.class),
+    ConcentrationEdit(Session.class),
 
     Minors(Session.class),
     MinorEdit(Session.class),

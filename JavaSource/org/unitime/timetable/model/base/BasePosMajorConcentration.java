@@ -20,19 +20,15 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 
-import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMajorConcentration;
-import org.unitime.timetable.model.Session;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public abstract class BasePosMajor implements Serializable {
+public abstract class BasePosMajorConcentration implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Long iUniqueId;
@@ -40,20 +36,18 @@ public abstract class BasePosMajor implements Serializable {
 	private String iCode;
 	private String iName;
 
-	private Session iSession;
-	private Set<AcademicArea> iAcademicAreas;
-	private Set<PosMajorConcentration> iConcentrations;
+	private PosMajor iMajor;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_EXTERNAL_UID = "externalUniqueId";
 	public static String PROP_CODE = "code";
 	public static String PROP_NAME = "name";
 
-	public BasePosMajor() {
+	public BasePosMajorConcentration() {
 		initialize();
 	}
 
-	public BasePosMajor(Long uniqueId) {
+	public BasePosMajorConcentration(Long uniqueId) {
 		setUniqueId(uniqueId);
 		initialize();
 	}
@@ -72,27 +66,13 @@ public abstract class BasePosMajor implements Serializable {
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
-	public Session getSession() { return iSession; }
-	public void setSession(Session session) { iSession = session; }
-
-	public Set<AcademicArea> getAcademicAreas() { return iAcademicAreas; }
-	public void setAcademicAreas(Set<AcademicArea> academicAreas) { iAcademicAreas = academicAreas; }
-	public void addToacademicAreas(AcademicArea academicArea) {
-		if (iAcademicAreas == null) iAcademicAreas = new HashSet<AcademicArea>();
-		iAcademicAreas.add(academicArea);
-	}
-
-	public Set<PosMajorConcentration> getConcentrations() { return iConcentrations; }
-	public void setConcentrations(Set<PosMajorConcentration> concentrations) { iConcentrations = concentrations; }
-	public void addToconcentrations(PosMajorConcentration posMajorConcentration) {
-		if (iConcentrations == null) iConcentrations = new HashSet<PosMajorConcentration>();
-		iConcentrations.add(posMajorConcentration);
-	}
+	public PosMajor getMajor() { return iMajor; }
+	public void setMajor(PosMajor major) { iMajor = major; }
 
 	public boolean equals(Object o) {
-		if (o == null || !(o instanceof PosMajor)) return false;
-		if (getUniqueId() == null || ((PosMajor)o).getUniqueId() == null) return false;
-		return getUniqueId().equals(((PosMajor)o).getUniqueId());
+		if (o == null || !(o instanceof PosMajorConcentration)) return false;
+		if (getUniqueId() == null || ((PosMajorConcentration)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((PosMajorConcentration)o).getUniqueId());
 	}
 
 	public int hashCode() {
@@ -101,15 +81,15 @@ public abstract class BasePosMajor implements Serializable {
 	}
 
 	public String toString() {
-		return "PosMajor["+getUniqueId()+" "+getName()+"]";
+		return "PosMajorConcentration["+getUniqueId()+" "+getName()+"]";
 	}
 
 	public String toDebugString() {
-		return "PosMajor[" +
+		return "PosMajorConcentration[" +
 			"\n	Code: " + getCode() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +
+			"\n	Major: " + getMajor() +
 			"\n	Name: " + getName() +
-			"\n	Session: " + getSession() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

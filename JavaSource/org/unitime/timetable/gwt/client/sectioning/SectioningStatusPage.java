@@ -1989,6 +1989,14 @@ public class SectioningStatusPage extends Composite {
 			addSortOperation(hMajor, StudentComparator.SortBy.MAJOR, MESSAGES.colMajor());
 		}
 		
+		UniTimeTableHeader hConc = null;
+		if (iStudentInfoVisibleColumns.hasConc) {
+			hConc = new UniTimeTableHeader(MESSAGES.colConcentration());
+			//hMajor.setWidth("100px");
+			header.add(hConc);
+			addSortOperation(hConc, StudentComparator.SortBy.CONCENTRATION, MESSAGES.colConcentration());
+		}
+		
 		UniTimeTableHeader hMinor = null;
 		if (iStudentInfoVisibleColumns.hasMinor) {
 			hMinor = new UniTimeTableHeader(MESSAGES.colMinor());
@@ -2205,6 +2213,7 @@ public class SectioningStatusPage extends Composite {
 					h = hGroups.get(g);
 				break;
 			case MAJOR: h = hMajor; break;
+			case CONCENTRATION: h = hConc; break;
 			case REQUEST_TS: h = hRequestTS; break;
 			case RESERVATION: h = hReservation; break;
 			case STATUS: h = hStatus; break;
@@ -2223,6 +2232,7 @@ public class SectioningStatusPage extends Composite {
 			case ADVISED_PERC: h = hAdvisedCred; break;
 			case ADVISED_CRIT: h = hMissingCourses; break;
 			case ADVISED_ASSGN: h = hNotAssignedCourses; break;
+			case MINOR: h = hMinor; break;
 			}
 			if (h != null) {
 				Collections.sort(result, new StudentComparator(sort, asc, g));
@@ -2309,6 +2319,8 @@ public class SectioningStatusPage extends Composite {
 			}
 			if (iStudentInfoVisibleColumns.hasMajor)
 				line.add(new HTML(info.getStudent().getMajor("<br>"), false));
+			if (iStudentInfoVisibleColumns.hasConc)
+				line.add(new HTML(info.getStudent().getConcentration("<br>"), false));
 			if (iStudentInfoVisibleColumns.hasMinor)
 				line.add(new HTML(info.getStudent().getMinor("<br>"), false));
 			if (iStudentInfoVisibleColumns.hasGroup)
@@ -2330,6 +2342,8 @@ public class SectioningStatusPage extends Composite {
 				line.add(new HTML("&nbsp;", false));
 			}
 			if (iStudentInfoVisibleColumns.hasMajor)
+				line.add(new HTML("&nbsp;", false));
+			if (iStudentInfoVisibleColumns.hasConc)
 				line.add(new HTML("&nbsp;", false));
 			if (iStudentInfoVisibleColumns.hasMinor)
 				line.add(new HTML("&nbsp;", false));
@@ -3090,6 +3104,7 @@ public class SectioningStatusPage extends Composite {
 			ADVISED_CRIT,
 			ADVISED_ASSGN,
 			MINOR,
+			CONCENTRATION,
 			;
 		}
 		
@@ -3126,6 +3141,12 @@ public class SectioningStatusPage extends Composite {
 				return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
 			case MINOR:
 				return e1.getStudent().getMinor("|").compareTo(e2.getStudent().getMinor("|"));
+			case CONCENTRATION:
+				cmp = e1.getStudent().getConcentration("|").compareTo(e2.getStudent().getConcentration("|"));
+				if (cmp != 0) return cmp;
+				cmp = e1.getStudent().getMajor("|").compareTo(e2.getStudent().getMajor("|"));
+				if (cmp != 0) return cmp;
+				return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
 			case GROUP:
 				cmp = e1.getStudent().getGroup(iGroup, "|").compareTo(e2.getStudent().getGroup(iGroup, "|"));
 				if (cmp != 0) return cmp;
@@ -3472,7 +3493,7 @@ public class SectioningStatusPage extends Composite {
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
 				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false, hasReqCred = false, hasDistances = false, hasOverlaps = false,
 				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false, hasOverride = false, hasExtId = false,
-				hasAdvisor = false, hasAdvisedInfo = false, hasMinor = false;
+				hasAdvisor = false, hasAdvisedInfo = false, hasMinor = false, hasConc = false;
 		int selectableStudents = 0;
 		Set<String> groupTypes = new TreeSet<String>();
 		
@@ -3507,6 +3528,7 @@ public class SectioningStatusPage extends Composite {
 				if (e.getStudent().hasAdvisor()) hasAdvisor = true;
 				if (e.getAdvisedInfo() != null) hasAdvisedInfo = true;
 				if (e.getStudent().hasMinor()) hasMinor = true;
+				if (e.getStudent().hasConcentration()) hasConc = true;
 			}
 		}
 	}

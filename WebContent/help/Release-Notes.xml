@@ -55,6 +55,7 @@
 				<line>Added ability for the curriculum reservations and overrides to match on student minors.
 					<line>When a reservation has both majors and minors, a student must have at least one matching minor OR one matching major.</line>
 				</line>
+				<line>Added ability to further divide majors by using the optional concentrations.</line>
 			</description>
 		</item>
 	</category>

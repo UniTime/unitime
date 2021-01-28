@@ -448,12 +448,32 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		private List<IdName> iClassifications = new ArrayList<IdName>();
 		private List<IdName> iMajors = new ArrayList<IdName>();
 		private List<IdName> iMinors = new ArrayList<IdName>();
+		private List<IdName> iConcentrations = new ArrayList<IdName>();
 
 		public Area() { super(); }
 		
 		public List<IdName> getClassifications() { return iClassifications; }
 		public List<IdName> getMajors() { return iMajors; }
 		public List<IdName> getMinors() { return iMinors; }
+		public List<IdName> getConcentrations() { return iConcentrations; }
+		public List<IdName> getConcentrations(Long majorId) {
+			List<IdName> ret = new ArrayList<IdName>();
+			for (IdName conc: getConcentrations())
+				if (majorId.equals(conc.getParentId())) ret.add(conc);
+			return ret;
+		}
+		public boolean hasConcentrations(Long majorId) {
+			if (majorId == null) return false;
+			for (IdName conc: getConcentrations())
+				if (majorId.equals(conc.getParentId())) return true;
+			return false;
+		}
+		public IdName getMajor(Long majorId) {
+			if (majorId == null) return null;
+			for (IdName major: getMajors())
+				if (major.getId().equals(majorId)) return major;
+			return null;
+		}
 		
 		public String toString() { return super.toString() + " " + getClassifications().toString() + " " + getMajors().toString(); }
 	}
@@ -463,6 +483,7 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		private List<IdName> iClassifications = new ArrayList<IdName>();
 		private List<IdName> iMajors = new ArrayList<IdName>();
 		private List<IdName> iMinors = new ArrayList<IdName>();
+		private List<IdName> iConcentrations = new ArrayList<IdName>();
 
 		public Areas() {}
 		
@@ -470,6 +491,7 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		public List<IdName> getClassifications() { return iClassifications; }
 		public List<IdName> getMajors() { return iMajors; }
 		public List<IdName> getMinors() { return iMinors; }
+		public List<IdName> getConcentrations() { return iConcentrations; }
 		
 		public String toString() { return getAreas().toString() + " " + getClassifications().toString() + " " + getMajors().toString(); }
 	}

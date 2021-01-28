@@ -780,6 +780,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Major")
 	String colMajor();
 	
+	@DefaultMessage("Concentration")
+	String colConcentration();
+	
 	@DefaultMessage("Minor")
 	String colMinor();
 

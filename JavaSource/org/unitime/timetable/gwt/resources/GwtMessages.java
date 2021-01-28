@@ -1410,6 +1410,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Minors:")
 	String propMinors();
 	
+	@DefaultMessage("Concentrations:")
+	String propConcentrations();
+	
 	@DefaultMessage("Academic Classification:")
 	String propAcademicClassification();
 	
@@ -3272,6 +3275,14 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageMinors();
 	
+	@DefaultMessage("Concentration")
+	@DoNotTranslate
+	String pageConcentration();
+
+	@DefaultMessage("Concentrations")
+	@DoNotTranslate
+	String pageConcentrations();
+	
 	@DefaultMessage("Offering Consent Type")
 	@DoNotTranslate
 	String pageOfferingConsentType();
@@ -4727,6 +4738,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Restricted")
 	String fieldHasRole();
+	
+	@DefaultMessage("Major")
+	String fieldMajor();
 	
 	@DefaultMessage("Not Allowed")
 	String itemAllowDisabledSectionsNotAllowed();

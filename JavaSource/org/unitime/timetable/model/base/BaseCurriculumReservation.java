@@ -27,6 +27,7 @@ import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.PosMajorConcentration;
 import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.Reservation;
 
@@ -39,6 +40,7 @@ public abstract class BaseCurriculumReservation extends Reservation implements S
 
 	private Set<AcademicArea> iAreas;
 	private Set<PosMajor> iMajors;
+	private Set<PosMajorConcentration> iConcentrations;
 	private Set<AcademicClassification> iClassifications;
 	private Set<PosMinor> iMinors;
 
@@ -66,6 +68,13 @@ public abstract class BaseCurriculumReservation extends Reservation implements S
 	public void addTomajors(PosMajor posMajor) {
 		if (iMajors == null) iMajors = new HashSet<PosMajor>();
 		iMajors.add(posMajor);
+	}
+
+	public Set<PosMajorConcentration> getConcentrations() { return iConcentrations; }
+	public void setConcentrations(Set<PosMajorConcentration> concentrations) { iConcentrations = concentrations; }
+	public void addToconcentrations(PosMajorConcentration posMajorConcentration) {
+		if (iConcentrations == null) iConcentrations = new HashSet<PosMajorConcentration>();
+		iConcentrations.add(posMajorConcentration);
 	}
 
 	public Set<AcademicClassification> getClassifications() { return iClassifications; }

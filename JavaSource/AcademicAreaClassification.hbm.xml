@@ -59,6 +59,13 @@
             column="major_id"
             not-null="true"
             foreign-key="fk_student_acmaj_major"/>
+            
+        <many-to-one
+            name="concentration"
+            class="PosMajorConcentration"
+            column="concentration_id"
+            not-null="false"
+            foreign-key="fk_student_acmaj_conc"/>
     </class>
     <class name="StudentAreaClassificationMinor" table="student_area_clasf_minor">
         <cache include="non-lazy" usage="transactional"/>

@@ -328,7 +328,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 		}
 	}
 	
-	public static class ListItem implements IsSerializable {
+	public static class ListItem implements IsSerializable, Comparable<ListItem> {
 		private String iValue, iText;
 		public ListItem() {}
 		public ListItem(String value, String text) {
@@ -336,6 +336,18 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 		}
 		public String getValue() { return iValue; }
 		public String getText() { return iText; }
+		@Override
+		public int compareTo(ListItem o) {
+			return getText().compareTo(o.getText());
+		}
+		@Override
+		public int hashCode() { return getText().hashCode(); }
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof ListItem)) return false;
+			ListItem i = (ListItem)o;
+			return getValue().equals(i.getValue());
+		}
 	}
 	
 	public static class Field implements IsSerializable {

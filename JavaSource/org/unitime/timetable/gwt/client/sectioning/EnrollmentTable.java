@@ -796,7 +796,7 @@ public class EnrollmentTable extends Composite {
 		}
 		
 		boolean hasPriority = false, hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasAlternative = false, hasReservation = false, hasRequestedDate = false, hasEnrolledDate = false, hasConflict = false, hasMessage = false;
-		boolean hasAdvisor = false, hasMinor = false;
+		boolean hasAdvisor = false, hasMinor = false, hasConc = false;
 		Set<String> groupTypes = new HashSet<String>();
 		for (ClassAssignmentInterface.Enrollment e: enrollments) {
 			if (filter(f, e)) continue;
@@ -814,6 +814,7 @@ public class EnrollmentTable extends Composite {
 			if (e.getStudent().hasGroups()) groupTypes.addAll(e.getStudent().getGroupTypes());
 			if (e.getStudent().hasAdvisor()) hasAdvisor = true;
 			if (e.getStudent().hasMinor()) hasMinor = true;
+			if (e.getStudent().hasConcentration()) hasConc = true;
 		}
 
 		UniTimeTableHeader hPriority = null;
@@ -848,8 +849,15 @@ public class EnrollmentTable extends Composite {
 			addSortOperation(hMajor, EnrollmentComparator.SortBy.MAJOR, MESSAGES.colMajor());
 		}
 		
+		UniTimeTableHeader hConc = null;
+		if (hasConc) {
+			hConc = new UniTimeTableHeader(MESSAGES.colConcentration());
+			header.add(hConc);
+			addSortOperation(hConc, EnrollmentComparator.SortBy.CONCENTRATION, MESSAGES.colConcentration());
+		}
+		
 		UniTimeTableHeader hMinor = null;
-		if (hasMajor) {
+		if (hasMinor) {
 			hMinor = new UniTimeTableHeader(MESSAGES.colMinor());
 			header.add(hMinor);
 			addSortOperation(hMinor, EnrollmentComparator.SortBy.MINOR, MESSAGES.colMinor());
@@ -895,7 +903,7 @@ public class EnrollmentTable extends Composite {
 		for (final String subpart: subparts) {
 			UniTimeTableHeader hSubpart = new UniTimeTableHeader(subpart);
 			hSubparts.put(subpart, hSubpart);
-			final int col = 1 + (hasExtId ? 1 : 0) + (crosslist ? 1 : 0) + (hasPriority ? 1 : 0) + (hasAlternative ? 1 : 0) + (hasArea ? 2 : 0) + (hasMajor ? 1 : 0) + (hasMinor ? 1 : 0) + (hasGroup ? 1 : 0) + (hasAcmd ? 1 : 0) + (hasReservation ? 1 : 0) + groupTypes.size();
+			final int col = 1 + (hasExtId ? 1 : 0) + (crosslist ? 1 : 0) + (hasPriority ? 1 : 0) + (hasAlternative ? 1 : 0) + (hasArea ? 2 : 0) + (hasMajor ? 1 : 0) + (hasConc ? 1 : 0) + (hasMinor ? 1 : 0) + (hasGroup ? 1 : 0) + (hasAcmd ? 1 : 0) + (hasReservation ? 1 : 0) + groupTypes.size();
 			hSubpart.addOperation(new Operation() {
 				@Override
 				public void execute() {
@@ -1196,6 +1204,8 @@ public class EnrollmentTable extends Composite {
 			}
 			if (hasMajor)
 				line.add(new HTML(enrollment.getStudent().getMajor("<br>"), false));
+			if (hasConc)
+				line.add(new HTML(enrollment.getStudent().getConcentration("<br>"), false));
 			if (hasMinor)
 				line.add(new HTML(enrollment.getStudent().getMinor("<br>"), false));
 			if (hasGroup)
@@ -1396,6 +1406,9 @@ public class EnrollmentTable extends Composite {
 			case REQUEST_TS: h = hRequestTS; break;
 			case RESERVATION: h = hReservation; break;
 			case STUDENT: h = hStudent; break;
+			case CONCENTRATION: h = hConc; break;
+			case MINOR: h = hMinor; break;
+			case ADVISOR: h = hAdvisor; break;
 			}
 			if (h != null)
 				iEnrollments.sort(h, new EnrollmentComparator(sort, group), asc);
@@ -1670,6 +1683,7 @@ public class EnrollmentTable extends Composite {
 			APPROVED,
 			ADVISOR,
 			MINOR,
+			CONCENTRATION,
 			;
 		}
 		
@@ -1744,6 +1758,12 @@ public class EnrollmentTable extends Composite {
 					return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
 				case MINOR:
 					return e1.getStudent().getMinor("|").compareTo(e2.getStudent().getMinor("|"));
+				case CONCENTRATION:
+					cmp = e1.getStudent().getConcentration("|").compareTo(e2.getStudent().getConcentration("|"));
+					if (cmp != 0) return cmp;
+					cmp = e1.getStudent().getMajor("|").compareTo(e2.getStudent().getMajor("|"));
+					if (cmp != 0) return cmp;
+					return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
 				case GROUP:
 					cmp = e1.getStudent().getGroup(iGroupType, "|").compareTo(e2.getStudent().getGroup(iGroupType, "|"));
 					if (cmp != 0) return cmp;

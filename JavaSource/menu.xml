@@ -892,6 +892,12 @@
 					<hasPermission name="Majors"/>
 				</condition>
 			</item>
+			<item name="Concentrations" page="admin" type="gwt">
+				<parameter name="type">concentration</parameter>
+				<condition>
+					<hasPermission name="Concentrations"/>
+				</condition>
+			</item>
 			<item name="Minors" page="admin" type="gwt">
 				<parameter name="type">minor</parameter>
 				<condition>

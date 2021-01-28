@@ -36,7 +36,7 @@ import org.infinispan.commons.marshall.SerializeWith;
 @SerializeWith(XAreaClassificationMajor.XAreaClassificationMajorSerializer.class)
 public class XAreaClassificationMajor implements Serializable, Externalizable, Comparable<XAreaClassificationMajor> {
     private static final long serialVersionUID = 1L;
-	private String iArea, iClassification, iMajor;
+	private String iArea, iClassification, iMajor, iConcentration;
 	
 	public XAreaClassificationMajor() {}
 	
@@ -48,6 +48,13 @@ public class XAreaClassificationMajor implements Serializable, Externalizable, C
         iArea = area;
         iClassification = classification;
         iMajor = major;
+    }
+    
+    public XAreaClassificationMajor(String area, String classification, String major, String concentration) {
+        iArea = area;
+        iClassification = classification;
+        iMajor = major;
+        iConcentration = concentration;
     }
 
     /** Academic area */
@@ -63,6 +70,11 @@ public class XAreaClassificationMajor implements Serializable, Externalizable, C
     /** Major */
     public String getMajor() {
         return iMajor;
+    }
+    
+    /** Concentration */
+    public String getConcentration() {
+        return iConcentration;
     }
 
     @Override
@@ -80,7 +92,7 @@ public class XAreaClassificationMajor implements Serializable, Externalizable, C
 
     @Override
     public String toString() {
-        return getArea() + "/" + getMajor() + " " + getClassification();
+        return getArea() + "/" + getMajor() + (getConcentration() == null ? "" : "-" + getConcentration()) + " " + getClassification();
     }
 
 	@Override
@@ -88,6 +100,7 @@ public class XAreaClassificationMajor implements Serializable, Externalizable, C
 		iArea = (String)in.readObject();
 		iClassification = (String)in.readObject();
 		iMajor = (String)in.readObject();
+		iConcentration = (String)in.readObject();
 	}
 
 	@Override
@@ -95,6 +108,7 @@ public class XAreaClassificationMajor implements Serializable, Externalizable, C
 		out.writeObject(iArea);
 		out.writeObject(iClassification);
 		out.writeObject(iMajor);
+		out.writeObject(iConcentration);
 	}
 	
 	public static class XAreaClassificationMajorSerializer implements Externalizer<XAreaClassificationMajor> {

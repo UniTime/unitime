@@ -85,7 +85,9 @@ public class StudentSectioningExport extends BaseExport {
 	        		Element acadAreaEl = demographicsEl.addElement("acadArea");
 	        		acadAreaEl.addAttribute("abbv", acm.getAcademicArea().getAcademicAreaAbbreviation());
 	        		acadAreaEl.addAttribute("classification", acm.getAcademicClassification().getCode());
-	        		acadAreaEl.addElement("major").addAttribute("code", acm.getMajor().getCode());
+	        		Element majorEl = acadAreaEl.addElement("major").addAttribute("code", acm.getMajor().getCode());
+	        		if (acm.getConcentration() != null)
+	        			majorEl.addAttribute("concentration", acm.getConcentration().getCode());
 	        	}
 	        	for (StudentAreaClassificationMinor acm: student.getAreaClasfMinors()) {
 	        		Element acadAreaEl = demographicsEl.addElement("acadArea");

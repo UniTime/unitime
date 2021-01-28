@@ -96,16 +96,24 @@ public interface StudentCourseDemands {
 	public Set<WeightedCourseOffering> getCourses(Long studentId);
 	
 	public static class AreaClasfMajor implements Comparable<AreaClasfMajor> {
-		String iArea, iClasf, iMajor;
+		String iArea, iClasf, iMajor, iConcentration;
 		public AreaClasfMajor(String area, String clasf, String major) {
 			iArea = area; iClasf = clasf; iMajor = major;
+		}
+		public AreaClasfMajor(String area, String clasf, String major, String concentration) {
+			iArea = area; iClasf = clasf; iMajor = major; iConcentration = concentration;
 		}
 		
 		public String getArea() { return iArea; }
 		public String getClasf() { return iClasf; }
 		public String getMajor() { return iMajor; }
+		public String getConcentration() { return iConcentration; }
 		
-		public String toString() { return getArea() + (getMajor().isEmpty() ? "" : "/" + getMajor()) + (getClasf().isEmpty() ? "" : " " + getClasf()); }
+		public String toString() {
+			return getArea() + 
+				(getMajor().isEmpty() ? "" : "/" + getMajor() + (getConcentration() == null ? "" : "-" + getConcentration())) +
+				(getClasf().isEmpty() ? "" : " " + getClasf());
+		}
 		
 		@Override
 		public int hashCode() {
@@ -195,7 +203,8 @@ public interface StudentCourseDemands {
 			iWeight = weight;
 			float rule = 1.0f; int cnt = 0;
 			for (StudentAreaClassificationMajor acm: student.getAreaClasfMajors()) {
-				iMajors.add(new AreaClasfMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode()));
+				iMajors.add(new AreaClasfMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode(),
+						acm.getConcentration() == null ? null : acm.getConcentration().getCode()));
 				if (projections != null) {
 					rule *= projections.getProjection(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode());
 					cnt ++;

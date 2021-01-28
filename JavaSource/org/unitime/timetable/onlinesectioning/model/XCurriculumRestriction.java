@@ -22,7 +22,9 @@ package org.unitime.timetable.onlinesectioning.model;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.infinispan.commons.marshall.Externalizer;
@@ -34,9 +36,11 @@ import org.infinispan.commons.marshall.SerializeWith;
 @SerializeWith(XCurriculumRestriction.XCurriculumRestrictionSerializer.class)
 public class XCurriculumRestriction extends XRestriction {
 	private static final long serialVersionUID = 1L;
-    private String iAcadArea;
+	private Set<String> iAcadAreas  = new HashSet<String>();
     private Set<String> iClassifications = new HashSet<String>();
     private Set<String> iMajors = new HashSet<String>();
+    private Set<String> iMinors = new HashSet<String>();
+    private Map<String, Set<String>> iConcentrations = new HashMap<String, Set<String>>();
     
     public XCurriculumRestriction() {
     	super();
@@ -49,18 +53,27 @@ public class XCurriculumRestriction extends XRestriction {
     
     public XCurriculumRestriction(org.cpsolver.studentsct.reservation.CurriculumRestriction reservation) {
     	super(XRestrictionType.Curriculum, reservation);
-    	iAcadArea = reservation.getAcademicArea();
+    	if (reservation.getAcademicAreas() != null)
+    		iAcadAreas.addAll(reservation.getAcademicAreas());
     	if (reservation.getClassifications() != null)
     		iClassifications.addAll(reservation.getClassifications());
     	if (reservation.getMajors() != null)
     		iMajors.addAll(reservation.getMajors());
+    	if (reservation.getMinors() != null)
+    		iMinors.addAll(reservation.getMinors());
+    	for (String major: reservation.getMajors()) {
+    		Set<String> concentrations = reservation.getConcentrations(major);
+    		if (concentrations != null) {
+    			iConcentrations.put(major, new HashSet<String>(concentrations));
+    		}
+    	}
     }
     
     /**
      * Academic area
      */
-    public String getAcademicArea() {
-        return iAcadArea;
+    public Set<String> getAcademicAreas() {
+        return iAcadAreas;
     }
     
     /**
@@ -68,6 +81,13 @@ public class XCurriculumRestriction extends XRestriction {
      */
     public Set<String> getMajors() {
         return iMajors;
+    }
+    
+    /**
+     * Minors
+     */
+    public Set<String> getMinors() {
+        return iMinors;
     }
     
     /**
@@ -82,18 +102,35 @@ public class XCurriculumRestriction extends XRestriction {
      */
     @Override
     public boolean isApplicable(XStudent student, XCourseId course) {
-        for (XAreaClassificationMajor acm: student.getMajors()) {
-            if (getAcademicArea().equals(acm.getArea()) &&
-            	(getClassifications().isEmpty() || getClassifications().contains(acm.getClassification())) &&
-            	(getMajors().isEmpty() || getMajors().contains(acm.getMajor()))) return true;
-        }
+    	if (!getMajors().isEmpty() || getMinors().isEmpty())
+    		for (XAreaClassificationMajor acm: student.getMajors()) {
+                if (getAcademicAreas().contains(acm.getArea()) &&
+                	(getClassifications().isEmpty() || getClassifications().contains(acm.getClassification())) &&
+                	(getMajors().isEmpty() || getMajors().contains(acm.getMajor()))) {
+                	Set<String> conc = iConcentrations.get(acm.getMajor());
+                    if (conc != null && !conc.isEmpty()) {
+                        return acm.getConcentration() != null && conc.contains(acm.getConcentration());
+                    } else {
+                        return true;
+                    }
+                }
+            }
+    	if (!getMinors().isEmpty())
+    		for (XAreaClassificationMajor acm: student.getMinors()) {
+                if (getAcademicAreas().contains(acm.getArea()) &&
+                	(getClassifications().isEmpty() || getClassifications().contains(acm.getClassification())) &&
+                	(getMinors().contains(acm.getMajor()))) return true;
+            }
         return false;
     }
     
     @Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
     	super.readExternal(in);
-    	iAcadArea = (String)in.readObject();
+    	int nrAcadAreas = in.readInt();
+    	iAcadAreas.clear();
+    	for (int i = 0; i < nrAcadAreas; i++)
+    		iAcadAreas.add((String)in.readObject());
     	
     	int nrClassifications = in.readInt();
     	iClassifications.clear();
@@ -104,12 +141,21 @@ public class XCurriculumRestriction extends XRestriction {
     	iMajors.clear();
     	for (int i = 0; i < nrMajors; i++)
     		iMajors.add((String)in.readObject());
+    	
+    	int nrMinors = in.readInt();
+    	iMinors.clear();
+    	for (int i = 0; i < nrMinors; i++)
+    		iMinors.add((String)in.readObject());
+    	
+    	iConcentrations = (Map<String, Set<String>>)in.readObject();
     }
 
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		super.writeExternal(out);
-		out.writeObject(iAcadArea);
+		out.writeInt(iAcadAreas.size());
+		for (String area: iAcadAreas)
+			out.writeObject(area);
 		
 		out.writeInt(iClassifications.size());
 		for (String clasf: iClassifications)
@@ -118,6 +164,12 @@ public class XCurriculumRestriction extends XRestriction {
 		out.writeInt(iMajors.size());
 		for (String major: iMajors)
 			out.writeObject(major);
+		
+		out.writeInt(iMinors.size());
+		for (String minor: iMinors)
+			out.writeObject(minor);
+		
+		out.writeObject(iConcentrations);
 	}
 	
 	public static class XCurriculumRestrictionSerializer implements Externalizer<XCurriculumRestriction> {

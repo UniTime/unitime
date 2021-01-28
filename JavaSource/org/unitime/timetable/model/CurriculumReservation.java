@@ -94,6 +94,17 @@ public class CurriculumReservation extends BaseCurriculumReservation {
 		return false;
 	}
 	
+	public boolean hasConcentration(String majorCode, String concCode) {
+		if (concCode == null) return true;
+		boolean hasMajor = false;
+		for (PosMajorConcentration c: getConcentrations())
+			if (c.getMajor().getCode().equals(majorCode)) {
+				hasMajor = true;
+				if (c.getCode().equals(concCode)) return true;
+			}
+		return !hasMajor;
+	}
+	
 	public boolean hasMinor(String minorCode) {
 		for (PosMinor c: getMinors())
 			if (c.getCode().equals(minorCode)) return true;

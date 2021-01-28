@@ -120,6 +120,7 @@ import org.unitime.timetable.model.LearningCommunityReservation;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.OverrideReservation;
 import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.PosMajorConcentration;
 import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Room;
@@ -1002,6 +1003,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		r.setMustBeUsed(reservation.isMustBeUsed());
         		r.setAllowOverlap(reservation.isAllowOverlap());
         		r.setCanAssignOverLimit(reservation.isCanAssignOverLimit());
+        		for (PosMajorConcentration conc: cr.getConcentrations())
+        			((CurriculumReservation)r).addConcentration(conc.getMajor().getCode(), conc.getCode());
         	} else if (reservation instanceof org.unitime.timetable.model.CurriculumReservation) {
         		org.unitime.timetable.model.CurriculumReservation cr = (org.unitime.timetable.model.CurriculumReservation)reservation;
         		List<String> areas = new ArrayList<String>();
@@ -1022,6 +1025,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		r.setAllowOverlap(ApplicationProperty.ReservationAllowOverlapCurriculum.isTrue());
         		r.setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitCurriculum.isTrue());
         		r.setMustBeUsed(ApplicationProperty.ReservationMustBeUsedCurriculum.isTrue());
+        		for (PosMajorConcentration conc: cr.getConcentrations())
+        			((CurriculumReservation)r).addConcentration(conc.getMajor().getCode(), conc.getCode());
         	} else if (reservation instanceof org.unitime.timetable.model.CourseReservation) {
         		CourseOffering co = ((org.unitime.timetable.model.CourseReservation)reservation).getCourse();
         		for (Course course: offering.getCourses()) {
@@ -2130,7 +2135,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         for (StudentAreaClassificationMajor acm: s.getAreaClasfMajors()) {
             // student.getAcademicAreaClasiffications().add(new AcademicAreaCode(acm.getAcademicArea().getAcademicAreaAbbreviation(),acm.getAcademicClassification().getCode()));
             // student.getMajors().add(new AcademicAreaCode(acm.getAcademicArea().getAcademicAreaAbbreviation(),acm.getMajor().getCode()));
-        	student.getAreaClassificationMajors().add(new AreaClassificationMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode()));
+        	student.getAreaClassificationMajors().add(new AreaClassificationMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode(),
+        			acm.getConcentration() == null ? null : acm.getConcentration().getCode()));
         }
         for (StudentAreaClassificationMinor acm: s.getAreaClasfMinors()) {
         	student.getAreaClassificationMinors().add(new AreaClassificationMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMinor().getCode()));
@@ -2761,7 +2767,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             	        if (student == null) {
             	        	student = new Student(demand.getStudentId(), true);
             	            for (AreaClasfMajor acm: demand.getMajors())
-            	            	student.getAreaClassificationMajors().add(new AreaClassificationMajor(acm.getArea(), acm.getClasf(), acm.getMajor()));
+            	            	student.getAreaClassificationMajors().add(new AreaClassificationMajor(acm.getArea(), acm.getClasf(), acm.getMajor(), acm.getConcentration()));
+            	            for (AreaClasfMajor acm: demand.getMinors())
+            	            	student.getAreaClassificationMinors().add(new AreaClassificationMajor(acm.getArea(), acm.getClasf(), acm.getMajor()));
             	            students.put(demand.getStudentId(), student);
             	        }
             	        List<Course> courses = new ArrayList<Course>();

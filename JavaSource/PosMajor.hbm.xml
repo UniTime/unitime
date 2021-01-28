@@ -74,6 +74,54 @@
                 foreign-key="fk_acad_area_major_area"/>
 
         </set>
+        
+        <set
+            name="concentrations"
+            inverse="true"
+            cascade="all-delete-orphan">
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="major_id"/>
+            <one-to-many class="PosMajorConcentration"/>
+        </set>
 
+    </class>
+    <class name="PosMajorConcentration" table="pos_major_conc">
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">pos_major_seq</param>
+            </generator>
+        </id>
+
+        <property
+            name="externalUniqueId"
+            column="external_uid"
+            type="java.lang.String"
+            not-null="false"
+            length="40"/>
+
+        <property
+            name="code"
+            column="code"
+            type="java.lang.String"
+            not-null="true"
+            length="40"/>
+
+        <property
+            name="name"
+            column="name"
+            type="java.lang.String"
+            not-null="true"
+            length="100"/>
+
+        <many-to-one
+            name="major"
+            class="PosMajor"
+            column="major_id"
+            foreign-key="fk_pos_conc_major"
+            not-null="true"/>
     </class>
 </hibernate-mapping>
