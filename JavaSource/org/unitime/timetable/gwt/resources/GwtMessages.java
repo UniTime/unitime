@@ -3451,7 +3451,7 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageOnlineStudentSchedulingDashboard();
 	
-	@DefaultMessage("Student Sectioning Dashboard")
+	@DefaultMessage("Batch Student Solver Dashboard")
 	@DoNotTranslate
 	String pageStudentSectioningDashboard();
 	
