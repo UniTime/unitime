@@ -213,19 +213,19 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 			st.setCanSelect(isCanSelect(student));
 			st.setName(student.getName());
 			for (XAreaClassificationMajor acm: student.getMajors()) {
-				st.addArea(acm.getArea());
-				st.addClassification(acm.getClassification());
-				st.addMajor(acm.getMajor());
-				st.addConcentration(acm.getConcentration());
+				st.addArea(acm.getArea(), acm.getAreaLabel());
+				st.addClassification(acm.getClassification(), acm.getClassificationLabel());
+				st.addMajor(acm.getMajor(), acm.getMajorLabel());
+				st.addConcentration(acm.getConcentration(), acm.getConcentrationLabel());
 			}
 			for (XAreaClassificationMajor acm: student.getMinors()) {
-				st.addMinor(acm.getMajor());
+				st.addMinor(acm.getMajor(), acm.getMajorLabel());
 			}
 			for (XStudent.XGroup gr: student.getGroups()) {
 				st.addGroup(gr.getType(), gr.getAbbreviation(), gr.getTitle());
 			}
-			for (String acc: student.getAccomodations()) {
-				st.addAccommodation(acc);
+			for (XStudent.XGroup acc: student.getAccomodations()) {
+				st.addAccommodation(acc.getAbbreviation(), acc.getTitle());
 			}
 			for (XStudent.XAdvisor a: student.getAdvisors()) {
 				if (a.getName() != null) st.addAdvisor(a.getName());

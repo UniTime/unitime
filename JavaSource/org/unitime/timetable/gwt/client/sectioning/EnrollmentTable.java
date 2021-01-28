@@ -1199,21 +1199,21 @@ public class EnrollmentTable extends Composite {
 			if (hasAlternative)
 				line.add(new Label(enrollment.getAlternative(), false));
 			if (hasArea) {
-				line.add(new HTML(enrollment.getStudent().getArea("<br>"), false));
-				line.add(new HTML(enrollment.getStudent().getClassification("<br>"), false));
+				line.add(new ACM(enrollment.getStudent().getAreas()));
+				line.add(new ACM(enrollment.getStudent().getClassifications()));
 			}
 			if (hasMajor)
-				line.add(new HTML(enrollment.getStudent().getMajor("<br>"), false));
+				line.add(new ACM(enrollment.getStudent().getMajors()));
 			if (hasConc)
-				line.add(new HTML(enrollment.getStudent().getConcentration("<br>"), false));
+				line.add(new ACM(enrollment.getStudent().getConcentrations()));
 			if (hasMinor)
-				line.add(new HTML(enrollment.getStudent().getMinor("<br>"), false));
+				line.add(new ACM(enrollment.getStudent().getMinors()));
 			if (hasGroup)
 				line.add(new Groups(enrollment.getStudent().getGroups()));
 			for (String type: groupTypes)
 				line.add(new Groups(enrollment.getStudent().getGroups(type)));
 			if (hasAcmd)
-				line.add(new HTML(enrollment.getStudent().getAccommodation("<br>"), false));
+				line.add(new ACM(enrollment.getStudent().getAccommodations()));
 			if (hasReservation)
 				line.add(new HTML(enrollment.getReservation() == null ? "&nbsp;" : enrollment.getReservation(), false));
 			if (!subparts.isEmpty()) {
@@ -1511,6 +1511,18 @@ public class EnrollmentTable extends Composite {
 				for (ClassAssignmentInterface.Group group: groups) {
 					P g = new P(); g.setText(group.getName());
 					if (group.hasTitle()) g.setTitle(group.getTitle());
+					add(g);
+				}
+			}
+		}
+	}
+	
+	private static class ACM extends P {
+		private ACM(Collection<ClassAssignmentInterface.CodeLabel> groups) {
+			if (groups != null && !groups.isEmpty()) {
+				for (ClassAssignmentInterface.CodeLabel group: groups) {
+					P g = new P(); g.setText(group.getCode());
+					if (group.hasLabel()) g.setTitle(group.getLabel());
 					add(g);
 				}
 			}

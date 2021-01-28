@@ -517,13 +517,13 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
     			st.setName(studentNameFormat.format(enrollment.getStudent()));
     			st.setEmail(enrollment.getStudent().getEmail());
     			for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(enrollment.getStudent().getAreaClasfMajors())) {
-    				st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation());
-    				st.addClassification(acm.getAcademicClassification().getCode());
-    				st.addMajor(acm.getMajor().getCode());
-    				st.addConcentration(acm.getConcentration() == null ? null : acm.getConcentration().getCode());
+    				st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicArea().getTitle());
+    				st.addClassification(acm.getAcademicClassification().getCode(), acm.getAcademicClassification().getName());
+    				st.addMajor(acm.getMajor().getCode(), acm.getMajor().getName());
+    				st.addConcentration(acm.getConcentration() == null ? null : acm.getConcentration().getCode(), acm.getConcentration() == null ? null : acm.getConcentration().getName());
     			}
     			for (StudentAreaClassificationMinor acm: new TreeSet<StudentAreaClassificationMinor>(enrollment.getStudent().getAreaClasfMinors())) {
-    				st.addMinor(acm.getMinor().getCode());
+    				st.addMinor(acm.getMinor().getCode(), acm.getMinor().getName());
     			}
     			for (StudentGroup g: enrollment.getStudent().getGroups()) {
     				if (g.getType() == null)
@@ -532,7 +532,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
     					st.addGroup(g.getType().getReference(), g.getGroupAbbreviation(), g.getGroupName());
     			}
     			for (StudentAccomodation a: enrollment.getStudent().getAccomodations()) {
-    				st.addAccommodation(a.getAbbreviation());
+    				st.addAccommodation(a.getAbbreviation(), a.getName());
     			}
     			for (Advisor a: enrollment.getStudent().getAdvisors()) {
     				if (a.getLastName() != null)

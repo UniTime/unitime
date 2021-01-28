@@ -1255,13 +1255,13 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							st.setCanUseAssistant(canUseAssistant);
 							st.setName(nameFormat.format(enrollment.getStudent()));
 							for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(enrollment.getStudent().getAreaClasfMajors())) {
-								st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation());
-								st.addClassification(acm.getAcademicClassification().getCode());
-								st.addMajor(acm.getMajor().getCode());
-								st.addConcentration(acm.getConcentration() == null ? null : acm.getConcentration().getCode());
+								st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicArea().getTitle());
+								st.addClassification(acm.getAcademicClassification().getCode(), acm.getAcademicClassification().getName());
+								st.addMajor(acm.getMajor().getCode(), acm.getMajor().getName());
+								st.addConcentration(acm.getConcentration() == null ? null : acm.getConcentration().getCode(), acm.getConcentration() == null ? null : acm.getConcentration().getName());
 							}
 							for (StudentAreaClassificationMinor acm: new TreeSet<StudentAreaClassificationMinor>(enrollment.getStudent().getAreaClasfMinors())) {
-								st.addMinor(acm.getMinor().getCode());
+								st.addMinor(acm.getMinor().getCode(), acm.getMinor().getName());
 							}
 							for (StudentGroup g: enrollment.getStudent().getGroups()) {
 								if (g.getType() == null)
@@ -1269,9 +1269,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								else
 									st.addGroup(g.getType().getReference(), g.getGroupAbbreviation(), g.getGroupName());
 							}
-			    			for (StudentAccomodation a: enrollment.getStudent().getAccomodations()) {
-			    				st.addAccommodation(a.getAbbreviation());
-			    			}
+							for (StudentAccomodation a: enrollment.getStudent().getAccomodations()) {
+								st.addAccommodation(a.getAbbreviation(), a.getName());
+							}
 			    			for (Advisor a: enrollment.getStudent().getAdvisors()) {
 			    				if (a.getLastName() != null)
 			    					st.addAdvisor(instructorNameFormat.format(a));
@@ -1366,13 +1366,13 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							st.setCanUseAssistant(canUseAssistant);
 							st.setName(nameFormat.format(request.getCourseDemand().getStudent()));
 							for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(request.getCourseDemand().getStudent().getAreaClasfMajors())) {
-								st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation());
-								st.addClassification(acm.getAcademicClassification().getCode());
-								st.addMajor(acm.getMajor().getCode());
-								st.addConcentration(acm.getConcentration() == null ? null : acm.getConcentration().getCode());
+								st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicArea().getTitle());
+								st.addClassification(acm.getAcademicClassification().getCode(), acm.getAcademicClassification().getName());
+								st.addMajor(acm.getMajor().getCode(), acm.getMajor().getName());
+								st.addConcentration(acm.getConcentration() == null ? null : acm.getConcentration().getCode(), acm.getConcentration() == null ? null : acm.getConcentration().getName());
 							}
 							for (StudentAreaClassificationMinor acm: new TreeSet<StudentAreaClassificationMinor>(request.getCourseDemand().getStudent().getAreaClasfMinors())) {
-								st.addMinor(acm.getMinor().getCode());
+								st.addMinor(acm.getMinor().getCode(), acm.getMinor().getName());
 							}
 							for (StudentGroup g: request.getCourseDemand().getStudent().getGroups()) {
 								if (g.getType() == null)
@@ -1381,7 +1381,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 									st.addGroup(g.getType().getReference(), g.getGroupAbbreviation(), g.getGroupName());
 							}
 			    			for (StudentAccomodation a: request.getCourseDemand().getStudent().getAccomodations()) {
-			    				st.addAccommodation(a.getAbbreviation());
+			    				st.addAccommodation(a.getAbbreviation(), a.getName());
 			    			}
 			    			for (Advisor a: request.getCourseDemand().getStudent().getAdvisors()) {
 			    				if (a.getLastName() != null)
@@ -3043,13 +3043,13 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			st.setWaitListMode(WaitListMode.None);
 		}
 		for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(student.getAreaClasfMajors())) {
-			st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation());
-			st.addClassification(acm.getAcademicClassification().getCode());
-			st.addMajor(acm.getMajor().getCode());
-			st.addConcentration(acm.getConcentration() == null ? null : acm.getConcentration().getCode());
+			st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicArea().getTitle());
+			st.addClassification(acm.getAcademicClassification().getCode(), acm.getAcademicClassification().getName());
+			st.addMajor(acm.getMajor().getCode(), acm.getMajor().getName());
+			st.addConcentration(acm.getConcentration() == null ? null : acm.getConcentration().getCode(), acm.getConcentration() == null ? null : acm.getConcentration().getName());
 		}
 		for (StudentAreaClassificationMinor acm: new TreeSet<StudentAreaClassificationMinor>(student.getAreaClasfMinors())) {
-			st.addMinor(acm.getMinor().getCode());
+			st.addMinor(acm.getMinor().getCode(), acm.getMinor().getName());
 		}
 		for (StudentGroup g: student.getGroups()) {
 			if (g.getType() == null)
@@ -3058,7 +3058,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				st.addGroup(g.getType().getReference(), g.getGroupAbbreviation(), g.getGroupName());
 		}
 		for (StudentAccomodation a: student.getAccomodations()) {
-			st.addAccommodation(a.getAbbreviation());
+			st.addAccommodation(a.getAbbreviation(), a.getName());
 		}
 		for (Advisor a: student.getAdvisors()) {
 			if (a.getLastName() != null)
@@ -3137,13 +3137,13 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			st.setWaitListMode(WaitListMode.None);
 		}
 		for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(student.getAreaClasfMajors())) {
-			st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation());
-			st.addClassification(acm.getAcademicClassification().getCode());
-			st.addMajor(acm.getMajor().getCode());
-			st.addConcentration(acm.getConcentration() == null ? null : acm.getConcentration().getCode());
+			st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicArea().getTitle());
+			st.addClassification(acm.getAcademicClassification().getCode(), acm.getAcademicClassification().getName());
+			st.addMajor(acm.getMajor().getCode(), acm.getMajor().getName());
+			st.addConcentration(acm.getConcentration() == null ? null : acm.getConcentration().getCode(), acm.getConcentration() == null ? null : acm.getConcentration().getName());
 		}
 		for (StudentAreaClassificationMinor acm: new TreeSet<StudentAreaClassificationMinor>(student.getAreaClasfMinors())) {
-			st.addMinor(acm.getMinor().getCode());
+			st.addMinor(acm.getMinor().getCode(), acm.getMinor().getName());
 		}
 		for (StudentGroup g: student.getGroups()) {
 			if (g.getType() == null)
@@ -3152,7 +3152,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				st.addGroup(g.getType().getReference(), g.getGroupAbbreviation(), g.getGroupName());
 		}
 		for (StudentAccomodation a: student.getAccomodations()) {
-			st.addAccommodation(a.getAbbreviation());
+			st.addAccommodation(a.getAbbreviation(), a.getName());
 		}
 		for (Advisor a: student.getAdvisors()) {
 			if (a.getLastName() != null)

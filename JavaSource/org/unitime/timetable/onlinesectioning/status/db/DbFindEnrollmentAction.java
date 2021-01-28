@@ -144,16 +144,16 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 			st.setCanSelect(isCanSelect(student));
 			st.setName(helper.getStudentNameFormat().format(student));
 			for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(student.getAreaClasfMajors())) {
-				st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation());
-				st.addClassification(acm.getAcademicClassification().getCode());
-				st.addMajor(acm.getMajor().getCode());
-				st.addConcentration(acm.getConcentration() == null ? null : acm.getConcentration().getCode());
+				st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicArea().getTitle());
+				st.addClassification(acm.getAcademicClassification().getCode(), acm.getAcademicClassification().getName());
+				st.addMajor(acm.getMajor().getCode(), acm.getMajor().getName());
+				st.addConcentration(acm.getConcentration() == null ? null : acm.getConcentration().getCode(), acm.getConcentration() == null ? null : acm.getConcentration().getName());
 			}
 			for (StudentAreaClassificationMinor acm: new TreeSet<StudentAreaClassificationMinor>(student.getAreaClasfMinors())) {
-				st.addMinor(acm.getMinor().getCode());
+				st.addMinor(acm.getMinor().getCode(), acm.getMinor().getName());
 			}
 			for (StudentAccomodation acc: student.getAccomodations()) {
-				st.addAccommodation(acc.getAbbreviation());
+				st.addAccommodation(acc.getAbbreviation(), acc.getName());
 			}
 			for (StudentGroup gr: student.getGroups()) {
 				if (gr.getType() == null)

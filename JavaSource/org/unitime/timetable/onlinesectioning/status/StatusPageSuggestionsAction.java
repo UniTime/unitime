@@ -718,8 +718,8 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			}
 			
 			if ("accommodation".equals(attr)) {
-				for (String acc: student().getAccomodations())
-					if (eq(acc, term)) return true;
+				for (XStudent.XGroup acc: student().getAccomodations())
+					if (eq(acc.getAbbreviation(), term)) return true;
 			}
 			
 			if ("student".equals(attr)) {
@@ -1386,8 +1386,8 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				for (XStudent.XGroup group: student().getGroups())
 					if (eq(group.getAbbreviation(), term)) return true;
 			} else if ("accommodation".equals(attr)) {
-				for (String acc: student().getAccomodations())
-					if (eq(acc, term)) return true;
+				for (XStudent.XGroup acc: student().getAccomodations())
+					if (eq(acc.getAbbreviation(), term)) return true;
 			} else if  ("student".equals(attr)) {
 				return has(student().getName(), term) || eq(student().getExternalId(), term) || eq(student().getName(), term);
 			} else if  ("advisor".equals(attr)) {

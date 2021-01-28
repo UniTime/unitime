@@ -226,23 +226,23 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						st.setCanSelect(isCanSelect(student));
 						st.setName(student.getName());
 						for (XAreaClassificationMajor acm: student.getMajors()) {
-							st.addArea(acm.getArea());
-							st.addClassification(acm.getClassification());
-							st.addMajor(acm.getMajor());
-							st.addConcentration(acm.getConcentration());
+							st.addArea(acm.getArea(), acm.getAreaLabel());
+							st.addClassification(acm.getClassification(), acm.getClassificationLabel());
+							st.addMajor(acm.getMajor(), acm.getMajorLabel());
+							st.addConcentration(acm.getConcentration(), acm.getConcentrationLabel());
 						}
 						for (XAreaClassificationMajor acm: student.getMinors()) {
-							st.addMinor(acm.getMajor());
-						}
-						for (String acc: student.getAccomodations()) {
-							st.addAccommodation(acc);
+							st.addMinor(acm.getMajor(), acm.getMajorLabel());
 						}
 						for (XStudent.XGroup gr: student.getGroups()) {
 							st.addGroup(gr.getType(), gr.getAbbreviation(), gr.getTitle());
 						}
-		    			for (XStudent.XAdvisor a: student.getAdvisors()) {
-		    				if (a.getName() != null) st.addAdvisor(a.getName());
-		    			}
+						for (XStudent.XGroup acc: student.getAccomodations()) {
+							st.addAccommodation(acc.getAbbreviation(), acc.getTitle());
+						}
+						for (XStudent.XAdvisor a: student.getAdvisors()) {
+							if (a.getName() != null) st.addAdvisor(a.getName());
+						}
 
 						int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0, tUnasg = 0, tOvrNeed = 0, ovrNeed = 0;
 						float tCred = 0f;
@@ -579,23 +579,23 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 					st.setCanSelect(isCanSelect(student));
 					st.setName(student.getName());
 					for (XAreaClassificationMajor acm: student.getMajors()) {
-						st.addArea(acm.getArea());
-						st.addClassification(acm.getClassification());
-						st.addMajor(acm.getMajor());
-						st.addConcentration(acm.getConcentration());
+						st.addArea(acm.getArea(), acm.getAreaLabel());
+						st.addClassification(acm.getClassification(), acm.getClassificationLabel());
+						st.addMajor(acm.getMajor(), acm.getMajorLabel());
+						st.addConcentration(acm.getConcentration(), acm.getConcentrationLabel());
 					}
 					for (XAreaClassificationMajor acm: student.getMinors()) {
-						st.addMinor(acm.getMajor());
-					}
-					for (String acc: student.getAccomodations()) {
-						st.addAccommodation(acc);
+						st.addMinor(acm.getMajor(), acm.getMajorLabel());
 					}
 					for (XStudent.XGroup gr: student.getGroups()) {
 						st.addGroup(gr.getType(), gr.getAbbreviation(), gr.getTitle());
 					}
-	    			for (XStudent.XAdvisor a: student.getAdvisors()) {
-	    				if (a.getName() != null) st.addAdvisor(a.getName());
-	    			}
+					for (XStudent.XGroup acc: student.getAccomodations()) {
+						st.addAccommodation(acc.getAbbreviation(), acc.getTitle());
+					}
+					for (XStudent.XAdvisor a: student.getAdvisors()) {
+						if (a.getName() != null) st.addAdvisor(a.getName());
+					}
 					s.setStatus(student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
 					s.setEmailDate(student.getEmailTimeStamp() == null ? null : student.getEmailTimeStamp());
 					s.setNote(student.hasLastNote() ? student.getLastNote().getNote() : null);
@@ -625,23 +625,23 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 					st.setCanSelect(isCanSelect(student));
 					st.setName(student.getName());
 					for (XAreaClassificationMajor acm: student.getMajors()) {
-						st.addArea(acm.getArea());
-						st.addClassification(acm.getClassification());
-						st.addMajor(acm.getMajor());
-						st.addConcentration(acm.getConcentration());
+						st.addArea(acm.getArea(), acm.getAreaLabel());
+						st.addClassification(acm.getClassification(), acm.getClassificationLabel());
+						st.addMajor(acm.getMajor(), acm.getMajorLabel());
+						st.addConcentration(acm.getConcentration(), acm.getConcentrationLabel());
 					}
 					for (XAreaClassificationMajor acm: student.getMinors()) {
-						st.addMinor(acm.getMajor());
-					}
-					for (String acc: student.getAccomodations()) {
-						st.addAccommodation(acc);
+						st.addMinor(acm.getMajor(), acm.getMajorLabel());
 					}
 					for (XStudent.XGroup gr: student.getGroups()) {
 						st.addGroup(gr.getType(), gr.getAbbreviation(), gr.getTitle());
 					}
-	    			for (XStudent.XAdvisor a: student.getAdvisors()) {
-	    				if (a.getName() != null) st.addAdvisor(a.getName());
-	    			}
+					for (XStudent.XGroup acc: student.getAccomodations()) {
+						st.addAccommodation(acc.getAbbreviation(), acc.getTitle());
+					}
+					for (XStudent.XAdvisor a: student.getAdvisors()) {
+						if (a.getName() != null) st.addAdvisor(a.getName());
+					}
 					s.setStatus(student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
 					s.setEmailDate(student.getEmailTimeStamp() == null ? null : student.getEmailTimeStamp());
 					s.setNote(student.hasLastNote() ? student.getLastNote().getNote() : null);

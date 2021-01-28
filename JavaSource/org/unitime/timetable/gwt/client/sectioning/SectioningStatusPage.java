@@ -2314,21 +2314,21 @@ public class SectioningStatusPage extends Composite {
 			}
 			line.add(new TitleCell(info.getStudent().getName()));
 			if (iStudentInfoVisibleColumns.hasArea) {
-				line.add(new HTML(info.getStudent().getArea("<br>"), false));
-				line.add(new HTML(info.getStudent().getClassification("<br>"), false));
+				line.add(new ACM(info.getStudent().getAreas()));
+				line.add(new ACM(info.getStudent().getClassifications()));
 			}
 			if (iStudentInfoVisibleColumns.hasMajor)
-				line.add(new HTML(info.getStudent().getMajor("<br>"), false));
+				line.add(new ACM(info.getStudent().getMajors()));
 			if (iStudentInfoVisibleColumns.hasConc)
-				line.add(new HTML(info.getStudent().getConcentration("<br>"), false));
+				line.add(new ACM(info.getStudent().getConcentrations()));
 			if (iStudentInfoVisibleColumns.hasMinor)
-				line.add(new HTML(info.getStudent().getMinor("<br>"), false));
+				line.add(new ACM(info.getStudent().getMinors()));
 			if (iStudentInfoVisibleColumns.hasGroup)
 				line.add(new Groups(info.getStudent().getGroups()));
 			for (String type: iStudentInfoVisibleColumns.groupTypes)
 				line.add(new Groups(info.getStudent().getGroups(type)));
 			if (iStudentInfoVisibleColumns.hasAcmd)
-				line.add(new HTML(info.getStudent().getAccommodation("<br>"), false));
+				line.add(new ACM(info.getStudent().getAccommodations()));
 			line.add(new HTML(info.getStatus(), false));
 		} else {
 			if (iOnline && iProperties != null && iProperties.isCanSelectStudent()) line.add(new HTML("&nbsp;", false));
@@ -3565,6 +3565,30 @@ public class SectioningStatusPage extends Composite {
 
 		@Override
 		public Collection<Group> getValue() { return iGroups; }
+	}
+	
+	private static class ACM extends P implements TakesValue<Collection<ClassAssignmentInterface.CodeLabel>> {
+		private Collection<ClassAssignmentInterface.CodeLabel> iGroups = null;
+		
+		private ACM(Collection<ClassAssignmentInterface.CodeLabel> groups) {
+			setValue(groups);
+		}
+
+		@Override
+		public void setValue(Collection<ClassAssignmentInterface.CodeLabel> value) {
+			iGroups = value;
+			clear();
+			if (iGroups != null && !iGroups.isEmpty()) {
+				for (ClassAssignmentInterface.CodeLabel group: iGroups) {
+					P g = new P(); g.setText(group.getCode());
+					if (group.hasLabel()) g.setTitle(group.getLabel());
+					add(g);
+				}
+			}
+		}
+
+		@Override
+		public Collection<ClassAssignmentInterface.CodeLabel> getValue() { return iGroups; }
 	}
 	
 	static {

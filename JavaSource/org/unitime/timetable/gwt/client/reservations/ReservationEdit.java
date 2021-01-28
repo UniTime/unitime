@@ -886,6 +886,8 @@ public class ReservationEdit extends Composite {
 		iPanel.getRowFormatter().setVisible(iAreaLine, "curriculum".equals(val) || "curriculum-override".equals(val));
 		iPanel.getRowFormatter().setVisible(1 + iAreaLine, "curriculum".equals(val) || "curriculum-override".equals(val));
 		iPanel.getRowFormatter().setVisible(2 + iAreaLine, "curriculum".equals(val) || "curriculum-override".equals(val));
+		iPanel.getRowFormatter().setVisible(iConcentrationRow, ("curriculum".equals(val) || "curriculum-override".equals(val)) && iConcentrations.getItemCount() > 0);
+		iPanel.getRowFormatter().setVisible(iMinorRow, ("curriculum".equals(val) || "curriculum-override".equals(val)) && iMinors.getItemCount() > 0);
 		iPanel.getRowFormatter().setVisible(iExpirationLine, getOverrideType(val) == null || getOverrideType(val).isCanHaveExpirationDate());
 		iPanel.getRowFormatter().setVisible(iStartDateLine, getOverrideType(val) == null || getOverrideType(val).isCanHaveExpirationDate());
 		iPanel.getRowFormatter().setVisible(iInclusionLine, getOverrideType(val) == null || getOverrideType(val).isCanHaveExpirationDate());

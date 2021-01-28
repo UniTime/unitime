@@ -134,23 +134,23 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					st.setCanShowExternalId(iCanShowExtIds);
 					st.setName(student.getName());
 					for (XAreaClassificationMajor acm: student.getMajors()) {
-						st.addArea(acm.getArea());
-						st.addClassification(acm.getClassification());
-						st.addMajor(acm.getMajor());
-						st.addConcentration(acm.getConcentration());
+						st.addArea(acm.getArea(), acm.getAreaLabel());
+						st.addClassification(acm.getClassification(), acm.getClassificationLabel());
+						st.addMajor(acm.getMajor(), acm.getMajorLabel());
+						st.addConcentration(acm.getConcentration(), acm.getConcentrationLabel());
 					}
 					for (XAreaClassificationMajor acm: student.getMinors()) {
-						st.addMinor(acm.getMajor());
-					}
-					for (String acc: student.getAccomodations()) {
-						st.addAccommodation(acc);
+						st.addMinor(acm.getMajor(), acm.getMajorLabel());
 					}
 					for (XStudent.XGroup gr: student.getGroups()) {
 						st.addGroup(gr.getType(), gr.getAbbreviation(), gr.getTitle());
 					}
-	    			for (XStudent.XAdvisor a: student.getAdvisors()) {
-	    				if (a.getName() != null) st.addAdvisor(a.getName());
-	    			}
+					for (XStudent.XGroup acc: student.getAccomodations()) {
+						st.addAccommodation(acc.getAbbreviation(), acc.getTitle());
+					}
+					for (XStudent.XAdvisor a: student.getAdvisors()) {
+						if (a.getName() != null) st.addAdvisor(a.getName());
+					}
 
 					SectioningAction a = new SectioningAction();
 					a.setStudent(st);

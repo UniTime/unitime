@@ -801,12 +801,33 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		}
 	}
 	
+	public static class CodeLabel implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		private String iCode, iLabel;
+		
+		public CodeLabel() {}
+		public CodeLabel(String code, String label) {
+			iCode = code; iLabel = label;
+		}
+		
+		public String getCode() { return iCode; }
+		public void setCode(String code) { iCode = code; }
+		public String getLabel() { return (iLabel == null || iLabel.isEmpty() ? iCode : iLabel); }
+		public void setLable(String label) { iLabel = label; }
+		public boolean hasLabel() { return iLabel != null && !iLabel.isEmpty(); }
+		
+		@Override
+		public String toString() { return (iCode == null || iCode.isEmpty() ? "" : iCode); }
+		public boolean isEmpty() { return iCode == null || iCode.isEmpty(); }
+	}
+	
 	public static class Student implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private long iId;
 		private Long iSessionId = null;
 		private String iExternalId, iName, iEmail;
-		private List<String> iArea, iClassification, iMajor, iAccommodation, iAdvisor, iMinor, iConcentration;
+		private List<CodeLabel> iArea, iClassification, iMajor, iAccommodation, iMinor, iConcentration;
+		private List<String> iAdvisor;
 		private Set<Group> iGroups;
 		private boolean iCanShowExternalId = false, iCanSelect = false;
 		private boolean iCanUseAssitant = false, iCanRegister = false;
@@ -845,70 +866,70 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public String getArea(String delim) { 
 			if (iArea == null) return "";
 			String ret = "";
-			for (String area: iArea) {
+			for (CodeLabel area: iArea) {
 				if (!ret.isEmpty()) ret += delim;
-				ret += area;
+				ret += area.getCode();
 			}
 			return ret;
 		}
-		public void addArea(String area) {
-			if (iArea == null) iArea = new ArrayList<String>();
-			iArea.add(area);
+		public void addArea(String area, String label) {
+			if (iArea == null) iArea = new ArrayList<CodeLabel>();
+			iArea.add(new CodeLabel(area, label));
 		}
-		public List<String> getAreas() { return iArea; }
+		public List<CodeLabel> getAreas() { return iArea; }
 		
 		public boolean hasClassification() { return iClassification != null && !iClassification.isEmpty(); }
 		public String getClassification(String delim) { 
 			if (iClassification == null) return "";
 			String ret = "";
-			for (String classification: iClassification) {
+			for (CodeLabel classification: iClassification) {
 				if (!ret.isEmpty()) ret += delim;
-				ret += classification;
+				ret += classification.getCode();
 			}
 			return ret;
 		}
-		public void addClassification(String classification) {
-			if (iClassification == null) iClassification = new ArrayList<String>();
-			iClassification.add(classification);
+		public void addClassification(String classification, String label) {
+			if (iClassification == null) iClassification = new ArrayList<CodeLabel>();
+			iClassification.add(new CodeLabel(classification, label));
 		}
-		public List<String> getClassifications() { return iClassification; }
+		public List<CodeLabel> getClassifications() { return iClassification; }
 
 		public boolean hasMajor() { return iMajor != null && !iMajor.isEmpty(); }
 		public String getMajor(String delim) { 
 			if (iMajor == null) return "";
 			String ret = "";
-			for (String major: iMajor) {
+			for (CodeLabel major: iMajor) {
 				if (!ret.isEmpty()) ret += delim;
-				ret += major;
+				ret += major.getCode();
 			}
 			return ret;
 		}
-		public void addMajor(String major) {
-			if (iMajor == null) iMajor = new ArrayList<String>();
-			iMajor.add(major);
+		public void addMajor(String major, String label) {
+			if (iMajor == null) iMajor = new ArrayList<CodeLabel>();
+			iMajor.add(new CodeLabel(major, label));
 		}
-		public List<String> getMajors() { return iMajor; }
+		public List<CodeLabel> getMajors() { return iMajor; }
 		
 		public boolean hasConcentration() {
 			if (iConcentration == null || iConcentration.isEmpty()) return false;
-			for (String conc: iConcentration)
+			for (CodeLabel conc: iConcentration)
 				if (!conc.isEmpty()) return true;
 			return false;
 		}
 		public String getConcentration(String delim) { 
 			if (iConcentration == null) return "";
 			String ret = "";
-			for (String conc: iConcentration) {
+			for (CodeLabel conc: iConcentration) {
 				if (!ret.isEmpty()) ret += delim;
-				ret += conc;
+				ret += conc.getCode();
 			}
 			return ret;
 		}
-		public void addConcentration(String conc) {
-			if (iConcentration == null) iConcentration = new ArrayList<String>();
-			iConcentration.add(conc == null ? "" : conc);
+		public void addConcentration(String conc, String label) {
+			if (iConcentration == null) iConcentration = new ArrayList<CodeLabel>();
+			iConcentration.add(new CodeLabel(conc, label));
 		}
-		public List<String> getConcentrations() { return iConcentration; }
+		public List<CodeLabel> getConcentrations() { return iConcentration; }
 		
 		public boolean hasAdvisor() { return iAdvisor != null && !iAdvisor.isEmpty(); }
 		public String getAdvisor(String delim) { 
@@ -931,17 +952,17 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public String getMinor(String delim) { 
 			if (iMinor == null) return "";
 			String ret = "";
-			for (String minor: iMinor) {
+			for (CodeLabel minor: iMinor) {
 				if (!ret.isEmpty()) ret += delim;
-				ret += minor;
+				ret += minor.getCode();
 			}
 			return ret;
 		}
-		public void addMinor(String minor) {
-			if (iMinor == null) iMinor = new ArrayList<String>();
-			iMinor.add(minor);
+		public void addMinor(String minor, String label) {
+			if (iMinor == null) iMinor = new ArrayList<CodeLabel>();
+			iMinor.add(new CodeLabel(minor, label));
 		}
-		public List<String> getMinors() { return iMinor; }
+		public List<CodeLabel> getMinors() { return iMinor; }
 		
 		public boolean hasGroup() { return hasGroups(null); }
 		public String getGroup(String delim) { return getGroup(null, delim); }
@@ -1010,17 +1031,17 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public String getAccommodation(String delim) { 
 			if (iAccommodation == null) return "";
 			String ret = "";
-			for (String accommodation: iAccommodation) {
+			for (CodeLabel accommodation: iAccommodation) {
 				if (!ret.isEmpty()) ret += delim;
-				ret += accommodation;
+				ret += accommodation.getCode();
 			}
 			return ret;
 		}
-		public void addAccommodation(String accommodation) {
-			if (iAccommodation == null) iAccommodation = new ArrayList<String>();
-			iAccommodation.add(accommodation);
+		public void addAccommodation(String accommodation, String label) {
+			if (iAccommodation == null) iAccommodation = new ArrayList<CodeLabel>();
+			iAccommodation.add(new CodeLabel(accommodation, label));
 		}
-		public List<String> getAccommodations() { return iAccommodation; }
+		public List<CodeLabel> getAccommodations() { return iAccommodation; }
 		
 		public String getCurriculum(String delim) {
 			if (!hasArea()) return "";

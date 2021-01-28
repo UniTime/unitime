@@ -26,8 +26,11 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 
 import org.cpsolver.ifs.util.ToolBox;
+import org.cpsolver.studentsct.model.AreaClassificationMajor;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
+import org.unitime.timetable.model.StudentAreaClassificationMajor;
+import org.unitime.timetable.model.StudentAreaClassificationMinor;
 
 
 /**
@@ -36,7 +39,8 @@ import org.infinispan.commons.marshall.SerializeWith;
 @SerializeWith(XAreaClassificationMajor.XAreaClassificationMajorSerializer.class)
 public class XAreaClassificationMajor implements Serializable, Externalizable, Comparable<XAreaClassificationMajor> {
     private static final long serialVersionUID = 1L;
-	private String iArea, iClassification, iMajor, iConcentration;
+	private String iAreaCode, iClassificationCode, iMajorCode, iConcentrationCode;
+	private String iAreaLabel, iClassificationLabel, iMajorLabel, iConcentrationLabel;
 	
 	public XAreaClassificationMajor() {}
 	
@@ -45,41 +49,59 @@ public class XAreaClassificationMajor implements Serializable, Externalizable, C
 	}
 
     public XAreaClassificationMajor(String area, String classification, String major) {
-        iArea = area;
-        iClassification = classification;
-        iMajor = major;
+        iAreaCode = area;
+        iClassificationCode = classification;
+        iMajorCode = major;
     }
     
-    public XAreaClassificationMajor(String area, String classification, String major, String concentration) {
-        iArea = area;
-        iClassification = classification;
-        iMajor = major;
-        iConcentration = concentration;
+    public XAreaClassificationMajor(StudentAreaClassificationMinor acm) {
+        iAreaCode = acm.getAcademicArea().getAcademicAreaAbbreviation();
+        iAreaLabel = acm.getAcademicArea().getTitle();
+        iClassificationCode = acm.getAcademicClassification().getCode();
+        iClassificationLabel = acm.getAcademicClassification().getName();
+        iMajorCode = acm.getMinor().getCode();
+        iMajorLabel = acm.getMinor().getName();
+    }
+    
+    public XAreaClassificationMajor(StudentAreaClassificationMajor acm) {
+        iAreaCode = acm.getAcademicArea().getAcademicAreaAbbreviation();
+        iAreaLabel = acm.getAcademicArea().getTitle();
+        iClassificationCode = acm.getAcademicClassification().getCode();
+        iClassificationLabel = acm.getAcademicClassification().getName();
+        iMajorCode = acm.getMajor().getCode();
+        iMajorLabel = acm.getMajor().getName();
+        if (acm.getConcentration() != null) {
+        	iConcentrationCode = acm.getConcentration().getCode();
+        	iConcentrationLabel = acm.getConcentration().getName();
+        }
+    }
+    
+    public XAreaClassificationMajor(AreaClassificationMajor acm) {
+    	iAreaCode = acm.getArea();
+        iClassificationCode = acm.getClassification();
+        iMajorCode = acm.getMajor();
+        iConcentrationCode = acm.getConcentration();
     }
 
     /** Academic area */
-    public String getArea() {
-        return iArea;
-    }
+    public String getArea() { return iAreaCode; }
+    public String getAreaLabel() { return iAreaLabel; }
 
     /** Classification */
-    public String getClassification() {
-        return iClassification;
-    }
+    public String getClassification() { return iClassificationCode; }
+    public String getClassificationLabel() { return iClassificationLabel; }
     
     /** Major */
-    public String getMajor() {
-        return iMajor;
-    }
+    public String getMajor() { return iMajorCode; }
+    public String getMajorLabel() { return iMajorLabel; }
     
     /** Concentration */
-    public String getConcentration() {
-        return iConcentration;
-    }
-
+    public String getConcentration() { return iConcentrationCode; }
+    public String getConcentrationLabel() { return iConcentrationLabel; }
+    
     @Override
     public int hashCode() {
-        return (iArea + ":" + iClassification + ":" + iMajor).hashCode();
+        return toString().hashCode();
     }
 
     @Override
@@ -87,7 +109,8 @@ public class XAreaClassificationMajor implements Serializable, Externalizable, C
         if (o == null || !(o instanceof XAreaClassificationMajor))
             return false;
         XAreaClassificationMajor acm = (XAreaClassificationMajor) o;
-        return ToolBox.equals(acm.getArea(), getArea()) && ToolBox.equals(acm.getClassification(), getClassification()) && ToolBox.equals(acm.getMajor(), getMajor());
+        return ToolBox.equals(acm.getArea(), getArea()) && ToolBox.equals(acm.getClassification(), getClassification()) && ToolBox.equals(acm.getMajor(), getMajor()) &&
+        		ToolBox.equals(acm.getConcentration(), getConcentration()) ;
     }
 
     @Override
@@ -97,18 +120,26 @@ public class XAreaClassificationMajor implements Serializable, Externalizable, C
 
 	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-		iArea = (String)in.readObject();
-		iClassification = (String)in.readObject();
-		iMajor = (String)in.readObject();
-		iConcentration = (String)in.readObject();
+		iAreaCode = (String)in.readObject();
+		iAreaLabel = (String)in.readObject();
+		iClassificationCode = (String)in.readObject();
+		iClassificationLabel = (String)in.readObject();
+		iMajorCode = (String)in.readObject();
+		iMajorLabel = (String)in.readObject();
+		iConcentrationCode = (String)in.readObject();
+		iConcentrationLabel = (String)in.readObject();
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeObject(iArea);
-		out.writeObject(iClassification);
-		out.writeObject(iMajor);
-		out.writeObject(iConcentration);
+		out.writeObject(iAreaCode);
+		out.writeObject(iAreaLabel);
+		out.writeObject(iClassificationCode);
+		out.writeObject(iClassificationLabel);
+		out.writeObject(iMajorCode);
+		out.writeObject(iMajorLabel);
+		out.writeObject(iConcentrationCode);
+		out.writeObject(iConcentrationLabel);
 	}
 	
 	public static class XAreaClassificationMajorSerializer implements Externalizer<XAreaClassificationMajor> {
