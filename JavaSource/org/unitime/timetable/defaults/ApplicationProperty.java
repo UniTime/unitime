@@ -2746,6 +2746,10 @@ public enum ApplicationProperty {
 	@Since(4.5)
 	AdvisorCourseRequestsPDFDisclaimer("unitime.acrf.pdfdisclaimer"),
 	
+	@Type(String.class)
+	@Description("Advisor Course Recommendations: default advisor note")
+	@Since(4.5)
+	AdvisorCourseRequestsDefaultNote("unitime.acrf.note"),
 	
 	@Type(Boolean.class)
 	@DefaultValue("true")

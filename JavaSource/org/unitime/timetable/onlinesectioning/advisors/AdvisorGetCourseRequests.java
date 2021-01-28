@@ -203,9 +203,6 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 				helper.warn(MSG.exceptionFailedEligibilityCheck(e.getMessage()), e);
 			}
 		}
-		
-		// has pin but was not advised yet >> set the pin released default to true
-		if (request.hasPin() && !student.hasAdvisorRequests()) request.setPinReleased(true);
 
 		return request;
 

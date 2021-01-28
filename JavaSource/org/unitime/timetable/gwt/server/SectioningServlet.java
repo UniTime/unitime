@@ -3449,6 +3449,17 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			}
 		}
 		
+		// has pin but was not advised yet >> set the pin released default to true
+		if (ret.getRequest() != null && ret.getRequest().hasPin() && student.getAdvisorCourseRequests().isEmpty())
+			ret.getRequest().setPinReleased(true);
+		
+		// put default note when no note is provided
+		if (ret.getRequest() != null && !ret.getRequest().hasCreditNote() && ret.getRequest().isEmpty()) {
+			String defaultNote = ApplicationProperty.AdvisorCourseRequestsDefaultNote.valueOfSession(sessionId);
+			if (defaultNote != null && !defaultNote.isEmpty())
+				ret.getRequest().setCreditNote(defaultNote);
+		}
+		
 		return ret;
 	}
 
