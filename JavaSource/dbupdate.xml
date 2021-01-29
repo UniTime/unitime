@@ -14066,4 +14066,11 @@
 			references %SCHEMA%.reservation (uniqueid) on delete cascade
 		</sql>
 	</update>
+	<update version="236" date="29-Jan-2021" comment="StudentSchedulingCanLookupAllCourses permission">
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'StudentSchedulingCanLookupAllCourses'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'StudentSchedulingAdvisor'
+		</sql>
+	</update>
 </dbupdate>

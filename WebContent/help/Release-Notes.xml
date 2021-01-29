@@ -93,6 +93,15 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Finder</name>
+			<description>
+				<line>Instead of allowing advisors and administrators to see all courses (ignore course type check),
+					there is now a new permission StudentSchedulingCanLookupAllCourses that the user role must have.
+					<line>Automatically set for roles with StudentSchedulingAdvisor permission.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 		<category>
 		<title>Examination Timetabling</title>

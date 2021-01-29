@@ -480,4 +480,7 @@ public class StudentSchedulingPermissions {
 		@Override
 		public Class<Student> type() { return Student.class; }
 	}
+	
+	@PermissionForRight(Right.StudentSchedulingCanLookupAllCourses)
+	public static class StudentSchedulingCanLookupAllCourses extends StudentSchedulingAdvisor {}
 }
