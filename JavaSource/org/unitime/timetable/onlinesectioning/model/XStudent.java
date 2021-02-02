@@ -384,7 +384,10 @@ public class XStudent extends XStudentId implements Externalizable {
     }
     
     public boolean hasAccomodation(String accomodation) {
-    	return accomodation != null && iAccomodations.contains(accomodation);
+    	if (accomodation != null)
+        	for (XGroup acc: iAccomodations)
+        		if (accomodation.equals(acc.getAbbreviation())) return true;
+    	return false;
     }
     
     public List<XAdvisor> getAdvisors() {
