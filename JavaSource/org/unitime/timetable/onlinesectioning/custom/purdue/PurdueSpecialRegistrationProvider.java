@@ -101,6 +101,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
+import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationDashboardUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ApiMode;
@@ -163,7 +164,7 @@ import com.google.gson.JsonSerializer;
 /**
  * @author Tomas Muller
  */
-public class PurdueSpecialRegistrationProvider implements SpecialRegistrationProvider {
+public class PurdueSpecialRegistrationProvider implements SpecialRegistrationProvider, SpecialRegistrationDashboardUrlProvider {
 	private static Logger sLog = Logger.getLogger(PurdueSpecialRegistrationProvider.class);
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 
@@ -261,12 +262,22 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		return iExternalTermProvider.getExternalCampus(session);
 	}
 	
+	protected String getSpecialRegistrationDashboardUrl() {
+		return ApplicationProperties.getProperty("purdue.specreg.dashBoard");
+	}
+	
 	protected String getResetGradeModesRegExp() {
 		return ApplicationProperties.getProperty("banner.xe.resetGradeModes", "H|Q|R");
 	}
 	
 	protected String getBannerId(XStudent student) {
 		String id = student.getExternalId();
+		while (id.length() < 9) id = "0" + id;
+		return id;
+	}
+	
+	protected String getBannerId(Student student) {
+		String id = student.getExternalUniqueId();
 		while (id.length() < 9) id = "0" + id;
 		return id;
 	}
@@ -2708,5 +2719,44 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				resource.release();
 			}
 		}
+	}
+	
+	protected boolean isDashboardEnabled(org.unitime.timetable.model.Student student) {
+		if (student == null) return false;
+		StudentSectioningStatus status = student.getEffectiveStatus();
+		return status == null || status.hasOption(StudentSectioningStatus.Option.specreg) || status.hasOption(StudentSectioningStatus.Option.reqval);
+	}
+	
+	protected boolean isDashboardEnabled(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) {
+		if (student == null) return false;
+		String status = student.getStatus();
+		if (status == null) status = server.getAcademicSession().getDefaultSectioningStatus();
+		if (status == null) return true;
+		StudentSectioningStatus dbStatus = StudentSectioningStatus.getPresentStatus(status, server.getAcademicSession().getUniqueId(), helper.getHibSession());
+		return dbStatus != null && dbStatus.hasOption(StudentSectioningStatus.Option.specreg) || dbStatus.hasOption(StudentSectioningStatus.Option.reqval);
+	}
+
+	@Override
+	public String getDashboardUrl(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) throws SectioningException {
+		String dash = getSpecialRegistrationDashboardUrl();
+		if (dash != null && student != null && isDashboardEnabled(server, helper, student)) {
+			AcademicSessionInfo session = server.getAcademicSession();
+			String term = getBannerTerm(session);
+			String campus = getBannerCampus(session);
+			return dash.replace("{term}", term).replace("{campus}", campus).replace("{studentId}",getBannerId(student));
+		}
+		return null;
+	}
+
+	@Override
+	public String getDashboardUrl(Student student) throws SectioningException {
+		String dash = getSpecialRegistrationDashboardUrl();
+		if (dash != null && student != null &&  isDashboardEnabled(student)) {
+			AcademicSessionInfo session = new AcademicSessionInfo(student.getSession());
+			String term = getBannerTerm(session);
+			String campus = getBannerCampus(session);
+			return dash.replace("{term}", term).replace("{campus}", campus).replace("{studentId}",getBannerId(student));
+		}
+		return null;
 	}
 }

@@ -169,6 +169,7 @@ import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHold
 import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.RequestStudentUpdates;
+import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationDashboardUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEmailProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentHoldsCheckProvider;
 import org.unitime.timetable.onlinesectioning.match.AbstractCourseMatcher;
@@ -1666,6 +1667,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								} catch (Exception e) {
 									helper.warn("Failed to lookup critical courses: " + e.getMessage(), e);
 								}
+							} catch (Exception e) {}
+						}
+						if (Customization.SpecialRegistrationDashboardUrlProvider.hasProvider()) {
+							try {
+								SpecialRegistrationDashboardUrlProvider dash = Customization.SpecialRegistrationDashboardUrlProvider.getProvider();
+								ret.getRequest().setSpecRegDashboardUrl(dash.getDashboardUrl(student));
 							} catch (Exception e) {}
 						}
 						if (ret.getAdvisorRequest() != null)

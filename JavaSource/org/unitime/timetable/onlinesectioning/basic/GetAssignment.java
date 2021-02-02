@@ -64,6 +64,7 @@ import org.unitime.timetable.onlinesectioning.custom.CustomClassAttendanceProvid
 import org.unitime.timetable.onlinesectioning.custom.CustomClassAttendanceProvider.StudentClassAttendance;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsValidationHolder;
 import org.unitime.timetable.onlinesectioning.custom.Customization;
+import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationDashboardUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentHoldsCheckProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentError;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentFailure;
@@ -154,6 +155,13 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 				try {
 					StudentHoldsCheckProvider provider = Customization.StudentHoldsCheckProvider.getProvider();
 					ret.getRequest().setErrorMessage(provider.getStudentHoldError(server, helper, student));
+				} catch (Exception e) {}
+			}
+			
+			if (iCheckHolds && ret.hasRequest() && Customization.SpecialRegistrationDashboardUrlProvider.hasProvider()) {
+				try {
+					SpecialRegistrationDashboardUrlProvider provider = Customization.SpecialRegistrationDashboardUrlProvider.getProvider();
+					ret.getRequest().setSpecRegDashboardUrl(provider.getDashboardUrl(server, helper, student));
 				} catch (Exception e) {}
 			}
 			

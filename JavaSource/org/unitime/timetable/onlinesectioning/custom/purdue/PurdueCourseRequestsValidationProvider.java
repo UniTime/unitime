@@ -213,10 +213,6 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		return ApplicationProperties.getProperty("purdue.specreg.site.checkAllSpecialRegistrationStatus", getSpecialRegistrationApiSite() + "/checkAllSpecialRegistrationStatus");
 	}
 	
-	protected String getSpecialRegistrationDashboardUrl() {
-		return ApplicationProperties.getProperty("purdue.specreg.dashBoard");
-	}
-	
 	protected String getSpecialRegistrationApiKey() {
 		return ApplicationProperties.getProperty("purdue.specreg.apiKey");
 	}
@@ -1876,10 +1872,6 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				if (creditNote != null && !creditNote.isEmpty())
 					request.setCreditNote(creditNote);
 			}
-			
-			String dash = getSpecialRegistrationDashboardUrl();
-			if (dash != null)
-				request.setSpecRegDashboardUrl(dash.replace("{term}", term).replace("{campus}", campus).replace("{studentId}",getBannerId(original)));
 		} catch (SectioningException e) {
 			helper.getAction().setApiException(e.getMessage());
 			throw (SectioningException)e;

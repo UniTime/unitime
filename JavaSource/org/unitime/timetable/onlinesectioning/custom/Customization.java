@@ -41,6 +41,7 @@ public enum Customization {
 	CustomClassAttendanceProvider(CustomClassAttendanceProvider.class, ApplicationProperty.CustomizationCustomClassAttendance),
 	StudentHoldsCheckProvider(StudentHoldsCheckProvider.class, ApplicationProperty.CustomizationStudentHoldsCheck),
 	ClassNamingHelper(ExternalClassNameHelperInterface.class, ApplicationProperty.ClassNamingHelper, DefaultExternalClassNameHelper.class),
+	SpecialRegistrationDashboardUrlProvider(SpecialRegistrationDashboardUrlProvider.class, ApplicationProperty.CustomizationSpecialRegistrationDashboardUrl),
 	;
 	
 	private Holder<?> iHolder;

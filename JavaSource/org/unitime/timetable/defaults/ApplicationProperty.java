@@ -68,6 +68,7 @@ import org.unitime.timetable.onlinesectioning.custom.CustomCourseLookup;
 import org.unitime.timetable.onlinesectioning.custom.DegreePlansProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.SectionUrlProvider;
+import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationDashboardUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEmailProvider;
 import org.unitime.timetable.onlinesectioning.custom.SectionLimitProvider;
@@ -1191,6 +1192,12 @@ public enum ApplicationProperty {
 	@Description("Customization: student special registration provider (interface SpecialRegistrationProvider, used by Student Scheduling Assistant to retrieve and submit special registration)")
 	@Since(4.3)
 	CustomizationSpecialRegistration("unitime.custom.SpecialRegistrationProvider"),
+	
+	@Type(Class.class)
+	@Implements(SpecialRegistrationDashboardUrlProvider.class)
+	@Description("Customization: student special registration dashboard URL provider (interface SpecialRegistrationDashboardUrlProvider, used by Online Student Scheduling Dasbhard to provide link to the special registration dashboard)")
+	@Since(4.5)
+	CustomizationSpecialRegistrationDashboardUrl("unitime.custom.SpecialRegistrationDashboardUrlProvider"),
 	
 	@Type(Class.class)
 	@Implements(OnlineSectioningActionFactory.class)
