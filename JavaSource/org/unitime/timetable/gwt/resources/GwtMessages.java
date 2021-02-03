@@ -3759,6 +3759,18 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageAdvisorCourseRequests();
 	
+	@DefaultMessage("Buildings")
+	@DoNotTranslate
+	String pageBuildings();
+	
+	@DefaultMessage("Add Building")
+	@DoNotTranslate
+	String pageAddBuilding();
+	
+	@DefaultMessage("Edit Building")
+	@DoNotTranslate
+	String pageEditBuilding();
+	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	
@@ -6517,4 +6529,19 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Restriction: Reservation is only enforced on the selected level")
 	String reservationInclusiveFalse();
+	
+	@DefaultMessage("Buildings")
+	String sectBuildings();
+	
+	@DefaultMessage("Add Building")
+	String sectAddBuilding();
+	
+	@DefaultMessage("Edit Building")
+	String sectEditBuilding();
+	
+	@DefaultMessage("<u>A</u>dd Building")
+	String buttonAddBuilding();
+	
+	@DefaultMessage("Update Data")
+	String buttonBuildingsUpdateData();
 }

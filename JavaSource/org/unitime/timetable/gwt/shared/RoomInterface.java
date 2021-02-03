@@ -842,6 +842,7 @@ public class RoomInterface implements IsSerializable {
 		private String iName;
 		private Double iX, iY;
 		private String iExternalId;
+		private Boolean iCanEdit, iCanDelete;
 		
 		public BuildingInterface() {}
 		
@@ -868,6 +869,11 @@ public class RoomInterface implements IsSerializable {
 		public boolean hasExternalId() { return iExternalId != null && !iExternalId.isEmpty(); }
 		public String getExternalId() { return iExternalId; }
 		public void setExternalId(String externalId) { iExternalId = externalId; }
+		
+		public void setCanEdit(boolean canEdit) { iCanEdit = canEdit; }
+		public boolean isCanEdit() { return iCanEdit != null && iCanEdit.booleanValue(); }
+		public void setCanDelete(boolean canDelete) { iCanDelete = canDelete; }
+		public boolean isCanDelete() { return iCanDelete != null && iCanDelete.booleanValue(); }
 		
 		@Override
 		public int hashCode() { return getId().hashCode(); }
@@ -2769,5 +2775,38 @@ public class RoomInterface implements IsSerializable {
 		public String getQuery() { return iQuery; }
 		public boolean hasQuery() { return iQuery != null && !iQuery.isEmpty(); }
 		public void setQuery(String query) { iQuery = query; }
+	}
+	
+	public static class GetBuildingsRequest implements GwtRpcRequest<BuildingsDataResponse> {
+	}
+	
+	public static class BuildingsDataResponse implements GwtRpcResponse {
+		private List<BuildingInterface> iBuildings;
+		private boolean iCanAdd, iCanExportPDF, iCanUpdateData;
+		private String iEllipsoid = null;
+		
+		public BuildingsDataResponse() {}
+		
+		public void addBuilding(BuildingInterface building) {
+			if (iBuildings == null) iBuildings = new ArrayList<BuildingInterface>();
+			iBuildings.add(building);
+		}
+		public List<BuildingInterface> getBuildings() { return iBuildings; }
+		public boolean hasBuildings() { return iBuildings != null && !iBuildings.isEmpty(); }
+		
+		public boolean isCanAdd() { return iCanAdd; }
+		public void setCanAdd(boolean canAdd) { iCanAdd = canAdd; }
+		public boolean isCanExportPDF() { return iCanExportPDF; }
+		public void setCanExportPDF(boolean canExportPDF) { iCanExportPDF = canExportPDF; }
+		public boolean isCanUpdateData() { return iCanUpdateData; }
+		public void setCanUpdateData(boolean canUpdateData) { iCanUpdateData = canUpdateData; }
+		
+		public String getEllipsoid() { return iEllipsoid; }
+		public boolean hasEllipsoid() { return iEllipsoid != null & !iEllipsoid.isEmpty(); }
+		public void setEllipsoid(String ellipsoid) { iEllipsoid = ellipsoid; }
+	}
+	
+	public static enum BuildingsColumn {
+		ABBREVIATION, NAME, EXTERNAL_ID, COORDINATES,
 	}
 }

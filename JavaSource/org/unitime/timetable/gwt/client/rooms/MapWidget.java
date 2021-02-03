@@ -92,6 +92,20 @@ public abstract class MapWidget extends AbsolutePanel implements HasEnabled {
 	protected abstract void setup();
 	public abstract void setMarker();
 	
+	public static void createWidget(final TextBox x, final TextBox y, final AsyncCallback<MapWidget> callback) {
+		RPC.execute(new MapPropertiesRequest(), new AsyncCallback<MapPropertiesInterface>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				callback.onFailure(caught);
+			}
+			@Override
+			public void onSuccess(MapPropertiesInterface result) {
+				MapWidget map = MapWidget.createMap(x, y, result);
+				callback.onSuccess(map);
+			}
+		});
+	}
+	
 	public static void insert(final RootPanel panel) {
 		RPC.execute(new MapPropertiesRequest(), new AsyncCallback<MapPropertiesInterface>() {
 			@Override
