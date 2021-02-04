@@ -30,6 +30,8 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.PageAccessException;
+import org.unitime.timetable.gwt.shared.ReservationException;
+import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionInfo;
@@ -121,4 +123,5 @@ public interface SectioningService extends RemoteService {
 	StudentInfo getStudentInfo(Long studentId) throws SectioningException, PageAccessException;
 	AdvisorCourseRequestSubmission submitAdvisingDetails(AdvisingStudentDetails details, boolean emailStudent) throws SectioningException, PageAccessException;
 	CourseRequestInterface getAdvisorRequests(StudentSectioningContext cx) throws SectioningException, PageAccessException;
+	List<ReservationInterface> getReservations(boolean online, Long offeringId) throws ReservationException, PageAccessException;
 }

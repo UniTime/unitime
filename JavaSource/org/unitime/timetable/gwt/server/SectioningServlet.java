@@ -75,6 +75,8 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSection
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.PageAccessException;
+import org.unitime.timetable.gwt.shared.ReservationException;
+import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationResponse;
@@ -273,7 +275,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		
 		return server;
 	}
-
+	
 	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(StudentSectioningContext cx, String query, Integer limit) throws SectioningException, PageAccessException {
 		checkContext(cx);
 		if (cx.getSessionId()==null) throw new SectioningException(MSG.exceptionNoAcademicSession());
@@ -3564,5 +3566,18 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			ret.setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value(server.getAcademicSession())));
 		} catch (Exception e) {}
 		return ret;
+	}
+
+	@Override
+	public List<ReservationInterface> getReservations(boolean online, Long offeringId) throws ReservationException, PageAccessException {
+		if (online) {
+			sessionContext.checkPermission(Right.Reservations);
+			return new ReservationServlet().withSessionContext(sessionContext).getReservations(offeringId);
+		} else {
+			StudentSolverProxy server = getStudentSolver();
+			if (server == null) 
+				throw new SectioningException(MSG.exceptionNoSolver());
+			return server.getReservations(offeringId);
+		}
 	}
 }

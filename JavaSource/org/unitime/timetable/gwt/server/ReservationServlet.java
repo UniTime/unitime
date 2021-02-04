@@ -1192,4 +1192,9 @@ public class ReservationServlet implements ReservationService {
 			throw new ReservationException(e.getMessage());
 		}
 	}
+	
+	public ReservationServlet withSessionContext(SessionContext cx) {
+		sessionContext = cx;
+		return this;
+	}
 }

@@ -32,10 +32,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.unitime.timetable.gwt.client.GwtHint;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.aria.AriaTabBar;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.client.reservations.ReservationTable;
+import org.unitime.timetable.gwt.client.reservations.ReservationTable.ReservationColumn;
 import org.unitime.timetable.gwt.client.rooms.RoomHint;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable.TopCell;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
@@ -65,6 +68,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.AdvisedInfoInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
@@ -2839,8 +2843,10 @@ public class SectioningStatusPage extends Composite {
 		}
 	}
 	
-	public static class AvailableCell extends HTML implements HasCellAlignment {
-		public AvailableCell(EnrollmentInfo e) {
+	public class AvailableCell extends HTML implements HasCellAlignment {
+		private boolean iMouseOver = false;
+		
+		public AvailableCell(final EnrollmentInfo e) {
 			super();
 			int other = (e.getOther() == null ? 0 : e.getOther());
 			if (e.getLimit() == null) {
@@ -2869,22 +2875,75 @@ public class SectioningStatusPage extends Composite {
 					setTitle(MESSAGES.availableSomeReservation(e.getAvailable(), e.getLimit(), e.getLimit() - e.getTotalEnrollment() - e.getAvailable() - other));
 				}
 			}
+			if (e.getOfferingId() != null) {
+				addMouseOverHandler(new MouseOverHandler() {
+					@Override
+					public void onMouseOver(MouseOverEvent event) {
+						iMouseOver = true;
+						iSectioningService.getReservations(iOnline, e.getOfferingId(), new AsyncCallback<List<ReservationInterface>>() {
+							@Override
+							public void onFailure(Throwable caught) {
+							}
+
+							@Override
+							public void onSuccess(List<ReservationInterface> result) {
+								if (result != null)
+									for (Iterator<ReservationInterface> i = result.iterator(); i.hasNext(); ) {
+										ReservationInterface r = i.next();
+										if (r instanceof ReservationInterface.OverrideReservation && !r.isAllowOverlaps() && !r.isMustBeUsed() && !r.isOverLimit()) {
+											i.remove();
+										} else if (e.getClazzId() != null) {
+											boolean match = false;
+											for (ReservationInterface.Config c: r.getConfigs()) {
+												if (e.getConfigId().equals(c.getId())) {
+													match = true; break;
+												}
+											}
+											for (ReservationInterface.Clazz c: r.getClasses()) {
+												if (e.getClazzId().equals(c.getId())) {
+													match = true; break;
+												}
+											}
+											if (!match) i.remove();
+										}
+									}
+								if (result != null && !result.isEmpty() && iMouseOver) {
+									ReservationTable rt = new ReservationTable(false, false);
+									rt.populate(result);
+									rt.getTable().setColumnVisible(ReservationColumn.LAST_LIKE.ordinal(), false);
+									rt.getTable().setColumnVisible(ReservationColumn.PROJECTED_BY_RULE.ordinal(), false);
+									rt.getTable().setColumnVisible(ReservationColumn.EXPIRATION_DATE.ordinal(), iOnline);
+									rt.getTable().setColumnVisible(ReservationColumn.START_DATE.ordinal(), iOnline);
+									GwtHint.showHint(getElement(), rt);
+								}
+							}
+						});
+					}
+				});
+				addMouseOutHandler(new MouseOutHandler() {
+					@Override
+					public void onMouseOut(MouseOutEvent event) {
+						iMouseOver = false;
+						GwtHint.hideHint();
+					}
+				});
+			}
 		}
 		
-		public static boolean hasReservedSpace(EnrollmentInfo e) {
-			if (e.getLimit() < 0) return false;
-			if (e.getLimit() < 0) {
-				return e.getAvailable() == 0;
-			} else {
-				return e.getAvailable() != e.getLimit() - e.getTotalEnrollment() - (e.getOther() == null ? 0 : e.getOther());
-			}
-			
-		}
-
 		@Override
 		public HorizontalAlignmentConstant getCellAlignment() {
 			return HasHorizontalAlignment.ALIGN_RIGHT;
 		}
+	}
+	
+	public static boolean hasReservedSpace(EnrollmentInfo e) {
+		if (e.getLimit() < 0) return false;
+		if (e.getLimit() < 0) {
+			return e.getAvailable() == 0;
+		} else {
+			return e.getAvailable() != e.getLimit() - e.getTotalEnrollment() - (e.getOther() == null ? 0 : e.getOther());
+		}
+		
 	}
 	
 	public static class WaitListCell extends HTML implements HasCellAlignment {
@@ -3485,7 +3544,7 @@ public class SectioningStatusPage extends Composite {
 		
 		public CourseInfoVisibleColums(List<EnrollmentInfo> result) {
 			for (EnrollmentInfo e: result) {
-				if (AvailableCell.hasReservedSpace(e)) hasReservation = true;
+				if (hasReservedSpace(e)) hasReservation = true;
 				if (e.getSnapshot() != null) hasSnapshot = true;
 			}
 		}

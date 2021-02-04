@@ -20,10 +20,12 @@
 package org.unitime.timetable.solver.studentsct;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.DataProperties;
 import org.unitime.timetable.gwt.client.sectioning.SectioningReports.ReportTypeInterface;
+import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.solver.CommonSolverInterface;
 
@@ -37,4 +39,5 @@ public interface StudentSolverProxy extends OnlineSectioningServer, CommonSolver
     public byte[] backupXml();
     public boolean restoreXml(byte[] data);
     public boolean isPublished();
+    public List<ReservationInterface> getReservations(Long offeringId);
 }

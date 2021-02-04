@@ -29,6 +29,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -75,6 +77,14 @@ import org.cpsolver.studentsct.model.Unavailability;
 import org.cpsolver.studentsct.online.expectations.NeverOverExpected;
 import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
 import org.cpsolver.studentsct.report.StudentSectioningReport;
+import org.cpsolver.studentsct.reservation.CourseReservation;
+import org.cpsolver.studentsct.reservation.CurriculumOverride;
+import org.cpsolver.studentsct.reservation.CurriculumReservation;
+import org.cpsolver.studentsct.reservation.GroupReservation;
+import org.cpsolver.studentsct.reservation.IndividualReservation;
+import org.cpsolver.studentsct.reservation.LearningCommunityReservation;
+import org.cpsolver.studentsct.reservation.Reservation;
+import org.cpsolver.studentsct.reservation.ReservationOverride;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.dom.DOMCDATA;
@@ -87,15 +97,22 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.client.sectioning.SectioningReports.ReportTypeInterface;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.ReservationInterface.IdName;
+import org.unitime.timetable.gwt.shared.ReservationInterface.OverrideType;
+import org.unitime.timetable.model.GroupOverrideReservation;
 import org.unitime.timetable.model.SectioningSolutionLog;
 import org.unitime.timetable.model.SolverPredefinedSetting;
+import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.SolverParameterGroup.SolverType;
+import org.unitime.timetable.model.dao.LearningCommunityReservationDAO;
 import org.unitime.timetable.model.dao.SectioningSolutionLogDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
+import org.unitime.timetable.model.dao.StudentGroupReservationDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -1193,5 +1210,258 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 				return true;
 			}
 		};
+	}
+	
+	private ReservationInterface convert(Reservation reservation, Assignment<Request, Enrollment> assignment) {
+		ReservationInterface r = null;
+		Course co = null;
+		for (Course c: reservation.getOffering().getCourses()) {
+			if (co == null || reservation.getOffering().getName().equals(c.getName()))
+				co = c;
+		}
+		if (reservation instanceof LearningCommunityReservation) {
+			org.unitime.timetable.model.LearningCommunityReservation lcr = LearningCommunityReservationDAO.getInstance().get(reservation.getId());
+			if (lcr != null) {
+				r = new ReservationInterface.LCReservation();
+				IdName g = new IdName();
+				g.setAbbv(lcr.getGroup().getGroupAbbreviation());
+				g.setName(lcr.getGroup().getGroupName());
+				g.setLimit(lcr.getGroup().getStudents().size());
+				((ReservationInterface.LCReservation)r).setGroup(g);
+				
+				co = ((LearningCommunityReservation) reservation).getCourse();
+				ReservationInterface.Course course = new ReservationInterface.Course();
+				course.setId(co.getId());
+				course.setAbbv(co.getName());
+				course.setControl(reservation.getOffering().getName().equals(co.getName()));
+				course.setLimit(co.getLimit() < 0 ? null : co.getLimit());
+				((ReservationInterface.LCReservation) r).setCourse(course);
+			}
+		} else if (reservation instanceof GroupReservation) {
+			StudentGroupReservation sgr = StudentGroupReservationDAO.getInstance().get(reservation.getId());
+			if (sgr != null) {
+				r = new ReservationInterface.GroupReservation();
+				IdName g = new IdName();
+				g.setAbbv(sgr.getGroup().getGroupAbbreviation());
+				g.setName(sgr.getGroup().getGroupName());
+				g.setLimit(sgr.getGroup().getStudents().size());
+				((ReservationInterface.GroupReservation)r).setGroup(g);
+				r.setOverride(sgr instanceof GroupOverrideReservation);
+			}
+		}
+		
+		if (r != null) {
+			// do nothing
+		} else if (reservation instanceof CourseReservation) {
+			co = ((CourseReservation) reservation).getCourse();
+			ReservationInterface.Course course = new ReservationInterface.Course();
+			course.setId(co.getId());
+			course.setAbbv(co.getName());
+			course.setControl(reservation.getOffering().getName().equals(co.getName()));
+			course.setLimit(co.getLimit() < 0 ? null : co.getLimit());
+			r = new ReservationInterface.CourseReservation();
+			r.setOverride(reservation.mustBeUsed() != CourseReservation.DEFAULT_MUST_BE_USED ||
+					reservation.canAssignOverLimit() != CourseReservation.DEFAULT_CAN_ASSIGN_OVER_LIMIT ||
+					reservation.isAllowDisabled() != CourseReservation.DEFAULT_ALLOW_OVERLAP);
+			((ReservationInterface.CourseReservation) r).setCourse(course);
+			r.setProjection(co.getProjected());
+			r.setEnrollment(co.getContext(assignment).getEnrollments().size());
+		} else if (reservation instanceof CurriculumReservation) {
+			CurriculumReservation cr = (CurriculumReservation) reservation;
+			r = new ReservationInterface.CurriculumReservation();
+			r.setOverride(reservation.mustBeUsed() != CurriculumReservation.DEFAULT_MUST_BE_USED ||
+					reservation.canAssignOverLimit() != CurriculumReservation.DEFAULT_CAN_ASSIGN_OVER_LIMIT ||
+					reservation.isAllowDisabled() != CurriculumReservation.DEFAULT_ALLOW_OVERLAP);
+			ReservationInterface.Areas curriculum = new ReservationInterface.Areas();
+			long areaId = 0;
+			for (String area: cr.getAcademicAreas()) {
+				ReservationInterface.IdName aa = new ReservationInterface.IdName();
+				aa.setId(areaId++);
+				aa.setAbbv(area);
+				aa.setName(area);
+				curriculum.getAreas().add(aa);
+			}
+			long clasfId = 0;
+			for (String classification: cr.getClassifications()) {
+				ReservationInterface.IdName clasf = new ReservationInterface.IdName();
+				clasf.setId(clasfId++);
+				clasf.setAbbv(classification);
+				clasf.setName(classification);
+				curriculum.getClassifications().add(clasf);
+			}
+			long majorId = 0, concId = 0;
+			for (String major: cr.getMajors()) {
+				ReservationInterface.IdName mj = new ReservationInterface.IdName();
+				mj.setId(majorId);
+				mj.setAbbv(major);
+				mj.setName(major);
+				curriculum.getMajors().add(mj);
+				if (cr.getConcentrations(major) != null)
+					for (String conc: cr.getConcentrations(major)) {
+						ReservationInterface.IdName cc = new ReservationInterface.IdName();
+						cc.setId(concId++);
+						cc.setAbbv(conc);
+						cc.setParentId(majorId);
+						cc.setName(conc);
+						curriculum.getConcentrations().add(cc);
+					}
+				majorId ++;
+			}
+			for (String minor: cr.getMinors()) {
+				ReservationInterface.IdName mn = new ReservationInterface.IdName();
+				mn.setAbbv(minor);
+				curriculum.getMinors().add(mn);
+			}
+			if (curriculum.getAreas().size() > 1)
+				Collections.sort(curriculum.getAreas(), new Comparator<ReservationInterface.IdName>() {
+					@Override
+					public int compare(ReservationInterface.IdName s1, ReservationInterface.IdName s2) {
+						int cmp = s1.getAbbv().compareTo(s2.getAbbv());
+						if (cmp != 0) return cmp;
+						cmp = s1.getName().compareTo(s2.getName());
+						if (cmp != 0) return cmp;
+						return s1.getId().compareTo(s2.getId());
+					}
+				});
+			Collections.sort(curriculum.getMajors(), new Comparator<ReservationInterface.IdName>() {
+				@Override
+				public int compare(ReservationInterface.IdName s1, ReservationInterface.IdName s2) {
+					int cmp = s1.getAbbv().compareTo(s2.getAbbv());
+					if (cmp != 0) return cmp;
+					cmp = s1.getName().compareTo(s2.getName());
+					if (cmp != 0) return cmp;
+					return s1.getId().compareTo(s2.getId());
+				}
+			});
+			Collections.sort(curriculum.getClassifications(), new Comparator<ReservationInterface.IdName>() {
+				@Override
+				public int compare(ReservationInterface.IdName s1, ReservationInterface.IdName s2) {
+					int cmp = s1.getAbbv().compareTo(s2.getAbbv());
+					if (cmp != 0) return cmp;
+					cmp = s1.getName().compareTo(s2.getName());
+					if (cmp != 0) return cmp;
+					return s1.getId().compareTo(s2.getId());
+				}
+			});
+			Collections.sort(curriculum.getMinors(), new Comparator<ReservationInterface.IdName>() {
+				@Override
+				public int compare(ReservationInterface.IdName s1, ReservationInterface.IdName s2) {
+					int cmp = s1.getAbbv().compareTo(s2.getAbbv());
+					if (cmp != 0) return cmp;
+					cmp = s1.getName().compareTo(s2.getName());
+					if (cmp != 0) return cmp;
+					return s1.getId().compareTo(s2.getId());
+				}
+			});
+			Collections.sort(curriculum.getConcentrations(), new Comparator<ReservationInterface.IdName>() {
+				@Override
+				public int compare(ReservationInterface.IdName s1, ReservationInterface.IdName s2) {
+					int cmp = s1.getAbbv().compareTo(s2.getAbbv());
+					if (cmp != 0) return cmp;
+					cmp = s1.getName().compareTo(s2.getName());
+					if (cmp != 0) return cmp;
+					return s1.getId().compareTo(s2.getId());
+				}
+			});
+			((ReservationInterface.CurriculumReservation) r).setCurriculum(curriculum);
+		} else if (reservation instanceof IndividualReservation) {
+			r = new ReservationInterface.IndividualReservation();
+			r.setOverride(reservation instanceof ReservationOverride || !reservation.mustBeUsed());
+			if (reservation instanceof ReservationOverride) {
+				r = new ReservationInterface.OverrideReservation(
+						reservation.canAssignOverLimit() && reservation.isAllowOverlap() ? OverrideType.AllowOverLimitTimeConflict :
+						reservation.canAssignOverLimit() ? OverrideType.AllowOverLimit :
+							reservation.isAllowOverlap() ? OverrideType.AllowTimeConflict : OverrideType.Other);
+			} else {
+				r.setOverride(reservation.mustBeUsed() != IndividualReservation.DEFAULT_MUST_BE_USED ||
+						reservation.canAssignOverLimit() != IndividualReservation.DEFAULT_CAN_ASSIGN_OVER_LIMIT ||
+						reservation.isAllowDisabled() != IndividualReservation.DEFAULT_ALLOW_OVERLAP);
+			}
+			
+			for (Student student: getModel().getStudents()) {
+				if (((IndividualReservation)reservation).getStudentIds().contains(student.getId())) {
+					ReservationInterface.IdName s = new ReservationInterface.IdName();
+					s.setId(student.getId());
+					s.setAbbv(student.getExternalId());
+					s.setName(student.getName());
+					((ReservationInterface.IndividualReservation) r).getStudents().add(s);
+				}
+			}
+			Collections.sort(((ReservationInterface.IndividualReservation) r).getStudents(), new Comparator<ReservationInterface.IdName>() {
+				@Override
+				public int compare(ReservationInterface.IdName s1, ReservationInterface.IdName s2) {
+					int cmp = s1.getName().compareTo(s2.getName());
+					if (cmp != 0) return cmp;
+					return s1.getAbbv().compareTo(s2.getAbbv());
+				}
+			});
+		} else {
+			return null;
+		}
+		r.setEnrollment(reservation.getContext(assignment).getEnrollments().size());
+		
+		ReservationInterface.Offering offering = new ReservationInterface.Offering();
+		offering.setAbbv(co.getName());
+		offering.setId(reservation.getOffering().getId());
+		offering.setOffered(true);
+		r.setOffering(offering);
+		for (Course cx: reservation.getOffering().getCourses()) {
+			ReservationInterface.Course course = new ReservationInterface.Course();
+			course.setId(cx.getId());
+			course.setAbbv(cx.getName());
+			course.setControl(reservation.getOffering().getName().equals(cx.getName()));
+			course.setLimit(cx.getLimit() < 0 ? null : cx.getLimit());
+			offering.getCourses().add(course);
+		}
+		for (Config ioc: reservation.getOffering().getConfigs()) {
+			if (!reservation.getConfigs().contains(ioc)) continue;
+			boolean hasSection = false;
+			for (Subpart subpart: ioc.getSubparts()) {
+				Set<Section> sections = reservation.getSections(subpart);
+				if (sections != null)
+					for (Section c: sections) {
+						ReservationInterface.Clazz clazz = new ReservationInterface.Clazz();
+						clazz.setId(c.getId());
+						clazz.setAbbv(c.getName(c.getId()));
+						clazz.setName(subpart.getName() + " " + c.getName(c.getId()));
+						clazz.setLimit(c.getLimit() < 0 ? null : c.getLimit());
+						r.getClasses().add(clazz);
+						hasSection = true;
+					}
+			}
+			if (!hasSection) {
+				ReservationInterface.Config config = new ReservationInterface.Config();
+				config.setId(ioc.getId());
+				config.setName(ioc.getName());
+				config.setAbbv(ioc.getName());
+				config.setLimit(ioc.getLimit() < 0 ? null : ioc.getLimit());
+				r.getConfigs().add(config);
+			}
+		}
+		r.setExpired(reservation.isExpired());
+		r.setLimit(reservation.getReservationLimit() < 0 ? null : (int)Math.round(reservation.getReservationLimit()));
+		r.setInclusive(reservation.areRestrictionsInclusive());
+		r.setId(reservation.getId());
+		r.setAllowOverlaps(reservation.isAllowOverlap());
+		r.setMustBeUsed(reservation.mustBeUsed());
+		r.setAlwaysExpired(reservation instanceof ReservationOverride || reservation instanceof CurriculumOverride);
+		r.setOverLimit(reservation.canAssignOverLimit());
+		return r;
+	}
+	
+	@Override
+	public List<ReservationInterface> getReservations(Long offeringId) {
+		Assignment<Request, Enrollment> assignment = currentSolution().getAssignment();
+		for (Offering offering: getModel().getOfferings())
+			if (offeringId.equals(offering.getId())) {
+				List<ReservationInterface> ret = new ArrayList<ReservationInterface>();
+				for (Reservation r: offering.getReservations()) {
+					ReservationInterface res = convert(r, assignment);
+					if (res != null)
+						ret.add(res);
+				}
+				return ret;
+			}
+		return null;
 	}
 }

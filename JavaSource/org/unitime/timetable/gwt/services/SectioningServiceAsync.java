@@ -30,6 +30,8 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.PageAccessException;
+import org.unitime.timetable.gwt.shared.ReservationException;
+import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionInfo;
@@ -120,4 +122,5 @@ public interface SectioningServiceAsync {
 	void getStudentInfo(Long studentId, AsyncCallback<StudentInfo> callback) throws SectioningException, PageAccessException;
 	void submitAdvisingDetails(AdvisingStudentDetails details, boolean emailStudent, AsyncCallback<AdvisorCourseRequestSubmission> callback) throws SectioningException, PageAccessException;
 	void getAdvisorRequests(StudentSectioningContext cx, AsyncCallback<CourseRequestInterface> callback) throws SectioningException, PageAccessException;
+	void getReservations(boolean online, Long offeringId, AsyncCallback<List<ReservationInterface>> callback) throws ReservationException, PageAccessException;
 }

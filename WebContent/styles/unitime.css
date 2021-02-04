@@ -6911,3 +6911,17 @@ unitime-RoomSharingWidget .legend .blank {
 .unitine-DegreePlanTable .gwt-CheckBox {
 	white-space: nowrap;
 }
+
+.unitime-PopupHint .unitime-TableHeader {
+	background-image: none;
+  	background-color: transparent;
+  	border-bottom: 1px dashed black;
+  	color: black;
+}
+
+.unitime-PopupHint .unitime-ClickableTableHeader {
+	background-image: none;
+  	background-color: transparent;
+  	border-bottom: 1px dashed black;
+  	color: black;
+}

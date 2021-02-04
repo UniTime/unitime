@@ -58,6 +58,13 @@
 				<line>Added ability to further divide majors by using the optional concentrations.</line>
 			</description>
 		</item>
+		<item>
+			<name>Batch Student Solver Dashboard</name>
+			<description>
+				<line>Student Sectioning Dashboard renamed to Batch Student Solver Dashboard.</line>
+				<line>Enrollments tab: when the mouse is hovering over course/class available space, show existing reservations in a tooltip popup (as they were loaded into the solver).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Online Student Scheduling</title>
@@ -102,8 +109,16 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Online Student Scheduling Dashboard</name>
+			<description>
+				<line>Added tooltips for Area, Clasf, Major, Concentration, Minor and Accommodation columns (showing full name when available).</line>
+				<line>Enrollments tab: when the mouse is hovering over course/class available space, show existing reservations in a tooltip popup.</line>
+			</description>
+		</item>
+		
 	</category>
-		<category>
+	<category>
 		<title>Examination Timetabling</title>
 		<item>
 			<name>Overlapping Periods</name>

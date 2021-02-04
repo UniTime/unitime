@@ -202,7 +202,7 @@ public class ReservationTable extends Composite {
 	}
 
 
-	private void populate(List<ReservationInterface> reservations) {
+	public void populate(List<ReservationInterface> reservations) {
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		
 		for (final ReservationColumn column: ReservationColumn.values()) {
@@ -273,7 +273,7 @@ public class ReservationTable extends Composite {
 				if (reservation.isAlwaysExpired())
 					flags += "\n  " + MESSAGES.checkAllwaysExpired();
 			}
-			Integer limit = reservation.getLimit();
+			Integer limit = reservation.getReservationLimit();
 			if (reservation instanceof CourseReservation) {
 				line.add(new Label(MESSAGES.reservationCourseAbbv()));
 				Course course = ((CourseReservation) reservation).getCourse();
@@ -291,7 +291,8 @@ public class ReservationTable extends Composite {
 					line.add(new Label(MESSAGES.reservationIndividualAbbv()));
 				}
 				VerticalPanel students = new VerticalPanel();
-				limit = ((IndividualReservation) reservation).getStudents().size();
+				if (limit == null)
+					limit = ((IndividualReservation) reservation).getStudents().size();
 				for (IdName student: ((IndividualReservation) reservation).getStudents()) {
 					students.add(new Label(student.getName(), false));
 				}
@@ -814,5 +815,7 @@ public class ReservationTable extends Composite {
 				return null;
 			}
 		}
-	}	
+	}
+	
+	public UniTimeTable<ReservationInterface> getTable() { return iReservations; }
 }
