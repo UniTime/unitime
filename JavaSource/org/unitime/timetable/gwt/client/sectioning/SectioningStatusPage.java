@@ -551,7 +551,7 @@ public class SectioningStatusPage extends Composite {
 									iEnrollmentTable.clear();
 									iEnrollmentTable.setId(id);
 									iEnrollmentTable.populate(result, courseIdsCanApprove);
-									if (event.getData().getConfigId() == null)
+									if (event.getData().getConfigId() == null || event.getData().getConfigId() < 0l)
 										iEnrollmentDialog.setText(MESSAGES.titleEnrollments(MESSAGES.course(event.getData().getSubject(), event.getData().getCourseNbr())));
 									else
 										iEnrollmentDialog.setText(MESSAGES.titleEnrollments(MESSAGES.clazz(event.getData().getSubject(), event.getData().getCourseNbr(), event.getData().getSubpart(), event.getData().getClazz())));
@@ -1112,6 +1112,8 @@ public class SectioningStatusPage extends Composite {
 				line.get(line.size() - 1).getElement().getStyle().setTextDecoration(TextDecoration.UNDERLINE);
 			line.get(line.size() - 1).getElement().getStyle().setPaddingLeft(5, Unit.PX);
 			line.add(new Label(e.getCourseNbr(), false));
+			if (e.isControl() != null && e.isControl().booleanValue())
+				line.get(line.size() - 1).getElement().getStyle().setTextDecoration(TextDecoration.UNDERLINE);
 			line.add(new TitleCell(e.getTitle() == null ? "" : e.getTitle()));
 			line.add(new Label(e.getConsent() == null ? "" : e.getConsent(), false));
 		} else {
