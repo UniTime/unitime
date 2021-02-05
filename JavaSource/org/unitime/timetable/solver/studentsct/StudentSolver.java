@@ -1415,28 +1415,42 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 			offering.getCourses().add(course);
 		}
 		for (Config ioc: reservation.getOffering().getConfigs()) {
-			if (!reservation.getConfigs().contains(ioc)) continue;
-			boolean hasSection = false;
-			for (Subpart subpart: ioc.getSubparts()) {
-				Set<Section> sections = reservation.getSections(subpart);
-				if (sections != null)
-					for (Section c: sections) {
-						ReservationInterface.Clazz clazz = new ReservationInterface.Clazz();
-						clazz.setId(c.getId());
-						clazz.setAbbv(c.getName(c.getId()));
-						clazz.setName(subpart.getName() + " " + c.getName(c.getId()));
-						clazz.setLimit(c.getLimit() < 0 ? null : c.getLimit());
-						r.getClasses().add(clazz);
-						hasSection = true;
-					}
-			}
-			if (!hasSection) {
-				ReservationInterface.Config config = new ReservationInterface.Config();
-				config.setId(ioc.getId());
-				config.setName(ioc.getName());
-				config.setAbbv(ioc.getName());
-				config.setLimit(ioc.getLimit() < 0 ? null : ioc.getLimit());
-				r.getConfigs().add(config);
+			if (reservation.getConfigs().contains(ioc)) {
+				boolean hasSection = false;
+				for (Subpart subpart: ioc.getSubparts()) {
+					Set<Section> sections = reservation.getSections(subpart);
+					if (sections != null)
+						for (Section c: sections) {
+							ReservationInterface.Clazz clazz = new ReservationInterface.Clazz();
+							clazz.setId(c.getId());
+							clazz.setAbbv(c.getName(c.getId()));
+							clazz.setName(subpart.getName() + " " + c.getName(c.getId()));
+							clazz.setLimit(c.getLimit() < 0 ? null : c.getLimit());
+							r.getClasses().add(clazz);
+							hasSection = true;
+						}
+				}
+				if (!hasSection) {
+					ReservationInterface.Config config = new ReservationInterface.Config();
+					config.setId(ioc.getId());
+					config.setName(ioc.getName());
+					config.setAbbv(ioc.getName());
+					config.setLimit(ioc.getLimit() < 0 ? null : ioc.getLimit());
+					r.getConfigs().add(config);
+				}
+			} else {
+				for (Subpart subpart: ioc.getSubparts()) {
+					Set<Section> sections = reservation.getSections(subpart);
+					if (sections != null)
+						for (Section c: sections) {
+							ReservationInterface.Clazz clazz = new ReservationInterface.Clazz();
+							clazz.setId(c.getId());
+							clazz.setAbbv(c.getName(c.getId()));
+							clazz.setName(subpart.getName() + " " + c.getName(c.getId()));
+							clazz.setLimit(c.getLimit() < 0 ? null : c.getLimit());
+							r.getClasses().add(clazz);
+						}
+				}
 			}
 		}
 		r.setExpired(reservation.isExpired());
