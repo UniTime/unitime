@@ -192,6 +192,7 @@ import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationUpdate;
 import org.unitime.timetable.onlinesectioning.status.FindEnrollmentAction;
 import org.unitime.timetable.onlinesectioning.status.FindEnrollmentInfoAction;
 import org.unitime.timetable.onlinesectioning.status.FindStudentInfoAction;
+import org.unitime.timetable.onlinesectioning.status.GetReservationsAction;
 import org.unitime.timetable.onlinesectioning.status.FindOnlineSectioningLogAction;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction;
 import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentAction;
@@ -3572,6 +3573,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	public List<ReservationInterface> getReservations(boolean online, Long offeringId) throws ReservationException, PageAccessException {
 		if (online) {
 			sessionContext.checkPermission(Right.Reservations);
+			OnlineSectioningServer server = getServerInstance(sessionContext.getUser().getCurrentAcademicSessionId(), true);
+			if (server != null)
+				return server.execute(server.createAction(GetReservationsAction.class).forOfferingId(offeringId), currentUser());
 			return new ReservationServlet().withSessionContext(sessionContext).getReservations(offeringId);
 		} else {
 			StudentSolverProxy server = getStudentSolver();

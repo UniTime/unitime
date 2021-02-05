@@ -270,6 +270,22 @@ public abstract class XReservation extends XReservationId implements Comparable<
     	iPriority = priority;
     }
     
+    public Date getExpirationDate() {
+    	return iExpirationDate;
+    }
+    
+    public Date getStartDate() {
+    	return iStartDate;
+    }
+    
+    public boolean isInclusive() {
+    	return iInclusive;
+    }
+    
+    public boolean isAlwaysExpired() {
+    	return false;
+    }
+    
     /**
      * Returns true if the student is applicable for the reservation
      * @param student a student 

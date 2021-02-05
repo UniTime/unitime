@@ -1310,6 +1310,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 			for (String minor: cr.getMinors()) {
 				ReservationInterface.IdName mn = new ReservationInterface.IdName();
 				mn.setAbbv(minor);
+				mn.setName(minor);
 				curriculum.getMinors().add(mn);
 			}
 			if (curriculum.getAreas().size() > 1)
@@ -1460,6 +1461,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 					if (res != null)
 						ret.add(res);
 				}
+				Collections.sort(ret);
 				return ret;
 			}
 		return null;

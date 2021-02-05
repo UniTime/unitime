@@ -92,6 +92,11 @@ public class XGroupReservation extends XReservation {
     	return (getType() == XReservationType.GroupOverride && iExpired != null ? iExpired.booleanValue() : super.isExpired());
     }
     
+    @Override
+    public boolean isAlwaysExpired() {
+    	return getType() == XReservationType.GroupOverride && iExpired != null && iExpired.booleanValue();
+    }
+    
 	@Override
 	public boolean isApplicable(XStudent student, XCourseId course) {
 		return student.getGroups().contains(iGroup);
