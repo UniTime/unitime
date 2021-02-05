@@ -23,7 +23,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -85,9 +84,7 @@ public class PurdueCourseDetailsProvider implements CourseDetailsProvider, Cours
 				try {
 					iExternalTermProvider = (ExternalTermProvider)Class.forName(clazz).getConstructor().newInstance();
 					subjectArea = iExternalTermProvider.getExternalSubject(session, subject, courseNbr);
-				} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-						| InvocationTargetException | NoSuchMethodException | SecurityException
-						| ClassNotFoundException e) {
+				} catch (Exception e) {
 					subjectArea = subject;
 				}
 			} else {
