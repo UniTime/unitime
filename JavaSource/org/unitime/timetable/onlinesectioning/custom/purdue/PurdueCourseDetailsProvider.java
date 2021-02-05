@@ -23,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -32,11 +33,13 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseUrlProvider;
+import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
@@ -57,6 +60,7 @@ public class PurdueCourseDetailsProvider implements CourseDetailsProvider, Cours
 		{"(?i) class=\"nttitle\" ", " class=\"unitime-MainTableHeader\" "},
 		{"(?i) class=\"datadisplaytable\" ", " class=\"unitime-MainTable\" "},
 	};
+	private transient ExternalTermProvider iExternalTermProvider = null;
 	
 	private String getTerm(AcademicSessionInfo session) throws SectioningException {
 		if (session.getTerm().toLowerCase().startsWith("spr")) return "20";
@@ -74,12 +78,26 @@ public class PurdueCourseDetailsProvider implements CourseDetailsProvider, Cours
 	@Override
 	public URL getCourseUrl(AcademicSessionInfo session, String subject, String courseNbr) throws SectioningException {
 		try {
+			String subjectArea = subject;
+			if (iExternalTermProvider == null) {
+				String clazz = ApplicationProperty.CustomizationExternalTerm.value();
+				if (clazz == null || clazz.isEmpty()) subjectArea = subject;
+				try {
+					iExternalTermProvider = (ExternalTermProvider)Class.forName(clazz).getConstructor().newInstance();
+					subjectArea = iExternalTermProvider.getExternalSubject(session, subject, courseNbr);
+				} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+						| InvocationTargetException | NoSuchMethodException | SecurityException
+						| ClassNotFoundException e) {
+					subjectArea = subject;
+				}
+			} else {
+			}
 			if (courseNbr.length() > getCourseNumberLength()) courseNbr = courseNbr.substring(0, getCourseNumberLength());
 			return new URL(sUrl
 				.replace(":year", getYear(session))
 				.replace(":term", getTerm(session))
 				.replace(":initiative", session.getCampus())
-				.replace(":subject", URLEncoder.encode(subject, "utf-8"))
+				.replace(":subject", URLEncoder.encode(subjectArea, "utf-8"))
 				.replace(":courseNbr", courseNbr));
 		} catch (MalformedURLException e) {
 			sLog.error(e.getMessage(), e);
