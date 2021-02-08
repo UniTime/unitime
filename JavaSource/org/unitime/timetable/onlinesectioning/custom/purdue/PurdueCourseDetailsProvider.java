@@ -88,6 +88,7 @@ public class PurdueCourseDetailsProvider implements CourseDetailsProvider, Cours
 					subjectArea = subject;
 				}
 			} else {
+				subjectArea = iExternalTermProvider.getExternalSubject(session, subject, courseNbr);
 			}
 			if (courseNbr.length() > getCourseNumberLength()) courseNbr = courseNbr.substring(0, getCourseNumberLength());
 			return new URL(sUrl
