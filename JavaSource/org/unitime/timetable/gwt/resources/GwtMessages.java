@@ -2799,6 +2799,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Abbreviation is required.")
 	String errorAbbreviationIsEmpty();
 	
+	@DefaultMessage("Abbreviation must be unique.")
+	String errorAbbreviationMustBeUnique();
+
 	@DefaultMessage("Attribute type must be selected.")
 	String errorNoAttributeTypeSelected();
 	
@@ -6544,4 +6547,16 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Update Data")
 	String buttonBuildingsUpdateData();
+	
+	@DefaultMessage("Map:")
+	String propMap();
+	
+	@DefaultMessage("Update room coordinates to match the building coordinates.")
+	String checkBuildingUpdateRoomCoordinates();
+	
+	@DefaultMessage("building")
+	String objectBuilding();
+	
+	@DefaultMessage("Update data has failed: {0}")
+	String failedBuildingUpdateData(String reason);
 }

@@ -2809,4 +2809,23 @@ public class RoomInterface implements IsSerializable {
 	public static enum BuildingsColumn {
 		ABBREVIATION, NAME, EXTERNAL_ID, COORDINATES,
 	}
+	
+	public static enum UpdateBuildingAction {
+		CREATE, UPDATE, DELETE, UPDATE_DATA,
+	}
+	
+	public static class UpdateBuildingRequest implements GwtRpcRequest<BuildingInterface> {
+		private UpdateBuildingAction iAction;
+		private BuildingInterface iBuilding;
+		private Boolean iUpdateRoomCoordinates;
+		
+		public UpdateBuildingRequest() {}
+		
+		public UpdateBuildingAction getAction() { return iAction; }
+		public void setAction(UpdateBuildingAction action) { iAction = action; }
+		public BuildingInterface getBuilding() { return iBuilding; }
+		public void setBuilding(BuildingInterface building) { iBuilding = building; }
+		public void setUpdateRoomCoordinates(Boolean updateRoomCoordinates) { iUpdateRoomCoordinates = updateRoomCoordinates; }
+		public Boolean getUpdateRoomCoordinates() { return iUpdateRoomCoordinates; }
+	}
 }

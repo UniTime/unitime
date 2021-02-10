@@ -1,3 +1,22 @@
+/*
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+*/
 package org.unitime.timetable.gwt.client.rooms;
 
 import org.unitime.timetable.gwt.client.ToolBox;
@@ -14,6 +33,8 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.RoomInterface.BuildingInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.BuildingsDataResponse;
 import org.unitime.timetable.gwt.shared.RoomInterface.GetBuildingsRequest;
+import org.unitime.timetable.gwt.shared.RoomInterface.UpdateBuildingAction;
+import org.unitime.timetable.gwt.shared.RoomInterface.UpdateBuildingRequest;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -48,12 +69,28 @@ public class BuildingsPage extends Composite {
 		iListBuildingsHeader.addButton("export", MESSAGES.buttonExportPDF(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
+				ToolBox.open(GWT.getHostPageBaseURL() + "export?output=buildings.pdf");
 			}
 		});
 		iListBuildingsHeader.setEnabled("export", false);
 		iListBuildingsHeader.addButton("updateData", MESSAGES.buttonBuildingsUpdateData(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
+				UpdateBuildingRequest request = new UpdateBuildingRequest();
+				request.setAction(UpdateBuildingAction.UPDATE_DATA);
+				LoadingWidget.getInstance().show(MESSAGES.waitPlease());
+				RPC.execute(request, new AsyncCallback<BuildingInterface>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						LoadingWidget.getInstance().hide();
+						iListBuildingsHeader.setErrorMessage(MESSAGES.failedBuildingUpdateData(caught.getMessage()));
+						UniTimeNotifications.error(MESSAGES.failedBuildingUpdateData(caught.getMessage()), caught);
+					}
+					@Override
+					public void onSuccess(BuildingInterface result) {
+						LoadingWidget.getInstance().hide();
+					}
+				});
 			}
 		});
 		iListBuildingsHeader.setEnabled("updateData", false);
@@ -61,6 +98,7 @@ public class BuildingsPage extends Composite {
 		
 		iBuildingsTable = new BuildingsTable();
 		iListBuildingsForm.addRow(iBuildingsTable);
+		iBuildingsTable.setAllowSelection(true); iBuildingsTable.setAllowMultiSelect(false);
 		
 		iListBuildingsFooter = iListBuildingsHeader.clonePanel("");
 		iListBuildingsForm.addBottomRow(iListBuildingsFooter);
@@ -90,14 +128,18 @@ public class BuildingsPage extends Composite {
 		iBuildingsTable.addMouseClickListener(new MouseClickListener<BuildingInterface>() {
 			@Override
 			public void onMouseClick(TableEvent<BuildingInterface> event) {
-				if (event.getData() != null && event.getData().isCanEdit())
+				if (event.getData() != null && event.getData().isCanEdit()) {
+					iBuildingsTable.setSelected(event.getRow(), true);
 					editBuilding(event.getData());
+				}
 			}
 		});
 		
 		iBuildingsEdit = new BuildingsEdit() {
 			@Override
-			protected void onBack(boolean refresh, Long buildingId) {
+			protected void onBack(boolean refresh, final Long buildingId) {
+				iPanel.setWidget(iListBuildingsForm);
+				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageBuildings());
 				if (refresh) {
 					LoadingWidget.getInstance().show(MESSAGES.waitLoadingData());
 					RPC.execute(new GetBuildingsRequest(), new AsyncCallback<BuildingsDataResponse>() {
@@ -118,12 +160,40 @@ public class BuildingsPage extends Composite {
 							LoadingWidget.getInstance().hide();
 							if (result.getEllipsoid() != null)
 								iBuildingsEdit.setCoordinatesFormat(result.getEllipsoid());
+							if (buildingId != null)
+								for (int i = 0; i < iBuildingsTable.getRowCount(); i++) {
+									BuildingInterface b = iBuildingsTable.getData(i);
+									if (b != null && b.getId().equals(buildingId)) {
+										iBuildingsTable.getRowFormatter().getElement(i).scrollIntoView();
+										iBuildingsTable.setSelected(i, true);
+										break;
+									}
+								}
 						}
 					});
 				} else {
-					iPanel.setWidget(iListBuildingsForm);
-					UniTimePageLabel.getInstance().setPageName(MESSAGES.pageBuildings());
+					if (iBuildingsTable.getSelectedRow() >= 0)
+						iBuildingsTable.setSelected(iBuildingsTable.getSelectedRow(), false);
+					if (buildingId != null)
+						for (int i = 0; i < iBuildingsTable.getRowCount(); i++) {
+							BuildingInterface b = iBuildingsTable.getData(i);
+							if (b != null && b.getId().equals(buildingId)) {
+								iBuildingsTable.getRowFormatter().getElement(i).scrollIntoView();
+								iBuildingsTable.setSelected(i, true);
+								break;
+							}
+						}
 				}
+			}
+			@Override
+			protected boolean isAbbreviationUnique(BuildingInterface building) {
+				for (int i = 0; i < iBuildingsTable.getRowCount(); i++) {
+					BuildingInterface b = iBuildingsTable.getData(i);
+					if (b != null && !b.getId().equals(building.getId()) && b.getAbbreviation().equalsIgnoreCase(building.getAbbreviation())) {
+						return false;
+					}
+				}
+				return true;
 			}
 		};
 		
