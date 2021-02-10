@@ -69,7 +69,7 @@ public class BuildingsPage extends Composite {
 		iListBuildingsHeader.addButton("export", MESSAGES.buttonExportPDF(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "export?output=buildings.pdf");
+				ToolBox.open(GWT.getHostPageBaseURL() + "export?output=buildings.pdf&sort=" + iBuildingsTable.getSortBy());
 			}
 		});
 		iListBuildingsHeader.setEnabled("export", false);
