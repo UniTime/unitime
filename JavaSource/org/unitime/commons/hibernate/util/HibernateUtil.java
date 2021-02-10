@@ -56,6 +56,7 @@ import org.hibernate.mapping.Selectable;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.service.spi.ServiceBinding;
 import org.hibernate.type.IntegerType;
+import org.hibernate.type.StringType;
 import org.unitime.commons.LocalContext;
 import org.unitime.commons.hibernate.connection.LoggingConnectionProvider;
 import org.unitime.commons.hibernate.connection.LoggingDBCPConnectionProvider;
@@ -298,6 +299,8 @@ public class HibernateUtil {
         
         addAddDateToDialect();
         
+        addReplaceToDialect();
+        
         DatabaseUpdate.update();
     }
     
@@ -517,6 +520,14 @@ public class HibernateUtil {
     	Dialect dialect = hibSessionFactory.getDialect();
     	if (isPostgress() && !dialect.getFunctions().containsKey("adddate")) {
     		dialect.getFunctions().put("adddate", new SQLFunctionTemplate(IntegerType.INSTANCE, "?1 + (?2) * interval '1 day'"));
+    	}
+    }
+    
+    public static void addReplaceToDialect() {
+    	SessionFactoryImplementor hibSessionFactory = (SessionFactoryImplementor)new _RootDAO().getSession().getSessionFactory();
+    	Dialect dialect = hibSessionFactory.getDialect();
+    	if (!dialect.getFunctions().containsKey("replace")) {
+    		dialect.getFunctions().put("replace", new StandardSQLFunction("replace", StringType.INSTANCE));
     	}
     }
 }

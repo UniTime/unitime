@@ -65,6 +65,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseSt
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisingStudentDetails;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisorCourseRequestSubmission;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisorNote;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
@@ -132,6 +133,7 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.StudentSectioningStatus.Option;
 import org.unitime.timetable.model.comparators.ClassComparator;
+import org.unitime.timetable.model.dao.AdvisorCourseRequestDAO;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseDemandDAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
@@ -3583,5 +3585,42 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				throw new SectioningException(MSG.exceptionNoSolver());
 			return server.getReservations(offeringId);
 		}
+	}
+
+	@Override
+	public List<AdvisorNote> lastAdvisorNotes(StudentSectioningContext cx) throws SectioningException, PageAccessException {
+		checkContext(cx);
+		getSessionContext().checkPermissionAnySession(cx.getAcademicSessionId(), Right.AdvisorCourseRequests);
+		
+		List<AdvisorNote> ret = new ArrayList<AdvisorNote>();
+		String defaultNote = ApplicationProperty.AdvisorCourseRequestsDefaultNote.valueOfSession(cx.getAcademicSessionId());
+		Student student = (cx.getStudentId() == null ? null : StudentDAO.getInstance().get(cx.getStudentId()));
+		
+		List<Object[]> notes = (List<Object[]>)AdvisorCourseRequestDAO.getInstance().getSession().createQuery(
+				"select replace(acr.notes, acr.student.pin, '$PIN$'), count(acr), max(acr.timestamp) " +
+				"from AdvisorCourseRequest acr where acr.priority = -1 and acr.changedBy = :externalId and acr.student.session = :sessionId " +
+				"group by replace(acr.notes, acr.student.pin, '$PIN$') " +
+				"order by max(acr.timestamp) desc")
+				.setString("externalId", sessionContext.getUser().getExternalUserId())
+				.setLong("sessionId", cx.getAcademicSessionId())
+				.setCacheable(true).setMaxResults(50).list();
+		for (Object[] o: notes) {
+			String note = (String)o[0];
+			Integer count = ((Number)o[1]).intValue();
+			Date ts = (Date)o[2];
+			String dispNote = note;
+			if (defaultNote != null && note.contains(defaultNote))
+				dispNote = note.replace(defaultNote, "\u2026");
+			if (defaultNote != null && note.contains(defaultNote.replace("\r", "")))
+				dispNote = note.replace(defaultNote.replace("\r", ""), "\u2026");
+			AdvisorNote an = new AdvisorNote();
+			an.setCount(count);
+			an.setDisplayString(dispNote.replace("$PIN$", "XXXXXX"));
+			an.setReplaceString(note.replace("$PIN$", student == null || student.getPin() == null ? "XXXXXX" : student.getPin()));
+			an.setTimeStamp(ts);
+			ret.add(an);
+		}
+		
+		return ret;
 	}
 }

@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.shared;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -676,4 +677,25 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 	public static enum WaitListMode implements IsSerializable, Serializable {
 		WaitList, NoSubs, None
 	};
+	
+	public static class AdvisorNote implements IsSerializable, Serializable  {
+		private static final long serialVersionUID = 1L;
+		private String iDisplayString;
+		private String iReplaceString;
+		private int iCount;
+		private Date iTimeStamp;
+		
+		public AdvisorNote() {}
+		
+		public String getDisplayString() { return iDisplayString; }
+		public void setDisplayString(String displayString) { iDisplayString = displayString; }
+		public String getReplaceString() { return iReplaceString; }
+		public void setReplaceString(String replaceString) { iReplaceString = replaceString; }
+		
+		public int getCount() { return iCount; }
+		public void setCount(int count) { iCount = count; }
+		
+		public Date getTimeStamp() { return iTimeStamp; }
+		public void setTimeStamp(Date timeStamp) { iTimeStamp = timeStamp; }
+	}
 }

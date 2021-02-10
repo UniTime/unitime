@@ -27,6 +27,7 @@ import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderClasses;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderDetails;
@@ -35,8 +36,13 @@ import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
+import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
@@ -61,6 +67,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisingStudentDetails;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisorCourseRequestSubmission;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisorNote;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
@@ -70,12 +77,18 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegi
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Style.Overflow;
+import com.google.gwt.dom.client.Style.WhiteSpace;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.event.logical.shared.CloseHandler;
+import com.google.gwt.event.logical.shared.OpenEvent;
+import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.http.client.URL;
@@ -94,7 +107,11 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextArea;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * @author Tomas Muller
@@ -105,6 +122,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	public static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	private static DateTimeFormat sDF = DateTimeFormat.getFormat(CONSTANTS.requestDateFormat());
+	private static DateTimeFormat sTSF = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
 	private UniTimeHeaderPanel header, footer;
 	private Lookup iLookupDialog = null;
 	private Label iStudentName, iStudentExternalId, iTerm, iStudentEmail;
@@ -138,6 +156,11 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	private StudentSectioningContext iContext;
 	
 	private CheckBox iEmailConfirmationHeader, iEmailConfirmationFooter;
+	
+	private AriaButton iLastNotes = null;
+	private AdvisorNotesTable iLastNotesTable = null;
+	private ScrollPanel iLastNotesScroll = null;
+	private UniTimeDialogBox iLastNotesDialog = null;
 	
 	public AdvisorCourseRequestsPage() {
 		super(6);
@@ -207,6 +230,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				iEmailConfirmationHeader.setVisible(false);
 				iEmailConfirmationFooter.setVisible(false);
 				iStatusBox.clear();
+				hideLastNotes();
 				LoadingWidget.getInstance().show(MESSAGES.loadingAdvisorRequests(iStudentName.getText()));
 				sSectioningService.getStudentAdvisingDetails(iSession.getAcademicSessionId(), iStudentExternalId.getText(), new AsyncCallback<AdvisingStudentDetails>() {
 					@Override
@@ -217,6 +241,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 						iSpecRegCx.setCanRequire(iDetails == null || iDetails.isCanRequire());
 						header.setEnabled("submit", result.isCanUpdate());
 						header.setEnabled("print", !result.isCanUpdate());
+						if (result.isCanUpdate()) checkForLastNotes();
 						iDegreePlan.setVisible(result.isDegreePlan()); iDegreePlan.setEnabled(result.isDegreePlan());
 						iEmailConfirmationHeader.setVisible(result.isCanUpdate() && result.isCanEmail());
 						iEmailConfirmationFooter.setVisible(result.isCanUpdate() && result.isCanEmail());
@@ -488,12 +513,59 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		iStatusBox = new ScheduleStatus();
 		addRow(iStatusBox);
 		
+		iLastNotes = new AriaButton(MESSAGES.buttonLastNotes());
+		iLastNotes.setTitle(MESSAGES.hintLastNotes());
+		iLastNotes.setVisible(false); iLastNotes.setEnabled(false);
+		iLastNotes.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				iLastNotesDialog.center();
+			}
+		});
+		footer.insertLeft(iLastNotes, false);
+		
+		iLastNotesTable = new AdvisorNotesTable();
+		iLastNotesTable.addMouseClickListener(new MouseClickListener<AdvisorNote>() {
+			@Override
+			public void onMouseClick(TableEvent<AdvisorNote> event) {
+				if (event.getData() != null) {
+					iNotes.setText(event.getData().getReplaceString());
+					resizeNotes();
+					iLastNotesDialog.hide();
+					iLastNotes.getElement().scrollIntoView();
+				}
+			}
+		});
+		
+		iLastNotesScroll = new ScrollPanel(iLastNotesTable);
+		iLastNotesScroll.setHeight(((int)(0.8 * Window.getClientHeight())) + "px");
+		iLastNotesScroll.setStyleName("unitime-ScrollPanel");
+		iLastNotesDialog = new UniTimeDialogBox(true, false);
+		iLastNotesDialog.setEscapeToHide(true);
+		iLastNotesDialog.setWidget(iLastNotesScroll);
+		iLastNotesDialog.addOpenHandler(new OpenHandler<UniTimeDialogBox>() {
+			@Override
+			public void onOpen(OpenEvent<UniTimeDialogBox> event) {
+				RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
+				iLastNotesScroll.setHeight(Math.min(iLastNotesTable.getElement().getScrollHeight(), Window.getClientHeight() * 80 / 100) + "px");
+				iLastNotesDialog.setPopupPosition(
+						Math.max(Window.getScrollLeft() + (Window.getClientWidth() - iLastNotesDialog.getOffsetWidth()) / 2, 0),
+						Math.max(Window.getScrollTop() + (Window.getClientHeight() - iLastNotesDialog.getOffsetHeight()) / 2, 0));
+			}
+		});
+		iLastNotesDialog.addCloseHandler(new CloseHandler<PopupPanel>() {
+			@Override
+			public void onClose(CloseEvent<PopupPanel> event) {
+				RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
+			}
+		});
+		iLastNotesDialog.setText(MESSAGES.dialogLastNotes());
+
 		iDegreePlan = new AriaMultiButton(MESSAGES.buttonDegreePlan());
 		iDegreePlan.setTitle(MESSAGES.hintDegreePlan());
 		iDegreePlan.setVisible(false); iDegreePlan.setEnabled(false);
 		header.insertLeft(iDegreePlan, true);
 		footer.insertLeft(iDegreePlan.createClone(), true);
-		
 		
 		Window.addWindowClosingHandler(new Window.ClosingHandler() {
 			@Override
@@ -659,9 +731,29 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		}
 	}
 	
+	protected void hideLastNotes() {
+		iLastNotes.setVisible(false); iLastNotes.setEnabled(false);
+	}
+	
+	protected void checkForLastNotes() {
+		sSectioningService.lastAdvisorNotes(iContext, new AsyncCallback<List<AdvisorNote>>() {
+			@Override
+			public void onSuccess(List<AdvisorNote> result) {
+				if (result != null && !result.isEmpty()) {
+					iLastNotesTable.setData(result);
+					iLastNotes.setVisible(true); iLastNotes.setEnabled(true);
+				}
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {}
+		});
+	}
+	
 	protected void loadStudent(String studentId) {
 		header.setEnabled("submit", false);
 		header.setEnabled("print", false);
+		hideLastNotes();
 		iDegreePlan.setVisible(false); iDegreePlan.setEnabled(false);
 		iEmailConfirmationHeader.setVisible(false);
 		iEmailConfirmationFooter.setVisible(false);
@@ -816,6 +908,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 			clearPin();
 			clearStudentRequests();
 			clearAdvisorRequests();
+			hideLastNotes();
 		} else {
 			iStudentName.setText(person.getName());
 			iStudentExternalId.setText(person.getId());
@@ -826,6 +919,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 			iSession.selectSessionNoCheck();
 			clearStudentRequests();
 			clearAdvisorRequests();
+			hideLastNotes();
 		}
 	}
 	
@@ -858,6 +952,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 			iDegreePlan.setVisible(false); iDegreePlan.setEnabled(false);
 			iEmailConfirmationHeader.setVisible(false);
 			iEmailConfirmationFooter.setVisible(false);
+			hideLastNotes();
 			super.selectSession();
 		}		
 	}
@@ -1363,5 +1458,56 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	
 	public boolean isSendEmailConformation() {
 		return iEmailConfirmationHeader.isVisible() && iEmailConfirmationHeader.getValue();
+	}
+	
+	public static class AdvisorNotesTable extends UniTimeTable<AdvisorNote> {
+		public AdvisorNotesTable() {
+			List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
+			for (Column col: Column.values())
+				header.add(new UniTimeTableHeader(getColumnName(col)));
+			addRow(null, header);
+		}
+		
+		public String getColumnName(Column column) {
+			switch (column) {
+			case COUNT: return MESSAGES.colAdvisorNotesCount();
+			case DATE: return MESSAGES.colAdvisorNotesTime();
+			case NOTE: return MESSAGES.colAdvisorNotesNote();
+			default: return column.name();
+			}
+		}
+		
+		public Widget getColumnWidget(Column column, AdvisorNote note) {
+			switch (column) {
+			case COUNT:
+				return new NumberCell(note.getCount());
+			case DATE:
+				return new Label(sTSF.format(note.getTimeStamp()));
+			case NOTE:
+				Label label = new Label(note.getDisplayString());
+				label.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE_WRAP);
+				return label;
+			default:
+				return null;
+			}
+		}
+		
+		protected void addRow(AdvisorNote note) {
+			List<Widget> line = new ArrayList<Widget>();
+			for (Column col: Column.values())
+				line.add(getColumnWidget(col, note));
+			addRow(note, line);
+		}
+		
+		public void setData(List<AdvisorNote> notes) {
+			clearTable(1);
+			if (notes != null)
+				for (AdvisorNote note: notes)
+					addRow(note);
+		}
+		
+		public static enum Column {
+			DATE, NOTE, COUNT
+		}
 	}
 }

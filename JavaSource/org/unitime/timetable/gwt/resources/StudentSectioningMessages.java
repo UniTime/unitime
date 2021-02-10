@@ -1733,6 +1733,15 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("There are multiple degree plans available, please select one to continue...")
 	String dialogSelectDegreePlan();
 	
+	@DefaultMessage("<u>N</u>otes")
+	String buttonLastNotes();
+	
+	@DefaultMessage("Show previous additional notes.")
+	String hintLastNotes();
+	
+	@DefaultMessage("Previous Notes -- Click on a note to select it, Escape to hide the dialog.")
+	String dialogLastNotes();
+
 	@DefaultMessage("Approval Requests")
 	String dialogSpecialRegistrations();
 	
@@ -2850,4 +2859,13 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Not released to the student.")
 	String pinNotReleasedToStudent();
+	
+	@DefaultMessage("Count")
+	String colAdvisorNotesCount();
+	
+	@DefaultMessage("Note")
+	String colAdvisorNotesNote();
+	
+	@DefaultMessage("Last Used")
+	String colAdvisorNotesTime();
 }

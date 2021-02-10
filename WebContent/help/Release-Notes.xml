@@ -28,6 +28,22 @@
 	<version>4.5.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Advisor Course Recommendations</title>
+		<item>
+			<name>Last Additional Notes</name>
+			<description>
+				<line>Added ability to select from the previous 50 notes that the advisor has used in the given term.
+					<line>Student PIN is automatically replaced (same message with different PIN does not list multiple times).</line>
+					<line>Ordered by the last time the note was used.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+<release>
+	<version>4.5.141</version>
+	<release-date>Tue, 9 Feb 2021</release-date>
+	<category>
 		<title>Batch Student Scheduling</title>
 		<item>
 			<name>Past Sections</name>

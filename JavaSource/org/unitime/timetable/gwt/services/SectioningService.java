@@ -51,6 +51,7 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpeci
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisingStudentDetails;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisorCourseRequestSubmission;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisorNote;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
@@ -124,4 +125,5 @@ public interface SectioningService extends RemoteService {
 	AdvisorCourseRequestSubmission submitAdvisingDetails(AdvisingStudentDetails details, boolean emailStudent) throws SectioningException, PageAccessException;
 	CourseRequestInterface getAdvisorRequests(StudentSectioningContext cx) throws SectioningException, PageAccessException;
 	List<ReservationInterface> getReservations(boolean online, Long offeringId) throws ReservationException, PageAccessException;
+	List<AdvisorNote> lastAdvisorNotes(StudentSectioningContext cx) throws SectioningException, PageAccessException;
 }
