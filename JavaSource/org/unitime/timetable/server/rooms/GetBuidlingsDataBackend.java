@@ -53,7 +53,6 @@ public class GetBuidlingsDataBackend implements GwtRpcImplementation<GetBuilding
 			b.setX(building.getCoordinateX());
 			b.setY(building.getCoordinateY());
 			b.setExternalId(building.getExternalUniqueId());
-			b.setCanDelete(context.hasPermission(building, Right.BuildingDelete));
 			b.setCanEdit(context.hasPermission(building, Right.BuildingEdit));
 			response.addBuilding(b);
 		}

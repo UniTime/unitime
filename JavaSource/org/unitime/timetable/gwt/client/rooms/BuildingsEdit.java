@@ -26,9 +26,11 @@ import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseBoolean;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.shared.RoomInterface.BuildingCheckCanDeleteRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.BuildingInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.UpdateBuildingAction;
 import org.unitime.timetable.gwt.shared.RoomInterface.UpdateBuildingRequest;
@@ -261,7 +263,15 @@ public class BuildingsEdit extends Composite implements TakesValue<BuildingInter
 			iHeader.setHeaderTitle(MESSAGES.sectEditBuilding());
 			iHeader.setEnabled("save", false);
 			iHeader.setEnabled("update", true);
-			iHeader.setEnabled("delete", building.isCanDelete());
+			iHeader.setEnabled("delete", false);
+			RPC.execute(new BuildingCheckCanDeleteRequest(building.getId()), new AsyncCallback<GwtRpcResponseBoolean>() {
+				@Override
+				public void onFailure(Throwable caught) {}
+				@Override
+				public void onSuccess(GwtRpcResponseBoolean result) {
+					iHeader.setEnabled("delete", result.getValue());
+				}
+			});
 			iHeader.setEnabled("back", true);
 			iName.getWidget().setText(building.getName() == null ? "" : building.getName());
 			iAbbreviation.getWidget().setText(building.getAbbreviation() == null ? "" : building.getAbbreviation());

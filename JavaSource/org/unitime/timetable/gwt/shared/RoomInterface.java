@@ -30,6 +30,7 @@ import java.util.TreeSet;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseBoolean;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 import org.unitime.timetable.gwt.shared.EventInterface.EventServiceProviderInterface;
@@ -842,7 +843,7 @@ public class RoomInterface implements IsSerializable {
 		private String iName;
 		private Double iX, iY;
 		private String iExternalId;
-		private Boolean iCanEdit, iCanDelete;
+		private Boolean iCanEdit;
 		
 		public BuildingInterface() {}
 		
@@ -872,8 +873,6 @@ public class RoomInterface implements IsSerializable {
 		
 		public void setCanEdit(boolean canEdit) { iCanEdit = canEdit; }
 		public boolean isCanEdit() { return iCanEdit != null && iCanEdit.booleanValue(); }
-		public void setCanDelete(boolean canDelete) { iCanDelete = canDelete; }
-		public boolean isCanDelete() { return iCanDelete != null && iCanDelete.booleanValue(); }
 		
 		@Override
 		public int hashCode() { return getId().hashCode(); }
@@ -2827,5 +2826,15 @@ public class RoomInterface implements IsSerializable {
 		public void setBuilding(BuildingInterface building) { iBuilding = building; }
 		public void setUpdateRoomCoordinates(Boolean updateRoomCoordinates) { iUpdateRoomCoordinates = updateRoomCoordinates; }
 		public Boolean getUpdateRoomCoordinates() { return iUpdateRoomCoordinates; }
+	}
+	
+	public static class BuildingCheckCanDeleteRequest implements GwtRpcRequest<GwtRpcResponseBoolean> {
+		private Long iBuildingId;
+		
+		public BuildingCheckCanDeleteRequest() {}
+		public BuildingCheckCanDeleteRequest(Long buildingId) { iBuildingId = buildingId; }
+		
+		public Long getBuildingId() { return iBuildingId; }
+		public void setBuildingId(Long buildingId) { iBuildingId = buildingId; }
 	}
 }
