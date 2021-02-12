@@ -1868,8 +1868,9 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 		private VerticalPanel iP = new VerticalPanel();
 		private boolean iCanShow = false;
 		
-		private int count(CurriculumStudentsInterface c, Set<Long> students) {
-			if ((CurriculumCookie.getInstance().getCurriculaCoursesMode() != Mode.PROJ && CurriculumCookie.getInstance().getCurriculaCoursesMode() != Mode.SSPROJ) || c == null) return students.size();
+		private int count(CurriculumStudentsInterface c, Map<Long, Double> students) {
+			if ((CurriculumCookie.getInstance().getCurriculaCoursesMode() != Mode.PROJ && CurriculumCookie.getInstance().getCurriculaCoursesMode() != Mode.SSPROJ) || c == null)
+				return CurriculumInterface.count(students);
 			if (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.PROJ) {
 				return c.countProjectedStudents(students);
 			} else {
@@ -1877,7 +1878,25 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 			}
 
 		}
-		
+
+		private int count(CurriculumStudentsInterface c, Set<Long> students, Map<Long, Double> weights) {
+			if ((CurriculumCookie.getInstance().getCurriculaCoursesMode() != Mode.PROJ && CurriculumCookie.getInstance().getCurriculaCoursesMode() != Mode.SSPROJ) || c == null) {
+				double total = 0.0;
+				if (students != null)
+					for (Long id: students) {
+						Double w = weights.get(id);
+						total += (w == null ? 1.0 : w.doubleValue());
+					}
+				return (int)Math.round(total);
+			}
+			if (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.PROJ) {
+				return c.countProjectedStudents(students, weights);
+			} else {
+				return c.countSnapshotProjectedStudents(students, weights);
+			}
+
+		}
+
 		private StudentsTable(int currentRow) {
 			super();
 			if (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.SSEXP) {	return;	}
@@ -1925,17 +1944,17 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 			for (int c = 0; c < iClassifications.getClassifications().size(); c++) {
 				CurriculumStudentsInterface tc = totals[c];
 				if (iClassifications.getExpected(c) == null) continue;
-				Set<Long> thisEnrollment = (thisCourse[c] == null ? null : (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.ENRL ? thisCourse[c].getEnrolledStudents() :
+				Map<Long, Double> thisEnrollment = (thisCourse[c] == null ? null : (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.ENRL ? thisCourse[c].getEnrolledStudents() :
 					CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.REQ ? thisCourse[c].getRequestedStudents() : thisCourse[c].getLastLikeStudents()));
 				if (thisEnrollment != null && count(tc,thisEnrollment) != 0) {
 					Set<Long> sharedWithOneOther = new HashSet<Long>();
 					Set<Long> sharedWithTwoOther = new HashSet<Long>();
 					Set<Long> sharedWithThreeOther = new HashSet<Long>();
-					Set<Long> sharedWithAll = new HashSet<Long>(thisEnrollment);
-					Set<Long> notShared = new HashSet<Long>(thisEnrollment);
+					Set<Long> sharedWithAll = new HashSet<Long>(thisEnrollment.keySet());
+					Set<Long> notShared = new HashSet<Long>(thisEnrollment.keySet());
 					row = 0;
 					for (CurriculumStudentsInterface[] o: other) {
-						Set<Long> enrl = (o == null || o[c] == null ? null : CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.ENRL ? o[c].getEnrolledStudents() :
+						Map<Long, Double> enrl = (o == null || o[c] == null ? null : CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.ENRL ? o[c].getEnrolledStudents() :
 								CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.REQ ? o[c].getRequestedStudents() : o[c].getLastLikeStudents());
 						if (enrl == null) {
 							sharedWithAll.clear();
@@ -1943,8 +1962,8 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 							continue;
 						}
 						Set<Long> share = new HashSet<Long>();
-						for (Long s: thisEnrollment) {
-							if (enrl.contains(s)) {
+						for (Long s: thisEnrollment.keySet()) {
+							if (enrl.containsKey(s)) {
 								if (!sharedWithOneOther.add(s))
 									if (!sharedWithTwoOther.add(s))
 										sharedWithThreeOther.add(s);
@@ -1952,34 +1971,34 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 							}
 						}
 						for (Iterator<Long> i = sharedWithAll.iterator(); i.hasNext(); )
-							if (!enrl.contains(i.next())) i.remove();
+							if (!enrl.containsKey(i.next())) i.remove();
 						for (Iterator<Long> i = notShared.iterator(); i.hasNext(); )
-							if (enrl.contains(i.next())) i.remove();
-						if (!share.isEmpty() && count(tc, share) != 0) {
+							if (enrl.containsKey(i.next())) i.remove();
+						if (!share.isEmpty() && count(tc, share, thisEnrollment) != 0) {
 							totalC[row] += share.size();
-							iT.setText(6 + row, 1 + column, (CurriculumCookie.getInstance().getCurriculaCoursesPercent() ? NF.format(100.0 * count(tc, share) / count(tc,thisEnrollment)) + "%" : "" + count(tc,share)));
+							iT.setText(6 + row, 1 + column, (CurriculumCookie.getInstance().getCurriculaCoursesPercent() ? NF.format(100.0 * count(tc, share, thisEnrollment) / count(tc,thisEnrollment)) + "%" : "" + count(tc,share, thisEnrollment)));
 						}
 						row++;
 					}
 					boolean percent = CurriculumCookie.getInstance().getCurriculaCoursesPercent();
-					if (!sharedWithOneOther.isEmpty() && count(tc,sharedWithOneOther) != 0) {
-						iT.setText(1, 1 + column, (percent ? NF.format(100.0 * count(tc,sharedWithOneOther) / count(tc,thisEnrollment)) + "%" : "" + count(tc,sharedWithOneOther)));
+					if (!sharedWithOneOther.isEmpty() && count(tc,sharedWithOneOther, thisEnrollment) != 0) {
+						iT.setText(1, 1 + column, (percent ? NF.format(100.0 * count(tc,sharedWithOneOther, thisEnrollment) / count(tc,thisEnrollment)) + "%" : "" + count(tc,sharedWithOneOther, thisEnrollment)));
 						has1 = true;
 					}
-					if (!sharedWithTwoOther.isEmpty() && count(tc,sharedWithTwoOther) != 0) {
-						iT.setText(2, 1 + column, (percent ? NF.format(100.0 * count(tc,sharedWithTwoOther) / count(tc,thisEnrollment)) + "%" : "" + count(tc,sharedWithTwoOther)));
+					if (!sharedWithTwoOther.isEmpty() && count(tc,sharedWithTwoOther, thisEnrollment) != 0) {
+						iT.setText(2, 1 + column, (percent ? NF.format(100.0 * count(tc,sharedWithTwoOther, thisEnrollment) / count(tc,thisEnrollment)) + "%" : "" + count(tc,sharedWithTwoOther, thisEnrollment)));
 						has2 = true;
 					}
-					if (!sharedWithThreeOther.isEmpty() && count(tc,sharedWithThreeOther) != 0) {
-						iT.setText(3, 1 + column, (percent ? NF.format(100.0 * count(tc,sharedWithThreeOther) / count(tc,thisEnrollment)) + "%" : "" + count(tc,sharedWithThreeOther)));
+					if (!sharedWithThreeOther.isEmpty() && count(tc,sharedWithThreeOther, thisEnrollment) != 0) {
+						iT.setText(3, 1 + column, (percent ? NF.format(100.0 * count(tc,sharedWithThreeOther, thisEnrollment) / count(tc,thisEnrollment)) + "%" : "" + count(tc,sharedWithThreeOther, thisEnrollment)));
 						has3 = true;
 					}
-					if (!sharedWithAll.isEmpty() && count(tc,sharedWithAll) != 0) {
-						iT.setText(4, 1 + column, (percent ? NF.format(100.0 * count(tc,sharedWithAll) / count(tc,thisEnrollment)) + "%" : "" + count(tc,sharedWithAll)));
+					if (!sharedWithAll.isEmpty() && count(tc,sharedWithAll, thisEnrollment) != 0) {
+						iT.setText(4, 1 + column, (percent ? NF.format(100.0 * count(tc,sharedWithAll, thisEnrollment) / count(tc,thisEnrollment)) + "%" : "" + count(tc,sharedWithAll, thisEnrollment)));
 						hasAll = true;
 					}
-					if (!notShared.isEmpty() && count(tc,notShared) != 0) {
-						iT.setText(5, 1 + column, (percent ? NF.format(100.0 * count(tc,notShared) / count(tc,thisEnrollment)) + "%" : "" + count(tc,notShared)));
+					if (!notShared.isEmpty() && count(tc,notShared, thisEnrollment) != 0) {
+						iT.setText(5, 1 + column, (percent ? NF.format(100.0 * count(tc,notShared, thisEnrollment) / count(tc,thisEnrollment)) + "%" : "" + count(tc,notShared, thisEnrollment)));
 						hasNone = true;
 					}
 				}

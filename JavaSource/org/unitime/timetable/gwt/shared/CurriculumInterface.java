@@ -21,7 +21,7 @@ package org.unitime.timetable.gwt.shared;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -746,9 +746,9 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 	}
 	
 	public static class CurriculumStudentsInterface implements IsSerializable {
-		private Set<Long> iEnrollment = null;
-		private Set<Long> iRequested = null;
-		private HashMap<Long, Set<String>> iLastLike = null;
+		private Map<Long, Double> iEnrollment = null;
+		private Map<Long, Double> iRequested = null;
+		private HashMap<Long, Map<String, Double>> iLastLike = null;
 		private HashMap<String, Float> iProjection = null;
 		private HashMap<String, Float> iSnapshotProjection = null;
 		private boolean iSessionHasSnapshotData = false;
@@ -756,11 +756,18 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		public CurriculumStudentsInterface() {}
 		
 		public int getEnrollment() {
-			return (iEnrollment == null || iEnrollment.isEmpty() ? 0 : iEnrollment.size());
+			return (iEnrollment == null || iEnrollment.isEmpty() ? 0 : count(iEnrollment));
 		}		
 		public int getLastLike() {
 			if (iLastLike == null || iLastLike.isEmpty()) return 0;
-			return iLastLike.size();
+			double total = 0.0;
+			for (Map.Entry<Long, Map<String, Double>> e: iLastLike.entrySet()) {
+				double w = 0.0;
+				for (Double d: e.getValue().values())
+					w += d;
+				total += Math.min(w, 1.0);
+			}
+			return (int)Math.round(total);
 		}
 		
 		public boolean isSessionHasSnapshotData() { return(iSessionHasSnapshotData); }
@@ -768,84 +775,147 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 
 		public int getProjection() {
 			if (iLastLike == null || iLastLike.isEmpty()) return 0;
-			if (iProjection == null) return iLastLike.size();
+			if (iProjection == null) return getLastLike();
 			double proj = 0;
-			for (Map.Entry<Long, Set<String>> entry: iLastLike.entrySet()) {
-				double weight = 1.0;
-				int cnt = 0;
-				for (String major: entry.getValue()) {
-					Float f = iProjection.get(major);
+			for (Map.Entry<Long, Map<String, Double>> entry: iLastLike.entrySet()) {
+				double weight = 0.0;
+				double total = 0.0;
+				for (Map.Entry<String, Double> major: entry.getValue().entrySet()) {
+					Float f = iProjection.get(major.getKey());
 					if (f == null) f = iProjection.get("");
 					if (f != null) {
-						weight *= f; cnt ++;
+						weight += major.getValue() * f;
+					} else {
+						weight += major.getValue();
 					}
+					total += major.getValue();
 				}
-				proj += (cnt == 0 ? 1.0f : cnt == 1 ? weight : Math.pow(weight, 1.0 / cnt));
+				if (total > 1.0)
+					proj += weight / total;
+				else
+					proj += weight;
 			}
 			return (int) Math.round(proj);
 		}
 		
 		public int getSnapshotProjection() {
-			if (!iSessionHasSnapshotData) {
-				return(0);
-			}
+			if (!iSessionHasSnapshotData) return 0;
 			if (iLastLike == null || iLastLike.isEmpty()) return 0;
-			if (iSnapshotProjection == null) return iLastLike.size();
-			double ssProj = 0;
-			for (Map.Entry<Long, Set<String>> entry: iLastLike.entrySet()) {
-				double weight = 1.0;
-				int cnt = 0;
-				for (String major: entry.getValue()) {
-					Float f = iSnapshotProjection.get(major);
+			if (iSnapshotProjection == null) return getLastLike();
+			double proj = 0;
+			for (Map.Entry<Long, Map<String, Double>> entry: iLastLike.entrySet()) {
+				double weight = 0.0;
+				double total = 0.0;
+				for (Map.Entry<String, Double> major: entry.getValue().entrySet()) {
+					Float f = iSnapshotProjection.get(major.getKey());
 					if (f == null) f = iSnapshotProjection.get("");
 					if (f != null) {
-						weight *= f; cnt ++;
+						weight += major.getValue() * f;
+					} else {
+						weight += major.getValue();
 					}
+					total += major.getValue();
 				}
-				ssProj += (cnt == 0 ? 1.0f : cnt == 1 ? weight : Math.pow(weight, 1.0 / cnt));
+				if (total > 1.0)
+					proj += weight / total;
+				else
+					proj += weight;
 			}
-			return (int) Math.round(ssProj);
+			return (int) Math.round(proj);
 		}
 
 		public int getRequested() {
-			return (iRequested == null || iRequested.isEmpty() ? 0 : iRequested.size());
+			return (iRequested == null || iRequested.isEmpty() ? 0 : count(iRequested));
 		}
 		
-		public Set<Long> getEnrolledStudents() {
+		public Map<Long, Double> getEnrolledStudents() {
 			return iEnrollment;
 		}
 		
-		public Set<Long> getLastLikeStudents() {
+		public Map<Long, Double> getLastLikeStudents() {
 			if (iLastLike == null || iLastLike.isEmpty()) return null;
-			return iLastLike.keySet();
+			Map<Long, Double> ret = new HashMap<Long, Double>();
+			for (Map.Entry<Long, Map<String, Double>> e: iLastLike.entrySet()) {
+				double total = 0.0;
+				for (Double w: e.getValue().values())
+					total += w;
+				ret.put(e.getKey(), total);
+			}
+			return ret;
 		}
 		
-		public Set<Long> getProjectedStudents() {
+		public Map<Long, Double> getProjectedStudents() {
 			return getLastLikeStudents();
 		}
 		
-		public int countProjectedStudents(Set<Long> students) {
+		public int countProjectedStudents(Map<Long, Double> students) {
 			if (iLastLike == null || iLastLike.isEmpty()) return 0;
 			if (iProjection == null) return students.size();
 			double proj = 0;
-			for (Long student: students) {
-				Set<String> majors = iLastLike.get(student);
+			for (Map.Entry<Long, Double> student: students.entrySet()) {
+				Map<String, Double> majors = iLastLike.get(student.getKey());
 				if (majors == null) continue;
 				double weight = 1.0;
 				int cnt = 0;
-				for (String major: majors) {
-					Float f = iProjection.get(major);
+				for (Map.Entry<String, Double> major: majors.entrySet()) {
+					Float f = iProjection.get(major.getKey());
 					if (f == null) f = iProjection.get("");
 					if (f != null)
-						weight *= f;
+						weight *= f * major.getValue();
 					cnt ++;
 				}
-				proj += (cnt == 0 ? 1.0f : cnt == 1 ? weight : Math.pow(weight, 1.0 / cnt));
+				proj += student.getValue() * (cnt == 0 ? 1.0f : cnt == 1 ? weight : Math.pow(weight, 1.0 / cnt));
 			}
 			return (int) Math.round(proj);
 		}
 		
-		public int countSnapshotProjectedStudents(Set<Long> students) {
+		public int countSnapshotProjectedStudents(Map<Long, Double> students) {
+			if (!iSessionHasSnapshotData) {
+				return(0);
+			}
+			if (iLastLike == null || iLastLike.isEmpty()) return 0;
+			if (iSnapshotProjection == null) return students.size();
+			double ssproj = 0;
+			for (Map.Entry<Long, Double> student: students.entrySet()) {
+				Map<String, Double> majors = iLastLike.get(student.getKey());
+				if (majors == null) continue;
+				double weight = 1.0;
+				int cnt = 0;
+				for (Map.Entry<String, Double> major: majors.entrySet()) {
+					Float f = iSnapshotProjection.get(major.getKey());
+					if (f == null) f = iSnapshotProjection.get("");
+					if (f != null)
+						weight *= f * major.getValue();
+					cnt ++;
+				}
+				ssproj += student.getValue() * (cnt == 0 ? 1.0f : cnt == 1 ? weight : Math.pow(weight, 1.0 / cnt));
+			}
+			return (int) Math.round(ssproj);
+		}
+		
+		public int countProjectedStudents(Set<Long> students, Map<Long, Double> weights) {
+			if (iLastLike == null || iLastLike.isEmpty()) return 0;
+			if (iProjection == null) return students.size();
+			double proj = 0;
+			for (Long student: students) {
+				Map<String, Double> majors = iLastLike.get(student);
+				if (majors == null) continue;
+				double weight = 1.0;
+				int cnt = 0;
+				for (Map.Entry<String, Double> major: majors.entrySet()) {
+					Float f = iProjection.get(major.getKey());
+					if (f == null) f = iProjection.get("");
+					if (f != null)
+						weight *= f * major.getValue();
+					cnt ++;
+				}
+				Double w = weights.get(student);
+				proj += (w == null ? 1.0 : w.doubleValue()) * (cnt == 0 ? 1.0f : cnt == 1 ? weight : Math.pow(weight, 1.0 / cnt));
+			}
+			return (int) Math.round(proj);
+		}
+		
+		public int countSnapshotProjectedStudents(Set<Long> students, Map<Long, Double> weights) {
 			if (!iSessionHasSnapshotData) {
 				return(0);
 			}
@@ -853,41 +923,42 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 			if (iSnapshotProjection == null) return students.size();
 			double ssproj = 0;
 			for (Long student: students) {
-				Set<String> majors = iLastLike.get(student);
+				Map<String, Double> majors = iLastLike.get(student);
 				if (majors == null) continue;
 				double weight = 1.0;
 				int cnt = 0;
-				for (String major: majors) {
-					Float f = iSnapshotProjection.get(major);
+				for (Map.Entry<String, Double> major: majors.entrySet()) {
+					Float f = iSnapshotProjection.get(major.getKey());
 					if (f == null) f = iSnapshotProjection.get("");
 					if (f != null)
-						weight *= f;
+						weight *= f * major.getValue();
 					cnt ++;
 				}
-				ssproj += (cnt == 0 ? 1.0f : cnt == 1 ? weight : Math.pow(weight, 1.0 / cnt));
+				Double w = weights.get(student);
+				ssproj += (w == null ? 1.0 : w.doubleValue()) * (cnt == 0 ? 1.0f : cnt == 1 ? weight : Math.pow(weight, 1.0 / cnt));
 			}
 			return (int) Math.round(ssproj);
 		}
 
-		public Set<Long> getRequestedStudents() {
+		public Map<Long, Double> getRequestedStudents() {
 			return iRequested;
 		}
 		
-		public void setEnrolledStudents(Set<Long> students) { iEnrollment = students; }
+		public void setEnrolledStudents(Map<Long, Double> students) { iEnrollment = students; }
 		
-		public void setLastLikeStudents(HashMap<String, Set<Long>> students) {
+		public void setLastLikeStudents(HashMap<String, Map<Long, Double>> students) {
 			if (students == null) {
 				iLastLike = null;
 			} else {
-				iLastLike = new HashMap<Long, Set<String>>();
-				for (Map.Entry<String, Set<Long>> entry: students.entrySet()) {
-					for (Long student: entry.getValue()) {
-						Set<String> majors = iLastLike.get(student);
+				iLastLike = new HashMap<Long, Map<String, Double>>();
+				for (Map.Entry<String, Map<Long, Double>> entry: students.entrySet()) {
+					for (Map.Entry<Long, Double> student: entry.getValue().entrySet()) {
+						Map<String, Double> majors = iLastLike.get(student.getKey());
 						if (majors == null) {
-							majors = new HashSet<String>();
-							iLastLike.put(student, majors);
+							majors = new HashMap<String, Double>();
+							iLastLike.put(student.getKey(), majors);
 						}
-						majors.add(entry.getKey());
+						majors.put(entry.getKey(), student.getValue());
 					}
 				}
 			}
@@ -896,12 +967,48 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		public void setProjection(HashMap<String, Float> projection) { iProjection = projection; }
 		public void setSnapshotProjection(HashMap<String, Float> snapshotProjection) { iSnapshotProjection = snapshotProjection; }
 		
-		public void setRequestedStudents(Set<Long> students) { iRequested = students; }
+		public void setRequestedStudents(Map<Long, Double> students) { iRequested = students; }
 	}
 	
 	public static class CurriculumFilterRpcRequest extends FilterRpcRequest {
 		private static final long serialVersionUID = 1L;
 		
 		public CurriculumFilterRpcRequest() {}
+	}
+	
+	public static int count(Map<Long, Double> col) {
+		if (col == null) return 0;
+		double total = 0.0;
+		for (Double w: col.values()) total += w;
+		return (int)Math.round(total);			
+	}
+	
+	public static double addAll(Map<Long, Double> students, Map<Long, Double> other) {
+		double total = 0.0;
+		for (Map.Entry<Long, Double> e: other.entrySet()) {
+			Double w = students.get(e.getKey());
+			if (w == null)
+				students.put(e.getKey(), e.getValue());
+			else
+				students.put(e.getKey(), Math.min(e.getValue() + w, 1.0));
+			total += e.getValue();
+		}
+		return total;
+	}
+	
+	public static void retainAll(Map<Long, Double> students, Map<Long, Double> other) {
+		for (Iterator<Map.Entry<Long, Double>> i = students.entrySet().iterator(); i.hasNext(); ) {
+			Map.Entry<Long, Double> e = i.next();
+			Double w = other.get(e.getKey());
+			if (w == null)
+				i.remove();
+			else
+				students.put(e.getKey(), e.getValue() + w);
+		}
+	}
+	
+	public static void removeAll(Map<Long, Double> students, Map<Long, Double> other) {
+		for (Map.Entry<Long, Double> e: other.entrySet())
+			students.remove(e.getKey());
 	}
 }

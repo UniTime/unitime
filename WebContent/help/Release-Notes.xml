@@ -28,6 +28,17 @@
 	<version>4.5.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Student Academic Area Classification Major Weight</name>
+			<description>
+				<line>Added ability to add a weight to each (area, classification, major) combination that a student has.</line>
+				<line>It defaults to 1.0 and can be used to avoid double counting a student with two or more majors.</line>
+				<line>Added optional weight parameter in Students XML and Student Course Requests XML import and export.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Advisor Course Recommendations</title>
 		<item>
 			<name>Last Additional Notes</name>

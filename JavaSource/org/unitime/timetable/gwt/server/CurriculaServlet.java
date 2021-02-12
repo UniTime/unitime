@@ -609,9 +609,9 @@ public class CurriculaServlet implements CurriculaService {
 											Integer ll = m2l.getValue().get(courseIfc.getId());
 											if (ll != null) {
 												courseLastLike += ll;
-												courseProj += getProjection(rules, m2l.getKey(), clasfIfc.getAcademicClassification().getCode());
+												courseProj += ll * getProjection(rules, m2l.getKey(), clasfIfc.getAcademicClassification().getCode());
 												if (hasSnapshotData) {
-													courseSnapshotProj += getSnapshotProjection(snapshotRules, m2l.getKey(), clasfIfc.getAcademicClassification().getCode());
+													courseSnapshotProj += ll * getSnapshotProjection(snapshotRules, m2l.getKey(), clasfIfc.getAcademicClassification().getCode());
 												}
 											}
 										}
@@ -1486,17 +1486,17 @@ public class CurriculaServlet implements CurriculaService {
 					posMajors.add(PosMajorDAO.getInstance().get(majorId,hibSession));
 				}
 				
-				Hashtable<Long, Set<Long>> clasf2enrl = loadClasf2enrl(hibSession, acadAreaId, majors, multipleMajors);
+				Hashtable<Long, Map<Long, Double>> clasf2enrl = loadClasf2enrl(hibSession, acadAreaId, majors, multipleMajors);
 				
-				Hashtable<Long, Set<Long>> clasf2req = loadClasf2req(hibSession, acadAreaId, majors, multipleMajors);
+				Hashtable<Long, Map<Long, Double>> clasf2req = loadClasf2req(hibSession, acadAreaId, majors, multipleMajors);
 
-				Hashtable<Long, Hashtable<CourseInterface, Set<Long>>> clasf2course2enrl = loadClasfCourse2enrl(hibSession, acadAreaId, majors, multipleMajors);
+				Hashtable<Long, Hashtable<CourseInterface, Map<Long, Double>>> clasf2course2enrl = loadClasfCourse2enrl(hibSession, acadAreaId, majors, multipleMajors);
 				
-				Hashtable<Long, Hashtable<CourseInterface, Set<Long>>> clasf2course2req = loadClasfCourse2req(hibSession, acadAreaId, majors, multipleMajors);
+				Hashtable<Long, Hashtable<CourseInterface, Map<Long, Double>>> clasf2course2req = loadClasfCourse2req(hibSession, acadAreaId, majors, multipleMajors);
 				
-				Hashtable<String, HashMap<String, Set<Long>>> clasf2ll = loadClasfMajor2ll(hibSession, acadArea.getAcademicAreaAbbreviation(), posMajors, multipleMajors);
+				Hashtable<String, HashMap<String, Map<Long, Double>>> clasf2ll = loadClasfMajor2ll(hibSession, acadArea.getAcademicAreaAbbreviation(), posMajors, multipleMajors);
 				
-				Hashtable<String, Hashtable<CourseInterface, HashMap<String, Set<Long>>>> clasf2course2ll = loadClasfCourseMajor2ll(hibSession, acadArea.getAcademicAreaAbbreviation(), posMajors, multipleMajors);
+				Hashtable<String, Hashtable<CourseInterface, HashMap<String, Map<Long, Double>>>> clasf2course2ll = loadClasfCourseMajor2ll(hibSession, acadArea.getAcademicAreaAbbreviation(), posMajors, multipleMajors);
 				
 				for (AcademicClassificationInterface clasf: classifications) {
 					
@@ -1515,9 +1515,9 @@ public class CurriculaServlet implements CurriculaService {
 					x[col].setSnapshotProjection(snapshotRules.get(clasf.getCode()));
 					x[col].setSessionHasSnapshotData(hasSnapshotData);
 					
-					Hashtable<CourseInterface, HashMap<String, Set<Long>>> lastLike = clasf2course2ll.get(clasf.getCode());
-					Hashtable<CourseInterface, Set<Long>> enrollment = clasf2course2enrl.get(clasf.getId());
-					Hashtable<CourseInterface, Set<Long>> requested = clasf2course2req.get(clasf.getId());
+					Hashtable<CourseInterface, HashMap<String, Map<Long, Double>>> lastLike = clasf2course2ll.get(clasf.getCode());
+					Hashtable<CourseInterface, Map<Long, Double>> enrollment = clasf2course2enrl.get(clasf.getId());
+					Hashtable<CourseInterface, Map<Long, Double>> requested = clasf2course2req.get(clasf.getId());
 					
 					TreeSet<CourseInterface> courses = new TreeSet<CourseInterface>(new Comparator<CourseInterface>() {
 						public int compare(CourseInterface c1, CourseInterface c2) {
@@ -1576,11 +1576,11 @@ public class CurriculaServlet implements CurriculaService {
 			classifications.put(clasf.getId(), idx++);
 		}
 		
-		Map<Long, Map<Long, Map<Long, Set<Long>>>> area2major2clasf2enrl = loadAreaMajorClasf2enrl(hibSession, courseOffering.getUniqueId());
+		Map<Long, Map<Long, Map<Long, Map<Long, Double>>>> area2major2clasf2enrl = loadAreaMajorClasf2enrl(hibSession, courseOffering.getUniqueId());
 		
-		Map<String, Map<String, Map<String, Set<Long>>>> area2major2clasf2ll = loadAreaMajorClasf2ll(hibSession, courseOffering.getUniqueId());
+		Map<String, Map<String, Map<String, Map<Long, Double>>>> area2major2clasf2ll = loadAreaMajorClasf2ll(hibSession, courseOffering.getUniqueId());
 		
-		Map<Long, Map<Long, Map<Long, Set<Long>>>> area2major2clasf2req = loadAreaMajorClasf2req(hibSession, courseOffering.getUniqueId());
+		Map<Long, Map<Long, Map<Long, Map<Long, Double>>>> area2major2clasf2req = loadAreaMajorClasf2req(hibSession, courseOffering.getUniqueId());
 		
 		Hashtable<Long, CurriculumInterface> curricula = new Hashtable<Long, CurriculumInterface>();
 		Hashtable<Long, Hashtable<Long, Integer>> cur2clasf2enrl = new Hashtable<Long, Hashtable<Long, Integer>>();
@@ -1695,7 +1695,7 @@ public class CurriculaServlet implements CurriculaService {
 						if (curCourseIfc.getDefaultShare() < course.getPercShare()) {
 							curCourseIfc.setDefaultShare(course.getPercShare());
 						}
-						if (curCourseIfc.getDefaultSnapshotShare() < course.getSnapshotPercShare()) {
+						if (hasSnapshotData && curCourseIfc.getDefaultSnapshotShare() < course.getSnapshotPercShare()) {
 							curCourseIfc.setDefaultSnapshotShare(course.getSnapshotPercShare());
 						}
 					}
@@ -1805,122 +1805,119 @@ public class CurriculaServlet implements CurriculaService {
 			}
 			for (AcademicClassificationInterface clasf : academicClassifications) {
 				int enrl = 0;
-				Map<Long, Map<Long, Set<Long>>> major2clasf2enrl = area2major2clasf2enrl.get(curriculumIfc.getAcademicArea().getId());
+				Map<Long, Map<Long, Map<Long, Double>>> major2clasf2enrl = area2major2clasf2enrl.get(curriculumIfc.getAcademicArea().getId());
 				if (major2clasf2enrl != null) {
 					if (!curriculumIfc.hasMajors()) {
 						if (curriculumIfc.isMultipleMajors()) {
-							Map<Long, Set<Long>> clasf2enrl = major2clasf2enrl.get(-1l);
-							Set<Long> e = (clasf2enrl == null ? null : clasf2enrl.get(clasf.getId()));
+							Map<Long, Map<Long, Double>> clasf2enrl = major2clasf2enrl.get(-1l);
+							Map<Long, Double> e = (clasf2enrl == null ? null : clasf2enrl.get(clasf.getId()));
 							if (e != null) {
-								enrl += e.size();
+								enrl += CurriculumInterface.count(e);
 								clasf2enrl.remove(clasf.getId());
 							}
 						} else {
-							Set<Long> s = new HashSet<Long>();
-							for (Map<Long, Set<Long>> clasf2enrl: major2clasf2enrl.values()) {
-								Set<Long> e = (clasf2enrl == null ? null : clasf2enrl.get(clasf.getId()));
+							Map<Long, Double> s = new HashMap<Long, Double>();
+							for (Map<Long, Map<Long, Double>> clasf2enrl: major2clasf2enrl.values()) {
+								Map<Long, Double> e = (clasf2enrl == null ? null : clasf2enrl.get(clasf.getId()));
 								if (e != null) {
-									s.addAll(e);
+									CurriculumInterface.addAll(s, e);
 									clasf2enrl.remove(clasf.getId());
 								}
 							}
-							enrl += s.size();
+							enrl += CurriculumInterface.count(s);
 						}
 					} else {
 						if (curriculumIfc.isMultipleMajors()) {
-							Set<Long> s = null;
+							Map<Long, Double> s = null;
 							for (MajorInterface m: curriculumIfc.getMajors()) {
-								Map<Long, Set<Long>> clasf2enrl = major2clasf2enrl.get(m.getId());
-								Set<Long> e = (clasf2enrl == null ? null : clasf2enrl.get(clasf.getId()));
+								Map<Long, Map<Long, Double>> clasf2enrl = major2clasf2enrl.get(m.getId());
+								Map<Long, Double> e = (clasf2enrl == null ? null : clasf2enrl.get(clasf.getId()));
 								if (e == null) {
 									if (s == null)
-										s = new HashSet<Long>();
+										s = new HashMap<Long, Double>();
 									else
 										s.clear();
 								} else {
 									if (s == null)
-										s = new HashSet<Long>(e);
+										s = new HashMap<Long, Double>(e);
 									else
-										s.retainAll(e);
+										CurriculumInterface.retainAll(s, e);
 								}
 							}
 							if (s != null && !s.isEmpty()) {
-								enrl += s.size();
+								enrl += CurriculumInterface.count(s);
 								for (MajorInterface m: curriculumIfc.getMajors()) {
-									Map<Long, Set<Long>> clasf2enrl = major2clasf2enrl.get(m.getId());
-									Set<Long> e = (clasf2enrl == null ? null : clasf2enrl.get(clasf.getId()));
+									Map<Long, Map<Long, Double>> clasf2enrl = major2clasf2enrl.get(m.getId());
+									Map<Long, Double> e = (clasf2enrl == null ? null : clasf2enrl.get(clasf.getId()));
 									if (e != null) {
-										e.removeAll(s);
+										CurriculumInterface.removeAll(e, s);
 										if (e.isEmpty())
 											clasf2enrl.remove(clasf.getId());
 									}
 								}
 							}
 						} else {
-							Set<Long> s = new HashSet();
+							Map<Long, Double> s = new HashMap<Long, Double>();
 							for (MajorInterface m: curriculumIfc.getMajors()) {
-								Map<Long, Set<Long>> clasf2enrl = major2clasf2enrl.get(m.getId());
-								Set<Long> e = (clasf2enrl == null ? null : clasf2enrl.get(clasf.getId()));
+								Map<Long, Map<Long, Double>> clasf2enrl = major2clasf2enrl.get(m.getId());
+								Map<Long, Double> e = (clasf2enrl == null ? null : clasf2enrl.get(clasf.getId()));
 								if (e != null) {
-									s.addAll(e);
+									CurriculumInterface.addAll(s, e);
 									clasf2enrl.remove(clasf.getId());
 								}
 							}
-							enrl += s.size();
+							enrl += CurriculumInterface.count(s);
 						}
 					}
 				}
 				
 				int lastLike = 0;
-				float proj = 0.0f;
-				float snapshotProj = 0.0f;
-				Map<String, Map<String, Set<Long>>> major2clasf2ll = area2major2clasf2ll.get(curriculumIfc.getAcademicArea().getAbbv());
+				double proj = 0.0f;
+				double snapshotProj = 0.0f;
+				Map<String, Map<String, Map<Long, Double>>> major2clasf2ll = area2major2clasf2ll.get(curriculumIfc.getAcademicArea().getAbbv());
 				if (major2clasf2ll != null) {
 					if (!curriculumIfc.hasMajors()) {
 						if (curriculumIfc.isMultipleMajors()) {
-							Map<String, Set<Long>> clasf2ll = major2clasf2ll.get("");
-							Set<Long> e = (clasf2ll == null ? null : clasf2ll.get(clasf.getCode()));
+							Map<String, Map<Long, Double>> clasf2ll = major2clasf2ll.get("");
+							Map<Long, Double> e = (clasf2ll == null ? null : clasf2ll.get(clasf.getCode()));
 							if (e != null) {
-								lastLike += e.size();
+								lastLike += CurriculumInterface.count(e);
 								clasf2ll.remove(clasf.getCode());
 							}
 						} else {
-							Set<Long> s = new HashSet<Long>();
-							for (Map.Entry<String, Map<String, Set<Long>>> entry : major2clasf2ll.entrySet()) {
-								Map<String, Set<Long>> clasf2ll = entry.getValue();
-								Set<Long> e = (clasf2ll == null ? null : clasf2ll.get(clasf.getCode()));
+							Map<Long, Double> s = new HashMap<Long, Double>();
+							for (Map.Entry<String, Map<String, Map<Long, Double>>> entry : major2clasf2ll.entrySet()) {
+								Map<String, Map<Long, Double>> clasf2ll = entry.getValue();
+								Map<Long, Double> e = (clasf2ll == null ? null : clasf2ll.get(clasf.getCode()));
 								if (e != null) {
-									int add = 0;
-									for (Long id: e)
-										if (s.add(id)) add++;
+									double add = CurriculumInterface.addAll(s, e);
 									proj += getProjection(rules, entry.getKey(), clasf.getCode()) * add;
 									if (hasSnapshotData) {
-										snapshotProj += getSnapshotProjection(snapshotRules, entry.getKey(),
-												clasf.getCode()) * add;
+										snapshotProj += getSnapshotProjection(snapshotRules, entry.getKey(), clasf.getCode()) * add;
 									}
 									clasf2ll.remove(clasf.getCode());
 								}
 							}
-							lastLike += s.size();
+							lastLike += CurriculumInterface.count(s);
 						}
 					} else {
 						if (curriculumIfc.isMultipleMajors()) {
-							Set<Long> s = null;
+							Map<Long, Double> s = null;
 							float p = 1.0f;
 							float ssp = 1.0f;
 							for (MajorInterface m : curriculumIfc.getMajors()) {
-								Map<String, Set<Long>> clasf2ll = major2clasf2ll.get(m.getCode());
-								Set<Long> e = (clasf2ll == null ? null : clasf2ll.get(clasf.getCode()));
+								Map<String, Map<Long, Double>> clasf2ll = major2clasf2ll.get(m.getCode());
+								Map<Long, Double> e = (clasf2ll == null ? null : clasf2ll.get(clasf.getCode()));
 								if (e == null) {
 									if (s == null)
-										s = new HashSet<Long>();
+										s = new HashMap<Long, Double>();
 									else
 										s.clear();
 								} else {
 									if (s == null)
-										s = new HashSet<Long>(e);
+										s = new HashMap<Long, Double>(e);
 									else
-										s.retainAll(e);
+										CurriculumInterface.retainAll(s, e);
 								}
 								p *= getProjection(rules, m.getCode(), clasf.getCode());
 								if (hasSnapshotData) {
@@ -1928,107 +1925,103 @@ public class CurriculaServlet implements CurriculaService {
 								}
 							}
 							if (s != null && !s.isEmpty()) {
-								lastLike += s.size();
-								proj += Math.pow(p, 1.0 / curriculumIfc.getMajors().size()) * s.size();
+								lastLike += CurriculumInterface.count(s);
+								proj += Math.pow(p, 1.0 / curriculumIfc.getMajors().size()) * CurriculumInterface.count(s);
 								if (hasSnapshotData) {
-									snapshotProj += Math.pow(ssp, 1.0 / curriculumIfc.getMajors().size()) * s.size();
+									snapshotProj += Math.pow(ssp, 1.0 / curriculumIfc.getMajors().size()) * CurriculumInterface.count(s);
 								}
 								for (MajorInterface m: curriculumIfc.getMajors()) {
-									Map<String, Set<Long>> clasf2ll = major2clasf2ll.get(m.getCode());
-									Set<Long> e = (clasf2ll == null ? null : clasf2ll.get(clasf.getCode()));
+									Map<String, Map<Long, Double>> clasf2ll = major2clasf2ll.get(m.getCode());
+									Map<Long, Double> e = (clasf2ll == null ? null : clasf2ll.get(clasf.getCode()));
 									if (e != null) {
-										e.removeAll(s);
+										CurriculumInterface.removeAll(e, s);
 										if (e.isEmpty())
 											clasf2ll.remove(clasf.getCode());
 									}
 								}
 							}
 						} else {
-							Set<Long> s = new HashSet();
+							Map<Long, Double> s = new HashMap<Long, Double>();
 							for (MajorInterface m: curriculumIfc.getMajors()) {
-								Map<String, Set<Long>> clasf2ll = major2clasf2ll.get(m.getCode());
-								Set<Long> e = (clasf2ll == null ? null : clasf2ll.get(clasf.getCode()));
+								Map<String, Map<Long, Double>> clasf2ll = major2clasf2ll.get(m.getCode());
+								Map<Long, Double> e = (clasf2ll == null ? null : clasf2ll.get(clasf.getCode()));
 								if (e != null) {
-									int add = 0;
-									for (Long id: e)
-										if (s.add(id)) add ++;
+									double add = CurriculumInterface.addAll(s, e);
 									proj += getProjection(rules, m.getCode(), clasf.getCode()) * add;
 									if (hasSnapshotData) {
-										snapshotProj += getSnapshotProjection(snapshotRules, m.getCode(),
-												clasf.getCode()) * add;
+										snapshotProj += getSnapshotProjection(snapshotRules, m.getCode(), clasf.getCode()) * add;
 									}
-									s.addAll(e);
 									clasf2ll.remove(clasf.getCode());
 								}
 							}
-							lastLike += s.size();
+							lastLike += CurriculumInterface.count(s);
 						}
 					}
 				}
 				
 				int req = 0;
-				Map<Long, Map<Long, Set<Long>>> major2clasf2req = area2major2clasf2req.get(curriculumIfc.getAcademicArea().getId());
+				Map<Long, Map<Long, Map<Long, Double>>> major2clasf2req = area2major2clasf2req.get(curriculumIfc.getAcademicArea().getId());
 				if (major2clasf2req != null) {
 					if (!curriculumIfc.hasMajors()) {
 						if (curriculumIfc.isMultipleMajors()) {
-							Map<Long, Set<Long>> clasf2req = major2clasf2req.get(-1l);
-							Set<Long> e = (clasf2req == null ? null : clasf2req.get(clasf.getId()));
+							Map<Long, Map<Long, Double>> clasf2req = major2clasf2req.get(-1l);
+							Map<Long, Double> e = (clasf2req == null ? null : clasf2req.get(clasf.getId()));
 							if (e != null) {
-								req += e.size();
+								req += CurriculumInterface.count(e);
 								clasf2req.remove(-1l);
 							}
 						} else {
-							Set<Long> s = new HashSet<Long>();
-							for (Map<Long, Set<Long>> clasf2req: major2clasf2req.values()) {
-								Set<Long> e = (clasf2req == null ? null : clasf2req.get(clasf.getId()));
+							Map<Long, Double> s = new HashMap<Long, Double>();
+							for (Map<Long, Map<Long, Double>> clasf2req: major2clasf2req.values()) {
+								Map<Long, Double> e = (clasf2req == null ? null : clasf2req.get(clasf.getId()));
 								if (e != null) {
-									s.addAll(e);
+									CurriculumInterface.addAll(s, e);
 									clasf2req.remove(clasf.getId());
 								}
 							}
-							req += s.size();
+							req += CurriculumInterface.count(s);
 						}
 					} else {
 						if (curriculumIfc.isMultipleMajors()) {
-							Set<Long> s = null;
+							Map<Long, Double> s = null;
 							for (MajorInterface m: curriculumIfc.getMajors()) {
-								Map<Long, Set<Long>> clasf2req = major2clasf2req.get(m.getId());
-								Set<Long> e = (clasf2req == null ? null : clasf2req.get(clasf.getId()));
+								Map<Long, Map<Long, Double>> clasf2req = major2clasf2req.get(m.getId());
+								Map<Long, Double> e = (clasf2req == null ? null : clasf2req.get(clasf.getId()));
 								if (e == null) {
 									if (s == null)
-										s = new HashSet<Long>();
+										s = new HashMap<Long, Double>();
 									else
 										s.clear();
 								} else {
 									if (s == null)
-										s = new HashSet<Long>(e);
+										s = new HashMap<Long, Double>(e);
 									else
-										s.retainAll(e);
+										CurriculumInterface.retainAll(s, e);
 								}
 							}
 							if (s != null && !s.isEmpty()) {
-								req += s.size();
+								req += CurriculumInterface.count(s);
 								for (MajorInterface m: curriculumIfc.getMajors()) {
-									Map<Long, Set<Long>> clasf2req = major2clasf2req.get(m.getId());
-									Set<Long> e = (clasf2req == null ? null : clasf2req.get(clasf.getId()));
+									Map<Long, Map<Long, Double>> clasf2req = major2clasf2req.get(m.getId());
+									Map<Long, Double> e = (clasf2req == null ? null : clasf2req.get(clasf.getId()));
 									if (e != null) {
-										e.removeAll(s);
+										CurriculumInterface.removeAll(e, s);
 										if (e.isEmpty())
 											clasf2req.remove(clasf.getId());
 									}
 								}
 							}
 						} else {
-							Set<Long> s = new HashSet();
+							Map<Long, Double> s = new HashMap<Long, Double>();
 							for (MajorInterface m: curriculumIfc.getMajors()) {
-								Map<Long, Set<Long>> clasf2req = major2clasf2req.get(m.getId());
-								Set<Long> e = (clasf2req == null ? null : clasf2req.get(clasf.getId()));
+								Map<Long, Map<Long, Double>> clasf2req = major2clasf2req.get(m.getId());
+								Map<Long, Double> e = (clasf2req == null ? null : clasf2req.get(clasf.getId()));
 								if (e != null) {
-									s.addAll(e);
+									CurriculumInterface.addAll(s, e);
 									clasf2req.remove(clasf.getId());
 								}
 							}
-							req += s.size();
+							req += CurriculumInterface.count(s);
 						}
 					}
 				}
@@ -2060,12 +2053,12 @@ public class CurriculaServlet implements CurriculaService {
 						curCourseIfc.setLastLike(lastLike);
 					
 					if (Math.round(proj) > 0)
-						curCourseIfc.setProjection(Math.round(proj));
+						curCourseIfc.setProjection((int)Math.round(proj));
 					
 					curCourseIfc.setSessionHasSnapshotData(hasSnapshotData);
 					if (hasSnapshotData) {
 						if (Math.round(snapshotProj) > 0)
-							curCourseIfc.setSnapshotProjection(Math.round(snapshotProj));
+							curCourseIfc.setSnapshotProjection((int)Math.round(snapshotProj));
 					} else {
 						curCourseIfc.setSnapshotProjection(null);
 					}
@@ -2098,49 +2091,47 @@ public class CurriculaServlet implements CurriculaService {
 			otherCurriculumIfc.addCourse(otherCourseIfc);
 			for (AcademicClassificationInterface clasf: academicClassifications) {
 				int enrl = 0;
-				Map<Long, Map<Long, Set<Long>>> major2clasf2enrl = area2major2clasf2enrl.get(areaId);
+				Map<Long, Map<Long, Map<Long, Double>>> major2clasf2enrl = area2major2clasf2enrl.get(areaId);
 				if (major2clasf2enrl != null) {
-					Set<Long> s = new HashSet<Long>();
-					for (Map<Long, Set<Long>> clasf2enrl: major2clasf2enrl.values()) {
-						Set<Long> e = clasf2enrl.get(clasf.getId());
+					Map<Long, Double> s = new HashMap<Long, Double>();
+					for (Map<Long, Map<Long, Double>> clasf2enrl: major2clasf2enrl.values()) {
+						Map<Long, Double> e = clasf2enrl.get(clasf.getId());
 						if (e != null)
-							s.addAll(e);
+							CurriculumInterface.addAll(s, e);
 					}
-					enrl += s.size();
+					enrl += CurriculumInterface.count(s);
 				}
 				
 				int lastLike = 0;
 				int proj = 0;
 				int snapshotProj = 0;
-				Map<String, Map<String, Set<Long>>> major2clasf2ll = area2major2clasf2ll.get(areasId2Abbv.get(areaId));
+				Map<String, Map<String, Map<Long, Double>>> major2clasf2ll = area2major2clasf2ll.get(areasId2Abbv.get(areaId));
 				if (major2clasf2ll != null) {
-					Set<Long> s = new HashSet<Long>();
-					for (Map.Entry<String, Map<String, Set<Long>>> entry: major2clasf2ll.entrySet()) {
-						Map<String, Set<Long>> clasf2ll = entry.getValue();
-						Set<Long> e = clasf2ll.get(clasf.getCode());
+					Map<Long, Double> s = new HashMap<Long, Double>();
+					for (Map.Entry<String, Map<String, Map<Long, Double>>> entry: major2clasf2ll.entrySet()) {
+						Map<String, Map<Long, Double>> clasf2ll = entry.getValue();
+						Map<Long, Double> e = clasf2ll.get(clasf.getCode());
 						if (e != null) {
-							int add = 0;
-							for (Long id: e)
-								if (s.add(id)) add++;
+							double add = CurriculumInterface.addAll(s, e);
 							proj += Math.round(getProjection(rules, entry.getKey(), clasf.getCode()) * add);
 							if (hasSnapshotData) {
 								snapshotProj += Math.round(getSnapshotProjection(snapshotRules, entry.getKey(), clasf.getCode()) * add);
 							}
 						}
 					}
-					lastLike += s.size();
+					lastLike += CurriculumInterface.count(s);
 				}
 				
 				int req = 0;
-				Map<Long, Map<Long, Set<Long>>> major2clasf2req = area2major2clasf2req.get(areaId);
+				Map<Long, Map<Long, Map<Long, Double>>> major2clasf2req = area2major2clasf2req.get(areaId);
 				if (major2clasf2req != null) {
-					Set<Long> s = new HashSet<Long>();
-					for (Map<Long, Set<Long>> clasf2req: major2clasf2req.values()) {
-						Set<Long> e = clasf2req.get(clasf.getId());
+					Map<Long, Double> s = new HashMap<Long, Double>();
+					for (Map<Long, Map<Long, Double>> clasf2req: major2clasf2req.values()) {
+						Map<Long, Double> e = clasf2req.get(clasf.getId());
 						if (e != null)
-							s.addAll(e);
+							CurriculumInterface.addAll(s, e);
 					}
-					req += s.size();
+					req += CurriculumInterface.count(s);
 				}
 				
 				if (enrl > 0 || lastLike > 0 || proj > 0 || req > 0 || snapshotProj > 0) {
@@ -3099,7 +3090,7 @@ public class CurriculaServlet implements CurriculaService {
 				tx = hibSession.beginTransaction();
 				Long sessionId = getAcademicSessionId();
 				
-				Map<Long, Map<String, Map<String, Map<String, Set<Long>>>>> course2area2major2clasf2ll = null;
+				Map<Long, Map<String, Map<String, Map<String, Map<Long, Double>>>>> course2area2major2clasf2ll = null;
 				if (includeOtherStudents) {
 					course2area2major2clasf2ll = loadCourseAreaMajorClasf2ll(hibSession);
 				}
@@ -3147,7 +3138,7 @@ public class CurriculaServlet implements CurriculaService {
 					
 					Integer oldDemand = courseOffering.getDemand();
 
-					Map<String, Map<String, Map<String, Set<Long>>>> area2major2clasf2ll = (course2area2major2clasf2ll == null ? null : course2area2major2clasf2ll.get(courseOffering.getUniqueId()));
+					Map<String, Map<String, Map<String, Map<Long, Double>>>> area2major2clasf2ll = (course2area2major2clasf2ll == null ? null : course2area2major2clasf2ll.get(courseOffering.getUniqueId()));
 					
 					List<CurriculumCourse> courses = course2curriculum.get(courseOffering.getUniqueId());
 					int demand = 0;
@@ -3203,11 +3194,11 @@ public class CurriculaServlet implements CurriculaService {
 					
 					if (area2major2clasf2ll != null) {
 						for (Curriculum curriculum: related) {
-							Map<String, Map<String, Set<Long>>> major2clasf2ll = area2major2clasf2ll.get(curriculum.getAcademicArea().getAcademicAreaAbbreviation());
+							Map<String, Map<String, Map<Long, Double>>> major2clasf2ll = area2major2clasf2ll.get(curriculum.getAcademicArea().getAcademicAreaAbbreviation());
 							if (major2clasf2ll != null) {
 								if (curriculum.getMajors().isEmpty()) {
 									if (curriculum.isMultipleMajors()) {
-										Map<String, Set<Long>> clasf2ll = major2clasf2ll.get("");
+										Map<String, Map<Long, Double>> clasf2ll = major2clasf2ll.get("");
 										if (clasf2ll != null)
 											for (AcademicClassification cc: classifications)
 												clasf2ll.remove(cc.getCode());
@@ -3217,28 +3208,28 @@ public class CurriculaServlet implements CurriculaService {
 								} else {
 									if (curriculum.isMultipleMajors()) {
 										for (AcademicClassification cc: classifications) {
-											Set<Long> s = null;
+											Map<Long, Double> s = null;
 											for (PosMajor m: curriculum.getMajors()) {
-												Map<String, Set<Long>> clasf2ll = major2clasf2ll.get(m.getCode());
-												Set<Long> e = (clasf2ll == null ? null : clasf2ll.get(cc.getCode()));
+												Map<String, Map<Long, Double>> clasf2ll = major2clasf2ll.get(m.getCode());
+												Map<Long, Double> e = (clasf2ll == null ? null : clasf2ll.get(cc.getCode()));
 												if (e == null) {
 													if (s == null)
-														s = new HashSet<Long>();
+														s = new HashMap<Long, Double>();
 													else
 														s.clear();
 												} else {
 													if (s == null)
-														s = new HashSet<Long>(e);
+														s = new HashMap<Long, Double>(e);
 													else
-														s.retainAll(e);
+														CurriculumInterface.retainAll(s, e);
 												}
 											}
 											if (s != null && !s.isEmpty()) {
 												for (PosMajor m: curriculum.getMajors()) {
-													Map<String, Set<Long>> clasf2ll = major2clasf2ll.get(m.getCode());
-													Set<Long> e = (clasf2ll == null ? null : clasf2ll.get(cc.getCode()));
+													Map<String, Map<Long, Double>> clasf2ll = major2clasf2ll.get(m.getCode());
+													Map<Long, Double> e = (clasf2ll == null ? null : clasf2ll.get(cc.getCode()));
 													if (e != null) {
-														e.removeAll(s);
+														CurriculumInterface.removeAll(e, s);
 														if (e.isEmpty())
 															clasf2ll.remove(cc.getCode());
 													}
@@ -3253,13 +3244,13 @@ public class CurriculaServlet implements CurriculaService {
 							}
 						}
 
-						for (Map.Entry<String, Map<String, Map<String, Set<Long>>>> areaEmajor2clasf2ll: area2major2clasf2ll.entrySet()) {
-							for (Map.Entry<String, Map<String, Set<Long>>> majorEclasf2ll: areaEmajor2clasf2ll.getValue().entrySet()) {
-								for (Map.Entry<String, Set<Long>> clasfEll: majorEclasf2ll.getValue().entrySet()) {
-									demand += Math.round(getProjection(rules == null ? null : rules.get(areaEmajor2clasf2ll.getKey()), majorEclasf2ll.getKey(), clasfEll.getKey()) * clasfEll.getValue().size());	
+						for (Map.Entry<String, Map<String, Map<String, Map<Long, Double>>>> areaEmajor2clasf2ll: area2major2clasf2ll.entrySet()) {
+							for (Map.Entry<String, Map<String, Map<Long, Double>>> majorEclasf2ll: areaEmajor2clasf2ll.getValue().entrySet()) {
+								for (Map.Entry<String, Map<Long, Double>> clasfEll: majorEclasf2ll.getValue().entrySet()) {
+									demand += Math.round(getProjection(rules == null ? null : rules.get(areaEmajor2clasf2ll.getKey()), majorEclasf2ll.getKey(), clasfEll.getKey()) * CurriculumInterface.count(clasfEll.getValue()));
 								}
 							}
-						}						
+						}
 					}
 					
 					courseOffering.setProjectedDemand(demand);
@@ -3318,7 +3309,7 @@ public class CurriculaServlet implements CurriculaService {
 					
 					Integer oldDemand = courseOffering.getDemand();
 					
-					Map<String, Map<String, Map<String, Set<Long>>>> area2major2clasf2ll =  null;
+					Map<String, Map<String, Map<String, Map<Long, Double>>>> area2major2clasf2ll =  null;
 					if (includeOtherStudents) {
 						area2major2clasf2ll = loadAreaMajorClasf2ll(hibSession, courseOffering.getUniqueId());
 					}
@@ -3392,11 +3383,11 @@ public class CurriculaServlet implements CurriculaService {
 								"select c from AcademicClassification c where c.session.uniqueId = :sessionId")
 								.setLong("sessionId", offering.getSessionId()).setCacheable(true).list();
 						for (Curriculum curriculum: curricula) {
-							Map<String, Map<String, Set<Long>>> major2clasf2ll = area2major2clasf2ll.get(curriculum.getAcademicArea().getAcademicAreaAbbreviation());
+							Map<String, Map<String, Map<Long, Double>>> major2clasf2ll = area2major2clasf2ll.get(curriculum.getAcademicArea().getAcademicAreaAbbreviation());
 							if (major2clasf2ll != null) {
 								if (curriculum.getMajors().isEmpty()) {
 									if (curriculum.isMultipleMajors()) {
-										Map<String, Set<Long>> clasf2ll = major2clasf2ll.get("");
+										Map<String, Map<Long, Double>> clasf2ll = major2clasf2ll.get("");
 										if (clasf2ll != null)
 											for (AcademicClassification cc: classifications)
 												clasf2ll.remove(cc.getCode());
@@ -3406,28 +3397,28 @@ public class CurriculaServlet implements CurriculaService {
 								} else {
 									if (curriculum.isMultipleMajors()) {
 										for (AcademicClassification cc: classifications) {
-											Set<Long> s = null;
+											Map<Long, Double> s = null;
 											for (PosMajor m: curriculum.getMajors()) {
-												Map<String, Set<Long>> clasf2ll = major2clasf2ll.get(m.getCode());
-												Set<Long> e = (clasf2ll == null ? null : clasf2ll.get(cc.getCode()));
+												Map<String, Map<Long, Double>> clasf2ll = major2clasf2ll.get(m.getCode());
+												Map<Long, Double> e = (clasf2ll == null ? null : clasf2ll.get(cc.getCode()));
 												if (e == null) {
 													if (s == null)
-														s = new HashSet<Long>();
+														s = new HashMap<Long, Double>();
 													else
 														s.clear();
 												} else {
 													if (s == null)
-														s = new HashSet<Long>(e);
+														s = new HashMap<Long, Double>(e);
 													else
-														s.retainAll(e);
+														CurriculumInterface.retainAll(s, e);
 												}
 											}
 											if (s != null && !s.isEmpty()) {
 												for (PosMajor m: curriculum.getMajors()) {
-													Map<String, Set<Long>> clasf2ll = major2clasf2ll.get(m.getCode());
-													Set<Long> e = (clasf2ll == null ? null : clasf2ll.get(cc.getCode()));
+													Map<String, Map<Long, Double>> clasf2ll = major2clasf2ll.get(m.getCode());
+													Map<Long, Double> e = (clasf2ll == null ? null : clasf2ll.get(cc.getCode()));
 													if (e != null) {
-														e.removeAll(s);
+														CurriculumInterface.removeAll(e, s);
 														if (e.isEmpty())
 															clasf2ll.remove(cc.getCode());
 													}
@@ -3442,10 +3433,10 @@ public class CurriculaServlet implements CurriculaService {
 							}
 						}
 
-						for (Map.Entry<String, Map<String, Map<String, Set<Long>>>> areaEmajor2clasf2ll: area2major2clasf2ll.entrySet()) {
-							for (Map.Entry<String, Map<String, Set<Long>>> majorEclasf2ll: areaEmajor2clasf2ll.getValue().entrySet()) {
-								for (Map.Entry<String, Set<Long>> clasfEll: majorEclasf2ll.getValue().entrySet()) {
-									demand += Math.round(getProjection(rules == null ? null : rules.get(areaEmajor2clasf2ll.getKey()), majorEclasf2ll.getKey(), clasfEll.getKey()) * clasfEll.getValue().size());	
+						for (Map.Entry<String, Map<String, Map<String, Map<Long, Double>>>> areaEmajor2clasf2ll: area2major2clasf2ll.entrySet()) {
+							for (Map.Entry<String, Map<String, Map<Long, Double>>> majorEclasf2ll: areaEmajor2clasf2ll.getValue().entrySet()) {
+								for (Map.Entry<String, Map<Long, Double>> clasfEll: majorEclasf2ll.getValue().entrySet()) {
+									demand += Math.round(getProjection(rules == null ? null : rules.get(areaEmajor2clasf2ll.getKey()), majorEclasf2ll.getKey(), clasfEll.getKey()) * CurriculumInterface.count(clasfEll.getValue()));
 								}
 							}
 						}
@@ -3504,9 +3495,9 @@ public class CurriculaServlet implements CurriculaService {
 	
 	private Hashtable<Long, Integer> loadClasf2enrl(org.hibernate.Session hibSession, Curriculum c) {
 		List<Object[]> lines = null;
-		String select = "a.academicClassification.uniqueId, count(distinct s)";
-		String from = "StudentClassEnrollment e inner join e.student s inner join s.areaClasfMajors a";
-		String where = "s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :areaId";
+		String select = "a.academicClassification.uniqueId, sum(a.weight)";
+		String from = "Student s inner join s.areaClasfMajors a";
+		String where = "s.classEnrollments is not empty and s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :areaId";
 		String group = "a.academicClassification.uniqueId";
 		if (c.getMajors().isEmpty()) {
 			// students with all majors
@@ -3547,18 +3538,18 @@ public class CurriculaServlet implements CurriculaService {
 		if (lines != null)
 			for (Object[] o : lines) {
 				Long clasfId = (Long)o[0];
-				int enrl = ((Number)o[1]).intValue();
+				int enrl = Math.round(((Number)o[1]).floatValue());
 				if (clasfId != null)
 					clasf2enrl.put(clasfId, enrl);
 			}
 		return clasf2enrl;
 	}
 	
-	private Hashtable<Long, Set<Long>> loadClasf2enrl(org.hibernate.Session hibSession, Long acadAreaId, Collection<Long> majors, boolean multipleMajors) {
+	private Hashtable<Long, Map<Long, Double>> loadClasf2enrl(org.hibernate.Session hibSession, Long acadAreaId, Collection<Long> majors, boolean multipleMajors) {
 		List<Object[]> lines = null;
-		String select = "a.academicClassification.uniqueId, s.uniqueId";
-		String from = "StudentClassEnrollment e inner join e.student s inner join s.areaClasfMajors a";
-		String where = "s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :areaId";
+		String select = "a.academicClassification.uniqueId, s.uniqueId, a.weight";
+		String from = "Student s inner join s.areaClasfMajors a";
+		String where = "s.classEnrollments is not empty and s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :areaId";
 		if (majors.isEmpty()) {
 			// students with all majors
 			if (!multipleMajors)
@@ -3591,31 +3582,32 @@ public class CurriculaServlet implements CurriculaService {
 				q.setLong(e.getKey(), e.getValue());
 			lines = q.setCacheable(true).list();
 		}
-		Hashtable<Long, Set<Long>> clasf2enrl = new Hashtable<Long, Set<Long>>();
+		Hashtable<Long, Map<Long, Double>> clasf2enrl = new Hashtable<Long, Map<Long, Double>>();
 		if (lines != null)
 			for (Object[] o : lines) {
 				Long clasfId = (Long)o[0];
 				Long studentId = (Long)o[1];
-				Set<Long> students = clasf2enrl.get(clasfId);
+				Double weight = (Double)o[2];
+				Map<Long, Double> students = clasf2enrl.get(clasfId);
 				if (students == null) {
-					students = new HashSet<Long>();
+					students = new HashMap<Long, Double>();
 					clasf2enrl.put(clasfId, students);
 				}
-				students.add(studentId);
+				students.put(studentId, weight);
 			}
 		return clasf2enrl;
 	}
 	
 	private Hashtable<String, Hashtable<String, Integer>> loadClasfMajor2ll(org.hibernate.Session hibSession, Curriculum c) {
 		List<Object[]> lines = null;
-		String select = "f.code, m.code, count(distinct s)";
-		String from = "LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.academicClassification f inner join a.major m";
-		String where = "x.subjectArea.session.uniqueId = :sessionId and a.academicArea.academicAreaAbbreviation = :acadAbbv";
+		String select = "f.code, m.code, sum(a.weight)";
+		String from = "Student s inner join s.areaClasfMajors a inner join a.academicClassification f inner join a.major m";
+		String where = "s.uniqueId in (select x.student.uniqueId from LastLikeCourseDemand x where x.subjectArea.session.uniqueId = :sessionId) and a.academicArea.academicAreaAbbreviation = :acadAbbv";
 		String group = "f.code, m.code";
 		if (c.getMajors().isEmpty()) {
 			// students with all majors
 			if (!c.isMultipleMajors()) {
-				select = "f.code, '', count(distinct s)";
+				select = "f.code, '', sum(a.weight)";
 				group = "f.code";
 				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " group by " + group)
 						.setLong("sessionId", c.getAcademicArea().getSessionId()).setString("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation())
@@ -3632,7 +3624,7 @@ public class CurriculaServlet implements CurriculaService {
 					.setCacheable(true).list();
 		} else {
 			// students with multiple majors
-			select = "f.code, '', count(distinct s)";
+			select = "f.code, '', sum(a.weight)";
 			group = "f.code";
 			Map<String, String> params = new HashMap<String, String>();
 			int idx = 0;
@@ -3659,7 +3651,7 @@ public class CurriculaServlet implements CurriculaService {
 				if (clasfCode == null) continue;
 				String majorCode = (String)o[1];
 				if (majorCode == null) majorCode = "";
-				int enrl = ((Number)o[2]).intValue();
+				int enrl = Math.round(((Number)o[2]).floatValue());
 				Hashtable<String, Integer> major2ll = clasfMajor2ll.get(clasfCode);
 				if (major2ll == null) {
 					major2ll = new Hashtable<String, Integer>();
@@ -3672,9 +3664,9 @@ public class CurriculaServlet implements CurriculaService {
 	
 	private Hashtable<String, Integer> loadClasf2ll(org.hibernate.Session hibSession, Curriculum c) {
 		List<Object[]> lines = null;
-		String select = "f.code, count(distinct s)";
-		String from = "LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.academicClassification f";
-		String where = "x.subjectArea.session.uniqueId = :sessionId and a.academicArea.academicAreaAbbreviation = :acadAbbv";
+		String select = "f.code, sum(a.weight)";
+		String from = "Student s inner join s.areaClasfMajors a inner join a.academicClassification f";
+		String where = "s.uniqueId in (select x.uniqueId from LastLikeCourseDemand x where x.subjectArea.session.uniqueId = :sessionId) and a.academicArea.academicAreaAbbreviation = :acadAbbv";
 		String group = "f.code";
 		if (c.getMajors().isEmpty()) {
 			// students with all majors
@@ -3715,22 +3707,22 @@ public class CurriculaServlet implements CurriculaService {
 		if (lines != null)
 			for (Object[] o: lines) {
 				String clasfCode = (String)o[0];
-				int enrl = ((Number)o[1]).intValue();
+				int enrl = Math.round(((Number)o[1]).floatValue());
 				if (clasfCode != null)
 					clasf2ll.put(clasfCode, enrl);
 			}
 		return clasf2ll;
 	}
 	
-	private Hashtable<String, HashMap<String, Set<Long>>> loadClasfMajor2ll(org.hibernate.Session hibSession, String acadAreaAbbv, Collection<PosMajor> majors, boolean multipleMajors) {
+	private Hashtable<String, HashMap<String, Map<Long, Double>>> loadClasfMajor2ll(org.hibernate.Session hibSession, String acadAreaAbbv, Collection<PosMajor> majors, boolean multipleMajors) {
 		List<Object[]> lines = null;
-		String select = "f.code, m.code, s.uniqueId";
+		String select = "f.code, m.code, s.uniqueId, a.weight";
 		String from = "LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.academicClassification f inner join a.major m";
 		String where = "x.subjectArea.session.uniqueId = :sessionId and a.academicArea.academicAreaAbbreviation = :acadAbbv";
 		if (majors.isEmpty()) {
 			// students with all majors
 			if (!multipleMajors) {
-				select = "f.code, '', s.uniqueId";
+				select = "f.code, '', s.uniqueId, a.weight";
 				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where)
 						.setLong("sessionId", getAcademicSessionId()).setString("acadAbbv", acadAreaAbbv)
 						.setCacheable(true).list();
@@ -3746,7 +3738,7 @@ public class CurriculaServlet implements CurriculaService {
 					.setCacheable(true).list();
 		} else {
 			// students with multiple majors
-			select = "f.code, '', s.uniqueId";
+			select = "f.code, '', s.uniqueId, a.weight";
 			Map<String, String> params = new HashMap<String, String>();
 			int idx = 0;
 			for (PosMajor major: majors) {
@@ -3765,24 +3757,25 @@ public class CurriculaServlet implements CurriculaService {
 				q.setString(e.getKey(), e.getValue());
 			lines = q.setCacheable(true).list();
 		}
-		Hashtable<String, HashMap<String, Set<Long>>> clasf2ll = new Hashtable<String, HashMap<String, Set<Long>>>();
+		Hashtable<String, HashMap<String, Map<Long, Double>>> clasf2ll = new Hashtable<String, HashMap<String, Map<Long, Double>>>();
 		if (lines != null)
 			for (Object[] o : lines) {
 				String clasfCode = (String)o[0];
 				String majorCode = (String)o[1];
 				if (majorCode == null) majorCode = "";
 				Long studentId = (Long)o[2];
-				HashMap<String, Set<Long>> major2students = clasf2ll.get(clasfCode);
+				Double weight = (Double)o[3];
+				HashMap<String, Map<Long, Double>> major2students = clasf2ll.get(clasfCode);
 				if (major2students == null) {
-					major2students = new HashMap<String, Set<Long>>();
+					major2students = new HashMap<String, Map<Long, Double>>();
 					clasf2ll.put(clasfCode, major2students);
 				}
-				Set<Long> students = major2students.get(majorCode);
+				Map<Long, Double> students = major2students.get(majorCode);
 				if (students == null) {
-					students = new HashSet<Long>();
+					students = new HashMap<Long, Double>();
 					major2students.put(majorCode, students);
 				}
-				students.add(studentId);
+				students.put(studentId, weight);
 			}
 		
 		return clasf2ll;
@@ -3790,10 +3783,10 @@ public class CurriculaServlet implements CurriculaService {
 	
 	private Hashtable<Long, Hashtable<Long, Integer>> loadClasfCourse2enrl(org.hibernate.Session hibSession, Curriculum c) {
 		List<Object[]> lines = null;
-		String select = "a.academicClassification.uniqueId, e.courseOffering.uniqueId, count(distinct s)";
-		String from = "StudentClassEnrollment e inner join e.student s inner join s.areaClasfMajors a inner join a.major m";
-		String where = "s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :areaId";
-		String group = "a.academicClassification.uniqueId, e.courseOffering.uniqueId";
+		String select = "a.academicClassification.uniqueId, c.uniqueId, sum(a.weight)";
+		String from = "CourseOffering c, Student s inner join s.areaClasfMajors a inner join a.major m";
+		String where = "c.uniqueId in (select e.courseOffering.uniqueId from StudentClassEnrollment e where e.student = s.uniqueId) and s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :areaId";
+		String group = "a.academicClassification.uniqueId, c.uniqueId";
 		if (c.getMajors().isEmpty()) {
 			// students with no major
 			if (!c.isMultipleMajors())
@@ -3836,7 +3829,7 @@ public class CurriculaServlet implements CurriculaService {
 				Long clasfId = (Long)o[0];
 				if (clasfId == null) continue;
 				Long courseId = (Long)o[1];
-				int enrl = ((Number)o[2]).intValue();
+				int enrl = Math.round(((Number)o[2]).floatValue());
 				Hashtable<Long, Integer> course2enrl = clasf2course2enrl.get(clasfId);
 				if (course2enrl == null) {
 					course2enrl = new Hashtable<Long, Integer>();
@@ -3847,9 +3840,9 @@ public class CurriculaServlet implements CurriculaService {
 		return clasf2course2enrl;
 	}
 	
-	private Hashtable<Long, Hashtable<CourseInterface, Set<Long>>> loadClasfCourse2enrl(org.hibernate.Session hibSession, Long acadAreaId, Collection<Long> majors, boolean multipleMajors) {
+	private Hashtable<Long, Hashtable<CourseInterface, Map<Long, Double>>> loadClasfCourse2enrl(org.hibernate.Session hibSession, Long acadAreaId, Collection<Long> majors, boolean multipleMajors) {
 		List<Object[]> lines = null;
-		String select = "a.academicClassification.uniqueId, e.courseOffering.uniqueId, e.courseOffering.subjectArea.subjectAreaAbbreviation || ' ' || e.courseOffering.courseNbr, s.uniqueId";
+		String select = "a.academicClassification.uniqueId, e.courseOffering.uniqueId, e.courseOffering.subjectArea.subjectAreaAbbreviation || ' ' || e.courseOffering.courseNbr, s.uniqueId, a.weight";
 		String from = "StudentClassEnrollment e inner join e.student s inner join s.areaClasfMajors a inner join a.major m";
 		String where = "s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :areaId";
 		if (majors.isEmpty()) {
@@ -3884,34 +3877,35 @@ public class CurriculaServlet implements CurriculaService {
 				q.setLong(e.getKey(), e.getValue());
 			lines = q.setCacheable(true).list();
 		}
-		Hashtable<Long, Hashtable<CourseInterface, Set<Long>>> clasf2course2enrl = new Hashtable<Long, Hashtable<CourseInterface,Set<Long>>>();
+		Hashtable<Long, Hashtable<CourseInterface, Map<Long, Double>>> clasf2course2enrl = new Hashtable<Long, Hashtable<CourseInterface,Map<Long, Double>>>();
 		if (lines != null)
 			for (Object[] o : lines) {
 				Long clasfId = (Long)o[0];
 				Long courseId = (Long)o[1];
 				String courseName = (String)o[2];
 				Long studentId = (Long)o[3];
+				Double weight = (Double)o[4];
 				CourseInterface course = new CourseInterface();
 				course.setId(courseId);
 				course.setCourseName(courseName);
-				Hashtable<CourseInterface, Set<Long>> course2enrl = clasf2course2enrl.get(clasfId);
+				Hashtable<CourseInterface, Map<Long, Double>> course2enrl = clasf2course2enrl.get(clasfId);
 				if (course2enrl == null) {
-					course2enrl = new Hashtable<CourseInterface, Set<Long>>();
+					course2enrl = new Hashtable<CourseInterface, Map<Long, Double>>();
 					clasf2course2enrl.put(clasfId, course2enrl);
 				}
-				Set<Long> students = course2enrl.get(course);
+				Map<Long, Double> students = course2enrl.get(course);
 				if (students == null) {
-					students = new HashSet<Long>();
+					students = new HashMap<Long, Double>();
 					course2enrl.put(course, students);
 				}
-				students.add(studentId);
+				students.put(studentId, weight);
 			}
 		
 		return clasf2course2enrl;
 	}
 	
 	private Hashtable<String, Hashtable<String, Hashtable<Long, Integer>>> loadClasfMajorCourse2ll(org.hibernate.Session hibSession, Curriculum c) {
-		String select = "f.code, m.code, co.uniqueId, count(distinct s)";
+		String select = "f.code, m.code, co.uniqueId, sum(a.weight)";
 		String from = "CourseOffering co, LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.academicClassification f inner join a.major m";
 		String[] checks = new String[] {
 			"x.subjectArea.session.uniqueId = :sessionId and a.academicArea.academicAreaAbbreviation = :acadAbbv and co.subjectArea.uniqueId = x.subjectArea.uniqueId and x.coursePermId is not null and co.permId=x.coursePermId",
@@ -3926,7 +3920,7 @@ public class CurriculaServlet implements CurriculaService {
 			if (c.getMajors().isEmpty()) {
 				// students with no major
 				if (!c.isMultipleMajors()) {
-					select = "f.code, '', co.uniqueId, count(distinct s)";
+					select = "f.code, '', co.uniqueId, sum(a.weight)";
 					group = "f.code, co.uniqueId";
 					lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " group by " + group)
 							.setLong("sessionId", c.getAcademicArea().getSessionId()).setString("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation())
@@ -3943,7 +3937,7 @@ public class CurriculaServlet implements CurriculaService {
 						.setCacheable(true).list();
 			} else {
 				// students with multiple majors
-				select = "f.code, '', co.uniqueId, count(distinct s)";
+				select = "f.code, '', co.uniqueId, sum(a.weight)";
 				group = "f.code, co.uniqueId";
 				Map<String, String> params = new HashMap<String, String>();
 				int idx = 0;
@@ -3970,7 +3964,7 @@ public class CurriculaServlet implements CurriculaService {
 					String majorCode = (String)o[1];
 					if (majorCode == null) majorCode = "";
 					Long courseId = (Long)o[2];
-					int enrl = ((Number)o[3]).intValue();
+					int enrl = Math.round(((Number)o[3]).floatValue());
 					Hashtable<String, Hashtable<Long, Integer>> major2course2ll = clasfMajor2course2ll.get(clasfCode);
 					if (major2course2ll == null) {
 						major2course2ll = new Hashtable<String, Hashtable<Long,Integer>>();
@@ -3987,8 +3981,8 @@ public class CurriculaServlet implements CurriculaService {
 		return clasfMajor2course2ll;
 	}
 	
-	private Hashtable<String, Hashtable<CourseInterface, HashMap<String, Set<Long>>>> loadClasfCourseMajor2ll(org.hibernate.Session hibSession, String acadAreaAbbv, Collection<PosMajor> majors, boolean multipleMajors) {
-		String select = "f.code, co.uniqueId, co.subjectArea.subjectAreaAbbreviation || ' ' || co.courseNbr, m.code, s.uniqueId";
+	private Hashtable<String, Hashtable<CourseInterface, HashMap<String, Map<Long, Double>>>> loadClasfCourseMajor2ll(org.hibernate.Session hibSession, String acadAreaAbbv, Collection<PosMajor> majors, boolean multipleMajors) {
+		String select = "f.code, co.uniqueId, co.subjectArea.subjectAreaAbbreviation || ' ' || co.courseNbr, m.code, s.uniqueId, a.weight";
 		String from = "CourseOffering co, LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.academicClassification f inner join a.major m";
 		String[] checks = new String[] {
 				"x.subjectArea.session.uniqueId = :sessionId and a.academicArea.academicAreaAbbreviation = :acadAbbv and co.subjectArea.uniqueId = x.subjectArea.uniqueId and x.coursePermId is not null and co.permId=x.coursePermId",
@@ -3996,13 +3990,13 @@ public class CurriculaServlet implements CurriculaService {
 				"x.subjectArea.session.uniqueId = :sessionId and a.academicArea.academicAreaAbbreviation = :acadAbbv and co.demandOffering.subjectArea.uniqueId = x.subjectArea.uniqueId and x.coursePermId is not null and co.demandOffering.permId=x.coursePermId",
 				"x.subjectArea.session.uniqueId = :sessionId and a.academicArea.academicAreaAbbreviation = :acadAbbv and co.demandOffering.subjectArea.uniqueId = x.subjectArea.uniqueId and x.coursePermId is null and co.demandOffering.courseNbr=x.courseNbr"
 		};
-		Hashtable<String, Hashtable<CourseInterface, HashMap<String, Set<Long>>>> clasf2course2ll = new Hashtable<String, Hashtable<CourseInterface,HashMap<String,Set<Long>>>>();
+		Hashtable<String, Hashtable<CourseInterface, HashMap<String, Map<Long, Double>>>> clasf2course2ll = new Hashtable<String, Hashtable<CourseInterface,HashMap<String,Map<Long, Double>>>>();
 		for (String where: checks) {
 			List<Object[]> lines = new ArrayList<Object[]>();
 			if (majors.isEmpty()) {
 				// students with no major
 				if (!multipleMajors) {
-					select = "f.code, co.uniqueId, co.subjectArea.subjectAreaAbbreviation || ' ' || co.courseNbr, '', s.uniqueId";
+					select = "f.code, co.uniqueId, co.subjectArea.subjectAreaAbbreviation || ' ' || co.courseNbr, '', s.uniqueId, a.weight";
 					lines = hibSession.createQuery("select " + select + " from " + from + " where " + where)
 							.setLong("sessionId", getAcademicSessionId()).setString("acadAbbv", acadAreaAbbv)
 							.setCacheable(true).list();
@@ -4018,7 +4012,7 @@ public class CurriculaServlet implements CurriculaService {
 						.setCacheable(true).list();
 			} else {
 				// students with multiple majors
-				select = "f.code, co.uniqueId, co.subjectArea.subjectAreaAbbreviation || ' ' || co.courseNbr, '', s.uniqueId";
+				select = "f.code, co.uniqueId, co.subjectArea.subjectAreaAbbreviation || ' ' || co.courseNbr, '', s.uniqueId, a.weight";
 				Map<String, String> params = new HashMap<String, String>();
 				int idx = 0;
 				for (PosMajor major: majors) {
@@ -4045,35 +4039,36 @@ public class CurriculaServlet implements CurriculaService {
 					String majorCode = (String)o[3];
 					if (majorCode == null) majorCode = "";
 					Long studentId = (Long)o[4];
+					Double weight = (Double)o[5];
 					CourseInterface course = new CourseInterface();
 					course.setId(courseId);
 					course.setCourseName(courseName);
-					Hashtable<CourseInterface, HashMap<String,Set<Long>>> course2ll = clasf2course2ll.get(clasfCode);
+					Hashtable<CourseInterface, HashMap<String,Map<Long, Double>>> course2ll = clasf2course2ll.get(clasfCode);
 					if (course2ll == null) {
-						course2ll = new Hashtable<CourseInterface, HashMap<String,Set<Long>>>();
+						course2ll = new Hashtable<CourseInterface, HashMap<String,Map<Long, Double>>>();
 						clasf2course2ll.put(clasfCode, course2ll);
 					}
-					HashMap<String,Set<Long>> major2students = course2ll.get(course);
+					HashMap<String,Map<Long, Double>> major2students = course2ll.get(course);
 					if (major2students == null) {
-						major2students = new HashMap<String, Set<Long>>();
+						major2students = new HashMap<String, Map<Long, Double>>();
 						course2ll.put(course, major2students);
 					}
 					if (multipleMajors && majors.size() > 1) {
 						for (PosMajor major: majors) {
-							Set<Long> students = major2students.get(major.getCode());
+							Map<Long, Double> students = major2students.get(major.getCode());
 							if (students == null) {
-								students = new HashSet<Long>();
+								students = new HashMap<Long, Double>();
 								major2students.put(major.getCode(), students);
 							}
-							students.add(studentId);
+							students.put(studentId, weight);
 						}
 					} else {
-						Set<Long> students = major2students.get(majorCode);
+						Map<Long, Double> students = major2students.get(majorCode);
 						if (students == null) {
-							students = new HashSet<Long>();
+							students = new HashMap<Long, Double>();
 							major2students.put(majorCode, students);
 						}
-						students.add(studentId);
+						students.put(studentId, weight);
 					}
 				}			
 		}
@@ -4081,10 +4076,10 @@ public class CurriculaServlet implements CurriculaService {
 		return clasf2course2ll;
 	}
 	
-	private Map<Long, Map<Long, Map<Long, Set<Long>>>> loadAreaMajorClasf2enrl(org.hibernate.Session hibSession, Long courseOfferingId) {
-		Map<Long, Map<Long, Map<Long, Set<Long>>>> area2major2clasf2enrl = new HashMap<Long, Map<Long, Map<Long, Set<Long>>>>();
+	private Map<Long, Map<Long, Map<Long, Map<Long, Double>>>> loadAreaMajorClasf2enrl(org.hibernate.Session hibSession, Long courseOfferingId) {
+		Map<Long, Map<Long, Map<Long, Map<Long, Double>>>> area2major2clasf2enrl = new HashMap<Long, Map<Long, Map<Long, Map<Long, Double>>>>();
 		for (Object[] o : (List<Object[]>)hibSession.createQuery(
-				"select distinct a.academicArea.uniqueId, m.uniqueId, a.academicClassification.uniqueId, e.student.uniqueId " +
+				"select distinct a.academicArea.uniqueId, m.uniqueId, a.academicClassification.uniqueId, e.student.uniqueId, a.weight " +
 				"from StudentClassEnrollment e inner join e.student.areaClasfMajors a left outer join a.major m where " +
 				"e.courseOffering.uniqueId = :courseId")
 				.setLong("courseId", courseOfferingId)
@@ -4094,28 +4089,29 @@ public class CurriculaServlet implements CurriculaService {
 			if (majorId == null) majorId = -1l;
 			Long clasfId = (Long)o[2];
 			Long studentId = (Long)o[3];
-			Map<Long, Map<Long, Set<Long>>> major2clasf2enrl = area2major2clasf2enrl.get(areaId);
+			Double weight = (Double)o[4];
+			Map<Long, Map<Long, Map<Long, Double>>> major2clasf2enrl = area2major2clasf2enrl.get(areaId);
 			if (major2clasf2enrl == null) {
-				major2clasf2enrl = new HashMap<Long, Map<Long,Set<Long>>>();
+				major2clasf2enrl = new HashMap<Long, Map<Long,Map<Long, Double>>>();
 				area2major2clasf2enrl.put(areaId, major2clasf2enrl);
 			}
-			Map<Long, Set<Long>> clasf2enrl = major2clasf2enrl.get(majorId);
+			Map<Long, Map<Long, Double>> clasf2enrl = major2clasf2enrl.get(majorId);
 			if (clasf2enrl == null) {
-				clasf2enrl = new HashMap<Long, Set<Long>>();
+				clasf2enrl = new HashMap<Long, Map<Long, Double>>();
 				major2clasf2enrl.put(majorId, clasf2enrl);
 			}
-			Set<Long> enrl = clasf2enrl.get(clasfId);
+			Map<Long, Double> enrl = clasf2enrl.get(clasfId);
 			if (enrl == null) {
-				enrl = new HashSet<Long>();
+				enrl = new HashMap<Long, Double>();
 				clasf2enrl.put(clasfId, enrl);
 			}
-			enrl.add(studentId);
+			enrl.put(studentId, weight);
 		}
 		return area2major2clasf2enrl;
 	}
 	
-	private Map<String, Map<String, Map<String, Set<Long>>>> loadAreaMajorClasf2ll(org.hibernate.Session hibSession, Long courseOfferingId) {
-		Map<String, Map<String, Map<String, Set<Long>>>> area2major2clasf2ll = new HashMap<String, Map<String, Map<String, Set<Long>>>>();
+	private Map<String, Map<String, Map<String, Map<Long, Double>>>> loadAreaMajorClasf2ll(org.hibernate.Session hibSession, Long courseOfferingId) {
+		Map<String, Map<String, Map<String, Map<Long, Double>>>> area2major2clasf2ll = new HashMap<String, Map<String, Map<String, Map<Long, Double>>>>();
 		String[] checks = new String[] {
 				"x.subjectArea.session.uniqueId = :sessionId and co.uniqueId = :courseId and co.subjectArea.uniqueId = x.subjectArea.uniqueId and x.coursePermId is not null and co.permId=x.coursePermId",
 				"x.subjectArea.session.uniqueId = :sessionId and co.uniqueId = :courseId and co.subjectArea.uniqueId = x.subjectArea.uniqueId and x.coursePermId is null and co.courseNbr=x.courseNbr",
@@ -4124,7 +4120,7 @@ public class CurriculaServlet implements CurriculaService {
 		};
 		for (String where: checks) {
 			for (Object[] o : (List<Object[]>)hibSession.createQuery(
-					"select distinct r.academicAreaAbbreviation, m.code, f.code, s.uniqueId from " +
+					"select distinct r.academicAreaAbbreviation, m.code, f.code, s.uniqueId, a.weight from " +
 					"LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a left outer join a.major m " +
 					"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co where " + where)
 					.setLong("sessionId", getAcademicSessionId())
@@ -4135,22 +4131,23 @@ public class CurriculaServlet implements CurriculaService {
 				if (majorCode == null) majorCode = "";
 				String clasfCode = (String)o[2];
 				Long studentId = (Long)o[3];
-				Map<String, Map<String, Set<Long>>> major2clasf2ll = area2major2clasf2ll.get(areaAbbv);
+				Double weight = (Double)o[4];
+				Map<String, Map<String, Map<Long, Double>>> major2clasf2ll = area2major2clasf2ll.get(areaAbbv);
 				if (major2clasf2ll == null) {
-					major2clasf2ll = new HashMap<String, Map<String, Set<Long>>>();
+					major2clasf2ll = new HashMap<String, Map<String, Map<Long, Double>>>();
 					area2major2clasf2ll.put(areaAbbv, major2clasf2ll);
 				}
-				Map<String, Set<Long>> clasf2ll = major2clasf2ll.get(majorCode);
+				Map<String, Map<Long, Double>> clasf2ll = major2clasf2ll.get(majorCode);
 				if (clasf2ll == null) {
-					clasf2ll = new HashMap<String, Set<Long>>();
+					clasf2ll = new HashMap<String, Map<Long, Double>>();
 					major2clasf2ll.put(majorCode, clasf2ll);
 				}
-				Set<Long> ll = clasf2ll.get(clasfCode);
+				Map<Long, Double> ll = clasf2ll.get(clasfCode);
 				if (ll == null) {
-					ll = new HashSet<Long>();
+					ll = new HashMap<Long, Double>();
 					clasf2ll.put(clasfCode, ll);
 				}
-				ll.add(studentId);
+				ll.put(studentId, weight);
 			}
 		}
 		return area2major2clasf2ll;
@@ -4159,16 +4156,17 @@ public class CurriculaServlet implements CurriculaService {
 	private Hashtable<String, Hashtable<String, Hashtable<String, Integer>>> loadAreaMajorClasf2ll(org.hibernate.Session hibSession) {
 		Hashtable<String, Hashtable<String, Hashtable<String, Integer>>> area2major2clasf2ll = new Hashtable<String, Hashtable<String,Hashtable<String,Integer>>>();
 		for (Object[] o : (List<Object[]>)hibSession.createQuery(
-				"select a.academicAreaAbbreviation, m.code, f.code, count(distinct s) from LastLikeCourseDemand x inner join x.student s " +
+				"select a.academicAreaAbbreviation, m.code, f.code, sum(ac.weight) from Student s " +
 				"inner join s.areaClasfMajors ac inner join ac.academicClassification f inner join ac.academicArea a " +
-				"inner join ac.major m where x.subjectArea.session.uniqueId = :sessionId " +
+				"inner join ac.major m " +
+				"where s.uniqueId in (select x.student.uniqueId from LastLikeCourseDemand x where x.subjectArea.session.uniqueId = :sessionId) " +
 				"group by a.academicAreaAbbreviation, m.code, f.code")
 				.setLong("sessionId", getAcademicSessionId())
 				.setCacheable(true).list()) {
 			String area = (String)o[0];
 			String major = (String)o[1];
 			String clasf = (String)o[2];
-			int students = ((Number)o[3]).intValue();
+			int students = Math.round(((Number)o[3]).floatValue());
 			Hashtable<String, Hashtable<String, Integer>> majorClasf2ll = area2major2clasf2ll.get(area);
 			if (majorClasf2ll == null) {
 				majorClasf2ll = new Hashtable<String, Hashtable<String,Integer>>();
@@ -4184,8 +4182,8 @@ public class CurriculaServlet implements CurriculaService {
 		return area2major2clasf2ll;
 	}
 	
-	private Map<Long, Map<String, Map<String, Map<String, Set<Long>>>>> loadCourseAreaMajorClasf2ll(org.hibernate.Session hibSession) {
-		Map<Long, Map<String, Map<String, Map<String, Set<Long>>>>> course2area2major2clasf2ll = new HashMap<Long, Map<String, Map<String, Map<String, Set<Long>>>>>();
+	private Map<Long, Map<String, Map<String, Map<String, Map<Long, Double>>>>> loadCourseAreaMajorClasf2ll(org.hibernate.Session hibSession) {
+		Map<Long, Map<String, Map<String, Map<String, Map<Long, Double>>>>> course2area2major2clasf2ll = new HashMap<Long, Map<String, Map<String, Map<String, Map<Long, Double>>>>>();
 		String[] checks = new String[] {
 				"x.subjectArea.session.uniqueId = :sessionId and co.subjectArea.session.uniqueId = :sessionId and co.subjectArea.uniqueId = x.subjectArea.uniqueId and x.coursePermId is not null and co.permId=x.coursePermId",
 				"x.subjectArea.session.uniqueId = :sessionId and co.subjectArea.session.uniqueId = :sessionId and co.subjectArea.uniqueId = x.subjectArea.uniqueId and x.coursePermId is null and co.courseNbr=x.courseNbr",
@@ -4194,7 +4192,7 @@ public class CurriculaServlet implements CurriculaService {
 		};
 		for (String where: checks) {
 			for (Object[] o : (List<Object[]>)hibSession.createQuery(
-					"select distinct co.uniqueId, r.academicAreaAbbreviation, m.code, f.code, s.uniqueId from " +
+					"select distinct co.uniqueId, r.academicAreaAbbreviation, m.code, f.code, s.uniqueId, a.weight from " +
 					"LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.major m " +
 					"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co where " + where)
 					.setLong("sessionId", getAcademicSessionId())
@@ -4205,27 +4203,28 @@ public class CurriculaServlet implements CurriculaService {
 				if (majorCode == null) majorCode = "";
 				String clasfCode = (String)o[3];
 				Long studentId = (Long)o[4];
-				Map<String, Map<String, Map<String, Set<Long>>>> area2major2clasf2ll = course2area2major2clasf2ll.get(courseId);
+				Double weight = (Double)o[5];
+				Map<String, Map<String, Map<String, Map<Long, Double>>>> area2major2clasf2ll = course2area2major2clasf2ll.get(courseId);
 				if (area2major2clasf2ll == null) {
-					area2major2clasf2ll = new HashMap<String, Map<String, Map<String, Set<Long>>>>();
+					area2major2clasf2ll = new HashMap<String, Map<String, Map<String, Map<Long, Double>>>>();
 					course2area2major2clasf2ll.put(courseId, area2major2clasf2ll);
 				}
-				Map<String, Map<String, Set<Long>>> major2clasf2ll = area2major2clasf2ll.get(areaAbbv);
+				Map<String, Map<String, Map<Long, Double>>> major2clasf2ll = area2major2clasf2ll.get(areaAbbv);
 				if (major2clasf2ll == null) {
-					major2clasf2ll = new HashMap<String, Map<String, Set<Long>>>();
+					major2clasf2ll = new HashMap<String, Map<String, Map<Long, Double>>>();
 					area2major2clasf2ll.put(areaAbbv, major2clasf2ll);
 				}
-				Map<String, Set<Long>> clasf2ll = major2clasf2ll.get(majorCode);
+				Map<String, Map<Long, Double>> clasf2ll = major2clasf2ll.get(majorCode);
 				if (clasf2ll == null) {
-					clasf2ll = new HashMap<String, Set<Long>>();
+					clasf2ll = new HashMap<String, Map<Long, Double>>();
 					major2clasf2ll.put(majorCode, clasf2ll);
 				}
-				Set<Long> ll = clasf2ll.get(clasfCode);
+				Map<Long, Double> ll = clasf2ll.get(clasfCode);
 				if (ll == null) {
-					ll = new HashSet<Long>();
+					ll = new HashMap<Long, Double>();
 					clasf2ll.put(clasfCode, ll);
 				}
-				ll.add(studentId);
+				ll.put(studentId, weight);
 			}
 		}
 		return course2area2major2clasf2ll;
@@ -4233,9 +4232,9 @@ public class CurriculaServlet implements CurriculaService {
 	
 	private Hashtable<Long, Integer> loadClasf2req(org.hibernate.Session hibSession, Curriculum c) {
 		List<Object[]> lines = null;
-		String select = "a.academicClassification.uniqueId, count(distinct s)";
-		String from = "CourseRequest r inner join r.courseDemand.student s inner join s.areaClasfMajors a inner join a.major m";
-		String where = "s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :areaId";
+		String select = "a.academicClassification.uniqueId, sum(a.weight)";
+		String from = "Student s inner join s.areaClasfMajors a inner join a.major m";
+		String where = "s.courseDemands is not empty and s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :areaId";
 		String group = "a.academicClassification.uniqueId";
 		if (c.getMajors().isEmpty()) {
 			// students with no major
@@ -4276,18 +4275,18 @@ public class CurriculaServlet implements CurriculaService {
 		if (lines != null)
 			for (Object[] o: lines) {
 				Long clasfId = (Long)o[0];
-				int enrl = ((Number)o[1]).intValue();
+				int enrl = Math.round(((Number)o[1]).floatValue());
 				if (clasfId != null)
 					clasf2enrl.put(clasfId, enrl);
 			}
 		return clasf2enrl;
 	}
 	
-	private Hashtable<Long, Set<Long>> loadClasf2req(org.hibernate.Session hibSession, Long acadAreaId, Collection<Long> majors, boolean multipleMajors) {
+	private Hashtable<Long, Map<Long, Double>> loadClasf2req(org.hibernate.Session hibSession, Long acadAreaId, Collection<Long> majors, boolean multipleMajors) {
 		List<Object[]> lines = null;
-		String select = "a.academicClassification.uniqueId, s.uniqueId";
-		String from = "CourseRequest r inner join r.courseDemand.student s inner join s.areaClasfMajors a inner join a.major m";
-		String where = "s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :areaId";
+		String select = "a.academicClassification.uniqueId, s.uniqueId, a.weight";
+		String from = "Student s inner join s.areaClasfMajors a inner join a.major m";
+		String where = "s.courseDemands is not empty and s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :areaId";
 		if (majors.isEmpty()) {
 			// students with no major
 			if (!multipleMajors)
@@ -4320,24 +4319,25 @@ public class CurriculaServlet implements CurriculaService {
 				q.setLong(e.getKey(), e.getValue());
 			lines = q.setCacheable(true).list();
 		}
-		Hashtable<Long, Set<Long>> clasf2enrl = new Hashtable<Long, Set<Long>>();
+		Hashtable<Long, Map<Long, Double>> clasf2enrl = new Hashtable<Long, Map<Long, Double>>();
 		if (lines != null)
 			for (Object[] o : lines) {
 				Long clasfId = (Long)o[0];
 				Long studentId = (Long)o[1];
-				Set<Long> students = clasf2enrl.get(clasfId);
+				Double weight = (Double)o[2];
+				Map<Long, Double> students = clasf2enrl.get(clasfId);
 				if (students == null) {
-					students = new HashSet<Long>();
+					students = new HashMap<Long, Double>();
 					clasf2enrl.put(clasfId, students);
 				}
-				students.add(studentId);
+				students.put(studentId, weight);
 			}
 		return clasf2enrl;
 	}
 	
 	private Hashtable<Long, Hashtable<Long, Integer>> loadClasfCourse2req(org.hibernate.Session hibSession, Curriculum c) {
 		List<Object[]> lines = null;
-		String select = "a.academicClassification.uniqueId, r.courseOffering.uniqueId, count(distinct s)";
+		String select = "a.academicClassification.uniqueId, r.courseOffering.uniqueId, sum(a.weight)";
 		String from = "CourseRequest r inner join r.courseDemand.student s inner join s.areaClasfMajors a inner join a.major m";
 		String where = "s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :areaId";
 		String group = "a.academicClassification.uniqueId, r.courseOffering.uniqueId";
@@ -4382,7 +4382,7 @@ public class CurriculaServlet implements CurriculaService {
 				Long clasfId = (Long)o[0];
 				if (clasfId == null) continue;
 				Long courseId = (Long)o[1];
-				int enrl = ((Number)o[2]).intValue();
+				int enrl = Math.round(((Number)o[2]).floatValue());
 				Hashtable<Long, Integer> course2enrl = clasf2course2enrl.get(clasfId);
 				if (course2enrl == null) {
 					course2enrl = new Hashtable<Long, Integer>();
@@ -4393,9 +4393,9 @@ public class CurriculaServlet implements CurriculaService {
 		return clasf2course2enrl;
 	}
 	
-	private Hashtable<Long, Hashtable<CourseInterface, Set<Long>>> loadClasfCourse2req(org.hibernate.Session hibSession, Long acadAreaId, Collection<Long> majors, boolean multipleMajors) {
+	private Hashtable<Long, Hashtable<CourseInterface, Map<Long, Double>>> loadClasfCourse2req(org.hibernate.Session hibSession, Long acadAreaId, Collection<Long> majors, boolean multipleMajors) {
 		List<Object[]> lines = null;
-		String select = "a.academicClassification.uniqueId, r.courseOffering.uniqueId, r.courseOffering.subjectArea.subjectAreaAbbreviation || ' ' || r.courseOffering.courseNbr, s.uniqueId";
+		String select = "a.academicClassification.uniqueId, r.courseOffering.uniqueId, r.courseOffering.subjectArea.subjectAreaAbbreviation || ' ' || r.courseOffering.courseNbr, s.uniqueId, a.weight";
 		String from = "CourseRequest r inner join r.courseDemand.student s inner join s.areaClasfMajors a inner join a.major m";
 		String where = "s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :areaId";
 		if (majors.isEmpty()) {
@@ -4430,36 +4430,37 @@ public class CurriculaServlet implements CurriculaService {
 				q.setLong(e.getKey(), e.getValue());
 			lines = q.setCacheable(true).list();
 		}
-		Hashtable<Long, Hashtable<CourseInterface, Set<Long>>> clasf2course2enrl = new Hashtable<Long, Hashtable<CourseInterface,Set<Long>>>();
+		Hashtable<Long, Hashtable<CourseInterface, Map<Long, Double>>> clasf2course2enrl = new Hashtable<Long, Hashtable<CourseInterface,Map<Long, Double>>>();
 		if (lines != null)
 			for (Object[] o : lines) {
 				Long clasfId = (Long)o[0];
 				Long courseId = (Long)o[1];
 				String courseName = (String)o[2];
 				Long studentId = (Long)o[3];
+				Double weight = (Double)o[4];
 				CourseInterface course = new CourseInterface();
 				course.setId(courseId);
 				course.setCourseName(courseName);
-				Hashtable<CourseInterface, Set<Long>> course2enrl = clasf2course2enrl.get(clasfId);
+				Hashtable<CourseInterface, Map<Long, Double>> course2enrl = clasf2course2enrl.get(clasfId);
 				if (course2enrl == null) {
-					course2enrl = new Hashtable<CourseInterface, Set<Long>>();
+					course2enrl = new Hashtable<CourseInterface, Map<Long, Double>>();
 					clasf2course2enrl.put(clasfId, course2enrl);
 				}
-				Set<Long> students = course2enrl.get(course);
+				Map<Long, Double> students = course2enrl.get(course);
 				if (students == null) {
-					students = new HashSet<Long>();
+					students = new HashMap<Long, Double>();
 					course2enrl.put(course, students);
 				}
-				students.add(studentId);
+				students.put(studentId, weight);
 			}
 		
 		return clasf2course2enrl;
 	}
 	
-	private Map<Long, Map<Long, Map<Long, Set<Long>>>> loadAreaMajorClasf2req(org.hibernate.Session hibSession, Long courseOfferingId) {
-		Map<Long, Map<Long, Map<Long, Set<Long>>>> area2major2clasf2enrl = new HashMap<Long, Map<Long, Map<Long, Set<Long>>>>();
+	private Map<Long, Map<Long, Map<Long, Map<Long, Double>>>> loadAreaMajorClasf2req(org.hibernate.Session hibSession, Long courseOfferingId) {
+		Map<Long, Map<Long, Map<Long, Map<Long, Double>>>> area2major2clasf2enrl = new HashMap<Long, Map<Long, Map<Long, Map<Long, Double>>>>();
 		for (Object[] o : (List<Object[]>)hibSession.createQuery(
-				"select distinct a.academicArea.uniqueId, m.uniqueId, a.academicClassification.uniqueId, s.uniqueId " +
+				"select distinct a.academicArea.uniqueId, m.uniqueId, a.academicClassification.uniqueId, s.uniqueId, a.weight " +
 				"from CourseRequest r inner join r.courseDemand.student s inner join s.areaClasfMajors a inner join a.major m where " +
 				"r.courseOffering.uniqueId = :courseId")
 				.setLong("courseId", courseOfferingId)
@@ -4469,22 +4470,23 @@ public class CurriculaServlet implements CurriculaService {
 			if (majorId == null) majorId = -1l;
 			Long clasfId = (Long)o[2];
 			Long studentId = (Long)o[3];
-			Map<Long, Map<Long, Set<Long>>> major2clasf2enrl = area2major2clasf2enrl.get(areaId);
+			Double weight = (Double)o[4];
+			Map<Long, Map<Long, Map<Long, Double>>> major2clasf2enrl = area2major2clasf2enrl.get(areaId);
 			if (major2clasf2enrl == null) {
-				major2clasf2enrl = new HashMap<Long, Map<Long, Set<Long>>>();
+				major2clasf2enrl = new HashMap<Long, Map<Long, Map<Long, Double>>>();
 				area2major2clasf2enrl.put(areaId, major2clasf2enrl);
 			}
-			Map<Long, Set<Long>> clasf2enrl = major2clasf2enrl.get(majorId);
+			Map<Long, Map<Long, Double>> clasf2enrl = major2clasf2enrl.get(majorId);
 			if (clasf2enrl == null) {
-				clasf2enrl = new HashMap<Long, Set<Long>>();
+				clasf2enrl = new HashMap<Long, Map<Long, Double>>();
 				major2clasf2enrl.put(majorId, clasf2enrl);
 			}
-			Set<Long> enrl = clasf2enrl.get(clasfId);
+			Map<Long, Double> enrl = clasf2enrl.get(clasfId);
 			if (enrl == null) {
-				enrl = new HashSet<Long>();
+				enrl = new HashMap<Long, Double>();
 				clasf2enrl.put(clasfId, enrl);
 			}
-			enrl.add(studentId);
+			enrl.put(studentId, weight);
 		}
 		return area2major2clasf2enrl;
 	}
@@ -4595,5 +4597,4 @@ public class CurriculaServlet implements CurriculaService {
 			snapshotProjection = major2ssproj.get("");
 		return (snapshotProjection == null ? 1.0f : snapshotProjection);
 	}
-
 }

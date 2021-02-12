@@ -174,7 +174,7 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands, Nee
 	
 	private Map<CourseOffering, Set<WeightedStudentId>> loadCourseRegistrations(org.hibernate.Session hibSession, CurriculumClassification cc) {
 		List<Object[]> lines = null;
-		String select = "distinct co, s";
+		String select = "distinct co, s, a.weight";
 		String from = "CourseRequest r inner join r.courseOffering co inner join r.courseDemand.student s inner join s.areaClasfMajors a";
 		String where = "s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :acadAreaId and a.academicClassification.uniqueId = :clasfId and r.order = 0";
 		if (cc.getCurriculum().getMajors().isEmpty()) {
@@ -223,8 +223,10 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands, Nee
 			for (Object[] o : lines) {
 				CourseOffering course = (CourseOffering)o[0];
 				Student student = (Student)o[1];
+				Double weight = (Double)o[2];
 				
 				WeightedStudentId studentId = new WeightedStudentId(student);
+				studentId.setWeight(weight.floatValue());
 				if (iCreateStudentGroups)
 					studentId.getGroups().add(new Group(-cc.getUniqueId(), cc.getCurriculum().getAbbv() + " " + cc.getAcademicClassification().getCode()));
 				studentId.setCurriculum(cc.getCurriculum().getAbbv() + " " + cc.getAcademicClassification().getCode());

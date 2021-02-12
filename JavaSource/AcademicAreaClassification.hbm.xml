@@ -66,6 +66,12 @@
             column="concentration_id"
             not-null="false"
             foreign-key="fk_student_acmaj_conc"/>
+            
+        <property
+            name="weight"
+            column="weight"
+            type="java.lang.Double"
+            not-null="false"/>
     </class>
     <class name="StudentAreaClassificationMinor" table="student_area_clasf_minor">
         <cache include="non-lazy" usage="transactional"/>

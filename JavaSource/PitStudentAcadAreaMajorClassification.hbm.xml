@@ -59,6 +59,18 @@
             column="major_id"
             not-null="true"
             foreign-key="fk_pit_stuamc_to_pm"/>
-
+            
+        <many-to-one
+            name="concentration"
+            class="PosMajorConcentration"
+            column="concentration_id"
+            not-null="false"
+            foreign-key="fk_pit_stuamc_to_cc"/>
+            
+        <property
+            name="weight"
+            column="weight"
+            type="java.lang.Double"
+            not-null="false"/>
     </class>
 </hibernate-mapping>

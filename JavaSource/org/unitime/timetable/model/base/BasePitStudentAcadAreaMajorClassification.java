@@ -26,6 +26,7 @@ import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.PitStudent;
 import org.unitime.timetable.model.PitStudentAcadAreaMajorClassification;
 import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.PosMajorConcentration;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
@@ -35,13 +36,16 @@ public abstract class BasePitStudentAcadAreaMajorClassification implements Seria
 	private static final long serialVersionUID = 1L;
 
 	private Long iUniqueId;
+	private Double iWeight;
 
 	private PitStudent iPitStudent;
 	private AcademicArea iAcademicArea;
 	private AcademicClassification iAcademicClassification;
 	private PosMajor iMajor;
+	private PosMajorConcentration iConcentration;
 
 	public static String PROP_UNIQUEID = "uniqueId";
+	public static String PROP_WEIGHT = "weight";
 
 	public BasePitStudentAcadAreaMajorClassification() {
 		initialize();
@@ -57,6 +61,9 @@ public abstract class BasePitStudentAcadAreaMajorClassification implements Seria
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	public Double getWeight() { return iWeight; }
+	public void setWeight(Double weight) { iWeight = weight; }
+
 	public PitStudent getPitStudent() { return iPitStudent; }
 	public void setPitStudent(PitStudent pitStudent) { iPitStudent = pitStudent; }
 
@@ -68,6 +75,9 @@ public abstract class BasePitStudentAcadAreaMajorClassification implements Seria
 
 	public PosMajor getMajor() { return iMajor; }
 	public void setMajor(PosMajor major) { iMajor = major; }
+
+	public PosMajorConcentration getConcentration() { return iConcentration; }
+	public void setConcentration(PosMajorConcentration concentration) { iConcentration = concentration; }
 
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof PitStudentAcadAreaMajorClassification)) return false;
@@ -88,9 +98,11 @@ public abstract class BasePitStudentAcadAreaMajorClassification implements Seria
 		return "PitStudentAcadAreaMajorClassification[" +
 			"\n	AcademicArea: " + getAcademicArea() +
 			"\n	AcademicClassification: " + getAcademicClassification() +
+			"\n	Concentration: " + getConcentration() +
 			"\n	Major: " + getMajor() +
 			"\n	PitStudent: " + getPitStudent() +
 			"\n	UniqueId: " + getUniqueId() +
+			"\n	Weight: " + getWeight() +
 			"]";
 	}
 }

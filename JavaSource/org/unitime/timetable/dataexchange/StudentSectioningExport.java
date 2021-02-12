@@ -88,6 +88,8 @@ public class StudentSectioningExport extends BaseExport {
 	        		Element majorEl = acadAreaEl.addElement("major").addAttribute("code", acm.getMajor().getCode());
 	        		if (acm.getConcentration() != null)
 	        			majorEl.addAttribute("concentration", acm.getConcentration().getCode());
+	        		if (acm.getWeight() != null && acm.getWeight() != 1.0)
+	        			majorEl.addAttribute("weight", acm.getWeight().toString());
 	        	}
 	        	for (StudentAreaClassificationMinor acm: student.getAreaClasfMinors()) {
 	        		Element acadAreaEl = demographicsEl.addElement("acadArea");

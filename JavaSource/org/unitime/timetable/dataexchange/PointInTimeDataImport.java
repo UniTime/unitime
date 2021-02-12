@@ -69,6 +69,7 @@ import org.unitime.timetable.model.PitStudentAcadAreaMinorClassification;
 import org.unitime.timetable.model.PitStudentClassEnrollment;
 import org.unitime.timetable.model.PointInTimeData;
 import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.PosMajorConcentration;
 import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.Room;
@@ -106,6 +107,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	private HashMap<String, AcademicClassification> academicClassificationsByCode = new HashMap<String, AcademicClassification>();
 	private HashMap<String, AcademicArea> academicAreasByAbbv = new HashMap<String, AcademicArea>();
 	private HashMap<String, PosMajor> majorsByCode = new HashMap<String, PosMajor>();
+	private HashMap<String, PosMajorConcentration> concentrationsByCode = new HashMap<String, PosMajorConcentration>();
 	private HashMap<String, PosMinor> minorsByCode = new HashMap<String, PosMinor>();
 	private HashMap<String, RoomType> roomTypesByRef = new HashMap<String, RoomType>();
 	private HashMap<String, CourseCreditType> creditTypesByRef = new HashMap<String, CourseCreditType>();
@@ -138,6 +140,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	private HashMap<Long, PosMajor> majors = new HashMap<Long, PosMajor>();
 	private HashMap<Long, PosMinor> minors = new HashMap<Long, PosMinor>();
 	private HashMap<Long, Student> students = new HashMap<Long, Student>();
+	private HashMap<Long, PosMajorConcentration> concentrations = new HashMap<Long, PosMajorConcentration>();
 	
 	protected boolean courseNumbersMustBeUnique;
 
@@ -245,6 +248,11 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		aamc.setAcademicArea(academicAreas.get(new Long(getRequiredStringAttribute(element, PointInTimeDataExport.sAcademicAreaUniqueIdAttribute, PointInTimeDataExport.sAcadAreaMajorClassificationElementName))));
 		aamc.setAcademicClassification(academicClassifications.get(new Long(getRequiredStringAttribute(element, PointInTimeDataExport.sAcademicClassificationUniqueIdAttribute, PointInTimeDataExport.sAcadAreaMajorClassificationElementName))));
 		aamc.setMajor(majors.get(new Long(getRequiredStringAttribute(element, PointInTimeDataExport.sMajorUniqueIdAttribute, PointInTimeDataExport.sAcadAreaMajorClassificationElementName))));
+		String concId = getOptionalStringAttribute(element, PointInTimeDataExport.sConcentrationUniqueIdAttribute);
+		if (concId != null)
+			aamc.setConcentration(concentrations.get(Long.valueOf(concId)));
+		String weight = getOptionalStringAttribute(element, PointInTimeDataExport.sAcademicAreaMajorClassificationWeightAttribute);
+		if (weight != null) aamc.setWeight(Double.valueOf(weight));
 		aamc.setPitStudent(s);
 		s.addTopitAcadAreaMajorClassifications(aamc);
 		aamc.setUniqueId((Long) getHibSession().save(aamc));
@@ -1133,6 +1141,28 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			major.setUniqueId((Long)getHibSession().save(major));
 		}		
 		majors.put(uid, major);
+		for (Element concElement : (List<Element>)majorElement.elements())
+			elementConcentration(major, concElement);
+	}
+	
+	private void elementConcentration(PosMajor major, Element concElement) throws Exception {
+		String uidString = getRequiredStringAttribute(concElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sConcentrationElementName);
+		Long uid = new Long(uidString);
+		String code = getRequiredStringAttribute(concElement, PointInTimeDataExport.sCodeAttribute, PointInTimeDataExport.sConcentrationElementName);
+		PosMajorConcentration conc = concentrationsByCode.get(major.getCode() + "/" + code);
+		if (conc == null){
+			String name = getRequiredStringAttribute(concElement, PointInTimeDataExport.sNameAttribute, PointInTimeDataExport.sConcentrationElementName);
+			conc = new PosMajorConcentration();
+			conc.setCode(code);
+			conc.setName(name);
+			conc.setMajor(major);
+			String externalId = getOptionalStringAttribute(concElement, PointInTimeDataExport.sExternalIdAttribute);
+			if (externalId != null){
+				conc.setExternalUniqueId(externalId);
+			}
+			conc.setUniqueId((Long)getHibSession().save(conc));
+		}		
+		concentrations.put(uid, conc);
 	}
 
 	private void elementMinor(Element minorElement) throws Exception {
@@ -1704,6 +1734,8 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			setCacheable(true).
 			list()) {
 			majorsByCode.put(major.getCode(), major);
+			for (PosMajorConcentration conc: major.getConcentrations())
+				concentrationsByCode.put(major.getCode() + "/" + conc.getCode(), conc);
 		}
 	}
 

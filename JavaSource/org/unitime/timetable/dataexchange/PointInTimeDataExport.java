@@ -58,6 +58,7 @@ import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.PosMajorConcentration;
 import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.Room;
@@ -99,6 +100,7 @@ public class PointInTimeDataExport extends BaseExport {
     private HashMap<Long, Element> academicClassificationElements = new HashMap<Long, Element>();
     private HashMap<Long, Element> academicAreaElements = new HashMap<Long, Element>();
     private HashMap<Long, Element> majorElements = new HashMap<Long, Element>();
+    private HashMap<Long, Element> concentrationElements = new HashMap<Long, Element>();
     private HashMap<Long, Element> minorElements = new HashMap<Long, Element>();
     private HashMap<Long, Element> courseTypeElements = new HashMap<Long, Element>();
     private HashMap<Long, Element> classDurationTypeElements = new HashMap<Long, Element>();
@@ -192,6 +194,7 @@ public class PointInTimeDataExport extends BaseExport {
 	public static String sCodeAttribute = "code";
 	public static String sMajorsElementName = "majors";
 	public static String sMajorElementName = "major";
+	public static String sConcentrationElementName = "concentration";
 	public static String sMinorsElementName = "minors";
 	public static String sMinorElementName = "minor";
 	public static String sLocationsElementName = "locations";
@@ -277,6 +280,9 @@ public class PointInTimeDataExport extends BaseExport {
 	public static String sAcademicAreaUniqueIdAttribute = "academicAreaUniqueId";
 	public static String sAcademicClassificationUniqueIdAttribute = "academicClassificationUniqueId";
 	public static String sMajorUniqueIdAttribute = "majorUniqueId";
+	public static String sConcentrationUniqueIdAttribute = "concentrationUniqueId";
+	public static String sAcademicAreaMajorClassificationWeightAttribute = "weight";
+	
 	public static String sAcadAreaMinorClassificationElementName = "acadAreaMinorClassification";
 	public static String sMinorUniqueIdAttribute = "minorUniqueId";
 	public static String sEnrollmentElementName = "enrollment";
@@ -973,9 +979,16 @@ public class PointInTimeDataExport extends BaseExport {
     	if (!academicClassificationElements.containsKey(acm.getAcademicClassification().getUniqueId())){
     		exportAcademicClassification(acm.getAcademicClassification());
     	}
+    	if (acm.getConcentration() != null && !concentrationElements.containsKey(acm.getConcentration().getUniqueId())) {
+    		exportConcentration(acm.getConcentration());
+    	}
     	acadAreaMajorClassificationElement.addAttribute(sAcademicAreaUniqueIdAttribute, acm.getAcademicArea().getUniqueId().toString());
     	acadAreaMajorClassificationElement.addAttribute(sAcademicClassificationUniqueIdAttribute, acm.getAcademicClassification().getUniqueId().toString());
     	acadAreaMajorClassificationElement.addAttribute(sMajorUniqueIdAttribute, acm.getMajor().getUniqueId().toString());
+    	if (acm.getConcentration() != null)
+    		acadAreaMajorClassificationElement.addAttribute(sConcentrationUniqueIdAttribute, acm.getConcentration().getUniqueId().toString());	
+    	if (acm.getWeight() != null && acm.getWeight() != 1.0)
+    		acadAreaMajorClassificationElement.addAttribute(sAcademicAreaMajorClassificationWeightAttribute, acm.getWeight().toString());
 	}
 
     private void exportAcadAreaMinorClassification(Element acadAreaMinorClassificationElement,
@@ -1001,6 +1014,16 @@ public class PointInTimeDataExport extends BaseExport {
     	majorElement.addAttribute(sNameAttribute, major.getName());
     	majorElement.addAttribute(sExternalIdAttribute, (major.getExternalUniqueId() == null? major.getUniqueId().toString() : major.getExternalUniqueId()));
     	majorElements.put(major.getUniqueId(), majorElement);
+	}
+	
+	private void exportConcentration(PosMajorConcentration conc) {
+    	Element majorElement = majorElements.get(conc.getMajor().getUniqueId());
+    	Element concElement = majorElement.addElement(sConcentrationElementName);
+    	concElement.addAttribute(sUniqueIdAttribute, conc.getUniqueId().toString());
+    	concElement.addAttribute(sCodeAttribute, conc.getCode());
+    	concElement.addAttribute(sNameAttribute, conc.getName());
+    	concElement.addAttribute(sExternalIdAttribute, (conc.getExternalUniqueId() == null? conc.getUniqueId().toString() : conc.getExternalUniqueId()));
+    	concentrationElements.put(conc.getUniqueId(), concElement);
 	}
 
 	private void exportMinor(PosMinor minor) {

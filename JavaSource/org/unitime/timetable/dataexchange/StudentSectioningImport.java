@@ -381,6 +381,7 @@ public class StudentSectioningImport extends BaseImport {
         	    			Element g = (Element) i3.next();
         	    			String code = g.attributeValue("code");
         	    			String concentration = g.attributeValue("concentration");
+        	    			Double weight = Double.valueOf(g.attributeValue("weight", "1.0"));
         	    			if (sMajors.remove(area + ":" + clasf + ":" + code) == null) {
         	    				PosMajor m = code2major.get(area + ":" + code);
         	    				if (m == null) {
@@ -393,6 +394,7 @@ public class StudentSectioningImport extends BaseImport {
     	        				acm.setMajor(m);
     	        				acm.setStudent(student);
     	        				acm.setConcentration(concentration == null ? null : code2concentration.get(area + ":" + code + ":" + concentration));
+    	        				acm.setWeight(weight);
     	        				student.getAreaClasfMajors().add(acm);
     	        				if (student.getUniqueId() != null)
                         			updatedStudents.add(student.getUniqueId());

@@ -50,7 +50,7 @@ public class CourseRequestsWithProjectedLastLikes extends ProjectedStudentCourse
 		super.init(hibSession, progress, session, offerings);
 		
 		for (Object[] o : (List<Object[]>)hibSession.createQuery(
-				"select a.academicAreaAbbreviation, m.code, f.code, count(distinct s) from LastLikeCourseDemand x inner join x.student s " +
+				"select a.academicAreaAbbreviation, m.code, f.code, sum(ac.weight) from LastLikeCourseDemand x inner join x.student s " +
 				"inner join s.areaClasfMajors ac inner join ac.academicClassification f inner join ac.academicArea a " +
 				"inner join ac.major m where x.subjectArea.session.uniqueId = :sessionId " +
 				"group by a.academicAreaAbbreviation, m.code, f.code")
@@ -59,7 +59,7 @@ public class CourseRequestsWithProjectedLastLikes extends ProjectedStudentCourse
 			String area = (String)o[0];
 			String major = (String)o[1];
 			String clasf = (String)o[2];
-			int students = ((Number)o[3]).intValue();
+			int students = Math.round(((Number)o[3]).floatValue());
 			Hashtable<String, Hashtable<String, Integer>> clasfMajor2ll = iAreaClasfMajor2LastLike.get(area);
 			if (clasfMajor2ll == null) {
 				clasfMajor2ll = new Hashtable<String, Hashtable<String,Integer>>();
@@ -74,7 +74,7 @@ public class CourseRequestsWithProjectedLastLikes extends ProjectedStudentCourse
 		}
 		
 		for (Object[] o : (List<Object[]>)hibSession.createQuery(
-				"select a.academicAreaAbbreviation, m.code, f.code, count(distinct s) from CourseRequest x inner join x.courseDemand.student s " +
+				"select a.academicAreaAbbreviation, m.code, f.code, sum(ac.weight) from CourseRequest x inner join x.courseDemand.student s " +
 				"inner join s.areaClasfMajors ac inner join ac.academicClassification f inner join ac.academicArea a " +
 				"inner join ac.major m where s.session.uniqueId = :sessionId " +
 				"group by a.academicAreaAbbreviation, m.code, f.code")
@@ -83,7 +83,7 @@ public class CourseRequestsWithProjectedLastLikes extends ProjectedStudentCourse
 			String area = (String)o[0];
 			String major = (String)o[1];
 			String clasf = (String)o[2];
-			int students = ((Number)o[3]).intValue();
+			int students = Math.round(((Number)o[3]).floatValue());
 			Hashtable<String, Hashtable<String, Integer>> clasfMajor2ll = iAreaClasfMajor2Real.get(area);
 			if (clasfMajor2ll == null) {
 				clasfMajor2ll = new Hashtable<String, Hashtable<String,Integer>>();

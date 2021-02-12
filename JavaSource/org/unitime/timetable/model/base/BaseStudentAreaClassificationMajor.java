@@ -36,6 +36,7 @@ public abstract class BaseStudentAreaClassificationMajor implements Serializable
 	private static final long serialVersionUID = 1L;
 
 	private Long iUniqueId;
+	private Double iWeight;
 
 	private Student iStudent;
 	private AcademicArea iAcademicArea;
@@ -44,6 +45,7 @@ public abstract class BaseStudentAreaClassificationMajor implements Serializable
 	private PosMajorConcentration iConcentration;
 
 	public static String PROP_UNIQUEID = "uniqueId";
+	public static String PROP_WEIGHT = "weight";
 
 	public BaseStudentAreaClassificationMajor() {
 		initialize();
@@ -58,6 +60,9 @@ public abstract class BaseStudentAreaClassificationMajor implements Serializable
 
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public Double getWeight() { return iWeight; }
+	public void setWeight(Double weight) { iWeight = weight; }
 
 	public Student getStudent() { return iStudent; }
 	public void setStudent(Student student) { iStudent = student; }
@@ -97,6 +102,7 @@ public abstract class BaseStudentAreaClassificationMajor implements Serializable
 			"\n	Major: " + getMajor() +
 			"\n	Student: " + getStudent() +
 			"\n	UniqueId: " + getUniqueId() +
+			"\n	Weight: " + getWeight() +
 			"]";
 	}
 }

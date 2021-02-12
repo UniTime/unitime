@@ -14073,4 +14073,19 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'StudentSchedulingAdvisor'
 		</sql>
 	</update>
+	<update version="237" date="8-Feb-2021" comment="Student Area Classification Major Weight">
+		<plsql>alter table %SCHEMA%.student_area_clasf_major add weight double precision default 1.0</plsql>
+	    <mysql>alter table %SCHEMA%.student_area_clasf_major add weight double default 1.0</mysql>
+	    <pgsql>alter table %SCHEMA%.student_area_clasf_major add weight double precision default 1.0</pgsql>
+		<plsql>alter table %SCHEMA%.pit_stu_aa_major_clasf add concentration_id number(20,0)</plsql>
+	    <mysql>alter table %SCHEMA%.pit_stu_aa_major_clasf add concentration_id decimal(20,0)</mysql>
+	    <pgsql>alter table %SCHEMA%.pit_stu_aa_major_clasf add concentration_id bigint</pgsql>
+		<plsql>alter table %SCHEMA%.pit_stu_aa_major_clasf add weight double precision default 1.0</plsql>
+	    <mysql>alter table %SCHEMA%.pit_stu_aa_major_clasf add weight double default 1.0</mysql>
+	    <pgsql>alter table %SCHEMA%.pit_stu_aa_major_clasf add weight double precision default 1.0</pgsql>
+		<sql>
+			alter table %SCHEMA%.pit_stu_aa_major_clasf add constraint fk_pit_stuamc_to_cc foreign key (concentration_id)
+			references %SCHEMA%.pos_major_conc (uniqueid) on delete cascade
+		</sql>
+	</update>
 </dbupdate>
