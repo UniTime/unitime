@@ -37,6 +37,7 @@ import org.unitime.timetable.gwt.client.limitandprojectionsnapshot.LimitAndProje
 import org.unitime.timetable.gwt.client.pointintimedata.PointInTimeDataReportsPage;
 import org.unitime.timetable.gwt.client.reservations.ReservationEdit;
 import org.unitime.timetable.gwt.client.reservations.ReservationsPage;
+import org.unitime.timetable.gwt.client.rooms.BuildingsPage;
 import org.unitime.timetable.gwt.client.rooms.RoomFeaturesPage;
 import org.unitime.timetable.gwt.client.rooms.RoomGroupsPage;
 import org.unitime.timetable.gwt.client.rooms.RoomPicturesPage;
@@ -265,6 +266,10 @@ public enum Pages {
 	acrf(new PageFactory() {
 		public Widget create() { return new AdvisorCourseRequestsPage(); }
 		public String name(GwtMessages messages) { return messages.pageAdvisorCourseRequests(); }
+		}),
+	buildings(new PageFactory() {
+		public Widget create() { return new BuildingsPage(); }
+		public String name(GwtMessages messages) { return messages.pageBuildings(); }
 		}),
 	;
 	

@@ -2799,6 +2799,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Abbreviation is required.")
 	String errorAbbreviationIsEmpty();
 	
+	@DefaultMessage("Abbreviation must be unique.")
+	String errorAbbreviationMustBeUnique();
+
 	@DefaultMessage("Attribute type must be selected.")
 	String errorNoAttributeTypeSelected();
 	
@@ -3758,6 +3761,18 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Advisor Course Recommendations")
 	@DoNotTranslate
 	String pageAdvisorCourseRequests();
+	
+	@DefaultMessage("Buildings")
+	@DoNotTranslate
+	String pageBuildings();
+	
+	@DefaultMessage("Add Building")
+	@DoNotTranslate
+	String pageAddBuilding();
+	
+	@DefaultMessage("Edit Building")
+	@DoNotTranslate
+	String pageEditBuilding();
 	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -6517,4 +6532,31 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Restriction: Reservation is only enforced on the selected level")
 	String reservationInclusiveFalse();
+	
+	@DefaultMessage("Buildings")
+	String sectBuildings();
+	
+	@DefaultMessage("Add Building")
+	String sectAddBuilding();
+	
+	@DefaultMessage("Edit Building")
+	String sectEditBuilding();
+	
+	@DefaultMessage("<u>A</u>dd Building")
+	String buttonAddBuilding();
+	
+	@DefaultMessage("Update Data")
+	String buttonBuildingsUpdateData();
+	
+	@DefaultMessage("Map:")
+	String propMap();
+	
+	@DefaultMessage("Update room coordinates to match the building coordinates.")
+	String checkBuildingUpdateRoomCoordinates();
+	
+	@DefaultMessage("building")
+	String objectBuilding();
+	
+	@DefaultMessage("Update data has failed: {0}")
+	String failedBuildingUpdateData(String reason);
 }

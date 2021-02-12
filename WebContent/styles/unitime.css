@@ -6912,6 +6912,19 @@ unitime-RoomSharingWidget .legend .blank {
 	white-space: nowrap;
 }
 
+.unitime-BuildingEdit .coordinates .number {
+	float: left;
+}
+
+.unitime-BuildingEdit .coordinates .comma {
+	float: left;
+	margin: 3px 7px 0px 2px;
+}
+
+.unitime-BuildingEdit .coordinates .format {
+	float: left;
+	margin: 3px 0px 0px 5px;
+}
 .unitime-PopupHint .unitime-TableHeader {
 	background-image: none;
   	background-color: transparent;

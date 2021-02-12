@@ -852,7 +852,7 @@
 					<hasPermission name="SubjectAreas"/>
 				</condition>
 			</item>
-			<item name="Buildings" page="buildingList.do">
+			<item name="Buildings" page="buildings" type="gwt">
 				<condition>
 					<hasPermission name="BuildingList"/>
 				</condition>
