@@ -24,6 +24,7 @@ import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseBoolean;
@@ -41,6 +42,7 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -119,21 +121,26 @@ public class BuildingsEdit extends Composite implements TakesValue<BuildingInter
 		iHeader.addButton("delete", MESSAGES.buttonDelete(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				UpdateBuildingRequest request = new UpdateBuildingRequest();
-				request.setAction(UpdateBuildingAction.DELETE);
-				request.setBuilding(getValue());
-				LoadingWidget.getInstance().show(MESSAGES.waitPlease());
-				RPC.execute(request, new AsyncCallback<BuildingInterface>() {
+				UniTimeConfirmationDialog.confirm(MESSAGES.confirmBuildingDelete(), new Command() {
 					@Override
-					public void onFailure(Throwable caught) {
-						LoadingWidget.getInstance().hide();
-						iHeader.setErrorMessage(MESSAGES.failedDelete(MESSAGES.objectBuilding(), caught.getMessage()));
-						UniTimeNotifications.error(MESSAGES.failedDelete(MESSAGES.objectBuilding(), caught.getMessage()), caught);
-					}
-					@Override
-					public void onSuccess(BuildingInterface result) {
-						LoadingWidget.getInstance().hide();
-						onBack(true, null);
+					public void execute() {
+						UpdateBuildingRequest request = new UpdateBuildingRequest();
+						request.setAction(UpdateBuildingAction.DELETE);
+						request.setBuilding(getValue());
+						LoadingWidget.getInstance().show(MESSAGES.waitPlease());
+						RPC.execute(request, new AsyncCallback<BuildingInterface>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								LoadingWidget.getInstance().hide();
+								iHeader.setErrorMessage(MESSAGES.failedDelete(MESSAGES.objectBuilding(), caught.getMessage()));
+								UniTimeNotifications.error(MESSAGES.failedDelete(MESSAGES.objectBuilding(), caught.getMessage()), caught);
+							}
+							@Override
+							public void onSuccess(BuildingInterface result) {
+								LoadingWidget.getInstance().hide();
+								onBack(true, null);
+							}
+						});
 					}
 				});
 			}
@@ -280,6 +287,7 @@ public class BuildingsEdit extends Composite implements TakesValue<BuildingInter
 			if (iMap != null) iMap.setMarker();
 			iBuilding = building;
 			iUpdateRoomCoordinates.setVisible(true);
+			iUpdateRoomCoordinates.setValue(false);
 		}
 	}
 

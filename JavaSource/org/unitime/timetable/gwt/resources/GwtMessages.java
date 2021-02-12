@@ -6559,4 +6559,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Update data has failed: {0}")
 	String failedBuildingUpdateData(String reason);
+	
+	@DefaultMessage("The building and all its rooms will be deleted. Continue?")
+	String confirmBuildingDelete();
 }
