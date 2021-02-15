@@ -198,7 +198,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             for (org.cpsolver.exam.model.ExamPeriod p: model.getPeriods()) {
             	if (!p.equals(placement.getPeriod()) && p.hasIntersection(placement.getPeriod())) {
             		for (ExamInstructor instructor: exam.getInstructors()) {
-            			for (Iterator i=instructor.getExams(assignment, placement.getPeriod()).iterator();i.hasNext();) {
+            			for (Iterator i=instructor.getExams(assignment, p).iterator();i.hasNext();) {
                             Exam other = (Exam)i.next();
                             if (other.equals(exam)) continue;
                             if (!placement.getPeriod().hasIntersection(exam, other, p)) continue;

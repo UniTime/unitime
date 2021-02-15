@@ -483,7 +483,7 @@ public class ExamAssignmentReportAction extends Action {
             return generateIndividualConflictsReport(html, sessionId, form, exams, true, false, true, false, UserProperty.NameFormat.get(sessionContext.getUser()));
         } else if (ExamAssignmentReportForm.sIndividualInstructorConflicts.equals(form.getReport())) {
             return generateIndividualConflictsReport(html, sessionId, form, exams, false, true, true, true, UserProperty.NameFormat.get(sessionContext.getUser()));
-        } else if (ExamAssignmentReportForm.sIndividualInstructorConflicts.equals(form.getReport())) {
+        } else if (ExamAssignmentReportForm.sIndividualDirectInstructorConflicts.equals(form.getReport())) {
             return generateIndividualConflictsReport(html, sessionId, form, exams, false, true, false, false, UserProperty.NameFormat.get(sessionContext.getUser()));
         } else if (ExamAssignmentReportForm.sIndividualBackToBackInstructorConflicts.equals(form.getReport())) {
             return generateIndividualConflictsReport(html, sessionId, form, exams, false, false, false, true, UserProperty.NameFormat.get(sessionContext.getUser()));
@@ -1310,8 +1310,7 @@ public class ExamAssignmentReportAction extends Action {
                                     if (firstSection) {
                                         seating += conflict.getOtherExam().getSeatingTypeLabel();
                                         room += conflict.getOtherExam().getRoomsName(html, ", ");
-                                        if (!exam.getPeriod().equals(conflict.getOtherExam().getPeriod())) {
-                                        	date += conflict.getOtherExam().getDate(html);
+                                        if (!exam.getPeriod().equals(conflict.getOtherExam().getPeriod()) || exam.getLength() != conflict.getOtherExam().getLength()) {
                                             time += conflict.getOtherExam().getTime(html);
                                         }
                                     }
@@ -1363,8 +1362,8 @@ public class ExamAssignmentReportAction extends Action {
                                             exam.getExamName()+nl+conflict.getOtherExam().getExamName(),
                                             exam.getNrStudents()+nl+conflict.getOtherExam().getNrStudents(),
                                             exam.getSeatingTypeLabel()+nl+conflict.getOtherExam().getSeatingTypeLabel(),
-                                            exam.getDate(html)+nl+(exam.getPeriod().equals(conflict.getOtherExam().getPeriod()) ? "" : conflict.getOtherExam().getDate(html)),
-                                            exam.getTime(html)+nl+(exam.getPeriod().equals(conflict.getOtherExam().getPeriod()) ? "" : conflict.getOtherExam().getTime(html)),
+                                            exam.getDate(html)+nl,
+                                            exam.getTime(html)+nl+(exam.getPeriod().equals(conflict.getOtherExam().getPeriod()) && exam.getLength() == conflict.getOtherExam().getLength() ? "" : conflict.getOtherExam().getTime(html)),
                                             exam.getRoomsName(html, ", ")+nl+conflict.getOtherExam().getRoomsName(html, ", "),
                                             ""
                                         }, new Comparable[] {
@@ -2001,7 +2000,12 @@ public class ExamAssignmentReportAction extends Action {
             Set<Long> newStudents = null;
             for (ExamSectionInfo section : exam.getSections()) {
                 if (students == null) {
-                    newStudents = new HashSet(section.getStudentIds());
+                	if (studentConf)
+                		newStudents = new HashSet(section.getStudentIds());
+                	else {
+                		newStudents = new HashSet();
+                		for (ExamInstructorInfo i: section.getExam().getInstructors()) newStudents.add(i.getId());
+                	}
                 } else {
                     newStudents = new HashSet<Long>();
                     for (Long studentId : students) {
