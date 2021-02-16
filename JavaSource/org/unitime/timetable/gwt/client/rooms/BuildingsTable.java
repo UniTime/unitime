@@ -43,7 +43,7 @@ public class BuildingsTable extends UniTimeTable<BuildingInterface>{
 
 	public BuildingsTable() {
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
-		for (BuildingsColumn col: BuildingsColumn.values()) {
+		for (final BuildingsColumn col: BuildingsColumn.values()) {
 			final UniTimeTableHeader h = new UniTimeTableHeader(getColumnName(col));
 			if (BuildingComparator.isApplicable(col)) {
 				Operation op = new SortOperation() {
