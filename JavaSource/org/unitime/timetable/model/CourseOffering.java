@@ -427,4 +427,12 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
     	}
     	return ret;
     }
+    
+    public Department getEffectiveFundingDept() {
+    	if (getFundingDept() == null) {
+    		return getSubjectArea().getEffectiveFundingDept();
+    	} else {
+    		return getFundingDept();
+    	}
+    }
 }
