@@ -2958,7 +2958,12 @@ public enum ApplicationProperty {
 	@Type(String.class)
 	@Description("Instructional Offering: prohibit over the limit overrides when wait-listing is enabled. When set, this property should contain the reference of the override that must be marked as prohibited when wait-listing is enabled.")
 	@Since(4.6)
-	OfferingWaitListProhibitedOverride("unitime.offering.waitList.prohibitedOverride")
+	OfferingWaitListProhibitedOverride("unitime.offering.waitList.prohibitedOverride"),
+
+	@DefaultValue("false")
+	@Description("Enable Funding Department Functionality.")
+	CoursesFundingDepartmentsEnabled("unitime.courses.funding_departments_enabled"),
+
 	;
 
 	String iKey;
