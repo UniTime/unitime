@@ -2901,6 +2901,11 @@ public enum ApplicationProperty {
 	@Description("Variable Title: Instructor Id is Required")
 	VariableTitleInstructorIdRequired("unitime.variableTitle.instructorIdRequired"),
 
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Enable Funding Department Functionality.")
+	CoursesFundingDepartmentsEnabled("unitime.courses.funding_departments_enabled"),
+
 	;
 
 	String iKey;

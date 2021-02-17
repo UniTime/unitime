@@ -43,6 +43,7 @@ public abstract class BaseSubjectArea implements Serializable {
 
 	private Session iSession;
 	private Department iDepartment;
+	private Department iFundingDept;
 	private Set<CourseOffering> iCourseOfferings;
 	private Set<InstructionalOffering> iInstructionalOfferings;
 
@@ -80,6 +81,9 @@ public abstract class BaseSubjectArea implements Serializable {
 	public Department getDepartment() { return iDepartment; }
 	public void setDepartment(Department department) { iDepartment = department; }
 
+	public Department getFundingDept() { return iFundingDept; }
+	public void setFundingDept(Department fundingDept) { iFundingDept = fundingDept; }
+
 	public Set<CourseOffering> getCourseOfferings() { return iCourseOfferings; }
 	public void setCourseOfferings(Set<CourseOffering> courseOfferings) { iCourseOfferings = courseOfferings; }
 	public void addTocourseOfferings(CourseOffering courseOffering) {
@@ -113,6 +117,7 @@ public abstract class BaseSubjectArea implements Serializable {
 		return "SubjectArea[" +
 			"\n	Department: " + getDepartment() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +
+			"\n	FundingDept: " + getFundingDept() +
 			"\n	Session: " + getSession() +
 			"\n	SubjectAreaAbbreviation: " + getSubjectAreaAbbreviation() +
 			"\n	Title: " + getTitle() +
