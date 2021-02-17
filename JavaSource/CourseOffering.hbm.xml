@@ -231,5 +231,14 @@
                 column="type_id"
                 foreign-key="fk_disb_override_type"/>
         </set>
+        
+        <many-to-one
+            name="fundingDept"
+            class="Department"
+            column="funding_dept_id"
+            not-null="false"
+            lazy="proxy"
+            foreign-key="fk_co_fund_dept"/>
+        
     </class>
 </hibernate-mapping>

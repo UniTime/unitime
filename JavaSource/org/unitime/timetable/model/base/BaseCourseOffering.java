@@ -28,6 +28,7 @@ import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseType;
 import org.unitime.timetable.model.DemandOfferingType;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.OverrideType;
@@ -64,6 +65,7 @@ public abstract class BaseCourseOffering implements Serializable {
 	private CourseType iCourseType;
 	private OfferingConsentType iConsentType;
 	private CourseOffering iAlternativeOffering;
+	private Department iFundingDept;
 	private Set<CourseCreditUnitConfig> iCreditConfigs;
 	private Set<OverrideType> iDisabledOverrides;
 
@@ -163,6 +165,9 @@ public abstract class BaseCourseOffering implements Serializable {
 	public CourseOffering getAlternativeOffering() { return iAlternativeOffering; }
 	public void setAlternativeOffering(CourseOffering alternativeOffering) { iAlternativeOffering = alternativeOffering; }
 
+	public Department getFundingDept() { return iFundingDept; }
+	public void setFundingDept(Department fundingDept) { iFundingDept = fundingDept; }
+
 	public Set<CourseCreditUnitConfig> getCreditConfigs() { return iCreditConfigs; }
 	public void setCreditConfigs(Set<CourseCreditUnitConfig> creditConfigs) { iCreditConfigs = creditConfigs; }
 	public void addTocreditConfigs(CourseCreditUnitConfig courseCreditUnitConfig) {
@@ -202,6 +207,7 @@ public abstract class BaseCourseOffering implements Serializable {
 			"\n	DemandOffering: " + getDemandOffering() +
 			"\n	DemandOfferingType: " + getDemandOfferingType() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +
+			"\n	FundingDept: " + getFundingDept() +
 			"\n	InstructionalOffering: " + getInstructionalOffering() +
 			"\n	IsControl: " + getIsControl() +
 			"\n	NbrExpectedStudents: " + getNbrExpectedStudents() +

@@ -71,4 +71,9 @@ public abstract class BasePitClassDAO extends _RootDAO<PitClass,Long> {
 	public List<PitClass> findByTimePattern(org.hibernate.Session hibSession, Long timePatternId) {
 		return hibSession.createQuery("from PitClass x where x.timePattern.uniqueId = :timePatternId").setLong("timePatternId", timePatternId).list();
 	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitClass> findByFundingDept(org.hibernate.Session hibSession, Long fundingDeptId) {
+		return hibSession.createQuery("from PitClass x where x.fundingDept.uniqueId = :fundingDeptId").setLong("fundingDeptId", fundingDeptId).list();
+	}
 }
