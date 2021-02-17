@@ -189,5 +189,13 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 		}
 		return subjectAreas;
 	}
+	
+	public Department getEffectiveFundingDept() {
+		if (getFundingDept() == null) {
+			return getDepartment();
+		} else {
+			return getFundingDept();
+		}
+	}
 
 }
