@@ -418,12 +418,21 @@
 	            column="snapshot_limit_date"
 	            type="java.sql.Timestamp"
 	            not-null="false"/>  
+            
             <many-to-one
                 name="lmsInfo"
                 class="LearningManagementSystemInfo"
                 column="lms_info_id"
                 not-null="false"
                 foreign-key="fk_class_lms_info"/>
+                
+            <many-to-one
+	            name="fundingDept"
+	            class="Department"
+	            column="funding_dept_id"
+	            not-null="false"
+	            lazy="proxy"
+	            foreign-key="fk_class_fund_dept"/>
 	                      
         </union-subclass>
 
@@ -617,6 +626,12 @@
                 <one-to-many class="DepartmentalInstructor"/>
             </set>
 
+			<property
+                name="externalFundingDept"
+                column="external_funding_dept"
+                type="java.lang.Boolean"
+                not-null="false"/>
+                
         </union-subclass>
 
         <union-subclass

@@ -2807,6 +2807,11 @@ public enum ApplicationProperty {
 	@Parameter("examination type")
 	ExamEventAllocatedTimeBasedExamLength("unitime.examEvent.allocatesTimeBasedExamLength.%"),
 	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Enable Funding Department Functionality.")
+	CoursesFundingDepartmentsEnabled("unitime.courses.funding_departments_enabled"),
+
 	;
 
 	String iKey;

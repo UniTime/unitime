@@ -66,6 +66,7 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	private DatePattern iDatePattern;
 	private Assignment iCommittedAssignment;
 	private LearningManagementSystemInfo iLmsInfo;
+	private Department iFundingDept;
 	private Set<Class_> iChildClasses;
 	private Set<ClassInstructor> iClassInstructors;
 	private Set<Assignment> iAssignments;
@@ -171,6 +172,9 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	public LearningManagementSystemInfo getLmsInfo() { return iLmsInfo; }
 	public void setLmsInfo(LearningManagementSystemInfo lmsInfo) { iLmsInfo = lmsInfo; }
 
+	public Department getFundingDept() { return iFundingDept; }
+	public void setFundingDept(Department fundingDept) { iFundingDept = fundingDept; }
+
 	public Set<Class_> getChildClasses() { return iChildClasses; }
 	public void setChildClasses(Set<Class_> childClasses) { iChildClasses = childClasses; }
 	public void addTochildClasses(Class_ class_) {
@@ -230,6 +234,7 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 			"\n	EnabledForStudentScheduling: " + getEnabledForStudentScheduling() +
 			"\n	ExpectedCapacity: " + getExpectedCapacity() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +
+			"\n	FundingDept: " + getFundingDept() +
 			"\n	LmsInfo: " + getLmsInfo() +
 			"\n	ManagingDept: " + getManagingDept() +
 			"\n	MaxExpectedCapacity: " + getMaxExpectedCapacity() +
