@@ -193,6 +193,13 @@
             <one-to-many class="PitClassEvent"/>
         </set>
 
-
+		<many-to-one
+            name="fundingDept"
+            class="Department"
+            column="funding_dept_id"
+            not-null="false"
+            lazy="proxy"
+            foreign-key="fk_pit_class_fund_dept"/>
+            
     </class>
 </hibernate-mapping>

@@ -2984,6 +2984,10 @@ public enum ApplicationProperty {
 	@Description("Online Student Scheduling: automatically reload the online student scheduling server(s) when two clusters are merged together.")
 	OnlineSchedulingReloadAfterMerge("unitime.sectioning.reloadAfterMerge"),
 
+	@DefaultValue("false")
+	@Description("Enable Funding Department Functionality.")
+	CoursesFundingDepartmentsEnabled("unitime.courses.funding_departments_enabled"),
+
 	;
 
 	String iKey;
