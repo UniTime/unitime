@@ -14088,6 +14088,7 @@
 			references %SCHEMA%.pos_major_conc (uniqueid) on delete cascade
 		</sql>
 	</update>
+<<<<<<< HEAD
 	<update version="238" date="22-Feb-2021" comment="Student Area Classification Major Unique Index">
 		<mysql>alter table %SCHEMA%.student_area_clasf_major drop foreign key fk_student_acmaj_student</mysql>
 		<mysql>alter table %SCHEMA%.student_area_clasf_major drop foreign key fk_student_acmaj_area</mysql>
@@ -14162,4 +14163,117 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'MajorEdit'
 		</sql>
 	</update>
+	<update version="240" date="16-Feb-2021" comment="Add Funding Department">
+	    <plsql>alter table %SCHEMA%.department add external_funding_dept number(1)</plsql>
+	    <mysql>alter table %SCHEMA%.department add external_funding_dept int(1)</mysql>
+	    <pgsql>alter table %SCHEMA%.department add external_funding_dept boolean</pgsql>
+
+		<plsql>
+			alter table %SCHEMA%.subject_area add funding_dept_id number(20,0)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.subject_area add constraint fk_sa_fund_dept foreign key (funding_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</plsql>
+
+		<mysql>
+			alter table %SCHEMA%.subject_area add funding_dept_id decimal(20,0)
+		</mysql>
+		<mysql>
+			alter table %SCHEMA%.subject_area add constraint fk_sa_fund_dept foreign key (funding_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</mysql>
+		<pgsql>
+			alter table %SCHEMA%.subject_area add funding_dept_id bigint
+		</pgsql>
+		<pgsql>
+			create index fk_sa_fund_dept ON %SCHEMA%.subject_area USING btree (funding_dept_id)
+		</pgsql>
+		<pgsql>
+			alter table only %SCHEMA%.subject_area add constraint fk_co_fund_dept foreign key (funding_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</pgsql>
+
+		<plsql>
+			alter table %SCHEMA%.course_offering add funding_dept_id number(20,0)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.course_offering add constraint fk_co_fund_dept foreign key (funding_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</plsql>
+
+		<mysql>
+			alter table %SCHEMA%.course_offering add funding_dept_id decimal(20,0)
+		</mysql>
+		<mysql>
+			alter table %SCHEMA%.course_offering add constraint fk_co_fund_dept foreign key (funding_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</mysql>
+		
+		<pgsql>
+			alter table %SCHEMA%.course_offering add funding_dept_id bigint
+		</pgsql>
+		<pgsql>
+			create index fk_co_fund_dept ON %SCHEMA%.course_offering USING btree (funding_dept_id)
+		</pgsql>
+		<pgsql>
+			alter table only %SCHEMA%.course_offering add constraint fk_co_fund_dept foreign key (funding_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</pgsql>
+
+		<plsql>
+			alter table %SCHEMA%.class_ add funding_dept_id number(20,0)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.class_ add constraint fk_class_fund_dept foreign key (funding_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</plsql>
+
+		<mysql>
+			alter table %SCHEMA%.class_ add funding_dept_id decimal(20,0)
+		</mysql>
+		<mysql>
+			alter table %SCHEMA%.class_ add constraint fk_class_fund_dept foreign key (funding_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</mysql>
+		
+		<pgsql>
+			alter table %SCHEMA%.class_ add funding_dept_id bigint
+		</pgsql>
+		<pgsql>
+			create index fk_class_fund_dept ON %SCHEMA%.class_ USING btree (funding_dept_id)
+		</pgsql>
+		<pgsql>
+			alter table only %SCHEMA%.class_ add constraint fk_class_fund_dept foreign key (funding_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</pgsql>
+
+		<plsql>
+			alter table %SCHEMA%.pit_class add funding_dept_id number(20,0)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.pit_class add constraint fk_pit_class_fund_dept foreign key (funding_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</plsql>
+
+		<mysql>
+			alter table %SCHEMA%.pit_class add funding_dept_id decimal(20,0)
+		</mysql>
+		<mysql>
+			alter table %SCHEMA%.pit_class add constraint fk_pit_class_fund_dept foreign key (funding_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</mysql>
+		
+		<pgsql>
+			alter table %SCHEMA%.pit_class add funding_dept_id bigint
+		</pgsql>
+		<pgsql>
+			create index fk_pit_class_fund_dept ON %SCHEMA%.pit_class USING btree (funding_dept_id)
+		</pgsql>
+		<pgsql>
+			alter table only %SCHEMA%.pit_class add constraint fk_pit_class_fund_dept foreign key (funding_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</pgsql>
+	
+	</update>	
 </dbupdate>
