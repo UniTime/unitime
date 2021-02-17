@@ -76,4 +76,9 @@ public abstract class BaseCourseOfferingDAO extends _RootDAO<CourseOffering,Long
 	public List<CourseOffering> findByAlternativeOffering(org.hibernate.Session hibSession, Long alternativeOfferingId) {
 		return hibSession.createQuery("from CourseOffering x where x.alternativeOffering.uniqueId = :alternativeOfferingId").setLong("alternativeOfferingId", alternativeOfferingId).list();
 	}
+
+	@SuppressWarnings("unchecked")
+	public List<CourseOffering> findByFundingDept(org.hibernate.Session hibSession, Long fundingDeptId) {
+		return hibSession.createQuery("from CourseOffering x where x.fundingDept.uniqueId = :fundingDeptId").setLong("fundingDeptId", fundingDeptId).list();
+	}
 }

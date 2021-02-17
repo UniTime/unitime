@@ -57,6 +57,7 @@ public abstract class BasePitClass implements Serializable {
 	private PitClass iPitParentClass;
 	private DatePattern iDatePattern;
 	private TimePattern iTimePattern;
+	private Department iFundingDept;
 	private Set<PitClass> iPitChildClasses;
 	private Set<PitClassInstructor> iPitClassInstructors;
 	private Set<PitStudentClassEnrollment> iStudentEnrollments;
@@ -131,6 +132,9 @@ public abstract class BasePitClass implements Serializable {
 	public TimePattern getTimePattern() { return iTimePattern; }
 	public void setTimePattern(TimePattern timePattern) { iTimePattern = timePattern; }
 
+	public Department getFundingDept() { return iFundingDept; }
+	public void setFundingDept(Department fundingDept) { iFundingDept = fundingDept; }
+
 	public Set<PitClass> getPitChildClasses() { return iPitChildClasses; }
 	public void setPitChildClasses(Set<PitClass> pitChildClasses) { iPitChildClasses = pitChildClasses; }
 	public void addTopitChildClasses(PitClass pitClass) {
@@ -181,6 +185,7 @@ public abstract class BasePitClass implements Serializable {
 			"\n	DatePattern: " + getDatePattern() +
 			"\n	EnabledForStudentScheduling: " + getEnabledForStudentScheduling() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +
+			"\n	FundingDept: " + getFundingDept() +
 			"\n	Limit: " + getLimit() +
 			"\n	ManagingDept: " + getManagingDept() +
 			"\n	NbrRooms: " + getNbrRooms() +

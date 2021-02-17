@@ -51,4 +51,9 @@ public abstract class BaseSubjectAreaDAO extends _RootDAO<SubjectArea,Long> {
 	public List<SubjectArea> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
 		return hibSession.createQuery("from SubjectArea x where x.department.uniqueId = :departmentId").setLong("departmentId", departmentId).list();
 	}
+
+	@SuppressWarnings("unchecked")
+	public List<SubjectArea> findByFundingDept(org.hibernate.Session hibSession, Long fundingDeptId) {
+		return hibSession.createQuery("from SubjectArea x where x.fundingDept.uniqueId = :fundingDeptId").setLong("fundingDeptId", fundingDeptId).list();
+	}
 }

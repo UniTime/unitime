@@ -58,6 +58,7 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 	private String iExternalMgrLabel;
 	private String iExternalMgrAbbv;
 	private Integer iDistributionPrefPriority;
+	private Boolean iExternalFundingDept;
 
 	private Session iSession;
 	private DepartmentStatusType iStatusType;
@@ -85,6 +86,7 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 	public static String PROP_EXTERNAL_MGR_LABEL = "externalMgrLabel";
 	public static String PROP_EXTERNAL_MGR_ABBV = "externalMgrAbbv";
 	public static String PROP_DIST_PRIORITY = "distributionPrefPriority";
+	public static String PROP_EXTERNAL_FUNDING_DEPT = "externalFundingDept";
 
 	public BaseDepartment() {
 		initialize();
@@ -148,6 +150,10 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 
 	public Integer getDistributionPrefPriority() { return iDistributionPrefPriority; }
 	public void setDistributionPrefPriority(Integer distributionPrefPriority) { iDistributionPrefPriority = distributionPrefPriority; }
+
+	public Boolean isExternalFundingDept() { return iExternalFundingDept; }
+	public Boolean getExternalFundingDept() { return iExternalFundingDept; }
+	public void setExternalFundingDept(Boolean externalFundingDept) { iExternalFundingDept = externalFundingDept; }
 
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
@@ -232,6 +238,7 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 			"\n	AllowStudentScheduling: " + getAllowStudentScheduling() +
 			"\n	DeptCode: " + getDeptCode() +
 			"\n	DistributionPrefPriority: " + getDistributionPrefPriority() +
+			"\n	ExternalFundingDept: " + getExternalFundingDept() +
 			"\n	ExternalManager: " + getExternalManager() +
 			"\n	ExternalMgrAbbv: " + getExternalMgrAbbv() +
 			"\n	ExternalMgrLabel: " + getExternalMgrLabel() +
