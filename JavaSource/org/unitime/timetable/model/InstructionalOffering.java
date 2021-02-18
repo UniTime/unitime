@@ -144,7 +144,6 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 		CourseOffering course = getControllingCourseOffering();
 		return (course == null ? null : course.getDepartment());
 	}
-
 	/**
 	 * @return Returns the controllingCourseOffering.
 	 */
@@ -668,5 +667,9 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     
     public boolean hasCrossList() {
     	return getCourseOfferings().size() > 1;
+    }
+    
+    public Department getEffectiveFundingDept() {
+    	return getControllingCourseOffering().getEffectiveFundingDept();
     }
 }
