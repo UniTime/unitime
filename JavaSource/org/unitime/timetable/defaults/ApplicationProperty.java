@@ -2760,6 +2760,12 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("true")
+	@Description("Advisor Course Recommendations: enable previous notes (ability to select one of the notes that the advisor used before)")
+	@Since(4.5)
+	AdvisorCourseRequestsLastNotes("unitime.acrf.lastNotes"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
 	@Description("Advisor Course Recommendations: pre-populate Course Requests with advisor recommendations (when student has not made any changes and is allowed to submit)")
 	@Since(4.5)
 	AdvisorCourseRequestsPrepopulateCourseRequests("unitime.acrf.prepopulate.courseRequests"),

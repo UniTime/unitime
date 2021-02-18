@@ -3592,6 +3592,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		checkContext(cx);
 		getSessionContext().checkPermissionAnySession(cx.getAcademicSessionId(), Right.AdvisorCourseRequests);
 		
+		if (!ApplicationProperty.AdvisorCourseRequestsLastNotes.isTrue()) return null;
+		
 		List<AdvisorNote> ret = new ArrayList<AdvisorNote>();
 		String defaultNote = ApplicationProperty.AdvisorCourseRequestsDefaultNote.valueOfSession(cx.getAcademicSessionId());
 		Student student = (cx.getStudentId() == null ? null : StudentDAO.getInstance().get(cx.getStudentId()));
