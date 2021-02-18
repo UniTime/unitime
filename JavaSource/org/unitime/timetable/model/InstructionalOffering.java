@@ -144,7 +144,6 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 		CourseOffering course = getControllingCourseOffering();
 		return (course == null ? null : course.getDepartment());
 	}
-
 	/**
 	 * @return Returns the controllingCourseOffering.
 	 */
@@ -700,5 +699,9 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     	if (isWaitlist() != null)
     		return isWaitlist().booleanValue();
     	return ApplicationProperty.OfferingWaitListDefault.isTrue();
+    }
+
+    public Department getEffectiveFundingDept() {
+    	return getControllingCourseOffering().getEffectiveFundingDept();
     }
 }
