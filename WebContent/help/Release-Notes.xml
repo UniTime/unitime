@@ -37,6 +37,14 @@
 				<line>Added optional weight parameter in Students XML and Student Course Requests XML import and export.</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetabling Solver: Student Course Demands</name>
+			<description>
+				<line>Fixed an issue where a first-choice course is marked as alternative to each other, making the solver to ignore student conflicts within the course.
+					<line>This was only a problem when student course demands are used and alternatives are enabled (StudentCourseRequests.IncludeAlternatives is true).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Advisor Course Recommendations</title>
