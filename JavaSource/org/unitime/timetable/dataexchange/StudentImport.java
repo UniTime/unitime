@@ -391,6 +391,7 @@ public class StudentImport extends BaseImport {
     				acm.setAcademicClassification(f);
     				acm.setMajor(m);
     				acm.setStudent(student);
+    				acm.setWeight(1.0);
     				student.getAreaClasfMajors().add(acm);
             		if (student.getUniqueId() != null)
             			updatedStudents.add(student.getUniqueId());

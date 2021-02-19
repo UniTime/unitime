@@ -597,7 +597,7 @@ public class SessionRestore implements SessionRestoreInterface {
 				Type type = getMetaData().getPropertyTypes()[i];
 				if (type instanceof EntityType) {
 					TableData.Element element = getElement(getMetaData().getPropertyNames()[i]);
-					if (element == null) continue;
+					if (element == null || element.getValueCount() == 0) continue;
 					Object value = get(type.getReturnedClass(), element.getValue(0));
 					if (value == null || !iHibSession.contains(value)) return getMetaData().getPropertyNames()[i];
 				}
@@ -644,6 +644,10 @@ public class SessionRestore implements SessionRestoreInterface {
 				if (type instanceof EntityType) {
 					TableData.Element element = getElement(getMetaData().getPropertyNames()[i]);
 					if (element == null) continue;
+					if (element.getValueCount() == 0) {
+						message("Required " + getAbbv() + "." + property + " has no value", getRecord().getId());
+						continue;
+					}
 					Object value = get(type.getReturnedClass(), element.getValue(0));
 					if (value != null) {
 						if (!iHibSession.contains(value))
@@ -763,6 +767,7 @@ public class SessionRestore implements SessionRestoreInterface {
 								acm.setStudent(student);
 								acm.setAcademicClassification(clasf);
 								acm.setMajor(major);
+								acm.setWeight(1.0);
 								student.addToareaClasfMajors(acm);
 								otherObjectsToSave.add(acm);
 							}
@@ -945,6 +950,10 @@ public class SessionRestore implements SessionRestoreInterface {
 						}
 					o.setValue(option.build().toByteArray());
 				} catch (InvalidProtocolBufferException e) {}
+			}
+			if (getObject() instanceof StudentAreaClassificationMajor) {
+				StudentAreaClassificationMajor m = (StudentAreaClassificationMajor)getObject();
+				if (m.getWeight() == null) m.setWeight(1.0);
 			}
 		}
 	}
