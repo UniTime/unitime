@@ -2187,7 +2187,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 
     	for (Iterator i=clazz.getSchedulingSubpart().getInstrOfferingConfig().getSchedulingSubparts().iterator();i.hasNext();) {
     		SchedulingSubpart subpart = (SchedulingSubpart)i.next();
-    		if (subpart.getParentSubpart()!=null || subpart.getClasses().size()!=1) continue;
+    		if (subpart.getClasses().size()!=1) continue;
     		Class_ singleClazz = (Class_)subpart.getClasses().iterator().next();
     		Lecture singleLecture = getLecture(singleClazz);
 			if (singleLecture!=null && !variables.contains(singleLecture))

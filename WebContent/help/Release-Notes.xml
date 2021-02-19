@@ -45,6 +45,15 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetabling Solver: Automatic Same Students Constraint</name>
+			<description>
+				<line>When creating a same student constraint, consider all subparts that have just one class (not just those that do not have a parent).</line>
+				<line>This fixes an issue when there is Lec 1 - Lec 1a chain and Lab 1 - Lab 1a chain which are not in a parent-child relation.
+					<line>Before, only constraints between Lec 1 - Lec 1a - Lab 1 and Lab 1 - Lab 1a - Lec 1 were created, allowing Lec 1a to overlap with Lab 1a.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Advisor Course Recommendations</title>
