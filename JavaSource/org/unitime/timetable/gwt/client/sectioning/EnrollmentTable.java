@@ -1521,7 +1521,11 @@ public class EnrollmentTable extends Composite {
 		private ACM(Collection<ClassAssignmentInterface.CodeLabel> groups) {
 			if (groups != null && !groups.isEmpty()) {
 				for (ClassAssignmentInterface.CodeLabel group: groups) {
-					P g = new P(); g.setText(group.getCode());
+					P g = new P();
+					if (group.hasCode())
+						g.setText(group.getCode());
+					else
+						g.setHTML("&nbsp;");
 					if (group.hasLabel()) g.setTitle(group.getLabel());
 					add(g);
 				}

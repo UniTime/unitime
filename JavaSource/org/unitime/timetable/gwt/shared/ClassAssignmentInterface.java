@@ -812,6 +812,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public String getCode() { return iCode; }
 		public void setCode(String code) { iCode = code; }
+		public boolean hasCode() { return iCode != null && !iCode.isEmpty(); }
 		public String getLabel() { return (iLabel == null || iLabel.isEmpty() ? iCode : iLabel); }
 		public void setLable(String label) { iLabel = label; }
 		public boolean hasLabel() { return iLabel != null && !iLabel.isEmpty(); }
@@ -919,9 +920,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public String getConcentration(String delim) { 
 			if (iConcentration == null) return "";
 			String ret = "";
-			for (CodeLabel conc: iConcentration) {
-				if (!ret.isEmpty()) ret += delim;
-				ret += conc.getCode();
+			for (Iterator<CodeLabel> i = iConcentration.iterator(); i.hasNext(); ) {
+				CodeLabel conc = i.next();
+				if (conc.hasCode()) ret += conc.getCode();
+				if (i.hasNext()) ret += delim;
 			}
 			return ret;
 		}

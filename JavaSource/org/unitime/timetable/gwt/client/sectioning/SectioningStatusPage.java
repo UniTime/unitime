@@ -3650,7 +3650,11 @@ public class SectioningStatusPage extends Composite {
 			clear();
 			if (iGroups != null && !iGroups.isEmpty()) {
 				for (ClassAssignmentInterface.CodeLabel group: iGroups) {
-					P g = new P(); g.setText(group.getCode());
+					P g = new P();
+					if (group.hasCode())
+						g.setText(group.getCode());
+					else
+						g.setHTML("&nbsp;");
 					if (group.hasLabel()) g.setTitle(group.getLabel());
 					add(g);
 				}
