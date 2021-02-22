@@ -14088,4 +14088,23 @@
 			references %SCHEMA%.pos_major_conc (uniqueid) on delete cascade
 		</sql>
 	</update>
+	<update version="238" date="22-Feb-2021" comment="Student Area Classification Major Unique Index">
+		<mysql>alter table %SCHEMA%.student_area_clasf_major drop foreign key fk_student_acmaj_student</mysql>
+		<mysql>alter table %SCHEMA%.student_area_clasf_major drop foreign key fk_student_acmaj_area</mysql>
+		<mysql>alter table %SCHEMA%.student_area_clasf_major drop foreign key fk_student_acmaj_clasf</mysql>
+		<mysql>alter table %SCHEMA%.student_area_clasf_major drop foreign key fk_student_acmaj_major</mysql>
+		<mysql>alter table %SCHEMA%.student_area_clasf_major drop foreign key fk_student_acmaj_conc</mysql>
+		<mysql>alter table %SCHEMA%.student_area_clasf_major drop index uk_student_area_clasf_major</mysql>
+		<mysql>create unique index uk_student_area_clasf_major on %SCHEMA%.student_area_clasf_major(student_id, acad_area_id, acad_clasf_id, major_id, concentration_id)</mysql>
+		<mysql>alter table %SCHEMA%.student_area_clasf_major add constraint fk_student_acmaj_student foreign key (student_id) references %SCHEMA%.student (uniqueid) on delete cascade</mysql>
+		<mysql>alter table %SCHEMA%.student_area_clasf_major add constraint fk_student_acmaj_area foreign key (acad_area_id) references %SCHEMA%.academic_area (uniqueid) on delete cascade</mysql>
+		<mysql>alter table %SCHEMA%.student_area_clasf_major add constraint fk_student_acmaj_clasf foreign key (acad_clasf_id) references %SCHEMA%.academic_classification (uniqueid) on delete cascade</mysql>
+		<mysql>alter table %SCHEMA%.student_area_clasf_major add constraint fk_student_acmaj_major foreign key (major_id) references %SCHEMA%.pos_major (uniqueid) on delete cascade</mysql>
+		<mysql>alter table %SCHEMA%.student_area_clasf_major add constraint fk_student_acmaj_conc foreign key (concentration_id) references %SCHEMA%.pos_major_conc (uniqueid) on delete set null</mysql>
+		<plsql>drop index %SCHEMA%.uk_student_area_clasf_major</plsql>
+		<plsql>create unique index %SCHEMA%.uk_student_area_clasf_major on %SCHEMA%.student_area_clasf_major(student_id, acad_area_id, acad_clasf_id, major_id, concentration_id)</plsql>
+		<pgsql into="IDX">select indexname from pg_indexes where tablename = 'student_area_clasf_major' and indexname like '%uk_student_area_clasf_major'</pgsql>
+		<pgsql>drop index %IDX%</pgsql>
+		<pgsql>create unique index uk_student_area_clasf_major on %SCHEMA%.student_area_clasf_major(student_id, acad_area_id, acad_clasf_id, major_id, concentration_id)</pgsql>
+	</update>
 </dbupdate>
