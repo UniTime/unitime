@@ -67,6 +67,20 @@
 			</description>
 		</item>
 	</category>
+		<category>
+		<title>Other</title>
+		<item>
+			<name>UniTime Login Page</name>
+			<description>
+				<line>Include global info/warn/error messages on the UniTime login screen.
+					<line>Properties tmtbl.global.info, tmtbl.global.warn, and tmtbl.global.error</line>
+				</line>
+				<line>Added ability to add info/warn/error messages just on the login screen.
+					<line>Properties tmtbl.page.info.login, tmtbl.page.warn.login, tmtbl.page.error.login</line>
+				</line>
+			</description>
+		</item>
+	</category>
 </release>
 <release>
 	<version>4.5.141</version>

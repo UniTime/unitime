@@ -49,6 +49,19 @@
 	<span class='top-menu'>
     	<span id='UniTimeGWT:TopMenu' style="display: block; height: 23px;"></span>
     </span>
+
+	<tt:hasProperty name="tmtbl.global.info">
+    	<div class='unitime-PageMessage'><tt:property name="tmtbl.global.info"/></div>
+	</tt:hasProperty>
+	<tt:hasProperty name="tmtbl.global.warn">
+    	<div class='unitime-PageWarn'><tt:property name="tmtbl.global.warn"/></div>
+	</tt:hasProperty>
+	<tt:hasProperty name="tmtbl.global.error">
+    	<div class='unitime-PageError'><tt:property name="tmtbl.global.error"/></div>
+	</tt:hasProperty>
+	<tt:page-warning prefix="tmtbl.page.warn." style="unitime-PageWarn" page="login"/>
+	<tt:page-warning prefix="tmtbl.page.info." style="unitime-PageMessage" page="login"/>
+	<tt:page-warning prefix="tmtbl.page.error." style="unitime-PageError" page="login"/>
 	
 <%
 	String errorMsg = null;
