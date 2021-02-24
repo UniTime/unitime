@@ -540,7 +540,7 @@ public class ReservationServlet implements ReservationService {
 			((ReservationInterface.CurriculumReservation) r).setCurriculum(curriculum);
 			if (!mjIds.isEmpty() || mnIds.isEmpty()) {
 				Number enrollment = (Number)hibSession.createQuery(
-						"select sum(a.weight) " +
+						"select count(distinct e.student) " +
 						"from StudentClassEnrollment e inner join e.student.areaClasfMajors a inner join a.major m " +
 								(ccIds.isEmpty() ? "" : "left outer join a.concentration c ") + "where " +
 						"e.courseOffering.instructionalOffering.uniqueId = :offeringId " +
@@ -550,8 +550,8 @@ public class ReservationServlet implements ReservationService {
 						(ccIds.isEmpty() ? "" : " and (c is null or c.uniqueId in (" + ccIds + "))"))
 						.setLong("offeringId", reservation.getInstructionalOffering().getUniqueId())
 						.setCacheable(true).uniqueResult();
-				if (enrollment.floatValue() >= 0.5f)
-					r.setEnrollment(Math.round(enrollment.floatValue()));
+				if (enrollment.intValue() > 0)
+					r.setEnrollment(enrollment.intValue());
 			}
 			if (!mnIds.isEmpty()) {
 				Number enrollment = (Number)hibSession.createQuery(
@@ -587,7 +587,7 @@ public class ReservationServlet implements ReservationService {
 				for (AcademicArea area: cr.getAreas()) {
 					Hashtable<String,HashMap<String, Float>> rules = getRules(hibSession, area.getUniqueId());
 					for (Object[] o: (List<Object[]>)hibSession.createQuery(
-							"select sum(a.weight), m.code, f.code from " +
+							"select count(distinct s), m.code, f.code from " +
 							"LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.major m " +
 							"inner join a.academicClassification f inner join a.academicArea r"+
 							(ccIds.isEmpty() ? "" : " left outer join a.concentration c") +
@@ -603,7 +603,7 @@ public class ReservationServlet implements ReservationService {
 							.setLong("sessionId", getAcademicSessionId())
 							.setLong("offeringId", reservation.getInstructionalOffering().getUniqueId())
 							.setString("areaAbbv", area.getAcademicAreaAbbreviation()).setCacheable(true).list()) {
-						float nrStudents = ((Number)o[0]).floatValue();
+						int nrStudents = ((Number)o[0]).intValue();
 						lastLike += Math.round(nrStudents);
 						projection += getProjection(rules, (String)o[1], (String)o[2]) * nrStudents;
 					}
