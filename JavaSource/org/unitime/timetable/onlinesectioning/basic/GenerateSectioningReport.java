@@ -297,7 +297,12 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 							gr.getStudentIds().add(student.getStudentId());
 				}
 				for (XAreaClassificationMajor acm: student.getMajors())
-					clonnedStudent.getAreaClassificationMajors().add(new AreaClassificationMajor(acm.getArea(), acm.getClassification(), acm.getMajor(), acm.getConcentration()));
+					clonnedStudent.getAreaClassificationMajors().add(new AreaClassificationMajor(
+							acm.getArea(), acm.getAreaLabel(),
+							acm.getClassification(), acm.getClassificationLabel(),
+							acm.getMajor(), acm.getMajorLabel(),
+							acm.getConcentration(), acm.getConcentrationLabel(),
+							acm.getWeight()));
 				for (XStudent.XGroup acc: student.getAccomodations())
 					clonnedStudent.getAccommodations().add(acc.getAbbreviation());
 				for (XRequest r: student.getRequests()) {

@@ -2135,11 +2135,18 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         for (StudentAreaClassificationMajor acm: s.getAreaClasfMajors()) {
             // student.getAcademicAreaClasiffications().add(new AcademicAreaCode(acm.getAcademicArea().getAcademicAreaAbbreviation(),acm.getAcademicClassification().getCode()));
             // student.getMajors().add(new AcademicAreaCode(acm.getAcademicArea().getAcademicAreaAbbreviation(),acm.getMajor().getCode()));
-        	student.getAreaClassificationMajors().add(new AreaClassificationMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode(),
-        			acm.getConcentration() == null ? null : acm.getConcentration().getCode()));
+        	student.getAreaClassificationMajors().add(new AreaClassificationMajor(
+        			acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicArea().getTitle(),
+        			acm.getAcademicClassification().getCode(), acm.getAcademicClassification().getName(),
+        			acm.getMajor().getCode(), acm.getMajor().getName(),
+        			(acm.getConcentration() == null ? null : acm.getConcentration().getCode()), (acm.getConcentration() == null ? null : acm.getConcentration().getName()),
+        			acm.getWeight()));
         }
         for (StudentAreaClassificationMinor acm: s.getAreaClasfMinors()) {
-        	student.getAreaClassificationMinors().add(new AreaClassificationMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMinor().getCode()));
+        	student.getAreaClassificationMinors().add(new AreaClassificationMajor(
+        			acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicArea().getTitle(),
+        			acm.getAcademicClassification().getCode(), acm.getAcademicClassification().getName(),
+        			acm.getMinor().getCode(), acm.getMinor().getName()));
         }
         for (StudentGroup g: s.getGroups()) {
         	student.getGroups().add(new org.cpsolver.studentsct.model.StudentGroup(g.getType() == null ? null : g.getType().getReference(), g.getGroupAbbreviation(), g.getGroupName()));

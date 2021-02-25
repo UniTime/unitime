@@ -41,6 +41,7 @@ public class XAreaClassificationMajor implements Serializable, Externalizable, C
     private static final long serialVersionUID = 1L;
 	private String iAreaCode, iClassificationCode, iMajorCode, iConcentrationCode;
 	private String iAreaLabel, iClassificationLabel, iMajorLabel, iConcentrationLabel;
+	private double iWeight = 1.0;
 	
 	public XAreaClassificationMajor() {}
 	
@@ -74,13 +75,20 @@ public class XAreaClassificationMajor implements Serializable, Externalizable, C
         	iConcentrationCode = acm.getConcentration().getCode();
         	iConcentrationLabel = acm.getConcentration().getName();
         }
+        if (acm.getWeight() != null)
+        	iWeight = acm.getWeight();
     }
     
     public XAreaClassificationMajor(AreaClassificationMajor acm) {
     	iAreaCode = acm.getArea();
+    	iAreaLabel = acm.getAreaName();
         iClassificationCode = acm.getClassification();
+        iClassificationLabel = acm.getClassificationName();
         iMajorCode = acm.getMajor();
+        iMajorLabel = acm.getMajorName();
         iConcentrationCode = acm.getConcentration();
+        iConcentrationLabel = acm.getConcentrationName();
+        iWeight = acm.getWeight();
     }
 
     /** Academic area */
@@ -97,7 +105,11 @@ public class XAreaClassificationMajor implements Serializable, Externalizable, C
     
     /** Concentration */
     public String getConcentration() { return iConcentrationCode; }
+    public String getConcentrationNotNull() { return iConcentrationCode == null ? "" : iConcentrationCode; }
     public String getConcentrationLabel() { return iConcentrationLabel; }
+    
+    /** Weight */
+    public double getWeight() { return iWeight; }; 
     
     @Override
     public int hashCode() {
@@ -128,6 +140,7 @@ public class XAreaClassificationMajor implements Serializable, Externalizable, C
 		iMajorLabel = (String)in.readObject();
 		iConcentrationCode = (String)in.readObject();
 		iConcentrationLabel = (String)in.readObject();
+		iWeight = in.readDouble();
 	}
 
 	@Override
@@ -140,6 +153,7 @@ public class XAreaClassificationMajor implements Serializable, Externalizable, C
 		out.writeObject(iMajorLabel);
 		out.writeObject(iConcentrationCode);
 		out.writeObject(iConcentrationLabel);
+		out.writeDouble(iWeight);
 	}
 	
 	public static class XAreaClassificationMajorSerializer implements Externalizer<XAreaClassificationMajor> {
@@ -158,10 +172,14 @@ public class XAreaClassificationMajor implements Serializable, Externalizable, C
 
 	@Override
 	public int compareTo(XAreaClassificationMajor acm) {
+		if (getWeight() != acm.getWeight())
+			return getWeight() > acm.getWeight() ? -1 : 1;
 		if (!getArea().equals(acm.getArea()))
 			return getArea().compareTo(acm.getArea());
 		if (!getClassification().equals(acm.getClassification()))
 			return getClassification().compareTo(acm.getClassification());
-		return getMajor().compareTo(acm.getMajor());
+		if (!getMajor().equals(acm.getMajor()))
+			return getMajor().compareTo(acm.getMajor());
+		return getConcentrationNotNull().compareTo(acm.getConcentrationNotNull());
 	}
 }

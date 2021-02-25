@@ -30,11 +30,15 @@ public class StudentAreaClassificationMajor extends BaseStudentAreaClassificatio
 
 	@Override
 	public int compareTo(StudentAreaClassificationMajor m) {
-		int cmp = getAcademicArea().getAcademicAreaAbbreviation().compareTo(m.getAcademicArea().getAcademicAreaAbbreviation());
+		int cmp = Double.compare(getWeight() == null ? 1.0 : getWeight().doubleValue(), m.getWeight() == null ? 1.0 : m.getWeight().doubleValue());
+		if (cmp != 0) return - cmp;
+		cmp = getAcademicArea().getAcademicAreaAbbreviation().compareTo(m.getAcademicArea().getAcademicAreaAbbreviation());
 		if (cmp != 0) return cmp;
 		cmp = getAcademicClassification().getCode().compareTo(m.getAcademicClassification().getCode());
 		if (cmp != 0) return cmp;
 		cmp = getMajor().getCode().compareTo(m.getMajor().getCode());
+		if (cmp != 0) return cmp;
+		cmp = (getConcentration() == null ? "" : getConcentration().getCode()).compareTo(m.getConcentration() == null ? "" : m.getConcentration().getCode());
 		if (cmp != 0) return cmp;
 		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(m.getUniqueId() == null ? -1 : m.getUniqueId());
 	}
