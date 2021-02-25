@@ -220,7 +220,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         SENIOR("Seniors", new AndFilter(new PriorityFilter(StudentPriority.Senior), FILTER_ALL)),
         JUNIOR("Juniors", new AndFilter(new PriorityFilter(StudentPriority.Junior), FILTER_ALL)),
         SOPHOMORE("Sophomores", new AndFilter(new PriorityFilter(StudentPriority.Sophomore), FILTER_ALL)),
-        RESHMEN("Frehmen", new AndFilter(new PriorityFilter(StudentPriority.Frehmen), FILTER_ALL)),
+        FRESHMEN("Freshmen", new AndFilter(new PriorityFilter(StudentPriority.Freshmen), FILTER_ALL)),
         NORMAL("Non-priority", new AndFilter(new PriorityFilter(StudentPriority.Normal), FILTER_ALL)),
         
         REBATCH("RE-BATCH", new AndFilter(new GroupFilter("RE-BATCH"), FILTER_ALL_RES)),
