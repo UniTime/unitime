@@ -4814,7 +4814,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Course Request Validation")
 	String toggleCourseRequestValidation();
 	
-	@DefaultMessage("Special Requests")
+	@DefaultMessage("Approval Requests")
 	String toggleSpecialRequests();
 	
 	@DefaultMessage("Can Require")

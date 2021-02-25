@@ -487,7 +487,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Change variable credit hours of one or more courses.")
 	String hintChangeVariableCredits();
 	
-	@DefaultMessage("Sumbit the above enrollment changes to Special Registration.")
+	@DefaultMessage("Sumbit the above enrollment changes for approval.")
 	String hintSpecialRegistration();
 	
 	@DefaultMessage("<u>P</u>rint")
@@ -550,7 +550,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Unable to retrieve approval requests: {0}")
 	String requestSpecialRegistrationFail(String reason);
 	
-	@DefaultMessage("Special registration failed: {0}")
+	@DefaultMessage("Approval request failed: {0}")
 	String submitSpecialRegistrationFail(String reason);
 	
 	@DefaultMessage("Failed to cancel approval request: {0}")
@@ -1322,7 +1322,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Change <u>L</u>og")
 	String buttonChangeLog();
 	
-	@DefaultMessage("Special Registration")
+	@DefaultMessage("Approval Requests")
 	String buttonSpecRegDashboard();
 	
 	@DefaultMessage("Send <u>E</u>mail")
@@ -1577,7 +1577,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Fallback Status:")
 	String propFallbackStatus();
 	
-	@DefaultMessage("Special Registration:")
+	@DefaultMessage("Approval Requests:")
 	String propSpecialRegistration();
 	
 	@DefaultMessage("Course Request Validation:")
@@ -2218,10 +2218,10 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Email notifications are disabled.")
 	String messageStatusCanNotEmail();
 	
-	@DefaultMessage("Special registration is enabled.")
+	@DefaultMessage("Requests approval workflow is enabled.")
 	String messageStatusCanSpecialRegistration();
 	
-	@DefaultMessage("Special registration is disabled.")
+	@DefaultMessage("Requests approval workflow is disabled.")
 	String messageStatusCanNotSpecialRegistration();
 	
 	@DefaultMessage("Custom course request validation is enabled.")
