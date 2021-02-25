@@ -194,7 +194,7 @@ public class ClassInfo implements Serializable, Comparable<ClassInfo> {
 		    	    .createQuery("select e.clazz.committedAssignment, e.studentId "+
 		    	        	"from StudentEnrollment e, StudentEnrollment x "+
 		    	        	"where x.clazz.uniqueId = :classId and x.studentId = e.studentId and e.clazz != x.clazz and " + 
-		    	        	"e.solution.commited = true and x.solution.commited = true")
+		    	        	"e.solution.commited = true and x.solution.commited = true and x.solution.owner.session = e.solution.owner.session")
 		            .setLong("classId", classId);
 		} else {
 			q = LocationDAO.getInstance().getSession()

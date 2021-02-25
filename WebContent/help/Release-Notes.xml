@@ -54,6 +54,16 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Class Assignment: Projected Student Conflicts</name>
+			<description>
+				<line>When student conflict pre-fetching is enabled (tmtbl.classAssign.prefetchConflicts),
+					ensure that only committed classes from the current academic session are considered.</line>
+				<line>This fixes an issue when a combination of last-like and real students are being used
+					(e.g., Course Requests With Projected Last Likes) as the pre-fetch was getting conflict
+					between the current and the last-like session.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Advisor Course Recommendations</title>
