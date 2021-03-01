@@ -74,7 +74,7 @@ public class DbFindOnlineSectioningLogAction extends FindOnlineSectioningLogActi
 			
 			org.hibernate.Query q = helper.getHibSession().createQuery(
 					"select l, s from OnlineSectioningLog l, Student s " +
-					(getQuery().hasAttribute("area", "clasf", "classification", "major") ? "left outer join s.areaClasfMajors m " : "") +
+					(getQuery().hasAttribute("area", "clasf", "classification", "major", "concentration") ? "left outer join s.areaClasfMajors m " : "") +
 					(getQuery().hasAttribute("minor") ? "left outer join s.areaClasfMinors n " : "") + 
 					(getQuery().hasAttribute("group") ? "left outer join s.groups g " : "") + 
 					(getQuery().hasAttribute("accommodation") ? "left outer join s.accomodations a " : "") + 

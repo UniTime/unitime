@@ -101,7 +101,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 			
 			org.hibernate.Query q = helper.getHibSession().createQuery(
 					"select l, s.uniqueId from OnlineSectioningLog l, Student s " +
-					(getQuery().hasAttribute("area", "clasf", "classification", "major") ? "left outer join s.areaClasfMajors m " : "") +
+					(getQuery().hasAttribute("area", "clasf", "classification", "major", "concentration") ? "left outer join s.areaClasfMajors m " : "") +
 					(getQuery().hasAttribute("minor") ? "left outer join s.areaClasfMinors n " : "") + 
 					(getQuery().hasAttribute("group") ? "left outer join s.groups g " : "") + 
 					(getQuery().hasAttribute("accommodation") ? "left outer join s.accomodations a " : "") +
@@ -411,6 +411,8 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 				return "lower(m.academicClassification.code) = '" + body.toLowerCase() + "'";
 			} else if ("major".equalsIgnoreCase(attr)) {
 				return "lower(m.major.code) = '" + body.toLowerCase() + "'";
+			} else if ("concentration".equalsIgnoreCase(attr)) {
+				return "lower(m.concentration.code) = '" + body.toLowerCase() + "'";
 			} else if ("minor".equalsIgnoreCase(attr)) {
 				return "lower(n.minor.code) = '" + body.toLowerCase() + "'";
 			} else if ("group".equalsIgnoreCase(attr)) {

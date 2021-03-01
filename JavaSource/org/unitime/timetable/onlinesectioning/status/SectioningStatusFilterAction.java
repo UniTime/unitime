@@ -105,7 +105,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		Map<Long, Entity> areas = new HashMap<Long, Entity>();
 		for (Object[] o: (List<Object[]>)query.select("aac.academicArea.uniqueId, aac.academicArea.academicAreaAbbreviation, aac.academicArea.title, count(distinct s.uniqueId)")
 				.order("aac.academicArea.academicAreaAbbreviation, aac.academicArea.title").group("aac.academicArea.uniqueId, aac.academicArea.academicAreaAbbreviation, aac.academicArea.title")
-				.exclude("area").exclude("major").exclude("minor").exclude("course").exclude("lookup").exclude("prefer").exclude("require").exclude("im").exclude("credit").query(helper.getHibSession()).list()) {
+				.exclude("area").exclude("major").exclude("concentration").exclude("minor").exclude("course").exclude("lookup").exclude("prefer").exclude("require").exclude("im").exclude("credit").query(helper.getHibSession()).list()) {
 			Entity a = new Entity(
 					(Long)o[0],
 					(String)o[1],
@@ -117,7 +117,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				.from("StudentAreaClassificationMinor aam")
 				.where("aam.student = s")
 				.order("aam.academicArea.academicAreaAbbreviation, aam.academicArea.title").group("aam.academicArea.uniqueId, aam.academicArea.academicAreaAbbreviation, aam.academicArea.title")
-				.exclude("area").exclude("major").exclude("minor").exclude("course").exclude("lookup").exclude("prefer").exclude("require").exclude("im").exclude("credit").query(helper.getHibSession()).list()) {
+				.exclude("area").exclude("major").exclude("concentration").exclude("minor").exclude("course").exclude("lookup").exclude("prefer").exclude("require").exclude("im").exclude("credit").query(helper.getHibSession()).list()) {
 			Entity a = areas.get((Long)o[0]);
 			if (a == null) {
 				a = new Entity((Long)o[0], (String)o[1], (String)o[2]);
@@ -143,7 +143,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			List<Entity> majors = new ArrayList<Entity>();
 			for (Object[] o: (List<Object[]>)q.select("aac.major.uniqueId, aac.major.code, aac.major.name, count(distinct s)")
 					.order("aac.major.code, aac.major.name").group("aac.major.uniqueId, aac.major.code, aac.major.name")
-					.exclude("major").exclude("course").exclude("lookup").exclude("prefer").exclude("require").exclude("im").exclude("credit").query(helper.getHibSession()).list()) {
+					.exclude("major").exclude("concentration").exclude("course").exclude("lookup").exclude("prefer").exclude("require").exclude("im").exclude("credit").query(helper.getHibSession()).list()) {
 				Entity m = new Entity(
 						(Long)o[0],
 						(String)o[1],
@@ -152,6 +152,38 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				majors.add(m);
 			}
 			response.add("major", majors);
+		}
+		
+		if (iRequest.hasOptions("major")) {
+			StudentQuery q = new StudentQuery(query);
+			int id = 0;
+			String area = "";
+			if (iRequest.hasOptions("area"))
+				for (String a: iRequest.getOptions("area")) {
+					area += (area.isEmpty() ? "" : ",") + ":Xar" + id;
+					q.addParameter("area", "Xar" + id, a);
+					id++;
+				}
+			String major = "";
+			id = 0;
+			for (String a: iRequest.getOptions("major")) {
+				major += (major.isEmpty() ? "" : ",") + ":Xmj" + id;
+				q.addParameter("major", "Xmj" + id, a);
+				id++;
+			}
+			q.addWhere("xxx", (area.isEmpty() ? "" : "aac.academicArea.academicAreaAbbreviation in (" + area + ") and ") + "aac.major.code in (" + major + ")");
+			List<Entity> concentrations = new ArrayList<Entity>();
+			for (Object[] o: (List<Object[]>)q.select("aac.concentration.uniqueId, aac.concentration.code, aac.concentration.name, count(distinct s)")
+					.order("aac.concentration.code, aac.concentration.name").group("aac.concentration.uniqueId, aac.concentration.code, aac.concentration.name")
+					.exclude("concentration").exclude("course").exclude("lookup").exclude("prefer").exclude("require").exclude("im").exclude("credit").query(helper.getHibSession()).list()) {
+				Entity m = new Entity(
+						(Long)o[0],
+						(String)o[1],
+						(String)o[2]);
+				m.setCount(((Number)o[3]).intValue());
+				concentrations.add(m);
+			}
+			response.add("concentration", concentrations);
 		}
 		
 		if (iRequest.hasOptions("area")) {
@@ -699,6 +731,17 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				id++;
 			}
 			query.addWhere("major", "aac.major.code in (" + major + ")");
+		}
+		
+		if (request.hasOptions("concentration")) {
+			String conc = "";
+			int id = 0;
+			for (String m: request.getOptions("concentration")) {
+				conc += (conc.isEmpty() ? "" : ",") + ":Xcn" + id;
+				query.addParameter("concentration", "Xcn" + id, m);
+				id++;
+			}
+			query.addWhere("concentration", "aac.concentration.code in (" + conc + ")");
 		}
 		
 		if (request.hasOptions("minor")) {
