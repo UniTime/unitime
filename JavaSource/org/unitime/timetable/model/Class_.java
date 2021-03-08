@@ -1889,5 +1889,13 @@ public class Class_ extends BaseClass_ {
 			setLmsInfo(null);
 		}
 	}
+	
+	public Department getEffectiveFundingDept() {
+		if (getFundingDept() == null) {
+			return getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getEffectiveFundingDept();
+		} else {
+			return getFundingDept();
+		}
+	}
 
 }
