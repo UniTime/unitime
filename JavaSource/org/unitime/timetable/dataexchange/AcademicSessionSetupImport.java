@@ -39,6 +39,7 @@ import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.Degree;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DistributionObject;
@@ -48,6 +49,7 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.ManagerRole;
 import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.PosMajorConcentration;
 import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -138,6 +140,10 @@ public class AcademicSessionSetupImport extends BaseImport {
             Element posMinorsEl = root.element("posMinors");
             if (posMinorsEl != null)
             	importMinors(posMinorsEl, session);
+            
+            Element degreesEl = root.element("degrees");
+            if (degreesEl != null)
+            	importDegrees(degreesEl, session);
 
             Element studentGroupsEl = root.element("studentGroups");
             if (studentGroupsEl != null)
@@ -648,6 +654,54 @@ public class AcademicSessionSetupImport extends BaseImport {
         flush(true);
     }
     
+    public void importDegrees(Element root, Session session) {
+    	info("Importing degrees...");
+    	
+        Map<String, Degree> id2degr = new Hashtable<String, Degree>();
+        Map<String, Degree> ref2degr = new Hashtable<String, Degree>();
+        for (Degree degr: (List<Degree>)getHibSession().createQuery(
+        		"from Degree where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+        	if (degr.getExternalUniqueId() != null)
+        		id2degr.put(degr.getExternalUniqueId(), degr);
+        	ref2degr.put(degr.getReference(), degr);
+        }
+
+        for (Iterator it = root.elementIterator(); it.hasNext(); ) {
+            Element element = (Element) it.next();
+            
+            String externalId = element.attributeValue("externalId");
+            String ref = element.attributeValue("code");
+            
+            Degree degr = null;
+            if (externalId != null)
+            	degr = id2degr.remove(externalId);
+            if (degr == null)
+            	degr = ref2degr.get(ref);
+            
+            if (degr == null) {
+            	degr = new Degree();
+            	degr.setSession(session);
+            	debug("Degree " + ref + (externalId == null ? "" : " (" + externalId + ")") + " created.");
+            } else {
+            	debug("Academic area " + ref + (externalId == null ? "" : " (" + externalId + ")") + " updated.");
+            }
+            degr.setExternalUniqueId(externalId);
+            degr.setReference(ref);
+            degr.setLabel(element.attributeValue("name"));
+
+            getHibSession().saveOrUpdate(degr);
+        }
+        
+        if (!"true".equalsIgnoreCase(root.attributeValue("incremental"))) {
+            for (Degree degree: id2degr.values()) {
+            	debug("Degree " + degree.getReference() + " (" + degree.getExternalUniqueId() + ") deleted.");
+            	getHibSession().delete(degree);
+            }
+        }
+        
+        flush(true);
+    }
+    
     public void importAcademicClassifications(Element root, Session session) {
     	info("Importing academic classifications...");
     	
@@ -738,6 +792,7 @@ public class AcademicSessionSetupImport extends BaseImport {
             	major = new PosMajor();
             	major.setSession(session);
             	major.setAcademicAreas(new HashSet<AcademicArea>());
+            	major.setConcentrations(new HashSet<PosMajorConcentration>());
             	debug("Major " + area.getAcademicAreaAbbreviation() + " " + code + (externalId == null ? "" : " (" + externalId + ")") + " created.");
             } else {
             	debug("Major " + area.getAcademicAreaAbbreviation() + " " + code + (externalId == null ? "" : " (" + externalId + ")") + " updated.");
@@ -752,6 +807,47 @@ public class AcademicSessionSetupImport extends BaseImport {
             area.getPosMajors().add(major);
             
             getHibSession().saveOrUpdate(major);
+            
+            Map<String, PosMajorConcentration> id2conc = new Hashtable<String, PosMajorConcentration>();
+            Map<String, PosMajorConcentration> code2conc = new Hashtable<String, PosMajorConcentration>();
+            for (PosMajorConcentration conc: major.getConcentrations()) {
+            	if (conc.getExternalUniqueId() != null)
+            		id2conc.put(conc.getExternalUniqueId(), conc);
+            	code2conc.put(conc.getCode(), conc);
+            }
+            
+            for (Iterator j = element.elementIterator("concentration"); j.hasNext(); ) {
+            	Element concEl = (Element)j.next();
+            	String concId = concEl.attributeValue("externalId");
+                String concCode = trim(concEl.attributeValue("code"), "code", 40);
+                
+                PosMajorConcentration conc = null;
+                if (concId != null)
+                	conc = id2conc.remove(concId);
+                if (conc == null)
+                	conc = code2conc.get(concCode);
+                
+                if (conc == null) {
+                	conc = new PosMajorConcentration();
+                	conc.setCode(concCode);
+                	conc.setMajor(major);
+                	major.getConcentrations().add(conc);
+                	debug("Concentration " + area.getAcademicAreaAbbreviation() + " " + major.getCode() + "-" + concCode + (externalId == null ? "" : " (" + externalId + ")") + " created.");
+                } else {
+                	debug("Concentration " + area.getAcademicAreaAbbreviation() + " " + major.getCode() + "-" + concCode + (externalId == null ? "" : " (" + externalId + ")") + " updated.");
+                }
+                conc.setExternalUniqueId(concId);
+                conc.setName(trim(concEl.attributeValue("name"), "name", 100));
+                
+                getHibSession().saveOrUpdate(conc);
+            }
+            if (!"true".equalsIgnoreCase(root.attributeValue("incremental"))) {
+            	for (PosMajorConcentration conc: id2conc.values()) {
+                	debug("Concentration " + area.getAcademicAreaAbbreviation() + " " + major.getCode() + "-" + conc.getCode() + " (" + conc.getExternalUniqueId() + ") deleted.");
+                	major.getConcentrations().remove(conc);
+                	getHibSession().delete(conc);
+                }
+            }
         }
         
         if (!"true".equalsIgnoreCase(root.attributeValue("incremental"))) {
