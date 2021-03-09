@@ -71,6 +71,7 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
@@ -324,9 +325,22 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		SpecialRegistrationStatus ret = null;
 		if (request.changes != null)
 			for (Change ch: request.changes)
-				ret = combine(ret, getStatus(ch.status));
+				if (ch.status != null)
+					ret = combine(ret, getStatus(ch.status));
 		if (ret == SpecialRegistrationStatus.Approved && request.completionStatus == CompletionStatus.inProgress)
 			return SpecialRegistrationStatus.Pending;
+		if (ret != null) return ret;
+		return getStatus(request.completionStatus);
+	}
+	
+	protected SpecialRegistrationStatus getCreditStatus(SpecialRegistration request) {
+		SpecialRegistrationStatus ret = null;
+		if (request.changes != null)
+			for (Change ch: request.changes) {
+				if (ch.status == null) continue;
+				if (ch.subject == null && ch.courseNbr == null)
+					ret = combine(ret, getStatus(ch.status));
+			}
 		if (ret != null) return ret;
 		return getStatus(request.completionStatus);
 	}
@@ -1872,6 +1886,12 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								if (ch.status != null) {
 									SpecialRegistrationStatus s = course2status.get(course);
 									course2status.put(course, s == null ? getStatus(ch.status) : combine(s, getStatus(ch.status)));
+								} else {
+									for (ChangeError e: ch.errors)
+										if ("MAXI".equals(e.code)) {
+											SpecialRegistrationStatus s = course2status.get(course);
+											course2status.put(course, s == null ? getCreditStatus(r) : combine(s, getCreditStatus(r)));
+										}
 								}
 							}
 						}

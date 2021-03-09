@@ -1396,6 +1396,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		RequestedCourseStatus ret = null;
 		if (request.changes != null)
 			for (Change ch: request.changes) {
+				if (ch.status == null) continue;
 				if (credit && ch.subject == null && ch.courseNbr == null)
 					ret = combine(ret, status(ch.status));
 				if (!credit && ch.subject != null && ch.courseNbr != null)
@@ -1832,7 +1833,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					}
 					if (r.changes != null)
 						for (Change ch: r.changes)
-							if (ch.errors != null && ch.courseNbr != null && ch.subject != null)
+							if (ch.errors != null && ch.courseNbr != null && ch.subject != null && ch.status != null)
 								for (ChangeError er: ch.errors) {
 									if (ch.status == ChangeStatus.denied) {
 										request.addConfirmationError(rc.getCourseId(), rc.getCourseName(), er.code, "Denied " + er.message, status(ch.status), ORD_BANNER);
