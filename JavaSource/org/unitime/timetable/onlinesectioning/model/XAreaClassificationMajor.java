@@ -39,8 +39,8 @@ import org.unitime.timetable.model.StudentAreaClassificationMinor;
 @SerializeWith(XAreaClassificationMajor.XAreaClassificationMajorSerializer.class)
 public class XAreaClassificationMajor implements Serializable, Externalizable, Comparable<XAreaClassificationMajor> {
     private static final long serialVersionUID = 1L;
-	private String iAreaCode, iClassificationCode, iMajorCode, iConcentrationCode;
-	private String iAreaLabel, iClassificationLabel, iMajorLabel, iConcentrationLabel;
+	private String iAreaCode, iClassificationCode, iMajorCode, iConcentrationCode, iDegreeCode;
+	private String iAreaLabel, iClassificationLabel, iMajorLabel, iConcentrationLabel, iDegreeLabel;
 	private double iWeight = 1.0;
 	
 	public XAreaClassificationMajor() {}
@@ -75,6 +75,10 @@ public class XAreaClassificationMajor implements Serializable, Externalizable, C
         	iConcentrationCode = acm.getConcentration().getCode();
         	iConcentrationLabel = acm.getConcentration().getName();
         }
+        if (acm.getDegree() != null) {
+        	iDegreeCode = acm.getDegree().getReference();
+        	iDegreeLabel = acm.getDegree().getLabel();
+        }
         if (acm.getWeight() != null)
         	iWeight = acm.getWeight();
     }
@@ -88,6 +92,8 @@ public class XAreaClassificationMajor implements Serializable, Externalizable, C
         iMajorLabel = acm.getMajorName();
         iConcentrationCode = acm.getConcentration();
         iConcentrationLabel = acm.getConcentrationName();
+        iDegreeCode = acm.getDegree();
+        iDegreeLabel = acm.getDegreeName();
         iWeight = acm.getWeight();
     }
 
@@ -108,6 +114,11 @@ public class XAreaClassificationMajor implements Serializable, Externalizable, C
     public String getConcentrationNotNull() { return iConcentrationCode == null ? "" : iConcentrationCode; }
     public String getConcentrationLabel() { return iConcentrationLabel; }
     
+    /** Concentration */
+    public String getDegree() { return iDegreeCode; }
+    public String getDegreeNotNull() { return iDegreeCode == null ? "" : iDegreeCode; }
+    public String getDegreeLabel() { return iDegreeLabel; }
+    
     /** Weight */
     public double getWeight() { return iWeight; }; 
     
@@ -122,7 +133,7 @@ public class XAreaClassificationMajor implements Serializable, Externalizable, C
             return false;
         XAreaClassificationMajor acm = (XAreaClassificationMajor) o;
         return ToolBox.equals(acm.getArea(), getArea()) && ToolBox.equals(acm.getClassification(), getClassification()) && ToolBox.equals(acm.getMajor(), getMajor()) &&
-        		ToolBox.equals(acm.getConcentration(), getConcentration()) ;
+        		ToolBox.equals(acm.getConcentration(), getConcentration()) && ToolBox.equals(acm.getDegree(), getDegree());
     }
 
     @Override
@@ -140,6 +151,8 @@ public class XAreaClassificationMajor implements Serializable, Externalizable, C
 		iMajorLabel = (String)in.readObject();
 		iConcentrationCode = (String)in.readObject();
 		iConcentrationLabel = (String)in.readObject();
+		iDegreeCode = (String)in.readObject();
+		iDegreeLabel = (String)in.readObject();
 		iWeight = in.readDouble();
 	}
 
@@ -153,6 +166,8 @@ public class XAreaClassificationMajor implements Serializable, Externalizable, C
 		out.writeObject(iMajorLabel);
 		out.writeObject(iConcentrationCode);
 		out.writeObject(iConcentrationLabel);
+		out.writeObject(iDegreeCode);
+		out.writeObject(iDegreeLabel);
 		out.writeDouble(iWeight);
 	}
 	
@@ -178,6 +193,8 @@ public class XAreaClassificationMajor implements Serializable, Externalizable, C
 			return getArea().compareTo(acm.getArea());
 		if (!getClassification().equals(acm.getClassification()))
 			return getClassification().compareTo(acm.getClassification());
+		if (!getDegreeNotNull().equals(acm.getDegreeNotNull()))
+			return getDegreeNotNull().compareTo(acm.getDegreeNotNull());
 		if (!getMajor().equals(acm.getMajor()))
 			return getMajor().compareTo(acm.getMajor());
 		return getConcentrationNotNull().compareTo(acm.getConcentrationNotNull());

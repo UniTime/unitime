@@ -827,7 +827,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private long iId;
 		private Long iSessionId = null;
 		private String iExternalId, iName, iEmail;
-		private List<CodeLabel> iArea, iClassification, iMajor, iAccommodation, iMinor, iConcentration;
+		private List<CodeLabel> iArea, iClassification, iMajor, iAccommodation, iMinor, iConcentration, iDegree;
 		private List<String> iAdvisor;
 		private Set<Group> iGroups;
 		private boolean iCanShowExternalId = false, iCanSelect = false;
@@ -932,6 +932,23 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			iConcentration.add(new CodeLabel(conc, label));
 		}
 		public List<CodeLabel> getConcentrations() { return iConcentration; }
+		
+		public boolean hasDegree() { return iDegree != null && !iDegree.isEmpty(); }
+		public String getDegree(String delim) { 
+			if (iDegree == null) return "";
+			String ret = "";
+			for (Iterator<CodeLabel> i = iDegree.iterator(); i.hasNext(); ) {
+				CodeLabel deg = i.next();
+				if (deg.hasCode()) ret += deg.getCode();
+				if (i.hasNext()) ret += delim;
+			}
+			return ret;
+		}
+		public void addDegree(String degree, String label) {
+			if (iDegree == null) iDegree = new ArrayList<CodeLabel>();
+			iDegree.add(new CodeLabel(degree, label));
+		}
+		public List<CodeLabel> getDegrees() { return iDegree; }
 		
 		public boolean hasAdvisor() { return iAdvisor != null && !iAdvisor.isEmpty(); }
 		public String getAdvisor(String delim) { 

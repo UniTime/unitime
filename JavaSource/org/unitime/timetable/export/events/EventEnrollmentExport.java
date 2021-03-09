@@ -163,7 +163,7 @@ public class EventEnrollmentExport implements Exporter {
 		if (crosslist)
 			header.add(MESSAGES.colCourse());
 		
-		boolean hasPriority = false, hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasAlternative = false, hasReservation = false, hasRequestedDate = false, hasEnrolledDate = false, hasConflict = false, hasMessage = false, hasAdvisor = false, hasMinor = false, hasConc = false;
+		boolean hasPriority = false, hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasAlternative = false, hasReservation = false, hasRequestedDate = false, hasEnrolledDate = false, hasConflict = false, hasMessage = false, hasAdvisor = false, hasMinor = false, hasConc = false, hasDeg = false;
 		Set<String> groupTypes = new TreeSet<String>();
 		for (ClassAssignmentInterface.Enrollment e: enrollments) {
 			if (e.getPriority() > 0) hasPriority = true;
@@ -181,6 +181,7 @@ public class EventEnrollmentExport implements Exporter {
 			if (e.getStudent().hasAdvisor()) hasAdvisor = true;
 			if (e.getStudent().hasMinor()) hasMinor = true;
 			if (e.getStudent().hasConcentration()) hasConc = true;
+			if (e.getStudent().hasDegree()) hasDeg = true;
 		}
 		
 		if (hasPriority)
@@ -193,6 +194,9 @@ public class EventEnrollmentExport implements Exporter {
 			header.add(MESSAGES.colArea());
 			header.add(MESSAGES.colClassification());
 		}
+		
+		if (hasDeg)
+			header.add(MESSAGES.colDegree());
 		
 		if (hasMajor)
 			header.add(MESSAGES.colMajor());
@@ -267,6 +271,8 @@ public class EventEnrollmentExport implements Exporter {
 				line.add(enrollment.getStudent().getArea("\n"));
 				line.add(enrollment.getStudent().getClassification("\n"));
 			}
+			if (hasDeg)
+				line.add(enrollment.getStudent().getDegree("\n"));
 			if (hasMajor)
 				line.add(enrollment.getStudent().getMajor("\n"));
 			if (hasConc)

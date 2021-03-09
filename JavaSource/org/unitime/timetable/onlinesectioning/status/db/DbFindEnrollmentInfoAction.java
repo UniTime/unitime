@@ -918,6 +918,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			if ("area".equals(attr)) {
 				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
 					if (eq(acm.getAcademicArea().getAcademicAreaAbbreviation(), term)) return true;
+				for (StudentAreaClassificationMinor acm: student().getAreaClasfMinors())
+					if (eq(acm.getAcademicArea().getAcademicAreaAbbreviation(), term)) return true;
 			}
 			
 			if ("clasf".equals(attr) || "classification".equals(attr)) {
@@ -932,6 +934,10 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			if ("concentration".equals(attr)) {
 				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
 					if (acm.getConcentration() != null && eq(acm.getConcentration().getCode(), term)) return true;
+			}
+			if ("degree".equals(attr)) {
+				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
+					if (acm.getDegree() != null && eq(acm.getDegree().getReference(), term)) return true;
 			}
 			if ("minor".equals(attr)) {
 				for (StudentAreaClassificationMinor acm: student().getAreaClasfMinors())
@@ -1494,6 +1500,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			if ("area".equals(attr)) {
 				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
 					if (eq(acm.getAcademicArea().getAcademicAreaAbbreviation(), term)) return true;
+				for (StudentAreaClassificationMinor acm: student().getAreaClasfMinors())
+					if (eq(acm.getAcademicArea().getAcademicAreaAbbreviation(), term)) return true;
 			} else if ("clasf".equals(attr) || "classification".equals(attr)) {
 				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
 					if (eq(acm.getAcademicClassification().getCode(), term)) return true;
@@ -1503,6 +1511,9 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			} else if ("concentration".equals(attr)) {
 				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
 					if (acm.getConcentration() != null && eq(acm.getConcentration().getCode(), term)) return true;
+			} else if ("degree".equals(attr)) {
+				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
+					if (acm.getDegree() != null && eq(acm.getDegree().getReference(), term)) return true;
 			} else if ("minor".equals(attr)) {
 				for (StudentAreaClassificationMinor acm: student().getAreaClasfMinors())
 					if (eq(acm.getMinor().getCode(), term)) return true;

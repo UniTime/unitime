@@ -886,6 +886,12 @@
 					<hasPermission name="AcademicClassifications"/>
 				</condition>
 			</item>
+			<item name="Degrees" page="admin" type="gwt">
+				<parameter name="type">degree</parameter>
+				<condition>
+					<hasPermission name="Degrees"/>
+				</condition>
+			</item>
 			<item name="Majors" page="admin" type="gwt">
 				<parameter name="type">major</parameter>
 				<condition>

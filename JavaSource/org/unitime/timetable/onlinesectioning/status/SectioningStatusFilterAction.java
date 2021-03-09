@@ -224,6 +224,19 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		}
 		response.add("classification", classifications);
 		
+		List<Entity> degrees = new ArrayList<Entity>();
+		for (Object[] o: (List<Object[]>)query.select("aac.degree.uniqueId, aac.degree.reference, aac.degree.label, count(distinct s)")
+				.order("aac.degree.reference, aac.degree.label").group("aac.degree.uniqueId, aac.degree.reference, aac.degree.label")
+				.exclude("degree").exclude("course").exclude("lookup").exclude("prefer").exclude("require").exclude("im").exclude("credit").query(helper.getHibSession()).list()) {
+			Entity c = new Entity(
+					(Long)o[0],
+					(String)o[1],
+					(String)o[2]);
+			c.setCount(((Number)o[3]).intValue());
+			degrees.add(c);
+		}
+		response.add("degree", degrees);
+		
 		List<Entity> groups = new ArrayList<Entity>();
 		for (Object[] o: (List<Object[]>)query.select("g.uniqueId, g.groupAbbreviation, g.groupName, count(distinct s)")
 				.from("inner join s.groups g").where("g.type is null")
@@ -720,6 +733,17 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				id++;
 			}
 			query.addWhere("classification", "aac.academicClassification.code in (" + classf + ")");
+		}
+		
+		if (request.hasOptions("degree")) {
+			String degr = "";
+			int id = 0;
+			for (String d: request.getOptions("degree")) {
+				degr += (degr.isEmpty() ? "" : ",") + ":Xdg" + id;
+				query.addParameter("degree", "Xdg" + id, d);
+				id++;
+			}
+			query.addWhere("degree", "aac.degree.reference in (" + degr + ")");
 		}
 
 		if (request.hasOptions("major")) {

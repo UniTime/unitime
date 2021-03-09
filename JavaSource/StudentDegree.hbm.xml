@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="AcademicArea" table="academic_area">
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">academic_area_seq</param>
+            </generator>
+        </id>
+
+        <property
+            name="externalUniqueId"
+            column="external_uid"
+            type="java.lang.String"
+            not-null="false"
+            length="40"/>
+
+        <property
+            name="academicAreaAbbreviation"
+            column="academic_area_abbreviation"
+            type="java.lang.String"
+            not-null="true"
+            length="40"/>
+
+        <property
+            name="title"
+            column="long_title"
+            type="java.lang.String"
+            not-null="true"
+            length="100"/>
+
+        <many-to-one
+            name="session"
+            class="Session"
+            column="session_id"
+            not-null="true"/>
+
+        <set
+            name="posMajors"
+            table="pos_acad_area_major"
+            inverse="true"
+            lazy="true">
+
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="academic_area_id"/>
+            <many-to-many
+                class="org.unitime.timetable.model.PosMajor"
+                column="major_id"
+                foreign-key="fk_acad_area_major_major"/>
+
+        </set>
+
+        <set
+            name="posMinors"
+            table="pos_acad_area_minor"
+            inverse="true"
+            lazy="true">
+
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="academic_area_id"/>
+            <many-to-many
+                class="org.unitime.timetable.model.PosMinor"
+                column="minor_id"
+                foreign-key="fk_acad_area_minor_minor"/>
+
+        </set>
+
+    </class>
+</hibernate-mapping>

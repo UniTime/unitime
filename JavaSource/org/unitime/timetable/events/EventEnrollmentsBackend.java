@@ -521,6 +521,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
     				st.addClassification(acm.getAcademicClassification().getCode(), acm.getAcademicClassification().getName());
     				st.addMajor(acm.getMajor().getCode(), acm.getMajor().getName());
     				st.addConcentration(acm.getConcentration() == null ? null : acm.getConcentration().getCode(), acm.getConcentration() == null ? null : acm.getConcentration().getName());
+    				st.addDegree(acm.getDegree() == null ? null : acm.getDegree().getReference(), acm.getDegree() == null ? null : acm.getDegree().getLabel());
     			}
     			for (StudentAreaClassificationMinor acm: new TreeSet<StudentAreaClassificationMinor>(enrollment.getStudent().getAreaClasfMinors())) {
     				st.addMinor(acm.getMinor().getCode(), acm.getMinor().getName());

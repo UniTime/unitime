@@ -48,6 +48,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.Degree;
 import org.unitime.timetable.model.FreeTime;
 import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.PosMajor;
@@ -168,6 +169,12 @@ public class StudentSectioningImport extends BaseImport {
             		"from PosMajorConcentration where major.session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
             	for (AcademicArea area: conc.getMajor().getAcademicAreas())
             		code2concentration.put(area.getAcademicAreaAbbreviation() + ":" + conc.getMajor().getCode() + ":" + conc.getCode(), conc);
+            }
+            
+            Map<String, Degree> code2degree = new Hashtable<String, Degree>();
+            for (Degree deg: (List<Degree>)getHibSession().createQuery(
+            		"from Degree where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            	code2degree.put(deg.getReference(), deg);
             }
             
             Map<String, PosMinor> code2minor = new Hashtable<String, PosMinor>();
@@ -381,19 +388,28 @@ public class StudentSectioningImport extends BaseImport {
         	    			Element g = (Element) i3.next();
         	    			String code = g.attributeValue("code");
         	    			String concentration = g.attributeValue("concentration");
+        	    			String degree = g.attributeValue("degree");
         	    			Double weight = Double.valueOf(g.attributeValue("weight", "1.0"));
-        	    			if (sMajors.remove(area + ":" + clasf + ":" + code) == null) {
+        	    			StudentAreaClassificationMajor acm = sMajors.remove(area + ":" + clasf + ":" + code);
+        	    			if (acm != null) {
+        	    				acm.setConcentration(concentration == null ? null : code2concentration.get(area + ":" + code + ":" + concentration));
+    	        				acm.setDegree(degree == null ? null : code2degree.get(degree));
+    	        				acm.setWeight(weight);
+    	        				if (student.getUniqueId() != null)
+                        			updatedStudents.add(student.getUniqueId());
+        	    			} else {
         	    				PosMajor m = code2major.get(area + ":" + code);
         	    				if (m == null) {
         	    					warn("Major " + area + " " + code + " not known.");
         	    					continue;
         	    				}
-        	    				StudentAreaClassificationMajor acm = new StudentAreaClassificationMajor();
+        	    				acm = new StudentAreaClassificationMajor();
     	        				acm.setAcademicArea(a);
     	        				acm.setAcademicClassification(f);
     	        				acm.setMajor(m);
     	        				acm.setStudent(student);
     	        				acm.setConcentration(concentration == null ? null : code2concentration.get(area + ":" + code + ":" + concentration));
+    	        				acm.setDegree(degree == null ? null : code2degree.get(degree));
     	        				acm.setWeight(weight);
     	        				student.getAreaClasfMajors().add(acm);
     	        				if (student.getUniqueId() != null)

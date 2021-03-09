@@ -302,6 +302,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 							acm.getClassification(), acm.getClassificationLabel(),
 							acm.getMajor(), acm.getMajorLabel(),
 							acm.getConcentration(), acm.getConcentrationLabel(),
+							acm.getDegree(), acm.getDegreeLabel(),
 							acm.getWeight()));
 				for (XStudent.XGroup acc: student.getAccomodations())
 					clonnedStudent.getAccommodations().add(acc.getAbbreviation());

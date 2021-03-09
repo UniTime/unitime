@@ -66,9 +66,9 @@
 		</item>
 	</category>
 	<category>
-		<title>Advisor Course Recommendations</title>
+		<title>Student Scheduling</title>
 		<item>
-			<name>Last Additional Notes</name>
+			<name>Advisor Course Recommendations: Last Additional Notes</name>
 			<description>
 				<line>Added ability to select from the previous 50 notes that the advisor has used in the given term.
 					<line>Student PIN is automatically replaced (same message with different PIN does not list multiple times).</line>
@@ -76,8 +76,15 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling Dashboards (Both Online and Batch)</name>
+			<description>
+				<line>Added optional Conc (major concentration) and Degr (student degree) columns.</line>
+				<line>Added ability to filter by concentration and/or degree.</line>
+			</description>
+		</item>
 	</category>
-		<category>
+	<category>
 		<title>Other</title>
 		<item>
 			<name>UniTime Login Page</name>
@@ -88,6 +95,13 @@
 				<line>Added ability to add info/warn/error messages just on the login screen.
 					<line>Properties tmtbl.page.info.login, tmtbl.page.warn.login, tmtbl.page.error.login</line>
 				</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Curriculum Information</name>
+			<description>
+				<line>Added ability to include an optional concentration and degree field on a student, with academic area, major, and classification.</line>
+				<line>Included in Student XML and Course Requests XML exports and imports.</line>
 			</description>
 		</item>
 	</category>

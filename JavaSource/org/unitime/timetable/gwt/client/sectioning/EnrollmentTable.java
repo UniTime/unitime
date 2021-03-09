@@ -796,7 +796,7 @@ public class EnrollmentTable extends Composite {
 		}
 		
 		boolean hasPriority = false, hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasAlternative = false, hasReservation = false, hasRequestedDate = false, hasEnrolledDate = false, hasConflict = false, hasMessage = false;
-		boolean hasAdvisor = false, hasMinor = false, hasConc = false;
+		boolean hasAdvisor = false, hasMinor = false, hasConc = false, hasDeg = false;
 		Set<String> groupTypes = new HashSet<String>();
 		for (ClassAssignmentInterface.Enrollment e: enrollments) {
 			if (filter(f, e)) continue;
@@ -815,6 +815,7 @@ public class EnrollmentTable extends Composite {
 			if (e.getStudent().hasAdvisor()) hasAdvisor = true;
 			if (e.getStudent().hasMinor()) hasMinor = true;
 			if (e.getStudent().hasConcentration()) hasConc = true;
+			if (e.getStudent().hasDegree()) hasDeg = true;
 		}
 
 		UniTimeTableHeader hPriority = null;
@@ -840,6 +841,13 @@ public class EnrollmentTable extends Composite {
 			hClasf = new UniTimeTableHeader(MESSAGES.colClassification());
 			header.add(hClasf);
 			addSortOperation(hClasf, EnrollmentComparator.SortBy.CLASSIFICATION, MESSAGES.colClassification());
+		}
+		
+		UniTimeTableHeader hDegree = null;
+		if (hasDeg) {
+			hDegree = new UniTimeTableHeader(MESSAGES.colDegree());
+			header.add(hDegree);
+			addSortOperation(hDegree, EnrollmentComparator.SortBy.DEGREE, MESSAGES.colDegree());
 		}
 
 		UniTimeTableHeader hMajor = null;
@@ -903,7 +911,7 @@ public class EnrollmentTable extends Composite {
 		for (final String subpart: subparts) {
 			UniTimeTableHeader hSubpart = new UniTimeTableHeader(subpart);
 			hSubparts.put(subpart, hSubpart);
-			final int col = 1 + (hasExtId ? 1 : 0) + (crosslist ? 1 : 0) + (hasPriority ? 1 : 0) + (hasAlternative ? 1 : 0) + (hasArea ? 2 : 0) + (hasMajor ? 1 : 0) + (hasConc ? 1 : 0) + (hasMinor ? 1 : 0) + (hasGroup ? 1 : 0) + (hasAcmd ? 1 : 0) + (hasReservation ? 1 : 0) + groupTypes.size();
+			final int col = 1 + (hasExtId ? 1 : 0) + (crosslist ? 1 : 0) + (hasPriority ? 1 : 0) + (hasAlternative ? 1 : 0) + (hasArea ? 2 : 0) + (hasDeg ? 1 : 0) + (hasMajor ? 1 : 0) + (hasConc ? 1 : 0) + (hasMinor ? 1 : 0) + (hasGroup ? 1 : 0) + (hasAcmd ? 1 : 0) + (hasReservation ? 1 : 0) + groupTypes.size();
 			hSubpart.addOperation(new Operation() {
 				@Override
 				public void execute() {
@@ -1202,6 +1210,8 @@ public class EnrollmentTable extends Composite {
 				line.add(new ACM(enrollment.getStudent().getAreas()));
 				line.add(new ACM(enrollment.getStudent().getClassifications()));
 			}
+			if (hasDeg)
+				line.add(new ACM(enrollment.getStudent().getDegrees()));
 			if (hasMajor)
 				line.add(new ACM(enrollment.getStudent().getMajors()));
 			if (hasConc)
@@ -1409,6 +1419,7 @@ public class EnrollmentTable extends Composite {
 			case CONCENTRATION: h = hConc; break;
 			case MINOR: h = hMinor; break;
 			case ADVISOR: h = hAdvisor; break;
+			case DEGREE: h = hDegree; break;
 			}
 			if (h != null)
 				iEnrollments.sort(h, new EnrollmentComparator(sort, group), asc);
@@ -1700,6 +1711,7 @@ public class EnrollmentTable extends Composite {
 			ADVISOR,
 			MINOR,
 			CONCENTRATION,
+			DEGREE,
 			;
 		}
 		
@@ -1778,6 +1790,10 @@ public class EnrollmentTable extends Composite {
 					cmp = e1.getStudent().getConcentration("|").compareTo(e2.getStudent().getConcentration("|"));
 					if (cmp != 0) return cmp;
 					cmp = e1.getStudent().getMajor("|").compareTo(e2.getStudent().getMajor("|"));
+					if (cmp != 0) return cmp;
+					return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
+				case DEGREE:
+					cmp = e1.getStudent().getDegree("|").compareTo(e2.getStudent().getDegree("|"));
 					if (cmp != 0) return cmp;
 					return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
 				case GROUP:

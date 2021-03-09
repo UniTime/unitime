@@ -3286,6 +3286,14 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageConcentrations();
 	
+	@DefaultMessage("Degree")
+	@DoNotTranslate
+	String pageDegree();
+
+	@DefaultMessage("Degrees")
+	@DoNotTranslate
+	String pageDegrees();
+	
 	@DefaultMessage("Offering Consent Type")
 	@DoNotTranslate
 	String pageOfferingConsentType();
@@ -5750,6 +5758,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("concentration")
 	String tagConcentration();
+	
+	@DefaultMessage("degree")
+	String tagDegree();
 	
 	@DefaultMessage("minor")
 	String tagMinor();
