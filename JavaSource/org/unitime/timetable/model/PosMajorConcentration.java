@@ -36,5 +36,13 @@ public class PosMajorConcentration extends BasePosMajorConcentration {
 				"from PosMajorConcentration x where x.major.session.uniqueId = :sessionId order by x.major.code, x.code")
 				.setLong("sessionId", sessionId).list();
 	}
+	
+    public Object clone() {
+    	PosMajorConcentration m = new PosMajorConcentration();
+    	m.setExternalUniqueId(getExternalUniqueId());
+    	m.setCode(getCode());
+    	m.setName(getName());
+    	return m;
+    }
 
 }

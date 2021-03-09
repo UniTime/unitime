@@ -36,5 +36,13 @@ public class Degree extends BaseDegree {
 				"from Degree x where x.session.uniqueId = :sessionId order by x.reference")
 				.setLong("sessionId", sessionId).list();
 	}
+	
+    public Object clone() {
+    	Degree degree = new Degree();
+    	degree.setExternalUniqueId(getExternalUniqueId());
+    	degree.setReference(getReference());
+    	degree.setLabel(getLabel());
+    	return degree;
+    }
 
 }

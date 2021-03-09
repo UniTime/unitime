@@ -58,6 +58,7 @@ import org.unitime.timetable.model.CurriculumOverrideReservation;
 import org.unitime.timetable.model.CurriculumProjectionRule;
 import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.Degree;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -92,6 +93,7 @@ import org.unitime.timetable.model.NonUniversityLocationPicture;
 import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.PeriodicTask;
 import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.PosMajorConcentration;
 import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
@@ -133,6 +135,7 @@ import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseCatalogDAO;
 import org.unitime.timetable.model.dao.CurriculumDAO;
 import org.unitime.timetable.model.dao.DatePatternDAO;
+import org.unitime.timetable.model.dao.DegreeDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.DistributionTypeDAO;
@@ -2602,6 +2605,20 @@ public class SessionRollForward {
         	}
         }
         
+        // roll forward degrees, if needed
+        Hashtable<String, Degree> degrees = new Hashtable<String, Degree>();
+        for (Degree degree: DegreeDAO.getInstance().findBySession(hibSession, toSession.getUniqueId())) {
+        	degrees.put(degree.getReference(), degree);
+        }
+        if (degrees.isEmpty()) {
+        	for (Degree degree: DegreeDAO.getInstance().findBySession(hibSession, fromSession.getUniqueId())) {
+        		Degree newDegree = (Degree)degree.clone();
+        		newDegree.setSession(toSession);
+        		hibSession.save(newDegree);
+        		degrees.put(newDegree.getReference(), degree);
+        	}
+        }
+        
         // roll forward majors, if needed
         Hashtable<String, Hashtable<String, PosMajor>> majors = new Hashtable<String, Hashtable<String,PosMajor>>();
         for (PosMajor major: PosMajorDAO.getInstance().findBySession(hibSession, toSession.getUniqueId())) {
@@ -2625,6 +2642,7 @@ public class SessionRollForward {
             	PosMajor newMajor = (PosMajor)major.clone();
             	newMajor.setSession(toSession);
             	newMajor.setAcademicAreas(newAreas);
+            	newMajor.setConcentrations(new HashSet<PosMajorConcentration>());
             	for (AcademicArea newArea: newAreas) {
             		newArea.getPosMajors().add(newMajor);
             		Hashtable<String, PosMajor> code2major = majors.get(newArea.getAcademicAreaAbbreviation());
@@ -2635,7 +2653,13 @@ public class SessionRollForward {
             		code2major.put(newMajor.getCode(), newMajor);
             	}
             	hibSession.save(newMajor);
-            }        	
+            	for (PosMajorConcentration conc: major.getConcentrations()) {
+            		PosMajorConcentration newConc = (PosMajorConcentration)conc.clone();
+            		newConc.setMajor(newMajor);
+            		newMajor.getConcentrations().add(newConc);
+            		hibSession.save(newConc);
+            	}
+            }
         }
         
         // roll forward minors, if needed
@@ -2985,6 +3009,7 @@ public class SessionRollForward {
 	        	classifications.put(clasf.getCode(), clasf);
 
 	        Map<String, Map<String, PosMajor>> majors = new Hashtable<String, Map<String,PosMajor>>();
+	        Map<String, Map<String, Map<String, PosMajorConcentration>>> concentrations = new Hashtable<String, Map<String, Map<String, PosMajorConcentration>>>();
 	        for (PosMajor major: PosMajorDAO.getInstance().findBySession(hibSession, rollForwardSessionForm.getSessionToRollForwardTo())) {
 	        	for (AcademicArea area: major.getAcademicAreas()) {
 	        		Map<String, PosMajor> code2major = majors.get(area.getAcademicAreaAbbreviation());
@@ -2993,6 +3018,18 @@ public class SessionRollForward {
 	        			majors.put(area.getAcademicAreaAbbreviation(), code2major);
 	        		}
 	        		code2major.put(major.getCode(), major);
+	        		if (!major.getConcentrations().isEmpty()) {
+		        		Map<String, Map<String, PosMajorConcentration>> majorCode2concentration = concentrations.get(area.getAcademicAreaAbbreviation());
+		        		if (majorCode2concentration == null) {
+		        			majorCode2concentration = new Hashtable<String, Map<String, PosMajorConcentration>>();
+		        			concentrations.put(area.getAcademicAreaAbbreviation(), majorCode2concentration);
+		        		}
+		        		Map<String, PosMajorConcentration> code2concentration = new Hashtable<String, PosMajorConcentration>();
+		        		majorCode2concentration.put(major.getCode(), code2concentration);
+		        		for (PosMajorConcentration conc: major.getConcentrations()) {
+		        			code2concentration.put(conc.getCode(), conc);
+		        		}
+	        		}
 	        	}
 	        }
 	        
@@ -3016,7 +3053,7 @@ public class SessionRollForward {
 						"select distinct r from CurriculumReservation r inner join r.instructionalOffering.courseOfferings c where " +
 						"c.isControl = true and c.subjectArea.subjectAreaAbbreviation = :subject and c.subjectArea.department.session.uniqueId = :sessionId")
 						.setString("subject", subject.getSubjectAreaAbbreviation()).setLong("sessionId", rollForwardSessionForm.getSessionToRollReservationsForwardFrom()).list()) {
-					CurriculumReservation toReservation = rollCurriculumReservationForward(reservation, subject.getSession(), startDate, expiration, areas, classifications, majors, minors);
+					CurriculumReservation toReservation = rollCurriculumReservationForward(reservation, subject.getSession(), startDate, expiration, areas, classifications, majors, concentrations, minors);
 					if (toReservation != null)
 						hibSession.saveOrUpdate(toReservation);
 				}
@@ -3176,7 +3213,12 @@ public class SessionRollForward {
 		return toReservation;
 	}
 	
-	protected CurriculumReservation rollCurriculumReservationForward(CurriculumReservation fromReservation, Session toSession, Date startDate, Date expiration, Map<String, AcademicArea> areas, Map<String, AcademicClassification> classifications, Map<String, Map<String, PosMajor>> majors, Map<String, Map<String, PosMinor>> minors) {
+	protected CurriculumReservation rollCurriculumReservationForward(CurriculumReservation fromReservation, Session toSession, Date startDate, Date expiration,
+			Map<String, AcademicArea> areas,
+			Map<String, AcademicClassification> classifications,
+			Map<String, Map<String, PosMajor>> majors,
+			Map<String, Map<String, Map<String, PosMajorConcentration>>> concentrations,
+			Map<String, Map<String, PosMinor>> minors) {
 		CurriculumReservation toReservation = new CurriculumReservation();
 		if (fromReservation instanceof CurriculumOverrideReservation) {
 			toReservation = new CurriculumOverrideReservation();
@@ -3199,13 +3241,21 @@ public class SessionRollForward {
 		}
 		
 		toReservation.setMajors(new HashSet<PosMajor>());
+		toReservation.setConcentrations(new HashSet<PosMajorConcentration>());
 		toReservation.setMinors(new HashSet<PosMinor>());
 		for (AcademicArea area: fromReservation.getAreas()) {
 			Map<String, PosMajor> mj = majors.get(area.getAcademicAreaAbbreviation());
+			Map<String, Map<String, PosMajorConcentration>> mj2cc = concentrations.get(area.getAcademicAreaAbbreviation());
 			if (mj != null)
 				for (PosMajor fromMajor: fromReservation.getMajors()) {
 					PosMajor toMajor = mj.get(fromMajor.getCode());
 					if (toMajor != null) toReservation.getMajors().add(toMajor);
+				}
+			if (mj2cc != null)
+				for (PosMajorConcentration fromConc: fromReservation.getConcentrations()) {
+					Map<String, PosMajorConcentration> cc = mj2cc.get(fromConc.getMajor().getCode());
+					PosMajorConcentration toConc = (cc == null ? null : cc.get(fromConc.getCode()));
+					if (toConc != null) toReservation.getConcentrations().add(toConc);
 				}
 			Map<String, PosMinor> mn = minors.get(area.getAcademicAreaAbbreviation());
 			if (mn != null)
