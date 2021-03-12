@@ -30,6 +30,7 @@ import org.cpsolver.studentsct.model.AreaClassificationMajor;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.StudentGroup;
@@ -70,6 +71,13 @@ public class CriticalCoursesReport implements StudentSectioningReport {
         return group;           
     }
     
+    protected String advisor(Student student) {
+        String advisors = "";
+        for (Instructor instructor: student.getAdvisors())
+        	advisors += (advisors.isEmpty() ? "" : ", ") + instructor.getName();
+        return advisors;
+    }
+    
     @Override
     public CSVFile create(Assignment<Request, Enrollment> assignment, DataProperties properties) {
         CSVFile csv = new CSVFile();
@@ -80,6 +88,7 @@ public class CriticalCoursesReport implements StudentSectioningReport {
         		new CSVFile.CSVField(MSG.reportStudentEmail()),
         		new CSVFile.CSVField(MSG.reportStudentCurriculum()),
         		new CSVFile.CSVField(MSG.reportStudentGroup()),
+        		new CSVFile.CSVField(MSG.reportStudentAdvisor()),
                 new CSVFile.CSVField(MSG.reportPriority()),
                 new CSVFile.CSVField(MSG.reportCourse()),
                 new CSVFile.CSVField(MSG.report1stAlt()),
@@ -108,6 +117,7 @@ public class CriticalCoursesReport implements StudentSectioningReport {
                             new CSVFile.CSVField(dbStudent == null ? null : dbStudent.getEmail()),
                             new CSVFile.CSVField(curriculum(student)),
                             new CSVFile.CSVField(group(student)),
+                            new CSVFile.CSVField(advisor(student)),
                             new CSVFile.CSVField(priority),
                             new CSVFile.CSVField(course.getName()),
                             new CSVFile.CSVField(alt1 == null ? "" : alt1.getName()),

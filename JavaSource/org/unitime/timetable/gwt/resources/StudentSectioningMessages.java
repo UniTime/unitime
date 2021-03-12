@@ -872,6 +872,15 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("LC")
 	String reservationLearningCommunity();
+	
+	@DefaultMessage("Override")
+	String reservationOverride();
+
+	@DefaultMessage("Dummy")
+	String reservationDummy();
+
+	@DefaultMessage("Other")
+	String reservationOther();
 
 	/* Enrollment dialog messages (opened from Enrollments table)
 	 */
@@ -1952,6 +1961,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Curriculum")
 	String reportStudentCurriculum();
 	
+	@DefaultMessage("Advisor")
+	String reportStudentAdvisor();
+	
 	@DefaultMessage("Group")
 	String reportStudentGroup();
 	
@@ -2000,6 +2012,81 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course")
 	String reportCourse();
 	
+	@DefaultMessage("Class")
+	String reportClass();
+	
+	@DefaultMessage("Allowed\nOverlap")
+	String reportAllowedOverlap();
+	
+	@DefaultMessage("Meeting Time")
+	String reportMeetingTime();
+	
+	@DefaultMessage("Date Pattern")
+	String reportDatePattern();
+	
+	@DefaultMessage("Subpart\nOverlap")
+	String reportSubpartOverlap();
+	
+	@DefaultMessage("Time\nOverride")
+	String reportTimeOverride();
+	
+	@DefaultMessage("Ignore\nConflict")
+	String reportIgnoreConflicts();
+	
+	@DefaultMessage("Conflicting\nCourse")
+	String reportConflictingCourse();
+	
+	@DefaultMessage("Conflicting\nClass")
+	String reportConflictingClass();
+	
+	@DefaultMessage("Conflicting\nMeeting Time")
+	String reportConflictingMeetingTime();
+	
+	@DefaultMessage("Conflicting\nDate Pattern")
+	String reportConflictingDatePattern();
+	
+	@DefaultMessage("Conflicting\nAssignment")
+	String reportConflictingAssignment();
+	
+	@DefaultMessage("Overlap\n[min]")
+	String reportOverlapMinutes();
+	
+	@DefaultMessage("Overlapping\nMeetings")
+	String reportOverlappingMeetings();
+	
+	@DefaultMessage("Original\nClass")
+	String reportOriginalClass();
+	
+	@DefaultMessage("Original\nTime")
+	String reportOriginalTime();
+	
+	@DefaultMessage("Original\nDate")
+	String reportOriginalDate();
+
+	@DefaultMessage("Original\nRoom")
+	String reportOriginalRoom();
+
+	@DefaultMessage("Assigned\nClass")
+	String reportAssignedClass();
+
+	@DefaultMessage("Assigned\nTime")
+	String reportAssignedTime();
+
+	@DefaultMessage("Assigned\nDate")
+	String reportAssignedDate();
+
+	@DefaultMessage("Assigned\nRoom")
+	String reportAssignedRoom();
+
+	@DefaultMessage("Penalization")
+	String reportPenalization();
+
+	@DefaultMessage("Not Assigned")
+	String reportNotAssigned();
+	
+	@DefaultMessage("Teaching\nOverlap")
+	String reportTeachingOverlap();
+
 	@DefaultMessage("1st Alt")
 	String report1stAlt();
 	
