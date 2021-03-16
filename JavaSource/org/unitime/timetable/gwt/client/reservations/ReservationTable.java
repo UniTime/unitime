@@ -344,9 +344,15 @@ public class ReservationTable extends Composite {
 						owner.add(o);
 					}
 				}
+				boolean firstClasf = true;
 				for (IdName clasf: curriculum.getClassifications()) {
 					Label l = new Label(clasf.getAbbv() + " - " + clasf.getName());
-					l.getElement().getStyle().setMarginLeft(10, Unit.PX);
+					if (curriculum.getAreas().size() == 1)
+						l.getElement().getStyle().setMarginLeft(10, Unit.PX);
+					else if (firstClasf) {
+						l.getElement().getStyle().setMarginTop(2, Unit.PX);
+						firstClasf = false;
+					}
 					owner.add(l);
 				}
 				for (IdName major: curriculum.getMajors()) {
