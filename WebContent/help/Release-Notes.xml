@@ -64,6 +64,12 @@
 					between the current and the last-like session.</line>
 			</description>
 		</item>
+		<item>
+			<name>Distribution Preferences</name>
+			<description>
+				<line>Added ability to export the distribution preferences in CSV format.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>
@@ -81,6 +87,15 @@
 			<description>
 				<line>Added optional Conc (major concentration) and Degr (student degree) columns.</line>
 				<line>Added ability to filter by concentration and/or degree.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Examination Timetabling</title>
+		<item>
+			<name>Examination Distribution Preferences</name>
+			<description>
+				<line>Added ability to export the distribution preferences in CSV format.</line>
 			</description>
 		</item>
 	</category>

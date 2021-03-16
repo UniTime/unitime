@@ -390,6 +390,13 @@
 						title="<%=MSG.titleExportPdf(MSG.accessExportPdf()) %>">
 						<loc:message name="actionExportPdf"/>
 					</html:submit> 
+					&nbsp;&nbsp;&nbsp;
+					<html:submit property="op" 
+						accesskey="<%=MSG.accessExportCsv() %>" 
+						styleClass="btn" 
+						title="<%=MSG.titleExportCsv(MSG.accessExportCsv()) %>">
+						<loc:message name="actionExportCsv"/>
+					</html:submit> 
 				</TD>
 			</TR>		
 		

@@ -20,6 +20,7 @@
 package org.unitime.timetable.action;
 
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -221,7 +222,7 @@ public class DistributionPrefsAction extends Action {
     	    request.setAttribute("addedClass", ""+(frm.getSubjectArea().size()-1));
         }
         
-        if (op.equals(MSG.actionSearchDistributionPreferences()) || op.equals(MSG.actionExportPdf())) {
+        if (op.equals(MSG.actionSearchDistributionPreferences()) || op.equals(MSG.actionExportPdf()) || op.equals(MSG.actionExportCsv())) {
         	String subjectAreaId = frm.getFilterSubjectAreaId();
         	String courseNbr = frm.getFilterCourseNbr();
         	if (subjectAreaId!=null && subjectAreaId.length()>0)
@@ -235,12 +236,14 @@ public class DistributionPrefsAction extends Action {
         	
         	if (op.equals(MSG.actionExportPdf()))
         		op="export"; 
+        	else if (op.equals(MSG.actionExportCsv()))
+        		op="export-csv"; 
         	else 
         		op="view";
         }
 
         // Load Distribution Pref
-        if(op!=null && (op.equals("view") || op.equals("export")) 
+        if(op!=null && (op.equals("view") || op.equals("export") || op.equals("export-csv")) 
                 && distPrefId!=null && distPrefId.trim().length()>0) {
             Debug.debug("Loading dist pref - " + distPrefId);
             
@@ -308,9 +311,15 @@ public class DistributionPrefsAction extends Action {
 
         if ("export".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
         	OutputStream out = ExportUtils.getPdfOutputStream(response, "distprefs");
-        	
             new DistributionPrefsTableBuilder().getAllDistPrefsTableForCurrentUserAsPdf(out, sessionContext, frm.getFilterSubjectAreaId(), frm.getFilterCourseNbr());
-            
+            out.flush(); out.close();
+            return null;
+        }
+        
+        if ("export-csv".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
+        	PrintWriter out = ExportUtils.getCsvWriter(response, "distprefs");
+            new DistributionPrefsTableBuilder().getAllDistPrefsTableForCurrentUserAsCsv(out, sessionContext, frm.getFilterSubjectAreaId(), frm.getFilterCourseNbr());
+            out.flush(); out.close();
             return null;
         }
         

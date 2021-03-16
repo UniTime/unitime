@@ -20,6 +20,7 @@
 package org.unitime.timetable.action;
 
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -190,7 +191,7 @@ public class ExamDistributionPrefsAction extends Action {
             frm.getExam().add(new Long(-1));
         }
 
-        if (op.equals(rsc.getMessage("button.search")) || op.equals(rsc.getMessage("button.exportPDF"))) {
+        if (op.equals(rsc.getMessage("button.search")) || op.equals(rsc.getMessage("button.exportPDF")) || op.equals(rsc.getMessage("button.exportCSV"))) {
         	String subjectAreaId = frm.getFilterSubjectAreaId();
         	String courseNbr = frm.getFilterCourseNbr();
         	if (subjectAreaId!=null && subjectAreaId.length()>0)
@@ -204,12 +205,14 @@ public class ExamDistributionPrefsAction extends Action {
         	sessionContext.setAttribute(SessionAttribute.ExamType, frm.getExamType());
         	if (op.equals(rsc.getMessage("button.exportPDF")))
         		op="export"; 
+        	else if (op.equals(rsc.getMessage("button.exportCSV")))
+        		op="export-csv"; 
         	else 
         		op="view";
         }
 
         // Load Distribution Pref
-        if(op!=null && (op.equals("view") || op.equals("export")) 
+        if(op!=null && (op.equals("view") || op.equals("export") || op.equals("export-csv")) 
                 && distPrefId!=null && distPrefId.trim().length()>0) {
             Debug.debug("Loading dist pref - " + distPrefId);
             
@@ -261,6 +264,13 @@ public class ExamDistributionPrefsAction extends Action {
         if ("export".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
         	OutputStream out = ExportUtils.getPdfOutputStream(response, "distpref");
             new ExamDistributionPrefsTableBuilder().getDistPrefsTableAsPdf(out, request, sessionContext, (Constants.ALL_OPTION_VALUE.equals(frm.getFilterSubjectAreaId()) || frm.getFilterSubjectAreaId().isEmpty()?null:Long.valueOf(frm.getFilterSubjectAreaId())), frm.getFilterCourseNbr(), frm.getExamType());
+            out.flush();out.close();
+            return null;
+        }
+
+        if ("export-csv".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
+        	PrintWriter out = ExportUtils.getCsvWriter(response, "distpref");
+            new ExamDistributionPrefsTableBuilder().getDistPrefsTableAsCsv(out, request, sessionContext, (Constants.ALL_OPTION_VALUE.equals(frm.getFilterSubjectAreaId()) || frm.getFilterSubjectAreaId().isEmpty()?null:Long.valueOf(frm.getFilterSubjectAreaId())), frm.getFilterCourseNbr(), frm.getExamType());
             out.flush();out.close();
             return null;
         }

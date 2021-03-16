@@ -337,8 +337,13 @@
 					</html:submit> 
 					&nbsp;&nbsp;&nbsp;
 					<html:submit property="op" 
-						accesskey="S" styleClass="btn" titleKey="title.exportPDF">
+						accesskey="P" styleClass="btn" titleKey="title.exportPDF">
 						<bean:message key="button.exportPDF" />
+					</html:submit> 
+					&nbsp;&nbsp;&nbsp;
+					<html:submit property="op" 
+						accesskey="C" styleClass="btn" titleKey="title.exportCSV">
+						<bean:message key="button.exportCSV" />
 					</html:submit> 
 				</TD>
 			</TR>		
