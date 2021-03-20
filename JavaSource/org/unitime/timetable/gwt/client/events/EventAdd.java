@@ -1962,6 +1962,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		public StartEndTime getSelectedTime();
 		public boolean isTooEarly(int startSlot, int endSlot);
 		public int getFirstDayOfWeek();
+		public boolean isCanEmailStudents();
 	}
 	
 	private void showCreateButtonIfApplicable() {

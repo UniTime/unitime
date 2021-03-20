@@ -297,6 +297,9 @@ public class EventPermissions {
 
 	}
 	
+	@PermissionForRight(Right.EventDetailEmailStudents)
+	public static class EventDetailEmailStudents extends Events {}
+	
 	@PermissionForRight(Right.EventDetailArrangeHourClass)
 	public static class EventDetailArrangeHourClass implements Permission<Class_> {
 		@Autowired Permission<Class_> permissionClassDetail;

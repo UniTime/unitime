@@ -377,6 +377,7 @@ public enum Right {
     EventLookupContactAdditional,
     EventLookupSchedule,
     EventDetail(Event.class),
+    EventDetailEmailStudents(Session.class),
     EventDetailArrangeHourClass(Class_.class),
     EventEdit(Event.class),
     EventEditClass(ClassEvent.class),

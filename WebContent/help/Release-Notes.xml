@@ -28,6 +28,26 @@
 	<version>4.5.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Event Management</title>
+		<item>
+			<name>Event Detail: Email Students</name>
+			<description>
+				<line>Added ability to email students of a class, an examination or a course related event.</line>
+				<line>Requires permission Event Detail Email Students (not enabled by default).
+					<line>When enabled, Send Email button appears on the top of the Enrollments table.</line>
+				</line>
+				<line>Either all students that have an email on file can be emailed, or just those that are selected.</line>
+				<line>One email is sent with all the (selected) students in BCC.</line>
+				<line>CC defaults to the user's email, but it can be changed in the Send email dialog.</line>
+				<line>Email subject defaults to the event's name, but it can be changed in the Send email dialog.</line>
+			</description>
+		</item>
+	</category>
+</release>
+<release>
+	<version>4.5.154</version>
+	<release-date>Wed, 17 Mar 2021</release-date>
+	<category>
 		<title>Course Timetabling</title>
 		<item>
 			<name>Student Academic Area Classification Major Weight</name>

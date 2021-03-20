@@ -516,6 +516,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
     			st.setCanUseAssistant(canUseAssistant);
     			st.setName(studentNameFormat.format(enrollment.getStudent()));
     			st.setEmail(enrollment.getStudent().getEmail());
+    			st.setCanSelect(st.getEmail() != null && !st.getEmail().isEmpty());
     			for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(enrollment.getStudent().getAreaClasfMajors())) {
     				st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicArea().getTitle());
     				st.addClassification(acm.getAcademicClassification().getCode(), acm.getAcademicClassification().getName());

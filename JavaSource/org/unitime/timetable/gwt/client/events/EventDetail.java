@@ -36,6 +36,7 @@ import org.unitime.timetable.gwt.client.widgets.ImageLink;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -43,6 +44,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -63,6 +65,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcResponse;
+import org.unitime.timetable.gwt.shared.EventInterface.SendStudentEmailsRpcRequest;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -74,6 +77,7 @@ import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -254,6 +258,51 @@ public class EventDetail extends Composite {
 		iEnrollmentHeader = new UniTimeHeaderPanel(MESSAGES.sectEnrollments());
 		iEnrollments = new EnrollmentTable(false, true);
 		iEnrollments.getTable().setStyleName("unitime-Enrollments");
+		iEnrollmentHeader.addButton("email", MESSAGES.opSendEmail(), 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				final EventStudentEmail email = new EventStudentEmail();
+				if (email.getCC().isEmpty() && iProperties.getMainContact().hasEmail())
+					email.setCC(iProperties.getMainContact().getEmail());
+				email.setCommand(new Command() {
+					@Override
+					public void execute() {
+						UniTimeConfirmationDialog.confirmFocusNo(MESSAGES.confirmSendEmail(iEnrollments.getStudentIds().size()), new Command() {
+							@Override
+							public void execute() {
+								SendStudentEmailsRpcRequest request = new SendStudentEmailsRpcRequest();
+								request.setEventId(iEvent.getId());
+								request.setStudentIds(iEnrollments.getStudentIds());
+								request.setMessage(email.getMessage());
+								request.setSubject(email.getSubject());
+								if (request.getSubject().isEmpty())
+									request.setSubject(iEvent.getName());
+								request.setCC(email.getCC());
+								LoadingWidget.getInstance().show(MESSAGES.waitSendingEmail());
+								iEnrollmentHeader.clearMessage();
+								RPC.execute(request, new AsyncCallback<GwtRpcResponseNull>() {
+
+									@Override
+									public void onFailure(Throwable caught) {
+										LoadingWidget.getInstance().hide();
+										UniTimeNotifications.info(MESSAGES.failureSendingEmail(caught.getMessage()));
+										iEnrollmentHeader.setErrorMessage(MESSAGES.failureSendingEmail(caught.getMessage()));
+									}
+
+									@Override
+									public void onSuccess(GwtRpcResponseNull result) {
+										LoadingWidget.getInstance().hide();
+										UniTimeNotifications.info(MESSAGES.emailSent());
+									}
+								});
+							}
+						});							
+					}
+				});
+				email.setSubject(iEvent.getName());
+				email.center();
+			}
+		});
 		iEnrollmentHeader.addButton("export", MESSAGES.opExportCSV(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -600,6 +649,7 @@ public class EventDetail extends Composite {
 		if (iEvent.hasEnrollment()) {
 			final int enrollmentsRow = iForm.addHeaderRow(iEnrollmentHeader);
 			iForm.addRow(iEnrollments.getTable());
+			iEnrollmentHeader.setEnabled("email", false);
 			iEnrollmentHeader.setEnabled("export", false);
 			iEnrollmentHeader.setEnabled("export-pdf", false);
 			iEnrollmentHeader.showLoading();
@@ -621,6 +671,7 @@ public class EventDetail extends Composite {
 						if (result == null) result = new GwtRpcResponseList<Enrollment>();
 						iEnrollmentHeader.clearMessage();
 						iEnrollments.clear();
+						iEnrollments.setCanSelect(iProperties.isCanEmailStudents());
 						iEnrollments.populate(result, null);
 						int conf = 0;
 						for (Enrollment e: result)
@@ -630,6 +681,7 @@ public class EventDetail extends Composite {
 							((Label)iForm.getWidget(row, 1)).setText(String.valueOf(conf));
 							iForm.getRowFormatter().setVisible(row, true);
 						}
+						iEnrollmentHeader.setEnabled("email", !result.isEmpty() && iProperties.isCanEmailStudents() && iEnrollments.isCanSelect());
 						iEnrollmentHeader.setEnabled("export", !result.isEmpty());
 						iEnrollmentHeader.setEnabled("export-pdf", !result.isEmpty());
 					}

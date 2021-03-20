@@ -1924,6 +1924,12 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		return iProperties.getFirstDayOfWeek();
 	}
 	
+	@Override
+	public boolean isCanEmailStudents() {
+		if (iProperties == null) return false;
+		return iProperties.getCanEmailStudents();
+	}
+	
 	public static class HistoryToken {
 		private String iType = null;
 		private Map<String, String> iParams = new HashMap<String, String>();

@@ -127,6 +127,8 @@ public class EnrollmentTable extends Composite {
 	private boolean iShowFilter = false;
 	private boolean iEmail = false;
 	private boolean iACR = false;
+	private boolean iCanSelect = false;
+	private Set<Long> iSelectedStudentIds = new HashSet<Long>();
 	
 	public EnrollmentTable(final boolean showHeader, boolean online) {
 		this(showHeader, online, false);
@@ -218,6 +220,40 @@ public class EnrollmentTable extends Composite {
 				});
 			}
 		});
+	}
+	
+	public boolean isCanSelect() {
+		if (iCanSelect) {
+			for (int row = 0; row < iEnrollments.getRowCount(); row++) {
+				Enrollment e = iEnrollments.getData(row);
+				if (e != null && e.getStudent().isCanSelect()) return true;
+			}
+			return false;
+		} else {
+			return false;
+		}
+	}
+	public void setCanSelect(boolean canSelect) { iCanSelect = canSelect; }
+	public Set<Long> getStudentIds() {
+		if (iSelectedStudentIds == null || iSelectedStudentIds.isEmpty()) {
+			Set<Long> studentIds = new HashSet<Long>();
+			for (int row = 0; row < iEnrollments.getRowCount(); row++) {
+				Enrollment e = iEnrollments.getData(row);
+				if (e != null && e.getStudent().isCanSelect())
+					studentIds.add(e.getStudent().getId());
+			}
+			return studentIds;
+		} else {
+			return iSelectedStudentIds;
+		}
+	}
+	protected int countSelectableStudents() {
+		int ret = 0;
+		for (int row = 0; row < iEnrollments.getRowCount(); row++) {
+			Enrollment e = iEnrollments.getData(row);
+			if (e != null && e.getStudent().isCanSelect()) ret ++;
+		}
+		return ret;
 	}
 	
 	public UniTimeTable<ClassAssignmentInterface.Enrollment> getTable() { return iEnrollments; }
@@ -731,6 +767,7 @@ public class EnrollmentTable extends Composite {
 	}
 
 	public void populate(final List<ClassAssignmentInterface.Enrollment> enrollments, final List<Long> courseIdsCanApprove) {
+		iSelectedStudentIds.clear();
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		
 		int enrolled = 0; int waitlisted = 0; int unassigned = 0;
@@ -765,6 +802,72 @@ public class EnrollmentTable extends Composite {
 		boolean hasExtId = false;
 		for (ClassAssignmentInterface.Enrollment e: enrollments) {
 			if (!filter(f,e) && e.getStudent().isCanShowExternalId()) { hasExtId = true; break; }
+		}
+		
+		boolean canSelect = false;
+		if (iCanSelect) {
+			for (ClassAssignmentInterface.Enrollment e: enrollments) {
+				if (!filter(f,e) && e.getStudent().isCanSelect()) { canSelect = true; break; }
+			}
+		}
+		
+		UniTimeTableHeader hSelect = null;
+		if (canSelect) {
+			hSelect = new UniTimeTableHeader("&otimes;", HasHorizontalAlignment.ALIGN_CENTER);
+			header.add(hSelect);
+			hSelect.setWidth("10px");
+			hSelect.addAdditionalStyleName("unitime-NoPrint");
+			hSelect.addOperation(new Operation() {
+				@Override
+				public String getName() {
+					return MESSAGES.selectAll();
+				}
+				@Override
+				public boolean hasSeparator() {
+					return false;
+				}
+				@Override
+				public boolean isApplicable() {
+					return iSelectedStudentIds.size() != countSelectableStudents();
+				}
+				@Override
+				public void execute() {
+					iSelectedStudentIds.clear();
+					for (Enrollment e: iEnrollments.getData())
+						if (e.getStudent() != null && e.getStudent().isCanSelect())
+							iSelectedStudentIds.add(e.getStudent().getId());
+					for (int row = 0; row < iEnrollments.getRowCount(); row++) {
+						Widget w = iEnrollments.getWidget(row, 0);
+						if (w instanceof CheckBox) {
+							((CheckBox)w).setValue(true);
+						}
+					}
+				}
+			});
+			hSelect.addOperation(new Operation() {
+				@Override
+				public String getName() {
+					return MESSAGES.clearAll();
+				}
+				@Override
+				public boolean hasSeparator() {
+					return false;
+				}
+				@Override
+				public boolean isApplicable() {
+					return iSelectedStudentIds.size() > 0;
+				}
+				@Override
+				public void execute() {
+					iSelectedStudentIds.clear();
+					for (int row = 0; row < iEnrollments.getRowCount(); row++) {
+						Widget w = iEnrollments.getWidget(row, 0);
+						if (w instanceof CheckBox) {
+							((CheckBox)w).setValue(false);
+						}
+					}
+				}
+			});
 		}
 		
 		UniTimeTableHeader hExtId = null;
@@ -911,7 +1014,7 @@ public class EnrollmentTable extends Composite {
 		for (final String subpart: subparts) {
 			UniTimeTableHeader hSubpart = new UniTimeTableHeader(subpart);
 			hSubparts.put(subpart, hSubpart);
-			final int col = 1 + (hasExtId ? 1 : 0) + (crosslist ? 1 : 0) + (hasPriority ? 1 : 0) + (hasAlternative ? 1 : 0) + (hasArea ? 2 : 0) + (hasDeg ? 1 : 0) + (hasMajor ? 1 : 0) + (hasConc ? 1 : 0) + (hasMinor ? 1 : 0) + (hasGroup ? 1 : 0) + (hasAcmd ? 1 : 0) + (hasReservation ? 1 : 0) + groupTypes.size();
+			final int col = 1 + (canSelect ? 1 : 0) + (hasExtId ? 1 : 0) + (crosslist ? 1 : 0) + (hasPriority ? 1 : 0) + (hasAlternative ? 1 : 0) + (hasArea ? 2 : 0) + (hasDeg ? 1 : 0) + (hasMajor ? 1 : 0) + (hasConc ? 1 : 0) + (hasMinor ? 1 : 0) + (hasGroup ? 1 : 0) + (hasAcmd ? 1 : 0) + (hasReservation ? 1 : 0) + groupTypes.size();
 			hSubpart.addOperation(new Operation() {
 				@Override
 				public void execute() {
@@ -1197,13 +1300,40 @@ public class EnrollmentTable extends Composite {
 		for (ClassAssignmentInterface.Enrollment enrollment: enrollments) {
 			if (filter(f, enrollment)) continue;
 			List<Widget> line = new ArrayList<Widget>();
+			if (canSelect) {
+				if (enrollment.getStudent().isCanSelect()) {
+					CheckBox ch = new CheckBox();
+					ch.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							event.stopPropagation();
+						}
+					});
+					final Long sid = enrollment.getStudent().getId();
+					if (iSelectedStudentIds.contains(sid)) {
+						ch.setValue(true);
+					}
+					ch.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+						@Override
+						public void onValueChange(ValueChangeEvent<Boolean> event) {
+							if (event.getValue())
+								iSelectedStudentIds.add(sid);
+							else
+								iSelectedStudentIds.remove(sid);
+						}
+					});
+					line.add(ch);
+				} else {
+					line.add(new Label(""));
+				}
+			}
 			if (hasExtId)
 				line.add(new Label(enrollment.getStudent().isCanShowExternalId() ? enrollment.getStudent().getExternalId() : "", false));
 			line.add(new Label(enrollment.getStudent().getName(), false));
 			if (crosslist)
 				line.add(new Label(enrollment.getCourseName(), false));
 			if (hasPriority)
-				line.add(new Label(enrollment.getPriority() <= 0 ? "&nbsp;" : MESSAGES.priority(enrollment.getPriority())));
+				line.add(new Label(enrollment.getPriority() <= 0 ? "" : MESSAGES.priority(enrollment.getPriority())));
 			if (hasAlternative)
 				line.add(new Label(enrollment.getAlternative(), false));
 			if (hasArea) {

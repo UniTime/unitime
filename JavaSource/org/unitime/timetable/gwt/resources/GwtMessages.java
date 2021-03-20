@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.gwt.resources;
 
+import com.google.gwt.i18n.client.Messages.DefaultMessage;
+
 /**
  * @author Tomas Muller
  */
@@ -323,6 +325,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Back")
 	String opScriptBack();
+	
+	@DefaultMessage("Send Email")
+	String opSendEmail();
 	
 	@DefaultMessage("Edit Requested Enrollments")
 	String opEditRequestedEnrollments();
@@ -6576,4 +6581,16 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("The building and all its rooms will be deleted. Continue?")
 	String confirmBuildingDelete();
+	
+	@DefaultMessage("Do you really want to send an email to {0}\u00a0students?")
+	String confirmSendEmail(int studentCount);
+	
+	@DefaultMessage("Sending email...")
+	String waitSendingEmail();
+	
+	@DefaultMessage("Email sent.")
+	String emailSent();
+	
+	@DefaultMessage("Email failed: {0}")
+	String failureSendingEmail(String message);
 }

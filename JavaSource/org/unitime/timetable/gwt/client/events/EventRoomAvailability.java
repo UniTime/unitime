@@ -1060,6 +1060,12 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 	}
 	
 	@Override
+	public boolean isCanEmailStudents() {
+		if (iProperties == null) return false;
+		return iProperties.getCanEmailStudents();
+	}
+	
+	@Override
 	public SessionMonth.Flag getDateFlag(EventType type, Date date) {
 		if (iSessionMonths == null || iSessionMonths.isEmpty()) return null;
 		if (date == null) return null;
