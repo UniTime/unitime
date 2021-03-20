@@ -52,6 +52,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	private ArrayList<CourseAssignment> iAssignments = new ArrayList<CourseAssignment>();
 	private ArrayList<String> iMessages = null;
 	private ArrayList<ErrorMessage> iErrors = null;
+	private Set<Note> iNotes = null;
 	private boolean iCanEnroll = true;
 	private boolean iCanSetCriticalOverrides = false;
 	private double iValue = 0.0;
@@ -139,6 +140,13 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			if (course.isAssigned() && !course.isFreeTime() && !course.isTeachingAssignment()) return true;
 		return false;
 	}
+	
+	public boolean hasNotes() { return iNotes != null && !iNotes.isEmpty(); }
+	public void addNote(Note note) {
+		if (iNotes == null) iNotes = new TreeSet<Note>();
+		iNotes.add(note);
+	}
+	public Set<Note> getNotes() { return iNotes; }
 	
 	public static class CourseAssignment implements IsSerializable, Serializable, Comparable<CourseAssignment> {
 		private static final long serialVersionUID = 1L;
@@ -1770,6 +1778,46 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof ErrorMessage)) return false;
 			return toString().equals(o.toString());
+		}
+	}
+	
+	public static class Note implements IsSerializable, Serializable, Comparable<Note> {
+		private static final long serialVersionUID = 1L;
+		private Long iId;
+		private Date iTimeStamp;
+		private String iMessage;
+		private String iOwner;
+		
+		public Note() {}
+		
+		public Long getId() { return iId; }
+		public void setId(Long id) { iId = id; }
+		
+		public Date getTimeStamp() { return iTimeStamp; }
+		public void setTimeStamp(Date date) { iTimeStamp = date; }
+		
+		public String getMessage() { return iMessage; }
+		public void setMessage(String message) { iMessage = message; }
+		
+		public String getOwner() { return iOwner; }
+		public void setOwner(String owner) { iOwner = owner; }
+		
+		@Override
+		public int hashCode() {
+			return getId().hashCode();
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof Note)) return false;
+			return getId().equals(((Note)o).getId());
+		}
+		
+		@Override
+		public int compareTo(Note other) {
+			int cmp = -getTimeStamp().compareTo(other.getTimeStamp());
+			if (cmp != 0) return cmp;
+			return getId().compareTo(other.getId());
 		}
 	}
 	

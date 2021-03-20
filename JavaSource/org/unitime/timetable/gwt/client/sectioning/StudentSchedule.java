@@ -36,6 +36,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Note;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
@@ -75,10 +76,11 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 	public static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	private static DateTimeFormat sDF = DateTimeFormat.getFormat(CONSTANTS.requestDateFormat());
+	private static DateTimeFormat sTSF = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
 	private ClassAssignmentInterface iAssignment;
 	private UniTimeTabPanel iTabs;
 	private TimeGrid iGrid;
-	private WebTable iAssignments, iRequests, iAdvReqs;
+	private WebTable iAssignments, iRequests, iAdvReqs, iNotes;
 	private boolean iOnline = false;
 	private float iTotalCredit = 0f;
 	private Map<Character, Integer> iTabAccessKeys = new HashMap<Character, Integer>();
@@ -147,6 +149,14 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 			));
 		iAssignments.setEmptyMessage(MESSAGES.emptySchedule());
 		
+		iNotes = new WebTable();
+		iNotes.setHeader(new WebTable.Row(
+				new WebTable.Cell(MESSAGES.colTimeStamp(), 1, "75px"),
+				new WebTable.Cell(MESSAGES.colNote(), 1, "400x"),
+				new WebTable.Cell(MESSAGES.colNoteAuthor(), 1, "75x")
+			));
+		iNotes.setEmptyMessage(MESSAGES.emptyNotes());
+		
 		iTabs.add(iAssignments, MESSAGES.tabClasses(), true);
 		Character ch1 = UniTimeHeaderPanel.guessAccessKey(MESSAGES.tabClasses());
 		if (ch1 != null)
@@ -158,7 +168,17 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		if (ch2 != null)
 			iTabAccessKeys.put(ch2, 3);
 		
-		iTabs.selectTab(SectioningStatusCookie.getInstance().getStudentTab());
+		if (iOnline) {
+			iTabs.add(iNotes, MESSAGES.tabNotes(), true);
+			Character ch3 = UniTimeHeaderPanel.guessAccessKey(MESSAGES.tabNotes());
+			if (ch3 != null)
+				iTabAccessKeys.put(ch3, 4);
+		}
+		
+		if (!iOnline && SectioningStatusCookie.getInstance().getStudentTab() == 4)
+			iTabs.selectTab(2);
+		else
+			iTabs.selectTab(SectioningStatusCookie.getInstance().getStudentTab());
 		
 		iTabs.addSelectionHandler(new SelectionHandler<Integer>() {
 			@Override
@@ -196,6 +216,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		fillInRequests();
 		fillInAssignments();
 		fillInTimeGrid();
+		if (iOnline) fillInNotes();
 	}
 	
 	protected String getChanges(Request request, RequestedCourse rc) {
@@ -982,6 +1003,27 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 					iAssignments.getTable().getFlexCellFormatter().setVisible(row, iAssignments.getTable().getCellCount(row) - 2, false);
 			}
 		}
+	}
+	
+	public void fillInNotes() {
+		iTabs.getTabBar().setTabEnabled(4, iAssignment.hasNotes());
+
+		ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
+		if (iAssignment.hasNotes()) {
+			for (Note note: iAssignment.getNotes()) {
+				WebTable.Row row = new WebTable.Row(
+						new WebTable.Cell(sTSF.format(note.getTimeStamp())),
+						new WebTable.Cell(note.getMessage()),
+						new WebTable.Cell(note.getOwner()));
+				rows.add(row);
+			}
+		}
+			
+		WebTable.Row[] rowArray = new WebTable.Row[rows.size()];
+		int idx = 0;
+		for (WebTable.Row row: rows) rowArray[idx++] = row;
+		
+		iNotes.setData(rowArray);
 	}
 	
 	protected void fillInTimeGrid() {

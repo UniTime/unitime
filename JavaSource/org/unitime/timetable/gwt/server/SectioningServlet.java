@@ -127,6 +127,7 @@ import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.StudentGroupType;
 import org.unitime.timetable.model.StudentInstrMthPref;
+import org.unitime.timetable.model.StudentNote;
 import org.unitime.timetable.model.StudentSectioningPref;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.SubjectArea;
@@ -1686,6 +1687,23 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							ret.getAdvisorRequest().setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value(student.getSession())));
 						if (ret.getRequest() != null)
 							ret.getRequest().setWaitListMode(wlMode);
+						
+						for (StudentNote n: student.getNotes()) {
+							ClassAssignmentInterface.Note note = new ClassAssignmentInterface.Note();
+							note.setTimeStamp(n.getTimeStamp());
+							note.setId(n.getUniqueId());
+							note.setMessage(n.getTextNote());
+							note.setOwner(n.getUserId());
+							TimetableManager manager = TimetableManager.findByExternalId(n.getUserId());
+							if (manager != null) {
+								note.setOwner(nameFormat.format(manager));
+							} else {
+								Advisor advisor = Advisor.findByExternalId(n.getUserId(), student.getSession().getUniqueId());
+								if (advisor != null) note.setOwner(nameFormat.format(advisor));
+							}
+							ret.addNote(note);
+						}
+						
 						return ret;
 					} else {
 						ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(studentId).withRequest(true).withCustomCheck(true).withAdvisorRequest(true).checkHolds(true), currentUser());
@@ -1694,6 +1712,24 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							ret.getAdvisorRequest().setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value(student.getSession())));
 						if (ret.getRequest() != null)
 							ret.getRequest().setWaitListMode(wlMode);
+						
+						NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
+						for (StudentNote n: student.getNotes()) {
+							ClassAssignmentInterface.Note note = new ClassAssignmentInterface.Note();
+							note.setTimeStamp(n.getTimeStamp());
+							note.setId(n.getUniqueId());
+							note.setMessage(n.getTextNote());
+							note.setOwner(n.getUserId());
+							TimetableManager manager = TimetableManager.findByExternalId(n.getUserId());
+							if (manager != null) {
+								note.setOwner(nameFormat.format(manager));
+							} else {
+								Advisor advisor = Advisor.findByExternalId(n.getUserId(), server.getAcademicSession().getUniqueId());
+								if (advisor != null) note.setOwner(nameFormat.format(advisor));
+							}
+							ret.addNote(note);
+						}	
+						
 						return ret;
 					}
 				} finally {

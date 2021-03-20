@@ -28,6 +28,15 @@
 	<version>4.5.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Online Student Scheduling Dashboard: Student Notes</name>
+			<description>
+				<line>Show all students notes in a new Notes tab when a student is clicked, including time stamp and the name of the user who set the note.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Event Management</title>
 		<item>
 			<name>Event Detail: Email Students</name>

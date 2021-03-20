@@ -106,6 +106,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Note")
 	String colNote();
 	
+	@DefaultMessage("Set by")
+	String colNoteAuthor();
+
 	@DefaultMessage("Notes")
 	String colNotes();
 	
@@ -538,6 +541,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("<u>T</u>ime Grid")
 	String tabTimetable();
 	
+	@DefaultMessage("<u>N</u>otes")
+	String tabNotes();
+	
 	@DefaultMessage("Course requests have been successfully submitted.")
 	String saveRequestsOK();
 	
@@ -591,6 +597,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("There is no schedule.")
 	String emptySchedule();
+	
+	@DefaultMessage("There are no notes.")
+	String emptyNotes();
 	
 	/* User Authentication messages
 	 */

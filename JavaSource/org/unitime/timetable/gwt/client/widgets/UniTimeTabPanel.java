@@ -54,7 +54,8 @@ public class UniTimeTabPanel extends TabPanel {
 	}
 
 	public void selectTab(int index) {
-		super.selectTab(index);
+		if (index < getTabBar().getTabCount())
+			super.selectTab(index);
 	}
 	
 	public HandlerRegistration addSelectionHandler(SelectionHandler<Integer> handler) {
