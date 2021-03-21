@@ -941,7 +941,12 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		}
 		public List<CodeLabel> getConcentrations() { return iConcentration; }
 		
-		public boolean hasDegree() { return iDegree != null && !iDegree.isEmpty(); }
+		public boolean hasDegree() {
+			if (iDegree == null || iDegree.isEmpty()) return false;
+			for (CodeLabel degr: iDegree)
+				if (!degr.isEmpty()) return true;
+			return false;
+		}
 		public String getDegree(String delim) { 
 			if (iDegree == null) return "";
 			String ret = "";
