@@ -1228,11 +1228,16 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 							if (!free.isEmpty()) free += ", ";
 							free += ft.toString(CONSTANTS.shortDays(), CONSTANTS.useAmPm());
 						}
+						String note = null, noteTitle = null;
+						if (check != null) {
+							note = check.getMessageWithColor(CONSTANTS.freePrefix() + free, "<br>");
+							noteTitle = check.getMessage(CONSTANTS.freePrefix() + free, "\n", "CREDIT");
+						}
 						WebTable.Row row = new WebTable.Row(
 								new WebTable.Cell(first ? MESSAGES.courseRequestsPriority(priority) : ""),
 								new WebTable.Cell(CONSTANTS.freePrefix() + free, 3, null),
 								new WebTable.Cell(""),
-								new WebTable.Cell(""),
+								new WebTable.NoteCell(note, noteTitle),
 								new WebTable.IconCell(RESOURCES.requestSaved(), MESSAGES.requested(free), MESSAGES.reqStatusRegistered()),
 								new WebTable.Cell(""),
 								new WebTable.Cell(""),

@@ -40,10 +40,12 @@ import org.restlet.resource.ResourceException;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestPriority;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
@@ -74,6 +76,7 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.model.XAdvisorRequest;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XFreeTimeRequest;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
@@ -98,6 +101,7 @@ import com.google.gson.JsonSerializer;
 public class SimplifiedCourseRequestsValidationProvider implements CourseRequestsValidationProvider, StudentHoldsCheckProvider {
 	private static Logger sLog = Logger.getLogger(SimplifiedCourseRequestsValidationProvider.class);
 	private static StudentSectioningMessages MESSAGES = Localization.create(StudentSectioningMessages.class);
+	protected static final StudentSectioningConstants CONSTANTS = Localization.create(StudentSectioningConstants.class);
 	protected static Format<Number> sCreditFormat = Formats.getNumberFormat("0.##");
 	
 	private Client iClient;
@@ -528,6 +532,28 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 			}
 		}
 		
+		for (int i = 0; i < request.getCourses().size(); i++) {
+			CourseRequestInterface.Request r = request.getCourse(i);
+			if (r.hasRequestedCourse() && r.getRequestedCourse(0).isFreeTime()) {
+				boolean hasCourse = false;
+				for (int j = i + 1; j < request.getCourses().size(); j++) {
+					CourseRequestInterface.Request q = request.getCourse(j);
+					if (q.hasRequestedCourse() && q.getRequestedCourse(0).isCourse()) {
+						hasCourse = true; break;
+					}
+				}
+				if (hasCourse) {
+					String free = "";
+					for (FreeTime ft: r.getRequestedCourse(0).getFreeTime()) {
+						if (!free.isEmpty()) free += ", ";
+						free += ft.toString(CONSTANTS.shortDays(), CONSTANTS.useAmPm());
+					}
+					request.addConfirmationMessage(0l, CONSTANTS.freePrefix() + free, "FREE-TIME",
+						ApplicationProperties.getProperty("purdue.specreg.messages.freeTimeHighPriority", "High priority free time"), ORD_UNITIME);
+				}
+			}
+		}
+		
 		String minCreditLimit = ApplicationProperties.getProperty("purdue.specreg.minCreditCheck");
 		float minCredit = 0;
 		for (CourseRequestInterface.Request r: request.getCourses()) {
@@ -898,6 +924,48 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 			}
 		}
 		
+		boolean questionFreeTime = false;
+		for (int i = 0; i < request.getCourses().size(); i++) {
+			CourseRequestInterface.Request r = request.getCourse(i);
+			if (r.hasRequestedCourse() && r.getRequestedCourse(0).isFreeTime()) {
+				boolean hasCourse = false;
+				for (int j = i + 1; j < request.getCourses().size(); j++) {
+					CourseRequestInterface.Request q = request.getCourse(j);
+					if (q.hasRequestedCourse() && q.getRequestedCourse(0).isCourse()) {
+						hasCourse = true;
+					}
+				}
+				String free = "";
+				boolean confirm = false;
+				for (FreeTime ft: r.getRequestedCourse(0).getFreeTime()) {
+					if (!free.isEmpty()) free += ", ";
+					free += ft.toString(CONSTANTS.shortDays(), CONSTANTS.useAmPm());
+					if (!confirm) {
+						XFreeTimeRequest ftr = original.getRequestForFreeTime(ft);
+						if (ftr == null) {
+							confirm = true;
+						} else if (hasCourse) {
+							for (int j = i + 1; j < request.getCourses().size(); j++) {
+								CourseRequestInterface.Request q = request.getCourse(j);
+								if (q.hasRequestedCourse() && q.getRequestedCourse(0).isCourse()) {
+									XCourseRequest cr = original.getRequestForCourse(q.getRequestedCourse(0).getCourseId());
+									if (cr == null || cr.getPriority() < ftr.getPriority()) {
+										confirm = true;
+										break;
+									}
+								}
+							}
+						}
+					}
+				}
+				if (hasCourse)
+					response.addMessage(0l, CONSTANTS.freePrefix() + free, "FREE-TIME",
+						ApplicationProperties.getProperty("purdue.specreg.messages.freeTimeHighPriority", "High priority free time"),
+						confirm ? CONF_UNITIME : CONF_NONE);
+				if (confirm) questionFreeTime = true;
+			}
+		}
+		
 		String creditError = null;
 		Float maxCredit = original.getMaxCredit();
 		if (maxCredit == null) maxCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"));
@@ -970,9 +1038,14 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 					"One or more of the newly requested courses have no residential option at the moment. You may not be able to get a full schedule because becasue you are not allowed to take these courses."),
 					CONF_UNITIME, 6);
 		}
+		if (questionFreeTime) {
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.freeTimeRequested", (creditError != null || questionNoAlt || questionDropCritical || questionMissingAdvisorCritical || questionRestrictionsNotMet ? "\n" : "") +
+					"The Free Time request will be considered a time block during the preregistration process. If the Free Time request is placed higher than a traditional course, you may not receive a full schedule."),
+					CONF_UNITIME, 7);
+		}
 		
-		if (creditError != null || questionNoAlt || questionDropCritical || questionMissingAdvisorCritical || questionRestrictionsNotMet)
-			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.confirmation", "\nDo you want to proceed?"), CONF_UNITIME, 7);
+		if (creditError != null || questionNoAlt || questionDropCritical || questionMissingAdvisorCritical || questionRestrictionsNotMet || questionFreeTime)
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.confirmation", "\nDo you want to proceed?"), CONF_UNITIME, 8);
 
 		Set<Integer> conf = response.getConfirms();
 		if (conf.contains(CONF_UNITIME)) {

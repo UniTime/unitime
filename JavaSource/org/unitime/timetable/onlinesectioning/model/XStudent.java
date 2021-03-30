@@ -45,6 +45,7 @@ import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Request;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.CourseDemand;
@@ -332,6 +333,16 @@ public class XStudent extends XStudentId implements Externalizable {
     	for (XRequest request: iRequests)
     		if (request instanceof XCourseRequest && ((XCourseRequest)request).hasCourse(courseId))
     			return (XCourseRequest)request;
+    	return null;
+    }
+    
+    public XFreeTimeRequest getRequestForFreeTime(CourseRequestInterface.FreeTime ft) {
+    	for (XRequest request: iRequests) {
+    		if (request instanceof XFreeTimeRequest) {
+    			XFreeTimeRequest ftRequest = (XFreeTimeRequest)request;
+    			if (ftRequest.getTime() != null && ftRequest.getTime().equals(ft)) return ftRequest; 
+    		}
+    	}
     	return null;
     }
     

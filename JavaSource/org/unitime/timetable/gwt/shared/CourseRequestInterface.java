@@ -348,7 +348,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		public int getDayCode() {
 			int ret = 0;
 			for (int day: iDays)
-				ret += (1 << day);
+				ret += (1 << (6 - day));
 			return ret;
 		}
 		

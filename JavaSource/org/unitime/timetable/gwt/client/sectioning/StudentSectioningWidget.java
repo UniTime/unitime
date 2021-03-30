@@ -3242,11 +3242,15 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (!free.isEmpty()) free += ", ";
 						free += ft.toString(CONSTANTS.shortDays(), CONSTANTS.useAmPm());
 					}
+					String note = null;
+					if (check != null)
+						note = check.getMessage(CONSTANTS.freePrefix() + free, "<br>");
+					P messages = new P("text-pre-wrap"); messages.setText(note);
 					WebTable.Row row = new WebTable.Row(
 							new WebTable.Cell(first ? MESSAGES.courseRequestsPriority(priority) : ""),
 							new WebTable.Cell(CONSTANTS.freePrefix() + free, 3, null),
 							new WebTable.Cell(""),
-							new WebTable.Cell(""),
+							new WebTable.WidgetCell(messages, note),
 							new WebTable.IconCell(RESOURCES.requestSaved(), MESSAGES.requested(free), MESSAGES.reqStatusRegistered()),
 							new WebTable.Cell(""));
 					if (priority > 1 && first)

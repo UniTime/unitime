@@ -34,6 +34,7 @@ import org.cpsolver.coursett.model.TimeLocation;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.gwt.server.DayCode;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.FreeTime;
@@ -205,6 +206,10 @@ public class XTime implements Serializable, Externalizable {
     	if (o instanceof TimeLocation) {
     		TimeLocation t = (TimeLocation)o;
     		return getDays() == t.getDayCode() && getSlot() == t.getStartSlot() && getLength() == t.getLength() && getWeeks().equals(t.getWeekCode());
+    	}
+    	if (o instanceof CourseRequestInterface.FreeTime) {
+    		CourseRequestInterface.FreeTime ft = (CourseRequestInterface.FreeTime)o;
+    		return getDays() == ft.getDayCode() && getSlot() == ft.getStart() && getLength() == ft.getLength();
     	}
     	return false;
     }
