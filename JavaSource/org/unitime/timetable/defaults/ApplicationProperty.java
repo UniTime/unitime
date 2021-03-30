@@ -75,6 +75,7 @@ import org.unitime.timetable.onlinesectioning.custom.StudentEmailProvider;
 import org.unitime.timetable.onlinesectioning.custom.SectionLimitProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentHoldsCheckProvider;
+import org.unitime.timetable.onlinesectioning.custom.VariableTitleCourseProvider;
 import org.unitime.timetable.spring.ldap.SpringLdapExternalUidLookup;
 import org.unitime.timetable.spring.ldap.SpringLdapExternalUidTranslation;
 
@@ -1231,6 +1232,12 @@ public enum ApplicationProperty {
 	@DefaultValue("org.unitime.timetable.util.DefaultExternalClassLookup")
 	@Since(4.3)
 	CustomizationExternalClassLookup("unitime.custom.ExternalClassLookup"),
+	
+	@Type(Class.class)
+	@Implements(VariableTitleCourseProvider.class)
+	@Description("Customization: variable title course provider")
+	@Since(4.5)
+	CustomizationVariableTitleCourseProvider("unitime.custom.VariableTitleCourseProvider"),
 	
 	@Type(Class.class)
 	@Implements(ExternalLinkLookup.class)

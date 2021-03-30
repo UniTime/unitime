@@ -95,6 +95,9 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpeci
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseInfo;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseResponse;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpart;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.model.Advisor;
@@ -182,6 +185,7 @@ import org.unitime.timetable.onlinesectioning.custom.RequestStudentUpdates;
 import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationDashboardUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEmailProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentHoldsCheckProvider;
+import org.unitime.timetable.onlinesectioning.custom.VariableTitleCourseProvider;
 import org.unitime.timetable.onlinesectioning.match.AbstractCourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -193,6 +197,7 @@ import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction;
 import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationCancel;
 import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationChangeGradeModes;
 import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationEligibility;
+import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationRequestVariableTitleCourse;
 import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationRetrieveAll;
 import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationRetrieveGradeModes;
 import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationSubmit;
@@ -738,7 +743,14 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					courseOffering.getSubjectAreaAbbv(), courseOffering.getCourseNbr());
 		} else {
 			XCourseId c = server.getCourse(course);
-			if (c == null) throw new SectioningException(MSG.exceptionCourseDoesNotExist(course));
+			if (c == null) {
+				if (course.indexOf(' ') >= 0) {
+					return getCourseDetailsProvider().getDetails(
+							new AcademicSessionInfo(SessionDAO.getInstance().get(cx.getSessionId())),
+							course.substring(0, course.indexOf(' ')), course.substring(course.indexOf(' ') + 1));
+				}
+				throw new SectioningException(MSG.exceptionCourseDoesNotExist(course));
+			}
 			return server.getCourseDetails(c.getCourseId(), getCourseDetailsProvider());
 		}
 	}
@@ -2953,6 +2965,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							getSessionContext().hasPermissionAnyAuthority(cx.getStudentId(), "Student", Right.StudentSchedulingCanRequirePreferences)), currentUser(cx));
 			if (includeCustomCheck) getSessionContext().setAttribute(SessionAttribute.OnlineSchedulingEligibility, ret);
 			
+			// FIXME: this is a hack, do not commit
+			ret.setFlag(EligibilityFlag.CAN_REQUEST_VAR_TITLE_COURSE, true);
+			
 			return ret;
 		} catch (Exception e) {
 			sLog.error(e.getMessage(), e);
@@ -3722,5 +3737,56 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			}
 		}
 		return ret;
+	}
+
+	@Override
+	public Collection<VariableTitleCourseInfo> listVariableTitleCourses(StudentSectioningContext cx, String query, int limit) throws SectioningException, PageAccessException {
+		checkContext(cx);
+		if (cx.getSessionId() == null) throw new PageAccessException(MSG.exceptionNoAcademicSession());
+		if (cx.getStudentId() == null) throw new PageAccessException(MSG.exceptionNoStudent());
+		getSessionContext().checkPermissionAnyAuthority(cx.getStudentId(), "Student", Right.StudentSchedulingCanEnroll);
+		
+		OnlineSectioningServer server = getServerInstance(cx.getSessionId(), false);
+		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+		if (!server.getAcademicSession().isSectioningEnabled() || !Customization.VariableTitleCourseProvider.hasProvider())
+			throw new SectioningException(MSG.exceptionNotSupportedFeature());
+
+		VariableTitleCourseProvider provider = Customization.VariableTitleCourseProvider.getProvider();
+		OnlineSectioningHelper helper = new OnlineSectioningHelper(SessionDAO.getInstance().getSession(), currentUser(cx));
+		
+		return provider.getVariableTitleCourses(query, limit, server, helper);
+	}
+	
+	@Override
+	public VariableTitleCourseInfo getVariableTitleCourse(StudentSectioningContext cx, String course) throws SectioningException, PageAccessException {
+		checkContext(cx);
+		if (cx.getSessionId() == null) throw new PageAccessException(MSG.exceptionNoAcademicSession());
+		if (cx.getStudentId() == null) throw new PageAccessException(MSG.exceptionNoStudent());
+		getSessionContext().checkPermissionAnyAuthority(cx.getStudentId(), "Student", Right.StudentSchedulingCanEnroll);
+		
+		OnlineSectioningServer server = getServerInstance(cx.getSessionId(), false);
+		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+		if (!server.getAcademicSession().isSectioningEnabled() || !Customization.VariableTitleCourseProvider.hasProvider())
+			throw new SectioningException(MSG.exceptionNotSupportedFeature());
+
+		VariableTitleCourseProvider provider = Customization.VariableTitleCourseProvider.getProvider();
+		OnlineSectioningHelper helper = new OnlineSectioningHelper(SessionDAO.getInstance().getSession(), currentUser(cx));
+		
+		return provider.getVariableTitleCourse(course, server, helper);
+	}
+
+	@Override
+	public VariableTitleCourseResponse requestVariableTitleCourse(VariableTitleCourseRequest request) throws SectioningException, PageAccessException {
+		checkContext(request);
+		if (request.getSessionId() == null) throw new PageAccessException(MSG.exceptionNoAcademicSession());
+		if (request.getStudentId() == null) throw new PageAccessException(MSG.exceptionNoStudent());
+		getSessionContext().checkPermissionAnyAuthority(request.getStudentId(), "Student", Right.StudentSchedulingCanEnroll);
+		
+		OnlineSectioningServer server = getServerInstance(request.getSessionId(), false);
+		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+		if (!server.getAcademicSession().isSectioningEnabled() || !Customization.VariableTitleCourseProvider.hasProvider())
+			throw new SectioningException(MSG.exceptionNotSupportedFeature());
+		
+		return server.execute(server.createAction(SpecialRegistrationRequestVariableTitleCourse.class).withRequest(request), currentUser());
 	}
 }

@@ -807,6 +807,17 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 				if (rc.equals(course) && !rc.isInactive()) return true;
 			return false;
 		}
+		public RequestedCourse update(RequestedCourse rc) {
+			if (iRequestedCourse == null) return null;
+			for (int i = 0; i < iRequestedCourse.size(); i++) {
+				RequestedCourse old = iRequestedCourse.get(i);
+				if (rc.equals(old)) {
+					iRequestedCourse.set(i, rc);
+					return old;
+				}
+			}
+			return null;
+		}
 
 		/*
 		public List<FreeTime> getRequestedFreeTime() {

@@ -472,6 +472,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("<u>G</u>rade Modes")
 	String buttonChangeGradeModes();
 	
+	@DefaultMessage("Variable Title Course")
+	String buttonRequestVariableTitleCourse();
+	
 	@DefaultMessage("<u>V</u>ariable Credits")
 	String buttonChangeVariableCredits();
 	
@@ -489,6 +492,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Change variable credit hours of one or more courses.")
 	String hintChangeVariableCredits();
+	
+	@DefaultMessage("Request variable title course.")
+	String hintRequestVariableTitleCourse();
 	
 	@DefaultMessage("Sumbit the above enrollment changes for approval.")
 	String hintSpecialRegistration();
@@ -2523,17 +2529,29 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Variable Credits")
 	String dialogChangeVariableCredit();
 	
+	@DefaultMessage("Request Variable Title Course")
+	String dialogRequestVariableTitleCourse();
+	
 	@DefaultMessage("Retrieving available grade modes and/or variable credits...")
 	String waitRetrieveGradeModes();
 	
 	@DefaultMessage("Requesting grade mode and/or credit changes...")
 	String waitChangeGradeModes();
 	
+	@DefaultMessage("Requesting variable title course...")
+	String waitRequestVariableTitleCourse();
+	
 	@DefaultMessage("Unable to get available grade modes and/or variable credits: {0}")
 	String exceptionRetrieveGradeModes(String message);
 	
 	@DefaultMessage("Failed to request grade mode and/or variable credit changes: {0}")
 	String exceptionChangeGradeModes(String message);
+	
+	@DefaultMessage("Failed to request variable title course: {0}")
+	String exceptionRequestVariableTitleCourse(String message);
+	
+	@DefaultMessage("Failed to load request course: {0}")
+	String exceptionGetVariableTitleCourseInfo(String message);
 	
 	@DefaultMessage("No grade mode or credit changes are available.")
 	String statusNoGradeModeChangesAvailable();
@@ -2547,6 +2565,12 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Grade mode and/or credit  changes have been successfully applied.")
     String statusGradeModeChangesApplied();
 	
+	@DefaultMessage("Variable title course has been successfully requested.")
+	String statusVariableCourseRequested();
+	
+	@DefaultMessage("A variable title course meeting your selection already exists. Do you want to submit a request anyway?")
+	String questionVariableCourseAlreadyExists();
+	
 	@DefaultMessage("There are no courses with grade modes and/or variable credits.")
 	String emptyGradeChanges();
 	
@@ -2555,6 +2579,12 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Close Dialog")
 	String buttonCloseGradeModeChanges();
+	
+	@DefaultMessage("Request Course")
+	String buttonSubmitVariableTitleCourse();
+	
+	@DefaultMessage("Close Dialog")
+	String buttonCloseVariableTitleCourse();
 	
 	@DefaultMessage("The following grade mode changes are being requested:")
 	String gradeModeListChanges();
@@ -2976,4 +3006,43 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Last Used")
 	String colAdvisorNotesTime();
+	
+	@DefaultMessage("Course:")
+	String propReqVTCourseCourse();
+	
+	@DefaultMessage("Details:")
+	String propReqVTCourseDetails();
+	
+	@DefaultMessage("Title:")
+	String propReqVTCourseTitle();
+	
+	@DefaultMessage("Course title must be provided.")
+	String errorReqVTCourseNoTitle();
+	
+	@DefaultMessage("Credit:")
+	String propReqVTCourseCredit();
+	
+	@DefaultMessage("Instructor:")
+	String propReqVTCourseInstructor();
+	
+	@DefaultMessage("Grade Mode:")
+	String propReqVTCourseGradeMode();
+	
+	@DefaultMessage("Dates:")
+	String propReqVTCourseDates();
+	
+	@DefaultMessage("From: ")
+	String propReqVTCourseDatesFrom();
+	
+	@DefaultMessage("- To: ")
+	String propReqVTCourseDatesTo();
+	
+	@DefaultMessage("Note:")
+	String propReqVTCourseNote();
+	
+	@DefaultMessage("Disclaimer:")
+	String propReqVTCourseDisclaimer();
+	
+	@DefaultMessage("An example dislaimer here.\nI solemnly swear that i am up to no good.")
+	String disclaimerRequestVariableTitle();
 }
