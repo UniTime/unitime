@@ -742,6 +742,26 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		}
 	}
 	
+	public boolean updateCourse(RequestedCourse rc) {
+		for (final CourseRequestLine line: iCourses) {
+			Request request = line.getValue();
+			if (request != null && request.hasRequestedCourse(rc)) {
+				request.update(rc);
+				line.setValue(request);
+				return true;
+			}
+		}
+		for (final CourseRequestLine line: iAlternatives) {
+			Request request = line.getValue();
+			if (request != null && request.hasRequestedCourse(rc)) {
+				request.update(rc);
+				line.setValue(request);
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public void dropCourse(ClassAssignmentInterface.ClassAssignment assignment) {
 		if (assignment.isFreeTime() && assignment.isAssigned()) {
 			FreeTime ft = new FreeTime(assignment.getDays(), assignment.getStart(), assignment.getLength());

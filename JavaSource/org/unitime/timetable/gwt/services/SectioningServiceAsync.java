@@ -57,6 +57,9 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpeci
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseInfo;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseResponse;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -129,4 +132,7 @@ public interface SectioningServiceAsync {
 	void lastAdvisorNotes(StudentSectioningContext cx, AsyncCallback<List<AdvisorNote>> callback) throws SectioningException, PageAccessException;
 	void getChangeLogTexts(Collection<Long> logIds, AsyncCallback<Map<Long, String>> callback) throws SectioningException, PageAccessException;
 	void getChangeLogMessage(Long logId, AsyncCallback<String> callback) throws SectioningException, PageAccessException;
+	void listVariableTitleCourses(StudentSectioningContext cx, String query, int limit, AsyncCallback<Collection<VariableTitleCourseInfo>> callback) throws SectioningException, PageAccessException;
+	void getVariableTitleCourse(StudentSectioningContext cx, String course, AsyncCallback<VariableTitleCourseInfo> callback) throws SectioningException, PageAccessException;
+	void requestVariableTitleCourse(VariableTitleCourseRequest request, AsyncCallback<VariableTitleCourseResponse> callback) throws SectioningException, PageAccessException;
 }

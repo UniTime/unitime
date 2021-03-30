@@ -100,6 +100,7 @@ import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationDashboardUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationProvider;
@@ -2046,6 +2047,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					check.setFlag(EligibilityFlag.SR_EXTENDED, check.hasOverride("EX-ADD") || check.hasOverride("EX-DROP"));
 					check.setFlag(EligibilityFlag.CAN_CHANGE_GRADE_MODE, check.hasOverride("GMODE"));
 					check.setFlag(EligibilityFlag.CAN_CHANGE_VAR_CREDIT, check.hasOverride("VARCR"));
+					check.setFlag(EligibilityFlag.CAN_REQUEST_VAR_TITLE_COURSE, check.hasOverride("VARTL") && Customization.VariableTitleCourseProvider.hasProvider());
 				}
 			} else {
 				check.setFlag(EligibilityFlag.CAN_SPECREG, false);

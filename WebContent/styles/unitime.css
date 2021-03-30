@@ -6938,3 +6938,51 @@ unitime-RoomSharingWidget .legend .blank {
   	border-bottom: 1px dashed black;
   	color: black;
 }
+
+.unitime-RequestVariableTitleCourseDialog .disclaimer {
+	display: block;
+	white-space: pre-wrap;
+	text-align: justify;
+	margin-left: 20px;
+	text-indent: -20px;
+}
+
+.unitime-RequestVariableTitleCourseDialog .course {
+	width: 500px;
+}
+
+.unitime-RequestVariableTitleCourseDialog .details {
+	border: 1px solid #9CB0CE;
+	width: 500px;
+	max-height: 150px;
+	overflow: scroll;
+}
+
+.unitime-RequestVariableTitleCourseDialog .details .unitime-MainTableHeader {
+	display: none;
+}
+
+.unitime-RequestVariableTitleCourseDialog .details td {
+	font-size: x-small;
+}
+
+.unitime-RequestVariableTitleCourseDialog .details .unitime-ErrorMessage {
+	font-size: x-small;
+}
+
+.unitime-RequestVariableTitleCourseDialog .title {
+	width: 500px;
+}
+
+.unitime-RequestVariableTitleCourseDialog .dates .from {
+	display: inline-block;
+	vertical-align: top;
+	padding-right: 2px;
+}
+
+.unitime-RequestVariableTitleCourseDialog .dates .to {
+	display: inline-block;
+	vertical-align: top;
+	padding-left: 10px;
+	padding-right: 2px;
+}

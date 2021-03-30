@@ -50,6 +50,9 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpeci
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseInfo;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseResponse;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisingStudentDetails;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisorCourseRequestSubmission;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisorNote;
@@ -130,4 +133,7 @@ public interface SectioningService extends RemoteService {
 	List<AdvisorNote> lastAdvisorNotes(StudentSectioningContext cx) throws SectioningException, PageAccessException;
 	Map<Long, String> getChangeLogTexts(Collection<Long> logIds) throws SectioningException, PageAccessException;
 	String getChangeLogMessage(Long logId) throws SectioningException, PageAccessException;
+	Collection<VariableTitleCourseInfo> listVariableTitleCourses(StudentSectioningContext cx, String query, int limit) throws SectioningException, PageAccessException;
+	VariableTitleCourseInfo getVariableTitleCourse(StudentSectioningContext cx, String course) throws SectioningException, PageAccessException;
+	VariableTitleCourseResponse requestVariableTitleCourse(VariableTitleCourseRequest request) throws SectioningException, PageAccessException;
 }

@@ -42,6 +42,7 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSection
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
+import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 
 /**
  * @author Tomas Muller
@@ -1087,5 +1088,229 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public boolean hasMessage() { return iMessage != null && !iMessage.isEmpty(); }
 		public String getMessage() { return iMessage; }
 		public void setMessage(String message) { iMessage = message; }
+	}	public static class InstructorInfo implements IsSerializable, Serializable, Comparable<InstructorInfo>  {
+		private static final long serialVersionUID = 1L;
+		private Long iInstructorId;
+		private String iInstructorName;
+		
+		public InstructorInfo() {}
+		public InstructorInfo(Long id, String name) {
+			iInstructorId = id;
+			iInstructorName = name;
+		}
+		
+		public Long getId() { return iInstructorId; }
+		public void setId(Long id) { iInstructorId = id; }
+		
+		public String getName() { return iInstructorName; }
+		public void setName(String name) { iInstructorName = name; }
+		
+		@Override
+		public int hashCode() { return getId().hashCode(); }
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof InstructorInfo)) return false;
+			return getId().equals(((InstructorInfo)o).getId());
+		}
+		
+		@Override
+		public int compareTo(InstructorInfo i) {
+			int cmp = getName().compareTo(i.getName());
+			if (cmp != 0) return cmp;
+			return getId().compareTo(i.getId());
+		}
+		
+		@Override
+		public String toString() {
+			return getName();
+		}
+	}
+	
+	public static class VariableTitleCourseInfo implements IsSerializable, Serializable, Suggestion, Comparable<VariableTitleCourseInfo>  {
+		private static final long serialVersionUID = 1L;
+		private String iTitle;
+		private String iSubject, iCourseNbr;
+		private String iDefaultGradeModeCode;
+		private Set<GradeMode> iGradeModes;
+		private Set<Float> iAvailableCredits;
+		private Date iStartDate, iEndDate;
+		private Set<InstructorInfo> iInstructors;
+		private String iDetails;
+		private String iDisclaimer;
+		
+		public VariableTitleCourseInfo() {}
+		
+		public String getTitle() { return iTitle; }
+		public void setTitle(String title) { iTitle = title; }
+		public boolean hasTitle() { return iTitle != null && !iTitle.isEmpty(); }
+		
+		public String getSubject() { return iSubject; }
+		public void setSubject(String subject) { iSubject = subject; }
+		public String getCourseNbr() { return iCourseNbr; }
+		public void setCourseNbr(String courseNbr) { iCourseNbr = courseNbr; }
+		public String getCourseName() { return getSubject() + " " + getCourseNbr(); }
+		
+		public String getDefaultGradeModeCode() { return iDefaultGradeModeCode; }
+		public void setDefaultGradeModeCode(String gmCode) { iDefaultGradeModeCode = gmCode; }
+		public GradeMode getDefaultGradeMode() {
+			if (iDefaultGradeModeCode == null || !hasGradeModes()) return null;
+			for (GradeMode gm: iGradeModes)
+				if (iDefaultGradeModeCode.equals(gm.getCode())) return gm;
+			return null;
+		}
+		
+		public boolean hasGradeModes() { return iGradeModes != null && !iGradeModes.isEmpty(); }
+		public void addGradeMode(GradeMode gradeMode) {
+			if (iGradeModes == null) iGradeModes = new TreeSet<GradeMode>();
+			iGradeModes.add(gradeMode);
+		}
+		public Set<GradeMode> getGradeModes() { return iGradeModes; }
+		
+		public boolean hasAvailableCredits() { return iAvailableCredits != null && !iAvailableCredits.isEmpty(); }
+		public void addAvailableCredit(Float credit) {
+			if (iAvailableCredits == null) iAvailableCredits = new TreeSet<Float>();
+			iAvailableCredits.add(credit);
+		}
+		public Set<Float> getAvailableCredits() { return iAvailableCredits; }
+		
+		public Date getStartDate() { return iStartDate; }
+		public void setStartDate(Date date) { iStartDate = date; }
+		public Date getEndDate() { return iEndDate; }
+		public void setEndDate(Date date) { iEndDate = date; }
+		
+		public boolean hasInstructors() { return iInstructors != null && !iInstructors.isEmpty(); }
+		public void addInstructor(Long id, String name) {
+			if (iInstructors == null) iInstructors = new TreeSet<InstructorInfo>();
+			iInstructors.add(new InstructorInfo(id, name));
+		}
+		public Set<InstructorInfo> getInstructors() { return iInstructors; }
+		public void setInstructors(Set<InstructorInfo> instructors) { iInstructors = instructors; }
+		
+		public String getDetails() { return iDetails; }
+		public void setDetails(String details) { iDetails = details; }
+		public boolean hasDetails() { return iDetails != null && !iDetails.isEmpty(); }
+		
+		public String getDisclaimer() { return iDisclaimer; }
+		public void setDisclaimer(String disclaimer) { iDisclaimer = disclaimer; }
+		public boolean hasDisclaimer() { return iDisclaimer != null && !iDisclaimer.isEmpty(); }
+		
+		@Override
+		public int hashCode() { return getCourseName().hashCode(); }
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof VariableTitleCourseInfo)) return false;
+			return getCourseName().equals(((VariableTitleCourseInfo)o).getCourseName());
+		}
+		
+		@Override
+		public int compareTo(VariableTitleCourseInfo c) {
+			return getCourseName().compareTo(c.getCourseName());
+		}
+		
+		@Override
+		public String toString() {
+			return getCourseName();
+		}
+
+		@Override
+		public String getDisplayString() {
+			return getCourseName() + (hasTitle() ? " - " + getTitle() : "");
+		}
+
+		@Override
+		public String getReplacementString() {
+			return getCourseName() + (hasTitle() ? " - " + getTitle() : "");
+		}
+	}
+	
+	public static class VariableTitleCourseRequest extends StudentSectioningContext {
+		private static final long serialVersionUID = 1L;
+		private VariableTitleCourseInfo iCourse;
+		private String iTitle;
+		private InstructorInfo iInstructor;
+		private Float iCredit;
+		private String iNote;
+		private Date iStartDate, iEndDate;
+		private boolean iCheckIfExists = true;
+		private String iGradeMode;
+		
+		public VariableTitleCourseRequest() {}
+		public VariableTitleCourseRequest(StudentSectioningContext cx) {
+			super(cx);
+		}
+		
+		public VariableTitleCourseInfo getCourse() { return iCourse; }
+		public void setCourse(VariableTitleCourseInfo course) { iCourse = course; }
+		
+		public String getTitle() { return iTitle; }
+		public void setTitle(String title) { iTitle = title; }
+		public boolean hasTitle() { return iTitle != null && !iTitle.isEmpty(); }
+		
+		public InstructorInfo getInstructor() { return iInstructor; }
+		public void setInstructor(InstructorInfo instructor) { iInstructor = instructor; }
+		
+		public String getGradeModeCode() { return iGradeMode; }
+		public void setGradeModeCode(String code) { iGradeMode = code; }
+		public boolean hasGradeMode() { return iGradeMode != null && !iGradeMode.isEmpty(); }
+		
+		public Float getCredit() { return iCredit; }
+		public void setCredit(Float credit) { iCredit = credit; }
+		
+		public String getNote() { return iNote; }
+		public void setNote(String note) { iNote = note; }
+		public boolean hasNote() { return iNote != null && !iNote.isEmpty(); }
+		
+		public Date getStartDate() {
+			if (iStartDate == null) return getCourse().getStartDate();
+			return iStartDate;
+		}
+		public void setStartDate(Date date) { iStartDate = date; }
+		
+		public Date getEndDate() {
+			if (iEndDate == null) return getCourse().getEndDate();
+			return iEndDate;
+		}
+		public void setEndDate(Date date) { iEndDate = date; }
+		
+		public boolean isCheckIfExists() { return iCheckIfExists; }
+		public void setCheckIfExists(boolean check) { iCheckIfExists = check; }
+	}
+	
+	public static class VariableTitleCourseResponse implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		private RequestedCourse iCourse = null;
+		private List<RetrieveSpecialRegistrationResponse> iRequests = null;
+		private Set<String> iCancelRequestIds = null;
+		
+		public VariableTitleCourseResponse() {}
+		public VariableTitleCourseResponse(RequestedCourse rc) {
+			iCourse = rc;
+		}
+		
+		public RequestedCourse getCourse() { return iCourse; }
+		public void setCourse(RequestedCourse course) { iCourse = course; }
+		
+		public boolean hasRequests() { return iRequests != null && !iRequests.isEmpty(); }
+		public void addRequest(RetrieveSpecialRegistrationResponse request) {
+			if (iRequests == null) iRequests = new ArrayList<RetrieveSpecialRegistrationResponse>();
+			iRequests.add(request);
+		}
+		public List<RetrieveSpecialRegistrationResponse> getRequests() { return iRequests; }
+		public boolean hasRequest(String requestId) {
+			if (iRequests == null) return false;
+			for (RetrieveSpecialRegistrationResponse r: iRequests)
+				if (r.getRequestId().equals(requestId)) return true;
+			return false;
+		}
+		
+		public void addCancelRequestId(String id) {
+			if (iCancelRequestIds == null) iCancelRequestIds = new HashSet<String>();
+			iCancelRequestIds.add(id);
+		}
+		public boolean hasCancelRequestIds() { return iCancelRequestIds != null && !iCancelRequestIds.isEmpty(); }
+		public Set<String> getCancelRequestIds() { return iCancelRequestIds; }
+		public boolean isToBeCancelled(String requestId) { return iCancelRequestIds != null && iCancelRequestIds.contains(requestId); }
 	}
 }
