@@ -1040,7 +1040,7 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 		}
 		if (questionFreeTime) {
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.freeTimeRequested", (creditError != null || questionNoAlt || questionDropCritical || questionMissingAdvisorCritical || questionRestrictionsNotMet ? "\n" : "") +
-					"The Free Time request will be considered a time block during the preregistration process. If the Free Time request is placed higher than a traditional course, you may not receive a full schedule."),
+					"Free time requests will be considered as time blocks during the pre-registration process. When possible, classes should be avoided during free time. However, if a free time request is placed higher than a course, the course cannot be attended during free time and you may not receive a full schedule."),
 					CONF_UNITIME, 7);
 		}
 		
