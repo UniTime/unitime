@@ -353,6 +353,22 @@ public class XStudent extends XStudentId implements Externalizable {
     	return null;
     }
     
+    public XAdvisorRequest getAdvisorRequestForCourse(Long courseId) {
+    	if (iAdvisorRequests == null) return null;
+    	for (XAdvisorRequest request: iAdvisorRequests)
+    		if (request.hasCourseId() && request.getCourseId().getCourseId().equals(courseId))
+    			return request;
+    	return null;
+    }
+    
+    public XAdvisorRequest getAdvisorRequestForFreeTime(CourseRequestInterface.FreeTime ft) {
+    	if (iAdvisorRequests == null) return null;
+    	for (XAdvisorRequest request: iAdvisorRequests)
+    		if (request.hasFreeTime() && request.getFreeTime().equals(ft))
+    			return request;
+    	return null;
+    }
+    
     public Float getMaxCredit() { return iMaxCredit; }
     public boolean hasMaxCredit() { return iMaxCredit != null; }
     public void setMaxCredit(Float maxCredit) { iMaxCredit = maxCredit; }

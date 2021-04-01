@@ -122,6 +122,7 @@ public interface SectioningService extends RemoteService {
 	Collection<AcademicSessionInfo> getStudentSessions(String studentExternalId) throws SectioningException, PageAccessException;
 	AdvisingStudentDetails getStudentAdvisingDetails(Long sessionId, String studentExternalId) throws SectioningException, PageAccessException;
 	StudentInfo getStudentInfo(Long studentId) throws SectioningException, PageAccessException;
+	CheckCoursesResponse checkAdvisingDetails(AdvisingStudentDetails details) throws SectioningException, PageAccessException;
 	AdvisorCourseRequestSubmission submitAdvisingDetails(AdvisingStudentDetails details, boolean emailStudent) throws SectioningException, PageAccessException;
 	CourseRequestInterface getAdvisorRequests(StudentSectioningContext cx) throws SectioningException, PageAccessException;
 	List<ReservationInterface> getReservations(boolean online, Long offeringId) throws ReservationException, PageAccessException;

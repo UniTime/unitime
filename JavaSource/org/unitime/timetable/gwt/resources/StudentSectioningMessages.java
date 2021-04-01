@@ -2713,6 +2713,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Advisor Course Recommendations")
 	String pdfHeaderAdvisorCourseRequests();
 	
+	@DefaultMessage("Validating...")
+	String advisorCourseRequestsValidating();
+	
 	@DefaultMessage("Saving...")
 	String advisorCourseRequestsSaving();
 	
@@ -2757,6 +2760,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Submit failed: {0}")
 	String advisorRequestsSubmitFailed(String reason);
+	
+	@DefaultMessage("Validation failed: {0}")
+	String advisorRequestsValidationFailed(String reason);
 	
 	@DefaultMessage("Email failed: {0}")
 	String advisorRequestsEmailFailed(String reason);

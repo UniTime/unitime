@@ -541,6 +541,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			iEmailOptionalToggleDefault = clone.iEmailOptionalToggleDefault;
 			iMode = clone.iMode;
 			iCanRequire = clone.iCanRequire;
+			iAvailableStatuses = clone.iAvailableStatuses; 
 		}
 		
 		public Long getStudentId() { return iStudentId; }

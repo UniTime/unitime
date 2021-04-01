@@ -149,6 +149,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.advisors.AdvisorCourseRequestsSubmit;
+import org.unitime.timetable.onlinesectioning.advisors.AdvisorCourseRequestsValidate;
 import org.unitime.timetable.onlinesectioning.advisors.AdvisorGetCourseRequests;
 import org.unitime.timetable.onlinesectioning.basic.CheckCourses;
 import org.unitime.timetable.onlinesectioning.basic.CheckEligibility;
@@ -3513,6 +3514,16 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 		
 		return ret;
+	}
+	
+	@Override
+	public CheckCoursesResponse checkAdvisingDetails(AdvisingStudentDetails details) throws SectioningException, PageAccessException {
+		getSessionContext().checkPermissionAnySession(details.getSessionId(), Right.AdvisorCourseRequests);
+		
+		OnlineSectioningServer server = getServerInstance(details.getSessionId(), true);
+		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+		
+		return server.execute(server.createAction(AdvisorCourseRequestsValidate.class).withDetails(details), currentUser());
 	}
 
 	@Override

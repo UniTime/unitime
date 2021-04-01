@@ -57,6 +57,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningActionFactory;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.custom.AdvisorCourseRequestsValidationProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseMatcherProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseRequestsProvider;
@@ -1180,6 +1181,11 @@ public enum ApplicationProperty {
 	@Implements(CourseRequestsValidationProvider.class)
 	@Description("Customization: student course requests validation provider (interface CourseRequestsValidationProvider, used by Student Course Requests when the entered data are being validated)")
 	CustomizationCourseRequestsValidation("unitime.custom.CourseRequestsValidationProvider"),
+	
+	@Type(Class.class)
+	@Implements(AdvisorCourseRequestsValidationProvider.class)
+	@Description("Customization: advisor course requests validation provider (interface AdvisorCourseRequestsValidationProvider, used by Advisor Course Recommendations when the entered data are being validated)")
+	CustomizationAdvisorsCourseRequestsValidation("unitime.custom.AdvisorCourseRequestsValidationProvider"),
 	
 	@Type(Class.class)
 	@Implements(DegreePlansProvider.class)

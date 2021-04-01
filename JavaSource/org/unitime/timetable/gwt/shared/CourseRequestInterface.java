@@ -1248,7 +1248,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			if (iErrorMessage == null) iErrorMessage = message;
 			else if (!iErrorMessage.contains(message)) iErrorMessage += "\n" + message;
 		}
-		public String getErrorMessaeg() { return iErrorMessage; }
+		public String getErrorMessage() { return iErrorMessage; }
 		
 		public boolean hasCreditWarning() { return iCreditWarning != null && !iCreditWarning.isEmpty(); }
 		public String getCreditWarning() { return iCreditWarning; }
