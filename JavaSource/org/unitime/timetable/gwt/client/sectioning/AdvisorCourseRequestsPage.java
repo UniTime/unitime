@@ -1100,7 +1100,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		sSectioningService.checkAdvisingDetails(details, new AsyncCallback<CourseRequestInterface.CheckCoursesResponse>() {
 			
 			@Override
-			public void onSuccess(CheckCoursesResponse result) {
+			public void onSuccess(final CheckCoursesResponse result) {
 				LoadingWidget.getInstance().hide();
 				if (result == null) {
 					save(details);

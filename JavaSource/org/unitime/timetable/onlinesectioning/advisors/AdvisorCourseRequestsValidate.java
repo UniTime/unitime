@@ -52,8 +52,8 @@ public class AdvisorCourseRequestsValidate implements OnlineSectioningAction<Che
 	@Override
 	public CheckCoursesResponse execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		try {
-		
-			OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
+			
+			OnlineSectioningLog.Action.Builder action = helper.getAction();
 			action.setStudent(OnlineSectioningLog.Entity.newBuilder()
 				.setUniqueId(getDetails().getStudentId())
 				.setExternalId(getDetails().getStudentExternalId())
@@ -78,28 +78,15 @@ public class AdvisorCourseRequestsValidate implements OnlineSectioningAction<Che
 			provider.validateAdvisorRecommendations(server, helper, getDetails(), ret);
 			
 			if (ret.hasMessages())
-				for (CourseMessage cm: ret.getMessages())
-					if (cm.hasCourse()) {
-						action.addMessage(OnlineSectioningLog.Message.newBuilder()
-								.setLevel(cm.isError() ? OnlineSectioningLog.Message.Level.ERROR : cm.isConfirm() ? OnlineSectioningLog.Message.Level.WARN : OnlineSectioningLog.Message.Level.INFO)
-								.setText(cm.toString())
-								.setTimeStamp(System.currentTimeMillis()));
-					}
+				for (CourseMessage m: ret.getMessages())
+					if (m.hasCourse())
+						action.addMessageBuilder().setText(m.toString()).setLevel(m.isError() ? OnlineSectioningLog.Message.Level.ERROR : m.isConfirm() ? OnlineSectioningLog.Message.Level.WARN : OnlineSectioningLog.Message.Level.INFO);
 			if (ret.hasCreditNote())
-				action.addMessage(OnlineSectioningLog.Message.newBuilder()
-						.setLevel(OnlineSectioningLog.Message.Level.INFO)
-						.setText(ret.getCreditNote())
-						.setTimeStamp(System.currentTimeMillis()));
+				action.addMessageBuilder().setText(ret.getCreditNote()).setLevel(OnlineSectioningLog.Message.Level.INFO);
 			if (ret.hasCreditWarning())
-				action.addMessage(OnlineSectioningLog.Message.newBuilder()
-						.setLevel(OnlineSectioningLog.Message.Level.WARN)
-						.setText(ret.getCreditWarning())
-						.setTimeStamp(System.currentTimeMillis()));
+				action.addMessageBuilder().setText(ret.getCreditWarning()).setLevel(OnlineSectioningLog.Message.Level.WARN);
 			if (ret.hasErrorMessage())
-				action.addMessage(OnlineSectioningLog.Message.newBuilder()
-						.setLevel(OnlineSectioningLog.Message.Level.ERROR)
-						.setText(ret.getErrorMessage())
-						.setTimeStamp(System.currentTimeMillis()));
+				action.addMessageBuilder().setText(ret.getErrorMessage()).setLevel(OnlineSectioningLog.Message.Level.ERROR);
 			
 			if (ret.isError())
 				action.setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
