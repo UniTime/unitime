@@ -257,35 +257,35 @@ SLF4J LOG4J-12 Binding (slf4j-log4j12-1.7.12.jar)
 	under MIT License
 	http://www.slf4j.org
 
-Spring AOP (spring-aop-4.3.18.RELEASE.jar)
+Spring AOP (spring-aop-4.3.30.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Beans (spring-beans-4.3.18.RELEASE.jar)
+Spring Beans (spring-beans-4.3.30.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Context (spring-context-4.3.18.RELEASE.jar)
+Spring Context (spring-context-4.3.30.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Context Support (spring-context-support-4.3.20.RELEASE.jar)
+Spring Context Support (spring-context-support-4.3.30.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Core (spring-core-4.3.18.RELEASE.jar)
+Spring Core (spring-core-4.3.30.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Expression Language (SpEL) (spring-expression-4.3.18.RELEASE.jar)
+Spring Expression Language (SpEL) (spring-expression-4.3.30.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring JDBC (spring-jdbc-4.3.18.RELEASE.jar)
+Spring JDBC (spring-jdbc-4.3.30.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Messaging (spring-messaging-4.3.20.RELEASE.jar)
+Spring Messaging (spring-messaging-4.3.30.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
@@ -293,11 +293,11 @@ Spring Struts (spring-struts-3.2.18.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/SpringSource/spring-framework
 
-Spring Transaction (spring-tx-4.3.18.RELEASE.jar)
+Spring Transaction (spring-tx-4.3.30.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Web (spring-web-4.3.18.RELEASE.jar)
+Spring Web (spring-web-4.3.30.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
@@ -305,57 +305,57 @@ Spring Web MVC (spring-webmvc-3.2.18.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/SpringSource/spring-framework
 
-Spring Integration Core (spring-integration-core-4.3.18.RELEASE.jar)
+Spring Integration Core (spring-integration-core-4.3.24.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://projects.spring.io/spring-integration
 
-Spring Integration File Support (spring-integration-file-4.3.18.RELEASE.jar)
+Spring Integration File Support (spring-integration-file-4.3.24.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://projects.spring.io/spring-integration
 
-Spring Integration Mail Support (spring-integration-mail-4.3.18.RELEASE.jar)
+Spring Integration Mail Support (spring-integration-mail-4.3.24.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://projects.spring.io/spring-integration
 
-spring-ldap-core (spring-ldap-core-2.3.2.RELEASE.jar)
+spring-ldap-core (spring-ldap-core-2.3.3.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://www.springframework.org/ldap
+	https://www.springframework.org/ldap
 
-Spring Retry (spring-retry-1.1.3.RELEASE.jar)
+Spring Retry (spring-retry-1.1.5.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.springsource.org
 
-spring-security-acl (spring-security-acl-4.2.9.RELEASE.jar)
+spring-security-acl (spring-security-acl-4.2.20.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://spring.io/spring-security
+	https://spring.io/spring-security
 
-spring-security-aspects (spring-security-aspects-4.2.9.RELEASE.jar)
+spring-security-aspects (spring-security-aspects-4.2.20.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://spring.io/spring-security
+	https://spring.io/spring-security
 
-spring-security-cas (spring-security-cas-4.2.9.RELEASE.jar)
+spring-security-cas (spring-security-cas-4.2.20.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://spring.io/spring-security
+	https://spring.io/spring-security
 
-spring-security-config (spring-security-config-4.2.9.RELEASE.jar)
+spring-security-config (spring-security-config-4.2.20.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://spring.io/spring-security
+	https://spring.io/spring-security
 
-spring-security-core (spring-security-core-4.2.9.RELEASE.jar)
+spring-security-core (spring-security-core-4.2.20.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://spring.io/spring-security
+	https://spring.io/spring-security
 
-spring-security-ldap (spring-security-ldap-4.2.9.RELEASE.jar)
+spring-security-ldap (spring-security-ldap-4.2.20.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://spring.io/spring-security
+	https://spring.io/spring-security
 
-spring-security-taglibs (spring-security-taglibs-4.2.9.RELEASE.jar)
+spring-security-taglibs (spring-security-taglibs-4.2.20.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://spring.io/spring-security
+	https://spring.io/spring-security
 
-spring-security-web (spring-security-web-4.2.9.RELEASE.jar)
+spring-security-web (spring-security-web-4.2.20.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://spring.io/spring-security
+	https://spring.io/spring-security
 
 CPSolver (cpsolver-1.3-SNAPSHOT.jar)
 	under GNU Lesser General Public License (LGPL), Version 3
