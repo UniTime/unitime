@@ -1634,18 +1634,21 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 
 	public static class SectioningAction implements IsSerializable, Serializable, Comparable<SectioningAction> {
 		private static final long serialVersionUID = 1L;
+		private Long iLogId;
 		private Student iStudent;
 		private Date iTimeStamp;
 		private String iOperation;
 		private String iUser;
 		private String iMessage;
-		private String iProto;
 		private String iResult;
 		private Long iCpuTime;
 		private Long iWallTime;
 		
 		public SectioningAction() {
 		}
+		
+		public Long getLogId() { return iLogId; }
+		public void setLogId(Long id) { iLogId = id; }
 
 		public Student getStudent() { return iStudent; }
 		public void setStudent(Student student) { iStudent = student; }
@@ -1670,9 +1673,6 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public Long getWallTime() { return iWallTime; }
 		public void setWallTime(Long wallTime) { iWallTime = wallTime; }
-
-		public String getProto() { return iProto; }
-		public void setProto(String proto) { iProto = proto; }
 
 		@Override
 		public int compareTo(SectioningAction a) {

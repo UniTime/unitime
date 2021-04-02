@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -36,6 +37,7 @@ import org.apache.log4j.Logger;
 import org.cpsolver.coursett.model.Placement;
 import org.hibernate.CacheMode;
 import org.hibernate.SessionFactory;
+import org.hibernate.type.LongType;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
@@ -141,12 +143,14 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.CourseTypeDAO;
 import org.unitime.timetable.model.dao.CurriculumDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
+import org.unitime.timetable.model.dao.OnlineSectioningLogDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.model.dao.StudentGroupDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.advisors.AdvisorCourseRequestsSubmit;
 import org.unitime.timetable.onlinesectioning.advisors.AdvisorCourseRequestsValidate;
@@ -228,6 +232,8 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LoginManager;
 import org.unitime.timetable.util.NameFormat;
+
+import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
  * @author Tomas Muller
@@ -3674,6 +3680,45 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			ret.add(an);
 		}
 		
+		return ret;
+	}
+
+	@Override
+	public String getChangeLogMessage(Long logId) throws SectioningException, PageAccessException {
+		getSessionContext().checkPermission(Right.SchedulingDashboard);
+		org.unitime.timetable.model.OnlineSectioningLog log = OnlineSectioningLogDAO.getInstance().get(logId);
+		if (log != null) {
+			try {
+				OnlineSectioningLog.Action action = OnlineSectioningLog.Action.parseFrom(log.getAction());
+				if (action != null) {
+					return FindOnlineSectioningLogAction.getHTML(action);
+				} else {
+					throw new SectioningException("Failed to load log message: Log message has no details.");
+				}
+			} catch (InvalidProtocolBufferException e) {
+				throw new SectioningException("Failed to parse log message: " + e.getMessage(), e);
+			}
+		} else {
+			throw new SectioningException("Failed to load log message: Log message does not exist.");
+		}
+	}
+
+	@Override
+	public Map<Long, String> getChangeLogTexts(Collection<Long> logIds) throws SectioningException, PageAccessException {
+		getSessionContext().checkPermission(Right.SchedulingDashboard);
+		Map<Long, String> ret = new HashMap<Long, String>();
+		for (Object[] o: (List<Object[]>)OnlineSectioningLogDAO.getInstance().getSession().createQuery(
+				"select uniqueId, action from OnlineSectioningLog where uniqueId in :logIds"
+				).setParameterList("logIds", logIds, LongType.INSTANCE).list()) {
+			Long id = (Long)o[0];
+			try {
+				OnlineSectioningLog.Action action = OnlineSectioningLog.Action.parseFrom((byte[])o[1]);
+				String message = OnlineSectioningLogger.getMessage(action);
+				if (message != null && !message.isEmpty())
+					ret.put(id, message);
+			} catch (InvalidProtocolBufferException e) {
+			}
+		}
 		return ret;
 	}
 }

@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.services;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
@@ -127,4 +128,6 @@ public interface SectioningService extends RemoteService {
 	CourseRequestInterface getAdvisorRequests(StudentSectioningContext cx) throws SectioningException, PageAccessException;
 	List<ReservationInterface> getReservations(boolean online, Long offeringId) throws ReservationException, PageAccessException;
 	List<AdvisorNote> lastAdvisorNotes(StudentSectioningContext cx) throws SectioningException, PageAccessException;
+	Map<Long, String> getChangeLogTexts(Collection<Long> logIds) throws SectioningException, PageAccessException;
+	String getChangeLogMessage(Long logId) throws SectioningException, PageAccessException;
 }

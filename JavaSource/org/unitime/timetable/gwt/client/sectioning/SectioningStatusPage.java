@@ -629,34 +629,46 @@ public class SectioningStatusPage extends Composite {
 		
 		iLogTable.addMouseClickListener(new MouseClickListener<ClassAssignmentInterface.SectioningAction>() {
 			@Override
-			public void onMouseClick(TableEvent<SectioningAction> event) {
-				if (event.getData() != null && event.getData().getProto() != null) {
-					final HTML widget = new HTML(event.getData().getProto());
-					final ScrollPanel scroll = new ScrollPanel(widget);
-					scroll.setHeight(((int)(0.8 * Window.getClientHeight())) + "px");
-					scroll.setStyleName("unitime-ScrollPanel");
-					final UniTimeDialogBox dialog = new UniTimeDialogBox(true, false);
-					dialog.setWidget(scroll);
-					dialog.setText(MESSAGES.dialogChangeMessage(event.getData().getStudent().getName()));
-					dialog.setEscapeToHide(true);
-					dialog.addOpenHandler(new OpenHandler<UniTimeDialogBox>() {
+			public void onMouseClick(final TableEvent<SectioningAction> event) {
+				if (event.getData() != null) {
+					LoadingWidget.getInstance().show(MESSAGES.loadingChangeLogMessage());
+					iSectioningService.getChangeLogMessage(event.getData().getLogId(), new AsyncCallback<String>() {
 						@Override
-						public void onOpen(OpenEvent<UniTimeDialogBox> event) {
-							RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
-							scroll.setHeight(Math.min(widget.getElement().getScrollHeight(), Window.getClientHeight() * 80 / 100) + "px");
-							dialog.setPopupPosition(
-									Math.max(Window.getScrollLeft() + (Window.getClientWidth() - dialog.getOffsetWidth()) / 2, 0),
-									Math.max(Window.getScrollTop() + (Window.getClientHeight() - dialog.getOffsetHeight()) / 2, 0));
+						public void onSuccess(String message) {
+							LoadingWidget.getInstance().hide();
+							final HTML widget = new HTML(message);
+							final ScrollPanel scroll = new ScrollPanel(widget);
+							scroll.setHeight(((int)(0.8 * Window.getClientHeight())) + "px");
+							scroll.setStyleName("unitime-ScrollPanel");
+							final UniTimeDialogBox dialog = new UniTimeDialogBox(true, false);
+							dialog.setWidget(scroll);
+							dialog.setText(MESSAGES.dialogChangeMessage(event.getData().getStudent().getName()));
+							dialog.setEscapeToHide(true);
+							dialog.addOpenHandler(new OpenHandler<UniTimeDialogBox>() {
+								@Override
+								public void onOpen(OpenEvent<UniTimeDialogBox> event) {
+									RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
+									scroll.setHeight(Math.min(widget.getElement().getScrollHeight(), Window.getClientHeight() * 80 / 100) + "px");
+									dialog.setPopupPosition(
+											Math.max(Window.getScrollLeft() + (Window.getClientWidth() - dialog.getOffsetWidth()) / 2, 0),
+											Math.max(Window.getScrollTop() + (Window.getClientHeight() - dialog.getOffsetHeight()) / 2, 0));
+								}
+							});
+							dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
+								@Override
+								public void onClose(CloseEvent<PopupPanel> event) {
+									iLogTable.clearHover();
+									RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
+								}
+							});
+							dialog.center();
+						}
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+							UniTimeNotifications.error(caught);
 						}
 					});
-					dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
-						@Override
-						public void onClose(CloseEvent<PopupPanel> event) {
-							iLogTable.clearHover();
-							RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
-						}
-					});
-					dialog.center();
 				}
 			}
 		});
@@ -2508,20 +2520,37 @@ public class SectioningStatusPage extends Composite {
 	}
 	
 	private void fillLogTable(int firstLine) {
+		final Map<Long, HTML> id2message = new HashMap<Long, HTML>();
 		iSectioningActionsFirstLine = firstLine;
 		if (iLogTable.getRowCount() > 0) iLogTable.clearTable(1);
 		for (int line = iSectioningActionsFirstLine; line < iSectioningActions.size() && (iMaxTableLines <= 0 || line < iSectioningActionsFirstLine + iMaxTableLines); line++) {
-			addLogTableLine(iSectioningActions.get(line));
+			addLogTableLine(iSectioningActions.get(line), id2message);
 		}
 		iRange.setText(MESSAGES.pageRange(iSectioningActionsFirstLine + 1, Math.min(iSectioningActions.size(), iSectioningActionsFirstLine + iMaxTableLines)));
 		
 		iPaginationButtons.setVisible(iSectioningActions.size() > iMaxTableLines && iMaxTableLines > 0);
 		iPrevious.setEnabled(iMaxTableLines > 0 && iSectioningActionsFirstLine >= iMaxTableLines);
 		iNext.setEnabled(iMaxTableLines > 0 && iSectioningActionsFirstLine + iMaxTableLines < iSectioningActions.size());
+		
+		if (!id2message.isEmpty()) {
+			iSectioningService.getChangeLogTexts(new ArrayList<Long>(id2message.keySet()), new AsyncCallback<Map<Long,String>>() {
+				@Override
+				public void onSuccess(Map<Long, String> result) {
+					for (Map.Entry<Long, String> e: result.entrySet()) {
+						HTML html = id2message.get(e.getKey());
+						if (html != null) html.setHTML(e.getValue());
+					}
+				}
+				@Override
+				public void onFailure(Throwable caught) {
+				}
+			});
+		}
 	}
 	
-	private void addLogTableLine(SectioningAction log) {
+	private void addLogTableLine(SectioningAction log, Map<Long,HTML> id2message) {
 		HTML message = new HTML(log.getMessage() == null ? "" : log.getMessage());
+		id2message.put(log.getLogId(), message);
 		message.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE_WRAP);
 		if (iSectioningActionsVisibleColumns.hasExtId) {
 			iLogTable.addRow(log,

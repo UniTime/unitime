@@ -1351,6 +1351,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Loading change log for {0}...")
 	String loadingChangeLog(String student);
+	
+	@DefaultMessage("Loading change log message...")
+	String loadingChangeLogMessage();
 
 	@DefaultMessage("Operation")
 	String colOperation();
