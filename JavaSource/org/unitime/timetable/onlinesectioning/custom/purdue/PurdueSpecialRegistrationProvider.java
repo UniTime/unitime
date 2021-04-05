@@ -62,9 +62,11 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentEnrollmentMessage;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.CourseDemandDAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
+import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
@@ -94,6 +96,8 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpeci
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseResponse;
 import org.unitime.timetable.interfaces.ExternalClassLookupInterface;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpart;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
@@ -286,6 +290,13 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 	protected String getRequestorId(OnlineSectioningLog.Entity user) {
 		if (user == null || user.getExternalId() == null) return null;
 		String id = user.getExternalId();
+		while (id.length() < 9) id = "0" + id;
+		return id;
+	}
+	
+	protected String getBannerId(DepartmentalInstructor instructor) {
+		String id = instructor.getExternalUniqueId();
+		if (id == null) return null;
 		while (id.length() < 9) id = "0" + id;
 		return id;
 	}
@@ -2060,8 +2071,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			if (response.data != null && response.data.PIN != null && !response.data.PIN.isEmpty() && !"NA".equals(response.data.PIN))
 				pin = response.data.PIN;
 			Float maxCredit = null;
-			if (response.maxCredit != null && response.maxCredit > 0)
+			if (response.maxCredit != null && response.maxCredit > 0) {
 				maxCredit = response.maxCredit;
+				check.setMaxCredit(response.maxCredit);
+			}
 			if (student.getStudentId() != null && ((maxCredit != null && !maxCredit.equals(student.getMaxCredit())) || (pin != null && !pin.equals(student.getPin())))) {
 				Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
 				if (dbStudent != null) {
@@ -2779,5 +2792,102 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			return dash.replace("{term}", term).replace("{campus}", campus).replace("{studentId}",getBannerId(student));
 		}
 		return null;
+	}
+
+	@Override
+	public VariableTitleCourseResponse requestVariableTitleCourse(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, VariableTitleCourseRequest request) throws SectioningException {
+		ClientResource resource = null;
+		try {
+			SpecialRegistrationRequest req = new SpecialRegistrationRequest();
+			AcademicSessionInfo session = server.getAcademicSession();
+			req.term = getBannerTerm(session);
+			req.campus = getBannerCampus(session);
+			req.studentId = getBannerId(student);
+			req.changes = new ArrayList<Change>();
+			if (request.getMaxCredit() != null)
+				req.maxCredit = request.getMaxCredit();
+			
+			Change change = new Change();
+			change.courseNbr = request.getCourse().getCourseNbr();
+			change.subject = request.getCourse().getSubject();
+			change.operation = ChangeOperation.CHGVARTL;
+			if (request.getCredit() != null)
+				change.selectedCreditHour = Formats.getNumberFormat("0.#").format(request.getCredit());
+			change.selectedGradeMode = request.getGradeModeCode();
+			change.selectedGradeModeDescription = request.getGradeModeLabel();
+			change.selectedTitle = request.getTitle();
+			if (request.getInstructor() != null) {
+				DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(request.getInstructor().getId(), helper.getHibSession());
+				if (instructor != null)
+					change.selectedInstructor = getBannerId(instructor);
+			}
+			if (request.getStartDate() != null)
+				change.selectedStartDate = Formats.getDateFormat("MM/dd/yy").format(request.getStartDate());
+			if (request.getEndDate() != null)
+				change.selectedEndDate = Formats.getDateFormat("MM/dd/yy").format(request.getEndDate());
+			ChangeError err = new ChangeError();
+			err.code = "VARTL";
+			err.message = "Requested " + request.getCourse().getCourseName() + ": " + request.getTitle();
+			change.errors = new ArrayList<ChangeError>();
+			change.errors.add(err);
+			req.changes.add(change);
+
+			req.mode = getSpecialRegistrationMode(); 
+			if (helper.getUser() != null) {
+				req.requestorId = getRequestorId(helper.getUser());
+				req.requestorRole = getRequestorType(helper.getUser(), student);
+			}
+			req.requestorNotes = request.getNote();
+			
+			resource = new ClientResource(getSpecialRegistrationApiSiteSubmitRegistration());
+			resource.setNext(iClient);
+			resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
+			
+			Gson gson = getGson(helper);
+			if (helper.isDebugEnabled())
+				helper.debug("Request: " + gson.toJson(request));
+			helper.getAction().addOptionBuilder().setKey("specreg_request").setValue(gson.toJson(req));
+			long t1 = System.currentTimeMillis();
+				
+			resource.post(new GsonRepresentation<SpecialRegistrationRequest>(req));
+			
+			helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
+			
+			SpecialRegistrationResponseList response = (SpecialRegistrationResponseList)new GsonRepresentation<SpecialRegistrationResponseList>(resource.getResponseEntity(), SpecialRegistrationResponseList.class).getObject();
+			if (helper.isDebugEnabled())
+				helper.debug("Response: " + gson.toJson(response));
+			helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(response));
+			
+			VariableTitleCourseResponse ret = new VariableTitleCourseResponse(); 
+			
+			if (response.data != null && !response.data.isEmpty()) {
+				for (SubmitRegistrationResponse r: response.data) {
+					if (r.requestorNotes == null) r.requestorNotes = request.getNote();
+					if (r.changes != null)
+						for (Change ch: r.changes)
+							if (ch.errors != null && !ch.errors.isEmpty() && ch.status == null)
+								ch.status = ChangeStatus.inProgress;
+					ret.addRequest(convert(server, helper, student, r, false));
+				}
+			}
+			
+			if (response.cancelledRequests != null)
+				for (CancelledRequest c: response.cancelledRequests)
+					ret.addCancelRequestId(c.regRequestId);
+			
+			return ret;
+		} catch (SectioningException e) {
+			helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
+			throw (SectioningException)e;
+		} catch (Exception e) {
+			helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(e.getMessage());
+		} finally {
+			if (resource != null) {
+				if (resource.getResponse() != null) resource.getResponse().release();
+				resource.release();
+			}
+		}
 	}
 }

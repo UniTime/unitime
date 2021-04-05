@@ -116,6 +116,7 @@ public class SpecialRegistrationInterface {
 		KEEP, // sections are being unchanged, but a registration error was reported on them (e.g., co-requisite, only during registration)
 		CHGMODE, // change grade mode
 		CHGVARCR, // change variable credit
+		CHGVARTL, // request variable title course
 		;
 	}
 	
@@ -139,14 +140,22 @@ public class SpecialRegistrationInterface {
 		public String credit;
 		/** Current grade mode (only used when operation = CHGMODE) */
 		public String currentGradeMode;
-		/** New grade mode (only used when operation = CHGMODE) */
+		/** New grade mode (only used when operation = CHGMODE or CHGVARTL) */
 		public String selectedGradeMode;
 		/** New grade mode description (only used when operation = CHGMODE) */
 		public String selectedGradeModeDescription;
 		/** Current credit hours (only used when operation = CHGVARCR) */
 		public String currentCreditHour;
-		/** Selected credit hours (only used when operation = CHGVARCR) */
+		/** Selected credit hours (only used when operation = CHGVARCR or CHGVARTL) */
 		public String selectedCreditHour;
+		/** Selected course title (only used when operation = CHGVARTL) */
+		public String selectedTitle;
+		/** Selected instructor (only used when operation = CHGVARTL) */
+		public String selectedInstructor;
+		/** Selected start date (only used when operation = CHGVARTL, format MM/dd/yy) */
+		public String selectedStartDate;
+		/** Selected end date (only used when operation = CHGVARTL, format MM/dd/yy) */
+		public String selectedEndDate;
 	}
 	
 

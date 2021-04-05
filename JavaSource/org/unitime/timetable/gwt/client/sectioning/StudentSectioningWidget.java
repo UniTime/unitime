@@ -197,6 +197,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	
 	private ChangeGradeModesDialog iChangeGradeModesDialog = null;
 	private RequestVariableTitleCourseDialog iRequestVariableTitleCourseDialog = null;
+	private Float iCurrentCredit = null;
 
 	public StudentSectioningWidget(boolean online, AcademicSessionProvider sessionSelector, UserAuthenticationProvider userAuthentication, StudentSectioningPage.Mode mode, boolean history) {
 		iMode = mode;
@@ -1455,7 +1456,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		String calendarUrl = GWT.getHostPageBaseURL() + "calendar?sid=" + iSessionSelector.getAcademicSessionId() + "&cid=";
 		String ftParam = "&ft=";
 		boolean hasError = false, hasWarning = false;
-		float totalCredit = 0f;
+		iCurrentCredit = 0f;
 		boolean hasGradeMode = false;
 		if (!result.getCourseAssignments().isEmpty() || CONSTANTS.allowEmptySchedule()) {
 			ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
@@ -1492,7 +1493,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							GradeMode gm = iSpecialRegistrationsPanel.getGradeMode(clazz);
 							if (gm != null && gradeMode != null) gradeMode = gm;
 							Float ch = iSpecialRegistrationsPanel.getCreditHours(clazz);
-							if (ch != null) { creditHour = ch; totalCredit += creditHour; }
+							if (ch != null) { creditHour = ch; iCurrentCredit += creditHour; }
 							switch (specRegStatus) {
 							case Draft:
 								icons.add(RESOURCES.specRegDraft(), (error != null ? error + "\n" : "") + MESSAGES.hintSpecRegDraft(), true);
@@ -1535,7 +1536,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							icons.add(RESOURCES.cancelled(), MESSAGES.classCancelled(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
 
 						if (!clazz.isTeachingAssignment() && creditHour == null)
-							totalCredit += clazz.guessCreditCount();
+							iCurrentCredit += clazz.guessCreditCount();
 						if (gradeMode != null)
 							hasGradeMode = true;
 						if (clazz.isAssigned()) {
@@ -2078,8 +2079,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			} else {
 				updateScheduleChangedNoteIfNeeded();
 			}
-			iTotalCredit.setVisible(totalCredit > 0f);
-			iTotalCredit.setText(MESSAGES.totalCredit(totalCredit));
+			iTotalCredit.setVisible(iCurrentCredit > 0f);
+			iTotalCredit.setText(MESSAGES.totalCredit(iCurrentCredit));
 		} else {
 			iTotalCredit.setVisible(false);
 			iStatus.error(MESSAGES.noSchedule());
@@ -3559,45 +3560,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						}
 					}
 					if (response.getCourse() != null) {
-						if (iQuickAddSuggestions == null) {
-							iQuickAddSuggestions = new SuggestionsBox(iAssignmentGrid.getColorProvider(), iSpecRegCx);
-							iQuickAddSuggestions.addCloseHandler(new CloseHandler<PopupPanel>() {
-								public void onClose(CloseEvent<PopupPanel> event) {
-									Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-										@Override
-										public void execute() {
-											iAssignmentPanel.setFocus(true);
-										}
-									});
-								}
-							});
-						}
-						iQuickAddSuggestions.open(iCourseRequests.getRequest(), iLastResult, response.getCourse(), useDefaultConfirmDialog(), new AsyncCallback<ClassAssignmentInterface>() {
-							@Override
-							public void onSuccess(ClassAssignmentInterface result) {
-								clearMessage();
-								if (!iCourseRequests.hasCourse(response.getCourse()))
-									iCourseRequests.addCourse(response.getCourse());
-								else
-									iCourseRequests.updateCourse(response.getCourse());
-								fillIn(result);
-								addHistory();
-								iQuickAddFinder.setValue(null, true);
-							}
-
-							@Override
-							public void onFailure(Throwable caught) {
-								if (caught != null) iStatus.error(caught.getMessage());
-								iAssignmentPanel.setFocus(true);
-							}
-						});
+						getQuickAddFinder().setValue(response.getCourse(), true);
+						getQuickAddFinder().findCourse();
 					}
-					fillIn(iSavedAssignment);
-					addHistory();
 				}
 			};
 		}
-		iRequestVariableTitleCourseDialog.requestVariableTitleCourse();
+		iRequestVariableTitleCourseDialog.requestVariableTitleCourse(iCurrentCredit, iEligibilityCheck == null ? null : iEligibilityCheck.getMaxCredit());
 	}
 	
 	public void setSessionId(Long sessionId) {

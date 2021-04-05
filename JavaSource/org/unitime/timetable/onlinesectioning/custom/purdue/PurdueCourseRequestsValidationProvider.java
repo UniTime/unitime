@@ -2700,8 +2700,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			if (eligibility.data != null && eligibility.data.PIN != null && !eligibility.data.PIN.isEmpty() && !"NA".equals(eligibility.data.PIN))
 				pin = eligibility.data.PIN;
 			Float maxCredit = null;
-			if (eligibility.maxCredit != null && eligibility.maxCredit > 0)
+			if (eligibility.maxCredit != null && eligibility.maxCredit > 0) {
 				maxCredit = eligibility.maxCredit;
+				check.setMaxCredit(eligibility.maxCredit);
+			}
 			if ((maxCredit != null && !maxCredit.equals(student.getMaxCredit())) || (pin != null && !pin.equals(student.getPin()))) {
 				org.unitime.timetable.model.Student dbStudent = StudentDAO.getInstance().get(student.getUniqueId(), helper.getHibSession());
 				if (maxCredit != null) dbStudent.setMaxCredit(maxCredit);
