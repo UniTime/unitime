@@ -320,6 +320,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			// Check status, memorize enrolled sections
 			if (original != null && helper.isDebugEnabled())
 				helper.debug("Current registration: " + gson.toJson(original));
+			if (original != null && original.maxHours != null)
+				check.setMaxCredit(original.maxHours);
 			if (original == null || !original.validStudent) {
 				String bannerRecheck = getBannerRecheck();
 				String reason = null;

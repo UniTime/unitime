@@ -29,6 +29,7 @@ import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
@@ -52,13 +53,14 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.IsSerializable;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.TextArea;
@@ -90,6 +92,9 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 	private CheckBox iDisclaimer;
 	private int iDisclaimerLine;
 	private Timer iTimer;
+	private Float iCurrentCredit, iMaxCredit;
+	private Label iCreditMessage;
+	private int iCreditLine;
 	
 	private UniTimeHeaderPanel iButtons;
 	
@@ -152,6 +157,12 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 		iCredit.addStyleName("credit");
 		iCredit.setEnabled(false);
 		iForm.addRow(MESSAGES.propReqVTCourseCredit(), iCredit);
+		iCredit.addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				checkCredit();
+			}
+		});
 		
 		iInstructor = new ListBox();
 		iInstructor.addStyleName("instructor");
@@ -193,6 +204,11 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 		iDisclaimerLine = iForm.addRow(MESSAGES.propReqVTCourseDisclaimer(), iDisclaimer);
 		iForm.getRowFormatter().setVisible(iDisclaimerLine, false);
 		
+		iCreditMessage = new Label();
+		iCreditMessage.addStyleName("credit");
+		iCreditLine = iForm.addRow(MESSAGES.propReqVTMaxCredit(), iCreditMessage);
+		iForm.getRowFormatter().setVisible(iCreditLine, false);
+		
 		iButtons = new UniTimeHeaderPanel();
 		iButtons.addButton("submit", MESSAGES.buttonSubmitVariableTitleCourse(), new ClickHandler() {
 			@Override
@@ -215,7 +231,7 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 		setWidget(iForm);
 	}
 	
-	public void requestVariableTitleCourse() {
+	public void requestVariableTitleCourse(Float currentCredit, Float maxCredit) {
 		iCourseName.setText("");
 		iCourseTitle.getWidget().setText("");
 		iDisclaimer.setValue(false);
@@ -223,8 +239,9 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 		iCredit.clear();
 		iInstructor.clear();
 		iGradeMode.clear();
-		iDateFrom.setValue(null); iDateTo.setValue(null);
+		iDateFrom.setValueInServerTimeZone(null); iDateTo.setValueInServerTimeZone(null);
 		setCourse(null);
+		iCurrentCredit = currentCredit; iMaxCredit = maxCredit;
 		center();
 		iCourseName.setFocus(true);
 	}
@@ -261,6 +278,7 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 		iCourseDetails.setHTML("");
 		iForm.getRowFormatter().setVisible(iCourseDetailsLine, false);
 		iForm.getRowFormatter().setVisible(iDisclaimerLine, false);
+		iForm.getRowFormatter().setVisible(iCreditLine, false);
 		if (iSelectedCourse == null) {
 			iCredit.setEnabled(false);
 			iInstructor.setEnabled(false);
@@ -282,11 +300,11 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 				}
 			}
 			iCredit.setEnabled(iCredit.getItemCount() > 0);
-			if (iDateFrom.getValue() == null)
-				iDateFrom.setValue(iSelectedCourse.getStartDate());
+			if (iDateFrom.getValueInServerTimeZone() == null)
+				iDateFrom.setValueInServerTimeZone(iSelectedCourse.getStartDate());
 			iDateFrom.setEnabled(true);
-			if (iDateTo.getValue() == null)
-				iDateTo.setValue(iSelectedCourse.getEndDate());
+			if (iDateTo.getValueInServerTimeZone() == null)
+				iDateTo.setValueInServerTimeZone(iSelectedCourse.getEndDate());
 			iDateTo.setEnabled(true);
 			if (iSelectedCourse.hasInstructors()) {
 				iInstructor.addItem(GWT_MSG.itemSelect(), "");
@@ -314,8 +332,23 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 				iDisclaimer.setEnabled(true);
 				iForm.getRowFormatter().setVisible(iDisclaimerLine, true);
 			}
+			checkCredit();
 		}
 		iButtons.setEnabled("submit", iSelectedCourse != null && (!iSelectedCourse.hasDisclaimer() || iDisclaimer.getValue()));
+	}
+	
+	protected void checkCredit() {
+		if (iMaxCredit == null || iCurrentCredit == null || iCredit.getItemCount() == 0) {
+			iForm.getRowFormatter().setVisible(iCreditLine, false);
+		} else {
+			float credit = iCurrentCredit + Float.valueOf(iCredit.getSelectedValue());
+			if (credit > iMaxCredit) {
+				iCreditMessage.setText(MESSAGES.varCreditMaxExceeded(credit, iMaxCredit));
+				iForm.getRowFormatter().setVisible(iCreditLine, true);
+			} else {
+				iForm.getRowFormatter().setVisible(iCreditLine, false);
+			}
+		}
 	}
 	
 	protected boolean validate() {
@@ -332,8 +365,14 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 		request.setCredit(Float.valueOf(iCredit.getSelectedValue()));
 		request.setTitle(iCourseTitle.getWidget().getText());
 		request.setNote(iNote.getText());
-		request.setStartDate(iDateFrom.getValue());
-		request.setEndDate(iDateTo.getValue());
+		request.setStartDate(iDateFrom.getValueInServerTimeZone());
+		request.setEndDate(iDateTo.getValueInServerTimeZone());
+		if (iCurrentCredit != null && iMaxCredit != null) {
+			float credit = iCurrentCredit + Float.valueOf(iCredit.getSelectedValue());
+			if (credit > iMaxCredit) {
+				request.setMaxCredit(credit);
+			}
+		}
 		if (iInstructor.getSelectedIndex() > 0)
 			request.setInstructor(new InstructorInfo(Long.valueOf(iInstructor.getSelectedValue()), iInstructor.getItemText(iInstructor.getSelectedIndex())));
 		if (iGradeMode.getItemCount() > 0)
@@ -341,32 +380,39 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 		LoadingWidget.getInstance().show(MESSAGES.waitRequestVariableTitleCourse());
 		iSectioningService.requestVariableTitleCourse(request, new AsyncCallback<VariableTitleCourseResponse>() {
 			@Override
-			public void onSuccess(VariableTitleCourseResponse response) {
+			public void onSuccess(final VariableTitleCourseResponse response) {
+				LoadingWidget.getInstance().hide();
 				if (response.hasRequests())
 					iStatus.info(MESSAGES.statusVariableCourseRequested());
 				else if (response.getCourse() != null) {
-					if (Window.confirm(MESSAGES.questionVariableCourseAlreadyExists())) {
-						request.setCheckIfExists(false);
-						iSectioningService.requestVariableTitleCourse(request, new AsyncCallback<VariableTitleCourseResponse>() {
-							@Override
-							public void onSuccess(VariableTitleCourseResponse response) {
-								if (response.hasRequests())
-									iStatus.info(MESSAGES.statusVariableCourseRequested());
-								LoadingWidget.getInstance().hide();
-								onChange(response);
-							}
-							
-							@Override
-							public void onFailure(Throwable caught) {
-								iStatus.error(MESSAGES.exceptionRequestVariableTitleCourse(caught.getMessage()), caught);
-								LoadingWidget.getInstance().hide();
-							}
-						});
-						return;
-					}
+					UniTimeConfirmationDialog.confirm(MESSAGES.questionVariableCourseAlreadyExists(), new Command() {
+						@Override
+						public void execute() {
+							request.setCheckIfExists(false);
+							LoadingWidget.getInstance().show(MESSAGES.waitRequestVariableTitleCourse());
+							iSectioningService.requestVariableTitleCourse(request, new AsyncCallback<VariableTitleCourseResponse>() {
+								@Override
+								public void onSuccess(VariableTitleCourseResponse response) {
+									if (response.hasRequests())
+										iStatus.info(MESSAGES.statusVariableCourseRequested());
+									LoadingWidget.getInstance().hide();
+									onChange(response);
+								}
+								
+								@Override
+								public void onFailure(Throwable caught) {
+									iStatus.error(MESSAGES.exceptionRequestVariableTitleCourse(caught.getMessage()), caught);
+									LoadingWidget.getInstance().hide();
+								}
+							});
+						}
+					}, new Command() {
+						@Override
+						public void execute() {
+							onChange(response);
+						}
+					});
 				}
-				LoadingWidget.getInstance().hide();
-				onChange(response);
 			}
 			
 			@Override

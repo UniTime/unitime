@@ -321,6 +321,8 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 				// Check status, memorize enrolled sections
 				if (original != null && helper.isDebugEnabled())
 					helper.debug("Current registration: " + gson.toJson(original));
+				if (original != null && original.maxHours != null)
+					check.setMaxCredit(original.maxHours);
 				
 				String bannerErrors = getBannerErrors();
 				String error = null;
@@ -415,8 +417,10 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 				if (eligibility.data != null && eligibility.data.PIN != null && !eligibility.data.PIN.isEmpty() && !"NA".equals(eligibility.data.PIN))
 					pin = eligibility.data.PIN;
 				Float maxCredit = null;
-				if (eligibility.maxCredit != null && eligibility.maxCredit > 0)
+				if (eligibility.maxCredit != null && eligibility.maxCredit > 0) {
 					maxCredit = eligibility.maxCredit;
+					check.setMaxCredit(eligibility.maxCredit);
+				}
 				if ((maxCredit != null && !maxCredit.equals(student.getMaxCredit())) || (pin != null && !pin.equals(student.getPin()))) {
 					Student dbStudent = StudentDAO.getInstance().get(student.getUniqueId(), helper.getHibSession());
 					if (maxCredit != null) dbStudent.setMaxCredit(maxCredit);

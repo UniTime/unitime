@@ -3043,6 +3043,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Disclaimer:")
 	String propReqVTCourseDisclaimer();
 	
+	@DefaultMessage("")
+	String propReqVTMaxCredit();
+	
 	@DefaultMessage("An example dislaimer here.\nI solemnly swear that i am up to no good.")
 	String disclaimerRequestVariableTitle();
 }

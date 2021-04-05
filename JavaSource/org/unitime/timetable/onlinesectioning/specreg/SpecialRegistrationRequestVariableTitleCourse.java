@@ -19,6 +19,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.custom.CustomSpecialRegistrationHolder;
+import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationProvider;
 import org.unitime.timetable.onlinesectioning.match.AnyCourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
@@ -99,10 +100,11 @@ public class SpecialRegistrationRequestVariableTitleCourse implements OnlineSect
 				}
 			}
 			
-			if (!CustomSpecialRegistrationHolder.hasProvider())
+			SpecialRegistrationProvider specReg = CustomSpecialRegistrationHolder.getProvider();
+			if (specReg == null)
 				throw new SectioningException(MSG.exceptionNotSupportedFeature());
-
-			return new VariableTitleCourseResponse();
+			
+			return specReg.requestVariableTitleCourse(server, helper, student, getRequest());
 		} finally {
 			lock.release();
 		}

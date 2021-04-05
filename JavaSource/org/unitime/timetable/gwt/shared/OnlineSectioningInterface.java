@@ -47,6 +47,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private Set<String> iOverrides = null;
 		private String iOverrideRequestDisclaimer = null;
 		private GradeModes iGradeModes = null;
+		private Float iMaxCredit = null;
 		
 		public static enum EligibilityFlag implements IsSerializable {
 			IS_ADMIN, IS_ADVISOR, IS_GUEST,
@@ -121,6 +122,10 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public Long getSessionId() { return iSessionId; }
 		public void setStudentId(Long studentId) { iStudentId = studentId; }
 		public Long getStudentId() { return iStudentId; }
+		
+		public boolean hasMaxCredit() { return iMaxCredit != null && iMaxCredit > 0f; }
+		public void setMaxCredit(Float maxCredit) { iMaxCredit = maxCredit; }
+		public Float getMaxCredit() { return iMaxCredit; }
 		
 		public boolean hasOverride(String errorCode) {
 			if (errorCode == null || errorCode.isEmpty()) return true;

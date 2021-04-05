@@ -60,7 +60,7 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 	private String iAnswer = null;
 	private UniTimeTextBox iTextBox = null;
 	private AriaButton iYes, iNo;
-	private Command iCommand;
+	private Command iCommand, iNoCommand;
 	private P iError = null;
 	private String iMessage;
 	private boolean iDefaultIsYes = true;
@@ -90,7 +90,10 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 			@Override
 			public void execute() {
 				if (!iDefaultIsYes) hide();
-				if (iNo != null && iNo.isFocused()) return;
+				if (iNo != null && iNo.isFocused()) {
+					if (!iDefaultIsYes) iNoCommand.execute();
+					return;
+				}
 				submit();
 			}
 		});
@@ -162,6 +165,7 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 				@Override
 				public void onClick(ClickEvent event) {
 					hide();
+					if (iNoCommand != null) iNoCommand.execute();
 				}
 			});
 		}
@@ -228,6 +232,12 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 
 	public static void confirm(String message, Command callback) {
 		new UniTimeConfirmationDialog(Type.CONFIRM, message, null, null, callback).center();
+	}
+	
+	public static void confirm(String message, Command yesCallback, Command noCallback) {
+		UniTimeConfirmationDialog dialog = new UniTimeConfirmationDialog(Type.CONFIRM, message, null, null, yesCallback);
+		dialog.iNoCommand = noCallback;
+		dialog.center();
 	}
 	
 	public static void confirmFocusNo(String message, Command callback) {
