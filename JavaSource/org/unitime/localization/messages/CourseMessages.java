@@ -3005,4 +3005,25 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Availability")
 	String instructorNotAvailableType();
+	
+	@DefaultMessage("Wait-Listing:")
+	String propertyWaitListing();
+	
+	@DefaultMessage("Default (Enabled)")
+	String waitListDefaultEnabled();
+	
+	@DefaultMessage("Default (Disabled)")
+	String waitListDefaultDisabled();
+	
+	@DefaultMessage("Enabled")
+	String waitListEnabled();
+	
+	@DefaultMessage("Disabled")
+	String waitListDisabled();
+	
+	@DefaultMessage("Wait-listing is enabled for this offering.")
+	String descWaitListEnabled();
+	
+	@DefaultMessage("Wait-listing is not enabled for this offering.")
+	String descWaitListDisabled();
 }

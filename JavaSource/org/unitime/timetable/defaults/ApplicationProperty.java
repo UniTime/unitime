@@ -2931,6 +2931,12 @@ public enum ApplicationProperty {
 	@Description("Course Timetabling Solution Commit: Skip checking for room and instructor conflicts with other committed problems.")
 	@Since(4.5)
 	CourseTimetablingCommitSkipChecking("unitime.commit.skipConflictChecking"),
+
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Instructional Offering: wait-list toggle default value")
+	@Since(4.6)
+	OfferingWaitListDefault("unitime.offering.waitListDefault"),
 	;
 
 	String iKey;

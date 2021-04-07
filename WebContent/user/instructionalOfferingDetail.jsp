@@ -479,6 +479,22 @@
 				</TD>
 			</TR>
 		</logic:equal>
+		
+		<logic:notEmpty name="instructionalOfferingDetailForm" property="waitList">
+			<TR>
+				<TD valign="top"><loc:message name="propertyWaitListing"/></TD>
+				<TD>
+					<logic:equal name="instructionalOfferingDetailForm" property="waitList" value="true">
+						<IMG src="images/accept.png" alt="<%=MSG.waitListEnabled() %>" title="<%=MSG.descWaitListEnabled() %>" border="0" align="top">
+						<loc:message name="descWaitListEnabled"/>
+					</logic:equal>
+					<logic:equal name="instructionalOfferingDetailForm" property="waitList" value="false">
+						<img src="images/cancel.png" alt="<%=MSG.waitListDisabled() %>" title="<%=MSG.descWaitListDisabled() %>" border="0" align="top">
+						<loc:message name="descWaitListDisabled"/>
+					</logic:equal>
+				</TD>
+			</TR>
+		</logic:notEmpty>
 
 		<logic:notEmpty name="instructionalOfferingDetailForm" property="catalogLinkLabel">
 		<TR>
