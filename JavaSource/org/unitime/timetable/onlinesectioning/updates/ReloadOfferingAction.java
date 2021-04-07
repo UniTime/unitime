@@ -392,7 +392,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 				}
 				
 				if (oldEnrollment == null && newEnrollment == null) {
-					if (student[1].canAssign(newRequest) && isWaitListed(student[1], newRequest, server, helper))
+					if (student[1].canAssign(newRequest) && isWaitListed(student[1], newRequest, server, helper) && newOffering.isWaitList()) {
 						queue.add(new SectioningRequest(newOffering, newRequest, student[1], action).setOldOffering(oldOffering).setOldRequest(oldRequest).setOldStudent(student[0]));
 					continue;
 				}

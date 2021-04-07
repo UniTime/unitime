@@ -672,4 +672,10 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     public Department getEffectiveFundingDept() {
     	return getControllingCourseOffering().getEffectiveFundingDept();
     }
+    
+    public boolean effectiveWaitList() {
+    	if (isWaitlist() != null)
+    		return isWaitlist().booleanValue();
+    	return ApplicationProperty.OfferingWaitListDefault.isTrue();
+    }
 }

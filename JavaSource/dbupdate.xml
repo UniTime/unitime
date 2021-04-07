@@ -14280,5 +14280,9 @@
 		<mysql>alter table %SCHEMA%.lastlike_course_demand modify course_nbr varchar(40)</mysql>
 		<pgsql>alter table %SCHEMA%.lastlike_course_demand alter column course_nbr type varchar(40)</pgsql>
 	</update>
-	
+	<update version="241" date="6-Apr-2021" comment="Offering Waitlist Toggle">
+	    <plsql>alter table %SCHEMA%.instructional_offering add waitlist number(1)</plsql>
+	    <mysql>alter table %SCHEMA%.instructional_offering add waitlist int(1)</mysql>
+	    <pgsql>alter table %SCHEMA%.instructional_offering add waitlist boolean</pgsql>
+	</update>
 </dbupdate>
