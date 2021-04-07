@@ -454,6 +454,11 @@ public class CourseOfferingEditAction extends Action {
 			        	io.setLastWeekToDrop(null);
 			        }
 			        io.setNotes(frm.getNotes() == null || frm.getNotes().length() <= 2000 ? frm.getNotes() : frm.getNotes().substring(0, 2000));
+			        
+			        if (frm.getWaitList() == null || frm.getWaitList().isEmpty())
+			        	io.setWaitlist(null);
+			        else
+			        	io.setWaitlist("true".equalsIgnoreCase(frm.getWaitList()));
 
 			        hibSession.update(io);
 		        }
@@ -602,6 +607,11 @@ public class CourseOfferingEditAction extends Action {
 	        	io.setLastWeekToDrop(null);
 	        }
 	        
+	        if (frm.getWaitList() == null || frm.getWaitList().isEmpty())
+	        	io.setWaitlist(null);
+	        else
+	        	io.setWaitlist("true".equalsIgnoreCase(frm.getWaitList()));
+	        
 	        io.setNotes(frm.getNotes() == null || frm.getNotes().length() <= 2000 ? frm.getNotes() : frm.getNotes().substring(0, 2000));
 
 	        if (ApplicationProperty.CourseOfferingEditExternalIds.isTrue())
@@ -709,6 +719,7 @@ public class CourseOfferingEditAction extends Action {
         frm.setWkChangeDefault(io.getSession().getLastWeekToChange());
         frm.setWkDrop(io.getLastWeekToDrop() == null ? "" : io.getLastWeekToDrop().toString());
         frm.setWkDropDefault(io.getSession().getLastWeekToDrop());
+        frm.setWaitList(io.isWaitlist() == null ? "" : io.isWaitlist().booleanValue() ? "true" : "false");
         frm.setWeekStartDayOfWeek(Localization.getDateFormat("EEEE").format(io.getSession().getSessionBeginDateTime()));
         frm.setCourseTypeId(co.getCourseType() == null ? "" : co.getCourseType().getUniqueId().toString());
         frm.setAlternativeCourseOfferingId(co.getAlternativeOffering() == null ? null : co.getAlternativeOffering().getUniqueId());

@@ -99,12 +99,15 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 				// offering is locked -> assuming that the offering will get checked when it is unlocked
 				if (server.isOfferingLocked(offeringId)) continue;
 				
+				// skip non-existing offerings and offerings that do not wait-list
+				XOffering offering = server.getOffering(offeringId);
+				if (offering == null || !offering.isWaitList()) continue;
+				
 				// lock and check the offering
 				Lock lock = server.lockOffering(offeringId, null, name());
 				try {
 					helper.beginTransaction();
 
-					XOffering offering = server.getOffering(offeringId);
 					helper.getAction().addOther(OnlineSectioningLog.Entity.newBuilder()
 							.setUniqueId(offeringId)
 							.setName(offering.getName())
@@ -127,7 +130,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 	}
 	
 	public void checkOffering(OnlineSectioningServer server, OnlineSectioningHelper helper, XOffering offering) {
-		if (!server.getAcademicSession().isSectioningEnabled() || offering == null) return;
+		if (!server.getAcademicSession().isSectioningEnabled() || offering == null || !offering.isWaitList()) return;
 		
 		if (!CustomStudentEnrollmentHolder.isAllowWaitListing()) return;
 		

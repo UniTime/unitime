@@ -92,6 +92,7 @@ public class XOffering implements Serializable, Externalizable {
     private List<XReservation> iReservations = new ArrayList<XReservation>();
     private List<XDistribution> iDistrubutions = new ArrayList<XDistribution>();
     private List<XRestriction> iRestrictions = new ArrayList<XRestriction>();
+    private boolean iWaitList = false;
 
     public XOffering() {
     }
@@ -103,6 +104,7 @@ public class XOffering implements Serializable, Externalizable {
     public XOffering(InstructionalOffering offering, Collection<XDistribution> distributions, OnlineSectioningHelper helper) {
     	iUniqueId = offering.getUniqueId();
     	iName = offering.getCourseName();
+    	iWaitList = offering.effectiveWaitList();
     	for (CourseOffering course: offering.getCourseOfferings())
     		if (course.isAllowStudentScheduling())
     			iCourses.add(new XCourse(course, helper));
@@ -213,6 +215,10 @@ public class XOffering implements Serializable, Externalizable {
     
     public boolean hasCrossList() {
     	return iCourses.size() > 1;
+    }
+    
+    public boolean isWaitList() {
+    	return iWaitList;
     }
     
     public XCourse getControllingCourse() {
@@ -886,6 +892,7 @@ public class XOffering implements Serializable, Externalizable {
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 		iUniqueId = in.readLong();
 		iName = (String)in.readObject();
+		iWaitList = in.readBoolean();
 		
 		int nrConfigs = in.readInt();
 		iConfigs.clear();
@@ -948,6 +955,7 @@ public class XOffering implements Serializable, Externalizable {
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeLong(iUniqueId);
 		out.writeObject(iName);
+		out.writeBoolean(iWaitList);
 		
 		out.writeInt(iConfigs.size());
 		for (XConfig config: iConfigs)
