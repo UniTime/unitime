@@ -3019,6 +3019,12 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course title must be provided.")
 	String errorReqVTCourseNoTitle();
 	
+	@DefaultMessage("Instructor must be provided.")
+	String errorReqVTCourseNoInstructor();
+	
+	@DefaultMessage("Please put in the instructor name/email in the notes below.")
+	String hintReqVTCourseNoInstructorMatch();
+	
 	@DefaultMessage("Credit:")
 	String propReqVTCourseCredit();
 	
@@ -3048,4 +3054,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("An example dislaimer here.\nI solemnly swear that i am up to no good.")
 	String disclaimerRequestVariableTitle();
+	
+	@DefaultMessage("None of the above")
+	String itemReqVTNoInstructor();
 }
