@@ -673,6 +673,8 @@ public enum Right {
     ApiRetrieveInstructors(Session.class),
     ApiRetrieveCurricula(Session.class),
     ApiRetrieveStudentGroups(Session.class),
+    ApiVariableTitleSectionLookup(Session.class),
+    ApiVariableTitleSectionCreate(Session.class),
     
     /** People Lookup limitations */
     CanLookupStudents,

@@ -557,6 +557,12 @@ public class AdministrationPermissions {
 	@PermissionForRight(Right.ApiRetrieveStudentGroups)
 	public static class ApiRetrieveStudentGroups extends SimpleSessionPermission {}
 	
+	@PermissionForRight(Right.ApiVariableTitleSectionLookup)
+	public static class ApiVariableTitleSectionLookup extends SimpleSessionPermission {}
+	
+	@PermissionForRight(Right.ApiVariableTitleSectionCreate)
+	public static class ApiVariableTitleSectionCreate extends SimpleSessionPermission {}
+
 	@PermissionForRight(Right.EventServiceProviderEditSession)
 	public static class EventServiceProviderEditSession extends SimpleSessionPermission {} 
 
