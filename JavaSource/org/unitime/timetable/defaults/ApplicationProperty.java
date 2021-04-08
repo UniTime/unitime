@@ -33,6 +33,7 @@ import org.hibernate.id.IdentifierGenerator;
 import org.unitime.commons.Email;
 import org.unitime.commons.hibernate.util.DatabaseUpdate;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.interfaces.AcademicSessionLookup;
 import org.unitime.timetable.interfaces.ExternalClassEditAction;
 import org.unitime.timetable.interfaces.ExternalClassLookupInterface;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface;
@@ -49,9 +50,11 @@ import org.unitime.timetable.interfaces.ExternalInstructionalOfferingNotOfferedA
 import org.unitime.timetable.interfaces.ExternalInstructionalOfferingOfferedAction;
 import org.unitime.timetable.interfaces.ExternalLinkLookup;
 import org.unitime.timetable.interfaces.ExternalSchedulingSubpartEditAction;
+import org.unitime.timetable.interfaces.ExternalSectionMonitoredUpdateMessage;
 import org.unitime.timetable.interfaces.ExternalSolutionCommitAction;
 import org.unitime.timetable.interfaces.ExternalUidLookup;
 import org.unitime.timetable.interfaces.ExternalUidTranslation;
+import org.unitime.timetable.interfaces.ExternalVariableTitleDataLookup;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
@@ -68,11 +71,11 @@ import org.unitime.timetable.onlinesectioning.custom.CustomClassAttendanceProvid
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseLookup;
 import org.unitime.timetable.onlinesectioning.custom.DegreePlansProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
+import org.unitime.timetable.onlinesectioning.custom.SectionLimitProvider;
 import org.unitime.timetable.onlinesectioning.custom.SectionUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationDashboardUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEmailProvider;
-import org.unitime.timetable.onlinesectioning.custom.SectionLimitProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentHoldsCheckProvider;
 import org.unitime.timetable.onlinesectioning.custom.VariableTitleCourseProvider;
@@ -858,6 +861,16 @@ public enum ApplicationProperty {
 	@Description("ExternalCourseOfferingReservationEditAction interface called when a reservation was edited")
 	ExternalActionCourseOfferingReservationEdit("tmtbl.external.reservation.edit_action.class"),
 
+	@Type(Class.class)
+	@Implements(ExternalSectionMonitoredUpdateMessage.class)
+	@Description("ExternalSectionMonitoredUpdateMessage interface called when the update to the external system needs to be monitored for success or failure.")
+	ExternalActionSectionMonitoredUpdateMessage("unitime.external.section_monitored_update_message.class"),
+
+	@Type(Class.class)
+	@Implements(ExternalVariableTitleDataLookup.class)
+	@Description("ExternalVariableTitleDataLookup interface called when a view exists to the external system that provides additional information about variable title courses.")
+	ExternalVariableTitleDataLookup("unitime.external.variable_title_data_lookup.class"),
+	
 	/**
 	 * Use {@link SpringLdapExternalUidTranslation} when LDAP authentication is enabled.
 	 * See http://help.unitime.org/LDAP for more details.
@@ -2826,6 +2839,63 @@ public enum ApplicationProperty {
 	@Parameter("examination type")
 	ExamEventAllocatedTimeBasedExamLength("unitime.examEvent.allocatesTimeBasedExamLength.%"),
 	
+	@Type(Class.class)
+	@Implements(AcademicSessionLookup.class)
+	@DefaultValue("org.unitime.timetable.util.DefaultAcademicSessionLookup")
+	@Description("Academic Session Lookup: implementation class (implementing AcademicSessionLookup interface)")
+	AcademicSessionLookupImplementation("unitime.session.lookup.class"),
+
+	@Type(String.class)
+	@DefaultValue("VT")
+	@Description("Variable Title: Course Configuration Name")
+	@Since(4.5)
+	VariableTitleConfigName("unitime.variableTitle.configName"),
+
+	@Type(String.class)
+	@DefaultValue("IND")
+	@Description("Variable Title: Instructional Type - This should match the reference of the instructional type.")
+	@Since(4.5)
+	VariableTitleInstructionalType("unitime.variableTitle.instructionalType"),
+
+	@Type(String.class)
+	@DefaultValue("VT_")
+	@Description("Variable Title: Default Generated Date Pattern Prefix")
+	@Since(4.5)
+	VariableTitleDatePatternPrefix("unitime.variableTitle.datePatternPrefix"),
+
+	@Type(String.class)
+	@DefaultValue("IN")
+	@Description("Variable Title: Default Consent Type - This should match the reference of the consent type.  If no abbreviation is given, no consent type will be set.")
+	@Since(4.5)
+	VariableTitleDefaultConsentType("unitime.variableTitle.defaultConsentType"),
+
+	@Type(String.class)
+	@DefaultValue("collegiate")
+	@Description("Variable Title: Default Course Credit Type - This should match the reference of the course credit type.")
+	@Since(4.5)
+	VariableTitleDefaultCourseCreditType("unitime.variableTitle.defaultCourseCreditType"),
+
+	@Type(String.class)
+	@DefaultValue("semesterHours")
+	@Description("Variable Title: Default Course Credit Unit Type - This should match the reference of the course credit unit type.  If no abbreviation is given, no consent type will be set.")
+	@Since(4.5)
+	VariableTitleDefaultCourseCreditUnitType("unitime.variableTitle.defaultCourseCreditUnitType"),
+
+	@Type(Integer.class)
+	@DefaultValue("-1")
+	@Description("Variable Title: Default Limit (-1 means unlimited enrollment).  This will be used for all generated Instructional Offering Configurations and Classes.  The user can edit this value after the configuration/class has been created.")
+	VariableTitleDefaultLimit("unitime.variableTitle.defaultLimit"),
+
+	@Type(String.class)
+	@DefaultValue("Z")
+	@Description("Variable Title: Default starting character(s) for the generated course suffix.")
+	VariableTitleCourseSuffixDefaultStartCharacter("unitime.variableTitle.courseSuffixDefaultStartCharacter"),
+
+	@Type(Integer.class)
+	@DefaultValue("20")
+	@Description("Variable Title: Wait time for external system section creation validation in seconds.  If wait time is exeeded, PENDING will be returned as the external system creation status.")
+	VariableTitleExternalSystemWaitTime("unitime.variableTitle.defaultExternalSystemWaitTime"),
+
 	;
 
 	String iKey;

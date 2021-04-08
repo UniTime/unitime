@@ -38,7 +38,7 @@ import org.unitime.timetable.util.Formats;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
-public class ChangeLog extends BaseChangeLog implements Comparable {
+public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -130,6 +130,7 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
         INSTRUCTOR_ASSIGNMENT_PREF_EDIT("Instructor Assignment Preferences"),
         INSTRUCTOR_ASSIGNMENT("Instructor Assignment"),
         DATA_IMPORT_PREFERENCES("Data Import: Prerefences"),
+        VARIABLE_TITLE_API("Variable Title API"),
         ;
         
         private String iTitle;
@@ -252,7 +253,7 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
             chl.setManager(manager);
             chl.setTimeStamp(new Date());
             chl.setObjectType(objectType);
-            chl.setObjectUniqueId(new Long(objectUniqueId.longValue()));
+            chl.setObjectUniqueId(Long.valueOf(objectUniqueId.longValue()));
             chl.setObjectTitle(objectTitle==null || objectTitle.length()==0?"N/A":(objectTitle.length() <= 255?objectTitle:objectTitle.substring(0,255)));
             chl.setSubjectArea(subjArea);
             if (dept==null && subjArea!=null) dept = subjArea.getDepartment();
@@ -305,12 +306,11 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
     
     public String toString() { return getLabel(); }
     
-    public int compareTo(Object obj) {
-        if (obj==null || !(obj instanceof ChangeLog)) return -1;
-        ChangeLog chl = (ChangeLog)obj;
-        int cmp = getTimeStamp().compareTo(chl.getTimeStamp());
+    public int compareTo(ChangeLog obj) {
+        if (obj==null ) return -1;
+        int cmp = getTimeStamp().compareTo(obj.getTimeStamp());
         if (cmp!=0) return cmp;
-        return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(chl.getUniqueId() == null ? -1 : chl.getUniqueId());
+        return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(obj.getUniqueId() == null ? -1 : obj.getUniqueId());
     }
     
     public static ChangeLog findLastChange(Object object) {
@@ -348,21 +348,22 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
                 q.setString("source",source.name());
             q.setMaxResults(1);
             q.setCacheable(true);
-            List logs = q.list();
-            return (logs.isEmpty()?null:(ChangeLog)logs.get(0));
+            @SuppressWarnings("unchecked")
+			List<ChangeLog> logs = q.list();
+            return (logs.isEmpty()?null:logs.get(0));
         } catch (Exception e) {
             Debug.error(e);
         }
         return null;
     }
     
-    public static ChangeLog findLastChange(String objectType, Collection objectUniqueIds, Source source) {
+    public static ChangeLog findLastChange(String objectType, Collection<Long> objectUniqueIds, Source source) {
         try {
             org.hibernate.Session hibSession = new ChangeLogDAO().getSession();
             ChangeLog changeLog = null;
 
             StringBuffer ids = new StringBuffer(); int idx = 0;
-            for (Iterator i=objectUniqueIds.iterator();i.hasNext();idx++) {
+            for (Iterator<Long> i=objectUniqueIds.iterator();i.hasNext();idx++) {
                 ids.append(i.next()); idx++;
                 if (idx==100) {
                     Query q = hibSession.createQuery(
@@ -373,9 +374,10 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
                     q.setString("objectType",objectType);
                     if (source!=null) q.setString("source",source.name());
                     q.setMaxResults(1);
-                    List logs = q.list();
+                    @SuppressWarnings("unchecked")
+					List<ChangeLog> logs = q.list();
                     if (!logs.isEmpty()) {
-                        ChangeLog cl = (ChangeLog)logs.get(0);
+                        ChangeLog cl = logs.get(0);
                         if (changeLog==null || changeLog.compareTo(cl)>0)
                             changeLog = cl;
                     }
@@ -396,9 +398,10 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
                 if (source!=null) q.setString("source",source.name());
                 q.setMaxResults(1);
                 q.setCacheable(true);
-                List logs = q.list();
+                @SuppressWarnings("unchecked")
+				List<ChangeLog> logs = q.list();
                 if (!logs.isEmpty()) {
-                    ChangeLog cl = (ChangeLog)logs.get(0);
+                    ChangeLog cl = logs.get(0);
                     if (changeLog==null || changeLog.compareTo(cl)>0)
                         changeLog = cl;
                 }
@@ -411,11 +414,12 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
         return null;
     }
 
-    public static List findLastNChanges(Object object, int n) {
+    public static List<ChangeLog> findLastNChanges(Object object, int n) {
         return findLastNChanges(object, null, n);
     }
     
-    public static List findLastNChanges(Object object, Source source, int n) {
+    @SuppressWarnings("unchecked")
+	public static List<ChangeLog> findLastNChanges(Object object, Source source, int n) {
         try {
             Number objectUniqueId = (Number)object.getClass().getMethod("getUniqueId", new Class[]{}).invoke(object, new Object[]{});
             String objectType = object.getClass().getName();
@@ -438,7 +442,8 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
         return null;
     }
 
-    public static List findLastNChanges(Long sessionId, Long managerId, Long subjAreaId, Long departmentId, int n) {
+    @SuppressWarnings("unchecked")
+	public static List<ChangeLog> findLastNChanges(Long sessionId, Long managerId, Long subjAreaId, Long departmentId, int n) {
         try {
             org.hibernate.Session hibSession = new ChangeLogDAO().getSession(); 
             Query q = hibSession.createQuery(

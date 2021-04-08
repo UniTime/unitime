@@ -21,6 +21,7 @@ package org.unitime.timetable.model;
 
 import java.util.TreeSet;
 
+import org.hibernate.Session;
 import org.unitime.timetable.model.base.BaseItypeDesc;
 import org.unitime.timetable.model.dao.ItypeDescDAO;
 
@@ -65,6 +66,14 @@ public class ItypeDesc extends BaseItypeDesc implements Comparable<Object> {
     public int compareTo(Object o) {
         if (o==null || !(o instanceof ItypeDesc)) return -1;
         return getItype().compareTo(((ItypeDesc)o).getItype());
+    }
+    
+    public static ItypeDesc findForReference(String reference, Session hibSession) {
+    	return((ItypeDesc) hibSession
+    			.createQuery("from ItypeDesc i where i.sis_ref = :ref")
+    			.setString("ref", reference)
+    			.setCacheable(true)
+    			.uniqueResult());
     }
     
 }
