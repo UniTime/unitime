@@ -64,6 +64,7 @@ import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.comparators.ClassComparator;
+import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseDemandDAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
@@ -818,6 +819,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					course = r.subject + " " + r.courseNbr;
 				} else if (r.crn != null) {
 					for (String crn: r.crn.split(",")) {
+						if (crn.isEmpty() || "-".equals(crn)) continue;
 						CourseOffering c = findCourseByExternalId(server.getAcademicSession().getUniqueId(), crn);
 						if (c != null) { course = c.getCourseName(); break; }
 					}
@@ -1378,7 +1380,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		String honorsGradeMode = getResetGradeModesRegExp();
 		if (specialRequest.changes != null)
 			for (Change change: specialRequest.changes) {
-				if (change.crn == null || change.crn.isEmpty()) {
+				if (change.crn == null || change.crn.isEmpty() || change.crn.equals("-")) {
 					if (change.errors != null)
 						for (ChangeError err: change.errors)
 							if ("MAXI".equals(err.code)) {
@@ -1392,10 +1394,65 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 									if (student.getMaxCredit() >= specialRequest.maxCredit && getStatus(change.status) == SpecialRegistrationStatus.Pending)
 										maxStatus = ChangeStatus.approved;
 								}
+							} else if ("VARTL".equals(err.code)) {
+								for (XRequest r: student.getRequests()) {
+									if (r instanceof XCourseRequest) {
+										XCourseRequest cr = (XCourseRequest)r;
+										XEnrollment e = cr.getEnrollment();
+										if (e != null && e.getCourseName().startsWith(change.subject + " " + change.courseNbr)) {
+											// already enrolled
+											CourseOffering course = CourseOfferingDAO.getInstance().get(e.getCourseId(), helper.getHibSession());
+											Set<Class_> list = adds.get(course);
+											if (list == null) {
+												list = new TreeSet<Class_>(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
+												 adds.put(course, list);
+											}
+											for (Long classId: e.getSectionIds()) {
+												Class_ clazz = Class_DAO.getInstance().get(classId, helper.getHibSession());
+												if (clazz != null) {
+													list.add(clazz);
+													List<Change> ch = changes.get(clazz);
+													if (ch == null) { ch = new ArrayList<Change>(); changes.put(clazz, ch); }
+													ch.add(change);
+												}
+											}
+										}
+									}
+								}
+								if (changes.isEmpty()) {
+									String vartlNote = SpecialRegistrationHelper.getLastNote(change);
+									String message = err.message;
+									switch (getStatus(change.status)) {
+									case Approved:
+										message = "Approved: " + message;
+										break;
+									case Rejected:
+										message = "Denied: " + message;
+										break;
+									}
+									if (vartlNote != null && !vartlNote.toString().isEmpty())
+										message += "\n  <span class='note'>" + vartlNote.trim() + "</span>";
+									if (change.status != null)
+										message = "<span class='" + change.status + "'>" + message + "</span>";
+									ClassAssignment ca = new ClassAssignment();
+									ca.setSubject(change.subject);
+									ca.setCourseNbr(change.courseNbr);
+									ca.setSpecRegOperation(SpecialRegistrationOperation.Add);
+									ca.setCourseId(-1l);
+									ca.setSubpart("Ind");
+									ca.setCredit(change.selectedCreditHour);
+									ca.setSection("");
+									ca.setExternalId("00000");
+									ca.setClassId(-1l);
+									ret.addChange(ca);
+									ca.addError(message);
+									ret.addError(new ErrorMessage(change.subject + " " + change.courseNbr, "00000", "VARTL", message));
+								}
 							}
 					continue;
 				}
 				for (String crn: change.crn.split(",")) {
+					if (crn.isEmpty() || "-".equals(crn)) continue;
 					CourseOffering course = findCourseByExternalId(server.getAcademicSession().getUniqueId(), crn);
 					List<Class_> classes = findClassesByExternalId(server.getAcademicSession().getUniqueId(), crn);
 					if (course != null && classes != null && !classes.isEmpty()) {
@@ -1450,6 +1507,12 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 						if (clazz.getExternalId(course).equals(change.get(0).crn) && (clazz.getParentClass() == null || !clazz.getSchedulingSubpart().getItype().equals(clazz.getParentClass().getSchedulingSubpart().getItype())))
 							if (change.get(0).selectedCreditHour != null)
 								ca.setCreditHour(Float.valueOf(change.get(0).selectedCreditHour));
+					}
+					if (change.get(0).operation == ChangeOperation.CHGVARTL) {
+						if (change.get(0).selectedCreditHour != null)
+							ca.setCreditHour(Float.valueOf(change.get(0).selectedCreditHour));
+						if (change.get(0).selectedGradeMode != null)
+							ca.setGradeMode(new GradeMode(change.get(0).selectedGradeMode, change.get(0).selectedGradeModeDescription, honorsGradeMode != null && !honorsGradeMode.isEmpty() && change.get(0).selectedGradeMode.matches(honorsGradeMode)));
 					}
 					SpecialRegistrationStatus s = null;
 					for (Change ch: change)

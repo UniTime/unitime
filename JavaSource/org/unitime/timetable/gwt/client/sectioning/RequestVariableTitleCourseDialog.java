@@ -86,7 +86,7 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 	private UniTimeWidget<AriaTextBox> iCourseTitle = null;
 	private ListBox iCredit;
 	private AriaSuggestBox iCourseSuggestBox = null;
-	private ListBox iInstructor;
+	private UniTimeWidget<ListBox> iInstructor;
 	private ListBox iGradeMode;
 	private SingleDateSelector iDateFrom, iDateTo;
 	private CheckBox iDisclaimer;
@@ -143,7 +143,7 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 		iCourseTitle = new UniTimeWidget<AriaTextBox>(new AriaTextBox());
 		iCourseTitle.getWidget().setStyleName("unitime-TextBox");
 		iCourseTitle.getWidget().addStyleName("title");
-		iCourseTitle.getWidget().setMaxLength(100);
+		iCourseTitle.getWidget().setMaxLength(30);
 		iCourseTitle.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
@@ -164,10 +164,19 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 			}
 		});
 		
-		iInstructor = new ListBox();
-		iInstructor.addStyleName("instructor");
-		iInstructor.setEnabled(false);
+		iInstructor = new UniTimeWidget<ListBox>(new ListBox());
+		iInstructor.getWidget().addStyleName("instructor");
+		iInstructor.getWidget().setEnabled(false);
 		iForm.addRow(MESSAGES.propReqVTCourseInstructor(), iInstructor);
+		iInstructor.getWidget().addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				if ("-".equals(iInstructor.getWidget().getSelectedValue()))
+						iInstructor.setHint(MESSAGES.hintReqVTCourseNoInstructorMatch());
+				else
+					iInstructor.clearHint();
+			}
+		});
 		
 		iGradeMode = new ListBox();
 		iGradeMode.addStyleName("grade-mode");
@@ -237,7 +246,7 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 		iDisclaimer.setValue(false);
 		iNote.setText("");
 		iCredit.clear();
-		iInstructor.clear();
+		iInstructor.getWidget().clear(); iInstructor.clearHint();
 		iGradeMode.clear();
 		iDateFrom.setValueInServerTimeZone(null); iDateTo.setValueInServerTimeZone(null);
 		setCourse(null);
@@ -270,10 +279,10 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 	protected void setCourse(VariableTitleCourseInfo course) {
 		iSelectedCourse = course;
 		String lastCredit = iCredit.getSelectedValue();
-		String lastInstructor = iInstructor.getSelectedValue();
+		String lastInstructor = iInstructor.getWidget().getSelectedValue();
 		String lastGradeMode = iGradeMode.getSelectedValue();
 		iCredit.clear();
-		iInstructor.clear();
+		iInstructor.getWidget().clear(); iInstructor.clearHint();
 		iGradeMode.clear();
 		iCourseDetails.setHTML("");
 		iForm.getRowFormatter().setVisible(iCourseDetailsLine, false);
@@ -281,7 +290,7 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 		iForm.getRowFormatter().setVisible(iCreditLine, false);
 		if (iSelectedCourse == null) {
 			iCredit.setEnabled(false);
-			iInstructor.setEnabled(false);
+			iInstructor.getWidget().setEnabled(false);
 			iGradeMode.setEnabled(false);
 			iDisclaimer.setEnabled(false);
 			iDateFrom.setEnabled(false);
@@ -302,19 +311,24 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 			iCredit.setEnabled(iCredit.getItemCount() > 0);
 			if (iDateFrom.getValueInServerTimeZone() == null)
 				iDateFrom.setValueInServerTimeZone(iSelectedCourse.getStartDate());
-			iDateFrom.setEnabled(true);
+			// iDateFrom.setEnabled(true);
 			if (iDateTo.getValueInServerTimeZone() == null)
 				iDateTo.setValueInServerTimeZone(iSelectedCourse.getEndDate());
-			iDateTo.setEnabled(true);
+			// iDateTo.setEnabled(true);
 			if (iSelectedCourse.hasInstructors()) {
-				iInstructor.addItem(GWT_MSG.itemSelect(), "");
+				iInstructor.getWidget().addItem(GWT_MSG.itemSelect(), "");
 				for (InstructorInfo i: iSelectedCourse.getInstructors()) {
-					iInstructor.addItem(i.getName(), i.getId().toString());
+					iInstructor.getWidget().addItem(i.getName(), i.getId().toString());
 					if (lastInstructor != null && lastInstructor.equals(i.getId().toString()))
-						iInstructor.setSelectedIndex(iInstructor.getItemCount() - 1);
+						iInstructor.getWidget().setSelectedIndex(iInstructor.getWidget().getItemCount() - 1);
+				}
+				iInstructor.getWidget().addItem(MESSAGES.itemReqVTNoInstructor(), "-");
+				if (lastInstructor != null && lastInstructor.equals("-")) {
+					iInstructor.getWidget().setSelectedIndex(iInstructor.getWidget().getItemCount() - 1);
+					iInstructor.setHint(MESSAGES.hintReqVTCourseNoInstructorMatch());
 				}
 			}
-			iInstructor.setEnabled(iInstructor.getItemCount() > 0);
+			iInstructor.getWidget().setEnabled(iInstructor.getWidget().getItemCount() > 0);
 			if (iSelectedCourse.hasGradeModes()) {
 				GradeMode selection = iSelectedCourse.getDefaultGradeMode();
 				if (lastGradeMode != null)
@@ -352,11 +366,16 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 	}
 	
 	protected boolean validate() {
+		boolean valid = true;
 		if (iCourseTitle.getWidget().getText().isEmpty()) {
 			iCourseTitle.setErrorHint(MESSAGES.errorReqVTCourseNoTitle());
-			return false;
+			valid = false;
 		}
-		return true;
+		if (iInstructor.getWidget().isEnabled() && iInstructor.getWidget().getSelectedIndex() == 0) {
+			iInstructor.setErrorHint(MESSAGES.errorReqVTCourseNoTitle());
+			valid = false;
+		}
+		return valid;
 	}
 	
 	protected void onSubmit() {
@@ -373,8 +392,8 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 				request.setMaxCredit(credit);
 			}
 		}
-		if (iInstructor.getSelectedIndex() > 0)
-			request.setInstructor(new InstructorInfo(Long.valueOf(iInstructor.getSelectedValue()), iInstructor.getItemText(iInstructor.getSelectedIndex())));
+		if (iInstructor.getWidget().getSelectedIndex() > 0 && !"-".equals(iInstructor.getWidget().getSelectedValue()))
+			request.setInstructor(new InstructorInfo(Long.valueOf(iInstructor.getWidget().getSelectedValue()), iInstructor.getWidget().getItemText(iInstructor.getWidget().getSelectedIndex())));
 		if (iGradeMode.getItemCount() > 0)
 			request.setGradeModeCode(iGradeMode.getSelectedValue());
 		LoadingWidget.getInstance().show(MESSAGES.waitRequestVariableTitleCourse());
