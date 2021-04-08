@@ -79,7 +79,6 @@ import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
-import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
@@ -130,6 +129,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 		Set<Long> lockedCourses = new HashSet<Long>();
 		List<EnrollmentFailure> failures = null;
 		boolean includeRequestInTheReturnMessage = false;
+		boolean rescheduling = server.getConfig().getPropertyBoolean("Enrollment.ReSchedulingEnabled", false);
 		getRequest().removeDuplicates();
 		for (ClassAssignmentInterface.ClassAssignment ca: getAssignment())
 			if (ca != null && !ca.isFreeTime() && !ca.isDummy() && !ca.isTeachingAssignment()) {
@@ -138,15 +138,16 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					throw new SectioningException(MSG.exceptionEnrollNotAvailable(MSG.clazz(ca.getSubject(), ca.getCourseNbr(), ca.getSubpart(), ca.getSection())));
 				if (server.isOfferingLocked(course.getOfferingId())) {
 					lockedCourses.add(course.getCourseId());
-					for (CourseRequestInterface.Request r: getRequest().getCourses())
-						if (!r.isWaitList() && r.hasRequestedCourse()) {
-							for (RequestedCourse rc: r.getRequestedCourse())
-								if (rc.hasCourseId()) {
-									if (rc.getCourseId().equals(course.getCourseId())) r.setWaitList(true);
-								} else if (rc.hasCourseName()) {
-									if (course.matchCourseName(rc.getCourseName())) r.setWaitList(true);
-								}
-						}
+					if (rescheduling)
+						for (CourseRequestInterface.Request r: getRequest().getCourses())
+							if (!r.isWaitList() && r.hasRequestedCourse()) {
+								for (RequestedCourse rc: r.getRequestedCourse())
+									if (rc.hasCourseId()) {
+										if (rc.getCourseId().equals(course.getCourseId())) r.setWaitList(true);
+									} else if (rc.hasCourseName()) {
+										if (course.matchCourseName(rc.getCourseName())) r.setWaitList(true);
+									}
+							}
 				} else {
 					offeringIds.add(course.getOfferingId());
 				}
@@ -692,41 +693,12 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 								oldSections.add(sectionId);
 					}
 					
-					if (oldSections.isEmpty()) continue; // same assignment
+					if (oldSections.isEmpty()) continue; // no change detected
 					
-					boolean checkOffering = false;
 					XOffering offering = server.getOffering(oldEnrollment.getOfferingId());
-					if (!offering.getReservations().isEmpty()) {
-						checkOffering = true;
-						helper.debug("Check offering for " + oldEnrollment.getCourseName() + ": there are reservations.");
-					} else {
-						XEnrollments enrollments = server.getEnrollments(oldEnrollment.getOfferingId());
-						for (Long sectionId: oldSections) {
-							XSection section = offering.getSection(sectionId);
-							if (section != null && section.getLimit() >= 0 && section.getLimit() - enrollments.countEnrollmentsForSection(sectionId) == 1) {
-								checkOffering = true;
-								helper.debug("Check offering for " + oldEnrollment.getCourseName() + ": section " + section + " became available.");
-								break;
-							}
-						}
-						if (!checkOffering && (newEnrollment == null || !newEnrollment.getConfigId().equals(oldEnrollment.getConfigId()))) {
-							XConfig config = offering.getConfig(oldEnrollment.getConfigId());
-							if (config != null && config.getLimit() >= 0 && config.getLimit() - enrollments.countEnrollmentsForConfig(config.getConfigId()) == 1) {
-								checkOffering = true;
-								helper.debug("Check offering for " + oldEnrollment.getCourseName() + ": config " + config + " became available.");
-							}
-						}
-						if (!checkOffering && (newEnrollment == null || !newEnrollment.getCourseId().equals(oldEnrollment.getCourseId()))) {
-							XCourse course = offering.getCourse(oldEnrollment.getCourseId());
-							if (course != null && course.getLimit() >= 0 && course.getLimit() - enrollments.countEnrollmentsForCourse(course.getCourseId()) == 1) {
-								checkOffering = true;
-								helper.debug("Check offering for " + oldEnrollment.getCourseName() + ": course " + course + " became available.");
-							}
-						}
-					}
-					
-					if (checkOffering)
-						server.execute(server.createAction(CheckOfferingAction.class).forOfferings(oldEnrollment.getOfferingId()), helper.getUser(), offeringChecked);
+
+					if (CheckOfferingAction.isCheckNeeded(server, helper, oldEnrollment, newEnrollment))
+						server.execute(server.createAction(CheckOfferingAction.class).forOfferings(oldEnrollment.getOfferingId()).skipStudents(getStudentId()), helper.getUser(), offeringChecked);
 					
 					updateSpace(server,
 							newEnrollment == null ? null : SectioningRequest.convert(newStudent, newRequest, server, offering, newEnrollment),
