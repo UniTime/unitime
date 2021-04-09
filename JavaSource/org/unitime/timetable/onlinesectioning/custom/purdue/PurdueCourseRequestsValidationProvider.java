@@ -3434,7 +3434,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		}
 		if (questionNoAlt)
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.noAlternatives", (creditError != null ? "\n" : "") +
-					"One or more of the newly requested courses have no alternatives provided. The student may not be able to get a full schedule."),
+					"One or more of the recommended courses have no alternatives provided. The student may not be able to get a full schedule."),
 					CONF_UNITIME, 3);
 		if (questionTimeConflict)
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.timeConflicts", (creditError != null || questionNoAlt ? "\n" : "") +
@@ -3443,11 +3443,11 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		if (questionRestrictionsNotMet) {
 			if (onlineOnly)
 				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.onlineOnlyNotMet", (creditError != null || questionNoAlt || questionTimeConflict ? "\n" : "") +
-					"One or more of the newly requested courses have no online-only option at the moment. The student may not be able to get a full schedule."),
+					"One or more of the recommended courses have no online-only option at the moment. The student may not be able to get a full schedule."),
 					CONF_UNITIME, 7);
 			else
 				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.residentialNotMet", (creditError != null || questionNoAlt || questionTimeConflict ? "\n" : "") +
-					"One or more of the newly requested courses have no residential option at the moment. The student may not be able to get a full schedule."),
+					"One or more of the recommended courses have no residential option at the moment. The student may not be able to get a full schedule."),
 					CONF_UNITIME, 7);
 		}
 		if (questionFreeTime) {

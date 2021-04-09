@@ -1494,17 +1494,17 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 		}
 		if (questionNoAlt)
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.noAlternatives", (creditError != null ? "\n" : "") +
-					"One or more of the newly requested courses have no alternatives provided. The student may not be able to get a full schedule."),
+					"One or more of the recommended courses have no alternatives provided. The student may not be able to get a full schedule."),
 					CONF_UNITIME, 3);
 		
 		if (questionRestrictionsNotMet) {
 			if (onlineOnly)
 				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.onlineOnlyNotMet", (creditError != null || questionNoAlt ? "\n" : "") +
-					"One or more of the newly requested courses have no online-only option at the moment. The student may not be able to get a full schedule."),
+					"One or more of the recommended courses have no online-only option at the moment. The student may not be able to get a full schedule."),
 					CONF_UNITIME, 5);
 			else
 				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.residentialNotMet", (creditError != null || questionNoAlt ? "\n" : "") +
-					"One or more of the newly requested courses have no residential option at the moment. The student may not be able to get a full schedule."),
+					"One or more of the recommended courses have no residential option at the moment. The student may not be able to get a full schedule."),
 					CONF_UNITIME, 5);
 		}
 		if (questionFreeTime) {
