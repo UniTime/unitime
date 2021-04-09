@@ -128,13 +128,13 @@ public class VariableTitleCourseConnector extends ApiConnector {
 			throw new IllegalArgumentException("Instructor with matching id not found for provided subject area.");			
 		};
 		
-		if (ApplicationProperty.VariableTitleConfigName.value() == null || ApplicationProperty.VariableTitleConfigName.value().strip().equals("")) {
+		if (ApplicationProperty.VariableTitleConfigName.value() == null || ApplicationProperty.VariableTitleConfigName.value().trim().equals("")) {
 			throw new IllegalArgumentException("Variable Title Application Properties: Config Name must be set.");			
 		}
-		if (ApplicationProperty.VariableTitleDefaultLimit.value() == null || ApplicationProperty.VariableTitleDefaultLimit.value().strip().equals("")) {
+		if (ApplicationProperty.VariableTitleDefaultLimit.value() == null || ApplicationProperty.VariableTitleDefaultLimit.value().trim().equals("")) {
 			throw new IllegalArgumentException("Variable Title Application Properties: Default Limit must be set.");			
 		}
-		if (ApplicationProperty.VariableTitleInstructionalType.value() == null || ApplicationProperty.VariableTitleInstructionalType.value().strip().equals("")) {
+		if (ApplicationProperty.VariableTitleInstructionalType.value() == null || ApplicationProperty.VariableTitleInstructionalType.value().trim().equals("")) {
 			throw new IllegalArgumentException("Variable Title Application Properties: Instructional Type must be set.");			
 		}
 		if (ItypeDesc.findForReference(ApplicationProperty.VariableTitleInstructionalType.value(), helper.getHibSession()) == null) {
@@ -179,7 +179,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
 						        && ApplicationProperty.VariableTitleConfigName.value() != ""
 						        && ioc.getName().equals(ApplicationProperty.VariableTitleConfigName.value()))
 					        || (ApplicationProperty.VariableTitleConfigName.value() == null
-					           || ApplicationProperty.VariableTitleConfigName.value().strip() == ""))) {
+					           || ApplicationProperty.VariableTitleConfigName.value().trim() == ""))) {
 					for (SchedulingSubpart ss : ioc.getSchedulingSubparts()) {
 						if (ss.getItype().getSis_ref().equals(ApplicationProperty.VariableTitleInstructionalType.value())) {
 							for (Class_ c : ss.getClasses()) {
