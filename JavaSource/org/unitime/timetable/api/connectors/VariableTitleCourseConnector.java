@@ -108,7 +108,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
 		if (variableTitleQuery.getCourseTitle() == null) {
 			throw new IllegalArgumentException("Missing Course Title.");			
 		}
-		if (variableTitleQuery.getInstructorId() == null) {
+		if (ApplicationProperty.VariableTitleInstructorIdRequired.isTrue() && variableTitleQuery.getInstructorId() == null) {
 			throw new IllegalArgumentException("Missing Instructor Id.");			
 		}
 		if (variableTitleQuery.getStartDate() == null) {
@@ -117,14 +117,29 @@ public class VariableTitleCourseConnector extends ApiConnector {
 		if (variableTitleQuery.getEndDate() == null) {
 			throw new IllegalArgumentException("Missing End Date.");			
 		}
-		if (getAcadSession(variableTitleQuery, helper.getHibSession()) == null) {
+		Session s = getAcadSession(variableTitleQuery, helper.getHibSession());
+		if ( s == null) {
 			throw new IllegalArgumentException("Academic session not found for campus, year, and term.");
 		}
 		SubjectArea sa = getSubjectObject(variableTitleQuery, helper.getHibSession());
 		if (sa == null) {
 			throw new IllegalArgumentException("Subject area not found for campus, year, term, and subject area abbreviaton.");
 		}
-		if (DepartmentalInstructor.findByPuidDepartmentId(variableTitleQuery.getInstructorId(), sa.getDepartment().getUniqueId(), helper.getHibSession()) == null) {
+		
+		ExternalVariableTitleDataLookup evtdl = null;
+		try {
+			evtdl = lookupExternalVariableTitleDataLookup();
+		} catch (Exception e) {
+			Debug.error("Unable to look up external variable title data.", e);
+			throw new IllegalArgumentException("Unable to look up external variable title data.  Unable to instantiate lookup class.");			
+		}
+		if (evtdl != null) {
+			if (!evtdl.isVariableTitleCourse(sa, variableTitleQuery.getCourseNumber(), s, helper.getHibSession())) {
+				throw new IllegalArgumentException("Course for provided subject area and course number is not a variable title course.");							
+			}
+		}
+		
+		if (variableTitleQuery.getInstructorId() != null && DepartmentalInstructor.findByPuidDepartmentId(variableTitleQuery.getInstructorId(), sa.getDepartment().getUniqueId(), helper.getHibSession()) == null) {
 			throw new IllegalArgumentException("Instructor with matching id not found for provided subject area.");			
 		};
 		
@@ -161,15 +176,25 @@ public class VariableTitleCourseConnector extends ApiConnector {
 		  .append(getSubjectObject(variableTitleQuery, hibSession).getUniqueId())
 		  .append(" and co.courseNbr like '")
 		  .append(variableTitleQuery.getCourseNumber())
-		  .append("%' and co.title = '")
-		  .append(variableTitleQuery.getCourseTitle())
-		  .append("'")
+		  .append("%'")
 		  ;
 		
-		return (CourseOffering) hibSession.createQuery(sb.toString()).setCacheable(true).setMaxResults(1).uniqueResult();
+		@SuppressWarnings("unchecked")
+		List<CourseOffering> courses = (List<CourseOffering>)hibSession.createQuery(sb.toString()).setCacheable(true).list();
+		CourseOffering co = null;
+		for (CourseOffering c : courses) {
+			if (c.getTitle().trim().equalsIgnoreCase(variableTitleQuery.getCourseTitle().trim())) {
+				co = c;
+				break;
+			}
+		}
+		return co; 
 	}
 
 	private Class_ findClass(VariableTitleQuery variableTitleQuery, CourseOffering courseOffering, org.hibernate.Session hibSession) {
+		if (ApplicationProperty.VariableTitleInstructorIdRequired.isTrue() && variableTitleQuery.getInstructorId() == null) {
+			return null;
+		}
 		if (courseOffering != null && courseOffering.getInstructionalOffering() != null 
 				&& courseOffering.getInstructionalOffering().getInstrOfferingConfigs() != null 
 				&& !courseOffering.getInstructionalOffering().getInstrOfferingConfigs().isEmpty()) {
@@ -183,14 +208,16 @@ public class VariableTitleCourseConnector extends ApiConnector {
 					for (SchedulingSubpart ss : ioc.getSchedulingSubparts()) {
 						if (ss.getItype().getSis_ref().equals(ApplicationProperty.VariableTitleInstructionalType.value())) {
 							for (Class_ c : ss.getClasses()) {
-								if (c.getClassInstructors().size() == 1) {
-									for (ClassInstructor ci : c.getClassInstructors()) {
-										if (ci.getInstructor().getExternalUniqueId() != null && ci.getInstructor().getExternalUniqueId().equalsIgnoreCase(variableTitleQuery.getInstructorId())) {
-											if (c.effectiveDatePattern().getStartDate().equals(variableTitleQuery.getStartDate()) 
-													&& c.effectiveDatePattern().getEndDate().equals(variableTitleQuery.getEndDate())) {
-												return c;
+								if (c.effectiveDatePattern().getStartDate().equals(variableTitleQuery.getStartDate()) 
+										&& c.effectiveDatePattern().getEndDate().equals(variableTitleQuery.getEndDate())) {
+									if ((ApplicationProperty.VariableTitleInstructorIdRequired.isTrue() || variableTitleQuery.getInstructorId() != null) && c.getClassInstructors().size() == 1) {
+										for(ClassInstructor ci : c.getClassInstructors()) {
+											if (ci.getInstructor().getExternalUniqueId() != null && ci.getInstructor().getExternalUniqueId().equalsIgnoreCase(variableTitleQuery.getInstructorId())) {
+													return c;
 											}
-										}
+										} 
+									} else if (ApplicationProperty.VariableTitleInstructorIdRequired.isFalse() && variableTitleQuery.getInstructorId() == null && c.getClassInstructors().size() == 0) {
+										return c;
 									}
 								}
 							}
@@ -411,14 +438,16 @@ public class VariableTitleCourseConnector extends ApiConnector {
         ss.addToclasses(clazz);
         clazz.setUniqueId((Long) hibSession.save(clazz));
         
-        DepartmentalInstructor di = DepartmentalInstructor.findByPuidDepartmentId(variableTitleQuery.getInstructorId(), subjectArea.getDepartment().getUniqueId(), hibSession);
-        ClassInstructor ci = new ClassInstructor();
-        ci.setLead(true);
-        ci.setPercentShare(100);
-        ci.setInstructor(di);
-        ci.setClassInstructing(clazz);
-        clazz.addToclassInstructors(ci);
-        ci.setUniqueId((Long)hibSession.save(ci));
+        if (variableTitleQuery.getInstructorId() != null) {
+        	DepartmentalInstructor di = DepartmentalInstructor.findByPuidDepartmentId(variableTitleQuery.getInstructorId(), subjectArea.getDepartment().getUniqueId(), hibSession);
+	        ClassInstructor ci = new ClassInstructor();
+	        ci.setLead(true);
+	        ci.setPercentShare(100);
+	        ci.setInstructor(di);
+	        ci.setClassInstructing(clazz);
+	        clazz.addToclassInstructors(ci);
+	        ci.setUniqueId((Long)hibSession.save(ci));
+        }
         return clazz;
 	}
 
