@@ -51,6 +51,12 @@
 				<line>Email subject defaults to the event's name, but it can be changed in the Send email dialog.</line>
 			</description>
 		</item>
+		<item>
+			<name>Event Timetable: Curriculum</name>
+			<description>
+				<line>Fixed an issue caused by a recent changes in curriculum reservations (curriculum reservation can now list multiple academic areas).</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>

@@ -359,11 +359,11 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						restrictions = new Hashtable<Long, Set<Long>[]>();
 						for (Object[] o: (List<Object[]>)hibSession.createQuery(
 								"select distinct cc.course.instructionalOffering.uniqueId, (case when g.uniqueId is null then x.uniqueId else g.uniqueId end), z.uniqueId " +
-								"from CurriculumReservation r left outer join r.configurations g left outer join r.classes z left outer join z.schedulingSubpart.instrOfferingConfig x " +
+								"from CurriculumReservation r inner join r.areas ra left outer join r.configurations g left outer join r.classes z left outer join z.schedulingSubpart.instrOfferingConfig x " +
 								"left outer join r.majors rm left outer join r.classifications rc, " +
 								"CurriculumCourse cc inner join cc.classification.curriculum.majors cm " +
 								"where (cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId) " +
-								"and cc.course.instructionalOffering = r.instructionalOffering and r.area = cc.classification.curriculum.academicArea "+
+								"and cc.course.instructionalOffering = r.instructionalOffering and ra = cc.classification.curriculum.academicArea "+
 								"and (rm is null or rm = cm) and (rc is null or rc = cc.classification.academicClassification)")
 								.setLong("resourceId", request.getResourceId()).setCacheable(true).list()) {
 							Long offeringId = (Long)o[0];
@@ -498,11 +498,11 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						restrictions = new Hashtable<Long, Set<Long>[]>();
 						for (Object[] o: (List<Object[]>)hibSession.createQuery(
 								"select distinct r.instructionalOffering.uniqueId, (case when g.uniqueId is null then x.uniqueId else g.uniqueId end), z.uniqueId " +
-								"from CurriculumReservation r left outer join r.configurations g left outer join r.classes z left outer join z.schedulingSubpart.instrOfferingConfig x " +
+								"from CurriculumReservation r inner join r.areas ra left outer join r.configurations g left outer join r.classes z left outer join z.schedulingSubpart.instrOfferingConfig x " +
 								"left outer join r.majors rm left outer join r.classifications rc, " +
 								"CurriculumClassification f inner join f.curriculum c inner join c.majors cm, CourseOffering co " +
 								"where (f.uniqueId = :resourceId or c.uniqueId = :resourceId) and co.uniqueId in (:courses) " +
-								"and co.instructionalOffering = r.instructionalOffering and r.area = c.academicArea "+
+								"and co.instructionalOffering = r.instructionalOffering and ra = c.academicArea "+
 								"and (rm is null or rm = cm) and (rc is null or rc = f.academicClassification)")
 								.setLong("resourceId", request.getResourceId()).setParameterList("courses", curriculumCourses).setCacheable(true).list()) {
 							Long offeringId = (Long)o[0];
