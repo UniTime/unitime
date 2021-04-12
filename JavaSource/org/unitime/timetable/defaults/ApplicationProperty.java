@@ -2896,6 +2896,11 @@ public enum ApplicationProperty {
 	@Description("Variable Title: Wait time for external system section creation validation in seconds.  If wait time is exeeded, PENDING will be returned as the external system creation status.")
 	VariableTitleExternalSystemWaitTime("unitime.variableTitle.defaultExternalSystemWaitTime"),
 
+	@Type(Integer.class)
+	@DefaultValue("false")
+	@Description("Variable Title: Instructor Id is Required")
+	VariableTitleInstructorIdRequired("unitime.variableTitle.instructorIdRequired"),
+
 	;
 
 	String iKey;
