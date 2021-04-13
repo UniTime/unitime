@@ -35,6 +35,16 @@
 				<line>Show all students notes in a new Notes tab when a student is clicked, including time stamp and the name of the user who set the note.</line>
 			</description>
 		</item>
+		<item>
+			<name>Advisor Course Recommendations: Read-Only Use</name>
+			<description>
+				<line>A few small improvements for users with read-only access to the Advisor Course Recommendations page.
+					<line>Show student status and PIN correctly (with the PIN toggle disabled).</line>
+					<line>Degree Plan button works without the Student Advisor permission (Advisor Course Request permission works as well).</line>
+					<line>Advisor Course Recommendations appears in the menu even when there is no Students menu.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Event Management</title>

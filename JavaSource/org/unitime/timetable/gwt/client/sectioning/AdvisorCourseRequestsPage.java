@@ -289,8 +289,18 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 							getRowFormatter().setVisible(iStatusLine, true);
 						} else {
 							setAdvisorRequests(result.getRequest());
-							getRowFormatter().setVisible(iStatusLine, false);
+							setPin(result.getRequest());
+							if (result.getStatus() != null) {
+								iStatus.clear();
+								iStatus.addItem(result.getStatus().getLabel(), result.getStatus().getReference());
+								iStatus.setSelectedIndex(0);	
+								iStatus.setEnabled(false);
+								getRowFormatter().setVisible(iStatusLine, true);
+							} else {
+								getRowFormatter().setVisible(iStatusLine, false);
+							}
 						}
+						iPinReleased.setEnabled(result.isCanUpdate());
 						History.newItem(String.valueOf(result.getStudentId()), false);
 					}
 					@Override
@@ -348,6 +358,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		iPin.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
+				if (iDetails != null && !iDetails.isCanUpdate()) return;
 				iPinReleased.setValue(!iPinReleased.getValue());
 				pinReleaseChanged();
 			}

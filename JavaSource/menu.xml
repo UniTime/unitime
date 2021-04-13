@@ -682,6 +682,14 @@
 			</not>
 		</condition>
 	</item>
+	<item name="Advisor Course Recommendations" page="acrf" type="gwt">
+		<condition>
+			<hasPermission name="AdvisorCourseRequests" authority="role"/>
+			<not>
+				<hasPermission name="StudentScheduling"/>
+			</not>
+		</condition>
+	</item>
 	<item name="Personal Schedule" page="personal" type="gwt">
 		<condition>
 			<or>
