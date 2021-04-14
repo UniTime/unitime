@@ -323,6 +323,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 			ret.setCourseName(course.getCourseName());
 			ret.setCourseTitle(course.getTitle());
 			ret.setCredit(course.guessCreditRange());
+			ret.setCanWaitList(course.isCanWaitList());
 			if (iLastCourse != null && iLastCourse.isCourse() && iLastCourse.hasCourseId() && courseName.equalsIgnoreCase(iLastCourse.getCourseName())) {
 				ret.setStatus(iLastCourse.getStatus());
 				ret.setStatusNote(iLastCourse.getStatusNote());
@@ -330,6 +331,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 				ret.setOverrideTimeStamp(iLastCourse.getOverrideTimeStamp());
 				ret.setRequestId(iLastCourse.getRequestId());
 				ret.setRequestorNote(iLastCourse.getRequestorNote());
+				ret.setCanWaitList(iLastCourse.isCanWaitList());
 			} else
 				ret.setStatus(RequestedCourseStatus.NEW_REQUEST);
 		} else if (iLastCourse != null && iLastCourse.isCourse() && iLastCourse.hasCourseId() && courseName.equalsIgnoreCase(iLastCourse.getCourseName())) {
@@ -343,6 +345,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 			ret.setStatusNote(iLastCourse.getStatusNote());
 			ret.setRequestId(iLastCourse.getRequestId());
 			ret.setRequestorNote(iLastCourse.getRequestorNote());
+			ret.setCanWaitList(iLastCourse.isCanWaitList());
 		} else if (iFreeTimeParser != null) {
 			try {
 				ret.setFreeTime(iFreeTimeParser.parseFreeTime(courseName));
@@ -693,6 +696,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 			iCourse.setCourseName(!course.hasUniqueName() || iShowCourses ? course.getCourseNameWithTitle() : course.getCourseName());
 			iCourse.setCourseTitle(course.getTitle());
 			iCourse.setCredit(course.guessCreditRange());
+			iCourse.setCanWaitList(course.isCanWaitList());
 			if (getText().equals(course.getCourseName()) || getText().startsWith(course.getCourseName() + " ") || 
 				getText().equals(course.getCourseNameWithTitle()) || getText().startsWith(course.getCourseNameWithTitle() + " ")) {
 				for (Chip chip: iFilter.getChips("section"))

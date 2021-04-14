@@ -780,6 +780,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 				rc.setCourseName(CONSTANTS.showCourseTitle() ? MESSAGES.courseNameWithTitle(ca.getSubject(), ca.getCourseNbr(), ca.getTitle()) : MESSAGES.course(ca.getSubject(), ca.getCourseNbr()));
 				rc.setCourseTitle(ca.getTitle());
 				rc.setCredit(ca.guessCreditRange());
+				rc.setCanWaitList(ca.isCanWaitList());
 				
 				CourseRequestInterface.RequestPriority p = requests.getRequestPriority(ca);
 				
@@ -804,6 +805,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 					altRc.setCourseName(CONSTANTS.showCourseTitle() ? MESSAGES.courseNameWithTitle(altCa.getSubject(), altCa.getCourseNbr(), altCa.getTitle()) : MESSAGES.course(altCa.getSubject(), altCa.getCourseNbr()));
 					altRc.setCourseTitle(altCa.getTitle());
 					altRc.setCredit(altCa.guessCreditRange());
+					altRc.setCanWaitList(altCa.isCanWaitList());
 					r.addRequestedCourse(altRc);
 				}
 			}
