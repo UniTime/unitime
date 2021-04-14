@@ -186,7 +186,15 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 		
 		if (!alternate) {
 			iWaitList = new CheckBox(); iWaitList.addStyleName("waitlist");
+			iWaitList.setEnabled(false);
 			iNotes.addStyleName("notes-with-waitlist");
+			box.addCourseSelectionHandler(new CourseSelectionHandler() {
+				@Override
+				public void onCourseSelection(CourseSelectionEvent event) {
+					iWaitList.setEnabled(event.getValue() != null && event.getValue().isCanWaitList());
+					if (!iWaitList.isEnabled()) iWaitList.setValue(false);
+				}
+			});
 		} else {
 			iNotes.addStyleName("notes-no-waitlist");
 		}
@@ -419,7 +427,7 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 			iCourses.get(0).setValue(null);
 			iCredit.setValue("");
 			iNotes.setValue("");
-			if (iWaitList != null) iWaitList.setValue(false);
+			if (iWaitList != null) { iWaitList.setValue(false); iWaitList.setEnabled(false); }
 			for (int i = iCourses.size() - 1; i > 0; i--) {
 				deleteAlternative(i);
 			}
@@ -518,7 +526,7 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 				deleteAlternative(i);
 			iCredit.setValue("");
 			iNotes.setValue("");
-			if (iWaitList != null) iWaitList.setValue(false);
+			if (iWaitList != null) { iWaitList.setValue(false); iWaitList.setEnabled(false); }
 		} else {
 			int index = 0;
 			if (value.hasRequestedCourse())
@@ -538,7 +546,15 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 			if (value.hasFilter()) iCourses.get(0).getCourseFinder().setFilter(value.getFilter());
 			iCredit.setValue(value.hasAdvisorCredit() ? value.getAdvisorCredit() : "");
 			iNotes.setValue(value.hasAdvisorNote() ? value.getAdvisorNote() : "");
-			if (iWaitList != null) iWaitList.setValue(value.isWaitList());
+			if (iWaitList != null) {
+				if (value.isCanWaitList()) {
+					iWaitList.setValue(value.isWaitList());
+					iWaitList.setEnabled(true);
+				} else {
+					iWaitList.setValue(false);
+					iWaitList.setEnabled(false);
+				}
+			}
 		}
 		if (iDelete != null) {
 			iDelete.setVisible(value == null || value.isCanDelete());

@@ -320,11 +320,12 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					XEnrollment newEnrollment = getEnrollment(newRequest, offeringId);
 					if (oldRequest == null && newRequest == null) continue;
 					
-					OnlineSectioningLog.Action.Builder action = helper.createAction(this, server.getAcademicSession());
+					OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
 					action.setStudent(
 							OnlineSectioningLog.Entity.newBuilder()
 							.setUniqueId(student[0] == null ? student[1].getStudentId() : student[0].getStudentId())
-							.setExternalId(student[0] == null ? student[1].getExternalId() : student[0].getExternalId()));
+							.setExternalId(student[0] == null ? student[1].getExternalId() : student[0].getExternalId())
+							.setName(student[0] == null ? student[1].getName() : student[0].getName()));
 					action.addOther(OnlineSectioningLog.Entity.newBuilder()
 							.setUniqueId(offeringId)
 							.setName(newOffering == null ? oldOffering.getName() : newOffering.getName())
@@ -360,7 +361,6 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 							}
 						}
 						action.setEndTime(System.currentTimeMillis());
-						helper.addAction(action);
 						server.execute(server.createAction(NotifyStudentAction.class).forStudent(oldStudent == null ? newStudent.getStudentId() : oldStudent.getStudentId()).oldEnrollment(oldOffering, course, oldEnrollment), helper.getUser());
 						continue;
 					}
@@ -370,7 +370,6 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					if (oldEnrollment == null && newEnrollment == null) {
 						if (newRequest.getEnrollment() == null && newStudent.canAssign(newRequest) && isWaitListed(newStudent, newRequest, server, helper) && newOffering.isWaitList()) {
 							queue.add(new SectioningRequest(newOffering, newRequest, newStudent, action).setOldOffering(oldOffering).setOldRequest(oldRequest).setOldStudent(oldStudent));
-							helper.addAction(action);
 						}
 						continue;
 					}
@@ -399,7 +398,6 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 								}							
 							}
 							action.setEndTime(System.currentTimeMillis());
-							helper.addAction(action);
 							
 							if (!isVerySame(newEnrollment.getCourseId(), newOffering.getSections(newEnrollment), oldOffering.getSections(oldEnrollment)))
 								server.execute(server.createAction(NotifyStudentAction.class).forStudent(oldStudent == null ? newStudent.getStudentId() : oldStudent.getStudentId()).oldEnrollment(oldOffering, course, oldEnrollment), helper.getUser());
@@ -418,11 +416,12 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					XStudent newStudent = student[1];
 					XCourseRequest newRequest = getRequest(newStudent, course);
 					if (newRequest != null && newRequest.getEnrollment() == null && newStudent.canAssign(newRequest) && isWaitListed(student[1], newRequest, server, helper) && newOffering.isWaitList()) {
-						OnlineSectioningLog.Action.Builder action = helper.createAction(this, server.getAcademicSession());
+						OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
 						action.setStudent(
 								OnlineSectioningLog.Entity.newBuilder()
 								.setUniqueId(student[0] == null ? student[1].getStudentId() : student[0].getStudentId())
-								.setExternalId(student[0] == null ? student[1].getExternalId() : student[0].getExternalId()));
+								.setExternalId(student[0] == null ? student[1].getExternalId() : student[0].getExternalId())
+								.setName(student[0] == null ? student[1].getName() : student[0].getName()));
 						action.addOther(OnlineSectioningLog.Entity.newBuilder()
 								.setUniqueId(offeringId)
 								.setName(newOffering == null ? oldOffering.getName() : newOffering.getName())
@@ -445,7 +444,6 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 						action.addRequest(OnlineSectioningHelper.toProto(newRequest));
 						
 						queue.add(new SectioningRequest(newOffering, newRequest, newStudent, action).setOldOffering(oldOffering).setOldRequest(oldRequest).setOldStudent(oldStudent));
-						helper.addAction(action);
 					}
 				}
 			}
@@ -456,12 +454,12 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 			ResectioningWeights w = new ResectioningWeights(properties);
 			StudentQuality sq = new StudentQuality(server.getDistanceMetric(), properties);
 			Date ts = new Date();
-			int index = 0;
+			int index = 1;
 			for (SectioningRequest r: queue) {
 				helper.debug("Resectioning " + r.getRequest() + " (was " + (r.getLastEnrollment() == null ? "not assigned" : r.getLastEnrollment().getSectionIds()) + ")");
 				long c0 = OnlineSectioningHelper.getCpuTime();
 				r.getAction().setStartTime(System.currentTimeMillis());
-				r.getAction().addOptionBuilder().setKey("Index").setValue(String.valueOf(index++));
+				r.getAction().addOptionBuilder().setKey("Index").setValue(index + " of " + queue.size()); index++;
 				XEnrollment e = r.resection(server, w, sq);
 				
 				if (e != null) {
@@ -486,7 +484,6 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 							server.assign(r.getRequest(), r.getNewEnrollment());
 						r.getAction().setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
 						r.getAction().setEndTime(System.currentTimeMillis());
-						helper.addAction(r.getAction());
 						continue;
 					}
 				}
@@ -591,7 +588,6 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 				r.getAction().setResult(e == null ? OnlineSectioningLog.Action.ResultType.NULL : OnlineSectioningLog.Action.ResultType.SUCCESS);
 				r.getAction().setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
 				r.getAction().setEndTime(System.currentTimeMillis());
-				helper.addAction(r.getAction());
 			}
 		}
 	}

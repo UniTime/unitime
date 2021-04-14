@@ -506,6 +506,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		private String iRequestorNote = null;
 		private String iRequestId = null;
 		private Boolean iInactive = null;  
+		private Boolean iCanWaitList = null;
 		
 		public RequestedCourse() {}
 		public RequestedCourse(List<FreeTime> freeTime) {
@@ -584,6 +585,9 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		
 		public boolean isInactive() { return iInactive != null && iInactive.booleanValue(); }
 		public void setInactive(Boolean inactive) { iInactive = inactive; }
+		
+		public boolean isCanWaitList() { return iCanWaitList != null && iCanWaitList.booleanValue(); }
+		public void setCanWaitList(Boolean canWaitList) { iCanWaitList = canWaitList; }
 		
 		public boolean isEmpty() { return !isCourse() && !isFreeTime(); }
 		
@@ -890,6 +894,15 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 				for (RequestedCourse rc: getRequestedCourse()) {
 					if (rc.hasCourseId() && advisorWaitListedCourseIds.contains(rc.getCourseId())) return true;
 				}
+			}
+			return false;
+		}
+
+		public boolean isCanWaitList() {
+			if (iRequestedCourse == null) return false;
+			for (RequestedCourse rc: iRequestedCourse) {
+				if (rc.isCanWaitList()) return true;
+				break;
 			}
 			return false;
 		}

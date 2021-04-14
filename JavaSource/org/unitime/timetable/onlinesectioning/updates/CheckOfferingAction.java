@@ -266,12 +266,12 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 			ResectioningWeights w = new ResectioningWeights(properties);
 			StudentQuality sq = new StudentQuality(server.getDistanceMetric(), properties);
 			Date ts = new Date();
-			int index = 0;
+			int index = 1;
 			for (SectioningRequest r: queue) {
-				helper.info("Resectioning " + r.getRequest() + " (was " + (r.getLastEnrollment() == null ? "not assigned" : r.getLastEnrollment()) + ")");
+				helper.debug("Resectioning " + r.getRequest() + " (was " + (r.getLastEnrollment() == null ? "not assigned" : r.getLastEnrollment()) + ")");
 				r.getAction().setStartTime(System.currentTimeMillis());
 				long c0 = OnlineSectioningHelper.getCpuTime();
-				r.getAction().addOptionBuilder().setKey("Index").setValue(String.valueOf(index++));
+				r.getAction().addOptionBuilder().setKey("Index").setValue(index + " of " + queue.size()); index++;
 				XEnrollment enrollment = r.resection(server, w, sq);
 				
 				if (enrollment != null) {
@@ -312,7 +312,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 					r.getAction().setEndTime(System.currentTimeMillis());
 					continue;
 				}
-				helper.info("New: " + (r.getRequest().getEnrollment() == null ? "not assigned" : r.getRequest().getEnrollment()));
+				helper.debug("New: " + (r.getRequest().getEnrollment() == null ? "not assigned" : r.getRequest().getEnrollment()));
 				if (r.getLastEnrollment() == null && r.getRequest().getEnrollment() == null) {
 					r.getAction().setResult(OnlineSectioningLog.Action.ResultType.NULL);
 					r.getAction().setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
