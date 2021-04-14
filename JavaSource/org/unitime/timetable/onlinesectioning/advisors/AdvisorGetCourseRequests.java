@@ -166,6 +166,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 								}
 							}
 						}
+						rc.setCanWaitList(offering != null && offering.isWaitList());
 						xcr.fillPreferencesIn(rc, course);
 						r.addRequestedCourse(rc);
 					}
@@ -288,6 +289,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 								}
 							}
 						}
+						rc.setCanWaitList(course.getCourseOffering().getInstructionalOffering().effectiveWaitList());
 						if (course.getPreferences() != null)
 							for (StudentSectioningPref ssp: course.getPreferences()) {
 								if (ssp instanceof StudentClassPref) {
@@ -378,6 +380,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 				rc.setCourseId(acr.getCourseOffering().getUniqueId());
 				rc.setCourseName(acr.getCourseOffering().getSubjectAreaAbbv() + " " + acr.getCourseOffering().getCourseNbr() + (!CONST.showCourseTitle() ? "" : " - " + acr.getCourseOffering().getTitle()));
 				rc.setCourseTitle(acr.getCourseOffering().getTitle());
+				rc.setCanWaitList(acr.getCourseOffering().getInstructionalOffering().effectiveWaitList());
 				CourseCreditUnitConfig credit = acr.getCourseOffering().getCredit(); 
 				if (credit != null) rc.setCredit(credit.getMinCredit(), credit.getMaxCredit());
 				if (acr.getPreferences() != null)
@@ -454,6 +457,8 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 				if (course != null) {
 					rc.setCredit(course.getMinCredit(), course.getMaxCredit());
 				}
+				XOffering offering = server.getOffering(acr.getCourseId().getOfferingId());
+				rc.setCanWaitList(offering != null && offering.isWaitList());
 				if (acr.hasPreferences())
 					for (XPreference ssp: acr.getPreferences()) {
 						switch (ssp.getType()) {

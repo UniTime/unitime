@@ -127,7 +127,15 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 					ValueChangeEvent.fire(CourseRequestLine.this, getValue());
 				}
 			});
+			iWaitList.setEnabled(false);
 			buttons.add(iWaitList);
+			box.addCourseSelectionHandler(new CourseSelectionHandler() {
+				@Override
+				public void onCourseSelection(CourseSelectionEvent event) {
+					iWaitList.setEnabled(event.getValue() != null && event.getValue().isCanWaitList());
+					if (!iWaitList.isEnabled()) iWaitList.setValue(false);
+				}
+			});
 		} else {
 			addStyleName("nowaitlist");
 		}
@@ -313,7 +321,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			iNext.delete();
 		} else {
 			iCourses.get(0).setValue(null);
-			if (iWaitList != null && iWaitList.isVisible()) { iWaitList.setEnabled(true); iWaitList.setValue(false); }
+			if (iWaitList != null && iWaitList.isVisible()) { iWaitList.setEnabled(false); iWaitList.setValue(false); }
 			for (int i = iCourses.size() - 1; i > 0; i--) {
 				deleteAlternative(i);
 			}
@@ -410,12 +418,20 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 	@Override
 	public void setValue(Request value, boolean fireEvents) {
 		if (value == null) {
-			if (iWaitList != null) iWaitList.setValue(false);
+			if (iWaitList != null) { iWaitList.setValue(false); iWaitList.setEnabled(false); }
 			iCourses.get(0).setValue(null, true);
 			for (int i = iCourses.size() - 1; i > 0; i--)
 				deleteAlternative(i);
 		} else {
-			if (iWaitList != null) iWaitList.setValue(value.isWaitList());
+			if (iWaitList != null) {
+				if (value.isCanWaitList()) {
+					iWaitList.setValue(value.isWaitList());
+					iWaitList.setEnabled(!value.isReadOnly());
+				} else {
+					iWaitList.setValue(false);
+					iWaitList.setEnabled(false);
+				}
+			}
 			int index = 0;
 			if (value.hasRequestedCourse())
 				for (RequestedCourse rc: value.getRequestedCourse()) {
@@ -436,9 +452,6 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 				iCourses.get(iCourses.size() - 1).setInfo(MESSAGES.advisorNoteWithCredit(value.getAdvisorNote(), value.getAdvisorCredit()));
 			else if (value.hasAdvisorNote())
 				iCourses.get(iCourses.size() - 1).setInfo(MESSAGES.advisorNote(value.getAdvisorNote()));
-		}
-		if (iWaitList != null && iWaitList.isVisible()) {
-			iWaitList.setEnabled(value == null || !value.isReadOnly());
 		}
 		if (iDelete != null) {
 			iDelete.setVisible(value == null || value.isCanDelete());

@@ -439,25 +439,6 @@ public class OnlineSectioningHelper {
 		}
     }
     
-    public OnlineSectioningLog.Action.Builder createAction(OnlineSectioningAction<?> action, AcademicSessionInfo session) {
-    	OnlineSectioningLog.Action.Builder a = OnlineSectioningLog.Action.newBuilder();
-    	a.setOperation(action.name());
-    	a.setSession(OnlineSectioningLog.Entity.newBuilder()
-    			.setUniqueId(session.getUniqueId())
-    			.setName(session.toCompactString())
-    			);
-    	a.setStartTime(System.currentTimeMillis());
-    	if (iUser != null)
-    		a.setUser(iUser);
-    	return a;
-    }
-    
-    public void addAction(OnlineSectioningLog.Action.Builder a) {
-    	synchronized (iLog) {
-        	iLog.addAction(a);
-		}
-    }
-    
     public OnlineSectioningLog.Action.Builder getAction() {
     	if (iLog.getActionCount() == 0)
     		return iLog.addActionBuilder();

@@ -927,10 +927,11 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					ca.setCourseId(course.getId());
 					ca.setSubject(course.getSubjectArea());
 					ca.setCourseNbr(course.getCourseNumber());
-					XCourse xc = server.getCourse(course.getId());
-					if (xc != null) ca.setTitle(xc.getTitle());
+					XOffering offering = server.getOffering(course.getOffering().getId());
+					ca.setTitle(offering.getCourse(course.getId()).getTitle());
 					ca.setWaitListed(r.isWaitlist());
 					ca.setHasCrossList(course.getOffering().getCourses().size() > 1);
+					ca.setCanWaitList(offering.isWaitList());
 					if (!r.isWaitlist()) 
 						nrUnassignedCourses++;
 					if (computeOverlaps) {
@@ -1069,6 +1070,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					}
 				}
 				XOffering offering = server.getOffering(course.getOffering().getId());
+				ca.setCanWaitList(offering.isWaitList());
 				ca.setTitle(offering.getCourse(course.getId()).getTitle());
 				XEnrollments enrl = server.getEnrollments(offering.getOfferingId());
 				for (Iterator<Section> i = sections.iterator(); i.hasNext();) {

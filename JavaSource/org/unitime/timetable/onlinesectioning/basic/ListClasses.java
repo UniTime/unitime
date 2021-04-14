@@ -104,6 +104,7 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 			courseAssign.setTitle(c.getTitle());
 			courseAssign.setSubject(c.getSubjectArea());
 			courseAssign.setHasCrossList(offering.hasCrossList());
+			courseAssign.setCanWaitList(offering.isWaitList());
 			XStudent student = (getStudentId() == null ? null : server.getStudent(getStudentId()));
 			for (XConfig config: offering.getConfigs())
 				for (XSubpart subpart: config.getSubparts())

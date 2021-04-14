@@ -208,6 +208,7 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 			rc.setCourseName(MESSAGES.courseNameWithTitle(record.getSubject(), record.getCourseNbr(), record.getTitle()));
 		rc.setCourseTitle(record.getTitle());
 		rc.setCredit(record.guessCreditRange());
+		rc.setCanWaitList(record.isCanWaitList());
 		for (Map.Entry<Preference, CheckBox> e: iInstructionalMethods.entrySet())
 			if (e.getValue().isEnabled() && e.getValue().getValue())
 				rc.setSelectedIntructionalMethod(e.getKey(), true);

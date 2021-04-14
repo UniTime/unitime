@@ -68,6 +68,7 @@ import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
@@ -552,6 +553,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 							if (io != null) {
 								ca.setEnrollment(io.getEnrollment());
 								ca.setProjected(io.getDemand());
+								ca.setCanWaitList(io.effectiveWaitList());
 							}
 						} else {
 							int firstChoiceReqs = 0;
@@ -564,6 +566,8 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 								}
 							ca.setEnrollment(enrl);
 							ca.setProjected(firstChoiceReqs);
+							XOffering io = server.getOffering(id.getOfferingId());
+							ca.setCanWaitList(io != null && io.isWaitList());
 						}
 						course.addCourse(ca);
 					}
@@ -624,6 +628,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 							if (io != null) {
 								ca.setEnrollment(io.getEnrollment());
 								ca.setProjected(io.getDemand());
+								ca.setCanWaitList(io.effectiveWaitList());
 							}
 						} else {
 							int firstChoiceReqs = 0;
@@ -636,6 +641,8 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 								}
 							ca.setEnrollment(enrl);
 							ca.setProjected(firstChoiceReqs);
+							XOffering io = server.getOffering(xc.getOfferingId());
+							ca.setCanWaitList(io != null && io.isWaitList());
 						}
 						course.addCourse(ca);
 					}

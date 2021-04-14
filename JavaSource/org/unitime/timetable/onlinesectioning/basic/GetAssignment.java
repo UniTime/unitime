@@ -217,6 +217,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 				
 		    	if (server.isOfferingLocked(course.getOfferingId()))
 					ca.setLocked(true);
+		    	ca.setCanWaitList(offering.isWaitList());
 				ca.setAssigned(true);
 				ca.setCourseId(course.getCourseId());
 				ca.setSubject(course.getSubjectArea());
@@ -225,6 +226,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 				ca.setTitle(course.getTitle());
 				ca.setTeachingAssignment(true);
 				ca.setHasCrossList(offering.hasCrossList());
+				ca.setCanWaitList(offering.isWaitList());
 				
 				Set<Long> added = new HashSet<Long>();
 		    	for (XConfig config: offering.getConfigs())
@@ -337,6 +339,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 
 				if (server.isOfferingLocked(course.getOfferingId()))
 					ca.setLocked(true);
+				ca.setCanWaitList(offering.isWaitList());
 				ca.setAssigned(enrollment != null);
 				ca.setCourseId(course.getCourseId());
 				ca.setSubject(course.getSubjectArea());
@@ -346,6 +349,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 				ca.setEnrollmentMessage(r.getEnrollmentMessage());
 				ca.setRequestedDate(r.getTimeStamp());
 				ca.setHasCrossList(offering.hasCrossList());
+				ca.setCanWaitList(offering.isWaitList());
 				if (enrollment == null) {
 					TreeSet<Enrollment> overlap = new TreeSet<Enrollment>(new Comparator<Enrollment>() {
 						@Override
@@ -748,6 +752,8 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 							else
 								rc.setStatus(RequestedCourseStatus.OVERRIDE_PENDING);
 						}
+						XOffering offering = server.getOffering(c.getOfferingId());
+						rc.setCanWaitList(offering != null && offering.isWaitList());
 						rc.setOverrideExternalId(((XCourseRequest)cd).getOverrideExternalId(courseId));
 						rc.setOverrideTimeStamp(((XCourseRequest)cd).getOverrideTimeStamp(courseId));
 						((XCourseRequest)cd).fillPreferencesIn(rc, courseId);

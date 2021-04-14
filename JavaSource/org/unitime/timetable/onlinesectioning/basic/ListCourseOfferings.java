@@ -128,6 +128,7 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 					course.setHasNoInstructionalMethod(true);
 			}
 			course.setHasCrossList(offering.hasCrossList());
+			course.setCanWaitList(offering.isWaitList());
 		}
 		return course;
 	}

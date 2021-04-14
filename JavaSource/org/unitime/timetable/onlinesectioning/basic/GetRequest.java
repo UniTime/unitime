@@ -205,8 +205,8 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 							if (enrolledNoAlternatives) rc.setCanChangeAlternatives(false);
 							if (enrolledNoPriority) rc.setCanChangePriority(false);
 						}
+						XOffering offering = server.getOffering(c.getOfferingId());
 						if (!iSectioning && setReadOnlyWhenReserved) {
-							XOffering offering = server.getOffering(c.getOfferingId());
 							if (offering != null && (offering.hasIndividualReservation(student, c) || offering.hasGroupReservation(student, c))) {
 								rc.setReadOnly(true);
 								rc.setCanDelete(false);
@@ -214,6 +214,7 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 								if (reservedNoPriority) rc.setCanChangePriority(false);
 							}
 						}
+						rc.setCanWaitList(offering != null && offering.isWaitList());
 						if (isEnrolled)
 							rc.setStatus(RequestedCourseStatus.ENROLLED);
 						else {

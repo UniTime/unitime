@@ -44,6 +44,8 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Action.Builder;
@@ -56,8 +58,10 @@ import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
+import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 
 /**
  * @author Tomas Muller
@@ -296,6 +300,13 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 					}
 				ca.setEnrollment(enrl);
 				ca.setProjected(firstChoiceReqs);
+				if (server instanceof DatabaseServer) {
+					InstructionalOffering io = InstructionalOfferingDAO.getInstance().get(id.getOfferingId());
+					ca.setCanWaitList(io != null && io.effectiveWaitList());
+				} else {
+					XOffering io = server.getOffering(id.getOfferingId());
+					ca.setCanWaitList(io != null && io.isWaitList());
+				}
 				course.addCourse(ca);
 			}
 		}
@@ -459,6 +470,13 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 									}
 								ca.setEnrollment(enrl);
 								ca.setProjected(firstChoiceReqs);
+								if (server instanceof DatabaseServer) {
+									InstructionalOffering io = InstructionalOfferingDAO.getInstance().get(xc.getOfferingId());
+									ca.setCanWaitList(io != null && io.effectiveWaitList());
+								} else {
+									XOffering io = server.getOffering(xc.getOfferingId());
+									ca.setCanWaitList(io != null && io.isWaitList());
+								}
 								course.addCourse(ca);
 							}
 							plan.getGroup().addGroup(phg);

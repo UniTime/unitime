@@ -175,7 +175,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Integer iLimit = null, iProjected = null, iEnrollment = null, iLastLike = null, iRequested = null, iSnapShotLimit = null;
 		
 		private ArrayList<String> iOverlaps = null;
-		private boolean iNotAvailable = false, iFull = false, iLocked = false;
+		private boolean iNotAvailable = false, iFull = false, iLocked = false, iCanWaitList = false;
 		private String iInstead;
 		private boolean iWaitListed = false;
 		private String iEnrollmentMessage = null;
@@ -273,6 +273,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public boolean isLocked() { return iLocked; }
 		public void setLocked(boolean locked) { iLocked = locked; }
+		
+		public boolean isCanWaitList() { return iCanWaitList; }
+		public void setCanWaitList(boolean waitList) { iCanWaitList = waitList; }
 
 		public void setInstead(String instead) { iInstead = instead; }
 		public String getInstead() { return iInstead; }
