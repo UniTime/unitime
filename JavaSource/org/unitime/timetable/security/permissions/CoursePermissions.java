@@ -118,6 +118,7 @@ public class CoursePermissions {
 		public boolean check(UserContext user, InstructionalOffering source) {
 			if (!CustomStudentEnrollmentHolder.isAllowWaitListing()) return false;
 			if (!super.check(user, source)) return false;
+			if (!source.effectiveWaitList()) return false;
 			if (ApplicationProperty.ReservationLockCheckWaitList.isTrue()) {
 				OnlineSectioningServer server = getInstance(user.getCurrentAcademicSessionId());
 				Collection<XCourseRequest> requests = (server != null ? server.getRequests(source.getUniqueId()) : null);
