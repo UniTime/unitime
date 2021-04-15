@@ -202,10 +202,10 @@ public class OnlineSectioningLogger extends Thread {
 			if (!m.hasLevel()) continue; // skip messages with no level
 			if (!message.isEmpty() && level > m.getLevel().getNumber()) continue; // if we have a message, ignore messages with lower level
 			if (m.hasText()) {
-				message = (level != m.getLevel().getNumber() ? "" : message + "\n") + m.getText();
+				message = (level != m.getLevel().getNumber() || message.isEmpty() ? "" : message + "\n") + m.getText();
 				level = m.getLevel().getNumber();
 			} else if (m.hasException()) {
-				message = (level != m.getLevel().getNumber() ? "" : message + "\n") + m.getException();
+				message = (level != m.getLevel().getNumber() || message.isEmpty() ? "" : message + "\n") + m.getException();
 				level = m.getLevel().getNumber();
 			}
 		}
