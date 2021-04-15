@@ -1380,99 +1380,130 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		String honorsGradeMode = getResetGradeModesRegExp();
 		if (specialRequest.changes != null)
 			for (Change change: specialRequest.changes) {
-				if (change.crn == null || change.crn.isEmpty() || change.crn.equals("-")) {
-					if (change.errors != null)
-						for (ChangeError err: change.errors)
-							if ("MAXI".equals(err.code)) {
-								maxi = err.message;
-								maxStatus = change.status;
-								maxiNote = SpecialRegistrationHelper.getLastNote(change);
-								ret.setMaxCredit(specialRequest.maxCredit);
-								if (specialRequest.maxCredit != null && student.getMaxCredit() != null) {
-									DecimalFormat df = new DecimalFormat("0.#");
-									maxi = "Maximum hours exceeded. Currently allowed " + df.format(student.getMaxCredit()) + " but needs " + df.format(specialRequest.maxCredit) + ".";
-									if (student.getMaxCredit() >= specialRequest.maxCredit && getStatus(change.status) == SpecialRegistrationStatus.Pending)
-										maxStatus = ChangeStatus.approved;
-								}
-							} else if ("VARTL".equals(err.code)) {
-								for (XRequest r: student.getRequests()) {
-									if (r instanceof XCourseRequest) {
-										XCourseRequest cr = (XCourseRequest)r;
-										XEnrollment e = cr.getEnrollment();
-										if (e != null && e.getCourseName().startsWith(change.subject + " " + change.courseNbr)) {
-											// already enrolled
-											CourseOffering course = CourseOfferingDAO.getInstance().get(e.getCourseId(), helper.getHibSession());
-											Set<Class_> list = adds.get(course);
-											if (list == null) {
-												list = new TreeSet<Class_>(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
-												 adds.put(course, list);
-											}
-											for (Long classId: e.getSectionIds()) {
-												Class_ clazz = Class_DAO.getInstance().get(classId, helper.getHibSession());
-												if (clazz != null) {
-													list.add(clazz);
-													List<Change> ch = changes.get(clazz);
-													if (ch == null) { ch = new ArrayList<Change>(); changes.put(clazz, ch); }
-													ch.add(change);
-												}
+				if (change.errors != null)
+					for (ChangeError err: change.errors)
+						if ("MAXI".equals(err.code)) {
+							maxi = err.message;
+							maxStatus = change.status;
+							maxiNote = SpecialRegistrationHelper.getLastNote(change);
+							ret.setMaxCredit(specialRequest.maxCredit);
+							if (specialRequest.maxCredit != null && student.getMaxCredit() != null) {
+								DecimalFormat df = new DecimalFormat("0.#");
+								maxi = "Maximum hours exceeded. Currently allowed " + df.format(student.getMaxCredit()) + " but needs " + df.format(specialRequest.maxCredit) + ".";
+								if (student.getMaxCredit() >= specialRequest.maxCredit && getStatus(change.status) == SpecialRegistrationStatus.Pending)
+									maxStatus = ChangeStatus.approved;
+							}
+						} else if ("VARTL".equals(err.code)) {
+							for (XRequest r: student.getRequests()) {
+								if (r instanceof XCourseRequest) {
+									XCourseRequest cr = (XCourseRequest)r;
+									XEnrollment e = cr.getEnrollment();
+									if (e != null && e.getCourseName().startsWith(change.subject + " " + change.courseNbr)) {
+										// already enrolled
+										CourseOffering course = CourseOfferingDAO.getInstance().get(e.getCourseId(), helper.getHibSession());
+										Set<Class_> list = adds.get(course);
+										if (list == null) {
+											list = new TreeSet<Class_>(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
+											 adds.put(course, list);
+										}
+										for (Long classId: e.getSectionIds()) {
+											Class_ clazz = Class_DAO.getInstance().get(classId, helper.getHibSession());
+											if (clazz != null) {
+												list.add(clazz);
+												List<Change> ch = changes.get(clazz);
+												if (ch == null) { ch = new ArrayList<Change>(); changes.put(clazz, ch); }
+												ch.add(change);
 											}
 										}
 									}
 								}
-								if (changes.isEmpty()) {
-									String vartlNote = SpecialRegistrationHelper.getLastNote(change);
-									String message = err.message;
-									switch (getStatus(change.status)) {
-									case Approved:
-										message = "Approved: " + message;
-										break;
-									case Rejected:
-										message = "Denied: " + message;
-										break;
-									}
-									if (vartlNote != null && !vartlNote.toString().isEmpty())
-										message += "\n  <span class='note'>" + vartlNote.trim() + "</span>";
-									if (change.status != null)
-										message = "<span class='" + change.status + "'>" + message + "</span>";
-									ClassAssignment ca = new ClassAssignment();
-									ca.setSubject(change.subject);
-									ca.setCourseNbr(change.courseNbr);
-									ca.setSpecRegOperation(SpecialRegistrationOperation.Add);
-									ca.setCourseId(-1l);
-									ca.setSubpart("Ind");
-									ca.setCredit(change.selectedCreditHour);
-									ca.setSection("");
-									ca.setExternalId("00000");
-									ca.setClassId(-1l);
-									ret.addChange(ca);
-									ca.addError(message);
-									ret.addError(new ErrorMessage(change.subject + " " + change.courseNbr, "00000", "VARTL", message));
-								}
 							}
-					continue;
-				}
-				for (String crn: change.crn.split(",")) {
-					if (crn.isEmpty() || "-".equals(crn)) continue;
-					CourseOffering course = findCourseByExternalId(server.getAcademicSession().getUniqueId(), crn);
-					List<Class_> classes = findClassesByExternalId(server.getAcademicSession().getUniqueId(), crn);
-					if (course != null && classes != null && !classes.isEmpty()) {
-						courses.add(course);
-						Set<Class_> list = (ChangeOperation.DROP != change.operation ? adds : drops).get(course);
-						if (ChangeOperation.KEEP == change.operation || ChangeOperation.CHGMODE == change.operation || ChangeOperation.CHGVARCR == change.operation) keeps.add(course);
-						if (list == null) {
-							list = new TreeSet<Class_>(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
-							 (ChangeOperation.DROP != change.operation ? adds : drops).put(course, list);
+							String vartlNote = SpecialRegistrationHelper.getLastNote(change);
+							String message = err.message;
+							if (change.selectedTitle != null && !change.selectedTitle.isEmpty())
+								message = "Requested " + change.subject + " " + change.courseNbr + ": " + change.selectedTitle;
+							switch (getStatus(change.status)) {
+							case Approved:
+								message = "Approved: " + message;
+								break;
+							case Rejected:
+								message = "Denied: " + message;
+								break;
+							}
+							if (vartlNote != null && !vartlNote.toString().isEmpty())
+								message += "\n  <span class='note'>" + vartlNote.trim() + "</span>";
+							if (change.status != null)
+								message = "<span class='" + change.status + "'>" + message + "</span>";
+							ClassAssignment ca = new ClassAssignment();
+							ca.setSubject(change.subject);
+							ca.setCourseNbr(change.courseNbr);
+							ca.setTitle(change.selectedTitle);
+							ca.setSpecRegOperation(SpecialRegistrationOperation.Add);
+							ca.setCourseId(-1l);
+							ca.setSubpart("Ind");
+							ca.setCredit(change.selectedCreditHour);
+							ca.setExternalId("00000");
+							ca.setClassId(-1l);
+							if (change.crn != null) {
+								ca.setSection(change.crn);
+								ca.setLimit(new int[] {0, -1});
+								CourseOffering course = findCourseByExternalId(server.getAcademicSession().getUniqueId(), change.crn);
+								if (course != null) {
+									ca.setCourseId(course.getUniqueId());
+									ca.setSubject(course.getSubjectAreaAbbv());
+									ca.setCourseNbr(course.getCourseNbr());
+									ca.setTitle(course.getTitle());
+									List<Class_> classes = findClassesByExternalId(server.getAcademicSession().getUniqueId(), change.crn);
+									if (!classes.isEmpty()) {
+										Class_ clazz = classes.get(0);
+										ca.setClassId(clazz.getUniqueId());
+										ca.setSection(clazz.getClassSuffix(course));
+										if (ca.getSection() == null)
+											ca.setSection(clazz.getSectionNumberString(helper.getHibSession()));
+										ca.setClassNumber(clazz.getSectionNumberString(helper.getHibSession()));
+										ca.setSubpart(clazz.getSchedulingSubpart().getItypeDesc().trim());
+										ca.setExternalId(clazz.getExternalId(course));
+										if (clazz.getSchedulePrintNote() != null)
+											ca.addNote(clazz.getSchedulePrintNote());
+					                	int limit = clazz.getExpectedCapacity();
+					                    if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment() || limit >= 9999) limit = -1;
+					                    ca.setCancelled(clazz.isCancelled());
+										ca.setLimit(new int[] { clazz.getEnrollment(), limit});
+									}
+								}
+							} else if (change.selectedInstructorName != null) {
+								ca.setSection(change.selectedInstructorName);
+							} else {
+								ca.setSection("");
+							}							
+							ret.addChange(ca);
+							ca.addError(message);
+							ret.addError(new ErrorMessage(ca.getCourseName(), ca.getExternalId(), "VARTL", message));
 						}
-						for (Class_ clazz: classes) {
-							list.add(clazz);
-							List<Change> ch = changes.get(clazz);
-							if (ch == null) { ch = new ArrayList<Change>(); changes.put(clazz, ch); }
-							ch.add(change);
+				if (change.crn != null) 
+					for (String crn: change.crn.split(",")) {
+						if (crn.isEmpty() || "-".equals(crn)) continue;
+						if ("CHGVARTL".equals(change.operation)) continue;
+						CourseOffering course = findCourseByExternalId(server.getAcademicSession().getUniqueId(), crn);
+						List<Class_> classes = findClassesByExternalId(server.getAcademicSession().getUniqueId(), crn);
+						if (course != null && classes != null && !classes.isEmpty()) {
+							courses.add(course);
+							Set<Class_> list = (ChangeOperation.DROP != change.operation ? adds : drops).get(course);
+							if (ChangeOperation.KEEP == change.operation || ChangeOperation.CHGMODE == change.operation || ChangeOperation.CHGVARCR == change.operation) keeps.add(course);
+							if (list == null) {
+								list = new TreeSet<Class_>(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
+								 (ChangeOperation.DROP != change.operation ? adds : drops).put(course, list);
+							}
+							for (Class_ clazz: classes) {
+								list.add(clazz);
+								List<Change> ch = changes.get(clazz);
+								if (ch == null) { ch = new ArrayList<Change>(); changes.put(clazz, ch); }
+								ch.add(change);
+							}
 						}
+						if (change.status != null)
+							status = combine(status, getStatus(change.status));
 					}
-					if (change.status != null)
-						status = combine(status, getStatus(change.status));
-				}
 			}
 		String desc = "";
 		NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
@@ -2881,8 +2912,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			change.selectedTitle = request.getTitle();
 			if (request.getInstructor() != null) {
 				DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(request.getInstructor().getId(), helper.getHibSession());
-				if (instructor != null)
+				if (instructor != null) {
 					change.selectedInstructor = getBannerId(instructor);
+					change.selectedInstructorName = request.getInstructor().getName();
+				}
 			}
 			if (request.getStartDate() != null)
 				change.selectedStartDate = Formats.getDateFormat("MM/dd/yy").format(request.getStartDate());

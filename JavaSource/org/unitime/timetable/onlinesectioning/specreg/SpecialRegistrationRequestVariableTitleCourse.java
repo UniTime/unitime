@@ -59,16 +59,25 @@ public class SpecialRegistrationRequestVariableTitleCourse implements OnlineSect
 				.setName(student.getName());
 			
 			helper.getAction().addOptionBuilder().setKey("course").setValue(getRequest().getCourse().getCourseName());
+			action.addMessageBuilder().setText(getRequest().getCourse().getCourseName() + ": " + getRequest().getTitle()).setLevel(OnlineSectioningLog.Message.Level.INFO);
 			if (getRequest().hasTitle())
 				helper.getAction().addOptionBuilder().setKey("title").setValue(getRequest().getTitle());
-			if (getRequest().getInstructor() != null)
+			if (getRequest().getInstructor() != null) {
 				helper.getAction().addOptionBuilder().setKey("instructor").setValue(getRequest().getInstructor().getName());
+				action.addMessageBuilder().setText("Instructor: " + getRequest().getInstructor().getName()).setLevel(OnlineSectioningLog.Message.Level.INFO);
+			}
 			if (getRequest().hasNote())
 				helper.getAction().addOptionBuilder().setKey("note").setValue(getRequest().getNote());
-			if (getRequest().getCredit() != null)
+			if (getRequest().getCredit() != null) {
 				helper.getAction().addOptionBuilder().setKey("credit").setValue(getRequest().getCredit().toString());
-			if (getRequest().hasGradeMode())
+				if (getRequest().getCredit() > getRequest().getCourse().getAvailableCredits().iterator().next())
+					action.addMessageBuilder().setText("Credit: " + getRequest().getCredit()).setLevel(OnlineSectioningLog.Message.Level.INFO);
+			}
+			if (getRequest().hasGradeMode()) {
 				helper.getAction().addOptionBuilder().setKey("gradeMode").setValue(getRequest().getGradeModeCode());
+				if (!getRequest().getGradeModeCode().equals(getRequest().getCourse().getDefaultGradeModeCode()))
+					action.addMessageBuilder().setText("Grade Mode: " + getRequest().getGradeModeLabel()).setLevel(OnlineSectioningLog.Message.Level.INFO);
+			}
 			if (getRequest().getStartDate() != null && getRequest().getEndDate() != null) {
 				SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 				helper.getAction().addOptionBuilder().setKey("dates").setValue(df.format(getRequest().getStartDate()) + " - " + df.format(getRequest().getEndDate()));
