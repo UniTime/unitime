@@ -2965,9 +2965,6 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							getSessionContext().hasPermissionAnyAuthority(cx.getStudentId(), "Student", Right.StudentSchedulingCanRequirePreferences)), currentUser(cx));
 			if (includeCustomCheck) getSessionContext().setAttribute(SessionAttribute.OnlineSchedulingEligibility, ret);
 			
-			// FIXME: this is a hack, do not commit
-			ret.setFlag(EligibilityFlag.CAN_REQUEST_VAR_TITLE_COURSE, true);
-			
 			return ret;
 		} catch (Exception e) {
 			sLog.error(e.getMessage(), e);

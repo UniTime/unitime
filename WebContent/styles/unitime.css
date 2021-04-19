@@ -6500,10 +6500,10 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-SpecialRegistrationsPanel .registrations-table td:nth-child(2) {
-	width: 250px;
+	width: 200px;
 }
 
-.unitime-SpecialRegistrationsPanel .registrations-table td:nth-child(9) {
+.unitime-SpecialRegistrationsPanel .registrations-table td:nth-child(10) {
 	width: 400px;
 }
 

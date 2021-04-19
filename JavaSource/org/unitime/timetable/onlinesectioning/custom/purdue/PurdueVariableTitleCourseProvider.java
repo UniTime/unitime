@@ -61,13 +61,14 @@ public class PurdueVariableTitleCourseProvider implements VariableTitleCoursePro
 	
 	protected String getVariableTitleCourseSQL() {
 		return ApplicationProperties.getProperty("purdue.vt.variableTitleCourseSQL",
-				"select subj_code, crse_numb, crse_title, credit_hr_ind, credit_hr_low, credit_hr_high, gmod_code, gmod_desc, gmod_default_ind " +
-				"from timetable.szgv_reg_vartl_course where " +
-				"concat(concat(subj_code, ' '), crse_numb) like :query and attr_code = 'VART' and " +
-				"course_effective_term <= :term and :term < course_end_term and " +
-				"attr_effective_term <= :term and :term < attr_end_term and " +
-				"gmod_effective_term <= :term and :term < gmod_end_term " +
-				"order by subj_code, crse_numb, gmod_code");
+				"select c.subj_code, c.crse_numb, c.crse_title, c.credit_hr_ind, c.credit_hr_low, c.credit_hr_high, c.gmod_code, c.gmod_desc, c.gmod_default_ind " +
+				"from timetable.szgv_reg_vartl_course c, timetable.subject_area sa where " +
+				"concat(concat(c.subj_code, ' '), c.crse_numb) like :query and c.attr_code = 'VART' and " +
+				"c.course_effective_term <= :term and :term < c.course_end_term and " +
+				"c.attr_effective_term <= :term and :term < c.attr_end_term and " +
+				"c.gmod_effective_term <= :term and :term < c.gmod_end_term and " +
+				"c.subj_code = sa.subject_area_abbreviation and sa.session_id = :sessionId " +
+				"order by c.subj_code, c.crse_numb, c.gmod_code");
 	}
 	
 	protected String getInstructorNameFormat() {
@@ -85,6 +86,7 @@ public class PurdueVariableTitleCourseProvider implements VariableTitleCoursePro
 			query = query.substring(0, query.indexOf(" - "));
 		q.setText("query", query == null ? "%" : query.toUpperCase() + "%");
 		q.setText("term", iExternalTermProvider.getExternalTerm(server.getAcademicSession()));
+		q.setLong("sessionId", server.getAcademicSession().getUniqueId());
 		if (limit > 0)
 			q.setMaxResults(5 * limit);
 		
@@ -110,8 +112,16 @@ public class PurdueVariableTitleCourseProvider implements VariableTitleCoursePro
 				info.setStartDate(server.getAcademicSession().getDefaultStartDate());
 				info.setEndDate(server.getAcademicSession().getDefaultEndDate());
 				if ("TO".equals(credInd)) {
-					for (float credit = credLo.floatValue(); credit <= credHi.floatValue(); credit += 1f) {
-						info.addAvailableCredit(credit);
+					float min = credLo.floatValue();
+					float max = credHi.floatValue();
+					if ((min - Math.floor(min)) == 0.5f || (max - Math.floor(max)) == 0.5f) {
+						for (float credit = min; credit <= max + 0.001f; credit += 0.5f) {
+							info.addAvailableCredit(credit);
+						}
+					} else {
+						for (float credit = min; credit <= max + 0.001f; credit += 1f) {
+							info.addAvailableCredit(credit);
+						}
 					}
 				} else if ("OR".equals(credInd)) {
 					info.addAvailableCredit(credLo.floatValue());
@@ -137,6 +147,7 @@ public class PurdueVariableTitleCourseProvider implements VariableTitleCoursePro
 			query = query.substring(0, query.indexOf(" - "));
 		q.setText("query", query.toUpperCase());
 		q.setText("term", iExternalTermProvider.getExternalTerm(server.getAcademicSession()));
+		q.setLong("sessionId", server.getAcademicSession().getUniqueId());
 		
 		NameFormat nameFormat = NameFormat.fromReference(getInstructorNameFormat());
 
@@ -159,8 +170,16 @@ public class PurdueVariableTitleCourseProvider implements VariableTitleCoursePro
 				info.setStartDate(server.getAcademicSession().getDefaultStartDate());
 				info.setEndDate(server.getAcademicSession().getDefaultEndDate());
 				if ("TO".equals(credInd)) {
-					for (float credit = credLo.floatValue(); credit <= credHi.floatValue(); credit += 1f) {
-						info.addAvailableCredit(credit);
+					float min = credLo.floatValue();
+					float max = credHi.floatValue();
+					if ((min - Math.floor(min)) == 0.5f || (max - Math.floor(max)) == 0.5f) {
+						for (float credit = min; credit <= max + 0.001f; credit += 0.5f) {
+							info.addAvailableCredit(credit);
+						}
+					} else {
+						for (float credit = min; credit <= max + 0.001f; credit += 1f) {
+							info.addAvailableCredit(credit);
+						}
 					}
 				} else if ("OR".equals(credInd)) {
 					info.addAvailableCredit(credLo.floatValue());

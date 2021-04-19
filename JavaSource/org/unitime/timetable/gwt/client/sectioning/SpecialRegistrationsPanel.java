@@ -221,6 +221,7 @@ public class SpecialRegistrationsPanel extends P {
 		header.add(new UniTimeTableHeader(MESSAGES.colClass()));
 		header.add(new UniTimeTableHeader(MESSAGES.colLimit()));
 		header.add(new UniTimeTableHeader(MESSAGES.colCredit()));
+		header.add(new UniTimeTableHeader(MESSAGES.colGradeMode()));
 		header.add(new UniTimeTableHeader(MESSAGES.colSpecRegErrors()));
 		header.add(new UniTimeTableHeader(""));
 		header.add(new UniTimeTableHeader(""));
@@ -392,6 +393,13 @@ public class SpecialRegistrationsPanel extends P {
 					} else {
 						row.add(new CreditCell(ca.getCredit()));
 					}
+					if (ca.getGradeMode() != null) {
+						Label gm = new Label(ca.getGradeMode().getCode());
+						if (ca.getGradeMode().getLabel() != null) gm.setTitle(ca.getGradeMode().getLabel());
+						row.add(gm);
+					} else {
+						row.add(new Label());
+					}
 					HTML errorsLabel = new HTML(ca.hasError() ? ca.getError() : ""); errorsLabel.addStyleName("registration-errors");
 					row.add(errorsLabel);
 					P s = new P("icons");
@@ -511,7 +519,7 @@ public class SpecialRegistrationsPanel extends P {
 	
 		@Override
 		public int getColSpan() {
-			return 6;
+			return 7;
 		}
 		
 	}
