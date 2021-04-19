@@ -216,6 +216,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		return ApplicationProperties.getProperty("purdue.specreg.readTimeout", "60000");
 	}
 	
+	protected String getSpecialRegistrationDateFormat() {
+		return ApplicationProperties.getProperty("purdue.specreg.dateFormat", "M-d-yyyy");
+	}
+	
 	protected String getSpecialRegistrationApiSiteSubmitRegistration() {
 		return ApplicationProperties.getProperty("purdue.specreg.site.submitRegistration", getSpecialRegistrationApiSite() + "/submitRegistration");
 	}
@@ -1442,9 +1446,13 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							ca.setCourseId(-1l);
 							ca.setSubpart("Ind");
 							ca.setCredit(change.selectedCreditHour);
+							if (change.selectedCreditHour != null)
+								ca.setCreditHour(Float.valueOf(change.selectedCreditHour));
+							if (change.selectedGradeMode != null)
+								ca.setGradeMode(new GradeMode(change.selectedGradeMode, change.selectedGradeModeDescription, honorsGradeMode != null && !honorsGradeMode.isEmpty() && change.selectedGradeMode.matches(honorsGradeMode)));
 							ca.setExternalId("00000");
 							ca.setClassId(-1l);
-							if (change.crn != null) {
+							if (change.crn != null && !change.crn.isEmpty() && !change.crn.equals("-")) {
 								ca.setSection(change.crn);
 								ca.setLimit(new int[] {0, -1});
 								CourseOffering course = findCourseByExternalId(server.getAcademicSession().getUniqueId(), change.crn);
@@ -1475,7 +1483,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								ca.setSection(change.selectedInstructorName);
 							} else {
 								ca.setSection("");
-							}							
+							}
 							ret.addChange(ca);
 							ca.addError(message);
 							ret.addError(new ErrorMessage(ca.getCourseName(), ca.getExternalId(), "VARTL", message));
@@ -1483,7 +1491,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				if (change.crn != null) 
 					for (String crn: change.crn.split(",")) {
 						if (crn.isEmpty() || "-".equals(crn)) continue;
-						if ("CHGVARTL".equals(change.operation)) continue;
+						if (change.operation == ChangeOperation.CHGVARTL) continue;
 						CourseOffering course = findCourseByExternalId(server.getAcademicSession().getUniqueId(), crn);
 						List<Class_> classes = findClassesByExternalId(server.getAcademicSession().getUniqueId(), crn);
 						if (course != null && classes != null && !classes.isEmpty()) {
@@ -2397,6 +2405,9 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					if ("OR".equalsIgnoreCase(v.creditHrInd)) {
 						change.addAvailableCredit(min);
 						change.addAvailableCredit(max);
+					} else if ((min - Math.floor(min)) == 0.5f || (max - Math.floor(max)) == 0.5f) {
+						for (float c = min; c <= max + 0.001f; c += 0.5f)
+							change.addAvailableCredit((float)c);
 					} else {
 						for (float c = min; c <= max + 0.001f; c += 1f)
 							change.addAvailableCredit((float)c);
@@ -2914,18 +2925,26 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(request.getInstructor().getId(), helper.getHibSession());
 				if (instructor != null) {
 					change.selectedInstructor = getBannerId(instructor);
-					change.selectedInstructorName = request.getInstructor().getName();
+					change.selectedInstructorName = NameFormat.FIRST_LAST.format(instructor);
 				}
 			}
+			Formats.Format<Date> df = Formats.getDateFormat(getSpecialRegistrationDateFormat());
 			if (request.getStartDate() != null)
-				change.selectedStartDate = Formats.getDateFormat("MM/dd/yy").format(request.getStartDate());
+				change.selectedStartDate = df.format(request.getStartDate());
 			if (request.getEndDate() != null)
-				change.selectedEndDate = Formats.getDateFormat("MM/dd/yy").format(request.getEndDate());
+				change.selectedEndDate = df.format(request.getEndDate());
+			if (request.hasSection()) {
+				change.crn = request.getSection();
+				if (change.crn != null && change.crn.indexOf('-') >= 0)
+					change.crn = change.crn.substring(0, change.crn.indexOf('-'));
+			}
 			ChangeError err = new ChangeError();
 			err.code = "VARTL";
 			err.message = "Requested " + request.getCourse().getCourseName() + ": " + request.getTitle();
 			change.errors = new ArrayList<ChangeError>();
 			change.errors.add(err);
+			change.apiTerm = session.getTerm();
+			change.apiYear = session.getYear();
 			req.changes.add(change);
 
 			req.mode = getSpecialRegistrationMode(); 

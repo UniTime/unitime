@@ -1236,6 +1236,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private boolean iCheckIfExists = true;
 		private String iGradeMode;
 		private Float iMaxCredit;
+		private String iSection;
 		
 		public VariableTitleCourseRequest() {}
 		public VariableTitleCourseRequest(StudentSectioningContext cx) {
@@ -1274,6 +1275,10 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public String getNote() { return iNote; }
 		public void setNote(String note) { iNote = note; }
 		public boolean hasNote() { return iNote != null && !iNote.isEmpty(); }
+		
+		public boolean hasSection() { return iSection != null && !iSection.isEmpty(); }
+		public void setSection(String section) { iSection = section; }
+		public String getSection() { return iSection; }
 		
 		public Date getStartDate() {
 			if (iStartDate == null) return getCourse().getStartDate();

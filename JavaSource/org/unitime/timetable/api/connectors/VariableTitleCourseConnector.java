@@ -55,6 +55,7 @@ import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.security.rights.Right;
 
@@ -520,11 +521,11 @@ public class VariableTitleCourseConnector extends ApiConnector {
 		if (configChangeAction != null) {
 			configChangeActionExists = true;
 		}
+		InstructionalOffering instructionalOffering = null;
 		Transaction trans = null;
 		try {
 			trans = helper.getHibSession().beginTransaction();
 			SubjectArea subjectArea = getSubjectObject(variableTitleQuery, helper.getHibSession());
-			InstructionalOffering instructionalOffering = null;
 			if (courseOffering == null) {
 				instructionalOffering = createOffering(variableTitleQuery, subjectArea, helper.getHibSession());
 				courseOffering = instructionalOffering.getControllingCourseOffering();
@@ -562,7 +563,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
                     ChangeLog.Operation.CREATE,
                     instrOfferingConfig.getInstructionalOffering().getControllingCourseOffering().getSubjectArea(),
                     null);
-
+            
             helper.getHibSession().flush();
             trans.commit();
             
@@ -585,6 +586,9 @@ public class VariableTitleCourseConnector extends ApiConnector {
 		if (courseOffering != null && courseOffering.getUniqueId() != null && clazz != null && clazz.getUniqueId() != null) {
 			variableTitleQuery.setExternalId(clazz.getExternalId(courseOffering));
 		}
+		
+		// Notify the online scheduling server that the variable course title has changed
+		StudentSectioningQueue.offeringChanged(helper.getHibSession(), helper.getSessionContext().getUser(), instructionalOffering.getSessionId(), instructionalOffering.getUniqueId());
 	}
 	
 	private ExternalInstrOffrConfigChangeAction lookupExternalConfigChangeAction() throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, ClassNotFoundException {

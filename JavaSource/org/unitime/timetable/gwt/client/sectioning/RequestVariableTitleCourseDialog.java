@@ -37,6 +37,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.InstructorInfo;
@@ -401,9 +402,15 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 			@Override
 			public void onSuccess(final VariableTitleCourseResponse response) {
 				LoadingWidget.getInstance().hide();
-				if (response.hasRequests())
+				if (response.hasRequests()) {
 					iStatus.info(MESSAGES.statusVariableCourseRequested());
-				else if (response.getCourse() != null) {
+					onChange(response);
+				} else if (response.getCourse() != null) {
+					if (response.getCourse().hasSelectedClasses())
+						for (CourseRequestInterface.Preference p: response.getCourse().getSelectedClasses()) {
+							request.setSection(p.getText());
+							break;
+						}
 					UniTimeConfirmationDialog.confirm(MESSAGES.questionVariableCourseAlreadyExists(), new Command() {
 						@Override
 						public void execute() {

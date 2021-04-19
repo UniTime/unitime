@@ -158,6 +158,10 @@ public class SpecialRegistrationInterface {
 		public String selectedStartDate;
 		/** Selected end date (only used when operation = CHGVARTL, format MM/dd/yy) */
 		public String selectedEndDate;
+		/** UniTime's academic session year (only used when operation = CHGVARTL) */ 
+		public String apiYear;
+		/** UniTime's academic session term (only used when operation = CHGVARTL) */ 
+		public String apiTerm;
 	}
 	
 
