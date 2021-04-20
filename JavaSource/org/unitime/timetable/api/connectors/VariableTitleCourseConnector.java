@@ -32,6 +32,7 @@ import java.util.Locale;
 import org.hibernate.Transaction;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.api.ApiConnector;
 import org.unitime.timetable.api.ApiHelper;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -741,7 +742,11 @@ public class VariableTitleCourseConnector extends ApiConnector {
 			this.iCourseTitle = courseTitle;
 		}
 		public String getInstructorId() {
-			return iInstructorId;
+			if (iInstructorId != null && ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue()) {
+				return iInstructorId.trim().replaceFirst("^0+(?!$)", "");
+			} else {
+				return iInstructorId;
+			}
 		}
 		public void setInstructorId(String instructorId) {
 			this.iInstructorId = instructorId;
