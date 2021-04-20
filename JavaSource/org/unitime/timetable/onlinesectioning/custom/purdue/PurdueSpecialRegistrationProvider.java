@@ -2926,6 +2926,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				if (instructor != null) {
 					change.selectedInstructor = getBannerId(instructor);
 					change.selectedInstructorName = NameFormat.FIRST_LAST.format(instructor);
+					change.selectedInstructorEmail = instructor.getEmail();
 				}
 			}
 			Formats.Format<Date> df = Formats.getDateFormat(getSpecialRegistrationDateFormat());

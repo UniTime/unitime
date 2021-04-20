@@ -154,6 +154,8 @@ public class SpecialRegistrationInterface {
 		public String selectedInstructor;
 		/** Selected instructor name (only used when operation = CHGVARTL) */
 		public String selectedInstructorName;
+		/** Selected instructor email (only used when operation = CHGVARTL) */
+		public String selectedInstructorEmail;
 		/** Selected start date (only used when operation = CHGVARTL, format MM/dd/yy) */
 		public String selectedStartDate;
 		/** Selected end date (only used when operation = CHGVARTL, format MM/dd/yy) */
