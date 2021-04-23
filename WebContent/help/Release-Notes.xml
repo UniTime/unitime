@@ -36,6 +36,12 @@
 			</description>
 		</item>
 		<item>
+			<name>Advisor Course Recommendations: Custom Warnings</name>
+			<description>
+				<line>Added the same warnings that the student would see using the custom course validation provider.</line>
+			</description>
+		</item>
+		<item>
 			<name>Advisor Course Recommendations: Read-Only Use</name>
 			<description>
 				<line>A few small improvements for users with read-only access to the Advisor Course Recommendations page.
@@ -43,6 +49,33 @@
 					<line>Degree Plan button works without the Student Advisor permission (Advisor Course Request permission works as well).</line>
 					<line>Advisor Course Recommendations appears in the menu even when there is no Students menu.</line>
 				</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Requests Validation: Free Times</name>
+			<description>
+				<line>Added a warning message when free time is requested (regardless of its priority)
+					<line>The Free Time request will be considered a time block during the preregistration process.
+  						If the Free Time request is placed higher than a traditional course, you may not receive a full schedule.</line>
+				</line>
+				<line>Also added a warning on a free time request that is above a course
+					<line>High priority free time</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Online Student Scheduling Dashboard: Change Log</name>
+			<description>
+				<line>A few changes have been made to make the Change Log load faster, namely
+					<line>Only parse the action proto message when an item is clicked.</line>
+					<line>Message field updated to contain a message generated from the action so that the same message gets shown on the dashboard without the needed to parse the action proto.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Batch Student Scheduling: Backtracking phase</name>
+			<description>
+				<line>Ensure that the solver does not get stuck (as it repeatedly adds requests that failed) by setting a limit on the number of iterations (2x the initial size of the request queue).</line>
 			</description>
 		</item>
 	</category>
@@ -65,6 +98,24 @@
 			<name>Event Timetable: Curriculum</name>
 			<description>
 				<line>Fixed an issue caused by a recent changes in curriculum reservations (curriculum reservation can now list multiple academic areas).</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Other</title>
+		<item>
+			<name>CSV Files</name>
+			<description>
+				<line>When reading CSV file, consider line breaks inside of cells -- do not import as multiple lines.</line>
+				<line>This fixes an issue with the validation and enrollment logs on the Student Sectioning Solver Reports page (the table gets disordered after a student with multiple curricula).</line>
+			</description>
+		</item>
+		<item>
+			<name>Spring libraries updated due to security issues</name>
+			<description>
+				<line>Spring core libraries updated to version 4.3.30 (was 4.3.18) to fix CVE-2018-15756 issue (high severity).</line>
+				<line>Spring integration is updated to version 4.3.24 (was 4.3.18) to fix CVE-2020-5413 issue (high severity).</line>
+				<line>Spring security is updated to version 4.2.20 (was 4.2.9) to fix CVE-2020-5408, CVE-2019-11272, and CVE-2019-3795 issues (moderate to high severities).</line>
 			</description>
 		</item>
 	</category>
