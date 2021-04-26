@@ -813,6 +813,8 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					if (credit != null) a.setCredit(FixedCreditUnitConfig.formatCredit(credit));
 				}
 		}
+		if (ret != null && gradeModes.hasCurrentCredit())
+			ret.setCurrentCredit(gradeModes.getCurrentCredit());
 		return ret;
 	}
 	

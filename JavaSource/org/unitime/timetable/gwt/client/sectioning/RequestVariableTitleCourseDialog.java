@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.client.sectioning;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.unitime.timetable.gwt.client.aria.AriaSuggestBox;
 import org.unitime.timetable.gwt.client.aria.AriaTextBox;
@@ -74,6 +75,7 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 	protected static StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	protected static GwtMessages GWT_MSG = GWT.create(GwtMessages.class);
 	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
+	protected static Logger sLogger = Logger.getLogger(RequestVariableTitleCourseDialog.class.getName());
 	
 	private ScheduleStatus iStatus;
 	private StudentSectioningContext iContext;
@@ -254,6 +256,7 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 		iCurrentCredit = currentCredit; iMaxCredit = maxCredit;
 		center();
 		iCourseName.setFocus(true);
+		sLogger.fine("Current credit: " + currentCredit + " of " + maxCredit);
 	}
 	
 	protected void onCourseChanged(String course) {

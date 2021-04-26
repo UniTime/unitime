@@ -383,6 +383,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				external.setType(OnlineSectioningLog.Enrollment.EnrollmentType.EXTERNAL);
 				String added = "";
 				String resetGradeModes = getResetGradeModesRegExp();
+				float currentCredit = 0f;
 				if (original.registrations != null)
 					for (XEInterface.Registration reg: original.registrations) {
 						if (reg.isRegistered()) {
@@ -399,7 +400,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 							if (reg.creditHour != null)
 								check.addCreditHour(reg.courseReferenceNumber, reg.creditHour);
 						}
+						if (reg.hasCredit())
+							currentCredit += reg.creditHour;
 					}
+				check.setCurrentCredit(currentCredit);
 				helper.getAction().addEnrollment(external);
 				String removed = "";
 				for (String s: sectionExternalIds)
@@ -766,6 +770,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			
 			Set<String> outcome = new HashSet<String>();
 			String resetGradeModes = getResetGradeModesRegExp();
+			float currentCredit = 0f;
 			if (response.registrations != null) {
 				OnlineSectioningLog.Enrollment.Builder external = OnlineSectioningLog.Enrollment.newBuilder();
 				external.setType(OnlineSectioningLog.Enrollment.EnrollmentType.EXTERNAL);
@@ -795,6 +800,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						}
 						if (gradeModes != null && reg.creditHour != null) {
 							gradeModes.addCreditHour(reg.courseReferenceNumber, reg.creditHour);
+							currentCredit += reg.creditHour;
 						}
 						if (added.contains(id)) {
 							// skip successfully registered enrollments
@@ -813,6 +819,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						// skip deleted enrollments
 						continue;
 					}
+					if ("Withdrawn".equals(reg.statusDescription) && gradeModes != null && reg.creditHour != null)
+						currentCredit += reg.creditHour;
 					if (error == null && response.registrationException != null) {
 						error = response.registrationException;
 						errors.add(new EnrollmentError("Unable to make requested changes so your schedule was not changed.".equals(response.registrationException) ? "IGNORE" : "UNKNOWN", response.registrationException));
@@ -829,6 +837,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				}
 				helper.getAction().addEnrollment(external);
 			}
+			if (gradeModes != null)
+				gradeModes.setCurrentCredit(currentCredit);
 			if (response.failedRegistrations != null) {
 				Set<EnrollmentError> error = new TreeSet<EnrollmentError>();
 				for (XEInterface.FailedRegistration reg: response.failedRegistrations) {
@@ -977,6 +987,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 							}
 							throw new SectioningException(reason == null ? "Failed to change grade modes." : reason);
 						}
+						currentCredit = 0f;
 						if (responseGM.registrations != null) {
 							for (XEInterface.Registration reg: responseGM.registrations) {
 								if ("Registered".equals(reg.statusDescription)) {
@@ -986,10 +997,14 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 									}
 									if (reg.creditHour != null) {
 										gradeModes.addCreditHour(reg.courseReferenceNumber, reg.creditHour);
+										currentCredit += reg.creditHour;
 									}
 								}
+								if ("Withdrawn".equals(reg.statusDescription) && reg.creditHour != null)
+									currentCredit += reg.creditHour;
 							}
 						}
+						gradeModes.setCurrentCredit(currentCredit);
 					}
 				} catch (Exception e) {
 					action: for (RegisterAction action: reqGM.actionsAndOptions) {
