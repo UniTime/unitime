@@ -56,6 +56,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	private boolean iCanEnroll = true;
 	private boolean iCanSetCriticalOverrides = false;
 	private double iValue = 0.0;
+	private Float iCurrentCredit = null;
 	
 	public ClassAssignmentInterface() {}
 	
@@ -1878,4 +1879,8 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			iNotAssignedMessage = (iNotAssignedMessage == null ? "" : iNotAssignedMessage + "\n") +  message;
 		}
 	}
+	
+	public boolean hasCurrentCredit() { return iCurrentCredit != null && iCurrentCredit > 0f; }
+	public void setCurrentCredit(Float curCredit) { iCurrentCredit = curCredit; }
+	public Float getCurrentCredit() { return iCurrentCredit; }
 }

@@ -1195,6 +1195,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					if (a.getCreditHour() != null)
 						last.addCreditHour(a.getExternalId(), a.getCreditHour());
 				}
+			last.setCurrentCredit(ret.getCurrentCredit());
 		}
 		
 		return ret;
@@ -3308,6 +3309,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (ret != null && ret.hasCreditHours() && last != null)
 			for (Map.Entry<String, Float> e: ret.getGradeModes().getCreditHours().entrySet())
 				last.addCreditHour(e.getKey(), e.getValue());
+		if (ret != null && ret.hasGradeModes() && last != null)
+			last.setCurrentCredit(ret.getGradeModes().getCurrentCredit());
 		
 		return ret;
 	}

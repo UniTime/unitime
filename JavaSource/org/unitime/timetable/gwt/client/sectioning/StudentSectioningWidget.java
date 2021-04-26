@@ -1156,6 +1156,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								iSavedAssignment = result;
 								iStartOver.setVisible(iSavedAssignment != null && !iSavedAssignment.getCourseAssignments().isEmpty());
 								iStartOver.setEnabled(iSavedAssignment != null && !iSavedAssignment.getCourseAssignments().isEmpty());
+								if (result.hasCurrentCredit() && iEligibilityCheck != null)
+									iEligibilityCheck.setCurrentCredit(result.getCurrentCredit());
 								fillIn(result, iEligibilityCheck == null || !iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
 								if (result.hasRequest())
 									iCourseRequests.setRequest(result.getRequest());
@@ -3566,7 +3568,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				}
 			};
 		}
-		iRequestVariableTitleCourseDialog.requestVariableTitleCourse(iCurrentCredit, iEligibilityCheck == null ? null : iEligibilityCheck.getMaxCredit());
+		iRequestVariableTitleCourseDialog.requestVariableTitleCourse(
+				iEligibilityCheck == null || !iEligibilityCheck.hasCurrentCredit() ? iCurrentCredit : iEligibilityCheck.getCurrentCredit(),
+				iEligibilityCheck == null ? null : iEligibilityCheck.getMaxCredit());
 	}
 	
 	public void setSessionId(Long sessionId) {

@@ -127,6 +127,18 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public void setMaxCredit(Float maxCredit) { iMaxCredit = maxCredit; }
 		public Float getMaxCredit() { return iMaxCredit; }
 		
+		public boolean hasCurrentCredit() {
+			return iGradeModes != null && iGradeModes.hasCurrentCredit();
+		}
+		public void setCurrentCredit(Float curCredit) {
+			if (iGradeModes == null) iGradeModes = new GradeModes();
+			iGradeModes.setCurrentCredit(curCredit);
+		}
+		public Float getCurrentCredit() {
+			if (iGradeModes == null) return null;
+			return iGradeModes.getCurrentCredit();
+		}
+		
 		public boolean hasOverride(String errorCode) {
 			if (errorCode == null || errorCode.isEmpty()) return true;
 			return iOverrides != null && iOverrides.contains(errorCode);
@@ -400,6 +412,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		Map<String, GradeMode> iModes = new HashMap<String, GradeMode>();
 		private Map<String, Float> iCreditHours = new HashMap<String, Float>();
+		private Float iCurrentCredit = null;
 		
 		public GradeModes() {}
 		
@@ -446,6 +459,9 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 				iCreditHours.put(sectionId, credit);
 		}
 
+		public boolean hasCurrentCredit() { return iCurrentCredit != null && iCurrentCredit > 0f; }
+		public void setCurrentCredit(Float curCredit) { iCurrentCredit = curCredit; }
+		public Float getCurrentCredit() { return iCurrentCredit; }
 	}
 		
 	public static class GradeMode implements IsSerializable, Serializable, Comparable<GradeMode> {
