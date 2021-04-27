@@ -314,6 +314,15 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 				if (ca.getCreditHour() != null) return true;
 			return false;
 		}
+
+		public boolean isVariableTitleCourseChange() {
+			if (iChanges == null) return false;
+			for (ClassAssignmentInterface.ClassAssignment ca: iChanges) {
+				if (ca.getGradeMode() != null && ca.getCredit() != null && ca.getSpecRegOperation() == SpecialRegistrationOperation.Add && ca.getClassId() != null && ca.getClassId() >= 0l)
+					return true;
+			}
+			return false;
+		}
 		
 		public boolean isAdd(Long courseId) {
 			boolean hasDrop = false, hasAdd = false;

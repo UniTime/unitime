@@ -864,7 +864,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					iSpecRegCx.setStatus(specReg.getStatus());
 					iSpecRegCx.setNote(specReg.getNote());
 					iSpecialRegAssignment = null;
-					if (specReg.hasChanges() && !specReg.isGradeModeChange() && !specReg.isCreditChange()) {
+					if ((specReg.hasChanges() && !specReg.isGradeModeChange() && !specReg.isCreditChange()) ||
+						(specReg.hasChanges() && specReg.isVariableTitleCourseChange())) {
 						final CourseRequestInterface courseRequests = iCourseRequests.getRequest();
 						courseRequests.setTimeConflictsAllowed(specReg.hasTimeConflict());
 						courseRequests.setSpaceConflictsAllowed(specReg.hasSpaceConflict());
