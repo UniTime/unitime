@@ -32,7 +32,6 @@ import java.util.Locale;
 import org.hibernate.Transaction;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.api.ApiConnector;
 import org.unitime.timetable.api.ApiHelper;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -590,6 +589,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
 		
 		// Notify the online scheduling server that the variable course title has changed
 		StudentSectioningQueue.offeringChanged(helper.getHibSession(), helper.getSessionContext().getUser(), instructionalOffering.getSessionId(), instructionalOffering.getUniqueId());
+		helper.getHibSession().flush();
 	}
 	
 	private ExternalInstrOffrConfigChangeAction lookupExternalConfigChangeAction() throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, ClassNotFoundException {
