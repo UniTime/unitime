@@ -281,7 +281,7 @@ public class SpecialRegistrationsPanel extends P {
 			} else if (reg.getStatus() != null) {
 				switch (reg.getStatus()) {
 				case Approved:
-					if (reg.isGradeModeChange() || reg.isExtended())
+					if (reg.isGradeModeChange() || reg.isVariableTitleCourseChange() || reg.isExtended())
 						p.add(new Icon(RESOURCES.specRegApproved(), MESSAGES.hintSpecRegApproved()));
 					else
 						p.add(new Icon(RESOURCES.specRegApproved(), MESSAGES.hintSpecRegApprovedNoteApply()));
