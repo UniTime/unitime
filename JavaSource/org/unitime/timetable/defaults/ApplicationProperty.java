@@ -2897,7 +2897,7 @@ public enum ApplicationProperty {
 	VariableTitleExternalSystemWaitTime("unitime.variableTitle.defaultExternalSystemWaitTime"),
 
 	@Type(Integer.class)
-	@DefaultValue("false")
+	@DefaultValue("true")
 	@Description("Variable Title: Instructor Id is Required")
 	VariableTitleInstructorIdRequired("unitime.variableTitle.instructorIdRequired"),
 
