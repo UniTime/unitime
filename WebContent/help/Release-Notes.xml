@@ -22,11 +22,23 @@
  -->
 
 <release-history>
-
 <doc-title>UniTime 4.5 Release Notes</doc-title>
 <release>
 	<version>4.5.${build.number}</version>
 	<release-date>${build.date}</release-date>
+	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Student Scheduling Reports: Tableau Report</name>
+			<description>
+				<line>Added Request Type column (including request priority: Critical, Important, or Normal).</line>
+			</description>
+		</item>
+	</category>
+</release>
+<release>
+	<version>4.5.164</version>
+	<release-date>Sat, 24 Apr 2021</release-date>
 	<category>
 		<title>Student Scheduling</title>
 		<item>
