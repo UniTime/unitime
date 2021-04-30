@@ -40,6 +40,6 @@ alter table pit_class add constraint fk_pit_class_fund_dept foreign key (funding
  * Update database version
  */
 
-update application_config set value='238' where name='tmtbl.db.version';
+update application_config set value='240' where name='tmtbl.db.version';
 
 commit;
