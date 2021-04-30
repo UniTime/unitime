@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaTabBar;
+import org.unitime.timetable.gwt.client.sectioning.StudentSectioningPage.Mode;
 import org.unitime.timetable.gwt.client.sectioning.TimeGrid.Meeting;
 import org.unitime.timetable.gwt.client.widgets.CourseFinder;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderClasses;
@@ -621,7 +622,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							UpdateSpecialRegistrationRequest request = new UpdateSpecialRegistrationRequest(
 									iContext,
 									rc.getRequestId(),
-									requestorNote, true);
+									requestorNote, iMode == Mode.REQUESTS);
 							iSectioningService.updateSpecialRequest(request, new AsyncCallback<UpdateSpecialRegistrationResponse>() {
 								@Override
 								public void onSuccess(UpdateSpecialRegistrationResponse result) {
@@ -672,7 +673,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							UpdateSpecialRegistrationRequest req = new UpdateSpecialRegistrationRequest(
 									iContext,
 									request.getRequestId(),
-									requestorNote, true);
+									requestorNote, iMode == Mode.REQUESTS);
 							iSectioningService.updateSpecialRequest(req, new AsyncCallback<UpdateSpecialRegistrationResponse>() {
 								@Override
 								public void onSuccess(UpdateSpecialRegistrationResponse result) {
@@ -721,7 +722,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							UpdateSpecialRegistrationRequest request = new UpdateSpecialRegistrationRequest(
 									iContext,
 									reg.getRequestId(),
-									requestorNote, true);
+									requestorNote, iMode == Mode.REQUESTS);
 							iSectioningService.updateSpecialRequest(request, new AsyncCallback<UpdateSpecialRegistrationResponse>() {
 								@Override
 								public void onSuccess(UpdateSpecialRegistrationResponse result) {
