@@ -14088,7 +14088,6 @@
 			references %SCHEMA%.pos_major_conc (uniqueid) on delete cascade
 		</sql>
 	</update>
-<<<<<<< HEAD
 	<update version="238" date="22-Feb-2021" comment="Student Area Classification Major Unique Index">
 		<mysql>alter table %SCHEMA%.student_area_clasf_major drop foreign key fk_student_acmaj_student</mysql>
 		<mysql>alter table %SCHEMA%.student_area_clasf_major drop foreign key fk_student_acmaj_area</mysql>
