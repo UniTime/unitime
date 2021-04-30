@@ -1486,7 +1486,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							}
 							ret.addChange(ca);
 							ca.addError(message);
-							ret.addError(new ErrorMessage(ca.getCourseName(), ca.getExternalId(), "VARTL", message));
+							String em = err.message;
+							if (change.selectedTitle != null && !change.selectedTitle.isEmpty())
+								em = "Requested " + change.subject + " " + change.courseNbr + ": " + change.selectedTitle;
+							ret.addError(new ErrorMessage(ca.getCourseName(), ca.getExternalId(), "VARTL", em));
 						}
 				if (change.crn != null) 
 					for (String crn: change.crn.split(",")) {
