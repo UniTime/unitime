@@ -246,6 +246,10 @@ public class StudentSectioningImport extends BaseImport {
 	 			ref2im.put(meth.getReference(), meth);
 	 			name2im.put(meth.getLabel(), meth);
 	 		}
+	 		
+	 		Map<String, StudentSectioningStatus> ref2status = new HashMap<String, StudentSectioningStatus>();
+	 		for (StudentSectioningStatus status: StudentSectioningStatus.findAll(getHibSession(), session.getUniqueId()))
+	 			ref2status.put(status.getReference(), status);
             
             Set<Long> updatedStudents = new HashSet<Long>();
             
@@ -594,7 +598,7 @@ public class StudentSectioningImport extends BaseImport {
 	            	if (status.isEmpty())
 	            		student.setSectioningStatus(null);
 	            	else {
-	            		StudentSectioningStatus s = StudentSectioningStatus.getStatus(status, session.getUniqueId(), getHibSession());
+	            		StudentSectioningStatus s = ref2status.get(status);
 	            		if (s != null)
 	            			student.setSectioningStatus(s);
 	            		else
