@@ -401,9 +401,10 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 	}
 	
 	private void resizeNotes() {
-		iNotes.setHeight((23 + 27 * (iCourses.size() - 1)) + "px");
 		if (!iNotes.getText().isEmpty()) {
 			iNotes.setHeight(Math.max((23 + 27 * (iCourses.size() - 1)), iNotes.getElement().getScrollHeight()) + "px");
+		} else {
+			iNotes.setHeight((23 + 27 * (iCourses.size() - 1)) + "px");
 		}
 	}
 	
