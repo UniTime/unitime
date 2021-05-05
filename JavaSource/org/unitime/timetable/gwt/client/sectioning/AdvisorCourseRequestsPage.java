@@ -809,9 +809,10 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	}
 	
 	private void resizeNotes() {
-		iNotes.setHeight("50px");
 		if (!iNotes.getText().isEmpty()) {
 			iNotes.setHeight(Math.max(50, iNotes.getElement().getScrollHeight()) + "px");
+		} else {
+			iNotes.setHeight("50px");
 		}
 	}
 	

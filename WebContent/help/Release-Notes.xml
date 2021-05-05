@@ -34,6 +34,12 @@
 				<line>Added Request Type column (including request priority: Critical, Important, or Normal).</line>
 			</description>
 		</item>
+		<item>
+			<name>Advisor Course Recommendations: Notes</name>
+			<description>
+				<line>When the Notes textarea is automatically resized to fit the text, avoid scroll-position jumping on Firefox.</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>
