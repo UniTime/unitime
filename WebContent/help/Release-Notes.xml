@@ -41,6 +41,15 @@
 			</description>
 		</item>
 	</category>
+		<category>
+		<title>Administration</title>
+		<item>
+			<name>Data Exchange: Student Course Requests XML Import</name>
+			<description>
+				<line>Improved speed of the import by pre-loading and caching available student statuses.</line>
+			</description>
+		</item>
+	</category>
 </release>
 <release>
 	<version>4.5.164</version>
