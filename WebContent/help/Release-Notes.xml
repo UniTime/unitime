@@ -36,5 +36,14 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Dependencies / Technology Update</name>
+			<description>
+				<line>GWT updated to version 2.9.0 (was 2.8.2).</line>
+			</description>
+		</item>
+	</category>
 </release>
 </release-history>
