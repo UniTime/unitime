@@ -22,6 +22,7 @@ package org.unitime.timetable.action;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,18 +35,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionInfo;
 import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserQualifier;
+import org.unitime.timetable.security.context.UniTimeUserContext;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.service.SolverServerService;
@@ -102,13 +107,40 @@ public class StudentSchedulingAction extends Action {
 		
 		boolean useDefault = ApplicationProperty.StudentSchedulingUseDefaultSession.isTrue();
 		
+		// if instructor role is assigned, prefer student role
+		if (sessionContext.isAuthenticated() && Roles.ROLE_INSTRUCTOR.equals(sessionContext.getUser().getCurrentAuthority().getRole())) {
+			// Student role of the same session
+			for (UserAuthority auth: sessionContext.getUser().getAuthorities(Roles.ROLE_STUDENT, new SimpleQualifier("Session", sessionContext.getUser().getCurrentAcademicSessionId()))) {
+				sessionContext.getUser().setCurrentAuthority(auth);
+				break;
+			}
+			// Student role of different sessions
+			if (Roles.ROLE_INSTRUCTOR.equals(sessionContext.getUser().getCurrentAuthority().getRole())) {
+				TreeSet<Session> sessions = new TreeSet<Session>();
+				UserAuthority firstStudentAuth = null;
+				for (UserAuthority auth: sessionContext.getUser().getAuthorities(Roles.ROLE_STUDENT)) {
+					Session session = SessionDAO.getInstance().get((Long)auth.getAcademicSession().getQualifierId());
+					if (session != null) sessions.add(session);
+					if (firstStudentAuth == null) firstStudentAuth = auth;
+				}
+				if (!sessions.isEmpty()) {
+					Session session = UniTimeUserContext.defaultSession(sessions, firstStudentAuth, UserProperty.PrimaryCampus.get(sessionContext.getUser()));
+					if (session != null)
+						for (UserAuthority auth: sessionContext.getUser().getAuthorities(Roles.ROLE_STUDENT, new SimpleQualifier("Session", session.getUniqueId()))) {
+							sessionContext.getUser().setCurrentAuthority(auth);
+							break;
+						}
+				}
+			}
+		}
+		
 		// Select current role -> prefer advisor, than student in the matching academic session
 		SectioningService service = (SectioningService)applicationContext.getBean("sectioning.gwt");
 		if (sessionContext.isAuthenticated()) {
 			UserAuthority preferredAuthority = null;
 			try {
 				for (AcademicSessionInfo session:  service.listAcademicSessions(true)) {
-					if (match(request, session, true)) {
+					if (match(request, session, useDefault)) {
 						for (UserAuthority auth: sessionContext.getUser().getAuthorities(null, new SimpleQualifier("Session", session.getSessionId()))) {
 							if (preferredAuthority == null && Roles.ROLE_STUDENT.equals(auth.getRole())) {
 								preferredAuthority = auth;
@@ -123,7 +155,7 @@ public class StudentSchedulingAction extends Action {
 				// no authority selected --> also check the session for which the course requests are enabled
 				if (preferredAuthority == null)
 					for (AcademicSessionInfo session:  service.listAcademicSessions(false)) {
-						if (match(request, session, true)) {
+						if (match(request, session, useDefault)) {
 							for (UserAuthority auth: sessionContext.getUser().getAuthorities(null, new SimpleQualifier("Session", session.getSessionId()))) {
 								if (preferredAuthority == null && Roles.ROLE_STUDENT.equals(auth.getRole())) {
 									preferredAuthority = auth;
