@@ -40,6 +40,13 @@
 				<line>When the Notes textarea is automatically resized to fit the text, avoid scroll-position jumping on Firefox.</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling Link (UniTime/studentScheduling.do)</name>
+			<description>
+				<line>If an instructor role is assigned, prefer student role when possible.</line>
+				<line>When selecting current authority, do not stick with the default academic session when unitime.studentScheduling.useDefaultSession = false.</line>
+			</description>
+		</item>
 	</category>
 		<category>
 		<title>Administration</title>
