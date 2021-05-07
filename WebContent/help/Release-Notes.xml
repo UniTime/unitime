@@ -55,6 +55,14 @@
 			<description>
 				<line>Improved speed of the import by pre-loading and caching available student statuses.</line>
 			</description>
+		</item><item>
+			<name>Data Exchange: Academic Session Import</name>
+			<description>
+				<line>Fixed a potential issue with uk_student_area_clasf_major unique key.
+					<line>Optional concentration is part of the index, which can cause troubles when there is a student with two or more (area,classification,major) elements that differ only in concentration.</line>
+					<line>Concentration is now set together with the required fields.</line>
+				</line>
+			</description>
 		</item>
 	</category>
 </release>
