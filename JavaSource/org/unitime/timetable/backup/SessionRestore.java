@@ -105,6 +105,7 @@ import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.OnlineSectioningLog;
 import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.PosMajorConcentration;
 import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RefTableEntry;
@@ -737,6 +738,19 @@ public class SessionRestore implements SessionRestoreInterface {
 			if (getObject() instanceof Department) {
 				Department dept = (Department)getObject();
 				if (dept.isAllowStudentScheduling() == null) dept.setAllowStudentScheduling(true);
+			}
+			if (getObject() instanceof StudentAreaClassificationMajor) {
+				TableData.Element element = getElement("concentration");
+				if (element != null) {
+					StudentAreaClassificationMajor acm = (StudentAreaClassificationMajor)getObject();
+					PosMajorConcentration conc = (PosMajorConcentration)get(PosMajorConcentration.class, element.getValue(0));
+					if (conc != null) {
+						if (!iHibSession.contains(conc))
+							message("Required " + getAbbv() + ".concentration has transient value", getId() + "-" + element.getValue(0));
+						else
+							acm.setConcentration(conc);
+					}
+				}
 			}
 		}
 		
