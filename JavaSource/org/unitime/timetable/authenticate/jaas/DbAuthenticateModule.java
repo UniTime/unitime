@@ -31,9 +31,9 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.login.LoginException;
 
 import org.apache.log4j.Logger;
-import org.springframework.security.authentication.encoding.MessageDigestPasswordEncoder;
 import org.unitime.timetable.model.User;
 import org.unitime.timetable.model.dao.UserDAO;
+import org.unitime.timetable.spring.security.MD5PasswordEncoder;
 
 /**
  * Authenticates a user by looking up username/password in the database Options:
@@ -178,7 +178,7 @@ public class DbAuthenticateModule extends AuthenticateModule {
 	 * @throws NoSuchAlgorithmException
 	 */
 	public static String getEncodedPassword(String clearTextPassword) {
-		return new MessageDigestPasswordEncoder("MD5", true).encodePassword(clearTextPassword, null);
+		return MD5PasswordEncoder.getEncodedPassword(clearTextPassword);
 	}
 
 	/**

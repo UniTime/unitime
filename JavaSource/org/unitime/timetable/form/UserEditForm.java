@@ -25,8 +25,8 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
-import org.springframework.security.authentication.encoding.MessageDigestPasswordEncoder;
 import org.unitime.timetable.model.User;
+import org.unitime.timetable.spring.security.MD5PasswordEncoder;
 
 /** 
  * 
@@ -95,7 +95,7 @@ public class UserEditForm extends ActionForm {
     }
     
 	public static String encodePassword(String clearTextPassword) {
-		return new MessageDigestPasswordEncoder("MD5", true).encodePassword(clearTextPassword, null);
+		return MD5PasswordEncoder.getEncodedPassword(clearTextPassword);
 	}
     
     public void saveOrUpdate(org.hibernate.Session hibSession) throws Exception {

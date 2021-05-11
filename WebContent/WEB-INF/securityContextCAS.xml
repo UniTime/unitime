@@ -25,7 +25,7 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans
 		http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
 		http://www.springframework.org/schema/security
-		http://www.springframework.org/schema/security/spring-security-4.2.xsd">
+		http://www.springframework.org/schema/security/spring-security-5.4.xsd">
 	
 	<http use-expressions="true" entry-point-ref="casEntryPoint">
 		<intercept-url pattern="/temp/*" access="isAuthenticated()"/>
@@ -145,7 +145,7 @@
 	<authentication-manager alias="authenticationManager">
 		<!-- Database Authentication --> 
 		<authentication-provider user-service-ref="unitimeUserDetailsService">
-			<password-encoder hash="md5" base64="true"/>
+			<password-encoder ref="unitimePasswordEncoder"/>
 		</authentication-provider>
 		<!-- LDAP Authentication -->
 		<authentication-provider ref="ldapAuthProvider"/>
