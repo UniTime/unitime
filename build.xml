@@ -212,6 +212,12 @@
 			</manifest>
 		</jar>
 	</target>
+	
+	<target name="tomcat-10" depends="load-properties">
+		<mkdir dir="${dist.dir}/tomcat10"/>
+		<taskdef name="javax2jakarta" classname="org.apache.tomcat.jakartaee.MigrationTask" classpath="${3rd_party.dir}/jakartaee-migration/jakartaee-migration-1.0.0.jar"/>
+		<javax2jakarta src="${dist.dir}/UniTime.war" dest="${dist.dir}/tomcat10/UniTime.war" profile="tomcat"/>
+	</target>
 
 	<target name="done">
 		<delete dir="${temp.dir}" />
@@ -290,7 +296,7 @@
 		</java>
 	</target>
 
-	<target name="build-dist" depends="compile-war,help">
+	<target name="build-dist" depends="compile-war,tomcat-10,help">
 		<tar destfile="${dist.dir}/unitime-4.6_bld${build.number}.tar">
 			<tarfileset dir="${basedir}" includes="LICENSE" fullpath="doc/license.txt"/>
 			<tarfileset dir="${basedir}" includes="NOTICE" fullpath="doc/notice.txt"/>
@@ -300,6 +306,7 @@
 			<tarfileset dir="${basedir}/Documentation/Database/MySQL" includes="*.sql" prefix="doc/mysql"/>
 			<tarfileset dir="${basedir}/Documentation/Database/Oracle" includes="*.sql" prefix="doc/oracle"/>
 			<tarfileset dir="${dist.dir}" includes="*.war" prefix="web"/>
+			<tarfileset dir="${dist.dir}/tomcat10" includes="*.war" prefix="web-tomcat10"/>
 			<tarfileset dir="${dist.dir}" includes="timetable.jar" prefix="solver"/>
 			<tarfileset dir="${lib.dir}" prefix="solver">
 				<include name="antlr-2.7.7.jar"/>
@@ -362,6 +369,7 @@
 			<zipfileset dir="${basedir}/Documentation/Database/MySQL" includes="*.sql" prefix="doc/mysql"/>
 			<zipfileset dir="${basedir}/Documentation/Database/Oracle" includes="*.sql" prefix="doc/oracle"/>
 			<zipfileset dir="${dist.dir}" includes="*.war" prefix="web"/>
+			<zipfileset dir="${dist.dir}/tomcat10" includes="*.war" prefix="web-tomcat10"/>
 			<zipfileset dir="${dist.dir}" includes="timetable.jar" prefix="solver"/>
 			<zipfileset dir="${lib.dir}" prefix="solver">
 				<include name="antlr-2.7.7.jar"/>
