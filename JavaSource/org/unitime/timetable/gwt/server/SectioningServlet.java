@@ -3515,7 +3515,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			ret.getRequest().setPinReleased(true);
 		
 		// put default note when no note is provided
-		if (ret.getRequest() != null && !ret.getRequest().hasCreditNote() && ret.getRequest().isEmpty()) {
+		if (student.getAdvisorCourseRequests().isEmpty()) {
 			String defaultNote = ApplicationProperty.AdvisorCourseRequestsDefaultNote.valueOfSession(sessionId);
 			if (defaultNote != null && !defaultNote.isEmpty())
 				ret.getRequest().setCreditNote(defaultNote);
@@ -3664,7 +3664,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				"order by max(acr.timestamp) desc")
 				.setString("externalId", sessionContext.getUser().getExternalUserId())
 				.setLong("sessionId", cx.getAcademicSessionId())
-				.setCacheable(true).setMaxResults(50).list();
+				.setCacheable(false).setMaxResults(50).list();
 		for (Object[] o: notes) {
 			String note = (String)o[0];
 			Integer count = ((Number)o[1]).intValue();

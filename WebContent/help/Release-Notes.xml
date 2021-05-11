@@ -38,6 +38,8 @@
 			<name>Advisor Course Recommendations: Notes</name>
 			<description>
 				<line>When the Notes textarea is automatically resized to fit the text, avoid scroll-position jumping on Firefox.</line>
+				<line>Do not cache previous notes query (this is to ensure that the most recent notes are visible).</line>
+				<line>When there are no advisor course recommendations, but the page is pre-populated with student's course requests, still display the default advisor note.</line>
 			</description>
 		</item>
 		<item>
