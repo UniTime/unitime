@@ -64,8 +64,8 @@ public class SolverAllocatedMemoryBackend implements GwtRpcImplementation<Solver
 			}
 			break;
 		}
-		if (memUsage == 0)
-			return null;
+		if (memUsage <= 0)
+			return new SolverAllocatedMemoryRpcResponse("");
 		else
 			return new SolverAllocatedMemoryRpcResponse(new DecimalFormat("0.00").format(memUsage / 1048576.0) + "M");
 	}
