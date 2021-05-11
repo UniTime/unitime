@@ -39,9 +39,35 @@
 	<category>
 		<title>Administration</title>
 		<item>
+			<name>Added Support for JDK 16+</name>
+			<description>
+				<line>Various dependencies updated to avoid illegal access exceptions.</line>
+				<line>MemoryCounter updated to avoid illegal access calls (using the Unsafe access instead).</line>
+				<line>Known issues:
+					<line>Spring LDAP is still not fully JDK 16+ compatible, JAVA_OPTS must include --add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED for the time being.</line>
+					<line>Due to this issue, LDAP authentication is disabled by default, to enable add the following line to catalina.properties:
+						<line>unitime.spring.context.security=securityContextLDAP.xml</line>
+					</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Added Support for Apache Tomcat 10</name>
+			<description>
+				<line>Due to the move from Java EE to Jakarta EE, the Tomcat 10 compatible version of UniTime is available under web-tomcat10 in the distribution.
+					<line>It is built using the Apache Tomcat migration tool for Jakarta EE.</line>
+				</line>
+			</description>
+		</item>
+		<item>
 			<name>Dependencies / Technology Update</name>
 			<description>
 				<line>GWT updated to version 2.9.0 (was 2.8.2).</line>
+				<line>Javassist updated to version 3.28.0 (was 3.18.2).</line>
+				<line>GWT updated to version 2.9.0 (was 2.8.2).</line>
+				<line>Spring core libraries updated to version 5.3.6 (was 4.3.40).</line>
+				<line>Spring security updated to 5.4.6 (was 4.2.20).</line>
+				<line>Spring integration updated to 5.4.6 (was 4.3.24).</line>
 			</description>
 		</item>
 	</category>
