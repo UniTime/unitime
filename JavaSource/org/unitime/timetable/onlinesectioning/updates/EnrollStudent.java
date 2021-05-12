@@ -231,8 +231,22 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					.setExternalId(oldStudent.getExternalId())
 					.setName(oldStudent.getName());
 				
+				boolean hasWaitListedCourses = false;
+				if (wlMode == WaitListMode.WaitList) {
+					for (CourseRequestInterface.Request r: getRequest().getCourses()) {
+						if (r.isWaitList()) {
+							hasWaitListedCourses = true; break;
+						}
+					}
+					for (XRequest r: oldStudent.getRequests())
+						if (!r.isAlternative() && r instanceof XCourseRequest && ((XCourseRequest)r).isWaitlist()) {
+							hasWaitListedCourses = true;
+							break;
+						}
+				}
+				
 				if (CustomStudentEnrollmentHolder.hasProvider()) {
-					failures = CustomStudentEnrollmentHolder.getProvider().enroll(server, helper, oldStudent, enrlCheck, lockedCourses, gradeModes);
+					failures = CustomStudentEnrollmentHolder.getProvider().enroll(server, helper, oldStudent, enrlCheck, lockedCourses, gradeModes, hasWaitListedCourses);
 					for (Iterator<ClassAssignmentInterface.ClassAssignment> i = getAssignment().iterator(); i.hasNext(); ) {
 						ClassAssignmentInterface.ClassAssignment ca = i.next();
 						if (ca == null || ca.isFreeTime() || ca.getClassId() == null || ca.isDummy() || ca.isTeachingAssignment()) continue;

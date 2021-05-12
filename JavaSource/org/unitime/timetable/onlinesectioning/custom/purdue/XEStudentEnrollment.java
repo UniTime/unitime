@@ -195,8 +195,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 	
 	protected boolean throwExceptionWhenNoChange(boolean admin) {
 		if (admin) {
-			String conditionalAddDrop = ApplicationProperties.getProperty("banner.xe.admin.errorWhenNoChange");
-			if (conditionalAddDrop != null) return "true".equalsIgnoreCase(conditionalAddDrop);
+			String errorWhenNoChange = ApplicationProperties.getProperty("banner.xe.admin.errorWhenNoChange");
+			if (errorWhenNoChange != null) return "true".equalsIgnoreCase(errorWhenNoChange);
 		}
 		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.xe.errorWhenNoChange", "false"));
 	}
@@ -438,7 +438,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 	}
 	
 	@Override
-	public List<EnrollmentFailure> enroll(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<EnrollmentRequest> enrollments, Set<Long> lockedCourses, GradeModes gradeModes) throws SectioningException {
+	public List<EnrollmentFailure> enroll(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<EnrollmentRequest> enrollments, Set<Long> lockedCourses, GradeModes gradeModes, boolean hasWaitListedCourses) throws SectioningException {
 		ClientResource resource = null;
 		try {
 			String pin = helper.getPin();
@@ -884,7 +884,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				}
 			}
 			
-			if (outcome.equals(registered.keySet()) && !fails.isEmpty() && throwExceptionWhenNoChange(admin)) {
+			if (outcome.equals(registered.keySet()) && !fails.isEmpty() && throwExceptionWhenNoChange(admin) && !hasWaitListedCourses) {
 				String message = "";
 				for (EnrollmentFailure f: fails) {
 					if (!"Unable to make requested changes so your schedule was not changed.".equals(f.getMessage()))
