@@ -49,7 +49,7 @@ public class NoDropStudentEnrollmentProvider implements StudentEnrollmentProvide
 	}
 
 	@Override
-	public List<EnrollmentFailure> enroll(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<EnrollmentRequest> enrollments, Set<Long> lockedCourses, GradeModes gradeModes) throws SectioningException {
+	public List<EnrollmentFailure> enroll(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<EnrollmentRequest> enrollments, Set<Long> lockedCourses, GradeModes gradeModes, boolean hasWaitListedCourses) throws SectioningException {
 		Student dbStudent = StudentDAO.getInstance().get(student.getStudentId());
 		List<EnrollmentFailure> failures = new ArrayList<EnrollmentFailure>();
 		e: for (StudentClassEnrollment e: dbStudent.getClassEnrollments()) {
