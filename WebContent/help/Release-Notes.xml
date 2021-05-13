@@ -50,7 +50,17 @@
 			</description>
 		</item>
 	</category>
-		<category>
+	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Solution Commit: Skip Conflict Checking</name>
+			<description>
+				<line>Added ability to skip room and instructor conflict checking with other committed problems.</line>
+				<line>Set unitime.commit.skipConflictChecking to true to skip the checks, defaults to false.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Data Exchange: Student Course Requests XML Import</name>

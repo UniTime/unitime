@@ -2819,6 +2819,12 @@ public enum ApplicationProperty {
 	@Parameter("examination type")
 	ExamEventAllocatedTimeBasedExamLength("unitime.examEvent.allocatesTimeBasedExamLength.%"),
 	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Course Timetabling Solution Commit: Skip checking for room and instructor conflicts with other committed problems.")
+	@Since(4.5)
+	CourseTimetablingCommitSkipChecking("unitime.commit.skipConflictChecking"),
+	
 	;
 
 	String iKey;
