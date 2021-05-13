@@ -177,7 +177,6 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private ArrayList<String> iOverlaps = null;
 		private boolean iNotAvailable = false, iFull = false, iLocked = false, iCanWaitList = false;
 		private String iInstead;
-		private boolean iWaitListed = false;
 		private String iEnrollmentMessage = null;
 		private Date iRequestedDate = null;
 		private Integer iSelection = null;
@@ -333,9 +332,6 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 					iRequested = availability[2];
 			}
 		}
-		
-		public boolean isWaitListed() { return iWaitListed; }
-		public void setWaitListed(boolean waitListed) { iWaitListed = waitListed; }
 		
 		public String getEnrollmentMessage() { return iEnrollmentMessage; }
 		public boolean hasEnrollmentMessage() { return iEnrollmentMessage != null && !iEnrollmentMessage.isEmpty(); }
@@ -1135,7 +1131,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private String iReservation = null;
 		private String iApprovedBy = null;
 		private List<Conflict> iConflicts = null;
-		private Boolean iWaitList = null; 
+		private Boolean iWaitList = null, iNoSub = null; 
 		private String iEnrollmentMessage = null;
 		
 		public Enrollment() {}
@@ -1167,6 +1163,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public boolean hasWaitList() { return iWaitList != null; }
 		public boolean isWaitList() { return iWaitList != null && iWaitList.booleanValue(); }
 		public void setWaitList(Boolean waitList) { iWaitList = waitList; }
+		
+		public boolean hasNoSub() { return iNoSub != null; }
+		public boolean isNoSub() { return iNoSub != null && iNoSub.booleanValue(); }
+		public void setNoSub(Boolean noSub) { iNoSub = noSub; }
 		
 		public String getClasses(String subpart, String delim, boolean showClassNumbers) {
 			if (getCourse() == null || getCourse().getClassAssignments().isEmpty()) return "";
@@ -1250,8 +1250,8 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private String iArea, iMajor, iClassification;
 		private String iSubject, iCourseNbr, iConfig, iSubpart, iClazz, iTitle, iConsent;
 		private Long iCourseId, iOfferingId, iSubjectId, iConfigId, iSubpartId, iClazzId;
-		private Integer iLimit, iOther, iProjection, iEnrollment, iWaitlist, iReservation, iAvailable, iUnassigned, iUnassignedPrimary, iSnapshot;
-		private Integer iTotalEnrollment, iTotalWaitlist, iTotalReservation, iTotalUnassigned, iTotalUnassignedPrimary;
+		private Integer iLimit, iOther, iProjection, iEnrollment, iWaitlist, iReservation, iAvailable, iUnassigned, iUnassignedPrimary, iSnapshot, iNoSub;
+		private Integer iTotalEnrollment, iTotalWaitlist, iTotalReservation, iTotalUnassigned, iTotalUnassignedPrimary, iTotalNoSub;
 		private Integer iConsentNeeded, iTotalConsentNeeded;
 		private Integer iOverrideNeeded, iTotalOverrideNeeded;
 		private ClassAssignment iAssignment;
@@ -1335,6 +1335,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public void setWaitlist(Integer waitlist) { iWaitlist = waitlist; }
 		public boolean hasWaitlist() { return iWaitlist != null; }
 		
+		public Integer getNoSub() { return iNoSub; }
+		public void setNoSub(Integer noSub) { iNoSub = noSub; }
+		public boolean hasNoSub() { return iNoSub != null; }
+		
 		public Integer getUnassigned() { return iUnassigned; }
 		public void setUnassigned(Integer unassigned) { iUnassigned = unassigned; }
 		public boolean hasUnassigned() { return iUnassigned != null; }
@@ -1359,6 +1363,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public Integer getTotalWaitlist() { return iTotalWaitlist; }
 		public void setTotalWaitlist(Integer waitlist) { iTotalWaitlist = waitlist; }
 		public boolean hasTotalWaitlist() { return iTotalWaitlist != null; }
+		
+		public Integer getTotalNoSub() { return iTotalNoSub; }
+		public void setTotalNoSub(Integer noSub) { iTotalNoSub = noSub; }
+		public boolean hasTotalNoSub() { return iTotalNoSub != null; }
 		
 		public Integer getTotalUnassigned() { return iTotalUnassigned; }
 		public void setTotalUnassigned(Integer unassigned) { iTotalUnassigned = unassigned; }
@@ -1431,8 +1439,8 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	public static class StudentInfo implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private Student iStudent;
-		private Integer iEnrollment, iWaitlist, iReservation, iRequested, iUnassigned;
-		private Integer iTotalEnrollment, iTotalWaitlist, iTotalReservation, iTotalUnassigned;
+		private Integer iEnrollment, iWaitlist, iReservation, iRequested, iUnassigned, iNoSub;
+		private Integer iTotalEnrollment, iTotalWaitlist, iTotalReservation, iTotalUnassigned, iTotalNoSub;
 		private Integer iConsentNeeded, iTotalConsentNeeded;
 		private Integer iTopWaitingPriority;
 		private Date iRequestedDate = null, iEnrolledDate = null, iApprovedDate = null, iEmailDate = null;
@@ -1466,6 +1474,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public void setWaitlist(Integer waitlist) { iWaitlist = waitlist; }
 		public boolean hasWaitlist() { return iWaitlist != null; }
 		
+		public Integer getNoSub() { return iNoSub; }
+		public void setNoSub(Integer noSub) { iNoSub = noSub; }
+		public boolean hasNoSub() { return iNoSub != null; }
+		
 		public Integer getUnassigned() { return iUnassigned; }
 		public void setUnassigned(Integer unassigned) { iUnassigned = unassigned; }
 		public boolean hasUnassigned() { return iUnassigned != null; }
@@ -1481,6 +1493,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public Integer getTotalWaitlist() { return iTotalWaitlist; }
 		public void setTotalWaitlist(Integer waitlist) { iTotalWaitlist = waitlist; }
 		public boolean hasTotalWaitlist() { return iTotalWaitlist != null; }
+		
+		public Integer getTotalNoSub() { return iTotalNoSub; }
+		public void setTotalNoSub(Integer noSub) { iTotalNoSub = noSub; }
+		public boolean hasTotalNoSub() { return iTotalNoSub != null; }
 		
 		public Integer getTotalUnassigned() { return iTotalUnassigned; }
 		public void setTotalUnassigned(Integer unassigned) { iTotalUnassigned = unassigned; }

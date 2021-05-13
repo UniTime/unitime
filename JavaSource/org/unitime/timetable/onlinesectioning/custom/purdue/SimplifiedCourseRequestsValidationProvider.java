@@ -547,7 +547,7 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 			}
 		else if (original.hasAdvisorRequests() && isWaitListNoAlts())
 			for (XAdvisorRequest ar: original.getAdvisorRequests()) {
-				if (ar.isWaitList() && !ar.isSubstitute()) {
+				if (ar.isWaitListOrNoSub() && !ar.isSubstitute()) {
 					int count = 0;
 					for (XAdvisorRequest x: original.getAdvisorRequests()) {
 						if (x.getPriority() == ar.getPriority() && !x.isSubstitute()) count ++;
@@ -751,7 +751,7 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 			}
 		else if (original.hasAdvisorRequests() && isWaitListNoAlts())
 			for (XAdvisorRequest ar: original.getAdvisorRequests()) {
-				if (ar.isWaitList() && !ar.isSubstitute()) {
+				if (ar.isWaitListOrNoSub() && !ar.isSubstitute()) {
 					int count = 0;
 					for (XAdvisorRequest x: original.getAdvisorRequests()) {
 						if (x.getPriority() == ar.getPriority() && !x.isSubstitute()) count ++;

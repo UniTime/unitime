@@ -634,6 +634,7 @@ public class StudentSectioningImport extends BaseImport {
             		if (reqCoursesElement != null) for (Iterator i = reqCoursesElement.elementIterator(); i.hasNext(); priority++) {
                         Element requestElement = (Element)i.next();
                         String waitList = requestElement.attributeValue("waitlist");
+                        String noSub = requestElement.attributeValue("nosub");
                         String alternative = requestElement.attributeValue("alternative");
                         String critical = requestElement.attributeValue("critical");
                         String criticalOverride = requestElement.attributeValue("criticalOverride");
@@ -692,6 +693,7 @@ public class StudentSectioningImport extends BaseImport {
         					cd.setAlternative("true".equals(alternative));
         					cd.setPriority(priority);
         					cd.setWaitlist("true".equals(waitList));
+        					cd.setNoSub("true".equals(noSub));
         					if (critical == null)
         						cd.setCritical(null);
         					else if ("true".equals(critical))
@@ -834,6 +836,7 @@ public class StudentSectioningImport extends BaseImport {
         					cd.setAlternative("true".equals(alternative));
         					cd.setPriority(priority);
         					cd.setWaitlist("true".equals(waitList));
+        					cd.setNoSub("true".equals(noSub));
         					FreeTime free = cd.getFreeTime();
         					if (free == null) {
         						free = new FreeTime();
@@ -1025,6 +1028,11 @@ public class StudentSectioningImport extends BaseImport {
             				acr.setWaitlist(null);
             			else
             				acr.setWaitlist("true".equalsIgnoreCase(wl));
+            			String ns = recEl.attributeValue("nosub");
+            			if (ns == null)
+            				acr.setNoSub(null);
+            			else
+            				acr.setNoSub("true".equalsIgnoreCase(ns));
 						acr.setNotes(recEl.attributeValue("notes"));
 						acr.setCourse(recEl.attributeValue("course"));
 						if (recEl.attributeValue("subjectArea") != null) {

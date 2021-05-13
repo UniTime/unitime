@@ -39,6 +39,7 @@ import org.cpsolver.studentsct.online.selection.ResectioningWeights;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpart;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpartCache;
@@ -368,7 +369,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					action.addRequest(OnlineSectioningHelper.toProto(newRequest));
 					
 					if (oldEnrollment == null && newEnrollment == null) {
-						if (newRequest.getEnrollment() == null && newStudent.canAssign(newRequest) && isWaitListed(newStudent, newRequest, server, helper) && newOffering.isWaitList()) {
+						if (newRequest.getEnrollment() == null && newStudent.canAssign(newRequest, WaitListMode.WaitList) && isWaitListed(newStudent, newRequest, server, helper) && newOffering.isWaitList()) {
 							queue.add(new SectioningRequest(newOffering, newRequest, newStudent, action).setOldOffering(oldOffering).setOldRequest(oldRequest).setOldStudent(oldStudent));
 						}
 						continue;
@@ -415,7 +416,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					XStudent oldStudent = student[0];
 					XStudent newStudent = student[1];
 					XCourseRequest newRequest = getRequest(newStudent, course);
-					if (newRequest != null && newRequest.getEnrollment() == null && newStudent.canAssign(newRequest) && isWaitListed(student[1], newRequest, server, helper) && newOffering.isWaitList()) {
+					if (newRequest != null && newRequest.getEnrollment() == null && newStudent.canAssign(newRequest, WaitListMode.WaitList) && isWaitListed(student[1], newRequest, server, helper) && newOffering.isWaitList()) {
 						OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
 						action.setStudent(
 								OnlineSectioningLog.Entity.newBuilder()
@@ -502,6 +503,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 				helper.debug("New: " + (e == null ? "not assigned" : e.getSectionIds()));
 				
 				org.unitime.timetable.model.Student student = StudentDAO.getInstance().get(r.getRequest().getStudentId(), helper.getHibSession());
+				WaitListMode wlMode = student.getWaitListMode();
 				Map<Long, StudentClassEnrollment> enrollmentMap = new HashMap<Long, StudentClassEnrollment>();
 				String approvedBy = null; Date approvedDate = null;
 				for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext();) {
@@ -577,8 +579,8 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 				helper.getHibSession().save(student);
 			
 				EnrollStudent.updateSpace(server,
-						r.getRequest().getEnrollment() == null ? null : SectioningRequest.convert(r.getStudent(), r.getRequest(), server, newOffering, r.getRequest().getEnrollment()),
-						r.getLastEnrollment() == null ? null : SectioningRequest.convert(r.getOldStudent(), r.getOldRequest(), server, oldOffering, r.getLastEnrollment()),
+						r.getRequest().getEnrollment() == null ? null : SectioningRequest.convert(r.getStudent(), r.getRequest(), server, newOffering, r.getRequest().getEnrollment(), wlMode),
+						r.getLastEnrollment() == null ? null : SectioningRequest.convert(r.getOldStudent(), r.getOldRequest(), server, oldOffering, r.getLastEnrollment(), wlMode),
 						newOffering, oldOffering);
 				server.persistExpectedSpaces(offeringId);
 

@@ -158,16 +158,17 @@ public class AdvisorConfirmationPDF {
 		if (getDetails().getRequest().getCourses() != null && !getDetails().getRequest().getCourses().isEmpty()) {
 			boolean hasWaitList = false;
 			for (Request r: getDetails().getRequest().getCourses()) {
-				if (r.isWaitList()) { hasWaitList = true; break; }
+				if (getDetails().getWaitListMode() == WaitListMode.WaitList) {
+					if (r.isWaitList()) { hasWaitList = true; break; }
+				} else if (getDetails().getWaitListMode() == WaitListMode.NoSubs) {
+					if (r.isNoSub()) { hasWaitList = true; break; }
+				}
 			}
-			document.add(courseTable(true,
-					hasWaitList && getDetails().getWaitListMode() == WaitListMode.NoSubs ? MSG.colNoSubs() :
-					hasWaitList && getDetails().getWaitListMode() == WaitListMode.WaitList ? MSG.colWaitList() :
-					null));
+			document.add(courseTable(true, hasWaitList ? getDetails().getWaitListMode() : WaitListMode.None));
 		}
 		
 		if (getDetails().getRequest().getAlternatives() != null && !getDetails().getRequest().getAlternatives().isEmpty())
-			document.add(courseTable(false, null));
+			document.add(courseTable(false, WaitListMode.None));
 		
 		if (getDetails().getRequest().hasCreditNote()) {
 			Paragraph p = new Paragraph(getDetails().getRequest().getCreditNote(), PdfFont.getSmallFont());
@@ -205,15 +206,15 @@ public class AdvisorConfirmationPDF {
 		out.flush(); out.close();
 	}
 	
-	private PdfPTable courseTable(boolean primary, String waitList) {
+	private PdfPTable courseTable(boolean primary, WaitListMode waitListMode) {
 		Font font = PdfFont.getSmallFont();
 		float wP = font.getBaseFont().getWidth(primary ? MSG.courseRequestsPriority(100) : MSG.courseRequestsAlternate(100)) * 0.001f * font.getSize();
 		float wA = 20f + font.getBaseFont().getWidth(MSG.courseRequestsAlternative(100)) * 0.001f * font.getSize() - wP;
 		float wC = 5f + font.getBaseFont().getWidth("999 - 999") * 0.001f * font.getSize();
-		float wW = (waitList == null ? 0f : 5f + Math.max(font.getBaseFont().getWidth(MSG.colWaitList())  * 0.001f * font.getSize(), font.getBaseFont().getWidth(MSG.colNoSubs())  * 0.001f * font.getSize()));
+		float wW = (waitListMode == WaitListMode.None ? 0f : 5f + Math.max(font.getBaseFont().getWidth(MSG.colWaitList())  * 0.001f * font.getSize(), font.getBaseFont().getWidth(MSG.colNoSubs())  * 0.001f * font.getSize()));
 		float pw = PageSize.LETTER.getWidth() - 72f;
 		float wX = (pw - wP - wA - wC - wW);
-		PdfPTable cr = (waitList == null ?
+		PdfPTable cr = (waitListMode == WaitListMode.None ?
 				new PdfPTable(new float[] {wP, wA, wX * 0.4f, wC, wX * 0.6f}):
 				new PdfPTable(new float[] {wP, wA, wX * 0.4f, wC, wX * 0.6f, wW}));
 		cr.setHeaderRows(1);
@@ -238,8 +239,8 @@ public class AdvisorConfirmationPDF {
 			c.setVerticalAlignment(Element.ALIGN_BOTTOM);
 			c.setBorder(PdfPCell.BOTTOM); c.setBorderWidth(0.1f);
 			cr.addCell(c);
-			if (waitList != null) {
-				c = italic(waitList);
+			if (waitListMode != WaitListMode.None) {
+				c = italic(waitListMode == WaitListMode.WaitList ? MSG.colWaitList() : MSG.colNoSubs());
 				c.setVerticalAlignment(Element.ALIGN_BOTTOM);
 				c.setBorder(PdfPCell.BOTTOM); c.setBorderWidth(0.1f);
 				cr.addCell(c);
@@ -254,7 +255,7 @@ public class AdvisorConfirmationPDF {
 			x.setFont(PdfFont.getSmallFont(false, true));
 			ch.add(x);
 			ch.setAlignment(Element.ALIGN_LEFT);
-			ch.setSpacingBefore(10f); ch.setSpacingAfter(2f); c.addElement(ch); c.setColspan(waitList == null ? 5 : 6);
+			ch.setSpacingBefore(10f); ch.setSpacingAfter(2f); c.addElement(ch); c.setColspan(waitListMode == WaitListMode.None ? 5 : 6);
 			c.setBorder(PdfPCell.BOTTOM); c.setBorderWidth(0.1f);
 			cr.addCell(c);
 		}
@@ -280,8 +281,13 @@ public class AdvisorConfirmationPDF {
 				note.setBorder(PdfPCell.BOTTOM); note.setBorderWidth(0.1f);
 				cr.addCell(note);
 				
-				if (waitList != null) {
+				if (waitListMode == WaitListMode.WaitList) {
 					PdfPCell wl = cell(r.isWaitList() ? MSG.pdfCourseWaitListed() : MSG.pdfCourseNotWaitListed());
+					((Paragraph)wl.getCompositeElements().get(0)).setAlignment(Element.ALIGN_CENTER);
+					wl.setBorder(PdfPCell.BOTTOM | PdfPCell.LEFT); wl.setBorderWidth(0.1f);
+					cr.addCell(wl);
+				} else if (waitListMode == WaitListMode.NoSubs) {
+					PdfPCell wl = cell(r.isNoSub() ? MSG.pdfCourseWaitListed() : MSG.pdfCourseNotWaitListed());
 					((Paragraph)wl.getCompositeElements().get(0)).setAlignment(Element.ALIGN_CENTER);
 					wl.setBorder(PdfPCell.BOTTOM | PdfPCell.LEFT); wl.setBorderWidth(0.1f);
 					cr.addCell(wl);
@@ -314,8 +320,14 @@ public class AdvisorConfirmationPDF {
 						note.setRowspan(r.getRequestedCourse().size());
 						cr.addCell(note);
 						
-						if (waitList != null) {
+						if (waitListMode == WaitListMode.WaitList) {
 							PdfPCell wl = cell(r.isWaitList() ? MSG.pdfCourseWaitListed() : MSG.pdfCourseNotWaitListed());
+							((Paragraph)wl.getCompositeElements().get(0)).setAlignment(Element.ALIGN_CENTER);
+							wl.setBorder(PdfPCell.BOTTOM | PdfPCell.LEFT); wl.setBorderWidth(0.1f);
+							wl.setRowspan(r.getRequestedCourse().size());
+							cr.addCell(wl);
+						} else if (waitListMode == WaitListMode.NoSubs) {
+							PdfPCell wl = cell(r.isNoSub() ? MSG.pdfCourseWaitListed() : MSG.pdfCourseNotWaitListed());
 							((Paragraph)wl.getCompositeElements().get(0)).setAlignment(Element.ALIGN_CENTER);
 							wl.setBorder(PdfPCell.BOTTOM | PdfPCell.LEFT); wl.setBorderWidth(0.1f);
 							wl.setRowspan(r.getRequestedCourse().size());

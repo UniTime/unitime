@@ -83,6 +83,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisingStudentDetails;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
@@ -913,7 +914,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			}
 		else if (original.hasAdvisorRequests() && isWaitListNoAlts())
 			for (XAdvisorRequest ar: original.getAdvisorRequests()) {
-				if (ar.isWaitList() && !ar.isSubstitute()) {
+				if (ar.isWaitListOrNoSub() && !ar.isSubstitute()) {
 					int count = 0;
 					for (XAdvisorRequest x: original.getAdvisorRequests()) {
 						if (x.getPriority() == ar.getPriority() && !x.isSubstitute()) count ++;
@@ -1590,7 +1591,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			}
 		else if (original.hasAdvisorRequests() && isWaitListNoAlts())
 			for (XAdvisorRequest ar: original.getAdvisorRequests()) {
-				if (ar.isWaitList() && !ar.isSubstitute()) {
+				if (ar.isWaitListOrNoSub() && !ar.isSubstitute()) {
 					int count = 0;
 					for (XAdvisorRequest x: original.getAdvisorRequests()) {
 						if (x.getPriority() == ar.getPriority() && !x.isSubstitute()) count ++;
@@ -2203,6 +2204,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		
 		XStudent original = server.getStudent(student.getUniqueId());
 		if (original == null) original = new XStudent(student, helper, server.getAcademicSession().getFreeTimePattern());
+		WaitListMode wlMode = student.getWaitListMode();
 		
 		Student s = new Student(student.getUniqueId());
 		s.setExternalId(original.getExternalId());
@@ -2243,7 +2245,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						lcCourses.add(c);
 				}
 				if (courses.isEmpty()) continue;
-				CourseRequest clonnedRequest = new CourseRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), s, courses, cr.isWaitlist(), cr.getTimeStamp() == null ? null : cr.getTimeStamp().getTime());
+				CourseRequest clonnedRequest = new CourseRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), s, courses, cr.isWaitListOrNoSub(wlMode), cr.getTimeStamp() == null ? null : cr.getTimeStamp().getTime());
 				if (!sections.isEmpty())
 					preferredSections.put(clonnedRequest, sections);
 				for (Course clonnedCourse: clonnedRequest.getCourses()) {

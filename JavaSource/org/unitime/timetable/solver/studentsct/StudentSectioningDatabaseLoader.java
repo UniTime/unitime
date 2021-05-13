@@ -255,7 +255,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private boolean iSkipStudentsWithHold = false;
     private StudentHoldsCheckProvider iStudentHoldsCheckProvider = null;
     private InMemoryReport iStudentHoldsCSV;
-    private boolean iUseAdvisorWaitLists = false;
+    private boolean iUseAdvisorWaitLists = false, iUseAdvisorNoSubs = false;
     private Date iClassesPastDate = null;
     private int iClassesPastDateIndex = 0;
     private boolean iLoadArrangedHoursPlacements = true;
@@ -420,6 +420,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         }
         
         iUseAdvisorWaitLists = model.getProperties().getPropertyBoolean("Load.UseAdvisorWaitLists", iUseAdvisorWaitLists);
+        iUseAdvisorNoSubs = model.getProperties().getPropertyBoolean("Load.UseAdvisorNoSubs", iUseAdvisorNoSubs);
         iLoadArrangedHoursPlacements = model.getProperties().getPropertyBoolean("Load.ArrangedHoursPlacements", iLoadArrangedHoursPlacements);
     }
     
@@ -1593,7 +1594,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         alternative,
                         student,
                         courses,
-                        cd.isWaitlist(), 
+                        cd.effectiveWaitList() || cd.effectiveNoSub(), 
                         cd.getEffectiveCritical().toRequestPriority(),
                         cd.getTimestamp().getTime());
                 request.getSelectedChoices().addAll(selChoices);
@@ -2214,6 +2215,21 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     	}
     }
     
+    public void loadAdvisorNoSubs(Student student, org.unitime.timetable.model.Student s) {
+    	for (AdvisorCourseRequest acr: s.getAdvisorCourseRequests()) {
+    		if (acr.getNoSub() != null && acr.getNoSub().booleanValue() && acr.getCourseOffering() != null) {
+    			for (Request r: student.getRequests()) {
+    				if (r.isAlternative() || !(r instanceof CourseRequest)) continue;
+    				CourseRequest cr = (CourseRequest)r;
+    				if (cr.getCourse(acr.getCourseOffering().getUniqueId()) != null) {
+    					cr.setWaitlist(true);
+    					iProgress.debug(iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + "): " + cr.getName() + " marked as wait-listed.");
+    				}
+    			}
+    		}
+    	}
+    }
+    
     public void loadRequestGroups(Student student, org.unitime.timetable.model.Student s) {
         for (StudentGroup g: s.getGroups()) {
         	if (iRequestGroupRegExp != null && !iRequestGroupRegExp.isEmpty() && !g.getGroupName().matches(iRequestGroupRegExp)) continue;
@@ -2553,6 +2569,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 if (student == null) continue;
                 if (iUseAdvisorWaitLists)
                 	loadAdvisorWaitLists(student, s);
+                else if (iUseAdvisorNoSubs)
+                	loadAdvisorNoSubs(student, s);
                 if (iOnlineOnlyStudentQuery != null && iOnlineOnlyStudentQuery.match(new DbStudentMatcher(s)))
                 	onlineOnlyStudents.add(student);
                 updateCurriculumCounts(student);

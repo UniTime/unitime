@@ -44,6 +44,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
@@ -78,7 +79,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	private CheckCoursesResponse iLastCheck;
 	
 	Validator<CourseSelection> iCheckForDuplicities;
-	private boolean iCanWaitList = true;
+	private WaitListMode iWaitListMode = WaitListMode.WaitList;
 	private P iHeader, iHeaderTitle, iHeaderWaitlist;
 	private P iAltHeader, iAltHeaderTitle, iAltHeaderNote;
 	private boolean iArrowsVisible = true;
@@ -204,7 +205,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			line.setNext(next); next.setPrevious(line);
 		}
 		line.setArrowsVisible(iArrowsVisible);
-		line.setWaitListVisible(iCanWaitList);
+		line.setWaitListMode(iWaitListMode);
 		insert(line, 1 + i);
 		line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
 			@Override
@@ -248,11 +249,11 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		});
 	}
 	
-	public void setCanWaitList(boolean canWaitList) {
-		iCanWaitList = canWaitList;
-		iHeaderWaitlist.setVisible(canWaitList);
+	public void setWaitListMode(WaitListMode waitListMode) {
+		iWaitListMode = waitListMode;
+		iHeaderWaitlist.setVisible(iWaitListMode == WaitListMode.WaitList || iWaitListMode == WaitListMode.NoSubs);
 		for (CourseRequestLine line: iCourses)
-			line.setWaitListVisible(canWaitList);
+			line.setWaitListMode(iWaitListMode);
 	}
 	
 	public void setArrowsVisible(boolean arrowsVisible, boolean noSubs) {
@@ -591,7 +592,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	}
 	
 	public Boolean getWaitList(Long course) {
-		if (iCanWaitList && course != null)
+		if ((iWaitListMode == WaitListMode.WaitList || iWaitListMode == WaitListMode.NoSubs) && course != null)
 			for (CourseRequestLine line: iCourses)
 				for (CourseSelectionBox box: line.getCourses()) {
 					RequestedCourse rc = box.getValue();

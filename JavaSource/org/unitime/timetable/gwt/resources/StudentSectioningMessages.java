@@ -1219,12 +1219,18 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("<sup><font color='#2066CE'>w)</font></sup>")
 	String htmlWaitListSign();
+	
+	@DefaultMessage("<sup><font color='#2066CE'>n)</font></sup>")
+	String htmlNoSubSign();
 		
 	@DefaultMessage(" (r)")
 	String csvReservationSign();
 	
 	@DefaultMessage(" (w)")
 	String csvWaitListSign();
+	
+	@DefaultMessage(" (n)")
+	String csvNoSubSign();
 	
 	@DefaultMessage("No results matching filter {0} found.")
 	String exceptionNoMatchingResultsFound(String filter);
@@ -1271,10 +1277,10 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage(" ({0}p)")
 	String csvFirstWaitListedPrioritySign(int priority);
 	
-	@DefaultMessage("r) Space available only with a reservation.<br>w) Wait-listed or No-Subs requests.")
+	@DefaultMessage("r) Space available only with a reservation.<br>w) Wait-listed and n) No-Subs requests.")
 	String sectioningStatusReservationHint();
 	
-	@DefaultMessage("(p) denotes priority of the first wait-listed/no-subs course request.")
+	@DefaultMessage("(p) denotes priority of the first wait-listed course request.")
 	String sectioningStatusPriorityHint();
 	
 	@DefaultMessage("Enrollment disabled.")
@@ -2164,8 +2170,11 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Advised")
 	String modeAdvised();
 	
-	@DefaultMessage("Request is wait-listed or marked as no-subs.")
+	@DefaultMessage("Request is wait-listed.")
 	String descriptionRequestWaitListed();
+	
+	@DefaultMessage("Request is marked as no-subs.")
+	String descriptionRequestNoSubs();
 	
 	@DefaultMessage("Course request is critical.")
 	String descriptionRequestCritical();

@@ -48,6 +48,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeModes;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.ClassWaitList;
@@ -171,6 +172,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 		} catch (Exception e) {
 			helper.warn("Failed to lookup critical courses: " + e.getMessage(), e);
 		}
+		WaitListMode wlMode = WaitListMode.None;
 		
 		Set<ErrorMessage> checkErrors = (getRequest().areTimeConflictsAllowed() || getRequest().areSpaceConflictsAllowed() || getRequest().areLinkedConflictsAllowed() ? new TreeSet<ErrorMessage>() : null);
 		Lock lock = server.lockStudent(getStudentId(), offeringIds, name());
@@ -221,6 +223,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 	                    "left join fetch c.schedulingSubpart as ss " +
 						"where s.uniqueId = :studentId").setLong("studentId", getStudentId()).uniqueResult();
 				if (student == null) throw new SectioningException(MSG.exceptionBadStudentId());
+				wlMode = student.getWaitListMode();
 				
 				XStudent oldStudent = server.getStudent(getStudentId());
 
@@ -278,6 +281,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 									cd.setAlternative(false);
 									cd.setPriority(priority);
 									cd.setWaitlist(false);
+									cd.setNoSub(false);
 									cd.setCritical(0);
 									FreeTime free = cd.getFreeTime();
 									if (free == null) {
@@ -330,6 +334,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					cd.setAlternative(false);
 					cd.setPriority(priority);
 					cd.setWaitlist(r.isWaitList());
+					cd.setNoSub(r.isNoSub());
 					if (checkCritical) cd.setCritical(isCritical(courses, cc));
 					Iterator<CourseRequest> requests = new TreeSet<CourseRequest>(cd.getCourseRequests()).iterator();
 					int order = 0;
@@ -414,6 +419,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 									cd.setAlternative(true);
 									cd.setPriority(priority);
 									cd.setWaitlist(false);
+									cd.setNoSub(false);
 									cd.setCritical(0);
 									FreeTime free = cd.getFreeTime();
 									if (free == null) {
@@ -459,6 +465,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					cd.setAlternative(true);
 					cd.setPriority(priority);
 					cd.setWaitlist(r.isWaitList());
+					cd.setNoSub(r.isNoSub());
 					cd.setCritical(0);
 					Iterator<CourseRequest> requests = new TreeSet<CourseRequest>(cd.getCourseRequests()).iterator();
 					int order = 0;
@@ -556,6 +563,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							cd.setAlternative(false);
 							cd.setPriority(priority++);
 							cd.setWaitlist(false);
+							cd.setNoSub(false);
 							if (checkCritical) cd.setCritical(isCritical(ca, cc));
 						}
 						if (cr == null) {
@@ -587,6 +595,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							cd.setAlternative(false);
 							cd.setPriority(priority++);
 							cd.setWaitlist(false);
+							cd.setNoSub(false);
 							if (checkCritical) cd.setCritical(isCritical(ca, cc));
 							cr.setCourseDemand(cd);
 							cd.getCourseRequests().add(cr);
@@ -701,8 +710,8 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						server.execute(server.createAction(CheckOfferingAction.class).forOfferings(oldEnrollment.getOfferingId()).skipStudents(getStudentId()), helper.getUser(), offeringChecked);
 					
 					updateSpace(server,
-							newEnrollment == null ? null : SectioningRequest.convert(newStudent, newRequest, server, offering, newEnrollment),
-							oldEnrollment == null ? null : SectioningRequest.convert(oldStudent, (XCourseRequest)oldRequest, server, offering, oldEnrollment),
+							newEnrollment == null ? null : SectioningRequest.convert(newStudent, newRequest, server, offering, newEnrollment, wlMode),
+							oldEnrollment == null ? null : SectioningRequest.convert(oldStudent, (XCourseRequest)oldRequest, server, offering, oldEnrollment, wlMode),
 							offering);
 					server.persistExpectedSpaces(oldEnrollment.getOfferingId());
 				}
@@ -727,7 +736,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						}
 					XOffering offering = server.getOffering(newEnrollment.getOfferingId());
 					updateSpace(server,
-							SectioningRequest.convert(newStudent, (XCourseRequest)newRequest, server, offering, newEnrollment),
+							SectioningRequest.convert(newStudent, (XCourseRequest)newRequest, server, offering, newEnrollment, wlMode),
 							null, offering);
 					server.persistExpectedSpaces(newEnrollment.getOfferingId());
 				}
@@ -769,7 +778,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				includeRequestInTheReturnMessage = true;
 		}
 		
-		ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(getStudentId()).withMessages(failures).withErrors(checkErrors).withRequest(includeRequestInTheReturnMessage), helper.getUser());
+		ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(getStudentId()).withMessages(failures).withErrors(checkErrors).withRequest(includeRequestInTheReturnMessage).withWaitListMode(wlMode), helper.getUser());
 		if (ret != null && gradeModes.hasGradeModes()) {
 			for (CourseAssignment ca: ret.getCourseAssignments())
 				for (ClassAssignment a: ca.getClassAssignments()) {

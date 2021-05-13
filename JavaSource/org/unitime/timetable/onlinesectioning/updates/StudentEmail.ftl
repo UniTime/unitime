@@ -296,7 +296,7 @@
  		</td></#if>
  		<#if requests.hasWait && wlMode == 'NoSubs'><td style="${style}">
  			<#if line.waitlist>
- 				<img src='http://www.unitime.org/icons/action_check.png' width='16' height='16' title='${msg.descriptionRequestWaitListed()}' alt='${msg.courseNoSubs()}'>
+ 				<img src='http://www.unitime.org/icons/action_check.png' width='16' height='16' title='${msg.descriptionRequestNoSubs()}' alt='${msg.courseNoSubs()}'>
  			</#if>
  		</td></#if>
  	</tr>
