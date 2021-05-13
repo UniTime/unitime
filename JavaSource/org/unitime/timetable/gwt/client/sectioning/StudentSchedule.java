@@ -372,7 +372,11 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 			for (Request request: iAssignment.getAdvisorRequest().getCourses()) {
 				if (request.hasRequestedCourse()) {
 					if (request.isCritical() || request.isImportant()) hasCrit = true;
-					if (request.isWaitList()) hasWL = true;
+					if (iAssignment.getAdvisorRequest().getWaitListMode() == WaitListMode.WaitList) {
+						if (request.isWaitList()) hasWL = true;
+					} else {
+						if (request.isNoSub()) hasWL = true;
+					}
 					boolean first = true;
 					for (RequestedCourse rc: request.getRequestedCourse()) {
 						WebTable.Row row = null;
@@ -412,7 +416,9 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									new WebTable.Cell(ToolBox.toString(prefs), true),
 									request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
 									request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") : new WebTable.Cell(""),
-									request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell(""),
+									(iAssignment.getAdvisorRequest().getWaitListMode() == WaitListMode.WaitList
+										? (request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell(""))
+										: (request.isNoSub() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestNoSubs(), "") : new WebTable.Cell(""))),
 									note,
 									new WebTable.Cell(changes)
 									);
@@ -622,7 +628,11 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 			for (Request request: iAssignment.getRequest().getCourses()) {
 				if (!request.hasRequestedCourse()) continue;
 				boolean first = true;
-				if (request.isWaitList()) hasWait = true;
+				if (iAssignment.getRequest().getWaitListMode() == WaitListMode.WaitList) {
+					if (request.isWaitList()) hasWait = true;
+				} else {
+					if (request.isNoSub()) hasWait = true;
+				}
 				if (request.isCritical() || request.isImportant()) hasCrit = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					if (rc.isCourse()) {
@@ -700,7 +710,9 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
 								(first && iAssignment.isCanSetCriticalOverrides() ? new CriticalCell(request) : first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
 									first && request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") : new WebTable.Cell("")),
-								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell("")),
+								(iAssignment.getRequest().getWaitListMode() == WaitListMode.WaitList
+									? (first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell(""))
+									: (first && request.isNoSub() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestNoSubs(), "") : new WebTable.Cell(""))),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
 								);
 						if (priority > 1 && first)

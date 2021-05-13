@@ -133,6 +133,8 @@ public class StudentSectioningExport extends BaseExport {
 	        				courseOfferingEl.addAttribute("courseNumber", cr.getCourseOffering().getCourseNbr());
 	        				if (first && cd.isWaitlist())
 	        					courseOfferingEl.addAttribute("waitlist", "true");
+	        				if (first && cd.getNoSub() != null && cd.getNoSub().booleanValue())
+	        					courseOfferingEl.addAttribute("nosub", "true");
 	        				if (first && cd.isAlternative())
 	        					courseOfferingEl.addAttribute("alternative", "true");
 	        				if (first && cd.getCritical() != null)
@@ -195,6 +197,7 @@ public class StudentSectioningExport extends BaseExport {
 	        		}
 	        		if (acr.getCredit() != null) acrEl.addAttribute("credit", acr.getCredit());
 	        		if (acr.getWaitlist() != null) acrEl.addAttribute("waitlist", acr.getWaitlist() ? "true" : "false");
+	        		if (acr.getNoSub() != null) acrEl.addAttribute("nosub", acr.getNoSub() ? "true" : "false");
 	        		if (acr.getNotes() != null) acrEl.addAttribute("notes", acr.getNotes());
 	        		if (acr.getCourse() != null) acrEl.addAttribute("course", acr.getCourse());
 	        		if (acr.getFreeTime() != null) {

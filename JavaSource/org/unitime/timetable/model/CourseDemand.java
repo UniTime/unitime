@@ -29,6 +29,7 @@ import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.Request.RequestPriority;
 import org.cpsolver.studentsct.model.Section;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.model.StudentSectioningStatus.Option;
 import org.unitime.timetable.model.base.BaseCourseDemand;
 import org.unitime.timetable.model.dao.CourseDemandDAO;
 
@@ -159,5 +160,31 @@ public class CourseDemand extends BaseCourseDemand implements Comparable {
     	default:
     		return false;
     	}
+    }
+    
+    public boolean effectiveNoSub() {
+    	if (getNoSub() == null) return false;
+    	if (getNoSub()) {
+        	StudentSectioningStatus status = getStudent().getEffectiveStatus();
+        	return (status == null || status.hasOption(Option.nosubs));
+    	}
+    	return false;
+    }
+    
+    public boolean effectiveWaitList() {
+    	if (getWaitlist() == null) return false;
+    	if (getWaitlist()) {
+        	StudentSectioningStatus status = getStudent().getEffectiveStatus();
+        	if (status == null || status.hasOption(Option.waitlist)) {
+        		CourseRequest firstRequest = null;
+        		if (getCourseRequests() != null)
+        			for (CourseRequest cr: getCourseRequests()) {
+        				if (firstRequest == null || firstRequest.getOrder() > cr.getOrder())
+        					firstRequest = cr;
+        			}
+        		return firstRequest != null && firstRequest.getCourseOffering().getInstructionalOffering().effectiveWaitList();
+        	}
+    	}
+    	return false;
     }
 }

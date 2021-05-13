@@ -315,7 +315,6 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		assignment.add(new Entity(0l, "Assigned", CONSTANTS.assignmentType()[0], "translated-value", CONSTANTS.assignmentType()[0]));
 		assignment.add(new Entity(1l, "Reserved", CONSTANTS.assignmentType()[1], "translated-value", CONSTANTS.assignmentType()[1]));
 		assignment.add(new Entity(2l, "Not Assigned", CONSTANTS.assignmentType()[2], "translated-value", CONSTANTS.assignmentType()[2]));
-		assignment.add(new Entity(3l, "Wait-Listed", CONSTANTS.assignmentType()[3], "translated-value", CONSTANTS.assignmentType()[3]));
 		if (CONSTANTS.assignmentType().length > 4)
 			assignment.add(new Entity(4l, "Critical", CONSTANTS.assignmentType()[4], "translated-value", CONSTANTS.assignmentType()[4]));
 		else
@@ -340,6 +339,20 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			assignment.add(new Entity(9l, "Not Assigned Important", CONSTANTS.assignmentType()[9], "translated-value", CONSTANTS.assignmentType()[9]));
 		else
 			assignment.add(new Entity(9l, "Not Assigned Important", "Not Assigned Important"));
+		if (CONSTANTS.assignmentType().length > 10)
+			assignment.add(new Entity(10l, "No-Substitutes", CONSTANTS.assignmentType()[10], "translated-value", CONSTANTS.assignmentType()[10]));
+		else
+			assignment.add(new Entity(10l, "No-Substitutes", "No-Substitutes"));
+		if (CONSTANTS.assignmentType().length > 11)
+			assignment.add(new Entity(11l, "Assigned No-Subs", CONSTANTS.assignmentType()[11], "translated-value", CONSTANTS.assignmentType()[11]));
+		else
+			assignment.add(new Entity(11l, "Assigned No-Subs", "Assigned No-Subs"));
+		if (CONSTANTS.assignmentType().length > 12)
+			assignment.add(new Entity(12l, "Not Assigned No-Subs", CONSTANTS.assignmentType()[12], "translated-value", CONSTANTS.assignmentType()[12]));
+		else
+			assignment.add(new Entity(12l, "Not Assigned No-Subs", "Not Assigned No-Subs"));
+		if (!(server instanceof StudentSolver))
+			assignment.add(new Entity(3l, "Wait-Listed", CONSTANTS.assignmentType()[3], "translated-value", CONSTANTS.assignmentType()[3]));
 		response.add("assignment", assignment);
 		
 		List<Entity> consent = new ArrayList<Entity>();

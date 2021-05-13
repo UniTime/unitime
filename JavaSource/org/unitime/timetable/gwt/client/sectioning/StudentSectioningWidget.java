@@ -89,6 +89,7 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityChe
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
 import org.unitime.timetable.gwt.shared.UserAuthenticationProvider;
 
@@ -2157,8 +2158,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				iEligibilityCheck = result;
 				iContext.setStudentId(result == null ? null : result.getStudentId());
 				iSpecRegCx.update(result);
-				iCourseRequests.setCanWaitList(result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST)
-						|| result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_NO_SUBS));
+				iCourseRequests.setWaitListMode(
+						result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST) ? WaitListMode.WaitList :
+						result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_NO_SUBS) ? WaitListMode.NoSubs : WaitListMode.None);
 				iCourseRequests.setArrowsVisible(!result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.NO_REQUEST_ARROWS),
 						result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_NO_SUBS)
 						&& !result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
@@ -2192,8 +2194,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							}
 							@Override
 							public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
-								iCourseRequests.setCanWaitList(result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST)
-										|| result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_NO_SUBS));
+								iCourseRequests.setWaitListMode(
+										result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST) ? WaitListMode.WaitList :
+										result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_NO_SUBS) ? WaitListMode.NoSubs : WaitListMode.None);
 								iCourseRequests.setArrowsVisible(!result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.NO_REQUEST_ARROWS),
 										result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_NO_SUBS)
 										&& !result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
@@ -2237,7 +2240,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (ret != null) ret.onSuccess(iEligibilityCheck);
 					}
 				} else {
-					iCourseRequests.setCanWaitList(false);
+					iCourseRequests.setWaitListMode(WaitListMode.None);
 					LoadingWidget.getInstance().hide();
 					if (result.hasMessage()) {
 						iStatus.error(result.getMessage());
@@ -2708,8 +2711,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	protected void setElibibilityCheckDuringEnrollment(EligibilityCheck check) {
 		iEligibilityCheck = check;
 		iSpecRegCx.update(check);
-		iCourseRequests.setCanWaitList(check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST)
-				|| check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_NO_SUBS));
+		iCourseRequests.setWaitListMode(
+				check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST) ? WaitListMode.WaitList :
+				check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_NO_SUBS) ? WaitListMode.NoSubs : WaitListMode.None);
 		iCourseRequests.setArrowsVisible(!check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.NO_REQUEST_ARROWS),
 				check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_NO_SUBS)
 				&& !check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));

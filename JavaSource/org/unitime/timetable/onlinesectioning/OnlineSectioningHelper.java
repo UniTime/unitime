@@ -687,6 +687,7 @@ public class OnlineSectioningHelper {
     		if (cr.getTimeStamp() != null)
     			request.setTimeStamp(cr.getTimeStamp().getTime());
         	request.setWaitList(cr.isWaitlist());
+        	request.setNoSubs(cr.isNoSub());
         	request.setCritical(cr.isCritical());
     	}
     	return request;

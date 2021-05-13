@@ -52,6 +52,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -103,6 +104,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 	private boolean iIncludeAdvisorRequest = false;
 	private boolean iCheckHolds = false;
 	private boolean iGetSpecRegs = false;
+	private WaitListMode iWaitListMode = null;
 	
 	public GetAssignment forStudent(Long studentId) {
 		iStudentId = studentId;
@@ -144,6 +146,11 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 		return this;
 	}
 
+	public GetAssignment withWaitListMode(WaitListMode wlMode) {
+		iWaitListMode = wlMode;
+		return this;
+	}
+
 	@Override
 	public ClassAssignmentInterface execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		XStudent student = null;
@@ -152,7 +159,10 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 		try {
 			student = server.getStudent(iStudentId);
 			if (student == null) return null;
-			ret = computeAssignment(server, helper, student, student.getRequests(), iMessages, iErrors, iIncludeRequest);
+			if (iWaitListMode == null)
+				iWaitListMode = student.getWaitListMode(helper);
+			
+			ret = computeAssignment(server, helper, student, student.getRequests(), iMessages, iErrors, iIncludeRequest, iWaitListMode);
 			
 			if (iIncludeAdvisorRequest) {
 				ret.setAdvisorRequest(AdvisorGetCourseRequests.getRequest(student, server, helper));
@@ -221,7 +231,6 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 				ca.setAssigned(true);
 				ca.setCourseId(course.getCourseId());
 				ca.setSubject(course.getSubjectArea());
-				ca.setWaitListed(false);
 				ca.setCourseNbr(course.getCourseNumber());
 				ca.setTitle(course.getTitle());
 				ca.setTeachingAssignment(true);
@@ -284,7 +293,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 		return sections;
 	}
 	
-	public static ClassAssignmentInterface computeAssignment(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<XRequest> studentRequests, List<EnrollmentFailure> messages, Set<ErrorMessage> errors, boolean includeRequest) {
+	public static ClassAssignmentInterface computeAssignment(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<XRequest> studentRequests, List<EnrollmentFailure> messages, Set<ErrorMessage> errors, boolean includeRequest, WaitListMode wlMode) {
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_REQUEST);
 		DistanceMetric m = server.getDistanceMetric();
 		OverExpectedCriterion overExp = server.getOverExpectedCriterion();
@@ -343,7 +352,6 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 				ca.setAssigned(enrollment != null);
 				ca.setCourseId(course.getCourseId());
 				ca.setSubject(course.getSubjectArea());
-				ca.setWaitListed(r.isWaitlist());
 				ca.setCourseNbr(course.getCourseNumber());
 				ca.setTitle(course.getTitle());
 				ca.setEnrollmentMessage(r.getEnrollmentMessage());
@@ -359,7 +367,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 					});
 					Hashtable<CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<CourseRequest, TreeSet<Section>>();
 					Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
-					Collection<Enrollment> avEnrls = SectioningRequest.convert(assignment, r, server).getAvaiableEnrollmentsSkipSameTime(assignment);
+					Collection<Enrollment> avEnrls = SectioningRequest.convert(assignment, r, server, wlMode).getAvaiableEnrollmentsSkipSameTime(assignment);
 					for (Iterator<Enrollment> e = avEnrls.iterator(); e.hasNext();) {
 						Enrollment enrl = e.next();
 						for (Request q: enrl.getStudent().getRequests()) {
@@ -422,7 +430,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 						if (minCred != null && credit + minCred > student.getMaxCredit())
 							ca.setOverMaxCredit(student.getMaxCredit());
 					}
-					if (!r.isWaitlist()) nrUnassignedCourses++;
+					if (!r.isWaitListOrNoSub(wlMode)) nrUnassignedCourses++;
 					int alt = nrUnassignedCourses;
 					for (XRequest q: studentRequests) {
 						if (q instanceof XCourseRequest && !q.equals(request)) {
@@ -760,6 +768,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 						r.addRequestedCourse(rc);
 					}
 					r.setWaitList(((XCourseRequest)cd).isWaitlist());
+					r.setNoSub(((XCourseRequest)cd).isNoSub());
 					r.setCritical(((XCourseRequest)cd).getCritical());
 					r.setTimeStamp(((XCourseRequest)cd).getTimeStamp());
 					if (r.hasRequestedCourse()) {

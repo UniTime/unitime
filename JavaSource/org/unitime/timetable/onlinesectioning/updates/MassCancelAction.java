@@ -28,6 +28,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseRequest;
@@ -122,6 +123,7 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 					Student student = StudentDAO.getInstance().get(studentId, helper.getHibSession());
 					if (student != null) {
 						OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
+						WaitListMode wlMode = student.getWaitListMode();
 						
 						action.setStudent(OnlineSectioningLog.Entity.newBuilder()
 							.setUniqueId(student.getUniqueId())
@@ -189,7 +191,7 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 								XOffering offering = server.getOffering(oldEnrollment.getOfferingId());
 								EnrollStudent.updateSpace(server,
 										null,
-										oldEnrollment == null ? null : SectioningRequest.convert(oldStudent, (XCourseRequest)oldRequest, server, offering, oldEnrollment),
+										oldEnrollment == null ? null : SectioningRequest.convert(oldStudent, (XCourseRequest)oldRequest, server, offering, oldEnrollment, wlMode),
 										offering);
 							}
 							OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();

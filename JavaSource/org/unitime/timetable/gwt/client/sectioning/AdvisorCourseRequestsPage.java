@@ -256,11 +256,9 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 						case None: iWaitListHeader.setHTML("&nbsp;"); break;
 						case NoSubs:
 							iWaitListHeader.setHTML(MESSAGES.headNoSubs());
-							iRequests.getTable().setHTML(0, 8, MESSAGES.colNoSubs());
 							break;
 						case WaitList:
 							iWaitListHeader.setHTML(MESSAGES.headWaitList());
-							iRequests.getTable().setHTML(0, 8, MESSAGES.colWaitList());
 							break;
 						}
 						fillInStudentRequests();
@@ -831,7 +829,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	private void clearRequests() {
 		for (AdvisorCourseRequestLine line: iCourses) {
 			line.setValue(null);
-			line.setWaitListVisible(iDetails == null || iDetails.getWaitListMode() != WaitListMode.None);
+			line.setWaitListMode(iDetails == null ? WaitListMode.None : iDetails.getWaitListMode());
 		}
 		for (AdvisorCourseRequestLine line: iAlternatives)
 			line.setValue(null);
@@ -850,7 +848,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	private void addCourseLine() {
 		int i = iCourses.size();
 		final AdvisorCourseRequestLine line = new AdvisorCourseRequestLine(iContext, i, false, null, iSpecRegCx);
-		line.setWaitListVisible(iDetails == null || iDetails.getWaitListMode() != WaitListMode.None);
+		line.setWaitListMode(iDetails == null ? WaitListMode.None : iDetails.getWaitListMode());
 		iCourses.add(line);
 		AdvisorCourseRequestLine prev = iCourses.get(i - 1);
 		prev.getCourses().get(0).setHint("");
@@ -1222,13 +1220,21 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		boolean hasPref = false, hasWarn = false, hasWait = false, hasCrit = false;
 		NumberFormat df = NumberFormat.getFormat("0.#");
 		if (iDetails != null && iDetails.hasStudentRequest()) {
+			switch (iDetails.getStudentRequest().getWaitListMode()) {
+			case NoSubs:
+				iRequests.getTable().setHTML(0, 8, MESSAGES.colNoSubs());
+				break;
+			case WaitList:
+				iRequests.getTable().setHTML(0, 8, MESSAGES.colWaitList());
+				break;
+			}
 			CheckCoursesResponse check = new CheckCoursesResponse(iDetails.getStudentRequest().getConfirmations());
 			hasWarn = iDetails.getStudentRequest().hasConfirmations();
 			int priority = 1;
 			for (Request request: iDetails.getStudentRequest().getCourses()) {
 				if (!request.hasRequestedCourse()) continue;
 				boolean first = true;
-				if (request.isWaitList()) hasWait = true;
+				if (request.isWaitlistOrNoSub(iDetails.getStudentRequest().getWaitListMode())) hasWait = true;
 				if (request.isCritical() || request.isImportant()) hasCrit = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					if (rc.isCourse()) {
@@ -1306,7 +1312,9 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 								(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
 								(first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
 									first && request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") : new WebTable.Cell("")),
-								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell("")),
+								(iDetails.getStudentRequest().getWaitListMode() == WaitListMode.WaitList
+									 ? (first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell(""))
+									 : (first && request.isNoSub() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestNoSubs(), "") : new WebTable.Cell(""))),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
 								);
 						if (priority > 1 && first)

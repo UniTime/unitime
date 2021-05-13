@@ -120,8 +120,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			Set<Long> students = new HashSet<Long>();
 			Set<Long> matchingStudents = new HashSet<Long>();
 			
-			int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0, gUnasgPrim = 0;
-			int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0, gtUnasgPrim = 0;
+			int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0, gUnasgPrim = 0, gNoSub = 0;
+			int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0, gtUnasgPrim = 0, gtNoSub = 0;
 			int gConNeed = 0, gtConNeed = 0, gOvrNeed = 0, gtOvrNeed = 0;
 			
 			DbFindEnrollmentInfoCourseMatcher m = new DbFindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery, lookup);
@@ -154,8 +154,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				e.setControl(course.isIsControl());
 
 				int match = 0;
-				int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0;
-				int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0;
+				int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0, noSub = 0;
+				int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0, tNoSub = 0;
 				int conNeed = 0, tConNeed = 0, ovrNeed = 0, tOvrNeed = 0;
 				
 				for (CourseRequest request: (List<CourseRequest>)helper.getHibSession().createQuery(
@@ -175,8 +175,10 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 							tUnasg ++;
 							if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) {
 								tUnasgPrim ++;
-								if (request.getCourseDemand().isWaitlist())
+								if (request.getCourseDemand().effectiveWaitList())
 									tWait ++;
+								if (request.getCourseDemand().effectiveNoSub())
+									tNoSub ++;
 							}
 						}
 					}
@@ -203,8 +205,10 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 							unasg ++;
 							if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) {
 								unasgPrim ++;
-								if (request.getCourseDemand().isWaitlist())
+								if (request.getCourseDemand().effectiveWaitList())
 									wait ++;
+								if (request.getCourseDemand().effectiveNoSub())
+									noSub ++;
 							}
 						}
 						if (request.isRequestPending()) ovrNeed ++;
@@ -219,8 +223,10 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 							tUnasg ++;
 							if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) {
 								tUnasgPrim ++;
-								if (request.getCourseDemand().isWaitlist())
+								if (request.getCourseDemand().effectiveWaitList())
 									tWait ++;
+								if (request.getCourseDemand().effectiveNoSub())
+									tNoSub ++;
 							}
 						}
 					}
@@ -234,6 +240,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				
 				gEnrl += enrl;
 				gWait += wait;
+				gNoSub += noSub;
 				gUnasg += unasg;
 				gUnasgPrim += unasgPrim;
 				gRes += res;
@@ -242,6 +249,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				
 				gtEnrl += tEnrl;
 				gtWait += tWait;
+				gtNoSub += tNoSub;
 				gtUnasg += tUnasg;
 				gtUnasgPrim += tUnasgPrim;
 				gtRes += tRes;
@@ -285,12 +293,14 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				e.setEnrollment(enrl);
 				e.setReservation(res);
 				e.setWaitlist(wait);
+				e.setNoSub(noSub);
 				e.setUnassigned(unasg);
 				e.setUnassignedPrimary(unasgPrim);
 				
 				e.setTotalEnrollment(tEnrl);
 				e.setTotalReservation(tRes);
 				e.setTotalWaitlist(tWait);
+				e.setTotalNoSub(tNoSub);
 				e.setTotalUnassigned(tUnasg);
 				e.setTotalUnassignedPrimary(tUnasgPrim);
 				
@@ -325,12 +335,14 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			t.setEnrollment(gEnrl);
 			t.setReservation(gRes);
 			t.setWaitlist(gWait);
+			t.setNoSub(gNoSub);
 			t.setUnassigned(gUnasg);
 			t.setUnassignedPrimary(gUnasgPrim);
 			
 			t.setTotalEnrollment(gtEnrl);
 			t.setTotalReservation(gtRes);
 			t.setTotalWaitlist(gtWait);
+			t.setTotalNoSub(gtNoSub);
 			t.setTotalUnassigned(gtUnasg);
 			t.setTotalUnassignedPrimary(gtUnasgPrim);
 			
@@ -369,8 +381,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					e.setMasterCourseNbr(course.getCourseNbr());
 					e.setConfigId(-1l);
 
-					int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0;
-					int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0;
+					int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0, noSub = 0;
+					int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0, tNoSub = 0;
 					int conNeed = 0, tConNeed = 0, ovrNeed = 0, tOvrNeed = 0;
 					
 					for (CourseRequest request: requests) {
@@ -387,8 +399,10 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 								unasg ++;
 								if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) {
 									unasgPrim ++;
-									if (request.getCourseDemand().isWaitlist())
+									if (request.getCourseDemand().effectiveWaitList())
 										wait ++;
+									if (request.getCourseDemand().effectiveNoSub())
+										noSub ++;
 								}
 							}
 							if (request.isRequestPending()) ovrNeed ++;
@@ -402,8 +416,10 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 								tUnasg ++;
 								if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) {
 									tUnasgPrim ++;
-									if (request.getCourseDemand().isWaitlist())
+									if (request.getCourseDemand().effectiveWaitList())
 										tWait ++;
+									if (request.getCourseDemand().effectiveNoSub())
+										tNoSub ++;
 								}
 							}
 							if (request.isRequestPending()) tOvrNeed ++;
@@ -446,12 +462,14 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					e.setEnrollment(enrl);
 					e.setReservation(res);
 					e.setWaitlist(wait);
+					e.setNoSub(noSub);
 					e.setUnassigned(unasg);
 					e.setUnassignedPrimary(unasgPrim);
 					
 					e.setTotalEnrollment(tEnrl);
 					e.setTotalReservation(tRes);
 					e.setTotalWaitlist(tWait);
+					e.setTotalNoSub(tNoSub);
 					e.setTotalUnassigned(tUnasg);
 					e.setTotalUnassignedPrimary(tUnasgPrim);
 					
@@ -582,8 +600,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				}
 				
 				int match = 0;
-				int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0;
-				int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0;
+				int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0, noSub = 0;
+				int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0, tNoSub = 0;
 				int conNeed = 0, tConNeed = 0;
 				int other = 0;
 
@@ -618,15 +636,19 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 						unasg++;
 						if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) {
 							unasgPrim ++;
-							if (request.getCourseDemand().isWaitlist())
+							if (request.getCourseDemand().effectiveWaitList())
 								wait++;
+							if (request.getCourseDemand().effectiveNoSub())
+								noSub ++;
 						}
 					}
 					tUnasg ++;
 					if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) {
 						tUnasgPrim ++;
-						if (request.getCourseDemand().isWaitlist())
+						if (request.getCourseDemand().effectiveWaitList())
 							tWait ++;
+						if (request.getCourseDemand().effectiveNoSub())
+							tNoSub ++;
 					}
 				}
 				
@@ -643,12 +665,14 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				e.setEnrollment(enrl);
 				e.setReservation(res);
 				e.setWaitlist(wait);
+				e.setNoSub(noSub);
 				e.setUnassigned(unasg);
 				e.setUnassignedPrimary(unasgPrim);
 				
 				e.setTotalEnrollment(tEnrl);
 				e.setTotalReservation(tRes);
 				e.setTotalWaitlist(tWait);
+				e.setTotalNoSub(tNoSub);
 				e.setTotalUnassigned(tUnasg);
 				e.setTotalUnassignedPrimary(tUnasgPrim);
 
@@ -897,7 +921,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					if (assigned) return false;
 					else assigned = true;
 				}
-				boolean waitlist = (course && demand.isWaitlist());
+				boolean waitlist = (course && (demand.effectiveWaitList() || demand.effectiveNoSub()));
 				if (demand.isAlternative()) {
 					if (assigned)
 						alt --;
@@ -990,7 +1014,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					}
 					return false;
 				} else if (eq("Wait-Listed", term)) {
-					return enrollment().isEmpty() && request().getCourseDemand().isWaitlist();
+					return enrollment().isEmpty() && request().getCourseDemand().effectiveWaitList();
 				} else if (eq("Critical", term)) {
 					return request().getCourseDemand().getEffectiveCritical() == Critical.CRITICAL;
 				} else if (eq("Assigned Critical", term)) {
@@ -1015,6 +1039,12 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 						return true;
 					}
 					return false;
+				} else if (eq("No-Subs", term) || eq("No-Substitutes", term)) {
+					return request().getCourseDemand().effectiveNoSub();
+				} else if (eq("Assigned No-Subs", term) || eq("Assigned  No-Substitutes", term)) {
+					return !enrollment().isEmpty() && request().getCourseDemand().effectiveNoSub();
+				} else if (eq("Not Assigned No-Subs", term) || eq("Not Assigned No-Substitutes", term)) {
+					return enrollment().isEmpty() && request().getCourseDemand().effectiveNoSub();
 				}
 			}
 			
@@ -1027,7 +1057,14 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			
 			if ("waitlisted".equals(attr) || "waitlist".equals(attr)) {
 				if (eq("true", term) || eq("1",term))
-					return enrollment().isEmpty() && request().getCourseDemand().isWaitlist();
+					return enrollment().isEmpty() && request().getCourseDemand().effectiveWaitList();
+				else
+					return !enrollment().isEmpty();
+			}
+			
+			if ("no-sub".equals(attr) || "no-substitution".equals(attr)) {
+				if (eq("true", term) || eq("1",term))
+					return enrollment().isEmpty() && request().getCourseDemand().effectiveNoSub();
 				else
 					return !enrollment().isEmpty();
 			}

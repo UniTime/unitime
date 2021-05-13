@@ -41,6 +41,7 @@ import org.unitime.timetable.gwt.server.Query.AmbigousTermMatcher;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.CourseDemand;
@@ -652,8 +653,9 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		private OnlineSectioningServer iServer;
 		private boolean iMyStudent;
 		private XEnrollment iEnrollment;
+		private WaitListMode iWaitListMode;
 		
-		public CourseRequestMatcher(AcademicSessionInfo session, XCourse info, XStudent student, XOffering offering, XCourseRequest request, boolean isConsentToDoCourse, boolean isMyStudent, CourseLookup lookup, OnlineSectioningServer server) {
+		public CourseRequestMatcher(AcademicSessionInfo session, XCourse info, XStudent student, XOffering offering, XCourseRequest request, boolean isConsentToDoCourse, boolean isMyStudent, CourseLookup lookup, OnlineSectioningServer server, WaitListMode wlMode) {
 			super(info, isConsentToDoCourse, lookup);
 			iFirstDate = session.getDatePatternFirstDate();
 			iStudent = student;
@@ -663,6 +665,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			iOffering = offering;
 			iServer = server;
 			iMyStudent = isMyStudent;
+			iWaitListMode = wlMode; 
 		}
 		
 		public XCourseRequest request() { return iRequest; }
@@ -761,7 +764,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				} else if (eq("Not Assigned", term)) {
 					return enrollment() == null && !request().isAlternative();
 				} else if (eq("Wait-Listed", term)) {
-					return enrollment() == null && request().isWaitlist();
+					return enrollment() == null && request().isWaitlist(iWaitListMode);
 				} else if (eq("Critical", term)) {
 					return request().getCritical() == CourseDemand.Critical.CRITICAL.ordinal();
 				} else if (eq("Assigned Critical", term)) {
@@ -774,8 +777,13 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					return request().getCritical() == CourseDemand.Critical.IMPORTANT.ordinal() && enrollment() != null;
 				} else if (eq("Not Assigned Important", term)) {
 					return request().getCritical() == CourseDemand.Critical.IMPORTANT.ordinal() && enrollment() == null;
+				} else if (eq("No-Subs", term) || eq("No-Substitutes", term)) {
+					return request().isNoSub(iWaitListMode);
+				} else if (eq("Assigned No-Subs", term) || eq("Assigned  No-Substitutes", term)) {
+					return enrollment() != null && request().isNoSub(iWaitListMode);
+				} else if (eq("Not Assigned No-Subs", term) || eq("Not Assigned No-Substitutes", term)) {
+					return enrollment() == null && request().isNoSub(iWaitListMode);
 				}
-				
 			}
 			
 			if ("assigned".equals(attr) || "scheduled".equals(attr)) {
@@ -788,6 +796,13 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			if ("waitlisted".equals(attr) || "waitlist".equals(attr)) {
 				if (eq("true", term) || eq("1",term))
 					return enrollment() == null && request().isWaitlist();
+				else
+					return enrollment() != null;
+			}
+			
+			if ("no-substitutes".equals(attr) || "no-subs".equals(attr)) {
+				if (eq("true", term) || eq("1",term))
+					return enrollment() == null && request().isNoSub();
 				else
 					return enrollment() != null;
 			}

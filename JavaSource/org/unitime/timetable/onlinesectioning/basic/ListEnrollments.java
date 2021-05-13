@@ -45,7 +45,6 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
-import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -116,7 +115,6 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 			
 			Set<String> regStates = new HashSet<String>();
 			Set<String> assStates = new HashSet<String>();
-			boolean waitListEnabled = CustomStudentEnrollmentHolder.isAllowWaitListing();
 			Set<String> wlStates = new HashSet<String>();
 			Set<String> noSubStates = new HashSet<String>();
 			AcademicSessionInfo session = server.getAcademicSession();
@@ -130,7 +128,7 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 					|| (iIsAdmin && StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.regadmin))
 					|| (iIsAdvisor && StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.regadvisor))
 					) regStates.add(status.getReference());
-				if (waitListEnabled && StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.waitlist))
+				if (StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.waitlist))
 					wlStates.add(status.getReference());
 				else if (StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.nosubs))
 					noSubStates.add(status.getReference());
@@ -146,10 +144,16 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 					if (enrollment != null && !course.getCourseId().equals(enrollment.getCourseId())) continue;
 					
 					XStudent student = server.getStudent(request.getStudentId());
-					if (enrollment == null && !student.canAssign(request)) continue;
 					String status = student.getStatus();
 					if (status == null) status = session.getDefaultSectioningStatus();
-					
+					WaitListMode wl = WaitListMode.None;
+					if (status == null || wlStates.contains(status))
+						wl = WaitListMode.WaitList;
+					else if (noSubStates.contains(status))
+						wl = WaitListMode.NoSubs;
+
+					if (enrollment == null && !student.canAssign(request, wl)) continue;
+
 					ClassAssignmentInterface.Enrollment e = new ClassAssignmentInterface.Enrollment();
 
 					// fill student information in
@@ -158,12 +162,7 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 					st.setSessionId(server.getAcademicSession().getUniqueId());
 					st.setExternalId(student.getExternalId());
 					st.setCanShowExternalId(iCanShowExtIds);
-					if ((status == null && waitListEnabled) || (status != null && wlStates.contains(status)))
-						st.setWaitListMode(WaitListMode.WaitList);
-					else if (status != null && noSubStates.contains(status))
-						st.setWaitListMode(WaitListMode.NoSubs);
-					else
-						st.setWaitListMode(WaitListMode.None);
+					st.setWaitListMode(wl);
 					st.setCanRegister(iCanRegister && (status == null || regStates.contains(status)));
 					st.setCanUseAssistant(iCanUseAssistant && (status == null || assStates.contains(status)));
 					st.setName(student.getName());
@@ -199,6 +198,7 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 					c.setCanWaitList(offering.isWaitList());
 					e.setCourse(c);
 					e.setWaitList(request.isWaitlist());
+					e.setNoSub(request.isNoSub());
 					if (!request.getCourseIds().get(0).equals(course))
 						e.setAlternative(request.getCourseIds().get(0).getCourseName());
 					if (request.isAlternative()) {

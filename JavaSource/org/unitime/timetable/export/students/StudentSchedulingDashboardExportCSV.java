@@ -622,31 +622,63 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		}
 	}
 	
-	public String waitlist(int wait, int tWait, int unasg, int tUnasg, Integer topWaitingPriority) {
-		if (tWait == 0 || tWait == tUnasg) {
-			// no wait-list or all wait-listed
-			if (unasg == tUnasg) {
-				return (unasg == 0 ? "-" : String.valueOf(unasg)) + (tWait > 0 ? MESSAGES.csvWaitListSign() : "") +
-						(topWaitingPriority != null ? MESSAGES.csvFirstWaitListedPrioritySign(topWaitingPriority) : "");
+	public String waitlist(int wait, int tWait, int noSub, int tNoSub, int unasg, int tUnasg, Integer topWaitingPriority) {
+		if (tNoSub == 0) {
+			// no no-subs -- like before
+			if (tWait == 0 || tWait == tUnasg) {
+				// no wait-list or all wait-listed
+				if (unasg == tUnasg) {
+					return (unasg == 0 ? "-" : String.valueOf(unasg)) + (tWait > 0 ? MESSAGES.csvWaitListSign() : "") +
+							(topWaitingPriority != null ? MESSAGES.csvFirstWaitListedPrioritySign(topWaitingPriority) : "");
+				} else {
+					return (unasg + " / " + tUnasg) + (tWait > 0 ? MESSAGES.csvWaitListSign() : "") +
+							(topWaitingPriority != null ? MESSAGES.csvFirstWaitListedPrioritySign(topWaitingPriority) : "");
+				}
 			} else {
-				return (unasg + " / " + tUnasg) + (tWait > 0 ? MESSAGES.csvWaitListSign() : "") +
-						(topWaitingPriority != null ? MESSAGES.csvFirstWaitListedPrioritySign(topWaitingPriority) : "");
+				if (wait == tWait && unasg == tUnasg) {
+					return (wait == 0 ? String.valueOf(unasg) : wait == unasg ? wait + MESSAGES.csvWaitListSign() : (unasg - wait) + " + " + wait + MESSAGES.csvWaitListSign()) +
+							(topWaitingPriority != null ? MESSAGES.csvFirstWaitListedPrioritySign(topWaitingPriority) : "");
+							
+				} else {
+					return ((wait == 0 ? String.valueOf(unasg) : wait == unasg ? wait + MESSAGES.csvWaitListSign() : (unasg - wait) + " + " + wait + MESSAGES.csvWaitListSign()) + " / " + tUnasg) +
+							(topWaitingPriority != null ? MESSAGES.csvFirstWaitListedPrioritySign(topWaitingPriority) : "");
+				}
+			}
+		} else if (tWait == 0) {
+			// no wait-lists -- like before, but with no-sub
+			if (tNoSub == 0 || tNoSub == tUnasg) {
+				// no no-sub or all no-subs
+				if (unasg == tUnasg) {
+					return (unasg == 0 ? "-" : String.valueOf(unasg)) + (tNoSub > 0 ? MESSAGES.csvNoSubSign() : "");
+				} else {
+					return (unasg + " / " + tUnasg) + (tNoSub > 0 ? MESSAGES.csvNoSubSign() : "");
+				}
+			} else {
+				if (noSub == tNoSub && unasg == tUnasg) {
+					return (noSub == 0 ? String.valueOf(unasg) : noSub == unasg ? noSub + MESSAGES.csvNoSubSign() : (unasg - noSub) + " + " + noSub + MESSAGES.csvNoSubSign());
+				} else {
+					return ((noSub == 0 ? String.valueOf(unasg) : noSub == unasg ? noSub + MESSAGES.csvNoSubSign() : (unasg - noSub) + " + " + wait + MESSAGES.csvNoSubSign()) + " / " + tUnasg);
+				}
 			}
 		} else {
-			if (wait == tWait && unasg == tUnasg) {
-				return (wait == 0 ? String.valueOf(unasg) : wait == unasg ? wait + MESSAGES.csvWaitListSign() : (unasg - wait) + " + " + wait + MESSAGES.csvWaitListSign()) +
-						(topWaitingPriority != null ? MESSAGES.csvFirstWaitListedPrioritySign(topWaitingPriority) : "");
-						
-			} else {
-				return ((wait == 0 ? String.valueOf(unasg) : wait == unasg ? wait + MESSAGES.csvWaitListSign() : (unasg - wait) + " + " + wait + MESSAGES.csvWaitListSign()) + " / " + tUnasg) +
-						(topWaitingPriority != null ? MESSAGES.csvFirstWaitListedPrioritySign(topWaitingPriority) : "");
-			}
+			if (unasg > noSub + wait)
+				return String.valueOf(unasg - noSub - wait) + (wait > 0 ? " + " + wait + MESSAGES.csvWaitListSign() : "") + (noSub > 0 ? " + " + noSub + MESSAGES.csvNoSubSign() : "") + " / " + tUnasg;
+			else if (wait > 0)
+				return wait + MESSAGES.csvWaitListSign() + (noSub > 0 ? " + " + noSub + MESSAGES.csvNoSubSign() : "") + " / " + tUnasg;
+			else if (noSub > 0)
+				return noSub + MESSAGES.csvNoSubSign() + " / " + tUnasg;
+			else if (unasg == tUnasg)
+				return (unasg == 0 ? "-" : String.valueOf(unasg));
+			else
+				return unasg + " / " + tUnasg;
 		}
 	}
 		
 	public String waitlist(StudentInfo e) {
 		return waitlist(e.hasWaitlist() ? e.getWaitlist() : 0,
 			e.hasTotalWaitlist() ? e.getTotalWaitlist() : 0,
+			e.hasNoSub() ? e.getNoSub() : 0,
+			e.hasTotalNoSub() ? e.getTotalNoSub() : 0,
 			e.hasUnassigned() ? e.getUnassigned() : 0,
 			e.hasTotalUnassigned() ? e.getTotalUnassigned() : 0,
 			e.getTopWaitingPriority());
@@ -655,6 +687,8 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 	public String waitlist(EnrollmentInfo e) {
 		return waitlist(e.hasWaitlist() ? e.getWaitlist() : 0,
 			e.hasTotalWaitlist() ? e.getTotalWaitlist() : 0,
+			e.hasNoSub() ? e.getNoSub() : 0,
+			e.hasTotalNoSub() ? e.getTotalNoSub() : 0,
 			e.hasUnassigned() ? e.getUnassignedPrimary() : 0,
 			e.hasTotalUnassigned() ? e.getTotalUnassignedPrimary() : 0,
 			null);

@@ -358,7 +358,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
                         cd.isAlternative().booleanValue(),
                         student,
                         courses,
-                        cd.isWaitlist().booleanValue(),
+                        cd.effectiveWaitList() || cd.effectiveNoSub(),
                         cd.getTimestamp().getTime());
                 request.getSelectedChoices().addAll(selChoices);
                 request.getWaitlistedChoices().addAll(wlChoices);

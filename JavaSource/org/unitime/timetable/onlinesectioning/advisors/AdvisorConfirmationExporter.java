@@ -142,7 +142,11 @@ public class AdvisorConfirmationExporter implements Exporter {
 		}
 		
 		details.setRequest(AdvisorGetCourseRequests.getRequest(student, AdvisorCourseRequestDAO.getInstance().getSession()));
-		details.setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value(student.getSession())));
+		String advWlMode = ApplicationProperty.AdvisorRecommendationsWaitListMode.value(student.getSession());
+		if ("Student".equalsIgnoreCase(advWlMode))
+			details.setWaitListMode(student.getWaitListMode());
+		else
+			details.setWaitListMode(WaitListMode.valueOf(advWlMode));
 		
 		helper.setup("application/pdf", "crf-" + student.getSession().getAcademicTerm() + student.getSession().getAcademicYear() +
 				(isAdvisor ? "-" + student.getName(NameFormat.LAST_FIRST_MIDDLE.reference()).replaceAll("[&$\\+,/:;=\\?@<>\\[\\]\\{\\}\\|\\^\\~%#`\\t\\s\\n\\r \\\\]", "") + "-" + student.getExternalUniqueId() : "") + ".pdf", false);

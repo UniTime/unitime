@@ -219,6 +219,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 							cd.setAlternative(false);
 							cd.setPriority(priority);
 							cd.setWaitlist(false);
+							cd.setNoSub(false);
 							cd.setCritical(0);
 							FreeTime free = cd.getFreeTime();
 							if (free == null) {
@@ -273,6 +274,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 				cd.setAlternative(false);
 				cd.setPriority(priority);
 				cd.setWaitlist(r.isWaitList());
+				cd.setNoSub(r.isNoSub());
 				cd.setCritical(isCritical(false, courses, critical));
 				Iterator<CourseRequest> requests = new TreeSet<CourseRequest>(cd.getCourseRequests()).iterator();
 				int order = 0;
@@ -337,6 +339,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 							cd.setAlternative(true);
 							cd.setPriority(priority);
 							cd.setWaitlist(false);
+							cd.setNoSub(false);
 							cd.setCritical(0);
 							FreeTime free = cd.getFreeTime();
 							if (free == null) {
@@ -391,6 +394,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 				cd.setAlternative(true);
 				cd.setPriority(priority);
 				cd.setWaitlist(r.isWaitList());
+				cd.setNoSub(r.isNoSub());
 				cd.setCritical(isCritical(true, courses, critical));
 				Iterator<CourseRequest> requests = new TreeSet<CourseRequest>(cd.getCourseRequests()).iterator();
 				int order = 0;

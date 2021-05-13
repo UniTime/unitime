@@ -40,6 +40,7 @@ public abstract class BaseCourseDemand implements Serializable {
 	private Long iUniqueId;
 	private Integer iPriority;
 	private Boolean iWaitlist;
+	private Boolean iNoSub;
 	private Boolean iAlternative;
 	private Date iTimestamp;
 	private Integer iCritical;
@@ -54,6 +55,7 @@ public abstract class BaseCourseDemand implements Serializable {
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_PRIORITY = "priority";
 	public static String PROP_WAITLIST = "waitlist";
+	public static String PROP_NOSUB = "noSub";
 	public static String PROP_IS_ALTERNATIVE = "alternative";
 	public static String PROP_TIMESTAMP = "timestamp";
 	public static String PROP_CRITICAL = "critical";
@@ -80,6 +82,10 @@ public abstract class BaseCourseDemand implements Serializable {
 	public Boolean isWaitlist() { return iWaitlist; }
 	public Boolean getWaitlist() { return iWaitlist; }
 	public void setWaitlist(Boolean waitlist) { iWaitlist = waitlist; }
+
+	public Boolean isNoSub() { return iNoSub; }
+	public Boolean getNoSub() { return iNoSub; }
+	public void setNoSub(Boolean noSub) { iNoSub = noSub; }
 
 	public Boolean isAlternative() { return iAlternative; }
 	public Boolean getAlternative() { return iAlternative; }
@@ -139,6 +145,7 @@ public abstract class BaseCourseDemand implements Serializable {
 			"\n	Critical: " + getCritical() +
 			"\n	CriticalOverride: " + getCriticalOverride() +
 			"\n	FreeTime: " + getFreeTime() +
+			"\n	NoSub: " + getNoSub() +
 			"\n	Priority: " + getPriority() +
 			"\n	Student: " + getStudent() +
 			"\n	Timestamp: " + getTimestamp() +

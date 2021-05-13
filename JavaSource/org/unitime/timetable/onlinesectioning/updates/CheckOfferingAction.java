@@ -36,6 +36,7 @@ import org.cpsolver.studentsct.online.selection.ResectioningWeights;
 import org.hibernate.CacheMode;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
@@ -231,7 +232,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 			if (iSkipStudentIds != null && iSkipStudentIds.contains(request.getStudentId())) continue;
 			XStudent student = server.getStudent(request.getStudentId());
 			if (request.getEnrollment() == null) {
-				if (!student.canAssign(request) || !isWaitListed(student, request, server, helper)) continue;
+				if (!student.canAssign(request, WaitListMode.WaitList) || !isWaitListed(student, request, server, helper)) continue;
 				OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
 				action.setStudent(
 						OnlineSectioningLog.Entity.newBuilder()
@@ -399,8 +400,8 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 					helper.getHibSession().save(student);
 		
 					EnrollStudent.updateSpace(server,
-							r.getRequest().getEnrollment() == null ? null : SectioningRequest.convert(r.getStudent(), r.getRequest(), server, offering, r.getRequest().getEnrollment()),
-							r.getLastEnrollment() == null ? null : SectioningRequest.convert(r.getOldStudent(), r.getRequest(), server, offering, r.getLastEnrollment()),
+							r.getRequest().getEnrollment() == null ? null : SectioningRequest.convert(r.getStudent(), r.getRequest(), server, offering, r.getRequest().getEnrollment(), WaitListMode.WaitList),
+							r.getLastEnrollment() == null ? null : SectioningRequest.convert(r.getOldStudent(), r.getRequest(), server, offering, r.getLastEnrollment(), WaitListMode.WaitList),
 							offering);
 					server.persistExpectedSpaces(offering.getOfferingId());
 

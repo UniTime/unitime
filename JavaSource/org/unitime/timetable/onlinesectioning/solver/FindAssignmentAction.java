@@ -929,7 +929,6 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					ca.setCourseNbr(course.getCourseNumber());
 					XOffering offering = server.getOffering(course.getOffering().getId());
 					ca.setTitle(offering.getCourse(course.getId()).getTitle());
-					ca.setWaitListed(r.isWaitlist());
 					ca.setHasCrossList(course.getOffering().getCourses().size() > 1);
 					ca.setCanWaitList(offering.isWaitList());
 					if (!r.isWaitlist()) 
@@ -1053,7 +1052,6 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				if (server.isOfferingLocked(course.getOffering().getId()))
 					ca.setLocked(true);
 				ca.setAssigned(true);
-				ca.setWaitListed(r.isWaitlist());
 				ca.setCourseId(course.getId());
 				ca.setSubject(course.getSubjectArea());
 				ca.setCourseNbr(course.getCourseNumber());

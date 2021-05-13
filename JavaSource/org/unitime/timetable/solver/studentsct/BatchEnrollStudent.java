@@ -51,6 +51,7 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -171,7 +172,7 @@ public class BatchEnrollStudent extends EnrollStudent {
 							false,
 	                        student,
 	                        courses,
-	                        r.isWaitList(), 
+	                        r.isWaitList() || r.isNoSub(), 
 	                        ts);
 					model.addVariable(courseRequest);
 					changed = true;
@@ -180,8 +181,8 @@ public class BatchEnrollStudent extends EnrollStudent {
 						courseRequest.setPriority(priority);
 						changed = true;
 					}
-					if (courseRequest.isWaitlist() != r.isWaitList()) {
-						courseRequest.setWaitlist(r.isWaitList());
+					if (courseRequest.isWaitlist() != (r.isWaitList() || r.isNoSub())) {
+						courseRequest.setWaitlist(r.isWaitList() || r.isNoSub());
 						changed = true;
 					}
 				}
@@ -383,7 +384,7 @@ public class BatchEnrollStudent extends EnrollStudent {
 			}
 		}
 		
-		return server.execute(server.createAction(GetAssignment.class).forStudent(getStudentId()).withMessages(failures), helper.getUser());
+		return server.execute(server.createAction(GetAssignment.class).forStudent(getStudentId()).withMessages(failures).withWaitListMode(WaitListMode.WaitList), helper.getUser());
 	}
 	
 	protected Course getCourse(StudentSectioningModel model, Long courseId, String courseName){

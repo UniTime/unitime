@@ -85,6 +85,7 @@ message Request {
 	
 	optional bool wait_list = 9 [default = false];
 	optional bool critical = 10 [default = false];
+	optional bool no_subs = 11 [default = false];
 }
 
 message Enrollment {

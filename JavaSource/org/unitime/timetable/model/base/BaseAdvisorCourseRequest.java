@@ -48,6 +48,7 @@ public abstract class BaseAdvisorCourseRequest implements Serializable {
 	private String iNotes;
 	private Integer iCritical;
 	private Boolean iWaitlist;
+	private Boolean iNoSub;
 
 	private Student iStudent;
 	private CourseOffering iCourseOffering;
@@ -65,6 +66,7 @@ public abstract class BaseAdvisorCourseRequest implements Serializable {
 	public static String PROP_NOTES = "notes";
 	public static String PROP_CRITICAL = "critical";
 	public static String PROP_WAITLIST = "waitlist";
+	public static String PROP_NOSUB = "noSub";
 
 	public BaseAdvisorCourseRequest() {
 		initialize();
@@ -112,6 +114,10 @@ public abstract class BaseAdvisorCourseRequest implements Serializable {
 	public Boolean getWaitlist() { return iWaitlist; }
 	public void setWaitlist(Boolean waitlist) { iWaitlist = waitlist; }
 
+	public Boolean isNoSub() { return iNoSub; }
+	public Boolean getNoSub() { return iNoSub; }
+	public void setNoSub(Boolean noSub) { iNoSub = noSub; }
+
 	public Student getStudent() { return iStudent; }
 	public void setStudent(Student student) { iStudent = student; }
 
@@ -152,6 +158,7 @@ public abstract class BaseAdvisorCourseRequest implements Serializable {
 			"\n	Credit: " + getCredit() +
 			"\n	Critical: " + getCritical() +
 			"\n	FreeTime: " + getFreeTime() +
+			"\n	NoSub: " + getNoSub() +
 			"\n	Notes: " + getNotes() +
 			"\n	Priority: " + getPriority() +
 			"\n	Student: " + getStudent() +

@@ -326,6 +326,7 @@ public class StudentEnrollmentImport extends BaseImport {
                 			cd.setAlternative(false);
                 			cd.setPriority(nextPriority++);
                 			cd.setWaitlist(false);
+                			cd.setNoSub(false);
                 			enrollment.getCourseRequest().setCourseDemand(cd);
                 			cd.getCourseRequests().add(enrollment.getCourseRequest());
                 			fixCourseDemands = true;
@@ -346,6 +347,7 @@ public class StudentEnrollmentImport extends BaseImport {
     					cd.setAlternative(false);
     					cd.setPriority(nextPriority++);
     					cd.setWaitlist(false);
+    					cd.setNoSub(false);
     					CourseRequest cr = new CourseRequest();
 						cd.getCourseRequests().add(cr);
 						cr.setCourseDemand(cd);
