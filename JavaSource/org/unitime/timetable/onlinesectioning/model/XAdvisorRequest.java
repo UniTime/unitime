@@ -153,6 +153,7 @@ public class XAdvisorRequest implements Comparable<XAdvisorRequest>, Serializabl
 	public boolean hasPreferences() { return iPreferences != null && !iPreferences.isEmpty(); }
 	public List<XPreference> getPreferences() { return iPreferences; }
 	public Boolean getWaitList() { return iWaitList; }
+	public boolean isWaitList() { return iWaitList != null && iWaitList.booleanValue(); }
 	
 	public float getCreditMin() {
 		if (iCredit == null || iCredit.isEmpty()) return 0f;
