@@ -308,7 +308,8 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 						else
 							request.getCourses().add(r);
 					}
-					r.setWaitList(cd.getWaitlist());
+					r.setWaitList(cd.effectiveWaitList());
+					r.setNoSub(cd.effectiveNoSub());
 					if (cd.getCriticalOverride() != null)
 						r.setCritical(cd.getCriticalOverride());
 					else
@@ -415,6 +416,8 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 				r.setAdvisorNote(acr.getNotes());
 			if (acr.getWaitlist() != null)
 				r.setWaitList(acr.getWaitlist());
+			if (acr.getNoSub() != null)
+				r.setNoSub(acr.getNoSub());
 		}
 	}
 	
@@ -492,6 +495,8 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 				r.setAdvisorNote(acr.getNote());
 			if (acr.getWaitList() != null)
 				r.setWaitList(acr.getWaitList());
+			if (acr.getNoSub() != null)
+				r.setNoSub(acr.getNoSub());
 		}
 	}
 	

@@ -2498,18 +2498,6 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
-	@Description("Student Solver Dashboard: allow wait-listing toggle)")
-	@Since(4.4)
-	SolverDashboardAllowWaitList("unitime.solverDashboard.allowWaitList"),
-	
-	@Type(Boolean.class)
-	@DefaultValue("false")
-	@Description("Student Solver Dashboard: allow no-subs toggle)")
-	@Since(4.5)
-	SolverDashboardAllowNoSubs("unitime.solverDashboard.allowNoSubs"),
-
-	@Type(Boolean.class)
-	@DefaultValue("false")
 	@Description("Distribution Preferences: show class suffix (external id) next to the class section number")
 	@Since(4.1)
 	DistributionsShowClassSufix("unitime.distributions.showClassSuffixes"),
@@ -2849,8 +2837,8 @@ public enum ApplicationProperty {
 	AdminStudentGroupsLazyStudents("unitime.admin.studentGroups.lazyLoad"),
 	
 	@DefaultValue("None")
-	@Values({"None, WaitList, NoSubs"})
-	@Description("Advisor Course Recommendation: Allow for wait-lists, no-subs or none of the two.")
+	@Values({"None, WaitList, NoSubs, Student"})
+	@Description("Advisor Course Recommendation: Allow for wait-lists, no-subs or none of the two. It set to Student, use the same setting as on the student (based on the student status).")
 	AdvisorRecommendationsWaitListMode("unitime.acr.waitlist"),
 	
 	@DefaultValue("false")

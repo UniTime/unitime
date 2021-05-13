@@ -51,7 +51,6 @@ import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -149,7 +148,6 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 			studentIds = (iFilter == null ? null : server.createAction(SectioningStatusFilterAction.class).forRequest(iFilter).getStudentIds(server, helper));
 		Set<String> regStates = new HashSet<String>();
 		Set<String> assStates = new HashSet<String>();
-		boolean waitListEnabled = CustomStudentEnrollmentHolder.isAllowWaitListing();
 		Set<String> wlStates = new HashSet<String>();
 		Set<String> noSubStates = new HashSet<String>();
 		Session dbSession = SessionDAO.getInstance().get(session.getUniqueId());
@@ -162,11 +160,13 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 					|| (iIsAdmin && StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.regadmin))
 					|| (iIsAdvisor && StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.regadvisor))
 					) regStates.add(status.getReference());
-				if (waitListEnabled && StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.waitlist))
+				if (StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.waitlist))
 					wlStates.add(status.getReference());
 				else if (StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.nosubs))
 					noSubStates.add(status.getReference());
 		}
+		WaitListMode defaultWL = null;
+		if (server instanceof StudentSolver) defaultWL = WaitListMode.NoSubs;
 		
 		for (XCourseRequest request: enrollments.getRequests()) {
 			if (request.getEnrollment() != null && !request.getEnrollment().getCourseId().equals(courseId())) continue;
@@ -175,16 +175,26 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 			if (studentIds != null && !studentIds.contains(request.getStudentId())) continue;
 			XStudent student = server.getStudent(request.getStudentId());
 			if (student == null) continue;
-			if (request.getEnrollment() == null && !student.canAssign(request)) continue;
-			if (!query().match(new StatusPageSuggestionsAction.CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse(), isMyStudent(student), lookup, server))) continue;
+			
+			String status = (student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
+			WaitListMode wl = WaitListMode.None;
+			if (defaultWL != null)
+				wl = defaultWL;
+			else if (status == null || wlStates.contains(status))
+				wl = WaitListMode.WaitList;
+			else if (noSubStates.contains(status))
+				wl = WaitListMode.NoSubs;
+			
+			if (request.getEnrollment() == null && !student.canAssign(request, wl)) continue;
+			if (!query().match(new StatusPageSuggestionsAction.CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse(), isMyStudent(student), lookup, server, wl))) continue;
 			if (classId() != null && request.getEnrollment() == null) {
 				boolean hasEnrollment = false;
 				Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
-				CourseRequest r = SectioningRequest.convert(assignment, request, server);
+				CourseRequest r = SectioningRequest.convert(assignment, request, server, wl);
 				Section s = r.getSection(classId());
 				values: for (Enrollment en: r.values(assignment)) {
 					if (!en.getSections().contains(s)) continue;
-					if (!query().match(new StatusPageSuggestionsAction.CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse(), isMyStudent(student), lookup, server).setEnrollment(new XEnrollment(en)))) continue;
+					if (!query().match(new StatusPageSuggestionsAction.CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse(), isMyStudent(student), lookup, server, wl).setEnrollment(new XEnrollment(en)))) continue;
 					for (Request x: r.getStudent().getRequests()) {
 						Enrollment xe = assignment.getValue(x);
 						if (!x.equals(r) && xe != null && xe.isOverlapping(en)) {
@@ -201,13 +211,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 			st.setSessionId(session.getUniqueId());
 			st.setExternalId(student.getExternalId());
 			st.setCanShowExternalId(iCanShowExtIds);
-			String status = (student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
-			if ((status == null && waitListEnabled) || (status != null && wlStates.contains(status)))
-				st.setWaitListMode(WaitListMode.WaitList);
-			else if (status != null && noSubStates.contains(status))
-				st.setWaitListMode(WaitListMode.NoSubs);
-			else
-				st.setWaitListMode(WaitListMode.None);
+			st.setWaitListMode(wl);
 			st.setCanRegister(iCanRegister && (status == null || regStates.contains(status)));
 			st.setCanUseAssistant(iCanUseAssistant && (status == null || assStates.contains(status)));
 			st.setCanSelect(isCanSelect(student));
@@ -244,6 +248,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 			c.setCanWaitList(offering.isWaitList());
 			e.setCourse(c);
 			e.setWaitList(request.isWaitlist());
+			e.setNoSub(request.isNoSub());
 			if (request.getEnrollment() == null)
 				e.setEnrollmentMessage(request.getEnrollmentMessage());
 			if (!request.getCourseIds().get(0).equals(course))

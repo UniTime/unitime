@@ -45,6 +45,7 @@ import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Subpart;
 import org.cpsolver.studentsct.online.selection.ResectioningWeights;
 import org.cpsolver.studentsct.online.selection.ResectioningWeights.LastSectionProvider;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -180,7 +181,7 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 		double bestValue = 0.0;
 		
 		Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
-		CourseRequest request = convert(assignment, getRequest(), server);
+		CourseRequest request = convert(assignment, getRequest(), server, WaitListMode.WaitList);
 		if (request == null) return null;
 		
 		if (getLastEnrollment() != null)
@@ -365,17 +366,17 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 		return false;
 	}
 	
-	public static CourseRequest convert(Assignment<Request, Enrollment> assignment, XCourseRequest request, OnlineSectioningServer server) {
-		return convert(assignment, server.getStudent(request.getStudentId()), request, server, null, null);
+	public static CourseRequest convert(Assignment<Request, Enrollment> assignment, XCourseRequest request, OnlineSectioningServer server, WaitListMode wlMode) {
+		return convert(assignment, server.getStudent(request.getStudentId()), request, server, null, null, wlMode);
 	}
 	
-	public static Enrollment convert(XCourseRequest request, OnlineSectioningServer server) {
+	public static Enrollment convert(XCourseRequest request, OnlineSectioningServer server, WaitListMode wlMode) {
 		Assignment<Request, Enrollment> assignment = new DefaultSingleAssignment<Request, Enrollment>();
-		CourseRequest cr = convert(assignment, server.getStudent(request.getStudentId()), request, server, null, null);
+		CourseRequest cr = convert(assignment, server.getStudent(request.getStudentId()), request, server, null, null, wlMode);
 		return assignment.getValue(cr);
 	}
 	
-	public static CourseRequest convert(Assignment<Request, Enrollment> assignment, XStudent student, XCourseRequest request, OnlineSectioningServer server, XOffering oldOffering, XEnrollment oldEnrollment) {
+	public static CourseRequest convert(Assignment<Request, Enrollment> assignment, XStudent student, XCourseRequest request, OnlineSectioningServer server, XOffering oldOffering, XEnrollment oldEnrollment, WaitListMode wlMode) {
 		Student clonnedStudent = new Student(request.getStudentId());
 		clonnedStudent.setExternalId(student.getExternalId());
 		clonnedStudent.setName(student.getName());
@@ -397,7 +398,7 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 						offering = oldOffering;
 					courses.add(offering.toCourse(c.getCourseId(), student, server));
 				}
-				CourseRequest clonnedRequest = new CourseRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), clonnedStudent, courses, cr.isWaitlist(), cr.getTimeStamp() == null ? null : cr.getTimeStamp().getTime());
+				CourseRequest clonnedRequest = new CourseRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), clonnedStudent, courses, cr.isWaitListOrNoSub(wlMode), cr.getTimeStamp() == null ? null : cr.getTimeStamp().getTime());
 				cr.fillChoicesIn(clonnedRequest);
 				XEnrollment enrollment = cr.getEnrollment();
 				if (oldEnrollment != null && cr.getCourseIdByOfferingId(oldOffering.getOfferingId()) != null)
@@ -436,9 +437,9 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 		return ret;
 	}
 	
-	public static Enrollment convert(XStudent student, XCourseRequest request, OnlineSectioningServer server, XOffering oldOffering, XEnrollment oldEnrollment) {
+	public static Enrollment convert(XStudent student, XCourseRequest request, OnlineSectioningServer server, XOffering oldOffering, XEnrollment oldEnrollment, WaitListMode wlMode) {
 		Assignment<Request, Enrollment> assignment = new DefaultSingleAssignment<Request, Enrollment>();
-		CourseRequest cr = convert(assignment, student, request, server, oldOffering, oldEnrollment);
+		CourseRequest cr = convert(assignment, student, request, server, oldOffering, oldEnrollment, wlMode);
 		return assignment.getValue(cr);
 	}
 }

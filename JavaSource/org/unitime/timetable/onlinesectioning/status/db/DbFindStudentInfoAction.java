@@ -60,7 +60,6 @@ import org.unitime.timetable.model.StudentSectioningStatus.Option;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.status.FindStudentInfoAction;
 import org.unitime.timetable.onlinesectioning.status.SectioningStatusFilterAction;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseLookup;
@@ -93,8 +92,8 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		
 		Map<Long, StudentInfo> students = new HashMap<Long, StudentInfo>();
 		
-		int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0;
-		int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0;
+		int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0, gNoSub = 0;
+		int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0, gtNoSub = 0;
 		int gConNeed = 0, gtConNeed = 0, gOvrNeed = 0, gtOvrNeed = 0;
 		int gDist = 0, gtDist = 0, gNrDC = 0, gtNrDC = 0, gShr = 0, gtShr = 0; 
 		int gFre = 0, gtFre = 0, gPIM = 0, gtPIM = 0, gPSec = 0, gtPSec = 0;
@@ -137,7 +136,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					st.setExternalId(student.getExternalUniqueId());
 					st.setCanShowExternalId(iCanShowExtIds);
 					StudentSectioningStatus status = student.getEffectiveStatus();
-					if (CustomStudentEnrollmentHolder.isAllowWaitListing() && (status == null || status.hasOption(Option.waitlist))) {
+					if (status == null || status.hasOption(Option.waitlist)) {
 						st.setWaitListMode(WaitListMode.WaitList);
 					} else if (status != null && status.hasOption(Option.nosubs)) {
 						st.setWaitListMode(WaitListMode.NoSubs);
@@ -180,7 +179,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 	    					st.addAdvisor(helper.getInstructorNameFormat().format(a));
 	    			}
 
-					int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0, tUnasg = 0, tOvrNeed = 0, ovrNeed = 0;
+					int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0, tUnasg = 0, tOvrNeed = 0, ovrNeed = 0, tNoSub = 0;
 					float tCred = 0f;
 					int nrDisCnf = 0, maxDist = 0, share = 0; 
 					int ftShare = 0;
@@ -257,8 +256,11 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 								DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, first, isConsentToDoCourse(first.getCourseOffering()), isMyStudent(student), helper.getStudentNameFormat(), lookup);
 								if (crm.canAssign()) {
 									tUnasg ++; gtUnasg ++;
-									if (demand.isWaitlist()) {
+									if (demand.effectiveWaitList()) {
 										tWait ++; gtWait ++;
+									}
+									if (demand.effectiveNoSub()) {
+										tNoSub ++; gtNoSub ++;
 									}
 								}
 							} else {
@@ -345,12 +347,14 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					s.setTotalEnrollment(tEnrl);
 					s.setTotalReservation(tRes);
 					s.setTotalWaitlist(tWait);
+					s.setTotalNoSub(tNoSub);
 					s.setTotalUnassigned(tUnasg);
 					s.setTotalConsentNeeded(tConNeed);
 					s.setTotalOverrideNeeded(tOvrNeed);
 					s.setEnrollment(0);
 					s.setReservation(0);
 					s.setWaitlist(0);
+					s.setNoSub(0);
 					s.setUnassigned(0);
 					s.setConsentNeeded(0);
 					s.setOverrideNeeded(ovrNeed);
@@ -494,12 +498,15 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					}
 				} else if (unassigned.add(crm.request().getCourseDemand().getUniqueId())) {
 					if (crm.canAssign()) {
-						if (crm.request().getCourseDemand().isWaitlist()) {
+						if (crm.request().getCourseDemand().effectiveWaitList()) {
 							s.setWaitlist(s.getWaitlist() + 1); gWait ++;
 							if (s.getTopWaitingPriority() == null)
 								s.setTopWaitingPriority(1 + crm.request().getCourseDemand().getPriority());
 							else
 								s.setTopWaitingPriority(Math.min(1 + crm.request().getCourseDemand().getPriority(), s.getTopWaitingPriority()));
+						}
+						if (crm.request().getCourseDemand().effectiveNoSub()) {
+							s.setNoSub(s.getNoSub() + 1); gNoSub ++;
 						}
 						s.setUnassigned(s.getUnassigned() + 1); gUnasg ++;	
 					}
@@ -548,7 +555,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 				st.setExternalId(student.getExternalUniqueId());
 				st.setCanShowExternalId(iCanShowExtIds);
 				StudentSectioningStatus status = student.getEffectiveStatus();
-				if (CustomStudentEnrollmentHolder.isAllowWaitListing() && (status == null || status.hasOption(Option.waitlist))) {
+				if (status == null || status.hasOption(Option.waitlist)) {
 					st.setWaitListMode(WaitListMode.WaitList);
 				} else if (status != null && status.hasOption(Option.nosubs)) {
 					st.setWaitListMode(WaitListMode.NoSubs);
@@ -628,11 +635,13 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		t.setEnrollment(gEnrl);
 		t.setReservation(gRes);
 		t.setWaitlist(gWait);
+		t.setNoSub(gNoSub);
 		t.setUnassigned(gUnasg);
 		
 		t.setTotalEnrollment(gtEnrl);
 		t.setTotalReservation(gtRes);
 		t.setTotalWaitlist(gtWait);
+		t.setTotalNoSub(gtNoSub);
 		t.setTotalUnassigned(gtUnasg);
 		
 		t.setConsentNeeded(gConNeed);

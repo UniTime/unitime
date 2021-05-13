@@ -1374,7 +1374,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 									}
 									e.setApprovedBy(name == null ? enrollment.getApprovedBy() : name);
 								}
-								e.setWaitList(enrollment.getCourseRequest().getCourseDemand().isWaitlist());
+								e.setWaitList(enrollment.getCourseRequest().getCourseDemand().effectiveWaitList());
+								e.setNoSub(enrollment.getCourseRequest().getCourseDemand().effectiveNoSub());
 							} else {
 								e.setPriority(-1);
 							}
@@ -1434,7 +1435,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							c.setHasCrossList(request.getCourseOffering().getInstructionalOffering().hasCrossList());
 							c.setCanWaitList(request.getCourseOffering().getInstructionalOffering().effectiveWaitList());
 							e.setCourse(c);
-							e.setWaitList(request.getCourseDemand().isWaitlist());
+							e.setWaitList(request.getCourseDemand().effectiveWaitList());
+							e.setNoSub(request.getCourseDemand().effectiveNoSub());
 							student2enrollment.put(request.getCourseDemand().getStudent().getUniqueId(), e);
 							e.setPriority(1 + request.getCourseDemand().getPriority());
 							if (request.getCourseDemand().getCourseRequests().size() > 1) {
@@ -1498,12 +1500,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					if (student == null) 
 						throw new SectioningException(MSG.exceptionBadStudentId());
 					StudentSectioningStatus status = student.getEffectiveStatus();
-					WaitListMode wlMode = WaitListMode.None;
-					if (CustomStudentEnrollmentHolder.isAllowWaitListing() && (status == null || status.hasOption(Option.waitlist))) {
-						wlMode = WaitListMode.WaitList;
-					} else if (status != null && status.hasOption(Option.nosubs)) {
-						wlMode = WaitListMode.NoSubs;
-					}
+					WaitListMode wlMode = student.getWaitListMode();
 					OnlineSectioningServer server = getServerInstance(student.getSession().getUniqueId(), false);
 					if (server == null) {
 						Comparator<StudentClassEnrollment> cmp = new Comparator<StudentClassEnrollment>() {
@@ -1549,7 +1546,6 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								course.setCourseNbr(enrollment.getCourseOffering().getCourseNbr());
 								course.setSubject(enrollment.getCourseOffering().getSubjectAreaAbbv());
 								course.setTitle(enrollment.getCourseOffering().getTitle());
-								course.setWaitListed(enrollment.getCourseRequest() != null && enrollment.getCourseRequest().getCourseDemand().getWaitlist() != null && enrollment.getCourseRequest().getCourseDemand().getWaitlist().booleanValue());
 								course.setHasCrossList(enrollment.getCourseOffering().getInstructionalOffering().hasCrossList());
 								course.setCanWaitList(enrollment.getCourseOffering().getInstructionalOffering().effectiveWaitList());
 								credit = enrollment.getCourseOffering().getCredit();
@@ -1677,7 +1673,6 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								course.setRequestedDate(demand.getTimestamp());
 								ret.add(course);
 								course.setAssigned(false);
-								course.setWaitListed(demand.getWaitlist() != null && demand.getWaitlist().booleanValue());
 								course.setCourseId(request.getCourseOffering().getUniqueId());
 								course.setCourseNbr(request.getCourseOffering().getCourseNbr());
 								course.setSubject(request.getCourseOffering().getSubjectAreaAbbv());
@@ -1716,10 +1711,15 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								ret.getRequest().setSpecRegDashboardUrl(dash.getDashboardUrl(student));
 							} catch (Exception e) {}
 						}
-						if (ret.getAdvisorRequest() != null)
-							ret.getAdvisorRequest().setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value(student.getSession())));
 						if (ret.getRequest() != null)
 							ret.getRequest().setWaitListMode(wlMode);
+						if (ret.getAdvisorRequest() != null) {
+							String advWlMode = ApplicationProperty.AdvisorRecommendationsWaitListMode.value(student.getSession());
+							if ("Student".equalsIgnoreCase(advWlMode))
+								ret.getAdvisorRequest().setWaitListMode(wlMode);
+							else
+								ret.getAdvisorRequest().setWaitListMode(WaitListMode.valueOf(advWlMode));
+						}
 						
 						for (StudentNote n: student.getNotes()) {
 							ClassAssignmentInterface.Note note = new ClassAssignmentInterface.Note();
@@ -1749,13 +1749,18 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						return ret;
 					} else {
 						ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(studentId)
-								.withRequest(true).withCustomCheck(true).withAdvisorRequest(true).checkHolds(true)
+								.withRequest(true).withCustomCheck(true).withAdvisorRequest(true).checkHolds(true).withWaitListMode(wlMode)
 								.withSpecialRegistrations(status != null && status.hasOption(Option.specreg)), currentUser());
 						ret.setCanSetCriticalOverrides(getSessionContext().hasPermission(student, Right.StudentSchedulingChangeCriticalOverride));
-						if (ret.getAdvisorRequest() != null)
-							ret.getAdvisorRequest().setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value(student.getSession())));
 						if (ret.getRequest() != null)
 							ret.getRequest().setWaitListMode(wlMode);
+						if (ret.getAdvisorRequest() != null) {
+							String advWlMode = ApplicationProperty.AdvisorRecommendationsWaitListMode.value(student.getSession());
+							if ("Student".equalsIgnoreCase(advWlMode))
+								ret.getAdvisorRequest().setWaitListMode(wlMode);
+							else
+								ret.getAdvisorRequest().setWaitListMode(WaitListMode.valueOf(advWlMode));
+						}
 						
 						NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
 						for (StudentNote n: student.getNotes()) {
@@ -1783,8 +1788,22 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
+				
+				WaitListMode wlMode = WaitListMode.NoSubs;
+				
+				ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(studentId).withRequest(true).withAdvisorRequest(true).withWaitListMode(wlMode), currentUser());
+				
+				if (ret.getRequest() != null)
+					ret.getRequest().setWaitListMode(wlMode);
+				if (ret.getAdvisorRequest() != null) {
+					String advWlMode = ApplicationProperty.AdvisorRecommendationsWaitListMode.value(server.getAcademicSession());
+					if ("Student".equalsIgnoreCase(advWlMode))
+						ret.getAdvisorRequest().setWaitListMode(wlMode);
+					else
+						ret.getAdvisorRequest().setWaitListMode(WaitListMode.valueOf(advWlMode));
+				}
 
-				return server.execute(server.createAction(GetAssignment.class).forStudent(studentId).withRequest(true).withAdvisorRequest(true), currentUser());
+				return ret;
 			}
 		} catch (PageAccessException e) {
 			throw e;
@@ -2379,7 +2398,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						else
 							request.getCourses().add(r);
 					}
-					r.setWaitList(cd.getWaitlist());
+					r.setWaitList(cd.effectiveWaitList());
+					r.setNoSub(cd.effectiveNoSub());
 					if (cd.getCriticalOverride() != null)
 						r.setCritical(cd.getCriticalOverride());
 					else
@@ -2504,10 +2524,14 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			OnlineSectioningServer server = getStudentSolver();
 			if (server == null) 
 				throw new SectioningException(MSG.exceptionNoSolver());
+			
+			WaitListMode wlMode = WaitListMode.NoSubs;
 
-			ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(cx.getStudentId()), currentUser(cx));
-			if (ret != null)
+			ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(cx.getStudentId()).withWaitListMode(wlMode), currentUser(cx));
+			if (ret != null) {
+				if (ret.getRequest() != null) ret.getRequest().setWaitListMode(wlMode);
 				ret.setCanEnroll(cx.getStudentId() != null);
+			}
 			
 			return ret;
 		}
@@ -2919,8 +2943,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				check.setStudentId(cx.getStudentId());
 				check.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, true);
 				check.setFlag(EligibilityFlag.CAN_ENROLL, !server.isPublished());
-				check.setFlag(EligibilityFlag.CAN_WAITLIST, ApplicationProperty.SolverDashboardAllowWaitList.isTrue());
-				check.setFlag(EligibilityFlag.CAN_NO_SUBS, ApplicationProperty.SolverDashboardAllowNoSubs.isTrue());
+				check.setFlag(EligibilityFlag.CAN_WAITLIST, false);
+				check.setFlag(EligibilityFlag.CAN_NO_SUBS, true);
 				check.setFlag(EligibilityFlag.CAN_RESET, ApplicationProperty.SolverDashboardAllowScheduleReset.isTrue());
 				check.setFlag(EligibilityFlag.CONFIRM_DROP, ApplicationProperty.OnlineSchedulingConfirmCourseDrop.isTrue());
 				check.setFlag(EligibilityFlag.QUICK_ADD_DROP, ApplicationProperty.OnlineSchedulingQuickAddDrop.isTrue());
@@ -3462,7 +3486,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			ret.setEmailOptionalToggleDefault(email.isOptionCheckedByDefault());
 		}
 		try {
-			ret.setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value(student.getSession())));
+			String advWlMode = ApplicationProperty.AdvisorRecommendationsWaitListMode.value(student.getSession());
+			if ("Student".equalsIgnoreCase(advWlMode))
+				ret.setWaitListMode(student.getWaitListMode());
+			else
+				ret.setWaitListMode(WaitListMode.valueOf(advWlMode));
 		} catch (Exception e) {}
 		 
 		if (getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdmin)) {
@@ -3676,8 +3704,14 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		
 		CourseRequestInterface ret = server.execute(server.createAction(AdvisorGetCourseRequests.class).forStudent(cx.getStudentId()).checkDemands(false), currentUser(cx));
 		try {
-			ret.setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value(server.getAcademicSession())));
-		} catch (Exception e) {}
+			String advWlMode = ApplicationProperty.AdvisorRecommendationsWaitListMode.value(server.getAcademicSession());
+			if ("Student".equalsIgnoreCase(advWlMode))
+				ret.setWaitListMode(StudentDAO.getInstance().get(cx.getStudentId()).getWaitListMode());
+			else
+				ret.setWaitListMode(WaitListMode.valueOf(advWlMode));
+		} catch (Exception e) {
+			ret.setWaitListMode(WaitListMode.None);
+		}
 		return ret;
 	}
 

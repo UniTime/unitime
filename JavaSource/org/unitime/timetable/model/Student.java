@@ -28,10 +28,13 @@ import java.util.List;
 import java.util.Set;
 
 import org.hibernate.Query;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
+import org.unitime.timetable.model.StudentSectioningStatus.Option;
 import org.unitime.timetable.model.base.BaseStudent;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.util.NameFormat;
 import org.unitime.timetable.util.NameInterface;
@@ -295,6 +298,16 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
 			}
 		}
     	return getSession().getDefaultSectioningStatus();
+    }
+    
+    public WaitListMode getWaitListMode() {
+    	StudentSectioningStatus status = getEffectiveStatus();
+		if (CustomStudentEnrollmentHolder.isAllowWaitListing() && (status == null || status.hasOption(Option.waitlist))) {
+			return WaitListMode.WaitList;
+		} else if (status != null && status.hasOption(Option.nosubs)) {
+			return WaitListMode.NoSubs;
+		}
+		return WaitListMode.None;
     }
     
     public Date getLastChangedByStudent() {

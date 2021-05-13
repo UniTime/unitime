@@ -71,7 +71,7 @@ public class CourseRequestEligibility extends CheckEligibility {
 			if (iStudentId != null)
 				action.setStudent(OnlineSectioningLog.Entity.newBuilder().setUniqueId(iStudentId));
 			
-			iCheck.setFlag(EligibilityFlag.CAN_WAITLIST, server.getAcademicSession().isSectioningEnabled() && CustomStudentEnrollmentHolder.isAllowWaitListing());
+			iCheck.setFlag(EligibilityFlag.CAN_WAITLIST, CustomStudentEnrollmentHolder.isAllowWaitListing());
 			
 			org.hibernate.Session hibSession = StudentDAO.getInstance().createNewSession();
 			try {

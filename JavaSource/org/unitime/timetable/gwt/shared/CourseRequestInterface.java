@@ -589,6 +589,8 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		public boolean isCanWaitList() { return iCanWaitList != null && iCanWaitList.booleanValue(); }
 		public void setCanWaitList(Boolean canWaitList) { iCanWaitList = canWaitList; }
 		
+		public boolean isCanNoSub() { return isCourse(); }
+		
 		public boolean isEmpty() { return !isCourse() && !isFreeTime(); }
 		
 		public boolean hasSelectedIntructionalMethods() { return iSelectedIntructionalMethods != null && !iSelectedIntructionalMethods.isEmpty(); }
@@ -788,6 +790,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		private static final long serialVersionUID = 1L;
 		private List<RequestedCourse> iRequestedCourse = null;
 		private Boolean iWaitList = false;
+		private Boolean iNoSub = false;
 		private Integer iCritical = null;
 		private Date iTimeStamp = null;
 		private String iFilter = null;
@@ -907,6 +910,25 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			return false;
 		}
 		
+		public boolean hasNoSub() { return iNoSub != null; }
+		public boolean isNoSub() { return iNoSub != null && iNoSub.booleanValue(); }
+		public void setNoSub(Boolean noSub) { iNoSub = noSub; }
+		
+		public boolean isCanNoSub() {
+			if (iRequestedCourse == null) return false;
+			for (RequestedCourse rc: iRequestedCourse) {
+				if (rc.isCourse()) return true;
+				break;
+			}
+			return false;
+		}
+		
+		public boolean isWaitlistOrNoSub(WaitListMode wlMode) {
+			if (wlMode == WaitListMode.WaitList) return isWaitList();
+			if (wlMode == WaitListMode.NoSubs) return isNoSub();
+			return false;
+		}
+
 		public boolean hasCritical() { return iCritical != null; }
 		public boolean isCritical() { return iCritical != null && iCritical.intValue() == 1; }
 		public boolean isImportant() { return iCritical != null && iCritical.intValue() == 2; }
@@ -985,7 +1007,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof Request)) return false;
 			Request r = (Request)o;
-			if (isWaitList() != r.isWaitList() || countRequestedCourses() != r.countRequestedCourses()) return false;
+			if (isWaitList() != r.isWaitList() || isNoSub() != r.isNoSub() || countRequestedCourses() != r.countRequestedCourses()) return false;
 			for (int i = 0; i < countRequestedCourses(); i++) {
 				RequestedCourse c1 = getRequestedCourse(i);
 				RequestedCourse c2 = r.getRequestedCourse(i);

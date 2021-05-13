@@ -179,6 +179,9 @@ public interface StudentSectioningConstants extends Constants {
 		"Important",
 		"Assigned Important",
 		"Not Assigned Important",
+		"No-Substitutes",
+		"Assigned No-Subs",
+		"Not Assigned No-Subs",
 	})
 	String[] assignmentType();
 	
