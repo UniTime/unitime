@@ -698,6 +698,17 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			}
 		};
 	}
+	
+	public void addRequest(Request request) {
+		for (final CourseRequestLine line: iCourses)
+			if (line.getValue() == null) {
+				line.setValue(request, true);
+				return;
+			}		
+		addCourseLine();
+		final CourseRequestLine line = iCourses.get(iCourses.size() - 1);
+		line.setValue(request, true);
+	}
 
 	public boolean hasCourse(RequestedCourse rc) {
 		for (final CourseRequestLine line: iCourses) {

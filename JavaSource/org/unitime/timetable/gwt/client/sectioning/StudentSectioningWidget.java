@@ -2998,6 +2998,30 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							public void onFailure(Throwable caught) {
 								if (caught != null) iStatus.error(caught.getMessage());
 								iAssignmentPanel.setFocus(true);
+								if (event.getSelectedItem().isCanWaitList() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST)) {
+									UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), caught.getMessage() + "\n" + MESSAGES.confirmQuickWaitList(event.getSelectedItem().getCourseName()), new Command() {
+										@Override
+										public void execute() {
+											final CourseRequestInterface undo = iCourseRequests.getRequest();
+											Request request = new Request(); request.setWaitList(true); request.addRequestedCourse(event.getSelectedItem());
+											iCourseRequests.addRequest(request);
+											LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
+											CourseRequestInterface r = iCourseRequests.getRequest(); r.setNoChange(true);
+											iSectioningService.section(r, iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
+												public void onFailure(Throwable caught) {
+													LoadingWidget.getInstance().hide();
+													iStatus.error(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
+													iCourseRequests.setRequest(undo);
+												}
+												public void onSuccess(ClassAssignmentInterface result) {
+													fillIn(result);
+													addHistory();
+													iQuickAddFinder.setValue(null, true);
+												}
+											});
+										}
+									});
+								}
 							}
 						});
 					}
