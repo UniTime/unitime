@@ -134,7 +134,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			box.addCourseSelectionHandler(new CourseSelectionHandler() {
 				@Override
 				public void onCourseSelection(CourseSelectionEvent event) {
-					boolean readOnly = event.getValue() != null && event.getValue().isReadOnly();
+					boolean readOnly = event.getValue() != null && (event.getValue().isReadOnly() || event.getValue().isInactive());
 					boolean canSet = false;
 					if (iWaitListMode == WaitListMode.WaitList) {
 						canSet = event.getValue() != null && event.getValue().isCanWaitList();
@@ -447,10 +447,10 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			if (iWaitList != null) {
 				if (iWaitListMode == WaitListMode.WaitList && value.isCanWaitList()) {
 					iWaitList.setValue(value.isWaitList());
-					iWaitList.setEnabled(!value.isReadOnly());
+					iWaitList.setEnabled(!value.isReadOnly() && !value.isInactive());
 				} else if (iWaitListMode == WaitListMode.NoSubs && value.isCanNoSub()) {
 					iWaitList.setValue(value.isNoSub());
-					iWaitList.setEnabled(!value.isReadOnly());
+					iWaitList.setEnabled(!value.isReadOnly() && !value.isInactive());
 				} else {
 					iWaitList.setValue(false);
 					iWaitList.setEnabled(false);

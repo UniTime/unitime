@@ -264,9 +264,9 @@ public class CourseRequestBox extends P implements CourseSelection {
 					iFilter.setText(iLastCourse.getCourseName());
 				}
 				iFilter.resizeFilterIfNeeded();
-				CourseSelectionEvent.fire(CourseRequestBox.this, getValue());
 				if (iInactive) iFilter.removeStyleName("inactive");
 				iInactive = false;
+				CourseSelectionEvent.fire(CourseRequestBox.this, getValue());
 			}
 		});
 		iFilter.addSelectionHandler(new SelectionHandler<FilterBox.Suggestion>() {
@@ -296,6 +296,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 		if (iInactive && course.equals(getValue())) {
 			iInactive = false;
 			iFilter.removeStyleName("inactive");
+			CourseSelectionEvent.fire(CourseRequestBox.this, getValue());
 		}
 	}
 	

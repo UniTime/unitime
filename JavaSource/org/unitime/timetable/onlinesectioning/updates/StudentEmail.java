@@ -593,6 +593,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					.withCustomValidation(status != null && status.hasOption(StudentSectioningStatus.Option.reqval))
 					.withCustomRequest(false)
 					.withAdvisorRequests(false)
+					.withWaitListMode(wlMode)
 					.execute(server, helper);
 			input.put("requests", generateCourseRequests(student, requests, server, helper, wlMode));
 		}
