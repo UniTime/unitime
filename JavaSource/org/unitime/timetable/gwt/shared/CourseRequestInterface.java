@@ -1500,7 +1500,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			if (!r.hasRequestedCourse()) continue;
 			boolean skip = false;
 			for (RequestedCourse rc: r.getRequestedCourse()) {
-				if (rc.isCourse() && getRequestPriority(rc) != null) { skip = true; break; }
+				if (rc.hasCourseId() && getRequestPriority(rc) != null) { skip = true; break; }
 			}
 			if (!skip) {
 				getCourses().add(r);
@@ -1511,7 +1511,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			if (!r.hasRequestedCourse()) continue;
 			boolean skip = false;
 			for (RequestedCourse rc: r.getRequestedCourse()) {
-				if (rc.isCourse() && getRequestPriority(rc) != null) { skip = true; break; }
+				if (rc.hasCourseId() && getRequestPriority(rc) != null) { skip = true; break; }
 			}
 			if (!skip) {
 				getAlternatives().add(r);
