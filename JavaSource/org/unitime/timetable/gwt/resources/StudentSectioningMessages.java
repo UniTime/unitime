@@ -1763,6 +1763,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Do you want to drop {0} from your schedule?")
 	String confirmQuickDrop(String course);
 	
+	@DefaultMessage("Do you want to wait-list {0}?")
+	String confirmQuickWaitList(String course);
+	
 	@DefaultMessage("<u>D</u>egree Plan")
 	String buttonDegreePlan();
 	
