@@ -766,6 +766,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 			request.setSaved(true);
 			request.setAcademicSessionId(server.getAcademicSession().getUniqueId());
 			request.setMaxCredit(student.getMaxCredit());
+			request.setWaitListMode(wlMode);
 			if (student.getMaxCreditOverride() != null) {
 				request.setMaxCreditOverride(student.getMaxCreditOverride().getValue());
 				request.setMaxCreditOverrideExternalId(student.getMaxCreditOverride().getExternalId());
@@ -843,8 +844,8 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 						((XCourseRequest)cd).fillPreferencesIn(rc, courseId);
 						r.addRequestedCourse(rc);
 					}
-					r.setWaitList(((XCourseRequest)cd).isWaitlist());
-					r.setNoSub(((XCourseRequest)cd).isNoSub());
+					r.setWaitList(((XCourseRequest)cd).isWaitlist(wlMode));
+					r.setNoSub(((XCourseRequest)cd).isNoSub(wlMode));
 					r.setCritical(((XCourseRequest)cd).getCritical());
 					r.setTimeStamp(((XCourseRequest)cd).getTimeStamp());
 					if (r.hasRequestedCourse()) {
