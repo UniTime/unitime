@@ -2226,7 +2226,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 				
-				CourseRequestInterface request = server.execute(server.createAction(GetRequest.class).forStudent(cx.getStudentId()), currentUser(cx));
+				CourseRequestInterface request = server.execute(server.createAction(GetRequest.class).forStudent(cx.getStudentId()).withWaitListMode(WaitListMode.NoSubs), currentUser(cx));
 				if (request == null)
 					throw new SectioningException(MSG.exceptionBadStudentId());
 
@@ -2278,6 +2278,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		request.setStudentId(student.getUniqueId());
 		request.setSaved(true);
 		request.setMaxCredit(student.getMaxCredit());
+		request.setWaitListMode(student.getWaitListMode());
 		if (student.getOverrideMaxCredit() != null) {
 			request.setMaxCreditOverride(student.getOverrideMaxCredit());
 			request.setMaxCreditOverrideExternalId(student.getOverrideExternalId());
@@ -2451,7 +2452,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			OnlineSectioningServer server = getStudentSolver();
 			if (server == null) 
 				throw new SectioningException(MSG.exceptionNoSolver());
-			return server.execute(server.createAction(GetRequest.class).forStudent(cx.getStudentId(), cx.isSectioning()), currentUser(cx));
+			return server.execute(server.createAction(GetRequest.class).forStudent(cx.getStudentId(), cx.isSectioning()).withWaitListMode(WaitListMode.NoSubs), currentUser(cx));
 		}
 		OnlineSectioningServer server = getServerInstance(cx.getSessionId() == null ? canEnroll(cx) : cx.getSessionId(), false);
 		EligibilityCheck last = getLastEligibilityCheck(cx);
@@ -2523,13 +2524,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			if (server == null) 
 				throw new SectioningException(MSG.exceptionNoSolver());
 			
-			WaitListMode wlMode = WaitListMode.NoSubs;
-
-			ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(cx.getStudentId()).withWaitListMode(wlMode), currentUser(cx));
-			if (ret != null) {
-				if (ret.getRequest() != null) ret.getRequest().setWaitListMode(wlMode);
+			ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(cx.getStudentId()).withWaitListMode(WaitListMode.NoSubs), currentUser(cx));
+			if (ret != null)
 				ret.setCanEnroll(cx.getStudentId() != null);
-			}
 			
 			return ret;
 		}
@@ -3568,7 +3565,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		
 		if (server != null && !(server instanceof DatabaseServer)) {
 			ret.setStudentRequest(server.execute(server.createAction(GetRequest.class).forStudent(student.getUniqueId(), false)
-					.withCustomValidation(true).withCustomRequest(false).withAdvisorRequests(false), currentUser()));
+					.withCustomValidation(true).withCustomRequest(false).withAdvisorRequests(false).withWaitListMode(student.getWaitListMode()), currentUser()));
 		} else if (ret.isCanUpdate()) {
 			ret.setStudentRequest(getRequest(student));
 		}

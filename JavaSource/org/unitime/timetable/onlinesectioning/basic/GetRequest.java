@@ -27,6 +27,7 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -61,6 +62,7 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 	private boolean iCustomRequests = true;
 	private boolean iAdvisorRequests = true;
 	private CourseMatcher iMatcher = null;
+	private WaitListMode iWaitListMode = null;
 	
 	public GetRequest forStudent(Long studentId, boolean sectioning) {
 		iStudentId = studentId;
@@ -87,6 +89,10 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 	public GetRequest withCourseMatcher(CourseMatcher matcher) {
 		iMatcher = matcher; return this;
 	}
+	
+	public GetRequest withWaitListMode(WaitListMode mode) {
+		iWaitListMode = mode; return this;
+	}
 
 	@Override
 	public CourseRequestInterface execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
@@ -108,7 +114,6 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 			if (student == null) return null;
 			action.getStudentBuilder().setExternalId(student.getExternalId());
 			action.getStudentBuilder().setName(student.getName());
-
 			if (student.getRequests().isEmpty() && CustomCourseRequestsHolder.hasProvider() && iCustomRequests) {
 				if (iMatcher != null) iMatcher.setServer(server);
 				request = CustomCourseRequestsHolder.getProvider().getCourseRequests(server, helper, student, iMatcher);
@@ -120,6 +125,10 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 			request.setSaved(true);
 			request.setAcademicSessionId(server.getAcademicSession().getUniqueId());
 			request.setMaxCredit(student.getMaxCredit());
+			if (iWaitListMode == null)
+				request.setWaitListMode(student.getWaitListMode(helper));
+			else
+				request.setWaitListMode(iWaitListMode);
 			if (student.getMaxCreditOverride() != null) {
 				request.setMaxCreditOverride(student.getMaxCreditOverride().getValue());
 				request.setMaxCreditOverrideExternalId(student.getMaxCreditOverride().getExternalId());
@@ -189,15 +198,17 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 					for (XCourseId courseId: ((XCourseRequest)cd).getCourseIds()) {
 						XCourse c = server.getCourse(courseId.getCourseId());
 						if (c == null) continue;
+						XOffering offering = server.getOffering(c.getOfferingId());
 						RequestedCourse rc = new RequestedCourse();
 						rc.setCourseId(c.getCourseId());
 						rc.setCourseName(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
 						rc.setCourseTitle(c.getTitle());
 						rc.setCredit(c.getMinCredit(), c.getMaxCredit());
 						boolean isEnrolled = ((XCourseRequest)cd).getEnrollment() != null && c.getCourseId().equals(((XCourseRequest)cd).getEnrollment().getCourseId());
+						boolean isWaitListed = !isEnrolled && offering.isWaitList() && ((XCourseRequest)cd).isWaitlist(request.getWaitListMode()); 
 						if (setReadOnly && isEnrolled)
 							rc.setReadOnly(true);
-						if (iSectioning && setInactive && !isEnrolled)
+						if (iSectioning && setInactive && !isEnrolled && !isWaitListed)
 							rc.setInactive(true);
 						if (!iSectioning && isEnrolled) {
 							rc.setReadOnly(true);
@@ -205,7 +216,6 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 							if (enrolledNoAlternatives) rc.setCanChangeAlternatives(false);
 							if (enrolledNoPriority) rc.setCanChangePriority(false);
 						}
-						XOffering offering = server.getOffering(c.getOfferingId());
 						if (!iSectioning && setReadOnlyWhenReserved) {
 							if (offering != null && (offering.hasIndividualReservation(student, c) || offering.hasGroupReservation(student, c))) {
 								rc.setReadOnly(true);

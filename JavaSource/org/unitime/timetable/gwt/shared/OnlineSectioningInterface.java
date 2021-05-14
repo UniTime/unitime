@@ -28,8 +28,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
-
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
@@ -155,7 +153,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			if (iGradeModes == null) iGradeModes = new GradeModes();
 			iGradeModes.addGradeMode(sectionId, new GradeMode(code, label, honor));
 		}
-		public GradeMode getGradeMode(ClassAssignment section) {
+		public GradeMode getGradeMode(ClassAssignmentInterface.ClassAssignment section) {
 			if (iGradeModes == null) return null;
 			return iGradeModes.getGradeMode(section);
 		}
@@ -164,7 +162,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public boolean hasCreditHours() {
 			return iGradeModes != null && iGradeModes.hasCreditHours();
 		}
-		public Float getCreditHour(ClassAssignment section) {
+		public Float getCreditHour(ClassAssignmentInterface.ClassAssignment section) {
 			if (iGradeModes == null || section == null) return null;
 			return iGradeModes.getCreditHour(section);
 		}
@@ -426,7 +424,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			iModes.put(sectionId, mode);
 		}
 		
-		public GradeMode getGradeMode(ClassAssignment a) {
+		public GradeMode getGradeMode(ClassAssignmentInterface.ClassAssignment a) {
 			if (a.getExternalId() == null) return null;
 			if (a.getParentSection() != null && a.getParentSection().equals(a.getSection())) return null;
 			return iModes.get(a.getExternalId());
@@ -445,7 +443,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			return iCreditHours != null && !iCreditHours.isEmpty();
 		}
 		
-		public Float getCreditHour(ClassAssignment a) {
+		public Float getCreditHour(ClassAssignmentInterface.ClassAssignment a) {
 			if (a.getExternalId() == null) return null;
 			if (a.getParentSection() != null && a.getParentSection().equals(a.getSection())) return null;
 			return iCreditHours.get(a.getExternalId());
