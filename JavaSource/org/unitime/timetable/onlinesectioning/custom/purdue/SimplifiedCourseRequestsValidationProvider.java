@@ -1303,6 +1303,20 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 		
 		Integer CONF_UNITIME = 0;
 		
+		Set<Long> courseIds = new HashSet<Long>();
+		for (CourseRequestInterface.Request r: request.getCourses()) {
+			if (r.hasRequestedCourse())
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					if (rc.hasCourseId() && !courseIds.add(rc.getCourseId())) {
+						response.addError(rc.getCourseId(), rc.getCourseName(), "DUPL",
+								ApplicationProperties.getProperty("purdue.specreg.messages.duplicateCourse", "Course {course} used multiple times.").replace("{course}", rc.getCourseName())
+								);
+						if (!response.hasErrorMessage())
+							response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.duplicateCourse", "Course {course} used multiple times.").replace("{course}", rc.getCourseName()));
+					}
+				}
+		}
+		
 		boolean questionNoAlt = false;
 		if (!isAdvisedNoAlts())
 			for (CourseRequestInterface.Request r: request.getCourses()) {

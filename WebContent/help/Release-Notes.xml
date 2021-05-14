@@ -35,12 +35,13 @@
 			</description>
 		</item>
 		<item>
-			<name>Advisor Course Recommendations: Notes</name>
+			<name>Advisor Course Recommendations</name>
 			<description>
 				<line>When the Notes textarea is automatically resized to fit the text, avoid scroll-position jumping on Firefox.</line>
 				<line>Do not cache previous notes query (this is to ensure that the most recent notes are visible).</line>
 				<line>When there are no advisor course recommendations, but the page is pre-populated with student's course requests, still display the default advisor note.</line>
 				<line>When pre-populating student course requests with advisor recommendations, only check true courses for duplicates (not free texts).</line>
+				<line>Do not allow the same course to be entered multiple times (duplicate free texts are allowed).</line>
 			</description>
 		</item>
 		<item>
