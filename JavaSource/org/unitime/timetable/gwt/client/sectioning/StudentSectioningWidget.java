@@ -157,7 +157,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	
 	private VerticalPanel iPanel;
 	private P iFooter, iHeader;
-	private AriaMultiButton iRequests, iReset, iSchedule, iEnroll, iPrint, iExport = null, iSave, iStartOver, iDegreePlan, iSubmitSpecReg, iChangeGradeModes, iAdvisorReqs;
+	private AriaMultiButton iRequests, iReset, iSchedule, iEnroll, iPrint, iExport = null, iSave, iStartOver, iDegreePlan, iChangeGradeModes, iAdvisorReqs;
 	
 	private AriaTabBar iAssignmentTab;
 	private DockPanel iAssignmentDock;
@@ -425,13 +425,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iRequestVarTitleCourse.setVisible(false);
 		iRequestVarTitleCourse.setEnabled(false);
 		
-		iSubmitSpecReg = new AriaMultiButton(MESSAGES.buttonSubmitSpecReg());
-		iSubmitSpecReg.setTitle(MESSAGES.hintSpecialRegistration());
-		iSubmitSpecReg.setVisible(false);
-		iSubmitSpecReg.setEnabled(false);
-		rightFooterPanel.add(iSubmitSpecReg);
-		rightHeaderPanel.add(iSubmitSpecReg.createClone());
-
 		iPrint = new AriaMultiButton(MESSAGES.buttonPrint());
 		iPrint.setTitle(MESSAGES.hintPrint());
 		iPrint.setVisible(false);
@@ -1161,8 +1154,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								if (result.hasCurrentCredit() && iEligibilityCheck != null)
 									iEligibilityCheck.setCurrentCredit(result.getCurrentCredit());
 								fillIn(result, iEligibilityCheck == null || !iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
-								if (result.hasRequest())
+								if (result.hasRequest()) {
 									iCourseRequests.setRequest(result.getRequest());
+									iSavedRequest = result.getRequest();
+								}
 								if (!result.hasMessages())
 									iStatus.done(MESSAGES.enrollOK());
 								updateHistory();
@@ -1245,13 +1240,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				};
 				enroll = confirmEnrollment(enroll);
 				enroll.execute();
-			}
-		});
-		
-		iSubmitSpecReg.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				checkSpecialRegistrationAfterFailedSubmitSchedule(new ArrayList<ClassAssignmentInterface.ClassAssignment>(iLastResult));
 			}
 		});
 		
@@ -2004,8 +1992,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_RESET)) { iReset.setVisible(true); iReset.setEnabled(true); }
 			if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.QUICK_ADD_DROP)) { iQuickAdd.setVisible(true); iQuickAdd.setEnabled(true); }
 			iEnroll.setVisible(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL));
-			iSubmitSpecReg.setVisible(result.isCanEnroll() && !iEnroll.isVisible() && iSpecRegCx.isCanSubmit() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
-			iSubmitSpecReg.setEnabled(result.isCanEnroll() && !iEnroll.isVisible() && iSpecRegCx.isCanSubmit() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
 			if (hasGradeMode && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_CHANGE_GRADE_MODE, EligibilityFlag.CAN_CHANGE_VAR_CREDIT)) {
 				iChangeGradeModes.setEnabled(true);
 				iChangeGradeModes.setVisible(true);
@@ -2102,7 +2088,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iEnroll.setVisible(false); iEnroll.setEnabled(false);
 		iChangeGradeModes.setVisible(false); iChangeGradeModes.setEnabled(false);
 		iRequestVarTitleCourse.setVisible(false); iRequestVarTitleCourse.setEnabled(false);
-		iSubmitSpecReg.setVisible(false); iSubmitSpecReg.setEnabled(false);
 		if (iCustomCheckbox != null) {
 			iCustomCheckbox.setVisible(false); iCustomCheckbox.setEnabled(false);
 		}
@@ -2505,6 +2490,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	public void setData(CourseRequestInterface request, ClassAssignmentInterface response) {
 		clear();
 		iCourseRequests.setRequest(request);
+		if (request.isSaved())
+			iSavedRequest = request;
 		if (response != null) {
 			if (request.isSaved()) {
 				iSavedAssignment = response;
@@ -2525,52 +2512,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			clearMessage();
 		}
 		if (iLastAssignment == null || !iLastAssignment.isCanEnroll() || iEligibilityCheck == null || !iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL)) {
-			if (iLastAssignment != null && (iSpecialRegAssignment != null || iSavedAssignment != null) && iSpecRegCx.isCanSubmit() && iSubmitSpecReg.isVisible()) {
-				for (ClassAssignmentInterface.CourseAssignment course: iLastAssignment.getCourseAssignments()) {
-					if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
-					classes: for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
-						for (ClassAssignmentInterface.CourseAssignment saved: (iSpecialRegAssignment == null ? iSavedAssignment : iSpecialRegAssignment).getCourseAssignments()) {
-							if (!saved.isAssigned() || saved.isFreeTime() || saved.isTeachingAssignment() || !course.getCourseId().equals(saved.getCourseId())) continue;
-							for (ClassAssignmentInterface.ClassAssignment x: saved.getClassAssignments()) {
-								if (clazz.getClassId().equals(x.getClassId())) continue classes;
-							}
-						}
-						//if (!clazz.isSaved() && !clazz.hasError()) {
-						iScheduleChanged = true;
-						iSubmitSpecReg.addStyleName("unitime-EnrollButton");
-						iStatus.warning(MESSAGES.warnSpecialRegistrationChanged(), false);
-						//}
-					}
-					for (ClassAssignmentInterface.CourseAssignment saved: (iSpecialRegAssignment == null ? iSavedAssignment : iSpecialRegAssignment).getCourseAssignments()) {
-						if (!saved.isAssigned() || saved.isFreeTime() || saved.isTeachingAssignment() || !course.getCourseId().equals(saved.getCourseId())) continue;
-						classes: for (ClassAssignmentInterface.ClassAssignment clazz: saved.getClassAssignments()) {
-							for (ClassAssignmentInterface.ClassAssignment x: course.getClassAssignments()) {
-								if (clazz.getClassId().equals(x.getClassId())) continue classes;
-							}
-							if (clazz.isSaved() && !clazz.hasError()) {
-								iScheduleChanged = true;
-								iSubmitSpecReg.addStyleName("unitime-EnrollButton");
-								iStatus.warning(MESSAGES.warnSpecialRegistrationChanged(), false);
-							}
-						}
-					}
-				}
-				courses: for (ClassAssignmentInterface.CourseAssignment course: (iSpecialRegAssignment == null ? iSavedAssignment : iSpecialRegAssignment).getCourseAssignments()) {
-					if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
-					for (ClassAssignmentInterface.CourseAssignment x: iLastAssignment.getCourseAssignments())
-						if (course.getCourseId().equals(x.getCourseId())) continue courses;
-					for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
-						if (clazz.isSaved() && !clazz.hasError()) {
-							iScheduleChanged = true;
-							iSubmitSpecReg.addStyleName("unitime-EnrollButton");
-							iStatus.warning(MESSAGES.warnSpecialRegistrationChanged(), false);
-						}
-					}
-				}
-			}
 			return;
 		}
-		if (iLastAssignment != null && iSpecialRegAssignment != null && iSpecRegCx.isCanSubmit()) {
+		if (iLastAssignment != null && iSpecialRegAssignment != null) {
 			boolean changed = false;
 			for (ClassAssignmentInterface.CourseAssignment course: iLastAssignment.getCourseAssignments()) {
 				if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
@@ -2670,6 +2614,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iEnroll.addStyleName("unitime-EnrollButton");
 			iStatus.warning(cr ? MESSAGES.warnScheduleChangedOnCourseRequest() : MESSAGES.warnScheduleChangedOnClassSchedule(), false);
 		}
+		if (iSavedRequest != null && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST)) {
+			if (!iSavedRequest.sameWaitListedCourses(request)) {
+				iScheduleChanged = true;
+				iEnroll.addStyleName("unitime-EnrollButton");
+				iStatus.warning(cr ? MESSAGES.warnScheduleChangedOnCourseRequest() : MESSAGES.warnScheduleChangedOnClassSchedule(), false);
+			}
+		}
 	}
 	
 	public boolean isChanged() {
@@ -2696,13 +2647,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				iStatus.clear();
 				iEnroll.removeStyleName("unitime-EnrollButton");
 				iSave.removeStyleName("unitime-EnrollButton");
-				iSubmitSpecReg.removeStyleName("unitime-EnrollButton");
 			}
 		} else {
 			iStatus.clear();
 			iEnroll.removeStyleName("unitime-EnrollButton");
 			iSave.removeStyleName("unitime-EnrollButton");
-			iSubmitSpecReg.removeStyleName("unitime-EnrollButton");
 		}
 		if (isChanged())
 			updateScheduleChangedNoteIfNeeded();
@@ -3101,10 +3050,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG)) {
 										iEligibilityCheck.setFlag(EligibilityFlag.HAS_SPECREG, true);
 									}
-									if (!iSpecRegCx.isCanSubmit()) {
-										iSubmitSpecReg.setVisible(false);
-										iSubmitSpecReg.setEnabled(false);
-									}
 									for (CourseAssignment ca: iLastAssignment.getCourseAssignments())
 										for (ClassAssignment a: ca.getClassAssignments()) {
 											a.setError(null); a.setWarn(null); a.setInfo(null);
@@ -3134,37 +3079,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		});
 	}
 	
-	protected void checkSpecialRegistrationAfterFailedSubmitSchedule(ArrayList<ClassAssignmentInterface.ClassAssignment> lastEnrollment) {
-		if (!iSpecRegCx.isCanSubmit()) return;
-		iLastEnrollment = lastEnrollment;
-		LoadingWidget.getInstance().show(MESSAGES.waitOverridesCheck());
-		iSpecialRegAssignment = null;
-		iSectioningService.checkSpecialRequestEligibility(
-				new SpecialRegistrationEligibilityRequest(iContext, iSpecRegCx.getRequestId(), iLastEnrollment, iLastAssignment == null ? null : iLastAssignment.getErrors()),
-				new AsyncCallback<SpecialRegistrationEligibilityResponse>() {
-					@Override
-					public void onFailure(Throwable caught) {
-						LoadingWidget.getInstance().hide();
-						iStatus.error(MESSAGES.requestSpecialRegistrationFail(caught.getMessage()), caught);
-					}
-
-					@Override
-					public void onSuccess(final SpecialRegistrationEligibilityResponse eligibilityResponse) {
-						LoadingWidget.getInstance().hide();
-						final Collection<ErrorMessage> errors = eligibilityResponse.getErrors();
-						if (eligibilityResponse.isCanSubmit() && errors != null && !errors.isEmpty()) {
-							requestEnrollmentOverrides(eligibilityResponse);
-						} else if (eligibilityResponse.hasMessage()) {
-							iStatus.warning(eligibilityResponse.getMessage());
-						} else if (eligibilityResponse.isCanSubmit()) {
-							iStatus.warning(MESSAGES.errorNoRegistrationErrorsDetected());
-						}
-					}
-				});
-	}
-	
 	protected void checkSpecialRegistrationAfterFailedSubmitSchedule(ArrayList<ClassAssignmentInterface.ClassAssignment> lastEnrollment, Throwable exception, ClassAssignmentInterface result) {
-		if (!iSpecRegCx.isCanSubmit()) return;
 		iLastEnrollment = lastEnrollment;
 		final EnrollmentConfirmationDialog dialog = new EnrollmentConfirmationDialog(exception, result, new AsyncCallback<SpecialRegistrationEligibilityResponse>() {
 			@Override
