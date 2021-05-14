@@ -478,9 +478,6 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("<u>V</u>ariable Credits")
 	String buttonChangeVariableCredits();
 	
-	@DefaultMessage("Submit Approval Requests")
-	String buttonSubmitSpecReg();
-	
 	@DefaultMessage("Register for the above schedule.")
 	String hintEnroll();
 	
@@ -1645,10 +1642,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("You have made some changes in your course requests. Please click the Submit Requests button to update your submission.")
 	String warnRequestsChangedOnCourseRequest();
-	
-	@DefaultMessage("You have made some changes in your schedule. Please click the Submit Approval Requests button to validate your changes and request approvals if needed.")
-	String warnSpecialRegistrationChanged();
-		
+			
 	@DefaultMessage("There are unsaved changes in your schedule. Do you really want to discard these changes without updating your registration?")
 	String queryLeaveChangesOnClassSchedule();
 	

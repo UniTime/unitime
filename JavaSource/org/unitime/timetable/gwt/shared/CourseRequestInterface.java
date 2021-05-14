@@ -97,6 +97,22 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		}
 	}
 	
+	public boolean sameWaitListedCourses(CourseRequestInterface other) {
+		if (other == null) return false;
+		int nrWaitListed = 0;
+		r: for (Request r: getCourses()) {
+			if (r.isWaitList()) {
+				nrWaitListed ++;
+				for (Request o: other.getCourses())
+					if (o.isWaitList() && r.sameCourses(o)) continue r;
+				return false;
+			}
+		}
+		for (Request o: other.getCourses())
+			if (o.isWaitList()) nrWaitListed --;
+		return nrWaitListed == 0;
+	}
+	
 	public boolean isSaved() { return iSaved; }
 	public void setSaved(boolean saved) { iSaved = saved; }
 	
@@ -1015,6 +1031,16 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			}
 			if (!(hasAdvisorNote() ? getAdvisorNote() : "").equals(r.hasAdvisorNote() ? r.getAdvisorNote() : "")) return false;
 			if (!(hasAdvisorCredit() ? getAdvisorCredit() : "").equals(r.hasAdvisorCredit() ? r.getAdvisorCredit() : "")) return false;
+			return true;
+		}
+		
+		public boolean sameCourses(Request r) {
+			if (countRequestedCourses() != r.countRequestedCourses()) return false;
+			for (int i = 0; i < countRequestedCourses(); i++) {
+				RequestedCourse c1 = getRequestedCourse(i);
+				RequestedCourse c2 = r.getRequestedCourse(i);
+				if (!c1.equals(c2) || !c1.sameSelectedClasses(c2) || !c1.sameSelectedIntructionalMethods(c2)) return false;
+			}
 			return true;
 		}
 	}
