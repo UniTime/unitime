@@ -315,7 +315,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 				}
 				helper.debug("New: " + (r.getRequest().getEnrollment() == null ? "not assigned" : r.getRequest().getEnrollment()));
 				if (r.getLastEnrollment() == null && r.getRequest().getEnrollment() == null) {
-					r.getAction().setResult(OnlineSectioningLog.Action.ResultType.NULL);
+					r.getAction().setResult(OnlineSectioningLog.Action.ResultType.FALSE);
 					r.getAction().setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
 					r.getAction().setEndTime(System.currentTimeMillis());
 					continue;
