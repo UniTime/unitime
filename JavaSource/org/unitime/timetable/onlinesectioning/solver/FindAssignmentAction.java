@@ -1014,6 +1014,17 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								}
 								if (minCred != null && assignedCredit + minCred > r.getStudent().getMaxCredit())
 									ca.setOverMaxCredit(r.getStudent().getMaxCredit());
+							} else if (r.getStudent().getId() >= 0 && !(server instanceof StudentSolver)) {
+								XStudent original = server.getStudent(r.getStudent().getId());
+								if (original != null && original.hasMaxCredit()) {
+									Float minCred = null;
+									for (Course c: r.getCourses()) {
+										if (c.hasCreditValue() && (minCred == null || minCred > c.getCreditValue()))
+											minCred = c.getCreditValue();
+									}
+									if (minCred != null && assignedCredit + minCred > original.getMaxCredit())
+										ca.setOverMaxCredit(original.getMaxCredit());
+								}
 							}
 						} else {
 							TreeSet<Enrollment> overlap = new TreeSet<Enrollment>(new Comparator<Enrollment>() {
@@ -1092,6 +1103,17 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								}
 								if (minCred != null && assignedCredit + minCred > r.getStudent().getMaxCredit())
 									ca.setOverMaxCredit(r.getStudent().getMaxCredit());
+							} else if (r.getStudent().getId() >= 0 && !(server instanceof StudentSolver)) {
+								XStudent original = server.getStudent(r.getStudent().getId());
+								if (original != null && original.hasMaxCredit()) {
+									Float minCred = null;
+									for (Course c: r.getCourses()) {
+										if (c.hasCreditValue() && (minCred == null || minCred > c.getCreditValue()))
+											minCred = c.getCreditValue();
+									}
+									if (minCred != null && assignedCredit + minCred > original.getMaxCredit())
+										ca.setOverMaxCredit(original.getMaxCredit());
+								}
 							}
 						}
 					}
