@@ -1149,12 +1149,6 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			// Retrieve academic session, banner term etc.
 			AcademicSessionInfo session = server.getAcademicSession();
 			String term = getBannerTerm(session);
-			if (helper.isDebugEnabled()) {
-				if (!idsToAdd.isEmpty())
-					helper.debug("Enrolling " + student.getName() + " to " + course.getCourseName() + " (term: " + term + ", id:" + getBannerId(student) + (idsToDrop.isEmpty() ? "" : ", drop: " + idsToDrop) + ", add: " + idsToAdd + ")");
-				else
-					helper.debug("Dropping " + student.getName() + " from " + course.getCourseName() + " (term: " + term + ", id:" + getBannerId(student) + ", drop: " + idsToDrop + ")");
-			}
 			
 			// First, check student registration status
 			resource = new ClientResource(getBannerSite());
@@ -1172,7 +1166,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			try {
 				resource.get(MediaType.APPLICATION_JSON);
 			} catch (ResourceException exception) {
-				helper.getAction().setApiException(exception.getMessage());
+				sectioningRequest.getAction().setApiException(exception.getMessage());
 				try {
 					XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject();
 					sectioningRequest.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
@@ -1187,7 +1181,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						throw exception;
 					}
 				} catch (SectioningException e) {
-					helper.getAction().setApiException(e.getMessage());
+					sectioningRequest.getAction().setApiException(e.getMessage());
 					throw e;
 				} catch (Throwable t) {
 					throw exception;
@@ -1200,9 +1194,6 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			XEInterface.RegisterResponse original = (current != null && !current.isEmpty() ? current.get(0) : null);
 			
 			// Check status, memorize enrolled sections
-			if (original != null && helper.isDebugEnabled())
-				helper.debug("Current registration: " + gson.toJson(original));
-			
 			if (original == null || !original.validStudent) {
 				String reason = null;
 				if (original != null && original.failureReasons != null) {
@@ -1243,8 +1234,6 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				changed = true;
 			}
 			
-			if (helper.isDebugEnabled())
-				helper.debug("Request: " + gson.toJson(req));
 			sectioningRequest.getAction().addOptionBuilder().setKey("request").setValue(gson.toJson(req));
 			
 			if (req.isEmpty() || !changed) {
@@ -1256,7 +1245,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			try {
 				resource.post(new GsonRepresentation<XEInterface.RegisterRequest>(req));
 			} catch (ResourceException exception) {
-				helper.getAction().setApiException(exception.getMessage());
+				sectioningRequest.getAction().setApiException(exception.getMessage());
 				try {
 					XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject();
 					sectioningRequest.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
@@ -1271,19 +1260,17 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						throw exception;
 					}
 				} catch (SectioningException e) {
-					helper.getAction().setApiException(e.getMessage());
+					sectioningRequest.getAction().setApiException(e.getMessage());
 					throw e;
 				} catch (Throwable t) {
 					throw exception;
 				}
 			} finally {
-				helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
+				sectioningRequest.getAction().setApiPostTime(System.currentTimeMillis() - t1);
 			}
 			
 			// Finally, check the response
 			XEInterface.RegisterResponse response = new GsonRepresentation<XEInterface.RegisterResponse>(resource.getResponseEntity(), XEInterface.RegisterResponse.class).getObject();
-			if (helper.isDebugEnabled())
-				helper.debug("Response: " + gson.toJson(response));
 			sectioningRequest.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(response));
 			if (response == null || !response.validStudent) {
 				String reason = null;
@@ -1306,6 +1293,12 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				external.setType(OnlineSectioningLog.Enrollment.EnrollmentType.EXTERNAL);
 				for (XEInterface.Registration reg: response.registrations) {
 					String id = reg.courseReferenceNumber;
+					
+					if (reg.crnErrors != null)
+						for (XEInterface.CrnError e: reg.crnErrors)
+							sectioningRequest.getAction().addMessageBuilder().setText(
+									reg.subject + " " + reg.courseNumber + " " + reg.courseReferenceNumber + ": " + e.message + " (" + e.messageType + ")"
+									).setLevel(OnlineSectioningLog.Message.Level.WARN);
 					List<XSection> sections = sectioningRequest.getOffering().getSections(course.getCourseId(), id);
 					if (!sections.isEmpty() && "Registered".equals(reg.statusDescription)) {
 						for (XSection section: sections)
@@ -1321,16 +1314,21 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				}
 				sectioningRequest.getAction().addEnrollment(external);
 			}
+			if (response.failedRegistrations != null) {
+				for (XEInterface.FailedRegistration reg: response.failedRegistrations) {
+					if (reg.failedCRN != null)
+						sectioningRequest.getAction().addMessageBuilder().setText(reg.failedCRN + ": " + reg.failure).setLevel(OnlineSectioningLog.Message.Level.WARN);
+					else
+						sectioningRequest.getAction().addMessageBuilder().setText(reg.failure).setLevel(OnlineSectioningLog.Message.Level.WARN);
+				}
+			}
 			
-			if (helper.isDebugEnabled())
-				helper.debug("Return: " + registered);
-
 			return (ret.getSectionIds().isEmpty() ? null : ret);
 		} catch (SectioningException e) {
-			helper.info("Banner enrollment failed: " + e.getMessage());
+			sectioningRequest.getAction().addMessageBuilder().setText("Banner enrollment failed: " + e.getMessage()).setLevel(OnlineSectioningLog.Message.Level.INFO);
 			throw e;
 		} catch (Exception e) {
-			helper.warn("Banner enrollment failed: " + e.getMessage(), e);
+			sectioningRequest.getAction().addMessageBuilder().setText("Banner enrollment failed: " + e.getMessage()).setLevel(OnlineSectioningLog.Message.Level.WARN);
 			throw new SectioningException(e.getMessage());
 		} finally {
 			if (resource != null) {

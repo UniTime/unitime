@@ -172,6 +172,8 @@ public class OnlineSectioningLogger extends Thread {
 		OnlineSectioningLog.Enrollment enrl = null;
 		for (OnlineSectioningLog.Enrollment e: action.getEnrollmentList()) {
 			enrl = e;
+			if ("check-offering".equals(action.getOperation()) && e.getType() == OnlineSectioningLog.Enrollment.EnrollmentType.COMPUTED) break;
+			if ("reload-offering".equals(action.getOperation()) && e.getType() == OnlineSectioningLog.Enrollment.EnrollmentType.COMPUTED) break;
 			if (e.getType() == OnlineSectioningLog.Enrollment.EnrollmentType.REQUESTED) break;
 		}
 		String enrollment = "";
@@ -214,9 +216,13 @@ public class OnlineSectioningLogger extends Thread {
 		} else if ("suggestions".equals(action.getOperation())) {
 			String selected = getSelectedMessage(action);
 			return (selected.isEmpty() ? message : selected);
-		} if ("section".equals(action.getOperation())) {
+		} else if ("section".equals(action.getOperation())) {
 			String request = getRequestMessage(action);
 			return (request.isEmpty() ? message : request);
+		} else if ("check-offering".equals(action.getOperation()) && action.hasResult() && !OnlineSectioningLog.Action.ResultType.SUCCESS.equals(action.getResult()) && !message.isEmpty()) {
+			return message;
+		} else if ("reload-offering".equals(action.getOperation()) && action.hasResult() && !OnlineSectioningLog.Action.ResultType.SUCCESS.equals(action.getResult()) && !message.isEmpty()) {
+			return message;
 		} else {
 			String enrollment = getEnrollmentMessage(action);
 			if (!enrollment.isEmpty()) return enrollment;
