@@ -571,6 +571,12 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						else if (m.request().getTimeStamp().after(s.getRequestedDate()))
 							s.setRequestedDate(m.request().getTimeStamp());
 					}
+					if (m.request().getWaitListedTimeStamp() != null) {
+						if (s.getWaitListedDate() == null)
+							s.setWaitListedDate(m.request().getWaitListedTimeStamp());
+						else if (m.request().getWaitListedTimeStamp().after(s.getWaitListedDate()))
+							s.setWaitListedDate(m.request().getWaitListedTimeStamp());
+					}
 				}
 			}
 		}

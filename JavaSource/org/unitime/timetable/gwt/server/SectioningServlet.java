@@ -1348,6 +1348,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 									e.setAlternative(alt.getCourseOffering().getCourseName());
 								}
 								e.setRequestedDate(enrollment.getCourseRequest().getCourseDemand().getTimestamp());
+								e.setWaitListedDate(enrollment.getCourseRequest().getCourseDemand().getWaitlistedTimeStamp());
 								e.setApprovedDate(enrollment.getApprovedDate());
 								if (enrollment.getApprovedBy() != null) {
 									String name = approvedBy2name.get(enrollment.getApprovedBy());
@@ -1461,6 +1462,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								e.setAlternative(alt.getCourseOffering().getCourseName());
 							}
 							e.setRequestedDate(request.getCourseDemand().getTimestamp());
+							e.setWaitListedDate(request.getCourseDemand().getWaitlistedTimeStamp());
 						}
 					return new ArrayList<ClassAssignmentInterface.Enrollment>(student2enrollment.values());
 				} else {
@@ -1547,8 +1549,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								course.setHasCrossList(enrollment.getCourseOffering().getInstructionalOffering().hasCrossList());
 								course.setCanWaitList(enrollment.getCourseOffering().getInstructionalOffering().effectiveWaitList());
 								credit = enrollment.getCourseOffering().getCredit();
-								if (enrollment.getCourseRequest() != null)
+								if (enrollment.getCourseRequest() != null) {
 									course.setRequestedDate(enrollment.getCourseRequest().getCourseDemand().getTimestamp());
+								}
 							}
 							ClassAssignment clazz = course.addClassAssignment();
 							clazz.setClassId(enrollment.getClazz().getUniqueId());
@@ -1669,6 +1672,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								CourseAssignment course = new CourseAssignment();
 								courses.put(request.getCourseOffering().getUniqueId(), course);
 								course.setRequestedDate(demand.getTimestamp());
+								if (demand.effectiveWaitList())
+									course.setWaitListedDate(demand.getWaitlistedTimeStamp());
 								ret.add(course);
 								course.setAssigned(false);
 								course.setCourseId(request.getCourseOffering().getUniqueId());
@@ -2404,6 +2409,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					else
 						r.setCritical(cd.getCritical());
 					r.setTimeStamp(cd.getTimestamp());
+					r.setWaitListedTimeStamp(cd.getWaitlistedTimeStamp());
 					lastRequest = r;
 					lastRequestPriority = cd.getPriority();
 				}

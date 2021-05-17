@@ -179,6 +179,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private String iInstead;
 		private String iEnrollmentMessage = null;
 		private Date iRequestedDate = null;
+		private Date iWaitListedDate = null;
 		private Integer iSelection = null;
 		private Float iOverMaxCredit;
 
@@ -360,6 +361,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public Date getRequestedDate() { return iRequestedDate; }
 		public void setRequestedDate(Date ts) { iRequestedDate = ts; }
+		
+		public Date getWaitListedDate() { return iWaitListedDate; }
+		public void setWaitListedDate(Date ts) { iWaitListedDate = ts; }
 		
 		public Integer getRequested() { return iRequested; }
 		public void setRequested(Integer requested) { iRequested = requested; }
@@ -1127,7 +1131,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private CourseAssignment iCourse = null;
 		private int iPriority = 0;
 		private String iAlternative = null;
-		private Date iRequestedDate = null, iEnrolledDate = null, iApprovedDate = null;
+		private Date iRequestedDate = null, iEnrolledDate = null, iApprovedDate = null, iWaitListedDate = null;
 		private String iReservation = null;
 		private String iApprovedBy = null;
 		private List<Conflict> iConflicts = null;
@@ -1151,6 +1155,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public Date getRequestedDate() { return iRequestedDate; }
 		public void setRequestedDate(Date ts) { iRequestedDate = ts; }
+		
+		public Date getWaitListedDate() { return iWaitListedDate; }
+		public void setWaitListedDate(Date ts) { iWaitListedDate = ts; }
 
 		public Date getEnrolledDate() { return iEnrolledDate; }
 		public void setEnrolledDate(Date ts) { iEnrolledDate = ts; }
@@ -1443,7 +1450,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Integer iTotalEnrollment, iTotalWaitlist, iTotalReservation, iTotalUnassigned, iTotalNoSub;
 		private Integer iConsentNeeded, iTotalConsentNeeded;
 		private Integer iTopWaitingPriority;
-		private Date iRequestedDate = null, iEnrolledDate = null, iApprovedDate = null, iEmailDate = null;
+		private Date iRequestedDate = null, iEnrolledDate = null, iApprovedDate = null, iEmailDate = null, iWaitListedDate = null;
 		private String iStatus, iNote;
 		private Float iCredit, iTotalCredit;
 		private Map<String, Float> iIMCredit, iIMTotalCredit;
@@ -1528,6 +1535,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public Date getRequestedDate() { return iRequestedDate; }
 		public void setRequestedDate(Date ts) { iRequestedDate = ts; }
+		
+		public Date getWaitListedDate() { return iWaitListedDate; }
+		public void setWaitListedDate(Date ts) { iWaitListedDate = ts; }
 
 		public Date getEnrolledDate() { return iEnrolledDate; }
 		public void setEnrolledDate(Date ts) { iEnrolledDate = ts; }

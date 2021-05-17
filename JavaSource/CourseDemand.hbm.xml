@@ -82,6 +82,12 @@
             type="java.lang.Integer"
             not-null="false"/>
 
+		<property
+            name="waitlistedTimeStamp"
+            column="waitlist_ts"
+            type="java.util.Date"
+            not-null="false"/>        
+
         <many-to-one
             name="freeTime"
             class="FreeTime"

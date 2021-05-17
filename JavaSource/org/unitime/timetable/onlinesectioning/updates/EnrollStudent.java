@@ -347,6 +347,8 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					}
 					cd.setAlternative(false);
 					cd.setPriority(priority);
+					if (r.isWaitList() && !Boolean.TRUE.equals(cd.getWaitlist()))
+						cd.setWaitlistedTimeStamp(ts);
 					cd.setWaitlist(r.isWaitList());
 					cd.setNoSub(r.isNoSub());
 					if (checkCritical) cd.setCritical(isCritical(courses, cc));
@@ -478,6 +480,8 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					}
 					cd.setAlternative(true);
 					cd.setPriority(priority);
+					if (r.isWaitList() && !Boolean.TRUE.equals(cd.getWaitlist()))
+						cd.setWaitlistedTimeStamp(ts);
 					cd.setWaitlist(r.isWaitList());
 					cd.setNoSub(r.isNoSub());
 					cd.setCritical(0);

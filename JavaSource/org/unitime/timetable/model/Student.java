@@ -316,6 +316,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     		for (CourseDemand cd: getCourseDemands()) {
     			if (getExternalUniqueId() != null && getExternalUniqueId().equals(cd.getChangedBy())) {
     				if (ret == null || ret.before(cd.getTimestamp())) ret = cd.getTimestamp();
+    				if (cd.getWaitlistedTimeStamp() != null && (ret == null || ret.before(cd.getWaitlistedTimeStamp()))) ret = cd.getWaitlistedTimeStamp();
     			}
     		}
     	}

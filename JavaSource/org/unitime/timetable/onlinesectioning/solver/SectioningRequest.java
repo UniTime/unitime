@@ -128,15 +128,15 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 		if (!hasIndividualReservation() && r.hasIndividualReservation()) return 1;
 
 		if (getLastEnrollment() == null) {
-			// Use time stamp
-			if (getRequest().getTimeStamp() != null) {
-				if (r.getRequest().getTimeStamp() != null) {
-					int cmp = getRequest().getTimeStamp().compareTo(r.getRequest().getTimeStamp());
+			// Use wait-listed time stamp
+			if (getRequest().getWaitListedTimeStamp() != null) {
+				if (r.getRequest().getWaitListedTimeStamp() != null) {
+					int cmp = getRequest().getWaitListedTimeStamp().compareTo(r.getRequest().getWaitListedTimeStamp());
 					if (cmp != 0) return cmp;
 				} else {
 					return 1;
 				}
-			} else if (r.getRequest().getTimeStamp() != null) {
+			} else if (r.getRequest().getWaitListedTimeStamp() != null) {
 				return -1;
 			}
 		}
@@ -150,7 +150,7 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 		if (cmp != 0) return cmp;
 
 		if (getLastEnrollment() != null) {
-			// Use time stamp
+			// Use request time stamp
 			if (getRequest().getTimeStamp() != null) {
 				if (r.getRequest().getTimeStamp() != null) {
 					cmp = getRequest().getTimeStamp().compareTo(r.getRequest().getTimeStamp());

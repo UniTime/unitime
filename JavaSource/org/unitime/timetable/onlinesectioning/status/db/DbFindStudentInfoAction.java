@@ -539,6 +539,12 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					else if (crm.request().getCourseDemand().getTimestamp().after(s.getRequestedDate()))
 						s.setRequestedDate(crm.request().getCourseDemand().getTimestamp());
 				}
+				if (crm.request().getCourseDemand().getWaitlistedTimeStamp() != null) {
+					if (s.getWaitListedDate() == null)
+						s.setWaitListedDate(crm.request().getCourseDemand().getWaitlistedTimeStamp());
+					else if (crm.request().getCourseDemand().getWaitlistedTimeStamp().after(s.getWaitListedDate()))
+						s.setWaitListedDate(crm.request().getCourseDemand().getWaitlistedTimeStamp());
+				}
 			}
 		}
 		
