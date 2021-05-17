@@ -592,23 +592,44 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	}
 	
 	public Boolean getWaitList(Long course) {
-		if ((iWaitListMode == WaitListMode.WaitList || iWaitListMode == WaitListMode.NoSubs) && course != null)
+		if ((iWaitListMode == WaitListMode.WaitList || iWaitListMode == WaitListMode.NoSubs) && course != null) {
+			// skip inactive first
+			for (CourseRequestLine line: iCourses)
+				for (CourseSelectionBox box: line.getCourses()) {
+					RequestedCourse rc = box.getValue();
+					if (rc != null && course.equals(rc.getCourseId()) && !rc.isInactive())
+						return line.getWaitList();
+				}
+			// all courses next
 			for (CourseRequestLine line: iCourses)
 				for (CourseSelectionBox box: line.getCourses()) {
 					RequestedCourse rc = box.getValue();
 					if (rc != null && course.equals(rc.getCourseId()))
 						return line.getWaitList();
 				}
+		}
 		return null;
 	}
 	
 	public void setWaitList(Long course, boolean waitList) {
-		for (CourseRequestLine line: iCourses)
+		for (CourseRequestLine line: iCourses) {
+			// skip inactive first
 			for (CourseSelectionBox box: line.getCourses()) {
 				RequestedCourse rc = box.getValue();
-				if (rc != null && course.equals(rc.getCourseId()))
+				if (rc != null && course.equals(rc.getCourseId()) && !rc.isInactive()) {
 					line.setWaitList(waitList);
+					return;
+				}
 			}
+			// all courses next
+			for (CourseSelectionBox box: line.getCourses()) {
+				RequestedCourse rc = box.getValue();
+				if (rc != null && course.equals(rc.getCourseId())) {
+					line.setWaitList(waitList);
+					return;
+				}
+			}
+		}
 	}
 	
 	public void clear() {
