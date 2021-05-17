@@ -83,6 +83,7 @@ public class XCourseRequest extends XRequest {
     private String iMessage = null;
     private Map<XCourseId, XOverride> iOverrides = null;
     private int iCritical = 0;
+    private Date iWaitListedTimeStamp = null;
 
     public XCourseRequest() {}
     
@@ -155,6 +156,7 @@ public class XCourseRequest extends XRequest {
         iNoSub = (demand.isNoSub() != null && demand.isNoSub().booleanValue());
         iCritical = demand.getEffectiveCritical().ordinal();
         iTimeStamp = (demand.getTimestamp() == null ? new Date() : demand.getTimestamp());
+        iWaitListedTimeStamp = demand.getWaitlistedTimeStamp();
         for (CourseRequest cr: crs) {
     		List<StudentClassEnrollment> enrl = cr.getClassEnrollments();
     		if (!enrl.isEmpty()) {
@@ -216,6 +218,7 @@ public class XCourseRequest extends XRequest {
     	iNoSub = request.isNoSub();
     	iCritical = request.getCritical();
     	iTimeStamp = request.getTimeStamp();
+    	iWaitListedTimeStamp = request.getWaitListedTimeStamp();
     	iEnrollment = enrollment;
     	if (request.iSectionWaitlist != null)
     		iSectionWaitlist = new HashMap<XCourseId, List<XWaitListedSection>>(request.iSectionWaitlist);
@@ -236,6 +239,7 @@ public class XCourseRequest extends XRequest {
     	iNoSub = request.isWaitlist();
     	iCritical = CourseDemand.Critical.fromRequestPriority(request.getRequestPriority()).ordinal();
     	iTimeStamp = request.getTimeStamp() == null ? null : new Date(request.getTimeStamp());
+    	iWaitListedTimeStamp = (request.isWaitlist() ? new Date() : null);
     	iEnrollment = enrollment == null ? null : new XEnrollment(enrollment);
 
     	if (!request.getSelectedChoices().isEmpty() || !request.getRequiredChoices().isEmpty()) {
@@ -390,6 +394,10 @@ public class XCourseRequest extends XRequest {
      */
     public Date getTimeStamp() {
         return iTimeStamp;
+    }
+    
+    public Date getWaitListedTimeStamp() {
+    	return iWaitListedTimeStamp;
     }
     
     /** Return enrollment, if enrolled */
@@ -557,6 +565,7 @@ public class XCourseRequest extends XRequest {
     	iWaitlist = in.readBoolean();
     	iNoSub = in.readBoolean();
     	iTimeStamp = (in.readBoolean() ? new Date(in.readLong()) : null);
+    	iWaitListedTimeStamp = (in.readBoolean() ? new Date(in.readLong()) : null);
     	iEnrollment = (in.readBoolean() ? new XEnrollment(in) : null);
     	
     	int nrWaitlists = in.readInt();
@@ -651,6 +660,10 @@ public class XCourseRequest extends XRequest {
 		out.writeBoolean(iTimeStamp != null);
 		if (iTimeStamp != null)
 			out.writeLong(iTimeStamp.getTime());
+		
+		out.writeBoolean(iWaitListedTimeStamp != null);
+		if (iWaitListedTimeStamp != null)
+			out.writeLong(iWaitListedTimeStamp.getTime());
 		
 		out.writeBoolean(iEnrollment != null);
 		if (iEnrollment != null)

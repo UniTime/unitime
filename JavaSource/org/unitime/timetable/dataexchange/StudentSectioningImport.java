@@ -692,6 +692,8 @@ public class StudentSectioningImport extends BaseImport {
             				}
         					cd.setAlternative("true".equals(alternative));
         					cd.setPriority(priority);
+        					if ("true".equals(waitList) && !Boolean.TRUE.equals(cd.getWaitlist()))
+        						cd.setWaitlistedTimeStamp(ts);
         					cd.setWaitlist("true".equals(waitList));
         					cd.setNoSub("true".equals(noSub));
         					if (critical == null)
@@ -835,6 +837,8 @@ public class StudentSectioningImport extends BaseImport {
         					
         					cd.setAlternative("true".equals(alternative));
         					cd.setPriority(priority);
+        					if ("true".equals(waitList) && !Boolean.TRUE.equals(cd.getWaitlist()))
+        						cd.setWaitlistedTimeStamp(ts);
         					cd.setWaitlist("true".equals(waitList));
         					cd.setNoSub("true".equals(noSub));
         					FreeTime free = cd.getFreeTime();

@@ -210,6 +210,8 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 					}
 					if (request.getTimeStamp() != null)
 						e.setRequestedDate(request.getTimeStamp());
+					if (request.getWaitListedTimeStamp() != null)
+						e.setWaitListedDate(request.getWaitListedTimeStamp());
 					if (enrollment == null)
 						e.setEnrollmentMessage(request.getEnrollmentMessage());
 					

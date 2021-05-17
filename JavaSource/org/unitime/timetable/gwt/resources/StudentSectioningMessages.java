@@ -726,6 +726,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Exceeds maximum of {0,number,0.#} credit hours.")
 	String conflictOverMaxCredit(float maxCredit);
 	
+	@DefaultMessage("Wait-listed on {0}.")
+	String conflictWaitListed(String date);
+	
 	@DefaultMessage("Failed to load the application ({0}).")
 	String failedToLoadTheApp(String message);
 	

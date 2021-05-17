@@ -14295,4 +14295,12 @@
 	    <sql>update %SCHEMA%.course_demand set nosub = waitlist</sql>
 	    <sql>update %SCHEMA%.advisor_crsreq set nosub = waitlist</sql>
 	</update>
+	<update version="242" date="17-May-2021" comment="Course Demand Wait-List Time Stamp">
+		<plsql>alter table %SCHEMA%.course_demand add waitlist_ts timestamp</plsql>
+	    <mysql>alter table %SCHEMA%.course_demand add waitlist_ts datetime</mysql>
+	    <pgsql>alter table %SCHEMA%.course_demand add waitlist_ts timestamp with time zone</pgsql>
+	    <plsql>update %SCHEMA%.course_demand set waitlist_ts = timestamp where waitlist = 1</plsql>
+	    <mysql>update %SCHEMA%.course_demand set waitlist_ts = timestamp where waitlist = 1</mysql>
+	    <pgsql>update %SCHEMA%.course_demand set waitlist_ts = timestamp where waitlist = true</pgsql>
+	</update>
 </dbupdate>
