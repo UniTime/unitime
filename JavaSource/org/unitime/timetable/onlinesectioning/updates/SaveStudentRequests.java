@@ -273,6 +273,8 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 				}
 				cd.setAlternative(false);
 				cd.setPriority(priority);
+				if (r.isWaitList() && !Boolean.TRUE.equals(cd.getWaitlist()))
+					cd.setWaitlistedTimeStamp(ts);
 				cd.setWaitlist(r.isWaitList());
 				cd.setNoSub(r.isNoSub());
 				cd.setCritical(isCritical(false, courses, critical));
@@ -393,6 +395,8 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 				}
 				cd.setAlternative(true);
 				cd.setPriority(priority);
+				if (r.isWaitList() && !Boolean.TRUE.equals(cd.getWaitlist()))
+					cd.setWaitlistedTimeStamp(ts);
 				cd.setWaitlist(r.isWaitList());
 				cd.setNoSub(r.isNoSub());
 				cd.setCritical(isCritical(true, courses, critical));

@@ -262,6 +262,8 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 			}
 			if (request.getTimeStamp() != null)
 				e.setRequestedDate(request.getTimeStamp());
+			if (request.getWaitListedTimeStamp() != null)
+				e.setWaitListedDate(request.getWaitListedTimeStamp());
 			if (request.getEnrollment() != null) {
 				if (request.getEnrollment().getReservation() != null) {
 					switch (request.getEnrollment().getReservation().getType()) {

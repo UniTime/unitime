@@ -569,6 +569,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 						r.setRequest(server.waitlist(r.getRequest(), false));
 				} else if (!r.getRequest().isAlternative()) { // wait-list
 					if (cd != null && !cd.isWaitlist()) {
+						cd.setWaitlistedTimeStamp(ts);
 						cd.setWaitlist(true);
 						helper.getHibSession().saveOrUpdate(cd);
 					}

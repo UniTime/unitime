@@ -45,6 +45,7 @@ public abstract class BaseCourseDemand implements Serializable {
 	private Date iTimestamp;
 	private Integer iCritical;
 	private Integer iCriticalOverride;
+	private Date iWaitlistedTimeStamp;
 	private String iChangedBy;
 
 	private Student iStudent;
@@ -60,6 +61,7 @@ public abstract class BaseCourseDemand implements Serializable {
 	public static String PROP_TIMESTAMP = "timestamp";
 	public static String PROP_CRITICAL = "critical";
 	public static String PROP_CRITICAL_OVERRIDE = "criticalOverride";
+	public static String PROP_WAITLIST_TS = "waitlistedTimeStamp";
 	public static String PROP_CHANGED_BY = "changedBy";
 
 	public BaseCourseDemand() {
@@ -99,6 +101,9 @@ public abstract class BaseCourseDemand implements Serializable {
 
 	public Integer getCriticalOverride() { return iCriticalOverride; }
 	public void setCriticalOverride(Integer criticalOverride) { iCriticalOverride = criticalOverride; }
+
+	public Date getWaitlistedTimeStamp() { return iWaitlistedTimeStamp; }
+	public void setWaitlistedTimeStamp(Date waitlistedTimeStamp) { iWaitlistedTimeStamp = waitlistedTimeStamp; }
 
 	public String getChangedBy() { return iChangedBy; }
 	public void setChangedBy(String changedBy) { iChangedBy = changedBy; }
@@ -151,6 +156,7 @@ public abstract class BaseCourseDemand implements Serializable {
 			"\n	Timestamp: " + getTimestamp() +
 			"\n	UniqueId: " + getUniqueId() +
 			"\n	Waitlist: " + getWaitlist() +
+			"\n	WaitlistedTimeStamp: " + getWaitlistedTimeStamp() +
 			"]";
 	}
 }

@@ -809,6 +809,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		private Boolean iNoSub = false;
 		private Integer iCritical = null;
 		private Date iTimeStamp = null;
+		private Date iWaitListedTimeStamp = null;
 		private String iFilter = null;
 		private String iAdvisorCredit = null;
 		private String iAdvisorNote = null;
@@ -954,6 +955,10 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		public boolean hasTimeStamp() { return iTimeStamp != null; }
 		public Date getTimeStamp() { return iTimeStamp; }
 		public void setTimeStamp(Date ts) { iTimeStamp = ts; }
+		
+		public boolean hasWaitListedTimeStamp() { return iWaitListedTimeStamp != null; }
+		public Date getWaitListedTimeStamp() { return iWaitListedTimeStamp; }
+		public void setWaitListedTimeStamp(Date ts) { iWaitListedTimeStamp = ts; }
 		
 		public boolean hasFilter() { return iFilter != null && !iFilter.isEmpty(); }
 		public String getFilter() { return iFilter; }
