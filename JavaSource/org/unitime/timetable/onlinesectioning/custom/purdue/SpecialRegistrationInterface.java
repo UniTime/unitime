@@ -107,6 +107,8 @@ public class SpecialRegistrationInterface {
 		public String requestorNotes;
 		/** Request completion status (only read, never sent) */
 		public CompletionStatus completionStatus;
+		/** Validation request */
+		public RestrictionsCheckRequest validation;
 	}
 	
 	/** Possible operations for a change (work order) */
