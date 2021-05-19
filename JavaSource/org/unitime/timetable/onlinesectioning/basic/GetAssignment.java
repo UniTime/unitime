@@ -65,6 +65,7 @@ import org.unitime.timetable.onlinesectioning.custom.CustomClassAttendanceProvid
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsValidationHolder;
 import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationDashboardUrlProvider;
+import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentHoldsCheckProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentError;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentFailure;
@@ -101,6 +102,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 	private boolean iCustomCheck = false;
 	private boolean iIncludeAdvisorRequest = false;
 	private boolean iCheckHolds = false;
+	private boolean iGetSpecRegs = false;
 	
 	public GetAssignment forStudent(Long studentId) {
 		iStudentId = studentId;
@@ -136,6 +138,11 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 		iCheckHolds = check;
 		return this;
 	}
+	
+	public GetAssignment withSpecialRegistrations(boolean specReg) {
+		iGetSpecRegs = specReg;
+		return this;
+	}
 
 	@Override
 	public ClassAssignmentInterface execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
@@ -163,6 +170,15 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 					SpecialRegistrationDashboardUrlProvider provider = Customization.SpecialRegistrationDashboardUrlProvider.getProvider();
 					ret.getRequest().setSpecRegDashboardUrl(provider.getDashboardUrl(server, helper, student));
 				} catch (Exception e) {}
+			}
+			
+			if (iGetSpecRegs && Customization.SpecialRegistrationProvider.hasProvider()) {
+				try {
+					SpecialRegistrationProvider sp = Customization.SpecialRegistrationProvider.getProvider();
+					ret.setSpecialRegistrations(sp.retrieveAllRegistrations(server, helper, student));
+				} catch (Exception e) {
+					helper.warn("Failed to retrieve special registrations: " + e.getMessage(), e);
+				}
 			}
 			
 			return ret;

@@ -21,21 +21,30 @@ package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.client.widgets.P;
+import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat;
+import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTabPanel;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.MenuBarWithAccessKeys;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Note;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
@@ -46,6 +55,8 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestPriority;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationStatus;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Cursor;
@@ -62,7 +73,10 @@ import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -81,10 +95,12 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 	private UniTimeTabPanel iTabs;
 	private TimeGrid iGrid;
 	private WebTable iAssignments, iRequests, iAdvReqs, iNotes;
+	private UniTimeTable<RetrieveSpecialRegistrationResponse> iSpecialRegistrations;
 	private boolean iOnline = false;
 	private float iTotalCredit = 0f;
 	private Map<Character, Integer> iTabAccessKeys = new HashMap<Character, Integer>();
 	private SelectionHandler<Integer> iHandler;
+	private static DateTimeFormat sModifiedDateFormat = ServerDateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
 	
 	public StudentSchedule(boolean online) {
 		iOnline = online;
@@ -157,6 +173,22 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 			));
 		iNotes.setEmptyMessage(MESSAGES.emptyNotes());
 		
+		iSpecialRegistrations = new UniTimeTable<RetrieveSpecialRegistrationResponse>();
+		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
+		header.add(new UniTimeTableHeader(""));
+		header.add(new UniTimeTableHeader(MESSAGES.colSpecRegSubmitted()));
+		header.add(new UniTimeTableHeader(MESSAGES.colSubject()));
+		header.add(new UniTimeTableHeader(MESSAGES.colCourse()));
+		header.add(new UniTimeTableHeader(MESSAGES.colSubpart()));
+		header.add(new UniTimeTableHeader(MESSAGES.colClass()));
+		header.add(new UniTimeTableHeader(MESSAGES.colLimit()));
+		header.add(new UniTimeTableHeader(MESSAGES.colCredit()));
+		header.add(new UniTimeTableHeader(MESSAGES.colGradeMode()));
+		header.add(new UniTimeTableHeader(MESSAGES.colSpecRegErrors()));
+		header.add(new UniTimeTableHeader(""));
+		iSpecialRegistrations.addStyleName("unitime-SpecialRegistrationsPanel");
+		iSpecialRegistrations.addRow(null, header);
+		
 		iTabs.add(iAssignments, MESSAGES.tabClasses(), true);
 		Character ch1 = UniTimeHeaderPanel.guessAccessKey(MESSAGES.tabClasses());
 		if (ch1 != null)
@@ -169,13 +201,20 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 			iTabAccessKeys.put(ch2, 3);
 		
 		if (iOnline) {
+			iTabs.add(iSpecialRegistrations, MESSAGES.tabSpecialRegistrations(), true);
+			Character ch4 = UniTimeHeaderPanel.guessAccessKey(MESSAGES.tabSpecialRegistrations());
+			if (ch4 != null)
+				iTabAccessKeys.put(ch4, 4);
+		}
+		
+		if (iOnline) {
 			iTabs.add(iNotes, MESSAGES.tabNotes(), true);
 			Character ch3 = UniTimeHeaderPanel.guessAccessKey(MESSAGES.tabNotes());
 			if (ch3 != null)
-				iTabAccessKeys.put(ch3, 4);
+				iTabAccessKeys.put(ch3, 5);
 		}
 		
-		if (!iOnline && SectioningStatusCookie.getInstance().getStudentTab() == 4)
+		if (!iOnline && SectioningStatusCookie.getInstance().getStudentTab() >= 4)
 			iTabs.selectTab(2);
 		else
 			iTabs.selectTab(SectioningStatusCookie.getInstance().getStudentTab());
@@ -217,6 +256,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		fillInAssignments();
 		fillInTimeGrid();
 		if (iOnline) fillInNotes();
+		if (iOnline) fillInSpecialRegistrations();
 	}
 	
 	protected String getChanges(Request request, RequestedCourse rc) {
@@ -1011,7 +1051,9 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 	}
 	
 	public void fillInNotes() {
-		iTabs.getTabBar().setTabEnabled(4, iAssignment.hasNotes());
+		iTabs.getTabBar().setTabEnabled(5, iAssignment.hasNotes());
+		if (iTabs.getSelectedTab() != 5)
+			((Widget)iTabs.getTabBar().getTab(5)).setVisible(iAssignment.hasNotes());
 
 		ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 		if (iAssignment.hasNotes()) {
@@ -1029,6 +1071,160 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		for (WebTable.Row row: rows) rowArray[idx++] = row;
 		
 		iNotes.setData(rowArray);
+	}
+	
+	public void fillInSpecialRegistrations() {
+		iTabs.getTabBar().setTabEnabled(4, iAssignment.hasSpecialRegistrations());
+		if (iTabs.getSelectedTab() != 4)
+			((Widget)iTabs.getTabBar().getTab(4)).setVisible(iAssignment.hasSpecialRegistrations());
+		iSpecialRegistrations.clearTable(1);
+		
+		if (iAssignment.hasSpecialRegistrations())
+			for (final RetrieveSpecialRegistrationResponse reg: iAssignment.getSpecialRegistrations()) {
+				P p = new P("icons");
+				if (reg.isFullyApplied(iAssignment)) {
+					p.add(new Icon(RESOURCES.specRegApplied(), MESSAGES.hintSpecRegApplied()));
+				} else if (reg.getStatus() != null) {
+					switch (reg.getStatus()) {
+					case Approved:
+						if (reg.isGradeModeChange() || reg.isVariableTitleCourseChange() || reg.isExtended())
+							p.add(new Icon(RESOURCES.specRegApproved(), MESSAGES.hintSpecRegApproved()));
+						else
+							p.add(new Icon(RESOURCES.specRegApproved(), MESSAGES.hintSpecRegApprovedNoteApply()));
+						break;
+					case Cancelled:
+						p.add(new Icon(RESOURCES.specRegCancelled(), MESSAGES.hintSpecRegCancelled()));
+						break;
+					case Pending:
+						if (reg.isHonorsGradeModeNotFullyMatching(iAssignment)) {
+							p.add(new Icon(RESOURCES.specRegCancelled(), MESSAGES.hintSpecRegHonorsGradeModeNotMatchingSchedule()));
+						} else {
+							p.add(new Icon(RESOURCES.specRegPending(), MESSAGES.hintSpecRegPending()));
+						}
+						break;
+					case Rejected:
+						p.add(new Icon(RESOURCES.specRegRejected(), MESSAGES.hintSpecRegRejected()));
+						break;
+					case Draft:
+						p.add(new Icon(RESOURCES.specRegDraft(), MESSAGES.hintSpecRegDraft()));
+						break;
+					}
+				}
+				if (reg.hasChanges()) {
+					Long lastCourseId = null;
+					String[] dateAndNote = (reg.getSubmitDate() == null ? reg.getNote() == null ? "" : reg.getNote() : sModifiedDateFormat.format(reg.getSubmitDate()) + (reg.getNote() == null || reg.getNote().isEmpty() ? "" : "\n" + reg.getNote())).split("\n");
+
+					List<ClassAssignment> rows = new ArrayList<ClassAssignment>();
+					for (ClassAssignment ca: reg.getChanges()) {
+						if (ca.getParentSection() != null && ca.getParentSection().equals(ca.getSection())) continue;
+						rows.add(ca);
+					}
+					
+					for (int r = 0; r < rows.size(); r++) {
+						ClassAssignment ca = rows.get(r);
+						List<Widget> row = new ArrayList<Widget>();
+						if (lastCourseId == null) {
+							row.add(p);
+						} else {
+							row.add(new P("icons"));
+						}
+						if (r < dateAndNote.length) {
+							Label label = null;
+							if (r + 1 == rows.size()) {
+								String text = dateAndNote[r];
+								for (int i = r + 1; i < dateAndNote.length; i++)
+									text += "\n" + dateAndNote[i];
+								label = new Label(text); label.addStyleName("date-and-note");
+							} else {
+								label = new Label(dateAndNote[r]); label.addStyleName("date-and-note");
+							}
+							row.add(label);
+						} else {
+							row.add(new Label());
+						}
+						if (lastCourseId == null || !lastCourseId.equals(ca.getCourseId())) {
+							row.add(new Label(ca.getSubject(), false));
+							row.add(new Label(ca.getCourseNbr(), false));
+						} else {
+							row.add(new Label());
+							row.add(new Label());
+						}
+						row.add(new Label(ca.getSubpart(), false));
+						row.add(new Label(ca.getSection(), false));
+						row.add(new HTML(ca.getLimitString(), false));
+						if (ca.getCreditHour() != null) {
+							row.add(new Label(MESSAGES.credit(ca.getCreditHour())));
+						} else {
+							row.add(new CreditCell(ca.getCredit()));
+						}
+						if (ca.getGradeMode() != null) {
+							Label gm = new Label(ca.getGradeMode().getCode());
+							if (ca.getGradeMode().getLabel() != null) gm.setTitle(ca.getGradeMode().getLabel());
+							row.add(gm);
+						} else {
+							row.add(new Label());
+						}
+						HTML errorsLabel = new HTML(ca.hasError() ? ca.getError() : ""); errorsLabel.addStyleName("registration-errors");
+						row.add(errorsLabel);
+						P s = new P("icons");
+						switch (ca.getSpecRegOperation()) {
+						case Add:
+							s.add(new Icon(RESOURCES.assignment(), MESSAGES.specRegAssignment(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection())));
+							break;
+						case Drop:
+							s.add(new Icon(RESOURCES.unassignment(), MESSAGES.specRegRemoved(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection())));
+							break;
+						case Keep:
+							if (ca.getGradeMode() != null && ca.getGradeMode().isHonor()) {
+								boolean found = false;
+								for (ClassAssignmentInterface.ClassAssignment x: iAssignment.getClassAssignments())
+									if (x.isSaved() && ca.getClassId().equals(x.getClassId())) {
+										found = true; break;
+									}
+								if (!found)
+									s.add(new Icon(RESOURCES.unassignment(), MESSAGES.specRegRemoved(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection())));
+							}
+							// s.add(new Icon(RESOURCES.saved(), MESSAGES.saved(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection())));
+							// break;
+						default:
+							s.add(new Label());
+						}
+						row.add(s);
+						int idx = iSpecialRegistrations.addRow(reg, row);
+						if (reg.getStatus() == SpecialRegistrationStatus.Approved)
+							iSpecialRegistrations.setBackGroundColor(idx, "#D7FFD7");
+						if (idx > 1 && lastCourseId == null)
+							for (int c = 0; c < iSpecialRegistrations.getCellCount(idx); c++)
+								iSpecialRegistrations.getCellFormatter().addStyleName(idx, c, "top-border-solid");
+						if (lastCourseId != null && !lastCourseId.equals(ca.getCourseId()))
+							for (int c = 2; c < iSpecialRegistrations.getCellCount(idx) - 1; c++)
+								iSpecialRegistrations.getCellFormatter().addStyleName(idx, c, "top-border-dashed");
+						if (!ca.isCourseAssigned()) {
+							for (int c = 2; c < iSpecialRegistrations.getCellCount(idx) - 1; c++)
+								iSpecialRegistrations.getCellFormatter().addStyleName(idx, c, ca.hasError() ? "change-drop-with-errors" : "change-drop");
+						} else  {
+							for (int c = 2; c < iSpecialRegistrations.getCellCount(idx) - 1; c++)
+								iSpecialRegistrations.getCellFormatter().addStyleName(idx, c, "change-add");
+						}
+						lastCourseId = ca.getCourseId();
+					}
+				} else if (reg.hasErrors()) {
+					List<Widget> row = new ArrayList<Widget>();
+					row.add(p);
+					row.add(new DateAndNoteCell(reg.getSubmitDate(), reg.getNote()));
+					row.add(new DescriptionCell(reg.getDescription()));
+					String errors = "";
+					for (ErrorMessage e: reg.getErrors())
+						errors += (errors.isEmpty() ? "" : "\n") + e.getMessage();
+					HTML errorsLabel = new HTML(errors); errorsLabel.addStyleName("registration-errors");
+					row.add(errorsLabel);
+					row.add(new Label());
+					int idx = iSpecialRegistrations.addRow(reg, row);
+					if (idx > 1)
+						for (int c = 0; c < iSpecialRegistrations.getCellCount(idx); c++)
+							iSpecialRegistrations.getCellFormatter().addStyleName(idx, c, "top-border-solid");
+				}
+			}
 	}
 	
 	protected void fillInTimeGrid() {
@@ -1080,6 +1276,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		if (event.getTypeInt() == Event.ONKEYUP && (event.getNativeEvent().getAltKey() || event.getNativeEvent().getCtrlKey())) {
 			for (Map.Entry<Character, Integer> entry: iTabAccessKeys.entrySet())
 				if (event.getNativeEvent().getKeyCode() == Character.toLowerCase(entry.getKey()) || event.getNativeEvent().getKeyCode()  == Character.toUpperCase(entry.getKey())) {
+					if (entry.getValue() >= 4 && !((Widget)iTabs.getTabBar().getTab(entry.getValue())).isVisible()) return;
 					iTabs.selectTab(entry.getValue());
 				}
 		}
@@ -1179,5 +1376,49 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				}
 			});
 		}
+	}
+	
+	protected class Icon extends Image {
+		public Icon(ImageResource image, final String text) {
+			super(image);
+			if (text != null && !text.isEmpty()) {
+				setAltText(text);
+				setTitle(text);
+				addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						event.preventDefault(); event.stopPropagation();
+						UniTimeConfirmationDialog.info(text);
+					}
+				});
+			}
+		}
+	}
+	
+	protected class CreditCell extends HTML {
+		public CreditCell(String text) {
+			if (text != null && text.indexOf('|') >= 0) {
+				setHTML(text.substring(0, text.indexOf('|')));
+				setTitle(text.substring(text.indexOf('|') + 1).replace("\n", "<br>"));
+			} else {
+				setHTML(text == null ? "" : text.replace("\n", "<br>"));
+				if (text != null) setTitle(text);
+			}
+		}
+	}
+	
+	protected class DateAndNoteCell extends Label {
+		public DateAndNoteCell(Date date, String note) {
+			super(date == null ? note == null ? "" : note : sModifiedDateFormat.format(date) + (note == null || note.isEmpty() ? "" : "\n" + note));
+			addStyleName("date-and-note");
+		}
+	}
+	
+	protected class DescriptionCell extends Label implements UniTimeTable.HasColSpan {
+		public DescriptionCell(String text) {
+			super(text == null ? "" : text);
+		}
+		@Override
+		public int getColSpan() { return 7; }		
 	}
 }

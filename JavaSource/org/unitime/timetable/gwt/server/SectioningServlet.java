@@ -183,6 +183,7 @@ import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.RequestStudentUpdates;
 import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationDashboardUrlProvider;
+import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEmailProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentHoldsCheckProvider;
 import org.unitime.timetable.onlinesectioning.custom.VariableTitleCourseProvider;
@@ -1724,9 +1725,20 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							ret.addNote(note);
 						}
 						
+						if (status != null && status.hasOption(Option.specreg) && Customization.SpecialRegistrationProvider.hasProvider()) {
+							try {
+								SpecialRegistrationProvider sp = Customization.SpecialRegistrationProvider.getProvider();
+								OnlineSectioningHelper helper = new OnlineSectioningHelper(hibSession, currentUser());
+								server = getServerInstance(student.getSession().getUniqueId(), true);
+								ret.setSpecialRegistrations(sp.retrieveAllRegistrations(server, helper, new XStudent(student, helper, server.getAcademicSession().getFreeTimePattern())));
+							} catch (Exception e) {}
+						}
+						
 						return ret;
 					} else {
-						ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(studentId).withRequest(true).withCustomCheck(true).withAdvisorRequest(true).checkHolds(true), currentUser());
+						ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(studentId)
+								.withRequest(true).withCustomCheck(true).withAdvisorRequest(true).checkHolds(true)
+								.withSpecialRegistrations(status != null && status.hasOption(Option.specreg)), currentUser());
 						ret.setCanSetCriticalOverrides(getSessionContext().hasPermission(student, Right.StudentSchedulingChangeCriticalOverride));
 						if (ret.getAdvisorRequest() != null)
 							ret.getAdvisorRequest().setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value(student.getSession())));
@@ -1748,7 +1760,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								if (advisor != null) note.setOwner(nameFormat.format(advisor));
 							}
 							ret.addNote(note);
-						}	
+						}
 						
 						return ret;
 					}

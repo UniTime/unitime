@@ -36,6 +36,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationOperation;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationStatus;
 import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
@@ -53,6 +54,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	private ArrayList<String> iMessages = null;
 	private ArrayList<ErrorMessage> iErrors = null;
 	private Set<Note> iNotes = null;
+	private Set<RetrieveSpecialRegistrationResponse> iSpecialRegistrations = null;
 	private boolean iCanEnroll = true;
 	private boolean iCanSetCriticalOverrides = false;
 	private double iValue = 0.0;
@@ -148,6 +150,17 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		iNotes.add(note);
 	}
 	public Set<Note> getNotes() { return iNotes; }
+	
+	public boolean hasSpecialRegistrations() { return iSpecialRegistrations != null && !iSpecialRegistrations.isEmpty(); }
+	public void addSpecialRegistrations(RetrieveSpecialRegistrationResponse reg) {
+		if (iSpecialRegistrations == null) iSpecialRegistrations = new TreeSet<RetrieveSpecialRegistrationResponse>();
+		iSpecialRegistrations.add(reg);
+	}
+	public void setSpecialRegistrations(Collection<RetrieveSpecialRegistrationResponse> regs) {
+		if (regs == null || regs.isEmpty()) return;
+		iSpecialRegistrations = new TreeSet<RetrieveSpecialRegistrationResponse>(regs);
+	}
+	public Set<RetrieveSpecialRegistrationResponse> getSpecialRegistrations() { return iSpecialRegistrations; }
 	
 	public static class CourseAssignment implements IsSerializable, Serializable, Comparable<CourseAssignment> {
 		private static final long serialVersionUID = 1L;
