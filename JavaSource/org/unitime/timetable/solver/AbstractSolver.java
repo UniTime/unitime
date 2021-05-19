@@ -233,8 +233,14 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
             if (currentSolution().getBestInfo()!=null)
                 currentSolution().restoreBest();
             finishBeforeSave();
-            if (currentSolution().getBestInfo()!=null && getProperties().getPropertyBoolean("General.Save",false)) {
+            if (!isStop() && currentSolution().getBestInfo()!=null && getProperties().getPropertyBoolean("General.Save",false)) {
             	ProblemSaver<V, T, M> saver = getDatabaseSaver(this);
+            	saver.setTerminationCondition(new TerminationCondition<V, T>() {
+					@Override
+					public boolean canContinue(Solution<V, T> currentSolution) {
+						return !isStop();
+					}
+				});
                 Lock lock = currentSolution().getLock().readLock();
                 lock.lock();
                 try {
@@ -245,7 +251,7 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
                 	lock.unlock();
                 }
             }
-            if (getProperties().getPropertyBoolean("General.Unload",false)) {
+            if (!isStop() && getProperties().getPropertyBoolean("General.Unload",false)) {
                 dispose();
             } else {
                 Progress.getInstance(currentSolution().getModel()).setStatus(MSG.statusReady());

@@ -50,6 +50,7 @@ import org.cpsolver.ifs.model.Constraint;
 import org.cpsolver.ifs.model.Model;
 import org.cpsolver.ifs.solution.Solution;
 import org.cpsolver.ifs.solver.Solver;
+import org.cpsolver.ifs.termination.TerminationCondition;
 import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.Callback;
 import org.cpsolver.ifs.util.DataProperties;
@@ -1119,6 +1120,12 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 		if (getProperties().getPropertyBoolean("General.Validate",false) && isCanValidate()) {
 			ProblemSaver<Request, Enrollment, StudentSectioningModel> saver = getCustomValidator(this); 
 			java.util.concurrent.locks.Lock lock = currentSolution().getLock().readLock();
+			saver.setTerminationCondition(new TerminationCondition<Request, Enrollment>() {
+				@Override
+				public boolean canContinue(Solution<Request, Enrollment> currentSolution) {
+					return !isStop();
+				}
+			});
             lock.lock();
             try {
                 saver.save();
