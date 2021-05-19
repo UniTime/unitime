@@ -122,9 +122,11 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CompletionStatus;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.DeniedRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.EligibilityProblem;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.IncludeReg;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Problem;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.RequestorRole;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ResponseStatus;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.RestrictionsCheckRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistration;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationAvailableGradeMode;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationCancelResponse;
@@ -412,6 +414,12 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 	
 	protected void buildChangeList(SpecialRegistration request, OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, Collection<ClassAssignmentInterface.ClassAssignment> assignment, Collection<ErrorMessage> errors, Float credit) {
 		request.changes = new ArrayList<Change>();
+		RestrictionsCheckRequest validation = new RestrictionsCheckRequest();
+		validation.includeReg = IncludeReg.Y;
+		validation.campus = getBannerCampus(server.getAcademicSession());
+		validation.term = getBannerTerm(server.getAcademicSession());
+		validation.sisId = getBannerId(student); 
+		
 		float maxCredit = 0f;
 		Map<XCourse, List<XSection>> enrollments = new HashMap<XCourse, List<XSection>>();
 		Map<Long, XOffering> offerings = new HashMap<Long, XOffering>();
@@ -485,6 +493,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								ch.operation = ChangeOperation.ADD;
 								ch.credit = course.getCreditAbbv();
 								if (crns.add(ch.crn)) request.changes.add(ch);
+								SpecialRegistrationHelper.addCrn(validation, ch.crn);
 							}
 						}
 						for (Long id: enrollment.getSectionIds()) {
@@ -497,6 +506,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								ch.operation = ChangeOperation.DROP;
 								ch.credit = course.getCreditAbbv();
 								if (crns.add(ch.crn)) request.changes.add(ch);
+								SpecialRegistrationHelper.dropCrn(validation, ch.crn);
 							}
 						}
 						continue check;
@@ -513,6 +523,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				ch.operation = ChangeOperation.ADD;
 				ch.credit = course.getCreditAbbv();
 				if (crns.add(ch.crn)) request.changes.add(ch);
+				SpecialRegistrationHelper.addCrn(validation, ch.crn);
 			}
 		}
 		
@@ -532,6 +543,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							ch.operation = ChangeOperation.DROP;
 							ch.credit = course.getCreditAbbv();
 							if (crns.add(ch.crn)) request.changes.add(ch);
+							SpecialRegistrationHelper.dropCrn(validation, ch.crn);
 						}
 				}
 			}
@@ -576,6 +588,9 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		if (credit != null && credit > maxCredit) maxCredit = credit;
 		if (maxi || (student.getMaxCredit() != null && student.getMaxCredit() < maxCredit))
 			request.maxCredit = maxCredit;
+		
+		if (!SpecialRegistrationHelper.isEmpty(validation))
+			request.validation = validation;
 	}
 	
 	protected CourseRequest.CourseRequestOverrideIntent combine(Change change, CourseRequest.CourseRequestOverrideIntent oldIntent) {
