@@ -550,6 +550,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("<u>N</u>otes")
 	String tabNotes();
 	
+	@DefaultMessage("Requested <u>A</u>pprovals")
+	String tabSpecialRegistrations();
+	
 	@DefaultMessage("Course requests have been successfully submitted.")
 	String saveRequestsOK();
 	
@@ -2836,7 +2839,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Failed to load advisor course recommendations: {0}")
 	String failedAdvisorRequests(String reason);
 	
-	@DefaultMessage("Advisor Recommendations")
+	@DefaultMessage("Advisor <u>R</u>ecommendations")
 	String tabAdvisorRequests();
 	
 	@DefaultMessage("Course requests not filled in.")
