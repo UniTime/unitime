@@ -120,6 +120,7 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CheckRestrictionsRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CheckRestrictionsResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CompletionStatus;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Crn;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.DeniedRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.EligibilityProblem;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.IncludeReg;
@@ -139,6 +140,7 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SubmitRegistrationResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ValidationMode;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ValidationOperation;
 import org.unitime.timetable.onlinesectioning.custom.purdue.XEInterface.CourseReferenceNumber;
 import org.unitime.timetable.onlinesectioning.custom.purdue.XEInterface.RegisterAction;
 import org.unitime.timetable.onlinesectioning.custom.purdue.XEInterface.RegistrationGradingMode;
@@ -418,7 +420,11 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		validation.includeReg = IncludeReg.Y;
 		validation.campus = getBannerCampus(server.getAcademicSession());
 		validation.term = getBannerTerm(server.getAcademicSession());
-		validation.sisId = getBannerId(student); 
+		validation.sisId = getBannerId(student);
+		validation.mode = ValidationMode.REG;
+		validation.actions = new HashMap<ValidationOperation, List<Crn>>();
+		validation.actions.put(ValidationOperation.ADD, new ArrayList<Crn>());
+		validation.actions.put(ValidationOperation.DROP, new ArrayList<Crn>());
 		
 		float maxCredit = 0f;
 		Map<XCourse, List<XSection>> enrollments = new HashMap<XCourse, List<XSection>>();
