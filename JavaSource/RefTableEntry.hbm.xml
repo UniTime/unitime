@@ -472,5 +472,19 @@
 	            column="session_id"
 	            not-null="true"/>
         </union-subclass>
+        <union-subclass name="Degree" table="degree" abstract="false">
+	        <property
+	            name="externalUniqueId"
+	            column="external_uid"
+	            type="java.lang.String"
+	            not-null="false"
+	            length="40"/>
+	        <many-to-one
+	            name="session"
+	            class="Session"
+	            column="session_id"
+	            not-null="true"
+	            foreign-key="fk_degree_session"/>
+        </union-subclass>
     </class>
 </hibernate-mapping>

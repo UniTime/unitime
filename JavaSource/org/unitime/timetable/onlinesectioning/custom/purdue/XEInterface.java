@@ -132,6 +132,10 @@ public class XEInterface {
 		public boolean isRegistered() {
 			return "R".equals(statusIndicator);
 		}
+		
+		public boolean hasCredit() {
+			return ("R".equals(statusIndicator) || "W".equals(statusIndicator)) && creditHour != null;
+		}
 	}
 	
 	public static class CrnError {

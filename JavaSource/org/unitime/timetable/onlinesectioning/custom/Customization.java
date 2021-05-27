@@ -42,6 +42,8 @@ public enum Customization {
 	StudentHoldsCheckProvider(StudentHoldsCheckProvider.class, ApplicationProperty.CustomizationStudentHoldsCheck),
 	ClassNamingHelper(ExternalClassNameHelperInterface.class, ApplicationProperty.ClassNamingHelper, DefaultExternalClassNameHelper.class),
 	SpecialRegistrationDashboardUrlProvider(SpecialRegistrationDashboardUrlProvider.class, ApplicationProperty.CustomizationSpecialRegistrationDashboardUrl),
+	AdvisorCourseRequestsValidationProvider(AdvisorCourseRequestsValidationProvider.class, ApplicationProperty.CustomizationAdvisorsCourseRequestsValidation),
+	VariableTitleCourseProvider(VariableTitleCourseProvider.class, ApplicationProperty.CustomizationVariableTitleCourseProvider),
 	;
 	
 	private Holder<?> iHolder;

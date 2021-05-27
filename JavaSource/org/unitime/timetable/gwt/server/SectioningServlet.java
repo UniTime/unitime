@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -36,6 +37,7 @@ import org.apache.log4j.Logger;
 import org.cpsolver.coursett.model.Placement;
 import org.hibernate.CacheMode;
 import org.hibernate.SessionFactory;
+import org.hibernate.type.LongType;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
@@ -93,6 +95,9 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpeci
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseInfo;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseResponse;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpart;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.model.Advisor;
@@ -127,6 +132,7 @@ import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.StudentGroupType;
 import org.unitime.timetable.model.StudentInstrMthPref;
+import org.unitime.timetable.model.StudentNote;
 import org.unitime.timetable.model.StudentSectioningPref;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.SubjectArea;
@@ -140,14 +146,17 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.CourseTypeDAO;
 import org.unitime.timetable.model.dao.CurriculumDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
+import org.unitime.timetable.model.dao.OnlineSectioningLogDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.model.dao.StudentGroupDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.advisors.AdvisorCourseRequestsSubmit;
+import org.unitime.timetable.onlinesectioning.advisors.AdvisorCourseRequestsValidate;
 import org.unitime.timetable.onlinesectioning.advisors.AdvisorGetCourseRequests;
 import org.unitime.timetable.onlinesectioning.basic.CheckCourses;
 import org.unitime.timetable.onlinesectioning.basic.CheckEligibility;
@@ -176,6 +185,7 @@ import org.unitime.timetable.onlinesectioning.custom.RequestStudentUpdates;
 import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationDashboardUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEmailProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentHoldsCheckProvider;
+import org.unitime.timetable.onlinesectioning.custom.VariableTitleCourseProvider;
 import org.unitime.timetable.onlinesectioning.match.AbstractCourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -187,6 +197,7 @@ import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction;
 import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationCancel;
 import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationChangeGradeModes;
 import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationEligibility;
+import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationRequestVariableTitleCourse;
 import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationRetrieveAll;
 import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationRetrieveGradeModes;
 import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationSubmit;
@@ -226,6 +237,8 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LoginManager;
 import org.unitime.timetable.util.NameFormat;
+
+import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
  * @author Tomas Muller
@@ -730,7 +743,14 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					courseOffering.getSubjectAreaAbbv(), courseOffering.getCourseNbr());
 		} else {
 			XCourseId c = server.getCourse(course);
-			if (c == null) throw new SectioningException(MSG.exceptionCourseDoesNotExist(course));
+			if (c == null) {
+				if (course.indexOf(' ') >= 0) {
+					return getCourseDetailsProvider().getDetails(
+							new AcademicSessionInfo(SessionDAO.getInstance().get(cx.getSessionId())),
+							course.substring(0, course.indexOf(' ')), course.substring(course.indexOf(' ') + 1));
+				}
+				throw new SectioningException(MSG.exceptionCourseDoesNotExist(course));
+			}
 			return server.getCourseDetails(c.getCourseId(), getCourseDetailsProvider());
 		}
 	}
@@ -1175,6 +1195,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					if (a.getCreditHour() != null)
 						last.addCreditHour(a.getExternalId(), a.getCreditHour());
 				}
+			last.setCurrentCredit(ret.getCurrentCredit());
 		}
 		
 		return ret;
@@ -1265,6 +1286,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								st.addClassification(acm.getAcademicClassification().getCode(), acm.getAcademicClassification().getName());
 								st.addMajor(acm.getMajor().getCode(), acm.getMajor().getName());
 								st.addConcentration(acm.getConcentration() == null ? null : acm.getConcentration().getCode(), acm.getConcentration() == null ? null : acm.getConcentration().getName());
+								st.addDegree(acm.getDegree() == null ? null : acm.getDegree().getReference(), acm.getDegree() == null ? null : acm.getDegree().getLabel());
 							}
 							for (StudentAreaClassificationMinor acm: new TreeSet<StudentAreaClassificationMinor>(enrollment.getStudent().getAreaClasfMinors())) {
 								st.addMinor(acm.getMinor().getCode(), acm.getMinor().getName());
@@ -1376,6 +1398,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								st.addClassification(acm.getAcademicClassification().getCode(), acm.getAcademicClassification().getName());
 								st.addMajor(acm.getMajor().getCode(), acm.getMajor().getName());
 								st.addConcentration(acm.getConcentration() == null ? null : acm.getConcentration().getCode(), acm.getConcentration() == null ? null : acm.getConcentration().getName());
+								st.addDegree(acm.getDegree() == null ? null : acm.getDegree().getReference(), acm.getDegree() == null ? null : acm.getDegree().getLabel());
 							}
 							for (StudentAreaClassificationMinor acm: new TreeSet<StudentAreaClassificationMinor>(request.getCourseDemand().getStudent().getAreaClasfMinors())) {
 								st.addMinor(acm.getMinor().getCode(), acm.getMinor().getName());
@@ -1684,6 +1707,23 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							ret.getAdvisorRequest().setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value(student.getSession())));
 						if (ret.getRequest() != null)
 							ret.getRequest().setWaitListMode(wlMode);
+						
+						for (StudentNote n: student.getNotes()) {
+							ClassAssignmentInterface.Note note = new ClassAssignmentInterface.Note();
+							note.setTimeStamp(n.getTimeStamp());
+							note.setId(n.getUniqueId());
+							note.setMessage(n.getTextNote());
+							note.setOwner(n.getUserId());
+							TimetableManager manager = TimetableManager.findByExternalId(n.getUserId());
+							if (manager != null) {
+								note.setOwner(nameFormat.format(manager));
+							} else {
+								Advisor advisor = Advisor.findByExternalId(n.getUserId(), student.getSession().getUniqueId());
+								if (advisor != null) note.setOwner(nameFormat.format(advisor));
+							}
+							ret.addNote(note);
+						}
+						
 						return ret;
 					} else {
 						ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(studentId).withRequest(true).withCustomCheck(true).withAdvisorRequest(true).checkHolds(true), currentUser());
@@ -1692,6 +1732,24 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							ret.getAdvisorRequest().setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value(student.getSession())));
 						if (ret.getRequest() != null)
 							ret.getRequest().setWaitListMode(wlMode);
+						
+						NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
+						for (StudentNote n: student.getNotes()) {
+							ClassAssignmentInterface.Note note = new ClassAssignmentInterface.Note();
+							note.setTimeStamp(n.getTimeStamp());
+							note.setId(n.getUniqueId());
+							note.setMessage(n.getTextNote());
+							note.setOwner(n.getUserId());
+							TimetableManager manager = TimetableManager.findByExternalId(n.getUserId());
+							if (manager != null) {
+								note.setOwner(nameFormat.format(manager));
+							} else {
+								Advisor advisor = Advisor.findByExternalId(n.getUserId(), server.getAcademicSession().getUniqueId());
+								if (advisor != null) note.setOwner(nameFormat.format(advisor));
+							}
+							ret.addNote(note);
+						}	
+						
 						return ret;
 					}
 				} finally {
@@ -3012,8 +3070,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		checkContext(cx);
 		if (cx.getStudentId() == null)
 			throw new PageAccessException(MSG.exceptionNoStudent());
-		if (!cx.getStudentId().equals(getStudentId(cx.getSessionId())))
-			getSessionContext().checkPermissionAnySession(cx.getSessionId(), Right.StudentSchedulingAdvisor);
+		if (!cx.getStudentId().equals(getStudentId(cx.getSessionId()))) {
+			if (!getSessionContext().hasPermissionAnySession(cx.getSessionId(), Right.AdvisorCourseRequests))
+				getSessionContext().checkPermissionAnySession(cx.getSessionId(), Right.StudentSchedulingAdvisor);
+		}
 		
 		OnlineSectioningServer server = null;
 		if (!cx.isOnline()) {
@@ -3059,6 +3119,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			st.addClassification(acm.getAcademicClassification().getCode(), acm.getAcademicClassification().getName());
 			st.addMajor(acm.getMajor().getCode(), acm.getMajor().getName());
 			st.addConcentration(acm.getConcentration() == null ? null : acm.getConcentration().getCode(), acm.getConcentration() == null ? null : acm.getConcentration().getName());
+			st.addDegree(acm.getDegree() == null ? null : acm.getDegree().getReference(), acm.getDegree() == null ? null : acm.getDegree().getLabel());
 		}
 		for (StudentAreaClassificationMinor acm: new TreeSet<StudentAreaClassificationMinor>(student.getAreaClasfMinors())) {
 			st.addMinor(acm.getMinor().getCode(), acm.getMinor().getName());
@@ -3153,6 +3214,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			st.addClassification(acm.getAcademicClassification().getCode(), acm.getAcademicClassification().getName());
 			st.addMajor(acm.getMajor().getCode(), acm.getMajor().getName());
 			st.addConcentration(acm.getConcentration() == null ? null : acm.getConcentration().getCode(), acm.getConcentration() == null ? null : acm.getConcentration().getName());
+			st.addDegree(acm.getDegree() == null ? null : acm.getDegree().getReference(), acm.getDegree() == null ? null : acm.getDegree().getLabel());
 		}
 		for (StudentAreaClassificationMinor acm: new TreeSet<StudentAreaClassificationMinor>(student.getAreaClasfMinors())) {
 			st.addMinor(acm.getMinor().getCode(), acm.getMinor().getName());
@@ -3247,6 +3309,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (ret != null && ret.hasCreditHours() && last != null)
 			for (Map.Entry<String, Float> e: ret.getGradeModes().getCreditHours().entrySet())
 				last.addCreditHour(e.getKey(), e.getValue());
+		if (ret != null && ret.hasGradeModes() && last != null)
+			last.setCurrentCredit(ret.getGradeModes().getCurrentCredit());
 		
 		return ret;
 	}
@@ -3474,6 +3538,16 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		
 		return ret;
 	}
+	
+	@Override
+	public CheckCoursesResponse checkAdvisingDetails(AdvisingStudentDetails details) throws SectioningException, PageAccessException {
+		getSessionContext().checkPermissionAnySession(details.getSessionId(), Right.AdvisorCourseRequests);
+		
+		OnlineSectioningServer server = getServerInstance(details.getSessionId(), true);
+		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+		
+		return server.execute(server.createAction(AdvisorCourseRequestsValidate.class).withDetails(details), currentUser());
+	}
 
 	@Override
 	public AdvisorCourseRequestSubmission submitAdvisingDetails(AdvisingStudentDetails details, boolean emailStudent) throws SectioningException, PageAccessException {
@@ -3592,6 +3666,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		checkContext(cx);
 		getSessionContext().checkPermissionAnySession(cx.getAcademicSessionId(), Right.AdvisorCourseRequests);
 		
+		if (!ApplicationProperty.AdvisorCourseRequestsLastNotes.isTrue()) return null;
+		
 		List<AdvisorNote> ret = new ArrayList<AdvisorNote>();
 		String defaultNote = ApplicationProperty.AdvisorCourseRequestsDefaultNote.valueOfSession(cx.getAcademicSessionId());
 		Student student = (cx.getStudentId() == null ? null : StudentDAO.getInstance().get(cx.getStudentId()));
@@ -3622,5 +3698,95 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 		
 		return ret;
+	}
+
+	@Override
+	public String getChangeLogMessage(Long logId) throws SectioningException, PageAccessException {
+		getSessionContext().checkPermission(Right.SchedulingDashboard);
+		org.unitime.timetable.model.OnlineSectioningLog log = OnlineSectioningLogDAO.getInstance().get(logId);
+		if (log != null) {
+			try {
+				OnlineSectioningLog.Action action = OnlineSectioningLog.Action.parseFrom(log.getAction());
+				if (action != null) {
+					return FindOnlineSectioningLogAction.getHTML(action);
+				} else {
+					throw new SectioningException("Failed to load log message: Log message has no details.");
+				}
+			} catch (InvalidProtocolBufferException e) {
+				throw new SectioningException("Failed to parse log message: " + e.getMessage(), e);
+			}
+		} else {
+			throw new SectioningException("Failed to load log message: Log message does not exist.");
+		}
+	}
+
+	@Override
+	public Map<Long, String> getChangeLogTexts(Collection<Long> logIds) throws SectioningException, PageAccessException {
+		getSessionContext().checkPermission(Right.SchedulingDashboard);
+		Map<Long, String> ret = new HashMap<Long, String>();
+		for (Object[] o: (List<Object[]>)OnlineSectioningLogDAO.getInstance().getSession().createQuery(
+				"select uniqueId, action from OnlineSectioningLog where uniqueId in :logIds"
+				).setParameterList("logIds", logIds, LongType.INSTANCE).list()) {
+			Long id = (Long)o[0];
+			try {
+				OnlineSectioningLog.Action action = OnlineSectioningLog.Action.parseFrom((byte[])o[1]);
+				String message = OnlineSectioningLogger.getMessage(action);
+				if (message != null && !message.isEmpty())
+					ret.put(id, message);
+			} catch (InvalidProtocolBufferException e) {
+			}
+		}
+		return ret;
+	}
+
+	@Override
+	public Collection<VariableTitleCourseInfo> listVariableTitleCourses(StudentSectioningContext cx, String query, int limit) throws SectioningException, PageAccessException {
+		checkContext(cx);
+		if (cx.getSessionId() == null) throw new PageAccessException(MSG.exceptionNoAcademicSession());
+		if (cx.getStudentId() == null) throw new PageAccessException(MSG.exceptionNoStudent());
+		getSessionContext().checkPermissionAnyAuthority(cx.getStudentId(), "Student", Right.StudentSchedulingCanEnroll);
+		
+		OnlineSectioningServer server = getServerInstance(cx.getSessionId(), false);
+		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+		if (!server.getAcademicSession().isSectioningEnabled() || !Customization.VariableTitleCourseProvider.hasProvider())
+			throw new SectioningException(MSG.exceptionNotSupportedFeature());
+
+		VariableTitleCourseProvider provider = Customization.VariableTitleCourseProvider.getProvider();
+		OnlineSectioningHelper helper = new OnlineSectioningHelper(SessionDAO.getInstance().getSession(), currentUser(cx));
+		
+		return provider.getVariableTitleCourses(query, limit, server, helper);
+	}
+	
+	@Override
+	public VariableTitleCourseInfo getVariableTitleCourse(StudentSectioningContext cx, String course) throws SectioningException, PageAccessException {
+		checkContext(cx);
+		if (cx.getSessionId() == null) throw new PageAccessException(MSG.exceptionNoAcademicSession());
+		if (cx.getStudentId() == null) throw new PageAccessException(MSG.exceptionNoStudent());
+		getSessionContext().checkPermissionAnyAuthority(cx.getStudentId(), "Student", Right.StudentSchedulingCanEnroll);
+		
+		OnlineSectioningServer server = getServerInstance(cx.getSessionId(), false);
+		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+		if (!server.getAcademicSession().isSectioningEnabled() || !Customization.VariableTitleCourseProvider.hasProvider())
+			throw new SectioningException(MSG.exceptionNotSupportedFeature());
+
+		VariableTitleCourseProvider provider = Customization.VariableTitleCourseProvider.getProvider();
+		OnlineSectioningHelper helper = new OnlineSectioningHelper(SessionDAO.getInstance().getSession(), currentUser(cx));
+		
+		return provider.getVariableTitleCourse(course, server, helper);
+	}
+
+	@Override
+	public VariableTitleCourseResponse requestVariableTitleCourse(VariableTitleCourseRequest request) throws SectioningException, PageAccessException {
+		checkContext(request);
+		if (request.getSessionId() == null) throw new PageAccessException(MSG.exceptionNoAcademicSession());
+		if (request.getStudentId() == null) throw new PageAccessException(MSG.exceptionNoStudent());
+		getSessionContext().checkPermissionAnyAuthority(request.getStudentId(), "Student", Right.StudentSchedulingCanEnroll);
+		
+		OnlineSectioningServer server = getServerInstance(request.getSessionId(), false);
+		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+		if (!server.getAcademicSession().isSectioningEnabled() || !Customization.VariableTitleCourseProvider.hasProvider())
+			throw new SectioningException(MSG.exceptionNotSupportedFeature());
+		
+		return server.execute(server.createAction(SpecialRegistrationRequestVariableTitleCourse.class).withRequest(request), currentUser());
 	}
 }

@@ -152,6 +152,11 @@ public class SectioningStatusCookie {
 		save();
 	}
 	
+	public void setEmailCC(String cc) {
+		iEmailCC = cc;
+		save();
+	}
+	
 	public boolean isAdvisorRequestsEmailStudent() { return iAdvisorRequestsEmailStudent; }
 	public void setAdvisorRequestsEmailStudent(boolean email) { iAdvisorRequestsEmailStudent = email; save(); }
 	

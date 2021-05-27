@@ -20,6 +20,7 @@
 package org.unitime.timetable.webutil;
 
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -29,6 +30,7 @@ import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.cpsolver.ifs.util.CSVFile;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
@@ -123,6 +125,37 @@ public class DistributionPrefsTableBuilder {
 			title += " - "+session.getLabel()+" "+MSG.pageTitleDistributionPreferencesPdf();
 		
 		toPdfTable(out, context, prefs, title); 
+	}
+	
+	public void getAllDistPrefsTableForCurrentUserAsCsv(PrintWriter out, SessionContext context, String subjectAreaId, String courseNbr) throws Exception {
+
+		if (subjectAreaId.equals(Constants.BLANK_OPTION_VALUE))
+            subjectAreaId = null;
+        else if (subjectAreaId.equals(Constants.ALL_OPTION_VALUE))
+            subjectAreaId = null;
+
+		String title = null;
+		
+		Long subjAreaId = null;
+		if (subjectAreaId!=null && subjectAreaId.length()>0) {
+			subjAreaId = Long.valueOf(subjectAreaId);
+			SubjectArea area = (new SubjectAreaDAO()).get(subjAreaId);
+			title = area.getSubjectAreaAbbreviation()+(courseNbr==null?"":" "+courseNbr);
+		}
+		
+        Collection prefs = new HashSet();
+		for (Department d: Department.getUserDepartments(context.getUser())) {
+            prefs.addAll(DistributionPref.getPreferences(context.getUser().getCurrentAcademicSessionId(), d.getUniqueId(), true, null, subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
+            prefs.addAll(DistributionPref.getInstructorPreferences(context.getUser().getCurrentAcademicSessionId(),d.getUniqueId(),subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
+        }
+		
+		Session session = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId());
+		if (title==null)
+			title = session.getLabel()+" "+MSG.pageTitleDistributionPreferencesPdf();
+		else
+			title += " - "+session.getLabel()+" "+MSG.pageTitleDistributionPreferencesPdf();
+		
+		toCsvTable(out, context, prefs, title); 
 	}
 
 	public String getDistPrefsTableForClass(HttpServletRequest request, SessionContext context, Class_ clazz) {
@@ -322,8 +355,8 @@ public class DistributionPrefsTableBuilder {
         
         return tbl.printTable(WebTable.getOrder(context,"distPrefsTable.ord"));
     }
-
-    public void toPdfTable(OutputStream out, SessionContext context, Collection distPrefs, String title) throws Exception {
+    
+    protected PdfWebTable generatePdfWebTable(SessionContext context, Collection distPrefs, String title) {
     	String instructorFormat = UserProperty.NameFormat.get(context.getUser());
         
         PdfWebTable tbl = new PdfWebTable(5, 
@@ -404,6 +437,12 @@ public class DistributionPrefsTableBuilder {
         if (nrPrefs==0)
             tbl.addLine(null,  new String[] {MSG.errorNoDistributionPreferencesFound(), "", "", "", "" }, null);
         
+        return tbl;
+    }
+
+    public void toPdfTable(OutputStream out, SessionContext context, Collection distPrefs, String title) throws Exception {
+    	PdfWebTable tbl = generatePdfWebTable(context, distPrefs, title);
+        
         int ord = WebTable.getOrder(context, "distPrefsTable.ord");
         ord = (ord>0?1:-1)*(1+Math.abs(ord));
 
@@ -423,5 +462,20 @@ public class DistributionPrefsTableBuilder {
         doc.add(table);
 
         doc.close();
+    }
+    
+    public void toCsvTable(PrintWriter writer, SessionContext context, Collection distPrefs, String title) throws Exception {
+    	PdfWebTable tbl = generatePdfWebTable(context, distPrefs, title);
+        
+        int ord = WebTable.getOrder(context, "distPrefsTable.ord");
+        ord = (ord>0?1:-1)*(1+Math.abs(ord));
+        
+        CSVFile csv = tbl.printCsvTable(ord);
+        
+		if (csv.getHeader() != null)
+			writer.println(csv.getHeader().toString());
+		if (csv.getLines() != null)
+			for (CSVFile.CSVLine line: csv.getLines())
+				writer.println(line.toString());
     }
 }

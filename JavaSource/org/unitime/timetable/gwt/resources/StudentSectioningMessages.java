@@ -106,6 +106,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Note")
 	String colNote();
 	
+	@DefaultMessage("Set by")
+	String colNoteAuthor();
+
 	@DefaultMessage("Notes")
 	String colNotes();
 	
@@ -469,6 +472,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("<u>G</u>rade Modes")
 	String buttonChangeGradeModes();
 	
+	@DefaultMessage("Variable Title Course")
+	String buttonRequestVariableTitleCourse();
+	
 	@DefaultMessage("<u>V</u>ariable Credits")
 	String buttonChangeVariableCredits();
 	
@@ -487,7 +493,10 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Change variable credit hours of one or more courses.")
 	String hintChangeVariableCredits();
 	
-	@DefaultMessage("Sumbit the above enrollment changes to Special Registration.")
+	@DefaultMessage("Request variable title course.")
+	String hintRequestVariableTitleCourse();
+	
+	@DefaultMessage("Sumbit the above enrollment changes for approval.")
 	String hintSpecialRegistration();
 	
 	@DefaultMessage("<u>P</u>rint")
@@ -538,6 +547,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("<u>T</u>ime Grid")
 	String tabTimetable();
 	
+	@DefaultMessage("<u>N</u>otes")
+	String tabNotes();
+	
 	@DefaultMessage("Course requests have been successfully submitted.")
 	String saveRequestsOK();
 	
@@ -550,7 +562,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Unable to retrieve approval requests: {0}")
 	String requestSpecialRegistrationFail(String reason);
 	
-	@DefaultMessage("Special registration failed: {0}")
+	@DefaultMessage("Approval request failed: {0}")
 	String submitSpecialRegistrationFail(String reason);
 	
 	@DefaultMessage("Failed to cancel approval request: {0}")
@@ -591,6 +603,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("There is no schedule.")
 	String emptySchedule();
+	
+	@DefaultMessage("There are no notes.")
+	String emptyNotes();
 	
 	/* User Authentication messages
 	 */
@@ -780,8 +795,11 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Major")
 	String colMajor();
 	
-	@DefaultMessage("Concentration")
+	@DefaultMessage("Conc")
 	String colConcentration();
+	
+	@DefaultMessage("Degr")
+	String colDegree();
 	
 	@DefaultMessage("Minor")
 	String colMinor();
@@ -869,6 +887,15 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("LC")
 	String reservationLearningCommunity();
+	
+	@DefaultMessage("Override")
+	String reservationOverride();
+
+	@DefaultMessage("Dummy")
+	String reservationDummy();
+
+	@DefaultMessage("Other")
+	String reservationOther();
 
 	/* Enrollment dialog messages (opened from Enrollments table)
 	 */
@@ -1322,7 +1349,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Change <u>L</u>og")
 	String buttonChangeLog();
 	
-	@DefaultMessage("Special Registration")
+	@DefaultMessage("Approval Requests")
 	String buttonSpecRegDashboard();
 	
 	@DefaultMessage("Send <u>E</u>mail")
@@ -1330,6 +1357,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Loading change log for {0}...")
 	String loadingChangeLog(String student);
+	
+	@DefaultMessage("Loading change log message...")
+	String loadingChangeLogMessage();
 
 	@DefaultMessage("Operation")
 	String colOperation();
@@ -1577,7 +1607,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Fallback Status:")
 	String propFallbackStatus();
 	
-	@DefaultMessage("Special Registration:")
+	@DefaultMessage("Approval Requests:")
 	String propSpecialRegistration();
 	
 	@DefaultMessage("Course Request Validation:")
@@ -1949,6 +1979,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Curriculum")
 	String reportStudentCurriculum();
 	
+	@DefaultMessage("Advisor")
+	String reportStudentAdvisor();
+	
 	@DefaultMessage("Group")
 	String reportStudentGroup();
 	
@@ -1997,6 +2030,81 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course")
 	String reportCourse();
 	
+	@DefaultMessage("Class")
+	String reportClass();
+	
+	@DefaultMessage("Allowed\nOverlap")
+	String reportAllowedOverlap();
+	
+	@DefaultMessage("Meeting Time")
+	String reportMeetingTime();
+	
+	@DefaultMessage("Date Pattern")
+	String reportDatePattern();
+	
+	@DefaultMessage("Subpart\nOverlap")
+	String reportSubpartOverlap();
+	
+	@DefaultMessage("Time\nOverride")
+	String reportTimeOverride();
+	
+	@DefaultMessage("Ignore\nConflict")
+	String reportIgnoreConflicts();
+	
+	@DefaultMessage("Conflicting\nCourse")
+	String reportConflictingCourse();
+	
+	@DefaultMessage("Conflicting\nClass")
+	String reportConflictingClass();
+	
+	@DefaultMessage("Conflicting\nMeeting Time")
+	String reportConflictingMeetingTime();
+	
+	@DefaultMessage("Conflicting\nDate Pattern")
+	String reportConflictingDatePattern();
+	
+	@DefaultMessage("Conflicting\nAssignment")
+	String reportConflictingAssignment();
+	
+	@DefaultMessage("Overlap\n[min]")
+	String reportOverlapMinutes();
+	
+	@DefaultMessage("Overlapping\nMeetings")
+	String reportOverlappingMeetings();
+	
+	@DefaultMessage("Original\nClass")
+	String reportOriginalClass();
+	
+	@DefaultMessage("Original\nTime")
+	String reportOriginalTime();
+	
+	@DefaultMessage("Original\nDate")
+	String reportOriginalDate();
+
+	@DefaultMessage("Original\nRoom")
+	String reportOriginalRoom();
+
+	@DefaultMessage("Assigned\nClass")
+	String reportAssignedClass();
+
+	@DefaultMessage("Assigned\nTime")
+	String reportAssignedTime();
+
+	@DefaultMessage("Assigned\nDate")
+	String reportAssignedDate();
+
+	@DefaultMessage("Assigned\nRoom")
+	String reportAssignedRoom();
+
+	@DefaultMessage("Penalization")
+	String reportPenalization();
+
+	@DefaultMessage("Not Assigned")
+	String reportNotAssigned();
+	
+	@DefaultMessage("Teaching\nOverlap")
+	String reportTeachingOverlap();
+
 	@DefaultMessage("1st Alt")
 	String report1stAlt();
 	
@@ -2218,10 +2326,10 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Email notifications are disabled.")
 	String messageStatusCanNotEmail();
 	
-	@DefaultMessage("Special registration is enabled.")
+	@DefaultMessage("Requests approval workflow is enabled.")
 	String messageStatusCanSpecialRegistration();
 	
-	@DefaultMessage("Special registration is disabled.")
+	@DefaultMessage("Requests approval workflow is disabled.")
 	String messageStatusCanNotSpecialRegistration();
 	
 	@DefaultMessage("Custom course request validation is enabled.")
@@ -2421,17 +2529,29 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Variable Credits")
 	String dialogChangeVariableCredit();
 	
+	@DefaultMessage("Request Variable Title Course")
+	String dialogRequestVariableTitleCourse();
+	
 	@DefaultMessage("Retrieving available grade modes and/or variable credits...")
 	String waitRetrieveGradeModes();
 	
 	@DefaultMessage("Requesting grade mode and/or credit changes...")
 	String waitChangeGradeModes();
 	
+	@DefaultMessage("Requesting variable title course...")
+	String waitRequestVariableTitleCourse();
+	
 	@DefaultMessage("Unable to get available grade modes and/or variable credits: {0}")
 	String exceptionRetrieveGradeModes(String message);
 	
 	@DefaultMessage("Failed to request grade mode and/or variable credit changes: {0}")
 	String exceptionChangeGradeModes(String message);
+	
+	@DefaultMessage("Failed to request variable title course: {0}")
+	String exceptionRequestVariableTitleCourse(String message);
+	
+	@DefaultMessage("Failed to load request course: {0}")
+	String exceptionGetVariableTitleCourseInfo(String message);
 	
 	@DefaultMessage("No grade mode or credit changes are available.")
 	String statusNoGradeModeChangesAvailable();
@@ -2445,6 +2565,12 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Grade mode and/or credit  changes have been successfully applied.")
     String statusGradeModeChangesApplied();
 	
+	@DefaultMessage("Variable title course has been successfully requested.")
+	String statusVariableCourseRequested();
+	
+	@DefaultMessage("A variable title course meeting your selection already exists. Do you want to submit a request anyway?")
+	String questionVariableCourseAlreadyExists();
+	
 	@DefaultMessage("There are no courses with grade modes and/or variable credits.")
 	String emptyGradeChanges();
 	
@@ -2453,6 +2579,12 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Close Dialog")
 	String buttonCloseGradeModeChanges();
+	
+	@DefaultMessage("Request Course")
+	String buttonSubmitVariableTitleCourse();
+	
+	@DefaultMessage("Close Dialog")
+	String buttonCloseVariableTitleCourse();
 	
 	@DefaultMessage("The following grade mode changes are being requested:")
 	String gradeModeListChanges();
@@ -2614,6 +2746,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Advisor Course Recommendations")
 	String pdfHeaderAdvisorCourseRequests();
 	
+	@DefaultMessage("Validating...")
+	String advisorCourseRequestsValidating();
+	
 	@DefaultMessage("Saving...")
 	String advisorCourseRequestsSaving();
 	
@@ -2658,6 +2793,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Submit failed: {0}")
 	String advisorRequestsSubmitFailed(String reason);
+	
+	@DefaultMessage("Validation failed: {0}")
+	String advisorRequestsValidationFailed(String reason);
 	
 	@DefaultMessage("Email failed: {0}")
 	String advisorRequestsEmailFailed(String reason);
@@ -2868,4 +3006,55 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Last Used")
 	String colAdvisorNotesTime();
+	
+	@DefaultMessage("Course:")
+	String propReqVTCourseCourse();
+	
+	@DefaultMessage("Details:")
+	String propReqVTCourseDetails();
+	
+	@DefaultMessage("Title:")
+	String propReqVTCourseTitle();
+	
+	@DefaultMessage("Course title must be provided.")
+	String errorReqVTCourseNoTitle();
+	
+	@DefaultMessage("Instructor must be provided.")
+	String errorReqVTCourseNoInstructor();
+	
+	@DefaultMessage("Please put in the instructor name/email in the notes below.")
+	String hintReqVTCourseNoInstructorMatch();
+	
+	@DefaultMessage("Credit:")
+	String propReqVTCourseCredit();
+	
+	@DefaultMessage("Instructor:")
+	String propReqVTCourseInstructor();
+	
+	@DefaultMessage("Grade Mode:")
+	String propReqVTCourseGradeMode();
+	
+	@DefaultMessage("Dates:")
+	String propReqVTCourseDates();
+	
+	@DefaultMessage("From: ")
+	String propReqVTCourseDatesFrom();
+	
+	@DefaultMessage("- To: ")
+	String propReqVTCourseDatesTo();
+	
+	@DefaultMessage("Note:")
+	String propReqVTCourseNote();
+	
+	@DefaultMessage("Disclaimer:")
+	String propReqVTCourseDisclaimer();
+	
+	@DefaultMessage("")
+	String propReqVTMaxCredit();
+	
+	@DefaultMessage("An example dislaimer here.\nI solemnly swear that i am up to no good.")
+	String disclaimerRequestVariableTitle();
+	
+	@DefaultMessage("None of the above")
+	String itemReqVTNoInstructor();
 }

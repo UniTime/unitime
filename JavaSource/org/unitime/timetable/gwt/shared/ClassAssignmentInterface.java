@@ -52,9 +52,11 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	private ArrayList<CourseAssignment> iAssignments = new ArrayList<CourseAssignment>();
 	private ArrayList<String> iMessages = null;
 	private ArrayList<ErrorMessage> iErrors = null;
+	private Set<Note> iNotes = null;
 	private boolean iCanEnroll = true;
 	private boolean iCanSetCriticalOverrides = false;
 	private double iValue = 0.0;
+	private Float iCurrentCredit = null;
 	
 	public ClassAssignmentInterface() {}
 	
@@ -139,6 +141,13 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			if (course.isAssigned() && !course.isFreeTime() && !course.isTeachingAssignment()) return true;
 		return false;
 	}
+	
+	public boolean hasNotes() { return iNotes != null && !iNotes.isEmpty(); }
+	public void addNote(Note note) {
+		if (iNotes == null) iNotes = new TreeSet<Note>();
+		iNotes.add(note);
+	}
+	public Set<Note> getNotes() { return iNotes; }
 	
 	public static class CourseAssignment implements IsSerializable, Serializable, Comparable<CourseAssignment> {
 		private static final long serialVersionUID = 1L;
@@ -812,6 +821,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public String getCode() { return iCode; }
 		public void setCode(String code) { iCode = code; }
+		public boolean hasCode() { return iCode != null && !iCode.isEmpty(); }
 		public String getLabel() { return (iLabel == null || iLabel.isEmpty() ? iCode : iLabel); }
 		public void setLable(String label) { iLabel = label; }
 		public boolean hasLabel() { return iLabel != null && !iLabel.isEmpty(); }
@@ -826,7 +836,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private long iId;
 		private Long iSessionId = null;
 		private String iExternalId, iName, iEmail;
-		private List<CodeLabel> iArea, iClassification, iMajor, iAccommodation, iMinor, iConcentration;
+		private List<CodeLabel> iArea, iClassification, iMajor, iAccommodation, iMinor, iConcentration, iDegree;
 		private List<String> iAdvisor;
 		private Set<Group> iGroups;
 		private boolean iCanShowExternalId = false, iCanSelect = false;
@@ -919,9 +929,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public String getConcentration(String delim) { 
 			if (iConcentration == null) return "";
 			String ret = "";
-			for (CodeLabel conc: iConcentration) {
-				if (!ret.isEmpty()) ret += delim;
-				ret += conc.getCode();
+			for (Iterator<CodeLabel> i = iConcentration.iterator(); i.hasNext(); ) {
+				CodeLabel conc = i.next();
+				if (conc.hasCode()) ret += conc.getCode();
+				if (i.hasNext()) ret += delim;
 			}
 			return ret;
 		}
@@ -930,6 +941,28 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			iConcentration.add(new CodeLabel(conc, label));
 		}
 		public List<CodeLabel> getConcentrations() { return iConcentration; }
+		
+		public boolean hasDegree() {
+			if (iDegree == null || iDegree.isEmpty()) return false;
+			for (CodeLabel degr: iDegree)
+				if (!degr.isEmpty()) return true;
+			return false;
+		}
+		public String getDegree(String delim) { 
+			if (iDegree == null) return "";
+			String ret = "";
+			for (Iterator<CodeLabel> i = iDegree.iterator(); i.hasNext(); ) {
+				CodeLabel deg = i.next();
+				if (deg.hasCode()) ret += deg.getCode();
+				if (i.hasNext()) ret += delim;
+			}
+			return ret;
+		}
+		public void addDegree(String degree, String label) {
+			if (iDegree == null) iDegree = new ArrayList<CodeLabel>();
+			iDegree.add(new CodeLabel(degree, label));
+		}
+		public List<CodeLabel> getDegrees() { return iDegree; }
 		
 		public boolean hasAdvisor() { return iAdvisor != null && !iAdvisor.isEmpty(); }
 		public String getAdvisor(String delim) { 
@@ -1602,18 +1635,21 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 
 	public static class SectioningAction implements IsSerializable, Serializable, Comparable<SectioningAction> {
 		private static final long serialVersionUID = 1L;
+		private Long iLogId;
 		private Student iStudent;
 		private Date iTimeStamp;
 		private String iOperation;
 		private String iUser;
 		private String iMessage;
-		private String iProto;
 		private String iResult;
 		private Long iCpuTime;
 		private Long iWallTime;
 		
 		public SectioningAction() {
 		}
+		
+		public Long getLogId() { return iLogId; }
+		public void setLogId(Long id) { iLogId = id; }
 
 		public Student getStudent() { return iStudent; }
 		public void setStudent(Student student) { iStudent = student; }
@@ -1638,9 +1674,6 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public Long getWallTime() { return iWallTime; }
 		public void setWallTime(Long wallTime) { iWallTime = wallTime; }
-
-		public String getProto() { return iProto; }
-		public void setProto(String proto) { iProto = proto; }
 
 		@Override
 		public int compareTo(SectioningAction a) {
@@ -1754,6 +1787,46 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		}
 	}
 	
+	public static class Note implements IsSerializable, Serializable, Comparable<Note> {
+		private static final long serialVersionUID = 1L;
+		private Long iId;
+		private Date iTimeStamp;
+		private String iMessage;
+		private String iOwner;
+		
+		public Note() {}
+		
+		public Long getId() { return iId; }
+		public void setId(Long id) { iId = id; }
+		
+		public Date getTimeStamp() { return iTimeStamp; }
+		public void setTimeStamp(Date date) { iTimeStamp = date; }
+		
+		public String getMessage() { return iMessage; }
+		public void setMessage(String message) { iMessage = message; }
+		
+		public String getOwner() { return iOwner; }
+		public void setOwner(String owner) { iOwner = owner; }
+		
+		@Override
+		public int hashCode() {
+			return getId().hashCode();
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof Note)) return false;
+			return getId().equals(((Note)o).getId());
+		}
+		
+		@Override
+		public int compareTo(Note other) {
+			int cmp = -getTimeStamp().compareTo(other.getTimeStamp());
+			if (cmp != 0) return cmp;
+			return getId().compareTo(other.getId());
+		}
+	}
+	
 	public static class AdvisedInfoInterface implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private Float iMinCredit, iMaxCredit;
@@ -1806,4 +1879,8 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			iNotAssignedMessage = (iNotAssignedMessage == null ? "" : iNotAssignedMessage + "\n") +  message;
 		}
 	}
+	
+	public boolean hasCurrentCredit() { return iCurrentCredit != null && iCurrentCredit > 0f; }
+	public void setCurrentCredit(Float curCredit) { iCurrentCredit = curCredit; }
+	public Float getCurrentCredit() { return iCurrentCredit; }
 }

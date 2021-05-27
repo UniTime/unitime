@@ -629,34 +629,46 @@ public class SectioningStatusPage extends Composite {
 		
 		iLogTable.addMouseClickListener(new MouseClickListener<ClassAssignmentInterface.SectioningAction>() {
 			@Override
-			public void onMouseClick(TableEvent<SectioningAction> event) {
-				if (event.getData() != null && event.getData().getProto() != null) {
-					final HTML widget = new HTML(event.getData().getProto());
-					final ScrollPanel scroll = new ScrollPanel(widget);
-					scroll.setHeight(((int)(0.8 * Window.getClientHeight())) + "px");
-					scroll.setStyleName("unitime-ScrollPanel");
-					final UniTimeDialogBox dialog = new UniTimeDialogBox(true, false);
-					dialog.setWidget(scroll);
-					dialog.setText(MESSAGES.dialogChangeMessage(event.getData().getStudent().getName()));
-					dialog.setEscapeToHide(true);
-					dialog.addOpenHandler(new OpenHandler<UniTimeDialogBox>() {
+			public void onMouseClick(final TableEvent<SectioningAction> event) {
+				if (event.getData() != null) {
+					LoadingWidget.getInstance().show(MESSAGES.loadingChangeLogMessage());
+					iSectioningService.getChangeLogMessage(event.getData().getLogId(), new AsyncCallback<String>() {
 						@Override
-						public void onOpen(OpenEvent<UniTimeDialogBox> event) {
-							RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
-							scroll.setHeight(Math.min(widget.getElement().getScrollHeight(), Window.getClientHeight() * 80 / 100) + "px");
-							dialog.setPopupPosition(
-									Math.max(Window.getScrollLeft() + (Window.getClientWidth() - dialog.getOffsetWidth()) / 2, 0),
-									Math.max(Window.getScrollTop() + (Window.getClientHeight() - dialog.getOffsetHeight()) / 2, 0));
+						public void onSuccess(String message) {
+							LoadingWidget.getInstance().hide();
+							final HTML widget = new HTML(message);
+							final ScrollPanel scroll = new ScrollPanel(widget);
+							scroll.setHeight(((int)(0.8 * Window.getClientHeight())) + "px");
+							scroll.setStyleName("unitime-ScrollPanel");
+							final UniTimeDialogBox dialog = new UniTimeDialogBox(true, false);
+							dialog.setWidget(scroll);
+							dialog.setText(MESSAGES.dialogChangeMessage(event.getData().getStudent().getName()));
+							dialog.setEscapeToHide(true);
+							dialog.addOpenHandler(new OpenHandler<UniTimeDialogBox>() {
+								@Override
+								public void onOpen(OpenEvent<UniTimeDialogBox> event) {
+									RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
+									scroll.setHeight(Math.min(widget.getElement().getScrollHeight(), Window.getClientHeight() * 80 / 100) + "px");
+									dialog.setPopupPosition(
+											Math.max(Window.getScrollLeft() + (Window.getClientWidth() - dialog.getOffsetWidth()) / 2, 0),
+											Math.max(Window.getScrollTop() + (Window.getClientHeight() - dialog.getOffsetHeight()) / 2, 0));
+								}
+							});
+							dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
+								@Override
+								public void onClose(CloseEvent<PopupPanel> event) {
+									iLogTable.clearHover();
+									RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
+								}
+							});
+							dialog.center();
+						}
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+							UniTimeNotifications.error(caught);
 						}
 					});
-					dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
-						@Override
-						public void onClose(CloseEvent<PopupPanel> event) {
-							iLogTable.clearHover();
-							RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
-						}
-					});
-					dialog.center();
 				}
 			}
 		});
@@ -1987,6 +1999,14 @@ public class SectioningStatusPage extends Composite {
 			header.add(hClasf);
 			addSortOperation(hClasf, StudentComparator.SortBy.CLASSIFICATION, MESSAGES.colClassification());
 		}
+		
+		UniTimeTableHeader hDegree = null;
+		if (iStudentInfoVisibleColumns.hasDeg) {
+			hDegree = new UniTimeTableHeader(MESSAGES.colDegree());
+			//hMajor.setWidth("100px");
+			header.add(hDegree);
+			addSortOperation(hDegree, StudentComparator.SortBy.DEGREE, MESSAGES.colDegree());
+		}
 
 		UniTimeTableHeader hMajor = null;
 		if (iStudentInfoVisibleColumns.hasMajor) {
@@ -2240,6 +2260,7 @@ public class SectioningStatusPage extends Composite {
 			case ADVISED_CRIT: h = hMissingCourses; break;
 			case ADVISED_ASSGN: h = hNotAssignedCourses; break;
 			case MINOR: h = hMinor; break;
+			case DEGREE: h = hDegree; break;
 			}
 			if (h != null) {
 				Collections.sort(result, new StudentComparator(sort, asc, g));
@@ -2324,6 +2345,8 @@ public class SectioningStatusPage extends Composite {
 				line.add(new ACM(info.getStudent().getAreas()));
 				line.add(new ACM(info.getStudent().getClassifications()));
 			}
+			if (iStudentInfoVisibleColumns.hasDeg)
+				line.add(new ACM(info.getStudent().getDegrees()));
 			if (iStudentInfoVisibleColumns.hasMajor)
 				line.add(new ACM(info.getStudent().getMajors()));
 			if (iStudentInfoVisibleColumns.hasConc)
@@ -2348,6 +2371,8 @@ public class SectioningStatusPage extends Composite {
 				line.add(new HTML("&nbsp;", false));
 				line.add(new HTML("&nbsp;", false));
 			}
+			if (iStudentInfoVisibleColumns.hasDeg)
+				line.add(new HTML("&nbsp;", false));
 			if (iStudentInfoVisibleColumns.hasMajor)
 				line.add(new HTML("&nbsp;", false));
 			if (iStudentInfoVisibleColumns.hasConc)
@@ -2495,20 +2520,37 @@ public class SectioningStatusPage extends Composite {
 	}
 	
 	private void fillLogTable(int firstLine) {
+		final Map<Long, HTML> id2message = new HashMap<Long, HTML>();
 		iSectioningActionsFirstLine = firstLine;
 		if (iLogTable.getRowCount() > 0) iLogTable.clearTable(1);
 		for (int line = iSectioningActionsFirstLine; line < iSectioningActions.size() && (iMaxTableLines <= 0 || line < iSectioningActionsFirstLine + iMaxTableLines); line++) {
-			addLogTableLine(iSectioningActions.get(line));
+			addLogTableLine(iSectioningActions.get(line), id2message);
 		}
 		iRange.setText(MESSAGES.pageRange(iSectioningActionsFirstLine + 1, Math.min(iSectioningActions.size(), iSectioningActionsFirstLine + iMaxTableLines)));
 		
 		iPaginationButtons.setVisible(iSectioningActions.size() > iMaxTableLines && iMaxTableLines > 0);
 		iPrevious.setEnabled(iMaxTableLines > 0 && iSectioningActionsFirstLine >= iMaxTableLines);
 		iNext.setEnabled(iMaxTableLines > 0 && iSectioningActionsFirstLine + iMaxTableLines < iSectioningActions.size());
+		
+		if (!id2message.isEmpty()) {
+			iSectioningService.getChangeLogTexts(new ArrayList<Long>(id2message.keySet()), new AsyncCallback<Map<Long,String>>() {
+				@Override
+				public void onSuccess(Map<Long, String> result) {
+					for (Map.Entry<Long, String> e: result.entrySet()) {
+						HTML html = id2message.get(e.getKey());
+						if (html != null) html.setHTML(e.getValue());
+					}
+				}
+				@Override
+				public void onFailure(Throwable caught) {
+				}
+			});
+		}
 	}
 	
-	private void addLogTableLine(SectioningAction log) {
+	private void addLogTableLine(SectioningAction log, Map<Long,HTML> id2message) {
 		HTML message = new HTML(log.getMessage() == null ? "" : log.getMessage());
+		id2message.put(log.getLogId(), message);
 		message.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE_WRAP);
 		if (iSectioningActionsVisibleColumns.hasExtId) {
 			iLogTable.addRow(log,
@@ -3175,6 +3217,7 @@ public class SectioningStatusPage extends Composite {
 			ADVISED_ASSGN,
 			MINOR,
 			CONCENTRATION,
+			DEGREE,
 			;
 		}
 		
@@ -3215,6 +3258,10 @@ public class SectioningStatusPage extends Composite {
 				cmp = e1.getStudent().getConcentration("|").compareTo(e2.getStudent().getConcentration("|"));
 				if (cmp != 0) return cmp;
 				cmp = e1.getStudent().getMajor("|").compareTo(e2.getStudent().getMajor("|"));
+				if (cmp != 0) return cmp;
+				return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
+			case DEGREE:
+				cmp = e1.getStudent().getDegree("|").compareTo(e2.getStudent().getDegree("|"));
 				if (cmp != 0) return cmp;
 				return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
 			case GROUP:
@@ -3563,7 +3610,7 @@ public class SectioningStatusPage extends Composite {
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
 				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false, hasReqCred = false, hasDistances = false, hasOverlaps = false,
 				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false, hasOverride = false, hasExtId = false,
-				hasAdvisor = false, hasAdvisedInfo = false, hasMinor = false, hasConc = false;
+				hasAdvisor = false, hasAdvisedInfo = false, hasMinor = false, hasConc = false, hasDeg = false;
 		int selectableStudents = 0;
 		Set<String> groupTypes = new TreeSet<String>();
 		
@@ -3599,6 +3646,7 @@ public class SectioningStatusPage extends Composite {
 				if (e.getAdvisedInfo() != null) hasAdvisedInfo = true;
 				if (e.getStudent().hasMinor()) hasMinor = true;
 				if (e.getStudent().hasConcentration()) hasConc = true;
+				if (e.getStudent().hasDegree()) hasDeg = true;
 			}
 		}
 	}
@@ -3650,7 +3698,11 @@ public class SectioningStatusPage extends Composite {
 			clear();
 			if (iGroups != null && !iGroups.isEmpty()) {
 				for (ClassAssignmentInterface.CodeLabel group: iGroups) {
-					P g = new P(); g.setText(group.getCode());
+					P g = new P();
+					if (group.hasCode())
+						g.setText(group.getCode());
+					else
+						g.setHTML("&nbsp;");
 					if (group.hasLabel()) g.setTitle(group.getLabel());
 					add(g);
 				}

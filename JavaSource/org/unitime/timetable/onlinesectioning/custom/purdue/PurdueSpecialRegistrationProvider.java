@@ -62,9 +62,12 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentEnrollmentMessage;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.comparators.ClassComparator;
+import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseDemandDAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
+import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
@@ -94,12 +97,15 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpeci
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseResponse;
 import org.unitime.timetable.interfaces.ExternalClassLookupInterface;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpart;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationDashboardUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationProvider;
@@ -210,6 +216,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		return ApplicationProperties.getProperty("purdue.specreg.readTimeout", "60000");
 	}
 	
+	protected String getSpecialRegistrationDateFormat() {
+		return ApplicationProperties.getProperty("purdue.specreg.dateFormat", "M-d-yyyy");
+	}
+	
 	protected String getSpecialRegistrationApiSiteSubmitRegistration() {
 		return ApplicationProperties.getProperty("purdue.specreg.site.submitRegistration", getSpecialRegistrationApiSite() + "/submitRegistration");
 	}
@@ -289,6 +299,13 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		return id;
 	}
 	
+	protected String getBannerId(DepartmentalInstructor instructor) {
+		String id = instructor.getExternalUniqueId();
+		if (id == null) return null;
+		while (id.length() < 9) id = "0" + id;
+		return id;
+	}
+	
 	protected RequestorRole getRequestorType(OnlineSectioningLog.Entity user, XStudent student) {
 		if (user == null || user.getExternalId() == null) return null;
 		if (user.hasType()) {
@@ -324,9 +341,22 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		SpecialRegistrationStatus ret = null;
 		if (request.changes != null)
 			for (Change ch: request.changes)
-				ret = combine(ret, getStatus(ch.status));
+				if (ch.status != null)
+					ret = combine(ret, getStatus(ch.status));
 		if (ret == SpecialRegistrationStatus.Approved && request.completionStatus == CompletionStatus.inProgress)
 			return SpecialRegistrationStatus.Pending;
+		if (ret != null) return ret;
+		return getStatus(request.completionStatus);
+	}
+	
+	protected SpecialRegistrationStatus getCreditStatus(SpecialRegistration request) {
+		SpecialRegistrationStatus ret = null;
+		if (request.changes != null)
+			for (Change ch: request.changes) {
+				if (ch.status == null) continue;
+				if (ch.subject == null && ch.courseNbr == null)
+					ret = combine(ret, getStatus(ch.status));
+			}
 		if (ret != null) return ret;
 		return getStatus(request.completionStatus);
 	}
@@ -793,6 +823,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					course = r.subject + " " + r.courseNbr;
 				} else if (r.crn != null) {
 					for (String crn: r.crn.split(",")) {
+						if (crn.isEmpty() || "-".equals(crn)) continue;
 						CourseOffering c = findCourseByExternalId(server.getAcademicSession().getUniqueId(), crn);
 						if (c != null) { course = c.getCourseName(); break; }
 					}
@@ -1353,44 +1384,137 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		String honorsGradeMode = getResetGradeModesRegExp();
 		if (specialRequest.changes != null)
 			for (Change change: specialRequest.changes) {
-				if (change.crn == null || change.crn.isEmpty()) {
-					if (change.errors != null)
-						for (ChangeError err: change.errors)
-							if ("MAXI".equals(err.code)) {
-								maxi = err.message;
-								maxStatus = change.status;
-								maxiNote = SpecialRegistrationHelper.getLastNote(change);
-								ret.setMaxCredit(specialRequest.maxCredit);
-								if (specialRequest.maxCredit != null && student.getMaxCredit() != null) {
-									DecimalFormat df = new DecimalFormat("0.#");
-									maxi = "Maximum hours exceeded. Currently allowed " + df.format(student.getMaxCredit()) + " but needs " + df.format(specialRequest.maxCredit) + ".";
-									if (student.getMaxCredit() >= specialRequest.maxCredit && getStatus(change.status) == SpecialRegistrationStatus.Pending)
-										maxStatus = ChangeStatus.approved;
+				if (change.errors != null)
+					for (ChangeError err: change.errors)
+						if ("MAXI".equals(err.code)) {
+							maxi = err.message;
+							maxStatus = change.status;
+							maxiNote = SpecialRegistrationHelper.getLastNote(change);
+							ret.setMaxCredit(specialRequest.maxCredit);
+							if (specialRequest.maxCredit != null && student.getMaxCredit() != null) {
+								DecimalFormat df = new DecimalFormat("0.#");
+								maxi = "Maximum hours exceeded. Currently allowed " + df.format(student.getMaxCredit()) + " but needs " + df.format(specialRequest.maxCredit) + ".";
+								if (student.getMaxCredit() >= specialRequest.maxCredit && getStatus(change.status) == SpecialRegistrationStatus.Pending)
+									maxStatus = ChangeStatus.approved;
+							}
+						} else if ("VARTL".equals(err.code)) {
+							for (XRequest r: student.getRequests()) {
+								if (r instanceof XCourseRequest) {
+									XCourseRequest cr = (XCourseRequest)r;
+									XEnrollment e = cr.getEnrollment();
+									if (e != null && e.getCourseName().startsWith(change.subject + " " + change.courseNbr)) {
+										// already enrolled
+										CourseOffering course = CourseOfferingDAO.getInstance().get(e.getCourseId(), helper.getHibSession());
+										Set<Class_> list = adds.get(course);
+										if (list == null) {
+											list = new TreeSet<Class_>(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
+											 adds.put(course, list);
+										}
+										for (Long classId: e.getSectionIds()) {
+											Class_ clazz = Class_DAO.getInstance().get(classId, helper.getHibSession());
+											if (clazz != null) {
+												list.add(clazz);
+												List<Change> ch = changes.get(clazz);
+												if (ch == null) { ch = new ArrayList<Change>(); changes.put(clazz, ch); }
+												ch.add(change);
+											}
+										}
+									}
 								}
 							}
-					continue;
-				}
-				for (String crn: change.crn.split(",")) {
-					CourseOffering course = findCourseByExternalId(server.getAcademicSession().getUniqueId(), crn);
-					List<Class_> classes = findClassesByExternalId(server.getAcademicSession().getUniqueId(), crn);
-					if (course != null && classes != null && !classes.isEmpty()) {
-						courses.add(course);
-						Set<Class_> list = (ChangeOperation.DROP != change.operation ? adds : drops).get(course);
-						if (ChangeOperation.KEEP == change.operation || ChangeOperation.CHGMODE == change.operation || ChangeOperation.CHGVARCR == change.operation) keeps.add(course);
-						if (list == null) {
-							list = new TreeSet<Class_>(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
-							 (ChangeOperation.DROP != change.operation ? adds : drops).put(course, list);
+							String vartlNote = SpecialRegistrationHelper.getLastNote(change);
+							String message = err.message;
+							if (change.selectedTitle != null && !change.selectedTitle.isEmpty())
+								message = "Requested " + change.subject + " " + change.courseNbr + ": " + change.selectedTitle;
+							switch (getStatus(change.status)) {
+							case Approved:
+								message = "Approved: " + message;
+								break;
+							case Rejected:
+								message = "Denied: " + message;
+								break;
+							}
+							if (vartlNote != null && !vartlNote.toString().isEmpty())
+								message += "\n  <span class='note'>" + vartlNote.trim() + "</span>";
+							if (change.status != null)
+								message = "<span class='" + change.status + "'>" + message + "</span>";
+							ClassAssignment ca = new ClassAssignment();
+							ca.setSubject(change.subject);
+							ca.setCourseNbr(change.courseNbr);
+							ca.setTitle(change.selectedTitle);
+							ca.setSpecRegOperation(SpecialRegistrationOperation.Add);
+							ca.setCourseId(-1l);
+							ca.setSubpart("Ind");
+							ca.setCredit(change.selectedCreditHour);
+							if (change.selectedCreditHour != null)
+								ca.setCreditHour(Float.valueOf(change.selectedCreditHour));
+							if (change.selectedGradeMode != null)
+								ca.setGradeMode(new GradeMode(change.selectedGradeMode, change.selectedGradeModeDescription, honorsGradeMode != null && !honorsGradeMode.isEmpty() && change.selectedGradeMode.matches(honorsGradeMode)));
+							ca.setExternalId("00000");
+							ca.setClassId(-1l);
+							if (change.crn != null && !change.crn.isEmpty() && !change.crn.equals("-")) {
+								ca.setSection(change.crn);
+								ca.setLimit(new int[] {0, -1});
+								CourseOffering course = findCourseByExternalId(server.getAcademicSession().getUniqueId(), change.crn);
+								if (course != null) {
+									ca.setCourseId(course.getUniqueId());
+									ca.setSubject(course.getSubjectAreaAbbv());
+									ca.setCourseNbr(course.getCourseNbr());
+									ca.setTitle(course.getTitle());
+									List<Class_> classes = findClassesByExternalId(server.getAcademicSession().getUniqueId(), change.crn);
+									if (!classes.isEmpty()) {
+										Class_ clazz = classes.get(0);
+										ca.setClassId(clazz.getUniqueId());
+										ca.setSection(clazz.getClassSuffix(course));
+										if (ca.getSection() == null)
+											ca.setSection(clazz.getSectionNumberString(helper.getHibSession()));
+										ca.setClassNumber(clazz.getSectionNumberString(helper.getHibSession()));
+										ca.setSubpart(clazz.getSchedulingSubpart().getItypeDesc().trim());
+										ca.setExternalId(clazz.getExternalId(course));
+										if (clazz.getSchedulePrintNote() != null)
+											ca.addNote(clazz.getSchedulePrintNote());
+					                	int limit = clazz.getExpectedCapacity();
+					                    if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment() || limit >= 9999) limit = -1;
+					                    ca.setCancelled(clazz.isCancelled());
+										ca.setLimit(new int[] { clazz.getEnrollment(), limit});
+									}
+								}
+							} else if (change.selectedInstructorName != null) {
+								ca.setSection(change.selectedInstructorName);
+							} else {
+								ca.setSection("");
+							}
+							ret.addChange(ca);
+							ca.addError(message);
+							String em = err.message;
+							if (change.selectedTitle != null && !change.selectedTitle.isEmpty())
+								em = "Requested " + change.subject + " " + change.courseNbr + ": " + change.selectedTitle;
+							ret.addError(new ErrorMessage(ca.getCourseName(), ca.getExternalId(), "VARTL", em));
 						}
-						for (Class_ clazz: classes) {
-							list.add(clazz);
-							List<Change> ch = changes.get(clazz);
-							if (ch == null) { ch = new ArrayList<Change>(); changes.put(clazz, ch); }
-							ch.add(change);
+				if (change.crn != null) 
+					for (String crn: change.crn.split(",")) {
+						if (crn.isEmpty() || "-".equals(crn)) continue;
+						if (change.operation == ChangeOperation.CHGVARTL) continue;
+						CourseOffering course = findCourseByExternalId(server.getAcademicSession().getUniqueId(), crn);
+						List<Class_> classes = findClassesByExternalId(server.getAcademicSession().getUniqueId(), crn);
+						if (course != null && classes != null && !classes.isEmpty()) {
+							courses.add(course);
+							Set<Class_> list = (ChangeOperation.DROP != change.operation ? adds : drops).get(course);
+							if (ChangeOperation.KEEP == change.operation || ChangeOperation.CHGMODE == change.operation || ChangeOperation.CHGVARCR == change.operation) keeps.add(course);
+							if (list == null) {
+								list = new TreeSet<Class_>(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
+								 (ChangeOperation.DROP != change.operation ? adds : drops).put(course, list);
+							}
+							for (Class_ clazz: classes) {
+								list.add(clazz);
+								List<Change> ch = changes.get(clazz);
+								if (ch == null) { ch = new ArrayList<Change>(); changes.put(clazz, ch); }
+								ch.add(change);
+							}
 						}
+						if (change.status != null)
+							status = combine(status, getStatus(change.status));
 					}
-					if (change.status != null)
-						status = combine(status, getStatus(change.status));
-				}
 			}
 		String desc = "";
 		NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
@@ -1425,6 +1549,12 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 						if (clazz.getExternalId(course).equals(change.get(0).crn) && (clazz.getParentClass() == null || !clazz.getSchedulingSubpart().getItype().equals(clazz.getParentClass().getSchedulingSubpart().getItype())))
 							if (change.get(0).selectedCreditHour != null)
 								ca.setCreditHour(Float.valueOf(change.get(0).selectedCreditHour));
+					}
+					if (change.get(0).operation == ChangeOperation.CHGVARTL) {
+						if (change.get(0).selectedCreditHour != null)
+							ca.setCreditHour(Float.valueOf(change.get(0).selectedCreditHour));
+						if (change.get(0).selectedGradeMode != null)
+							ca.setGradeMode(new GradeMode(change.get(0).selectedGradeMode, change.get(0).selectedGradeModeDescription, honorsGradeMode != null && !honorsGradeMode.isEmpty() && change.get(0).selectedGradeMode.matches(honorsGradeMode)));
 					}
 					SpecialRegistrationStatus s = null;
 					for (Change ch: change)
@@ -1872,6 +2002,12 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								if (ch.status != null) {
 									SpecialRegistrationStatus s = course2status.get(course);
 									course2status.put(course, s == null ? getStatus(ch.status) : combine(s, getStatus(ch.status)));
+								} else {
+									for (ChangeError e: ch.errors)
+										if ("MAXI".equals(e.code)) {
+											SpecialRegistrationStatus s = course2status.get(course);
+											course2status.put(course, s == null ? getCreditStatus(r) : combine(s, getCreditStatus(r)));
+										}
 								}
 							}
 						}
@@ -2027,6 +2163,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					check.setFlag(EligibilityFlag.SR_EXTENDED, check.hasOverride("EX-ADD") || check.hasOverride("EX-DROP"));
 					check.setFlag(EligibilityFlag.CAN_CHANGE_GRADE_MODE, check.hasOverride("GMODE"));
 					check.setFlag(EligibilityFlag.CAN_CHANGE_VAR_CREDIT, check.hasOverride("VARCR"));
+					check.setFlag(EligibilityFlag.CAN_REQUEST_VAR_TITLE_COURSE, check.hasOverride("VARTL") && Customization.VariableTitleCourseProvider.hasProvider());
 				}
 			} else {
 				check.setFlag(EligibilityFlag.CAN_SPECREG, false);
@@ -2039,8 +2176,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			if (response.data != null && response.data.PIN != null && !response.data.PIN.isEmpty() && !"NA".equals(response.data.PIN))
 				pin = response.data.PIN;
 			Float maxCredit = null;
-			if (response.maxCredit != null && response.maxCredit > 0)
+			if (response.maxCredit != null && response.maxCredit > 0) {
 				maxCredit = response.maxCredit;
+				check.setMaxCredit(response.maxCredit);
+			}
 			if (student.getStudentId() != null && ((maxCredit != null && !maxCredit.equals(student.getMaxCredit())) || (pin != null && !pin.equals(student.getPin())))) {
 				Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
 				if (dbStudent != null) {
@@ -2269,6 +2408,9 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					if ("OR".equalsIgnoreCase(v.creditHrInd)) {
 						change.addAvailableCredit(min);
 						change.addAvailableCredit(max);
+					} else if ((min - Math.floor(min)) == 0.5f || (max - Math.floor(max)) == 0.5f) {
+						for (float c = min; c <= max + 0.001f; c += 0.5f)
+							change.addAvailableCredit((float)c);
 					} else {
 						for (float c = min; c <= max + 0.001f; c += 1f)
 							change.addAvailableCredit((float)c);
@@ -2758,5 +2900,113 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			return dash.replace("{term}", term).replace("{campus}", campus).replace("{studentId}",getBannerId(student));
 		}
 		return null;
+	}
+
+	@Override
+	public VariableTitleCourseResponse requestVariableTitleCourse(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, VariableTitleCourseRequest request) throws SectioningException {
+		ClientResource resource = null;
+		try {
+			SpecialRegistrationRequest req = new SpecialRegistrationRequest();
+			AcademicSessionInfo session = server.getAcademicSession();
+			req.term = getBannerTerm(session);
+			req.campus = getBannerCampus(session);
+			req.studentId = getBannerId(student);
+			req.changes = new ArrayList<Change>();
+			if (request.getMaxCredit() != null)
+				req.maxCredit = request.getMaxCredit();
+			
+			Change change = new Change();
+			change.courseNbr = request.getCourse().getCourseNbr();
+			change.subject = request.getCourse().getSubject();
+			change.operation = ChangeOperation.CHGVARTL;
+			if (request.getCredit() != null)
+				change.selectedCreditHour = Formats.getNumberFormat("0.#").format(request.getCredit());
+			change.selectedGradeMode = request.getGradeModeCode();
+			change.selectedGradeModeDescription = request.getGradeModeLabel();
+			change.selectedTitle = request.getTitle();
+			if (request.getInstructor() != null) {
+				DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(request.getInstructor().getId(), helper.getHibSession());
+				if (instructor != null) {
+					change.selectedInstructor = getBannerId(instructor);
+					change.selectedInstructorName = NameFormat.FIRST_LAST.format(instructor);
+					change.selectedInstructorEmail = instructor.getEmail();
+				}
+			}
+			Formats.Format<Date> df = Formats.getDateFormat(getSpecialRegistrationDateFormat());
+			if (request.getStartDate() != null)
+				change.selectedStartDate = df.format(request.getStartDate());
+			if (request.getEndDate() != null)
+				change.selectedEndDate = df.format(request.getEndDate());
+			if (request.hasSection()) {
+				change.crn = request.getSection();
+				if (change.crn != null && change.crn.indexOf('-') >= 0)
+					change.crn = change.crn.substring(0, change.crn.indexOf('-'));
+			}
+			ChangeError err = new ChangeError();
+			err.code = "VARTL";
+			err.message = "Requested " + request.getCourse().getCourseName() + ": " + request.getTitle();
+			change.errors = new ArrayList<ChangeError>();
+			change.errors.add(err);
+			change.apiTerm = session.getTerm();
+			change.apiYear = session.getYear();
+			req.changes.add(change);
+
+			req.mode = getSpecialRegistrationMode(); 
+			if (helper.getUser() != null) {
+				req.requestorId = getRequestorId(helper.getUser());
+				req.requestorRole = getRequestorType(helper.getUser(), student);
+			}
+			req.requestorNotes = request.getNote();
+			
+			resource = new ClientResource(getSpecialRegistrationApiSiteSubmitRegistration());
+			resource.setNext(iClient);
+			resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
+			
+			Gson gson = getGson(helper);
+			if (helper.isDebugEnabled())
+				helper.debug("Request: " + gson.toJson(request));
+			helper.getAction().addOptionBuilder().setKey("specreg_request").setValue(gson.toJson(req));
+			long t1 = System.currentTimeMillis();
+				
+			resource.post(new GsonRepresentation<SpecialRegistrationRequest>(req));
+			
+			helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
+			
+			SpecialRegistrationResponseList response = (SpecialRegistrationResponseList)new GsonRepresentation<SpecialRegistrationResponseList>(resource.getResponseEntity(), SpecialRegistrationResponseList.class).getObject();
+			if (helper.isDebugEnabled())
+				helper.debug("Response: " + gson.toJson(response));
+			helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(response));
+			
+			VariableTitleCourseResponse ret = new VariableTitleCourseResponse(); 
+			
+			if (response.data != null && !response.data.isEmpty()) {
+				for (SubmitRegistrationResponse r: response.data) {
+					if (r.requestorNotes == null) r.requestorNotes = request.getNote();
+					if (r.changes != null)
+						for (Change ch: r.changes)
+							if (ch.errors != null && !ch.errors.isEmpty() && ch.status == null)
+								ch.status = ChangeStatus.inProgress;
+					ret.addRequest(convert(server, helper, student, r, false));
+				}
+			}
+			
+			if (response.cancelledRequests != null)
+				for (CancelledRequest c: response.cancelledRequests)
+					ret.addCancelRequestId(c.regRequestId);
+			
+			return ret;
+		} catch (SectioningException e) {
+			helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
+			throw (SectioningException)e;
+		} catch (Exception e) {
+			helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(e.getMessage());
+		} finally {
+			if (resource != null) {
+				if (resource.getResponse() != null) resource.getResponse().release();
+				resource.release();
+			}
+		}
 	}
 }

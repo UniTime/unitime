@@ -28,6 +28,9 @@
 <!-- Attribute major.academicClass since UniTime 4.2 -->
 <!ATTLIST major academicClass CDATA #IMPLIED >
 <!ATTLIST major code CDATA #REQUIRED >
+<!ATTLIST major concentration CDATA #IMPLIED >
+<!ATTLIST major degree CDATA #IMPLIED >
+<!ATTLIST major weight CDATA #IMPLIED >
 
 <!ELEMENT minor EMPTY >
 <!ATTLIST minor academicArea CDATA #REQUIRED >

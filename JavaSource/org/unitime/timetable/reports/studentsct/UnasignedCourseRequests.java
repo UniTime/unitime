@@ -31,14 +31,17 @@ import org.cpsolver.ifs.assignment.AssignmentComparator;
 import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.studentsct.StudentSectioningModel;
+import org.cpsolver.studentsct.model.AreaClassificationMajor;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.model.StudentGroup;
 import org.cpsolver.studentsct.report.StudentSectioningReport;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -69,6 +72,27 @@ public class UnasignedCourseRequests implements StudentSectioningReport {
         		);
 	}
 	
+    protected String curriculum(Student student) {
+        String curriculum = "";
+        for (AreaClassificationMajor acm: student.getAreaClassificationMajors())
+                curriculum += (curriculum.isEmpty() ? "" : ", ") + acm.toString();
+        return curriculum;
+    }
+    
+    protected String group(Student student) {
+    	String group = "";
+    	for (StudentGroup aac: student.getGroups())
+    		group += (group.isEmpty() ? "" : ", ") + aac.getReference();
+    	return group;    	
+    }
+    
+    protected String advisor(Student student) {
+        String advisors = "";
+        for (Instructor instructor: student.getAdvisors())
+        	advisors += (advisors.isEmpty() ? "" : ", ") + instructor.getName();
+        return advisors;
+    }
+	
 	public CSVFile createTable(final Assignment<Request, Enrollment> assignment, boolean includeLastLikeStudents, boolean includeRealStudents, final boolean useAmPm) {
 		CSVFile csv = new CSVFile();
 		csv.setHeader(new CSVFile.CSVField[] {
@@ -76,6 +100,9 @@ public class UnasignedCourseRequests implements StudentSectioningReport {
         		new CSVFile.CSVField(MSG.reportStudentId()),
         		new CSVFile.CSVField(MSG.reportStudentName()),
         		new CSVFile.CSVField(MSG.reportStudentEmail()),
+        		new CSVFile.CSVField(MSG.reportStudentCurriculum()),
+        		new CSVFile.CSVField(MSG.reportStudentGroup()),
+        		new CSVFile.CSVField(MSG.reportStudentAdvisor()),
         		new CSVFile.CSVField(MSG.reportUnassignedCourse()),
         		new CSVFile.CSVField(MSG.reportAssignmentConflict())
                 });
@@ -96,6 +123,9 @@ public class UnasignedCourseRequests implements StudentSectioningReport {
 	            	line.add(new CSVFile.CSVField(dbStudent.getEmail()));
 	            else
 	            	line.add(new CSVFile.CSVField(""));
+	            line.add(new CSVFile.CSVField(curriculum(student)));
+	            line.add(new CSVFile.CSVField(group(student)));
+	            line.add(new CSVFile.CSVField(advisor(student)));
 	            line.add(new CSVFile.CSVField(courseRequest.getCourses().get(0).getName()));
 	            
 				TreeSet<Enrollment> overlaps = new TreeSet<Enrollment>(new Comparator<Enrollment>() {

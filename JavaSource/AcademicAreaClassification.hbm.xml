@@ -66,6 +66,13 @@
             column="concentration_id"
             not-null="false"
             foreign-key="fk_student_acmaj_conc"/>
+
+        <many-to-one
+            name="degree"
+            class="Degree"
+            column="degree_id"
+            not-null="false"
+            foreign-key="fk_degree_session"/>
             
         <property
             name="weight"

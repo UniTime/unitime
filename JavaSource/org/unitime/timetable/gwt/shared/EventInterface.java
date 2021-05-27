@@ -34,6 +34,7 @@ import java.util.TreeSet;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
@@ -2076,6 +2077,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private Integer iFirstDayOfWeek = null;
 		private boolean iCourseEventDefaultStudentAttendance = false;
 		private boolean iExpectedAttendanceRequired = false;
+		private boolean iCanEmailStudents = false;
 	
 		public EventPropertiesRpcResponse() {}
 		
@@ -2177,6 +2179,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		
 		public void setExpectedAttendanceRequired(boolean expectedAttendanceRequired) { iExpectedAttendanceRequired = expectedAttendanceRequired; }
 		public boolean getExpectedAttendanceRequired() { return iExpectedAttendanceRequired; }
+		
+		public void setCanEmailStudents(boolean canEmailStudents) { iCanEmailStudents = canEmailStudents; }
+		public boolean getCanEmailStudents() { return iCanEmailStudents; }
 	}
 	
 	public static class EventDetailRpcRequest extends EventRpcRequest<EventInterface> {
@@ -2784,5 +2789,31 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public String toString() {
 			return getName() + " = " + getValue();
 		}
+	}
+	
+	public static class SendStudentEmailsRpcRequest implements GwtRpcRequest<GwtRpcResponseNull> {
+		private Long iEventId;
+		private Set<Long> iStudentIds;
+		private String iCC;
+		private String iSubject;
+		private String iMessage;
+		
+		public SendStudentEmailsRpcRequest() {}
+
+		public Long getEventId() { return iEventId; }
+		public void setEventId(Long eventId) { iEventId = eventId; }
+		
+		public String getCC() { return iCC; }
+		public void setCC(String cc) { iCC = cc; }
+		public boolean hasCC() { return iCC != null && !iCC.isEmpty(); }
+
+		public String getSubject() { return iSubject; }
+		public void setSubject(String subject) { iSubject = subject; }
+		
+		public String getMessage() { return iMessage; }
+		public void setMessage(String message) { iMessage = message; }
+		
+		public Set<Long> getStudentIds() { return iStudentIds; }
+		public void setStudentIds(Set<Long> studentIds) { iStudentIds = studentIds; }
 	}
 }

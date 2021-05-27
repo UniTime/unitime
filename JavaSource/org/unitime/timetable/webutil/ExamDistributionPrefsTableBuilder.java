@@ -20,12 +20,14 @@
 package org.unitime.timetable.webutil;
 
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.cpsolver.ifs.util.CSVFile;
 import org.hibernate.Query;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -102,6 +104,31 @@ public class ExamDistributionPrefsTableBuilder {
         List distPrefs = q.setCacheable(true).list();
 
         toPdfTable(out, request, context, distPrefs, examTypeId); 
+    }
+    
+    public void getDistPrefsTableAsCsv(PrintWriter out, HttpServletRequest request, SessionContext context, Long subjectAreaId, String courseNbr, Long examTypeId) throws Exception {
+    	String query =  "select distinct dp from DistributionPref dp " +
+                "inner join dp.distributionObjects do, Exam x inner join x.owners o " +
+                "where ";
+    	if (ApplicationProperty.CourseOfferingTitleSearch.isTrue() && courseNbr != null && courseNbr.trim().length() > 2) {
+			query += "(" + (courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr ":"o.course.courseNbr=:courseNbr ") +
+					" or lower(o.course.title) like lower('%' || :courseNbr || '%')) and ";
+		} else if (courseNbr != null && !courseNbr.trim().isEmpty()) {
+			query += (courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr and ":"o.course.courseNbr=:courseNbr and ");
+		}
+    	query += (subjectAreaId==null?"":" o.course.subjectArea.uniqueId=:subjectAreaId and ")+
+                "dp.distributionType.examPref = true and "+
+                "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId";
+        Query q = new DistributionPrefDAO().getSession().createQuery(query)
+                .setLong("sessionId", context.getUser().getCurrentAcademicSessionId())
+                .setLong("examTypeId", examTypeId);
+        if (subjectAreaId!=null)
+            q.setLong("subjectAreaId", subjectAreaId);
+        if (courseNbr!=null && courseNbr.trim().length()!=0)
+            q.setString("courseNbr", courseNbr.trim().replaceAll("\\*", "%"));
+        List distPrefs = q.setCacheable(true).list();
+
+        toCsvTable(out, request, context, distPrefs, examTypeId); 
     }
 
     public String getDistPrefsTable(HttpServletRequest request, SessionContext context, Exam exam) throws Exception {
@@ -194,10 +221,8 @@ public class ExamDistributionPrefsTableBuilder {
         
         return tbl.printTable(WebTable.getOrder(context,"examDistPrefsTable.ord"));
     }
-
-    public void toPdfTable(OutputStream out, HttpServletRequest request, SessionContext context, Collection distPrefs, Long examTypeId) throws Exception {
-        WebTable.setOrder(context,"examDistPrefsTable.ord",request.getParameter("order"),4);
-        
+    
+    protected PdfWebTable generatePdfWebTable(SessionContext context, Collection distPrefs, Long examTypeId) {
         PdfWebTable tbl = new PdfWebTable(4, 
                 ExamTypeDAO.getInstance().get(examTypeId).getLabel()+" Examination Distribution Preferences",  
                 null,
@@ -253,6 +278,14 @@ public class ExamDistributionPrefsTableBuilder {
         
         if (nrPrefs==0)
             tbl.addLine(null,  new String[] { "No preferences found", "", "", "" }, null);
+
+        return tbl;
+    }
+
+    public void toPdfTable(OutputStream out, HttpServletRequest request, SessionContext context, Collection distPrefs, Long examTypeId) throws Exception {
+        WebTable.setOrder(context,"examDistPrefsTable.ord",request.getParameter("order"),4);
+        
+        PdfWebTable tbl = generatePdfWebTable(context, distPrefs, examTypeId);
         
         int ord = WebTable.getOrder(context,"examDistPrefsTable.ord");
         ord = (ord>0?1:-1)*(1+Math.abs(ord));
@@ -273,5 +306,22 @@ public class ExamDistributionPrefsTableBuilder {
 		doc.add(table);
 		
 		doc.close();
+    }
+    
+    public void toCsvTable(PrintWriter writer, HttpServletRequest request, SessionContext context, Collection distPrefs, Long examTypeId) throws Exception {
+        WebTable.setOrder(context,"examDistPrefsTable.ord",request.getParameter("order"),4);
+        
+        PdfWebTable tbl = generatePdfWebTable(context, distPrefs, examTypeId);
+        
+        int ord = WebTable.getOrder(context,"examDistPrefsTable.ord");
+        ord = (ord>0?1:-1)*(1+Math.abs(ord));
+    	
+        CSVFile csv = tbl.printCsvTable(ord);
+        
+		if (csv.getHeader() != null)
+			writer.println(csv.getHeader().toString());
+		if (csv.getLines() != null)
+			for (CSVFile.CSVLine line: csv.getLines())
+				writer.println(line.toString());
     }
 }

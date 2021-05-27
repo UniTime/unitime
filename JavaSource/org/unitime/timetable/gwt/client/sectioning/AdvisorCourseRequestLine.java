@@ -48,6 +48,8 @@ import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.CourseMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
@@ -989,6 +991,27 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 		
 		public void dispose() {
 			iCourseSelectionHandlerRegistration.removeHandler();
+		}
+
+		public void setErrors(CheckCoursesResponse messages) {
+			String message = null;
+			for (CourseMessage m: messages.getMessages(getText())) {
+				if (message == null) {
+					message = m.getMessage();
+				} else {
+					message += "\n" + m.getMessage();
+				}
+			}
+			if (message != null) {
+				String note = "";
+				if (getValue().hasStatusNote()) note += "\n<span class='status-note'>" + getValue().getStatusNote() + "</span>";
+				if (messages.isError(getText()))
+					setError(message + note);
+				else
+					setWarning(message + note);
+			} else {
+				setInfo(null);
+			}
 		}
 	}
 

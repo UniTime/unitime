@@ -35,6 +35,8 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpeci
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseResponse;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
@@ -61,6 +63,8 @@ public interface SpecialRegistrationProvider {
 	public ChangeGradeModesResponse changeGradeModes(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, ChangeGradeModesRequest reqiuest) throws SectioningException;
 	
 	public UpdateSpecialRegistrationResponse updateRegistration(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, UpdateSpecialRegistrationRequest request) throws SectioningException;
+	
+	public VariableTitleCourseResponse requestVariableTitleCourse(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, VariableTitleCourseRequest request) throws SectioningException;
 	
 	public void dispose();
 }

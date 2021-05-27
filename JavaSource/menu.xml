@@ -682,6 +682,14 @@
 			</not>
 		</condition>
 	</item>
+	<item name="Advisor Course Recommendations" page="acrf" type="gwt">
+		<condition>
+			<hasPermission name="AdvisorCourseRequests" authority="role"/>
+			<not>
+				<hasPermission name="StudentScheduling"/>
+			</not>
+		</condition>
+	</item>
 	<item name="Personal Schedule" page="personal" type="gwt">
 		<condition>
 			<or>
@@ -884,6 +892,12 @@
 				<parameter name="type">classification</parameter>
 				<condition>
 					<hasPermission name="AcademicClassifications"/>
+				</condition>
+			</item>
+			<item name="Degrees" page="admin" type="gwt">
+				<parameter name="type">degree</parameter>
+				<condition>
+					<hasPermission name="Degrees"/>
 				</condition>
 			</item>
 			<item name="Majors" page="admin" type="gwt">

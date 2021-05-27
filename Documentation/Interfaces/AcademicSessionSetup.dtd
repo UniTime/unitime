@@ -18,7 +18,7 @@
  * 
  -->
 
-<!ELEMENT sessionSetup ( session?, managers?, departments?, subjectAreas?, solverGroups?, datePatterns?, timePatterns?, examinationPeriods?, academicAreas?, academicClassifications?, posMajors?, posMinors?, studentGroups?, studentAccomodations? )  >
+<!ELEMENT sessionSetup ( session?, managers?, departments?, subjectAreas?, solverGroups?, datePatterns?, timePatterns?, examinationPeriods?, academicAreas?, academicClassifications?, degrees?, posMajors?, posMinors?, studentGroups?, studentAccomodations? )  >
 <!ATTLIST sessionSetup term CDATA #REQUIRED >
 <!ATTLIST sessionSetup year CDATA #REQUIRED >
 <!ATTLIST sessionSetup campus CDATA #REQUIRED >
@@ -172,11 +172,16 @@
 <!ELEMENT posMajors (posMajor*)>
 <!ATTLIST posMajors incremental ( false | true ) #IMPLIED >
 
-<!ELEMENT posMajor EMPTY>
+<!ELEMENT posMajor (concentration*)>
 <!ATTLIST posMajor externalId CDATA #IMPLIED >
 <!ATTLIST posMajor code CDATA #REQUIRED >
 <!ATTLIST posMajor name CDATA #REQUIRED >
 <!ATTLIST posMajor academicArea CDATA #REQUIRED >
+
+<!ELEMENT concentration EMPTY>
+<!ATTLIST concentration externalId CDATA #IMPLIED >
+<!ATTLIST concentration code CDATA #REQUIRED >
+<!ATTLIST concentration name CDATA #REQUIRED >
 
 <!ELEMENT posMinors (posMinor*)>
 <!ATTLIST posMinors incremental ( false | true ) #IMPLIED >
@@ -186,6 +191,14 @@
 <!ATTLIST posMinor code CDATA #REQUIRED >
 <!ATTLIST posMinor name CDATA #REQUIRED >
 <!ATTLIST posMinor academicArea CDATA #REQUIRED >
+
+<!ELEMENT degrees (degree*)>
+<!ATTLIST degrees incremental ( false | true ) #IMPLIED >
+
+<!ELEMENT degree EMPTY>
+<!ATTLIST degree externalId CDATA #IMPLIED >
+<!ATTLIST degree code CDATA #REQUIRED >
+<!ATTLIST degree name CDATA #REQUIRED >
 
 <!ELEMENT studentGroups (studentGroup*)>
 <!ATTLIST studentGroups incremental ( false | true ) #IMPLIED >

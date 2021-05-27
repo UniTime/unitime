@@ -47,6 +47,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private Set<String> iOverrides = null;
 		private String iOverrideRequestDisclaimer = null;
 		private GradeModes iGradeModes = null;
+		private Float iMaxCredit = null;
 		
 		public static enum EligibilityFlag implements IsSerializable {
 			IS_ADMIN, IS_ADVISOR, IS_GUEST,
@@ -65,7 +66,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			CAN_REGISTER,
 			NO_REQUEST_ARROWS,
 			CAN_SPECREG, HAS_SPECREG, SR_TIME_CONF, SR_LIMIT_CONF,
-			CAN_REQUIRE, CAN_CHANGE_GRADE_MODE, CAN_CHANGE_VAR_CREDIT,
+			CAN_REQUIRE, CAN_CHANGE_GRADE_MODE, CAN_CHANGE_VAR_CREDIT, CAN_REQUEST_VAR_TITLE_COURSE,
 			SR_CHANGE_NOTE,
 			HAS_ADVISOR_REQUESTS,
 			SR_LINK_CONF, SR_EXTENDED,
@@ -121,6 +122,22 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public Long getSessionId() { return iSessionId; }
 		public void setStudentId(Long studentId) { iStudentId = studentId; }
 		public Long getStudentId() { return iStudentId; }
+		
+		public boolean hasMaxCredit() { return iMaxCredit != null && iMaxCredit > 0f; }
+		public void setMaxCredit(Float maxCredit) { iMaxCredit = maxCredit; }
+		public Float getMaxCredit() { return iMaxCredit; }
+		
+		public boolean hasCurrentCredit() {
+			return iGradeModes != null && iGradeModes.hasCurrentCredit();
+		}
+		public void setCurrentCredit(Float curCredit) {
+			if (iGradeModes == null) iGradeModes = new GradeModes();
+			iGradeModes.setCurrentCredit(curCredit);
+		}
+		public Float getCurrentCredit() {
+			if (iGradeModes == null) return null;
+			return iGradeModes.getCurrentCredit();
+		}
 		
 		public boolean hasOverride(String errorCode) {
 			if (errorCode == null || errorCode.isEmpty()) return true;
@@ -395,6 +412,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		Map<String, GradeMode> iModes = new HashMap<String, GradeMode>();
 		private Map<String, Float> iCreditHours = new HashMap<String, Float>();
+		private Float iCurrentCredit = null;
 		
 		public GradeModes() {}
 		
@@ -441,6 +459,9 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 				iCreditHours.put(sectionId, credit);
 		}
 
+		public boolean hasCurrentCredit() { return iCurrentCredit != null && iCurrentCredit > 0f; }
+		public void setCurrentCredit(Float curCredit) { iCurrentCredit = curCredit; }
+		public Float getCurrentCredit() { return iCurrentCredit; }
 	}
 		
 	public static class GradeMode implements IsSerializable, Serializable, Comparable<GradeMode> {
@@ -541,6 +562,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			iEmailOptionalToggleDefault = clone.iEmailOptionalToggleDefault;
 			iMode = clone.iMode;
 			iCanRequire = clone.iCanRequire;
+			iAvailableStatuses = clone.iAvailableStatuses; 
 		}
 		
 		public Long getStudentId() { return iStudentId; }

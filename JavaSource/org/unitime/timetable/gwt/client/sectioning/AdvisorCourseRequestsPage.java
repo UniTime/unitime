@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.client.sectioning;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -29,6 +30,7 @@ import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
+import org.unitime.timetable.gwt.client.sectioning.AdvisorCourseRequestLine.CourseSelectionBox;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderClasses;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderDetails;
 import org.unitime.timetable.gwt.client.widgets.DataProvider;
@@ -287,8 +289,18 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 							getRowFormatter().setVisible(iStatusLine, true);
 						} else {
 							setAdvisorRequests(result.getRequest());
-							getRowFormatter().setVisible(iStatusLine, false);
+							setPin(result.getRequest());
+							if (result.getStatus() != null) {
+								iStatus.clear();
+								iStatus.addItem(result.getStatus().getLabel(), result.getStatus().getReference());
+								iStatus.setSelectedIndex(0);	
+								iStatus.setEnabled(false);
+								getRowFormatter().setVisible(iStatusLine, true);
+							} else {
+								getRowFormatter().setVisible(iStatusLine, false);
+							}
 						}
+						iPinReleased.setEnabled(result.isCanUpdate());
 						History.newItem(String.valueOf(result.getStudentId()), false);
 					}
 					@Override
@@ -346,6 +358,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		iPin.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
+				if (iDetails != null && !iDetails.isCanUpdate()) return;
 				iPinReleased.setValue(!iPinReleased.getValue());
 				pinReleaseChanged();
 			}
@@ -1024,14 +1037,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		}
 	}-*/;
 	
-	protected void submit() {
-		final AdvisingStudentDetails details = new AdvisingStudentDetails(iDetails);
-		details.setRequest(details.isCanUpdate() ? getRequest() : iAdvisorRequests.getValue());
-		details.setStatus(iDetails.getStatus(iStatus.getSelectedValue()));
-		if (getRowFormatter().isVisible(iPinLine) && details.getRequest() != null) {
-			details.getRequest().setPinReleased(iPinReleased.getValue());
-			details.getRequest().setPin(iDetails.getRequest().getPin());
-		}
+	protected void save(final AdvisingStudentDetails details) {
 		LoadingWidget.getInstance().show(details.isCanUpdate() ? MESSAGES.advisorCourseRequestsSaving() : MESSAGES.advisorCourseRequestsExporting());
 		sSectioningService.submitAdvisingDetails(details, false, new AsyncCallback<AdvisorCourseRequestSubmission>() {
 			@Override
@@ -1093,6 +1099,85 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				}
 			}
 		});
+	}
+	
+	protected void validateAndSave(final AdvisingStudentDetails details) {
+		iStatusBox.clear();
+		if (!details.isCanUpdate()) {
+			save(details);
+			return;
+		}
+		LoadingWidget.getInstance().show(MESSAGES.advisorCourseRequestsValidating());
+		sSectioningService.checkAdvisingDetails(details, new AsyncCallback<CourseRequestInterface.CheckCoursesResponse>() {
+			
+			@Override
+			public void onSuccess(final CheckCoursesResponse result) {
+				LoadingWidget.getInstance().hide();
+				if (result == null) {
+					save(details);
+					return;
+				}
+				for (AdvisorCourseRequestLine line: iCourses) {
+					for (CourseSelectionBox box: line.getCourses()) {
+						box.setErrors(result);
+					}
+				}
+				for (AdvisorCourseRequestLine line: iAlternatives) {
+					for (CourseSelectionBox box: line.getCourses()) {
+						box.setErrors(result);
+					}
+				}
+				if (result.hasErrorMessage()) {
+					iStatusBox.error(MESSAGES.advisorRequestsValidationFailed(result.getErrorMessage()));
+					return;
+				}
+				if (result.isConfirm()) {
+					final Iterator<Integer> it = result.getConfirms().iterator();
+					new AsyncCallback<Boolean>() {
+						@Override
+						public void onFailure(Throwable caught) {}
+						@Override
+						public void onSuccess(Boolean accept) {
+							if (accept && it.hasNext()) {
+								CourseRequestsConfirmationDialog.confirm(result, it.next(), this);
+							} else if (accept) {
+								save(details);
+							}
+						}
+					}.onSuccess(true);
+				} else {
+					save(details);
+				}
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				LoadingWidget.getInstance().hide();
+				if (caught instanceof PageAccessException) {
+					iStatusBox.error(MESSAGES.advisorRequestsValidationFailed(caught.getMessage()) + "\n" + MESSAGES.sessionExpiredClickToLogin(), caught, new Command() {
+						@Override
+						public void execute() {
+							Window.open("selectPrimaryRole.do?list=Y&target=close.jsp&menu=hide", "", 
+							"toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, " +
+							"width=720px, height=400px, top=" + ((Window.getClientHeight() - 400) / 2) + "px, left=" + ((Window.getClientWidth() - 720) / 2) + "px");
+						}
+					});
+				} else {
+					iStatusBox.error(MESSAGES.advisorRequestsValidationFailed(caught.getMessage()), caught);
+				}
+			}
+		});
+	}
+	
+	protected void submit() {
+		final AdvisingStudentDetails details = new AdvisingStudentDetails(iDetails);
+		details.setRequest(details.isCanUpdate() ? getRequest() : iAdvisorRequests.getValue());
+		details.setStatus(iDetails.getStatus(iStatus.getSelectedValue()));
+		if (getRowFormatter().isVisible(iPinLine) && details.getRequest() != null) {
+			details.getRequest().setPinReleased(iPinReleased.getValue());
+			details.getRequest().setPin(iDetails.getRequest().getPin());
+		}
+		validateAndSave(details);
 	}
 
 	@Override
@@ -1228,11 +1313,16 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 							if (!free.isEmpty()) free += ", ";
 							free += ft.toString(CONSTANTS.shortDays(), CONSTANTS.useAmPm());
 						}
+						String note = null, noteTitle = null;
+						if (check != null) {
+							note = check.getMessageWithColor(CONSTANTS.freePrefix() + free, "<br>");
+							noteTitle = check.getMessage(CONSTANTS.freePrefix() + free, "\n", "CREDIT");
+						}
 						WebTable.Row row = new WebTable.Row(
 								new WebTable.Cell(first ? MESSAGES.courseRequestsPriority(priority) : ""),
 								new WebTable.Cell(CONSTANTS.freePrefix() + free, 3, null),
 								new WebTable.Cell(""),
-								new WebTable.Cell(""),
+								new WebTable.NoteCell(note, noteTitle),
 								new WebTable.IconCell(RESOURCES.requestSaved(), MESSAGES.requested(free), MESSAGES.reqStatusRegistered()),
 								new WebTable.Cell(""),
 								new WebTable.Cell(""),

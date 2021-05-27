@@ -24,18 +24,19 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.interfaces.AcademicSessionLookup;
 import org.unitime.timetable.model.base.BaseSession;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
@@ -56,7 +57,7 @@ import org.unitime.timetable.util.ReferenceList;
  *
  * @author Tomas Muller, Stephanie Schluttenhofer, Zuzana Mullerova
  */
-public class Session extends BaseSession implements Comparable, Qualifiable {
+public class Session extends BaseSession implements Comparable<Session>, Qualifiable {
 
 	public static final int sHolidayTypeNone = 0;
 
@@ -114,13 +115,13 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 	 * @param id
 	 * @throws HibernateException
 	 */
+	@SuppressWarnings("unchecked")
 	public static void deleteSessionById(Long id) throws HibernateException {
 		org.hibernate.Session hibSession = new SessionDAO().getSession();
 		Transaction tx = null;
 		try {
 		    tx = hibSession.beginTransaction();
-		    for (Iterator i=hibSession.createQuery("from Location where session.uniqueId = :sessionId").setLong("sessionId", id).iterate();i.hasNext();) {
-                Location loc = (Location)i.next();
+		    for (Location loc  : (List<Location>)hibSession.createQuery("from Location where session.uniqueId = :sessionId").setLong("sessionId", id).list()) {
                 loc.getFeatures().clear();
                 loc.getRoomGroups().clear();
                 hibSession.update(loc);
@@ -229,8 +230,7 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 	 */
 	public Building building(String bldgUniqueId) {
 		// TODO make faster
-		for (Iterator it = this.getBuildings().iterator(); it.hasNext();) {
-			Building bldg = (Building) it.next();
+		for (Building bldg : this.getBuildings()) {
 			if (bldg.getExternalUniqueId().equals(bldgUniqueId)) {
 				return bldg;
 			}
@@ -257,31 +257,39 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 
 	public static Session getSessionUsingInitiativeYearTerm(
 			String academicInitiative, String academicYear, String academicTerm) {
-		Session s = null;
-		StringBuffer queryString = new StringBuffer();
-		SessionDAO sdao = new SessionDAO();
-
-		queryString.append(" from Session as s where s.academicInitiative = '"
-				+ academicInitiative + "' ");
-		queryString.append(" and s.academicYear = '" + academicYear + "' ");
-		queryString.append(" and s.academicTerm = '" + academicTerm + "' ");
-
-		Query q = sdao.getQuery(queryString.toString());
-		if (q.list().size() == 1) {
-			s = (Session) q.list().iterator().next();
-		}
-		return (s);
-
+		return(getSessionUsingInitiativeYearTerm(academicInitiative, academicYear, academicTerm, SessionDAO.getInstance().getSession()));
 	}
 
+	public static Session getSessionUsingInitiativeYearTerm(
+			String academicInitiative, String academicYear, String academicTerm, org.hibernate.Session hibSession) {
+		return (Session) hibSession.createQuery("from Session s where s.academicInitiative = :academicInitiative and s.academicYear = :academicYear and s.academicTerm = :academicTerm")
+			         .setString("academicInitiative", academicInitiative)
+			         .setString("academicYear", academicYear)
+			         .setString("academicTerm", academicTerm)
+			         .setCacheable(true)
+			         .uniqueResult();	
+		
+	}
+
+	public static Session getSessionUsingCampusYearTerm(
+			String campus, String year, String term, org.hibernate.Session hibSession) {
+		String className = ApplicationProperty.AcademicSessionLookupImplementation.value();
+		AcademicSessionLookup academicSessionLookup = null;
+		try {
+			academicSessionLookup = (AcademicSessionLookup) Class.forName(className).getDeclaredConstructor().newInstance();
+		} catch (Exception e) {
+			return getSessionUsingInitiativeYearTerm(campus, year, term, hibSession);
+		}
+		return academicSessionLookup.findAcademicSession(campus, year, term, hibSession);
+	}
 	public Session getLastLikeSession() {
-		String lastYr = new Integer(this.getSessionStartYear() - 1).toString();
+		String lastYr = Integer.valueOf(this.getSessionStartYear() - 1).toString();
 		return getSessionUsingInitiativeYearTerm(this.getAcademicInitiative(),
 				lastYr, getAcademicTerm());
 	}
 
 	public Session getNextLikeSession() {
-		String nextYr = new Integer(this.getSessionStartYear() + 1).toString();
+		String nextYr = Integer.valueOf(this.getSessionStartYear() + 1).toString();
 		return getSessionUsingInitiativeYearTerm(this.getAcademicInitiative(),
 				nextYr, getAcademicTerm());
 	}
@@ -517,9 +525,8 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 		setHolidays(sb.toString());
 	}
 
-	public int compareTo(Object o) {
-		if (o == null || !(o instanceof Session)) return -1;
-		Session s = (Session) o;
+	public int compareTo(Session s) {
+		if (s == null) return -1;
 		
 		int cmp = getAcademicInitiative().compareTo(s.getAcademicInitiative());
 		if (cmp!=0) return cmp;
@@ -527,7 +534,7 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 		cmp = getSessionBeginDateTime().compareTo(s.getSessionBeginDateTime());
 		if (cmp!=0) return cmp;
 		
-		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(s.getUniqueId() == null ? -1 : s.getUniqueId());
+		return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(s.getUniqueId() == null ? -1 : s.getUniqueId());
 	}
 
 	public DatePattern getDefaultDatePatternNotNull() {

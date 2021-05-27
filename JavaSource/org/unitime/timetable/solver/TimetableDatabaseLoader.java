@@ -2187,7 +2187,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 
     	for (Iterator i=clazz.getSchedulingSubpart().getInstrOfferingConfig().getSchedulingSubparts().iterator();i.hasNext();) {
     		SchedulingSubpart subpart = (SchedulingSubpart)i.next();
-    		if (subpart.getParentSubpart()!=null || subpart.getClasses().size()!=1) continue;
+    		if (subpart.getClasses().size()!=1) continue;
     		Class_ singleClazz = (Class_)subpart.getClasses().iterator().next();
     		Lecture singleLecture = getLecture(singleClazz);
 			if (singleLecture!=null && !variables.contains(singleLecture))
@@ -2547,7 +2547,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		incProgress();
     		if (courses == null) continue;
     		for (WeightedCourseOffering course: courses) {
-    			if (course.getPrimaryOfferingId() != null)
+    			if (course.getPrimaryOfferingId() != null && !course.getPrimaryOfferingId().equals(course.getCourseOffering().getInstructionalOffering().getUniqueId()))
     				student.addAlternatives(course.getPrimaryOfferingId(), course.getCourseOffering().getInstructionalOffering().getUniqueId());
     			if (offeringsToAvoid.contains(course.getCourseOffering().getInstructionalOffering().getUniqueId())) continue;
     			if (!somehowEnroll(student, course.getCourseOffering(), course.getWeight(), iStudentCourseDemands.getEnrollmentPriority(student.getId(), course.getCourseOfferingId())))
@@ -3181,7 +3181,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         						student.setCurriculum(student.getCurriculum() + " " + iOnlineOnlyStudentSuffix);
         				}
         			}
-        			if (studentId.getPrimaryOfferingId() != null)
+        			if (studentId.getPrimaryOfferingId() != null && !studentId.getPrimaryOfferingId().equals(offering.getUniqueId()))
         				student.addAlternatives(studentId.getPrimaryOfferingId(), offering.getUniqueId());
         			student.addOffering(offering.getUniqueId(), weight * studentId.getWeight(), iStudentCourseDemands.getEnrollmentPriority(studentId.getStudentId(), course.getUniqueId()));
         			

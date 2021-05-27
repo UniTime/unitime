@@ -30,11 +30,13 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.Degree;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.ManagerRole;
 import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.PosMajorConcentration;
 import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Session;
@@ -82,6 +84,7 @@ public class AcademicSessionSetupExport extends BaseExport {
 	        exportAcademicClassifications(root, session);
 	        exportMajors(root, session);
 	        exportMinors(root, session);
+	        exportDegrees(root, session);
 	        exportStudentGroups(root, session);
 	        exportStudentAccomodations(root, session);
 	        
@@ -371,6 +374,14 @@ public class AcademicSessionSetupExport extends BaseExport {
 					majorEl.addAttribute("externalId", major.getExternalUniqueId());
 				if (major.getName() != null)
 					majorEl.addAttribute("name", major.getName());
+				for (PosMajorConcentration conc: major.getConcentrations()) {
+					Element concEl = majorEl.addElement("concentration");
+					concEl.addAttribute("code", conc.getCode());
+					if (conc.getExternalUniqueId() != null)
+						concEl.addAttribute("externalId", conc.getExternalUniqueId());
+					if (conc.getName() != null)
+						concEl.addAttribute("name", conc.getName());
+				}
 			}
 		}
 	}
@@ -388,6 +399,19 @@ public class AcademicSessionSetupExport extends BaseExport {
 				if (minor.getName() != null)
 					minorEl.addAttribute("name", minor.getName());
 			}
+		}
+	}
+	
+	protected void exportDegrees(Element root, Session session) {
+		Element degreesEl = root.addElement("degrees");
+		for (Degree degree: (List<Degree>)getHibSession().createQuery(
+				"from Degree where session = :sessionId order by reference").setLong("sessionId", session.getUniqueId()).list()) {
+			Element degreeEl = degreesEl.addElement("degree");
+			degreeEl.addAttribute("code", degree.getReference());
+			if (degree.getExternalUniqueId() != null)
+				degreeEl.addAttribute("externalId", degree.getExternalUniqueId());
+			if (degree.getLabel() != null)
+				degreeEl.addAttribute("name", degree.getLabel());
 		}
 	}
 	

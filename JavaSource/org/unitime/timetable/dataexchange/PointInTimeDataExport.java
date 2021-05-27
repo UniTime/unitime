@@ -47,6 +47,7 @@ import org.unitime.timetable.model.CourseCreditUnitType;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseType;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.Degree;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
@@ -101,6 +102,7 @@ public class PointInTimeDataExport extends BaseExport {
     private HashMap<Long, Element> academicAreaElements = new HashMap<Long, Element>();
     private HashMap<Long, Element> majorElements = new HashMap<Long, Element>();
     private HashMap<Long, Element> concentrationElements = new HashMap<Long, Element>();
+    private HashMap<Long, Element> degreeElements = new HashMap<Long, Element>();
     private HashMap<Long, Element> minorElements = new HashMap<Long, Element>();
     private HashMap<Long, Element> courseTypeElements = new HashMap<Long, Element>();
     private HashMap<Long, Element> classDurationTypeElements = new HashMap<Long, Element>();
@@ -127,6 +129,7 @@ public class PointInTimeDataExport extends BaseExport {
     private Element academicClassificationsElement = null;
     private Element majorsElement = null;
     private Element minorsElement = null;
+    private Element degreesElement = null;
     
 	public static String sRootElementName = "pointInTimeData";
 	public static String sNameAttribute = "name";
@@ -195,6 +198,8 @@ public class PointInTimeDataExport extends BaseExport {
 	public static String sMajorsElementName = "majors";
 	public static String sMajorElementName = "major";
 	public static String sConcentrationElementName = "concentration";
+	public static String sDegreeElementName = "degree";
+	public static String sDegreesElementName = "degrees";
 	public static String sMinorsElementName = "minors";
 	public static String sMinorElementName = "minor";
 	public static String sLocationsElementName = "locations";
@@ -282,6 +287,7 @@ public class PointInTimeDataExport extends BaseExport {
 	public static String sMajorUniqueIdAttribute = "majorUniqueId";
 	public static String sConcentrationUniqueIdAttribute = "concentrationUniqueId";
 	public static String sAcademicAreaMajorClassificationWeightAttribute = "weight";
+	public static String sDegreeUniqueIdAttribute = "degreeUniqueId";
 	
 	public static String sAcadAreaMinorClassificationElementName = "acadAreaMinorClassification";
 	public static String sMinorUniqueIdAttribute = "minorUniqueId";
@@ -609,6 +615,7 @@ public class PointInTimeDataExport extends BaseExport {
             majorsElement = root.addElement(sMajorsElementName);
             minorsElement = root.addElement(sMinorsElementName);
             offeringsElement = root.addElement(sOfferingsElementName);
+            degreesElement = root.addElement(sDegreesElementName);
 
             
             info("Exporting "+offerings.size()+" offerings ...");
@@ -982,11 +989,16 @@ public class PointInTimeDataExport extends BaseExport {
     	if (acm.getConcentration() != null && !concentrationElements.containsKey(acm.getConcentration().getUniqueId())) {
     		exportConcentration(acm.getConcentration());
     	}
+    	if (acm.getDegree() != null && !degreeElements.containsKey(acm.getDegree().getUniqueId())) {
+    		exportDegree(acm.getDegree());
+    	}
     	acadAreaMajorClassificationElement.addAttribute(sAcademicAreaUniqueIdAttribute, acm.getAcademicArea().getUniqueId().toString());
     	acadAreaMajorClassificationElement.addAttribute(sAcademicClassificationUniqueIdAttribute, acm.getAcademicClassification().getUniqueId().toString());
     	acadAreaMajorClassificationElement.addAttribute(sMajorUniqueIdAttribute, acm.getMajor().getUniqueId().toString());
     	if (acm.getConcentration() != null)
-    		acadAreaMajorClassificationElement.addAttribute(sConcentrationUniqueIdAttribute, acm.getConcentration().getUniqueId().toString());	
+    		acadAreaMajorClassificationElement.addAttribute(sConcentrationUniqueIdAttribute, acm.getConcentration().getUniqueId().toString());
+    	if (acm.getDegree() != null)
+    		acadAreaMajorClassificationElement.addAttribute(sDegreeUniqueIdAttribute, acm.getDegree().getUniqueId().toString());
     	if (acm.getWeight() != null && acm.getWeight() != 1.0)
     		acadAreaMajorClassificationElement.addAttribute(sAcademicAreaMajorClassificationWeightAttribute, acm.getWeight().toString());
 	}
@@ -1024,6 +1036,15 @@ public class PointInTimeDataExport extends BaseExport {
     	concElement.addAttribute(sNameAttribute, conc.getName());
     	concElement.addAttribute(sExternalIdAttribute, (conc.getExternalUniqueId() == null? conc.getUniqueId().toString() : conc.getExternalUniqueId()));
     	concentrationElements.put(conc.getUniqueId(), concElement);
+	}
+	
+	private void exportDegree(Degree degree) {
+    	Element degreeElement = degreesElement.addElement(sDegreeElementName);
+    	degreeElement.addAttribute(sUniqueIdAttribute, degree.getUniqueId().toString());
+    	degreeElement.addAttribute(sCodeAttribute, degree.getReference());
+    	degreeElement.addAttribute(sNameAttribute, degree.getLabel());
+    	degreeElement.addAttribute(sExternalIdAttribute, (degree.getExternalUniqueId() == null? degree.getUniqueId().toString() : degree.getExternalUniqueId()));
+    	degreeElements.put(degree.getUniqueId(), degreeElement);
 	}
 
 	private void exportMinor(PosMinor minor) {

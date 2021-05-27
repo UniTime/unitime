@@ -45,6 +45,7 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Ser
 	private String iDefaultStatus = null;
 	private String iDefaultInstructionalMethod = null;
 	private int iDayOfWeekOffset;
+	private Date iDefaultStartDate = null, iDefaultEndDate = null;
 	
 	public AcademicSessionInfo(Session session) {
 		update(session);
@@ -58,6 +59,11 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Ser
 		if (session.getDefaultDatePattern()!=null) {
 			iDatePatternId = session.getDefaultDatePattern().getUniqueId();
 			iWeekPattern = session.getDefaultDatePattern().getPatternBitSet();
+			iDefaultStartDate = session.getDefaultDatePattern().getStartDate();
+			iDefaultEndDate = session.getDefaultDatePattern().getEndDate();
+		} else {
+			iDefaultStartDate = session.getSessionBeginDateTime();
+			iDefaultEndDate = session.getClassesEndDateTime();
 		}
 		iFreeTimePattern = getFreeTimeBitSet(session);
 		iSessionBegin = session.getSessionBeginDateTime();
@@ -154,5 +160,13 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Ser
 	@Override
 	public String getQualifierLabel() {
 		return toString();
+	}
+	
+	public Date getDefaultStartDate() {
+		return iDefaultStartDate;
+	}
+	
+	public Date getDefaultEndDate() {
+		return iDefaultEndDate;
 	}
 }

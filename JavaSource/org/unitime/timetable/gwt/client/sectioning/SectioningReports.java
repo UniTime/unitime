@@ -133,18 +133,26 @@ public class SectioningReports extends Composite {
 					for (int x = 0; x < table.getCellCount(0); x++) {
 						boolean hide = true;
 						if (prev == null || !prevHide || !prev.getCell(x).equals(row.getCell(x))) hide = false;
-						String text = row.getCell(x).replaceAll("\\n", "<br>");
-						boolean number = false;
-						try {
-							Double.parseDouble(text);
-							number = true;
-						} catch (Exception e) {}
-						if (iHead.getCell(x).contains("%") && number)
-							text = PF.format(Double.parseDouble(text));
-						else if (text.matches("[\\-]?[0-9]+\\.[0-9]+") && number)
-							text = DF.format(Double.parseDouble(text));
-						else if (text.matches("[\\-]?[0-9]+(,[0-9][0-9][0-9])*(\\.[0-9]+)? ?%?"))
-							number = true;
+						String text = "";
+						boolean number = true;
+						int idx = 0;
+						for (String t: row.getCell(x).split("\\n")) {
+							boolean n = false;
+							try {
+								Double.parseDouble(t);
+								n = true;
+							} catch (Exception e) {}
+							if (iHead.getCell(x).contains("%") && n)
+								t = PF.format(Double.parseDouble(t));
+							else if (t.matches("[\\-]?[0-9]+\\.[0-9]+(<br>[\\-]?[0-9]+\\.[0-9]+)*") && n)
+								t = DF.format(Double.parseDouble(t));
+							else if (t.matches("[\\-]?[0-9]+(,[0-9][0-9][0-9])*(\\.[0-9]+)? ?%?"))
+								n = true;
+							if (!n) number = false;
+							if (idx > 0) text += "<br>";
+							text += t;
+							idx ++;
+						}
 						line.add(number ? new NumberCell(hide ? "" : text) : new HTML(hide ? "" : text));
 						prevHide = hide;
 					}
@@ -405,18 +413,26 @@ public class SectioningReports extends Composite {
 				for (int x = 0; x < iTable.getCellCount(0); x++) {
 					boolean hide = true;
 					if (prev == null || !prevHide || !prev.getCell(x).equals(row.getCell(x))) hide = false;
-					String text = row.getCell(x).replaceAll("\\n", "<br>");
-					boolean number = false;
-					try {
-						Double.parseDouble(text);
-						number = true;
-					} catch (Exception e) {}
-					if (iHead.getCell(x).contains("%") && number)
-						text = PF.format(Double.parseDouble(text));
-					else if (text.matches("[\\-]?[0-9]+\\.[0-9]+") && number)
-						text = DF.format(Double.parseDouble(text));
-					else if (text.matches("[\\-]?[0-9]+(,[0-9][0-9][0-9])*(\\.[0-9]+)? ?%?"))
-						number = true;
+					String text = "";
+					boolean number = true;
+					int idx = 0;
+					for (String t: row.getCell(x).split("\\n")) {
+						boolean n = false;
+						try {
+							Double.parseDouble(t);
+							n = true;
+						} catch (Exception e) {}
+						if (iHead.getCell(x).contains("%") && n)
+							t = PF.format(Double.parseDouble(t));
+						else if (t.matches("[\\-]?[0-9]+\\.[0-9]+(<br>[\\-]?[0-9]+\\.[0-9]+)*") && n)
+							t = DF.format(Double.parseDouble(t));
+						else if (t.matches("[\\-]?[0-9]+(,[0-9][0-9][0-9])*(\\.[0-9]+)? ?%?"))
+							n = true;
+						if (!n) number = false;
+						if (idx > 0) text += "<br>";
+						text += t;
+						idx ++;
+					}
 					line.add(number ? new NumberCell(hide ? "" : text) : new HTML(hide ? "" : text));
 					prevHide = hide;
 				}

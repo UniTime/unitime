@@ -377,6 +377,7 @@ public enum Right {
     EventLookupContactAdditional,
     EventLookupSchedule,
     EventDetail(Event.class),
+    EventDetailEmailStudents(Session.class),
     EventDetailArrangeHourClass(Class_.class),
     EventEdit(Event.class),
     EventEditClass(ClassEvent.class),
@@ -455,6 +456,9 @@ public enum Right {
     
     Concentrations(Session.class),
     ConcentrationEdit(Session.class),
+    
+    Degrees(Session.class),
+    DegreeEdit(Session.class),
 
     Minors(Session.class),
     MinorEdit(Session.class),
@@ -669,6 +673,8 @@ public enum Right {
     ApiRetrieveInstructors(Session.class),
     ApiRetrieveCurricula(Session.class),
     ApiRetrieveStudentGroups(Session.class),
+    ApiVariableTitleSectionLookup(Session.class),
+    ApiVariableTitleSectionCreate(Session.class),
     
     /** People Lookup limitations */
     CanLookupStudents,

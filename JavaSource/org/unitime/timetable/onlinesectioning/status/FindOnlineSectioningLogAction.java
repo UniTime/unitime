@@ -24,10 +24,8 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,7 +42,9 @@ import org.unitime.timetable.gwt.server.Query.QueryFormatter;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
+import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.StudentGroupType;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.StudentGroupTypeDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -55,8 +55,6 @@ import org.unitime.timetable.onlinesectioning.custom.CustomCourseLookupHolder;
 import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.util.Constants;
-
-import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
  * @author Tomas Muller
@@ -89,8 +87,6 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 		helper.beginTransaction();
 		try {
 			List<SectioningAction> ret = new ArrayList<SectioningAction>();
-			DateFormat df = Localization.getDateFormat(CONST.timeStampFormat());
-			NumberFormat nf = Localization.getNumberFormat(CONST.executionTimeFormat());
 			AcademicSessionInfo session = server.getAcademicSession();
 			
 			SectioningLogQueryFormatter formatter = new SectioningLogQueryFormatter(session, helper);
@@ -101,7 +97,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 			
 			org.hibernate.Query q = helper.getHibSession().createQuery(
 					"select l, s.uniqueId from OnlineSectioningLog l, Student s " +
-					(getQuery().hasAttribute("area", "clasf", "classification", "major") ? "left outer join s.areaClasfMajors m " : "") +
+					(getQuery().hasAttribute("area", "clasf", "classification", "major", "concentration") ? "left outer join s.areaClasfMajors m " : "") +
 					(getQuery().hasAttribute("minor") ? "left outer join s.areaClasfMinors n " : "") + 
 					(getQuery().hasAttribute("group") ? "left outer join s.groups g " : "") + 
 					(getQuery().hasAttribute("accommodation") ? "left outer join s.accomodations a " : "") +
@@ -121,235 +117,65 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 			
 			Set<Long> processedLogIds = new HashSet<Long>();
 			for (Object[] o: (List<Object[]>)q.list()) {
-				try {
-					org.unitime.timetable.model.OnlineSectioningLog log = (org.unitime.timetable.model.OnlineSectioningLog)o[0];
-					
-					XStudent student = server.getStudent((Long)o[1]);
-					if (student == null) continue;
-					if (!processedLogIds.add(log.getUniqueId())) continue;
-					ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
-					st.setId(student.getStudentId());
-					st.setSessionId(session.getUniqueId());
-					st.setExternalId(student.getExternalId());
-					st.setCanShowExternalId(iCanShowExtIds);
-					st.setName(student.getName());
-					for (XAreaClassificationMajor acm: student.getMajors()) {
-						st.addArea(acm.getArea(), acm.getAreaLabel());
-						st.addClassification(acm.getClassification(), acm.getClassificationLabel());
-						st.addMajor(acm.getMajor(), acm.getMajorLabel());
-						st.addConcentration(acm.getConcentration(), acm.getConcentrationLabel());
-					}
-					for (XAreaClassificationMajor acm: student.getMinors()) {
-						st.addMinor(acm.getMajor(), acm.getMajorLabel());
-					}
-					for (XStudent.XGroup gr: student.getGroups()) {
-						st.addGroup(gr.getType(), gr.getAbbreviation(), gr.getTitle());
-					}
-					for (XStudent.XGroup acc: student.getAccomodations()) {
-						st.addAccommodation(acc.getAbbreviation(), acc.getTitle());
-					}
-					for (XStudent.XAdvisor a: student.getAdvisors()) {
-						if (a.getName() != null) st.addAdvisor(a.getName());
-					}
+				org.unitime.timetable.model.OnlineSectioningLog log = (org.unitime.timetable.model.OnlineSectioningLog)o[0];
+				
+				XStudent student = server.getStudent((Long)o[1]);
+				if (student == null) continue;
+				if (!processedLogIds.add(log.getUniqueId())) continue;
+				ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
+				st.setId(student.getStudentId());
+				st.setSessionId(session.getUniqueId());
+				st.setExternalId(student.getExternalId());
+				st.setCanShowExternalId(iCanShowExtIds);
+				st.setName(student.getName());
+				for (XAreaClassificationMajor acm: student.getMajors()) {
+					st.addArea(acm.getArea(), acm.getAreaLabel());
+					st.addClassification(acm.getClassification(), acm.getClassificationLabel());
+					st.addMajor(acm.getMajor(), acm.getMajorLabel());
+					st.addConcentration(acm.getConcentration(), acm.getConcentrationLabel());
+					st.addDegree(acm.getDegree(), acm.getDegreeLabel());
+				}
+				for (XAreaClassificationMajor acm: student.getMinors()) {
+					st.addMinor(acm.getMajor(), acm.getMajorLabel());
+				}
+				for (XStudent.XGroup gr: student.getGroups()) {
+					st.addGroup(gr.getType(), gr.getAbbreviation(), gr.getTitle());
+				}
+				for (XStudent.XGroup acc: student.getAccomodations()) {
+					st.addAccommodation(acc.getAbbreviation(), acc.getTitle());
+				}
+				for (XStudent.XAdvisor a: student.getAdvisors()) {
+					if (a.getName() != null) st.addAdvisor(a.getName());
+				}
 
-					SectioningAction a = new SectioningAction();
-					a.setStudent(st);
-					a.setTimeStamp(log.getTimeStamp());
-					a.setOperation(Constants.toInitialCase(log.getOperation().replace('-', ' ')));
-					OnlineSectioningLog.Action action = OnlineSectioningLog.Action.parseFrom(log.getAction());
-					if (action.hasCpuTime())
-						a.setCpuTime(action.getCpuTime());
-					if (action.hasStartTime() && action.hasEndTime())
-						a.setWallTime(action.getEndTime() - action.getStartTime());
-					if (action.hasUser())
-						a.setUser(action.getUser().getName());
-					if (action.hasResult())
-						a.setResult(Constants.toInitialCase(action.getResult().name()));
-					// a.setProto(action.toString().replace("<", "&lt;").replace(">", "&gt;").replace(" ", "&nbsp;").replace("\n", "<br>"));
-					String html = "<table class='unitime-ChangeLog'>";
-					html += "<tr><td class='unitime-MainTableHeader' colspan='2'>General</td></tr>";
-					html += "<tr><td><b>" + MSG.colOperation() + ":</b></td><td>" + Constants.toInitialCase(log.getOperation().replace('-', ' ')) + "</td></tr>";
-					if (action.hasResult())
-						html += "<tr><td><b>" + MSG.colResult() + ":</b></td><td>" + Constants.toInitialCase(action.getResult().name()) + "</td></tr>";
-					if (action.hasStudent()) {
-						XStudent s = server.getStudent(action.getStudent().getUniqueId());
-						if (s != null) {
-							html += "<tr><td><b>" + MSG.colStudent() + ":</b></td><td>" + s.getName() + "</td></tr>";
-						}
-					}
-					for (OnlineSectioningLog.Entity other: action.getOtherList()) {
-						html += "<tr><td><b>" + Constants.toInitialCase(other.getType().name()) + ":</b></td><td>" + other.getName() + "</td></tr>";
-					}
-					html += "<tr><td><b>Time Stamp:</b></td><td>" + df.format(log.getTimeStamp()) + "</td></tr>";
-					for (OnlineSectioningLog.Property p: action.getOptionList()) {
-						if ("student-email".equals(log.getOperation()) && p.getKey().equalsIgnoreCase("email")) continue;
-						html += "<tr><td><b>" + Constants.toInitialCase(p.getKey()) + ":</b></td><td><div class='property' onclick='gwtPropertyClick(this);' title='" + MSG.changeLogClickToCopyToClipboard() + "'>" + (p.hasValue() ? StringEscapeUtils.escapeHtml(p.getValue()) : "") + "</div></td></tr>";
-					}
-					if (action.hasCpuTime()) {
-						html += "<tr><td><b>" + MSG.colCpuTime() + ":</b></td><td>" + nf.format(0.000000001 * action.getCpuTime()) + "</td></tr>";
-					}
-					if (action.hasStartTime() && action.hasEndTime()) {
-						html += "<tr><td nowrap><b>" + MSG.colWallTime() + ":</b></td><td>" + nf.format(0.001 * (action.getEndTime() - action.getStartTime())) + "</td></tr>";
-					}
-					if (action.hasApiGetTime()) {
-						html += "<tr><td nowrap><b>" + MSG.colApiGetTime() + ":</b></td><td>" + nf.format(0.001 * action.getApiGetTime()) + "</td></tr>";
-					}
-					if (action.hasApiPostTime()) {
-						html += "<tr><td nowrap><b>" + MSG.colApiPostTime() + ":</b></td><td>" + nf.format(0.001 * action.getApiPostTime()) + "</td></tr>";
-					}
-					if (action.hasApiException()) {
-						html += "<tr><td nowrap><b>" + MSG.colApiException() + ":</b></td><td>" + action.getApiException() + "</td></tr>";
-					}
-					if ("student-email".equals(log.getOperation())) {
-						for (OnlineSectioningLog.Property p: action.getOptionList())
-							if ("email".equals(p.getKey()) && p.hasValue()) {
-								html += "<tr><td class='unitime-MainTableHeader' colspan='2'>Email</td></tr>";
-								html += "<tr><td colspan='2'>" + p.getValue() + "</td></tr>";
-							}
-					}
-
-					if (!action.getRequestList().isEmpty()) {
-						html += "<tr><td class='unitime-MainTableHeader' colspan='2'>" + MSG.courseRequestsCourses() + "</td></tr>";
-						html += "<tr><td colspan='2'><table cellspacing='0' cellpadding='2'>" +
-								"<td class='unitime-TableHeader'>" + MSG.colPriority() + "</td>" +
-								"<td class='unitime-TableHeader'>" + MSG.colCourse() + "</td>" +
-								"<td class='unitime-TableHeader'>" + MSG.colPreferences() + "</td></tr>";
-					}
-					String request = "";
-					String selected = "";
-					int notAlt = 0, lastFT = -1;
-					for (OnlineSectioningLog.Request r: action.getRequestList()) {
-						if (!r.getAlternative()) notAlt = r.getPriority() + 1;
-						int idx = 0;
-						for (OnlineSectioningLog.Time f: r.getFreeTimeList()) {
-							if (idx == 0) {
-								html += (r.getPriority() > 0 && lastFT != r.getPriority() ? "<tr><td class='top-border-dashed'>" : "<tr><td>") + (lastFT == r.getPriority() ? "" : !r.getAlternative() ? MSG.courseRequestsPriority(1 + r.getPriority()) : MSG.courseRequestsAlternate(1 + r.getPriority() - notAlt)) + "</td>";
-								html += (r.getPriority() > 0 && lastFT != r.getPriority() ?"<td class='top-border-dashed' colspan='2'>":"<td colspan='2'>") + CONST.freePrefix() + " ";
-								request += (lastFT == r.getPriority() ? ", " : (request.isEmpty() ? "" : "<br>") + (r.getAlternative() ? "A" + (1 + r.getPriority() - notAlt) : String.valueOf(1 + r.getPriority())) + ". " + CONST.freePrefix() + " ");
-							} else {
-								html += ", ";
-								request += ", ";
-							}
-							idx++;
-							html += DayCode.toString(f.getDays()) + " "  + time(f.getStart()) + " - " + time(f.getStart() + f.getLength());
-							request += DayCode.toString(f.getDays()) + " "  + time(f.getStart()) + " - " + time(f.getStart() + f.getLength());
-							html += "</td></tr>";
-							lastFT = r.getPriority();
-						}
-						if (r.getFreeTimeList().isEmpty())
-							for (OnlineSectioningLog.Entity e: r.getCourseList()) {
-								if (idx == 0) {
-									html += (r.getPriority() > 0 ? "<tr><td class='top-border-dashed'>" : "<tr><td>") + (!r.getAlternative() ? MSG.courseRequestsPriority(1 + r.getPriority()) : MSG.courseRequestsAlternate(1 + r.getPriority() - notAlt)) + "</td>";
-									html += (r.getPriority() > 0 ?"<td class='top-border-dashed'>":"<td>");
-									request += (request.isEmpty() ? "" : "<br>") + (r.getAlternative() ? "A" + (1 + r.getPriority() - notAlt) : String.valueOf(1 + r.getPriority())) + ". ";
-								} else {
-									html += "<tr><td></td><td>";
-									request += ", ";
-								}
-								idx++;
-								html += e.getName();
-								request += e.getName();
-								html += (r.getPriority() > 0 && idx == 1 ? "</td><td class='top-border-dashed'>" : "</td><td>" );
-								for (int i = 0; i < e.getParameterCount(); i++)
-									html += (i > 0 ? ", " : "") + e.getParameter(i).getValue();
-								html += "</td></tr>";
-							}
-						for (OnlineSectioningLog.Section s: r.getSectionList()) {
-							if (s.getPreference() == OnlineSectioningLog.Section.Preference.SELECTED) {
-								if (!selected.isEmpty()) selected += "<br>";
-								String loc = "";
-								for (OnlineSectioningLog.Entity e: s.getLocationList()) {
-									if (!loc.isEmpty()) loc += ", ";
-									loc += e.getName();
-								}
-								String instr = "";
-								for (OnlineSectioningLog.Entity e: s.getInstructorList()) {
-									if (!instr.isEmpty()) instr += ", ";
-									instr += e.getName();
-								}
-								selected += s.getCourse().getName() + " " + s.getSubpart().getName() + " " + s.getClazz().getName() + " " +
-									(s.hasTime() ? DayCode.toString(s.getTime().getDays()) + " " + time(s.getTime().getStart()) + " - " + time(s.getTime().getStart() + s.getTime().getLength()) : "") + " " + loc;
-							}
-						}
-					}
-					if (!action.getRequestList().isEmpty()) {
-						html += "</table></td></tr>";
-					}
-					String enrollment = "";
-					Map<OnlineSectioningLog.Enrollment.EnrollmentType, String> enrollmentByType = new HashMap<OnlineSectioningLog.Enrollment.EnrollmentType, String>();
-					for (OnlineSectioningLog.Enrollment e: action.getEnrollmentList()) {
-						enrollment = "";
-						html += "<tr><td class='unitime-MainTableHeader' colspan='2'>"+ (e.hasType() ? Constants.toInitialCase(e.getType().name()) + " ": "") + MSG.enrollmentsTable() + "</td></tr>";
-						html += "<tr><td colspan='2'><table cellspacing='0' cellpadding='2'>" +
-								"<td class='unitime-TableHeader'>" + MSG.colCourse() + "</td>" +
-								"<td class='unitime-TableHeader'>" + MSG.colSubject() + "</td>" +
-								"<td class='unitime-TableHeader'>" + MSG.colClass() + "</td>" +
-								"<td class='unitime-TableHeader'>" + MSG.colDays() + "</td>" +
-								"<td class='unitime-TableHeader'>" + MSG.colStart() + "</td>" +
-								"<td class='unitime-TableHeader'>" + MSG.colEnd() + "</td>" +
-								"<td class='unitime-TableHeader'>" + MSG.colDate() + "</td>" +
-								"<td class='unitime-TableHeader'>" + MSG.colRoom() + "</td>" +
-								"<td class='unitime-TableHeader'>" + MSG.colInstructor() + "</td></tr>";
-						for (OnlineSectioningLog.Section s: e.getSectionList()) {
-							if (!s.hasCourse()) continue;
-							if (!enrollment.isEmpty()) enrollment += "<br>";
-							String loc = "";
-							for (OnlineSectioningLog.Entity r: s.getLocationList()) {
-								if (!loc.isEmpty()) loc += ", ";
-								loc += r.getName();
-							}
-							String instr = "";
-							for (OnlineSectioningLog.Entity r: s.getInstructorList()) {
-								if (!instr.isEmpty()) instr += ", ";
-								instr += r.getName();
-							}
-							html += "<tr>" +
-									"<td>" + s.getCourse().getName() + "</td>" +
-									"<td>" + s.getSubpart().getName() + "</td>" +
-									"<td>" + s.getClazz().getName() + "</td>" +
-									"<td>" + (s.hasTime() ? DayCode.toString(s.getTime().getDays()) : "") + "</td>" +
-									"<td>" + (s.hasTime() ? time(s.getTime().getStart()) : "") + "</td>" +
-									"<td>" + (s.hasTime() ? time(s.getTime().getStart() + s.getTime().getLength()) : "") + "</td>" +
-									"<td>" + (s.hasTime() && s.getTime().hasPattern() ? s.getTime().getPattern() : "") + "</td>" +
-									"<td>" + loc + "</td>" +
-									"<td>" + instr + "</td>" +
-									"</tr>";
-							enrollment += s.getCourse().getName() + " " + s.getSubpart().getName() + " " + s.getClazz().getName() + " " +
-								(s.hasTime() ? DayCode.toString(s.getTime().getDays()) + " " + time(s.getTime().getStart()) : "") + " " + loc;
-						}
-						html += "</table></td></tr>";
-						enrollmentByType.put(e.getType(), enrollment);
-					}
-					String message = "";
-					if (!action.getMessageList().isEmpty()) {
-						html += "<tr><td class='unitime-MainTableHeader' colspan='2'>" + MSG.tableMessages() + "</td></tr>";
-						for (OnlineSectioningLog.Message m: action.getMessageList()) {
-							if (m.hasText()) {
-								html += "<tr><td><b>" + m.getLevel().name() + ":</b></td><td>" + m.getText() + "</td></tr>"; message = m.getText();
-							}
-							if (m.hasException()) {
-								html += "<tr><td><b>Exception:</b></td><td>" + m.getException() + "</td></tr>"; message = m.getException();
-							}
-						}
-					}
-					html += "<tr><td class='unitime-MainTableHeader' colspan='2'>" + MSG.tableProto() + "</td></tr>";
-					html += "<tr><td colspan='2' class='proto'>" + action.toString().replace("<", "&lt;").replace(">", "&gt;").replace(" ", "&nbsp;").replace("\n", "<br>") + "</td></tr>";
-					html += "</table>";
-					if (action.hasResult() && OnlineSectioningLog.Action.ResultType.FAILURE.equals(action.getResult()) && !message.isEmpty()) {
-						a.setMessage(message);
-					} else if ("suggestions".equals(log.getOperation())) {
-						a.setMessage(selected.isEmpty() ? message : selected);
-					} else if ("section".equals(log.getOperation())) {
-						a.setMessage(request.isEmpty() ? message : request);
-					} else if (enrollmentByType.containsKey(OnlineSectioningLog.Enrollment.EnrollmentType.REQUESTED)) {
-						a.setMessage(enrollmentByType.get(OnlineSectioningLog.Enrollment.EnrollmentType.REQUESTED));
+				SectioningAction a = new SectioningAction();
+				a.setLogId(log.getUniqueId());
+				a.setStudent(st);
+				a.setTimeStamp(log.getTimeStamp());
+				a.setOperation(Constants.toInitialCase(log.getOperation().replace('-', ' ')));
+				if (log.getUser() != null && log.getUser().equals(st.getExternalId())) {
+					a.setUser(student.getName());
+				} else if (log.getUser() != null) {
+					Advisor advisor = Advisor.findByExternalId(log.getUser(), server.getAcademicSession().getUniqueId());
+					if (advisor != null) {
+						a.setUser(helper.getInstructorNameFormat().format(advisor));
 					} else {
-						a.setMessage(enrollment.isEmpty() ? request.isEmpty() ? message : request : enrollment);
+						TimetableManager mgr = TimetableManager.findByExternalId(log.getUser());
+						if (mgr != null)
+							a.setUser(helper.getInstructorNameFormat().format(mgr));
+						else
+							a.setUser(log.getUser());
 					}
-					a.setProto(html);
-					
-					ret.add(a);
-				} catch (InvalidProtocolBufferException e) {}
+				}
+				if (log.getResult() != null) {
+					OnlineSectioningLog.Action.ResultType res = OnlineSectioningLog.Action.ResultType.valueOf(log.getResult());
+					if (res != null)
+						a.setResult(Constants.toInitialCase(res.name()));
+				}
+				a.setMessage(log.getMessage());
+				a.setCpuTime(log.getCpuTime());
+				a.setWallTime(log.getWallTime());
+				ret.add(a);
 			}
 			helper.commitTransaction();
 			Collections.sort(ret);
@@ -361,8 +187,258 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 		}
 	}
+	
+	public static String getHTML(OnlineSectioningLog.Action action) {
+		DateFormat df = Localization.getDateFormat(CONST.timeStampFormat());
+		NumberFormat nf = Localization.getNumberFormat(CONST.executionTimeFormat());
+		String html = "<table class='unitime-ChangeLog'>";
+		html += "<tr><td class='unitime-MainTableHeader' colspan='2'>General</td></tr>";
+		html += "<tr><td><b>" + MSG.colOperation() + ":</b></td><td>" + Constants.toInitialCase(action.getOperation().replace('-', ' ')) + "</td></tr>";
+		if (action.hasResult())
+			html += "<tr><td><b>" + MSG.colResult() + ":</b></td><td>" + Constants.toInitialCase(action.getResult().name()) + "</td></tr>";
+		if (action.hasStudent() && action.getStudent().hasName()) {
+			html += "<tr><td><b>" + MSG.colStudent() + ":</b></td><td>" + action.getStudent().getName() + "</td></tr>";
+		}
+		for (OnlineSectioningLog.Entity other: action.getOtherList()) {
+			html += "<tr><td><b>" + Constants.toInitialCase(other.getType().name()) + ":</b></td><td>" + other.getName() + "</td></tr>";
+		}
+		html += "<tr><td><b>Time Stamp:</b></td><td>" + df.format(action.getStartTime()) + "</td></tr>";
+		for (OnlineSectioningLog.Property p: action.getOptionList()) {
+			if ("student-email".equals(action.getOperation()) && p.getKey().equalsIgnoreCase("email")) continue;
+			html += "<tr><td><b>" + Constants.toInitialCase(p.getKey()) + ":</b></td><td><div class='property' onclick='gwtPropertyClick(this);' title='" + MSG.changeLogClickToCopyToClipboard() + "'>" + (p.hasValue() ? StringEscapeUtils.escapeHtml(p.getValue()) : "") + "</div></td></tr>";
+		}
+		if (action.hasCpuTime()) {
+			html += "<tr><td><b>" + MSG.colCpuTime() + ":</b></td><td>" + nf.format(0.000000001 * action.getCpuTime()) + "</td></tr>";
+		}
+		if (action.hasStartTime() && action.hasEndTime()) {
+			html += "<tr><td nowrap><b>" + MSG.colWallTime() + ":</b></td><td>" + nf.format(0.001 * (action.getEndTime() - action.getStartTime())) + "</td></tr>";
+		}
+		if (action.hasApiGetTime()) {
+			html += "<tr><td nowrap><b>" + MSG.colApiGetTime() + ":</b></td><td>" + nf.format(0.001 * action.getApiGetTime()) + "</td></tr>";
+		}
+		if (action.hasApiPostTime()) {
+			html += "<tr><td nowrap><b>" + MSG.colApiPostTime() + ":</b></td><td>" + nf.format(0.001 * action.getApiPostTime()) + "</td></tr>";
+		}
+		if (action.hasApiException()) {
+			html += "<tr><td nowrap><b>" + MSG.colApiException() + ":</b></td><td>" + action.getApiException() + "</td></tr>";
+		}
+		if ("student-email".equals(action.getOperation())) {
+			for (OnlineSectioningLog.Property p: action.getOptionList())
+				if ("email".equals(p.getKey()) && p.hasValue()) {
+					html += "<tr><td class='unitime-MainTableHeader' colspan='2'>Email</td></tr>";
+					html += "<tr><td colspan='2'>" + p.getValue() + "</td></tr>";
+				}
+		}
 
-	protected String time(int slot) {
+		if (!action.getRequestList().isEmpty()) {
+			html += "<tr><td class='unitime-MainTableHeader' colspan='2'>" + MSG.courseRequestsCourses() + "</td></tr>";
+			html += "<tr><td colspan='2'><table cellspacing='0' cellpadding='2'>" +
+					"<td class='unitime-TableHeader'>" + MSG.colPriority() + "</td>" +
+					"<td class='unitime-TableHeader'>" + MSG.colCourse() + "</td>" +
+					"<td class='unitime-TableHeader'>" + MSG.colPreferences() + "</td></tr>";
+		}
+		int notAlt = 0, lastFT = -1;
+		for (OnlineSectioningLog.Request r: action.getRequestList()) {
+			if (!r.getAlternative()) notAlt = r.getPriority() + 1;
+			int idx = 0;
+			for (OnlineSectioningLog.Time f: r.getFreeTimeList()) {
+				if (idx == 0) {
+					html += (r.getPriority() > 0 && lastFT != r.getPriority() ? "<tr><td class='top-border-dashed'>" : "<tr><td>") + (lastFT == r.getPriority() ? "" : !r.getAlternative() ? MSG.courseRequestsPriority(1 + r.getPriority()) : MSG.courseRequestsAlternate(1 + r.getPriority() - notAlt)) + "</td>";
+					html += (r.getPriority() > 0 && lastFT != r.getPriority() ?"<td class='top-border-dashed' colspan='2'>":"<td colspan='2'>") + CONST.freePrefix() + " ";
+				} else {
+					html += ", ";
+				}
+				idx++;
+				html += DayCode.toString(f.getDays()) + " "  + time(f.getStart()) + " - " + time(f.getStart() + f.getLength());
+				html += "</td></tr>";
+				lastFT = r.getPriority();
+			}
+			if (r.getFreeTimeList().isEmpty())
+				for (OnlineSectioningLog.Entity e: r.getCourseList()) {
+					if (idx == 0) {
+						html += (r.getPriority() > 0 ? "<tr><td class='top-border-dashed'>" : "<tr><td>") + (!r.getAlternative() ? MSG.courseRequestsPriority(1 + r.getPriority()) : MSG.courseRequestsAlternate(1 + r.getPriority() - notAlt)) + "</td>";
+						html += (r.getPriority() > 0 ?"<td class='top-border-dashed'>":"<td>");
+					} else {
+						html += "<tr><td></td><td>";
+					}
+					idx++;
+					html += e.getName();
+					html += (r.getPriority() > 0 && idx == 1 ? "</td><td class='top-border-dashed'>" : "</td><td>" );
+					for (int i = 0; i < e.getParameterCount(); i++)
+						html += (i > 0 ? ", " : "") + e.getParameter(i).getValue();
+					html += "</td></tr>";
+				}
+		}
+		if (!action.getRequestList().isEmpty()) {
+			html += "</table></td></tr>";
+		}
+		for (OnlineSectioningLog.Enrollment e: action.getEnrollmentList()) {
+			html += "<tr><td class='unitime-MainTableHeader' colspan='2'>"+ (e.hasType() ? Constants.toInitialCase(e.getType().name()) + " ": "") + MSG.enrollmentsTable() + "</td></tr>";
+			html += "<tr><td colspan='2'><table cellspacing='0' cellpadding='2'>" +
+					"<td class='unitime-TableHeader'>" + MSG.colCourse() + "</td>" +
+					"<td class='unitime-TableHeader'>" + MSG.colSubject() + "</td>" +
+					"<td class='unitime-TableHeader'>" + MSG.colClass() + "</td>" +
+					"<td class='unitime-TableHeader'>" + MSG.colDays() + "</td>" +
+					"<td class='unitime-TableHeader'>" + MSG.colStart() + "</td>" +
+					"<td class='unitime-TableHeader'>" + MSG.colEnd() + "</td>" +
+					"<td class='unitime-TableHeader'>" + MSG.colDate() + "</td>" +
+					"<td class='unitime-TableHeader'>" + MSG.colRoom() + "</td>" +
+					"<td class='unitime-TableHeader'>" + MSG.colInstructor() + "</td></tr>";
+			for (OnlineSectioningLog.Section s: e.getSectionList()) {
+				if (!s.hasCourse()) continue;
+				String loc = "";
+				for (OnlineSectioningLog.Entity r: s.getLocationList()) {
+					if (!loc.isEmpty()) loc += ", ";
+					loc += r.getName();
+				}
+				String instr = "";
+				for (OnlineSectioningLog.Entity r: s.getInstructorList()) {
+					if (!instr.isEmpty()) instr += ", ";
+					instr += r.getName();
+				}
+				html += "<tr>" +
+						"<td>" + s.getCourse().getName() + "</td>" +
+						"<td>" + s.getSubpart().getName() + "</td>" +
+						"<td>" + s.getClazz().getName() + "</td>" +
+						"<td>" + (s.hasTime() ? DayCode.toString(s.getTime().getDays()) : "") + "</td>" +
+						"<td>" + (s.hasTime() ? time(s.getTime().getStart()) : "") + "</td>" +
+						"<td>" + (s.hasTime() ? time(s.getTime().getStart() + s.getTime().getLength()) : "") + "</td>" +
+						"<td>" + (s.hasTime() && s.getTime().hasPattern() ? s.getTime().getPattern() : "") + "</td>" +
+						"<td>" + loc + "</td>" +
+						"<td>" + instr + "</td>" +
+						"</tr>";
+			}
+			html += "</table></td></tr>";
+		}
+		if (!action.getMessageList().isEmpty()) {
+			html += "<tr><td class='unitime-MainTableHeader' colspan='2'>" + MSG.tableMessages() + "</td></tr>";
+			for (OnlineSectioningLog.Message m: action.getMessageList()) {
+				if (m.hasText()) {
+					html += "<tr><td><b>" + m.getLevel().name() + ":</b></td><td>" + m.getText() + "</td></tr>";
+				}
+				if (m.hasException()) {
+					html += "<tr><td><b>Exception:</b></td><td>" + m.getException() + "</td></tr>";
+				}
+			}
+		}
+		html += "<tr><td class='unitime-MainTableHeader' colspan='2'>" + MSG.tableProto() + "</td></tr>";
+		html += "<tr><td colspan='2' class='proto'>" + action.toString().replace("<", "&lt;").replace(">", "&gt;").replace(" ", "&nbsp;").replace("\n", "<br>") + "</td></tr>";
+		html += "</table>";
+		return html;
+	}
+	
+	protected static String getRequestMessage(OnlineSectioningLog.Action action) {
+		String request = "";
+		int notAlt = 0, lastFT = -1;
+		for (OnlineSectioningLog.Request r: action.getRequestList()) {
+			if (!r.getAlternative()) notAlt = r.getPriority() + 1;
+			int idx = 0;
+			for (OnlineSectioningLog.Time f: r.getFreeTimeList()) {
+				if (idx == 0) {
+					request += (lastFT == r.getPriority() ? ", " : (request.isEmpty() ? "" : "\n") + (r.getAlternative() ? "A" + (1 + r.getPriority() - notAlt) : String.valueOf(1 + r.getPriority())) + ". " + CONST.freePrefix() + " ");
+				} else {
+					request += ", ";
+				}
+				idx++;
+				request += DayCode.toString(f.getDays()) + " "  + time(f.getStart()) + " - " + time(f.getStart() + f.getLength());
+				lastFT = r.getPriority();
+			}
+			if (r.getFreeTimeList().isEmpty())
+				for (OnlineSectioningLog.Entity e: r.getCourseList()) {
+					if (idx == 0) {
+						request += (request.isEmpty() ? "" : "\n") + (r.getAlternative() ? "A" + (1 + r.getPriority() - notAlt) : String.valueOf(1 + r.getPriority())) + ". ";
+					} else {
+						request += ", ";
+					}
+					idx++;
+					request += e.getName();
+				}
+		}
+		return request;
+	}
+	
+	protected static String getSelectedMessage(OnlineSectioningLog.Action action) {
+		String selected = "";
+		for (OnlineSectioningLog.Request r: action.getRequestList()) {
+			for (OnlineSectioningLog.Section s: r.getSectionList()) {
+				if (s.getPreference() == OnlineSectioningLog.Section.Preference.SELECTED) {
+					if (!selected.isEmpty()) selected += "\n";
+					String loc = "";
+					for (OnlineSectioningLog.Entity e: s.getLocationList()) {
+						if (!loc.isEmpty()) loc += ", ";
+						loc += e.getName();
+					}
+					String instr = "";
+					for (OnlineSectioningLog.Entity e: s.getInstructorList()) {
+						if (!instr.isEmpty()) instr += ", ";
+						instr += e.getName();
+					}
+					selected += s.getCourse().getName() + " " + s.getSubpart().getName() + " " + s.getClazz().getName() + " " +
+						(s.hasTime() ? DayCode.toString(s.getTime().getDays()) + " " + time(s.getTime().getStart()) + " - " + time(s.getTime().getStart() + s.getTime().getLength()) : "") + " " + loc;
+				}
+			}
+		}
+		return selected;
+	}
+	
+	protected static String getEnrollmentMessage(OnlineSectioningLog.Action action) {
+		OnlineSectioningLog.Enrollment enrl = null;
+		for (OnlineSectioningLog.Enrollment e: action.getEnrollmentList()) {
+			enrl = e;
+			if (e.getType() == OnlineSectioningLog.Enrollment.EnrollmentType.REQUESTED) break;
+		}
+		String enrollment = "";
+		if (enrl != null)
+			for (OnlineSectioningLog.Section s: enrl.getSectionList()) {
+				if (!s.hasCourse()) continue;
+				if (!enrollment.isEmpty()) enrollment += "\n";
+				String loc = "";
+				for (OnlineSectioningLog.Entity r: s.getLocationList()) {
+					if (!loc.isEmpty()) loc += ", ";
+					loc += r.getName();
+				}
+				String instr = "";
+				for (OnlineSectioningLog.Entity r: s.getInstructorList()) {
+					if (!instr.isEmpty()) instr += ", ";
+					instr += r.getName();
+				}
+				enrollment += s.getCourse().getName() + " " + s.getSubpart().getName() + " " + s.getClazz().getName() + " " +
+					(s.hasTime() ? DayCode.toString(s.getTime().getDays()) + " " + time(s.getTime().getStart()) : "") + " " + loc;
+			}
+		return enrollment;
+	}
+	
+	public static String getMessage(OnlineSectioningLog.Action action) {
+		String message = "";
+		int level = 1;
+		for (OnlineSectioningLog.Message m: action.getMessageList()) {
+			if (!m.hasLevel()) continue; // skip messages with no level
+			if (!message.isEmpty() && level > m.getLevel().getNumber()) continue; // if we have a message, ignore messages with lower level
+			if (m.hasText()) {
+				message = (level != m.getLevel().getNumber() ? "" : message + "\n") + m.getText();
+				level = m.getLevel().getNumber();
+			} else if (m.hasException()) {
+				message = (level != m.getLevel().getNumber() ? "" : message + "\n") + m.getException();
+				level = m.getLevel().getNumber();
+			}
+		}
+		if (action.hasResult() && OnlineSectioningLog.Action.ResultType.FAILURE.equals(action.getResult()) && !message.isEmpty()) {
+			return message;
+		} else if ("suggestions".equals(action.getOperation())) {
+			String selected = getSelectedMessage(action);
+			return (selected.isEmpty() ? message : selected);
+		} if ("section".equals(action.getOperation())) {
+			String request = getRequestMessage(action);
+			return (request.isEmpty() ? message : request);
+		} else {
+			String enrollment = getEnrollmentMessage(action);
+			if (!enrollment.isEmpty()) return enrollment;
+			String request = getRequestMessage(action);
+			return (request.isEmpty() ? message : request);
+		}
+	}
+
+	protected static String time(int slot) {
         int h = slot / 12;
         int m = 5 * (slot % 12);
         if (CONST.useAmPm())
@@ -411,6 +487,8 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 				return "lower(m.academicClassification.code) = '" + body.toLowerCase() + "'";
 			} else if ("major".equalsIgnoreCase(attr)) {
 				return "lower(m.major.code) = '" + body.toLowerCase() + "'";
+			} else if ("concentration".equalsIgnoreCase(attr)) {
+				return "lower(m.concentration.code) = '" + body.toLowerCase() + "'";
 			} else if ("minor".equalsIgnoreCase(attr)) {
 				return "lower(n.minor.code) = '" + body.toLowerCase() + "'";
 			} else if ("group".equalsIgnoreCase(attr)) {

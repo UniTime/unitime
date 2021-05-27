@@ -32,7 +32,10 @@ import java.util.Vector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.CacheMode;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
+import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.dao.OnlineSectioningLogDAO;
@@ -44,6 +47,7 @@ import org.unitime.timetable.model.dao.StudentDAO;
  */
 public class OnlineSectioningLogger extends Thread {
 	private static Log sLog = LogFactory.getLog(OnlineSectioningLogger.class);
+	protected static StudentSectioningConstants CONST = Localization.create(StudentSectioningConstants.class);
 	private List<OnlineSectioningLog.Action> iActions = new Vector<OnlineSectioningLog.Action>();
 	private boolean iActive = false;
 	private boolean iEnabled = false;
@@ -110,6 +114,126 @@ public class OnlineSectioningLogger extends Thread {
 		}
 	}
 	
+	protected static String getRequestMessage(OnlineSectioningLog.Action action) {
+		String request = "";
+		int notAlt = 0, lastFT = -1;
+		for (OnlineSectioningLog.Request r: action.getRequestList()) {
+			if (!r.getAlternative()) notAlt = r.getPriority() + 1;
+			int idx = 0;
+			for (OnlineSectioningLog.Time f: r.getFreeTimeList()) {
+				if (idx == 0) {
+					request += (lastFT == r.getPriority() ? ", " : (request.isEmpty() ? "" : "\n") + (r.getAlternative() ? "A" + (1 + r.getPriority() - notAlt) : String.valueOf(1 + r.getPriority())) + ". " + CONST.freePrefix() + " ");
+				} else {
+					request += ", ";
+				}
+				idx++;
+				request += DayCode.toString(f.getDays()) + " "  + time(f.getStart()) + " - " + time(f.getStart() + f.getLength());
+				lastFT = r.getPriority();
+			}
+			if (r.getFreeTimeList().isEmpty())
+				for (OnlineSectioningLog.Entity e: r.getCourseList()) {
+					if (idx == 0) {
+						request += (request.isEmpty() ? "" : "\n") + (r.getAlternative() ? "A" + (1 + r.getPriority() - notAlt) : String.valueOf(1 + r.getPriority())) + ". ";
+					} else {
+						request += ", ";
+					}
+					idx++;
+					request += e.getName();
+				}
+		}
+		return request;
+	}
+	
+	protected static String getSelectedMessage(OnlineSectioningLog.Action action) {
+		String selected = "";
+		for (OnlineSectioningLog.Request r: action.getRequestList()) {
+			for (OnlineSectioningLog.Section s: r.getSectionList()) {
+				if (s.getPreference() == OnlineSectioningLog.Section.Preference.SELECTED) {
+					if (!selected.isEmpty()) selected += "\n";
+					String loc = "";
+					for (OnlineSectioningLog.Entity e: s.getLocationList()) {
+						if (!loc.isEmpty()) loc += ", ";
+						loc += e.getName();
+					}
+					String instr = "";
+					for (OnlineSectioningLog.Entity e: s.getInstructorList()) {
+						if (!instr.isEmpty()) instr += ", ";
+						instr += e.getName();
+					}
+					selected += s.getCourse().getName() + " " + s.getSubpart().getName() + " " + s.getClazz().getName() + " " +
+						(s.hasTime() ? DayCode.toString(s.getTime().getDays()) + " " + time(s.getTime().getStart()) + " - " + time(s.getTime().getStart() + s.getTime().getLength()) : "") + " " + loc;
+				}
+			}
+		}
+		return selected;
+	}
+	
+	protected static String getEnrollmentMessage(OnlineSectioningLog.Action action) {
+		OnlineSectioningLog.Enrollment enrl = null;
+		for (OnlineSectioningLog.Enrollment e: action.getEnrollmentList()) {
+			enrl = e;
+			if (e.getType() == OnlineSectioningLog.Enrollment.EnrollmentType.REQUESTED) break;
+		}
+		String enrollment = "";
+		if (enrl != null)
+			for (OnlineSectioningLog.Section s: enrl.getSectionList()) {
+				if (!s.hasCourse()) continue;
+				if (!enrollment.isEmpty()) enrollment += "\n";
+				String loc = "";
+				for (OnlineSectioningLog.Entity r: s.getLocationList()) {
+					if (!loc.isEmpty()) loc += ", ";
+					loc += r.getName();
+				}
+				String instr = "";
+				for (OnlineSectioningLog.Entity r: s.getInstructorList()) {
+					if (!instr.isEmpty()) instr += ", ";
+					instr += r.getName();
+				}
+				enrollment += s.getCourse().getName() + " " + s.getSubpart().getName() + " " + s.getClazz().getName() + " " +
+					(s.hasTime() ? DayCode.toString(s.getTime().getDays()) + " " + time(s.getTime().getStart()) : "") + " " + loc;
+			}
+		return enrollment;
+	}
+	
+	public static String getMessage(OnlineSectioningLog.Action action) {
+		String message = "";
+		int level = 1;
+		for (OnlineSectioningLog.Message m: action.getMessageList()) {
+			if (!m.hasLevel()) continue; // skip messages with no level
+			if (!message.isEmpty() && level > m.getLevel().getNumber()) continue; // if we have a message, ignore messages with lower level
+			if (m.hasText()) {
+				message = (level != m.getLevel().getNumber() || message.isEmpty() ? "" : message + "\n") + m.getText();
+				level = m.getLevel().getNumber();
+			} else if (m.hasException()) {
+				message = (level != m.getLevel().getNumber() || message.isEmpty() ? "" : message + "\n") + m.getException();
+				level = m.getLevel().getNumber();
+			}
+		}
+		if (action.hasResult() && OnlineSectioningLog.Action.ResultType.FAILURE.equals(action.getResult()) && !message.isEmpty()) {
+			return message;
+		} else if ("suggestions".equals(action.getOperation())) {
+			String selected = getSelectedMessage(action);
+			return (selected.isEmpty() ? message : selected);
+		} if ("section".equals(action.getOperation())) {
+			String request = getRequestMessage(action);
+			return (request.isEmpty() ? message : request);
+		} else {
+			String enrollment = getEnrollmentMessage(action);
+			if (!enrollment.isEmpty()) return enrollment;
+			String request = getRequestMessage(action);
+			return (request.isEmpty() ? message : request);
+		}
+	}
+	
+	protected static String time(int slot) {
+        int h = slot / 12;
+        int m = 5 * (slot % 12);
+        if (CONST.useAmPm())
+        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? "a" : h >= 12 ? "p" : "a");
+        else
+			return h + ":" + (m < 10 ? "0" : "") + m;
+	}
+	
 	public void run() {
 		sLog.info("Online Sectioning Logger is up.");
 		try {
@@ -161,15 +285,21 @@ public class OnlineSectioningLogger extends Thread {
 									log.setApiPostTime(q.getApiPostTime());
 								if (q.hasApiException())
 									log.setApiException(q.getApiException() != null && q.getApiException().length() > 255 ? q.getApiException().substring(0, 255) : q.getApiException());
-								if (!q.getMessageList().isEmpty()) {
-									String message = null; int level = 0;
-									for (OnlineSectioningLog.Message m: q.getMessageList()) {
-										if (message != null && !message.isEmpty() && (!m.hasLevel() || level < m.getLevel().getNumber())) continue;
-										if (m.hasText()) { message = m.getText(); level = m.getLevel().getNumber(); }
-										else if (m.hasException()) { message = m.getException(); level = m.getLevel().getNumber(); }
-									}
+								try {
+									String message = getMessage(q);
 									if (message != null && !message.isEmpty())
-										log.setMessage(message.length() > 255 ? message.substring(0, 255) : message);
+										log.setMessage(message.length() > 255 ? message.substring(0, 252) + "..." : message);
+								} catch (Exception e) {
+									if (!q.getMessageList().isEmpty()) {
+										String message = null; int level = 0;
+										for (OnlineSectioningLog.Message m: q.getMessageList()) {
+											if (message != null && !message.isEmpty() && (!m.hasLevel() || level > m.getLevel().getNumber())) continue;
+											if (m.hasText()) { message = m.getText(); level = m.getLevel().getNumber(); }
+											else if (m.hasException()) { message = m.getException(); level = m.getLevel().getNumber(); }
+										}
+										if (message != null && !message.isEmpty())
+											log.setMessage(message.length() > 255 ? message.substring(0, 252) + "..." : message);
+									}
 								}
 								Long sessionId = q.getSession().getUniqueId();
 								Session session = sessions.get(sessionId);

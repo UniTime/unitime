@@ -252,7 +252,10 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		if (concId != null)
 			aamc.setConcentration(concentrations.get(Long.valueOf(concId)));
 		String weight = getOptionalStringAttribute(element, PointInTimeDataExport.sAcademicAreaMajorClassificationWeightAttribute);
-		if (weight != null) aamc.setWeight(Double.valueOf(weight));
+		if (weight != null)
+			aamc.setWeight(Double.valueOf(weight));
+		else
+			aamc.setWeight(1.0);
 		aamc.setPitStudent(s);
 		s.addTopitAcadAreaMajorClassifications(aamc);
 		aamc.setUniqueId((Long) getHibSession().save(aamc));

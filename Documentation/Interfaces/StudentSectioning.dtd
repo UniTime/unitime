@@ -97,6 +97,9 @@
 
 <!ELEMENT major EMPTY >
 <!ATTLIST major code CDATA #REQUIRED >
+<!ATTLIST major concentration CDATA #IMPLIED >
+<!ATTLIST major degree CDATA #IMPLIED >
+<!ATTLIST major weight CDATA #IMPLIED >
 
 <!ELEMENT message ( #PCDATA ) >
 <!ATTLIST message type CDATA #REQUIRED >

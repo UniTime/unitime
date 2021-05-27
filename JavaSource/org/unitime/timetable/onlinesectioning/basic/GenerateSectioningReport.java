@@ -44,6 +44,7 @@ import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Offering;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Section;
@@ -89,6 +90,7 @@ import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XReservation;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XStudent.XAdvisor;
 import org.unitime.timetable.onlinesectioning.model.XStudent.XGroup;
 import org.unitime.timetable.server.sectioning.SectioningReportTypesBackend.ReportType;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
@@ -297,7 +299,21 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 							gr.getStudentIds().add(student.getStudentId());
 				}
 				for (XAreaClassificationMajor acm: student.getMajors())
-					clonnedStudent.getAreaClassificationMajors().add(new AreaClassificationMajor(acm.getArea(), acm.getClassification(), acm.getMajor(), acm.getConcentration()));
+					clonnedStudent.getAreaClassificationMajors().add(new AreaClassificationMajor(
+							acm.getArea(), acm.getAreaLabel(),
+							acm.getClassification(), acm.getClassificationLabel(),
+							acm.getMajor(), acm.getMajorLabel(),
+							acm.getConcentration(), acm.getConcentrationLabel(),
+							acm.getDegree(), acm.getDegreeLabel(),
+							acm.getWeight()));
+				for (XAreaClassificationMajor acm: student.getMinors())
+					clonnedStudent.getAreaClassificationMinors().add(new AreaClassificationMajor(
+							acm.getArea(), acm.getAreaLabel(),
+							acm.getClassification(), acm.getClassificationLabel(),
+							acm.getMajor(), acm.getMajorLabel(),
+							acm.getConcentration(), acm.getConcentrationLabel(),
+							acm.getDegree(), acm.getDegreeLabel(),
+							acm.getWeight()));
 				for (XStudent.XGroup acc: student.getAccomodations())
 					clonnedStudent.getAccommodations().add(acc.getAbbreviation());
 				for (XRequest r: student.getRequests()) {
@@ -339,6 +355,8 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 						}
 					}
 				}
+				for (XAdvisor advisor: student.getAdvisors())
+					clonnedStudent.getAdvisors().add(new Instructor(0, advisor.getExternalId(), advisor.getName(), advisor.getEmail()));
 				students.put(student.getStudentId(), clonnedStudent);
 				model.addStudent(clonnedStudent);
 				

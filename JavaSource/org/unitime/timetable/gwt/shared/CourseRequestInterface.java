@@ -348,7 +348,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		public int getDayCode() {
 			int ret = 0;
 			for (int day: iDays)
-				ret += (1 << day);
+				ret += (1 << (6 - day));
 			return ret;
 		}
 		
@@ -807,6 +807,17 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 				if (rc.equals(course) && !rc.isInactive()) return true;
 			return false;
 		}
+		public RequestedCourse update(RequestedCourse rc) {
+			if (iRequestedCourse == null) return null;
+			for (int i = 0; i < iRequestedCourse.size(); i++) {
+				RequestedCourse old = iRequestedCourse.get(i);
+				if (rc.equals(old)) {
+					iRequestedCourse.set(i, rc);
+					return old;
+				}
+			}
+			return null;
+		}
 
 		/*
 		public List<FreeTime> getRequestedFreeTime() {
@@ -1248,7 +1259,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			if (iErrorMessage == null) iErrorMessage = message;
 			else if (!iErrorMessage.contains(message)) iErrorMessage += "\n" + message;
 		}
-		public String getErrorMessaeg() { return iErrorMessage; }
+		public String getErrorMessage() { return iErrorMessage; }
 		
 		public boolean hasCreditWarning() { return iCreditWarning != null && !iCreditWarning.isEmpty(); }
 		public String getCreditWarning() { return iCreditWarning; }

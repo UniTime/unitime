@@ -609,7 +609,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	
 	public String getFirstError() {
 		if (iLastCheck != null && iLastCheck.hasErrorMessage())
-			return iLastCheck.getErrorMessaeg();
+			return iLastCheck.getErrorMessage();
 		if (iLastCheck != null && iLastCheck.hasMessages()) {
 			for (CourseRequestLine line: iCourses)
 				for (CourseSelectionBox box: line.getCourses())
@@ -740,6 +740,26 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 				return;
 			}
 		}
+	}
+	
+	public boolean updateCourse(RequestedCourse rc) {
+		for (final CourseRequestLine line: iCourses) {
+			Request request = line.getValue();
+			if (request != null && request.hasRequestedCourse(rc)) {
+				request.update(rc);
+				line.setValue(request);
+				return true;
+			}
+		}
+		for (final CourseRequestLine line: iAlternatives) {
+			Request request = line.getValue();
+			if (request != null && request.hasRequestedCourse(rc)) {
+				request.update(rc);
+				line.setValue(request);
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public void dropCourse(ClassAssignmentInterface.ClassAssignment assignment) {

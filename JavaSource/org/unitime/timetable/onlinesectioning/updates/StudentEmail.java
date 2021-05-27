@@ -1071,11 +1071,14 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						if (!free.isEmpty()) free += ", ";
 						free += ft.toString(CONST.shortDays(), CONST.useAmPm());
 					}
+					String note = null;
+					if (check != null) check.getMessageWithColor(CONST.freePrefix() + free, "<br>");
 					line.priority = (first ? MSG.courseRequestsPriority(priority) : "");
 					line.courseName = CONST.freePrefix() + free;
 					line.courseTitle = "";
 					line.credit = "";
 					line.prefs = "";
+					line.note = note;
 					line.icon = "action_check.png";
 					line.iconText = MSG.requested(free);
 					line.status = MSG.reqStatusRegistered();

@@ -32,14 +32,19 @@ import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.studentsct.StudentSectioningModel;
 import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
+import org.cpsolver.studentsct.model.AreaClassificationMajor;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.model.StudentGroup;
 import org.cpsolver.studentsct.model.Unavailability;
 import org.cpsolver.studentsct.report.StudentSectioningReport;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.util.Constants;
 
@@ -47,6 +52,7 @@ import org.unitime.timetable.util.Constants;
  * @author Tomas Muller
  */
 public class StudentAvailabilityConflicts implements StudentSectioningReport {
+	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
     private static DecimalFormat sDF1 = new DecimalFormat("0.####");
     private StudentSectioningModel iModel = null;
     private TimeOverlapsCounter iTOC = null;
@@ -101,27 +107,57 @@ public class StudentAvailabilityConflicts implements StudentSectioningReport {
         }
     }
     
+    protected String curriculum(Student student) {
+        String curriculum = "";
+        for (AreaClassificationMajor acm: student.getAreaClassificationMajors())
+                curriculum += (curriculum.isEmpty() ? "" : ", ") + acm.toString();
+        return curriculum;
+    }
+    
+    protected String group(Student student) {
+        String group = "";
+        Set<String> groups = new TreeSet<String>();
+        for (StudentGroup g: student.getGroups())
+        	groups.add(g.getReference());
+        for (String g: groups)
+        	group += (group.isEmpty() ? "" : ", ") + g;
+        return group;           
+    }
+    
+    protected String advisor(Student student) {
+        String advisors = "";
+        for (Instructor instructor: student.getAdvisors())
+        	advisors += (advisors.isEmpty() ? "" : ", ") + instructor.getName();
+        return advisors;
+    }
+    
     public CSVFile createTable(final Assignment<Request, Enrollment> assignment, boolean includeLastLikeStudents, boolean includeRealStudents, final boolean useAmPm, boolean includeAllowedOverlaps, boolean ignoreBreakTimeConflicts) {
         CSVFile csv = new CSVFile();
         if (includeAllowedOverlaps) {
             csv.setHeader(new CSVFile.CSVField[] {
-            		new CSVFile.CSVField("Student\nId"),
-            		new CSVFile.CSVField("Student\nName"),
-            		new CSVFile.CSVField("Student\nEmail"),
-            		new CSVFile.CSVField("Allowed\nOverlap"),
-            		new CSVFile.CSVField("Course"), new CSVFile.CSVField("Class"), new CSVFile.CSVField("Meeting Time"),
-            		new CSVFile.CSVField("Subpart\nOverlap"), new CSVFile.CSVField("Time\nOverride"),
-            		new CSVFile.CSVField("Conflicting\nAssignment"), new CSVFile.CSVField("Conflicting\nMeeting Time"),
-            		new CSVFile.CSVField("Teaching\nOverlap"), new CSVFile.CSVField("Overlap\n[min]")
+                    new CSVFile.CSVField(MSG.reportStudentId()),
+            		new CSVFile.CSVField(MSG.reportStudentName()),
+            		new CSVFile.CSVField(MSG.reportStudentEmail()),
+            		new CSVFile.CSVField(MSG.reportStudentCurriculum()),
+            		new CSVFile.CSVField(MSG.reportStudentGroup()),
+            		new CSVFile.CSVField(MSG.reportStudentAdvisor()),
+            		new CSVFile.CSVField(MSG.reportAllowedOverlap()),
+            		new CSVFile.CSVField(MSG.reportCourse()), new CSVFile.CSVField(MSG.reportClass()), new CSVFile.CSVField(MSG.reportMeetingTime()),
+            		new CSVFile.CSVField(MSG.reportSubpartOverlap()), new CSVFile.CSVField(MSG.reportTimeOverride()),
+            		new CSVFile.CSVField(MSG.reportConflictingAssignment()), new CSVFile.CSVField(MSG.reportConflictingMeetingTime()),
+            		new CSVFile.CSVField(MSG.reportTeachingOverlap()), new CSVFile.CSVField(MSG.reportOverlapMinutes())
                     });
         } else {
             csv.setHeader(new CSVFile.CSVField[] {
-            		new CSVFile.CSVField("Student\nId"),
-            		new CSVFile.CSVField("Student\nName"),
-            		new CSVFile.CSVField("Student\nEmail"),
-            		new CSVFile.CSVField("Course"), new CSVFile.CSVField("Class"), new CSVFile.CSVField("Meeting Time"),
-            		new CSVFile.CSVField("Conflicting\nAssignment"), new CSVFile.CSVField("Conflicting\nMeeting Time"),
-                    new CSVFile.CSVField("Overlap\n[min]")
+                    new CSVFile.CSVField(MSG.reportStudentId()),
+            		new CSVFile.CSVField(MSG.reportStudentName()),
+            		new CSVFile.CSVField(MSG.reportStudentEmail()),
+            		new CSVFile.CSVField(MSG.reportStudentCurriculum()),
+            		new CSVFile.CSVField(MSG.reportStudentGroup()),
+            		new CSVFile.CSVField(MSG.reportStudentAdvisor()),
+            		new CSVFile.CSVField(MSG.reportCourse()), new CSVFile.CSVField(MSG.reportClass()), new CSVFile.CSVField(MSG.reportMeetingTime()),
+            		new CSVFile.CSVField(MSG.reportConflictingAssignment()), new CSVFile.CSVField(MSG.reportConflictingMeetingTime()),
+                    new CSVFile.CSVField(MSG.reportOverlapMinutes())
                     });
         }
         
@@ -150,6 +186,9 @@ public class StudentAvailabilityConflicts implements StudentSectioningReport {
             	            org.unitime.timetable.model.Student dbStudent = StudentDAO.getInstance().get(student.getId());
             	            if (dbStudent != null)
             	            	line.add(new CSVFile.CSVField(dbStudent.getEmail()));
+            	            line.add(new CSVFile.CSVField(curriculum(student)));
+            	            line.add(new CSVFile.CSVField(group(student)));
+            	            line.add(new CSVFile.CSVField(advisor(student)));
             	            if (includeAllowedOverlaps)
             	            	line.add(new CSVFile.CSVField(e.isAllowOverlap() || u.isAllowOverlap() || !s.isOverlapping(u)));
             	            line.add(new CSVFile.CSVField(e.getCourse().getName()));

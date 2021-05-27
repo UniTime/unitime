@@ -40,6 +40,7 @@ import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Offering;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.SctAssignment;
@@ -83,7 +84,7 @@ public class UnusedReservations implements StudentSectioningReport {
         } else if (reservation instanceof ReservationOverride) {
         	return "override";
         } else if (reservation instanceof IndividualReservation) {
-            return "individual";
+        	return "individual";
         } else if (reservation instanceof CurriculumReservation) {
         	return "curriculum";
         } else if (reservation instanceof CourseReservation) {
@@ -97,21 +98,21 @@ public class UnusedReservations implements StudentSectioningReport {
     
     protected String name(Reservation reservation) {
     	if (reservation instanceof LearningCommunityReservation) {
-    		return "lc";
+    		return MSG.reservationLearningCommunity();
     	} else if (reservation instanceof GroupReservation) {
-    		return "group";
+    		return MSG.reservationGroup();
         } else if (reservation instanceof ReservationOverride) {
-        	return "override";
+        	return MSG.reservationOverride();
         } else if (reservation instanceof IndividualReservation) {
-            return "individual";
+        	return MSG.reservationIndividual();
         } else if (reservation instanceof CurriculumReservation) {
-        	return "curriculum";
+        	return MSG.reservationCurriculum();
         } else if (reservation instanceof CourseReservation) {
-        	return "course";
+        	return MSG.reservationCourse();
         } else if (reservation instanceof DummyReservation) {
-        	return "dummy";
+        	return MSG.reservationDummy();
         } else {
-        	return "other";
+        	return MSG.reservationOther();
         }
     }
     
@@ -128,7 +129,13 @@ public class UnusedReservations implements StudentSectioningReport {
     		group += (group.isEmpty() ? "" : ", ") + aac.getReference();
     	return group;    	
     }
-
+    
+    protected String advisor(Student student) {
+        String advisors = "";
+        for (Instructor instructor: student.getAdvisors())
+        	advisors += (advisors.isEmpty() ? "" : ", ") + instructor.getName();
+        return advisors;
+    }
 
 	@Override
 	public CSVFile create(Assignment<Request, Enrollment> assignment, DataProperties properties) {
@@ -177,6 +184,7 @@ public class UnusedReservations implements StudentSectioningReport {
         		new CSVFile.CSVField(MSG.reportStudentEmail()),
         		new CSVFile.CSVField(MSG.reportStudentCurriculum()),
         		new CSVFile.CSVField(MSG.reportStudentGroup()),
+        		new CSVFile.CSVField(MSG.reportStudentAdvisor()),
         		new CSVFile.CSVField(MSG.reportRequestedCourse()),
         		new CSVFile.CSVField(MSG.reportAssignmentConflict())
                 });
@@ -198,6 +206,7 @@ public class UnusedReservations implements StudentSectioningReport {
 	            	line.add(new CSVFile.CSVField(""));
 	            line.add(new CSVFile.CSVField(curriculum(student)));
 	            line.add(new CSVFile.CSVField(group(student)));
+	            line.add(new CSVFile.CSVField(advisor(student)));
 	            CourseRequest courseRequest = null;
 	            Course course = null;
 	            requests: for (Request r: student.getRequests()) {

@@ -28,6 +28,8 @@ import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.NaturalOrderComparator;
+import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.interfaces.AcademicSessionLookup;
 import org.unitime.timetable.model.base.BaseSubjectArea;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.security.UserContext;
@@ -64,12 +66,13 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 	 * @param sessionId academic session
 	 * @return List of SubjectArea objects
 	 */
-	public static List getSubjectAreaList(Long sessionId) 
+	public static List<SubjectArea> getSubjectAreaList(Long sessionId) 
 			throws HibernateException {
 	    
 	    SubjectAreaDAO subjDAO = new SubjectAreaDAO();
 	    Session hibSession = subjDAO.getSession();
-	    List subjs = hibSession.createCriteria(SubjectArea.class)
+	    @SuppressWarnings("unchecked")
+		List<SubjectArea> subjs = (List<SubjectArea>)hibSession.createCriteria(SubjectArea.class)
 				    .add(Restrictions.eq("session.uniqueId", sessionId))
 				    .list();
 		return subjs;
@@ -82,17 +85,7 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 	 * @return null if no matches found
 	 */
 	public static SubjectArea findByAbbv (Long sessionId, String subjectAreaAbbr) {
-	    SubjectAreaDAO subjDAO = new SubjectAreaDAO();
-	    Session hibSession = subjDAO.getSession();
-	    List subjs = hibSession.createCriteria(SubjectArea.class)
-				    .add(Restrictions.eq("session.uniqueId", sessionId))
-				    .add(Restrictions.eq("subjectAreaAbbreviation", subjectAreaAbbr))
-				    .list();
-	    
-	    if (subjs==null || subjs.size()==0)
-	    	return null;
-	    
-		return (SubjectArea)subjs.get(0);
+	    return findByAbbv(SubjectAreaDAO.getInstance().getSession(), sessionId, subjectAreaAbbr);
 	}
 	
 	public static SubjectArea findByAbbv(org.hibernate.Session hibSession, Long sessionId, String subjectAreaAbbr) {
@@ -101,13 +94,39 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 				).setLong("sessionId", sessionId).setString("subjectAreaAbbr", subjectAreaAbbr).setMaxResults(1).uniqueResult();
 	}
 	
-	public ArrayList getManagers() {
+	public static SubjectArea findUsingInitiativeYearTermSubjectAbbreviation(String academicInitiative, String academicYear, String term, String subjectAreaAbbreviation,
+	org.hibernate.Session hibSession) {
+		
+		return (SubjectArea) hibSession.createQuery("from SubjectArea sa where sa.session.academicInitiative = :campus and sa.session.academicYear = :year and sa.session.academicTerm = :term and sa.subjectAreaAbbreviation = :subj")
+         .setString("campus", academicInitiative)
+         .setString("year", academicYear)
+         .setString("term", term)
+         .setString("subj", subjectAreaAbbreviation)
+         .setCacheable(true)
+         .setMaxResults(1)
+         .uniqueResult();	
+		
+	}
+	
+	public static SubjectArea findUsingCampusYearTermExternalSubjectAbbreviation(
+			String campus, String year, String term, String externalSubjectAreaAbbreviation, org.hibernate.Session hibSession) {
+		String className = ApplicationProperty.AcademicSessionLookupImplementation.value();
+		AcademicSessionLookup academicSessionLookup = null;
+		try {
+			academicSessionLookup = (AcademicSessionLookup) Class.forName(className).getDeclaredConstructor().newInstance();
+		} catch (Exception e) {
+			return findByAbbv(hibSession, org.unitime.timetable.model.Session.getSessionUsingInitiativeYearTerm(campus, year, term, hibSession).getUniqueId(), externalSubjectAreaAbbreviation);
+		}
+		return academicSessionLookup.findSubjectAreaForCampusYearTerm(campus, year, term, externalSubjectAreaAbbreviation, hibSession);
+	}
+	
+	public ArrayList<TimetableManager> getManagers() {
 		if (getDepartment() != null){
-			ArrayList al = new ArrayList();
+			ArrayList<TimetableManager> al = new ArrayList<TimetableManager>();
 			al.addAll(getDepartment().getTimetableManagers());
 			return(al);
 		} else {
-			return(new ArrayList());
+			return(new ArrayList<TimetableManager>());
 		}
 	}
 
@@ -142,15 +161,7 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 	}
 	
 	public SubjectArea findSameSubjectAreaInSession(org.unitime.timetable.model.Session session){
-		String query = "select sa from SubjectArea sa where sa.department.session.uniqueId = " + session.getUniqueId().toString();
-		query += " and sa.subjectAreaAbbreviation = '" + this.getSubjectAreaAbbreviation() + "'";
-		SubjectAreaDAO saDao = new SubjectAreaDAO();
-		List l = saDao.getQuery(query).list();
-		if(l != null && l.size() == 1){
-			return((SubjectArea) l.get(0));
-		} else {
-			return(null);
-		}
+		return SubjectArea.findByAbbv(session.getUniqueId(), this.getSubjectAreaAbbreviation());
 	}
 
 	/**
@@ -158,14 +169,14 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 	 * @return
 	 */
 	public boolean hasOfferedCourses() {
-		Set courses = getCourseOfferings();
-		for (Object co: courses) {
-			if ( !((CourseOffering)co).getInstructionalOffering().isNotOffered())
+		for (CourseOffering co: getCourseOfferings()) {
+			if ( !co.getInstructionalOffering().isNotOffered())
 				return true;
 		}
 		return false;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static TreeSet<SubjectArea> getAllSubjectAreas(Long sessionId) {
 		return new TreeSet<SubjectArea>(
 				SubjectAreaDAO.getInstance().getQuery("from SubjectArea where session.uniqueId = :sessionId")

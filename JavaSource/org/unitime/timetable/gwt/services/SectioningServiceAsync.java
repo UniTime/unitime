@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.services;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
@@ -56,6 +57,9 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpeci
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpecialRegistrationResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseInfo;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseResponse;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -121,8 +125,14 @@ public interface SectioningServiceAsync {
 	void getStudentSessions(String studentExternalId, AsyncCallback<Collection<AcademicSessionInfo>> callback) throws SectioningException, PageAccessException;
 	void getStudentAdvisingDetails(Long sessionId, String studentExternalId, AsyncCallback<AdvisingStudentDetails> callback) throws SectioningException, PageAccessException;
 	void getStudentInfo(Long studentId, AsyncCallback<StudentInfo> callback) throws SectioningException, PageAccessException;
+	void checkAdvisingDetails(AdvisingStudentDetails details, AsyncCallback<CheckCoursesResponse> callback) throws SectioningException, PageAccessException;
 	void submitAdvisingDetails(AdvisingStudentDetails details, boolean emailStudent, AsyncCallback<AdvisorCourseRequestSubmission> callback) throws SectioningException, PageAccessException;
 	void getAdvisorRequests(StudentSectioningContext cx, AsyncCallback<CourseRequestInterface> callback) throws SectioningException, PageAccessException;
 	void getReservations(boolean online, Long offeringId, AsyncCallback<List<ReservationInterface>> callback) throws ReservationException, PageAccessException;
 	void lastAdvisorNotes(StudentSectioningContext cx, AsyncCallback<List<AdvisorNote>> callback) throws SectioningException, PageAccessException;
+	void getChangeLogTexts(Collection<Long> logIds, AsyncCallback<Map<Long, String>> callback) throws SectioningException, PageAccessException;
+	void getChangeLogMessage(Long logId, AsyncCallback<String> callback) throws SectioningException, PageAccessException;
+	void listVariableTitleCourses(StudentSectioningContext cx, String query, int limit, AsyncCallback<Collection<VariableTitleCourseInfo>> callback) throws SectioningException, PageAccessException;
+	void getVariableTitleCourse(StudentSectioningContext cx, String course, AsyncCallback<VariableTitleCourseInfo> callback) throws SectioningException, PageAccessException;
+	void requestVariableTitleCourse(VariableTitleCourseRequest request, AsyncCallback<VariableTitleCourseResponse> callback) throws SectioningException, PageAccessException;
 }
