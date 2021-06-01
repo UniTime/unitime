@@ -211,7 +211,7 @@ public class LocalSolverServer extends AbstractSolverServer {
 					if (nrSolutions == 0) continue;
 					
 					Properties properties = ApplicationProperties.getConfigProperties();
-					if (properties.getProperty(ApplicationProperty.OnlineSchedulingServerClass.key()) == null)
+					if (ApplicationProperty.OnlineSchedulingServerClass.value() == null)
 						properties.setProperty(ApplicationProperty.OnlineSchedulingServerClass.key(), InMemoryServer.class.getName());
 
 					try {
