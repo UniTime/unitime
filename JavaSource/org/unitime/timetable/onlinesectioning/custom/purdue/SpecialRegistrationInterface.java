@@ -44,6 +44,7 @@ public class SpecialRegistrationInterface {
 	public static enum ApiMode {
 		PREREG, // pre-registration (Course Requests page is used)
 		REG, // registration (Scheduling Assistant page is used)
+		WAITL, // wait-listing (Scheduling Assistant page is used)
 		;
 	}
 	
@@ -398,6 +399,7 @@ public class SpecialRegistrationInterface {
 	public static enum ValidationMode {
 		REG, // registration changes
 		ALT, // alternate changes
+		WAITL, // wait-list changes
 		;
 	}
 	

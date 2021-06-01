@@ -1856,6 +1856,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Failed to load degree plan: {0}")
 	String failedListDegreePlans(String reason);
 	
+	@DefaultMessage("Failed to validate wait-listed courses: {0}")
+	String failedWaitListValidation(String reason);
+	
 	@DefaultMessage("This plan is locked.")
 	String hintLockedPlan();
 	
@@ -2206,6 +2209,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Warning")
 	String reqStatusWarning();
 	
+	@DefaultMessage("Not Requested")
+	String reqStatusNeeded();
+	
 	@DefaultMessage("You are already enrolled in {0}.\nThis course request cannot be modified or deleted.")
 	String enrolled(String course);
 	
@@ -2215,18 +2221,27 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("The following registration errors have been detected:\n{0}")
 	String overrideNeeded(String errors);
 	
+	@DefaultMessage("Registration errors were detected, but no override has been requested.")
+	String overrideNotRequested();
+	
 	@DefaultMessage("The following issues have been detected:\n{0}")
 	String requestWarnings(String errors);
 	
 	@DefaultMessage("Requested override for {0} has been denied.\nPlease select a different course or remove this course request.")
 	String overrideRejected(String course);
 	
+	@DefaultMessage("Requested override for {0} has been denied.")
+	String overrideRejectedWaitList(String course);
+	
 	@DefaultMessage("An override has been requested for {0}.\nWaiting for approval...")
 	String overridePending(String course);
 	
 	@DefaultMessage("Requested override for {0} has been cancelled.\nClick the Submit Requests button to re-validate this request and request a new override if it is still needed.")
 	String overrideCancelled(String course);
-	
+
+	@DefaultMessage("Requested override for {0} has been cancelled.")
+	String overrideCancelledWaitList(String course);
+
 	@DefaultMessage("Requested override for {0} has been approved.")
 	String overrideApproved(String course);
 	
@@ -3069,4 +3084,19 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("None of the above")
 	String itemReqVTNoInstructor();
+	
+	@DefaultMessage("Wait-list overrides not requested.")
+	String waitListOverridesNotRequested();
+	
+	@DefaultMessage("Wait-list overrides have been successfully requested.")
+	String waitListOverridesRequested();
+	
+	@DefaultMessage("Checking wait-lists...")
+	String waitValidateWaitLists();
+	
+	@DefaultMessage("Requesting wait-list overrides...")
+	String waitRequestWaitListOverrides();
+	
+	@DefaultMessage("Failed to request wait-list overrides: {0}")
+	String failedRequestWaitListOverrides(String message);
 }

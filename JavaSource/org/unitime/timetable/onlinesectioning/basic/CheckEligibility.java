@@ -36,6 +36,8 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.custom.CustomSpecialRegistrationHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
+import org.unitime.timetable.onlinesectioning.custom.Customization;
+import org.unitime.timetable.onlinesectioning.custom.WaitListValidationProvider;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
@@ -169,7 +171,7 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 				} else {
 					iCheck.setFlag(EligibilityFlag.CAN_ENROLL, false);
 				}
-
+				
 				StudentSectioningStatus s = StudentSectioningStatus.getPresentStatus(student.getSectioningStatus());
 				
 				if (s != null && s.getMessage() != null)
@@ -207,6 +209,10 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 					CustomStudentEnrollmentHolder.getProvider().checkEligibility(server, helper, iCheck, xstudent);
 				if (CustomSpecialRegistrationHolder.hasProvider())
 					CustomSpecialRegistrationHolder.getProvider().checkEligibility(server, helper, iCheck, xstudent);
+				if (iCheck.hasFlag(EligibilityFlag.CAN_WAITLIST)) {
+					WaitListValidationProvider wp = Customization.WaitListValidationProvider.getProvider();
+					wp.checkEligibility(server, helper, iCheck, xstudent);
+				}
 			}
 			
 			if (xstudent != null && server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false))

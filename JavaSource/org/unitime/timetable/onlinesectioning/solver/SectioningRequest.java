@@ -425,6 +425,17 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 				if (request.equals(r)) ret = clonnedRequest;
 			}
 		}
+		if (ret == null) {
+			List<Course> courses = new ArrayList<Course>();
+			for (XCourseId c: request.getCourseIds()) {
+				XOffering offering = server.getOffering(c.getOfferingId());
+				if (oldOffering != null && oldOffering.getOfferingId().equals(c.getOfferingId()))
+					offering = oldOffering;
+				courses.add(offering.toCourse(c.getCourseId(), student, server));
+			}
+			ret = new CourseRequest(request.getRequestId(), request.getPriority(), request.isAlternative(), clonnedStudent, courses, request.isWaitListOrNoSub(wlMode), request.getTimeStamp() == null ? null : request.getTimeStamp().getTime());
+			request.fillChoicesIn(ret);
+		}
 		if (clonnedStudent.getExternalId() != null && !clonnedStudent.getExternalId().isEmpty()) {
 			Collection<Long> offerings = server.getInstructedOfferings(clonnedStudent.getExternalId());
 			if (offerings != null)

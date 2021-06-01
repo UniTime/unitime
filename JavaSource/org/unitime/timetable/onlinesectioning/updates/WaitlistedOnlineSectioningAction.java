@@ -25,7 +25,12 @@ import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.custom.Customization;
+import org.unitime.timetable.onlinesectioning.custom.WaitListValidationProvider;
+import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XOverride;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 
 /**
@@ -35,7 +40,7 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
 	private static final long serialVersionUID = 1L;
 	private Set<String> iWaitlistStatuses = null;
 	
-	public boolean isWaitListed(XStudent student, XCourseRequest request, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+	public boolean isWaitListed(XStudent student, XCourseRequest request, XOffering offering, OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		// Check wait-list toggle first
 		if (request == null || !request.isWaitlist()) return false;
 		
@@ -46,6 +51,20 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
 			if (iWaitlistStatuses == null)
 				iWaitlistStatuses = StudentSectioningStatus.getMatchingStatuses(StudentSectioningStatus.Option.waitlist, server.getAcademicSession().getUniqueId());
 			if (!iWaitlistStatuses.contains(status)) return false;
+		}
+		
+		if (Customization.WaitListValidationProvider.hasProvider()) {
+			for (XCourse course: offering.getCourses()) {
+				if (!request.hasCourse(course.getCourseId())) continue;
+				XOverride override = request.getOverride(course);
+				if (override != null) {
+					if ("TBD".equals(override.getExternalId())) return false; // override not requested --> ignore
+					WaitListValidationProvider wp = Customization.WaitListValidationProvider.getProvider();
+					if (wp.updateStudent(server, helper, student, helper.getAction()))
+						override = request.getOverride(course);						
+				}
+				if (override != null && !override.isApproved()) return false;
+			}
 		}
 		
 		return true;

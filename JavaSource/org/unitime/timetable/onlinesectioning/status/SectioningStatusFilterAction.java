@@ -368,7 +368,9 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		if ("true".equals(iRequest.getOption("online"))) {
 			List<Entity> overrides = new ArrayList<Entity>();
 			for (CourseRequest.CourseRequestOverrideStatus status: CourseRequest.CourseRequestOverrideStatus.values()) {
-				overrides.add(new Entity(new Long(-1 - status.ordinal()), Constants.toInitialCase(status.name()), CONSTANTS.overrideType()[status.ordinal()], "translated-value", CONSTANTS.overrideType()[status.ordinal()])); 
+				try {
+					overrides.add(new Entity(new Long(-1 - status.ordinal()), Constants.toInitialCase(status.name()), CONSTANTS.overrideType()[status.ordinal()], "translated-value", CONSTANTS.overrideType()[status.ordinal()])); 
+				} catch (ArrayIndexOutOfBoundsException e) {}
 			}
 			for (Object[] o: (List<Object[]>)query.select("s.overrideStatus, count(distinct s)").where("s.overrideStatus is not null").order("s.overrideStatus").group("s.overrideStatus").exclude("credit").exclude("override").query(helper.getHibSession()).list()) {
 				Entity e = overrides.get((Integer)o[0]);

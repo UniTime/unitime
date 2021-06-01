@@ -68,6 +68,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	private String iPopupMessage = null;
 	private Boolean iPinReleased = null;
 	private WaitListMode iMode = null;
+	private CheckCoursesResponse iWaitListChecks = null;
 	
 	public CourseRequestInterface() {}
 	public CourseRequestInterface(StudentSectioningContext cx) {
@@ -95,6 +96,38 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		} else {
 			getCourses().add(request);
 		}
+	}
+	
+	public boolean isActive(Long courseId) {
+		if (courseId == null) return false;
+		for (Request r: getCourses()) {
+			if (r.hasRequestedCourse())
+				for (RequestedCourse rc: r.getRequestedCourse())
+					if (courseId.equals(rc.getCourseId()) && !rc.isInactive())
+						return true;
+		}
+		for (Request r: getAlternatives()) {
+			if (r.hasRequestedCourse())
+				for (RequestedCourse rc: r.getRequestedCourse())
+					if (courseId.equals(rc.getCourseId()) && !rc.isInactive())
+						return true;
+		}
+		return false;
+	}
+	
+	public boolean isWaitListed(Long courseId) {
+		if (courseId == null) return false;
+		for (Request r: getCourses()) {
+			if (r.hasRequestedCourse() && r.isWaitList())
+				for (RequestedCourse rc: r.getRequestedCourse())
+					if (courseId.equals(rc.getCourseId())) return true;
+		}
+		for (Request r: getAlternatives()) {
+			if (r.hasRequestedCourse() && r.isWaitList())
+				for (RequestedCourse rc: r.getRequestedCourse())
+					if (courseId.equals(rc.getCourseId())) return true;
+		}
+		return false;
 	}
 	
 	public boolean sameWaitListedCourses(CourseRequestInterface other) {
@@ -1135,6 +1168,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		private String iErrorMessage = null;
 		private String iCreditWarning = null;
 		private String iCreditNote = null;
+		private Float iMaxCreditNeeded = null;
 		private RequestedCourseStatus iMaxCreditOverrideStatus = null;
 		
 		public CheckCoursesResponse() {}
@@ -1229,6 +1263,9 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 					if (m.isConfirm()) ret.add(m.getConfirm());
 			return ret;
 		}
+		
+		public Float getMaxCreditNeeded() { return iMaxCreditNeeded; }
+		public void setMaxCreditNeeded(Float maxCreditNeeded) { iMaxCreditNeeded = maxCreditNeeded; }
 		
 		public List<CourseMessage> getMessages(String courseName) {
 			List<CourseMessage> ret = new ArrayList<CourseMessage>();
@@ -1628,5 +1665,21 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	}
 	public void setWaitListMode(WaitListMode mode) {
 		iMode = mode;
+	}
+	
+	public boolean hasWaitListChecks() {
+		return iWaitListChecks != null;
+	}
+	public CheckCoursesResponse getWaitListChecks() {
+		return iWaitListChecks;
+	}
+	public void setWaitListChecks(CheckCoursesResponse waitListChecks) {
+		iWaitListChecks = waitListChecks;
+		setConfirmations(waitListChecks == null ? null : waitListChecks.getMessages());
+		setErrorMessage(waitListChecks == null ? null : waitListChecks.getErrorMessage());
+		setCreditNote(waitListChecks == null ? null : waitListChecks.getCreditNote());
+		setCreditWarning(waitListChecks == null ? null : waitListChecks.getCreditWarning());
+		setMaxCreditOverride(waitListChecks == null ? null : waitListChecks.getMaxCreditNeeded());
+		setMaxCreditOverrideStatus(waitListChecks == null ? null : waitListChecks.getMaxCreditOverrideStatus());
 	}
 }

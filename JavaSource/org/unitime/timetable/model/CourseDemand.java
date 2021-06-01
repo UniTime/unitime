@@ -187,4 +187,11 @@ public class CourseDemand extends BaseCourseDemand implements Comparable {
     	}
     	return false;
     }
+    
+    public boolean isEnrolled() {
+    	for (CourseRequest cr: getCourseRequests())
+        	for (StudentClassEnrollment e: getStudent().getClassEnrollments())
+    			if (cr.getCourseOffering().equals(e.getCourseOffering())) return true;
+    	return false;
+    }
 }

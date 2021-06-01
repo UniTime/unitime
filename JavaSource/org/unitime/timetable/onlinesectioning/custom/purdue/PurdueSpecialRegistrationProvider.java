@@ -61,6 +61,7 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentEnrollmentMessage;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideIntent;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.comparators.ClassComparator;
@@ -1005,6 +1006,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					for (Map.Entry<String, Set<String>> e: course2errors.entrySet()) {
 						XCourseRequest cr = student.getRequestForCourseName(e.getKey());
 						if (cr != null) {
+							if (cr.isWaitlist() && !cr.isAlternative() && cr.getEnrollment() == null) continue; // ignore wait-listed requests -> wait-list validator takes care of those
 							String message = "";
 							for (String m: e.getValue()) message += (m.isEmpty() ? "" : "\n") + m;
 							if (message.length() > 255)
@@ -2069,15 +2071,16 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				for (XRequest request: student.getRequests()) {
 					if (request instanceof XCourseRequest) {
 						XCourseRequest cr = (XCourseRequest)request;
-						if (cr.hasOverrides())
-								for (Iterator<Map.Entry<XCourseId, XOverride>> i = cr.getOverrides().entrySet().iterator(); i.hasNext(); ) {
-									Map.Entry<XCourseId, XOverride> e = i.next();
-									if (!requestIds.contains(e.getValue().getExternalId())) {
-										i.remove();
-										CourseDemand dbCourseDemand = CourseDemandDAO.getInstance().get(cr.getRequestId(), helper.getHibSession());
+						if (cr.hasOverrides()) {
+							overrides: for (Iterator<Map.Entry<XCourseId, XOverride>> i = cr.getOverrides().entrySet().iterator(); i.hasNext(); ) {
+								Map.Entry<XCourseId, XOverride> e = i.next();
+								if (!requestIds.contains(e.getValue().getExternalId())) {
+									CourseDemand dbCourseDemand = CourseDemandDAO.getInstance().get(cr.getRequestId(), helper.getHibSession());
 									if (dbCourseDemand != null) {
 										for (CourseRequest dbCourseRequest: dbCourseDemand.getCourseRequests()) {
 											if (dbCourseRequest.getCourseOffering().getUniqueId().equals(e.getKey().getCourseId())) {
+												if (dbCourseRequest.getCourseRequestOverrideIntent() == CourseRequestOverrideIntent.WAITLIST)
+													continue overrides;
 												dbCourseRequest.setOverrideStatus(null);
 												dbCourseRequest.setOverrideExternalId(null);
 												dbCourseRequest.setOverrideTimeStamp(null);
@@ -2086,10 +2089,12 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 											}
 										}
 									}
-										studentChanged = true;
-									}
-									
+									i.remove();
+									studentChanged = true;
 								}
+								
+							}
+						}
 					}
 				}
 				if (studentChanged) {

@@ -208,6 +208,7 @@ public interface StudentSectioningConstants extends Constants {
 		"Approved",
 		"Rejected",
 		"Cancelled",
+		"Not-Requested",
 	})
 	String[] overrideType();
 	

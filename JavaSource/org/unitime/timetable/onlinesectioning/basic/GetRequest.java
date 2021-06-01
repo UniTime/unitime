@@ -38,6 +38,8 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.advisors.AdvisorGetCourseRequests;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsValidationHolder;
+import org.unitime.timetable.onlinesectioning.custom.Customization;
+import org.unitime.timetable.onlinesectioning.custom.WaitListValidationProvider;
 import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -59,6 +61,7 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 	private Long iStudentId;
 	private boolean iSectioning;
 	private boolean iCustomValidation = false;
+	private boolean iWaitListValidation = false;
 	private boolean iCustomRequests = true;
 	private boolean iAdvisorRequests = true;
 	private CourseMatcher iMatcher = null;
@@ -76,6 +79,10 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 	
 	public GetRequest withCustomValidation(boolean validation) {
 		iCustomValidation = validation; return this;
+	}
+	
+	public GetRequest withWaitListValidation(boolean validation) {
+		iWaitListValidation = validation; return this;
 	}
 	
 	public GetRequest withCustomRequest(boolean request) {
@@ -142,6 +149,8 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 					request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
 				else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.CANCELLED.ordinal())
 					request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_CANCELLED);
+				else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.NOT_CHECKED.ordinal())
+					request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_NEEDED);
 				else
 					request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_PENDING);
 			}
@@ -237,6 +246,10 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 								rc.setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
 							else if (status == CourseRequest.CourseRequestOverrideStatus.CANCELLED.ordinal())
 								rc.setStatus(RequestedCourseStatus.OVERRIDE_CANCELLED);
+							else if (status == CourseRequest.CourseRequestOverrideStatus.NOT_CHECKED.ordinal())
+								rc.setStatus(RequestedCourseStatus.OVERRIDE_NEEDED);
+							else if (status == CourseRequest.CourseRequestOverrideStatus.NOT_CHECKED.ordinal())
+								rc.setStatus(RequestedCourseStatus.OVERRIDE_NEEDED);
 							else
 								rc.setStatus(RequestedCourseStatus.OVERRIDE_PENDING);
 						}
@@ -261,7 +274,7 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 				}
 				action.addRequest(OnlineSectioningHelper.toProto(cd));
 			}
-			
+
 			if (student.getLastStudentChange() == null && !(server instanceof StudentSolver) && iAdvisorRequests && (!iSectioning || !hasEnrollments)) {
 				if (request.applyAdvisorRequests(AdvisorGetCourseRequests.getRequest(student, server, helper)))
 					request.setPopupMessage(ApplicationProperty.PopupMessageCourseRequestsPrepopulatedWithAdvisorRecommendations.value());
@@ -272,6 +285,11 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 
 		if (iCustomValidation && CustomCourseRequestsValidationHolder.hasProvider())
 			CustomCourseRequestsValidationHolder.getProvider().check(server, helper, request);
+
+		if (iWaitListValidation && request.getWaitListMode() == WaitListMode.WaitList && Customization.WaitListValidationProvider.hasProvider()) {
+			WaitListValidationProvider wp = Customization.WaitListValidationProvider.getProvider();
+			wp.check(server, helper, request);
+		}
 
 		return request;
 	}
