@@ -43,6 +43,8 @@ import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
+import org.unitime.timetable.onlinesectioning.updates.CheckOfferingAction;
 import org.unitime.timetable.onlinesectioning.updates.ReloadOfferingAction;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.UserContext;
@@ -667,11 +669,19 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 	public void unlockOffering(InstructionalOffering offering, UserContext user) {
 		OnlineSectioningServer server = getInstance();
 		if (server != null) {
-			server.execute(server.createAction(ReloadOfferingAction.class).forOfferings(offering.getUniqueId()),
-					(user == null ? null :
-					OnlineSectioningLog.Entity.newBuilder().setExternalId(user.getExternalUserId()).setName(user.getName()).setType(OnlineSectioningLog.Entity.EntityType.MANAGER).build()
-					));
-			server.unlockOffering(offering.getUniqueId());
+			if (server instanceof DatabaseServer) {
+				server.unlockOffering(offering.getUniqueId());
+				server.execute(server.createAction(CheckOfferingAction.class).forOfferings(offering.getUniqueId()),
+						(user == null ? null :
+							OnlineSectioningLog.Entity.newBuilder().setExternalId(user.getExternalUserId()).setName(user.getName()).setType(OnlineSectioningLog.Entity.EntityType.MANAGER).build()
+						));
+			} else {
+				server.execute(server.createAction(ReloadOfferingAction.class).forOfferings(offering.getUniqueId()),
+						(user == null ? null :
+							OnlineSectioningLog.Entity.newBuilder().setExternalId(user.getExternalUserId()).setName(user.getName()).setType(OnlineSectioningLog.Entity.EntityType.MANAGER).build()
+						));
+				server.unlockOffering(offering.getUniqueId());
+			}
 		}
         try {
 	        SessionFactory hibSessionFactory = SessionDAO.getInstance().getSession().getSessionFactory();

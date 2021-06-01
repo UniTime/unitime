@@ -301,7 +301,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		
 		CourseMatcher matcher = getCourseMatcher(cx, server);
 		
-		if (server == null) {
+		if (server == null || server instanceof DatabaseServer) {
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			if (query != null && !query.isEmpty() && CustomCourseLookupHolder.hasProvider()) {
 				try {
@@ -519,7 +519,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 		OnlineSectioningServer server = getServerInstance(cx.getSessionId(), false);
 		Set<Long> allowedClasses = null;
-		if (server == null) {
+		if (server == null || server instanceof DatabaseServer) {
 			if (!sessionContext.hasPermission(Right.HasRole)) {
 				Session session = SessionDAO.getInstance().get(cx.getSessionId());
 				if (session != null && !session.canNoRoleReportClass())
