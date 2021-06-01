@@ -296,53 +296,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			iSectioningService.checkCourses(cr,
 					new AsyncCallback<CheckCoursesResponse>() {
 						public void onSuccess(final CheckCoursesResponse result) {
-							iLastCheck = result;
-							if (iCreditStatusIcon != null) {
-								if (result != null && result.hasCreditWarning()) {
-									String warning = result.getCreditWarning();
-									if (result.getMaxCreditOverrideStatus() != null) {
-										switch (result.getMaxCreditOverrideStatus()) {
-										case CREDIT_HIGH:
-											iCreditStatusIcon.setResource(RESOURCES.requestNeeded());
-											warning += "\n" + MESSAGES.creditStatusTooHigh();
-											break;
-										case OVERRIDE_REJECTED:
-											iCreditStatusIcon.setResource(RESOURCES.requestError());
-											warning += "\n" + MESSAGES.creditStatusDenied();
-											break;
-										default:
-											iCreditStatusIcon.setResource(RESOURCES.requestNeeded());
-											break;
-										}
-									} else {
-										iCreditStatusIcon.setResource(RESOURCES.requestNeeded());
-									}
-									iCreditStatusIcon.setAltText(warning);
-									iCreditStatusIcon.setTitle(warning);
-									iCreditStatusIcon.setVisible(true);
-								} else {
-									iCreditStatusIcon.setVisible(false);
-								}
-							}
-							for (CourseRequestLine line: iCourses) {
-								for (CourseSelectionBox box: line.getCourses()) {
-									String message = box.validate();
-									if (message != null) {
-										RequestedCourse rc = box.getValue();
-										iLastCheck.addError(rc.getCourseId(), rc.getCourseName(), "ERROR", message);
-									}
-								}
-							}
-							for (CourseRequestLine line: iAlternatives) {
-								for (CourseSelectionBox box: line.getCourses()) {
-									String message = box.validate();
-									if (message != null) {
-										RequestedCourse rc = box.getValue();
-										iLastCheck.addError(rc.getCourseId(), rc.getCourseName(), "ERROR", message);
-									}
-								}
-							}
-							setErrors(result);
+							setLastCheck(result);
 							LoadingWidget.getInstance().hide();
 							if (result.isError()) {
 								callback.onFailure(null);
@@ -377,6 +331,56 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		} catch (Exception e) {
 			callback.onFailure(e);
 		}
+	}
+	
+	public void setLastCheck(CheckCoursesResponse result) {
+		iLastCheck = result;
+		if (iCreditStatusIcon != null) {
+			if (result != null && result.hasCreditWarning()) {
+				String warning = result.getCreditWarning();
+				if (result.getMaxCreditOverrideStatus() != null) {
+					switch (result.getMaxCreditOverrideStatus()) {
+					case CREDIT_HIGH:
+						iCreditStatusIcon.setResource(RESOURCES.requestNeeded());
+						warning += "\n" + MESSAGES.creditStatusTooHigh();
+						break;
+					case OVERRIDE_REJECTED:
+						iCreditStatusIcon.setResource(RESOURCES.requestError());
+						warning += "\n" + MESSAGES.creditStatusDenied();
+						break;
+					default:
+						iCreditStatusIcon.setResource(RESOURCES.requestNeeded());
+						break;
+					}
+				} else {
+					iCreditStatusIcon.setResource(RESOURCES.requestNeeded());
+				}
+				iCreditStatusIcon.setAltText(warning);
+				iCreditStatusIcon.setTitle(warning);
+				iCreditStatusIcon.setVisible(true);
+			} else {
+				iCreditStatusIcon.setVisible(false);
+			}
+		}
+		for (CourseRequestLine line: iCourses) {
+			for (CourseSelectionBox box: line.getCourses()) {
+				String message = box.validate();
+				if (message != null) {
+					RequestedCourse rc = box.getValue();
+					iLastCheck.addError(rc.getCourseId(), rc.getCourseName(), "ERROR", message);
+				}
+			}
+		}
+		for (CourseRequestLine line: iAlternatives) {
+			for (CourseSelectionBox box: line.getCourses()) {
+				String message = box.validate();
+				if (message != null) {
+					RequestedCourse rc = box.getValue();
+					iLastCheck.addError(rc.getCourseId(), rc.getCourseName(), "ERROR", message);
+				}
+			}
+		}
+		setErrors(result);
 	}
 	
 	public void setError(String course, String error) {
@@ -555,7 +559,10 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		while (iAlternatives.size() < request.getAlternatives().size()) addAlternativeLine();;
 		for (int idx = 0; idx < request.getAlternatives().size(); idx++)
 			iAlternatives.get(idx).setValue(request.getAlternatives().get(idx), true);
-		if (request.hasConfirmations()) {
+		if (request.hasWaitListChecks()) {
+			iLastCheck = request.getWaitListChecks();
+			setErrors(iLastCheck);
+		} else if (request.hasConfirmations()) {
 			iLastCheck = new CheckCoursesResponse(request.getConfirmations());
 			setErrors(iLastCheck);
 		} else {
@@ -589,6 +596,36 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 				if (m.isConfirm()) m.setConfirm(null);
 			setErrors(iLastCheck);
 		}
+	}
+	
+	public RequestedCourse getRequestedCourse(Long course) {
+		// skip inactive first
+		for (CourseRequestLine line: iCourses)
+			for (CourseSelectionBox box: line.getCourses()) {
+				RequestedCourse rc = box.getValue();
+				if (rc != null && course.equals(rc.getCourseId()) && !rc.isInactive())
+					return rc;
+			}
+		for (CourseRequestLine line: iAlternatives)
+			for (CourseSelectionBox box: line.getCourses()) {
+				RequestedCourse rc = box.getValue();
+				if (rc != null && course.equals(rc.getCourseId()) && !rc.isInactive())
+					return rc;
+			}
+		// all courses next
+		for (CourseRequestLine line: iCourses)
+			for (CourseSelectionBox box: line.getCourses()) {
+				RequestedCourse rc = box.getValue();
+				if (rc != null && course.equals(rc.getCourseId()))
+					return rc;
+			}
+		for (CourseRequestLine line: iAlternatives)
+			for (CourseSelectionBox box: line.getCourses()) {
+				RequestedCourse rc = box.getValue();
+				if (rc != null && course.equals(rc.getCourseId()))
+					return rc;
+			}
+		return null;
 	}
 	
 	public Boolean getWaitList(Long course) {

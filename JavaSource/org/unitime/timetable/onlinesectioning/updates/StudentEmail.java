@@ -591,6 +591,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			CourseRequestInterface requests = server.createAction(GetRequest.class)
 					.forStudent(student.getUniqueId())
 					.withCustomValidation(status != null && status.hasOption(StudentSectioningStatus.Option.reqval))
+					.withWaitListValidation(status != null && status.hasOption(StudentSectioningStatus.Option.specreg))
 					.withCustomRequest(false)
 					.withAdvisorRequests(false)
 					.withWaitListMode(wlMode)
