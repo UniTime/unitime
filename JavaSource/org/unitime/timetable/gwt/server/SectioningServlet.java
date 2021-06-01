@@ -371,12 +371,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			ArrayList<ClassAssignmentInterface.CourseAssignment> results = new ArrayList<ClassAssignmentInterface.CourseAssignment>();
 			org.unitime.timetable.onlinesectioning.match.CourseMatcher parent = matcher.getParentCourseMatcher();
 			for (CourseOffering c: (List<CourseOffering>)hibSession.createQuery(
-					"select c from CourseOffering c where " +
+					"select c from CourseOffering c left outer join c.courseType ct where " +
 					(excludeNotOffered ? "c.instructionalOffering.notOffered is false and " : "") +
 					"c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and (" +
 					"(lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' or lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' - ' || c.title) like :q || '%') " +
 					(query.length()>2 ? "or lower(c.title) like '%' || :q || '%'" : "") + ") " +
-					(matcher.isAllCourseTypes() ? "" : matcher.isNoCourseType() ? types.isEmpty() ? " and c.courseType is null " : " and (c.courseType is null or c.courseType.reference in (" + types + ")) " : " and c.courseType.reference in (" + types + ") ") +
+					(matcher.isAllCourseTypes() ? "" : matcher.isNoCourseType() ? types.isEmpty() ? " and ct is null " : " and (ct is null or ct.reference in (" + types + ")) " : " and ct.reference in (" + types + ") ") +
 					"order by case " +
 					"when lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' then 0 else 1 end," + // matches on course name first
 					"c.subjectArea.subjectAreaAbbreviation, c.courseNbr")
