@@ -369,7 +369,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					action.addRequest(OnlineSectioningHelper.toProto(newRequest));
 					
 					if (oldEnrollment == null && newEnrollment == null) {
-						if (newRequest.getEnrollment() == null && newStudent.canAssign(newRequest, WaitListMode.WaitList) && isWaitListed(newStudent, newRequest, server, helper) && newOffering.isWaitList()) {
+						if (newRequest.getEnrollment() == null && newStudent.canAssign(newRequest, WaitListMode.WaitList) && isWaitListed(newStudent, newRequest, newOffering == null ? oldOffering : newOffering, server, helper) && newOffering.isWaitList()) {
 							queue.add(new SectioningRequest(newOffering, newRequest, newStudent, action).setOldOffering(oldOffering).setOldRequest(oldRequest).setOldStudent(oldStudent));
 						}
 						continue;
@@ -416,7 +416,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					XStudent oldStudent = student[0];
 					XStudent newStudent = student[1];
 					XCourseRequest newRequest = getRequest(newStudent, course);
-					if (newRequest != null && newRequest.getEnrollment() == null && newStudent.canAssign(newRequest, WaitListMode.WaitList) && isWaitListed(student[1], newRequest, server, helper) && newOffering.isWaitList()) {
+					if (newRequest != null && newRequest.getEnrollment() == null && newStudent.canAssign(newRequest, WaitListMode.WaitList) && isWaitListed(student[1], newRequest, newOffering == null ? oldOffering : newOffering, server, helper) && newOffering.isWaitList()) {
 						OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
 						action.setStudent(
 								OnlineSectioningLog.Entity.newBuilder()

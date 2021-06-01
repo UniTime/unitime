@@ -74,6 +74,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Collection<Long> iOfferingIds;
 	private Collection<Long> iSkipStudentIds;
+	private Collection<Long> iStudentIds;
 	
 	public CheckOfferingAction forOfferings(Long... offeringIds) {
 		iOfferingIds = new ArrayList<Long>();
@@ -97,6 +98,19 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 	
 	public CheckOfferingAction skipStudents(Collection<Long> studentIds) {
 		iSkipStudentIds = studentIds;
+		return this;
+	}
+	
+	public CheckOfferingAction forStudents(Long... studentIds) {
+		iStudentIds = new HashSet<Long>();
+		for (Long studentId: studentIds)
+			if (studentId != null)
+				iStudentIds.add(studentId);
+		return this;
+	}
+	
+	public CheckOfferingAction forStudents(Collection<Long> studentIds) {
+		iStudentIds = studentIds;
 		return this;
 	}
 	
@@ -230,9 +244,10 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 		
 		for (XCourseRequest request: enrollments.getRequests()) {
 			if (iSkipStudentIds != null && iSkipStudentIds.contains(request.getStudentId())) continue;
+			if (iStudentIds != null && !iStudentIds.contains(request.getStudentId())) continue;
 			XStudent student = server.getStudent(request.getStudentId());
 			if (request.getEnrollment() == null) {
-				if (!student.canAssign(request, WaitListMode.WaitList) || !isWaitListed(student, request, server, helper)) continue;
+				if (!student.canAssign(request, WaitListMode.WaitList) || !isWaitListed(student, request, offering, server, helper)) continue;
 				OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
 				action.setStudent(
 						OnlineSectioningLog.Entity.newBuilder()

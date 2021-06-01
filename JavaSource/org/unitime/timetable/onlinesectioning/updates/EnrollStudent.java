@@ -56,6 +56,8 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
+import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideIntent;
+import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.FreeTime;
@@ -71,6 +73,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
+import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.CriticalCourses;
 import org.unitime.timetable.onlinesectioning.custom.CustomCriticalCoursesHolder;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentFailure;
@@ -91,6 +94,8 @@ import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 import org.unitime.timetable.onlinesectioning.solver.CheckAssignmentAction;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction.IdPair;
+import org.unitime.timetable.onlinesectioning.specreg.WaitListCheckValidation;
+import org.unitime.timetable.onlinesectioning.specreg.WaitListSubmitOverrides;
 
 /**
  * @author Tomas Muller
@@ -102,6 +107,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 	private Long iStudentId;
 	private CourseRequestInterface iRequest;
 	private List<ClassAssignmentInterface.ClassAssignment> iAssignment;
+	private boolean iCheckWaitLists = false;
 	
 	public EnrollStudent forStudent(Long studentId) {
 		iStudentId = studentId;
@@ -115,6 +121,11 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 
 	public EnrollStudent withAssignment(List<ClassAssignmentInterface.ClassAssignment> assignment) {
 		iAssignment = assignment;
+		return this;
+	}
+	
+	public EnrollStudent withWaitListCheck(boolean checkWaitLists) {
+		iCheckWaitLists = checkWaitLists;
 		return this;
 	}
 
@@ -173,6 +184,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 			helper.warn("Failed to lookup critical courses: " + e.getMessage(), e);
 		}
 		WaitListMode wlMode = WaitListMode.None;
+		boolean hasWaitList = false;
 		
 		Set<ErrorMessage> checkErrors = (getRequest().areTimeConflictsAllowed() || getRequest().areSpaceConflictsAllowed() || getRequest().areLinkedConflictsAllowed() ? new TreeSet<ErrorMessage>() : null);
 		Lock lock = server.lockStudent(getStudentId(), offeringIds, name());
@@ -347,6 +359,8 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					}
 					cd.setAlternative(false);
 					cd.setPriority(priority);
+					Boolean oldWaitList = cd.isWaitlist();
+					if (Boolean.TRUE.equals(cd.isWaitlist()) || r.isWaitList()) hasWaitList = true;
 					if (r.isWaitList() && !Boolean.TRUE.equals(cd.getWaitlist()))
 						cd.setWaitlistedTimeStamp(ts);
 					cd.setWaitlist(r.isWaitList());
@@ -373,8 +387,27 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						cr.setAllowOverlap(false);
 						cr.setCredit(0);
 						cr.setOrder(order++);
-						if (cr.getCourseOffering() == null || !cr.getCourseOffering().getUniqueId().equals(co.getCourseId()))
+						if (cr.getCourseOffering() == null || !cr.getCourseOffering().getUniqueId().equals(co.getCourseId())) {
 							cr.setCourseOffering(CourseOfferingDAO.getInstance().get(co.getCourseId(), helper.getHibSession()));
+							if (r.isWaitList() && Customization.WaitListValidationProvider.hasProvider()) {
+								cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.NOT_CHECKED);
+								cr.setCourseRequestOverrideIntent(CourseRequestOverrideIntent.WAITLIST);
+								cr.setOverrideExternalId("TBD");
+								cr.setOverrideTimeStamp(ts);
+							}
+						}
+						if (Boolean.TRUE.equals(cd.getWaitlist()) && !Boolean.TRUE.equals(oldWaitList) && Customization.WaitListValidationProvider.hasProvider()) {
+							cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.NOT_CHECKED);
+							cr.setCourseRequestOverrideIntent(CourseRequestOverrideIntent.WAITLIST);
+							cr.setOverrideExternalId("TBD");
+							cr.setOverrideTimeStamp(ts);
+						}
+						if (!Boolean.TRUE.equals(cd.getWaitlist()) && cr.getCourseRequestOverrideIntent() == CourseRequestOverrideIntent.WAITLIST) {
+							cr.setOverrideStatus(null);
+							cr.setOverrideExternalId(null);
+							cr.setOverrideTimeStamp(null);
+							cr.setOverrideIntent(null);
+						}
 						cr.updatePreferences(r.getRequestedCourse(co.getCourseId()), helper.getHibSession());
 						course2request.put(co.getCourseId(), cr);
 						
@@ -480,6 +513,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					}
 					cd.setAlternative(true);
 					cd.setPriority(priority);
+					if (Boolean.TRUE.equals(cd.isWaitlist()) || r.isWaitList()) hasWaitList = true;
 					if (r.isWaitList() && !Boolean.TRUE.equals(cd.getWaitlist()))
 						cd.setWaitlistedTimeStamp(ts);
 					cd.setWaitlist(r.isWaitList());
@@ -505,8 +539,14 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						cr.setAllowOverlap(false);
 						cr.setCredit(0);
 						cr.setOrder(order++);
-						if (cr.getCourseOffering() == null || !cr.getCourseOffering().getUniqueId().equals(co.getCourseId()))
+						if (cr.getCourseOffering() == null || !cr.getCourseOffering().getUniqueId().equals(co.getCourseId())) {
 							cr.setCourseOffering(CourseOfferingDAO.getInstance().get(co.getCourseId(), helper.getHibSession()));
+							cr.setOverrideStatus(null);
+							cr.setOverrideIntent(null);
+							cr.setOverrideExternalId(null);
+							cr.setOverrideTimeStamp(null);
+						}
+						
 						cr.updatePreferences(r.getRequestedCourse(co.getCourseId()), helper.getHibSession());
 						course2request.put(co.getCourseId(), cr);
 					}
@@ -580,6 +620,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							}						
 							cd.setAlternative(false);
 							cd.setPriority(priority++);
+							if (Boolean.TRUE.equals(cd.isWaitlist())) hasWaitList = true;
 							cd.setWaitlist(false);
 							cd.setNoSub(false);
 							if (checkCritical) cd.setCritical(isCritical(ca, cc));
@@ -670,6 +711,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						helper.getHibSession().delete(cd.getFreeTime());
 					for (CourseRequest cr: cd.getCourseRequests())
 						helper.getHibSession().delete(cr);
+					if (Boolean.TRUE.equals(cd.isWaitlist())) hasWaitList = true;
 					student.getCourseDemands().remove(cd);
 					helper.getHibSession().delete(cd);
 				}
@@ -794,6 +836,8 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				includeRequestInTheReturnMessage = true;
 			else if (ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue())
 				includeRequestInTheReturnMessage = true;
+			else if (wlMode == WaitListMode.WaitList && iCheckWaitLists && hasWaitList)
+				includeRequestInTheReturnMessage = true;
 		}
 		
 		ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(getStudentId()).withMessages(failures).withErrors(checkErrors).withRequest(includeRequestInTheReturnMessage).withWaitListMode(wlMode), helper.getUser());
@@ -814,6 +858,11 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 		}
 		if (ret != null && gradeModes.hasCurrentCredit())
 			ret.setCurrentCredit(gradeModes.getCurrentCredit());
+		if (iCheckWaitLists && hasWaitList && ret != null && ret.getRequest() != null && wlMode == WaitListMode.WaitList && Customization.WaitListValidationProvider.hasProvider()) {
+			ret.getRequest().setWaitListChecks(server.execute(server.createAction(WaitListCheckValidation.class).withRequest(ret.getRequest()), helper.getUser()));
+			if (ret.getRequest().hasWaitListChecks() && !ret.getRequest().getWaitListChecks().isConfirm())
+				ret.setRequest(server.execute(server.createAction(WaitListSubmitOverrides.class).withRequest(ret.getRequest()).withCredit(ret.getRequest().getWaitListChecks().getMaxCreditNeeded()), helper.getUser()));
+		}
 		return ret;
 	}
 	

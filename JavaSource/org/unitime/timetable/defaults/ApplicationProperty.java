@@ -79,6 +79,7 @@ import org.unitime.timetable.onlinesectioning.custom.StudentEmailProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentHoldsCheckProvider;
 import org.unitime.timetable.onlinesectioning.custom.VariableTitleCourseProvider;
+import org.unitime.timetable.onlinesectioning.custom.WaitListValidationProvider;
 import org.unitime.timetable.spring.ldap.SpringLdapExternalUidLookup;
 import org.unitime.timetable.spring.ldap.SpringLdapExternalUidTranslation;
 
@@ -668,7 +669,7 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
-	@Description("Student Scheduling: provide default alternatice course when there is no alternative provided by student")
+	@Description("Student Scheduling: provide default alternative course when there is no alternative provided by student")
 	@Since(4.2)
 	StudentSchedulingAlternativeCourse("unitime.sectioning.alternativeCourse"),
 	
@@ -1251,6 +1252,12 @@ public enum ApplicationProperty {
 	@Description("Customization: variable title course provider")
 	@Since(4.5)
 	CustomizationVariableTitleCourseProvider("unitime.custom.VariableTitleCourseProvider"),
+	
+	@Type(Class.class)
+	@Implements(WaitListValidationProvider.class)
+	@Description("Customization: wait-list validation provider")
+	@Since(4.6)
+	CustomizationWaitListValidationProvider("unitime.custom.WaitListValidationProvider"),
 	
 	@Type(Class.class)
 	@Implements(ExternalLinkLookup.class)

@@ -1713,8 +1713,24 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	border-top: 1px solid #9CB0CE;
 }
 
+.unitime-BlackText {
+	color: black;
+}
+
 .unitime-GrayText {
 	color: #777777;
+}
+
+.unitime-WarningText {
+	color: orange;
+}
+
+.unitime-ErrorText {
+	color: red;
+}
+
+.unitime-GreenText {
+	color: green;
 }
 
 @media print {

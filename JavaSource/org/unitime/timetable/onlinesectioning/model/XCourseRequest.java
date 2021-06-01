@@ -211,6 +211,19 @@ public class XCourseRequest extends XRequest {
         	iTimeStamp = new Date();
     }
     
+    public XCourseRequest(XStudent student, XCourseId course) {
+    	super();
+    	iStudentId = student.getStudentId();
+    	iRequestId = -course.getCourseId();
+    	iAlternative = false;
+    	iPriority = student.getRequests().size();
+    	iCourseIds.add(course);
+        iWaitlist = false;
+        iNoSub = false;
+        iCritical = 0;
+        iTimeStamp = new Date();
+    }
+    
     public XCourseRequest(XCourseRequest request, XEnrollment enrollment) {
     	super(request);
     	iCourseIds.addAll(request.getCourseIds());

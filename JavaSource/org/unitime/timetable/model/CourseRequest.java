@@ -40,13 +40,14 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
 	private static final long serialVersionUID = 1L;
 	
 	public static enum CourseRequestOverrideStatus {
-		PENDING, APPROVED, REJECTED, CANCELLED,
+		PENDING, APPROVED, REJECTED, CANCELLED, NOT_CHECKED,
 	}
 	
 	public static enum CourseRequestOverrideIntent {
 		REGISTER, // pre-registration
 		ADD, DROP, CHANGE, // open registration
 		EX_ADD, EX_DROP, EX_CHANGE, // extended registration
+		WAITLIST, // wait-list
 	}
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -162,6 +163,10 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
     
     public boolean isRequestCancelled() {
     	return getOverrideStatus() != null && getOverrideStatus().intValue() == CourseRequestOverrideStatus.CANCELLED.ordinal();
+    }
+    
+    public boolean isRequestNeeded() {
+    	return getOverrideStatus() != null && getOverrideStatus().intValue() == CourseRequestOverrideStatus.NOT_CHECKED.ordinal();
     }
     
     public boolean isRequestRejected() {

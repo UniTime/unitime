@@ -1466,7 +1466,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 		iProgress.info("Requested course " + cr.getCourseOffering().getCourseName() + " has cancelled override for " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ")");
                 		continue;
                 	}
-                	if (iCheckRequestStatusSkipPending && cr.isRequestPending() && cr.getClassEnrollments().isEmpty()) {
+                	if (iCheckRequestStatusSkipPending && (cr.isRequestPending() || cr.isRequestNeeded()) && cr.getClassEnrollments().isEmpty()) {
                 		iProgress.info("Requested course " + cr.getCourseOffering().getCourseName() + " has pending override for " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ")");
                 		continue;
                 	}

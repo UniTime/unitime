@@ -68,6 +68,7 @@ import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationDashboardUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentHoldsCheckProvider;
+import org.unitime.timetable.onlinesectioning.custom.WaitListValidationProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentError;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentFailure;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
@@ -101,6 +102,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 	private Set<ErrorMessage> iErrors;
 	private boolean iIncludeRequest = false;
 	private boolean iCustomCheck = false;
+	private boolean iWaitListCheck = false;
 	private boolean iIncludeAdvisorRequest = false;
 	private boolean iCheckHolds = false;
 	private boolean iGetSpecRegs = false;
@@ -133,6 +135,11 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 	
 	public GetAssignment withCustomCheck(boolean customCheck) {
 		iCustomCheck = customCheck;
+		return this;
+	}
+	
+	public GetAssignment withWaitListCheck(boolean waitListCheck) {
+		iWaitListCheck = waitListCheck;
 		return this;
 	}
 	
@@ -175,6 +182,11 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 		
 		if (ret.hasRequest() && iCustomCheck && CustomCourseRequestsValidationHolder.hasProvider())
 			CustomCourseRequestsValidationHolder.getProvider().check(server, helper, ret.getRequest());
+		
+		if (ret.hasRequest() && iWaitListCheck && iWaitListMode == WaitListMode.WaitList && Customization.WaitListValidationProvider.hasProvider()) {
+			WaitListValidationProvider wp = Customization.WaitListValidationProvider.getProvider();
+			wp.check(server, helper, ret.getRequest());
+		}
 		
 		if (iCheckHolds && ret.hasRequest() && Customization.StudentHoldsCheckProvider.hasProvider()) {
 			try {
@@ -781,6 +793,8 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 					request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
 				else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.CANCELLED.ordinal())
 					request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_CANCELLED);
+				else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.NOT_CHECKED.ordinal())
+					request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_NEEDED);
 				else
 					request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_PENDING);
 			}
@@ -835,6 +849,8 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 								rc.setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
 							else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.CANCELLED.ordinal())
 								rc.setStatus(RequestedCourseStatus.OVERRIDE_CANCELLED);
+							else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.NOT_CHECKED.ordinal())
+								rc.setStatus(RequestedCourseStatus.OVERRIDE_NEEDED);
 							else
 								rc.setStatus(RequestedCourseStatus.OVERRIDE_PENDING);
 						}
