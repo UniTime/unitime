@@ -2887,7 +2887,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 	protected boolean isDashboardEnabled(org.unitime.timetable.model.Student student) {
 		if (student == null) return false;
 		StudentSectioningStatus status = student.getEffectiveStatus();
-		return status == null || status.hasOption(StudentSectioningStatus.Option.specreg) || status.hasOption(StudentSectioningStatus.Option.reqval);
+		return status != null && (status.hasOption(StudentSectioningStatus.Option.specreg) || status.hasOption(StudentSectioningStatus.Option.reqval));
 	}
 	
 	protected boolean isDashboardEnabled(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) {
@@ -2896,7 +2896,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		if (status == null) status = server.getAcademicSession().getDefaultSectioningStatus();
 		if (status == null) return true;
 		StudentSectioningStatus dbStatus = StudentSectioningStatus.getPresentStatus(status, server.getAcademicSession().getUniqueId(), helper.getHibSession());
-		return dbStatus != null && dbStatus.hasOption(StudentSectioningStatus.Option.specreg) || dbStatus.hasOption(StudentSectioningStatus.Option.reqval);
+		return dbStatus != null && (dbStatus.hasOption(StudentSectioningStatus.Option.specreg) || dbStatus.hasOption(StudentSectioningStatus.Option.reqval));
 	}
 
 	@Override
