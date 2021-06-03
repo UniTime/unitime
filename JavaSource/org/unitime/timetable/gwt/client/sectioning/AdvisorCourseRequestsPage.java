@@ -1045,6 +1045,10 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 			public void onSuccess(AdvisorCourseRequestSubmission result) {
 				LoadingWidget.getInstance().hide();
 				iDetails = details;
+				if (iDetails.getAdvisorWaitListedCourseIds() != null && iDetails.hasStudentRequest() && iDetails.getRequest() != null) {
+					iDetails.setAdvisorWaitListedCourseIds(iDetails.getRequest().getWaitListedCourseIds());
+					fillInStudentRequests();
+				}
 				iContext.setStudentId(iDetails == null ? null : iDetails.getStudentId());
 				download(result.getPdf(), result.hasName() ? result.getName() : "crf-" + iTerm.getText() + "-" + iStudentName.getText() + "-" + iStudentExternalId.getText());
 				final String statusLink = (result.hasLink() ?  "\n" + MESSAGES.advisorRequestsPdfLink(GWT.getHostPageBaseURL() + result.getLink()) : "");
@@ -1460,7 +1464,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				iconText = iDetails.getStudentRequest().getCreditWarning();
 				hasWarn = true;
 			} else if (iDetails.getStudentRequest().getMaxCreditOverrideStatus() != RequestedCourseStatus.SAVED) {
-				note = noteTitle = iconText = MESSAGES.creditWarning(iDetails.getStudentRequest().getCredit());
+				note = noteTitle = iconText = MESSAGES.creditWarning(iDetails.getStudentRequest().getCredit(iDetails.getAdvisorWaitListedCourseIds()));
 			}
 			switch (iDetails.getStudentRequest().getMaxCreditOverrideStatus()) {
 			case CREDIT_HIGH:
@@ -1515,7 +1519,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				iconText = (iconText == null ? "" : iconText + "\n") + iDetails.getStudentRequest().getCreditNote();
 				hasWarn = true;
 			}
-			float[] range = iDetails.getStudentRequest().getCreditRange();
+			float[] range = iDetails.getStudentRequest().getCreditRange(iDetails.getAdvisorWaitListedCourseIds());
 			WebTable.Cell credit = new WebTable.Cell(range != null ? range[0] < range[1] ? df.format(range[0]) + " - " + df.format(range[1]) : df.format(range[0]) : "");
 			credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			WebTable.Row row = new WebTable.Row(

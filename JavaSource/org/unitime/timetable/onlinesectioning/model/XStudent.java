@@ -489,6 +489,15 @@ public class XStudent extends XStudentId implements Externalizable {
     	return courseIds;
     }
     
+    public Set<Long> getAdvisorWaitListedCourseIds() {
+    	if (!hasAdvisorRequests()) return null;
+    	Set<Long> courseIds = new HashSet<Long>();
+    	for (XAdvisorRequest request: getAdvisorRequests())
+    			if (request.hasCourseId() && request.isWaitList() && !request.isSubstitute())
+    				courseIds.add(request.getCourseId().getCourseId());
+    	return courseIds;
+    }
+    
     @Override
     public String toString() {
     	return getName() + " (" + getExternalId() + ")";

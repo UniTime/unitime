@@ -712,46 +712,50 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					}
 				}
 			
+			Set<Long> advisorWaitListedCourseIds = null;
+			if (server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false))
+				advisorWaitListedCourseIds = original.getAdvisorWaitListedCourseIds();
+			
 			String maxCreditLimitStr = ApplicationProperties.getProperty("purdue.specreg.maxCreditCheck");
-			if (maxCreditDenied != null && request.getCredit() >= maxCreditDenied) {
+			if (maxCreditDenied != null && request.getCredit(advisorWaitListedCourseIds) >= maxCreditDenied) {
 				for (RequestedCourse rc: getOverCreditRequests(request, maxCredit))
 					response.addMessage(rc.getCourseId(), rc.getCourseName(), "CREDIT",
-							ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit()))
+							ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit(advisorWaitListedCourseIds)))
 							, CONF_NONE);
 				response.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit",
 						"Maximum of {max} credit hours exceeded.")
-						.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())).replace("{maxCreditDenied}", sCreditFormat.format(maxCreditDenied))
+						.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit(advisorWaitListedCourseIds))).replace("{maxCreditDenied}", sCreditFormat.format(maxCreditDenied))
 				);
 				response.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
 				creditError = ApplicationProperties.getProperty("purdue.specreg.messages.maxCreditDeniedError",
 								"Maximum of {max} credit hours exceeded.\nThe request to increase the maximum credit hours to {maxCreditDenied} has been denied.\nYou may not be able to get a full schedule.")
-						.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())).replace("{maxCreditDenied}", sCreditFormat.format(maxCreditDenied));
+						.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit(advisorWaitListedCourseIds))).replace("{maxCreditDenied}", sCreditFormat.format(maxCreditDenied));
 			} else if (maxCreditLimitStr != null) {
 				float maxCreditLimit = Float.parseFloat(maxCreditLimitStr);
 				if (maxCredit != null && maxCredit > maxCreditLimit) maxCreditLimit = maxCredit;
-				if (request.getCredit() > maxCreditLimit) {
+				if (request.getCredit(advisorWaitListedCourseIds) > maxCreditLimit) {
 					for (RequestedCourse rc: getOverCreditRequests(request, maxCreditLimit)) {
 						response.addMessage(rc.getCourseId(), rc.getCourseName(), "CREDIT",
-								ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCreditLimit)).replace("{credit}", sCreditFormat.format(request.getCredit()))
+								ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCreditLimit)).replace("{credit}", sCreditFormat.format(request.getCredit(advisorWaitListedCourseIds)))
 								, CONF_NONE);
 					}
 					response.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit",
 							"Maximum of {max} credit hours exceeded.")
-							.replace("{max}", sCreditFormat.format(maxCreditLimit)).replace("{credit}", sCreditFormat.format(request.getCredit())));
+							.replace("{max}", sCreditFormat.format(maxCreditLimit)).replace("{credit}", sCreditFormat.format(request.getCredit(advisorWaitListedCourseIds))));
 					response.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_HIGH);
 					creditError = ApplicationProperties.getProperty("purdue.specreg.messages.maxCreditError",
 							"Maximum of {max} credit hours exceeded.\nYou may not be able to get a full schedule.")
-							.replace("{max}", sCreditFormat.format(maxCreditLimit)).replace("{credit}", sCreditFormat.format(request.getCredit()));
+							.replace("{max}", sCreditFormat.format(maxCreditLimit)).replace("{credit}", sCreditFormat.format(request.getCredit(advisorWaitListedCourseIds)));
 				}
 			}
 			
-			if (creditError == null && maxCredit < request.getCredit()) {
+			if (creditError == null && maxCredit < request.getCredit(advisorWaitListedCourseIds)) {
 				for (RequestedCourse rc: getOverCreditRequests(request, maxCredit)) 
 					response.addMessage(rc.getCourseId(), rc.getCourseName(), "CREDIT",
-							ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())),
-							maxCreditOverride == null || maxCreditOverride < request.getCredit() ? CONF_BANNER : CONF_NONE);
-				response.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())));
-				response.setMaxCreditOverrideStatus(maxCreditOverrideStatus == null || maxCreditOverride < request.getCredit() ? RequestedCourseStatus.OVERRIDE_NEEDED : maxCreditOverrideStatus);
+							ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit(advisorWaitListedCourseIds))),
+							maxCreditOverride == null || maxCreditOverride < request.getCredit(advisorWaitListedCourseIds) ? CONF_BANNER : CONF_NONE);
+				response.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit(advisorWaitListedCourseIds))));
+				response.setMaxCreditOverrideStatus(maxCreditOverrideStatus == null || maxCreditOverride < request.getCredit(advisorWaitListedCourseIds) ? RequestedCourseStatus.OVERRIDE_NEEDED : maxCreditOverrideStatus);
 			}
 			
 			Map<String, Set<String>> deniedOverrides = new HashMap<String, Set<String>>();
@@ -1253,7 +1257,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					}
 				}
 		}
-		float total = request.getCredit();
+		Set<Long> advisorWaitListedCourseIds = null;
+		if (server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false))
+			advisorWaitListedCourseIds = original.getAdvisorWaitListedCourseIds();
+		float total = request.getCredit(advisorWaitListedCourseIds);
 		String maxCreditLimitStr = ApplicationProperties.getProperty("purdue.specreg.maxCreditCheck");
 		if (maxCreditLimitStr != null) {
 			float maxCreditLimit = Float.parseFloat(maxCreditLimitStr);
@@ -1969,26 +1976,30 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				}
 			}
 			
+			Set<Long> advisorWaitListedCourseIds = null;
+			if (server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false))
+				advisorWaitListedCourseIds = original.getAdvisorWaitListedCourseIds();
+
 			String maxCreditLimitStr = ApplicationProperties.getProperty("purdue.specreg.maxCreditCheck");
-			if (maxCredit < request.getCredit()) {
+			if (maxCredit < request.getCredit(advisorWaitListedCourseIds)) {
 				for (RequestedCourse rc: getOverCreditRequests(request, maxCredit)) {
 					request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), "CREDIT",
-							ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())), null,
+							ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit(advisorWaitListedCourseIds))), null,
 							ORD_CREDIT);
 				}
-				request.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())));
+				request.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit(advisorWaitListedCourseIds))));
 				if (request.getMaxCreditOverrideStatus() == RequestedCourseStatus.OVERRIDE_REJECTED && request.getMaxCreditOverride() != null) {
 					if (!request.hasErrorMessage())
 						request.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.maxCreditDeniedError",
 								"Maximum of {max} credit hours exceeded.\nThe request to increase the maximum credit hours to {maxCreditDenied} has been denied.\nYou may not be able to get a full schedule.")
-								.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())).replace("{maxCreditDenied}", sCreditFormat.format(request.getMaxCreditOverride())));
-				} else if (maxCreditLimitStr != null && Float.parseFloat(maxCreditLimitStr) < request.getCredit()) {
+								.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit(advisorWaitListedCourseIds))).replace("{maxCreditDenied}", sCreditFormat.format(request.getMaxCreditOverride())));
+				} else if (maxCreditLimitStr != null && Float.parseFloat(maxCreditLimitStr) < request.getCredit(advisorWaitListedCourseIds)) {
 					float maxCreditLimit = Float.parseFloat(maxCreditLimitStr);
 					request.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_HIGH);
 					if (!request.hasErrorMessage())
 						request.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.maxCreditError",
 								"Maximum of {max} credit hours exceeded.\nYou may not be able to get a full schedule.")
-								.replace("{max}", sCreditFormat.format(maxCreditLimit)).replace("{credit}", sCreditFormat.format(request.getCredit())));
+								.replace("{max}", sCreditFormat.format(maxCreditLimit)).replace("{credit}", sCreditFormat.format(request.getCredit(advisorWaitListedCourseIds))));
 				}
 				if (creditNote != null && !creditNote.isEmpty())
 					request.setCreditNote(creditNote);
@@ -2498,10 +2509,14 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					err.message = err.message.replaceFirst(" \\(CRN [0-9][0-9][0-9][0-9][0-9]\\) ", " ");
 				change.errors.add(err);
 			}
+		float total = 0f;
 		List<Float> credits = new ArrayList<Float>();
 		int nrCourses = 0;
 		submitRequest.courseCreditHrs = new ArrayList<CourseCredit>();
 		submitRequest.alternateCourseCreditHrs = new ArrayList<CourseCredit>();
+		Set<Long> advisorWaitListedCourseIds = null;
+		if (server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false))
+			advisorWaitListedCourseIds = original.getAdvisorWaitListedCourseIds();
 		for (XRequest r: original.getRequests()) {
 			CourseCredit cc = null;
 			if (r instanceof XCourseRequest) {
@@ -2528,8 +2543,12 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					if (course.hasCredit() && (credit == null || credit < course.getMinCredit())) credit = course.getMinCredit();
 				}
 				if (credit != null) {
-					credits.add(credit);
-					if (!r.isAlternative()) nrCourses ++;
+					if (!r.isAlternative() && cr.isWaitlist(advisorWaitListedCourseIds)) {
+						total += credit;
+					} else {
+						credits.add(credit);
+						if (!r.isAlternative()) nrCourses ++;
+					}
 				}
 			}
 			if (cc != null) {
@@ -2540,7 +2559,6 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			}
 		}
 		Collections.sort(credits);
-		float total = 0f;
 		for (int i = 0; i < nrCourses; i++) {
 			total += credits.get(credits.size() - i - 1);
 		}
@@ -3307,45 +3325,45 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				}
 			
 			String maxCreditLimitStr = ApplicationProperties.getProperty("purdue.specreg.maxCreditCheck");
-			if (maxCreditDenied != null && request.getCredit() >= maxCreditDenied) {
+			if (maxCreditDenied != null && request.getCredit(null) >= maxCreditDenied) {
 				for (RequestedCourse rc: getOverCreditRequests(request, maxCredit))
 					response.addMessage(rc.getCourseId(), rc.getCourseName(), "CREDIT",
-							ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit()))
+							ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit(null)))
 							, CONF_UNITIME);
 				response.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit",
 						"Maximum of {max} credit hours exceeded.")
-						.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())).replace("{maxCreditDenied}", sCreditFormat.format(maxCreditDenied))
+						.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit(null))).replace("{maxCreditDenied}", sCreditFormat.format(maxCreditDenied))
 				);
 				response.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
 				creditError = ApplicationProperties.getProperty("purdue.specreg.messages.acr.maxCreditDeniedError",
 								"Maximum of {max} credit hours exceeded.\nThe request to increase the maximum credit hours to {maxCreditDenied} has been denied.\nThe student may not be able to get a full schedule.")
-						.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())).replace("{maxCreditDenied}", sCreditFormat.format(maxCreditDenied));
+						.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit(null))).replace("{maxCreditDenied}", sCreditFormat.format(maxCreditDenied));
 			} else if (maxCreditLimitStr != null) {
 				float maxCreditLimit = Float.parseFloat(maxCreditLimitStr);
 				if (maxCredit != null && maxCredit > maxCreditLimit) maxCreditLimit = maxCredit;
-				if (request.getCredit() > maxCreditLimit) {
+				if (request.getCredit(null) > maxCreditLimit) {
 					for (RequestedCourse rc: getOverCreditRequests(request, maxCreditLimit)) {
 						response.addMessage(rc.getCourseId(), rc.getCourseName(), "CREDIT",
-								ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCreditLimit)).replace("{credit}", sCreditFormat.format(request.getCredit()))
+								ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCreditLimit)).replace("{credit}", sCreditFormat.format(request.getCredit(null)))
 								, CONF_UNITIME);
 					}
 					response.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit",
 							"Maximum of {max} credit hours exceeded.")
-							.replace("{max}", sCreditFormat.format(maxCreditLimit)).replace("{credit}", sCreditFormat.format(request.getCredit())));
+							.replace("{max}", sCreditFormat.format(maxCreditLimit)).replace("{credit}", sCreditFormat.format(request.getCredit(null))));
 					response.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_HIGH);
 					creditError = ApplicationProperties.getProperty("purdue.specreg.messages.acr.maxCreditError",
 							"Maximum of {max} credit hours exceeded.\nThe student may not be able to get a full schedule.")
-							.replace("{max}", sCreditFormat.format(maxCreditLimit)).replace("{credit}", sCreditFormat.format(request.getCredit()));
+							.replace("{max}", sCreditFormat.format(maxCreditLimit)).replace("{credit}", sCreditFormat.format(request.getCredit(null)));
 				}
 			}
 			
-			if (creditError == null && maxCredit < request.getCredit()) {
+			if (creditError == null && maxCredit < request.getCredit(null)) {
 				for (RequestedCourse rc: getOverCreditRequests(request, maxCredit)) 
 					response.addMessage(rc.getCourseId(), rc.getCourseName(), "CREDIT",
-							ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())),
+							ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit(null))),
 							CONF_BANNER);
-				response.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())));
-				response.setMaxCreditOverrideStatus(maxCreditOverrideStatus == null || maxCreditOverride < request.getCredit() ? RequestedCourseStatus.OVERRIDE_NEEDED : maxCreditOverrideStatus);
+				response.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit(null))));
+				response.setMaxCreditOverrideStatus(maxCreditOverrideStatus == null || maxCreditOverride < request.getCredit(null) ? RequestedCourseStatus.OVERRIDE_NEEDED : maxCreditOverrideStatus);
 			}
 			
 			Map<String, Set<String>> deniedOverrides = new HashMap<String, Set<String>>();

@@ -219,7 +219,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				if (iTotalCreditRequests != null) {
 					iTotalCreditRequestsStatus.setVisible(false);
 					if (!isChanged() && iSavedRequest != null && iSavedRequest.getMaxCreditOverrideStatus() != null) {
-						String cw = (iSavedRequest.hasCreditWarning() ? iSavedRequest.getCreditWarning() : MESSAGES.creditWarning(iSavedRequest.getCredit()));
+						String cw = (iSavedRequest.hasCreditWarning() ? iSavedRequest.getCreditWarning() : MESSAGES.creditWarning(iSavedRequest.getCredit(iEligibilityCheck == null ? null : iEligibilityCheck.getAdvisorWaitListedCourseIds())));
 						String note = "";
 						if (iSavedRequest.hasRequestorNote())
 							note += "\n" + MESSAGES.requestNote(iSavedRequest.getRequestorNote());
@@ -272,7 +272,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							break;
 						}
 					}
-					float[] credit = iCourseRequests.getRequest().getCreditRange();
+					float[] credit = iCourseRequests.getRequest().getCreditRange(iEligibilityCheck == null ? null : iEligibilityCheck.getAdvisorWaitListedCourseIds());
 					if (credit[1] > 0) {
 						if (credit[0] != credit[1])
 							iTotalCreditRequests.setText(MESSAGES.totalCreditRange(credit[0], credit[1]));
@@ -664,7 +664,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			@Override
 			public boolean changeRequestorCreditNote(final CourseRequestInterface request) {
 				if (request == null || request.getRequestId() == null || request.getMaxCreditOverrideStatus() != RequestedCourseStatus.OVERRIDE_PENDING) return false;
-				String message = (request.hasCreditWarning() ? request.getCreditWarning() : MESSAGES.creditWarning(request.getCredit()));
+				String message = (request.hasCreditWarning() ? request.getCreditWarning() : MESSAGES.creditWarning(request.getCredit(iEligibilityCheck == null ? null : iEligibilityCheck.getAdvisorWaitListedCourseIds())));
 				CheckCoursesResponse confirm = new CheckCoursesResponse();
 				confirm.setConfirmation(0, MESSAGES.dialogChangeCreditRequestNote(),
 						MESSAGES.buttonChangeRequestNote(), MESSAGES.buttonHideRequestNote(),
@@ -3453,7 +3453,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				note = (note == null ? "" : note + "\n") + savedRequests.getCreditNote();
 				hasWarn = true;
 			}
-			float[] range = savedRequests.getCreditRange();
+			float[] range = savedRequests.getCreditRange(iEligibilityCheck == null ? null : iEligibilityCheck.getAdvisorWaitListedCourseIds());
 			WebTable.Cell credit = new WebTable.Cell(range != null ? range[0] < range[1] ? df.format(range[0]) + " - " + df.format(range[1]) : df.format(range[0]) : "");
 			credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			P messages = new P("text-pre-wrap"); messages.setText(note);
@@ -3481,7 +3481,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		requests.setColumnVisible(7, hasWait);
 		
 		P credit = new P("unitime-StatusLine");
-		float[] range = savedRequests.getCreditRange();
+		float[] range = savedRequests.getCreditRange(iEligibilityCheck == null ? null : iEligibilityCheck.getAdvisorWaitListedCourseIds());
 		if (range != null && range[1] > 0f) {
 			if (range[0] == range[1]) credit.setText(MESSAGES.requestedCredit(range[0]));
 			else credit.setText(MESSAGES.requestedCreditRange(range[0], range[1]));

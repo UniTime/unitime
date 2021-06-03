@@ -341,6 +341,15 @@ public class XCourseRequest extends XRequest {
         return iWaitlist;
     }
     
+    public boolean isWaitlist(Set<Long> advisorWaitListedCourseIds) {
+    	if (iWaitlist) return true;
+    	if (advisorWaitListedCourseIds != null) {
+    		for (XCourseId id: iCourseIds)
+    			if (advisorWaitListedCourseIds.contains(id.getCourseId())) return true;
+    	}
+    	return false;
+    }
+    
     public int getCritical() {
     	return iCritical;
     }

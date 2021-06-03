@@ -858,7 +858,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				iconText = iAssignment.getRequest().getCreditWarning();
 				hasWarn = true;
 			} else if (iAssignment.getRequest().getMaxCreditOverrideStatus() != RequestedCourseStatus.SAVED) {
-				note = noteTitle = iconText = MESSAGES.creditWarning(iAssignment.getRequest().getCredit());
+				note = noteTitle = iconText = MESSAGES.creditWarning(iAssignment.getRequest().getCredit(iAssignment.getAdvisorWaitListedCourseIds()));
 			}
 			switch (iAssignment.getRequest().getMaxCreditOverrideStatus()) {
 			case CREDIT_HIGH:
@@ -913,7 +913,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				iconText = (iconText == null ? "" : iconText + "\n") + iAssignment.getRequest().getCreditNote();
 				hasWarn = true;
 			}
-			float[] range = iAssignment.getRequest().getCreditRange();
+			float[] range = iAssignment.getRequest().getCreditRange(iAssignment.getAdvisorWaitListedCourseIds());
 			WebTable.Cell credit = new WebTable.Cell(range != null ? range[0] < range[1] ? df.format(range[0]) + " - " + df.format(range[1]) : df.format(range[0]) : "");
 			credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			WebTable.Row row = new WebTable.Row(
@@ -1248,7 +1248,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 	
 	public float getTotalCredit() { return iTotalCredit; }
 	
-	public float[] getCreditRange() { return iAssignment == null || !iAssignment.hasRequest() ? null : iAssignment.getRequest().getCreditRange(); }
+	public float[] getCreditRange() { return iAssignment == null || !iAssignment.hasRequest() ? null : iAssignment.getRequest().getCreditRange(iAssignment.getAdvisorWaitListedCourseIds()); }
 	
 	public String getCreditMessage() {
 		if (iTabs.getSelectedTab() == 0) {

@@ -318,4 +318,15 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     
     public boolean hasReleasedPin() { return getPin() != null && !getPin().isEmpty() && isPinReleased() != null && isPinReleased().booleanValue(); }
     public String getReleasedPin() { return (hasReleasedPin() ? getPin() : null); }
+    
+    public Set<Long> getAdvisorWaitListedCourseIds() {
+    	if (getAdvisorCourseRequests() == null || getAdvisorCourseRequests().isEmpty()) return null;
+    	Set<Long> courseIds = new HashSet<Long>();
+    	for (AdvisorCourseRequest acr: getAdvisorCourseRequests()) {
+    		if (acr.getWaitlist() != null && acr.getWaitlist().booleanValue() && acr.getCourseOffering() != null) {
+    			courseIds.add(acr.getCourseOffering().getUniqueId());
+    		}
+    	}
+    	return courseIds;
+    }
 }

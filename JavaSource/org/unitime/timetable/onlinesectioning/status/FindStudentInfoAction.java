@@ -188,6 +188,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		} else if (iFilter != null) {
 			acrs = server.createAction(SectioningStatusFilterAction.class).forRequest(iFilter).getAdvisorCourseRequests(server, helper);
 		}
+		boolean useAdvisorWaitLists = server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false);
 		for (XCourseId info: findCourses(server, helper, lookup)) {
 			XOffering offering = server.getOffering(info.getOfferingId());
 			if (offering == null) continue;
@@ -254,6 +255,9 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						List<Float> mins = new ArrayList<Float>();
 						List<Float> maxs = new ArrayList<Float>();
 						int nrCoursesTot = 0, nrCourses = 0;
+						float studentMin = 0f, studentMax = 0f;
+						float studentMinTot = 0f, studentMaxTot = 0f;
+						Set<Long> advisorWaitListedCourseIds = (useAdvisorWaitLists ? student.getAdvisorWaitListedCourseIds() : null);
 						for (XRequest r: student.getRequests()) {
 							if (r instanceof XCourseRequest) {
 								XCourseRequest cr = (XCourseRequest)r;
@@ -274,13 +278,22 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 										if (cr.isOverridePending(c)) { gOvrNeed ++; ovrNeed ++; }
 									}
 								}
-								if (minTot != null) {
-									minsTot.add(minTot); maxsTot.add(maxTot); 
-									if (!r.isAlternative()) nrCoursesTot ++;
-								}
-								if (min != null) {
-									mins.add(min); maxs.add(max); 
-									if (!r.isAlternative()) nrCourses ++;
+								if (cr.isWaitlist(advisorWaitListedCourseIds)) {
+									if (minTot != null) {
+										studentMinTot += minTot; studentMaxTot += maxTot;
+									}
+									if (min != null) {
+										studentMin += min; studentMax += max;
+									}
+								} else {
+									if (minTot != null) {
+										minsTot.add(minTot); maxsTot.add(maxTot); 
+										if (!r.isAlternative()) nrCoursesTot ++;
+									}
+									if (min != null) {
+										mins.add(min); maxs.add(max); 
+										if (!r.isAlternative()) nrCourses ++;
+									}									
 								}
 								if (!r.isAlternative()) tReq ++;
 								if (cr.getEnrollment() == null) {
@@ -351,20 +364,18 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 
 						Collections.sort(mins);
 						Collections.sort(maxs);
-						float min = 0f, max = 0f;
 						for (int i = 0; i < nrCourses; i++) {
-							min += mins.get(i);
-							max += maxs.get(maxs.size() - i - 1);
+							studentMin += mins.get(i);
+							studentMax += maxs.get(maxs.size() - i - 1);
 						}
 						Collections.sort(minsTot);
 						Collections.sort(maxsTot);
-						float minTot = 0f, maxTot = 0f;
 						for (int i = 0; i < nrCoursesTot; i++) {
-							minTot += minsTot.get(i);
-							maxTot += maxsTot.get(maxsTot.size() - i - 1);
+							studentMinTot += minsTot.get(i);
+							studentMaxTot += maxsTot.get(maxsTot.size() - i - 1);
 						}
-						s.setRequestCredit(min, max);
-						s.setTotalRequestCredit(minTot, maxTot);
+						s.setRequestCredit(studentMin, studentMax);
+						s.setTotalRequestCredit(studentMinTot, studentMaxTot);
 						s.setTotalEnrollment(tEnrl);
 						s.setTotalReservation(tRes);
 						s.setTotalWaitlist(tWait);

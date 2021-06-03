@@ -43,6 +43,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -970,6 +971,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	}
 	
 	CourseRequestsTable generateCourseRequests(org.unitime.timetable.model.Student student, CourseRequestInterface requests, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		Set<Long> advisorWaitListedCourseIds = null;
+		if (server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false) && iStudent != null)
+			advisorWaitListedCourseIds = iStudent.getAdvisorWaitListedCourseIds();
 		CourseRequestsTable courseRequests = new CourseRequestsTable();
 		Format<Number> df = Formats.getNumberFormat("0.#");
 		CheckCoursesResponse check = new CheckCoursesResponse(requests.getConfirmations());
@@ -1257,7 +1261,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				note = (note == null ? "" : note + "\n") + requests.getCreditNote();
 				courseRequests.hasWarn = true;
 			}
-			float[] range = requests.getCreditRange();
+			float[] range = requests.getCreditRange(advisorWaitListedCourseIds);
 			String credit = (range != null ? range[0] < range[1] ? df.format(range[0]) + " - " + df.format(range[1]) : df.format(range[0]) : "");
 			CourseRequestLine line = new CourseRequestLine();
 			line.priority = "";
@@ -1272,7 +1276,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			line.last = true;
 			courseRequests.add(line);
 		} else {
-			float[] range = requests.getCreditRange();
+			float[] range = requests.getCreditRange(advisorWaitListedCourseIds);
 			if (range != null && range[1] > 0f) {
 				String credit = (range != null ? range[0] < range[1] ? df.format(range[0]) + " - " + df.format(range[1]) : df.format(range[0]) : "");
 				CourseRequestLine line = new CourseRequestLine();

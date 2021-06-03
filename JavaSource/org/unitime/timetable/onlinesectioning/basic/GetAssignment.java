@@ -155,8 +155,11 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 			if (ret.hasRequest() && iCustomCheck && CustomCourseRequestsValidationHolder.hasProvider())
 				CustomCourseRequestsValidationHolder.getProvider().check(server, helper, ret.getRequest());
 			
-			if (iIncludeAdvisorRequest)
+			if (iIncludeAdvisorRequest) {
 				ret.setAdvisorRequest(AdvisorGetCourseRequests.getRequest(student, server, helper));
+				if (server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false))
+					ret.setAdvisorWaitListedCourseIds(student.getAdvisorWaitListedCourseIds());
+			}
 			
 			if (iCheckHolds && ret.hasRequest() && Customization.StudentHoldsCheckProvider.hasProvider()) {
 				try {
