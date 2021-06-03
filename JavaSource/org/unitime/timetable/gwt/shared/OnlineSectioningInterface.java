@@ -48,6 +48,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private String iOverrideRequestDisclaimer = null;
 		private GradeModes iGradeModes = null;
 		private Float iMaxCredit = null;
+		private Set<Long> iAdvisorWaitListedCourseIds = null;
 		
 		public static enum EligibilityFlag implements IsSerializable {
 			IS_ADMIN, IS_ADVISOR, IS_GUEST,
@@ -171,6 +172,9 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			if (iGradeModes == null) iGradeModes = new GradeModes();
 			iGradeModes.addCreditHour(sectionId, credit);
 		}
+		
+		public Set<Long> getAdvisorWaitListedCourseIds() { return iAdvisorWaitListedCourseIds; }
+		public void setAdvisorWaitListedCourseIds(Set<Long> advisorWaitListedCourseIds) { iAdvisorWaitListedCourseIds = advisorWaitListedCourseIds; } 
 	}
 	
 	public static class SectioningProperties implements IsSerializable, Serializable {
@@ -544,6 +548,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private boolean iEmailOptionalToggleDefault = false;
 		private WaitListMode iMode = null;
 		private boolean iCanRequire = false;
+		private Set<Long> iAdvisorWaitListedCourseIds = null;
 		
 		public AdvisingStudentDetails() {}
 		public AdvisingStudentDetails(AdvisingStudentDetails clone) {
@@ -563,6 +568,8 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			iMode = clone.iMode;
 			iCanRequire = clone.iCanRequire;
 			iAvailableStatuses = clone.iAvailableStatuses; 
+			iStudentRequest = clone.iStudentRequest;
+			iAdvisorWaitListedCourseIds = clone.iAdvisorWaitListedCourseIds;
 		}
 		
 		public Long getStudentId() { return iStudentId; }
@@ -634,6 +641,9 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		
 		public boolean isCanRequire() { return iCanRequire; }
 		public void setCanRequire(boolean canRequire) { iCanRequire = canRequire; }
+		
+		public Set<Long> getAdvisorWaitListedCourseIds() { return iAdvisorWaitListedCourseIds; }
+		public void setAdvisorWaitListedCourseIds(Set<Long> advisorWaitListedCourseIds) { iAdvisorWaitListedCourseIds = advisorWaitListedCourseIds; }
 	}
 	
 	public static class AdvisorCourseRequestSubmission implements IsSerializable, Serializable {

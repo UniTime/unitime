@@ -54,6 +54,8 @@ public class CourseRequestEligibility extends CheckEligibility {
 			action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
 		else 
 			action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
+		if (check.getAdvisorWaitListedCourseIds() != null && !check.getAdvisorWaitListedCourseIds().isEmpty())
+			action.addOptionBuilder().setKey("Wait-Listed Courses").setValue(check.getAdvisorWaitListedCourseIds().toString());
 	}
 	
 	@Override
@@ -81,6 +83,9 @@ public class CourseRequestEligibility extends CheckEligibility {
 					action.setResult(OnlineSectioningLog.Action.ResultType.NULL);
 					return iCheck;
 				}
+				
+				if (student != null && server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false))
+					iCheck.setAdvisorWaitListedCourseIds(student.getAdvisorWaitListedCourseIds());
 				
 				if (iStudentId != null) {
 					iCheck.setFlag(EligibilityFlag.HAS_ADVISOR_REQUESTS, student.getAdvisorCourseRequests() != null && !student.getAdvisorCourseRequests().isEmpty());

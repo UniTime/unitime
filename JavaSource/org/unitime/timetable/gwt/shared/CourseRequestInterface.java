@@ -227,10 +227,11 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		return __getRequestPriority(course);
 	}
 	
-	public float[] getCreditRange() {
+	public float[] getCreditRange(Set<Long> advisorWaitListedCourseIds) {
 		List<Float> mins = new ArrayList<Float>();
 		List<Float> maxs = new ArrayList<Float>();
 		int nrCourses = 0;
+		float tMin = 0f, tMax = 0f;
 		for (Request r: getCourses()) {
 			if (r.hasRequestedCourse()) {
 				Float min = null, max = null;
@@ -241,7 +242,11 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 					}
 				}
 				if (min != null) {
-					mins.add(min); maxs.add(max); nrCourses ++;
+					if (r.isWaitList(advisorWaitListedCourseIds)) {
+						tMin += min; tMax += max;
+					} else {
+						mins.add(min); maxs.add(max); nrCourses ++;
+					}
 				}
 			}
 		}
@@ -261,17 +266,17 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		}
 		Collections.sort(mins);
 		Collections.sort(maxs);
-		float min = 0f, max = 0f;
 		for (int i = 0; i < nrCourses; i++) {
-			min += mins.get(i);
-			max += maxs.get(maxs.size() - i - 1);
+			tMin += mins.get(i);
+			tMax += maxs.get(maxs.size() - i - 1);
 		}
-		return new float[] {min, max};
+		return new float[] {tMin, tMax};
 	}
 	
-	public float getCredit() {
+	public float getCredit(Set<Long> advisorWaitListedCourseIds) {
 		List<Float> credits = new ArrayList<Float>();
 		int nrCourses = 0;
+		float total = 0f;
 		for (Request r: getCourses()) {
 			if (r.hasRequestedCourse()) {
 				Float credit = null;
@@ -281,7 +286,11 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 					}
 				}
 				if (credit != null) {
-					credits.add(credit); nrCourses ++;
+					if (r.isWaitList(advisorWaitListedCourseIds)) {
+						total += credit;
+					} else {
+						credits.add(credit); nrCourses ++;
+					}
 				}
 			}
 		}
@@ -299,7 +308,6 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			}
 		}
 		Collections.sort(credits);
-		float total = 0f;
 		for (int i = 0; i < nrCourses; i++) {
 			total += credits.get(credits.size() - i - 1);
 		}
@@ -309,6 +317,20 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	public boolean isPinReleased() { return iPinReleased != null && iPinReleased.booleanValue(); }
 	public void setPinReleased(boolean pinReleased) { iPinReleased = pinReleased; }
 	public boolean hasReleasedPin() { return isPinReleased() && hasPin(); }
+	
+	public Set<Long> getWaitListedCourseIds() {
+		Set<Long> courseIds = new HashSet<Long>();
+		for (Request request: getCourses()) {
+			if (request.hasRequestedCourse() && request.isWaitList())
+				for (RequestedCourse rc: request.getRequestedCourse()) {
+					if (rc.hasCourseId())
+						courseIds.add(rc.getCourseId());
+					break;
+				}
+		}
+		return courseIds;
+	}
+
 	
 	@Override
 	public boolean equals(Object o) {
@@ -861,6 +883,16 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		public boolean hasWaitList() { return iWaitList != null; }
 		public boolean isWaitList() { return iWaitList != null && iWaitList.booleanValue(); }
 		public void setWaitList(Boolean waitList) { iWaitList = waitList; }
+		
+		public boolean isWaitList(Set<Long> advisorWaitListedCourseIds) {
+			if (iWaitList != null && iWaitList.booleanValue()) return true;
+			if (advisorWaitListedCourseIds != null && hasRequestedCourse()) {
+				for (RequestedCourse rc: getRequestedCourse()) {
+					if (rc.hasCourseId() && advisorWaitListedCourseIds.contains(rc.getCourseId())) return true;
+				}
+			}
+			return false;
+		}
 		
 		public boolean hasCritical() { return iCritical != null; }
 		public boolean isCritical() { return iCritical != null && iCritical.intValue() == 1; }

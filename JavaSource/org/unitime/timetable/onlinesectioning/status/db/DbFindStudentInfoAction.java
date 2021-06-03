@@ -104,6 +104,8 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		CourseLookup lookup = new CourseLookup(session);
 		DistanceMetric dm = server.getDistanceMetric();
 		
+		boolean useAdvisorWaitLists = server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false);
+		
 		DbFindStudentInfoMatcher sm = new DbFindStudentInfoMatcher(session, iQuery, helper.getStudentNameFormat(), iMyStudents); sm.setServer(server);
 		
 		Map<CourseOffering, List<CourseRequest>> requests = new HashMap<CourseOffering, List<CourseRequest>>();
@@ -187,6 +189,9 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					List<Float> mins = new ArrayList<Float>();
 					List<Float> maxs = new ArrayList<Float>();
 					int nrCoursesTot = 0, nrCourses = 0;
+					float studentMin = 0f, studentMax = 0f;
+					float studentMinTot = 0f, studentMaxTot = 0f;
+					Set<Long> advisorWaitListedCourseIds = (useAdvisorWaitLists ? student.getAdvisorWaitListedCourseIds() : null);
 					for (CourseDemand demand: student.getCourseDemands()) {
 						if (!demand.getCourseRequests().isEmpty()) {
 							Float minTot = null, maxTot = null;
@@ -206,14 +211,35 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 									if (r.isRequestPending()) { ovrNeed ++; gOvrNeed ++ ; }
 								}
 							}
-							if (minTot != null) {
-								minsTot.add(minTot); maxsTot.add(maxTot); 
-								if (!demand.isAlternative()) nrCoursesTot ++;
+							boolean isWaitList = false;
+							if (!demand.isAlternative()) {
+								if (demand.isWaitlist() != null && demand.isWaitlist().booleanValue()) {
+									isWaitList = true;
+								} else if (advisorWaitListedCourseIds != null && !advisorWaitListedCourseIds.isEmpty()) {
+									for (CourseRequest r: demand.getCourseRequests())
+										if (advisorWaitListedCourseIds.contains(r.getCourseOffering().getUniqueId())) {
+											isWaitList = true; break;
+										}
+								}
 							}
-							if (min != null) {
-								mins.add(min); maxs.add(max); 
-								if (!demand.isAlternative()) nrCourses ++;
+							if (isWaitList) {
+								if (minTot != null) {
+									studentMinTot += minTot; studentMaxTot += maxTot;
+								}
+								if (min != null) {
+									studentMin += min; studentMax += max;
+								}
+							} else {
+								if (minTot != null) {
+									minsTot.add(minTot); maxsTot.add(maxTot); 
+									if (!demand.isAlternative()) nrCoursesTot ++;
+								}
+								if (min != null) {
+									mins.add(min); maxs.add(max); 
+									if (!demand.isAlternative()) nrCourses ++;
+								}								
 							}
+
 							if (!demand.isAlternative()) tReq ++;
 							List<StudentClassEnrollment> enrollment = null;
 							CourseRequest assigned = null;
@@ -300,24 +326,22 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 
 					Collections.sort(mins);
 					Collections.sort(maxs);
-					float min = 0f, max = 0f;
 					for (int i = 0; i < nrCourses; i++) {
-						min += mins.get(i);
-						max += maxs.get(maxs.size() - i - 1);
+						studentMin += mins.get(i);
+						studentMax += maxs.get(maxs.size() - i - 1);
 					}
 					Collections.sort(minsTot);
 					Collections.sort(maxsTot);
-					float minTot = 0f, maxTot = 0f;
 					for (int i = 0; i < nrCoursesTot; i++) {
-						minTot += minsTot.get(i);
-						maxTot += maxsTot.get(maxsTot.size() - i - 1);
+						studentMinTot += minsTot.get(i);
+						studentMaxTot += maxsTot.get(maxsTot.size() - i - 1);
 					}
 					if (student.isRequestPending()) {
 						if (nrCourses == nrCoursesTot) { gOvrNeed ++; ovrNeed ++; }
 						gtOvrNeed ++; tOvrNeed ++;
 					}
-					s.setRequestCredit(min, max);
-					s.setTotalRequestCredit(minTot, maxTot);
+					s.setRequestCredit(studentMin, studentMax);
+					s.setTotalRequestCredit(studentMinTot, studentMaxTot);
 					s.setTotalEnrollment(tEnrl);
 					s.setTotalReservation(tRes);
 					s.setTotalWaitlist(tWait);

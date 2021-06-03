@@ -208,6 +208,9 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 				if (CustomSpecialRegistrationHolder.hasProvider())
 					CustomSpecialRegistrationHolder.getProvider().checkEligibility(server, helper, iCheck, xstudent);
 			}
+			
+			if (xstudent != null && server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false))
+				iCheck.setAdvisorWaitListedCourseIds(xstudent.getAdvisorWaitListedCourseIds());
 
 			logCheck(action, iCheck);
 			return iCheck;

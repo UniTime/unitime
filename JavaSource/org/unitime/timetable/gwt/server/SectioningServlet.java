@@ -1686,6 +1686,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						ret.setRequest(getRequest(student));
 						ret.setCanSetCriticalOverrides(getSessionContext().hasPermission(student, Right.StudentSchedulingChangeCriticalOverride));
 						ret.setAdvisorRequest(AdvisorGetCourseRequests.getRequest(student, hibSession));
+						if (ApplicationProperty.OnlineSchedulingParameter.isTrue("Load.UseAdvisorWaitLists"))
+							ret.setAdvisorWaitListedCourseIds(student.getAdvisorWaitListedCourseIds());
 						if (Customization.StudentHoldsCheckProvider.hasProvider()) {
 							try {
 								OnlineSectioningHelper helper = new OnlineSectioningHelper(hibSession, currentUser());
@@ -2959,6 +2961,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					}
 					check.setFlag(EligibilityFlag.CAN_REGISTER, getSessionContext().hasPermissionAnyAuthority(student, Right.StudentSchedulingCanRegister));
 					check.setFlag(EligibilityFlag.CAN_REQUIRE, getSessionContext().hasPermissionAnyAuthority(student, Right.StudentSchedulingCanRequirePreferences));
+					if (ApplicationProperty.OnlineSchedulingParameter.isTrue("Load.UseAdvisorWaitLists"))
+						check.setAdvisorWaitListedCourseIds(student.getAdvisorWaitListedCourseIds());
 				} else {
 					check = server.execute(server.createAction(CourseRequestEligibility.class).forStudent(cx.getStudentId()).withCheck(check).includeCustomCheck(includeCustomCheck)
 							.withPermission(
@@ -3534,6 +3538,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				ret.getStudentRequest().setWaitListMode(WaitListMode.NoSubs);
 			} else {
 				ret.getStudentRequest().setWaitListMode(WaitListMode.None);
+			}
+			if (ret.getRequest() != null && server != null && server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false)) {
+				ret.setAdvisorWaitListedCourseIds(ret.getRequest().getWaitListedCourseIds());
 			}
 		}
 		

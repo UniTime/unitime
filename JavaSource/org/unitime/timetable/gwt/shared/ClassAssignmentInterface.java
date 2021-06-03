@@ -129,6 +129,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	public void setValue(double value) { iValue = value; }
 	
 	private CourseRequestInterface iRequest = null, iAdvisorRequest = null;
+	private Set<Long> iAdvisorWaitListedCourseIds = null;
 	
 	public boolean hasRequest() { return iRequest != null; }
 	public void setRequest(CourseRequestInterface request) { iRequest = request; }
@@ -137,6 +138,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	public boolean hasAdvisorRequest() { return iAdvisorRequest != null && (!iAdvisorRequest.isEmpty() || iAdvisorRequest.hasCreditNote()); }
 	public void setAdvisorRequest(CourseRequestInterface request) { iAdvisorRequest = request; }
 	public CourseRequestInterface getAdvisorRequest() { return iAdvisorRequest; }
+	
+	public Set<Long> getAdvisorWaitListedCourseIds() { return iAdvisorWaitListedCourseIds; }
+	public void setAdvisorWaitListedCourseIds(Set<Long> advisorWaitListedCourseIds) { iAdvisorWaitListedCourseIds = advisorWaitListedCourseIds; }
 	
 	public boolean isEnrolled() {
 		for (CourseAssignment course: getCourseAssignments())
