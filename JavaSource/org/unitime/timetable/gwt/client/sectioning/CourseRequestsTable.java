@@ -489,6 +489,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	
 	public CourseRequestInterface getRequest() {
 		CourseRequestInterface cr = new CourseRequestInterface(iContext);
+		cr.setWaitListMode(iWaitListMode);
 		fillInCourses(cr);
 		fillInAlternatives(cr);
 		cr.setTimeConflictsAllowed(iSpecReg.isEnabled() && iSpecReg.isDisclaimerAccepted() && iSpecReg.areTimeConflictsAllowed());

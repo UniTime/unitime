@@ -28,12 +28,14 @@ import java.util.List;
 import java.util.Set;
 
 import org.hibernate.Query;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.StudentSectioningStatus.Option;
 import org.unitime.timetable.model.base.BaseStudent;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.util.NameFormat;
@@ -333,14 +335,32 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     public boolean hasReleasedPin() { return getPin() != null && !getPin().isEmpty() && isPinReleased() != null && isPinReleased().booleanValue(); }
     public String getReleasedPin() { return (hasReleasedPin() ? getPin() : null); }
     
-    public Set<Long> getAdvisorWaitListedCourseIds() {
+    public Set<Long> getAdvisorWaitListedCourseIds(boolean useWaitLists, boolean useNoSubs) {
+    	if (!useWaitLists && !useNoSubs) return null;
     	if (getAdvisorCourseRequests() == null || getAdvisorCourseRequests().isEmpty()) return null;
     	Set<Long> courseIds = new HashSet<Long>();
     	for (AdvisorCourseRequest acr: getAdvisorCourseRequests()) {
-    		if (acr.getWaitlist() != null && acr.getWaitlist().booleanValue() && acr.getCourseOffering() != null) {
+    		if (useWaitLists && acr.getWaitlist() != null && acr.getWaitlist().booleanValue() && acr.getCourseOffering() != null) {
+    			courseIds.add(acr.getCourseOffering().getUniqueId());
+    		}
+    		if (useNoSubs && acr.getNoSub() != null && acr.getNoSub().booleanValue() && acr.getCourseOffering() != null) {
     			courseIds.add(acr.getCourseOffering().getUniqueId());
     		}
     	}
     	return courseIds;
+    }
+    
+    public Set<Long> getAdvisorWaitListedCourseIds(OnlineSectioningServer server) {
+    	if (server == null) {
+    		return getAdvisorWaitListedCourseIds(
+    				ApplicationProperty.OnlineSchedulingParameter.isTrue("Load.UseAdvisorWaitLists"),
+    				ApplicationProperty.OnlineSchedulingParameter.isTrue("Load.UseAdvisorNoSubs")
+    				);
+    	} else {
+    		return getAdvisorWaitListedCourseIds(
+    				server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false),
+    				server.getConfig().getPropertyBoolean("Load.UseAdvisorNoSubs", false)
+    				);
+    	}
     }
 }
