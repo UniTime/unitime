@@ -84,9 +84,6 @@ public class CourseRequestEligibility extends CheckEligibility {
 					return iCheck;
 				}
 				
-				if (student != null && server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false))
-					iCheck.setAdvisorWaitListedCourseIds(student.getAdvisorWaitListedCourseIds());
-				
 				if (iStudentId != null) {
 					iCheck.setFlag(EligibilityFlag.HAS_ADVISOR_REQUESTS, student.getAdvisorCourseRequests() != null && !student.getAdvisorCourseRequests().isEmpty());
 				}
@@ -118,6 +115,9 @@ public class CourseRequestEligibility extends CheckEligibility {
 				
 				if (status == null || status.hasOption(StudentSectioningStatus.Option.nosubs))
 					iCheck.setFlag(EligibilityFlag.CAN_NO_SUBS, true);
+				
+				if (student != null)
+					iCheck.setAdvisorWaitListedCourseIds(student.getAdvisorWaitListedCourseIds(server));
 				
 				if (iPermissionCanRequirePreferences != null)
 					iCheck.setFlag(EligibilityFlag.CAN_REQUIRE, iPermissionCanRequirePreferences);

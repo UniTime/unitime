@@ -34,7 +34,6 @@ import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.DataProperties;
-import org.cpsolver.ifs.util.ToolBox;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.cpsolver.studentsct.StudentSectioningModel;
 import org.cpsolver.studentsct.extension.DistanceConflict;
