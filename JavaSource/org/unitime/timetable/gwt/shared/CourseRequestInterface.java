@@ -291,7 +291,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 					}
 				}
 				if (min != null) {
-					if (r.isWaitList(advisorWaitListedCourseIds)) {
+					if (r.isWaitListOrNoSub(iMode, advisorWaitListedCourseIds)) {
 						tMin += min; tMax += max;
 					} else {
 						mins.add(min); maxs.add(max); nrCourses ++;
@@ -335,7 +335,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 					}
 				}
 				if (credit != null) {
-					if (r.isWaitList(advisorWaitListedCourseIds)) {
+					if (r.isWaitListOrNoSub(iMode, advisorWaitListedCourseIds)) {
 						total += credit;
 					} else {
 						credits.add(credit); nrCourses ++;
@@ -371,6 +371,19 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		Set<Long> courseIds = new HashSet<Long>();
 		for (Request request: getCourses()) {
 			if (request.hasRequestedCourse() && request.isWaitList())
+				for (RequestedCourse rc: request.getRequestedCourse()) {
+					if (rc.hasCourseId())
+						courseIds.add(rc.getCourseId());
+					break;
+				}
+		}
+		return courseIds;
+	}
+	
+	public Set<Long> getNoSubCourseIds() {
+		Set<Long> courseIds = new HashSet<Long>();
+		for (Request request: getCourses()) {
+			if (request.hasRequestedCourse() && request.isNoSub())
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					if (rc.hasCourseId())
 						courseIds.add(rc.getCourseId());
@@ -941,8 +954,13 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		public boolean isWaitList() { return iWaitList != null && iWaitList.booleanValue(); }
 		public void setWaitList(Boolean waitList) { iWaitList = waitList; }
 		
-		public boolean isWaitList(Set<Long> advisorWaitListedCourseIds) {
-			if (iWaitList != null && iWaitList.booleanValue()) return true;
+		public boolean isWaitListOrNoSub(WaitListMode wlMode, Set<Long> advisorWaitListedCourseIds) {
+			if (wlMode == WaitListMode.WaitList && isCanWaitList()) {
+				if (iWaitList != null && iWaitList.booleanValue()) return true;
+			}
+			if (wlMode == WaitListMode.NoSubs) {
+				if (iNoSub != null && iNoSub.booleanValue()) return true;
+			}
 			if (advisorWaitListedCourseIds != null && hasRequestedCourse()) {
 				for (RequestedCourse rc: getRequestedCourse()) {
 					if (rc.hasCourseId() && advisorWaitListedCourseIds.contains(rc.getCourseId())) return true;

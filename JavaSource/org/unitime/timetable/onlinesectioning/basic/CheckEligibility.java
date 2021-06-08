@@ -215,8 +215,8 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 				}
 			}
 			
-			if (xstudent != null && server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false))
-				iCheck.setAdvisorWaitListedCourseIds(xstudent.getAdvisorWaitListedCourseIds());
+			if (xstudent != null)
+				iCheck.setAdvisorWaitListedCourseIds(xstudent.getAdvisorWaitListedCourseIds(server));
 
 			logCheck(action, iCheck);
 			return iCheck;

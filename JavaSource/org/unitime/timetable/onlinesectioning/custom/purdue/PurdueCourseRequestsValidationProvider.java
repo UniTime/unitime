@@ -713,10 +713,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					}
 				}
 			
-			Set<Long> advisorWaitListedCourseIds = null;
-			if (server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false))
-				advisorWaitListedCourseIds = original.getAdvisorWaitListedCourseIds();
-			
+			Set<Long> advisorWaitListedCourseIds = original.getAdvisorWaitListedCourseIds(server);
 			String maxCreditLimitStr = ApplicationProperties.getProperty("purdue.specreg.maxCreditCheck");
 			if (maxCreditDenied != null && request.getCredit(advisorWaitListedCourseIds) >= maxCreditDenied) {
 				for (RequestedCourse rc: getOverCreditRequests(request, maxCredit))
@@ -1258,9 +1255,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					}
 				}
 		}
-		Set<Long> advisorWaitListedCourseIds = null;
-		if (server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false))
-			advisorWaitListedCourseIds = original.getAdvisorWaitListedCourseIds();
+		Set<Long> advisorWaitListedCourseIds = original.getAdvisorWaitListedCourseIds(server);
 		float total = request.getCredit(advisorWaitListedCourseIds);
 		String maxCreditLimitStr = ApplicationProperties.getProperty("purdue.specreg.maxCreditCheck");
 		if (maxCreditLimitStr != null) {
@@ -1977,10 +1972,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				}
 			}
 			
-			Set<Long> advisorWaitListedCourseIds = null;
-			if (server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false))
-				advisorWaitListedCourseIds = original.getAdvisorWaitListedCourseIds();
-
+			Set<Long> advisorWaitListedCourseIds = original.getAdvisorWaitListedCourseIds(server);
 			String maxCreditLimitStr = ApplicationProperties.getProperty("purdue.specreg.maxCreditCheck");
 			if (maxCredit < request.getCredit(advisorWaitListedCourseIds)) {
 				for (RequestedCourse rc: getOverCreditRequests(request, maxCredit)) {
@@ -2516,9 +2508,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		int nrCourses = 0;
 		submitRequest.courseCreditHrs = new ArrayList<CourseCredit>();
 		submitRequest.alternateCourseCreditHrs = new ArrayList<CourseCredit>();
-		Set<Long> advisorWaitListedCourseIds = null;
-		if (server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false))
-			advisorWaitListedCourseIds = original.getAdvisorWaitListedCourseIds();
+		Set<Long> advisorWaitListedCourseIds = original.getAdvisorWaitListedCourseIds(server);
 		for (XRequest r: original.getRequests()) {
 			CourseCredit cc = null;
 			if (r instanceof XCourseRequest) {
@@ -2545,7 +2535,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					if (course.hasCredit() && (credit == null || credit < course.getMinCredit())) credit = course.getMinCredit();
 				}
 				if (credit != null) {
-					if (!r.isAlternative() && cr.isWaitlist(advisorWaitListedCourseIds)) {
+					if (!r.isAlternative() && cr.isWaitListOrNoSub(wlMode, advisorWaitListedCourseIds)) {
 						total += credit;
 					} else {
 						credits.add(credit);

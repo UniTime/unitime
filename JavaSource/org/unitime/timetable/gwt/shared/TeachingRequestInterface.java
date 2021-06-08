@@ -241,6 +241,7 @@ public class TeachingRequestInterface implements IsSerializable {
 	}
 	
 	public static class Responsibility extends IdName {
+		private static final long serialVersionUID = 1L;
 		private boolean iCoordinator, iInstructor;
 		
 		public Responsibility() {}

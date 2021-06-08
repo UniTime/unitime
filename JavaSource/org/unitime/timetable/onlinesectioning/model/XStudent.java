@@ -64,6 +64,7 @@ import org.unitime.timetable.model.StudentSectioningStatus.Option;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 
 /**
  * @author Tomas Muller
@@ -503,14 +504,27 @@ public class XStudent extends XStudentId implements Externalizable {
     	return courseIds;
     }
     
-    public Set<Long> getAdvisorWaitListedCourseIds() {
+    public Set<Long> getAdvisorWaitListedCourseIds(boolean useWaitList, boolean useNoSubs) {
+    	if (!useWaitList && !useNoSubs) return null;
     	if (!hasAdvisorRequests()) return null;
     	Set<Long> courseIds = new HashSet<Long>();
-    	for (XAdvisorRequest request: getAdvisorRequests())
-    			if (request.hasCourseId() && request.isWaitList() && !request.isSubstitute())
+    	for (XAdvisorRequest request: getAdvisorRequests()) {
+    			if (useWaitList && request.hasCourseId() && request.isWaitList() && !request.isSubstitute())
     				courseIds.add(request.getCourseId().getCourseId());
+    			if (useNoSubs && request.hasCourseId() && request.isNoSub() && !request.isSubstitute())
+    				courseIds.add(request.getCourseId().getCourseId());
+    	}
     	return courseIds;
     }
+    
+    public Set<Long> getAdvisorWaitListedCourseIds(OnlineSectioningServer server) {
+    	return getAdvisorWaitListedCourseIds(
+    			server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false),
+    			server.getConfig().getPropertyBoolean("Load.UseAdvisorNoSubs", false)
+    			);
+    }
+    
+    
     
     @Override
     public String toString() {

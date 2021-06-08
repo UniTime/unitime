@@ -979,9 +979,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	}
 	
 	CourseRequestsTable generateCourseRequests(org.unitime.timetable.model.Student student, CourseRequestInterface requests, OnlineSectioningServer server, OnlineSectioningHelper helper, WaitListMode wlMode) {
-		Set<Long> advisorWaitListedCourseIds = null;
-		if (server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false) && iStudent != null)
-			advisorWaitListedCourseIds = iStudent.getAdvisorWaitListedCourseIds();
+		if (requests.getWaitListMode() == null) requests.setWaitListMode(wlMode);
+		Set<Long> advisorWaitListedCourseIds = (iStudent == null ? null : iStudent.getAdvisorWaitListedCourseIds(server));
 		CourseRequestsTable courseRequests = new CourseRequestsTable();
 		Format<Number> df = Formats.getNumberFormat("0.#");
 		CheckCoursesResponse check = new CheckCoursesResponse(requests.getConfirmations());

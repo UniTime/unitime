@@ -609,10 +609,7 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 		Float maxCredit = original.getMaxCredit();
 		if (maxCredit == null) maxCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"));
 		
-		Set<Long> advisorWaitListedCourseIds = null;
-		if (server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false))
-			advisorWaitListedCourseIds = original.getAdvisorWaitListedCourseIds();
-
+		Set<Long> advisorWaitListedCourseIds = original.getAdvisorWaitListedCourseIds(server);
 		if (maxCredit < request.getCredit(advisorWaitListedCourseIds)) {
 			for (RequestedCourse rc: getOverCreditRequests(request, maxCredit)) {
 				request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), "CREDIT",
@@ -1025,10 +1022,7 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 		Float maxCredit = original.getMaxCredit();
 		if (maxCredit == null) maxCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"));
 		
-		Set<Long> advisorWaitListedCourseIds = null;
-		if (server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false))
-			advisorWaitListedCourseIds = original.getAdvisorWaitListedCourseIds();
-		
+		Set<Long> advisorWaitListedCourseIds = original.getAdvisorWaitListedCourseIds(server);
 		if (maxCredit != null && request.getCredit(advisorWaitListedCourseIds) > maxCredit) {
 			for (RequestedCourse rc: getOverCreditRequests(request, maxCredit)) {
 				response.addMessage(rc.getCourseId(), rc.getCourseName(), "CREDIT",

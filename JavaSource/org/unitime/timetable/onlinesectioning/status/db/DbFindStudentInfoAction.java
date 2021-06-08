@@ -104,6 +104,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		DistanceMetric dm = server.getDistanceMetric();
 		
 		boolean useAdvisorWaitLists = server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false);
+		boolean useAdvisorNoSubs = server.getConfig().getPropertyBoolean("Load.UseAdvisorNoSubs", false);
 		
 		DbFindStudentInfoMatcher sm = new DbFindStudentInfoMatcher(session, iQuery, helper.getStudentNameFormat(), iMyStudents); sm.setServer(server);
 		
@@ -190,7 +191,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					int nrCoursesTot = 0, nrCourses = 0;
 					float studentMin = 0f, studentMax = 0f;
 					float studentMinTot = 0f, studentMaxTot = 0f;
-					Set<Long> advisorWaitListedCourseIds = (useAdvisorWaitLists ? student.getAdvisorWaitListedCourseIds() : null);
+					Set<Long> advisorWaitListedCourseIds = student.getAdvisorWaitListedCourseIds(useAdvisorWaitLists, useAdvisorNoSubs);
 					for (CourseDemand demand: student.getCourseDemands()) {
 						if (!demand.getCourseRequests().isEmpty()) {
 							Float minTot = null, maxTot = null;
@@ -212,7 +213,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 							}
 							boolean isWaitList = false;
 							if (!demand.isAlternative()) {
-								if (demand.isWaitlist() != null && demand.isWaitlist().booleanValue()) {
+								if (demand.isWaitListOrNoSub(st.getWaitListMode())) {
 									isWaitList = true;
 								} else if (advisorWaitListedCourseIds != null && !advisorWaitListedCourseIds.isEmpty()) {
 									for (CourseRequest r: demand.getCourseRequests())

@@ -1044,7 +1044,10 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				LoadingWidget.getInstance().hide();
 				iDetails = details;
 				if (iDetails.getAdvisorWaitListedCourseIds() != null && iDetails.hasStudentRequest() && iDetails.getRequest() != null) {
-					iDetails.setAdvisorWaitListedCourseIds(iDetails.getRequest().getWaitListedCourseIds());
+					if (iDetails.getWaitListMode() == WaitListMode.WaitList)
+						iDetails.setAdvisorWaitListedCourseIds(iDetails.getRequest().getWaitListedCourseIds());
+					if (iDetails.getWaitListMode() == WaitListMode.NoSubs)
+						iDetails.setAdvisorWaitListedCourseIds(iDetails.getRequest().getNoSubCourseIds());
 					fillInStudentRequests();
 				}
 				iContext.setStudentId(iDetails == null ? null : iDetails.getStudentId());
@@ -1461,7 +1464,9 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 			}
 		}
 		
-		if (iDetails != null && iDetails.hasStudentRequest() && iDetails.getStudentRequest().getMaxCreditOverrideStatus() != null) {
+		if (iDetails != null && iDetails.hasStudentRequest()) {
+			if (iDetails.getStudentRequest().getMaxCreditOverrideStatus() == null)
+				iDetails.getStudentRequest().setMaxCreditOverrideStatus(RequestedCourseStatus.SAVED);
 			ImageResource icon = null;
 			String status = "";
 			String note = null, noteTitle = null;

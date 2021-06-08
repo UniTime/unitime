@@ -189,6 +189,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 			acrs = server.createAction(SectioningStatusFilterAction.class).forRequest(iFilter).getAdvisorCourseRequests(server, helper);
 		}
 		boolean useAdvisorWaitLists = server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false);
+		boolean useAdvisorNoSubs = server.getConfig().getPropertyBoolean("Load.UseAdvisorNoSubs", false);
 		for (XCourseId info: findCourses(server, helper, lookup)) {
 			XOffering offering = server.getOffering(info.getOfferingId());
 			if (offering == null) continue;
@@ -261,7 +262,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						int nrCoursesTot = 0, nrCourses = 0;
 						float studentMin = 0f, studentMax = 0f;
 						float studentMinTot = 0f, studentMaxTot = 0f;
-						Set<Long> advisorWaitListedCourseIds = (useAdvisorWaitLists ? student.getAdvisorWaitListedCourseIds() : null);
+						Set<Long> advisorWaitListedCourseIds = student.getAdvisorWaitListedCourseIds(useAdvisorWaitLists, useAdvisorNoSubs);
 						for (XRequest r: student.getRequests()) {
 							if (r instanceof XCourseRequest) {
 								XCourseRequest cr = (XCourseRequest)r;
@@ -282,7 +283,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 										if (cr.isOverridePending(c)) { gOvrNeed ++; ovrNeed ++; }
 									}
 								}
-								if (cr.isWaitlist(advisorWaitListedCourseIds)) {
+								if (cr.isWaitListOrNoSub(wl, advisorWaitListedCourseIds)) {
 									if (minTot != null) {
 										studentMinTot += minTot; studentMaxTot += maxTot;
 									}
