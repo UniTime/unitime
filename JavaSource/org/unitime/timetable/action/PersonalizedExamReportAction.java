@@ -379,7 +379,7 @@ public class PersonalizedExamReportAction extends Action {
                 }
 
                 InstructorExamReport ir = new InstructorExamReport(
-                        InstructorExamReport.sModeNormal, out, instructor.getDepartment().getSession(),
+                        0, out, instructor.getDepartment().getSession(),
                         null, null, exams);
                 ir.setM2d(true); ir.setDirect(true);
                 ir.setClassSchedule(instructor.getDepartment().getSession().canNoRoleReportClass());
@@ -398,7 +398,7 @@ public class PersonalizedExamReportAction extends Action {
                 }
                 
                 StudentExamReport sr = new StudentExamReport(
-                        StudentExamReport.sModeNormal, out, student.getSession(),
+                        0, out, student.getSession(),
                         null, null, exams);
                 sr.setM2d(true); sr.setBtb(true); sr.setDirect(true);
                 sr.setClassSchedule(student.getSession().canNoRoleReportClass());
@@ -409,7 +409,7 @@ public class PersonalizedExamReportAction extends Action {
             } else if (hasClasses) {
                 if (instructor!=null) {
                     InstructorExamReport ir = new InstructorExamReport(
-                            InstructorExamReport.sModeNormal, out, instructor.getDepartment().getSession(),
+                            0, out, instructor.getDepartment().getSession(),
                             null, null, new TreeSet<ExamAssignmentInfo>());
                     ir.setM2d(true); ir.setDirect(true);
                     ir.setClassSchedule(instructor.getDepartment().getSession().canNoRoleReportClass());
@@ -419,7 +419,7 @@ public class PersonalizedExamReportAction extends Action {
                     ir.close();
                 } else if (student!=null) {
                     StudentExamReport sr = new StudentExamReport(
-                            StudentExamReport.sModeNormal, out, student.getSession(),
+                            0, out, student.getSession(),
                             null, null, new TreeSet<ExamAssignmentInfo>());
                     sr.setM2d(true); sr.setBtb(true); sr.setDirect(true);
                     sr.setClassSchedule(student.getSession().canNoRoleReportClass());

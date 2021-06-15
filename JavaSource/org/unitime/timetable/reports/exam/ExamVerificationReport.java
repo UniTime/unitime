@@ -279,24 +279,31 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
             boolean hasMw = cmw.length()>0;
             boolean mwSameLine = hasMw && !titleSameLine && (" m/w "+cmw).length()<=((iDispLimits?28:46)-formatSection(same).length()-(same.size()>1?" ("+same.size()+")":"").length());
             boolean mwSeparateLine = hasMw && !mwSameLine;
-            if ((titleSeparateLine || mwSeparateLine) && getLineNumber()+1+(titleSeparateLine?0:1)+(mwSeparateLine?1:0)>iNrLines) newPage();
+            if ((titleSeparateLine || mwSeparateLine) && getLineNumber()+1+(titleSeparateLine?0:1)+(mwSeparateLine?1:0)>getNrLinesPerPage() && getNrLinesPerPage() > 0) newPage();
             println(
-                    lpad(iITypePrinted?"":same.firstElement().getSchedulingSubpart().getItypeDesc().trim(),13)+" "+
-                    rpad(formatSection(same)+(same.size()>1?" ("+same.size()+")":"")+
-                            (titleSameLine?" "+title:"")+(mwSameLine?" m/w "+cmw:""),(iDispLimits?28:46))+
-                    (iDispLimits?lpad(maxLimit<=0?"":minLimit!=maxLimit?minLimit+"-"+maxLimit:""+minLimit,9)+lpad(maxEnrl<=0?"":minEnrl!=maxEnrl?minEnrl+"-"+maxEnrl:""+minEnrl,9)+" ":" ")+
-                    "         "+message);
+                    lpad(iITypePrinted?"":same.firstElement().getSchedulingSubpart().getItypeDesc().trim(),13),
+                    rpad(formatSection(same)+(same.size()>1?" ("+same.size()+")":"")+(titleSameLine?" "+title:"")+(mwSameLine?" m/w "+cmw:""),(iDispLimits?28:46)).withSeparator(iDispLimits ? "" : " "),
+                    (iDispLimits?lpad(maxLimit<=0?"":minLimit!=maxLimit?minLimit+"-"+maxLimit:""+minLimit,9):NULL).withSeparator(""),
+                    (iDispLimits?lpad(maxEnrl<=0?"":minEnrl!=maxEnrl?minEnrl+"-"+maxEnrl:""+minEnrl,9):NULL),
+                    rpad("", 4), lpad("", 3), new Cell(message).withColSpan(iDispLimits ? 5 : 3)
+                    );
             if (titleSeparateLine)
-                println(lpad("",13)+"  "+(title.length()>118?title.substring(0,115)+"...":title));
+                println(lpad("",13).withSeparator("  "),
+                		new Cell(title.length()>118 && getNrCharsPerLine() < 1000?title.substring(0,115)+"...":title).withColSpan(iDispLimits ? 10 : 8));
             if (mwSeparateLine)
-                println(lpad("",13)+"  Meets with "+(cmw.length()>107?cmw.substring(0,104)+"...":cmw));
+            	println(lpad("",13).withSeparator("  "),
+            			new Cell("Meets with "+(cmw.length()>107 && getNrCharsPerLine() < 1000?cmw.substring(0,104)+"...":cmw)).withColSpan(iDispLimits ? 10 : 8));
             iITypePrinted = !iNewPage;
         } else for (ExamAssignmentInfo exam : exams) {
-            Vector<String> rooms = new Vector();
-            Vector<String> times = new Vector();
+            Vector<Cell> rooms = new Vector();
+            Vector<Cell> roomCaps = new Vector();
+            Vector<Cell> roomExCaps = new Vector();
+            Vector<Cell> times = new Vector();
             if (exam.getPeriod()==null) {
                 times.add(rpad(iHasAssignment?" Exam not assigned":" Section exam",26));
-                rooms.add(rpad("", 23));
+                rooms.add(rpad("", 12));
+                roomCaps.add(rpad("", 4));
+                roomExCaps.add(rpad("", 5));
                 //if (exam.getMaxRooms()==0) rooms.add(" "+rpad(iNoRoom, 22));
                 for (Iterator i=new TreeSet(exam.getExam().getPreferences()).iterator();i.hasNext();) {
                     Preference pref = (Preference)i.next();
@@ -304,22 +311,28 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                         String pf = (PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog())?" ":"!");
                         if (pref instanceof ExamPeriodPref) {
                             ExamPeriodPref xp = (ExamPeriodPref)pref;
-                            times.add(pf+rpad(formatPeriod(xp.getExamPeriod(), exam.getLength(), exam.getPrintOffset()), 25));
+                            times.add(rpad(pf + formatPeriod(xp.getExamPeriod(), exam.getLength(), exam.getPrintOffset()), 26));
                         } else if (exam.getMaxRooms()>0) {
                             if (pref instanceof RoomPref) {
                                 RoomPref rp = (RoomPref)pref;
-                                rooms.add(pf+formatRoom(rp.getRoom())+" "+
-                                        lpad(""+rp.getRoom().getCapacity(),4)+" "+
-                                        lpad(""+rp.getRoom().getExamCapacity(),5));
+                                rooms.add(new Cell(new Cell(pf).withSeparator(""), formatRoom(rp.getRoom())));
+                                roomCaps.add(lpad(""+rp.getRoom().getCapacity(),4));
+                                roomExCaps.add(lpad(""+rp.getRoom().getExamCapacity(),5));
                             } else if (pref instanceof BuildingPref) {
                                 BuildingPref bp = (BuildingPref)pref;
-                                rooms.add(pf+rpad(bp.getBuilding().getAbbreviation(), 22));
+                                rooms.add(new Cell(new Cell(pf).withSeparator(""), rpad(bp.getBuilding().getAbbreviation(), 22)).withColSpan(3));
+                                roomCaps.add(NULL);
+                                roomExCaps.add(NULL);
                             } else if (pref instanceof RoomFeaturePref) {
                                 RoomFeaturePref fp = (RoomFeaturePref)pref;
-                                rooms.add(pf+rpad(fp.getRoomFeature().getLabel(), 22));
+                                rooms.add(new Cell(new Cell(pf).withSeparator(""), rpad(fp.getRoomFeature().getLabel(), 22)).withColSpan(3));
+                                roomCaps.add(NULL);
+                                roomExCaps.add(NULL);
                             } else if (pref instanceof RoomGroupPref) {
                                 RoomGroupPref gp = (RoomGroupPref)pref;
-                                rooms.add(pf+rpad(gp.getRoomGroup().getName(), 22));
+                                rooms.add(new Cell(new Cell(pf).withSeparator(""), rpad(gp.getRoomGroup().getName(), 22)).withColSpan(3));
+                                roomCaps.add(NULL);
+                                roomExCaps.add(NULL);
                             }
                         }
                     }
@@ -344,30 +357,32 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                 }
             } else {
                 if (exam.getRooms()==null || exam.getRooms().isEmpty()) {
-                    rooms.add(" "+rpad(iNoRoom, 22));
+                	rooms.add(rpad(iNoRoom, 12));
+                    roomCaps.add(rpad("", 4));
+                    roomExCaps.add(rpad("", 5));
                 } else for (ExamRoomInfo room : exam.getRooms()) {
-                    rooms.add(" "+formatRoom(room)+" "+
-                            lpad(""+room.getCapacity(),4)+" "+
-                            lpad(""+room.getExamCapacity(),5));
+                	rooms.add(new Cell(new Cell(" ").withSeparator(""), formatRoom(room)));
+                    roomCaps.add(lpad(""+room.getCapacity(),4));
+                    roomExCaps.add(lpad(""+room.getExamCapacity(),5));;
                 }
-                times.add(" "+rpad(formatPeriod(exam),25));
+                times.add(new Cell(new Cell(" ").withSeparator(""), rpad(formatPeriod(exam),25)));
             }
-            Vector<String> meetsWith = new Vector();
+            Vector<Cell> meetsWith = new Vector();
             int cnt = 0;
             int maxCnt = Math.max(4,Math.max(rooms.size(), times.size())-1);
             for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
                 if (section.getOwnerType()==ExamOwner.sOwnerTypeClass && same.contains(section.getOwner().getOwnerObject())) continue;
                 if (section.getOwnerType()==ExamOwner.sOwnerTypeConfig && section.getOwnerId().equals(same.firstElement().getSchedulingSubpart().getInstrOfferingConfig().getUniqueId())) continue;
                 if (cnt>=maxCnt) {
-                    meetsWith.add(" "+rpad("...",14)); break;
+                    meetsWith.add(rpad(" ...",14)); break;
                 }
                 if (iItype)
-                    meetsWith.add(" "+rpad(section.getName(),14));
+                    meetsWith.add(rpad(section.getName(),14));
                 else
-                    meetsWith.add(" "+
-                            rpad(section.getSubject(),4)+" "+
-                            rpad(section.getCourseNbr(),5)+" "+
-                            rpad(section.getSection(),3));
+                    meetsWith.add(new Cell(
+                            rpad(section.getSubject(),4),
+                            rpad(section.getCourseNbr(),5),
+                            rpad(section.getSection(),3)));
                 cnt++;
             }
 
@@ -387,29 +402,35 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
             boolean mwSecondLine = hasMw && !mwSameLine && !titleSecondLine && nrLines>1 && (" Meets with "+cmw).length()<=(iDispLimits?28:46);
             boolean mwThirdLine = hasMw && !mwSameLine && titleSecondLine && nrLines>2 && (" Meets with "+cmw).length()<=(iDispLimits?28:46);
             boolean mwSeparateLine = hasMw && !mwSameLine && !mwSecondLine && !mwThirdLine;
-            if (getLineNumber()+nrLines+(mwSeparateLine?1:0)+(titleSeparateLine?1:0)>iNrLines) newPage();
+            if (getLineNumber()+nrLines+(mwSeparateLine?1:0)+(titleSeparateLine?1:0)>getNrLinesPerPage() && getNrLinesPerPage() > 0) newPage();
             
             for (int idx = 0; idx < nrLines; idx++) {
-                String room = (idx<rooms.size()?rooms.elementAt(idx):rpad("",23));
-                String mw = (idx<meetsWith.size()?meetsWith.elementAt(idx):"");
-                String time = (idx<times.size()?times.elementAt(idx):rpad("",26));
-                println(lpad(idx>0 || iITypePrinted?"":same.firstElement().getSchedulingSubpart().getItypeDesc().trim(),13)+" "+
+                Cell room = (idx<rooms.size()?rooms.elementAt(idx):rpad("",11));
+                Cell roomCap = (idx<roomCaps.size()?roomCaps.elementAt(idx):rpad("",4));
+                Cell roomExCap = (idx<roomExCaps.size()?roomExCaps.elementAt(idx):rpad("",5));
+                Cell mw = (idx<meetsWith.size()?meetsWith.elementAt(idx):new Cell(""));
+                Cell time = (idx<times.size()?times.elementAt(idx):rpad("",26));
+                println(lpad(idx>0 || iITypePrinted?"":same.firstElement().getSchedulingSubpart().getItypeDesc().trim(),13),
                         rpad(iPeriodPrinted?"":idx>0 ? (idx==1 && mwSecondLine?" Meets with "+cmw:"")+
                                      (idx==1 && titleSecondLine?" "+title:"")+
                                      (idx==2 && mwThirdLine?" Meets with "+cmw:"")
                                    : formatSection(same)+(same.size()>1?" ("+same.size()+")":"")+
                                      (titleSameLine?" "+title:"")+
                                      (mwSameLine?" m/w "+cmw:"")
-                                   ,(iDispLimits?28:46))+
-                        (iDispLimits?lpad(iPeriodPrinted || idx>0 || maxLimit<=0?"":minLimit!=maxLimit?minLimit+"-"+maxLimit:""+minLimit,9)+
-                        lpad(iPeriodPrinted || idx>0 || maxEnrl<=0?"":minEnrl!=maxEnrl?minEnrl+"-"+maxEnrl:""+minEnrl,9)+" ":" ")+
-                        lpad(idx>0?"":exam.getSeatingType()==Exam.sSeatingTypeExam?"yes":"no",4)+" "+
-                        lpad(idx>0?"":String.valueOf(exam.getLength()),3)+time+room+mw
+                                   ,(iDispLimits?28:46)).withSeparator(iDispLimits ? "" : " "),
+                        (iDispLimits?lpad(iPeriodPrinted || idx>0 || maxLimit<=0?"":minLimit!=maxLimit?minLimit+"-"+maxLimit:""+minLimit,9).withSeparator(""):NULL),
+                        (iDispLimits?lpad(iPeriodPrinted || idx>0 || maxEnrl<=0?"":minEnrl!=maxEnrl?minEnrl+"-"+maxEnrl:""+minEnrl,9):NULL),
+                        lpad(idx>0?"":exam.getSeatingType()==Exam.sSeatingTypeExam?"yes":"no",4),
+                        lpad(idx>0?"":String.valueOf(exam.getLength()),3).withSeparator(""),
+                        time.withSeparator(""),
+                        room, roomCap, roomExCap,
+                        mw
                         );
                 if (idx==0 && titleSeparateLine)
-                    println(lpad("",13)+"  "+(title.length()>118?title.substring(0,115)+"...":title));
+                    println(lpad("",13),
+                    		new Cell(title.length()>118 && getNrCharsPerLine() < 1000?title.substring(0,115)+"...":title).withColSpan(iDispLimits ? 10 : 8));
                 if (idx==0 && mwSeparateLine)
-                    println(lpad("",13)+"  Meets with "+(cmw.length()>107?cmw.substring(0,104)+"...":cmw));
+                    println(lpad("",13), new Cell("  Meets with "+(cmw.length()>107 && getNrCharsPerLine() < 1000?cmw.substring(0,104)+"...":cmw)).withColSpan(iDispLimits ? 10 : 8));
             }
             iITypePrinted = iPeriodPrinted = !iNewPage;
         }
@@ -507,10 +528,44 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
         }
         sLog.info("  Printing report ...");
         SubjectArea subject = null;
-        setHeader(new String[] {
-                "Course        Title                       "+(iDispLimits?"                  ":"                  ")+" Alt  Len                                                  ",
-                "   InsType      Sections                  "+(iDispLimits?" Limit    Enrollmt":"                  ")+" Seat gth Date & Time               Room         Cap ExCap Exam with",
-                "------------- ----------------------------"+(iDispLimits?" -------- --------":"------------------")+" ---- --- ------------------------- ----------- ---- ----- --------------"});
+        setHeaderLine(
+        		new Line(
+        				rpad("Course", 13),
+        				rpad("Title", iDispLimits ? 28 : 46),
+        				(iDispLimits ? lpad("", 8) : NULL),
+        				(iDispLimits ? lpad("", 8) : NULL),
+        				lpad("Alt", 4),
+        				lpad("Len", 3),
+        				rpad("", 25),
+        				rpad("", 11),
+        				lpad("", 4),
+        				lpad("", 5),
+        				lpad("", 14)
+        		), new Line(
+        				rpad("  InsType", 13),
+        				rpad("  Sections", iDispLimits ? 28 : 46),
+        				(iDispLimits ? lpad("Limit", 8) : NULL),
+        				(iDispLimits ? lpad("Enrollmt", 8) : NULL),
+        				lpad("Seat", 4),
+        				lpad("gth", 3),
+        				rpad("Date & Time", 25),
+        				rpad("Room", 11),
+        				lpad("Cap", 4),
+        				lpad("ExCap", 5),
+        				rpad("Exam with", 14)
+        		), new Line(
+        				lpad("", '-', 13),
+        				lpad("", '-', iDispLimits ? 28 : 46),
+        				(iDispLimits ? lpad("", '-', 8) : NULL),
+        				(iDispLimits ? lpad("", '-', 8) : NULL),
+        				lpad("", '-', 4),
+        				lpad("", '-', 3),
+        				lpad("", '-', 25),
+        				lpad("", '-', 11),
+        				lpad("", '-', 4),
+        				lpad("", '-', 5),
+        				lpad("", '-', 14)
+        		));
         printHeader();
         for (CourseOffering co : allCourses) {
             InstructionalOffering io = co.getInstructionalOffering();
@@ -523,7 +578,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                 setFooter(subject.getSubjectAreaAbbreviation());
             } else if (!subject.equals(co.getSubjectArea())) {
                 subject = co.getSubjectArea();
-                newPage(); setFooter(subject.getSubjectAreaAbbreviation());
+                setCont(null); newPage(); setFooter(subject.getSubjectAreaAbbreviation());
             }
             setPageName(co.getCourseName());
             setCont(co.getCourseName());
@@ -555,16 +610,22 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                 iCoursePrinted = false;
                 if (exams.isEmpty()) {
                     println(
-                        rpad(courseName,14)+
-                        rpad(course.getTitle()==null?"":course.getTitle(),(iDispLimits?28:46))+
-                        (iDispLimits?lpad(courseLimit<=0?unlimited?"  inf":"":String.valueOf(courseLimit),9)+lpad(enrl==null || enrl<=0?"":String.valueOf(enrl),9)+" ":" ")+
-                        "         "+(hasCourseExam?"** NO EXAM**":""));
+                        rpad(courseName,14).withSeparator(""),
+                        rpad(course.getTitle()==null?"":course.getTitle(),(iDispLimits?28:46)).withSeparator(iDispLimits ? "" : " "),
+                        (iDispLimits?lpad(courseLimit<=0?unlimited?"  inf":"":String.valueOf(courseLimit),9).withSeparator(""):NULL),
+                        (iDispLimits?lpad(enrl==null || enrl<=0?"":String.valueOf(enrl),9):NULL),
+                        rpad("", 4), rpad("", 3),
+                        new Cell(hasCourseExam?"** NO EXAM**":"").withColSpan(5));
                 } else for (ExamAssignmentInfo exam : exams) {
-                    Vector<String> rooms = new Vector();
-                    Vector<String> times = new Vector();
+                	Vector<Cell> rooms = new Vector();
+                    Vector<Cell> roomCaps = new Vector();
+                    Vector<Cell> roomExCaps = new Vector();
+                    Vector<Cell> times = new Vector();
                     if (exam.getPeriod()==null) {
                         times.add(rpad(iHasAssignment?" Exam not assigned":" Course Exam",26));
-                        rooms.add(rpad("", 23));
+                        rooms.add(rpad("", 12));
+                        roomCaps.add(rpad("", 4));
+                        roomExCaps.add(rpad("", 5));
                         //if (exam.getMaxRooms()==0) rooms.add(" "+rpad(iNoRoom, 22));
                         for (Iterator i=new TreeSet(exam.getExam().getPreferences()).iterator();i.hasNext();) {
                             Preference pref = (Preference)i.next();
@@ -572,22 +633,28 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                                 String pf = (PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog())?" ":"!");
                                 if (pref instanceof ExamPeriodPref) {
                                     ExamPeriodPref xp = (ExamPeriodPref)pref;
-                                    times.add(pf+rpad(formatPeriod(xp.getExamPeriod(),exam.getLength(), exam.getPrintOffset()), 25));
+                                    times.add(new Cell(new Cell(pf).withSeparator(""),rpad(formatPeriod(xp.getExamPeriod(),exam.getLength(), exam.getPrintOffset()), 25)));
                                 } else if (exam.getMaxRooms()>0) {
                                     if (pref instanceof RoomPref) {
                                         RoomPref rp = (RoomPref)pref;
-                                        rooms.add(pf+formatRoom(rp.getRoom())+" "+
-                                                lpad(""+rp.getRoom().getCapacity(),4)+" "+
-                                                lpad(""+rp.getRoom().getExamCapacity(),5));
+                                        rooms.add(new Cell(new Cell(pf).withSeparator(""), formatRoom(rp.getRoom())));
+                                        roomCaps.add(lpad(""+rp.getRoom().getCapacity(),4));
+                                        roomExCaps.add(lpad(""+rp.getRoom().getExamCapacity(),5));
                                     } else if (pref instanceof BuildingPref) {
                                         BuildingPref bp = (BuildingPref)pref;
-                                        rooms.add(pf+rpad(bp.getBuilding().getAbbreviation(), 22));
+                                        rooms.add(new Cell(new Cell(pf).withSeparator(""), rpad(bp.getBuilding().getAbbreviation(), 22)).withColSpan(3));
+                                        roomCaps.add(NULL);
+                                        roomExCaps.add(NULL);
                                     } else if (pref instanceof RoomFeaturePref) {
                                         RoomFeaturePref fp = (RoomFeaturePref)pref;
-                                        rooms.add(pf+rpad(fp.getRoomFeature().getLabel(), 22));
+                                        rooms.add(new Cell(new Cell(pf).withSeparator(""), rpad(fp.getRoomFeature().getLabel(), 22)).withColSpan(3));
+                                        roomCaps.add(NULL);
+                                        roomExCaps.add(NULL);
                                     } else if (pref instanceof RoomGroupPref) {
                                         RoomGroupPref gp = (RoomGroupPref)pref;
-                                        rooms.add(pf+rpad(gp.getRoomGroup().getName(), 22));
+                                        rooms.add(new Cell(new Cell(pf).withSeparator(""), rpad(gp.getRoomGroup().getName(), 22)).withColSpan(3));
+                                        roomCaps.add(NULL);
+                                        roomExCaps.add(NULL);
                                     }
                                 }
                             }
@@ -612,45 +679,51 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                         }
                     } else {
                         if (exam.getRooms()==null || exam.getRooms().isEmpty()) {
-                            rooms.add(" "+rpad(iNoRoom, 22));
+                        	rooms.add(rpad(iNoRoom, 12));
+                            roomCaps.add(rpad("", 4));
+                            roomExCaps.add(rpad("", 5));
                         } else for (ExamRoomInfo room : exam.getRooms()) {
-                            rooms.add(" "+formatRoom(room)+" "+
-                                    lpad(""+room.getCapacity(),4)+" "+
-                                    lpad(""+room.getExamCapacity(),5));
+                        	rooms.add(new Cell(new Cell(" ").withSeparator(""), formatRoom(room)));
+                            roomCaps.add(lpad(""+room.getCapacity(),4));
+                            roomExCaps.add(lpad(""+room.getExamCapacity(),5));;
                         }
-                        times.add(" "+rpad(formatPeriod(exam),25));
+                        times.add(new Cell(new Cell(" ").withSeparator(""), rpad(formatPeriod(exam),25)));
                     }
-                    Vector<String> meetsWith = new Vector();
+                    Vector<Cell> meetsWith = new Vector();
                     int cnt = 0;
                     int maxCnt = Math.max(4,Math.max(rooms.size(), times.size())-1);
                     for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
                         if (section.getOwnerType()==ExamOwner.sOwnerTypeCourse && course.getUniqueId().equals(section.getOwnerId())) continue;
                         if (section.getOwnerType()==ExamOwner.sOwnerTypeOffering && course.getInstructionalOffering().getUniqueId().equals(section.getOwnerId())) continue;
                         if (cnt>=maxCnt) {
-                            meetsWith.add(" "+rpad("...",14)); break;
+                            meetsWith.add(rpad("...",14)); break;
                         }
                         if (iItype)
-                            meetsWith.add(" "+rpad(section.getName(),14));
+                            meetsWith.add(rpad(section.getName(),14));
                         else
-                            meetsWith.add(" "+
-                                    rpad(section.getSubject(),4)+" "+
-                                    rpad(section.getCourseNbr(),5)+" "+
-                                    rpad(section.getSection(),3));
+                            meetsWith.add(new Cell(
+                                    rpad(section.getSubject(),4),
+                                    rpad(section.getCourseNbr(),5),
+                                    rpad(section.getSection(),3)));
                         cnt++;
                     }
 
                     int nrLines = Math.max(Math.max(rooms.size(), meetsWith.size()),times.size());
                     for (int idx = 0; idx < nrLines; idx++) {
-                        String room = (idx<rooms.size()?rooms.elementAt(idx):rpad("",23));
-                        String mw = (idx<meetsWith.size()?meetsWith.elementAt(idx):"");
-                        String time = (idx<times.size()?times.elementAt(idx):rpad("",26));
-                        println(rpad(idx>0 || iCoursePrinted?"":courseName,14)+
-                                rpad(idx>0 || iCoursePrinted?"":course.getTitle()==null?"":course.getTitle(),(iDispLimits?28:46))+
-                                (iDispLimits?lpad(idx>0 || iCoursePrinted?"":courseLimit<=0?unlimited?"  inf":"":String.valueOf(courseLimit),9)+
-                                        lpad(idx>0 || iCoursePrinted || enrl==null || enrl<=0?"":String.valueOf(enrl),9)+" ":" ")+
-                                lpad(idx>0?"":exam.getSeatingType()==Exam.sSeatingTypeExam?"yes":"no",4)+" "+
-                                lpad(idx>0?"":String.valueOf(exam.getLength()),3)+
-                                time+room+mw
+                    	Cell room = (idx<rooms.size()?rooms.elementAt(idx):rpad("",11));
+                        Cell roomCap = (idx<roomCaps.size()?roomCaps.elementAt(idx):rpad("",4));
+                        Cell roomExCap = (idx<roomExCaps.size()?roomExCaps.elementAt(idx):rpad("",5));
+                        Cell mw = (idx<meetsWith.size()?meetsWith.elementAt(idx):new Cell(""));
+                        Cell time = (idx<times.size()?times.elementAt(idx):rpad("",26));
+                        println(rpad(idx>0 || iCoursePrinted?"":courseName,14).withSeparator(""),
+                                rpad(idx>0 || iCoursePrinted?"":course.getTitle()==null?"":course.getTitle(),(iDispLimits?28:46)).withSeparator(iDispLimits ? "" : " "),
+                                (iDispLimits?lpad(idx>0 || iCoursePrinted?"":courseLimit<=0?unlimited?"  inf":"":String.valueOf(courseLimit),9).withSeparator(""):NULL),
+                                (iDispLimits?lpad(idx>0 || iCoursePrinted || enrl==null || enrl<=0?"":String.valueOf(enrl),9):NULL),
+                                lpad(idx>0?"":exam.getSeatingType()==Exam.sSeatingTypeExam?"yes":"no",4),
+                                lpad(idx>0?"":String.valueOf(exam.getLength()),3).withSeparator(""),
+                                time.withSeparator(""),
+                                room, roomCap, roomExCap,
+                                mw
                                 );
                     }
                     iCoursePrinted = !iNewPage;
@@ -727,7 +800,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                 if (!same.isEmpty()) print(same, hasCourseExam || hasSubpartExam, hasSectionExam, minLimit, maxLimit, minEnrl, maxEnrl, class2event);
 
             }
-            if (!iNewPage) println("");
+            if (!iNewPage) println(new Line());
         }
         lastPage();
     }

@@ -48,9 +48,30 @@ public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
 
     
     public void printReport() throws DocumentException {
-        setHeader(new String[] {
-                "Date And Time                  Subject Course   "+(iItype?iExternal?"ExtnID ":"Type   ":"")+"Section     Meeting Times                         Enrl"+(iDispRooms?"  Room         Cap ExCap":""),
-                "------------------------------ ------- -------- "+(iItype?"------ ":"")+"--------- -------------------------------------- -----"+(iDispRooms?" ----------- ----- -----":"")});
+    	setHeaderLine(
+    			new Line(
+    					rpad("Date And Time", 30),
+    	    			rpad("Subject", 7),
+    	    			rpad("Course", 8),
+    	    			(iItype ? rpad(iExternal ? "ExtnID" : "Type", 6) : NULL),
+    	    			rpad("Section", 10),
+    	    			rpad("Meeting Times", 35),
+    	    			lpad("Enrl", 5),
+    	    			(iDispRooms ? rpad("Room", 11) : NULL),
+    	    			(iDispRooms ? lpad("Cap", 5) : NULL),
+    	    			(iDispRooms ? lpad("ExCap", 6) : NULL)
+    			), new Line(
+    					lpad("", '-', 30),
+    	    			lpad("", '-', 7),
+    	    			lpad("", '-', 8),
+    	    			(iItype ? lpad("", '-', 6) : NULL),
+    	    			lpad("", '-', 10),
+    	    			lpad("", '-', 35),
+    	    			lpad("", '-', 5),
+    	    			(iDispRooms ? lpad("", '-', 11) : NULL),
+    	    			(iDispRooms ? lpad("", '-', 5) : NULL),
+    	    			(iDispRooms ? lpad("", '-', 6) : NULL)
+    			));
         printHeader();
         sLog.debug("  Sorting exams...");
         TreeSet<ExamAssignmentInfo> exams = new TreeSet();
@@ -68,7 +89,7 @@ public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
                 ExamAssignmentInfo exam = i.next();
                 if (!period.equals(exam.getPeriod())) continue;
                 if (iPeriodPrinted) {
-                    if (!iNewPage) println("");
+                    if (!iNewPage) println(new Line());
                 }
                 ExamSectionInfo lastSection = null;
                 for (Iterator<ExamSectionInfo> j = exam.getSectionsIncludeCrosslistedDummies().iterator(); j.hasNext();) {
@@ -90,42 +111,43 @@ public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
 
                     if (!iDispRooms) {
                         println(
-                            rpad(iPeriodPrinted?"":formatPeriod(period),30)+" "+
-                            rpad(iSubjectPrinted?"":section.getSubject(),7)+" "+
-                            rpad(iCoursePrinted?"":section.getCourseNbr(), 8)+" "+
-                            (iItype?rpad(iStudentPrinted?"":section.getItype(), 6)+" ":"")+
-                            lpad(section.getSection(),9)+" "+
-                            rpad(getMeetingTime(section),38)+" "+
+                            rpad(iPeriodPrinted && isSkipRepeating()?"":formatPeriod(period),30),
+                            rpad(iSubjectPrinted && isSkipRepeating()?"":section.getSubject(),7),
+                            rpad(iCoursePrinted && isSkipRepeating()?"":section.getCourseNbr(), 8),
+                            (iItype?rpad(iStudentPrinted && isSkipRepeating()?"":section.getItype(), 6): NULL),
+                            formatSection10(section.getSection()),
+                            rpad(getMeetingTime(section),35),
                             lpad(String.valueOf(section.getNrStudents()),5)
                             );
                         iPeriodPrinted = !iNewPage;
                     } else {
                         if (section.getExamAssignment().getRooms()==null || section.getExamAssignment().getRooms().isEmpty()) {
                             println(
-                                    rpad(iPeriodPrinted?"":formatPeriod(period),30)+" "+
-                                    rpad(iSubjectPrinted?"":section.getSubject(),7)+" "+
-                                    rpad(iCoursePrinted?"":section.getCourseNbr(), 8)+" "+
-                                    (iItype?rpad(iStudentPrinted?"":section.getItype(), 6)+" ":"")+
-                                    lpad(section.getSection(),9)+" "+
-                                    rpad(getMeetingTime(section),38)+" "+
-                                    lpad(String.valueOf(section.getNrStudents()),5)+" "+iNoRoom
+                                    rpad(iPeriodPrinted && isSkipRepeating()?"":formatPeriod(period),30),
+                                    rpad(iSubjectPrinted && isSkipRepeating()?"":section.getSubject(),7),
+                                    rpad(iCoursePrinted && isSkipRepeating()?"":section.getCourseNbr(), 8),
+                                    (iItype?rpad(iStudentPrinted && isSkipRepeating()?"":section.getItype(), 6):NULL),
+                                    formatSection10(section.getSection()),
+                                    rpad(getMeetingTime(section),35),
+                                    lpad(String.valueOf(section.getNrStudents()),5),
+                                    new Cell(iNoRoom)
                                     );
                             iPeriodPrinted = !iNewPage;
                         } else {
-                            if (getLineNumber()+section.getExamAssignment().getRooms().size()>iNrLines) newPage();
+                            if (getLineNumber()+section.getExamAssignment().getRooms().size()>getNrLinesPerPage() && getNrLinesPerPage() > 0) newPage();
                             boolean firstRoom = true;
                             for (ExamRoomInfo room : section.getExamAssignment().getRooms()) {
                                 println(
-                                        rpad(!firstRoom || iPeriodPrinted?"":formatPeriod(period),30)+" "+
-                                        rpad(!firstRoom || iSubjectPrinted?"":section.getSubject(),7)+" "+
-                                        rpad(!firstRoom || iCoursePrinted?"":section.getCourseNbr(), 8)+" "+
-                                        (iItype?rpad(!firstRoom || iStudentPrinted?"":section.getItype(), 6)+" ":"")+
-                                        lpad(!firstRoom?"":section.getSection(),9)+" "+
-                                        rpad(!firstRoom?"":getMeetingTime(section),38)+" "+
-                                        lpad(!firstRoom?"":String.valueOf(section.getNrStudents()),5)+" "+
-                                        formatRoom(room)+" "+
-                                        lpad(""+room.getCapacity(),5)+" "+
-                                        lpad(""+room.getExamCapacity(),5)
+                                        rpad(!firstRoom || iPeriodPrinted && isSkipRepeating()?"":formatPeriod(period),30),
+                                        rpad(!firstRoom || iSubjectPrinted && isSkipRepeating()?"":section.getSubject(),7),
+                                        rpad(!firstRoom || iCoursePrinted && isSkipRepeating()?"":section.getCourseNbr(), 8),
+                                        (iItype?rpad(!firstRoom || iStudentPrinted && isSkipRepeating()?"":section.getItype(), 6):NULL),
+                                        formatSection10(!firstRoom && isSkipRepeating()?"":section.getSection()),
+                                        rpad(!firstRoom?new Cell(""):getMeetingTime(section),35),
+                                        lpad(!firstRoom && isSkipRepeating()?"":String.valueOf(section.getNrStudents()),5),
+                                        formatRoom(room),
+                                        lpad(""+room.getCapacity(),5),
+                                        lpad(""+room.getExamCapacity(),6)
                                         );
                                 firstRoom = false;
                             }

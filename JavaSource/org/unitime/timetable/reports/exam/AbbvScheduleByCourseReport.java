@@ -51,10 +51,26 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                 sections.add(section);
             }
         }
-        Vector<String> lines = new Vector();
-        String separator = null;
+        Vector<Line> lines = new Vector<Line>();
         int split = 9;
-        int n = iNrLines - 2 - ((iNrLines - 2) / (split + 1));
+        int n = 9;
+        if (getNrLinesPerPage() > 0)
+        	n = getNrLinesPerPage() - 1 - getSeparatorNrLines() - (getSeparatorNrLines() == 0 ? 0 : (getNrLinesPerPage() - 2) / (split + 1));
+        else {
+        	int rows = 0;
+        	if (!iDispRooms) {
+        		rows = sections.size();
+        		if (iItype)
+        			n = (rows + 1) / 2;
+        		else
+        			n = (rows + 2) / 3;
+        	} else {
+        		for (ExamSectionInfo section : sections)
+        			rows += Math.max(1, section.getExamAssignment().getNrRooms());
+        		n = (rows + 1) / 2;
+        	}
+        	split = rows;
+        }
         if (!iDispRooms) {
             ExamSectionInfo last = null; int lx = 0;
             for (ExamSectionInfo section : sections) {
@@ -73,57 +89,72 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                 }
                 last = section; lx++;
                 if (iItype) {
-                    lines.add(
-                        (rpad(sameSubj?"":section.getSubject(),7)+" "+
-                         rpad(sameCrs?"":section.getCourseNbr(),8)+" "+
-                         rpad(sameItype?"":section.getItype().length()==0?"ALL":section.getItype(),5)+" "+
-                         lpad(sameSct?"":section.getSection(),9))+"  "+
-                         formatPeriod(section.getExamAssignment()));
+                    lines.add(new Line(
+                    	rpad(sameSubj && isSkipRepeating()?"":section.getSubject(),7),
+                        rpad(sameCrs && isSkipRepeating()?"":section.getCourseNbr(),8),
+                        rpad(sameItype && isSkipRepeating()?"":section.getItype().length()==0?"ALL":section.getItype(),5),
+                        formatSection10(sameSct && isSkipRepeating()?"":section.getSection()),
+                        formatPeriodDate(section.getExamAssignment()), formatPeriodTime(section.getExamAssignment())
+                        ));
                 } else {
-                    lines.add(rpad(sameSubj?"":section.getSubject(),7)+" "+
-                            rpad(sameCrs?"":section.getCourseNbr(),8)+" "+
-                            lpad(sameSct?"":section.getSection().length()==0?"ALL":section.getSection(),9)+"  "+
-                            formatShortPeriodNoEndTime(section.getExamAssignment()));
+                    lines.add(new Line(
+                    		rpad(sameSubj && isSkipRepeating()?"":section.getSubject(),7),
+                            rpad(sameCrs && isSkipRepeating()?"":section.getCourseNbr(),8),
+                            formatSection10(sameSct && isSkipRepeating()?"":section.getSection().length()==0?"ALL":section.getSection()),
+                            formatShortPeriodNoEndTimeDate(section.getExamAssignment()), formatShortPeriodNoEndTimeTime(section.getExamAssignment())
+                            ));
                 }
             }
             if (iItype) {
                 if (iExternal) {
-                    setHeader(new String[] {
-                    		"Subject Course   ExtID Section    Date      Time            | Subject Course   ExtID Section    Date      Time           ",
-                    		"------- -------- ----- ---------  --------- --------------- | ------- -------- ----- ---------  --------- ---------------"});
-                    separator = "------- -------- ----- ---------  --------- --------------- | ------- -------- ----- ---------  --------- ---------------";
+                	setHeaderLine(
+                			new Line(
+                					new Line(rpad("Subject", 7), rpad("Course", 8), rpad("ExtID", 5), rpad("Section", 9).withSeparator("  "), rpad("Date", 9), rpad("Time", 15)).withLength(60),
+                					new Line(rpad("Subject", 7), rpad("Course", 8), rpad("ExtID", 5), rpad("Section", 9).withSeparator("  "), rpad("Date", 9), rpad("Time", 15))
+                			), new Line(
+                        			new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 5), rpad("", '-', 9).withSeparator("  "), rpad("", '-', 9), rpad("", '-', 15)).withLength(60),
+                        			new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 5), rpad("", '-', 9).withSeparator("  "), rpad("", '-', 9), rpad("", '-', 15))
+                			));
                 } else {
-                    setHeader(new String[] {
-                            "Subject Course   Type  Section    Date      Time            | Subject Course   Type  Section    Date      Time           ",
-                            "------- -------- ----- ---------  --------- --------------- | ------- -------- ----- ---------  --------- ---------------"});
-                    	//	".........1.........2.........3.........4.........5.........6"
-                    separator = "------- -------- ----- ---------  --------- --------------- | ------- -------- ----- ---------  --------- ---------------";
+                	setHeaderLine(
+                			new Line(
+                					new Line(rpad("Subject", 7), rpad("Course", 8), rpad("Type", 5), rpad("Section", 9).withSeparator("  "), rpad("Date", 9), rpad("Time", 15)).withLength(60),
+                					new Line(rpad("Subject", 7), rpad("Course", 8), rpad("Type", 5), rpad("Section", 9).withSeparator("  "), rpad("Date", 9), rpad("Time", 15))
+                			), new Line(
+                        			new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 5), rpad("", '-', 9).withSeparator("  "), rpad("", '-', 9), rpad("", '-', 15)).withLength(60),
+                        			new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 5), rpad("", '-', 9).withSeparator("  "), rpad("", '-', 9), rpad("", '-', 15))
+                			));
                 }
             } else {
-                setHeader(new String[] {
-                    "Subject Course   Section    Date    Time   | Subject Course   Section    Date    Time   | Subject Course   Section    Date    Time  ",
-                    "------- -------- ---------  ------- ------ | ------- -------- ---------  ------- ------ | ------- -------- ---------  ------- ------"});
-                //	".........1.........2.........3.........4123"
-                separator = "------- -------- ---------  ------- ------ | ------- -------- ---------  ------- ------ | ------- -------- ---------  ------- ------";
+            	setHeaderLine(
+            			new Line(
+            					new Line(rpad("Subject", 7), rpad("Course", 8), rpad("Section", 9).withSeparator("  "), rpad("Date", 7), rpad("Time", 6)).withLength(43),
+            					new Line(rpad("Subject", 7), rpad("Course", 8), rpad("Section", 9).withSeparator("  "), rpad("Date", 7), rpad("Time", 6)).withLength(43),
+            					new Line(rpad("Subject", 7), rpad("Course", 8), rpad("Section", 9).withSeparator("  "), rpad("Date", 7), rpad("Time", 6))
+            			), new Line(
+            					new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 9).withSeparator("  "), rpad("", '-', 7), rpad("", '-', 6)).withLength(43),
+            					new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 9).withSeparator("  "), rpad("", '-', 7), rpad("", '-', 6)).withLength(43),
+            					new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 9).withSeparator("  "), rpad("", '-', 7), rpad("", '-', 6))
+            			));
             }
             printHeader();
             if (iItype) {
                 for (int idx=0; idx<lines.size(); idx+=2*n) {
                     for (int i=0;i<n;i++) {
-                        String a = (i+idx+0*n<lines.size()?lines.elementAt(i+idx+0*n):"");
-                        String b = (i+idx+1*n<lines.size()?lines.elementAt(i+idx+1*n):"");
-                        println(rpad(a,60)+"| "+b);
-                        if ((i%split)==split-1) println(separator);
+                        Line a = (i+idx+0*n<lines.size()?lines.elementAt(i+idx+0*n):new Line(new Cell("").withColSpan(6)));
+                        Line b = (i+idx+1*n<lines.size()?lines.elementAt(i+idx+1*n):new Line(new Cell("").withColSpan(6)));
+                        println(a.withLength(60), b);
+                        if ((i%split)==split-1 && idx<lines.size()) printSeparator();
                     }
                 }
             } else {
                 for (int idx=0; idx<lines.size(); idx+=3*n) {
                     for (int i=0;i<n;i++) {
-                        String a = (i+idx+0*n<lines.size()?lines.elementAt(i+idx+0*n):"");
-                        String b = (i+idx+1*n<lines.size()?lines.elementAt(i+idx+1*n):"");
-                        String c = (i+idx+2*n<lines.size()?lines.elementAt(i+idx+2*n):"");
-                        println(rpad(a,43)+"| "+rpad(b,43)+"| "+c);
-                        if ((i%split)==split-1) println(separator);
+                        Line a = (i+idx+0*n<lines.size()?lines.elementAt(i+idx+0*n):new Line(new Cell("").withColSpan(5)));
+                        Line b = (i+idx+1*n<lines.size()?lines.elementAt(i+idx+1*n):new Line(new Cell("").withColSpan(5)));
+                        Line c = (i+idx+2*n<lines.size()?lines.elementAt(i+idx+2*n):new Line(new Cell("").withColSpan(5)));
+                        println(a.withLength(43), b.withLength(43), c);
+                        if ((i%split)==split-1 && idx<lines.size()) printSeparator();
                     }
                 }
             }
@@ -146,20 +177,22 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                 last = section; lx++;
                 if (section.getExamAssignment().getRooms()==null || section.getExamAssignment().getRooms().isEmpty()) {
                     if (iItype) {
-                        lines.add(
-                                 rpad(sameSubj?"":section.getSubject(),7)+" "+
-                                 rpad(sameCrs?"":section.getCourseNbr(),8)+" "+
-                                 rpad(sameItype?"":section.getItype().length()==0?"ALL":section.getItype(),5)+" "+
-                                 lpad(sameSct?"":section.getSection(),9)+" "+
-                                formatShortPeriod(section.getExamAssignment())+" "+
-                                rpad(iNoRoom,23));
+                        lines.add(new Line(
+                                 rpad(sameSubj && isSkipRepeating()?"":section.getSubject(),7),
+                                 rpad(sameCrs && isSkipRepeating()?"":section.getCourseNbr(),8),
+                                 rpad(sameItype && isSkipRepeating()?"":section.getItype().length()==0?"ALL":section.getItype(),5),
+                                 formatSection10(sameSct && isSkipRepeating()?"":section.getSection()).withSeparator(""),
+                                 formatShortPeriodDate(section.getExamAssignment()), formatShortPeriodTime(section.getExamAssignment()),
+                                 rpad(iNoRoom,23)
+                                 ));
                         } else {
-                            lines.add(
-                                        rpad(sameSubj?"":section.getSubject(),7)+" "+
-                                        rpad(sameCrs?"":section.getCourseNbr(),8)+" "+
-                                        rpad(sameSct?"":section.getSection().length()==0?"ALL":section.getSection(),9)+"  "+
-                                    formatPeriod(section.getExamAssignment())+" "+
-                                    rpad(iNoRoom,23));
+                            lines.add(new Line(
+                            		rpad(sameSubj && isSkipRepeating()?"":section.getSubject(),7),
+                            		rpad(sameCrs && isSkipRepeating()?"":section.getCourseNbr(),8),
+                            		formatSection10(sameSct && isSkipRepeating()?"":section.getSection().length()==0?"ALL":section.getSection()).withSeparator(""),
+                            		formatPeriodDate(section.getExamAssignment()), formatPeriodTime(section.getExamAssignment()),
+                            		rpad(iNoRoom,23)
+                            		));
                         }
                 } else {
                     Vector<ExamRoomInfo> rooms = new Vector(section.getExamAssignment().getRooms());
@@ -167,25 +200,28 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                         ExamRoomInfo a = rooms.elementAt(i);
                         if (i==0) {
                             if (iItype) {
-                                lines.add(
-                                         rpad(sameSubj?"":section.getSubject(),7)+" "+
-                                         rpad(sameCrs?"":section.getCourseNbr(),8)+" "+
-                                         rpad(sameItype?"":section.getItype().length()==0?"ALL":section.getItype(),5)+" "+
-                                         lpad(sameSct?"":section.getSection(),9)+" "+
-                                        formatShortPeriod(section.getExamAssignment())+" "+
-                                        formatRoom(a));
+                                lines.add(new Line(
+                                		rpad(sameSubj && isSkipRepeating()?"":section.getSubject(),7),
+                                		rpad(sameCrs && isSkipRepeating()?"":section.getCourseNbr(),8),
+                                		rpad(sameItype && isSkipRepeating()?"":section.getItype().length()==0?"ALL":section.getItype(),5),
+                                		formatSection10(sameSct && isSkipRepeating()?"":section.getSection()).withSeparator(""),
+                                		formatShortPeriodDate(section.getExamAssignment()), formatShortPeriodTime(section.getExamAssignment()),
+                                		formatRoom(a)
+                                		));
                                 } else {
-                                    lines.add(
-                                            rpad(sameSubj?"":section.getSubject(),7)+" "+
-                                            rpad(sameCrs?"":section.getCourseNbr(),8)+" "+
-                                            rpad(sameSct?"":section.getSection().length()==0?"ALL":section.getSection(),9)+" "+
-                                            formatPeriod(section.getExamAssignment())+" "+
-                                            formatRoom(a));
+                                    lines.add(new Line(
+                                    		rpad(sameSubj && isSkipRepeating()?"":section.getSubject(),7),
+                                            rpad(sameCrs && isSkipRepeating()?"":section.getCourseNbr(),8),
+                                            formatSection10(sameSct && isSkipRepeating()?"":section.getSection().length()==0?"ALL":section.getSection()).withSeparator(""),
+                                            formatPeriodDate(section.getExamAssignment()), formatPeriodTime(section.getExamAssignment()),
+                                            formatRoom(a)
+                                            ));
                                 }
                         } else {
-                            lines.add(
-                                    rpad("",(iItype?55:53))+
-                                    formatRoom(a));
+                            lines.add(new Line(
+                                    rpad("",(iItype?54:52)).withColSpan(iItype ? 6 : 5),
+                                    formatRoom(a)
+                                    ));
                             lx++;
                         }
                     }
@@ -193,34 +229,44 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
             }
             if (iItype) {
                 if (iExternal) {
-                    setHeader(new String[] {
-                            "Subject Course   ExtID Section   Date    Time          Bldg  Room |Subject Course   ExtID Section   Date    Time          Bldg  Room",
-                            "------- -------- ----- --------- ------- ------------- ----- -----|------- -------- ----- --------- ------- ------------- ----- -----"});
-                    	//	".........1.........2.........3.........4.........5.........6123456"
-                    separator = "------- -------- ----- --------- ------- ------------- ----- -----|------- -------- ----- --------- ------- ------------- ----- -----";
+                    setHeaderLine(
+                    		new Line(
+                    				new Line(rpad("Subject", 7), rpad("Course", 8), rpad("ExtID", 5), rpad("Section", 9), rpad("Date", 7), rpad("Time", 13), rpad("Bldg", 5).withColSpan(0), rpad("Room", 5)).withLength(66).withLineSeparator("|"),
+                    				new Line(rpad("Subject", 7), rpad("Course", 8), rpad("ExtID", 5), rpad("Section", 9), rpad("Date", 7), rpad("Time", 13), rpad("Bldg", 5).withColSpan(0), rpad("Room", 5))
+                    		), new Line(
+                    				new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 5), rpad("", '-', 9), rpad("", '-', 7), rpad("", '-', 13), rpad("", '-', 5).withColSpan(0), rpad("", '-', 5)).withLength(66).withLineSeparator("|"),
+                    				new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 5), rpad("", '-', 9), rpad("", '-', 7), rpad("", '-', 13), rpad("", '-', 5).withColSpan(0), rpad("", '-', 5))
+                    		));
                 } else {
-                    setHeader(new String[] {
-                    		"Subject Course   Type  Section   Date    Time          Bldg  Room |Subject Course   Type  Section   Date    Time          Bldg  Room",
-                            "------- -------- ----- --------- ------- ------------- ----- -----|------- -------- ----- --------- ------- ------------- ----- -----"});
-                    separator = "------- -------- ----- --------- ------- ------------- ----- -----|------- -------- ----- --------- ------- ------------- ----- -----";
+                    setHeaderLine(
+                    		new Line(
+                    				new Line(rpad("Subject", 7), rpad("Course", 8), rpad("Type", 5), rpad("Section", 9), rpad("Date", 7), rpad("Time", 13), rpad("Bldg", 5).withColSpan(0), rpad("Room", 5)).withLength(66).withLineSeparator("|"),
+                    				new Line(rpad("Subject", 7), rpad("Course", 8), rpad("Type", 5), rpad("Section", 9), rpad("Date", 7), rpad("Time", 13), rpad("Bldg", 5).withColSpan(0), rpad("Room", 5))
+                    		), new Line(
+                    				new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 5), rpad("", '-', 9), rpad("", '-', 7), rpad("", '-', 13), rpad("", '-', 5).withColSpan(0), rpad("", '-', 5)).withLength(66).withLineSeparator("|"),
+                    				new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 5), rpad("", '-', 9), rpad("", '-', 7), rpad("", '-', 13), rpad("", '-', 5).withColSpan(0), rpad("", '-', 5))
+                    		));
                 }
             } else {
-                setHeader(new String[] {
-                    "Subject Course   Section   Date      Time            Bldg  Room  | Subject Course   Section   Date      Time            Bldg  Room ",
-                    "------- -------- --------- --------- --------------- ----- ----- | ------- -------- --------- --------- --------------- ----- -----"});
-                //	".........1.........2.........3.........4.........5.........612345"
-                separator = "------- -------- --------- --------- --------------- ----- ----- | ------- -------- --------- --------- --------------- ----- -----";
+                setHeaderLine(
+                		new Line(
+                				new Line(rpad("Subject", 7), rpad("Course", 8), rpad("Section", 9), rpad("Date", 9), rpad("Time", 15), rpad("Bldg", 5).withColSpan(0), rpad("Room", 5)).withLength(65),
+                				new Line(rpad("Subject", 7), rpad("Course", 8), rpad("Section", 9), rpad("Date", 9), rpad("Time", 15), rpad("Bldg", 5).withColSpan(0), rpad("Room", 5))
+                		), new Line(
+                				new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 9), rpad("", '-', 9), rpad("", '-', 15), rpad("", '-', 5).withColSpan(0), rpad("", '-', 5)).withLength(65),
+                				new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 9), rpad("", '-', 9), rpad("", '-', 15), rpad("", '-', 5).withColSpan(0), rpad("", '-', 5))
+                		));
             }
             printHeader();
             for (int idx=0; idx<lines.size(); idx+=2*n) {
                 for (int i=0;i<n;i++) {
-                    String a = (i+idx+0*n<lines.size()?lines.elementAt(i+idx+0*n):"");
-                    String b = (i+idx+1*n<lines.size()?lines.elementAt(i+idx+1*n):"");
+                    Line a = (i+idx+0*n<lines.size()?lines.elementAt(i+idx+0*n):new Line(new Cell("").withColSpan(iItype?7:6)));
+                    Line b = (i+idx+1*n<lines.size()?lines.elementAt(i+idx+1*n):new Line(new Cell("").withColSpan(iItype?7:6)));
                     if (iItype)
-                    	println(rpad(a,66)+"|"+rpad(b, 66));
+                    	println(a.withLength(66).withLineSeparator("|"), b);
                     else
-                    	println(rpad(a,65)+"| "+rpad(b, 64));
-                    if ((i%split)==split-1) println(separator);
+                    	println(a.withLength(65), b);
+                    if ((i%split)==split-1 && idx<lines.size()) printSeparator();
                 }
             }
         }

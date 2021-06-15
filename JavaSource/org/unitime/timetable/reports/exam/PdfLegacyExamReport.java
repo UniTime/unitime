@@ -71,7 +71,7 @@ import org.unitime.timetable.model.Event.MultiMeeting;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao._RootDAO;
-import org.unitime.timetable.reports.PdfLegacyReport;
+import org.unitime.timetable.reports.AbstractReport;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo;
@@ -87,7 +87,7 @@ import com.lowagie.text.DocumentException;
 /**
  * @author Tomas Muller
  */
-public abstract class PdfLegacyExamReport extends PdfLegacyReport {
+public abstract class PdfLegacyExamReport extends AbstractReport {
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
     protected static Logger sLog = Logger.getLogger(PdfLegacyExamReport.class);
     
@@ -145,7 +145,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     }
     
     public PdfLegacyExamReport(int mode, OutputStream out, String title, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws DocumentException, IOException {
-        super(mode, out, title,
+        super(Mode.values()[mode], out, title,
         		ApplicationProperty.ExaminationPdfReportTitle.value(examType == null ? "all" : examType.getReference(), examType == null ? "EXAMINATIONS" : examType.getLabel().toUpperCase() + " EXAMINATIONS"),
                 title + " -- " + session.getLabel(), session.getLabel());
         if (subjectAreas!=null && subjectAreas.size() == 1) setFooter(subjectAreas.iterator().next().getSubjectAreaAbbreviation());
@@ -266,7 +266,8 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     protected boolean iPeriodPrinted = false;
     protected boolean iNewPage = false;
     
-    protected void headerPrinted() {
+    @Override
+    public void headerPrinted() {
         iSubjectPrinted = false;
         iCoursePrinted = false;
         iStudentPrinted = false;
@@ -276,9 +277,10 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         iNewPage = true;
     }
     
-    protected void println(String text) throws DocumentException {
+    @Override
+    protected void printLine(Line line) throws DocumentException {
         iNewPage = false;
-        super.println(text);
+        super.printLine(line);
     }
     
     public int getDaysCode(Set meetings) {
@@ -354,7 +356,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         return false;
     }
     
-    protected String getMeetingTime(ExamSectionInfo section) {
+    protected Cell getMeetingTime(ExamSectionInfo section) {
         if (section.getOwner().getOwnerObject() instanceof Class_) {
             SimpleDateFormat dpf = new SimpleDateFormat("MM/dd");
             Class_ clazz = (Class_)section.getOwner().getOwnerObject();
@@ -365,35 +367,45 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                     String days = "";
                     for (int i=0;i<Constants.DAY_CODES.length;i++)
                         if ((dayCode & Constants.DAY_CODES[i])!=0) days += DAY_NAMES_SHORT[i];
-                    String meetingTime = rpad(days,5);
+                    Cell dayOfWeek = rpad(days,5);
                     Meeting[] firstLastMeeting = firstLastMeeting(clazz.getCachedEvent());
-                    meetingTime += " "+lpad(firstLastMeeting[0].startTime(),6)+" - "+lpad(firstLastMeeting[0].stopTime(),6) + " ";
+                    Cell startTime = lpad(firstLastMeeting[0].startTime(),6).withSeparator(" - ");
+                    Cell endTime = lpad(firstLastMeeting[0].stopTime(),6);
                     Date first = firstLastMeeting[0].getMeetingDate();
                     Date last = firstLastMeeting[1].getMeetingDate();
+                    Cell firstDate = null, lastDate = null;
                     if (!iDispFullTermDates && isFullTerm(clazz.getEvent())) {
-                        meetingTime += rpad("",14);
+                    	firstDate = rpad("", 5).withSeparator("   ");
+                    	lastDate = rpad("", 5);
                     } else {
-                        meetingTime += dpf.format(first)+" - "+dpf.format(last);
+                    	firstDate = new Cell(dpf.format(first)).withSeparator(" - ");
+                    	lastDate = new Cell(dpf.format(last));
                     }
-                    return meetingTime;
+                    return new Cell(dayOfWeek, startTime, endTime, firstDate, lastDate);
                 }
             }
             Assignment assignment = clazz.getCommittedAssignment();
             Date[] firstLast = (assignment == null ? null : firstLastDate(assignment.getTimeLocation()));
             if (assignment != null) {
                 TimeLocation t = assignment.getTimeLocation();
-                String meetingTime = rpad(t.getDayHeader(),5)+" "+lpad(t.getStartTimeHeader(CONSTANTS.useAmPm()),6)+" - "+lpad(t.getEndTimeHeader(CONSTANTS.useAmPm()),6) + " ";
+                Cell dayOfWeek = rpad(t.getDayHeader(),5);
+                Cell startTime = lpad(t.getStartTimeHeader(CONSTANTS.useAmPm()),6).withSeparator(" - ");
+                Cell endTime = lpad(t.getEndTimeHeader(CONSTANTS.useAmPm()),6);
+                Cell firstDate = null, lastDate = null;
                 if (!iDispFullTermDates && isFullTerm(assignment.getDatePattern(), firstLast)) {
-                    meetingTime += rpad("",14);
+                	firstDate = rpad("", 5).withSeparator("   ");
+                	lastDate = rpad("", 5);
                 } else if (firstLast != null) {
-                    meetingTime += dpf.format(firstLast[0])+" - "+dpf.format(firstLast[1]);
+                	firstDate = new Cell(dpf.format(firstLast[0])).withSeparator(" - ");
+                	lastDate = new Cell(dpf.format(firstLast[1]));
                 } else {
-                	meetingTime += rpad(t.getDatePatternName(), 14);
+                	firstDate = rpad(t.getDatePatternName(), 14);
+                	lastDate = NULL;
                 }
-                return meetingTime;
+                return new Cell(dayOfWeek, startTime, endTime, firstDate, lastDate);
             }
         }
-        return rpad("", 36);
+        return new Cell(rpad("",5), lpad("", 6).withSeparator("   "), lpad("", 6), rpad("", 5).withSeparator("   "), rpad("", 5));
     }
     
     private Meeting[] firstLastMeeting(ClassEvent event) {
@@ -489,23 +501,23 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         return lpad(meeting.startTime(),6)+" - "+lpad(meeting.stopTime(),6);
     }
     
-    protected String getMeetingTime(String time) {
+    protected Cell getMeetingTime(String time) {
         int idx = time.indexOf('-');
         if (idx<0) return lpad(time,15);
         String start = time.substring(0,idx).trim();
         String stop = time.substring(idx+1).trim();
-        return lpad(start,'0',6)+" - "+lpad(stop,'0',6);
+        return new Cell(lpad(start,'0',6).withSeparator(" - "), lpad(stop,'0',6));
     }
     
-    public String formatRoom(String room) {
+    public Cell formatRoom(String room) {
         String r = room.trim();
         int idx = r.lastIndexOf(' '); 
         if (idx>=0 && idx<=5 && r.length()-idx-1<=5)
-            return rpad(r.substring(0, idx),5)+" "+rpad(r.substring(idx+1),5);
+            return new Cell(rpad(r.substring(0, idx),5), rpad(r.substring(idx+1),5));
         return rpad(r, 11);
     }
-
-    public String formatRoom(ExamRoomInfo roomInfo) {
+    
+    public Cell formatRoom(ExamRoomInfo roomInfo) {
     	if (roomInfo == null) return rpad("",11);
     	if (iRoomDisplayNames) {
     		Location location = roomInfo.getLocation();
@@ -516,7 +528,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     	return formatRoom(roomInfo.getName());
     }
     
-    public String formatRoom(Location location) {
+    public Cell formatRoom(Location location) {
     	if (location == null) return rpad("",11);
     	if (iRoomDisplayNames) {
     		String dispName = location.getDisplayName();
@@ -540,6 +552,24 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         return assignment.getPeriod().getStartDateLabel()+" "+
             lpad(assignment.getPeriod().getStartTimeLabel(assignment.getPrintOffset()),6)+" - "+
             lpad(assignment.getPeriod().getEndTimeLabel(assignment.getLength(), assignment.getPrintOffset()),6);
+    }
+    
+    public Cell formatPeriodDate(ExamAssignment assignment) {
+    	return new Cell(assignment.getPeriod().getStartDateLabel());
+    }
+    
+    public Cell formatPeriodTime(ExamAssignment assignment) {
+    	return new Cell(
+    			lpad(assignment.getPeriod().getStartTimeLabel(assignment.getPrintOffset()),6).withSeparator(" - "),
+    			lpad(assignment.getPeriod().getEndTimeLabel(assignment.getLength(), assignment.getPrintOffset()),6)
+    			);
+    }
+    
+    public Cell formatSection10(String section) {
+    	if (section.length() <= 9)
+    		return rpad(lpad(section, 9), 10);
+    	else
+    		return rpad(section, 10);
     }
     
     public String getShortDate(Date date) {
@@ -570,8 +600,27 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             lpad(assignment.getPeriod().getEndTimeLabel(assignment.getLength(),assignment.getPrintOffset()),6);
     }
     
+    public Cell formatShortPeriodDate(ExamAssignment assignment) {
+        return new Cell(getShortDate(assignment.getPeriod().getStartDate()));
+    }
+    
+    public Cell formatShortPeriodTime(ExamAssignment assignment) {
+        return new Cell(
+        		lpad(assignment.getPeriod().getStartTimeLabel(assignment.getPrintOffset()),6).withSeparator("-"),
+        		lpad(assignment.getPeriod().getEndTimeLabel(assignment.getLength(),assignment.getPrintOffset()),6)
+        		);
+    }
+    
     public String formatShortPeriodNoEndTime(ExamAssignment assignment) {
         return getShortDate(assignment.getPeriod().getStartDate())+" "+ lpad(assignment.getPeriod().getStartTimeLabel(assignment.getPrintOffset()),6);
+    }
+    
+    public Cell formatShortPeriodNoEndTimeDate(ExamAssignment assignment) {
+    	return new Cell(getShortDate(assignment.getPeriod().getStartDate()));
+    }
+    
+    public Cell formatShortPeriodNoEndTimeTime(ExamAssignment assignment) {
+    	return new Cell(lpad(assignment.getPeriod().getStartTimeLabel(assignment.getPrintOffset()),6));
     }
 
     public String getItype(CourseOffering course, Class_ clazz) {
@@ -695,7 +744,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                             mail.addRecipientCC(s.nextToken(), null);
                         if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.bcc"),";,\n\r ");s.hasMoreTokens();) 
                             mail.addRecipientBCC(s.nextToken(), null);
-                        mail.addAttachment(report, prefix+(report.getName().endsWith(".txt")?".txt":".pdf"));
+                        mail.addAttachment(report, prefix + report.getName().substring(report.getName().lastIndexOf('.')));
                     	mail.send();
                         sLog.info("&nbsp;&nbsp;An email was sent to <a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>.");
                     } catch (Exception e) {
@@ -728,7 +777,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                             mail.addRecipientCC(s.nextToken(), null);
                         if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.bcc"),";,\n\r ");s.hasMoreTokens();) 
                             mail.addRecipientBCC(s.nextToken(), null);
-                        mail.addAttachment(report, prefix+(report.getName().endsWith(".txt")?".txt":".pdf"));
+                        mail.addAttachment(report, prefix + report.getName().substring(report.getName().lastIndexOf('.')));
                     	mail.send();
                         sLog.info(" An email was sent to <a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>.");
                     } catch (Exception e) {
@@ -1036,9 +1085,9 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
             
             Session session = Session.getSessionUsingInitiativeYearTerm(
-                    ApplicationProperties.getProperty("initiative", "puWestLafayetteTrdtn"),
-                    ApplicationProperties.getProperty("year","2008"),
-                    ApplicationProperties.getProperty("term","Spr")
+                    ApplicationProperties.getProperty("initiative", "PWL"),
+                    ApplicationProperties.getProperty("year","2021"),
+                    ApplicationProperties.getProperty("term","Spring")
                     );
             if (session==null) {
                 sLog.error("Academic session not found, use properties initiative, year, and term to set academic session.");
@@ -1049,9 +1098,12 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             ExamType examType = ExamType.findByReference(ApplicationProperties.getProperty("type","final"));
             boolean assgn = "true".equals(System.getProperty("assgn","true"));
             boolean ignempty = "true".equals(System.getProperty("ignempty","true"));
-            int mode = sModeNormal;
-            if ("text".equals(System.getProperty("mode"))) mode = sModeText;
-            if ("ledger".equals(System.getProperty("mode"))) mode = sModeLedger;
+            int mode = Mode.LegacyPdfLetter.ordinal();
+            if ("text".equals(System.getProperty("mode"))) mode = Mode.LegacyText.ordinal();
+            if ("ledger".equals(System.getProperty("mode"))) mode = Mode.LegacyPdfLedger.ordinal();
+            if ("csv".equals(System.getProperty("mode"))) mode = Mode.CSV.ordinal();
+            if ("pdf".equals(System.getProperty("mode"))) mode = Mode.PDF.ordinal();
+            if ("xls".equals(System.getProperty("mode"))) mode = Mode.XLS.ordinal();
             sLog.info("Exam type: " + examType.getLabel());
             boolean perSubject = "true".equals(System.getProperty("persubject","false"));
             TreeSet<SubjectArea> subjects = null;
@@ -1112,24 +1164,24 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                 if (perSubject) {
                     for (SubjectArea subject : subjects) {
                         File file = new File(new File(ApplicationProperties.getProperty("output",".")),
-                            session.getAcademicTerm()+session.getSessionStartYear()+examType.getReference()+"_"+reportName+"_"+subject.getSubjectAreaAbbreviation()+(mode==sModeText?".txt":".pdf"));
+                            session.getAcademicTerm()+session.getSessionStartYear()+examType.getReference()+"_"+reportName+"_"+subject.getSubjectAreaAbbreviation()+getExtension(mode));
                         long t0 = System.currentTimeMillis();
                         sLog.info("Generating report "+file+" ("+subject.getSubjectAreaAbbreviation()+") ...");
                         List<SubjectArea> subjectList = new ArrayList<SubjectArea>(); subjectList.add(subject);
                         PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(int.class, File.class, Session.class, ExamType.class, Collection.class, Collection.class).newInstance(mode, file, session, examType, subjectList, exams);
                         report.printReport();
                         report.close();
-                        output.put(subject.getSubjectAreaAbbreviation()+"_"+reportName+"."+(mode==sModeText?"txt":"pdf"),file);
+                        output.put(subject.getSubjectAreaAbbreviation()+"_"+reportName+getExtension(mode),file);
                         Hashtable<String,File> files = outputPerSubject.get(subject);
                         if (files==null) {
                             files = new Hashtable(); outputPerSubject.put(subject,files);
                         }
-                        files.put(subject.getSubjectAreaAbbreviation()+"_"+reportName+"."+(mode==sModeText?"txt":"pdf"),file);
+                        files.put(subject.getSubjectAreaAbbreviation()+"_"+reportName+getExtension(mode),file);
                         long t1 = System.currentTimeMillis();
                         sLog.info("Report "+file+" generated in "+sDF.format((t1-t0)/1000.0)+"s.");
                         if (report instanceof InstructorExamReport && "true".equals(System.getProperty("email.instructors","false"))) {
                             ireports = ((InstructorExamReport)report).printInstructorReports(
-                                    mode, session.getAcademicTerm()+session.getSessionStartYear()+examType.getReference(), new InstructorExamReport.FileGenerator() {
+                                    session.getAcademicTerm()+session.getSessionStartYear()+examType.getReference(), new InstructorExamReport.FileGenerator() {
                                         public File generate(String prefix, String ext) {
                                             int idx = 0;
                                             File file = new File(prefix+"."+ext);
@@ -1142,7 +1194,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                                     });
                         } else if (report instanceof StudentExamReport && "true".equals(System.getProperty("email.students","false"))) {
                             sreports = ((StudentExamReport)report).printStudentReports(
-                                    mode, session.getAcademicTerm()+session.getSessionStartYear()+examType.getReference(), new InstructorExamReport.FileGenerator() {
+                                    session.getAcademicTerm()+session.getSessionStartYear()+examType.getReference(), new InstructorExamReport.FileGenerator() {
                                         public File generate(String prefix, String ext) {
                                             int idx = 0;
                                             File file = new File(prefix+"."+ext);
@@ -1157,18 +1209,18 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                     }
                 } else {
                     File file = new File(new File(ApplicationProperties.getProperty("output",".")),
-                            session.getAcademicTerm()+session.getSessionStartYear()+examType.getReference()+"_"+reportName+(mode==sModeText?".txt":".pdf"));
+                            session.getAcademicTerm()+session.getSessionStartYear()+examType.getReference()+"_"+reportName+getExtension(mode));
                     long t0 = System.currentTimeMillis();
                     sLog.info("Generating report "+file+" ...");
                     PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(int.class, File.class, Session.class, ExamType.class, Collection.class, Collection.class).newInstance(mode, file, session, examType, subjects, exams);
                     report.printReport();
                     report.close();
-                    output.put(reportName+"."+(mode==sModeText?"txt":"pdf"),file);
+                    output.put(reportName+getExtension(mode),file);
                     long t1 = System.currentTimeMillis();
                     sLog.info("Report "+file.getName()+" generated in "+sDF.format((t1-t0)/1000.0)+"s.");
                     if (report instanceof InstructorExamReport && "true".equals(System.getProperty("email.instructors","false"))) {
                         ireports = ((InstructorExamReport)report).printInstructorReports(
-                               mode, session.getAcademicTerm()+session.getSessionStartYear()+examType.getReference(), new InstructorExamReport.FileGenerator() {
+                               session.getAcademicTerm()+session.getSessionStartYear()+examType.getReference(), new InstructorExamReport.FileGenerator() {
                                     public File generate(String prefix, String ext) {
                                         int idx = 0;
                                         File file = new File(prefix+"."+ext);
@@ -1181,7 +1233,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                                 });
                     } else if (report instanceof StudentExamReport && "true".equals(System.getProperty("email.students","false"))) {
                         sreports = ((StudentExamReport)report).printStudentReports(
-                                mode, session.getAcademicTerm()+session.getSessionStartYear()+examType.getReference(), new InstructorExamReport.FileGenerator() {
+                                session.getAcademicTerm()+session.getSessionStartYear()+examType.getReference(), new InstructorExamReport.FileGenerator() {
                                     public File generate(String prefix, String ext) {
                                         int idx = 0;
                                         File file = new File(prefix+"."+ext);

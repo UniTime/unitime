@@ -21,12 +21,14 @@ package org.unitime.timetable.reports.exam;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -77,7 +79,7 @@ public class PeriodChartReport extends PdfLegacyExamReport {
             ExamPeriod period = (ExamPeriod)i.next();
             times.put(period.getStartSlot(), period.getStartTimeLabel());
             days.put(period.getDateOffset(), period.getStartDateLabel());
-            fixedTimes.put(period.getStartSlot(), lpad(period.getStartTimeLabel(),'0',6));
+            fixedTimes.put(period.getStartSlot(), lpad(period.getStartTimeLabel(), '0', 6).toString());
         }
         boolean headerPrinted = false;
         
@@ -86,16 +88,31 @@ public class PeriodChartReport extends PdfLegacyExamReport {
         int nrCols = 0;
         if (!iTotals) {
         	if (iCompact) {
-                setHeader(new String[] {
-                		"Start Time  Exam            Enrl  Exam            Enrl  Exam            Enrl  Exam            Enrl  Exam            Enrl",
-                		"----------  --------------- ----  --------------- ----  --------------- ----  --------------- ----  --------------- ----"
-                    });
+        		setHeaderLine(new Line(
+        				rpad("Start Time", 10).withSeparator("| "),
+        				rpad("Exam", 15).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad("Enrl", 4).withSeparator("| "),
+        				rpad("Exam", 15).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad("Enrl", 4).withSeparator("| "),
+        				rpad("Exam", 15).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad("Enrl", 4).withSeparator("| "),
+        				rpad("Exam", 15).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad("Enrl", 4).withSeparator("| "),
+        				rpad("Exam", 15).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad("Enrl", 4)),
+        				new Line(rpad("", '-', 10).withSeparator("| "),
+                		rpad("", '-', 15).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
+                		rpad("", '-', 15).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
+                		rpad("", '-', 15).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
+                		rpad("", '-', 15).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
+                		rpad("", '-', 15).withColSpan(2), rpad("", '-', 4)));
         	} else {
-                setHeader(new String[] {
-                        "Start Time Exam                     Enrl  Exam                     Enrl  Exam                     Enrl  Exam                     Enrl",
-                        "---------- ------------------------ ----  ------------------------ ----  ------------------------ ----  ------------------------ ----"
-                     //  .........1.........2.........3.........4.........5.........6.........7.........8.........9........10........11........12........13...
-                    });
+        		setHeaderLine(new Line(
+        				rpad("Start Time", 10).withSeparator("|"),
+        				rpad("Exam", 24).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad("Enrl", 4).withSeparator("| "),
+        				rpad("Exam", 24).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad("Enrl", 4).withSeparator("| "),
+        				rpad("Exam", 24).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad("Enrl", 4).withSeparator("| "),
+        				rpad("Exam", 24).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad("Enrl", 4)),
+        				new Line(rpad("", '-', 10).withSeparator("|"),
+        				rpad("", '-', 24).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
+                		rpad("", '-', 24).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
+                		rpad("", '-', 24).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
+                		rpad("", '-', 24).withColSpan(2), rpad("", '-', 4)));
         	}
             printHeader();
         }
@@ -105,9 +122,9 @@ public class PeriodChartReport extends PdfLegacyExamReport {
             for (int time: new TreeSet<Integer>(times.keySet())) {
                 int offset = 0;
                 String timeStr = times.get(time);
-                String header1 = "";
-                String header2 = "";
-                String header3 = "";
+                List<Cell> header1 = new ArrayList<Cell>();
+                List<Cell> header2 = new ArrayList<Cell>();
+                List<Cell> header3 = new ArrayList<Cell>();
                 Vector periods = new Vector();
                 int idx = 0;
                 String firstDay = null; int firstDayOffset = 0;
@@ -130,13 +147,17 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                     } 
                     lastDay = dayStr;
                     if (iCompact) {
-                    	header1 += mpad(dayStr,20)+"  ";
-                    	header2 += "Exam            Enrl  ";
-                    	header3 += "=============== ====  ";
+                    	header1.add(mpad(dayStr,20).withSeparator("| ").withColSpan(3));
+                    	header2.add(rpad("Exam", 15).withSeparator(""));
+                    	header2.add(rpad(" ", 1).withSeparator(""));
+                    	header2.add(lpad("Enrl", 4).withSeparator("| "));
+                    	header3.add(lpad("", '=', 15).withColSpan(2)); header3.add(lpad("", '=', 4).withSeparator("| "));
                     } else {
-                        header1 += mpad(dayStr,29)+"  "; 
-                        header2 += "Exam                     Enrl  ";
-                        header3 += "======================== ====  ";
+                    	header1.add(mpad(dayStr,29).withSeparator("| ").withColSpan(3)); 
+                    	header2.add(rpad("Exam", 24).withSeparator(""));
+                    	header2.add(rpad(" ", 1).withSeparator(""));
+                    	header2.add(lpad("Enrl", 4).withSeparator("| "));
+                    	header3.add(lpad("", '=', 24).withColSpan(2)); header3.add(lpad("", '=', 4).withSeparator("| "));
                     }
                     ExamPeriod period = null;
                     nrCols++;
@@ -148,7 +169,11 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                     periods.add(period);
                 }
                 if (iTotals)
-                	setHeader(new String[] {timeStr,header1,header2,header3});
+                	setHeaderLine(
+                			new Line(new Cell(timeStr).withColSpan(header2.size())),
+                			new Line(header1.toArray(new Cell[header1.size()])),
+                			new Line(header2.toArray(new Cell[header2.size()])),
+                			new Line(header3.toArray(new Cell[header3.size()])));
                 else if (offset + periods.size() > (iCompact?iTotals?6:5:4))
                 	offset = Math.max(0, (iCompact?iTotals?6:5:4) - periods.size());
                 int nextLines = 0;
@@ -168,12 +193,9 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                         setPageName(timeStr+(days.size()>nrCols?" ("+firstDay+" - "+lastDay+")":""));
                         setCont(timeStr+(days.size()>nrCols?" ("+firstDay+" - "+lastDay+")":""));
                         timesThisPage = timeStr;
-                    } else if (timesThisPage!=null && getLineNumber()+nextLines<=iNrLines) {
-                        println("");
-                        println(timeStr);
-                        println(header1);
-                        println(header2);
-                        println(header3);
+                    } else if (timesThisPage!=null && (getLineNumber()+nextLines<=getNrLinesPerPage() || getNrLinesPerPage() == 0)) {
+                    	println();
+                    	printHeader(false);
                         timesThisPage += ", "+timeStr;
                         setPageName(timesThisPage+(days.size()>nrCols?" ("+firstDay+" - "+lastDay+")":""));
                         setCont(timesThisPage+(days.size()>nrCols?" ("+firstDay+" - "+lastDay+")":""));
@@ -188,15 +210,33 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                     if (!iNewPage && !firstLine) {
                         if (lastDIdx!=dIdx) {
                         	if (iCompact)
-                        		println("----------  --------------- ----  --------------- ----  --------------- ----  --------------- ----  --------------- ----");
+                        		printSeparator(rpad("", '-', 10).withSeparator("| "),
+                        				rpad("", '-', 15).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
+                        				rpad("", '-', 15).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
+                        				rpad("", '-', 15).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
+                        				rpad("", '-', 15).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
+                        				rpad("", '-', 15).withColSpan(2), rpad("", '-', 4));
                         	else
-                        		println("---------- ------------------------ ----  ------------------------ ----  ------------------------ ----  ------------------------ ----");
+                        		printSeparator(rpad("", '-', 10),
+                        				rpad("", '-', 24).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
+                                		rpad("", '-', 24).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
+                                		rpad("", '-', 24).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
+                                		rpad("", '-', 24).withColSpan(2), rpad("", '-', 4));
                             lastDIdx = dIdx;
                         } else {
                         	if (iCompact)
-                        		println("            --------------- ----  --------------- ----  --------------- ----  --------------- ----  --------------- ----");
+                        		printSeparator(lpad("", ' ', 10).withSeparator("| "),
+                        				rpad("", '-', 15).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
+                        				rpad("", '-', 15).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
+                        				rpad("", '-', 15).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
+                        				rpad("", '-', 15).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
+                        				rpad("", '-', 15).withColSpan(2), rpad("", '-', 4));
                         	else
-                        		println("           ------------------------ ----  ------------------------ ----  ------------------------ ----  ------------------------ ----");
+                        		printSeparator(lpad("", ' ', 10),
+                        				rpad("", '-', 24).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
+                                		rpad("", '-', 24).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
+                                		rpad("", '-', 24).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
+                                		rpad("", '-', 24).withColSpan(2), rpad("", '-', 4));
                         }
                     }
                     firstLine = false;
@@ -210,13 +250,13 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                     ExamPeriod period = (ExamPeriod)f.nextElement();
                     if (period==null) {
                         Vector linesThisPeriod = new Vector();
-                        linesThisPeriod.add(lpad("0",iCompact ? 20 : 29));
+                        linesThisPeriod.add(new Cell[] {lpad("", iCompact ? 15 : 24).withColSpan(2), lpad("0",5)});
                         lines.add(linesThisPeriod);
                         continue;
                     }
                     TreeSet<ExamSectionInfo> sections = period2courseSections.get(period);
                     if (sections==null) sections = new TreeSet();
-                    Vector linesThisPeriod = new Vector();
+                    Vector<Cell[]> linesThisPeriod = new Vector<Cell[]>();
                     int total = 0;
                     int totalListed = 0;
                     for (ExamSectionInfo section : sections) {
@@ -231,52 +271,64 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                             }
                         }
                         if (iCompact) {
-                            linesThisPeriod.add(
-                                    rpad(section.getSubject(),7)+
-                                    rpad(section.getCourseNbr(),8)+
-                                    (code==null||code.length()==0?' ':code.charAt(0))+
-                                    lpad(String.valueOf(section.getNrStudents()),4));
+                        	linesThisPeriod.add(
+                        			new Cell[] {
+                        					new Cell(
+                        							rpad(section.getSubject(),7).withSeparator(""),
+                        							rpad(section.getCourseNbr(),8).withSeparator("")).withSeparator(""),
+                        					new Cell(String.valueOf(code==null||code.length()==0?' ':code.charAt(0))).withSeparator(""),
+                        					lpad(String.valueOf(section.getNrStudents()),4)
+                        			});
                         } else {
                             if (iItype) {
                                 if (iExternal) {
-                                    linesThisPeriod.add(
-                                            rpad(section.getSubject(),7)+
-                                            rpad(section.getCourseNbr(),8)+
-                                            rpad(section.getItype(),9)+
-                                            (code==null||code.length()==0?' ':code.charAt(0))+
-                                            lpad(String.valueOf(section.getNrStudents()),4));
+                                	linesThisPeriod.add(
+                                			new Cell[] {
+                                					new Cell(
+                                							rpad(section.getSubject(),7).withSeparator(""),
+                                							rpad(section.getCourseNbr(),8).withSeparator(""),
+                                							rpad(section.getSection(),9).withSeparator("")).withSeparator(""),
+                                					new Cell(String.valueOf(code==null||code.length()==0?' ':code.charAt(0))).withSeparator(""),
+                                					lpad(String.valueOf(section.getNrStudents()),4)
+                                			});
                                 } else {
-                                    linesThisPeriod.add(
-                                            rpad(section.getName(),24)+(code==null||code.length()==0?' ':code.charAt(0))+
-                                            lpad(String.valueOf(section.getNrStudents()),4));
+                                	linesThisPeriod.add(
+                                    		new Cell[] {
+                                    				rpad(section.getName(),24).withSeparator(""),
+                                    				new Cell(String.valueOf(code==null||code.length()==0?' ':code.charAt(0))).withSeparator(""),
+                                    				lpad(String.valueOf(section.getNrStudents()),4)
+                                    		});
                                 }
                             } else {
-                                linesThisPeriod.add(
-                                        rpad(section.getSubject(),7)+
-                                        rpad(section.getCourseNbr(),8)+
-                                        rpad(section.getSection(),9)+
-                                        (code==null||code.length()==0?' ':code.charAt(0))+
-                                        lpad(String.valueOf(section.getNrStudents()),4));
+                            	linesThisPeriod.add(
+                                		new Cell[] {
+                                				new Cell(
+                                						rpad(section.getSubject(),7).withSeparator(""),
+                            							rpad(section.getCourseNbr(),8).withSeparator(""),
+                            							rpad(section.getSection(),9).withSeparator("")).withSeparator(""),
+                                				new Cell(String.valueOf(code==null||code.length()==0?' ':code.charAt(0))).withSeparator(""),
+                                				lpad(String.valueOf(section.getNrStudents()),4)
+                                		});
                             }
                         }
                     }
                     if (iCompact) {
                     	if (iTotals) {
                             if (totalListed!=total)
-                                linesThisPeriod.insertElementAt(mpad("("+totalListed+")",13)+" "+lpad(""+total,6), 0);
+                            	linesThisPeriod.insertElementAt(new Cell[] {mpad("("+totalListed+")",14).withColSpan(2), lpad(""+total,6)}, 0);
                             else
-                                linesThisPeriod.insertElementAt(lpad(""+total,20), 0);
+                            	linesThisPeriod.insertElementAt(new Cell[] {lpad(""+total,20).withColSpan(3)}, 0);
                         } else {
-                            linesThisPeriod.insertElementAt(rpad(period.getStartDateLabel(),13)+" "+lpad(total==0?"":(""+total),6), 0);
+                        	linesThisPeriod.insertElementAt(new Cell[] {rpad(period.getStartDateLabel(),14).withColSpan(2), lpad(total==0?"":(""+total),6)}, 0);
                         }
                     } else {
-                        if (iTotals) {
+                    	if (iTotals) {
                             if (totalListed!=total)
-                                linesThisPeriod.insertElementAt(mpad("("+totalListed+")",22)+" "+lpad(""+total,6), 0);
+                                linesThisPeriod.insertElementAt(new Cell[] {mpad("("+totalListed+")",23).withColSpan(2), lpad(""+total,6)}, 0);
                             else
-                                linesThisPeriod.insertElementAt(lpad(""+total,29), 0);
+                                linesThisPeriod.insertElementAt(new Cell[] {lpad(""+total,29).withColSpan(3)}, 0);
                         } else {
-                            linesThisPeriod.insertElementAt(rpad(period.getStartDateLabel(),22)+" "+lpad(total==0?"":(""+total),6), 0);
+                            linesThisPeriod.insertElementAt(new Cell[] {rpad(period.getStartDateLabel(),23).withColSpan(2), lpad(total==0?"":(""+total),6)}, 0);
                         }
                     }
                     max = Math.max(max, linesThisPeriod.size());
@@ -285,57 +337,82 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                     lines.add(linesThisPeriod);
                 }
                 for (int i=0;i<max;i++) {
-                    String line = "";
+                	List<Cell> line = new ArrayList<Cell>();
                     if (!iTotals) {
                     	if (iCompact) {
-                            if (i==0 || iNewPage)
-                                line += rpad(fixedTimes.get(time),12)+rpad("",offset*22);
-                            else
-                                line += rpad("",12)+rpad("",offset*22);
+                            if (i==0 || iNewPage) {
+                            	line.add(rpad(fixedTimes.get(time),10).withSeparator("| "));
+                            	for (int c = 0; c < offset; c++)
+                            		line.add(rpad("",20).withSeparator("| ").withColSpan(3));
+                            } else {
+                            	line.add(rpad("",10).withSeparator("| "));
+                            	for (int c = 0; c < offset; c++)
+                            		line.add(rpad("",20).withSeparator("| ").withColSpan(3));
+                            }
                     	} else {
-                            if (i==0 || iNewPage)
-                                line += rpad(fixedTimes.get(time),11)+rpad("",offset*31);
-                            else
-                                line += rpad("",11)+rpad("",offset*31);
+                            if (i==0 || iNewPage) {
+                            	line.add(rpad(fixedTimes.get(time),10).withSeparator("|"));
+                            	for (int c = 0; c < offset; c++)
+                            		line.add(rpad("",29).withSeparator("| ").withColSpan(3));
+                            } else {
+                            	line.add(rpad("",10).withSeparator("|"));
+                            	for (int c = 0; c < offset; c++)
+                            		line.add(rpad("",29).withSeparator("| ").withColSpan(3));
+                            }
                     	}
                     }
                     for (Enumeration f=lines.elements();f.hasMoreElements();) {
                         Vector linesThisPeriod = (Vector)f.nextElement();
-                        if (i<linesThisPeriod.size())
-                            line += (String)linesThisPeriod.elementAt(i);
-                        else
-                            line += rpad("",iCompact ? 20 : 29);
-                        if (f.hasMoreElements()) line += "  ";
+                        if (i<linesThisPeriod.size()) {
+                        	Cell[] c = (Cell[])linesThisPeriod.elementAt(i);
+                        	for (int j = 0; j < c.length; j++)
+                        		line.add(c[j].withSeparator(j + 1 == c.length ? "| " : ""));
+                        } else {
+                        	line.add(rpad("",iCompact ? 20 : 29).withColSpan(3).withSeparator("| "));
+                        }
                     }
-                    println(line);
+                    if (!iTotals)
+                    	for (int c = offset + lines.size(); c < (iCompact ? 5 : 4); c++) {
+                    		if (iCompact) {
+                    			line.add(rpad("",20).withSeparator("| ").withColSpan(3));
+                    		} else {
+                    			line.add(rpad("",29).withSeparator("|").withColSpan(3));
+                    		}
+                    	}
+                    println(line.toArray(new Cell[line.size()]));
                 }
                 setCont(null);
             }
             if (iTotals) {
-                if (getLineNumber()+5>iNrLines) {
+            	setHeaderLine();
+                if (getLineNumber()+5>getNrLinesPerPage() && getNrLinesPerPage() > 0) {
                     newPage();
                     setPageName("Totals");
                 } else 
-                    println("");
-                println("Total Student Exams");
-                String line1 = "", line2 = "", line3 = "";
+                	println();
+                List<Cell> line1 = new ArrayList<Cell>();
+                List<Cell> line2 = new ArrayList<Cell>();
+                List<Cell> line3 = new ArrayList<Cell>();
                 int idx = 0;
                 for (Iterator<Integer> f = new TreeSet<Integer>(days.keySet()).iterator(); f.hasNext(); idx++) {
                     Integer day = f.next();
                     if (idx<dIdx || idx>=dIdx+nrCols) continue;
                     if (iCompact) {
-                        line1 += mpad((String)days.get(day),20)+"  ";
-                        line2 += "=============== ====  ";
-                        line3 += lpad(totalADay.get(day)==null?"":totalADay.get(day).toString(),20)+"  ";
+                    	line1.add(mpad((String)days.get(day),20).withSeparator("| ").withColSpan(3));
+                    	line2.add(lpad("", '=', 15).withSeparator("")); line2.add(lpad("", ' ', 1).withSeparator(""));  line2.add(lpad("", '=', 4).withSeparator("| "));
+                    	line3.add(lpad(totalADay.get(day)==null?"":totalADay.get(day).toString(),20).withColSpan(3).withSeparator("| "));
                     } else {
-                        line1 += mpad((String)days.get(day),29)+"  ";
-                        line2 += "======================== ====  ";
-                        line3 += lpad(totalADay.get(day)==null?"":totalADay.get(day).toString(),29)+"  ";
+                    	line1.add(mpad((String)days.get(day),29).withSeparator("| ").withColSpan(3));
+                    	line2.add(lpad("", '=', 24).withSeparator("")); line2.add(lpad("", ' ', 1).withSeparator("")); line2.add(lpad("", '=', 4).withSeparator("| "));
+                    	line3.add(lpad(totalADay.get(day)==null?"":totalADay.get(day).toString(),29).withColSpan(3).withSeparator("| "));
                     }
                 }
-                println(line1);
-                println(line2);
-                println(line3);
+                setHeaderLine(
+                		new Line(new Cell("Total Student Exams").withColSpan(iCompact ? 15 : 12)),
+                		new Line(line1.toArray(new Cell[line1.size()])),
+                		new Line(line2.toArray(new Cell[line2.size()])));
+                printHeader(false);
+                println(line3.toArray(new Cell[line3.size()]));
                 timesThisPage = null;
             }
         }
