@@ -1954,6 +1954,11 @@ public enum ApplicationProperty {
 	@DefaultValue("16")
 	@Description("PDF Font: big size")
 	PdfFontSizeBig("unitime.pdf.fontsize.big"),
+	
+	@Type(Float.class)
+	@DefaultValue("8")
+	@Description("PDF Font: font size used in Examination PDF Reports (New)")
+	PdfFontSizeExams("unitime.pdf.fontsize.exams"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")

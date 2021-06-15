@@ -62,9 +62,30 @@ public class ScheduleByPeriodReport extends PdfLegacyExamReport {
                 sections.add(section);
             }
         }
-        setHeader(new String[] {
-                "Date And Time                  Subject Course   "+(iItype?iExternal?"ExtnID ":"Type   ":"")+"Section     Meeting Times                         Enrl"+(iDispRooms?"  Room         Cap ExCap":""),
-                "------------------------------ ------- -------- "+(iItype?"------ ":"")+"--------- -------------------------------------- -----"+(iDispRooms?" ----------- ----- -----":"")});
+        setHeaderLine(
+        		new Line(
+        				rpad("Date And Time", 30),
+        				rpad("Subject", 7),
+        				rpad("Course", 8),
+        				(iItype ? rpad(iExternal ? "ExtnId" : "Type", 6) : NULL),
+        				rpad("Section", 10),
+        				rpad("Meeting Times", 35),
+        				lpad("Enrl", 5),
+        				(iDispRooms ? rpad("Room", 11): NULL),
+        				(iDispRooms ? lpad("Cap", 5): NULL),
+        				(iDispRooms ? lpad("ExCap", 6): NULL)
+        		), new Line(
+        				lpad("", '-', 30),
+        				lpad("", '-', 7),
+        				lpad("", '-', 8),
+        				(iItype ? lpad("", '-', 6) : NULL),
+        				lpad("", '-', 10),
+        				lpad("", '-', 35),
+        				lpad("", '-', 5),
+        				(iDispRooms ? lpad("", '-', 11): NULL),
+        				(iDispRooms ? lpad("", '-', 5): NULL),
+        				(iDispRooms ? lpad("", '-', 6): NULL)
+        		));
         sLog.debug("  Printing report...");
         printHeader();
         for (Iterator p=ExamPeriod.findAll(getSession().getUniqueId(), getExamType()).iterator();p.hasNext();) {
@@ -81,42 +102,43 @@ public class ScheduleByPeriodReport extends PdfLegacyExamReport {
                     if (!period.equals(section.getExamAssignment().getPeriod())) continue;
                     if (!iDispRooms) {
                         println(
-                            rpad(iPeriodPrinted?"":formatPeriod(period),30)+" "+
-                            rpad(iSubjectPrinted?"":subject,7)+" "+
-                            rpad(section.getCourseNbr(), 8)+" "+
-                            (iItype?rpad(section.getItype(), 6)+" ":"")+
-                            lpad(section.getSection(),9)+" "+
-                            rpad(getMeetingTime(section),38)+" "+
+                            rpad(iPeriodPrinted && isSkipRepeating()?"":formatPeriod(period),30),
+                            rpad(iSubjectPrinted && isSkipRepeating()?"":subject,7),
+                            rpad(section.getCourseNbr(), 8),
+                            (iItype?rpad(section.getItype(), 6):NULL),
+                            formatSection10(section.getSection()),
+                            rpad(getMeetingTime(section),35),
                             lpad(String.valueOf(section.getNrStudents()),5)
                             );
                         iPeriodPrinted = iSubjectPrinted = !iNewPage;
                     } else {
                         if (section.getExamAssignment().getRooms()==null || section.getExamAssignment().getRooms().isEmpty()) {
                             println(
-                                    rpad(iPeriodPrinted?"":formatPeriod(period),30)+" "+
-                                    rpad(iSubjectPrinted?"":subject,7)+" "+
-                                    rpad(section.getCourseNbr(), 8)+" "+
-                                    (iItype?rpad(section.getItype(), 6)+" ":"")+
-                                    lpad(section.getSection(),9)+" "+
-                                    rpad(getMeetingTime(section),38)+" "+
-                                    lpad(String.valueOf(section.getNrStudents()),5)+" "+iNoRoom
+                                    rpad(iPeriodPrinted && isSkipRepeating()?"":formatPeriod(period),30),
+                                    rpad(iSubjectPrinted && isSkipRepeating()?"":subject,7),
+                                    rpad(section.getCourseNbr(), 8),
+                                    (iItype?rpad(section.getItype(), 6):NULL),
+                                    formatSection10(section.getSection()),
+                                    rpad(getMeetingTime(section),35),
+                                    lpad(String.valueOf(section.getNrStudents()),5),
+                                    new Cell(iNoRoom).withColSpan(3)
                                     );
                             iPeriodPrinted = iSubjectPrinted = !iNewPage;
                         } else {
-                            if (getLineNumber()+section.getExamAssignment().getRooms().size()>iNrLines) newPage();
+                            if (getLineNumber()+section.getExamAssignment().getRooms().size()>getNrLinesPerPage() && getNrLinesPerPage() > 0) newPage();
                             boolean firstRoom = true;
                             for (ExamRoomInfo room : section.getExamAssignment().getRooms()) {
                                 println(
-                                        rpad(!firstRoom || iPeriodPrinted?"":formatPeriod(period),30)+" "+
-                                        rpad(!firstRoom || iSubjectPrinted?"":subject,7)+" "+
-                                        rpad(!firstRoom?"":section.getCourseNbr(), 8)+" "+
-                                        (iItype?rpad(!firstRoom?"":section.getItype(), 6)+" ":"")+
-                                        lpad(!firstRoom?"":section.getSection(),9)+" "+
-                                        rpad(!firstRoom?"":getMeetingTime(section),38)+" "+
-                                        lpad(!firstRoom?"":String.valueOf(section.getNrStudents()),5)+" "+
-                                        formatRoom(room)+" "+
-                                        lpad(""+room.getCapacity(),5)+" "+
-                                        lpad(""+room.getExamCapacity(),5)
+                                        rpad(!firstRoom || (iPeriodPrinted && isSkipRepeating())?"":formatPeriod(period),30),
+                                        rpad(!firstRoom || (iSubjectPrinted && isSkipRepeating())?"":subject,7),
+                                        rpad(!firstRoom?"":section.getCourseNbr(), 8),
+                                        (iItype?rpad(!firstRoom?"":section.getItype(), 6):NULL),
+                                        formatSection10(!firstRoom?"":section.getSection()),
+                                        (!firstRoom?rpad("", 35):getMeetingTime(section)),
+                                        lpad(!firstRoom?"":String.valueOf(section.getNrStudents()),5),
+                                        formatRoom(room),
+                                        lpad(""+room.getCapacity(),5),
+                                        lpad(""+room.getExamCapacity(),6)
                                         );
                                 firstRoom = false;
                             }

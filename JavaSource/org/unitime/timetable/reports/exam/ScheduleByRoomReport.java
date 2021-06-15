@@ -80,9 +80,30 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
         rooms.addAll(table.keySet());
         Vector periods = new Vector(ExamPeriod.findAll(getSession().getUniqueId(), getExamType()));
         sLog.info("  Printing report...");
-        setHeader(new String[] {
-                "Bldg  Room  Capacity  ExCap Period Date And Time                          Subject Course   "+(iItype?iExternal?"ExtnID ":"Type   ":"")+"Section    Enrl",
-                "----- ----- -------- ------ ------ -------------------------------------- ------- -------- "+(iItype?"------ ":"")+"--------- -----"});
+        setHeaderLine(
+        		new Line(
+        				rpad("Bldg", 5).withColSpan(0), rpad("Room", 5),
+        				lpad("Capacity", 8),
+        				lpad("ExCap", 6),
+        				lpad("Period", 6),
+        				rpad("Date And Time", 38),
+        				rpad("Subject", 7),
+        				rpad("Course", 8),
+        				(iItype ? rpad(iExternal ? "ExtnId" : "Type", 6) : NULL),
+        				rpad("Section", 10),
+        				lpad("Enrl", 5)
+        			), new Line(
+        				lpad("", '-', 5).withColSpan(0), lpad("", '-', 5),
+            			lpad("", '-', 8),
+            			lpad("", '-', 6),
+            			lpad("", '-', 6),
+            			lpad("", '-', 38),
+            			lpad("", '-', 7),
+            			lpad("", '-', 8),
+            			(iItype ? lpad("", '-', 6) : NULL),
+            			lpad("", '-', 10),
+            			lpad("", '-', 5)
+            		));
         printHeader();
         for (Iterator<ExamRoomInfo> i = rooms.iterator();i.hasNext();) {
             ExamRoomInfo room = i.next();
@@ -114,17 +135,17 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
                                     }
                                 }
                             }
-                            if (lastPeriod!=null && !lastPeriod.getDateOffset().equals(period.getDateOffset()) && !iNewPage) println("");
+                            if (lastPeriod!=null && !lastPeriod.getDateOffset().equals(period.getDateOffset()) && !iNewPage) println(new Line());
                             lastPeriod = period;
-                            println((iPeriodPrinted?rpad("",11):formatRoom(room))+" "+
-                                    lpad(iPeriodPrinted?"":String.valueOf(room.getCapacity()),8)+" "+
-                                    lpad(iPeriodPrinted?"":String.valueOf(room.getExamCapacity()),6)+" "+
-                                    lpad(iStudentPrinted?"":String.valueOf(periods.indexOf(period)+1),6)+" "+
-                                    rpad(iStudentPrinted?"":formatPeriod(section.getExamAssignment()),38)+" "+
-                                    rpad(iSubjectPrinted?"":section.getSubject(), 7)+" "+
-                                    rpad(iCoursePrinted?"":section.getCourseNbr(), 8)+" "+
-                                    (iItype?rpad(iITypePrinted?"":section.getItype(), 6)+" ":"")+
-                                    lpad(section.getSection(), 9)+" "+
+                            println((iPeriodPrinted && isSkipRepeating()?rpad("",11):formatRoom(room)),
+                                    lpad(iPeriodPrinted && isSkipRepeating()?"":String.valueOf(room.getCapacity()),8),
+                                    lpad(iPeriodPrinted && isSkipRepeating()?"":String.valueOf(room.getExamCapacity()),6),
+                                    lpad(iStudentPrinted && isSkipRepeating()?"":String.valueOf(periods.indexOf(period)+1),6),
+                                    rpad(iStudentPrinted && isSkipRepeating()?"":formatPeriod(section.getExamAssignment()),38),
+                                    rpad(iSubjectPrinted && isSkipRepeating()?"":section.getSubject(), 7),
+                                    rpad(iCoursePrinted && isSkipRepeating()?"":section.getCourseNbr(), 8),
+                                    (iItype?rpad(iITypePrinted && isSkipRepeating()?"":section.getItype(), 6):NULL),
+                                    formatSection10(section.getSection()),
                                     lpad(String.valueOf(section.getNrStudents()),5)
                                     );
                             iPeriodPrinted = iStudentPrinted = iSubjectPrinted = iCoursePrinted = iITypePrinted = !iNewPage;
@@ -136,8 +157,8 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
                         if (lastPeriod!=null && !lastPeriod.getDateOffset().equals(period.getDateOffset()) && !iNewPage) println("");
                         lastPeriod = period;
                         println((iPeriodPrinted?rpad("",11):formatRoom(room.getName()))+" "+
-                                lpad(iPeriodPrinted?"":String.valueOf(room.getCapacity()),8)+" "+
-                                lpad(iPeriodPrinted?"":String.valueOf(room.getExamCapacity()),6)+" "+
+                                lpad(iPeriodPrinted && isSkipRepeating()?"":String.valueOf(room.getCapacity()),8)+" "+
+                                lpad(iPeriodPrinted && isSkipRepeating()?"":String.valueOf(room.getExamCapacity()),6)+" "+
                                 lpad(String.valueOf(periods.indexOf(period)+1),6)+" "+
                                 rpad(formatPeriod(period),38)
                                 );
