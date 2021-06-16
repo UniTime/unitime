@@ -409,7 +409,6 @@ public class ExamPeriodChartReport extends PdfLegacyExamReport {
                     if (idx<dIdx || idx>=dIdx+nrCols) continue;
                     if (iCompact) {
                     	line1.add(mpad((String)days.get(day),20).withSeparator("| ").withColSpan(3));
-                    	line2.add(lpad("", '=', 15)); line2.add(lpad("", '=', 4).withSeparator("| "));
                     	line2.add(lpad("", '=', 15).withSeparator("")); line2.add(lpad("", ' ', 1).withSeparator(""));  line2.add(lpad("", '=', 4).withSeparator("| "));
                     	line3.add(lpad(totalADay.get(day)==null?"":totalADay.get(day).toString(),20).withColSpan(3).withSeparator("| "));
                     } else {
@@ -419,7 +418,7 @@ public class ExamPeriodChartReport extends PdfLegacyExamReport {
                     }
                 }
                 setHeaderLine(
-                		new Line(new Cell("Total Student Exams").withColSpan(iCompact ? 15 : 12)),
+                		new Line(new Cell("Total Student Exams").withColSpan(line1.size() * 3)),
                 		new Line(line1.toArray(new Cell[line1.size()])),
                 		new Line(line2.toArray(new Cell[line2.size()])));
                 printHeader(false);

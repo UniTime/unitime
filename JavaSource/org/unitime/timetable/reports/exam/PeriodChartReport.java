@@ -408,7 +408,7 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                     }
                 }
                 setHeaderLine(
-                		new Line(new Cell("Total Student Exams").withColSpan(iCompact ? 15 : 12)),
+                		new Line(new Cell("Total Student Exams").withColSpan(line1.size() * 3)),
                 		new Line(line1.toArray(new Cell[line1.size()])),
                 		new Line(line2.toArray(new Cell[line2.size()])));
                 printHeader(false);
