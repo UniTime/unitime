@@ -954,7 +954,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
             			if (e != null && e.isCourseRequest()) {
             				for (Section section: e.getSections()) {
             					if (section.isOnline()) onlineClass ++;
-            					if (section.getTime() == null) arrClass ++;
+            					if (!section.hasTime()) arrClass ++;
             					allClass ++;
             				}
             			}
