@@ -85,6 +85,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 	protected Long iCourseId;
 	protected Set<Long> iCoursesIcoordinate, iCoursesIcanApprove, iMyStudents;
 	protected Set<String> iSubjectAreas;
+	protected boolean iShowUnmatchedClasses = true;
 	
 	public FindEnrollmentInfoAction withParams(String query, Long courseId, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove, Set<Long> myStudents, Set<String> subjects) {
 		iQuery = new Query(query);
@@ -97,6 +98,11 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 		if (m.find()) {
 			iLimit = Integer.parseInt(m.group(1));
 		}
+		return this;
+	}
+	
+	public FindEnrollmentInfoAction showUnmatchedClasses(boolean showUnmatchedClasses) {
+		iShowUnmatchedClasses = showUnmatchedClasses;
 		return this;
 	}
 	
@@ -765,7 +771,8 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 						}
 					}
 				
-				if (match == 0) continue;
+				if (match == 0 && !iShowUnmatchedClasses) continue;
+				e.setNoMatch(match == 0);
 				
 				e.setLimit(section.getLimit());
 				e.setOther(other);

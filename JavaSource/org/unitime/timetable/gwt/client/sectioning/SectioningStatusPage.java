@@ -1154,6 +1154,10 @@ public class SectioningStatusPage extends Composite {
 		line.add(new NumberCell(e.getReservation(), e.getTotalReservation()));
 		line.add(new NumberCell(e.getConsentNeeded(), e.getTotalConsentNeeded()));
 		line.add(new NumberCell(e.getOverrideNeeded(), e.getTotalOverrideNeeded()));
+		if (Boolean.TRUE.equals(e.isNoMatch())) {
+			for (Widget w : line)
+				if (w != null) w.addStyleName("nomatch");
+		}
 		return line;
 	}
 	

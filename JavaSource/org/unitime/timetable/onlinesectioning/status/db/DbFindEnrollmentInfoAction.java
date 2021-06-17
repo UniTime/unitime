@@ -630,7 +630,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					}
 				}
 				
-				if (match == 0) continue;
+				if (match == 0 && !iShowUnmatchedClasses) continue;
+				e.setNoMatch(match == 0);
 				
 				e.setLimit(section.getSectioningLimit());
 				e.setOther(other);

@@ -50,7 +50,9 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.SecurityMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.SessionAttribute;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -1962,6 +1964,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null,
 							getMyStudents(sessionId),
 							getSubjectAreas())
+							.showUnmatchedClasses(CommonValues.Yes.eq(UserProperty.StudentDashboardShowUnmatchedClasses.get(sessionContext.getUser())))
 							.withFilter(filter), currentUser()
 					);	
 				}
@@ -1973,6 +1976,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null,
 						getMyStudents(sessionId),
 						getSubjectAreas())
+						.showUnmatchedClasses(CommonValues.Yes.eq(UserProperty.StudentDashboardShowUnmatchedClasses.get(sessionContext.getUser())))
 						.withFilter(filter), currentUser()
 				);				
 			} else {
@@ -1980,7 +1984,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 
-				return server.execute(server.createAction(FindEnrollmentInfoAction.class).withParams(query, courseId, null, null, getMyStudents(server.getAcademicSession().getUniqueId()), getSubjectAreas()).withFilter(filter), currentUser());
+				return server.execute(server.createAction(FindEnrollmentInfoAction.class)
+						.withParams(query, courseId, null, null, getMyStudents(server.getAcademicSession().getUniqueId()), getSubjectAreas())
+						.showUnmatchedClasses(CommonValues.Yes.eq(UserProperty.StudentDashboardShowUnmatchedClasses.get(sessionContext.getUser())))
+						.withFilter(filter), currentUser());
 			}
 		} catch (PageAccessException e) {
 			throw e;
