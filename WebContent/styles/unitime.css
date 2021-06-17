@@ -6226,6 +6226,10 @@ unitime-RoomSharingWidget .legend .blank {
 	border-left: none;
 }
 
+.unitime-EnrollmentsTable .nomatch {
+	color: gray;
+}
+
 .unitime-LogsTable tr:nth-child(odd) {
 	background-color: #eee;
 }

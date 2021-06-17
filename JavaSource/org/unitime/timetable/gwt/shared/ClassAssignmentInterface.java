@@ -1256,6 +1256,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Boolean iControl;
 		private Long iMasterCourseId;
 		private String iMasterSubject, iMasterCourseNbr;
+		private Boolean iNoMatch;
 		
 		public EnrollmentInfo() {}
 		
@@ -1410,6 +1411,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public void setControl(Boolean control) { iControl = control; }
 		public Boolean isControl() { return iControl; }
+		
+		public void setNoMatch(Boolean noMatch) { iNoMatch = noMatch; }
+		public Boolean isNoMatch() { return iNoMatch; }
 		
 		public Long getMasterCouresId() { return (iMasterCourseId != null ? iMasterCourseId : iCourseId); }
 		public void setMasterCourseId(Long courseId) { iMasterCourseId = courseId; }
