@@ -2907,6 +2907,12 @@ public enum ApplicationProperty {
 	VariableTitleInstructorIdRequired("unitime.variableTitle.instructorIdRequired"),
 
 	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Variable Title: When set to true, the first character of each word in the title will be made upper case all other characters will be left as is.")
+	@Since(4.5)
+	VariableTitleTitleFirstCharsOfWordsUpperCase("unitime.variableTitle.title.firstUpperCase"),
+
+	@Type(Boolean.class)
 	@DefaultValue("false")
 	@Description("Enable Funding Department Functionality.")
 	CoursesFundingDepartmentsEnabled("unitime.courses.funding_departments_enabled"),
