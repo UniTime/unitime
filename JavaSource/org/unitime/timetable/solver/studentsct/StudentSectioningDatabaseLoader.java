@@ -256,6 +256,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private boolean iUseAdvisorWaitLists = false;
     private Date iClassesPastDate = null;
     private int iClassesPastDateIndex = 0;
+    private boolean iLoadArrangedHoursPlacements = true;
     
     public StudentSectioningDatabaseLoader(StudentSectioningModel model, org.cpsolver.ifs.assignment.Assignment<Request, Enrollment> assignment) {
         super(model, assignment);
@@ -408,6 +409,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	iStudentHoldsCheckProvider = Customization.StudentHoldsCheckProvider.getProvider();
         
         iUseAdvisorWaitLists = model.getProperties().getPropertyBoolean("Load.UseAdvisorWaitLists", iUseAdvisorWaitLists);
+        iLoadArrangedHoursPlacements = model.getProperties().getPropertyBoolean("Load.ArrangedHoursPlacements", iLoadArrangedHoursPlacements);
     }
     
     public void load() {
@@ -847,11 +849,36 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     			datePatternName(a.getDatePattern(), p.getTimeLocation()),
                     			p.getTimeLocation().getWeekCode());
                     }
+                    if (p == null && iLoadArrangedHoursPlacements) {
+                    	DatePattern dp = c.effectiveDatePattern();
+                    	if (dp != null) {
+                    		TimeLocation tl = new TimeLocation(0, 0, 0, 0, 0.0, dp.getUniqueId(), datePatternName(dp, null), dp.getPatternBitSet(), 0);
+                    		List<RoomLocation> rooms = new ArrayList<RoomLocation>();
+                    		for (Iterator<?> it = c.effectivePreferences(RoomPref.class).iterator(); it.hasNext(); ) {
+                    			RoomPref rp = (RoomPref)it.next();
+                    			if (PreferenceLevel.sRequired.equals(rp.getPrefLevel().getPrefProlog())) {
+                    				Location room = rp.getRoom();
+                    				RoomLocation rl = new RoomLocation(
+                    						room.getUniqueId(),
+                    						room.getLabel(),
+                    						(room instanceof Room? ((Room)room).getBuilding().getUniqueId() : null),
+                    						0,
+                    						room.getCapacity().intValue(),
+                    						room.getCoordinateX(),
+                    						room.getCoordinateY(),
+                    						room.isIgnoreTooFar().booleanValue(),
+                    						null);
+                    				rooms.add(rl);
+                    			}
+                    		}
+                    		p = new Placement(null, tl, rooms);
+                    	}
+                    }
                     Section section = new Section(c.getUniqueId().longValue(), getSectionLimit(c, true), (c.getClassSuffix() == null ? c.getSectionNumberString() : c.getClassSuffix()), subpart, p,
                     		getInstructors(c), parentSection);
                     if (iCheckEnabledForScheduling && !c.isEnabledForStudentScheduling())
                     	section.setEnabled(false);
-                    if (iClassesFixedDateIndex > 0 && p != null && p.getTimeLocation() != null && p.getTimeLocation().getFirstMeeting(iDayOfWeekOffset) < iClassesFixedDateIndex) {
+                    if (iClassesFixedDateIndex > 0 && p != null && p.getTimeLocation() != null && p.getTimeLocation().getDayCode() != 0 && p.getTimeLocation().getFirstMeeting(iDayOfWeekOffset) < iClassesFixedDateIndex) {
                     	iProgress.info("Class " + c.getClassLabel(iShowClassSuffix, iShowConfigName) + " " + p.getLongName(iUseAmPm) + " starts before the fixed date, it is marked as disabled for student scheduling.");
                     	section.setEnabled(false);
                     }
@@ -862,7 +889,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         	section.setEnabled(false);
                 		}
                     }
-                    if (iClassesPastDateIndex > 0 && p != null && p.getTimeLocation() != null && p.getTimeLocation().getFirstMeeting(iDayOfWeekOffset) < iClassesPastDateIndex) {
+                    if (iClassesPastDateIndex > 0 && p != null && p.getTimeLocation() != null && p.getTimeLocation().getDayCode() != 0 && p.getTimeLocation().getFirstMeeting(iDayOfWeekOffset) < iClassesPastDateIndex) {
                     	iProgress.info("Class " + c.getClassLabel(iShowClassSuffix, iShowConfigName) + " " + p.getLongName(iUseAmPm) + " starts before the past date, it should be avoided.");
                     	section.setPast(true);
                     }
@@ -2207,6 +2234,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     	if ("never".equals(iDatePatternFormat)) return dp.getName();
     	if ("extended".equals(iDatePatternFormat) && dp.getType() != DatePattern.sTypeExtended) return dp.getName();
     	if ("alternate".equals(iDatePatternFormat) && dp.getType() == DatePattern.sTypeAlternate) return dp.getName();
+    	if (time == null) {
+    		Formats.Format<Date> dpf = Formats.getDateFormat(Formats.Pattern.DATE_PATTERN);
+    		Date first = dp.getStartDate();
+    		Date last = dp.getEndDate();
+    		return dpf.format(first) + (first.equals(last) ? "" : " - " + dpf.format(last));
+    	}
     	if (time.getWeekCode().isEmpty()) return time.getDatePatternName();
     	Calendar cal = Calendar.getInstance(Locale.US); cal.setLenient(true);
     	cal.setTime(iDatePatternFirstDate);
