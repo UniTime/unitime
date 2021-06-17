@@ -321,6 +321,26 @@ public class VariableTitleCourseConnector extends ApiConnector {
 		}
 		return null;
 	}
+	
+	private String getProperlyCasedTitle(String originalTitle) {
+		if (ApplicationProperty.VariableTitleTitleFirstCharsOfWordsUpperCase.isTrue()) {
+			StringBuffer sb = new StringBuffer();
+			String[] words = originalTitle.split("\\s"); ;
+			boolean first = true;
+			for (String word : words) {
+				if (first) {
+					first = false;
+				} else {
+					sb.append(" ");
+				}
+				sb.append(word.substring(0, 1).toUpperCase())
+				  .append(word.substring(1));
+			}
+			return sb.toString();
+		} else {
+			return originalTitle;
+		}
+	}
 
 	private InstructionalOffering createOffering(VariableTitleQuery variableTitleQuery, SubjectArea subjectArea, org.hibernate.Session hibSession) {
 
@@ -331,7 +351,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
 		subjectArea.addTocourseOfferings(courseOffering);					
 		courseOffering.setSubjectAreaAbbv(subjectArea.getSubjectAreaAbbreviation());
 		courseOffering.setCourseNbr(newCourseNumber);
-		courseOffering.setTitle(variableTitleQuery.getCourseTitle());
+		courseOffering.setTitle(getProperlyCasedTitle(variableTitleQuery.getCourseTitle()));
 		courseOffering.setIsControl(true);
 		courseOffering.setNbrExpectedStudents(0);
 		courseOffering.setDemand(0);
