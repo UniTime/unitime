@@ -146,48 +146,50 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 
 	@Override
 	public ClassAssignmentInterface execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		XStudent student = null;
+		ClassAssignmentInterface ret = null;
 		Lock lock = server.readLock();
 		try {
-			XStudent student = server.getStudent(iStudentId);
+			student = server.getStudent(iStudentId);
 			if (student == null) return null;
-			ClassAssignmentInterface ret = computeAssignment(server, helper, student, student.getRequests(), iMessages, iErrors, iIncludeRequest);
-			
-			if (ret.hasRequest() && iCustomCheck && CustomCourseRequestsValidationHolder.hasProvider())
-				CustomCourseRequestsValidationHolder.getProvider().check(server, helper, ret.getRequest());
+			ret = computeAssignment(server, helper, student, student.getRequests(), iMessages, iErrors, iIncludeRequest);
 			
 			if (iIncludeAdvisorRequest) {
 				ret.setAdvisorRequest(AdvisorGetCourseRequests.getRequest(student, server, helper));
 				if (server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false))
 					ret.setAdvisorWaitListedCourseIds(student.getAdvisorWaitListedCourseIds());
 			}
-			
-			if (iCheckHolds && ret.hasRequest() && Customization.StudentHoldsCheckProvider.hasProvider()) {
-				try {
-					StudentHoldsCheckProvider provider = Customization.StudentHoldsCheckProvider.getProvider();
-					ret.getRequest().setErrorMessage(provider.getStudentHoldError(server, helper, student));
-				} catch (Exception e) {}
-			}
-			
-			if (iCheckHolds && ret.hasRequest() && Customization.SpecialRegistrationDashboardUrlProvider.hasProvider()) {
-				try {
-					SpecialRegistrationDashboardUrlProvider provider = Customization.SpecialRegistrationDashboardUrlProvider.getProvider();
-					ret.getRequest().setSpecRegDashboardUrl(provider.getDashboardUrl(server, helper, student));
-				} catch (Exception e) {}
-			}
-			
-			if (iGetSpecRegs && Customization.SpecialRegistrationProvider.hasProvider()) {
-				try {
-					SpecialRegistrationProvider sp = Customization.SpecialRegistrationProvider.getProvider();
-					ret.setSpecialRegistrations(sp.retrieveAllRegistrations(server, helper, student));
-				} catch (Exception e) {
-					helper.warn("Failed to retrieve special registrations: " + e.getMessage(), e);
-				}
-			}
-			
-			return ret;
 		} finally {
 			lock.release();
 		}
+		
+		if (ret.hasRequest() && iCustomCheck && CustomCourseRequestsValidationHolder.hasProvider())
+			CustomCourseRequestsValidationHolder.getProvider().check(server, helper, ret.getRequest());
+		
+		if (iCheckHolds && ret.hasRequest() && Customization.StudentHoldsCheckProvider.hasProvider()) {
+			try {
+				StudentHoldsCheckProvider provider = Customization.StudentHoldsCheckProvider.getProvider();
+				ret.getRequest().setErrorMessage(provider.getStudentHoldError(server, helper, student));
+			} catch (Exception e) {}
+		}
+		
+		if (iCheckHolds && ret.hasRequest() && Customization.SpecialRegistrationDashboardUrlProvider.hasProvider()) {
+			try {
+				SpecialRegistrationDashboardUrlProvider provider = Customization.SpecialRegistrationDashboardUrlProvider.getProvider();
+				ret.getRequest().setSpecRegDashboardUrl(provider.getDashboardUrl(server, helper, student));
+			} catch (Exception e) {}
+		}
+		
+		if (iGetSpecRegs && Customization.SpecialRegistrationProvider.hasProvider()) {
+			try {
+				SpecialRegistrationProvider sp = Customization.SpecialRegistrationProvider.getProvider();
+				ret.setSpecialRegistrations(sp.retrieveAllRegistrations(server, helper, student));
+			} catch (Exception e) {
+				helper.warn("Failed to retrieve special registrations: " + e.getMessage(), e);
+			}
+		}
+		
+		return ret;
 	}
 	
 	public static List<CourseSection> fillUnavailabilitiesIn(ClassAssignmentInterface ret, XStudent student, OnlineSectioningServer server, OnlineSectioningHelper helper, OnlineSectioningLog.Enrollment.Builder eb) {
