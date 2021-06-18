@@ -99,6 +99,7 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 			}
 			throw new SectioningException(MSG.exceptionNoStudent());
 		}
+		CourseRequestInterface request = null;
 		Lock lock = server.readLock();
 		try {
 			OnlineSectioningLog.Action.Builder action = helper.getAction();
@@ -110,11 +111,11 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 
 			if (student.getRequests().isEmpty() && CustomCourseRequestsHolder.hasProvider() && iCustomRequests) {
 				if (iMatcher != null) iMatcher.setServer(server);
-				CourseRequestInterface request = CustomCourseRequestsHolder.getProvider().getCourseRequests(server, helper, student, iMatcher);
+				request = CustomCourseRequestsHolder.getProvider().getCourseRequests(server, helper, student, iMatcher);
 				if (request != null && !request.isEmpty()) return request;
 			}
 			
-			CourseRequestInterface request = new CourseRequestInterface();
+			request = new CourseRequestInterface();
 			request.setStudentId(iStudentId);
 			request.setSaved(true);
 			request.setAcademicSessionId(server.getAcademicSession().getUniqueId());
@@ -248,18 +249,18 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 				action.addRequest(OnlineSectioningHelper.toProto(cd));
 			}
 			
-			if (iCustomValidation && CustomCourseRequestsValidationHolder.hasProvider())
-				CustomCourseRequestsValidationHolder.getProvider().check(server, helper, request);
-			
 			if (student.getLastStudentChange() == null && !(server instanceof StudentSolver) && iAdvisorRequests && (!iSectioning || !hasEnrollments)) {
 				if (request.applyAdvisorRequests(AdvisorGetCourseRequests.getRequest(student, server, helper)))
 					request.setPopupMessage(ApplicationProperty.PopupMessageCourseRequestsPrepopulatedWithAdvisorRecommendations.value());
 			}
-			
-			return request;
 		} finally {
 			lock.release();
 		}
+
+		if (iCustomValidation && CustomCourseRequestsValidationHolder.hasProvider())
+			CustomCourseRequestsValidationHolder.getProvider().check(server, helper, request);
+
+		return request;
 	}
 
 	@Override
