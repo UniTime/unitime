@@ -259,7 +259,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 						.setName(offering.getName())
 						.setType(OnlineSectioningLog.Entity.EntityType.OFFERING));
 				action.addRequest(OnlineSectioningHelper.toProto(request));
-				queue.add(new SectioningRequest(offering, request, student, action));
+				queue.add(new SectioningRequest(offering, request, student, getStudentPriority(student, server, helper), action));
 			} else if (!check(server, student, offering, request)) {
 				OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
 				action.setStudent(
@@ -273,7 +273,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 				for (XSection section: offering.getSections(request.getEnrollment()))
 					enrollment.addSection(OnlineSectioningHelper.toProto(section, request.getEnrollment()));
 				action.addEnrollment(enrollment);
-				queue.add(new SectioningRequest(offering, request, student, action).setLastEnrollment(request.getEnrollment()));
+				queue.add(new SectioningRequest(offering, request, student, getStudentPriority(student, server, helper), action).setLastEnrollment(request.getEnrollment()));
 			}
 		}
 		
