@@ -39,6 +39,8 @@ import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.FreeTimeRequest;
 import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Request.RequestPriority;
+import org.cpsolver.studentsct.model.Student.StudentPriority;
 import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
@@ -46,6 +48,7 @@ import org.cpsolver.studentsct.model.Subpart;
 import org.cpsolver.studentsct.online.selection.ResectioningWeights;
 import org.cpsolver.studentsct.online.selection.ResectioningWeights.LastSectionProvider;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
+import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -71,16 +74,39 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 	private boolean iHasIndividualReservation;
 	private OnlineSectioningLog.Action.Builder iAction;
 	private List<Section> iLastSections = new ArrayList<Section>();
+	private RequestPriority iRequestPriority = RequestPriority.Normal;
+	private StudentPriority iStudentPriority = StudentPriority.Normal;
+	private int iAlternativity = 0;
 
-	public SectioningRequest(XOffering offering, XCourseRequest request, XStudent student, OnlineSectioningLog.Action.Builder action) {
+	public SectioningRequest(XOffering offering, XCourseRequest request, XStudent student, StudentPriority priority, OnlineSectioningLog.Action.Builder action) {
 		iRequest = request;
 		iStudent = student;
 		iOffering = offering;
+		for (int i = 0; i < request.getCourseIds().size(); i++) {
+			if (request.getCourseIds().get(i).getOfferingId().equals(offering.getOfferingId())) {
+				iAlternativity = i; break;
+			}
+		}
+
+		iStudentPriority = priority;
+		action.addOptionBuilder().setKey("Student Priority").setValue(iStudentPriority.name());
+
+		if (request.isCritical()) {
+			if (request.getCritical() == CourseDemand.Critical.CRITICAL.ordinal())
+				iRequestPriority = RequestPriority.Critical;
+			else if (request.getCritical() == CourseDemand.Critical.IMPORTANT.ordinal())
+				iRequestPriority = RequestPriority.Important;
+		}
+		action.addOptionBuilder().setKey("Request Priority").setValue(iRequestPriority.name());
+
 		iHasIndividualReservation = false;
-		for (XReservation reservation: iOffering.getReservations())
+		for (XReservation reservation: iOffering.getReservations()) {
+			if (!reservation.mustBeUsed() || reservation.isExpired()) continue;
 			if (reservation instanceof XIndividualReservation && ((XIndividualReservation)reservation).getStudentIds().contains(request.getStudentId())) {
 				iHasIndividualReservation = true; break;
 			}
+		}
+		
 		iAction = action;
 	}
 	
@@ -118,16 +144,28 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 		return getRequest().getStudentId().equals(((SectioningRequest)o).getRequest().getStudentId());
 	}
 	
+	public RequestPriority getRequestPriority() { return iRequestPriority; }
+	public StudentPriority getStudentPriority() { return iStudentPriority; }
+	public int getAlternativity() { return iAlternativity; }
+	
 	public int compareTo(SectioningRequest r) {
 		// Requests with last enrollment (recently unassigned requests) have priority
 		if (getLastEnrollment() == null && r.getLastEnrollment() != null) return 1;
 		if (getLastEnrollment() != null && r.getLastEnrollment() == null) return -1;
 		
-		// Check individual reservations
-		if (hasIndividualReservation() && !r.hasIndividualReservation()) return -1;
-		if (!hasIndividualReservation() && r.hasIndividualReservation()) return 1;
-
+		// Student Priority
+		if (getStudentPriority() != r.getStudentPriority())
+			return getStudentPriority().ordinal() < r.getStudentPriority().ordinal() ? -1 : 1;
+		
+		// Request Priority
+		if (getRequestPriority() != r.getRequestPriority())
+			return getRequestPriority().ordinal() < r.getRequestPriority().ordinal() ? -1 : 1;
+		
 		if (getLastEnrollment() == null) {
+			// Alternativity (first choice before first alternative, etc.)
+			if (getAlternativity() != r.getAlternativity())
+				return getAlternativity() < r.getAlternativity() ? -1 : 1;
+
 			// Use wait-listed time stamp
 			if (getRequest().getWaitListedTimeStamp() != null) {
 				if (r.getRequest().getWaitListedTimeStamp() != null) {
@@ -140,14 +178,22 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 				return -1;
 			}
 		}
-		
-		// Alternative requests last
+
+		// Check individual reservations
+		if (hasIndividualReservation() && !r.hasIndividualReservation()) return -1;
+		if (!hasIndividualReservation() && r.hasIndividualReservation()) return 1;
+
+		// Substitute requests last
 		if (getRequest().isAlternative() && !r.getRequest().isAlternative()) return 1;
 		if (!getRequest().isAlternative() && r.getRequest().isAlternative()) return -1;
 		
 		// Use priority
 		int cmp = new Integer(getRequest().getPriority()).compareTo(r.getRequest().getPriority());
 		if (cmp != 0) return cmp;
+		
+		// Alternativity (first choice before first alternative, etc.)
+		if (getAlternativity() != r.getAlternativity())
+			return getAlternativity() < r.getAlternativity() ? -1 : 1;
 
 		if (getLastEnrollment() != null) {
 			// Use request time stamp

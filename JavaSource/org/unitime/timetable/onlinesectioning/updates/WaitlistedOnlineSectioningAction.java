@@ -19,8 +19,13 @@
 */
 package org.unitime.timetable.onlinesectioning.updates;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.studentsct.model.Student.StudentPriority;
+import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -32,6 +37,8 @@ import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XOverride;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XStudent.XGroup;
+import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction;
 
 /**
  * @author Tomas Muller
@@ -39,6 +46,8 @@ import org.unitime.timetable.onlinesectioning.model.XStudent;
 public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSectioningAction<T> {
 	private static final long serialVersionUID = 1L;
 	private Set<String> iWaitlistStatuses = null;
+	private Map<StudentPriority, String> iPriorityStudentGroupReference = null;
+	private Map<StudentPriority, Query> iPriorityStudentQuery = null;
 	
 	public boolean isWaitListed(XStudent student, XCourseRequest request, XOffering offering, OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		// Check wait-list toggle first
@@ -68,5 +77,40 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
 		}
 		
 		return true;
+	}
+	
+	public StudentPriority getStudentPriority(XStudent student, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		if (iPriorityStudentGroupReference == null) {
+			iPriorityStudentGroupReference = new HashMap<StudentPriority, String>();
+			iPriorityStudentQuery = new HashMap<StudentPriority, Query>();
+			DataProperties config = server.getConfig();
+			for (StudentPriority priority: StudentPriority.values()) {
+	        	if (priority == StudentPriority.Normal) break;
+	            String priorityStudentFilter = config.getProperty("Load." + priority.name() + "StudentFilter", null);
+	            if (priorityStudentFilter != null && !priorityStudentFilter.isEmpty()) {
+	            	Query q = new Query(priorityStudentFilter);
+	            	iPriorityStudentQuery.put(priority, q);
+	            }
+	            String groupRef = config.getProperty("Load." + priority.name() + "StudentGroupReference", null);
+	            if (groupRef != null && !groupRef.isEmpty()) {
+	            	iPriorityStudentGroupReference.put(priority, groupRef);
+	            }
+	        }
+		}
+		for (StudentPriority priority: StudentPriority.values()) {
+        	if (priority == StudentPriority.Normal) break;
+        	Query query = iPriorityStudentQuery.get(priority);
+        	String groupRef = iPriorityStudentGroupReference.get(priority);
+        	if (query != null && query.match(new StatusPageSuggestionsAction.StudentMatcher(student, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
+            	return priority;
+        	} else if (groupRef != null) {
+        		for (XGroup g: student.getGroups()) {
+            		if (groupRef.equals(g.getAbbreviation())) {
+            			return priority;
+            		}
+            	}
+        	}
+        }
+		return StudentPriority.Normal;
 	}
 }
