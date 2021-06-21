@@ -106,6 +106,7 @@ import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
 import org.unitime.timetable.onlinesectioning.model.XDistribution;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XOverride;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XReservation;
 import org.unitime.timetable.onlinesectioning.model.XReservationType;
@@ -1113,6 +1114,20 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 									}
 									if (minCred != null && assignedCredit + minCred > original.getMaxCredit())
 										ca.setOverMaxCredit(original.getMaxCredit());
+								}
+							}
+						}
+					}
+					if (r.isWaitlist() && r.getStudent().getId() >= 0 && !(server instanceof StudentSolver)) {
+						XStudent original = server.getStudent(r.getStudent().getId());
+						for (XRequest or: original.getRequests()) {
+							if (or instanceof XCourseRequest) {
+								XCourseRequest ocr = (XCourseRequest)or;
+								if (ocr.isWaitlist() && !ocr.getCourseIds().isEmpty() && ocr.getCourseIds().get(0).getCourseId().equals(course.getId())) {
+									XOverride ov = ocr.getOverride(ocr.getCourseIds().get(0));
+									if (ov == null || !ov.isNoChecked())
+										ca.setWaitListedDate(ocr.getWaitListedTimeStamp());
+									break;
 								}
 							}
 						}
