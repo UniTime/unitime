@@ -150,7 +150,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	public static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	public static final GwtMessages GWT_MESSAGES = GWT.create(GwtMessages.class);
-	private static DateTimeFormat sDF = DateTimeFormat.getFormat(CONSTANTS.requestDateFormat());
+	private static DateTimeFormat sDF = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
 
 	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
 	
@@ -1671,7 +1671,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					Boolean w = iCourseRequests.getWaitList(course.getCourseId());
 					if (w != null && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST) && course.isCanWaitList()) {
 						if (w.booleanValue() && iCourseRequests.getLastCheck() != null) {
-							if (course.getWaitListedDate() != null) {
+							if (course.getWaitListedDate() != null && iCourseRequests.getLastCheck().getStatus(course.getCourseName()) != RequestedCourseStatus.OVERRIDE_NEEDED) {
 								style = (!rows.isEmpty() ? "top-border-dashed": "");
 								unassignedMessage = MESSAGES.conflictWaitListed(sDF.format(course.getWaitListedDate()));
 								if (course.getOverlaps()!=null && !course.getOverlaps().isEmpty()) {

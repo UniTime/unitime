@@ -712,7 +712,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								(first && iAssignment.isCanSetCriticalOverrides() ? new CriticalCell(request) : first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
 									first && request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") : new WebTable.Cell("")),
 								(iAssignment.getRequest().getWaitListMode() == WaitListMode.WaitList
-									? (first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), (request.hasWaitListedTimeStamp() ? sDF.format(request.getWaitListedTimeStamp()) : "")) : new WebTable.Cell(""))
+									? (first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), (request.hasWaitListedTimeStamp() ? sTSF.format(request.getWaitListedTimeStamp()) : "")) : new WebTable.Cell(""))
 									: (first && request.isNoSub() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestNoSubs(), "") : new WebTable.Cell(""))),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
 								);
@@ -830,7 +830,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
 								(first && iAssignment.isCanSetCriticalOverrides() ? new CriticalCell(request) : first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
 									first && request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") : new WebTable.Cell("")),
-								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), (request.hasWaitListedTimeStamp() ? sDF.format(request.getWaitListedTimeStamp()) : "")) : new WebTable.Cell("")),
+								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), (request.hasWaitListedTimeStamp() ? sTSF.format(request.getWaitListedTimeStamp()) : "")) : new WebTable.Cell("")),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
 								);
 						if (first)
@@ -1022,7 +1022,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 					unassignedMessage = MESSAGES.conflictOverMaxCredit(course.getOverMaxCredit())
 						+ (MESSAGES.courseNotAssigned().equals(unassignedMessage) ? "" : " " + unassignedMessage);
 				if (course.getWaitListedDate() != null)
-					unassignedMessage += MESSAGES.conflictWaitListed(sDF.format(course.getWaitListedDate()));
+					unassignedMessage += MESSAGES.conflictWaitListed(sTSF.format(course.getWaitListedDate()));
 				for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
 					row = new WebTable.Row(
 							new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),

@@ -78,6 +78,7 @@ public class XOverride implements Serializable, Externalizable {
 	public boolean isApproved() { return iStatus != null && iStatus == CourseRequestOverrideStatus.APPROVED.ordinal(); };
 	public boolean isCancelled() { return iStatus != null && iStatus == CourseRequestOverrideStatus.CANCELLED.ordinal(); };
 	public boolean isRejected() { return iStatus != null && iStatus == CourseRequestOverrideStatus.REJECTED.ordinal(); };
+	public boolean isNoChecked() { return iStatus != null && iStatus == CourseRequestOverrideStatus.NOT_CHECKED.ordinal(); };
 	public boolean isCancelledOrRejected() { return iStatus != null && (iStatus == CourseRequestOverrideStatus.CANCELLED.ordinal() || iStatus == CourseRequestOverrideStatus.REJECTED.ordinal()); };
 
 	@Override
