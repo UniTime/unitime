@@ -999,9 +999,17 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 		Map<String, RequestedCourse> rcs = new HashMap<String, RequestedCourse>();
 		for (CourseRequestInterface.Request r: request.getCourses()) {
 			if (r.hasRequestedCourse() && r.isWaitList())
-				for (RequestedCourse rc: r.getRequestedCourse())
+				for (RequestedCourse rc: r.getRequestedCourse()) {
 					if (rc.getOverrideExternalId() != null)
 						rcs.put(rc.getOverrideExternalId(), rc);
+					if (rc.getStatus() == RequestedCourseStatus.OVERRIDE_NEEDED && "TBD".equals(rc.getOverrideExternalId())) {
+						request.addConfirmationMessage(
+								rc.getCourseId(), rc.getCourseName(), "NOT_REQUESTED", 
+								ApplicationProperties.getProperty("purdue.specreg.messages.waitlist.notRequested", "Overrides not requested, wait-list inactive."),
+								RequestedCourseStatus.OVERRIDE_NEEDED, 1
+								);
+					}
+				}
 		}
 		
 		if (request.getMaxCreditOverrideStatus() == null) {
