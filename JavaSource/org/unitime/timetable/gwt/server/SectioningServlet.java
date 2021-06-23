@@ -2659,21 +2659,25 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			Session session = SessionDAO.getInstance().get(getStatusPageSessionId());
 			StudentStatusInfo info = null;
 			if (session.getDefaultSectioningStatus() != null) {
-				info = toStudentStatusInfo(session.getDefaultSectioningStatus(), courseTypes, admin, advisor);
+				StudentSectioningStatus s = session.getDefaultSectioningStatus();
+				info = toStudentStatusInfo(s, courseTypes, admin, advisor);
 				info.setUniqueId(null);
 				info.setReference("");
 				info.setLabel(MSG.studentStatusSessionDefault(session.getDefaultSectioningStatus().getLabel()));
-				info.setEffectiveStart(null); info.setEffectiveStop(null);
+				info.setEmail(email && s.hasOption(StudentSectioningStatus.Option.email));
+				info.setWaitList(waitlist && s.hasOption(StudentSectioningStatus.Option.waitlist));
+				info.setSpecialRegistration(specreg && s.hasOption(StudentSectioningStatus.Option.specreg));
+				info.setRequestValiadtion(reqval && s.hasOption(StudentSectioningStatus.Option.reqval));
 			} else {
 				info = new StudentStatusInfo();
 				info.setReference("");
 				info.setLabel(MSG.studentStatusSystemDefault());
 				info.setAllEnabled();
+				info.setEmail(email);
+				info.setWaitList(waitlist);
+				info.setSpecialRegistration(specreg);
+				info.setRequestValiadtion(reqval);
 			}
-			info.setEmail(email);
-			info.setWaitList(waitlist);
-			info.setSpecialRegistration(specreg);
-			info.setRequestValiadtion(reqval);
 			ret.add(info);
 		}
 		for (StudentSectioningStatus s: StudentSectioningStatus.findAll(getStatusPageSessionId())) {
@@ -2682,10 +2686,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			StudentStatusInfo info = toStudentStatusInfo(s, courseTypes, admin, advisor);
 			info.setEmail(email && s.hasOption(StudentSectioningStatus.Option.email));
 			info.setWaitList(waitlist && s.hasOption(StudentSectioningStatus.Option.waitlist));
-			info.setWaitList(s.hasOption(StudentSectioningStatus.Option.nosubs));
 			info.setSpecialRegistration(specreg && s.hasOption(StudentSectioningStatus.Option.specreg));
 			info.setRequestValiadtion(reqval && s.hasOption(StudentSectioningStatus.Option.reqval));
-			info.setCanRequire(s.hasOption(StudentSectioningStatus.Option.canreq));
 			ret.add(info);
 		}
 		return ret;
