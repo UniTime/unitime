@@ -2168,6 +2168,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Duplicate coordinator for a course.")
 	String errorDuplicateCoordinator();
 	
+	@DefaultMessage("Wait-listing cannot be enabled when {0} is allowed.")
+	String errorWaitListingOverrideMustBeProhibited(String override);
+	
 	@DefaultMessage("This instructor is allowed to teach two back-to-back classes that are too far away.")
 	String descriptionInstructorIgnoreTooFar();
 	

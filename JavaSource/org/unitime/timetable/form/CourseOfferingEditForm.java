@@ -165,6 +165,10 @@ public class CourseOfferingEditForm extends ActionForm {
 					}
 				}
 			}
+			
+			OverrideType prohibitedOverride = OverrideType.findByReference(ApplicationProperty.OfferingWaitListProhibitedOverride.value());
+			if (prohibitedOverride != null && (waitList == null || waitList.isEmpty() ? ApplicationProperty.OfferingWaitListDefault.isTrue() : "true".equalsIgnoreCase(waitList)) && !overrides.contains(prohibitedOverride.getUniqueId().toString()))
+				errors.add("waitList", new ActionMessage("errors.generic", MSG.errorWaitListingOverrideMustBeProhibited(prohibitedOverride.getLabel())));
 		}
 
         return errors;
