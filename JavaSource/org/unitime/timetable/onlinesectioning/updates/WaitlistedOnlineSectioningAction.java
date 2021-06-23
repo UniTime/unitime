@@ -58,7 +58,7 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
 		if (status == null) status = server.getAcademicSession().getDefaultSectioningStatus();
 		if (status != null) {
 			if (iWaitlistStatuses == null)
-				iWaitlistStatuses = StudentSectioningStatus.getMatchingStatuses(StudentSectioningStatus.Option.waitlist, server.getAcademicSession().getUniqueId());
+				iWaitlistStatuses = StudentSectioningStatus.getMatchingStatuses(server.getAcademicSession().getUniqueId(), StudentSectioningStatus.Option.waitlist, StudentSectioningStatus.Option.enrollment);
 			if (!iWaitlistStatuses.contains(status)) return false;
 		}
 		

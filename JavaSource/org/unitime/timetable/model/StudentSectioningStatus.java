@@ -72,8 +72,12 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 		public int toggle() { return 1 << ordinal(); }
 	}
 	
-	public boolean hasOption(Option option) {
-		return getStatus() != null && (getStatus() & option.toggle()) != 0;
+	public boolean hasOption(Option... options) {
+		if (getStatus() == null) return false;
+		for (Option option: options) {
+			if ((getStatus() & option.toggle()) == 0) return false;
+		}
+		return true;
 	}
 	
 	public void addOption(Option option) {
@@ -114,13 +118,13 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 		return status == null || status.hasOption(option);
 	}
 	
-	public static Set<String> getMatchingStatuses(Option option, Long sessionId) {
+	public static Set<String> getMatchingStatuses(Long sessionId, Option... options) {
 		org.hibernate.Session hibSession = StudentSectioningStatusDAO.getInstance().createNewSession();
 		try {
 			Session session = SessionDAO.getInstance().get(sessionId, hibSession);
 			Set<String> statuses = new HashSet<String>();
 			for (StudentSectioningStatus status: StudentSectioningStatus.findAll(hibSession, sessionId)) {
-				if (StudentSectioningStatus.hasEffectiveOption(status, session, option))
+				if (StudentSectioningStatus.hasEffectiveOption(status, session, options))
 					statuses.add(status.getReference());
 			}
 			return statuses;
@@ -157,21 +161,21 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 		return false;
 	}
 	
-	public static boolean hasEffectiveOption(StudentSectioningStatus status, Session session, Option option) {
+	public static boolean hasEffectiveOption(StudentSectioningStatus status, Session session, Option... options) {
 		if (status != null) {
 			if (status.isEffectiveNow())
-				return status.hasOption(option);
+				return status.hasOption(options);
 			StudentSectioningStatus fallback = status.getFallBackStatus();
 			int depth = 10;
 			while (fallback != null && depth -- > 0) {
 				if (fallback.isEffectiveNow())
-					return fallback.hasOption(option);
+					return fallback.hasOption(options);
 				else
 					fallback = fallback.getFallBackStatus();
 			}
 		}
 		StudentSectioningStatus defaultStatus = (session == null ? null : session.getDefaultSectioningStatus());
-		return (defaultStatus == null ? true : defaultStatus.hasOption(option));
+		return (defaultStatus == null ? true : defaultStatus.hasOption(options));
 	}
 	
 	public String getEffectivePeriod() {
