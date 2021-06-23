@@ -2932,6 +2932,11 @@ public enum ApplicationProperty {
 	@Description("Instructional Offering: wait-list toggle default value")
 	@Since(4.6)
 	OfferingWaitListDefault("unitime.offering.waitListDefault"),
+	
+	@Type(String.class)
+	@Description("Instructional Offering: prohibit over the limit overrides when wait-listing is enabled. When set, this property should contain the reference of the override that must be marked as prohibited when wait-listing is enabled.")
+	@Since(4.6)
+	OfferingWaitListProhibitedOverride("unitime.offering.waitList.prohibitedOverride")
 	;
 
 	String iKey;

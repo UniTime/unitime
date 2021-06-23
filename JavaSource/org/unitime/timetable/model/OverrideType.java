@@ -20,6 +20,7 @@
 package org.unitime.timetable.model;
 
 import org.unitime.timetable.model.base.BaseOverrideType;
+import org.unitime.timetable.model.dao.OverrideTypeDAO;
 
 public class OverrideType extends BaseOverrideType implements Comparable<OverrideType> {
 	private static final long serialVersionUID = 1L;
@@ -31,6 +32,13 @@ public class OverrideType extends BaseOverrideType implements Comparable<Overrid
 	@Override
 	public int compareTo(OverrideType o) {
 		return getReference().compareTo(o.getReference());
+	}
+	
+	public static OverrideType findByReference(String reference) {
+		if (reference == null || reference.isEmpty()) return null;
+		return (OverrideType)OverrideTypeDAO.getInstance().getSession().createQuery(
+				"from OverrideType where reference = :reference"
+				).setString("reference", reference).setMaxResults(1).uniqueResult();
 	}
 
 }
