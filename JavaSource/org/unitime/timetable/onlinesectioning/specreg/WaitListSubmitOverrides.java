@@ -116,14 +116,21 @@ public class WaitListSubmitOverrides implements OnlineSectioningAction<CourseReq
 									if (cr.getCourseOffering().getUniqueId().equals(course.getCourseId())) { courseRequest = cr; break cd; }
 							}
 							if (courseRequest != null) {
-								courseRequest.setOverrideExternalId(rc.getOverrideExternalId());
-								courseRequest.setOverrideTimeStamp(rc.getOverrideTimeStamp());
-								courseRequest.setCourseRequestOverrideIntent(CourseRequestOverrideIntent.WAITLIST);
-								courseRequest.setCourseRequestOverrideStatus(
-									RequestedCourseStatus.OVERRIDE_APPROVED == rc.getStatus() ? CourseRequestOverrideStatus.APPROVED :
-									RequestedCourseStatus.OVERRIDE_PENDING == rc.getStatus() ? CourseRequestOverrideStatus.PENDING :
-									RequestedCourseStatus.OVERRIDE_CANCELLED == rc.getStatus() ? CourseRequestOverrideStatus.CANCELLED :
-									RequestedCourseStatus.OVERRIDE_REJECTED == rc.getStatus() ? CourseRequestOverrideStatus.REJECTED : null);
+								if (RequestedCourseStatus.OVERRIDE_NEEDED == rc.getStatus()) {
+									courseRequest.setOverrideExternalId(null);
+									courseRequest.setOverrideTimeStamp(null);
+									courseRequest.setCourseRequestOverrideIntent(null);
+									courseRequest.setCourseRequestOverrideStatus(null);
+								} else {
+									courseRequest.setOverrideExternalId(rc.getOverrideExternalId());
+									courseRequest.setOverrideTimeStamp(rc.getOverrideTimeStamp());
+									courseRequest.setCourseRequestOverrideIntent(CourseRequestOverrideIntent.WAITLIST);
+									courseRequest.setCourseRequestOverrideStatus(
+										RequestedCourseStatus.OVERRIDE_APPROVED == rc.getStatus() ? CourseRequestOverrideStatus.APPROVED :
+										RequestedCourseStatus.OVERRIDE_PENDING == rc.getStatus() ? CourseRequestOverrideStatus.PENDING :
+										RequestedCourseStatus.OVERRIDE_CANCELLED == rc.getStatus() ? CourseRequestOverrideStatus.CANCELLED :
+										RequestedCourseStatus.OVERRIDE_REJECTED == rc.getStatus() ? CourseRequestOverrideStatus.REJECTED : null);
+								}
 								helper.getHibSession().update(courseRequest);
 							}
 						}
