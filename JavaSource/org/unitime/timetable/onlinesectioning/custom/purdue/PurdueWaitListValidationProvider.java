@@ -596,9 +596,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 								Map<String, RequestedCourseStatus> problems = (bc == null ? null : overrides.get(bc));
 								Set<String> denied = (bc == null ? null : deniedOverrides.get(bc));
 								if (denied != null && denied.contains(problem.code)) {
-									response.addError(xcourse.getCourseId(), xcourse.getCourseName(), problem.code, "Denied " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
-									response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.waitlist.deniedOverrideError",
-											"One or more wait-listed courses require registration overrides which have been denied.\nYou cannot wait-list these courses."));
+									response.addMessage(xcourse.getCourseId(), xcourse.getCourseName(), problem.code, "Denied " + problem.message, CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
 								} else {
 									RequestedCourseStatus status = (problems == null ? null : problems.get(problem.code));
 									if (status == null) {
@@ -724,22 +722,6 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 										if (err.code != null)
 											problems.add(err.code);
 									}
-							}
-							if (status(ch.status) == RequestedCourseStatus.OVERRIDE_REJECTED && ch.subject != null && ch.courseNbr != null) {
-								for (CourseRequestInterface.Request rq: request.getCourses()) {
-									if (rq.isWaitList() && rq.hasRequestedCourse())
-										for (RequestedCourse rc: rq.getRequestedCourse()) {
-											if ((ch.subject + " " + ch.courseNbr).equals(rc.getCourseName())) {
-												rc.setOverrideTimeStamp(r.dateCreated == null ? null : r.dateCreated.toDate());
-												rc.setOverrideExternalId(r.regRequestId);
-												rc.setStatus(status(r, false));
-												rc.setStatusNote(SpecialRegistrationHelper.note(r, false));
-												rc.setRequestId(r.regRequestId);
-												rc.setRequestorNote(r.requestorNotes);
-												break;
-											}
-										}
-								}
 							}
 						}
 				}
