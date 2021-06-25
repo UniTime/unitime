@@ -150,7 +150,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	public static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	public static final GwtMessages GWT_MESSAGES = GWT.create(GwtMessages.class);
-	private static DateTimeFormat sDF = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
+	private static DateTimeFormat sDF = DateTimeFormat.getFormat(CONSTANTS.requestWaitListedDateFormat());
 
 	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
 	

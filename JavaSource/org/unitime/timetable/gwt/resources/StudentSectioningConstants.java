@@ -119,6 +119,9 @@ public interface StudentSectioningConstants extends Constants {
 	
 	@DefaultStringValue("MM/dd/yyyy HH:mm:ss")
 	String timeStampFormat();
+	
+	@DefaultStringValue("MM/dd/yyyy hh:mmaa")
+	String requestWaitListedDateFormat();
 
 	@DefaultBooleanValue(true)
 	@DoNotTranslate
