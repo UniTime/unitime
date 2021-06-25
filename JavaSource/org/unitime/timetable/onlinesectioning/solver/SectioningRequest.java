@@ -153,13 +153,13 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 		if (getLastEnrollment() == null && r.getLastEnrollment() != null) return 1;
 		if (getLastEnrollment() != null && r.getLastEnrollment() == null) return -1;
 		
-		// Student Priority
-		if (getStudentPriority() != r.getStudentPriority())
-			return getStudentPriority().ordinal() < r.getStudentPriority().ordinal() ? -1 : 1;
-		
 		// Request Priority
 		if (getRequestPriority() != r.getRequestPriority())
 			return getRequestPriority().ordinal() < r.getRequestPriority().ordinal() ? -1 : 1;
+
+		// Student Priority
+		if (getStudentPriority() != r.getStudentPriority())
+			return getStudentPriority().ordinal() < r.getStudentPriority().ordinal() ? -1 : 1;
 		
 		if (getLastEnrollment() == null) {
 			// Alternativity (first choice before first alternative, etc.)
