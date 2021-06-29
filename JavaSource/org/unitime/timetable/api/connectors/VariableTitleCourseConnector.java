@@ -184,7 +184,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
 		List<CourseOffering> courses = (List<CourseOffering>)hibSession.createQuery(sb.toString()).setCacheable(true).list();
 		CourseOffering co = null;
 		for (CourseOffering c : courses) {
-			if (c.getTitle().trim().equalsIgnoreCase(variableTitleQuery.getCourseTitle().trim())) {
+			if (c.getTitle() != null && c.getTitle().trim().equalsIgnoreCase(variableTitleQuery.getCourseTitle().trim())) {
 				co = c;
 				break;
 			}
