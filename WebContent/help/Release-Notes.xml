@@ -28,11 +28,65 @@
 	<version>4.6.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
-		<title>TBD</title>
+		<title>Student Scheduling</title>
 		<item>
-			<name>Various Improvements</name>
+			<name>Special Registration: Variable Title Workflow</name>
 			<description>
-				<line>A number of improvements are planned for the UniTime 4.6 release, including major changes to the wait-listing.</line>
+				<line>Added an ability to plug-in a variable title course request workflow.</line>
+				<line>This include a new functionality on the Scheduling Assistant page and an API that can be used to create a variable title course in UniTime.</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Requests: Requested Credit</name>
+			<description>
+				<line>Requested credit computation updated to consider students (and optionally) advisor's no-subs/wait-listed courses.
+					<line>A no-sub/wait-listed course cannot be replaced by a substitute course.</line>
+					<line>The advisor recommendations are only considered when the solver parameter Load.UseAdvisorWaitLists is set to true.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Online Student Scheduling Dashboard: Requested Approvals</name>
+			<description>
+				<line>Details of a student: show student's requested approvals in a new tab when available.</line>
+			</description>
+		</item>
+		<item>
+			<name>Batch Student Scheduling: Section Times</name>
+			<description>
+				<line>Added ability to load arranged hours (no time) classes with a time (listing the date pattern but no time) and rooms (that are required by the class).
+					<line>This allows the effective date pattern and required room to show on arranged hours classes on the solver dashboard.</line>
+					<line>Can be disabled by setting the solver parameter Load.ArrangedHoursPlacements to false (defaults to true).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling Dashboards: Enrollments</name>
+			<description>
+				<line>When showing classes of a course, list all classes (but the classes that do not match the filter are grayed out).</line>
+				<line>It is possible to switch between showing all classes and just the matching classes using the sctdashShowUnmatchedClasses user setting parameter (defaults to yes, show unmatched classes).</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Examination Timetabling</title>
+		<item>
+			<name>Examination PDF Reports</name>
+			<description>
+				<line>Added new output format options: CSV, XLS, and PDF using a non-monospaced font.</line>
+			</description>
+		</item>
+	</category>
+		<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Solver: Stop</name>
+			<description>
+				<line>Added ability to stop the solver after it has finished, while running the when finished actions, including:
+					<line>solution save (all solvers),</line>
+					<line>student sectioning (course timetabling solver),</line>
+					<line>validation (student scheduling solver).</line>
+				</line>
 			</description>
 		</item>
 	</category>
