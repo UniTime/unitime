@@ -1502,6 +1502,40 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							icons.add(RESOURCES.unassignment(), MESSAGES.unassignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
 						else if (!clazz.isFreeTime() && result.isCanEnroll())
 							icons.add(RESOURCES.assignment(), MESSAGES.assignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
+						
+						WebTable.CheckboxCell waitList = null;
+						if (firstClazz && !clazz.isTeachingAssignment() && !clazz.isSaved() && !clazz.isFreeTime() && (clazz.isDummy() || result.isCanEnroll()) && clazz.hasError()) {
+							boolean courseEnrolled = false;
+							for (ClassAssignmentInterface.ClassAssignment x: course.getClassAssignments())
+								if (x.isSaved()) { courseEnrolled = true; break; }
+							if (!courseEnrolled) {
+								Boolean w = iCourseRequests.getWaitList(course.getCourseId());
+								if (w != null && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST) && course.isCanWaitList())
+								waitList = new WebTable.CheckboxCell(w, MESSAGES.toggleWaitList(), ARIA.titleRequestedWaitListForCourse(MESSAGES.course(course.getSubject(), course.getCourseNbr())));
+								waitList.getWidget().setStyleName("toggle");
+								((CheckBox)waitList.getWidget()).addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+									@Override
+									public void onValueChange(ValueChangeEvent<Boolean> event) {
+										clearMessage();
+										iCourseRequests.setWaitList(course.getCourseId(), event.getValue());
+										LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
+										CourseRequestInterface r = iCourseRequests.getRequest(); r.setNoChange(true);
+										iSectioningService.section(r, iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
+											public void onFailure(Throwable caught) {
+												iStatus.error(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
+												LoadingWidget.getInstance().hide();
+												updateHistory();
+											}
+											public void onSuccess(ClassAssignmentInterface result) {
+												fillIn(result);
+												addHistory();
+											}
+										});
+									}
+								});
+							}
+						}
+						
 						GradeMode gradeMode = clazz.getGradeMode();
 						SpecialRegistrationStatus specRegStatus = iSpecialRegistrationsPanel.getStatus(clazz);
 						Float creditHour = null;
@@ -1572,7 +1606,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
 								new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
 								new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
-								(creditHour != null ? new WebTable.Cell(MESSAGES.credit(creditHour)) : new WebTable.AbbvTextCell(clazz.getCredit())),
+								(waitList != null ? waitList : creditHour != null ? new WebTable.Cell(MESSAGES.credit(creditHour)) : new WebTable.AbbvTextCell(clazz.getCredit())),
 								(gradeMode == null ? new WebTable.Cell("") : new WebTable.Cell(gradeMode.getCode()).title(gradeMode.getLabel()).aria(gradeMode.getLabel())),
 								icons);
 						} else {
@@ -1589,7 +1623,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
 									new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
 									new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
-									(creditHour != null ? new WebTable.Cell(MESSAGES.credit(creditHour)) : new WebTable.AbbvTextCell(clazz.getCredit())),
+									(waitList != null ? waitList : creditHour != null ? new WebTable.Cell(MESSAGES.credit(creditHour)) : new WebTable.AbbvTextCell(clazz.getCredit())),
 									(gradeMode == null ? new WebTable.Cell("") : new WebTable.Cell(gradeMode.getCode()).title(gradeMode.getLabel()).aria(gradeMode.getLabel())),
 									icons);
 						}
