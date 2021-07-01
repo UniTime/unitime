@@ -564,6 +564,21 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		
 		long t3 = System.currentTimeMillis();
 		helper.debug("Sectioning took "+(t3-t0)+"ms (model "+(t1-t0)+"ms, sectioning "+(t2-t1)+"ms, conversion "+(t3-t2)+"ms)");
+		
+		if (getRequest().isNoChange() && getAssignment() != null && ret != null) {
+			for (ClassAssignmentInterface.CourseAssignment course: ret.getCourseAssignments()) {
+				if (!course.isFreeTime() && !course.isTeachingAssignment())
+					for (ClassAssignmentInterface.ClassAssignment ca: course.getClassAssignments()) {
+						for (ClassAssignmentInterface.ClassAssignment old: getAssignment()) {
+							if (old != null && ca.getClassId().equals(old.getClassId())) {
+								if (old.hasError()) ca.setError(old.getError());
+								if (old.hasWarn()) ca.setWarn(old.getWarn());
+								if (old.hasInfo()) ca.setInfo(old.getInfo());
+							}
+						}
+					}
+			}
+		}
 
 		List<ClassAssignmentInterface> rets = new ArrayList<ClassAssignmentInterface>(1);
 		rets.add(ret);

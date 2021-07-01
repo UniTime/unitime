@@ -245,16 +245,23 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				
 				boolean hasWaitListedCourses = false;
 				if (wlMode == WaitListMode.WaitList) {
-					for (CourseRequestInterface.Request r: getRequest().getCourses()) {
+					r: for (CourseRequestInterface.Request r: getRequest().getCourses()) {
 						if (r.isWaitList()) {
 							hasWaitListedCourses = true; break;
 						}
+						if (r.hasRequestedCourse())
+							for (CourseRequestInterface.RequestedCourse rc: r.getRequestedCourse()) {
+								if (rc.isCanWaitList()) {
+									hasWaitListedCourses = true; break r;
+								}
+							}
 					}
-					for (XRequest r: oldStudent.getRequests())
-						if (!r.isAlternative() && r instanceof XCourseRequest && ((XCourseRequest)r).isWaitlist()) {
-							hasWaitListedCourses = true;
-							break;
-						}
+					if (!hasWaitListedCourses)
+						for (XRequest r: oldStudent.getRequests())
+							if (!r.isAlternative() && r instanceof XCourseRequest && ((XCourseRequest)r).isWaitlist()) {
+								hasWaitListedCourses = true;
+								break;
+							}
 				}
 				
 				if (CustomStudentEnrollmentHolder.hasProvider()) {
