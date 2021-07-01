@@ -78,6 +78,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse;
@@ -836,6 +837,27 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				}
 			}
 		}
+		
+		if (ret.hasErrors())
+			for (XRequest request: student.getRequests()) {
+				if (request instanceof XCourseRequest) {
+					XCourseRequest cr = (XCourseRequest) request;
+					if (cr.getEnrollment() == null && !cr.isAlternative() && cr.isWaitlist() && student.getWaitListMode(helper) == WaitListMode.WaitList) {
+						for (XCourseId course: cr.getCourseIds()) {
+							boolean hasError = false;
+							for (ErrorMessage err: ret.getErrors()) {
+								if (course.getCourseName().equals(err.getCourse())) { hasError = true; break; }
+							}
+							if (hasError) {
+								XOffering offering = server.getOffering(course.getOfferingId());
+								if (offering == null || !offering.isWaitList()) continue;
+								denied.add(new ErrorMessage(course.getCourseName(), "", "UT_WAIT", "Course is wait-listed, Wait-List override needs to be requested instead."));
+								ret.setCanSubmit(false);
+							}
+						}
+					}
+				}
+			}
 		
 		Set<String> denials = new HashSet<String>();
 		if (resp.deniedRequests != null && !resp.deniedRequests.isEmpty()) {
