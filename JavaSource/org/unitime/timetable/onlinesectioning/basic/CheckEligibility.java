@@ -211,7 +211,7 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 					CustomSpecialRegistrationHolder.getProvider().checkEligibility(server, helper, iCheck, xstudent);
 				if (iCheck.hasFlag(EligibilityFlag.CAN_WAITLIST)) {
 					WaitListValidationProvider wp = Customization.WaitListValidationProvider.getProvider();
-					wp.checkEligibility(server, helper, iCheck, xstudent);
+					if (wp != null) wp.checkEligibility(server, helper, iCheck, xstudent);
 				}
 			}
 			
