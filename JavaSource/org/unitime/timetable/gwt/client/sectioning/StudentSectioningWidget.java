@@ -1748,6 +1748,24 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							RequestedCourse rc = iCourseRequests.getRequestedCourse(course.getCourseId());
 							if (rc != null && rc.hasRequestorNote()) unassignedMessage += "\n<span class='unitime-GrayText'>" + rc.getRequestorNote() + "</span>";
 							if (rc != null && rc.hasStatusNote()) unassignedMessage += "\n<span class='unitime-GrayText'>" + rc.getStatusNote() + "</span>";
+						} else if (w.booleanValue() && course.getWaitListedDate() != null && !iEligibilityCheck.hasFlag(EligibilityFlag.WAIT_LIST_VALIDATION)) {
+							style = (!rows.isEmpty() ? "top-border-dashed": "");
+							unassignedMessage = MESSAGES.conflictWaitListed(sDF.format(course.getWaitListedDate()));
+							if (course.getOverlaps()!=null && !course.getOverlaps().isEmpty()) {
+								unassignedMessage += "\n<span class='unitime-ErrorText'>";
+								for (Iterator<String> i = course.getOverlaps().iterator(); i.hasNext();) {
+									String x = i.next();
+									if (unassignedMessage.isEmpty())
+										unassignedMessage += MESSAGES.conflictWithFirst(x);
+									else if (!i.hasNext())
+										unassignedMessage += MESSAGES.conflictWithLast(x);
+									else
+										unassignedMessage += MESSAGES.conflictWithMiddle(x);
+								}
+								if (course.getInstead() != null)
+									unassignedMessage += MESSAGES.conflictAssignedAlternative(course.getInstead());
+								unassignedMessage += ".</span>";
+							}
 						}
 						waitList = new WebTable.CheckboxCell(w, MESSAGES.toggleWaitList(), ARIA.titleRequestedWaitListForCourse(MESSAGES.course(course.getSubject(), course.getCourseNbr())));
 						waitList.getWidget().setStyleName("toggle");
