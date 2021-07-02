@@ -854,6 +854,30 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 				if (m.hasCourse() && courseName.equals(m.getCourse())) ret.add(m);
 		return ret;
 	}
+	public String getConfirmation(String courseName, String delim, String... exclude) {
+		if (!hasConfirmations()) return null;
+		String ret = null;
+		if (hasConfirmations())
+			m: for (CourseMessage m: getConfirmations())
+				if (m.hasCourse() && courseName.equals(m.getCourse())) {
+					for (String e: exclude)
+						if (e.equals(m.getCode())) continue m;
+					if (ret == null)
+						ret = m.getMessage();
+					else
+						ret += delim + m.getMessage();
+				}
+		return ret;
+	}
+	public boolean isError(String courseName) {
+		if (!hasConfirmations()) return false;
+		if (hasConfirmations())
+			for (CourseMessage m: getConfirmations())
+				if (m.hasCourse() && courseName.equals(m.getCourse())) {
+					if (m.isError()) return true;
+				}
+		return false;
+	}
 	
 	public static class Request implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
