@@ -847,6 +847,13 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	public void setConfirmations(Collection<CourseMessage> confirmations) {
 		iConfirmations = (confirmations == null ? null : new ArrayList<CourseMessage>(confirmations));
 	}
+	public List<CourseMessage> getConfirmations(String courseName) {
+		List<CourseMessage> ret = new ArrayList<CourseMessage>();
+		if (hasConfirmations())
+			for (CourseMessage m: getConfirmations())
+				if (m.hasCourse() && courseName.equals(m.getCourse())) ret.add(m);
+		return ret;
+	}
 	
 	public static class Request implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
@@ -1699,5 +1706,25 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		setCreditWarning(waitListChecks == null ? null : waitListChecks.getCreditWarning());
 		setMaxCreditOverride(waitListChecks == null ? null : waitListChecks.getMaxCreditNeeded());
 		setMaxCreditOverrideStatus(waitListChecks == null ? null : waitListChecks.getMaxCreditOverrideStatus());
+	}
+	
+	public RequestedCourseStatus getStatus(String courseName) {
+		RequestedCourseStatus status = null;
+		if (hasConfirmations())
+			for (CourseMessage m: getConfirmations()) {
+				if (m.getStatus() != null && m.hasCourse() && courseName.equals(m.getCourse())) {
+					if (status == null || m.getStatus().ordinal() > status.ordinal()) status = m.getStatus();
+				}
+			}
+		if (status != null) return status;
+		for (Request r: getCourses())
+			if (r.hasRequestedCourse())
+				for (RequestedCourse rc: r.getRequestedCourse())
+					if (courseName.equals(rc.getCourseName()) && !rc.isInactive()) return rc.getStatus();
+		for (Request r: getAlternatives())
+			if (r.hasRequestedCourse())
+				for (RequestedCourse rc: r.getRequestedCourse())
+					if (courseName.equals(rc.getCourseName()) && !rc.isInactive()) return rc.getStatus();
+		return null;
 	}
 }

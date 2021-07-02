@@ -35,6 +35,7 @@ public class SectioningCookie {
 	private boolean iRequestOverridesOpened = true;
 	private int iSolutionsSortBy = 0;
 	private String iEnrollmentSortByGroup = "";
+	private boolean iWaitListsOpened = true;
 	
 	private static SectioningCookie sInstance = null;
 	
@@ -61,6 +62,7 @@ public class SectioningCookie {
 				iRequestOverridesOpened = "T".equals(values[8]);
 				iSolutionsSortBy = Integer.parseInt(values[9]);
 				iEnrollmentSortByGroup = values[10];
+				iWaitListsOpened = "T".equals(values[11]);
 			}
 		} catch (Exception e) {
 		}
@@ -71,7 +73,8 @@ public class SectioningCookie {
 			(iCourseDetails ? "T": "F") + ":" +
 			(iShowClassNumbers ? "T": "F") + ":" + iRelatedSortBy + ":" + iEnrollmentFilter.ordinal() + ":" + iEnrollmentSortBy + ":" + iEnrollmentSortBySubpart +
 			":" + (iAllChoices ? "T" : "F") + 
-			":" + (iShowAllChanges ? "T" : "F") + ":" + (iRequestOverridesOpened ? "T" : "F") + ":" + iSolutionsSortBy + ":" + iEnrollmentSortByGroup;
+			":" + (iShowAllChanges ? "T" : "F") + ":" + (iRequestOverridesOpened ? "T" : "F") + ":" + iSolutionsSortBy + ":" + iEnrollmentSortByGroup +
+			":" + (iWaitListsOpened ? "T" : "F");
 		Cookies.setCookie("UniTime:Sectioning", cookie);
 	}
 	
@@ -151,4 +154,7 @@ public class SectioningCookie {
 	
 	public int getSolutionsSortBy() { return iSolutionsSortBy; }
 	public void setSolutionsSortBy(int solutionsSortBy) { iSolutionsSortBy = solutionsSortBy; save(); }
+	
+	public boolean isWaitListsOpened() { return iWaitListsOpened; }
+	public void setWaitListsOpened(boolean waitListsOpened) { iWaitListsOpened = waitListsOpened; save(); }
 }
