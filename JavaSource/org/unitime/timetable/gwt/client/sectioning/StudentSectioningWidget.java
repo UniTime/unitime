@@ -176,6 +176,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private Image iTotalCreditRequestsStatus;
 	private P iTotalCreditRequests;
 	private SpecialRegistrationsPanel iSpecialRegistrationsPanel;
+	private WaitListsPanel iWaitListsPanel;
 	
 	private ArrayList<ClassAssignmentInterface.ClassAssignment> iLastResult, iLastEnrollment;
 	private ClassAssignmentInterface iLastAssignment, iSavedAssignment = null, iSpecialRegAssignment = null;
@@ -638,8 +639,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 										if (req.updateRequestorNote(rc.getRequestId(), requestorNote)) {
 											iCourseRequests.setValue(req);
 										}
-										if (iSavedRequest != null)
+										if (iSavedRequest != null) {
 											iSavedRequest.updateRequestorNote(rc.getRequestId(), requestorNote);
+											if (iWaitListsPanel != null) iWaitListsPanel.populate(iSavedRequest);
+										}
 										updateHistory();
 									}
 								}
@@ -916,6 +919,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			}
 		};
 		panel.add(iSpecialRegistrationsPanel);
+		
+		iWaitListsPanel = new WaitListsPanel(iSpecRegCx);
+		panel.add(iWaitListsPanel);
 
 		iShowUnassignments.setVisible(false);
 		String showUnassignments = Cookies.getCookie("UniTime:Unassignments");
@@ -1157,7 +1163,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									iEligibilityCheck.setCurrentCredit(result.getCurrentCredit());
 								if (result.getRequest() != null && result.getRequest().hasWaitListChecks())
 									iCourseRequests.setLastCheck(result.getRequest().getWaitListChecks());
-								fillIn(result, iEligibilityCheck == null || !iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
 								if (result.hasRequest()) {
 									for (Request r: result.getRequest().getCourses()) {
 										for (RequestedCourse rc: r.getRequestedCourse()) {
@@ -1173,7 +1178,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									}
 									iCourseRequests.setRequest(result.getRequest());
 									iSavedRequest = result.getRequest();
+									if (iWaitListsPanel != null) iWaitListsPanel.populate(result.getRequest());
 								}
+								fillIn(result, iEligibilityCheck == null || !iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
 								if (!result.hasMessages())
 									iStatus.done(MESSAGES.enrollOK());
 								updateHistory();
@@ -1354,6 +1361,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 											clearMessage();
 										}
 										iSavedRequest = result;
+										if (iWaitListsPanel != null) iWaitListsPanel.populate(result);
 										iCourseRequests.setValue(result, false);
 										iCourseRequests.notifySaveSucceeded();
 										iStatus.done(MESSAGES.saveRequestsOK());
@@ -1510,29 +1518,30 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								if (x.isSaved()) { courseEnrolled = true; break; }
 							if (!courseEnrolled) {
 								Boolean w = iCourseRequests.getWaitList(course.getCourseId());
-								if (w != null && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST) && course.isCanWaitList())
-								waitList = new WebTable.CheckboxCell(w, MESSAGES.toggleWaitList(), ARIA.titleRequestedWaitListForCourse(MESSAGES.course(course.getSubject(), course.getCourseNbr())));
-								waitList.getWidget().setStyleName("toggle");
-								((CheckBox)waitList.getWidget()).addValueChangeHandler(new ValueChangeHandler<Boolean>() {
-									@Override
-									public void onValueChange(ValueChangeEvent<Boolean> event) {
-										clearMessage();
-										iCourseRequests.setWaitList(course.getCourseId(), event.getValue());
-										LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
-										CourseRequestInterface r = iCourseRequests.getRequest(); r.setNoChange(true);
-										iSectioningService.section(r, iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
-											public void onFailure(Throwable caught) {
-												iStatus.error(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
-												LoadingWidget.getInstance().hide();
-												updateHistory();
-											}
-											public void onSuccess(ClassAssignmentInterface result) {
-												fillIn(result);
-												addHistory();
-											}
-										});
-									}
-								});
+								if (w != null && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST) && course.isCanWaitList()) {
+									waitList = new WebTable.CheckboxCell(w, MESSAGES.toggleWaitList(), ARIA.titleRequestedWaitListForCourse(MESSAGES.course(course.getSubject(), course.getCourseNbr())));
+									waitList.getWidget().setStyleName("toggle");
+									((CheckBox)waitList.getWidget()).addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+										@Override
+										public void onValueChange(ValueChangeEvent<Boolean> event) {
+											clearMessage();
+											iCourseRequests.setWaitList(course.getCourseId(), event.getValue());
+											LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
+											CourseRequestInterface r = iCourseRequests.getRequest(); r.setNoChange(true);
+											iSectioningService.section(r, iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
+												public void onFailure(Throwable caught) {
+													iStatus.error(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
+													LoadingWidget.getInstance().hide();
+													updateHistory();
+												}
+												public void onSuccess(ClassAssignmentInterface result) {
+													fillIn(result);
+													addHistory();
+												}
+											});
+										}
+									});
+								}
 							}
 						}
 						
@@ -1704,8 +1713,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					WebTable.CheckboxCell waitList = null;
 					Boolean w = iCourseRequests.getWaitList(course.getCourseId());
 					if (w != null && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST) && course.isCanWaitList()) {
-						if (w.booleanValue() && iCourseRequests.getLastCheck() != null) {
-							if (course.getWaitListedDate() != null && iCourseRequests.getLastCheck().getStatus(course.getCourseName()) != RequestedCourseStatus.OVERRIDE_NEEDED) {
+						if (w.booleanValue() && iSavedRequest != null) {
+							if (course.getWaitListedDate() != null && iSavedRequest.getStatus(course.getCourseName()) != RequestedCourseStatus.OVERRIDE_NEEDED) {
 								style = (!rows.isEmpty() ? "top-border-dashed": "");
 								unassignedMessage = MESSAGES.conflictWaitListed(sDF.format(course.getWaitListedDate()));
 								if (course.getOverlaps()!=null && !course.getOverlaps().isEmpty()) {
@@ -1724,8 +1733,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									unassignedMessage += ".</span>";
 								}
 							}
-							String msg = null;
-							RequestedCourseStatus status = iCourseRequests.getLastCheck().getStatus(course.getCourseName());
+							RequestedCourseStatus status = iSavedRequest.getStatus(course.getCourseName());
 							if (status != null) {
 								switch (status) {
 								case OVERRIDE_NEEDED:
@@ -1743,7 +1751,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									break;
 								}
 							}
-							for (CourseMessage cm: iCourseRequests.getLastCheck().getMessages(course.getCourseName()))
+							for (CourseMessage cm: iSavedRequest.getConfirmations(course.getCourseName()))
 								unassignedMessage += "\n" + cm.getMessage();
 							if (status != null) {
 								switch (status) {
@@ -1756,7 +1764,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									break;
 								}
 							}
-							msg = iCourseRequests.getLastCheck().getMessage(course.getCourseName(), "\n");
+							String msg = iCourseRequests.getLastCheck().getMessage(course.getCourseName(), "\n");
 							if (status != null) {
 								switch (status) {
 								case OVERRIDE_NEEDED:
@@ -1774,32 +1782,19 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								case OVERRIDE_APPROVED:
 									icons.add(RESOURCES.requestSaved(), (msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideApproved(course.getCourseName()));
 									break;
+								case SAVED:
+									icons.add(RESOURCES.requestSaved(), MESSAGES.courseWaitListed());
+									break;
 								default:
 									if (iCourseRequests.getLastCheck().isError(course.getCourseName()))
 										icons.add(RESOURCES.requestError(), msg);
 								}
 							}
+							/*
 							RequestedCourse rc = iCourseRequests.getRequestedCourse(course.getCourseId());
 							if (rc != null && rc.hasRequestorNote()) unassignedMessage += "\n<span class='unitime-GrayText'>" + rc.getRequestorNote() + "</span>";
 							if (rc != null && rc.hasStatusNote()) unassignedMessage += "\n<span class='unitime-GrayText'>" + rc.getStatusNote() + "</span>";
-						} else if (w.booleanValue() && course.getWaitListedDate() != null && !iEligibilityCheck.hasFlag(EligibilityFlag.WAIT_LIST_VALIDATION)) {
-							style = (!rows.isEmpty() ? "top-border-dashed": "");
-							unassignedMessage = MESSAGES.conflictWaitListed(sDF.format(course.getWaitListedDate()));
-							if (course.getOverlaps()!=null && !course.getOverlaps().isEmpty()) {
-								unassignedMessage += "\n<span class='unitime-ErrorText'>";
-								for (Iterator<String> i = course.getOverlaps().iterator(); i.hasNext();) {
-									String x = i.next();
-									if (unassignedMessage.isEmpty())
-										unassignedMessage += MESSAGES.conflictWithFirst(x);
-									else if (!i.hasNext())
-										unassignedMessage += MESSAGES.conflictWithLast(x);
-									else
-										unassignedMessage += MESSAGES.conflictWithMiddle(x);
-								}
-								if (course.getInstead() != null)
-									unassignedMessage += MESSAGES.conflictAssignedAlternative(course.getInstead());
-								unassignedMessage += ".</span>";
-							}
+							*/
 						}
 						waitList = new WebTable.CheckboxCell(w, MESSAGES.toggleWaitList(), ARIA.titleRequestedWaitListForCourse(MESSAGES.course(course.getSubject(), course.getCourseNbr())));
 						waitList.getWidget().setStyleName("toggle");
@@ -2505,9 +2500,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					iStatus.error(caught.getMessage(), caught);
 			}
 			public void onSuccess(final CourseRequestInterface request) {
-				if (request.isSaved())
+				if (request.isSaved()) {
 					iSavedRequest = request;
-				else if (!iMode.isSectioning() && iSavedRequest == null) {
+					if (iWaitListsPanel != null) iWaitListsPanel.populate(request);
+				} else if (!iMode.isSectioning() && iSavedRequest == null) {
 					iSectioningService.savedRequest(iContext, new AsyncCallback<CourseRequestInterface>() {
 						@Override
 						public void onFailure(Throwable caught) {
@@ -2520,6 +2516,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					});
 				}
 				clear(changeViewIfNeeded);
+				if (iWaitListsPanel != null) iWaitListsPanel.populate(iSavedRequest);
 				/*
 				if (request.isSaved() && request.getCourses().isEmpty()) {
 					LoadingWidget.getInstance().hide();
@@ -2646,8 +2643,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	public void setData(CourseRequestInterface request, ClassAssignmentInterface response) {
 		clear();
 		iCourseRequests.setRequest(request);
-		if (request.isSaved())
+		if (request.isSaved()) {
 			iSavedRequest = request;
+			if (iWaitListsPanel != null) iWaitListsPanel.populate(request);
+		}
 		if (response != null) {
 			if (request.isSaved()) {
 				iSavedAssignment = response;
@@ -2951,7 +2950,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	}
 	
 	protected Command confirmEnrollment(final Command callback) {
-		return confirmEnrollmentDrop(confirmEnrollmentHonors(confirmEnrollmentVariableCredits(callback)));
+		return confirmEnrollmentDrop(confirmWaitListDrop(confirmEnrollmentHonors(confirmEnrollmentVariableCredits(callback))));
 	}
 
 	protected Command confirmEnrollmentDrop(final Command callback) {
@@ -2971,6 +2970,42 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					@Override
 					public void execute() {
 						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.confirmEnrollmentCourseDrop(ToolBox.toString(drops)), callback);
+					}
+				};
+			}
+		}
+		return callback;
+	}
+	
+	public List<String> getCoursesToDropWaitList() {
+		if (iSavedRequest != null && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST)) {
+			List<String> ret = new ArrayList<String>();
+			r: for (Request r: iSavedRequest.getCourses()) {
+				if (r.isWaitList() && r.hasRequestedCourse()) {
+					for (RequestedCourse rc: r.getRequestedCourse())
+						if (rc.getStatus() == RequestedCourseStatus.ENROLLED) continue r; 
+					for (RequestedCourse rc: r.getRequestedCourse()) {
+						if (rc.isCanWaitList() && rc.hasCourseId() && !Boolean.TRUE.equals(iCourseRequests.getWaitList(rc.getCourseId()))) {
+							if (rc.getStatus() == RequestedCourseStatus.SAVED || rc.getStatus() == RequestedCourseStatus.OVERRIDE_APPROVED) {
+								ret.add(rc.getCourseName());
+							}
+						}
+					}
+				}
+			}
+			return ret;
+		}
+		return null;
+	}
+	
+	public Command confirmWaitListDrop(final Command callback) {
+		if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CONFIRM_DROP)) {
+			final List<String> wl = getCoursesToDropWaitList();
+			if (wl != null && !wl.isEmpty()) {
+				return new Command() {
+					@Override
+					public void execute() {
+						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.confirmCourseDropFromWaitList(ToolBox.toString(wl)), callback);
 					}
 				};
 			}
@@ -3288,6 +3323,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							iSectioningService.waitListSubmitOverrides(iSavedAssignment.getRequest(), lastCheck.getMaxCreditNeeded(), new AsyncCallback<CourseRequestInterface>() {
 								@Override
 								public void onSuccess(CourseRequestInterface result) {
+									iSavedRequest = result;
+									if (iWaitListsPanel != null) iWaitListsPanel.populate(result);
 									iCourseRequests.setValue(result, false);
 									iCourseRequests.notifySaveSucceeded();
 									fillIn(iLastAssignment, false);
