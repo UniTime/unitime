@@ -1764,7 +1764,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									break;
 								}
 							}
-							String msg = iCourseRequests.getLastCheck().getMessage(course.getCourseName(), "\n");
+							String msg = iSavedRequest.getConfirmation(course.getCourseName(), "\n");
 							if (status != null) {
 								switch (status) {
 								case OVERRIDE_NEEDED:
@@ -1786,7 +1786,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									icons.add(RESOURCES.requestSaved(), MESSAGES.courseWaitListed());
 									break;
 								default:
-									if (iCourseRequests.getLastCheck().isError(course.getCourseName()))
+									if (iSavedRequest.isError(course.getCourseName()))
 										icons.add(RESOURCES.requestError(), msg);
 								}
 							}
