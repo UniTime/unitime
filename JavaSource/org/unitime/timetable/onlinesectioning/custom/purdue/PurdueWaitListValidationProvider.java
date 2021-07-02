@@ -984,6 +984,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 				for (RequestedCourse rc: r.getRequestedCourse()) {
 					if (rc.getOverrideExternalId() != null)
 						rcs.put(rc.getOverrideExternalId(), rc);
+					rcs.put(rc.getCourseName(), rc);
 					if (rc.getStatus() == RequestedCourseStatus.OVERRIDE_NEEDED && "TBD".equals(rc.getOverrideExternalId())) {
 						request.addConfirmationMessage(
 								rc.getCourseId(), rc.getCourseName(), "NOT_REQUESTED", 
@@ -1051,7 +1052,24 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						request.setRequestId(r.regRequestId);
 					}
 					RequestedCourse rc = rcs.get(r.regRequestId);
-					if (rc == null) continue;
+					if (rc == null) {
+						if (r.changes != null)
+							for (Change ch: r.changes)
+								if (ch.status == ChangeStatus.approved) {
+									rc = rcs.get(ch.subject + " " + ch.courseNbr);
+									if (rc != null) {
+										for (ChangeError er: ch.errors)
+											request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), er.code, er.message, status(ch.status), ORD_BANNER);
+										if (rc.getRequestId() == null) {
+											rc.setStatusNote(SpecialRegistrationHelper.note(r, false));
+											rc.setRequestorNote(r.requestorNotes);
+											if (rc.getStatus() != RequestedCourseStatus.ENROLLED)
+												rc.setStatus(RequestedCourseStatus.OVERRIDE_APPROVED);
+										}
+									}
+								}
+						continue;
+					}
 					if (rc.getStatus() != RequestedCourseStatus.ENROLLED) {
 						rc.setStatus(status(r, false));
 					}
