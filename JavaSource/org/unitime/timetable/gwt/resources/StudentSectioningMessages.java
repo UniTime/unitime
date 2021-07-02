@@ -181,6 +181,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Preferences")
 	String colPreferences();
 	
+	@DefaultMessage("Requirements")
+	String colRequirements();
+	
 	@DefaultMessage("Warnings")
 	String colWarnings();
 	
@@ -549,6 +552,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Requested <u>A</u>pprovals")
 	String tabSpecialRegistrations();
+	
+	@DefaultMessage("<u>W</u>ait-Listed Courses")
+	String tabWaitListedCourses();
 	
 	@DefaultMessage("Course requests have been successfully submitted.")
 	String saveRequestsOK();
@@ -1735,10 +1741,10 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Together with other registration changes, the course {0} will be dropped. Do you want to proceed?")
 	String confirmEnrollmentCourseDrop(String course);
-	
+		
 	@DefaultMessage("Together with other registration changes, the critical course {0} will be dropped. This may prohibit progress towards degree. Please consult with your academic advisor. Do you want to proceed?")
 	String confirmEnrollmentCriticalCourseDrop(String course);
-
+	
 	@DefaultMessage("<u>N</u>ew Course")
 	String buttonQuickAdd();
 	
@@ -1814,9 +1820,15 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Submitted")
 	String colSpecRegSubmitted();
 	
+	@DefaultMessage("Wait-Listed")
+	String colWaitListedTimeStamp();
+	
 	@DefaultMessage("Registration Errors")
 	String colSpecRegErrors();
 	
+	@DefaultMessage("Registration Errors")
+	String colWaitListErrors();
+
 	@DefaultMessage("Last Note")
 	String colSpecRegNote();
 	
@@ -3099,4 +3111,10 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Failed to request wait-list overrides: {0}")
 	String failedRequestWaitListOverrides(String message);
+	
+	@DefaultMessage("Wait-Listed Courses")
+	String panelWaitListedCourses();
+	
+	@DefaultMessage("Course {0} will not longer be wait-listed. Do you want to proceed?")
+	String confirmCourseDropFromWaitList(String course);
 }

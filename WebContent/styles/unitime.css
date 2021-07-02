@@ -7006,3 +7006,89 @@ unitime-RoomSharingWidget .legend .blank {
 	padding-left: 10px;
 	padding-right: 2px;
 }
+
+.unitime-WaitListsPanel {
+	padding-top: 5px;
+}
+
+.unitime-WaitListsPanel .waitlists-header {
+    padding: 5px 0px 0px 2px;
+    border-top: 1px solid #9CB0CE;	
+}
+
+.unitime-WaitListsPanel .waitlists-header .icon {
+	display: inline-block;
+	margin: 3px 5px 1px 1px;
+}
+
+.unitime-WaitListsPanel .waitlists-header .open-close-icon {
+	display: inline-block;
+	margin: 0px 1px 2px 1px;
+}
+
+.unitime-WaitListsPanel .waitlists-header .title {
+	display: inline-block;
+	font-size: larger;
+	font-weight: bold;
+    color: black;
+    cursor: pointer;
+}
+
+.unitime-WaitListsPanel .waitlists-panel {
+	border: 1px solid #9CB0CE;	
+	overflow: auto;
+	overflow-x: scroll;
+	max-width: calc(100vw - 20px);
+}
+
+.unitime-WaitListsPanel .waitlists-errors {
+	white-space: pre-wrap;
+	min-width: 120px;
+}
+
+.unitime-WaitListsPanel .waitlists-errors .approved {
+	color: green;
+}
+
+.unitime-WaitListsPanel .waitlists-errors .saved {
+	color: green;
+}
+
+.unitime-WaitListsPanel .waitlists-errors .error {
+	color: red;
+}
+
+.unitime-WaitListsPanel .waitlists-errors .rejected {
+	color: red;
+}
+
+.unitime-WaitListsPanel .waitlists-errors .cancelled {
+	color: gray;
+}
+
+.unitime-WaitListsPanel .waitlists-errors .needed {
+	color: orange;
+}
+
+.unitime-WaitListsPanel .waitlists-errors .note {
+	font-style: italic;
+}
+
+.unitime-WaitListsPanel .date-and-note {
+	white-space: pre-wrap;
+	color: black;
+	font-style: normal;
+	min-width: 120px;
+}
+
+.unitime-SpecialRegistrationsPanel .registrations-table td:nth-child(3) {
+	width: 100px;
+}
+
+.unitime-SpecialRegistrationsPanel .registrations-table td:nth-child(4) {
+	width: 200px;
+}
+
+.unitime-SpecialRegistrationsPanel .registrations-table td:nth-child(7) {
+	width: 400px;
+}
