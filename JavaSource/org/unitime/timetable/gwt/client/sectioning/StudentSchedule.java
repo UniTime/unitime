@@ -48,6 +48,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Note;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.CourseMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
@@ -97,6 +98,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 	private TimeGrid iGrid;
 	private WebTable iAssignments, iRequests, iAdvReqs, iNotes;
 	private UniTimeTable<RetrieveSpecialRegistrationResponse> iSpecialRegistrations;
+	private UniTimeTable<RequestedCourse> iWaitLists;
 	private boolean iOnline = false;
 	private float iTotalCredit = 0f;
 	private Map<Character, Integer> iTabAccessKeys = new HashMap<Character, Integer>();
@@ -190,6 +192,18 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		iSpecialRegistrations.addStyleName("unitime-SpecialRegistrationsPanel");
 		iSpecialRegistrations.addRow(null, header);
 		
+		iWaitLists = new UniTimeTable<RequestedCourse>();
+		header = new ArrayList<UniTimeTableHeader>();
+		header.add(new UniTimeTableHeader(""));
+		header.add(new UniTimeTableHeader(MESSAGES.colWaitListedTimeStamp()));
+		header.add(new UniTimeTableHeader(MESSAGES.colCourse()));
+		header.add(new UniTimeTableHeader(MESSAGES.colTitle()));
+		header.add(new UniTimeTableHeader(MESSAGES.colCredit()));
+		header.add(new UniTimeTableHeader(MESSAGES.colRequirements()));
+		header.add(new UniTimeTableHeader(MESSAGES.colWaitListErrors()));
+		iWaitLists.addStyleName("unitime-WaitListsPanel");
+		iWaitLists.addRow(null, header);
+		
 		iTabs.add(iAssignments, MESSAGES.tabClasses(), true);
 		Character ch1 = UniTimeHeaderPanel.guessAccessKey(MESSAGES.tabClasses());
 		if (ch1 != null)
@@ -209,10 +223,17 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		}
 		
 		if (iOnline) {
+			iTabs.add(iWaitLists, MESSAGES.tabWaitListedCourses(), true);
+			Character ch5 = UniTimeHeaderPanel.guessAccessKey(MESSAGES.tabWaitListedCourses());
+			if (ch5 != null)
+				iTabAccessKeys.put(ch5, 5);
+		}
+		
+		if (iOnline) {
 			iTabs.add(iNotes, MESSAGES.tabNotes(), true);
 			Character ch3 = UniTimeHeaderPanel.guessAccessKey(MESSAGES.tabNotes());
 			if (ch3 != null)
-				iTabAccessKeys.put(ch3, 5);
+				iTabAccessKeys.put(ch3, 6);
 		}
 		
 		if (!iOnline && SectioningStatusCookie.getInstance().getStudentTab() >= 4)
@@ -258,6 +279,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		fillInTimeGrid();
 		if (iOnline) fillInNotes();
 		if (iOnline) fillInSpecialRegistrations();
+		if (iOnline) fillInWaitLists();
 	}
 	
 	protected String getChanges(Request request, RequestedCourse rc) {
@@ -1068,9 +1090,9 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 	}
 	
 	public void fillInNotes() {
-		iTabs.getTabBar().setTabEnabled(5, iAssignment.hasNotes());
-		if (iTabs.getSelectedTab() != 5)
-			((Widget)iTabs.getTabBar().getTab(5)).setVisible(iAssignment.hasNotes());
+		iTabs.getTabBar().setTabEnabled(6, iAssignment.hasNotes());
+		if (iTabs.getSelectedTab() != 6)
+			((Widget)iTabs.getTabBar().getTab(6)).setVisible(iAssignment.hasNotes());
 
 		ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 		if (iAssignment.hasNotes()) {
@@ -1242,6 +1264,114 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							iSpecialRegistrations.getCellFormatter().addStyleName(idx, c, "top-border-solid");
 				}
 			}
+	}
+	
+	public void fillInWaitLists() {
+		iWaitLists.clearTable(1);
+		if (iAssignment != null && iAssignment.hasRequest()) {
+			NumberFormat df = NumberFormat.getFormat("0.#");
+			boolean hasPrefs = false;
+			for (Request request: iAssignment.getRequest().getCourses()) {
+				if (request.isWaitList() && request.hasRequestedCourse()) {
+					boolean firstLine = true;
+					for (RequestedCourse rc: request.getRequestedCourse()) {
+						if (rc.hasCourseId() && rc.isCanWaitList() && rc.getStatus() != RequestedCourseStatus.ENROLLED) {
+							P p = new P("icons");
+							String style = "pending";
+							if (rc.getStatus() != null) {
+								switch (rc.getStatus()) {
+								case OVERRIDE_APPROVED:
+									p.add(new Icon(RESOURCES.specRegApproved(), MESSAGES.hintSpecRegApproved()));
+									style = "approved";
+									break;
+								case OVERRIDE_CANCELLED:
+									p.add(new Icon(RESOURCES.specRegCancelled(), MESSAGES.hintSpecRegCancelled()));
+									style = "cancelled";
+									break;
+								case OVERRIDE_PENDING:
+									p.add(new Icon(RESOURCES.specRegPending(), MESSAGES.hintSpecRegPending()));
+									style = "pending";
+									break;
+								case OVERRIDE_REJECTED:
+									p.add(new Icon(RESOURCES.specRegRejected(), MESSAGES.hintSpecRegRejected()));
+									style = "rejected";
+									break;
+								case OVERRIDE_NEEDED:
+								case NEW_REQUEST:
+									p.add(new Icon(RESOURCES.requestNeeded(), MESSAGES.reqStatusNeeded()));
+									style = "needed";
+									break;
+								case SAVED:
+									p.add(new Icon(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed()));
+									style = "saved";
+									break;
+								}
+							} else {
+								p.add(new Icon(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed()));
+								style = "saved";
+							}
+							
+							List<Widget> row = new ArrayList<Widget>();
+							row.add(p);
+							
+							row.add(new DateAndNoteCell(firstLine ? request.getWaitListedTimeStamp() : null, rc.getRequestorNote()));
+							row.add(new Label(rc.getCourseName()));
+							row.add(new Label(rc.hasCourseTitle() ? rc.getCourseTitle() : ""));
+							row.add(new Label(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : ""));
+							
+							Collection<Preference> prefs = null;
+							if (rc.hasSelectedIntructionalMethods()) {
+								if (rc.hasSelectedClasses()) {
+									prefs = new ArrayList<Preference>(rc.getSelectedIntructionalMethods().size() + rc.getSelectedClasses().size());
+									prefs.addAll(new TreeSet<Preference>(rc.getSelectedIntructionalMethods()));
+									prefs.addAll(new TreeSet<Preference>(rc.getSelectedClasses()));
+								} else {
+									prefs = new TreeSet<Preference>(rc.getSelectedIntructionalMethods());
+								}
+							} else if (rc.hasSelectedClasses()) {
+								prefs = new TreeSet<Preference>(rc.getSelectedClasses());
+							}
+							if (prefs != null && !prefs.isEmpty()) {
+								for (Iterator<Preference> i = prefs.iterator(); i.hasNext();) {
+									Preference pr = i.next();
+									if (!pr.isRequired()) i.remove();
+								}
+							}
+							row.add(new Label(ToolBox.toString(prefs)));
+							if (prefs != null && !prefs.isEmpty()) hasPrefs = true;
+
+							String note = null;
+							if (iAssignment.getRequest().hasConfirmations()) {
+								for (CourseMessage m: iAssignment.getRequest().getConfirmations())
+									if (m.hasCourse() && rc.getCourseId().equals(m.getCourseId())) {
+										if (note == null) {
+											note = (m.isError() ? "<span class='error'>" : "<span class='"+style+"'>") + m.getMessage() + "</span>";
+										} else {
+											note += "\n" + (m.isError() ? "<span class='error'>" : "<span class='"+style+"'>") + m.getMessage() + "</span>";
+										}
+									}
+							}
+							if (rc.hasStatusNote()) {
+								note = (note == null ? "" : note + "<br>") + "<span class='note'>" + rc.getStatusNote() + "</span>";
+							}
+							HTML errorsLabel = new HTML(note == null ? "" : note); errorsLabel.addStyleName("waitlists-errors");
+							row.add(errorsLabel);
+							int idx = iWaitLists.addRow(rc, row);
+							if (firstLine && idx > 1) {
+								for (int c = 0; c < iWaitLists.getCellCount(idx); c++)
+									iWaitLists.getCellFormatter().addStyleName(idx, c, "top-border-dashed");								
+							}
+							firstLine = false;
+						}
+					}
+				}
+			}
+			iWaitLists.setColumnVisible(5, hasPrefs);
+		}
+		
+		iTabs.getTabBar().setTabEnabled(5, iWaitLists.getRowCount() > 1);
+		if (iTabs.getSelectedTab() != 5)
+			((Widget)iTabs.getTabBar().getTab(5)).setVisible(iWaitLists.getRowCount() > 1);
 	}
 	
 	protected void fillInTimeGrid() {
