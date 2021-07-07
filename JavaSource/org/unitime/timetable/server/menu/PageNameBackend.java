@@ -37,7 +37,7 @@ public class PageNameBackend implements GwtRpcImplementation<PageNameRpcRequest,
 	
 	@Override
 	public PageNameInterface execute(PageNameRpcRequest request, SessionContext context) {
-		String name = request.getName().trim().replace(' ', '_').replace("(", "").replace(")", "").replace(':', '_');
+		String name = request.getName().trim().replace(' ', '-').replace("(", "").replace(")", "").replace(':', '-').toLowerCase();
 		PageNameInterface ret = new PageNameInterface();
 		if (ApplicationProperty.PageHelpEnabled.isTrue() && ApplicationProperty.PageHelpUrl.value() != null)
 			ret.setHelpUrl(ApplicationProperty.PageHelpUrl.value() + name);
