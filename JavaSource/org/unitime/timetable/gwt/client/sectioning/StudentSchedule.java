@@ -31,7 +31,6 @@ import java.util.TreeSet;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.P;
-import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTabPanel;
@@ -103,7 +102,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 	private float iTotalCredit = 0f;
 	private Map<Character, Integer> iTabAccessKeys = new HashMap<Character, Integer>();
 	private SelectionHandler<Integer> iHandler;
-	private static DateTimeFormat sModifiedDateFormat = ServerDateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
+	private static DateTimeFormat sModifiedDateFormat = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
 	
 	public StudentSchedule(boolean online) {
 		iOnline = online;
