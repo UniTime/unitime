@@ -1260,6 +1260,13 @@ public enum ApplicationProperty {
 	CustomizationWaitListValidationProvider("unitime.custom.WaitListValidationProvider"),
 	
 	@Type(Class.class)
+	@Implements(WaitListValidationProvider.class)
+	@Description("Customization: wait-list compatator provider")
+	@DefaultValue("org.unitime.timetable.onlinesectioning.custom.DefaultSectioningRequestComparatorProvider")
+	@Since(4.6)
+	CustomizationWaitListComparatorProvider("unitime.custom.WaitListComparatorProvider"),
+	
+	@Type(Class.class)
 	@Implements(ExternalLinkLookup.class)
 	@Description("Customization: course catalog link provider (interface ExternalLinkLookup, deprecated)")
 	@Deprecated

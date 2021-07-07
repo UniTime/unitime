@@ -66,7 +66,7 @@ import org.unitime.timetable.onlinesectioning.model.XTime;
 /**
  * @author Tomas Muller
  */
-public class SectioningRequest implements Comparable<SectioningRequest>, LastSectionProvider {
+public class SectioningRequest implements LastSectionProvider {
 	private XCourseRequest iOldRequest, iRequest;
 	private XStudent iOldStudent, iStudent;
 	private XEnrollment iLastEnrollment, iNewEnrollment;
@@ -147,70 +147,6 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 	public RequestPriority getRequestPriority() { return iRequestPriority; }
 	public StudentPriority getStudentPriority() { return iStudentPriority; }
 	public int getAlternativity() { return iAlternativity; }
-	
-	public int compareTo(SectioningRequest r) {
-		// Requests with last enrollment (recently unassigned requests) have priority
-		if (getLastEnrollment() == null && r.getLastEnrollment() != null) return 1;
-		if (getLastEnrollment() != null && r.getLastEnrollment() == null) return -1;
-		
-		// Request Priority
-		if (getRequestPriority() != r.getRequestPriority())
-			return getRequestPriority().ordinal() < r.getRequestPriority().ordinal() ? -1 : 1;
-
-		// Student Priority
-		if (getStudentPriority() != r.getStudentPriority())
-			return getStudentPriority().ordinal() < r.getStudentPriority().ordinal() ? -1 : 1;
-		
-		if (getLastEnrollment() == null) {
-			// Alternativity (first choice before first alternative, etc.)
-			if (getAlternativity() != r.getAlternativity())
-				return getAlternativity() < r.getAlternativity() ? -1 : 1;
-
-			// Use wait-listed time stamp
-			if (getRequest().getWaitListedTimeStamp() != null) {
-				if (r.getRequest().getWaitListedTimeStamp() != null) {
-					int cmp = getRequest().getWaitListedTimeStamp().compareTo(r.getRequest().getWaitListedTimeStamp());
-					if (cmp != 0) return cmp;
-				} else {
-					return 1;
-				}
-			} else if (r.getRequest().getWaitListedTimeStamp() != null) {
-				return -1;
-			}
-		}
-
-		// Check individual reservations
-		if (hasIndividualReservation() && !r.hasIndividualReservation()) return -1;
-		if (!hasIndividualReservation() && r.hasIndividualReservation()) return 1;
-
-		// Substitute requests last
-		if (getRequest().isAlternative() && !r.getRequest().isAlternative()) return 1;
-		if (!getRequest().isAlternative() && r.getRequest().isAlternative()) return -1;
-		
-		// Use priority
-		int cmp = new Integer(getRequest().getPriority()).compareTo(r.getRequest().getPriority());
-		if (cmp != 0) return cmp;
-		
-		// Alternativity (first choice before first alternative, etc.)
-		if (getAlternativity() != r.getAlternativity())
-			return getAlternativity() < r.getAlternativity() ? -1 : 1;
-
-		if (getLastEnrollment() != null) {
-			// Use request time stamp
-			if (getRequest().getTimeStamp() != null) {
-				if (r.getRequest().getTimeStamp() != null) {
-					cmp = getRequest().getTimeStamp().compareTo(r.getRequest().getTimeStamp());
-					if (cmp != 0) return cmp;
-				} else {
-					return 1;
-				}
-			} else if (r.getRequest().getTimeStamp() != null) {
-				return -1;
-			}
-		}
-		
-		return new Long(getRequest().getStudentId()).compareTo(r.getRequest().getStudentId());
-	}
 	
 	public boolean isOverlappingFreeTime(FreeTimeRequest request, Enrollment e) {
 		if (request.getTime() == null || e.isAllowOverlap()) return false;
