@@ -58,6 +58,8 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
+import org.unitime.timetable.onlinesectioning.custom.Customization;
+import org.unitime.timetable.onlinesectioning.custom.WaitListComparatorProvider;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XDistribution;
@@ -74,6 +76,7 @@ import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
+import org.unitime.timetable.onlinesectioning.solver.SectioningRequestComparator;
 
 /**
  * @author Tomas Muller
@@ -301,7 +304,8 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 		if (newOffering == null && oldOffering == null)
 			return;
 		
-		Set<SectioningRequest> queue = new TreeSet<SectioningRequest>();
+		WaitListComparatorProvider cmp = Customization.WaitListComparatorProvider.getProvider();
+		Set<SectioningRequest> queue = new TreeSet<SectioningRequest>(cmp == null ? new SectioningRequestComparator() : cmp.getComparator(server, helper));
 		
 		Set<XCourseId> courseIds = new HashSet<XCourseId>();
 		if (newOffering != null)

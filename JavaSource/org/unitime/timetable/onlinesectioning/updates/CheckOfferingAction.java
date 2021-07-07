@@ -51,6 +51,8 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
+import org.unitime.timetable.onlinesectioning.custom.Customization;
+import org.unitime.timetable.onlinesectioning.custom.WaitListComparatorProvider;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -64,6 +66,7 @@ import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
+import org.unitime.timetable.onlinesectioning.solver.SectioningRequestComparator;
 
 /**
  * @author Tomas Muller
@@ -238,7 +241,8 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 		
 		if (!CustomStudentEnrollmentHolder.isAllowWaitListing()) return;
 		
-		Set<SectioningRequest> queue = new TreeSet<SectioningRequest>();
+		WaitListComparatorProvider cmp = Customization.WaitListComparatorProvider.getProvider();
+		Set<SectioningRequest> queue = new TreeSet<SectioningRequest>(cmp == null ? new SectioningRequestComparator() : cmp.getComparator(server, helper));
 		
 		XEnrollments enrollments = server.getEnrollments(offering.getOfferingId());
 		
