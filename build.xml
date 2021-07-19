@@ -276,6 +276,7 @@
     	<delete dir="${dist.dir}/wiki" failonerror="false"/>
 		<wikiget url="http://wiki.unitime.org" output="${dist.dir}/wiki"/>
 		-->
+		<!--
 		<java failonerror="true" fork="true" classname="com.google.sites.liberation.export.Main">
 			<classpath>
 				<pathelement location="${3rd_party.dir}/google-sites-liberation-1.0.4.jar"/>
@@ -287,6 +288,7 @@
 			<arg value="-f"/>
 			<arg value="${dist.dir}/help"/>
 		</java>
+		-->
 	</target>
 
 	<target name="build-dist" depends="compile-war,help">

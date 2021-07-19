@@ -19,10 +19,8 @@
 */
 package org.unitime.timetable.gwt.client.page.mobile;
 
-import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.PageLabelDisplay;
 import org.unitime.timetable.gwt.client.widgets.P;
-import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.MenuInterface.PageNameInterface;
@@ -33,8 +31,9 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.ImageResourceRenderer;
 
 /**
  * @author Tomas Muller
@@ -44,30 +43,19 @@ public class MobilePageLabelImpl extends P implements PageLabelDisplay {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	
 	private P iName;
-	private Image iHelp;
+	private Anchor iHelp;
 	private Image iClose = null;
 	private String iUrl = null;
 	
 	public MobilePageLabelImpl() {
         iName = new P("text");
         
-        iHelp = new Image(RESOURCES.help());
+        iHelp = new Anchor(new ImageResourceRenderer().render(RESOURCES.help()), "", "_blank");
 		iHelp.addStyleName("icon");
 		iHelp.setVisible(false);
 		
 		add(iName);
 		add(iHelp);
-		
-		iHelp.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				if (iUrl == null || iUrl.isEmpty()) return;
-				if (Window.getClientWidth()>=600)
-					UniTimeFrameDialog.openDialog(MESSAGES.pageHelp(getText()), iUrl);
-				else
-					ToolBox.open(iUrl);
-			}
-		});
 		
 		if (hasParentWindow()) {
 			iClose = new Image(RESOURCES.close());
@@ -109,6 +97,7 @@ public class MobilePageLabelImpl extends P implements PageLabelDisplay {
 	public void setValue(PageNameInterface value, boolean fireEvents) {
 		iUrl = value.getHelpUrl();
 		iHelp.setVisible(iUrl != null && !iUrl.isEmpty());
+		iHelp.setHref(iUrl != null && !iUrl.isEmpty() ? iUrl : "");
 		setText(value.getName());
 		if (fireEvents)
 			ValueChangeEvent.fire(this, value);

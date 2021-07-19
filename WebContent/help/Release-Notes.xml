@@ -79,6 +79,19 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Documentation</title>
+		<item>
+			<name>UniTime 4.5 Online Help</name>
+			<description>
+				<line>Use https://help45.unitime.org for the online help.</line>
+				<line>Starting with this release of UniTime 4.5, the online help has been moved to the new Google Sites (from the classic Google Sites).
+					<line>URL formatting has changed (e.g., Instructional Offerings > https://help45.unitime.org/instructional-offerings).</line>
+					<line>The help page can no longer be opened in a frame (it now opens in a new tab).</line>
+				</line>
+			</description>
+		</item>
+	</category>
 </release>
 <release>
 	<version>4.5.164</version>
