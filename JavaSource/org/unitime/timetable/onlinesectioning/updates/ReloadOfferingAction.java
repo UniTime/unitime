@@ -366,7 +366,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 							}
 						}
 						action.setEndTime(System.currentTimeMillis());
-						server.execute(server.createAction(NotifyStudentAction.class).forStudent(oldStudent == null ? newStudent.getStudentId() : oldStudent.getStudentId()).oldEnrollment(oldOffering, course, oldEnrollment), helper.getUser());
+						server.execute(server.createAction(NotifyStudentAction.class).forStudent(oldStudent == null ? newStudent.getStudentId() : oldStudent.getStudentId()).fromAction(name()).oldEnrollment(oldOffering, course, oldEnrollment), helper.getUser());
 						continue;
 					}
 					
@@ -405,7 +405,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 							action.setEndTime(System.currentTimeMillis());
 							
 							if (!isVerySame(newEnrollment.getCourseId(), newOffering.getSections(newEnrollment), oldOffering.getSections(oldEnrollment)))
-								server.execute(server.createAction(NotifyStudentAction.class).forStudent(oldStudent == null ? newStudent.getStudentId() : oldStudent.getStudentId()).oldEnrollment(oldOffering, course, oldEnrollment), helper.getUser());
+								server.execute(server.createAction(NotifyStudentAction.class).forStudent(oldStudent == null ? newStudent.getStudentId() : oldStudent.getStudentId()).fromAction(name()).oldEnrollment(oldOffering, course, oldEnrollment), helper.getUser());
 							continue;
 						}
 					}
@@ -589,7 +589,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 						newOffering, oldOffering);
 				server.persistExpectedSpaces(offeringId);
 
-				server.execute(server.createAction(NotifyStudentAction.class).forStudent(r.getRequest().getStudentId()).oldEnrollment(oldOffering, r.getCourseId(), r.getLastEnrollment()), helper.getUser());
+				server.execute(server.createAction(NotifyStudentAction.class).forStudent(r.getRequest().getStudentId()).fromAction(name()).oldEnrollment(oldOffering, r.getCourseId(), r.getLastEnrollment()), helper.getUser());
 				
 				
 				r.getAction().setResult(e == null ? OnlineSectioningLog.Action.ResultType.NULL : OnlineSectioningLog.Action.ResultType.SUCCESS);
