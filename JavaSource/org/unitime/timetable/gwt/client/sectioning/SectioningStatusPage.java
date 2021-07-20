@@ -3137,13 +3137,13 @@ public class SectioningStatusPage extends Composite {
 				if (cmp != 0) return - cmp;
 				break;
 			case WAITLIST:
-				cmp = (e1.getWaitlist() == null ? new Integer(0) : e1.getWaitlist()).compareTo(e2.getWaitlist() == null ? 0 : e2.getWaitlist());
-				if (cmp != 0) return - cmp;
 				cmp = (e1.getUnassignedPrimary() == null ? new Integer(0) : e1.getUnassignedPrimary()).compareTo(e2.getUnassignedPrimary() == null ? 0 : e2.getUnassignedPrimary());
 				if (cmp != 0) return - cmp;
-				cmp = (e1.getTotalWaitlist() == null ? new Integer(0) : e1.getTotalWaitlist()).compareTo(e2.getTotalWaitlist() == null ? 0 : e2.getTotalWaitlist());
+				cmp = (e1.getWaitlist() == null ? new Integer(0) : e1.getWaitlist()).compareTo(e2.getWaitlist() == null ? 0 : e2.getWaitlist());
 				if (cmp != 0) return - cmp;
 				cmp = (e1.getTotalUnassignedPrimary() == null ? new Integer(0) : e1.getTotalUnassignedPrimary()).compareTo(e2.getTotalUnassignedPrimary() == null ? 0 : e2.getTotalUnassignedPrimary());
+				if (cmp != 0) return - cmp;
+				cmp = (e1.getTotalWaitlist() == null ? new Integer(0) : e1.getTotalWaitlist()).compareTo(e2.getTotalWaitlist() == null ? 0 : e2.getTotalWaitlist());
 				if (cmp != 0) return - cmp;
 				break;
 			case RESERVATION:
