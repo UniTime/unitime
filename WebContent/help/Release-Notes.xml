@@ -67,6 +67,15 @@
 				<line>It is possible to switch between showing all classes and just the matching classes using the sctdashShowUnmatchedClasses user setting parameter (defaults to yes, show unmatched classes).</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling Dashboards: Additional Filter Capabilities</name>
+			<description>
+				<line>Requested credit range (e.g., requested-credit:&gt;=15 for students that requested 15+ credit hours)</line>
+				<line>First-choice credit range (e.g., first-choice-credit:&gt;=15 for students with their first-choice requested courses of 15 or more credit hours)</line>
+				<line>Choice / alternativity (e.g., choice:&gt;1 for cases where an alternative course is assigned, or not-assigned primary course request has at least one alternative)</line>
+				<line>Request Priority (e.g., rp:&lt;=2 for course requests that are of priority 1 or 2)</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>
