@@ -957,9 +957,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				int nrCoursesTot = 0;
 				List<Float> minsTot = new ArrayList<Float>();
 				List<Float> maxsTot = new ArrayList<Float>();
-				Set<Long> advisorWaitListedCourseIds = null;
-				if (server().getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false))
-					advisorWaitListedCourseIds = student().getAdvisorWaitListedCourseIds();
+				Set<Long> advisorWaitListedCourseIds = student().getAdvisorWaitListedCourseIds(server());
 				for (XRequest r: student().getRequests()) {
 					if (r instanceof XCourseRequest) {
 						XCourseRequest cr = (XCourseRequest)r;
@@ -971,7 +969,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 								if (maxTot == null || maxTot < c.getMaxCredit()) maxTot = c.getMaxCredit();
 							}
 						}
-						if (cr.isWaitlist(advisorWaitListedCourseIds)) {
+						if (cr.isWaitListOrNoSub(iWaitListMode, advisorWaitListedCourseIds)) {
 							if (minTot != null) {
 								studentMinTot += minTot; studentMaxTot += maxTot;
 							}
