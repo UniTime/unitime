@@ -22,6 +22,7 @@ package org.unitime.timetable.onlinesectioning.status;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -910,6 +911,115 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				return min <= credit && credit <= max;
 			}
 			
+			if ("rc".equals(attr) || "requested-credit".equals(attr)) {
+				int min = 0, max = Integer.MAX_VALUE;
+				Credit prefix = Credit.eq;
+				String number = term;
+				if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+				else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+				else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+				else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+				else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+				try {
+					int a = Integer.parseInt(number);
+					switch (prefix) {
+						case eq: min = max = a; break; // = a
+						case le: max = a; break; // <= a
+						case ge: min = a; break; // >= a
+						case lt: max = a - 1; break; // < a
+						case gt: min = a + 1; break; // > a
+					}
+				} catch (NumberFormatException e) {}
+				if (term.contains("..")) {
+					try {
+						String a = term.substring(0, term.indexOf('.'));
+						String b = term.substring(term.indexOf("..") + 2);
+						min = Integer.parseInt(a); max = Integer.parseInt(b);
+					} catch (NumberFormatException e) {}
+				}
+				if (min == 0 && max == Integer.MAX_VALUE) return true;
+				float studentMinTot = 0f, studentMaxTot = 0f;
+				int nrCoursesTot = 0;
+				List<Float> minsTot = new ArrayList<Float>();
+				List<Float> maxsTot = new ArrayList<Float>();
+				Set<Long> advisorWaitListedCourseIds = null;
+				if (server().getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false))
+					advisorWaitListedCourseIds = student().getAdvisorWaitListedCourseIds();
+				for (XRequest r: student().getRequests()) {
+					if (r instanceof XCourseRequest) {
+						XCourseRequest cr = (XCourseRequest)r;
+						Float minTot = null, maxTot = null;
+						for (XCourseId courseId: cr.getCourseIds()) {
+							XCourse c = server().getCourse(courseId.getCourseId());
+							if (c != null && c.hasCredit()) {
+								if (minTot == null || minTot > c.getMinCredit()) minTot = c.getMinCredit();
+								if (maxTot == null || maxTot < c.getMaxCredit()) maxTot = c.getMaxCredit();
+							}
+						}
+						if (cr.isWaitlist(advisorWaitListedCourseIds)) {
+							if (minTot != null) {
+								studentMinTot += minTot; studentMaxTot += maxTot;
+							}
+						} else {
+							if (minTot != null) {
+								minsTot.add(minTot); maxsTot.add(maxTot); 
+								if (!r.isAlternative()) nrCoursesTot ++;
+							}
+						}
+					}
+				}
+				Collections.sort(minsTot);
+				Collections.sort(maxsTot);
+				for (int i = 0; i < nrCoursesTot; i++) {
+					studentMinTot += minsTot.get(i);
+					studentMaxTot += maxsTot.get(maxsTot.size() - i - 1);
+				}
+				return min <= studentMaxTot && studentMinTot <= max;
+			}
+			
+			if ("fc".equals(attr) || "first-choice-credit".equals(attr)) {
+				int min = 0, max = Integer.MAX_VALUE;
+				Credit prefix = Credit.eq;
+				String number = term;
+				if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+				else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+				else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+				else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+				else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+				try {
+					int a = Integer.parseInt(number);
+					switch (prefix) {
+						case eq: min = max = a; break; // = a
+						case le: max = a; break; // <= a
+						case ge: min = a; break; // >= a
+						case lt: max = a - 1; break; // < a
+						case gt: min = a + 1; break; // > a
+					}
+				} catch (NumberFormatException e) {}
+				if (term.contains("..")) {
+					try {
+						String a = term.substring(0, term.indexOf('.'));
+						String b = term.substring(term.indexOf("..") + 2);
+						min = Integer.parseInt(a); max = Integer.parseInt(b);
+					} catch (NumberFormatException e) {}
+				}
+				if (min == 0 && max == Integer.MAX_VALUE) return true;
+				float credit = 0f;
+				for (XRequest r: student().getRequests()) {
+					if (r instanceof XCourseRequest && !r.isAlternative()) {
+						XCourseRequest cr = (XCourseRequest)r;
+						for (XCourseId courseId: cr.getCourseIds()) {
+							XCourse c = server().getCourse(courseId.getCourseId());
+							if (c != null && c.hasCredit()) {
+								credit += c.getMinCredit();
+								break;
+							}
+						}
+					}
+				}
+				return min <= credit && credit <= max;
+			}
+			
 			if ("rp".equals(attr)) {
 				if ("subst".equalsIgnoreCase(term)) return request().isAlternative();
 				int min = 0, max = Integer.MAX_VALUE;
@@ -968,15 +1078,21 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					} catch (NumberFormatException e) {}
 				}
 				if (min == 0 && max == Integer.MAX_VALUE) return true;
-				if (enrollment() == null) return false;
-				int choice = 1;
-				for (XCourseId course: request().getCourseIds()) {
-					if (course.getCourseId().equals(enrollment().getCourseId())) {
-						return min <= choice && choice <= max;
+				if (enrollment() != null) {
+					int choice = 1;
+					for (XCourseId course: request().getCourseIds()) {
+						if (course.getCourseId().equals(enrollment().getCourseId())) {
+							return min <= choice && choice <= max;
+						}
+						choice++;
 					}
-					choice++;
+					return false;
+				} else if (!request().isAlternative()) {
+					int choice = request().getCourseIds().size();
+					return min <= choice && choice <= max;
+				} else {
+					return false;
 				}
-				return false;
 			}
 			
 			if ("overlap".equals(attr)) {

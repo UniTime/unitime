@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -1144,6 +1145,193 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					}
 				}
 				return min <= credit && credit <= max;
+			}
+			
+			if ("rc".equals(attr) || "requested-credit".equals(attr)) {
+				int min = 0, max = Integer.MAX_VALUE;
+				Credit prefix = Credit.eq;
+				String number = term;
+				if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+				else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+				else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+				else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+				else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+				try {
+					int a = Integer.parseInt(number);
+					switch (prefix) {
+						case eq: min = max = a; break; // = a
+						case le: max = a; break; // <= a
+						case ge: min = a; break; // >= a
+						case lt: max = a - 1; break; // < a
+						case gt: min = a + 1; break; // > a
+					}
+				} catch (NumberFormatException e) {}
+				if (term.contains("..")) {
+					try {
+						String a = term.substring(0, term.indexOf('.'));
+						String b = term.substring(term.indexOf("..") + 2);
+						min = Integer.parseInt(a); max = Integer.parseInt(b);
+					} catch (NumberFormatException e) {}
+				}
+				if (min == 0 && max == Integer.MAX_VALUE) return true;
+				float studentMinTot = 0f, studentMaxTot = 0f;
+				int nrCoursesTot = 0;
+				List<Float> minsTot = new ArrayList<Float>();
+				List<Float> maxsTot = new ArrayList<Float>();
+				Set<Long> advisorWaitListedCourseIds = null;
+				if (ApplicationProperty.OnlineSchedulingParameter.isTrue("Load.UseAdvisorWaitLists"))
+					advisorWaitListedCourseIds = student().getAdvisorWaitListedCourseIds();
+				for (CourseDemand demand: student().getCourseDemands()) {
+					if (!demand.getCourseRequests().isEmpty()) {
+						Float minTot = null, maxTot = null;
+						for (CourseRequest r: demand.getCourseRequests()) {
+							CourseCreditUnitConfig c = r.getCourseOffering().getCredit();
+							if (c != null) {
+								if (minTot == null || minTot > c.getMinCredit()) minTot = c.getMinCredit();
+								if (maxTot == null || maxTot < c.getMaxCredit()) maxTot = c.getMaxCredit();
+							}
+						}
+						boolean isWaitList = false;
+						if (!demand.isAlternative()) {
+							if (demand.isWaitlist()) {
+								isWaitList = true;
+							} else if (advisorWaitListedCourseIds != null && !advisorWaitListedCourseIds.isEmpty()) {
+								for (CourseRequest r: demand.getCourseRequests())
+									if (advisorWaitListedCourseIds.contains(r.getCourseOffering().getUniqueId())) {
+										isWaitList = true; break;
+									}
+							}
+						}
+						if (isWaitList) {
+							if (minTot != null) {
+								studentMinTot += minTot; studentMaxTot += maxTot;
+							}
+						} else {
+							if (minTot != null) {
+								minsTot.add(minTot); maxsTot.add(maxTot); 
+								if (!demand.isAlternative()) nrCoursesTot ++;
+							}
+						}
+					}
+				}
+				Collections.sort(minsTot);
+				Collections.sort(maxsTot);
+				for (int i = 0; i < nrCoursesTot; i++) {
+					studentMinTot += minsTot.get(i);
+					studentMaxTot += maxsTot.get(maxsTot.size() - i - 1);
+				}
+				return min <= studentMaxTot && studentMinTot <= max;
+			}
+			
+			if ("fc".equals(attr) || "first-choice-credit".equals(attr)) {
+				int min = 0, max = Integer.MAX_VALUE;
+				Credit prefix = Credit.eq;
+				String number = term;
+				if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+				else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+				else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+				else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+				else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+				try {
+					int a = Integer.parseInt(number);
+					switch (prefix) {
+						case eq: min = max = a; break; // = a
+						case le: max = a; break; // <= a
+						case ge: min = a; break; // >= a
+						case lt: max = a - 1; break; // < a
+						case gt: min = a + 1; break; // > a
+					}
+				} catch (NumberFormatException e) {}
+				if (term.contains("..")) {
+					try {
+						String a = term.substring(0, term.indexOf('.'));
+						String b = term.substring(term.indexOf("..") + 2);
+						min = Integer.parseInt(a); max = Integer.parseInt(b);
+					} catch (NumberFormatException e) {}
+				}
+				if (min == 0 && max == Integer.MAX_VALUE) return true;
+				float credit = 0f;
+				for (CourseDemand demand: student().getCourseDemands()) {
+					if (!demand.getCourseRequests().isEmpty() && !demand.isAlternative()) {
+						for (CourseRequest r: new TreeSet<CourseRequest>(demand.getCourseRequests())) {
+							CourseCreditUnitConfig c = r.getCourseOffering().getCredit();
+							if (c != null) {
+								credit += c.getMinCredit();
+								break;
+							}
+						}
+					}
+				}
+				return min <= credit && credit <= max;
+			}
+			
+			if ("rp".equals(attr)) {
+				if ("subst".equalsIgnoreCase(term)) return request().getCourseDemand().isAlternative();
+				int min = 0, max = Integer.MAX_VALUE;
+				Credit prefix = Credit.eq;
+				String number = term;
+				if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+				else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+				else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+				else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+				else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+				try {
+					int a = Integer.parseInt(number);
+					switch (prefix) {
+						case eq: min = max = a; break; // = a
+						case le: max = a; break; // <= a
+						case ge: min = a; break; // >= a
+						case lt: max = a - 1; break; // < a
+						case gt: min = a + 1; break; // > a
+					}
+				} catch (NumberFormatException e) {}
+				if (term.contains("..")) {
+					try {
+						String a = term.substring(0, term.indexOf('.'));
+						String b = term.substring(term.indexOf("..") + 2);
+						min = Integer.parseInt(a); max = Integer.parseInt(b);
+					} catch (NumberFormatException e) {}
+				}
+				if (min == 0 && max == Integer.MAX_VALUE) return true;
+				return !request().getCourseDemand().isAlternative() && min <= request().getCourseDemand().getPriority() + 1 && request().getCourseDemand().getPriority() + 1 <= max;
+			}
+			
+			if ("choice".equals(attr) || "ch".equals(attr)) {
+				int min = 0, max = Integer.MAX_VALUE;
+				Credit prefix = Credit.eq;
+				String number = term;
+				if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+				else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+				else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+				else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+				else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+				try {
+					int a = Integer.parseInt(number);
+					switch (prefix) {
+						case eq: min = max = a; break; // = a
+						case le: max = a; break; // <= a
+						case ge: min = a; break; // >= a
+						case lt: max = a - 1; break; // < a
+						case gt: min = a + 1; break; // > a
+					}
+				} catch (NumberFormatException e) {}
+				if (term.contains("..")) {
+					try {
+						String a = term.substring(0, term.indexOf('.'));
+						String b = term.substring(term.indexOf("..") + 2);
+						min = Integer.parseInt(a); max = Integer.parseInt(b);
+					} catch (NumberFormatException e) {}
+				}
+				if (min == 0 && max == Integer.MAX_VALUE) return true;
+				if (enrollment() != null) {
+					int choice = request().getOrder() + 1;
+					return min <= choice && choice <= max;
+				} else if (!request().getCourseDemand().isAlternative()) {
+					int choice = request().getCourseDemand().getCourseRequests().size();
+					return min <= choice && choice <= max;
+				} else {
+					return false;
+				}
 			}
 			
 			if ("overlap".equals(attr)) {
