@@ -150,7 +150,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 						throw (RuntimeException)e;
 					throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 				}
-				server.execute(server.createAction(NotifyStudentAction.class).forStudent(getStudentId()).oldStudent(oldStudent), helper.getUser());
+				server.execute(server.createAction(NotifyStudentAction.class).forStudent(getStudentId()).fromAction(name()).oldStudent(oldStudent), helper.getUser());
 				
 				helper.commitTransaction();
 				

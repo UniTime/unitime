@@ -3655,6 +3655,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (emailStudent && details.isCanEmail()) {
 			StudentEmail email = server.createAction(StudentEmail.class)
 					.forStudent(details.getStudentId())
+					.fromAction("advisor-submit")
 					.overridePermissions(false, false, true)
 					.includeAdvisorRequestsPDF();
 			email.setEmailSubject(MSG.defaulSubjectAdvisorRequests());

@@ -817,7 +817,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				}
 				action.addEnrollment(stored);
 				
-				server.execute(server.createAction(NotifyStudentAction.class).forStudent(getStudentId()).oldStudent(oldStudent), helper.getUser());
+				server.execute(server.createAction(NotifyStudentAction.class).forStudent(getStudentId()).fromAction(name()).oldStudent(oldStudent), helper.getUser());
 				helper.commitTransaction();
 			} catch (Exception e) {
 				helper.rollbackTransaction();

@@ -148,9 +148,15 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	private boolean iIncludeAdvisorRequests = false;
 	private boolean iIncludeAdvisorRequestsPDF = false;
 	private Boolean iOptional = false;
+	private String iSourceAction = "not-set";
 	
 	public StudentEmail forStudent(Long studentId) {
 		iStudentId = studentId;
+		return this;
+	}
+	
+	public StudentEmail fromAction(String actionName) {
+		iSourceAction = actionName;
 		return this;
 	}
 	
@@ -570,6 +576,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		input.put("helper", helper);
 		input.put("message", getMessage());
 		input.put("dfConsentApproval", sConsentApprovalDateFormat);
+		input.put("source", iSourceAction);
 		
 		StudentSectioningStatus status = student.getEffectiveStatus();
 		WaitListMode wlMode = WaitListMode.None;

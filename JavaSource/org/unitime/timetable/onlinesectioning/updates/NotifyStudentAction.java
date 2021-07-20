@@ -46,9 +46,15 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 	private XCourseId iOldCourseId;
 	private XEnrollment iOldEnrollment;
 	private XStudent iOldStudent;
+	private String iSourceAction = "other";
 	
 	public NotifyStudentAction forStudent(Long studentId) {
 		iStudentId = studentId;
+		return this;
+	}
+	
+	public NotifyStudentAction fromAction(String actionName) {
+		iSourceAction = actionName;
 		return this;
 	}
 	
@@ -108,8 +114,8 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 					}
 				}
 				helper.debug(message);
-				if (server.getAcademicSession().isSectioningEnabled() && ApplicationProperty.OnlineSchedulingEmailConfirmation.isTrue()) {
-					server.execute(server.createAction(StudentEmail.class).forStudent(getStudentId()).oldEnrollment(iOldOffering, iOldCourseId, iOldEnrollment), helper.getUser(), new ServerCallback<Boolean>() {
+				if (isEmailEnabled(server, helper)) {
+					server.execute(server.createAction(StudentEmail.class).forStudent(getStudentId()).fromAction(iSourceAction).oldEnrollment(iOldOffering, iOldCourseId, iOldEnrollment), helper.getUser(), new ServerCallback<Boolean>() {
 						@Override
 						public void onFailure(Throwable exception) {
 							helper.error("Failed to notify student: " + exception.getMessage(), exception);
@@ -163,8 +169,8 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 					}
 				}
 				helper.debug(message);
-				if (server.getAcademicSession().isSectioningEnabled() && ApplicationProperty.OnlineSchedulingEmailConfirmation.isTrue()) {
-					server.execute(server.createAction(StudentEmail.class).forStudent(getStudentId()).oldStudent(iOldStudent), helper.getUser(), new ServerCallback<Boolean>() {
+				if (isEmailEnabled(server, helper)) {
+					server.execute(server.createAction(StudentEmail.class).forStudent(getStudentId()).fromAction(iSourceAction).oldStudent(iOldStudent), helper.getUser(), new ServerCallback<Boolean>() {
 						@Override
 						public void onFailure(Throwable exception) {
 							helper.error("Failed to notify student: " + exception.getMessage(), exception);
@@ -178,6 +184,12 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 			}
 		}
 		return false;
+	}
+	
+	protected boolean isEmailEnabled(OnlineSectioningServer server, final OnlineSectioningHelper helper) {
+		String override = ApplicationProperty.OnlineSchedulingEmailConfirmationOverride.value(iSourceAction);
+		if (override != null) return "true".equalsIgnoreCase(override);
+		return server.getAcademicSession().isSectioningEnabled() && ApplicationProperty.OnlineSchedulingEmailConfirmation.isTrue();
 	}
 
 	@Override
