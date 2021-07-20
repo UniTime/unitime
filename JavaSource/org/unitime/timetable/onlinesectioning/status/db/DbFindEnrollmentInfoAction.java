@@ -1219,9 +1219,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				int nrCoursesTot = 0;
 				List<Float> minsTot = new ArrayList<Float>();
 				List<Float> maxsTot = new ArrayList<Float>();
-				Set<Long> advisorWaitListedCourseIds = null;
-				if (ApplicationProperty.OnlineSchedulingParameter.isTrue("Load.UseAdvisorWaitLists"))
-					advisorWaitListedCourseIds = student().getAdvisorWaitListedCourseIds();
+				Set<Long> advisorWaitListedCourseIds = student().getAdvisorWaitListedCourseIds(null);
 				for (CourseDemand demand: student().getCourseDemands()) {
 					if (!demand.getCourseRequests().isEmpty()) {
 						Float minTot = null, maxTot = null;
@@ -1234,7 +1232,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 						}
 						boolean isWaitList = false;
 						if (!demand.isAlternative()) {
-							if (demand.isWaitlist()) {
+							if (demand.isWaitListOrNoSub(student().getWaitListMode())) {
 								isWaitList = true;
 							} else if (advisorWaitListedCourseIds != null && !advisorWaitListedCourseIds.isEmpty()) {
 								for (CourseRequest r: demand.getCourseRequests())
