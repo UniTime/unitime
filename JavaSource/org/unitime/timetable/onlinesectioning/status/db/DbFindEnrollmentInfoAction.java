@@ -80,6 +80,10 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.status.FindEnrollmentInfoAction;
 import org.unitime.timetable.onlinesectioning.status.SectioningStatusFilterAction;
 import org.unitime.timetable.onlinesectioning.status.FindStudentInfoAction.FindStudentInfoMatcher;
@@ -1331,6 +1335,64 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					return min <= choice && choice <= max;
 				} else {
 					return false;
+				}
+			}
+			
+			if ("online".equals(attr) || "face-to-face".equals(attr) || "f2f".equals(attr) || "no-time".equals(attr) || "has-time".equals(attr)) {
+				int min = 0, max = Integer.MAX_VALUE;
+				Credit prefix = Credit.eq;
+				String number = term;
+				if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+				else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+				else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+				else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+				else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+				boolean perc = false;
+				if (number.endsWith("%")) { perc = true; number = number.substring(0, number.length() - 1).trim(); }
+				try {
+					int a = Integer.parseInt(number);
+					switch (prefix) {
+						case eq: min = max = a; break; // = a
+						case le: max = a; break; // <= a
+						case ge: min = a; break; // >= a
+						case lt: max = a - 1; break; // < a
+						case gt: min = a + 1; break; // > a
+					}
+				} catch (NumberFormatException e) {}
+				if (term.contains("..")) {
+					try {
+						String a = term.substring(0, term.indexOf('.'));
+						String b = term.substring(term.indexOf("..") + 2);
+						min = Integer.parseInt(a); max = Integer.parseInt(b);
+					} catch (NumberFormatException e) {}
+				}
+				if (min == 0 && max == Integer.MAX_VALUE) return true;
+				int match = 0, total = 0;
+				for (StudentClassEnrollment section: student().getClassEnrollments()) {
+					Assignment assignment = section.getClazz().getCommittedAssignment();
+					boolean online = true;
+			        if (assignment != null) {
+			        	for (Location loc: assignment.getRooms())
+			        		if (!loc.isIgnoreRoomCheck()) {
+			        			online = false; break;
+			        		}
+			        }
+					if ("online".equals(attr) && online) {
+						match ++;
+					} else if (("face-to-face".equals(attr) || "f2f".equals(attr)) && !online)
+						match ++;
+					else if ("no-time".equals(attr) && assignment == null)
+						match ++;
+					else if ("has-time".equals(attr) && assignment != null)
+						match ++;
+					total ++;
+				}
+				if (total == 0) return false;
+				if (perc) {
+					double percentage = 100.0 * match / total;
+					return min <= percentage && percentage <= max;
+				} else {
+					return min <= match && match <= max;
 				}
 			}
 			
