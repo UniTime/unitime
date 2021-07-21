@@ -74,6 +74,7 @@
 				<line>First-choice credit range (e.g., first-choice-credit:&gt;=15 for students with their first-choice requested courses of 15 or more credit hours)</line>
 				<line>Choice / alternativity (e.g., choice:&gt;1 for cases where an alternative course is assigned, or not-assigned primary course request has at least one alternative)</line>
 				<line>Request Priority (e.g., rp:&lt;=2 for course requests that are of priority 1 or 2)</line>
+				<line>Online / Face-to-face / Has-Time / No-Time (e.g., face-to-face:&lt;2 for students with less than two face-to-face classes, or online:&gt;50% for students with more than half of their classes online)</line>
 			</description>
 		</item>
 	</category>
