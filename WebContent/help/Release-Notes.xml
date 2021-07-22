@@ -65,7 +65,26 @@
 			<name>Administration: Export PDF/CSV</name>
 			<description>
 				<line>Added an ability to export the admin table in CSV or PDF.</line>
-				<line>Aplies to all 40+ admin pages using SimpleEditPage (gwt.jsp?page=admin&amp;type=XXX).</line>
+				<line>Applies to all 40+ admin pages using SimpleEditPage (gwt.jsp?page=admin&amp;type=XXX).</line>
+			</description>
+		</item>
+		<item>
+			<name>UniTime Email: Testing &amp; Non-Prod Environments</name>
+			<description>
+				<line>Added ability to test UniTime's email notification without actually sending emails to students, etc.</line>
+				<line>First option unitime.email.class=org.unitime.timetable.test.MockupEmail
+					<line>Email message is only logged (INFO message), no email is actually sent.</line>
+				</line>
+				<line>Second option unitime.email.class=org.unitime.timetable.test.JavaMailMockupEmail
+					<line>Email message is sent to the email address defined in unitime.email.test.recipient application property (defaults to unitime.email.notif)</line>
+					<line>Original recipients are included in the email, in the attached file named original-receipients.txt</line>
+					<line>Additional parameters:
+						<line>unitime.email.test.recipient ... test email's recipient, defaults to unitime.email.notif</line>
+						<line>unitime.email.test.recipient.name ... test email's recipient name, defaults to unitime.email.notif.name</line>
+						<line>unitime.email.test.subject ... test email's subject prefix, defaults to [TEST]</line>
+					</line>
+				</line>
+				<line>When the unitime.email.class is set to one of the above, ALL UniTime emails are only logged or sent to the predefined test recipient instead.</line>
 			</description>
 		</item>
 	</category>
