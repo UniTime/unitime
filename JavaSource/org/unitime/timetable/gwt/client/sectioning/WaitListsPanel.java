@@ -236,7 +236,9 @@ public class WaitListsPanel extends P {
 
 							String note = null;
 							if (iRequests.hasConfirmations()) {
-								for (CourseMessage m: iRequests.getConfirmations())
+								for (CourseMessage m: iRequests.getConfirmations()) {
+									if ("NO_ALT".equals(m.getCode())) continue;
+									if ("CREDIT".equals(m.getCode())) continue;
 									if (m.hasCourse() && rc.getCourseId().equals(m.getCourseId())) {
 										if (note == null) {
 											note = (m.isError() ? "<span class='error'>" : "<span class='"+style+"'>") + m.getMessage() + "</span>";
@@ -244,6 +246,7 @@ public class WaitListsPanel extends P {
 											note += "\n" + (m.isError() ? "<span class='error'>" : "<span class='"+style+"'>") + m.getMessage() + "</span>";
 										}
 									}
+								}
 							}
 							if (rc.hasStatusNote()) {
 								note = (note == null ? "" : note + "<br>") + "<span class='note'>" + rc.getStatusNote() + "</span>";

@@ -7051,7 +7051,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-WaitListsPanel .waitlists-errors .saved {
-	color: green;
+	color: orange;
 }
 
 .unitime-WaitListsPanel .waitlists-errors .error {

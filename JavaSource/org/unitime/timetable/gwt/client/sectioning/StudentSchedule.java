@@ -1341,7 +1341,9 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 
 							String note = null;
 							if (iAssignment.getRequest().hasConfirmations()) {
-								for (CourseMessage m: iAssignment.getRequest().getConfirmations())
+								for (CourseMessage m: iAssignment.getRequest().getConfirmations()) {
+									if ("NO_ALT".equals(m.getCode())) continue;
+									if ("CREDIT".equals(m.getCode())) continue;
 									if (m.hasCourse() && rc.getCourseId().equals(m.getCourseId())) {
 										if (note == null) {
 											note = (m.isError() ? "<span class='error'>" : "<span class='"+style+"'>") + m.getMessage() + "</span>";
@@ -1349,6 +1351,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 											note += "\n" + (m.isError() ? "<span class='error'>" : "<span class='"+style+"'>") + m.getMessage() + "</span>";
 										}
 									}
+								}
 							}
 							if (rc.hasStatusNote()) {
 								note = (note == null ? "" : note + "<br>") + "<span class='note'>" + rc.getStatusNote() + "</span>";

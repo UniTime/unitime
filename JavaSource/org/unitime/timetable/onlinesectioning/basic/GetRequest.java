@@ -19,6 +19,22 @@
 */
 package org.unitime.timetable.onlinesectioning.basic;
 
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
+
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.assignment.AssignmentComparator;
+import org.cpsolver.ifs.assignment.AssignmentMap;
+import org.cpsolver.studentsct.model.Course;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.SctAssignment;
+import org.cpsolver.studentsct.model.Section;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
@@ -48,6 +64,7 @@ import org.unitime.timetable.onlinesectioning.model.XFreeTimeRequest;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 import org.unitime.timetable.solver.studentsct.StudentSolver;
 
 /**
@@ -268,6 +285,80 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 							request.getAlternatives().add(r);
 						else
 							request.getCourses().add(r);
+					}
+					if (r.isWaitList()) {
+						Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
+						org.cpsolver.studentsct.model.CourseRequest courseRequest = SectioningRequest.convert(assignment, (XCourseRequest)cd, server, request.getWaitListMode());
+						Collection<Enrollment> enrls = courseRequest.getEnrollmentsSkipSameTime(assignment);
+						for (RequestedCourse rc: r.getRequestedCourse()) {
+							if (rc.getCourseId() == null) continue;
+							TreeSet<Enrollment> overlap = new TreeSet<Enrollment>(new Comparator<Enrollment>() {
+								@Override
+								public int compare(Enrollment o1, Enrollment o2) {
+									return o1.getRequest().compareTo(o2.getRequest());
+								}
+							});
+							Hashtable<org.cpsolver.studentsct.model.CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<org.cpsolver.studentsct.model.CourseRequest, TreeSet<Section>>();
+							Enrollment noConfEnrl = null;
+							for (Iterator<Enrollment> e = enrls.iterator(); e.hasNext();) {
+								Enrollment enrl = e.next();
+								if (!rc.getCourseId().equals(enrl.getCourse().getId())) continue;
+								boolean overlaps = false;
+								for (Request q: enrl.getStudent().getRequests()) {
+									if (q.equals(request)) continue;
+									Enrollment x = assignment.getValue(q);
+									if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
+									for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
+							        	SctAssignment a = i.next();
+										if (a.isOverlapping(enrl.getAssignments())) {
+											overlaps = true;
+											overlap.add(x);
+											if (x.getRequest() instanceof org.cpsolver.studentsct.model.CourseRequest) {
+												org.cpsolver.studentsct.model.CourseRequest cr = (org.cpsolver.studentsct.model.CourseRequest)x.getRequest();
+												TreeSet<Section> ss = overlapingSections.get(cr);
+												if (ss == null) { ss = new TreeSet<Section>(new AssignmentComparator<Section, Request, Enrollment>(assignment)); overlapingSections.put(cr, ss); }
+												ss.add((Section)a);
+											}
+										}
+							        }
+								}
+								if (!overlaps && noConfEnrl == null)
+									noConfEnrl = enrl;
+							}
+							if (noConfEnrl == null) {
+								Set<String> overlaps = new TreeSet<String>();
+								for (Enrollment q: overlap) {
+									if (q.getRequest() instanceof FreeTimeRequest) {
+										overlaps.add(OnlineSectioningHelper.toString((FreeTimeRequest)q.getRequest()));
+									} else {
+										org.cpsolver.studentsct.model.CourseRequest cr = (org.cpsolver.studentsct.model.CourseRequest)q.getRequest();
+										Course o = q.getCourse();
+										String ov = MSG.course(o.getSubjectArea(), o.getCourseNumber());
+										if (overlapingSections.get(cr).size() == 1)
+											for (Iterator<Section> i = overlapingSections.get(cr).iterator(); i.hasNext();) {
+												Section s = i.next();
+												ov += " " + s.getSubpart().getName();
+												if (i.hasNext()) ov += ",";
+											}
+										overlaps.add(ov);
+									}
+								}
+								if (overlaps != null && !overlaps.isEmpty()) {
+									String message = null;
+									for (Iterator<String> i = overlaps.iterator(); i.hasNext();) {
+										String ov = i.next();
+										if (message == null)
+											message = MSG.conflictWithFirst(ov);
+										else if (i.hasNext())
+											message += MSG.conflictWithMiddle(ov);
+										else
+											message += MSG.conflictWithLast(ov);
+									}
+									request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), "WL-OVERLAP", message + ".", 0);
+								}
+							}
+				
+						}
 					}
 					lastRequest = r;
 					lastRequestPriority = cd.getPriority();
