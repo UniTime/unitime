@@ -539,7 +539,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 
 						
 						if (maxCreditDenied != null && neededCredit != null && neededCredit >= maxCreditDenied) {
-							response.addMessage(rc.getCourseId(), rc.getCourseName(), "CREDIT",
+							response.addMessage(rc.getCourseId(), rc.getCourseName(), "WL-CREDIT",
 									ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(neededCredit))
 									, CONF_NONE);
 							response.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit",
@@ -554,7 +554,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						}
 						
 						if (creditError == null && neededCredit != null && maxCredit < neededCredit) {
-							response.addMessage(rc.getCourseId(), rc.getCourseName(), "CREDIT",
+							response.addMessage(rc.getCourseId(), rc.getCourseName(), "WL-CREDIT",
 									ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(neededCredit)),
 									maxCreditOverride == null || maxCreditOverride < neededCredit ? CONF_BANNER : CONF_NONE);
 							response.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(neededCredit)));
@@ -768,10 +768,10 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						String courseNbr = course.getCourseNumber();
 						List<ChangeError> errors = new ArrayList<ChangeError>();
 						for (CourseMessage m: request.getConfirmations()) {
-							if ("CREDIT".equals(m.getCode())) continue;
+							if ("WL-CREDIT".equals(m.getCode())) continue;
 							if ("NO_ALT".equals(m.getCode())) continue;
 							if ("DROP_CRIT".equals(m.getCode())) continue;
-							if ("OVERLAP".equals(m.getCode())) continue;
+							if ("WL-OVERLAP".equals(m.getCode())) continue;
 							if ("NOT-ONLINE".equals(m.getCode())) continue;
 							if ("NOT-RESIDENTIAL".equals(m.getCode())) continue;
 							if (!m.hasCourse()) continue;

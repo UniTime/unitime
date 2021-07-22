@@ -605,6 +605,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					if ("NO_ALT".equals(m.getCode())) continue;
 					if ("OVERLAP".equals(m.getCode())) continue;
 					if ("CREDIT".equals(m.getCode())) continue;
+					if ("WL-OVERLAP".equals(m.getCode())) continue;
+					if ("WL-CREDIT".equals(m.getCode())) continue;
 					if (message == null)
 						message = MESSAGES.courseMessage(m.getMessage());
 					else
@@ -1719,14 +1721,16 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								unassignedMessage = MESSAGES.conflictWaitListed(sDF.format(course.getWaitListedDate()));
 								if (course.getOverlaps()!=null && !course.getOverlaps().isEmpty()) {
 									unassignedMessage += "\n<span class='unitime-ErrorText'>";
+									boolean firstOverlap = true;
 									for (Iterator<String> i = course.getOverlaps().iterator(); i.hasNext();) {
 										String x = i.next();
-										if (unassignedMessage.isEmpty())
+										if (firstOverlap)
 											unassignedMessage += MESSAGES.conflictWithFirst(x);
 										else if (!i.hasNext())
 											unassignedMessage += MESSAGES.conflictWithLast(x);
 										else
 											unassignedMessage += MESSAGES.conflictWithMiddle(x);
+										firstOverlap = false;
 									}
 									if (course.getInstead() != null)
 										unassignedMessage += MESSAGES.conflictAssignedAlternative(course.getInstead());
@@ -1752,7 +1756,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								}
 							}
 							for (CourseMessage cm: iSavedRequest.getConfirmations(course.getCourseName()))
-								unassignedMessage += "\n" + cm.getMessage();
+								if (!"WL-OVERLAP".equals(cm.getCode()))
+									unassignedMessage += "\n" + cm.getMessage();
 							if (status != null) {
 								switch (status) {
 								case OVERRIDE_NEEDED:

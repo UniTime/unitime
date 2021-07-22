@@ -843,7 +843,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				includeRequestInTheReturnMessage = true;
 			else if (ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue())
 				includeRequestInTheReturnMessage = true;
-			else if (wlMode == WaitListMode.WaitList && iCheckWaitLists && hasWaitList)
+			else if (wlMode == WaitListMode.WaitList && hasWaitList)
 				includeRequestInTheReturnMessage = true;
 		}
 		

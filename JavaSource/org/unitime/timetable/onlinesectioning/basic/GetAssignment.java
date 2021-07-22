@@ -23,10 +23,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -323,6 +325,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 		List<CourseSection> unavailabilities = fillUnavailabilitiesIn(ret, student, server, helper, stored);
 		CustomClassAttendanceProvider provider = Customization.CustomClassAttendanceProvider.getProvider();
 		StudentClassAttendance attendance = (provider == null ? null : provider.getCustomClassAttendanceForStudent(StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession()), helper, null));
+		Map<Long, Set<String>> wlOverlaps = null;
 		
 		float credit = 0f;
 		if (student.getMaxCredit() != null)
@@ -371,71 +374,67 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 					ca.setWaitListedDate(r.getWaitListedTimeStamp());
 				ca.setHasCrossList(offering.hasCrossList());
 				if (enrollment == null) {
-					TreeSet<Enrollment> overlap = new TreeSet<Enrollment>(new Comparator<Enrollment>() {
-						@Override
-						public int compare(Enrollment o1, Enrollment o2) {
-							return o1.getRequest().compareTo(o2.getRequest());
-						}
-					});
 					if (r.isWaitlist()) {
 						Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 						CourseRequest courseRequest = SectioningRequest.convert(assignment, r, server, wlMode);
 						Collection<Enrollment> enrls = courseRequest.getEnrollmentsSkipSameTime(assignment);
-						Hashtable<CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<CourseRequest, TreeSet<Section>>();
-						Enrollment noConfEnrl = null;
-						for (Iterator<Enrollment> e = enrls.iterator(); e.hasNext();) {
-							Enrollment enrl = e.next();
-							boolean overlaps = false;
-							for (Request q: enrl.getStudent().getRequests()) {
-								if (q.equals(request)) continue;
-								Enrollment x = assignment.getValue(q);
-								if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
-								for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
-						        	SctAssignment a = i.next();
-									if (a.isOverlapping(enrl.getAssignments())) {
-										overlaps = true;
-										overlap.add(x);
-										if (x.getRequest() instanceof CourseRequest) {
-											CourseRequest cr = (CourseRequest)x.getRequest();
-											TreeSet<Section> ss = overlapingSections.get(cr);
-											if (ss == null) { ss = new TreeSet<Section>(new AssignmentComparator<Section, Request, Enrollment>(assignment)); overlapingSections.put(cr, ss); }
-											ss.add((Section)a);
+						for (Course c: courseRequest.getCourses()) {
+							TreeSet<Enrollment> overlap = new TreeSet<Enrollment>(new Comparator<Enrollment>() {
+								@Override
+								public int compare(Enrollment o1, Enrollment o2) {
+									return o1.getRequest().compareTo(o2.getRequest());
+								}
+							});
+							Hashtable<CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<CourseRequest, TreeSet<Section>>();
+							Enrollment noConfEnrl = null;
+							for (Iterator<Enrollment> e = enrls.iterator(); e.hasNext();) {
+								Enrollment enrl = e.next();
+								if (!c.equals(enrl.getCourse())) continue;
+								boolean overlaps = false;
+								for (Request q: enrl.getStudent().getRequests()) {
+									if (q.equals(enrl.getRequest())) continue;
+									Enrollment x = assignment.getValue(q);
+									if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
+									for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
+							        	SctAssignment a = i.next();
+										if (a.isOverlapping(enrl.getAssignments())) {
+											overlaps = true;
+											overlap.add(x);
+											if (x.getRequest() instanceof CourseRequest) {
+												CourseRequest cr = (CourseRequest)x.getRequest();
+												TreeSet<Section> ss = overlapingSections.get(cr);
+												if (ss == null) { ss = new TreeSet<Section>(new AssignmentComparator<Section, Request, Enrollment>(assignment)); overlapingSections.put(cr, ss); }
+												ss.add((Section)a);
+											}
 										}
+							        }
+								}
+								if (!overlaps && noConfEnrl == null)
+									noConfEnrl = enrl;
+							}
+							if (noConfEnrl == null) {
+								if (wlOverlaps == null) wlOverlaps = new HashMap<Long, Set<String>>();
+								Set<String> overlaps = new TreeSet<String>();
+								wlOverlaps.put(c.getId(), overlaps);
+								for (Enrollment q: overlap) {
+									if (q.getRequest() instanceof FreeTimeRequest) {
+										String ov = OnlineSectioningHelper.toString((FreeTimeRequest)q.getRequest());
+										overlaps.add(ov);
+										ca.addOverlap(ov);
+									} else {
+										CourseRequest cr = (CourseRequest)q.getRequest();
+										Course o = q.getCourse();
+										String ov = MSG.course(o.getSubjectArea(), o.getCourseNumber());
+										if (overlapingSections.get(cr).size() == 1)
+											for (Iterator<Section> i = overlapingSections.get(cr).iterator(); i.hasNext();) {
+												Section s = i.next();
+												ov += " " + s.getSubpart().getName();
+												if (i.hasNext()) ov += ",";
+											}
+										overlaps.add(ov);
+										ca.addOverlap(ov);
 									}
-						        }
-							}
-							if (!overlaps && noConfEnrl == null)
-								noConfEnrl = enrl;
-						}
-						if (noConfEnrl == null) {
-							for (Enrollment q: overlap) {
-								if (q.getRequest() instanceof FreeTimeRequest) {
-									ca.addOverlap(OnlineSectioningHelper.toString((FreeTimeRequest)q.getRequest()));
-								} else {
-									CourseRequest cr = (CourseRequest)q.getRequest();
-									Course o = q.getCourse();
-									String ov = MSG.course(o.getSubjectArea(), o.getCourseNumber());
-									if (overlapingSections.get(cr).size() == 1)
-										for (Iterator<Section> i = overlapingSections.get(cr).iterator(); i.hasNext();) {
-											Section s = i.next();
-											ov += " " + s.getSubpart().getName();
-											if (i.hasNext()) ov += ",";
-										}
-									ca.addOverlap(ov);
 								}
-							}
-						}
-						if (courseRequest.getAvaiableEnrollmentsSkipSameTime(assignment).isEmpty()) {
-							ca.setNotAvailable(true);
-							if (course.getLimit() >= 0) {
-								Collection<XCourseRequest> requests = server.getRequests(course.getOfferingId());
-								int enrl = 0;
-								if (requests != null) {
-									for (XCourseRequest x: requests)
-										if (x.getEnrollment() != null && x.getEnrollment().getCourseId().equals(course.getCourseId()))
-											enrl ++;
-								}
-								ca.setFull(enrl >= course.getLimit());
 							}
 						}
 						if (student.getMaxCredit() != null) {
@@ -448,17 +447,24 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 								if (altMinCred != null && (minCred == null || minCred > altMinCred))
 									minCred = altMinCred;
 							}
-							if (minCred != null && credit + minCred > student.getMaxCredit())
+							if (minCred != null && credit + minCred > student.getMaxCredit()) {
 								ca.setOverMaxCredit(student.getMaxCredit());
+							}
 						}
 					} else {
+						TreeSet<Enrollment> overlap = new TreeSet<Enrollment>(new Comparator<Enrollment>() {
+							@Override
+							public int compare(Enrollment o1, Enrollment o2) {
+								return o1.getRequest().compareTo(o2.getRequest());
+							}
+						});
 						Hashtable<CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<CourseRequest, TreeSet<Section>>();
 						Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 						Collection<Enrollment> avEnrls = SectioningRequest.convert(assignment, r, server, wlMode).getAvaiableEnrollmentsSkipSameTime(assignment);
 						for (Iterator<Enrollment> e = avEnrls.iterator(); e.hasNext();) {
 							Enrollment enrl = e.next();
 							for (Request q: enrl.getStudent().getRequests()) {
-								if (q.equals(request)) continue;
+								if (q.equals(enrl.getRequest())) continue;
 								Enrollment x = assignment.getValue(q);
 								if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
 						        for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
@@ -873,6 +879,24 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 					}
 					lastRequest = r;
 					lastRequestPriority = cd.getPriority();
+					if (r.isWaitList()) {
+						for (RequestedCourse rc: r.getRequestedCourse()) {
+							Set<String> overlaps = (wlOverlaps == null || rc.getCourseId() == null ? null : wlOverlaps.get(rc.getCourseId()));
+							if (overlaps != null && !overlaps.isEmpty()) {
+								String message = null;
+								for (Iterator<String> i = overlaps.iterator(); i.hasNext();) {
+									String ov = i.next();
+									if (message == null)
+										message = MSG.conflictWithFirst(ov);
+									else if (i.hasNext())
+										message += MSG.conflictWithMiddle(ov);
+									else
+										message += MSG.conflictWithLast(ov);
+								}
+								request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), "WL-OVERLAP", message + ".", 0);
+							}
+						}
+					}
 				}
 			}
 			ret.setRequest(request);
