@@ -47,10 +47,10 @@ import org.unitime.timetable.defaults.ApplicationProperty;
  * @author Tomas Muller
  */
 public class JavaMailWrapper extends Email {
-	private static Log sLog = LogFactory.getLog(Email.class);
-	private javax.mail.Session iMailSession = null;
-	private MimeMessage iMail = null;
-	private Multipart iBody = null;
+	protected static Log sLog = LogFactory.getLog(Email.class);
+	protected javax.mail.Session iMailSession = null;
+	protected MimeMessage iMail = null;
+	protected Multipart iBody = null;
 	
 	public JavaMailWrapper() {
         Properties p = ApplicationProperties.getProperties();
