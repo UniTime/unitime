@@ -272,6 +272,10 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						iIncludeClassSchedule = false;
 					if (iIncludeCourseRequests && status != null && !status.hasOption(StudentSectioningStatus.Option.registration))
 						iIncludeCourseRequests = false;
+					if (iIncludeClassSchedule && !ApplicationProperty.OnlineSchedulingEmailConfirmationOverride.isTrue(iSourceAction + ".classes", true))
+						iIncludeClassSchedule = false;
+					if (iIncludeCourseRequests && !ApplicationProperty.OnlineSchedulingEmailConfirmationOverride.isTrue(iSourceAction + ".requests", true))
+						iIncludeCourseRequests = false;
 				} else {
 					emailEnabled = true;
 				}
@@ -568,8 +572,6 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		Map<String, Object> input = new HashMap<String, Object>();
 		
 		input.put("msg", MSG);
-		if (getEmailSubject() != null && !getEmailSubject().isEmpty())
-			input.put("subject", getEmailSubject().replace("%session%", server.getAcademicSession().toString()));
 		input.put("student", getStudent());
 		input.put("name", helper.getStudentNameFormat().format(student));
 		input.put("server", server);
@@ -970,6 +972,11 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		} else {
 			setSubject(MSG.emailSubjectNotification());
 		}
+		
+		if (getEmailSubject() != null && !getEmailSubject().isEmpty())
+			input.put("subject", getEmailSubject().replace("%session%", server.getAcademicSession().toString()));
+		else if (getSubject() != null && !getSubject().isEmpty())
+			input.put("subject", getSubject().replace("%session%", server.getAcademicSession().toString()));
 		
 		input.put("manager", !iPermisionCheck || (helper.getUser() != null && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER));
 		input.put("changed", getOldEnrollment() != null || getOldStudent() != null);
