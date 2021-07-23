@@ -563,6 +563,13 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		return iCourseUrlProvider.getCourseUrl(session, course.getSubjectArea(), course.getCourseNumber());
 	}
 	
+	protected URL getCourseUrl(OnlineSectioningServer server, RequestedCourse rc) {
+		if (iCourseUrlProvider == null || rc == null || !rc.hasCourseId()) return null;
+		XCourse course = server.getCourse(rc.getCourseId());
+		if (course == null) return null;
+		return iCourseUrlProvider.getCourseUrl(server.getAcademicSession(), course.getSubjectArea(), course.getCourseNumber());
+	}
+	
 	private String generateMessage(org.unitime.timetable.model.Student student, OnlineSectioningServer server, OnlineSectioningHelper helper)  throws IOException, TemplateException {
 		Configuration cfg = new Configuration(Configuration.VERSION_2_3_0);
 		cfg.setClassForTemplateLoading(StudentEmail.class, "/");
@@ -1074,12 +1081,13 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					if (prefs != null) courseRequests.hasPref = true;
 					String credit = (rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : "");
 					String note = null;
-					if (check != null) note = check.getMessage(rc.getCourseName(), "\n", "CREDIT");
-					if (rc.hasStatusNote()) note = (note == null ? "" : note + "\n") + rc.getStatusNote();
+					if (check != null) note = check.getMessageWithColor(rc.getCourseName(), "<br>", "CREDIT");
+					if (rc.hasStatusNote()) note = (note == null ? "" : note + "<br>") + rc.getStatusNote();
 					CourseRequestLine line = new CourseRequestLine();
 					line.priority = (first ? MSG.courseRequestsPriority(priority) : "");
 					line.courseName = rc.getCourseName();
 					line.courseTitle = (rc.hasCourseTitle() ? rc.getCourseTitle() : "");
+					line.url = getCourseUrl(server, rc);
 					line.credit = credit;
 					line.prefs = toString(prefs);
 					line.note = note;
@@ -1087,6 +1095,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					line.iconText = iconText;
 					line.status = status;
 					line.waitlist = (first && request.isWaitlistOrNoSub(wlMode));
+					if (first && request.isWaitList() && wlMode == WaitListMode.WaitList && request.getWaitListedTimeStamp() != null)
+						line.waitListDate = sTimeStampFormat.format(request.getWaitListedTimeStamp());
 					line.first = (priority > 1 && first);
 					courseRequests.add(line);
 				} else if (rc.isFreeTime()) {
@@ -1097,7 +1107,6 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						free += ft.toString(CONST.shortDays(), CONST.useAmPm());
 					}
 					String note = null;
-					if (check != null) check.getMessageWithColor(CONST.freePrefix() + free, "<br>");
 					line.priority = (first ? MSG.courseRequestsPriority(priority) : "");
 					line.courseName = CONST.freePrefix() + free;
 					line.courseTitle = "";
@@ -1191,12 +1200,13 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					if (prefs != null) courseRequests.hasPref = true;
 					String credit = (rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : "");
 					String note = null;
-					if (check != null) note = check.getMessage(rc.getCourseName(), "\n", "CREDIT");
-					if (rc.hasStatusNote()) note = (note == null ? "" : note + "\n") + rc.getStatusNote();
+					if (check != null) note = check.getMessageWithColor(rc.getCourseName(), "<br>", "CREDIT");
+					if (rc.hasStatusNote()) note = (note == null ? "" : note + "<br>") + rc.getStatusNote();
 					CourseRequestLine line = new CourseRequestLine();
 					line.priority = (first ? MSG.courseRequestsAlternate(priority) : "");
 					line.courseName = rc.getCourseName();
 					line.courseTitle = (rc.hasCourseTitle() ? rc.getCourseTitle() : "");
+					line.url = getCourseUrl(server, rc);
 					line.credit = credit;
 					line.prefs = toString(prefs);
 					line.note = note;
@@ -1204,6 +1214,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					line.iconText = iconText;
 					line.status = status;
 					line.waitlist = (first && request.isWaitlistOrNoSub(wlMode));
+					if (first && request.isWaitList() && wlMode == WaitListMode.WaitList && request.getWaitListedTimeStamp() != null)
+						line.waitListDate = sTimeStampFormat.format(request.getWaitListedTimeStamp());
 					line.first = first;
 					line.firstalt = (first && priority == 1);
 					courseRequests.add(line);
@@ -1347,6 +1359,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						line.priority = (first ? MSG.courseRequestsPriority(priority) : "");
 						line.courseName = rc.getCourseName();
 						line.courseTitle = (rc.hasCourseTitle() ? rc.getCourseTitle() : "");
+						line.url = getCourseUrl(server, rc);
 						line.credit = credit;
 						line.prefs = toString(prefs);
 						line.note = note;
@@ -1493,6 +1506,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				XEnrollment enrollment = cr.getEnrollment();
 				if (enrollment == null) {
 					if (!getStudent().canAssign(cr, wlMode)) continue;
+					if (!cr.isWaitlist(wlMode)) continue;
 					XCourse course = server.getCourse(cr.getCourseIds().get(0).getCourseId());
 					listOfClasses.add(new TableCourseLine(cr, course, getCourseUrl(session, course), wlMode == WaitListMode.WaitList));
 				} else {
@@ -1985,6 +1999,23 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 
 		@Override
 		public String getNote() {
+			if (iRequest.isWaitlist() && iWaitListEnabled && iRequest.getWaitListedTimeStamp() != null) {
+				String note = MSG.conflictWaitListed(sTimeStampFormat.format(iRequest.getWaitListedTimeStamp()));
+				Integer status = iRequest.getOverrideStatus(getCourse());
+				if (status == null) {
+				} else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.APPROVED.ordinal()) {
+					note += " " + MSG.overrideApproved(iCourse.getCourseName());
+				} else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.REJECTED.ordinal()) {
+					note += " " + MSG.overrideRejectedWaitList(iCourse.getCourseName());
+				} else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.CANCELLED.ordinal()) {
+					note += " " + MSG.overrideCancelledWaitList(iCourse.getCourseName());
+				} else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.NOT_CHECKED.ordinal()) {
+					note += " " + MSG.overrideNotRequested();
+				} else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.PENDING.ordinal()) {
+					note += " " + MSG.overridePending(iCourse.getCourseName());
+				}
+				return note;
+			}
 			if (iRequest.isAlternative())
 				return (iRequest.isWaitlist() && iWaitListEnabled ? MSG.emailWaitListedAlternativeRequest() : MSG.emailNotEnrolledAlternativeRequest());
 			else
@@ -2413,6 +2444,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		public boolean firstalt = false;
 		public boolean last = false;
 		public int rows = 1;
+		public String waitListDate = null;
+		public URL url;
 		
 		public String getPriority() { return priority; }
 		public String getCourseName() { return courseName; }
@@ -2424,9 +2457,11 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		public String getIcon() { return icon; }
 		public String getIconText() { return iconText; }
 		public boolean isWaitlist() { return waitlist; }
+		public String getWaitListDate() { return waitListDate; }
 		public boolean isFirst() { return first; }
 		public boolean isFirstalt() { return firstalt; }
 		public boolean isLast() { return last; }
 		public int getRows() { return rows; }
+		public URL getUrl() { return url; }
 	}
 }
