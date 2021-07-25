@@ -314,7 +314,7 @@ public class InstructorAction extends Action {
         q.setString("puid", frm.getPuId().trim());
         q.setLong("deptId", Long.parseLong(deptId));
         if (frm.getInstructorId()!=null && frm.getInstructorId().trim().length()>0) {
-            q.setString("uniqueId", frm.getInstructorId().trim());
+            q.setLong("uniqueId", Long.parseLong(frm.getInstructorId().trim()));
         }
         
         return (q.list().size()==0);
