@@ -46,6 +46,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesRespo
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationOperation;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationStatus;
 
 import com.google.gwt.core.client.GWT;
@@ -712,6 +713,19 @@ public class SpecialRegistrationsPanel extends P {
 			}
 		}
 		return hasDrop && !hasAdd;
+	}
+	
+	public boolean canWaitList(Long courseId) {
+		if (courseId == null) return true;
+		for (RetrieveSpecialRegistrationResponse response: iRegistrations) {
+			if (response.getStatus() != SpecialRegistrationStatus.Pending) continue; // not in-progress
+			if (!response.hasChanges()) continue; // no changes
+			for (ClassAssignment ca: response.getChanges()) {
+				if (courseId.equals(ca.getCourseId()) && ca.getSpecRegOperation() == SpecialRegistrationOperation.Add)
+					return false;
+			}
+		}
+		return true;
 	}
 	
 	protected void cancel(final RetrieveSpecialRegistrationResponse reg) {

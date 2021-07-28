@@ -1737,6 +1737,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									unassignedMessage += ".</span>";
 								}
 							}
+							if (w.booleanValue() && !iSpecialRegistrationsPanel.canWaitList(course.getCourseId())) {
+								unassignedMessage += "\n<span class='unitime-ErrorText'>" +
+										MESSAGES.messageWaitListApprovalAlreadyRequested(course.getCourseName()) +
+										"</span>";
+							}
 							RequestedCourseStatus status = iSavedRequest.getStatus(course.getCourseName());
 							if (status != null) {
 								switch (status) {
@@ -3318,6 +3323,21 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			if (lastCheck.isError()) {
 				iStatus.error(lastCheck.getErrorMessage());
 				return;
+			}
+			if (lastCheck.hasMessages()) {
+				String error = null;
+				for (CourseMessage m: lastCheck.getMessages()) {
+					if (m.isConfirm() && !iSpecialRegistrationsPanel.canWaitList(m.getCourseId())) {
+						if (error == null)
+							error = MESSAGES.errorWaitListApprovalAlreadyRequested(m.getCourse());
+						else if (!error.contains(MESSAGES.errorWaitListApprovalAlreadyRequested(m.getCourse())))
+							error += "\n" + MESSAGES.errorWaitListApprovalAlreadyRequested(m.getCourse());
+					}
+				}
+				if (error != null) {
+					iStatus.error(error + "\n" + MESSAGES.errorWaitListApprovalCancelFirst());
+					return;
+				}
 			}
 			if (lastCheck.isConfirm()) {
 				final AsyncCallback<Boolean> callback = new AsyncCallback<Boolean>() {
