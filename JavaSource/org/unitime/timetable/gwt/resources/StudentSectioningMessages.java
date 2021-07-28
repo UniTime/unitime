@@ -3117,4 +3117,13 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Course {0} will not longer be wait-listed. Do you want to proceed?")
 	String confirmCourseDropFromWaitList(String course);
+	
+	@DefaultMessage("Course {0} cannot be wait-listed as there is a pending approval requested already.")
+	String errorWaitListApprovalAlreadyRequested(String course);
+	
+	@DefaultMessage("Please cancel the corresponding approval requests and click the Submit Schedule again.")
+	String errorWaitListApprovalCancelFirst();
+	
+	@DefaultMessage("Course {0} has a pending approval requested already. Cancel the approval request before wait-listing it.")
+	String messageWaitListApprovalAlreadyRequested(String course);
 }
