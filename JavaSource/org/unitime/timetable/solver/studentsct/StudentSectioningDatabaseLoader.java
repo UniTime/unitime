@@ -1389,9 +1389,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         if (s.getMaxCredit() != null)
         	maxCredit = s.getMaxCredit();
         if (s.getOverrideMaxCredit() != null) {
-        	if (s.isRequestApproved())
-        		maxCredit = s.getOverrideMaxCredit();
-        	else if (s.isRequestCancelled() && !iCheckRequestStatusSkipCancelled)
+        	if (s.isRequestCancelled() && !iCheckRequestStatusSkipCancelled)
         		maxCredit = s.getOverrideMaxCredit();
         	else if (s.isRequestPending() && !iCheckRequestStatusSkipPending)
         		maxCredit = s.getOverrideMaxCredit();
