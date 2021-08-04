@@ -32,6 +32,7 @@ import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.authority.OtherAuthority;
 import org.unitime.timetable.security.evaluation.PermissionCheck;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.spring.SpringApplicationContextHolder;
@@ -203,5 +204,35 @@ public class HttpSessionContext implements SessionContext {
 	
 	public static SessionContext getSessionContext(ServletContext context) {
 		return (SessionContext) WebApplicationContextUtils.getWebApplicationContext(context).getBean("sessionContext");
+	}
+
+	@Override
+	public void checkPermissionOtherAuthority(Right right, OtherAuthority other) {
+		unitimePermissionCheck.checkPermission(getUser(), null, null, right, other);
+	}
+
+	@Override
+	public void checkPermissionOtherAuthority(Serializable targetId, String targetType, Right right, OtherAuthority other) {
+		unitimePermissionCheck.checkPermission(getUser(), targetId, targetType, right, other);
+	}
+
+	@Override
+	public void checkPermissionOtherAuthority(Object targetObject, Right right, OtherAuthority other) {
+		unitimePermissionCheck.checkPermission(getUser(), targetObject, right,  other);
+	}
+
+	@Override
+	public boolean hasPermissionOtherAuthority(Right right, OtherAuthority other) {
+		return unitimePermissionCheck.hasPermission(getUser(), null, null, right, other);
+	}
+
+	@Override
+	public boolean hasPermissionOtherAuthority(Serializable targetId, String targetType, Right right, OtherAuthority other) {
+		return unitimePermissionCheck.hasPermission(getUser(), targetId, targetType, right, other);
+	}
+
+	@Override
+	public boolean hasPermissionOtherAuthority(Object targetObject, Right right, OtherAuthority other) {
+		return unitimePermissionCheck.hasPermission(getUser(), targetObject, right, other);
 	}
 }

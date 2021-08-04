@@ -22,6 +22,7 @@ package org.unitime.timetable.security;
 import java.io.Serializable;
 
 import org.unitime.timetable.defaults.SessionAttribute;
+import org.unitime.timetable.security.authority.OtherAuthority;
 import org.unitime.timetable.security.rights.Right;
 
 /**
@@ -51,6 +52,9 @@ public interface SessionContext {
     public void checkPermissionAnySession(Right right, Qualifiable... filter);
     public void checkPermissionAnySession(Serializable targetId, String targetType, Right right, Qualifiable... filter);
     public void checkPermissionAnySession(Object targetObject, Right right, Qualifiable... filter);
+    public void checkPermissionOtherAuthority(Right right, OtherAuthority other);
+    public void checkPermissionOtherAuthority(Serializable targetId, String targetType, Right right, OtherAuthority other);
+    public void checkPermissionOtherAuthority(Object targetObject, Right right, OtherAuthority other);
     public boolean hasPermission(Right right);
     public boolean hasPermission(Serializable targetId, String targetType, Right right);
     public boolean hasPermission(Object targetObject, Right right);
@@ -60,4 +64,7 @@ public interface SessionContext {
     public boolean hasPermissionAnySession(Right right, Qualifiable... filter);
     public boolean hasPermissionAnySession(Serializable targetId, String targetType, Right right, Qualifiable... filter);
     public boolean hasPermissionAnySession(Object targetObject, Right right, Qualifiable... filter);
+    public boolean hasPermissionOtherAuthority(Right right, OtherAuthority other);
+    public boolean hasPermissionOtherAuthority(Serializable targetId, String targetType, Right right, OtherAuthority other);
+    public boolean hasPermissionOtherAuthority(Object targetObject, Right right, OtherAuthority other);
 }

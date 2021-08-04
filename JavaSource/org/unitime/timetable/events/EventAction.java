@@ -40,6 +40,7 @@ import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.authority.OtherAuthority;
 import org.unitime.timetable.security.evaluation.UniTimePermissionCheck;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
@@ -271,6 +272,56 @@ public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpc
 		public void checkPermissionAnySession(Object targetObject, Right right, Qualifiable... filter) {
 			iContext.checkPermissionAnySession(targetObject, right, filter == null || filter.length == 0 ? iFilter : filter);
 		}
+
+		@Override
+		public void checkPermissionOtherAuthority(Right right, OtherAuthority other) {
+			iContext.checkPermissionOtherAuthority(right, new OtherAuthorityWithFilter(other, iFilter));
+		}
+
+		@Override
+		public void checkPermissionOtherAuthority(Serializable targetId, String targetType, Right right, OtherAuthority other) {
+			iContext.checkPermissionOtherAuthority(targetId, targetType, right, new OtherAuthorityWithFilter(other, iFilter));
+		}
+
+		@Override
+		public void checkPermissionOtherAuthority(Object targetObject, Right right, OtherAuthority other) {
+			iContext.checkPermissionOtherAuthority(targetObject, right, new OtherAuthorityWithFilter(other, iFilter));
+		}
+
+		@Override
+		public boolean hasPermissionOtherAuthority(Right right, OtherAuthority other) {
+			return iContext.hasPermissionOtherAuthority(right, new OtherAuthorityWithFilter(other, iFilter));
+		}
+
+		@Override
+		public boolean hasPermissionOtherAuthority(Serializable targetId, String targetType, Right right, OtherAuthority other) {
+			return iContext.hasPermissionOtherAuthority(targetId, targetType, right, new OtherAuthorityWithFilter(other, iFilter));
+		}
+
+		@Override
+		public boolean hasPermissionOtherAuthority(Object targetObject, Right right, OtherAuthority other) {
+			return iContext.hasPermissionOtherAuthority(targetObject, right, new OtherAuthorityWithFilter(other, iFilter));
+		}
+	}
+	
+	public static class OtherAuthorityWithFilter implements OtherAuthority {
+		private OtherAuthority iOther;
+		private Qualifiable[] iFilter;
+		OtherAuthorityWithFilter(OtherAuthority other, Qualifiable... filter) {
+			iOther = other; iFilter = filter;
+		}
+		
+		@Override
+		public boolean isMatch(UserAuthority authority) {
+			if (iOther.isMatch(authority)) {
+				for (Qualifiable q: iFilter)
+					if (!authority.hasQualifier(q)) return false;
+				return true;
+			} else {
+				return false;
+			}
+		}
+		
 	}
 	
 	public static interface HasPastOrOutside {
