@@ -224,10 +224,12 @@ import org.unitime.timetable.onlinesectioning.updates.RejectEnrollmentsAction;
 import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
 import org.unitime.timetable.onlinesectioning.updates.SaveStudentRequests;
 import org.unitime.timetable.onlinesectioning.updates.StudentEmail;
+import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.UserContext.Chameleon;
+import org.unitime.timetable.security.authority.OtherAuthority;
 import org.unitime.timetable.security.context.AnonymousUserContext;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
@@ -449,7 +451,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		boolean noCourseType = true, allCourseTypes = false;
 		Set<String> allowedCourseTypes = new HashSet<String>();
 		Set<Long> courseIds = null;
-		if (getSessionContext().hasPermissionAnySession(cx.getSessionId(), Right.StudentSchedulingCanLookupAllCourses)) {
+		if (getSessionContext().hasPermissionOtherAuthority(cx.getSessionId(), Right.StudentSchedulingCanLookupAllCourses, getStudentAuthority(cx.getSessionId()))) {
 			allCourseTypes = true;
 			if (cx.getStudentId() != null) {
 				if (server != null && !(server instanceof DatabaseServer)) {
@@ -687,7 +689,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						&& (!getSessionContext().hasPermissionAnySession(session, Right.StudentSchedulingAdvisor) || !status.hasOption(StudentSectioningStatus.Option.advisor))
 						) continue;
 				} else {
-					if (!getSessionContext().hasPermissionAnySession(session, Right.SchedulingAssistant)) continue;
+					if (!getSessionContext().hasPermissionOtherAuthority(session, Right.SchedulingAssistant, getStudentAuthority(session))) continue;
 				}
 				ret.add(new AcademicSessionProvider.AcademicSessionInfo(
 						session.getUniqueId(),
@@ -713,7 +715,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							&& (!getSessionContext().hasPermissionAnySession(session, Right.StudentSchedulingAdvisor) || !status.hasOption(StudentSectioningStatus.Option.regadvisor))
 							) continue;
 					} else {
-						if (!getSessionContext().hasPermissionAnySession(session, Right.CourseRequests)) continue;
+						if (!getSessionContext().hasPermissionOtherAuthority(session, Right.CourseRequests, getStudentAuthority(session))) continue;
 					}
 					ret.add(new AcademicSessionProvider.AcademicSessionInfo(
 							session.getUniqueId(),
@@ -1093,7 +1095,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			AcademicSessionInfo s = server.getAcademicSession();
 			if (s == null) throw new SectioningException(MSG.exceptionNoServerForSession());
 			if (getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingUser) == null)
-				getSessionContext().checkPermissionAnySession(s, Right.SchedulingAssistant);
+				getSessionContext().checkPermissionOtherAuthority(s, Right.SchedulingAssistant, getStudentAuthority(s));
 			return new AcademicSessionProvider.AcademicSessionInfo(
 					s.getUniqueId(),
 					s.getYear(), s.getTerm(), s.getCampus(),
@@ -1109,7 +1111,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				throw new SectioningException(MSG.exceptionNoServerForSession());
 			AcademicSessionInfo info = new AcademicSessionInfo(session);
 			if (getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingUser) == null)
-				getSessionContext().checkPermissionAnySession(session, Right.CourseRequests);
+				getSessionContext().checkPermissionOtherAuthority(session, Right.CourseRequests, getStudentAuthority(session));
 			return new AcademicSessionProvider.AcademicSessionInfo(
 					session.getUniqueId(),
 					session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
@@ -3375,9 +3377,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (request.getSessionId() == null) throw new PageAccessException(MSG.exceptionNoAcademicSession());
 		if (request.getStudentId() == null) throw new PageAccessException(MSG.exceptionNoStudent());
 		if (request.isPreReg())
-			getSessionContext().checkPermissionAnySession(request.getSessionId(), "Session", Right.CourseRequests);
+			getSessionContext().checkPermissionOtherAuthority(request.getSessionId(), "Session", Right.CourseRequests, getStudentAuthority(request.getSessionId()));
 		else
-			getSessionContext().checkPermissionAnySession(request.getSessionId(), "Session", Right.SchedulingAssistant);
+			getSessionContext().checkPermissionOtherAuthority(request.getSessionId(), "Session", Right.SchedulingAssistant, getStudentAuthority(request.getSessionId()));
 		
 		OnlineSectioningServer server = getServerInstance(request.getSessionId(), true);
 		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
@@ -3814,5 +3816,49 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			throw new SectioningException(MSG.exceptionNotSupportedFeature());
 		
 		return server.execute(server.createAction(SpecialRegistrationRequestVariableTitleCourse.class).withRequest(request), currentUser());
+	}
+
+	protected OtherAuthority getStudentAuthority(Long sessionId) {
+		return new StudentAuthority(getSessionContext(), new SimpleQualifier("Session", sessionId));
+	}
+	
+	protected OtherAuthority getStudentAuthority(Qualifiable session) {
+		return new StudentAuthority(getSessionContext(), session);
+	}
+	
+	protected static class StudentAuthority implements OtherAuthority {
+		private String iRole = null;
+		private boolean iAllowNoRole = false;
+
+		protected StudentAuthority(SessionContext context, Qualifiable... filter) {
+			UserContext user = context.getUser();
+			if (user != null && user.getCurrentAuthority() != null) {
+				iRole = user.getCurrentAuthority().getRole();
+				iAllowNoRole = true;
+				authorities: for (UserAuthority authority: user.getAuthorities()) {
+					for (Qualifiable q: filter)
+						if (!authority.hasQualifier(q)) continue authorities;
+					if (Roles.ROLE_STUDENT.equals(authority.getRole())) {
+						iAllowNoRole = true;
+						break authorities;
+					}
+				}
+			}
+		}
+
+		@Override
+		public boolean isMatch(UserAuthority authority) {
+			if (iRole == null) return false;
+			if (iRole.equals(authority.getRole())) {
+				return true;
+			}
+			if (Roles.ROLE_STUDENT.equals(authority.getRole())) {
+				return true;
+			}
+			if (iAllowNoRole && Roles.ROLE_NONE.equals(authority.getRole())) {
+				return true;
+			}
+			return false;
+		}
 	}
 }
