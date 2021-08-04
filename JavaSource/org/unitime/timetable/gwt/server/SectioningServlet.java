@@ -3829,9 +3829,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	protected static class StudentAuthority implements OtherAuthority {
 		private String iRole = null;
 		private boolean iAllowNoRole = false;
+		private Qualifiable[] iFilter = null;
 
 		protected StudentAuthority(SessionContext context, Qualifiable... filter) {
 			UserContext user = context.getUser();
+			iFilter = filter;
 			if (user != null && user.getCurrentAuthority() != null) {
 				iRole = user.getCurrentAuthority().getRole();
 				iAllowNoRole = true;
@@ -3839,7 +3841,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					for (Qualifiable q: filter)
 						if (!authority.hasQualifier(q)) continue authorities;
 					if (Roles.ROLE_STUDENT.equals(authority.getRole())) {
-						iAllowNoRole = true;
+						iAllowNoRole = false;
 						break authorities;
 					}
 				}
@@ -3849,15 +3851,19 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		@Override
 		public boolean isMatch(UserAuthority authority) {
 			if (iRole == null) return false;
-			if (iRole.equals(authority.getRole())) {
-				return true;
-			}
-			if (Roles.ROLE_STUDENT.equals(authority.getRole())) {
-				return true;
-			}
-			if (iAllowNoRole && Roles.ROLE_NONE.equals(authority.getRole())) {
-				return true;
-			}
+			
+			for (Qualifiable q: iFilter)
+				if (!authority.hasQualifier(q)) return false;
+			
+			// allow current role
+			if (iRole.equals(authority.getRole())) return true;
+			
+			// allow student role
+			if (Roles.ROLE_STUDENT.equals(authority.getRole())) return true;
+			
+			// allow no role (when no matching student role was found)
+			if (iAllowNoRole && Roles.ROLE_NONE.equals(authority.getRole())) return true;
+			
 			return false;
 		}
 	}
