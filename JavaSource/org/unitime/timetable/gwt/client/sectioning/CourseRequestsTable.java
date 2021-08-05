@@ -35,6 +35,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CourseMessage;
@@ -494,45 +495,55 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		return cr;
 	}
 
-	public void activate(Long courseId) {
-		if (courseId == null) return;
+	public void activate(RequestedCourse course) {
+		if (course == null) return;
 		for (CourseRequestLine line: iCourses) {
 			for (CourseSelectionBox box: line.getCourses())
-				if (box.isActive(courseId)) return;
+				if (box.isActive(course)) return;
 		}
 		for (CourseRequestLine line: iAlternatives) {
 			for (CourseSelectionBox box: line.getCourses())
-				if (box.isActive(courseId)) return;
+				if (box.isActive(course)) return;
 		}
 		for (CourseRequestLine line: iCourses) {
 			for (CourseSelectionBox box: line.getCourses())
-				box.activate(courseId);
+				box.activate(course);
 		}
 		for (CourseRequestLine line: iAlternatives) {
 			for (CourseSelectionBox box: line.getCourses())
-				box.activate(courseId);
+				box.activate(course);
 		}
 	}
 	
-	public boolean isActive(Long courseId) {
-		if (courseId == null) return true;
+	public void activate(CourseAssignment course) {
+		if (course == null) return;
+		activate(new RequestedCourse(course, CONSTANTS.showCourseTitle()));
+	}
+	
+	public boolean isActive(RequestedCourse course) {
+		if (course == null) return true;
 		for (CourseRequestLine line: iCourses) {
 			for (CourseSelectionBox box: line.getCourses())
-				if (box.isActive(courseId)) return true;
+				if (box.isActive(course)) return true;
 		}
 		for (CourseRequestLine line: iAlternatives) {
 			for (CourseSelectionBox box: line.getCourses())
-				if (box.isActive(courseId)) return true;
+				if (box.isActive(course)) return true;
 		}
 		for (CourseRequestLine line: iCourses) {
 			for (CourseSelectionBox box: line.getCourses())
-				if (box.isInactive(courseId)) return false;
+				if (box.isInactive(course)) return false;
 		}
 		for (CourseRequestLine line: iAlternatives) {
 			for (CourseSelectionBox box: line.getCourses())
-				if (box.isInactive(courseId)) return false;
+				if (box.isInactive(course)) return false;
 		}
 		return true;
+	}
+	
+	public boolean isActive(CourseAssignment course) {
+		if (course == null) return true;
+		return isActive(new RequestedCourse(course, CONSTANTS.showCourseTitle()));
 	}
 	
 	public void setRequest(CourseRequestInterface request) {

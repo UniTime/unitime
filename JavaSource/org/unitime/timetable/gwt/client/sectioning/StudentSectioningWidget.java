@@ -1468,7 +1468,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				boolean firstClazz = true;
 				if (course.isAssigned()) {
 					if (course.getCourseId() != null)
-						iCourseRequests.activate(course.getCourseId());
+						iCourseRequests.activate(course);
 					for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
 						if (clazz.getClassId() != null)
 							calendarUrl += clazz.getCourseId() + "-" + clazz.getClassId() + ",";
@@ -1616,7 +1616,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							cell.setStyleName(style);
 						firstClazz = false;
 					}
-				} else if (!iSpecialRegistrationsPanel.isDrop(course.getCourseId()) && iCourseRequests.isActive(course.getCourseId())) {
+				} else if (!iSpecialRegistrationsPanel.isDrop(course.getCourseId()) && iCourseRequests.isActive(course)) {
 					String style = "text-red" + (!rows.isEmpty() ? " top-border-dashed": "");
 					WebTable.Row row = null;
 					String unassignedMessage = MESSAGES.courseNotAssigned();
