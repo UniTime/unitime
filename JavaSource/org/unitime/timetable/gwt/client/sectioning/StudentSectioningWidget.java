@@ -1168,13 +1168,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								if (result.hasRequest()) {
 									for (Request r: result.getRequest().getCourses()) {
 										for (RequestedCourse rc: r.getRequestedCourse()) {
-											if (rc.hasCourseId() && !iCourseRequests.isActive(rc.getCourseId()) && !r.isWaitList())
+											if (rc.hasCourseId() && !iCourseRequests.isActive(rc) && !r.isWaitList())
 												rc.setInactive(true);
 										}
 									}
 									for (Request r: result.getRequest().getAlternatives()) {
 										for (RequestedCourse rc: r.getRequestedCourse()) {
-											if (rc.hasCourseId() && !iCourseRequests.isActive(rc.getCourseId()) && !r.isWaitList())
+											if (rc.hasCourseId() && !iCourseRequests.isActive(rc) && !r.isWaitList())
 												rc.setInactive(true);
 										}
 									}
