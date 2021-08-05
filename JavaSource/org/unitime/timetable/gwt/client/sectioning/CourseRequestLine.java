@@ -754,7 +754,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			activate.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					activate(getValue().getCourseId());
+					activate(getValue());
 					activate.setVisible(false);
 				}
 			});

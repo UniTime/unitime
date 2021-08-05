@@ -686,7 +686,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		
 		@Override
 		public int hashCode() {
-			return (hasCourseId() ? getCourseId().hashCode() : getCourseName().hashCode());
+			return (isCourse() ? getCourseName() : toString()).toLowerCase().hashCode();
 		}
 		
 		@Override
@@ -1452,24 +1452,24 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	}
 	
 	public void removeInactiveDuplicates() {
-		Set<Long> activeCourseIds = new HashSet<Long>();
+		Set<RequestedCourse> activeCourses = new HashSet<RequestedCourse>();
 		for (Request r: iCourses) {
 			if (r.hasRequestedCourse())
 				for (RequestedCourse rc: r.getRequestedCourse())
-					if (!rc.isInactive() && rc.hasCourseId())
-						activeCourseIds.add(rc.getCourseId());
+					if (!rc.isInactive() && rc.isCourse())
+						activeCourses.add(rc);
 		}
 		for (Request r: iAlternatives) {
 			if (r.hasRequestedCourse())
 				for (RequestedCourse rc: r.getRequestedCourse())
-					if (!rc.isInactive() && rc.hasCourseId())
-						activeCourseIds.add(rc.getCourseId());
+					if (!rc.isInactive() && rc.isCourse())
+						activeCourses.add(rc);
 		}
 		for (Request r: iCourses) {
 			if (r.hasRequestedCourse())
 				for (Iterator<RequestedCourse> i = r.getRequestedCourse().iterator(); i.hasNext(); ) {
 					RequestedCourse rc = i.next();
-					if (rc.isInactive() && rc.hasCourseId() && activeCourseIds.contains(rc.getCourseId()))
+					if (rc.isInactive() && rc.isCourse() && activeCourses.contains(rc))
 						i.remove();
 				}
 		}
@@ -1477,7 +1477,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			if (r.hasRequestedCourse())
 				for (Iterator<RequestedCourse> i = r.getRequestedCourse().iterator(); i.hasNext(); ) {
 					RequestedCourse rc = i.next();
-					if (rc.isInactive() && rc.hasCourseId() && activeCourseIds.contains(rc.getCourseId()))
+					if (rc.isInactive() && rc.hasCourseId() && activeCourses.contains(rc))
 						i.remove();
 				}
 		}
@@ -1500,13 +1500,13 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	}
 	
 	public boolean removeDuplicates() {
-		Set<Long> courseIds = new HashSet<Long>();
+		Set<RequestedCourse> courses = new HashSet<RequestedCourse>();
 		boolean deleted = false;
 		for (Request r: iCourses) {
 			if (r.hasRequestedCourse())
 				for (Iterator<RequestedCourse> i = r.getRequestedCourse().iterator(); i.hasNext(); ) {
 					RequestedCourse rc = i.next();
-					if (rc.hasCourseId() && !courseIds.add(rc.getCourseId())) {
+					if (rc.isCourse() && !courses.add(rc)) {
 						i.remove();
 						deleted = true;
 					}
@@ -1516,7 +1516,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			if (r.hasRequestedCourse())
 				for (Iterator<RequestedCourse> i = r.getRequestedCourse().iterator(); i.hasNext(); ) {
 					RequestedCourse rc = i.next();
-					if (rc.hasCourseId() && !courseIds.add(rc.getCourseId())) {
+					if (rc.isCourse() && !courses.add(rc)) {
 						i.remove();
 						deleted = true;
 					}
