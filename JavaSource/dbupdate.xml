@@ -14162,7 +14162,7 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'MajorEdit'
 		</sql>
 	</update>
-	<update version="240" date="16-Feb-2021" comment="Add Funding Department">
+	<update version="245" date="16-Feb-2021" comment="Add Funding Department">
 	    <plsql>alter table %SCHEMA%.department add external_funding_dept number(1)</plsql>
 	    <mysql>alter table %SCHEMA%.department add external_funding_dept int(1)</mysql>
 	    <pgsql>alter table %SCHEMA%.department add external_funding_dept boolean</pgsql>
@@ -14275,4 +14275,10 @@
 		</pgsql>
 	
 	</update>	
+	<update version="240" date="12-Aug-2021" comment="Last Like Demand Increase Course Number Size">
+		<plsql>alter table %SCHEMA%.lastlike_course_demand modify course_nbr varchar2(40 char)</plsql>
+		<mysql>alter table %SCHEMA%.lastlike_course_demand modify course_nbr varchar(40)</mysql>
+		<pgsql>alter table %SCHEMA%.lastlike_course_demand alter column course_nbr type varchar(40)</pgsql>
+	</update>
+	
 </dbupdate>
