@@ -1429,27 +1429,27 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						Gson gson = getGson(helper);
 						if (helper.isDebugEnabled())
 							helper.debug("Request: " + gson.toJson(req));
-						helper.getAction().addOptionBuilder().setKey("wl-req-" + testEnrollment.getCourse().getName().replace(" ", "").toLowerCase()).setValue(gson.toJson(req));
+						action.addOptionBuilder().setKey("wl-req-" + testEnrollment.getCourse().getName().replace(" ", "").toLowerCase()).setValue(gson.toJson(req));
 						long t1 = System.currentTimeMillis();
 						
 						resource.post(new GsonRepresentation<CheckRestrictionsRequest>(req));
 						
-						helper.getAction().setApiPostTime(
-								(helper.getAction().hasApiPostTime() ? helper.getAction().getApiPostTime() : 0) + 
+						action.setApiPostTime(
+								(action.hasApiPostTime() ? action.getApiPostTime() : 0) + 
 								System.currentTimeMillis() - t1);
 						
 						validation = (CheckRestrictionsResponse)new GsonRepresentation<CheckRestrictionsResponse>(resource.getResponseEntity(), CheckRestrictionsResponse.class).getObject();
 						if (helper.isDebugEnabled())
 							helper.debug("Response: " + gson.toJson(validation));
-						helper.getAction().addOptionBuilder().setKey("wl-resp-" + testEnrollment.getCourse().getName().replace(" ", "").toLowerCase()).setValue(gson.toJson(validation));
+						action.addOptionBuilder().setKey("wl-resp-" + testEnrollment.getCourse().getName().replace(" ", "").toLowerCase()).setValue(gson.toJson(validation));
 						
 						if (ResponseStatus.success != validation.status)
 							throw new SectioningException(validation.message == null || validation.message.isEmpty() ? "Failed to check student eligibility (" + validation.status + ")." : validation.message);
 					} catch (SectioningException e) {
-						helper.getAction().setApiException(e.getMessage());
+						action.setApiException(e.getMessage());
 						throw (SectioningException)e;
 					} catch (Exception e) {
-						helper.getAction().setApiException(e.getMessage());
+						action.setApiException(e.getMessage());
 						sLog.error(e.getMessage(), e);
 						throw new SectioningException(e.getMessage());
 					} finally {
