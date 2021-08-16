@@ -18,14 +18,14 @@
  * 
 */
 
-alter table course_demand add waitlist_ts datetime;
+alter table course_demand add waitlist_ts timestamp with time zone;
 
-update course_demand set waitlist_ts = timestamp where waitlist = 1;
+update course_demand set waitlist_ts = timestamp where waitlist = true;
 
 /*
  * Update database version
  */
 
-update application_config set value='242' where name='tmtbl.db.version';
+update application_config set value='243' where name='tmtbl.db.version';
 
 commit;

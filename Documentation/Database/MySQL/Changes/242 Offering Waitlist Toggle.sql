@@ -24,6 +24,6 @@ alter table instructional_offering add waitlist int(1);
  * Update database version
  */
 
-update application_config set value='241' where name='tmtbl.db.version';
+update application_config set value='242' where name='tmtbl.db.version';
 
 commit;

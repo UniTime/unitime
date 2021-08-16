@@ -18,9 +18,7 @@
  * 
 */
 
-alter table course_demand add waitlist_ts timestamp with time zone;
-
-update course_demand set waitlist_ts = timestamp where waitlist = true;
+alter table instructional_offering add waitlist boolean;
 
 /*
  * Update database version

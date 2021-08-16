@@ -14172,7 +14172,7 @@
 	    <mysql>alter table %SCHEMA%.instructional_offering add waitlist int(1)</mysql>
 	    <pgsql>alter table %SCHEMA%.instructional_offering add waitlist boolean</pgsql>
 	</update>
-	<update version="241" date="28-Apr-2021" comment="Course Demand No-Subtitutes">
+	<update version="242" date="28-Apr-2021" comment="Course Demand No-Subtitutes">
 		<plsql>alter table %SCHEMA%.course_demand add nosub number(1)</plsql>
 	    <mysql>alter table %SCHEMA%.course_demand add nosub int(1)</mysql>
 	    <pgsql>alter table %SCHEMA%.course_demand add nosub boolean</pgsql>
@@ -14182,7 +14182,7 @@
 	    <sql>update %SCHEMA%.course_demand set nosub = waitlist</sql>
 	    <sql>update %SCHEMA%.advisor_crsreq set nosub = waitlist</sql>
 	</update>
-	<update version="242" date="17-May-2021" comment="Course Demand Wait-List Time Stamp">
+	<update version="243" date="17-May-2021" comment="Course Demand Wait-List Time Stamp">
 		<plsql>alter table %SCHEMA%.course_demand add waitlist_ts timestamp</plsql>
 	    <mysql>alter table %SCHEMA%.course_demand add waitlist_ts datetime</mysql>
 	    <pgsql>alter table %SCHEMA%.course_demand add waitlist_ts timestamp with time zone</pgsql>

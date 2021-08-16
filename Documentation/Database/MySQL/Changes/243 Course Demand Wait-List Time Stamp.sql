@@ -18,12 +18,14 @@
  * 
 */
 
-alter table instructional_offering add waitlist number(1);
+alter table course_demand add waitlist_ts datetime;
+
+update course_demand set waitlist_ts = timestamp where waitlist = 1;
 
 /*
  * Update database version
  */
 
-update application_config set value='241' where name='tmtbl.db.version';
+update application_config set value='243' where name='tmtbl.db.version';
 
 commit;

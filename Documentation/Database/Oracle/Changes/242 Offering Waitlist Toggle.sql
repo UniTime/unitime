@@ -18,9 +18,7 @@
  * 
 */
 
-alter table course_demand add waitlist_ts timestamp;
-
-update course_demand set waitlist_ts = timestamp where waitlist = 1;
+alter table instructional_offering add waitlist number(1);
 
 /*
  * Update database version
