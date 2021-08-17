@@ -2342,7 +2342,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				
 		@Override
 		public String getArrangeHours() { 
-			return diff(getOldTime() == null ? MSG.emailArrangeHours() : DayCode.toString(getOldTime().getDays()) + " " + startTime(getOldTime()), MSG.emailArrangeHours());
+			return diff(getOldTime() == null || getOldTime().getDays() == 0 ? MSG.emailArrangeHours() : DayCode.toString(getOldTime().getDays()) + " " + startTime(getOldTime()), MSG.emailArrangeHours());
 		}
 
 		@Override
