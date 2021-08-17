@@ -1789,6 +1789,10 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	.unitime-CourseRequestBox .inactive input[type="text"] {
 		color: black;
 	}
+	.unitime-CheckBoxColumn {
+		visibility: hidden;
+		display: none;
+	}
 }
 
 .unitime-BlankSeparator {
@@ -7091,4 +7095,8 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-SpecialRegistrationsPanel .registrations-table td:nth-child(7) {
 	width: 400px;
+}
+
+.unitime-CheckBoxColumn {
+	width: 10px;	
 }
