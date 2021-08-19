@@ -142,6 +142,7 @@ public class SavedHQLPage extends Composite {
 	private Set<Long> iSelectedStudentIds = new HashSet<Long>();
 	private Set<StudentStatusInfo> iStates = null;
 	private StudentStatusDialog iStudentStatusDialog = null;
+	private Map<Long, List<CheckBox>> iStudentId2Checks = new HashMap<Long, List<CheckBox>>();
 	
 	public SavedHQLPage() {
 		iAppearance = Window.Location.getParameter("appearance");
@@ -613,8 +614,12 @@ public class SavedHQLPage extends Composite {
 						ToolBox.open(GWT.getHostPageBaseURL() + "examDetail.do?examId=" + event.getData()[0]);
 					else if ("__Event".equals(iFirstField))
 						ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=events#event=" + event.getData()[0]);
-					else if ("__Student".equals(iFirstField))
-						new EnrollmentTable(false, true).showStudentSchedule(Long.valueOf(event.getData()[0]));
+					else if ("__Student".equals(iFirstField)) {
+						EnrollmentTable et = new EnrollmentTable(false, true);
+						et.setAdvisorRecommendations(iSectioningProperties != null && iSectioningProperties.isAdvisorCourseRequests());
+						et.setEmail(iSectioningProperties != null && iSectioningProperties.isEmail());
+						et.showStudentSchedule(Long.valueOf(event.getData()[0]));
+					}
 				}
 			}
 		});
@@ -1198,6 +1203,7 @@ public class SavedHQLPage extends Composite {
 	}
 	
 	public void populate(Table result) {
+		iStudentId2Checks.clear();
 		if (result == null || result.size() <= 1) {
 			iTableHeader.setMessage(MESSAGES.errorNoResults());
 			iTableHeader.setEnabled("next", false);
@@ -1623,6 +1629,12 @@ public class SavedHQLPage extends Composite {
 							}
 						});
 						final Long sid = Long.valueOf(row[0]);
+						List<CheckBox> toggles = iStudentId2Checks.get(sid);
+						if (toggles == null) {
+							toggles = new ArrayList<CheckBox>();
+							iStudentId2Checks.put(sid, toggles);
+						}
+						toggles.add(ch);
 						ch.setValue(iSelectedStudentIds.contains(sid));
 						ch.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 							@Override
@@ -1631,6 +1643,9 @@ public class SavedHQLPage extends Composite {
 									iSelectedStudentIds.add(sid);
 								else
 									iSelectedStudentIds.remove(sid);
+								if (iStudentId2Checks.get(sid).size() > 1)
+									for (CheckBox ch: iStudentId2Checks.get(sid))
+										ch.setValue(event.getValue());
 							}
 						});
 						line.set(0, ch);

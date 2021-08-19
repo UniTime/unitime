@@ -3316,6 +3316,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			if (a.getLastName() != null)
 				st.addAdvisor(NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value()).format(a));
 		}
+		st.setCanSelect(
+				getSessionContext().hasPermission(student.getSession(), Right.AdvisorCourseRequests) ||
+				getSessionContext().hasPermission(student.getSession(), Right.StudentSchedulingEmailStudent));
 		return st;
 	}
 
