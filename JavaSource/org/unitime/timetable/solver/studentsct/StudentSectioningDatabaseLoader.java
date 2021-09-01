@@ -52,6 +52,7 @@ import org.cpsolver.ifs.solution.Solution;
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.IdGenerator;
 import org.cpsolver.ifs.util.Progress;
+import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.cpsolver.studentsct.StudentSectioningLoader;
 import org.cpsolver.studentsct.StudentSectioningModel;
 import org.cpsolver.studentsct.constraint.FixedAssignments;
@@ -253,12 +254,13 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private boolean iFixAssignedEnrollments = false;
     private boolean iSkipStudentsWithHold = false;
     private StudentHoldsCheckProvider iStudentHoldsCheckProvider = null;
+    private InMemoryReport iStudentHoldsCSV;
     private boolean iUseAdvisorWaitLists = false;
     private Date iClassesPastDate = null;
     private int iClassesPastDateIndex = 0;
     private boolean iLoadArrangedHoursPlacements = true;
     
-    public StudentSectioningDatabaseLoader(StudentSectioningModel model, org.cpsolver.ifs.assignment.Assignment<Request, Enrollment> assignment) {
+    public StudentSectioningDatabaseLoader(StudentSolver solver, StudentSectioningModel model, org.cpsolver.ifs.assignment.Assignment<Request, Enrollment> assignment) {
         super(model, assignment);
         iIncludeCourseDemands = model.getProperties().getPropertyBoolean("Load.IncludeCourseDemands", iIncludeCourseDemands);
         iIncludeUseCommittedAssignments = model.getProperties().getPropertyBoolean("Load.IncludeUseCommittedAssignments", iIncludeUseCommittedAssignments);
@@ -407,6 +409,15 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iSkipStudentsWithHold = model.getProperties().getPropertyBoolean("Load.SkipStudentsWithHold", iSkipStudentsWithHold);
         if (iSkipStudentsWithHold && Customization.StudentHoldsCheckProvider.hasProvider())
         	iStudentHoldsCheckProvider = Customization.StudentHoldsCheckProvider.getProvider();
+        if (iStudentHoldsCheckProvider != null && iSkipStudentsWithHold) {
+        	iStudentHoldsCSV = new InMemoryReport("HOLDS", "Student Holds (" + Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP_SHORT).format(new Date()) + ")");
+        	iStudentHoldsCSV.setHeader(new CSVField[] {
+    				new CSVField("Student Id"),
+    				new CSVField("Name"),
+    				new CSVField("Error")
+    		});
+        	if (solver != null) solver.setReport(iStudentHoldsCSV);
+        }
         
         iUseAdvisorWaitLists = model.getProperties().getPropertyBoolean("Load.UseAdvisorWaitLists", iUseAdvisorWaitLists);
         iLoadArrangedHoursPlacements = model.getProperties().getPropertyBoolean("Load.ArrangedHoursPlacements", iLoadArrangedHoursPlacements);
@@ -1347,6 +1358,11 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	String error = getStudentHoldError(hibSession, s);
         	if (error != null) {
         		iProgress.info(iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + "): " + error);
+        		iStudentHoldsCSV.addLine(new CSVField[] {
+        				new CSVField(s.getExternalUniqueId()),
+        				new CSVField(iStudentNameFormat.format(s)),
+        				new CSVField(error)
+        		});
         		skipStudent(s, courseTable, classTable);
         		return null;
         	}

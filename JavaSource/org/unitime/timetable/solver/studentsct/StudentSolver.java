@@ -182,12 +182,17 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	protected ProblemLoader<Request, Enrollment, StudentSectioningModel> getDatabaseLoader(StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
 		try {
 			String loaderClass = getProperties().getProperty("General.DatabaseLoader", StudentSectioningDatabaseLoader.class.getName());
-			if (loaderClass != null && !loaderClass.isEmpty())
-				return (ProblemLoader<Request, Enrollment, StudentSectioningModel>) Class.forName(loaderClass).getConstructor(StudentSectioningModel.class, Assignment.class).newInstance(model, assignment);
+			if (loaderClass != null && !loaderClass.isEmpty()) {
+				try {
+					return (ProblemLoader<Request, Enrollment, StudentSectioningModel>) Class.forName(loaderClass).getConstructor(StudentSolver.class, StudentSectioningModel.class, Assignment.class).newInstance(this, model, assignment);
+				} catch (NoSuchMethodException e) {
+					return (ProblemLoader<Request, Enrollment, StudentSectioningModel>) Class.forName(loaderClass).getConstructor(StudentSectioningModel.class, Assignment.class).newInstance(model, assignment);
+				}
+			}
 		} catch (Exception e) {
 			iProgress.error("Failed to create a custom database loader: " + e.getMessage(), e);
 		}
-		return new StudentSectioningDatabaseLoader(model, assignment);
+		return new StudentSectioningDatabaseLoader(this, model, assignment);
 	}
 	
 	@Override
