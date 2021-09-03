@@ -43,7 +43,7 @@ public interface WaitListValidationProvider {
 	
 	public void validate(OnlineSectioningServer server, OnlineSectioningHelper helper, CourseRequestInterface request, CheckCoursesResponse response) throws SectioningException;
 	
-	public void submit(OnlineSectioningServer server, OnlineSectioningHelper helper, CourseRequestInterface request, Float currentCredit) throws SectioningException;
+	public void submit(OnlineSectioningServer server, OnlineSectioningHelper helper, CourseRequestInterface request, Float neededCredit) throws SectioningException;
 	
 	public boolean updateStudent(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, OnlineSectioningLog.Action.Builder action) throws SectioningException;
 	

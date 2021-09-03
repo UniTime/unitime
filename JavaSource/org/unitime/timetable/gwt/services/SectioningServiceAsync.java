@@ -122,7 +122,7 @@ public interface SectioningServiceAsync {
 	void changeCriticalOverride(Long studentId, Long courseId, Integer critical, AsyncCallback<Integer> callback) throws SectioningException, PageAccessException;
 	void updateSpecialRequest(UpdateSpecialRegistrationRequest request, AsyncCallback<UpdateSpecialRegistrationResponse> callback) throws SectioningException, PageAccessException;
 	void waitListCheckValidation(CourseRequestInterface request, AsyncCallback<CheckCoursesResponse> callback) throws SectioningException, PageAccessException;
-	void waitListSubmitOverrides(CourseRequestInterface request, Float currentCredit, AsyncCallback<CourseRequestInterface> callback) throws SectioningException, PageAccessException;	
+	void waitListSubmitOverrides(CourseRequestInterface request, Float neededCredit, AsyncCallback<CourseRequestInterface> callback) throws SectioningException, PageAccessException;	
 	
 	void getStudentSessions(String studentExternalId, AsyncCallback<Collection<AcademicSessionInfo>> callback) throws SectioningException, PageAccessException;
 	void getStudentAdvisingDetails(Long sessionId, String studentExternalId, AsyncCallback<AdvisingStudentDetails> callback) throws SectioningException, PageAccessException;

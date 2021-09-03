@@ -123,7 +123,7 @@ public interface SectioningService extends RemoteService {
 	Integer changeCriticalOverride(Long studentId, Long courseId, Integer critical) throws SectioningException, PageAccessException;
 	UpdateSpecialRegistrationResponse updateSpecialRequest(UpdateSpecialRegistrationRequest request) throws SectioningException, PageAccessException;
 	CheckCoursesResponse waitListCheckValidation(CourseRequestInterface request) throws SectioningException, PageAccessException;
-	CourseRequestInterface waitListSubmitOverrides(CourseRequestInterface request, Float currentCredit) throws SectioningException, PageAccessException;
+	CourseRequestInterface waitListSubmitOverrides(CourseRequestInterface request, Float neededCredit) throws SectioningException, PageAccessException;
 	
 	Collection<AcademicSessionInfo> getStudentSessions(String studentExternalId) throws SectioningException, PageAccessException;
 	AdvisingStudentDetails getStudentAdvisingDetails(Long sessionId, String studentExternalId) throws SectioningException, PageAccessException;

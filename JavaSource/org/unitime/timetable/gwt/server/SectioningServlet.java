@@ -3910,7 +3910,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 
 	@Override
-	public CourseRequestInterface waitListSubmitOverrides(CourseRequestInterface request, Float currentCredit) throws SectioningException, PageAccessException {
+	public CourseRequestInterface waitListSubmitOverrides(CourseRequestInterface request, Float neededCredit) throws SectioningException, PageAccessException {
 		checkContext(request);
 		if (request.getSessionId() == null) throw new PageAccessException(MSG.exceptionNoAcademicSession());
 		if (request.getStudentId() == null) throw new PageAccessException(MSG.exceptionNoStudent());
@@ -3921,7 +3921,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (!server.getAcademicSession().isSectioningEnabled() || !Customization.WaitListValidationProvider.hasProvider())
 			throw new SectioningException(MSG.exceptionNotSupportedFeature());
 		
-		return server.execute(server.createAction(WaitListSubmitOverrides.class).withRequest(request).withCredit(currentCredit), currentUser());
+		return server.execute(server.createAction(WaitListSubmitOverrides.class).withRequest(request).withCredit(neededCredit), currentUser());
 	}
 
 	protected OtherAuthority getStudentAuthority(Long sessionId) {

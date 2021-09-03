@@ -53,15 +53,15 @@ public class WaitListSubmitOverrides implements OnlineSectioningAction<CourseReq
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private CourseRequestInterface iRequest = null;
-	private Float iCurrentCredit = null;
+	private Float iNeededCredit = null;
 	
 	public WaitListSubmitOverrides withRequest(CourseRequestInterface request) {
 		iRequest = request;
 		return this;
 	}
 	
-	public WaitListSubmitOverrides withCredit(Float currentCredit) {
-		iCurrentCredit = currentCredit;
+	public WaitListSubmitOverrides withCredit(Float neededCredit) {
+		iNeededCredit = neededCredit;
 		return this;
 	}
 	
@@ -90,7 +90,7 @@ public class WaitListSubmitOverrides implements OnlineSectioningAction<CourseReq
 						.setName(helper.getStudentNameFormat().format(student)));
 
 				WaitListValidationProvider provider = Customization.WaitListValidationProvider.getProvider();
-				provider.submit(server, helper, iRequest, iCurrentCredit);
+				provider.submit(server, helper, iRequest, iNeededCredit);
 				
 				for (CourseDemand cd: student.getCourseDemands()) {
 					if (!Boolean.TRUE.equals(cd.getWaitlist()) || Boolean.TRUE.equals(cd.isAlternative()) || cd.isEnrolled()) {
