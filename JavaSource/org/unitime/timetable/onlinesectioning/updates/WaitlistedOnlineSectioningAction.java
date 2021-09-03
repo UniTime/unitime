@@ -19,25 +19,33 @@
 */
 package org.unitime.timetable.onlinesectioning.updates;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.studentsct.model.Student.StudentPriority;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.Customization;
+import org.unitime.timetable.onlinesectioning.custom.WaitListComparatorProvider;
 import org.unitime.timetable.onlinesectioning.custom.WaitListValidationProvider;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XOverride;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudent.XGroup;
+import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
+import org.unitime.timetable.onlinesectioning.solver.SectioningRequestComparator;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction;
 
 /**
@@ -45,6 +53,7 @@ import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction
  */
 public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSectioningAction<T> {
 	private static final long serialVersionUID = 1L;
+	protected static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Set<String> iWaitlistStatuses = null;
 	private Map<StudentPriority, String> iPriorityStudentGroupReference = null;
 	private Map<StudentPriority, Query> iPriorityStudentQuery = null;
@@ -74,6 +83,40 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
 				}
 				if (override != null && !override.isApproved()) return false;
 			}
+		}
+		
+		return true;
+	}
+	
+	public boolean isWaitListedAssumeApproved(XStudent student, XCourseRequest request, XOffering offering, XCourseId courseId, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		// No student
+		if (student == null) return false;
+		
+		// Check wait-list toggle first
+		if (request == null || !request.isWaitlist()) return false;
+		
+		// Ignore enrolled requests
+		if (request.getEnrollment() != null) return false;
+		
+		// Check that the offering can be wait-listed
+		if (!offering.isWaitList()) return false;
+		
+		// No matching course
+		if (courseId == null) return false;
+		
+		// Check student status
+		String status = student.getStatus();
+		if (status == null) status = server.getAcademicSession().getDefaultSectioningStatus();
+		if (status != null) {
+			if (iWaitlistStatuses == null)
+				iWaitlistStatuses = StudentSectioningStatus.getMatchingStatuses(server.getAcademicSession().getUniqueId(), StudentSectioningStatus.Option.waitlist, StudentSectioningStatus.Option.enrollment);
+			if (!iWaitlistStatuses.contains(status)) return false;
+		}
+
+		// When validation is enabled, ignore when override has not been requested
+		if (Customization.WaitListValidationProvider.hasProvider()) {
+			XOverride override = request.getOverride(courseId);
+			if (override != null && "TBD".equals(override.getExternalId())) return false;
 		}
 		
 		return true;
@@ -112,5 +155,31 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
         	}
         }
 		return StudentPriority.Normal;
+	}
+	
+	public String getWaitListPosition(XOffering offering, XStudent student, XCourseRequest request, XCourseId courseId, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		if (!isWaitListedAssumeApproved(student, request, offering, courseId, server, helper)) return null;
+		if (!courseId.equals(request.getCourseIdByOfferingId(offering.getOfferingId()))) return null;
+		XEnrollments enrl = server.getEnrollments(offering.getOfferingId());
+		if (enrl == null) return null;
+		
+		WaitListComparatorProvider cmpProvider = Customization.WaitListComparatorProvider.getProvider();
+		Comparator<SectioningRequest> cmp = (cmpProvider == null ? new SectioningRequestComparator() : cmpProvider.getComparator(server, helper));
+		
+		SectioningRequest sr = new SectioningRequest(offering, request, courseId, student, getStudentPriority(student, server, helper), null);
+		int before = 0, total = 0;
+		for (XCourseRequest cr: enrl.getRequests()) {
+			if (!cr.isWaitlist() || cr.getEnrollment() != null) continue; // skip enrolled or not wait-listed
+			XStudent s = server.getStudent(cr.getStudentId());
+			XCourseId c = cr.getCourseIdByOfferingId(offering.getOfferingId());
+			if (!isWaitListedAssumeApproved(s, request, offering, c, server, helper)) continue; // skip not wait-listed
+			total ++;
+			if (!cr.equals(request)) {
+				SectioningRequest other = new SectioningRequest(offering, cr, c, s, getStudentPriority(s, server, helper), null);
+				if (cmp.compare(other, sr) < 0) before ++;
+			}
+		}
+		
+		return MSG.waitListPosition(before + 1, total);
 	}
 }

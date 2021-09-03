@@ -57,7 +57,6 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseSt
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.dao.StudentDAO;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -89,12 +88,13 @@ import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
+import org.unitime.timetable.onlinesectioning.updates.WaitlistedOnlineSectioningAction;
 import org.unitime.timetable.util.Formats;
 
 /**
  * @author Tomas Muller
  */
-public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInterface>{
+public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignmentInterface>{
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private static StudentSectioningConstants CONSTANTS = Localization.create(StudentSectioningConstants.class);
@@ -306,7 +306,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 		return sections;
 	}
 	
-	public static ClassAssignmentInterface computeAssignment(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<XRequest> studentRequests, List<EnrollmentFailure> messages, Set<ErrorMessage> errors, boolean includeRequest, WaitListMode wlMode) {
+	public ClassAssignmentInterface computeAssignment(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<XRequest> studentRequests, List<EnrollmentFailure> messages, Set<ErrorMessage> errors, boolean includeRequest, WaitListMode wlMode) {
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_REQUEST);
 		DistanceMetric m = server.getDistanceMetric();
 		OverExpectedCriterion overExp = server.getOverExpectedCriterion();
@@ -865,6 +865,9 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 						rc.setOverrideTimeStamp(((XCourseRequest)cd).getOverrideTimeStamp(courseId));
 						((XCourseRequest)cd).fillPreferencesIn(rc, courseId);
 						r.addRequestedCourse(rc);
+						if (rc.isCanWaitList() && ((XCourseRequest)cd).getEnrollment() == null && ((XCourseRequest)cd).isWaitlist()) {
+							rc.setWaitListPosition(getWaitListPosition(offering, student, (XCourseRequest)cd, courseId, server, helper));
+						}
 					}
 					r.setWaitList(((XCourseRequest)cd).isWaitlist(wlMode));
 					r.setNoSub(((XCourseRequest)cd).isNoSub(wlMode));
