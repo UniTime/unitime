@@ -46,7 +46,6 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseSt
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.CourseRequest;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -65,12 +64,13 @@ import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
+import org.unitime.timetable.onlinesectioning.updates.WaitlistedOnlineSectioningAction;
 import org.unitime.timetable.solver.studentsct.StudentSolver;
 
 /**
  * @author Tomas Muller
  */
-public class GetRequest implements OnlineSectioningAction<CourseRequestInterface> {
+public class GetRequest extends WaitlistedOnlineSectioningAction<CourseRequestInterface> {
 	protected static StudentSectioningConstants CONSTANTS = Localization.create(StudentSectioningConstants.class);
 	protected static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private static final long serialVersionUID = 1L;
@@ -274,6 +274,9 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 						rc.setOverrideTimeStamp(((XCourseRequest)cd).getOverrideTimeStamp(courseId));
 						((XCourseRequest)cd).fillPreferencesIn(rc, courseId);
 						r.addRequestedCourse(rc);
+						if (rc.isCanWaitList() && ((XCourseRequest)cd).getEnrollment() == null && ((XCourseRequest)cd).isWaitlist()) {
+							rc.setWaitListPosition(getWaitListPosition(offering, student, (XCourseRequest)cd, courseId, server, helper));
+						}
 					}
 					r.setWaitList(((XCourseRequest)cd).isWaitlist());
 					r.setNoSub(((XCourseRequest)cd).isNoSub());
@@ -389,6 +392,4 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 	public String name() {
 		return "get-request";
 	}
-	
-
 }

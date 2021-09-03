@@ -32,6 +32,8 @@ import java.util.Map;
 
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 
 /**
  * @author Tomas Muller
@@ -39,6 +41,7 @@ import org.infinispan.commons.marshall.SerializeWith;
 @SerializeWith(XEnrollments.XEnrollmentsSerializer.class)
 public class XEnrollments implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
+	protected static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	
 	private Long iOfferingId;
 	private List<XCourseRequest> iRequests = new ArrayList<XCourseRequest>();

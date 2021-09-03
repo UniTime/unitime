@@ -78,18 +78,23 @@ public class SectioningRequest implements LastSectionProvider {
 	private StudentPriority iStudentPriority = StudentPriority.Normal;
 	private int iAlternativity = 0;
 
-	public SectioningRequest(XOffering offering, XCourseRequest request, XStudent student, StudentPriority priority, OnlineSectioningLog.Action.Builder action) {
+	public SectioningRequest(XOffering offering, XCourseRequest request, XCourseId courseId, XStudent student, StudentPriority priority, OnlineSectioningLog.Action.Builder action) {
 		iRequest = request;
 		iStudent = student;
 		iOffering = offering;
-		for (int i = 0; i < request.getCourseIds().size(); i++) {
-			if (request.getCourseIds().get(i).getOfferingId().equals(offering.getOfferingId())) {
-				iAlternativity = i; break;
+		if (courseId != null) {
+			iAlternativity = request.getCourseIds().indexOf(courseId);
+		} else {
+			for (int i = 0; i < request.getCourseIds().size(); i++) {
+				if (request.getCourseIds().get(i).getOfferingId().equals(offering.getOfferingId())) {
+					iAlternativity = i; break;
+				}
 			}
 		}
 
 		iStudentPriority = priority;
-		action.addOptionBuilder().setKey("Student Priority").setValue(iStudentPriority.name());
+		if (action != null)
+			action.addOptionBuilder().setKey("Student Priority").setValue(iStudentPriority.name());
 
 		if (request.isCritical()) {
 			if (request.getCritical() == CourseDemand.Critical.CRITICAL.ordinal())
@@ -97,7 +102,8 @@ public class SectioningRequest implements LastSectionProvider {
 			else if (request.getCritical() == CourseDemand.Critical.IMPORTANT.ordinal())
 				iRequestPriority = RequestPriority.Important;
 		}
-		action.addOptionBuilder().setKey("Request Priority").setValue(iRequestPriority.name());
+		if (action != null)
+			action.addOptionBuilder().setKey("Request Priority").setValue(iRequestPriority.name());
 
 		iHasIndividualReservation = false;
 		for (XReservation reservation: iOffering.getReservations()) {

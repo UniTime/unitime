@@ -121,6 +121,7 @@ public class WaitListsPanel extends P {
 		header.add(new UniTimeTableHeader(MESSAGES.colCourse()));
 		header.add(new UniTimeTableHeader(MESSAGES.colTitle()));
 		header.add(new UniTimeTableHeader(MESSAGES.colCredit()));
+		header.add(new UniTimeTableHeader(MESSAGES.colWaitListPosition()));
 		header.add(new UniTimeTableHeader(MESSAGES.colRequirements()));
 		header.add(new UniTimeTableHeader(MESSAGES.colWaitListErrors()));
 		iTable.addRow(null, header);
@@ -150,6 +151,7 @@ public class WaitListsPanel extends P {
 		if (iRequests != null) {
 			NumberFormat df = NumberFormat.getFormat("0.#");
 			boolean hasPrefs = false;
+			boolean hasPosition = false;
 			for (Request request: iRequests.getCourses()) {
 				if (request.isWaitList() && request.hasRequestedCourse()) {
 					boolean firstLine = true;
@@ -213,6 +215,9 @@ public class WaitListsPanel extends P {
 							row.add(new Label(rc.hasCourseTitle() ? rc.getCourseTitle() : ""));
 							row.add(new Label(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : ""));
 							
+							if (rc.hasWaitListPosition()) hasPosition = true;
+							row.add(new Label(rc.hasWaitListPosition() ? rc.getWaitListPosition() : ""));
+							
 							Collection<Preference> prefs = null;
 							if (rc.hasSelectedIntructionalMethods()) {
 								if (rc.hasSelectedClasses()) {
@@ -263,7 +268,8 @@ public class WaitListsPanel extends P {
 					}
 				}
 			}
-			iTable.setColumnVisible(5, hasPrefs);
+			iTable.setColumnVisible(5, hasPosition);
+			iTable.setColumnVisible(6, hasPrefs);
 		}
 		setVisible(iTable.getRowCount() > 1);
 		iPanel.setVisible(iOpenCloseImage.getValue() && iTable.getRowCount() > 1);

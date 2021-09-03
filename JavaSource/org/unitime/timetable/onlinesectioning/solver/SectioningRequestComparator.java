@@ -91,7 +91,7 @@ public class SectioningRequestComparator implements Comparator<SectioningRequest
 			return -1;
 		}
 		
-		return Long.compare(s.getRequest().getStudentId(), r.getRequest().getStudentId());
+		return Long.compare(s.getRequest().getRequestId(), r.getRequest().getRequestId());
 	}
     
 	@Override

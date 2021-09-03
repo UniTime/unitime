@@ -569,6 +569,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		private String iRequestId = null;
 		private Boolean iInactive = null;  
 		private Boolean iCanWaitList = null;
+		private String iWaitListPosition = null;
 		
 		public RequestedCourse() {}
 		public RequestedCourse(List<FreeTime> freeTime) {
@@ -751,6 +752,10 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			if (iSelectedClasses != null) iSelectedClasses.clear();
 			if (iSelectedIntructionalMethods != null) iSelectedIntructionalMethods.clear();
 		}
+		
+		public String getWaitListPosition() { return iWaitListPosition; }
+		public void setWaitListPosition(String wlPosition) { iWaitListPosition = wlPosition; }
+		public boolean hasWaitListPosition() { return iWaitListPosition != null && !iWaitListPosition.isEmpty(); }
 		
 		@Override
 		public int hashCode() {

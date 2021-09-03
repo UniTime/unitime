@@ -202,6 +202,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("<br>Admin")
 	String colCanAdminChange();
 	
+	@DefaultMessage("Position")
+	String colWaitListPosition();
+	
 	/* Academic Session Selector messages
 	 */
 	@DefaultMessage("No academic session is selected.")
@@ -3126,4 +3129,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Course {0} has a pending approval requested already. Cancel the approval request before wait-listing it.")
 	String messageWaitListApprovalAlreadyRequested(String course);
+	
+	@DefaultMessage("{0} of {1}")
+	String waitListPosition(Integer position, Integer total);
 }

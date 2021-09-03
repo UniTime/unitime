@@ -198,6 +198,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		header.add(new UniTimeTableHeader(MESSAGES.colCourse()));
 		header.add(new UniTimeTableHeader(MESSAGES.colTitle()));
 		header.add(new UniTimeTableHeader(MESSAGES.colCredit()));
+		header.add(new UniTimeTableHeader(MESSAGES.colWaitListPosition()));
 		header.add(new UniTimeTableHeader(MESSAGES.colRequirements()));
 		header.add(new UniTimeTableHeader(MESSAGES.colWaitListErrors()));
 		iWaitLists.addStyleName("unitime-WaitListsPanel");
@@ -1269,6 +1270,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		iWaitLists.clearTable(1);
 		if (iAssignment != null && iAssignment.hasRequest()) {
 			NumberFormat df = NumberFormat.getFormat("0.#");
+			boolean hasPosition = false;
 			boolean hasPrefs = false;
 			for (Request request: iAssignment.getRequest().getCourses()) {
 				if (request.isWaitList() && request.hasRequestedCourse()) {
@@ -1317,6 +1319,9 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							row.add(new Label(rc.getCourseName()));
 							row.add(new Label(rc.hasCourseTitle() ? rc.getCourseTitle() : ""));
 							row.add(new Label(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : ""));
+							
+							if (rc.hasWaitListPosition()) hasPosition = true;
+							row.add(new Label(rc.hasWaitListPosition() ? rc.getWaitListPosition() : ""));
 							
 							Collection<Preference> prefs = null;
 							if (rc.hasSelectedIntructionalMethods()) {
@@ -1368,7 +1373,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 					}
 				}
 			}
-			iWaitLists.setColumnVisible(5, hasPrefs);
+			iWaitLists.setColumnVisible(5, hasPosition);
+			iWaitLists.setColumnVisible(6, hasPrefs);
 		}
 		
 		iTabs.getTabBar().setTabEnabled(5, iWaitLists.getRowCount() > 1);
