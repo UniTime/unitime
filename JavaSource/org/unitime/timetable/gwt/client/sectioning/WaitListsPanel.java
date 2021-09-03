@@ -268,6 +268,80 @@ public class WaitListsPanel extends P {
 					}
 				}
 			}
+			if (iRequests.hasMaxCreditOverride()) {
+				P p = new P("icons");
+				String style = "pending";
+				if (iRequests.getMaxCreditOverrideStatus() != null) {
+					switch (iRequests.getMaxCreditOverrideStatus()) {
+					case OVERRIDE_APPROVED:
+						p.add(new Icon(RESOURCES.specRegApproved(), MESSAGES.hintSpecRegApproved()));
+						style = "approved";
+						break;
+					case OVERRIDE_CANCELLED:
+						p.add(new Icon(RESOURCES.specRegCancelled(), MESSAGES.hintSpecRegCancelled()));
+						style = "cancelled";
+						break;
+					case OVERRIDE_PENDING:
+						p.add(new Icon(RESOURCES.specRegPending(), MESSAGES.hintSpecRegPending()));
+						style = "pending";
+						break;
+					case OVERRIDE_REJECTED:
+						p.add(new Icon(RESOURCES.specRegRejected(), MESSAGES.hintSpecRegRejected()));
+						style = "rejected";
+						break;
+					case OVERRIDE_NEEDED:
+					case NEW_REQUEST:
+						p.add(new Icon(RESOURCES.requestNeeded(), MESSAGES.reqStatusNeeded()));
+						style = "needed";
+						break;
+					case SAVED:
+						p.add(new Icon(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed()));
+						style = "saved";
+						break;
+					}
+				} else {
+					p.add(new Icon(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed()));
+					style = "saved";
+				}
+				
+				List<Widget> row = new ArrayList<Widget>();
+				row.add(p);
+				
+				String reqNote = iRequests.getRequestorNote();
+				if ((reqNote == null || reqNote.isEmpty()) && iSpecReg.isAllowChangeRequestNote() && iRequests.getMaxCreditOverrideStatus() == RequestedCourseStatus.OVERRIDE_PENDING)
+					reqNote = MESSAGES.noRequestNoteClickToChange();
+				DateAndNoteCell date = new DateAndNoteCell(iRequests.getMaxCreditOverrideTimeStamp(), reqNote); 
+				if (iSpecReg.isAllowChangeRequestNote() && iRequests.getMaxCreditOverrideStatus() == RequestedCourseStatus.OVERRIDE_PENDING) {
+					date.getElement().getStyle().setCursor(Cursor.POINTER);
+					date.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							iSpecReg.getChangeRequestorNoteInterface().changeRequestorCreditNote(iRequests);
+							event.stopPropagation();
+						}
+					});
+				}
+				row.add(date);
+				row.add(new Label(""));
+				row.add(new Label(""));
+				row.add(new Label(df.format(iRequests.getMaxCreditOverride())));
+				row.add(new Label(""));
+				row.add(new Label(""));
+				String note = null;
+				if (iRequests.hasCreditWarning())
+					note = "<span class='"+style+"'>" + iRequests.getCreditWarning() + "</span>";
+				else
+					note = "<span class='"+style+"'>" + MESSAGES.creditWarning(iRequests.getMaxCredit()) + "</span>";
+				if (iRequests.hasCreditNote())
+					note += "\n<span class='note'>" + iRequests.getCreditNote() + "</span>";
+				HTML errorsLabel = new HTML(note); errorsLabel.addStyleName("waitlists-errors");
+				row.add(errorsLabel);
+				int idx = iTable.addRow(null, row);
+				if (idx > 1) {
+					for (int c = 0; c < iTable.getCellCount(idx); c++)
+						iTable.getCellFormatter().addStyleName(idx, c, "top-border-dashed");
+				}
+			}
 			iTable.setColumnVisible(5, hasPosition);
 			iTable.setColumnVisible(6, hasPrefs);
 		}

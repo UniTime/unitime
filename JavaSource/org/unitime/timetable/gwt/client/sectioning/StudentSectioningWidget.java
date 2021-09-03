@@ -223,7 +223,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				if (iTotalCreditRequests != null) {
 					iTotalCreditRequestsStatus.setVisible(false);
 					if (!isChanged() && iSavedRequest != null && iSavedRequest.getMaxCreditOverrideStatus() != null) {
-						String cw = (iSavedRequest.hasCreditWarning() ? iSavedRequest.getCreditWarning() : MESSAGES.creditWarning(iSavedRequest.getCredit(iEligibilityCheck == null ? null : iEligibilityCheck.getAdvisorWaitListedCourseIds())));
+						String cw = (iSavedRequest.hasCreditWarning() ? iSavedRequest.getCreditWarning() : MESSAGES.creditWarning(iSavedRequest.getMaxCredit()));
 						String note = "";
 						if (iSavedRequest.hasRequestorNote())
 							note += "\n" + MESSAGES.requestNote(iSavedRequest.getRequestorNote());
@@ -665,7 +665,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			@Override
 			public boolean changeRequestorCreditNote(final CourseRequestInterface request) {
 				if (request == null || request.getRequestId() == null || request.getMaxCreditOverrideStatus() != RequestedCourseStatus.OVERRIDE_PENDING) return false;
-				String message = (request.hasCreditWarning() ? request.getCreditWarning() : MESSAGES.creditWarning(request.getCredit(iEligibilityCheck == null ? null : iEligibilityCheck.getAdvisorWaitListedCourseIds())));
+				String message = (request.hasCreditWarning() ? request.getCreditWarning() : MESSAGES.creditWarning(request.getMaxCredit()));
 				CheckCoursesResponse confirm = new CheckCoursesResponse();
 				confirm.setConfirmation(0, MESSAGES.dialogChangeCreditRequestNote(),
 						MESSAGES.buttonChangeRequestNote(), MESSAGES.buttonHideRequestNote(),
@@ -692,6 +692,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									} else {
 										if (request.updateRequestorNote(request.getRequestId(), requestorNote)) {
 											iCourseRequests.setValue(request);
+											if (iWaitListsPanel != null) iWaitListsPanel.populate(request);
 										}
 										updateHistory();
 									}

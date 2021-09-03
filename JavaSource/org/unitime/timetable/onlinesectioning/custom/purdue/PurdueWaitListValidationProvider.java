@@ -1048,6 +1048,15 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						if (r.maxCredit != null)
 							request.setMaxCreditOverride(r.maxCredit);
 						request.setCreditNote(SpecialRegistrationHelper.note(r, true));
+						String warning = null;
+						if (r.changes != null)
+							for (Change ch: r.changes)
+								if (ch.subject == null && ch.courseNbr == null)
+									if (ch.errors != null)
+										for (ChangeError er: ch.errors)
+											if ("MAXI".equals(er.code) && er.message != null)
+												warning = (warning == null ? "" : warning + "\n") + er.message;
+						request.setCreditWarning(warning);
 						request.setRequestorNote(r.requestorNotes);
 						request.setRequestId(r.regRequestId);
 					}
