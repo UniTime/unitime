@@ -895,7 +895,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				iconText = iAssignment.getRequest().getCreditWarning();
 				hasWarn = true;
 			} else if (iAssignment.getRequest().getMaxCreditOverrideStatus() != RequestedCourseStatus.SAVED) {
-				note = noteTitle = iconText = MESSAGES.creditWarning(iAssignment.getRequest().getCredit(iAssignment.getAdvisorWaitListedCourseIds()));
+				note = noteTitle = iconText = MESSAGES.creditWarning(iAssignment.getRequest().getMaxCredit());
 			}
 			switch (iAssignment.getRequest().getMaxCreditOverrideStatus()) {
 			case CREDIT_HIGH:
@@ -1371,6 +1371,67 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							firstLine = false;
 						}
 					}
+				}
+			}
+			if (iAssignment.getRequest().hasMaxCreditOverride()) {
+				P p = new P("icons");
+				String style = "pending";
+				if (iAssignment.getRequest().getMaxCreditOverrideStatus() != null) {
+					switch (iAssignment.getRequest().getMaxCreditOverrideStatus()) {
+					case OVERRIDE_APPROVED:
+						p.add(new Icon(RESOURCES.specRegApproved(), MESSAGES.hintSpecRegApproved()));
+						style = "approved";
+						break;
+					case OVERRIDE_CANCELLED:
+						p.add(new Icon(RESOURCES.specRegCancelled(), MESSAGES.hintSpecRegCancelled()));
+						style = "cancelled";
+						break;
+					case OVERRIDE_PENDING:
+						p.add(new Icon(RESOURCES.specRegPending(), MESSAGES.hintSpecRegPending()));
+						style = "pending";
+						break;
+					case OVERRIDE_REJECTED:
+						p.add(new Icon(RESOURCES.specRegRejected(), MESSAGES.hintSpecRegRejected()));
+						style = "rejected";
+						break;
+					case OVERRIDE_NEEDED:
+					case NEW_REQUEST:
+						p.add(new Icon(RESOURCES.requestNeeded(), MESSAGES.reqStatusNeeded()));
+						style = "needed";
+						break;
+					case SAVED:
+						p.add(new Icon(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed()));
+						style = "saved";
+						break;
+					}
+				} else {
+					p.add(new Icon(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed()));
+					style = "saved";
+				}
+				
+				List<Widget> row = new ArrayList<Widget>();
+				row.add(p);
+				
+				DateAndNoteCell date = new DateAndNoteCell(iAssignment.getRequest().getMaxCreditOverrideTimeStamp(), iAssignment.getRequest().getRequestorNote()); 
+				row.add(date);
+				row.add(new Label(""));
+				row.add(new Label(""));
+				row.add(new Label(df.format(iAssignment.getRequest().getMaxCreditOverride())));
+				row.add(new Label(""));
+				row.add(new Label(""));
+				String note = null;
+				if (iAssignment.getRequest().hasCreditWarning())
+					note = "<span class='"+style+"'>" + iAssignment.getRequest().getCreditWarning() + "</span>";
+				else
+					note = "<span class='"+style+"'>" + MESSAGES.creditWarning(iAssignment.getRequest().getMaxCredit()) + "</span>";
+				if (iAssignment.getRequest().hasCreditNote())
+					note += "\n<span class='note'>" + iAssignment.getRequest().getCreditNote() + "</span>";
+				HTML errorsLabel = new HTML(note); errorsLabel.addStyleName("waitlists-errors");
+				row.add(errorsLabel);
+				int idx = iWaitLists.addRow(null, row);
+				if (idx > 1) {
+					for (int c = 0; c < iWaitLists.getCellCount(idx); c++)
+						iWaitLists.getCellFormatter().addStyleName(idx, c, "top-border-dashed");								
 				}
 			}
 			iWaitLists.setColumnVisible(5, hasPosition);

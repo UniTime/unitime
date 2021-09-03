@@ -1477,7 +1477,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				iconText = iDetails.getStudentRequest().getCreditWarning();
 				hasWarn = true;
 			} else if (iDetails.getStudentRequest().getMaxCreditOverrideStatus() != RequestedCourseStatus.SAVED) {
-				note = noteTitle = iconText = MESSAGES.creditWarning(iDetails.getStudentRequest().getCredit(iDetails.getAdvisorWaitListedCourseIds()));
+				note = noteTitle = iconText = MESSAGES.creditWarning(iDetails.getStudentRequest().getMaxCredit());
 			}
 			switch (iDetails.getStudentRequest().getMaxCreditOverrideStatus()) {
 			case CREDIT_HIGH:
