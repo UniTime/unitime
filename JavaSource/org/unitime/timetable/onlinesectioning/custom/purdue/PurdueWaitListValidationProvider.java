@@ -660,7 +660,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 	}
 	
 	@Override
-	public void submit(OnlineSectioningServer server, OnlineSectioningHelper helper, CourseRequestInterface request, Float currentCredit) throws SectioningException {
+	public void submit(OnlineSectioningServer server, OnlineSectioningHelper helper, CourseRequestInterface request, Float neededCredit) throws SectioningException {
 		XStudent original = (request.getStudentId() == null ? null : server.getStudent(request.getStudentId()));
 		if (original == null) return;
 		// Do not submit when validation is disabled
@@ -826,17 +826,17 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 				if (credit != null && (wlCredit == null || wlCredit < credit)) wlCredit = credit;
 			}
 		}
-		if (wlCredit != null && wlCredit.floatValue() > 0f) {
+		if (neededCredit != null) {
+			if (maxCredit < neededCredit) {
+				req.maxCredit = neededCredit;
+			}
+		} else if (wlCredit != null && wlCredit.floatValue() > 0f) {
 			float total = wlCredit;
-			if (currentCredit != null) {
-				total += currentCredit;
-			} else {
-				for (XRequest r: original.getRequests()) {
-					if (r instanceof XCourseRequest) {
-						XCourseRequest cr = (XCourseRequest)r;
-						if (cr.getEnrollment() != null)
-							total += cr.getEnrollment().getCredit(server);
-					}
+			for (XRequest r: original.getRequests()) {
+				if (r instanceof XCourseRequest) {
+					XCourseRequest cr = (XCourseRequest)r;
+					if (cr.getEnrollment() != null)
+						total += cr.getEnrollment().getCredit(server);
 				}
 			}
 			if (maxCredit < total) {
