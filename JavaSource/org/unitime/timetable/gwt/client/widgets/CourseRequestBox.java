@@ -165,7 +165,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 								}
 							}
 							for (ClassAssignment clazz: result) {
-								if (clazz.isCancelled() || (!clazz.isSaved() && !clazz.isAvailable() && !isSpecialRegistration())) continue;
+								if (clazz.isCancelled() || (!clazz.isSaved() && !clazz.isAvailable() && !isSpecialRegistration() && !course.isCanWaitList())) continue;
 								if (clazz.getSection().equalsIgnoreCase(query) || clazz.getSelection().getText().equalsIgnoreCase(query)) {
 									suggestions.add(new CourseSuggestion(course, clazz, false));
 									if (iSpecReg == null || iSpecReg.isCanRequire())

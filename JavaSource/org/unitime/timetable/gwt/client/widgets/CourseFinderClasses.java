@@ -160,7 +160,7 @@ public class CourseFinderClasses extends UniTimeTable<ClassAssignment> implement
 							final Preference p = getSelection(clazz);
 							List<Widget> line = new ArrayList<Widget>();
 							if (isAllowSelection()) {
-								if (!clazz.isCancelled() && (clazz.isSaved() || clazz.isAvailable() || isSpecialRegistration())) {
+								if (!clazz.isCancelled() && (clazz.isSaved() || clazz.isAvailable() || isSpecialRegistration() || iValue.isCanWaitList())) {
 									AriaCheckBox ch = new Selection();
 									ch.setValue(iSelectedClasses.contains(p));
 									ch.setAriaLabel(ARIA.courseFinderPreferClass(MESSAGES.clazz(clazz.getSubject(), clazz.getCourseNbr(), clazz.getSubpart(), clazz.getSection())));
