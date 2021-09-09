@@ -35,6 +35,7 @@ import org.cpsolver.studentsct.extension.StudentQuality;
 import org.cpsolver.studentsct.online.selection.ResectioningWeights;
 import org.hibernate.CacheMode;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -311,9 +312,14 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 						r.getAction().addMessage(OnlineSectioningLog.Message.newBuilder()
 								.setLevel(OnlineSectioningLog.Message.Level.FATAL)
 								.setText(e.getMessage() == null ? "null" : e.getMessage()));
-						helper.error("Unable to resection student: " + e.getMessage(), e);
+						helper.warn("Unable to resection student: " + e.getMessage());
 						r.getAction().setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
 						r.getAction().setEndTime(System.currentTimeMillis());
+						if (ApplicationProperty.OnlineSchedulingEmailConfirmationWhenFailed.isTrue())
+							server.execute(server.createAction(NotifyStudentAction.class)
+									.forStudent(r.getRequest().getStudentId()).fromAction(name())
+									.failedEnrollment(offering, r.getCourseId(), enrollment, e),
+									helper.getUser());
 						continue;
 					}
 				}

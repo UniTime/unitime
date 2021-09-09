@@ -1285,6 +1285,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				throw new SectioningException(reason == null ? "Failed to enroll student." : reason);
 			}
 			
+			SectioningException exception = null;
+			if (response.registrationException != null)
+				exception = new SectioningException(response.registrationException);
+			
 			XEnrollment ret = new XEnrollment(enrollment == null ? sectioningRequest.getLastEnrollment() : enrollment);
 			ret.getSectionIds().clear();
 			Set<String> registered = new TreeSet<String>();
@@ -1295,10 +1299,13 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					String id = reg.courseReferenceNumber;
 					
 					if (reg.crnErrors != null)
-						for (XEInterface.CrnError e: reg.crnErrors)
+						for (XEInterface.CrnError e: reg.crnErrors) {
 							sectioningRequest.getAction().addMessageBuilder().setText(
 									reg.subject + " " + reg.courseNumber + " " + reg.courseReferenceNumber + ": " + e.message + " (" + e.messageType + ")"
 									).setLevel(OnlineSectioningLog.Message.Level.WARN);
+							if (exception != null)
+								exception.addError(new ErrorMessage(reg.subject + " " +reg.courseNumber, reg.courseReferenceNumber, e.messageType, e.message)); 
+						}
 					List<XSection> sections = sectioningRequest.getOffering().getSections(course.getCourseId(), id);
 					if (!sections.isEmpty() && "Registered".equals(reg.statusDescription)) {
 						for (XSection section: sections)
@@ -1320,9 +1327,11 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						sectioningRequest.getAction().addMessageBuilder().setText(reg.failedCRN + ": " + reg.failure).setLevel(OnlineSectioningLog.Message.Level.WARN);
 					else
 						sectioningRequest.getAction().addMessageBuilder().setText(reg.failure).setLevel(OnlineSectioningLog.Message.Level.WARN);
+					if (exception != null)
+						exception.addError(new ErrorMessage(course.getCourseName(), reg.failedCRN, "", reg.failure));
 				}
 			}
-			
+			if (exception != null) throw exception;		
 			return (ret.getSectionIds().isEmpty() ? null : ret);
 		} catch (SectioningException e) {
 			sectioningRequest.getAction().addMessageBuilder().setText("Banner enrollment failed: " + e.getMessage()).setLevel(OnlineSectioningLog.Message.Level.INFO);

@@ -1961,6 +1961,15 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 				}
 			}
 			
+			if (status.data.maxCredit != null && !status.data.maxCredit.equals(student.getMaxCredit())) {
+				student.setMaxCredit(status.data.maxCredit);
+				Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
+				if (dbStudent != null) {
+					dbStudent.setMaxCredit(status.data.maxCredit);
+					helper.getHibSession().update(dbStudent);
+				}
+				studentChanged = true;
+			}
 			if (student.getMaxCreditOverride() != null) {
 				SpecialRegistration req = null;
 				for (SpecialRegistration r: status.data.requests) {

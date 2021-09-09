@@ -50,8 +50,9 @@
  							<@classTableLine line/>
  						</#list>
  					</table></tr></tr>
- 				<#elseif changeMessage??>
- 					<tr><td style="color: red; text-align: center; font-style: italic; font-weight: normal;">${changeMessage}</td></tr>
+ 				</#if>
+ 				<#if changeMessage??>
+ 					<tr><td style="color: red; text-align: center; font-style: italic; font-weight: normal; white-space: pre-wrap;">${changeMessage}</td></tr>
  				</#if>
  			<#elseif changes??>
  				<tr><td style="width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;">${msg.emailEnrollmentChanges()}</td></tr>

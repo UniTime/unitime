@@ -1516,6 +1516,18 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("You are now enrolled in {0} {1}")
 	String emailEnrollmentNew(String subject, String courseNbr);
+	
+	@DefaultMessage("Unable to enroll a wait-listed course: {0} {1}")
+	String emailEnrollmentFailedWaitListed(String subject, String courseNbr);
+	
+	@DefaultMessage("Unable to enroll {0} {1}: {2}")
+	String emailEnrollmentFailed(String subject, String courseNbr, String error);
+	
+	@DefaultMessage("Unable to drop {0} {1}: {2}")
+	String emailDropFailed(String subject, String courseNbr, String error);
+	
+	@DefaultMessage("The schedule change failed due to the following error: {0}\nAdditional approvals may be needed. Please consult your advisor.")
+	String emailEnrollmentFailedMessage(String error);
 
 	@DefaultMessage("No class schedule.")
 	String emailNoSchedule();
