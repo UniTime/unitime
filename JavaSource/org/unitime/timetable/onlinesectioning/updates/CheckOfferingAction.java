@@ -251,7 +251,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 			if (iStudentIds != null && !iStudentIds.contains(request.getStudentId())) continue;
 			XStudent student = server.getStudent(request.getStudentId());
 			if (request.getEnrollment() == null) {
-				if (!student.canAssign(request, WaitListMode.WaitList) || !isWaitListed(student, request, offering, server, helper)) continue;
+				if (!isWaitListed(student, request, offering, server, helper)) continue;
 				OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
 				action.setStudent(
 						OnlineSectioningLog.Entity.newBuilder()
