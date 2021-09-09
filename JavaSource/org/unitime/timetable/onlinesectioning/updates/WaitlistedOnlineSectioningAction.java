@@ -29,6 +29,7 @@ import org.cpsolver.studentsct.model.Student.StudentPriority;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.Query;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -42,6 +43,7 @@ import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XOverride;
+import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudent.XGroup;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
@@ -59,8 +61,11 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
 	private Map<StudentPriority, Query> iPriorityStudentQuery = null;
 	
 	public boolean isWaitListed(XStudent student, XCourseRequest request, XOffering offering, OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		// Check wait-list toggle first
-		if (request == null || !request.isWaitlist()) return false;
+		// Check wait-list toggle first or if already enrolled
+		if (student == null || request == null || !request.isWaitlist() || request.getEnrollment() != null) return false;
+		
+		// Check if student can assign
+		if (!student.canAssign(request, WaitListMode.WaitList)) return false;
 		
 		// Check student status
 		String status = student.getStatus();
@@ -71,18 +76,36 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
 			if (!iWaitlistStatuses.contains(status)) return false;
 		}
 		
+		// Check wait-list overrides, when configured
 		if (Customization.WaitListValidationProvider.hasProvider()) {
+			// Student has a max credit override >> check credit
+			Float credit = null;
+			if (student.getMaxCreditOverride() != null && student.getMaxCredit() != null) {
+				credit = 0f;
+				for (XRequest r: student.getRequests()) {
+					if (r instanceof XCourseRequest && ((XCourseRequest)r).getEnrollment() != null) {
+						credit += ((XCourseRequest)r).getEnrollment().getCredit(server);
+					}
+				}
+			}
 			for (XCourse course: offering.getCourses()) {
 				if (!request.hasCourse(course.getCourseId())) continue;
 				XOverride override = request.getOverride(course);
 				if (override != null) {
-					if ("TBD".equals(override.getExternalId())) return false; // override not requested --> ignore
+					if ("TBD".equals(override.getExternalId())) continue; // override not requested --> ignore
 					WaitListValidationProvider wp = Customization.WaitListValidationProvider.getProvider();
 					if (wp.updateStudent(server, helper, student, helper.getAction()))
 						override = request.getOverride(course);						
+				} else if (credit != null && course.hasCredit() && credit + course.getMinCredit() > student.getMaxCredit()) {
+					WaitListValidationProvider wp = Customization.WaitListValidationProvider.getProvider();
+					wp.updateStudent(server, helper, student, helper.getAction());
 				}
-				if (override != null && !override.isApproved()) return false;
+				// override for this course is not approved
+				if (override != null && !override.isApproved()) continue;
+				if (credit != null && course.hasCredit() && credit + course.getMinCredit() > student.getMaxCredit()) continue;
+				return true;
 			}
+			return false;
 		}
 		
 		return true;
