@@ -63,6 +63,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
@@ -140,6 +141,10 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	private XCourseId iOldCourseId;
 	private XEnrollment iOldEnrollment;
 	private XStudent iOldStudent;
+	private XOffering iFailedOffering;
+	private XCourseId iFailedCourseId;
+	private XEnrollment iFailedEnrollment;
+	private SectioningException iFailure;
 	private XStudent iStudent;
 	private CourseUrlProvider iCourseUrlProvider = null;
 	private boolean iPermisionCheck = true;
@@ -169,6 +174,14 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	
 	public StudentEmail oldStudent(XStudent oldStudent) {
 		iOldStudent = oldStudent;
+		return this;
+	}
+	
+	public StudentEmail failedEnrollment(XOffering failedOffering, XCourseId failedCourseId, XEnrollment failedEnrollment, SectioningException failure) {
+		iFailedOffering = failedOffering;
+		iFailedCourseId = failedCourseId;
+		iFailedEnrollment = failedEnrollment;
+		iFailure = failure;
 		return this;
 	}
 	
@@ -206,6 +219,11 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	public XOffering getOldOffering() { return iOldOffering; }
 	public XCourse getOldCourse() { return (iOldOffering == null || iOldCourseId == null ? null : iOldOffering.getCourse(iOldCourseId)); }
 	public XStudent getOldStudent() { return iOldStudent; }
+	
+	public XEnrollment getFailedEnrollment() { return iFailedEnrollment; }
+	public XOffering getFailedOffering() { return iFailedOffering; }
+	public XCourse getFailedCourse() { return (iFailedOffering == null || iFailedCourseId == null ? null : iFailedOffering.getCourse(iFailedCourseId)); }
+	
 	public XStudent getStudent() { return iStudent; }
 	public void setStudent(XStudent student) { iStudent = student; }
 
@@ -238,6 +256,14 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						for (XSection section: server.getOffering(e.getOfferingId()).getSections(e))
 							enrollment.addSection(OnlineSectioningHelper.toProto(section, e));
 				}
+				action.addEnrollment(enrollment);
+			}
+			
+			if (getFailedEnrollment() != null) {
+				OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
+				enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.COMPUTED);
+				for (XSection section: getFailedOffering().getSections(getFailedEnrollment()))
+					enrollment.addSection(OnlineSectioningHelper.toProto(section, getFailedEnrollment()));
 				action.addEnrollment(enrollment);
 			}
 			
@@ -727,7 +753,105 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		}
 		
 		AcademicSessionInfo session = server.getAcademicSession();
-		if (getOldOffering() != null) {
+		if (getFailedOffering() != null) {
+			
+			Table listOfChanges = new Table();
+			XCourseRequest newRequest = null;
+			XOffering newOffering = null;
+			XCourse course = (getFailedEnrollment() != null ? getFailedOffering().getCourse(getFailedEnrollment().getCourseId()) : getFailedCourse());
+			for (XRequest r: getStudent().getRequests()) {
+				if (r instanceof XCourseRequest && (
+						(getFailedCourse() == null && ((XCourseRequest)r).getCourseIdByOfferingId(getFailedOffering().getOfferingId()) != null) ||
+						(getFailedCourse() != null && ((XCourseRequest)r).hasCourse(getFailedCourse().getCourseId()))
+						)) {
+					newRequest = (XCourseRequest)r;
+					newOffering = server.getOffering(getFailedOffering().getOfferingId());
+					if (newRequest.getEnrollment() != null)
+						course = newOffering.getCourse(newRequest.getEnrollment().getCourseId());
+					break;
+				}
+			}
+			input.put("changedCourse", course);
+			setSubject(MSG.emailEnrollmentFailed(course.getSubjectArea(), course.getCourseNumber(), iFailure == null ? null : iFailure.getMessage()));
+			if (newRequest != null && newRequest.isWaitlist())
+				setSubject(MSG.emailEnrollmentFailedWaitListed(course.getSubjectArea(), course.getCourseNumber()));
+			
+			if (getFailedEnrollment() != null && (newRequest == null || newRequest.getEnrollment() == null)) {
+				for (XSection section: getFailedOffering().getSections(getFailedEnrollment())) {
+					XSection parent = (section.getParentId() == null ? null : getFailedOffering().getSection(section.getParentId()));
+					XSubpart subpart = getFailedOffering().getSubpart(section.getSubpartId());
+					String requires = null;
+					if (parent != null) {
+						requires = parent.getName(course.getCourseId());
+					} else {
+						requires = null;
+					}
+					listOfChanges.add(new TableSectionLine(newRequest, course, subpart, section, requires, getCourseUrl(session, course)));
+				}
+				input.put("changes", listOfChanges);
+			} else if (getFailedEnrollment() != null && newRequest != null && newRequest.getEnrollment() != null) {
+				String consent = consent(server, newRequest.getEnrollment());
+				sections: for (XSection section: newOffering.getSections(newRequest.getEnrollment())) {
+					XSection parent = (section.getParentId() == null ? null : newOffering.getSection(section.getParentId()));
+					XSubpart subpart = newOffering.getSubpart(section.getSubpartId());
+					
+					for (XSection failed: getFailedOffering().getSections(getFailedEnrollment())) {
+						if (failed.getSubpartId().equals(section.getSubpartId())) {
+							String requires = null;
+							if (parent != null)
+								requires = parent.getName(course.getCourseId());
+							
+							XSubpart failedSubpart = getFailedOffering().getSubpart(failed.getSubpartId());
+							XSection failedParent = (failed.getParentId() == null ? null : getFailedOffering().getSection(failed.getParentId()));
+							String failedRequires = null;
+							if (failedParent != null)
+								failedRequires = failedParent.getName(course.getCourseId());
+							
+							if (failedRequires == null && requires == null) {
+								requires = consent;
+								failedRequires = consent;
+								consent = null;
+							}
+
+							listOfChanges.add(new TableSectionModifiedLine(newRequest, course, subpart, failedSubpart, section, failed, requires, failedRequires, getCourseUrl(session, course)));
+							continue sections;
+						}
+					}
+					
+					String requires = null;
+					if (parent != null) {
+						requires = parent.getName(course.getCourseId());
+					} else {
+						requires = consent; consent = null;
+					}
+					listOfChanges.add(new TableSectionDeletedLine(newRequest, course, subpart, section, requires, getCourseUrl(session, course)));
+				}
+				sections: for (XSection failed: getFailedOffering().getSections(getFailedEnrollment())) {
+					for (XSection section: newOffering.getSections(newRequest.getEnrollment()))
+						if (failed.getSubpartId().equals(section.getSubpartId())) continue sections;
+					
+					XSubpart subpart = getFailedOffering().getSubpart(failed.getSubpartId());
+					XSection parent = (failed.getParentId() == null ? null : getFailedOffering().getSection(failed.getParentId()));
+					String requires = null;
+					if (parent != null)
+						requires = parent.getName(course.getCourseId());
+					listOfChanges.add(new TableSectionLine(newRequest, course, subpart, failed, requires, getCourseUrl(session, course)));
+				}
+
+				input.put("changes", listOfChanges);
+			} else {
+				setSubject(MSG.emailDropFailed(course.getSubjectArea(), course.getCourseNumber(), iFailure == null ? null : iFailure.getMessage()));
+			}
+			if (iFailure != null) {
+				String message = MSG.emailEnrollmentFailedMessage(iFailure.getMessage());
+				if (iFailure.hasErrors())
+					for (ErrorMessage error: iFailure.getErrors()) {
+						if (error.getCourse().startsWith(course.getCourseName()))
+							message += "\n" + error;
+					}
+				input.put("changeMessage", message);
+			}
+		} else if (getOldOffering() != null) {
 			Table listOfChanges = new Table();
 
 			XCourseRequest newRequest = null;

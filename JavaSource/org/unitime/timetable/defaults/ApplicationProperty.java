@@ -636,6 +636,11 @@ public enum ApplicationProperty {
 	OnlineSchedulingEmailConfirmation("unitime.enrollment.email"),
 	
 	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Online Student Scheduling: enable student email confirmations when wait-list enrollment fails")
+	OnlineSchedulingEmailConfirmationWhenFailed("unitime.enrollment.email.failedWaitList"),
+	
+	@Type(Boolean.class)
 	@Parameter("operation")
 	@Description("Online Student Scheduling: enable student email confirmations from a particular operation %")
 	OnlineSchedulingEmailConfirmationOverride("unitime.enrollment.email.%"),

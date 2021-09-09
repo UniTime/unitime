@@ -484,11 +484,16 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 						r.getAction().addMessage(OnlineSectioningLog.Message.newBuilder()
 								.setLevel(OnlineSectioningLog.Message.Level.FATAL)
 								.setText(ex.getMessage() == null ? "null" : ex.getMessage()));
-						helper.error("Unable to resection student: " + ex.getMessage(), ex);
+						helper.warn("Unable to resection student: " + ex.getMessage());
 						if (r.getNewEnrollment() != null)
 							server.assign(r.getRequest(), r.getNewEnrollment());
 						r.getAction().setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
 						r.getAction().setEndTime(System.currentTimeMillis());
+						if (ApplicationProperty.OnlineSchedulingEmailConfirmationWhenFailed.isTrue())
+							server.execute(server.createAction(NotifyStudentAction.class)
+									.forStudent(r.getRequest().getStudentId()).fromAction(name())
+									.failedEnrollment(newOffering, r.getCourseId(), e, ex),
+									helper.getUser());
 						continue;
 					}
 				}
