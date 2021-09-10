@@ -867,7 +867,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 			ret.setCurrentCredit(gradeModes.getCurrentCredit());
 		if (iCheckWaitLists && hasWaitList && ret != null && ret.getRequest() != null && wlMode == WaitListMode.WaitList && Customization.WaitListValidationProvider.hasProvider()) {
 			ret.getRequest().setWaitListChecks(server.execute(server.createAction(WaitListCheckValidation.class).withRequest(ret.getRequest()), helper.getUser()));
-			if (ret.getRequest().hasWaitListChecks() && !ret.getRequest().getWaitListChecks().isConfirm())
+			if (ret.getRequest().hasWaitListChecks() && !ret.getRequest().getWaitListChecks().isConfirm() && !ret.getRequest().getWaitListChecks().isError())
 				ret.setRequest(server.execute(server.createAction(WaitListSubmitOverrides.class).withRequest(ret.getRequest()).withCredit(ret.getRequest().getWaitListChecks().getMaxCreditNeeded()), helper.getUser()));
 		}
 		return ret;
