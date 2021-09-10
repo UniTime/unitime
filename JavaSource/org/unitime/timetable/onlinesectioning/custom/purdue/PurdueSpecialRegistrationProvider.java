@@ -1431,7 +1431,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			for (Change change: specialRequest.changes) {
 				if (change.errors != null)
 					for (ChangeError err: change.errors)
-						if ("MAXI".equals(err.code)) {
+						if ("MAXI".equals(err.code) && (change.crn == null || change.crn.isEmpty())) {
 							maxi = err.message;
 							maxStatus = change.status;
 							maxiNote = SpecialRegistrationHelper.getLastNote(change);
