@@ -252,11 +252,6 @@ public class SpecialRegistrationInterface {
 	 *
 	 */
 	public static class SubmitRegistrationResponse extends SpecialRegistration {
-		/**
-		 * List of special registrations that have been cancelled (to create this request).
-		 * (only read, never sent; only used in submitRegistration response during registration)
-		 */
-		public List<CancelledRequest> cancelledRequests;
 	}
 
 	/**

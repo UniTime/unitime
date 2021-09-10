@@ -974,12 +974,13 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					if (r.requestorNotes == null) r.requestorNotes = input.getNote();
 					if (r.maxCredit == null && request.maxCredit != null) r.maxCredit = request.maxCredit;
 					ret.addRequest(convert(server, helper, student, r, false));
-					if (r.cancelledRequests != null)
-						for (CancelledRequest c: r.cancelledRequests)
-							ret.addCancelledRequest(c.regRequestId);
 				}
 			} else {
 				ret.setSuccess(false);
+			}
+			if (response.cancelledRequests != null) {
+				for (CancelledRequest c: response.cancelledRequests)
+					ret.addCancelledRequest(c.regRequestId);
 			}
 			
 			if (isUpdateUniTimeStatuses() && response.data != null && !response.data.isEmpty()) {
