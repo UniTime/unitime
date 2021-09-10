@@ -14190,4 +14190,9 @@
 	    <mysql>update %SCHEMA%.course_demand set waitlist_ts = timestamp where waitlist = 1</mysql>
 	    <pgsql>update %SCHEMA%.course_demand set waitlist_ts = timestamp where waitlist = true</pgsql>
 	</update>
+	<update version="244" date="10-Sep-2021" comment="Max Credit Override Intent">
+	    <plsql>alter table %SCHEMA%.student add req_intent number(10)</plsql>
+		<mysql>alter table %SCHEMA%.student add req_intent bigint(10)</mysql>
+		<pgsql>alter table %SCHEMA%.student add req_intent integer null</pgsql>
+	</update>
 </dbupdate>

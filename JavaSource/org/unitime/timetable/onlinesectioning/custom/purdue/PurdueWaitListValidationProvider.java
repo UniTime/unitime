@@ -1043,10 +1043,10 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 			if (status != null && status.data != null && status.data.requests != null) {
 				for (SpecialRegistration r: status.data.requests) {
 					if (r.regRequestId == null) continue;
-					if (r.regRequestId.equals(request.getMaxCreditOverrideExternalId())) {
+					if (r.maxCredit != null) {
+						request.setMaxCreditOverrideExternalId(r.regRequestId);
 						request.setMaxCreditOverrideStatus(status(r, true));
-						if (r.maxCredit != null)
-							request.setMaxCreditOverride(r.maxCredit);
+						request.setMaxCreditOverride(r.maxCredit);
 						request.setCreditNote(SpecialRegistrationHelper.note(r, true));
 						String warning = null;
 						if (r.changes != null)
@@ -1280,11 +1280,12 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 				for (SpecialRegistration r: status.data.requests) {
 					if (student.getOverrideExternalId().equals(r.regRequestId)) { req = r; break; }
 				}
-				if (req == null) {
+				if (req == null && student.getMaxCreditOverrideIntent() == CourseRequestOverrideIntent.WAITLIST) {
 					student.setOverrideExternalId(null);
 					student.setOverrideMaxCredit(null);
 					student.setOverrideStatus(null);
 					student.setOverrideTimeStamp(null);
+					student.setOverrideIntent(null);
 					studentChanged = true;
 				} else {
 					Integer oldStatus = student.getOverrideStatus();
@@ -1658,14 +1659,16 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						studentChanged = true;
 					student.setOverrideExternalId(r.regRequestId);
 					student.setOverrideTimeStamp(r.dateCreated == null ? null : r.dateCreated.toDate());
+					student.setMaxCreditOverrideIntent(CourseRequestOverrideIntent.WAITLIST);
 					break;
 				}
 			}
-		} else if (student.getOverrideExternalId() != null || student.getOverrideMaxCredit() != null) {
+		} else if (student.getMaxCreditOverrideIntent() == CourseRequestOverrideIntent.WAITLIST) {
 			student.setOverrideExternalId(null);
 			student.setOverrideMaxCredit(null);
 			student.setOverrideStatus(null);
 			student.setOverrideTimeStamp(null);
+			student.setOverrideIntent(null);
 			studentChanged = true;
 		}
 		if (studentChanged) helper.getHibSession().update(student);
@@ -1819,11 +1822,12 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						for (SpecialRegistration r: status.requests) {
 							if (student.getOverrideExternalId().equals(r.regRequestId)) { req = r; break; }
 						}
-						if (req == null) {
+						if (req == null && student.getMaxCreditOverrideIntent() == CourseRequestOverrideIntent.WAITLIST) {
 							student.setOverrideExternalId(null);
 							student.setOverrideMaxCredit(null);
 							student.setOverrideStatus(null);
 							student.setOverrideTimeStamp(null);
+							student.setOverrideIntent(null);
 							studentChanged = true;
 						} else {
 							Integer oldStatus = student.getOverrideStatus();

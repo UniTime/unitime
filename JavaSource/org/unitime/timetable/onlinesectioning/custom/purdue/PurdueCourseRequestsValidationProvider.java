@@ -2126,6 +2126,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					student.setOverrideMaxCredit(null);
 					student.setOverrideStatus(null);
 					student.setOverrideTimeStamp(null);
+					student.setOverrideIntent(null);
 					studentChanged = true;
 				} else {
 					Integer oldStatus = student.getOverrideStatus();
@@ -2674,6 +2675,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						studentChanged = true;
 					student.setOverrideExternalId(r.regRequestId);
 					student.setOverrideTimeStamp(r.dateCreated == null ? null : r.dateCreated.toDate());
+					student.setOverrideIntent(null);
 					break;
 				}
 			}
@@ -2682,6 +2684,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			student.setOverrideMaxCredit(null);
 			student.setOverrideStatus(null);
 			student.setOverrideTimeStamp(null);
+			student.setOverrideIntent(null);
 			studentChanged = true;
 		}
 		if (studentChanged) helper.getHibSession().update(student);
@@ -2902,6 +2905,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							student.setOverrideMaxCredit(null);
 							student.setOverrideStatus(null);
 							student.setOverrideTimeStamp(null);
+							student.setOverrideIntent(null);
 							studentChanged = true;
 						} else {
 							Integer oldStatus = student.getOverrideStatus();
