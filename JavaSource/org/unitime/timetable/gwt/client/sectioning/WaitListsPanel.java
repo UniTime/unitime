@@ -215,8 +215,13 @@ public class WaitListsPanel extends P {
 							row.add(new Label(rc.hasCourseTitle() ? rc.getCourseTitle() : ""));
 							row.add(new Label(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : ""));
 							
-							if (rc.hasWaitListPosition()) hasPosition = true;
-							row.add(new Label(rc.hasWaitListPosition() ? rc.getWaitListPosition() : ""));
+							if (rc.hasWaitListPosition() && rc.getStatus() != RequestedCourseStatus.NEW_REQUEST && rc.getStatus() != RequestedCourseStatus.OVERRIDE_NEEDED) {
+								hasPosition = true;
+								row.add(new Label(rc.getWaitListPosition()));
+							} else {
+								row.add(new Label());
+							}
+							
 							
 							Collection<Preference> prefs = null;
 							if (rc.hasSelectedIntructionalMethods()) {
