@@ -135,12 +135,6 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
 				iWaitlistStatuses = StudentSectioningStatus.getMatchingStatuses(server.getAcademicSession().getUniqueId(), StudentSectioningStatus.Option.waitlist, StudentSectioningStatus.Option.enrollment);
 			if (!iWaitlistStatuses.contains(status)) return false;
 		}
-
-		// When validation is enabled, ignore when override has not been requested
-		if (Customization.WaitListValidationProvider.hasProvider()) {
-			XOverride override = request.getOverride(courseId);
-			if (override != null && "TBD".equals(override.getExternalId())) return false;
-		}
 		
 		return true;
 	}
