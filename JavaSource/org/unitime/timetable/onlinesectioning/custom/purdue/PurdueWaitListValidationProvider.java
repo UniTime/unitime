@@ -496,7 +496,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						Float maxCreditDenied = null;
 						if (resp.deniedMaxCreditRequests != null) {
 							for (DeniedMaxCredit r: resp.deniedMaxCreditRequests) {
-								if (r.mode == req.mode && r.maxCredit != null && r.maxCredit > maxCredit && (maxCreditDenied == null || maxCreditDenied > r.maxCredit))
+								if (req.mode.equals(r.mode) && r.maxCredit != null && r.maxCredit > maxCredit && (maxCreditDenied == null || maxCreditDenied > r.maxCredit))
 									maxCreditDenied = r.maxCredit;
 							}
 						}
@@ -967,6 +967,27 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 					resource.release();
 				}
 			}
+		} else {
+			for (CourseRequestInterface.Request c: request.getCourses())
+				if (c.hasRequestedCourse()) {
+					for (CourseRequestInterface.RequestedCourse rc: c.getRequestedCourse()) {
+						if (rc.getStatus() != null && rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED) {
+							rc.setStatus(null);
+							rc.setOverrideExternalId(null);
+							rc.setOverrideTimeStamp(null);
+						}
+					}
+				}
+			for (CourseRequestInterface.Request c: request.getAlternatives())
+				if (c.hasRequestedCourse()) {
+					for (CourseRequestInterface.RequestedCourse rc: c.getRequestedCourse()) {
+						if (rc.getStatus() != null && rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED) {
+							rc.setStatus(null);
+							rc.setOverrideExternalId(null);
+							rc.setOverrideTimeStamp(null);
+						}
+					}
+				}
 		}
 		
 	}
