@@ -1014,16 +1014,17 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							}
 						}
 					if (r.maxCredit != null) {
-						student.setMaxCreditOverride(new XOverride(r.regRequestId, r.dateCreated == null ? new Date() : r.dateCreated.toDate(), maxiStatus != null ? toStatus(maxiStatus) : toStatus(r)));
 						Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
-						if (dbStudent != null) {
+						if (dbStudent != null && dbStudent.getMaxCreditOverrideIntent() != CourseRequestOverrideIntent.WAITLIST) {
 							dbStudent.setOverrideStatus(maxiStatus != null ? toStatus(maxiStatus) : toStatus(r));
 							dbStudent.setOverrideMaxCredit(r.maxCredit);
 							dbStudent.setOverrideExternalId(r.regRequestId);
 							dbStudent.setOverrideTimeStamp(r.dateCreated == null ? new Date() : r.dateCreated.toDate());
+							dbStudent.setOverrideIntent(null);
 							helper.getHibSession().update(dbStudent);
+							student.setMaxCreditOverride(new XOverride(r.regRequestId, r.dateCreated == null ? new Date() : r.dateCreated.toDate(), maxiStatus != null ? toStatus(maxiStatus) : toStatus(r)));
+							studentChanged = true;
 						}
-						studentChanged = true;
 					}
 					for (Map.Entry<String, Set<String>> e: course2errors.entrySet()) {
 						XCourseRequest cr = student.getRequestForCourseName(e.getKey());
@@ -2079,16 +2080,17 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					}
 				}
 				if (student.getMaxCreditOverride() != null && !requestIds.contains(student.getMaxCreditOverride().getExternalId())) {
-					student.setMaxCreditOverride(null);
 					Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
-					if (dbStudent != null) {
+					if (dbStudent != null && dbStudent.getMaxCreditOverrideIntent() != CourseRequestOverrideIntent.WAITLIST) {
 						dbStudent.setOverrideStatus(null);
 						dbStudent.setOverrideMaxCredit(null);
 						dbStudent.setOverrideExternalId(null);
 						dbStudent.setOverrideTimeStamp(null);
+						dbStudent.setOverrideIntent(null);
 						helper.getHibSession().update(dbStudent);
+						student.setMaxCreditOverride(null);
+						studentChanged = true;
 					}
-					studentChanged = true;
 				}
 				for (XRequest request: student.getRequests()) {
 					if (request instanceof XCourseRequest) {

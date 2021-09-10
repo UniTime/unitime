@@ -30,6 +30,7 @@ import java.util.Set;
 import org.hibernate.Query;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
+import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideIntent;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.StudentSectioningStatus.Option;
 import org.unitime.timetable.model.base.BaseStudent;
@@ -362,5 +363,16 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     				server.getConfig().getPropertyBoolean("Load.UseAdvisorNoSubs", false)
     				);
     	}
+    }
+    
+    public void setMaxCreditOverrideIntent(CourseRequestOverrideIntent intent) {
+    	if (intent == null)
+    		setOverrideIntent(null);
+    	else
+    		setOverrideIntent(intent.ordinal());
+    }
+    
+    public CourseRequestOverrideIntent getMaxCreditOverrideIntent() {
+    	return (getOverrideIntent() == null ? null : CourseRequestOverrideIntent.values()[getOverrideIntent()]); 
     }
 }

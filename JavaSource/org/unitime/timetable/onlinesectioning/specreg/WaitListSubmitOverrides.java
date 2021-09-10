@@ -137,15 +137,18 @@ public class WaitListSubmitOverrides implements OnlineSectioningAction<CourseReq
 					}
 				}
 
-				student.setOverrideExternalId(getRequest().getMaxCreditOverrideExternalId());
-				student.setOverrideTimeStamp(getRequest().getMaxCreditOverrideTimeStamp());
-				student.setMaxCreditOverrideStatus(
-					RequestedCourseStatus.OVERRIDE_APPROVED == getRequest().getMaxCreditOverrideStatus() ? CourseRequestOverrideStatus.APPROVED :
-					RequestedCourseStatus.OVERRIDE_PENDING == getRequest().getMaxCreditOverrideStatus() ? CourseRequestOverrideStatus.PENDING :
-					RequestedCourseStatus.OVERRIDE_CANCELLED == getRequest().getMaxCreditOverrideStatus() ? CourseRequestOverrideStatus.CANCELLED :
-					RequestedCourseStatus.OVERRIDE_REJECTED == getRequest().getMaxCreditOverrideStatus() ? CourseRequestOverrideStatus.REJECTED : null);
-				student.setOverrideMaxCredit(getRequest().getMaxCreditOverride());				
-				helper.getHibSession().update(student);
+				if (student.getMaxCreditOverrideIntent() == CourseRequestOverrideIntent.WAITLIST || getRequest().getMaxCreditOverrideExternalId() != null) {
+					student.setOverrideExternalId(getRequest().getMaxCreditOverrideExternalId());
+					student.setOverrideTimeStamp(getRequest().getMaxCreditOverrideTimeStamp());
+					student.setMaxCreditOverrideStatus(
+						RequestedCourseStatus.OVERRIDE_APPROVED == getRequest().getMaxCreditOverrideStatus() ? CourseRequestOverrideStatus.APPROVED :
+						RequestedCourseStatus.OVERRIDE_PENDING == getRequest().getMaxCreditOverrideStatus() ? CourseRequestOverrideStatus.PENDING :
+						RequestedCourseStatus.OVERRIDE_CANCELLED == getRequest().getMaxCreditOverrideStatus() ? CourseRequestOverrideStatus.CANCELLED :
+						RequestedCourseStatus.OVERRIDE_REJECTED == getRequest().getMaxCreditOverrideStatus() ? CourseRequestOverrideStatus.REJECTED : null);
+					student.setOverrideMaxCredit(getRequest().getMaxCreditOverride());
+					student.setMaxCreditOverrideIntent(getRequest().getMaxCreditOverrideExternalId() == null ? null : CourseRequestOverrideIntent.WAITLIST);
+					helper.getHibSession().update(student);
+				}
 				
 				// Reload student
 				XStudent newStudent = null;
