@@ -152,9 +152,11 @@ public class WaitListsPanel extends P {
 			NumberFormat df = NumberFormat.getFormat("0.#");
 			boolean hasPrefs = false;
 			boolean hasPosition = false;
-			for (Request request: iRequests.getCourses()) {
+			request: for (Request request: iRequests.getCourses()) {
 				if (request.isWaitList() && request.hasRequestedCourse()) {
 					boolean firstLine = true;
+					for (RequestedCourse rc: request.getRequestedCourse())
+						if (rc.getStatus() == RequestedCourseStatus.ENROLLED) continue request;
 					for (RequestedCourse rc: request.getRequestedCourse()) {
 						if (rc.hasCourseId() && rc.isCanWaitList() && rc.getStatus() != RequestedCourseStatus.ENROLLED) {
 							P p = new P("icons");
