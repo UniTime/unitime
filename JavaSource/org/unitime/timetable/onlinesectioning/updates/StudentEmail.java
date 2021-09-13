@@ -846,7 +846,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				String message = MSG.emailEnrollmentFailedMessage(iFailure.getMessage());
 				if (iFailure.hasErrors())
 					for (ErrorMessage error: iFailure.getErrors()) {
-						if (error.getCourse().startsWith(course.getCourseName()))
+						if (course.getCourseName().startsWith(error.getCourse()))
 							message += "\n" + error;
 					}
 				input.put("changeMessage", message);
