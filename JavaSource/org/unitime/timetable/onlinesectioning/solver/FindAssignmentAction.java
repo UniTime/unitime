@@ -961,6 +961,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							Enrollment noConfEnrl = null;
 							for (Iterator<Enrollment> e = enrls.iterator(); e.hasNext();) {
 								Enrollment enrl = e.next();
+								if (!course.equals(enrl.getCourse())) continue;
 								boolean overlaps = false; 
 								for (Enrollment x: enrollments) {
 									if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
@@ -978,14 +979,6 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 											}
 										}
 							        }
-								}
-								if (!overlaps) {
-									for (Unavailability unavailability: enrollment.getStudent().getUnavailabilities()) {
-										if (unavailability.isOverlapping(enrl.getAssignments())) {
-											overlaps = true;
-											break;
-										}
-									}
 								}
 						        if (!overlaps && noConfEnrl == null)
 									noConfEnrl = enrl;
@@ -1006,16 +999,6 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 											}
 										ca.addOverlap(ov);
 									}
-								}
-								unavailabilities: for (Unavailability unavailability: enrollment.getStudent().getUnavailabilities()) {
-									for (Config config: course.getOffering().getConfigs())
-										for (Subpart subpart: config.getSubparts())
-											for (Section section: subpart.getSections()) {
-												if (unavailability.isOverlapping(section)) {
-													ca.addOverlap(MSG.teachingAssignment(unavailability.getSection().getName()));
-													continue unavailabilities;
-												}
-											}
 								}
 							}
 							if (r.getAvaiableEnrollments(assignment).isEmpty()) {

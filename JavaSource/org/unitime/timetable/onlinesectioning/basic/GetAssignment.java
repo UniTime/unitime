@@ -374,11 +374,13 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 					ca.setWaitListedDate(r.getWaitListedTimeStamp());
 				ca.setHasCrossList(offering.hasCrossList());
 				if (enrollment == null) {
-					if (r.isWaitlist()) {
+					if (r.isWaitlist() && offering.isWaitList()) {
 						Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 						CourseRequest courseRequest = SectioningRequest.convert(assignment, r, server, wlMode);
 						Collection<Enrollment> enrls = courseRequest.getEnrollmentsSkipSameTime(assignment);
 						for (Course c: courseRequest.getCourses()) {
+							XOffering off = (c.getId() == courseId.getCourseId() ? offering : server.getOffering(c.getOffering().getId()));
+							if (off == null || !off.isWaitList()) continue;
 							TreeSet<Enrollment> overlap = new TreeSet<Enrollment>(new Comparator<Enrollment>() {
 								@Override
 								public int compare(Enrollment o1, Enrollment o2) {
@@ -420,7 +422,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 									if (q.getRequest() instanceof FreeTimeRequest) {
 										String ov = OnlineSectioningHelper.toString((FreeTimeRequest)q.getRequest());
 										overlaps.add(ov);
-										ca.addOverlap(ov);
+										if (c.getId() == course.getCourseId()) ca.addOverlap(ov);
 									} else {
 										CourseRequest cr = (CourseRequest)q.getRequest();
 										Course o = q.getCourse();
@@ -432,7 +434,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 												if (i.hasNext()) ov += ",";
 											}
 										overlaps.add(ov);
-										ca.addOverlap(ov);
+										if (c.getId() == course.getCourseId()) ca.addOverlap(ov);
 									}
 								}
 							}
