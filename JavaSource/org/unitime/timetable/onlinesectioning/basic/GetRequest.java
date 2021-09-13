@@ -289,12 +289,17 @@ public class GetRequest extends WaitlistedOnlineSectioningAction<CourseRequestIn
 						else
 							request.getCourses().add(r);
 					}
-					if (r.isWaitList()) {
+					if (r.isWaitList() && ((XCourseRequest)cd).getEnrollment() == null) {
 						Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 						org.cpsolver.studentsct.model.CourseRequest courseRequest = SectioningRequest.convert(assignment, (XCourseRequest)cd, server, request.getWaitListMode());
 						Collection<Enrollment> enrls = courseRequest.getEnrollmentsSkipSameTime(assignment);
-						for (RequestedCourse rc: r.getRequestedCourse()) {
+						rc: for (RequestedCourse rc: r.getRequestedCourse()) {
 							if (rc.getCourseId() == null) continue;
+							for (XCourseId cid: ((XCourseRequest)cd).getCourseIds())
+								if (cid.getCourseId().equals(rc.getCourseId())) {
+									XOffering off = server.getOffering(cid.getOfferingId());
+									if (off == null || !off.isWaitList()) continue rc;
+								}
 							TreeSet<Enrollment> overlap = new TreeSet<Enrollment>(new Comparator<Enrollment>() {
 								@Override
 								public int compare(Enrollment o1, Enrollment o2) {
