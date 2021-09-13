@@ -1272,8 +1272,10 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 			NumberFormat df = NumberFormat.getFormat("0.#");
 			boolean hasPosition = false;
 			boolean hasPrefs = false;
-			for (Request request: iAssignment.getRequest().getCourses()) {
+			request: for (Request request: iAssignment.getRequest().getCourses()) {
 				if (request.isWaitList() && request.hasRequestedCourse()) {
+					for (RequestedCourse rc: request.getRequestedCourse())
+						if (rc.getStatus() == RequestedCourseStatus.ENROLLED) continue request;
 					boolean firstLine = true;
 					for (RequestedCourse rc: request.getRequestedCourse()) {
 						if (rc.hasCourseId() && rc.isCanWaitList() && rc.getStatus() != RequestedCourseStatus.ENROLLED) {
