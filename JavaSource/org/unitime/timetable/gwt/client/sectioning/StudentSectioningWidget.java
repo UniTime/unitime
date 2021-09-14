@@ -599,18 +599,35 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iSpecRegCx.setChangeRequestorNote(new SpecialRegistrationInterface.ChangeRequestorNoteInterface() {
 			@Override
 			public boolean changeRequestorNote(final RequestedCourse rc) {
-				if (rc == null || rc.getRequestId() == null || rc.getStatus() != RequestedCourseStatus.OVERRIDE_PENDING || iCourseRequests.getLastCheck() == null) return false;
+				if (rc == null || rc.getRequestId() == null || rc.getStatus() != RequestedCourseStatus.OVERRIDE_PENDING) return false;
 				String message = null;
-				for (CourseMessage m: iCourseRequests.getLastCheck().getMessages(rc.getCourseName())) {
-					if ("NO_ALT".equals(m.getCode())) continue;
-					if ("OVERLAP".equals(m.getCode())) continue;
-					if ("CREDIT".equals(m.getCode())) continue;
-					if ("WL-OVERLAP".equals(m.getCode())) continue;
-					if ("WL-CREDIT".equals(m.getCode())) continue;
-					if (message == null)
-						message = MESSAGES.courseMessage(m.getMessage());
-					else
-						message += "\n" + MESSAGES.courseMessage(m.getMessage());
+				if (iCourseRequests.getLastCheck() != null) {
+					for (CourseMessage m: iCourseRequests.getLastCheck().getMessages(rc.getCourseName())) {
+						if ("NO_ALT".equals(m.getCode())) continue;
+						if ("OVERLAP".equals(m.getCode())) continue;
+						if ("CREDIT".equals(m.getCode())) continue;
+						if ("WL-OVERLAP".equals(m.getCode())) continue;
+						if ("WL-CREDIT".equals(m.getCode())) continue;
+						if (message == null)
+							message = MESSAGES.courseMessage(m.getMessage());
+						else
+							message += "\n" + MESSAGES.courseMessage(m.getMessage());
+					}
+				}
+				if (message == null && iSavedRequest != null && iSavedRequest.hasConfirmations()) {
+					for (CourseMessage m: iSavedRequest.getConfirmations()) {
+						if ("NO_ALT".equals(m.getCode())) continue;
+						if ("OVERLAP".equals(m.getCode())) continue;
+						if ("CREDIT".equals(m.getCode())) continue;
+						if ("WL-OVERLAP".equals(m.getCode())) continue;
+						if ("WL-CREDIT".equals(m.getCode())) continue;
+						if (m.hasCourse() && rc.getCourseId().equals(m.getCourseId())) {
+							if (message == null)
+								message = MESSAGES.courseMessage(m.getMessage());
+							else
+								message += "\n" + MESSAGES.courseMessage(m.getMessage());
+						}
+					}
 				}
 				if (message == null) return false;
 				CheckCoursesResponse confirm = new CheckCoursesResponse();

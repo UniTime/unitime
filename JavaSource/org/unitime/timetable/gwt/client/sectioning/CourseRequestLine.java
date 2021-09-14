@@ -855,6 +855,10 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			}
 		}
 		
+		public boolean hasStatus() {
+			return iStatus != null;
+		}
+		
 		public void setStatus(ImageResource icon, String message) {
 			if (iStatus != null) {
 				iStatus.setStatus(icon, message);
