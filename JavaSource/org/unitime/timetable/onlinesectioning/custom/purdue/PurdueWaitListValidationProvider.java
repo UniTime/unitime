@@ -496,7 +496,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						Float maxCreditDenied = null;
 						if (resp.deniedMaxCreditRequests != null) {
 							for (DeniedMaxCredit r: resp.deniedMaxCreditRequests) {
-								if (req.mode.equals(r.mode) && r.maxCredit != null && r.maxCredit > maxCredit && (maxCreditDenied == null || maxCreditDenied > r.maxCredit))
+								if (r.maxCredit != null && r.maxCredit > maxCredit && (maxCreditDenied == null || maxCreditDenied > r.maxCredit))
 									maxCreditDenied = r.maxCredit;
 							}
 						}
@@ -1308,7 +1308,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 					student.setOverrideTimeStamp(null);
 					student.setOverrideIntent(null);
 					studentChanged = true;
-				} else {
+				} else if (req != null) {
 					Integer oldStatus = student.getOverrideStatus();
 					switch (status(req, true)) {
 					case OVERRIDE_REJECTED: 
@@ -1850,7 +1850,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 							student.setOverrideTimeStamp(null);
 							student.setOverrideIntent(null);
 							studentChanged = true;
-						} else {
+						} else if (req != null) {
 							Integer oldStatus = student.getOverrideStatus();
 							switch (status(req, true)) {
 							case OVERRIDE_REJECTED: 
