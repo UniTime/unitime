@@ -163,7 +163,9 @@ public class EventEnrollmentExport implements Exporter {
 		if (crosslist)
 			header.add(MESSAGES.colCourse());
 		
-		boolean hasPriority = false, hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasAlternative = false, hasReservation = false, hasRequestedDate = false, hasEnrolledDate = false, hasConflict = false, hasMessage = false, hasAdvisor = false, hasMinor = false, hasConc = false, hasDeg = false;
+		boolean hasPriority = false, hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasAlternative = false, hasReservation = false,
+				hasRequestedDate = false, hasEnrolledDate = false, hasConflict = false, hasMessage = false, hasAdvisor = false, hasMinor = false, hasConc = false,
+				hasDeg = false, hasWaitlistedDate = false, hasWaitListedPosition = false;
 		Set<String> groupTypes = new TreeSet<String>();
 		for (ClassAssignmentInterface.Enrollment e: enrollments) {
 			if (e.getPriority() > 0) hasPriority = true;
@@ -182,6 +184,8 @@ public class EventEnrollmentExport implements Exporter {
 			if (e.getStudent().hasMinor()) hasMinor = true;
 			if (e.getStudent().hasConcentration()) hasConc = true;
 			if (e.getStudent().hasDegree()) hasDeg = true;
+			if (e.hasWaitListedDate()) hasWaitlistedDate = true;
+			if (e.hasWaitListedPosition()) hasWaitListedPosition = true;
 		}
 		
 		if (hasPriority)
@@ -235,6 +239,11 @@ public class EventEnrollmentExport implements Exporter {
 		
 		if (hasEnrolledDate)
 			header.add(MESSAGES.colEnrollmentTimeStamp());
+		
+		if (hasWaitlistedDate)
+			header.add(MESSAGES.colWaitListedTimeStamp());
+		if (hasWaitListedPosition)
+			header.add(MESSAGES.colWaitListPosition());
 		
 		if (hasAdvisor)
 			header.add(MESSAGES.colAdvisor());
@@ -299,6 +308,10 @@ public class EventEnrollmentExport implements Exporter {
 				line.add(enrollment.getRequestedDate() == null ? "" : sDF.format(enrollment.getRequestedDate()));
 			if (hasEnrolledDate)
 				line.add(enrollment.getEnrolledDate() == null ? "" : sDF.format(enrollment.getEnrolledDate()));
+			if (hasWaitlistedDate)
+				line.add(enrollment.hasWaitListedDate() ? sTSF.format(enrollment.getWaitListedDate()) : "");
+			if (hasWaitListedPosition)
+				line.add(enrollment.hasWaitListedPosition() ? enrollment.getWaitListedPosition() : "");
 			if (hasAdvisor)
 				line.add(enrollment.getStudent().getAdvisor("\n"));
 			if (hasMessage)

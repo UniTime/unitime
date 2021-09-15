@@ -1137,6 +1137,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private List<Conflict> iConflicts = null;
 		private Boolean iWaitList = null, iNoSub = null; 
 		private String iEnrollmentMessage = null;
+		private String iWaitListedPosition = null;
 		
 		public Enrollment() {}
 		
@@ -1156,9 +1157,12 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public Date getRequestedDate() { return iRequestedDate; }
 		public void setRequestedDate(Date ts) { iRequestedDate = ts; }
 		
+		public boolean hasWaitListedDate() {
+			return iWaitListedDate != null && isWaitList() && getStudent().getWaitListMode() == WaitListMode.WaitList;
+		}
 		public Date getWaitListedDate() { return iWaitListedDate; }
 		public void setWaitListedDate(Date ts) { iWaitListedDate = ts; }
-
+		
 		public Date getEnrolledDate() { return iEnrolledDate; }
 		public void setEnrolledDate(Date ts) { iEnrolledDate = ts; }
 		
@@ -1174,6 +1178,12 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public boolean hasNoSub() { return iNoSub != null; }
 		public boolean isNoSub() { return iNoSub != null && iNoSub.booleanValue(); }
 		public void setNoSub(Boolean noSub) { iNoSub = noSub; }
+		
+		public String getWaitListedPosition() { return iWaitListedPosition; }
+		public boolean hasWaitListedPosition() {
+			return iWaitListedPosition != null && !iWaitListedPosition.isEmpty() && isWaitList() && getStudent().getWaitListMode() == WaitListMode.WaitList;
+		}
+		public void setWaitListedPosition(String pos) { iWaitListedPosition = pos; }
 		
 		public String getClasses(String subpart, String delim, boolean showClassNumbers) {
 			if (getCourse() == null || getCourse().getClassAssignments().isEmpty()) return "";
