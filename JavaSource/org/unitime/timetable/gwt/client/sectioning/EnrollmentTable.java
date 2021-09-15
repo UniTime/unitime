@@ -62,6 +62,7 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityChe
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
+import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
 import org.unitime.timetable.gwt.shared.UserAuthenticationProvider;
 
 import com.google.gwt.core.client.GWT;
@@ -927,7 +928,7 @@ public class EnrollmentTable extends Composite {
 		}
 		
 		boolean hasPriority = false, hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasAlternative = false, hasReservation = false, hasRequestedDate = false, hasEnrolledDate = false, hasConflict = false, hasMessage = false;
-		boolean hasAdvisor = false, hasMinor = false, hasConc = false, hasDeg = false;
+		boolean hasAdvisor = false, hasMinor = false, hasConc = false, hasDeg = false, hasWaitlistedDate = false, hasWaitListedPosition = false;
 		Set<String> groupTypes = new HashSet<String>();
 		for (ClassAssignmentInterface.Enrollment e: enrollments) {
 			if (filter(f, e)) continue;
@@ -947,6 +948,8 @@ public class EnrollmentTable extends Composite {
 			if (e.getStudent().hasMinor()) hasMinor = true;
 			if (e.getStudent().hasConcentration()) hasConc = true;
 			if (e.getStudent().hasDegree()) hasDeg = true;
+			if (e.hasWaitListedDate()) hasWaitlistedDate = true;
+			if (e.hasWaitListedPosition()) hasWaitListedPosition = true;
 		}
 
 		UniTimeTableHeader hPriority = null;
@@ -1113,6 +1116,21 @@ public class EnrollmentTable extends Composite {
 			hEnrollmentTS = new UniTimeTableHeader(MESSAGES.colEnrollmentTimeStamp());
 			header.add(hEnrollmentTS);
 			addSortOperation(hEnrollmentTS, EnrollmentComparator.SortBy.ENROLLMENT_TS, MESSAGES.colEnrollmentTimeStamp());
+		}
+		
+		UniTimeTableHeader hWaitlistTS = null; 
+		if (hasWaitlistedDate) {
+			hWaitlistTS = new UniTimeTableHeader(MESSAGES.colWaitListedTimeStamp());
+			header.add(hWaitlistTS);
+			addSortOperation(hWaitlistTS, EnrollmentComparator.SortBy.WAITLIST_TS, MESSAGES.colWaitListedTimeStamp());
+		}
+
+		
+		UniTimeTableHeader hWaitlistPOS = null; 
+		if (hasWaitListedPosition) {
+			hWaitlistPOS = new UniTimeTableHeader(MESSAGES.colWaitListPosition());
+			header.add(hWaitlistPOS);
+			addSortOperation(hWaitlistPOS, EnrollmentComparator.SortBy.WAITLIST_POS, MESSAGES.colWaitListPosition());
 		}
 
 		UniTimeTableHeader hMessage = null;
@@ -1395,6 +1413,10 @@ public class EnrollmentTable extends Composite {
 				line.add(new HTML(enrollment.getRequestedDate() == null ? "&nbsp;" : sDF.format(enrollment.getRequestedDate()), false));
 			if (hasEnrolledDate)
 				line.add(new HTML(enrollment.getEnrolledDate() == null ? "&nbsp;" : sDF.format(enrollment.getEnrolledDate()), false));
+			if (hasWaitlistedDate)
+				line.add(new HTML(enrollment.hasWaitListedDate() ? sTSF.format(enrollment.getWaitListedDate()) : "&nbsp;", false));
+			if (hasWaitListedPosition)
+				line.add(new HTML(enrollment.hasWaitListedPosition() ? enrollment.getWaitListedPosition() : "&nbsp;", false));
 			if (hasMessage)
 				line.add(new HTML(enrollment.hasEnrollmentMessage() ? enrollment.getEnrollmentMessage().replace("\n", "<br>") : "&nbsp;", true));
 			if (hasAdvisor)
@@ -1578,6 +1600,8 @@ public class EnrollmentTable extends Composite {
 			case MINOR: h = hMinor; break;
 			case ADVISOR: h = hAdvisor; break;
 			case DEGREE: h = hDegree; break;
+			case WAITLIST_TS: h = hWaitlistTS; break;
+			case WAITLIST_POS: h = hWaitlistPOS; break;
 			}
 			if (h != null)
 				iEnrollments.sort(h, new EnrollmentComparator(sort, group), asc);
@@ -1870,6 +1894,8 @@ public class EnrollmentTable extends Composite {
 			MINOR,
 			CONCENTRATION,
 			DEGREE,
+			WAITLIST_TS,
+			WAITLIST_POS,
 			;
 		}
 		
@@ -1976,6 +2002,7 @@ public class EnrollmentTable extends Composite {
 				case CONFLICT_NAME:
 				case CONFLICT_DATE:
 				case CONFLICT_TIME:
+				case CONFLICT_ROOM:
 					if (e1.hasConflict()) {
 						if (e2.hasConflict()) {
 							Iterator<Conflict> i1 = e1.getConflicts().iterator();
@@ -1999,6 +2026,10 @@ public class EnrollmentTable extends Composite {
 					return 0;
 				case APPROVED:
 					return new Long(e1.getApprovedDate() == null ? 0 : e1.getApprovedDate().getTime()).compareTo(e2.getApprovedDate() == null ? 0 : e2.getApprovedDate().getTime());
+				case WAITLIST_TS:
+					return (e1.hasWaitListedDate() ? e1.getWaitListedDate() : new Date(0)).compareTo(e2.hasWaitListedDate() ? e2.getWaitListedDate() : new Date(0));
+				case WAITLIST_POS:
+					return NaturalOrderComparator.compare(e1.hasWaitListedPosition() ? e1.getWaitListedPosition() : "", e2.hasWaitListedPosition() ? e2.getWaitListedPosition() : "");
 				}
 			}
 			return 0;

@@ -48,7 +48,6 @@ import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
@@ -67,12 +66,13 @@ import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseLookup;
+import org.unitime.timetable.onlinesectioning.updates.WaitlistedOnlineSectioningAction;
 import org.unitime.timetable.solver.studentsct.StudentSolver;
 
 /**
  * @author Tomas Muller
  */
-public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAssignmentInterface.Enrollment>> {
+public class FindEnrollmentAction extends WaitlistedOnlineSectioningAction<List<ClassAssignmentInterface.Enrollment>> {
 	private static final long serialVersionUID = 1L;
 	protected static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	protected Query iQuery;
@@ -262,8 +262,9 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 			}
 			if (request.getTimeStamp() != null)
 				e.setRequestedDate(request.getTimeStamp());
-			if (request.getWaitListedTimeStamp() != null)
+			if (request.getWaitListedTimeStamp() != null && request.getEnrollment() == null)
 				e.setWaitListedDate(request.getWaitListedTimeStamp());
+			e.setWaitListedPosition(getWaitListPosition(offering, student, request, course, server, helper));
 			if (request.getEnrollment() != null) {
 				if (request.getEnrollment().getReservation() != null) {
 					switch (request.getEnrollment().getReservation().getType()) {

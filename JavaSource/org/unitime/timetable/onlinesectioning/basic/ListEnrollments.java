@@ -41,7 +41,6 @@ import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
@@ -58,12 +57,13 @@ import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
+import org.unitime.timetable.onlinesectioning.updates.WaitlistedOnlineSectioningAction;
 import org.unitime.timetable.util.Formats;
 
 /**
  * @author Tomas Muller
  */
-public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignmentInterface.Enrollment>> {
+public class ListEnrollments extends WaitlistedOnlineSectioningAction<List<ClassAssignmentInterface.Enrollment>> {
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	
@@ -210,8 +210,9 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 					}
 					if (request.getTimeStamp() != null)
 						e.setRequestedDate(request.getTimeStamp());
-					if (request.getWaitListedTimeStamp() != null)
+					if (request.getWaitListedTimeStamp() != null && request.getEnrollment() == null)
 						e.setWaitListedDate(request.getWaitListedTimeStamp());
+					e.setWaitListedPosition(getWaitListPosition(offering, student, request, course, server, helper));
 					if (enrollment == null)
 						e.setEnrollmentMessage(request.getEnrollmentMessage());
 					

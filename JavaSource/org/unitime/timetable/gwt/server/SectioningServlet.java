@@ -1358,7 +1358,6 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 									e.setAlternative(alt.getCourseOffering().getCourseName());
 								}
 								e.setRequestedDate(enrollment.getCourseRequest().getCourseDemand().getTimestamp());
-								e.setWaitListedDate(enrollment.getCourseRequest().getCourseDemand().getWaitlistedTimeStamp());
 								e.setApprovedDate(enrollment.getApprovedDate());
 								if (enrollment.getApprovedBy() != null) {
 									String name = approvedBy2name.get(enrollment.getApprovedBy());
