@@ -262,6 +262,7 @@ public class FindEnrollmentAction extends WaitlistedOnlineSectioningAction<List<
 			}
 			if (request.getTimeStamp() != null)
 				e.setRequestedDate(request.getTimeStamp());
+			e.setCritical(request.getCritical());
 			if (request.getWaitListedTimeStamp() != null && request.getEnrollment() == null)
 				e.setWaitListedDate(request.getWaitListedTimeStamp());
 			e.setWaitListedPosition(getWaitListPosition(offering, student, request, course, server, helper));

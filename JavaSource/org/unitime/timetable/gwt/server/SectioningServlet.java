@@ -1358,6 +1358,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 									e.setAlternative(alt.getCourseOffering().getCourseName());
 								}
 								e.setRequestedDate(enrollment.getCourseRequest().getCourseDemand().getTimestamp());
+								e.setCritical(enrollment.getCourseRequest().getCourseDemand().getEffectiveCritical().ordinal());
 								e.setApprovedDate(enrollment.getApprovedDate());
 								if (enrollment.getApprovedBy() != null) {
 									String name = approvedBy2name.get(enrollment.getApprovedBy());
@@ -1471,6 +1472,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								e.setAlternative(alt.getCourseOffering().getCourseName());
 							}
 							e.setRequestedDate(request.getCourseDemand().getTimestamp());
+							e.setCritical(request.getCourseDemand().getEffectiveCritical().ordinal());
 							e.setWaitListedDate(request.getCourseDemand().getWaitlistedTimeStamp());
 						}
 					return new ArrayList<ClassAssignmentInterface.Enrollment>(student2enrollment.values());
