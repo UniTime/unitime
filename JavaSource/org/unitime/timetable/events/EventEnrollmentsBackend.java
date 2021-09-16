@@ -589,6 +589,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
     					enrl.setAlternative(alt.getCourseOffering().getCourseName());
     				}
     				enrl.setRequestedDate(enrollment.getCourseRequest().getCourseDemand().getTimestamp());
+    				enrl.setCritical(enrollment.getCourseRequest().getCourseDemand().getEffectiveCritical().ordinal());
     				enrl.setApprovedDate(enrollment.getApprovedDate());
     				if (enrollment.getApprovedBy() != null) {
     					String name = approvedBy2name.get(enrollment.getApprovedBy());

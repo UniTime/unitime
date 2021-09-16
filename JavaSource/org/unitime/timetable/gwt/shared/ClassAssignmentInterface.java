@@ -1138,6 +1138,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Boolean iWaitList = null, iNoSub = null; 
 		private String iEnrollmentMessage = null;
 		private String iWaitListedPosition = null;
+		private Integer iCritical = null;
 		
 		public Enrollment() {}
 		
@@ -1154,6 +1155,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public void setAlternative(String course) { iAlternative = course; }
 		public String getAlternative() { return (iAlternative == null ? "" : iAlternative); }
 		
+		public boolean hasRequestedDate() { return iRequestedDate != null; }
 		public Date getRequestedDate() { return iRequestedDate; }
 		public void setRequestedDate(Date ts) { iRequestedDate = ts; }
 		
@@ -1163,9 +1165,11 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public Date getWaitListedDate() { return iWaitListedDate; }
 		public void setWaitListedDate(Date ts) { iWaitListedDate = ts; }
 		
+		public boolean hasEnrolledDate() { return iEnrolledDate != null; }
 		public Date getEnrolledDate() { return iEnrolledDate; }
 		public void setEnrolledDate(Date ts) { iEnrolledDate = ts; }
 		
+		public boolean hasApprovedDate() { return iApprovedDate != null; }
 		public Date getApprovedDate() { return iApprovedDate; }
 		public void setApprovedDate(Date ts) { iApprovedDate = ts; }
 		public String getApprovedBy() { return iApprovedBy; }
@@ -1216,6 +1220,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			return getCourse() == null ? null : getCourse().getCourseName();
 		}
 
+		public boolean hasReservation() { return iReservation != null && !iReservation.isEmpty(); }
 		public String getReservation() { return iReservation; }
 		public void setReservation(String reservation) { iReservation = reservation; }
 		
@@ -1229,6 +1234,12 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public String getEnrollmentMessage() { return iEnrollmentMessage; }
 		public boolean hasEnrollmentMessage() { return iEnrollmentMessage != null && !iEnrollmentMessage.isEmpty(); }
 		public void setEnrollmentMessage(String message) { iEnrollmentMessage = message; }
+		
+		public boolean hasCritical() { return iCritical != null; }
+		public boolean isCritical() { return iCritical != null && iCritical.intValue() == 1; }
+		public boolean isImportant() { return iCritical != null && iCritical.intValue() == 2; }
+		public Integer getCritical() { return iCritical; }
+		public void setCritical(Integer critical) { iCritical = critical; }
 	}
 	
 	public static class Conflict implements IsSerializable, Serializable {
