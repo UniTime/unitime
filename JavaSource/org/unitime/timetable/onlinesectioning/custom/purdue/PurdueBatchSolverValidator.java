@@ -22,13 +22,18 @@ package org.unitime.timetable.onlinesectioning.custom.purdue;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.solver.Solver;
 import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
@@ -37,8 +42,10 @@ import org.cpsolver.studentsct.model.AreaClassificationMajor;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.reservation.LearningCommunityReservation;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
@@ -72,6 +79,7 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.custom.purdue.XEBatchSolverSaver.StudentMatcher;
 import org.unitime.timetable.solver.studentsct.InMemoryReport;
 import org.unitime.timetable.solver.studentsct.StudentSolver;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 
 import com.google.gson.Gson;
@@ -106,6 +114,12 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
     private Hashtable<Long,Class_> iClasses = null;
     
     private Query iStudentQuery = null;
+    
+    private boolean iAutoOverrides = false;
+	private Set<String> iAllowedOverrides = new HashSet<String>();
+    private boolean iTimeConflictsIgnoreBreakTimes = false;
+	private boolean iAutoTimeOverrides = false;
+	private boolean iAutoLCOverrides = false;
 	
 	public PurdueBatchSolverValidator(Solver solver) {
         super(solver);
@@ -133,6 +147,14 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
         	iStudentQuery = new Query(query);
         	iProgress.info("Student filter: " + iStudentQuery); 
         }
+        
+        iAutoOverrides = solver.getProperties().getPropertyBoolean("Save.XE.AutoOverrides", false);
+		String allowedOverrides = solver.getProperties().getProperty("Save.XE.AllowedOverrides", null);
+		if (allowedOverrides != null && !allowedOverrides.isEmpty())
+			iAllowedOverrides = new HashSet<String>(Arrays.asList(allowedOverrides.split(",")));
+		iAutoTimeOverrides = solver.getProperties().getPropertyBoolean("Save.XE.AutoTimeOverrides", iAutoOverrides && iAllowedOverrides.contains("TIME-CNFLT"));
+		iAutoLCOverrides = solver.getProperties().getPropertyBoolean("Save.XE.AutoLCOverrides", false);
+		iTimeConflictsIgnoreBreakTimes = solver.getProperties().getPropertyBoolean("Save.XE.TimeConflictsIgnoreBreakTimes", false);
 	}
 
 	@Override
@@ -154,7 +176,8 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 				new CSVField("Course"),
 				new CSVField("CRN"),
 				new CSVField("Code"),
-				new CSVField("Message")
+				new CSVField("Message"),
+				new CSVField("Override")
 		});
 		org.hibernate.Session hibSession = null;
 		Transaction tx = null;
@@ -324,12 +347,124 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 		return ApiMode.valueOf(ApplicationProperties.getProperty("purdue.specreg.mode.batch", "PREREG"));
 	}
 	
+	protected Set<String> getLCCrns(Student student) {
+		Set<String> crns = new TreeSet<String>();
+		if (!iAutoLCOverrides) return crns;
+		for (Request request: student.getRequests()) {
+			Enrollment enrollment = getAssignment().getValue(request);
+			if (enrollment != null && enrollment.isCourseRequest() && enrollment.getReservation() != null && enrollment.getReservation() instanceof LearningCommunityReservation) {
+				CourseOffering course = iCourses.get(enrollment.getCourse().getId());
+				for (Section section: enrollment.getSections()) {
+					Class_ clazz = iClasses.get(section.getId());
+					if (clazz != null && course != null) crns.add(clazz.getExternalId(course));
+				}
+			}
+		}
+		return crns;
+	}
+	
+	protected static String defaultOverrides[] = new String[] {
+		    "CAMP", "CAMPUS",
+		    "CLAS", "CLASS",
+		    "CLOS", "CLOSED",
+		    "COLL", "COLLEGE",
+		    "CORQ", "CO-REQ",
+		    "DEGR", "DEGREE",
+		    "DEPT", "DPT-PERMIT",
+		    "DUPL", "DUP-CRSE",
+		    "LEVL", "LEVEL",
+		    "MAJR", "MAJOR",
+		    "PREQ", "PRE-REQ",
+		    "PROG", "PROGRAM",
+		    "TIME", "TIME-CNFLT",
+		    "CHRT", "COHORT",
+		    "REPH", "REPEATMHRS",
+		    };
+	
+	protected String getDefaultOverride(Student student, String crn, String messageType) {
+	    String override = null;
+	    if ("DEPT".equals(messageType) || "SAPR".equals(messageType)) {
+	    	OfferingConsentType consent = getConsent(student, crn);
+	    	if (consent != null && "IN".equals(consent.getReference())) {
+	    		override = "INST-PERMT";
+	    	} else if (consent != null && "DP".equals(consent.getReference())) {
+	    		override = "DPT-PERMIT";
+	    	} else {
+	    		override = "HONORS";
+	    	}
+	    } else {
+		    for (int i = 0; i < defaultOverrides.length; i+= 2) {
+		    	if (messageType.equals(defaultOverrides[i])) override = defaultOverrides[i + 1];
+		    }
+	    }
+	    return getSolver().getProperties().getProperty("Save.XE.Override." + messageType, override);
+	}
+	
+	protected boolean shareHoursIgnoreBreakTime(TimeLocation t1, TimeLocation t2) {
+    	int s1 = t1.getStartSlot() * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+    	int e1 = (t1.getStartSlot() + t1.getLength()) * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN - t1.getBreakTime();
+    	int s2 = t2.getStartSlot() * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+    	int e2 = (t2.getStartSlot() + t2.getLength()) * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN - t2.getBreakTime();
+    	return e1 > s2 && e2 > s1;
+    }
+	
+	protected String getCrn(Enrollment enrollment, Section section) {
+		CourseOffering course = iCourses.get(enrollment.getCourse().getId());
+		Class_ clazz = iClasses.get(section.getId());
+		if (clazz != null && course != null) return clazz.getExternalId(course);
+		return null;
+	}
+	
+	protected boolean inConflict(SctAssignment a1, SctAssignment a2) {
+        if (a1.getTime() == null || a2.getTime() == null) return false;
+        if (iTimeConflictsIgnoreBreakTimes) {
+        	TimeLocation t1 = a1.getTime();
+        	TimeLocation t2 = a2.getTime();
+        	return t1.shareDays(t2) && shareHoursIgnoreBreakTime(t1, t2) && t1.shareWeeks(t2);
+        } else {
+        	return a1.getTime().hasIntersection(a2.getTime());
+        }
+    }
+	
+	protected Set<String> getTimeConflicts(Student student) {
+		Set<String> crns = new TreeSet<String>();
+		for (int i1 = 0; i1 < student.getRequests().size(); i1++) {
+			Request r1 = student.getRequests().get(i1);
+			Enrollment e1 = getAssignment().getValue(r1);
+			if (e1 != null && e1.isCourseRequest()) {
+				for (int i2 = i1 + 1; i2 < student.getRequests().size(); i2++) {
+					Request r2 = student.getRequests().get(i2);
+					Enrollment e2 = getAssignment().getValue(r2);
+					if (e2 != null && e2.isCourseRequest()) {
+						for (Section s1 : e1.getSections()) {
+				            for (Section s2 : e2.getSections()) {
+				                if (inConflict(s1, s2)) {
+				                	if (s1.isAllowOverlap()) {
+				                		String crn = getCrn(e1, s1);
+				                		if (crn != null) crns.add(crn);
+				                	} else if (s2.isAllowOverlap()) {
+				                		String crn = getCrn(e2, s2);
+				                		if (crn != null) crns.add(crn);
+				                	}
+				                }
+				            }
+						}	
+					}
+				}
+			}
+		}
+		return crns;
+	}
+	
 	protected void validate(Student student, OnlineSectioningLog.Action.Builder action, List<CSVField[]> csv) {
 		iProgress.info("[" + student.getExternalId() + "] " + student.getName());
 		
 		String term = iExternalTermProvider.getExternalTerm(iSession);
 		String campus = iExternalTermProvider.getExternalCampus(iSession);
 		String puid = getBannerId(student);
+		
+		Set<String> lcCrns = getLCCrns(student);
+		Set<String> timeCrns = (iAutoTimeOverrides ? getTimeConflicts(student) : null);
 
 		CheckRestrictionsRequest req = new CheckRestrictionsRequest();
 		req.studentId = puid;
@@ -417,6 +552,7 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 				major += (major.isEmpty() ? "" : "\n") + (acm.getMajor() == null ? "" : acm.getMajor());
 			}
 			for (Problem p: resp.outJson.problems) {
+				String grantedOverride = null;
 				if (p.crn == null) {
 					iProgress.warn("[" + student.getExternalId() + "] " + p.message);
 					csv.add(new CSVField[] {
@@ -428,12 +564,20 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 							new CSVField(""),
 							new CSVField(""),
 							new CSVField(p.code),
-							new CSVField(p.message)
+							new CSVField(p.message),
 					});
 					action.addMessage(OnlineSectioningLog.Message.newBuilder()
 							.setLevel(OnlineSectioningLog.Message.Level.WARN)
 							.setText(p.message));
 				} else {
+					if ("TIME".equals(p.code) && timeCrns != null && timeCrns.contains(p.crn)) {
+						grantedOverride = "TIME-CNFLT";
+					} else if (iAutoOverrides) {
+						String override = getDefaultOverride(student, p.crn, p.code);
+						if (override != null && (iAllowedOverrides.contains(override) || lcCrns.contains(p.crn))) {
+							grantedOverride = override;
+						}
+					}
 					csv.add(new CSVField[] {
 							new CSVField(puid),
 							new CSVField(student.getName()),
@@ -443,14 +587,23 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 							new CSVField(getCourseNameForCrn(student, p.crn)),
 							new CSVField(p.crn),
 							new CSVField(p.code),
-							new CSVField(p.message)
+							new CSVField(p.message),
+							new CSVField(grantedOverride),
 					});
-					iProgress.warn("[" + student.getExternalId() + "] " + p.crn + ": " + p.message);
-					action.addMessage(OnlineSectioningLog.Message.newBuilder()
-							.setLevel(OnlineSectioningLog.Message.Level.WARN)
-							.setText(p.crn + ": " + p.message));
+					if (grantedOverride == null) {
+						iProgress.warn("[" + student.getExternalId() + "] " + p.crn + ": " + p.message);
+						action.addMessage(OnlineSectioningLog.Message.newBuilder()
+								.setLevel(OnlineSectioningLog.Message.Level.WARN)
+								.setText(p.crn + ": " + p.message));
+					} else {
+						iProgress.info("[" + student.getExternalId() + "] " + p.crn + ": " + p.message + " -- " + grantedOverride);
+						action.addMessage(OnlineSectioningLog.Message.newBuilder()
+								.setLevel(OnlineSectioningLog.Message.Level.INFO)
+								.setText(p.crn + ": " + p.message + " (" + grantedOverride + " override will be requested)"));
+					}
 				}
-				action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
+				if (grantedOverride == null)
+					action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
 			}
 		}
 	}
