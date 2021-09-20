@@ -1109,7 +1109,15 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		else if (getSubject() != null && !getSubject().isEmpty())
 			input.put("subject", getSubject().replace("%session%", server.getAcademicSession().toString()));
 		
-		input.put("manager", !iPermisionCheck || (helper.getUser() != null && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER));
+		if (!iPermisionCheck) {
+			input.put("manager", true);
+		} else if ("not-set".equals(iSourceAction) || "enroll".equals(iSourceAction) || "advisor-submit".equals(iSourceAction)
+			|| "mass-cancel".equals(iSourceAction) || "reject-enrollments".equals(iSourceAction) || "approve-enrollments".equals(iSourceAction)
+			|| "save-request".equals(iSourceAction)) {
+			input.put("manager", (helper.getUser() != null && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER));
+		} else {
+			input.put("manager", false);
+		}
 		input.put("changed", getOldEnrollment() != null || getOldStudent() != null);
 		input.put("version", GWT.pageVersion(Constants.getVersion(), Constants.getReleaseDate()));
 		input.put("copyright", GWT.pageCopyright());
