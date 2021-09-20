@@ -94,8 +94,12 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
 				if (override != null) {
 					if ("TBD".equals(override.getExternalId())) continue; // override not requested --> ignore
 					WaitListValidationProvider wp = Customization.WaitListValidationProvider.getProvider();
-					if (wp.updateStudent(server, helper, student, helper.getAction()))
-						override = request.getOverride(course);						
+					try {
+						if (wp.updateStudent(server, helper, student, helper.getAction()))
+							override = request.getOverride(course);
+					} catch (Exception e) {
+						helper.warn("Failed to check wait-list status for student " + student.getExternalId() + ": " + e.getMessage());
+					}
 				} else if (credit != null && course.hasCredit() && credit + course.getMinCredit() > student.getMaxCredit()) {
 					WaitListValidationProvider wp = Customization.WaitListValidationProvider.getProvider();
 					wp.updateStudent(server, helper, student, helper.getAction());
