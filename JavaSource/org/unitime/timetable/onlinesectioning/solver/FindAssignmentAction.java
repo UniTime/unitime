@@ -966,6 +966,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								for (Enrollment x: enrollments) {
 									if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
 									if (x == enrollment) continue;
+									if (x.getRequest() instanceof FreeTimeRequest && x.getRequest().getPriority() > r.getPriority()) continue;
 							        for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
 							        	SctAssignment a = i.next();
 										if (a.isOverlapping(enrl.getAssignments())) {

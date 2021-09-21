@@ -315,20 +315,26 @@ public class GetRequest extends WaitlistedOnlineSectioningAction<CourseRequestIn
 								for (Request q: enrl.getStudent().getRequests()) {
 									if (q.equals(request)) continue;
 									Enrollment x = assignment.getValue(q);
-									if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
-									for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
-							        	SctAssignment a = i.next();
-										if (a.isOverlapping(enrl.getAssignments())) {
+									if (q instanceof FreeTimeRequest) {
+										if (GetAssignment.isFreeTimeOverlapping((FreeTimeRequest)q, enrl)) {
 											overlaps = true;
-											overlap.add(x);
-											if (x.getRequest() instanceof org.cpsolver.studentsct.model.CourseRequest) {
-												org.cpsolver.studentsct.model.CourseRequest cr = (org.cpsolver.studentsct.model.CourseRequest)x.getRequest();
-												TreeSet<Section> ss = overlapingSections.get(cr);
-												if (ss == null) { ss = new TreeSet<Section>(new AssignmentComparator<Section, Request, Enrollment>(assignment)); overlapingSections.put(cr, ss); }
-												ss.add((Section)a);
-											}
+											overlap.add(((FreeTimeRequest)q).createEnrollment());
 										}
-							        }
+									} else if (x != null && x.getAssignments() != null && !x.getAssignments().isEmpty()) {
+										for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
+								        	SctAssignment a = i.next();
+											if (a.isOverlapping(enrl.getAssignments())) {
+												overlaps = true;
+												overlap.add(x);
+												if (x.getRequest() instanceof org.cpsolver.studentsct.model.CourseRequest) {
+													org.cpsolver.studentsct.model.CourseRequest cr = (org.cpsolver.studentsct.model.CourseRequest)x.getRequest();
+													TreeSet<Section> ss = overlapingSections.get(cr);
+													if (ss == null) { ss = new TreeSet<Section>(new AssignmentComparator<Section, Request, Enrollment>(assignment)); overlapingSections.put(cr, ss); }
+													ss.add((Section)a);
+												}
+											}
+								        }
+									}
 								}
 								if (!overlaps && noConfEnrl == null)
 									noConfEnrl = enrl;

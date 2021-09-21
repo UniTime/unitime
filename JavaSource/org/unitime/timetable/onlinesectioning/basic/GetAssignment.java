@@ -396,20 +396,26 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 								for (Request q: enrl.getStudent().getRequests()) {
 									if (q.equals(enrl.getRequest())) continue;
 									Enrollment x = assignment.getValue(q);
-									if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
-									for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
-							        	SctAssignment a = i.next();
-										if (a.isOverlapping(enrl.getAssignments())) {
+									if (q instanceof FreeTimeRequest) {
+										if (isFreeTimeOverlapping((FreeTimeRequest)q, enrl)) {
 											overlaps = true;
-											overlap.add(x);
-											if (x.getRequest() instanceof CourseRequest) {
-												CourseRequest cr = (CourseRequest)x.getRequest();
-												TreeSet<Section> ss = overlapingSections.get(cr);
-												if (ss == null) { ss = new TreeSet<Section>(new AssignmentComparator<Section, Request, Enrollment>(assignment)); overlapingSections.put(cr, ss); }
-												ss.add((Section)a);
-											}
+											overlap.add(((FreeTimeRequest)q).createEnrollment());
 										}
-							        }
+									} else if (x != null && x.getAssignments() != null && !x.getAssignments().isEmpty()) {
+										for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
+								        	SctAssignment a = i.next();
+											if (a.isOverlapping(enrl.getAssignments())) {
+												overlaps = true;
+												overlap.add(x);
+												if (x.getRequest() instanceof CourseRequest) {
+													CourseRequest cr = (CourseRequest)x.getRequest();
+													TreeSet<Section> ss = overlapingSections.get(cr);
+													if (ss == null) { ss = new TreeSet<Section>(new AssignmentComparator<Section, Request, Enrollment>(assignment)); overlapingSections.put(cr, ss); }
+													ss.add((Section)a);
+												}
+											}
+								        }
+									}
 								}
 								if (!overlaps && noConfEnrl == null)
 									noConfEnrl = enrl;
@@ -924,5 +930,23 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 		public XCourse getCourse() { return iCourse; }
 		public XSection getSection() { return iSection; }
 	}
+	
+	public static boolean isFreeTimeOverlapping(FreeTimeRequest r, Enrollment e) {
+		if (r.isAlternative() || r.getPriority() >= e.getRequest().getPriority())
+			return false;
+        if (r.getTime() == null)
+            return false;
+        for (SctAssignment assignment : e.getAssignments()) {
+            if (assignment.isAllowOverlap())
+                continue;
+            if (assignment.getTime() == null)
+                continue;
+            if (assignment instanceof FreeTimeRequest)
+                return false;
+            if (r.getTime().hasIntersection(assignment.getTime()))
+                return true;
+        }
+        return false;
+    }
 
 }
