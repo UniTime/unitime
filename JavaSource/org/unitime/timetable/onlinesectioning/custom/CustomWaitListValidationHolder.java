@@ -24,6 +24,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -43,6 +45,7 @@ import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
  * @author Tomas Muller
  */
 public class CustomWaitListValidationHolder {
+	protected static Log sLog = LogFactory.getLog(CustomWaitListValidationHolder.class);
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	
 	public static WaitListValidationProvider getProvider() {
@@ -261,7 +264,11 @@ public class CustomWaitListValidationHolder {
 						if (!iStudentsIds.hasNext()) break;
 						studentId = iStudentsIds.next();
 					}
-					process(studentId);
+					try {
+						process(studentId);
+					} catch (Exception e) {
+						sLog.warn("Failed to process student " + studentId + ": " + e.getMessage(), e);
+					}
 				}
 			} finally {
 				ApplicationProperties.setSessionId(null);
