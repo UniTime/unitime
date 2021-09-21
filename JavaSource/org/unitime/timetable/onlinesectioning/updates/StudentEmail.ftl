@@ -157,7 +157,7 @@
 <#macro classTableLine line>
 	<#assign style="white-space: nowrap;">
 	<#assign stylebr="">
-	<#assign stylelink="color: inherit;">
+	<#assign stylelink="color: inherit; text-decoration: none;">
 	<#if line.first>
 		<#assign style="white-space: nowrap; border-top: 1px dashed #9CB0CE;">
 		<#assign stylebr="border-top: 1px dashed #9CB0CE;">
@@ -219,7 +219,7 @@
 	<#else>
 		<#assign style="white-space: nowrap; color: red; border-top: 1px dashed #9CB0CE;">
 		<#assign stylebr="color: red; border-top: 1px dashed #9CB0CE;">
-		<#assign stylelink="color: inherit;">
+		<#assign stylelink="color: inherit; text-decoration: none;">
 	 	<tr style='vertical-align: top'>
 	 		<#if line.url??>
 				<td style="${style}"><a href="${line.url}" style="${stylelink}">${line.subject}</a></td>
@@ -259,7 +259,7 @@
 
 <#macro courseRequestsLine line>
 	<#assign style="white-space: nowrap; vertical-align: top;">
-	<#assign stylelink="color: inherit;">
+	<#assign stylelink="color: inherit; text-decoration: none;">
 	<#if line.first>
 		<#assign style="border-top: 1px dashed #9CB0CE; white-space: nowrap; vertical-align: top;">
 	</#if>
@@ -334,7 +334,7 @@
 
 <#macro advisorRequestsLine line>
 	<#assign style="white-space: nowrap; vertical-align: top;">
-	<#assign stylelink="color: inherit;">
+	<#assign stylelink="color: inherit; text-decoration: none;">
 	<#if line.first>
 		<#assign style="border-top: 1px dashed #9CB0CE; white-space: nowrap; vertical-align: top;">
 	</#if>
