@@ -51,6 +51,14 @@
 				<line>When selecting current authority, do not stick with the default academic session when unitime.studentScheduling.useDefaultSession = false.</line>
 			</description>
 		</item>
+		<item>
+			<name>Online Student Scheduling Dashboard: Student Notes</name>
+			<description>
+				<line>When online student scheduling is not enabled, corrected the logic of computing the last note of a student.
+					<line>This fixes an issue of showing an older note instead of the last one for students with no course requests.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>
@@ -378,7 +386,7 @@
 				<line>Enrollments tab: when the mouse is hovering over course/class available space, show existing reservations in a tooltip popup.</line>
 			</description>
 		</item>
-		
+
 	</category>
 	<category>
 		<title>Examination Timetabling</title>
