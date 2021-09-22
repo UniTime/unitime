@@ -99,7 +99,8 @@ public class OnlineSectioningLogger extends Thread {
 	public void record(OnlineSectioningLog.Log log) {
 		if (log == null || !isEnabled() || !isActive()) return;
 		for (OnlineSectioningLog.Action action: log.getActionList()) {
-			if (action.hasStartTime() && action.hasStudent() && action.hasOperation() && action.hasSession() && ApplicationProperty.OnlineSchedulingLogOperation.isTrue(action.getOperation())) {
+			if (action.hasStartTime() && action.hasStudent() && action.hasOperation() && action.hasSession() && ApplicationProperty.OnlineSchedulingLogOperation.isTrue(action.getOperation())
+				&& ApplicationProperty.OnlineSchedulingLogOperation.isTrue(action.getOperation() + "." + (action.hasResult() ? action.getResult().name() : "NULL"))) {
 				synchronized (iActions) {
 					if (iLogLimit <= 0 || iActions.size() < iLogLimit)
 						iActions.add(action);
