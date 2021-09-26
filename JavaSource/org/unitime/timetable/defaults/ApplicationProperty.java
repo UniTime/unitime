@@ -1674,6 +1674,20 @@ public enum ApplicationProperty {
 	
 	@Description("People Lookup LDAP: academic title attribute")
 	PeopleLookupLdapAcademicTitleAttribute("tmtbl.lookup.ldap.title"),
+	
+	@Description("People Lookup: default search sources separated by coma (defaults to ldap,students,instructors,staff,managers,events,advisors). This setting can be used to restrict the search to only certain sources and/or define in which order they will be searched.")
+	PeopleLookupDefaultSources("unitime.lookup.source.defaults"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("People Lookup: when searching instructors, prefer instructors with the matching department code in the Staff table")
+	PeopleLookupInstructorsPreferStaffDept("unitime.lookup.instructors.checkStaffDept"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Parameter("user role")
+	@Description("People Lookup: show Email column for given user role (when set to false, emails are not returned -- do not use for roles that can request an event on behalf of someone else)")
+	PeopleLookupShowEmail("unitime.lookup.showEmail.%"),
 
 	@Description("Reservations: default reservation expiration date for all reservation types (given either in the number of days relative to the academic session begin date or as a date in yyyy-mm-dd format)")
 	ReservationExpirationDateGlobal("unitime.reservations.expiration_date"),

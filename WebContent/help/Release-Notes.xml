@@ -86,6 +86,22 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>People Lookup: Adjustments</name>
+			<description>
+				<line>Added ability to specify which sources will be searched and in which order.
+					<line>By setting unitime.lookup.source.defaults property containing a comma separated list of sources, defaults to ldap,students,instructors,staff,managers,events,advisors.</line>
+				</line>
+				<line>When searching instructors, added ability to prefer instructors with the matching department code in the Staff table.
+					<line>By setting unitime.lookup.instructors.checkStaffDept to true (defaults to false).</line>
+				</line>
+				<line>Added ability to not return emails for some roles.
+					<line>By setting unitime.lookup.showEmail.&lt;role-ref&gt; to false (defaults to true, role-ref is the role reference for which Emails should be shown/hidden).</line>
+					<line>Do not use for roles that can request an event on behalf of someone else.</line>
+				</line>
+				<line>Hide columns Email or Phone when there is no match with an email or phone filled in respectively.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Documentation</title>
