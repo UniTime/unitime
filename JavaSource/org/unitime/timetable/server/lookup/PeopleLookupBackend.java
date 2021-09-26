@@ -53,6 +53,7 @@ import org.unitime.timetable.interfaces.ExternalUidTranslation.Source;
 import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.EventContact;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Staff;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.TimetableManager;
@@ -139,6 +140,12 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 			if (!cx.isAdmin() && sources != null && sources.length == 1 && sources[0].equals("students")) {
 				cx.setAdmin(context.hasPermission(Right.EnrollmentsShowExternalId));
 			}
+			
+			if (sources == null) {
+				String src = ApplicationProperty.PeopleLookupDefaultSources.value();
+				if (src != null && !src.isEmpty())
+					sources = src.split("[:,\n]");
+			}
 
 			if (sources == null) {
 				if (context == null || context.hasPermission(Right.CanLookupLdap)) findPeopleFromLdap(cx);
@@ -162,7 +169,9 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 			
 			GwtRpcResponseList<PersonInterface> people =  cx.response(displayWithoutId);
 			NameFormat nameFormat = NameFormat.fromReference(context != null ? context.getUser().getProperty(UserProperty.NameFormat) : NameFormat.LAST_FIRST_MIDDLE.reference());
-			for (final PersonInterface person: people)
+			boolean showEmail = ApplicationProperty.PeopleLookupShowEmail.isTrue(
+					context == null || context.getUser() == null || context.getUser().getCurrentAuthority() == null ? Roles.ROLE_NONE : context.getUser().getCurrentAuthority().getRole());
+			for (final PersonInterface person: people) {
 				person.setFormattedName(nameFormat.format(new NameInterface() {
 					@Override
 					public String getMiddleName() {
@@ -183,6 +192,8 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 						return person.getAcademicTitle();
 					}
 				}));
+				if (!showEmail) person.setEmail(null);
+			}
 			return people;
 		} catch (GwtRpcException e) {
 			throw e;
@@ -284,7 +295,15 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
     }
     
     protected void findPeopleFromInstructors(SearchContext context) throws Exception {
-        String q = "select s from DepartmentalInstructor s where s.department.session.uniqueId = :sessionId";
+    	if (ApplicationProperty.PeopleLookupInstructorsPreferStaffDept.isTrue())
+    		if (findPeopleFromInstructors(context, true) > 0) return;
+    	findPeopleFromInstructors(context, false);
+    }
+    
+    protected int findPeopleFromInstructors(SearchContext context, boolean checkStaffDepartment) throws Exception {
+        String q = (checkStaffDepartment ?
+        		"select s from DepartmentalInstructor s, Staff f where s.department.session.uniqueId = :sessionId and f.externalUniqueId = s.externalUniqueId and s.department.deptCode = f.dept" :
+        		"select s from DepartmentalInstructor s where s.department.session.uniqueId = :sessionId" );
         for (int idx = 0; idx < context.getQueryTokens().size(); idx++) {
             q += " and (lower(s.firstName) like :t" + idx + " || '%' " +
             		"or lower(s.firstName) like '% ' || :t" + idx + " || '%' " +
@@ -302,6 +321,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
         hq.setLong("sessionId", context.getSessionId());
         if (context.getLimit() > 0)
         	hq.setMaxResults(context.getLimit());
+        int ret = 0;
         for (DepartmentalInstructor instructor: (List<DepartmentalInstructor>)hq.setCacheable(true).list()) {
             context.addPerson(new PersonInterface(translate(instructor.getExternalUniqueId(), Source.Staff), 
                     Constants.toInitialCase(instructor.getFirstName()),
@@ -311,7 +331,9 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
                     instructor.getEmail(), null, instructor.getDepartment().getName(),
                     (instructor.getPositionType() == null ? null : instructor.getPositionType().getLabel()),
                     "Instructors"));
+            ret ++;
         }
+        return ret;
     }
 
     protected void findPeopleFromStudents(SearchContext context) throws Exception {
