@@ -256,13 +256,17 @@ public class Lookup extends UniTimeDialogBox implements HasValue<PersonInterface
 				iLastQuery = q;
 				iTable.clearTable(1);
 				boolean hasId = true;
+				boolean hasEmail = false;
+				boolean hasPhone = false;
 				for (PersonInterface person: result) {
 					List<Widget> line = new ArrayList<Widget>();
 					line.add(new Label(person.getName(), false));
-					line.add(new Label(person.getEmail(), false));
-					line.add(new Label(person.getPhone(), false));
+					line.add(new Label(person.getEmail() == null ? "" : person.getEmail(), false));
+					line.add(new Label(person.getPhone() == null ? "" : person.getPhone(), false));
 					line.add(new Label(person.getDepartment()));
 					line.add(new Label(person.getSource()));
+					if (person.getPhone() != null) hasPhone = true;
+					if (person.getEmail() != null) hasEmail = true;
 					iTable.addRow(person, line);
 					if (person.getId() == null || person.getId().isEmpty() || "null".equals(person.getId())) {
 						int row = iTable.getRowCount() - 1;
@@ -292,6 +296,8 @@ public class Lookup extends UniTimeDialogBox implements HasValue<PersonInterface
 						AriaStatus.getInstance().setText(ARIA.showingMultipleSuggestionsNoneSelected(result.size(), q));				
 					}
 				}
+				iTable.setColumnVisible(1, hasEmail);
+				iTable.setColumnVisible(2, hasPhone);
 			}
 			@Override
 			public void onFailure(Throwable caught) {
