@@ -51,6 +51,7 @@ import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamConflict;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -168,6 +169,15 @@ public class ExamDetailAction extends PreferencesAction {
                             exam.firstSubjectArea(), 
                             exam.firstDepartment());
                     exam.deleteDependentObjects(hibSession, false);
+                    for (Iterator<ExamConflict> j=exam.getConflicts().iterator();j.hasNext();) {
+                        ExamConflict conf = j.next();
+                        for (Iterator<Exam> i=conf.getExams().iterator();i.hasNext();) {
+                            Exam x = i.next();
+                            if (!x.equals(exam)) x.getConflicts().remove(conf);
+                        }
+                        hibSession.delete(conf);
+                        j.remove();
+                    }
                     hibSession.delete(exam);
                     tx.commit();
                 } catch (Exception e) {
