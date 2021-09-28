@@ -138,7 +138,7 @@ public class ClassInfoModel implements Serializable {
     	} catch (Exception e){}
     	DatePattern dp = getClazz().getClazz().effectiveDatePattern();
     	if (dp == null) return null;
-    	if (dp.getType() != DatePattern.sTypeAlternate) {
+    	if (dp.getType() != DatePattern.sTypePatternSet) {
     		return new ClassDateInfo(
     				dp.getUniqueId(),
     				getClazz().getClassId(),

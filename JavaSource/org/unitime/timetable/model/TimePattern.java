@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.cpsolver.coursett.model.TimeLocation;
+import org.hibernate.LazyInitializationException;
 import org.hibernate.Query;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseTimePattern;
@@ -242,10 +243,12 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
         cmp = getMinPerMtg().compareTo(t.getMinPerMtg());
         if (cmp!=0) return cmp;
         
-        int nrComb = getTimes().size()*getDays().size();
-        int nrCombT = t.getTimes().size()*t.getDays().size();
-        cmp = Double.compare(nrComb, nrCombT);
-        if (cmp!=0) return cmp;
+        try {
+        	int nrComb = getTimes().size()*getDays().size();
+        	int nrCombT = t.getTimes().size()*t.getDays().size();
+        	cmp = Double.compare(nrComb, nrCombT);
+        	if (cmp!=0) return cmp;
+        } catch (LazyInitializationException e) {}
         
         return getName().compareTo(t.getName());
     }
