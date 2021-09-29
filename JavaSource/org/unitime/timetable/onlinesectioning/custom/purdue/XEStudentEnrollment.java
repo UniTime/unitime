@@ -1327,6 +1327,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						sectioningRequest.getAction().addMessageBuilder().setText(reg.failedCRN + ": " + reg.failure).setLevel(OnlineSectioningLog.Message.Level.WARN);
 					else
 						sectioningRequest.getAction().addMessageBuilder().setText(reg.failure).setLevel(OnlineSectioningLog.Message.Level.WARN);
+					if (exception == null && ret.getSectionIds().isEmpty())
+						exception = new SectioningException(reg.failure);
 					if (exception != null)
 						exception.addError(new ErrorMessage(course.getCourseName(), reg.failedCRN, "", reg.failure));
 				}
