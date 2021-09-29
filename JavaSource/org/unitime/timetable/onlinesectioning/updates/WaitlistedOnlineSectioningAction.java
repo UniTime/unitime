@@ -102,7 +102,11 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
 					}
 				} else if (credit != null && course.hasCredit() && credit + course.getMinCredit() > student.getMaxCredit()) {
 					WaitListValidationProvider wp = Customization.WaitListValidationProvider.getProvider();
-					wp.updateStudent(server, helper, student, helper.getAction());
+					try {
+						wp.updateStudent(server, helper, student, helper.getAction());
+					} catch (Exception e) {
+						helper.warn("Failed to check wait-list status for student " + student.getExternalId() + ": " + e.getMessage());
+					}	
 				}
 				// override for this course is not approved
 				if (override != null && !override.isApproved()) continue;
