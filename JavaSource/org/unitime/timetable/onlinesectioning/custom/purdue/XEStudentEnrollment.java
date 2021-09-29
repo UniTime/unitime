@@ -1227,6 +1227,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						if (!reg.canAdd(true))
 							throw new SectioningException("Section " + reg.courseReferenceNumber + " is not available for student scheduling.");
 						req.add(reg.courseReferenceNumber, true);
+						changed = true;
 					}
 				}
 			for (String id: idsToAdd) {
