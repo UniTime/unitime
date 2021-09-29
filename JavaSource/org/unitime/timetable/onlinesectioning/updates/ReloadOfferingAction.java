@@ -359,10 +359,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 									null);
 							} catch (Exception ex) {
 								action.setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
-								action.addMessage(OnlineSectioningLog.Message.newBuilder()
-										.setLevel(OnlineSectioningLog.Message.Level.FATAL)
-										.setText(ex.getMessage() == null ? "null" : ex.getMessage()));
-								helper.error("Unable to resection student: " + ex.getMessage(), ex);
+								helper.error(course.getCourseName() + ": " + (ex.getMessage() == null ? "Unable to drop student." : ex.getMessage()), ex, action);
 							}
 						}
 						action.setEndTime(System.currentTimeMillis());
@@ -396,10 +393,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 										newEnrollment);
 								} catch (Exception ex) {
 									action.setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
-									action.addMessage(OnlineSectioningLog.Message.newBuilder()
-											.setLevel(OnlineSectioningLog.Message.Level.FATAL)
-											.setText(ex.getMessage() == null ? "null" : ex.getMessage()));
-									helper.error("Unable to resection student: " + ex.getMessage(), ex);
+									helper.error(course.getCourseName() + ": " + (ex.getMessage() == null ? "Unable to resection student." : ex.getMessage()), ex, action);
 								}							
 							}
 							action.setEndTime(System.currentTimeMillis());
@@ -461,7 +455,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 			Date ts = new Date();
 			int index = 1;
 			for (SectioningRequest r: queue) {
-				helper.debug("Resectioning " + r.getRequest() + " (was " + (r.getLastEnrollment() == null ? "not assigned" : r.getLastEnrollment().getSectionIds()) + ")");
+				helper.debug("Resectioning " + r.getRequest() + " (was " + (r.getLastEnrollment() == null ? "not assigned" : r.getLastEnrollment().getSectionIds()) + ")", r.getAction());
 				long c0 = OnlineSectioningHelper.getCpuTime();
 				r.getAction().setStartTime(System.currentTimeMillis());
 				r.getAction().addOptionBuilder().setKey("Index").setValue(index + " of " + queue.size()); index++;
@@ -481,10 +475,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 						e = CustomStudentEnrollmentHolder.getProvider().resection(server, helper, r, e);
 					} catch (Exception ex) {
 						r.getAction().setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
-						r.getAction().addMessage(OnlineSectioningLog.Message.newBuilder()
-								.setLevel(OnlineSectioningLog.Message.Level.FATAL)
-								.setText(ex.getMessage() == null ? "null" : ex.getMessage()));
-						helper.warn("Unable to resection student: " + ex.getMessage());
+						helper.warn(r.getCourseId().getCourseName() + ": " + (ex.getMessage() == null ? "Unable to resection student." : ex.getMessage()), r.getAction());
 						if (r.getNewEnrollment() != null)
 							server.assign(r.getRequest(), r.getNewEnrollment());
 						r.getAction().setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
@@ -509,7 +500,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 				if (e != null) {
 					r.setRequest(server.assign(r.getRequest(), e));
 				}
-				helper.debug("New: " + (e == null ? "not assigned" : e.getSectionIds()));
+				helper.debug("New: " + (e == null ? "not assigned" : e.getSectionIds()), r.getAction());
 				
 				org.unitime.timetable.model.Student student = StudentDAO.getInstance().get(r.getRequest().getStudentId(), helper.getHibSession());
 				WaitListMode wlMode = student.getWaitListMode();
@@ -519,7 +510,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					StudentClassEnrollment enrl = i.next();
 					if ((enrl.getCourseRequest() != null && enrl.getCourseRequest().getCourseDemand().getUniqueId().equals(r.getRequest().getRequestId())) ||
 						(enrl.getCourseOffering() != null && enrl.getCourseOffering().getUniqueId().equals(r.getCourseId().getCourseId()))) {
-						helper.debug("Deleting " + enrl.getClazz().getClassLabel());
+						helper.debug("Deleting " + enrl.getClazz().getClassLabel(), r.getAction());
 						enrollmentMap.put(enrl.getClazz().getUniqueId(), enrl);
 						if (approvedBy == null && enrl.getApprovedBy() != null) {
 							approvedBy = enrl.getApprovedBy();
@@ -567,7 +558,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 						enrl.setApprovedBy(approvedBy);
 						enrl.setApprovedDate(approvedDate);
 						student.getClassEnrollments().add(enrl);
-						helper.debug("Adding " + enrl.getClazz().getClassLabel());
+						helper.debug("Adding " + enrl.getClazz().getClassLabel(), r.getAction());
 					}
 					
 					if (cd != null && cd.isWaitlist()) {

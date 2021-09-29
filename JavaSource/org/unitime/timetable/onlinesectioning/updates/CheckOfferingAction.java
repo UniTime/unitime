@@ -289,7 +289,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 			Date ts = new Date();
 			int index = 1;
 			for (SectioningRequest r: queue) {
-				helper.debug("Resectioning " + r.getRequest() + " (was " + (r.getLastEnrollment() == null ? "not assigned" : r.getLastEnrollment()) + ")");
+				helper.debug("Resectioning " + r.getRequest() + " (was " + (r.getLastEnrollment() == null ? "not assigned" : r.getLastEnrollment()) + ")", r.getAction());
 				r.getAction().setStartTime(System.currentTimeMillis());
 				long c0 = OnlineSectioningHelper.getCpuTime();
 				r.getAction().addOptionBuilder().setKey("Index").setValue(index + " of " + queue.size()); index++;
@@ -309,10 +309,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 						enrollment = CustomStudentEnrollmentHolder.getProvider().resection(server, helper, r, enrollment);
 					} catch (Exception e) {
 						r.getAction().setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
-						r.getAction().addMessage(OnlineSectioningLog.Message.newBuilder()
-								.setLevel(OnlineSectioningLog.Message.Level.FATAL)
-								.setText(e.getMessage() == null ? "null" : e.getMessage()));
-						helper.warn("Unable to resection student: " + e.getMessage());
+						helper.warn((r.getCourseId() == null ? offering.getName() : r.getCourseId().getCourseName()) + ": " + (e.getMessage() == null ? "Unable to resection student." : e.getMessage()), r.getAction());
 						r.getAction().setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
 						r.getAction().setEndTime(System.currentTimeMillis());
 						if (ApplicationProperty.OnlineSchedulingEmailConfirmationWhenFailed.isTrue())
@@ -338,7 +335,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 					r.getAction().setEndTime(System.currentTimeMillis());
 					continue;
 				}
-				helper.debug("New: " + (r.getRequest().getEnrollment() == null ? "not assigned" : r.getRequest().getEnrollment()));
+				helper.debug("New: " + (r.getRequest().getEnrollment() == null ? "not assigned" : r.getRequest().getEnrollment()), r.getAction());
 				if (r.getLastEnrollment() == null && r.getRequest().getEnrollment() == null) {
 					r.getAction().setResult(OnlineSectioningLog.Action.ResultType.FALSE);
 					r.getAction().setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
@@ -361,7 +358,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 						StudentClassEnrollment enrl = i.next();
 						if ((enrl.getCourseRequest() != null && enrl.getCourseRequest().getCourseDemand().getUniqueId().equals(r.getRequest().getRequestId())) ||
 							(r.getLastEnrollment() != null && enrl.getCourseOffering() != null && enrl.getCourseOffering().getUniqueId().equals(r.getLastEnrollment().getCourseId()))) {
-							helper.debug("Deleting " + enrl.getClazz().getClassLabel());
+							helper.debug("Deleting " + enrl.getClazz().getClassLabel(), r.getAction());
 							oldEnrollments.put(enrl.getClazz().getUniqueId(), enrl);
 							if (approvedBy == null && enrl.getApprovedBy() != null) {
 								approvedBy = enrl.getApprovedBy();
@@ -405,7 +402,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 							enrl.setApprovedBy(approvedBy);
 							enrl.setApprovedDate(approvedDate);
 							student.getClassEnrollments().add(enrl);
-							helper.debug("Adding " + enrl.getClazz().getClassLabel());
+							helper.debug("Adding " + enrl.getClazz().getClassLabel(), r.getAction());
 						}
 						if (cd != null && cd.isWaitlist()) {
 							cd.setWaitlist(false);
@@ -437,11 +434,8 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 				} catch (Exception e) {
 					server.assign(r.getRequest(), r.getLastEnrollment());
 					r.getAction().setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
-					r.getAction().addMessage(OnlineSectioningLog.Message.newBuilder()
-							.setLevel(OnlineSectioningLog.Message.Level.FATAL)
-							.setText(e.getMessage() == null ? "null" : e.getMessage()));
+					helper.error((r.getCourseId() == null ? offering.getName() : r.getCourseId().getCourseName()) + ": " + (e.getMessage() == null ? "Unable to resection student." : e.getMessage()), e, r.getAction());
 					if (tx) helper.rollbackTransaction();
-					helper.error("Unable to resection student: " + e.getMessage(), e);
 				}
 				
 				r.getAction().setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);

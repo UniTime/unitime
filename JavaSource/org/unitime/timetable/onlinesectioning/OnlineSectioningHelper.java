@@ -160,6 +160,20 @@ public class OnlineSectioningHelper {
     		h.onMessage(m);
     }
     
+    public void log(Message m, OnlineSectioningLog.Action.Builder action) {
+    	if (m.getLevel() != LogLevel.DEBUG && action != null) {
+        	OnlineSectioningLog.Message.Builder l = OnlineSectioningLog.Message.newBuilder()
+        		.setLevel(m.getLevel().level())
+				.setText(m.getMessage())
+				.setTimeStamp(System.currentTimeMillis());
+        	if (m.getThrowable() != null)
+        		l.setException(m.getThrowable().getClass().getName() + ": " + m.getThrowable().getMessage());
+        	action.addMessage(l);
+    	}
+    	for (MessageHandler h: iMessageHandlers)
+    		h.onMessage(m);
+    }
+    
     public boolean isDebugEnabled() {
     	for (MessageHandler h: iMessageHandlers)
     		if (h.isDebugEnabled()) return true;
@@ -170,40 +184,80 @@ public class OnlineSectioningHelper {
         log(new Message(LogLevel.DEBUG, msg));
     }
     
+    public void debug(String msg, OnlineSectioningLog.Action.Builder action) {
+    	log(new Message(LogLevel.DEBUG, msg), action);
+    }
+    
     public void info(String msg) {
         log(new Message(LogLevel.INFO, msg));
+    }
+    
+    public void info(String msg, OnlineSectioningLog.Action.Builder action) {
+    	log(new Message(LogLevel.INFO, msg), action);
     }
     
     public void warn(String msg) {
         log(new Message(LogLevel.WARN, msg));
     }
     
+    public void warn(String msg, OnlineSectioningLog.Action.Builder action) {
+    	log(new Message(LogLevel.WARN, msg), action);
+    }
+    
     public void error(String msg) {
         log(new Message(LogLevel.ERROR, msg));
+    }
+    
+    public void error(String msg, OnlineSectioningLog.Action.Builder action) {
+    	log(new Message(LogLevel.ERROR, msg), action);
     }
     
     public void fatal(String msg) {
         log(new Message(LogLevel.FATAL, msg));
     }
     
+    public void fatal(String msg, OnlineSectioningLog.Action.Builder action) {
+    	log(new Message(LogLevel.FATAL, msg), action);
+    }
+    
     public void debug(String msg, Throwable t) {
         log(new Message(LogLevel.DEBUG, msg, t));
+    }
+    
+    public void debug(String msg, Throwable t, OnlineSectioningLog.Action.Builder action) {
+        log(new Message(LogLevel.DEBUG, msg, t), action);
     }
     
     public void info(String msg, Throwable t) {
         log(new Message(LogLevel.INFO, msg, t));
     }
     
+    public void info(String msg, Throwable t, OnlineSectioningLog.Action.Builder action) {
+        log(new Message(LogLevel.INFO, msg, t), action);
+    }
+    
     public void warn(String msg, Throwable t) {
         log(new Message(LogLevel.WARN, msg, t));
+    }
+    
+    public void warn(String msg, Throwable t, OnlineSectioningLog.Action.Builder action) {
+        log(new Message(LogLevel.WARN, msg, t), action);
     }
     
     public void error(String msg, Throwable t) {
         log(new Message(LogLevel.ERROR, msg, t));
     }
     
+    public void error(String msg, Throwable t, OnlineSectioningLog.Action.Builder action) {
+        log(new Message(LogLevel.ERROR, msg, t), action);
+    }
+    
     public void fatal(String msg, Throwable t) {
         log(new Message(LogLevel.FATAL, msg, t));
+    }
+    
+    public void fatal(String msg, Throwable t, OnlineSectioningLog.Action.Builder action) {
+        log(new Message(LogLevel.FATAL, msg, t), action);
     }
 
     public org.hibernate.Session getHibSession() {
