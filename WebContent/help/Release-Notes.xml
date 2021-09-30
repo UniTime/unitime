@@ -69,6 +69,12 @@
 				<line>Set unitime.commit.skipConflictChecking to true to skip the checks, defaults to false.</line>
 			</description>
 		</item>
+		<item>
+			<name>Class Assignment: Bugfix</name>
+			<description>
+				<line>Fixed an error that sometimes appear when a class with two or more date patterns available is being assigned (Exception thrown by getter for property times of bean model).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>
