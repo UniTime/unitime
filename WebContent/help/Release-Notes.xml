@@ -84,6 +84,12 @@
 				<line>Added an ability to unassign an exam (remove its current assingment).</line>
 			</description>
 		</item>
+		<item>
+			<name>Examination Detail: Delete</name>
+			<description>
+				<line>Fixed a &quot;deleted object would be re-saved by cascade&quot; issue which sometimes appears when an assigned exam that has some student conflicts is being deleted.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>
