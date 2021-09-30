@@ -77,6 +77,15 @@
 		</item>
 	</category>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Examination Assignment: Not-Assigned</name>
+			<description>
+				<line>Added an ability to unassign an exam (remove its current assingment).</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Data Exchange: Student Course Requests XML Import</name>

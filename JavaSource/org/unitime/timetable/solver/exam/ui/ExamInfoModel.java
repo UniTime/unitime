@@ -118,7 +118,14 @@ public class ExamInfoModel implements Serializable {
             for (ExamAssignment assignment : assignments) {
             	iChange.getAssignments().add(new ExamAssignmentInfo(assignment.getExam(),assignment.getPeriod(),assignment.getRooms(),table));
             }
-            iChange.getConflicts().clear();
+            if (assignments.isEmpty()) {
+            	for (Iterator<ExamAssignment> i = iChange.getConflicts().iterator(); i.hasNext(); ) {
+            		ExamAssignment assignment = i.next();
+            		if (assignment == null || !assignment.getExamId().equals(getExam().getExamId())) i.remove();
+            	}
+            } else {
+            	iChange.getConflicts().clear();
+            }
             for (ExamAssignment assignment : new Vector<ExamAssignment>(iChange.getAssignments())) {
                 if (assignment.getRooms() != null) {
                 	for (ExamRoomInfo room : assignment.getRooms()) {
@@ -269,12 +276,19 @@ public class ExamInfoModel implements Serializable {
     
     public void setPeriod(long periodId) throws Exception {
         iRooms = null;
-        if (iChange==null) iChange = new ExamProposedChange();
+        if (iChange==null) {
+        	iChange = new ExamProposedChange();
+            iChange.setSelected(getExam().getExamId());
+        }
         for (ExamAssignmentInfo period : getPeriods()) {
             if (periodId==period.getPeriodId()) {
                 iChange.addChange(period, getExamOldAssignment());
             }
         }
+        if (periodId == -1l)
+        	iChange.addChange(
+        			new ExamAssignmentInfo(getExam().getExam(), null, null, null, (iChange==null?null:iChange.getAssignmentTable())),
+        			getExamOldAssignment());
         if (iChange.isEmpty()) iChange = null; 
         update();
     }
@@ -289,7 +303,10 @@ public class ExamInfoModel implements Serializable {
     }
     
     public void setRooms(String rooms) throws Exception {
-        if (iChange==null) iChange = new ExamProposedChange();
+        if (iChange==null) {
+        	iChange = new ExamProposedChange();
+        	iChange.setSelected(getExam().getExamId());
+        }
         ExamAssignmentInfo assignment = iChange.getCurrent(iExam);
         if (assignment==null && isExamAssigned()) {
             for (ExamAssignmentInfo period : getPeriods()) {
@@ -433,6 +450,30 @@ public class ExamInfoModel implements Serializable {
                     line.setBgColor("rgb(168,187,225)");
                 }
             }
+            if (current != null) {
+            	table.addLine(
+                        "onClick=\"displayLoading();document.location='examInfo.do?op=Select&period=-1&noCacheTS=" + new Date().getTime()+"';\"",
+                        new String[] {
+                             "not-assigned",
+                             "",
+                             dc2html(true, 0, -current.getNrDirectConflicts()),
+                             m2d2html(true, 0, -current.getNrMoreThanTwoConflicts()),
+                             btb2html(true, 0, -current.getNrBackToBackConflicts(), 0, -current.getNrDistanceBackToBackConflicts()),
+                             dc2html(true, 0, -current.getNrInstructorDirectConflicts()),
+                             m2d2html(true, 0, -current.getNrInstructorMoreThanTwoConflicts()),
+                             btb2html(true, 0, -current.getNrInstructorBackToBackConflicts(), 0, -current.getNrInstructorDistanceBackToBackConflicts())
+                         }, new Comparable[] {
+                             9999,
+                             "",
+                             0,
+                             0,
+                             0,
+                             0,
+                             0,
+                             0
+                         });
+            }
+            
             return table.printTable(iPeriodTableOrd);
         } catch (Exception e) {
             Debug.error(e);
@@ -882,7 +923,7 @@ public class ExamInfoModel implements Serializable {
     }
     
     public ExamProposedChange getChange() {
-        if (iChange==null || iChange.getAssignments().isEmpty()) return null;
+        if (iChange==null || iChange.isEmpty()) return null;
         return iChange; 
     }
     
