@@ -95,7 +95,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 			}
 			if (getDetails().getRequest() != null)
 				for (OnlineSectioningLog.Request r: OnlineSectioningHelper.toProto(getDetails().getRequest()))
-					action.addRequest(r);
+					action.addRecommendation(r);
 
 			if (getDetails().isCanUpdate()) {
 				Date ts = new Date();

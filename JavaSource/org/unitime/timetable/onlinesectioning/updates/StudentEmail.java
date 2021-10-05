@@ -630,6 +630,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		input.put("awlMode", awlMode.name());
 		
 		if (iIncludeCourseRequests) {
+			helper.getAction().clearRequest();
 			CourseRequestInterface requests = server.createAction(GetRequest.class)
 					.forStudent(student.getUniqueId())
 					.withCustomValidation(status != null && status.hasOption(StudentSectioningStatus.Option.reqval))

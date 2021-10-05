@@ -118,7 +118,7 @@ public class OnlineSectioningLogger extends Thread {
 	protected static String getRequestMessage(OnlineSectioningLog.Action action) {
 		String request = "";
 		int notAlt = 0, lastFT = -1;
-		for (OnlineSectioningLog.Request r: action.getRequestList()) {
+		for (OnlineSectioningLog.Request r: (action.getRequestCount() > 0 ? action.getRequestList() : action.getRecommendationList())) {
 			if (!r.getAlternative()) notAlt = r.getPriority() + 1;
 			int idx = 0;
 			for (OnlineSectioningLog.Time f: r.getFreeTimeList()) {
@@ -131,7 +131,7 @@ public class OnlineSectioningLogger extends Thread {
 				request += DayCode.toString(f.getDays()) + " "  + time(f.getStart()) + " - " + time(f.getStart() + f.getLength());
 				lastFT = r.getPriority();
 			}
-			if (r.getFreeTimeList().isEmpty())
+			if (r.getFreeTimeList().isEmpty()) {
 				for (OnlineSectioningLog.Entity e: r.getCourseList()) {
 					if (idx == 0) {
 						request += (request.isEmpty() ? "" : "\n") + (r.getAlternative() ? "A" + (1 + r.getPriority() - notAlt) : String.valueOf(1 + r.getPriority())) + ". ";
@@ -141,6 +141,9 @@ public class OnlineSectioningLogger extends Thread {
 					idx++;
 					request += e.getName();
 				}
+				if (r.getWaitList()) request += " (w)";
+				else if (r.getNoSubs()) request += " (s)";
+			}
 		}
 		return request;
 	}
