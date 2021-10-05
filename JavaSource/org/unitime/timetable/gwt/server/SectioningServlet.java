@@ -3789,6 +3789,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			String note = (String)o[0];
 			Integer count = ((Number)o[1]).intValue();
 			Date ts = (Date)o[2];
+			if (note == null || note.isEmpty()) continue;
 			String dispNote = note;
 			if (defaultNote != null && note.contains(defaultNote))
 				dispNote = note.replace(defaultNote, "\u2026");

@@ -176,6 +176,9 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 			if (iIncludeAdvisorRequest) {
 				ret.setAdvisorRequest(AdvisorGetCourseRequests.getRequest(student, server, helper));
 				ret.setAdvisorWaitListedCourseIds(student.getAdvisorWaitListedCourseIds(server));
+				if (ret.hasAdvisorRequest())
+					for (OnlineSectioningLog.Request log: OnlineSectioningHelper.toProto(ret.getAdvisorRequest()))
+						helper.getAction().addRecommendation(log);
 			}
 		} finally {
 			lock.release();

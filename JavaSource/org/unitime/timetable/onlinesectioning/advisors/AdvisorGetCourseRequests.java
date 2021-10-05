@@ -188,7 +188,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 			fillCourseRequests(request, student.getAdvisorRequests(), server);
 		
 		for (OnlineSectioningLog.Request log: OnlineSectioningHelper.toProto(request))
-			action.addRequest(log);
+			action.addRecommendation(log);
 		
 		request.setPin(student.getPin());
 		request.setPinReleased(student.isPinReleased());
@@ -323,7 +323,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 		fillCourseRequests(request, acrs);
 		
 		for (OnlineSectioningLog.Request log: OnlineSectioningHelper.toProto(request))
-			action.addRequest(log);
+			action.addRecommendation(log);
 		
 		request.setPin(student.getPin());
 		request.setPinReleased(student.isPinReleased() != null && student.isPinReleased().booleanValue());

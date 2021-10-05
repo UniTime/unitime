@@ -40,6 +40,7 @@ import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Request.RequestPriority;
 import org.cpsolver.studentsct.reservation.CourseReservation;
 import org.cpsolver.studentsct.reservation.CurriculumReservation;
 import org.cpsolver.studentsct.reservation.GroupReservation;
@@ -59,6 +60,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpart;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Location;
@@ -700,7 +702,8 @@ public class OnlineSectioningHelper {
     		if (cr.getTimeStamp() != null)
     			request.setTimeStamp(cr.getTimeStamp());
         	request.setWaitList(cr.isWaitlist());
-        	request.setCritical(cr.isCritical());
+        	request.setCritical(cr.getRequestPriority() == RequestPriority.Critical);
+        	request.setImportant(cr.getRequestPriority() == RequestPriority.Important);
     	}
     	return request;
     }
@@ -744,7 +747,8 @@ public class OnlineSectioningHelper {
     			request.setWaitlistedTimeStamp(cr.getWaitListedTimeStamp().getTime());
         	request.setWaitList(cr.isWaitlist());
         	request.setNoSubs(cr.isNoSub());
-        	request.setCritical(cr.isCritical());
+        	request.setCritical(cr.getCritical() == CourseDemand.Critical.CRITICAL.ordinal());
+        	request.setImportant(cr.getCritical() == CourseDemand.Critical.IMPORTANT.ordinal());
     	}
     	return request;
     }
@@ -752,13 +756,20 @@ public class OnlineSectioningHelper {
     public static List<OnlineSectioningLog.Request> toProto(CourseRequestInterface request) {
     	List<OnlineSectioningLog.Request> ret = new ArrayList<OnlineSectioningLog.Request>();
     	int priority = 0;
+    	boolean cn = true;
     	for (CourseRequestInterface.Request r: request.getCourses()) {
     		if (!r.hasRequestedCourse()) continue;
     		OnlineSectioningLog.Request.Builder rq = OnlineSectioningLog.Request.newBuilder();
     		rq.setPriority(priority++);
     		rq.setWaitList(r.hasRequestedCourse() && r.isWaitList());
+    		rq.setNoSubs(r.hasRequestedCourse() && r.isNoSub());
+    		if (r.getWaitListedTimeStamp() != null)
+    			rq.setWaitlistedTimeStamp(r.getWaitListedTimeStamp().getTime());
+    		if (r.getTimeStamp() != null)
+    			rq.setTimeStamp(r.getTimeStamp().getTime());
     		rq.setAlternative(false);
-    		rq.setCritical(r.isCritical() || r.isImportant());
+    		rq.setCritical(r.isCritical());
+    		rq.setImportant(r.isImportant());
 			for (RequestedCourse rc: r.getRequestedCourse()) {
 				if (rc.isFreeTime()) {
 	        		for (CourseRequestInterface.FreeTime ft: rc.getFreeTime()) {
@@ -777,6 +788,10 @@ public class OnlineSectioningHelper {
     				if (rc.hasSelectedIntructionalMethods())
     					for (Preference im: rc.getSelectedIntructionalMethods())
     						e.addParameterBuilder().setKey("im_pref").setValue(im.toString());
+    				if (cn && request.hasCreditNote()) {
+    					e.addParameterBuilder().setKey("credit_note").setValue(request.getCreditNote());
+    					cn = false;
+    				}
     				rq.addCourse(e);
 				}
 			}
@@ -795,7 +810,13 @@ public class OnlineSectioningHelper {
     		rq.setPriority(priority++);
     		rq.setAlternative(true);
     		rq.setWaitList(r.hasRequestedCourse() && r.isWaitList());
-    		rq.setCritical(r.isCritical() || r.isImportant());
+    		rq.setNoSubs(r.hasRequestedCourse() && r.isNoSub());
+    		rq.setCritical(r.isCritical());
+    		rq.setImportant(r.isImportant());
+    		if (r.getWaitListedTimeStamp() != null)
+    			rq.setWaitlistedTimeStamp(r.getWaitListedTimeStamp().getTime());
+    		if (r.getTimeStamp() != null)
+    			rq.setTimeStamp(r.getTimeStamp().getTime());
     		for (RequestedCourse rc: r.getRequestedCourse()) {
 				if (rc.isFreeTime()) {
 	        		for (CourseRequestInterface.FreeTime ft: rc.getFreeTime()) {
@@ -814,6 +835,10 @@ public class OnlineSectioningHelper {
     				if (rc.hasSelectedIntructionalMethods())
     					for (Preference im: rc.getSelectedIntructionalMethods())
     						e.addParameterBuilder().setKey("im_pref").setValue(im.toString());
+    				if (cn && request.hasCreditNote()) {
+    					e.addParameterBuilder().setKey("credit_note").setValue(request.getCreditNote());
+    					cn = false;
+    				}
     				rq.addCourse(e);
 				}
 			}
