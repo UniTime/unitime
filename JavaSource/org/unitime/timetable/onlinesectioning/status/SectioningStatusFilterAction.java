@@ -1297,6 +1297,10 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				query.addFrom("im", "inner join co.instructionalOffering.instrOfferingConfigs cfg");
 			}
 		}
+		
+		if (request.hasOption("assignment") && "Wait-Listed".equalsIgnoreCase(request.getOption("assignment"))) {
+			query.addWhere("assignment", "co.instructionalOffering.waitlist = true");
+		}
 
 		return query;
 	}
