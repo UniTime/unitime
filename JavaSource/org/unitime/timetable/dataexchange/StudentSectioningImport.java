@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.dataexchange;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -69,6 +70,7 @@ import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.InstructionalMethodDAO;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 
 /**
  * 
@@ -76,6 +78,8 @@ import org.unitime.timetable.util.Constants;
  *
  */
 public class StudentSectioningImport extends BaseImport {
+	protected static Formats.Format<Date> sDateFormat = Formats.getDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+	
     public StudentSectioningImport() {}
     
     public static enum EnrollmentMode {
@@ -365,7 +369,8 @@ public class StudentSectioningImport extends BaseImport {
             	if (demographicsElement != null) {
                 	Map<String, StudentAreaClassificationMajor> sMajors = new Hashtable<String, StudentAreaClassificationMajor>();
                 	for (StudentAreaClassificationMajor major: student.getAreaClasfMajors())
-                		sMajors.put(major.getAcademicArea().getAcademicAreaAbbreviation() + ":" + major.getAcademicClassification().getCode() + ":" + major.getMajor().getCode(), major);
+                		sMajors.put(major.getAcademicArea().getAcademicAreaAbbreviation() + ":" + major.getAcademicClassification().getCode() + ":" + major.getMajor().getCode()
+                				+ (major.getConcentration() == null ? "" : ":" + major.getConcentration().getCode()), major);
 
                 	Map<String, StudentAreaClassificationMinor> sMinors = new Hashtable<String, StudentAreaClassificationMinor>();
                 	for (StudentAreaClassificationMinor minor: student.getAreaClasfMinors())
@@ -394,7 +399,7 @@ public class StudentSectioningImport extends BaseImport {
         	    			String concentration = g.attributeValue("concentration");
         	    			String degree = g.attributeValue("degree");
         	    			Double weight = Double.valueOf(g.attributeValue("weight", "1.0"));
-        	    			StudentAreaClassificationMajor acm = sMajors.remove(area + ":" + clasf + ":" + code);
+        	    			StudentAreaClassificationMajor acm = sMajors.remove(area + ":" + clasf + ":" + code + (concentration == null ? "" : ":" + concentration));
         	    			if (acm != null) {
         	    				acm.setConcentration(concentration == null ? null : code2concentration.get(area + ":" + code + ":" + concentration));
     	        				acm.setDegree(degree == null ? null : code2degree.get(degree));
@@ -684,7 +689,16 @@ public class StudentSectioningImport extends BaseImport {
             				}
             				if (cd == null) {
             					cd = new CourseDemand();
-            					cd.setTimestamp(ts);
+            					String requested = requestElement.attributeValue("requested");
+        						if (requested != null) {
+        							try {
+        								cd.setTimestamp(sDateFormat.parse(requested)); 
+        							} catch (ParseException e) {
+        								cd.setTimestamp(ts);
+        							}
+        						} else {
+        							cd.setTimestamp(ts);
+        						}
             					cd.setCourseRequests(new HashSet<CourseRequest>());
             					cd.setEnrollmentMessages(new HashSet<StudentEnrollmentMessage>());
             					cd.setStudent(student);
@@ -692,8 +706,18 @@ public class StudentSectioningImport extends BaseImport {
             				}
         					cd.setAlternative("true".equals(alternative));
         					cd.setPriority(priority);
-        					if ("true".equals(waitList) && !Boolean.TRUE.equals(cd.getWaitlist()))
-        						cd.setWaitlistedTimeStamp(ts);
+        					if ("true".equals(waitList) && !Boolean.TRUE.equals(cd.getWaitlist())) {
+        						String waitlisted = requestElement.attributeValue("waitlisted");
+        						if (waitlisted != null) {
+        							try {
+        								cd.setWaitlistedTimeStamp(sDateFormat.parse(waitlisted)); 
+        							} catch (ParseException e) {
+        								cd.setWaitlistedTimeStamp(ts);
+        							}
+        						} else {
+        							cd.setWaitlistedTimeStamp(ts);
+        						}
+        					}
         					cd.setWaitlist("true".equals(waitList));
         					cd.setNoSub("true".equals(noSub));
         					if (critical == null)
@@ -802,7 +826,16 @@ public class StudentSectioningImport extends BaseImport {
                                     		enrollment.setStudent(student);
                                     		enrollment.setClazz(clazz);
                                     		enrollment.setCourseOffering(co);
-                                    		enrollment.setTimestamp(ts);
+                                    		String enrolled = classElement.attributeValue("enrolled");
+                    						if (enrolled != null) {
+                    							try {
+                    								enrollment.setTimestamp(sDateFormat.parse(enrolled)); 
+                    							} catch (ParseException e) {
+                    								enrollment.setTimestamp(ts);
+                    							}
+                    						} else {
+                    							enrollment.setTimestamp(ts);
+                    						}
                                     		enrollment.setChangedBy(StudentClassEnrollment.SystemChange.IMPORT.toString());
                                     		enrollment.setCourseRequest(request);
                                     		student.getClassEnrollments().add(enrollment);
@@ -830,15 +863,34 @@ public class StudentSectioningImport extends BaseImport {
         					}
         					if (cd == null) {
         						cd = new CourseDemand();
-        						cd.setTimestamp(ts);
+        						String requested = requestElement.attributeValue("requested");
+        						if (requested != null) {
+        							try {
+        								cd.setTimestamp(sDateFormat.parse(requested)); 
+        							} catch (ParseException e) {
+        								cd.setTimestamp(ts);
+        							}
+        						} else {
+        							cd.setTimestamp(ts);
+        						}
         						student.getCourseDemands().add(cd);
         						cd.setStudent(student);
         					}
         					
         					cd.setAlternative("true".equals(alternative));
         					cd.setPriority(priority);
-        					if ("true".equals(waitList) && !Boolean.TRUE.equals(cd.getWaitlist()))
-        						cd.setWaitlistedTimeStamp(ts);
+        					if ("true".equals(waitList) && !Boolean.TRUE.equals(cd.getWaitlist())) {
+        						String waitlisted = requestElement.attributeValue("waitlisted");
+        						if (waitlisted != null) {
+        							try {
+        								cd.setWaitlistedTimeStamp(sDateFormat.parse(waitlisted)); 
+        							} catch (ParseException e) {
+        								cd.setWaitlistedTimeStamp(ts);
+        							}
+        						} else {
+        							cd.setWaitlistedTimeStamp(ts);
+        						}
+        					}
         					cd.setWaitlist("true".equals(waitList));
         					cd.setNoSub("true".equals(noSub));
         					FreeTime free = cd.getFreeTime();
@@ -997,7 +1049,16 @@ public class StudentSectioningImport extends BaseImport {
             				acr.setPriority(-1);
             				acr.setAlternative(0);
             				acr.setSubstitute(false);
-            				acr.setTimestamp(ts);
+            				String recommended = recommendationsEl.attributeValue("recommended");
+    						if (recommended != null) {
+    							try {
+    								acr.setTimestamp(sDateFormat.parse(recommended)); 
+    							} catch (ParseException e) {
+    								acr.setTimestamp(ts);
+    							}
+    						} else {
+    							acr.setTimestamp(ts);
+    						}
             				acr.setCredit(null);
             				acr.setCritical(0);
             				acr.setChangedBy(StudentClassEnrollment.SystemChange.IMPORT.toString());
@@ -1020,7 +1081,16 @@ public class StudentSectioningImport extends BaseImport {
             				acr = new AdvisorCourseRequest();
 							acr.setStudent(student);
 							acr.setChangedBy(StudentClassEnrollment.SystemChange.IMPORT.toString());
-							acr.setTimestamp(ts);
+            				String recommended = recEl.attributeValue("recommended");
+    						if (recommended != null) {
+    							try {
+    								acr.setTimestamp(sDateFormat.parse(recommended)); 
+    							} catch (ParseException e) {
+    								acr.setTimestamp(ts);
+    							}
+    						} else {
+    							acr.setTimestamp(ts);
+    						}
 							acr.setPriority(priority);
             				acr.setAlternative(0);
             				student.getAdvisorCourseRequests().add(acr);
@@ -1108,7 +1178,16 @@ public class StudentSectioningImport extends BaseImport {
 	            				acr = new AdvisorCourseRequest();
 								acr.setStudent(student);
 								acr.setChangedBy(StudentClassEnrollment.SystemChange.IMPORT.toString());
-								acr.setTimestamp(ts);
+								String recommended = acrEl.attributeValue("recommended");
+	    						if (recommended != null) {
+	    							try {
+	    								acr.setTimestamp(sDateFormat.parse(recommended)); 
+	    							} catch (ParseException e) {
+	    								acr.setTimestamp(ts);
+	    							}
+	    						} else {
+	    							acr.setTimestamp(ts);
+	    						}
 								acr.setPriority(priority);
 	            				acr.setAlternative(alterantive);
 	            				student.getAdvisorCourseRequests().add(acr);
