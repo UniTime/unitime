@@ -125,7 +125,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0, gtUnasgPrim = 0, gtNoSub = 0;
 			int gConNeed = 0, gtConNeed = 0, gOvrNeed = 0, gtOvrNeed = 0;
 			
-			DbFindEnrollmentInfoCourseMatcher m = new DbFindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery, lookup);
+			DbFindEnrollmentInfoCourseMatcher m = new DbFindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery, lookup, server);
 			
 			Map<CourseOffering, List<CourseRequest>> requests = new HashMap<CourseOffering, List<CourseRequest>>();
 			for (CourseRequest cr: (List<CourseRequest>)SectioningStatusFilterAction.getCourseQuery(iFilter, server, helper).select("distinct cr").query(helper.getHibSession()).list()) {
@@ -750,8 +750,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 	public static class DbFindEnrollmentInfoCourseMatcher extends FindEnrollmentInfoCourseMatcher {
 		private static final long serialVersionUID = 1L;
 		
-		public DbFindEnrollmentInfoCourseMatcher(Set<Long> coursesIcoordinate, Set<Long> coursesIcanApprove, Set<String> subjects, Query query, CourseLookup lookup) {
-			super(coursesIcoordinate, coursesIcanApprove, subjects, query, lookup);
+		public DbFindEnrollmentInfoCourseMatcher(Set<Long> coursesIcoordinate, Set<Long> coursesIcanApprove, Set<String> subjects, Query query, CourseLookup lookup, OnlineSectioningServer server) {
+			super(coursesIcoordinate, coursesIcanApprove, subjects, query, lookup, server);
 		}
 		
 		public boolean isConsentToDoCourse(CourseOffering co) {
@@ -820,6 +820,13 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					return true;
 				else
 					return false;
+			}
+			if ("assignment".equals(attr)) {
+				if ("Wait-Listed".equals(term)) {
+					return course().getInstructionalOffering().effectiveWaitList();
+				} else {
+					return true;
+				}
 			}
 			return null; // pass unknown attributes lower
 		}

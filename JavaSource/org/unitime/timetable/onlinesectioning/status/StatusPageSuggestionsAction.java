@@ -588,16 +588,20 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		private XCourse iInfo;
 		private boolean iConsentToDoCourse;
 		private CourseLookup iLookup;
+		private OnlineSectioningServer iServer;
 		
-		public CourseInfoMatcher(XCourse course, boolean isConsentToDoCourse, CourseLookup lookup) {
+		public CourseInfoMatcher(XCourse course, boolean isConsentToDoCourse, CourseLookup lookup, OnlineSectioningServer server) {
 			iInfo = course;
 			iConsentToDoCourse = isConsentToDoCourse;
 			iLookup = lookup;
+			iServer = server;
 		}
 		
 		public XCourse info() { return iInfo; }
 		
 		public boolean isConsentToDoCourse() { return iConsentToDoCourse; }
+		
+		public OnlineSectioningServer server() { return iServer; }
 		
 		@Override
 		public Boolean match(String attr, String term) {
@@ -640,6 +644,14 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				else
 					return false;
 			}
+			if ("assignment".equals(attr)) {
+				if ("Wait-Listed".equals(term)) {
+					XOffering offering = server().getOffering(info().getOfferingId());
+					return offering != null && offering.isWaitList();
+				} else {
+					return true;
+				}
+			}
 			return null; // pass unknown attributes lower
 		}
 	}
@@ -651,20 +663,18 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		private XOffering iOffering;
 		private Date iFirstDate;
 		private String iDefaultStatus;
-		private OnlineSectioningServer iServer;
 		private boolean iMyStudent;
 		private XEnrollment iEnrollment;
 		private WaitListMode iWaitListMode;
 		
 		public CourseRequestMatcher(AcademicSessionInfo session, XCourse info, XStudent student, XOffering offering, XCourseRequest request, boolean isConsentToDoCourse, boolean isMyStudent, CourseLookup lookup, OnlineSectioningServer server, WaitListMode wlMode) {
-			super(info, isConsentToDoCourse, lookup);
+			super(info, isConsentToDoCourse, lookup, server);
 			iFirstDate = session.getDatePatternFirstDate();
 			iStudent = student;
 			iRequest = request;
 			iEnrollment = request.getEnrollment();
 			iDefaultStatus = session.getDefaultSectioningStatus();
 			iOffering = offering;
-			iServer = server;
 			iMyStudent = isMyStudent;
 			iWaitListMode = wlMode; 
 		}
@@ -673,7 +683,6 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		public XEnrollment enrollment() { return iEnrollment; }
 		public XStudent student() { return iStudent; }
 		public String status() { return student().getStatus() == null ? iDefaultStatus : student().getStatus(); }
-		public OnlineSectioningServer server() { return iServer; }
 		public XCourseId course() {
 			if (enrollment() != null) return enrollment();
 			for (XCourseId course: request().getCourseIds())
@@ -915,7 +924,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 						XOffering o = server().getOffering(cr.getEnrollment().getOfferingId());
 						XConfig g = (o == null ? null : o.getConfig(cr.getEnrollment().getConfigId()));
 						if (g != null) {
-							if ("!".equals(im) && g.getInstructionalMethod() != null && !g.getInstructionalMethod().getReference().equals(iServer.getAcademicSession().getDefaultInstructionalMethod())) continue;
+							if ("!".equals(im) && g.getInstructionalMethod() != null && !g.getInstructionalMethod().getReference().equals(server().getAcademicSession().getDefaultInstructionalMethod())) continue;
 							if (im != null && !"!".equals(im) && (g.getInstructionalMethod() == null || !im.equalsIgnoreCase(g.getInstructionalMethod().getReference()))) continue;
 							for (XSubpart xs: g.getSubparts()) {
 								credit += xs.getCreditValue(cr.getEnrollment().getCourseId());

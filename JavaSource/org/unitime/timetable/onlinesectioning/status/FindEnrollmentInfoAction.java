@@ -212,7 +212,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 			int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0, gtUnasgPrim = 0, gtNoSub = 0;
 			int gConNeed = 0, gtConNeed = 0, gOvrNeed = 0, gtOvrNeed = 0;
 			
-			Collection<? extends XCourseId> courses = server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery, lookup)); 
+			Collection<? extends XCourseId> courses = server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery, lookup, server));
 			Map<Long, Integer> snapshots = getOfferingSnapshots(courses, helper);
 			for (XCourseId info: courses) {
 				XOffering offering = server.getOffering(info.getOfferingId());
@@ -976,13 +976,15 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 		protected Set<String> iSubjectAreas;
 		protected Query iQuery;
 		protected CourseLookup iLookup;
+		protected OnlineSectioningServer iServer;
 		
-		public FindEnrollmentInfoCourseMatcher(Set<Long> coursesIcoordinate, Set<Long> coursesIcanApprove, Set<String> subjects, Query query, CourseLookup lookup) {
+		public FindEnrollmentInfoCourseMatcher(Set<Long> coursesIcoordinate, Set<Long> coursesIcanApprove, Set<String> subjects, Query query, CourseLookup lookup, OnlineSectioningServer server) {
 			iCoursesIcoordinate = coursesIcoordinate;
 			iCoursesIcanApprove = coursesIcanApprove;
 			iSubjectAreas = subjects;
 			iQuery = query;
 			iLookup = lookup;
+			iServer = server;
 		}
 		
 
@@ -1002,7 +1004,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 		@Override
 		public boolean match(XCourseId id) {
 			XCourse course = (id instanceof XCourse ? (XCourse) id : getServer().getCourse(id.getCourseId()));
-			return course != null && isCourseVisible(course.getCourseId()) && hasMatchingSubjectArea(course.getSubjectArea()) && iQuery.match(new CourseInfoMatcher(course, isConsentToDoCourse(course), iLookup));
+			return course != null && isCourseVisible(course.getCourseId()) && hasMatchingSubjectArea(course.getSubjectArea()) && iQuery.match(new CourseInfoMatcher(course, isConsentToDoCourse(course), iLookup, iServer));
 		}
 		
 	}
