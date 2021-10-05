@@ -664,7 +664,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		private Date iFirstDate;
 		private String iDefaultStatus;
 		private boolean iMyStudent;
-		private XEnrollment iEnrollment;
+		private XEnrollment iEnrollment, iTestEnrollment = null;
 		private WaitListMode iWaitListMode;
 		
 		public CourseRequestMatcher(AcademicSessionInfo session, XCourse info, XStudent student, XOffering offering, XCourseRequest request, boolean isConsentToDoCourse, boolean isMyStudent, CourseLookup lookup, OnlineSectioningServer server, WaitListMode wlMode) {
@@ -680,7 +680,11 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		}
 		
 		public XCourseRequest request() { return iRequest; }
-		public XEnrollment enrollment() { return iEnrollment; }
+		public XEnrollment enrollment() {
+			if (iTestEnrollment != null) return iTestEnrollment;
+			return iEnrollment;
+		}
+		public boolean isAssigned() { return iEnrollment != null; }
 		public XStudent student() { return iStudent; }
 		public String status() { return student().getStatus() == null ? iDefaultStatus : student().getStatus(); }
 		public XCourseId course() {
@@ -692,7 +696,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		public XOffering offering() {
 			return iOffering;
 		}
-		public CourseRequestMatcher setEnrollment(XEnrollment e) { iEnrollment = e; return this; }
+		public CourseRequestMatcher setEnrollment(XEnrollment e) { iTestEnrollment = e; return this; }
 		
 		@Override
 		public Boolean match(String attr, String term) {
@@ -768,60 +772,60 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			
 			if ("assignment".equals(attr)) {
 				if (eq("Assigned", term)) {
-					return enrollment() != null;
+					return isAssigned();
 				} else if (eq("Reserved", term)) {
-					return enrollment() != null && enrollment().getReservation() != null;
+					return isAssigned() && enrollment().getReservation() != null;
 				} else if (eq("Not Assigned", term)) {
-					return enrollment() == null && !request().isAlternative();
+					return !isAssigned() && !request().isAlternative();
 				} else if (eq("Wait-Listed", term)) {
-					return enrollment() == null && request().isWaitlist(iWaitListMode);
+					return !isAssigned() && request().isWaitlist(iWaitListMode);
 				} else if (eq("Critical", term)) {
 					return request().getCritical() == CourseDemand.Critical.CRITICAL.ordinal();
 				} else if (eq("Assigned Critical", term)) {
-					return request().getCritical() == CourseDemand.Critical.CRITICAL.ordinal() && enrollment() != null;
+					return request().getCritical() == CourseDemand.Critical.CRITICAL.ordinal() && isAssigned();
 				} else if (eq("Not Assigned Critical", term)) {
-					return request().getCritical() == CourseDemand.Critical.CRITICAL.ordinal() && enrollment() == null;
+					return request().getCritical() == CourseDemand.Critical.CRITICAL.ordinal() && !isAssigned();
 				} else if (eq("Important", term)) {
 					return request().getCritical() == CourseDemand.Critical.IMPORTANT.ordinal();
 				} else if (eq("Assigned Important", term)) {
-					return request().getCritical() == CourseDemand.Critical.IMPORTANT.ordinal() && enrollment() != null;
+					return request().getCritical() == CourseDemand.Critical.IMPORTANT.ordinal() && isAssigned();
 				} else if (eq("Not Assigned Important", term)) {
-					return request().getCritical() == CourseDemand.Critical.IMPORTANT.ordinal() && enrollment() == null;
+					return request().getCritical() == CourseDemand.Critical.IMPORTANT.ordinal() && !isAssigned();
 				} else if (eq("No-Subs", term) || eq("No-Substitutes", term)) {
 					return request().isNoSub(iWaitListMode);
 				} else if (eq("Assigned No-Subs", term) || eq("Assigned  No-Substitutes", term)) {
-					return enrollment() != null && request().isNoSub(iWaitListMode);
+					return isAssigned() && request().isNoSub(iWaitListMode);
 				} else if (eq("Not Assigned No-Subs", term) || eq("Not Assigned No-Substitutes", term)) {
-					return enrollment() == null && request().isNoSub(iWaitListMode);
+					return !isAssigned() && request().isNoSub(iWaitListMode);
 				}
 			}
 			
 			if ("assigned".equals(attr) || "scheduled".equals(attr)) {
 				if (eq("true", term) || eq("1",term))
-					return enrollment() != null;
+					return isAssigned();
 				else
-					return enrollment() == null;
+					return !isAssigned();
 			}
 			
 			if ("waitlisted".equals(attr) || "waitlist".equals(attr)) {
 				if (eq("true", term) || eq("1",term))
-					return enrollment() == null && request().isWaitlist();
+					return !isAssigned() && request().isWaitlist();
 				else
-					return enrollment() != null;
+					return isAssigned();
 			}
 			
 			if ("no-substitutes".equals(attr) || "no-subs".equals(attr)) {
 				if (eq("true", term) || eq("1",term))
-					return enrollment() == null && request().isNoSub();
+					return !isAssigned() && request().isNoSub();
 				else
-					return enrollment() != null;
+					return isAssigned();
 			}
 			
 			if ("reservation".equals(attr) || "reserved".equals(attr)) {
 				if (eq("true", term) || eq("1",term))
-					return enrollment() != null && enrollment().getReservation() != null;
+					return isAssigned() && enrollment().getReservation() != null;
 				else
-					return enrollment() != null && enrollment().getReservation() == null;
+					return isAssigned() && enrollment().getReservation() == null;
 			}
 			
 			if ("consent".equals(attr)) {
