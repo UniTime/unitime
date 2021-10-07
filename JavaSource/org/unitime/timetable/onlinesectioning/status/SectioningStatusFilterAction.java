@@ -996,14 +996,34 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			query.addWhere("mode", "s.advisorCourseRequests is empty");
 		}
 		
-		if (request.hasOption("override")) {
-			CourseRequestOverrideStatus status = null;
-			for (CourseRequestOverrideStatus s: CourseRequestOverrideStatus.values())
-				if (s.name().equalsIgnoreCase(request.getOption("override"))) { status = s; break; }
-			if (status != null) {
+		if (request.hasOptions("override")) {
+			String where = "";
+			int id = 0;
+			boolean none = false;
+			for (String o: request.getOptions("override")) {
+				if ("none".equalsIgnoreCase(o) || "null".equalsIgnoreCase(o)) {
+					none = true; continue;
+				}
+				CourseRequestOverrideStatus status = null;
+				for (CourseRequestOverrideStatus s: CourseRequestOverrideStatus.values())
+					if (s.name().equalsIgnoreCase(o)) { status = s; break; }
+				if (status != null) {
+					where += (where.isEmpty() ? "" : ",") + ":Xstatus" + id;
+					query.addParameter("override", "Xstatus" + id, status.ordinal());
+					id++;
+				}
+			}
+			if (id > 0) {
+				if (none) {
+					query.addFrom("override", "CourseRequest xcr");
+					query.addWhere("override", "xcr.courseDemand.student = s and (xcr.overrideStatus is null or s.overrideStatus in (" + where + ") or xcr.overrideStatus in (" + where + "))");
+				} else {
+					query.addFrom("override", "CourseRequest xcr");
+					query.addWhere("override", "xcr.courseDemand.student = s and (s.overrideStatus in (" + where + ") or xcr.overrideStatus in (" + where + "))");
+				}
+			} else if (none) {
 				query.addFrom("override", "CourseRequest xcr");
-				query.addWhere("override", "xcr.courseDemand.student = s and (s.overrideStatus = :Xstatus or xcr.overrideStatus = :Xstatus)");
-				query.addParameter("override", "Xstatus", status.ordinal());
+				query.addWhere("override", "xcr.courseDemand.student = s and xcr.overrideStatus is null");
 			}
 		}
 		
@@ -1033,6 +1053,11 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			query.addFrom("require", "inner join s.courseDemands rcd inner join rcd.courseRequests rcr inner join rcr.preferences rp");
 			if (id > 0)
 				query.addWhere("require", "rp.label in (" + where + ") and rp.required = true");
+		}
+		
+		if (request.hasOption("assignment") && "Wait-Listed".equalsIgnoreCase(request.getOption("assignment"))) {
+			query.addFrom("assignment", "CourseRequest wcr");
+			query.addWhere("assignment", "wcr.courseDemand.waitlist = true and wcr.courseDemand.student = s and wcr.courseOffering.instructionalOffering.waitlist = true");
 		}
 		
 		if (request.hasOptions("im")) {
@@ -1299,7 +1324,38 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		}
 		
 		if (request.hasOption("assignment") && "Wait-Listed".equalsIgnoreCase(request.getOption("assignment"))) {
-			query.addWhere("assignment", "co.instructionalOffering.waitlist = true");
+			query.addWhere("assignment", "co.instructionalOffering.waitlist = true and cd.waitlist = true");
+		}
+		
+		if (request.hasOptions("override")) {
+			String where = "";
+			int id = 0;
+			boolean none = false;
+			for (String o: request.getOptions("override")) {
+				if ("none".equalsIgnoreCase(o) || "null".equalsIgnoreCase(o)) {
+					none = true; continue;
+				}
+				CourseRequestOverrideStatus status = null;
+				for (CourseRequestOverrideStatus s: CourseRequestOverrideStatus.values())
+					if (s.name().equalsIgnoreCase(o)) { status = s; break; }
+				if (status != null) {
+					where += (where.isEmpty() ? "" : ",") + ":Xstatus" + id;
+					query.addParameter("override", "Xstatus" + id, status.ordinal());
+					id++;
+				}
+			}
+			if (id > 0) {
+				if (none) {
+					query.addFrom("override", null);
+					query.addWhere("override", "cr.overrideStatus is null or cr.overrideStatus in (" + where + ")");
+				} else {
+					query.addFrom("override", null);
+					query.addWhere("override", "cr.overrideStatus in (" + where + ")");
+				}
+			} else if (none) {
+				query.addFrom("override", null);
+				query.addWhere("override", "cr.overrideStatus is null");
+			}
 		}
 
 		return query;
