@@ -101,6 +101,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		FilterRpcResponse response = new FilterRpcResponse();
 		
 		StudentQuery query = getQuery(iRequest, server, helper);
+		CourseQuery courseQuery = getCourseQuery(iRequest, server, helper);
 		
 		Map<Long, Entity> areas = new HashMap<Long, Entity>();
 		for (Object[] o: (List<Object[]>)query.select("aac.academicArea.uniqueId, aac.academicArea.academicAreaAbbreviation, aac.academicArea.title, count(distinct s.uniqueId)")
@@ -372,11 +373,12 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 					overrides.add(new Entity(new Long(-1 - status.ordinal()), Constants.toInitialCase(status.name()), CONSTANTS.overrideType()[status.ordinal()], "translated-value", CONSTANTS.overrideType()[status.ordinal()])); 
 				} catch (ArrayIndexOutOfBoundsException e) {}
 			}
-			for (Object[] o: (List<Object[]>)query.select("s.overrideStatus, count(distinct s)").where("s.overrideStatus is not null").order("s.overrideStatus").group("s.overrideStatus").exclude("credit").exclude("override").query(helper.getHibSession()).list()) {
-				Entity e = overrides.get((Integer)o[0]);
-				e.setCount(((Number)o[1]).intValue());
-			}
-			for (Object[] o: (List<Object[]>)query.select("xcr.overrideStatus, count(distinct xcr)").where("xcr.overrideStatus is not null").order("xcr.overrideStatus").group("xcr.overrideStatus").from("inner join s.courseDemands xcd inner join xcd.courseRequests xcr").exclude("credit").exclude("override").query(helper.getHibSession()).list()) {
+			if (!iRequest.hasOptions("assignment"))
+				for (Object[] o: (List<Object[]>)query.select("s.overrideStatus, count(distinct s)").where("s.overrideStatus is not null").order("s.overrideStatus").group("s.overrideStatus").exclude("credit").exclude("override").query(helper.getHibSession()).list()) {
+					Entity e = overrides.get((Integer)o[0]);
+					e.setCount(((Number)o[1]).intValue());
+				}
+			for (Object[] o: (List<Object[]>)courseQuery.select("cr.overrideStatus, count(distinct cr)").where("cr.overrideStatus is not null").order("cr.overrideStatus").group("cr.overrideStatus").exclude("credit").exclude("override").query(helper.getHibSession()).list()) {
 				Entity e = overrides.get((Integer)o[0]);
 				e.setCount(e.getCount() + ((Number)o[1]).intValue());
 			}
@@ -1057,7 +1059,11 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		
 		if (request.hasOption("assignment") && "Wait-Listed".equalsIgnoreCase(request.getOption("assignment"))) {
 			query.addFrom("assignment", "CourseRequest wcr");
-			query.addWhere("assignment", "wcr.courseDemand.waitlist = true and wcr.courseDemand.student = s and wcr.courseOffering.instructionalOffering.waitlist = true");
+			if (ApplicationProperty.OfferingWaitListDefault.isTrue()) {
+				query.addWhere("assignment", "wcr.courseDemand.waitlist = true and wcr.courseDemand.student = s and not wcr.courseOffering.instructionalOffering.waitlist = false");
+			} else {
+				query.addWhere("assignment", "wcr.courseDemand.waitlist = true and wcr.courseDemand.student = s and wcr.courseOffering.instructionalOffering.waitlist = true");
+			}
 		}
 		
 		if (request.hasOptions("im")) {
@@ -1324,7 +1330,12 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		}
 		
 		if (request.hasOption("assignment") && "Wait-Listed".equalsIgnoreCase(request.getOption("assignment"))) {
-			query.addWhere("assignment", "co.instructionalOffering.waitlist = true and cd.waitlist = true");
+			query.addFrom("assignment", null);
+			if (ApplicationProperty.OfferingWaitListDefault.isTrue()) {
+				query.addWhere("assignment", "not co.instructionalOffering.waitlist = false and cd.waitlist = true");
+			} else {
+				query.addWhere("assignment", "co.instructionalOffering.waitlist = true and cd.waitlist = true");
+			}
 		}
 		
 		if (request.hasOptions("override")) {
