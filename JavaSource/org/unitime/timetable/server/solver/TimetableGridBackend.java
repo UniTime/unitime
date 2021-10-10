@@ -54,12 +54,14 @@ import org.unitime.timetable.model.CurriculumClassification;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.dao.ItypeDescDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -127,6 +129,8 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
     					TimetableGridSolverHelper.fixClassNames(model, cx);
     				else if (cx.isShowCrossLists())
     					TimetableGridSolverHelper.addCrosslistedNames(model, cx);
+    				if (cx.getBgMode() == BgMode.InstructionalType.ordinal())
+    					TimetableGridSolverHelper.setInstructionalTypeBackgroundColors(model, cx);
     				TimetableGridHelper.computeIndexes(model, cx);
     				response.addModel(model);
     			}
@@ -433,6 +437,14 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
 			for (int percentage = 0; percentage <= 100; percentage += 5)
 				response.addAssignedLegend(TimetableGridHelper.percentage2color(percentage), MESSAGES.legendStudentGroups(String.valueOf(percentage)));
 			break;
+		case InstructionalType:
+			for (ItypeDesc it: (List<ItypeDesc>)ItypeDescDAO.getInstance().getSession().createQuery(
+    				"from ItypeDesc where " +
+    				"itype in (select s.itype.itype from SchedulingSubpart s where s.instrOfferingConfig.instructionalOffering.session = :sessionId) " +
+    				"and parent is null order by itype"
+    				).setLong("sessionId", acadSession.getUniqueId()).list()) {
+				response.addAssignedLegend(cx.getInstructionalTypeColor(it.getItype()), it.getDesc());
+			}
         }
 		response.addNotAssignedLegend(TimetableGridHelper.sBgColorNotAvailable, MESSAGES.legendTimeNotAvailable());
         response.addNotAssignedLegend(TimetableGridHelper.pref2color(PreferenceLevel.sNeutral), MESSAGES.legendNoPreference());
