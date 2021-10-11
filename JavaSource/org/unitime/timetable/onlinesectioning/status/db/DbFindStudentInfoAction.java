@@ -109,10 +109,14 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		DbFindStudentInfoMatcher sm = new DbFindStudentInfoMatcher(session, iQuery, helper.getStudentNameFormat(), iMyStudents); sm.setServer(server);
 		
 		Map<CourseOffering, List<CourseRequest>> requests = new HashMap<CourseOffering, List<CourseRequest>>();
-		for (CourseRequest cr: (List<CourseRequest>)SectioningStatusFilterAction.getCourseQuery(iFilter, server, helper).select("distinct cr").query(helper.getHibSession()).list()) {
+		cr: for (CourseRequest cr: (List<CourseRequest>)SectioningStatusFilterAction.getCourseQuery(iFilter, server, helper).select("distinct cr").query(helper.getHibSession()).list()) {
 			if (!hasMatchingSubjectArea(cr.getCourseOffering().getSubjectAreaAbbv())) continue;
 			if (!isCourseVisible(cr.getCourseOffering().getUniqueId())) continue;			
 			if (!query().match(new DbCourseRequestMatcher(session, cr, isConsentToDoCourse(cr.getCourseOffering()), isMyStudent(cr.getCourseDemand().getStudent()), helper.getStudentNameFormat(), lookup))) continue;
+			if (cr.getClassEnrollments().isEmpty()) { // skip course requests where course demand is enrolled to some other course
+				for (CourseRequest x: cr.getCourseDemand().getCourseRequests())
+					if (!x.equals(cr) && !x.getClassEnrollments().isEmpty()) continue cr;
+			}
 			List<CourseRequest> list = requests.get(cr.getCourseOffering());
 			if (list == null) {
 				list = new ArrayList<CourseRequest>();
