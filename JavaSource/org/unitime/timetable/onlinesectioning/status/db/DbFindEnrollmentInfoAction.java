@@ -128,8 +128,12 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			DbFindEnrollmentInfoCourseMatcher m = new DbFindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery, lookup, server);
 			
 			Map<CourseOffering, List<CourseRequest>> requests = new HashMap<CourseOffering, List<CourseRequest>>();
-			for (CourseRequest cr: (List<CourseRequest>)SectioningStatusFilterAction.getCourseQuery(iFilter, server, helper).select("distinct cr").query(helper.getHibSession()).list()) {
+			cr: for (CourseRequest cr: (List<CourseRequest>)SectioningStatusFilterAction.getCourseQuery(iFilter, server, helper).select("distinct cr").query(helper.getHibSession()).list()) {
 				if (!m.match(cr.getCourseOffering())) continue;
+				if (cr.getClassEnrollments().isEmpty()) { // skip course requests where course demand is enrolled to some other course
+					for (CourseRequest x: cr.getCourseDemand().getCourseRequests())
+						if (!x.equals(cr) && !x.getClassEnrollments().isEmpty()) continue cr;
+				}
 				List<CourseRequest> list = requests.get(cr.getCourseOffering());
 				if (list == null) {
 					list = new ArrayList<CourseRequest>();
@@ -159,11 +163,16 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0, tNoSub = 0;
 				int conNeed = 0, tConNeed = 0, ovrNeed = 0, tOvrNeed = 0;
 				
-				for (CourseRequest request: (List<CourseRequest>)helper.getHibSession().createQuery(
+				request: for (CourseRequest request: (List<CourseRequest>)helper.getHibSession().createQuery(
 						"from CourseRequest where courseOffering.uniqueId = :courseId"
 						).setLong("courseId", course.getUniqueId()).setCacheable(true).list()) {
 					
 					if (checkOverrides && !request.isRequestApproved() && request.getClassEnrollments().isEmpty()) continue;
+					
+					if (request.getClassEnrollments().isEmpty()) { // skip course requests where course demand is enrolled to some other course
+						for (CourseRequest x: request.getCourseDemand().getCourseRequests())
+							if (!x.equals(request) && !x.getClassEnrollments().isEmpty()) continue request;
+					}
 					
 					DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(request.getCourseDemand().getStudent()), helper.getStudentNameFormat(), lookup);
 					if (!query().match(crm)) {
@@ -186,7 +195,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				}
 
 				Set<Long> addedStudents = new HashSet<Long>();
-				for (CourseRequest request: entry.getValue()) {
+				request: for (CourseRequest request: entry.getValue()) {
 					if (checkOverrides && !request.isRequestApproved() && request.getClassEnrollments().isEmpty()) continue;
 					
 					Student student = request.getCourseDemand().getStudent();
@@ -865,8 +874,15 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 		public AcademicSessionInfo session() { return iSession; }
 		public CourseRequest request() { return iRequest; }
 		public List<StudentClassEnrollment> enrollment() {
-			if (iEnrollment == null)
-				iEnrollment = iRequest.getClassEnrollments();
+			if (iEnrollment == null) {
+				iEnrollment = new ArrayList<StudentClassEnrollment>();
+		    	for (StudentClassEnrollment e: student().getClassEnrollments()) {
+		    		for (CourseRequest cr: request().getCourseDemand().getCourseRequests()) {
+		    			if (cr.getCourseOffering().equals(e.getCourseOffering()))
+		    				iEnrollment.add(e);
+		    		}
+		    	}
+			}
 			return iEnrollment;
 		}
 		public Student student() { return iStudent; }
