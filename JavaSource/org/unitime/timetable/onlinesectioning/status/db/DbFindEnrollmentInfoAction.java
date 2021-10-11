@@ -918,6 +918,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 		
 		public boolean canAssign() {
 			if (!enrollment().isEmpty()) return true;
+			if (!request().getCourseDemand().isAlternative() && request().getCourseDemand().effectiveWaitList()) return true;
 			int alt = 0;
 			for (CourseDemand demand: student().getCourseDemands()) {
 				boolean course = (!demand.getCourseRequests().isEmpty());

@@ -473,6 +473,8 @@ public class XStudent extends XStudentId implements Externalizable {
     public boolean canAssign(XCourseRequest request, WaitListMode mode) {
         if (request.getEnrollment() != null)
             return true;
+        if (!request.isAlternative() && request.isWaitlist() && mode == WaitListMode.WaitList)
+        	return true;
         int alt = 0;
         boolean found = false;
         for (XRequest r : iRequests) {
