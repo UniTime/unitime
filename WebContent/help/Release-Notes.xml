@@ -28,6 +28,66 @@
 	<version>4.6.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Online Student Scheduling: Wait-Listing</title>
+		<item>
+			<name>Configuration</name>
+			<description>
+				<line>Only certain courses may be enabled for wait-listing (there is a toggle on the Edit Course Offering page).
+					<line>By default, only selected courses can be wait-listed. This can be changed using unitime.offering.waitListDefault which defaults to false.</line>
+					<line>Certain overrides can be disabled for wait-listed courses (using unitime.offering.waitList.prohibitedOverride).
+						<line>For example, a student should not be allowed to request a class limit override for a course that can be wait-listed.</line>
+					</line>
+				</line>
+				<line>There is now a different toggle for wait-listing (Wait-List) and for just indicating that a course cannot be substituted (No-Subs).
+					<line>A student (Course Requests, Scheduling Assistant) can use one or the other, based on the student status.</line>
+					<line>An advisor (Course Recommendations) can use one or the other, based on the unitime.acr.waitlist setting (defaults to None) or based on the student status.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling Assistant</name>
+			<description>
+				<line>An additional information about wait-listed courses is displayed, in the Wait-Listed Courses section (shown when at least one course is wait-listed).</line>
+				<line>As only some course can be wait-listed, the Wait-List checkbox is only available if the first-choice course can be wait-listed.</line>
+				<line>There is a warning when a wait-listed course overlaps with the rest of the schedule.</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling Dashboard</name>
+			<description>
+				<line>Wait-List and No-Sub toggles are separated, including the Filter / assignment.</line>
+				<line>A course only shows as wait-listed while the student is allowed to wait-list and the course can be wait-listed.</line>
+				<line>Show wait-listed courses in the detail of a student, and additional wait-list information (like the wait-listed time stamp, or student's position on the wait-list) on various places of the page.</line>
+				<line>Various improvements in the filtering for wait-listed courses.</line>
+			</description>
+		</item>
+		<item>
+			<name>Custom Validation</name>
+			<description>
+				<line>A custom validation of the wait-listed course requests can be implemented using the WaitListValidationProvider class.
+					<line>The validation does work similarly to pre-registration, using a test schedule, but doing one course at a time on top of the existing schedule.</line>
+					<line>It may include max credit overrides.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Process Changes</name>
+			<description>
+				<line>Re-scheduling is disabled by default (students are not moved around during course unlock).
+					<line>Can be enabled by setting solver configuration parameter Enrollment.ReSchedulingEnabled to true.</line>
+				</line>
+				<line>Students wait-listed for a course are processed in the following order:
+					<line>Course request priority (critical courses) first, student priority second, wait-listed time stamp last.</line>
+					<line>Students with a pending override, a time conflict, or students over max credit are skipped.</line>
+					<line>The order can be customized (e.g., only be based on the wait-listed time stamp)</line>
+				</line> 
+				<line>Email notifications added when custom enrollment fails (it is not possible to enroll student because of registration error).</line>
+				<line>Wait-list toggle is no longer automatically enabled when a student attempts to enroll to a course that is currently locked.</line>
+				<line>Various improvements across all the wait-listing functionality.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Student Scheduling</title>
 		<item>
 			<name>Special Registration: Variable Title Workflow</name>
