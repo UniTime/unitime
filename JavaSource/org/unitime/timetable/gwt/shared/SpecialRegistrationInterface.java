@@ -183,6 +183,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private List<ErrorMessage> iCancelErrors = null;
 		private Set<String> iCancelRequestIds = null;
 		private Float iCredit = null;
+		private List<String> iSuggestions = null;
 		
 		public SpecialRegistrationEligibilityResponse() {}
 		public SpecialRegistrationEligibilityResponse(boolean canSubmit, String message) {
@@ -251,6 +252,14 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void setCredit(Float credit) { iCredit = credit; }
 		public boolean hasCredit() { return iCredit != null; }
 		public Float getCredit() { return iCredit; }
+		
+		public boolean hasSuggestions() { return iSuggestions != null && !iSuggestions.isEmpty(); }
+		public List<String> getSuggestions() { return iSuggestions; }
+		public void addSuggestion(String suggestion) {
+			if (iSuggestions == null)
+				iSuggestions = new ArrayList<String>();
+			iSuggestions.add(suggestion);
+		}
 	}
 	
 	public static enum SpecialRegistrationStatus implements IsSerializable, Serializable {
@@ -275,6 +284,8 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private boolean iHasTimeConflict, iHasSpaceConflict, iExtended, iHasLinkedConflict;
 		private ArrayList<ErrorMessage> iErrors = null;
 		private Float iMaxCredit = null;
+		private List<String> iSuggestions = null;
+		
 		
 		public RetrieveSpecialRegistrationResponse() {}
 		
@@ -550,6 +561,14 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public Float getMaxCredit() { return iMaxCredit; }
 		public boolean hasMaxCredit() { return iMaxCredit != null; }
 		
+		public boolean hasSuggestions() { return iSuggestions != null && !iSuggestions.isEmpty(); }
+		public List<String> getSuggestions() { return iSuggestions; }
+		public void addSuggestion(String suggestion) {
+			if (iSuggestions == null)
+				iSuggestions = new ArrayList<String>();
+			iSuggestions.add(suggestion);
+		}
+		
 		@Override
 		public int compareTo(RetrieveSpecialRegistrationResponse o) {
 			int cmp = getSubmitDate().compareTo(o.getSubmitDate());
@@ -709,6 +728,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		Map<String, SpecialRegistrationGradeModeChanges> iModes = new HashMap<String, SpecialRegistrationGradeModeChanges>();
 		Map<String, SpecialRegistrationVariableCreditChange> iVarCreds = new HashMap<String, SpecialRegistrationVariableCreditChange>();
 		private Float iMaxCredit, iCurrentCredit;
+		private List<String> iSuggestions = null;
 		
 		public RetrieveAvailableGradeModesResponse() {}
 		
@@ -741,6 +761,14 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		
 		public Float getCurrentCredit() { return iCurrentCredit; }
 		public void setCurrentCredit(Float credit) { iCurrentCredit = credit; }
+		
+		public boolean hasSuggestions() { return iSuggestions != null && !iSuggestions.isEmpty(); }
+		public List<String> getSuggestions() { return iSuggestions; }
+		public void addSuggestion(String suggestion) {
+			if (iSuggestions == null)
+				iSuggestions = new ArrayList<String>();
+			iSuggestions.add(suggestion);
+		}
 	}
 	
 	public static class SpecialRegistrationGradeMode extends GradeMode {
@@ -1146,6 +1174,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private Set<InstructorInfo> iInstructors;
 		private String iDetails;
 		private String iDisclaimer;
+		private List<String> iSuggestions = null;
 		
 		public VariableTitleCourseInfo() {}
 		
@@ -1230,6 +1259,14 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		@Override
 		public String getReplacementString() {
 			return getCourseName() + (hasTitle() ? " - " + getTitle() : "");
+		}
+		
+		public boolean hasSuggestions() { return iSuggestions != null && !iSuggestions.isEmpty(); }
+		public List<String> getSuggestions() { return iSuggestions; }
+		public void addSuggestion(String suggestion) {
+			if (iSuggestions == null)
+				iSuggestions = new ArrayList<String>();
+			iSuggestions.add(suggestion);
 		}
 	}
 	

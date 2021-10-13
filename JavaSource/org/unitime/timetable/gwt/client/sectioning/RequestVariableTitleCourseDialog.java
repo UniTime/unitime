@@ -24,7 +24,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.unitime.timetable.gwt.client.aria.AriaSuggestArea;
 import org.unitime.timetable.gwt.client.aria.AriaSuggestBox;
+import org.unitime.timetable.gwt.client.aria.AriaTextArea;
 import org.unitime.timetable.gwt.client.aria.AriaTextBox;
 import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
@@ -65,7 +67,6 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SuggestOracle;
-import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 
 /**
@@ -84,7 +85,7 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 	private SimpleForm iForm;
 	private HTML iCourseDetails;
 	private int iCourseDetailsLine;
-	private TextArea iNote = null;
+	private AriaTextArea iNote = null;
 	private AriaTextBox iCourseName = null;
 	private UniTimeWidget<AriaTextBox> iCourseTitle = null;
 	private ListBox iCredit;
@@ -98,6 +99,7 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 	private Float iCurrentCredit, iMaxCredit;
 	private Label iCreditMessage;
 	private int iCreditLine;
+	private List<String> iSuggestions = new ArrayList<String>();
 	
 	private UniTimeHeaderPanel iButtons;
 	
@@ -198,11 +200,11 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 		iDateFrom.setEnabled(false);
 		iDateTo.setEnabled(false);
 		
-		iNote = new TextArea();
+		iNote = new AriaTextArea();
 		iNote.setStyleName("unitime-TextArea"); iNote.addStyleName("request-note");
 		iNote.setVisibleLines(5);
 		iNote.setCharacterWidth(80);
-		iForm.addRow(MESSAGES.propReqVTCourseNote(), iNote);
+		iForm.addRow(MESSAGES.propReqVTCourseNote(), new AriaSuggestArea(iNote, iSuggestions));
 		
 		iDisclaimer = new CheckBox();
 		iDisclaimer.addStyleName("disclaimer");
@@ -350,6 +352,9 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 				iDisclaimer.setEnabled(true);
 				iForm.getRowFormatter().setVisible(iDisclaimerLine, true);
 			}
+			iSuggestions.clear();
+			if (iSelectedCourse.hasSuggestions())
+				iSuggestions.addAll(iSelectedCourse.getSuggestions());
 			checkCredit();
 		}
 		iButtons.setEnabled("submit", iSelectedCourse != null && (!iSelectedCourse.hasDisclaimer() || iDisclaimer.getValue()));

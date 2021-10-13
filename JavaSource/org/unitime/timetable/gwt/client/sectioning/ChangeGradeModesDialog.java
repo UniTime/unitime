@@ -25,6 +25,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.AriaSuggestArea;
+import org.unitime.timetable.gwt.client.aria.AriaTextArea;
 import org.unitime.timetable.gwt.client.aria.HasAriaLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
@@ -69,7 +71,6 @@ import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -93,9 +94,11 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 	private ArrayList<ClassAssignmentInterface.ClassAssignment> iEnrollment;
 	private List<RetrieveSpecialRegistrationResponse> iApprovals;
 	private P iApproval = null;
-	private TextArea iNote = null;
+	private AriaTextArea iNote = null;
+	private AriaSuggestArea iNoteWithSuggestions;
 	private List<CheckBox> iDisclaimers = new ArrayList<CheckBox>();
 	private Float iCurrentCredit, iMaxCredit;
+	private List<String> iSuggestions = new ArrayList<String>();
 	private StudentSectioningContext iContext;
 	
 	public ChangeGradeModesDialog(StudentSectioningContext context, ScheduleStatus status) {
@@ -150,10 +153,11 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 		iForm.addRow(iApproval);
 
 		iForm.addBottomRow(iButtons);
-		iNote = new TextArea();
+		iNote = new AriaTextArea();
 		iNote.setStyleName("unitime-TextArea"); iNote.addStyleName("request-note");
 		iNote.setVisibleLines(5);
 		iNote.setCharacterWidth(80);
+		iNoteWithSuggestions = new AriaSuggestArea(iNote, iSuggestions);
 		
 		setWidget(iForm);
 		
@@ -209,6 +213,9 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 				ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 				iTable.clearData(true);
 				iCurrentCredit = result.getCurrentCredit(); iMaxCredit = result.getMaxCredit();
+				iSuggestions.clear();
+				if (result.hasSuggestions())
+					iSuggestions.addAll(result.getSuggestions());
 				
 				Long lastCourseId = null;
 				GradeModeChange change = null;
@@ -398,7 +405,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 		}
 		if (approvals || credApprovals || (credChanges && iMaxCredit != null && cred > iMaxCredit)) {
 			P m = new P("message"); m.setHTML(MESSAGES.gradeModeChangesNote()); iApproval.add(m);
-			iApproval.add(iNote);
+			iApproval.add(iNoteWithSuggestions);
 		}
 		if (!disclaimers.isEmpty()) {
 			P m = new P("message"); m.setHTML(MESSAGES.gradeModeDisclaimers()); iApproval.add(m);

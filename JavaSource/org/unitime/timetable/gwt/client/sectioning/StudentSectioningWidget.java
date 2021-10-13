@@ -637,6 +637,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				confirm.addConfirmation(MESSAGES.requestedWarnings(message), 0, 1);
 				confirm.addConfirmation("\n" + MESSAGES.messageRequestOverridesNote(), 0, 2);
 				final CourseRequestInterface.CourseMessage note = confirm.addConfirmation(rc.hasRequestorNote() ? rc.getRequestorNote() : "", 0, 3); note.setCode("REQUEST_NOTE");
+				if (rc.hasRequestorNoteSuggestions())
+					for (String suggestion: rc.getRequestorNoteSuggestions())
+						note.addSuggestion(suggestion);
 				if (rc.hasStatusNote())
 					confirm.addConfirmation("\n" + MESSAGES.overrideNote(rc.getStatusNote()), 0, 4);
 				CourseRequestsConfirmationDialog.confirm(confirm, 0, RESOURCES.statusInfo(), new AsyncCallback<Boolean>() {
@@ -690,6 +693,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				confirm.addConfirmation(MESSAGES.requestedWarnings(MESSAGES.courseMessage(message)), 0, 1);
 				confirm.addConfirmation("\n" + MESSAGES.messageRequestOverridesNote(), 0, 2);
 				final CourseRequestInterface.CourseMessage note = confirm.addConfirmation(request.hasRequestorNote() ? request.getRequestorNote() : "", 0, 3); note.setCode("REQUEST_NOTE");
+				if (request.hasRequestorNoteSuggestions())
+					for (String suggestion: request.getRequestorNoteSuggestions())
+						note.addSuggestion(suggestion);
 				if (request.hasCreditNote())
 					confirm.addConfirmation("\n" + MESSAGES.overrideNote(request.getCreditNote()), 0, 4);
 				CourseRequestsConfirmationDialog.confirm(confirm, 0, RESOURCES.statusInfo(), new AsyncCallback<Boolean>() {
@@ -742,6 +748,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				}
 				confirm.addConfirmation(MESSAGES.messageRequestOverridesNote(), 0, 3);
 				final CourseRequestInterface.CourseMessage note = confirm.addConfirmation(reg.getNote() == null ? "" : reg.getNote(), 0, 4); note.setCode("REQUEST_NOTE");
+				if (reg.hasSuggestions())
+					for (String suggestion: reg.getSuggestions())
+						note.addSuggestion(suggestion);
 				CourseRequestsConfirmationDialog.confirm(confirm, 0, RESOURCES.statusInfo(), new AsyncCallback<Boolean>() {
 					@Override
 					public void onSuccess(Boolean result) {
@@ -3212,6 +3221,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		confirm.addConfirmation(MESSAGES.messageRegistrationErrorsDetected(), 0, -1);
 		confirm.addConfirmation(MESSAGES.messageRequestOverridesNote(), 0, 2);
 		final CourseRequestInterface.CourseMessage note = confirm.addConfirmation(iSpecRegCx.getNote() == null ? "" : iSpecRegCx.getNote(), 0, 3); note.setCode("REQUEST_NOTE");
+		if (eligibilityResponse.hasSuggestions())
+			for (String suggestion: eligibilityResponse.getSuggestions())
+				note.addSuggestion(suggestion);
 		confirm.addConfirmation(MESSAGES.messageRequestOverridesOptions(), 0, 4);
 		confirm.addConfirmation(MESSAGES.messageRequestOverridesDisclaimer(), 0, 7);
 		if (iSpecRegCx.hasDisclaimer())

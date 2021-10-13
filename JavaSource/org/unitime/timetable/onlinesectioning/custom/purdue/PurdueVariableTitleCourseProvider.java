@@ -204,6 +204,9 @@ public class PurdueVariableTitleCourseProvider implements VariableTitleCoursePro
 				}
 				
 				info.setDisclaimer(getDisclaimer());
+				
+				for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.vt.requestorNoteSuggestions", "").split("[\r\n]+"))
+					if (!suggestion.isEmpty()) info.addSuggestion(suggestion);
 			}
 			if (gmCode != null) {
 				info.addGradeMode(new GradeMode(gmCode, gmDesc, false));

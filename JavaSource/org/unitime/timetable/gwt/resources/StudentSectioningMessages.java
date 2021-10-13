@@ -3130,7 +3130,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Wait-Listed Courses")
 	String panelWaitListedCourses();
 	
-	@DefaultMessage("Course {0} will not longer be wait-listed. Do you want to proceed?")
+	@DefaultMessage("Course {0} will no longer be wait-listed. Do you want to proceed?")
 	String confirmCourseDropFromWaitList(String course);
 	
 	@DefaultMessage("Course {0} cannot be wait-listed as there is a pending approval requested already.")

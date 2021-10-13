@@ -64,6 +64,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	private String iErrorMessage = null;
 	private String iSpecRegDashboardUrl = null;
 	private String iRequestorNote = null;
+	private List<String> iRequestorNoteSuggestions = null;
 	private String iRequestId = null;
 	private String iPopupMessage = null;
 	private Boolean iPinReleased = null;
@@ -566,6 +567,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		private String iOverrideExternalId = null;
 		private Date iOverrideTimeStamp = null;
 		private String iRequestorNote = null;
+		private List<String> iRequestorNoteSuggestions = null;
 		private String iRequestId = null;
 		private Boolean iInactive = null;  
 		private Boolean iCanWaitList = null;
@@ -618,9 +620,17 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		}
 		public boolean hasRequestorNote() { return iRequestorNote != null && !iRequestorNote.isEmpty() && !" ".equals(iRequestorNote); }
 		public String getRequestorNote() { return iRequestorNote; }
+		public boolean hasRequestorNoteSuggestions() { return iRequestorNoteSuggestions != null && !iRequestorNoteSuggestions.isEmpty(); }
+		public List<String> getRequestorNoteSuggestions() { return iRequestorNoteSuggestions; }
+		public void addRequestorNoteSuggestion(String suggestion) {
+			if (iRequestorNoteSuggestions == null)
+				iRequestorNoteSuggestions = new ArrayList<String>();
+			iRequestorNoteSuggestions.add(suggestion);
+		}
 		public void setRequestId(String id) { iRequestId = id; }
 		public boolean hasRequestId() { return iRequestId != null && !iRequestId.isEmpty() && !" ".equals(iRequestId); }
 		public String getRequestId() { return iRequestId; }
+		
 		public void setOverrideExternalId(String externalId) { iOverrideExternalId = externalId; }
 		public String getOverrideExternalId() { return iOverrideExternalId; }
 		public void setOverrideTimeStamp(Date timeStamp) { iOverrideTimeStamp = timeStamp; }
@@ -1474,6 +1484,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		private Integer iConfirm;
 		private Integer iOrder;
 		private RequestedCourseStatus iStatus;
+		private List<String> iSuggestions;
 		
 		public CourseMessage() {}
 		
@@ -1501,6 +1512,14 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		
 		public String getCode() { return iCode; }
 		public void setCode(String code) { iCode = code; }
+		
+		public boolean hasSuggestions() { return iSuggestions != null && !iSuggestions.isEmpty(); }
+		public List<String> getSuggestions() { return iSuggestions; }
+		public void addSuggestion(String suggestion) {
+			if (iSuggestions == null)
+				iSuggestions = new ArrayList<String>();
+			iSuggestions.add(suggestion);
+		}
 		
 		public RequestedCourseStatus getStatus() { return iStatus; }
 		public CourseMessage setStatus(RequestedCourseStatus status) { iStatus = status; return this; }
@@ -1580,6 +1599,13 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	}
 	public boolean hasRequestorNote() { return iRequestorNote != null && !iRequestorNote.isEmpty() && !" ".equals(iRequestorNote); }
 	public String getRequestorNote() { return iRequestorNote; }
+	public boolean hasRequestorNoteSuggestions() { return iRequestorNoteSuggestions != null && !iRequestorNoteSuggestions.isEmpty(); }
+	public List<String> getRequestorNoteSuggestions() { return iRequestorNoteSuggestions; }
+	public void addRequestorNoteSuggestion(String suggestion) {
+		if (iRequestorNoteSuggestions == null)
+			iRequestorNoteSuggestions = new ArrayList<String>();
+		iRequestorNoteSuggestions.add(suggestion);
+	}
 	public void setRequestId(String id) { iRequestId = id; }
 	public boolean hasRequestId() { return iRequestId != null && !iRequestId.isEmpty() && !" ".equals(iRequestId); }
 	public String getRequestId() { return iRequestId; }

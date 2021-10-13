@@ -917,6 +917,9 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		if (!denied.isEmpty())
 			ret.setDeniedErrors(denied);
 		
+		for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.reg.requestorNoteSuggestions", "").split("[\r\n]+"))
+			if (!suggestion.isEmpty()) ret.addSuggestion(suggestion);
+		
 		return ret;
 	}
 	
@@ -1941,6 +1944,16 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				message = "<span class='" + maxStatus + "'>" + message + "</span>";
 			ret.addError(new ErrorMessage("", "", "MAXI", message));
 		}
+		if (ret.isCreditChange() || ret.isCreditChange()) {
+			for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.gm.requestorNoteSuggestions", "").split("[\r\n]+"))
+				if (!suggestion.isEmpty()) ret.addSuggestion(suggestion);
+		} else if (ret.isVariableTitleCourseChange()) {
+			for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.vt.requestorNoteSuggestions", "").split("[\r\n]+"))
+				if (!suggestion.isEmpty()) ret.addSuggestion(suggestion);
+		} else {
+			for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.reg.requestorNoteSuggestions", "").split("[\r\n]+"))
+				if (!suggestion.isEmpty()) ret.addSuggestion(suggestion);
+		}
 		return ret;
 	}
 	
@@ -2490,6 +2503,9 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					ret.add(v.crn, change);
 				}
 			}
+			
+			for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.gm.requestorNoteSuggestions", "").split("[\r\n]+"))
+				if (!suggestion.isEmpty()) ret.addSuggestion(suggestion);
 			
 			return ret;
 		} catch (SectioningException e) {
