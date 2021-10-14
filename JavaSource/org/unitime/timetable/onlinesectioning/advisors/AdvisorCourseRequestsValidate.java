@@ -67,7 +67,7 @@ public class AdvisorCourseRequestsValidate implements OnlineSectioningAction<Che
 			}
 			if (getDetails().getRequest() != null)
 				for (OnlineSectioningLog.Request r: OnlineSectioningHelper.toProto(getDetails().getRequest()))
-					action.addRequest(r);
+					action.addRecommendation(r);
 			
 			AdvisorCourseRequestsValidationProvider provider = Customization.AdvisorCourseRequestsValidationProvider.getProvider();
 			

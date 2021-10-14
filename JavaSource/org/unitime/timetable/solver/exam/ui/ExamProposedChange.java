@@ -176,6 +176,10 @@ public class ExamProposedChange implements Serializable, Comparable<ExamProposed
         iSelectedExamId = examId;
     }
     
+    public Long getSelected() {
+    	return iSelectedExamId;
+    }
+    
     public String getHtmlTable() {
         String ret = "<table border='0' cellspacing='0' cellpadding='3' width='100%'>";
         ret += "<tr>";

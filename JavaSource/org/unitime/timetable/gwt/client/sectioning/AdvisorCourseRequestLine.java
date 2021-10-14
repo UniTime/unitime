@@ -54,6 +54,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
 import com.google.gwt.core.client.GWT;
@@ -101,6 +102,7 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 	private ImageButton iDelete;
 	private UniTimeTextBox iCredit;
 	private CheckBox iWaitList;
+	private WaitListMode iWaitListMode = WaitListMode.None;
 	private TextArea iNotes;
 	private Timer iTimer;
 	
@@ -186,7 +188,22 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 		
 		if (!alternate) {
 			iWaitList = new CheckBox(); iWaitList.addStyleName("waitlist");
+			iWaitList.setEnabled(false);
 			iNotes.addStyleName("notes-with-waitlist");
+			box.addCourseSelectionHandler(new CourseSelectionHandler() {
+				@Override
+				public void onCourseSelection(CourseSelectionEvent event) {
+					boolean readOnly = event.getValue() != null && event.getValue().isReadOnly();
+					boolean canSet = false;
+					if (iWaitListMode == WaitListMode.WaitList) {
+						canSet = event.getValue() != null && event.getValue().isCanWaitList();
+					} else if (iWaitListMode == WaitListMode.NoSubs) {
+						canSet = event.getValue() != null && event.getValue().isCanNoSub();
+					}
+					iWaitList.setEnabled(canSet && !readOnly);
+					if (!canSet) iWaitList.setValue(false);
+				}
+			});
 		} else {
 			iNotes.addStyleName("notes-no-waitlist");
 		}
@@ -210,10 +227,11 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 		}
 	}
 	
-	public void setWaitListVisible(boolean visible) {
+	public void setWaitListMode(WaitListMode wlMode) {
+		iWaitListMode = wlMode;
 		if (iWaitList != null) {
-			iWaitList.setVisible(visible);
-			if (visible) {
+			iWaitList.setVisible(iWaitListMode == WaitListMode.WaitList || iWaitListMode == WaitListMode.NoSubs);
+			if (iWaitList.isVisible()) {
 				iNotes.addStyleName("notes-with-waitlist");
 				iNotes.removeStyleName("notes-no-waitlist");
 			} else {
@@ -401,9 +419,10 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 	}
 	
 	private void resizeNotes() {
-		iNotes.setHeight((23 + 27 * (iCourses.size() - 1)) + "px");
 		if (!iNotes.getText().isEmpty()) {
 			iNotes.setHeight(Math.max((23 + 27 * (iCourses.size() - 1)), iNotes.getElement().getScrollHeight()) + "px");
+		} else {
+			iNotes.setHeight((23 + 27 * (iCourses.size() - 1)) + "px");
 		}
 	}
 	
@@ -418,7 +437,7 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 			iCourses.get(0).setValue(null);
 			iCredit.setValue("");
 			iNotes.setValue("");
-			if (iWaitList != null) iWaitList.setValue(false);
+			if (iWaitList != null) { iWaitList.setValue(false); iWaitList.setEnabled(false); }
 			for (int i = iCourses.size() - 1; i > 0; i--) {
 				deleteAlternative(i);
 			}
@@ -477,10 +496,19 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 		ret.setFilter(iCourses.get(0).getCourseFinder().getFilter());
 		ret.setAdvisorCredit(iCredit.getValue());
 		ret.setAdvisorNote(iNotes.getValue());
-		if (iWaitList == null || !iWaitList.isVisible())
+		if (iWaitList == null || !iWaitList.isVisible()) {
 			ret.setWaitList(null);
-		else
+			ret.setNoSub(null);
+		} else if (iWaitListMode == WaitListMode.WaitList) {
 			ret.setWaitList(iWaitList.getValue());
+			ret.setNoSub(null);
+		} else if (iWaitListMode == WaitListMode.NoSubs) {
+			ret.setWaitList(null);
+			ret.setNoSub(iWaitList.getValue());
+		} else {
+			ret.setWaitList(null);
+			ret.setNoSub(null);
+		}
 		return (ret.isEmpty() && !ret.hasAdvisorCredit() && !ret.hasAdvisorNote() ? null : ret);
 	}
 
@@ -517,7 +545,7 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 				deleteAlternative(i);
 			iCredit.setValue("");
 			iNotes.setValue("");
-			if (iWaitList != null) iWaitList.setValue(false);
+			if (iWaitList != null) { iWaitList.setValue(false); iWaitList.setEnabled(false); }
 		} else {
 			int index = 0;
 			if (value.hasRequestedCourse())
@@ -537,7 +565,18 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 			if (value.hasFilter()) iCourses.get(0).getCourseFinder().setFilter(value.getFilter());
 			iCredit.setValue(value.hasAdvisorCredit() ? value.getAdvisorCredit() : "");
 			iNotes.setValue(value.hasAdvisorNote() ? value.getAdvisorNote() : "");
-			if (iWaitList != null) iWaitList.setValue(value.isWaitList());
+			if (iWaitList != null) {
+				if (iWaitListMode == WaitListMode.WaitList && value.isCanWaitList()) {
+					iWaitList.setValue(value.isWaitList());
+					iWaitList.setEnabled(true);
+				} else if (iWaitListMode == WaitListMode.NoSubs && value.isCanNoSub()) {
+					iWaitList.setValue(value.isNoSub());
+					iWaitList.setEnabled(true);
+				} else {
+					iWaitList.setValue(false);
+					iWaitList.setEnabled(false);
+				}
+			}
 		}
 		if (iDelete != null) {
 			iDelete.setVisible(value == null || value.isCanDelete());

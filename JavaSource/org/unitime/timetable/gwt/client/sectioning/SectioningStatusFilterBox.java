@@ -102,7 +102,7 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 		addFilter(new FilterBox.StaticSimpleFilter("overlap", GWT_MESSAGES.tagOverlap()));
 		addFilter(new FilterBox.StaticSimpleFilter("advisor", GWT_MESSAGES.tagAdvisor()));
 		FilterBox.StaticSimpleFilter override = new FilterBox.StaticSimpleFilter("override", MESSAGES.tagOverride());
-		override.setMultipleSelection(false);
+		override.setMultipleSelection(true);
 		addFilter(override);
 		
 		addFilter(new FilterBox.StaticSimpleFilter("assignment", GWT_MESSAGES.tagSectioningAssignment()) {

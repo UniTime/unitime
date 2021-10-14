@@ -47,7 +47,12 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -85,6 +90,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 	protected Long iCourseId;
 	protected Set<Long> iCoursesIcoordinate, iCoursesIcanApprove, iMyStudents;
 	protected Set<String> iSubjectAreas;
+	protected boolean iShowUnmatchedClasses = true;
 	
 	public FindEnrollmentInfoAction withParams(String query, Long courseId, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove, Set<Long> myStudents, Set<String> subjects) {
 		iQuery = new Query(query);
@@ -97,6 +103,11 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 		if (m.find()) {
 			iLimit = Integer.parseInt(m.group(1));
 		}
+		return this;
+	}
+	
+	public FindEnrollmentInfoAction showUnmatchedClasses(boolean showUnmatchedClasses) {
+		iShowUnmatchedClasses = showUnmatchedClasses;
 		return this;
 	}
 	
@@ -180,15 +191,28 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 		Set<Long> studentIds = null;
 		if (!solver) 
 			studentIds = (iFilter == null ? null : server.createAction(SectioningStatusFilterAction.class).forRequest(iFilter).getStudentIds(server, helper));
+		
+		Set<String> wlStates = new HashSet<String>();
+		Set<String> noSubStates = new HashSet<String>();
+		Session dbSession = SessionDAO.getInstance().get(session.getUniqueId());
+		for (StudentSectioningStatus status: StudentSectioningStatusDAO.getInstance().findAll(helper.getHibSession())) {
+			if (StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.waitlist))
+				wlStates.add(status.getReference());
+			else if (StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.nosubs))
+				noSubStates.add(status.getReference());
+		}
+		WaitListMode defaultWL = null;
+		if (server instanceof StudentSolver) defaultWL = WaitListMode.NoSubs;
+		
 		if (courseId() == null) {
 			Set<Long> students = new HashSet<Long>();
 			Set<Long> matchingStudents = new HashSet<Long>();
 			
-			int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0, gUnasgPrim = 0;
-			int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0, gtUnasgPrim = 0;
+			int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0, gUnasgPrim = 0, gNoSub = 0;
+			int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0, gtUnasgPrim = 0, gtNoSub = 0;
 			int gConNeed = 0, gtConNeed = 0, gOvrNeed = 0, gtOvrNeed = 0;
 			
-			Collection<? extends XCourseId> courses = server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery, lookup)); 
+			Collection<? extends XCourseId> courses = server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery, lookup, server));
 			Map<Long, Integer> snapshots = getOfferingSnapshots(courses, helper);
 			for (XCourseId info: courses) {
 				XOffering offering = server.getOffering(info.getOfferingId());
@@ -207,8 +231,8 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				e.setControl(course.isControlling());
 
 				int match = 0;
-				int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0;
-				int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0;
+				int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0, noSub = 0;
+				int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0, tNoSub = 0;
 				int conNeed = 0, tConNeed = 0, ovrNeed = 0, tOvrNeed = 0;
 				
 				Set<Long> addedStudents = new HashSet<Long>();
@@ -230,12 +254,24 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 							if (course.getConsentLabel() != null && request.getEnrollment().getApproval() == null) tConNeed ++;
 						} else {
 							XStudent student = server.getStudent(request.getStudentId());
-							if (student != null && student.canAssign(request)) {
+							
+							String status = (student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
+							WaitListMode wl = WaitListMode.None;
+							if (defaultWL != null)
+								wl = defaultWL;
+							else if (status == null || wlStates.contains(status))
+								wl = WaitListMode.WaitList;
+							else if (noSubStates.contains(status))
+								wl = WaitListMode.NoSubs;
+							
+							if (student != null && student.canAssign(request, wl)) {
 								tUnasg ++;
 								if (!request.isAlternative() && request.isPrimary(info)) {
 									tUnasgPrim ++;
-									if (request.isWaitlist())
+									if (request.isWaitlist(wl))
 										tWait ++;
+									if (request.isNoSub(wl))
+										tNoSub ++;
 								}
 							}
 						}
@@ -244,7 +280,17 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					
 					XStudent student = server.getStudent(request.getStudentId());
 					if (student == null) continue;
-					CourseRequestMatcher m = new CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse, isMyStudent(student), lookup, server);
+
+					String status = (student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
+					WaitListMode wl = WaitListMode.None;
+					if (defaultWL != null)
+						wl = defaultWL;
+					else if (status == null || wlStates.contains(status))
+						wl = WaitListMode.WaitList;
+					else if (noSubStates.contains(status))
+						wl = WaitListMode.NoSubs;
+					
+					CourseRequestMatcher m = new CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse, isMyStudent(student), lookup, server, wl);
 					if (query().match(m)) {
 						matchingStudents.add(request.getStudentId());
 						match++;
@@ -252,12 +298,14 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 							enrl ++;
 							if (m.enrollment().getReservation() != null) res ++;
 							if (course.getConsentLabel() != null && m.enrollment().getApproval() == null) conNeed ++;
-						} else if (m.student().canAssign(m.request())) {
+						} else if (m.student().canAssign(m.request(), wl)) {
 							unasg ++;
 							if (!m.request().isAlternative() && m.request().isPrimary(info)) {
 								unasgPrim ++;
-								if (m.request().isWaitlist())
+								if (m.request().isWaitlist(wl))
 									wait ++;
+								if (m.request().isNoSub(wl))
+									noSub ++;
 							}
 						}
 						if (m.request().isOverridePending(course)) ovrNeed ++;
@@ -267,12 +315,14 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 							if (request.getEnrollment().getReservation() != null) tRes ++;
 							if (course.getConsentLabel() != null && request.getEnrollment().getApproval() == null) tConNeed ++;
 						} else {
-							if (student != null && student.canAssign(request)) {
+							if (student != null && student.canAssign(request, wl)) {
 								tUnasg ++;
 								if (!request.isAlternative() && request.isPrimary(info)) {
 									tUnasgPrim ++;
-									if (request.isWaitlist())
+									if (request.isWaitlist(wl))
 										tWait ++;
+									if (request.isNoSub(wl))
+										tNoSub ++;
 								}
 							}
 						}
@@ -283,12 +333,14 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 						tEnrl ++;
 						if (m.enrollment().getReservation() != null) tRes ++;
 						if (course.getConsentLabel() != null && m.enrollment().getApproval() == null) tConNeed ++;
-					} else if (m.student().canAssign(m.request())) {
+					} else if (m.student().canAssign(m.request(), wl)) {
 						tUnasg ++;
 						if (!m.request().isAlternative() && m.request().isPrimary(info)) {
 							tUnasgPrim ++;
-							if (m.request().isWaitlist())
+							if (m.request().isWaitlist(wl))
 								tWait ++;
+							if (m.request().isNoSub(wl))
+								tNoSub ++;
 						}
 					}
 					if (m.request().isOverridePending(course)) tOvrNeed ++;
@@ -301,6 +353,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				
 				gEnrl += enrl;
 				gWait += wait;
+				gNoSub += noSub;
 				gUnasg += unasg;
 				gUnasgPrim += unasgPrim;
 				gRes += res;
@@ -309,6 +362,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				
 				gtEnrl += tEnrl;
 				gtWait += tWait;
+				gtNoSub += tNoSub;
 				gtUnasg += tUnasg;
 				gtUnasgPrim += tUnasgPrim;
 				gtRes += tRes;
@@ -352,12 +406,14 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				e.setEnrollment(enrl);
 				e.setReservation(res);
 				e.setWaitlist(wait);
+				e.setNoSub(noSub);
 				e.setUnassigned(unasg);
 				e.setUnassignedPrimary(unasgPrim);
 				
 				e.setTotalEnrollment(tEnrl);
 				e.setTotalReservation(tRes);
 				e.setTotalWaitlist(tWait);
+				e.setTotalNoSub(tNoSub);
 				e.setTotalUnassigned(tUnasg);
 				e.setTotalUnassignedPrimary(tUnasgPrim);
 				
@@ -392,12 +448,14 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 			t.setEnrollment(gEnrl);
 			t.setReservation(gRes);
 			t.setWaitlist(gWait);
+			t.setNoSub(gNoSub);
 			t.setUnassigned(gUnasg);
 			t.setUnassignedPrimary(gUnasgPrim);
 			
 			t.setTotalEnrollment(gtEnrl);
 			t.setTotalReservation(gtRes);
 			t.setTotalWaitlist(gtWait);
+			t.setTotalNoSub(gtNoSub);
 			t.setTotalUnassigned(gtUnasg);
 			t.setTotalUnassignedPrimary(gtUnasgPrim);
 			
@@ -498,14 +556,24 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 			for (XCourseRequest request: enrollments.getRequests()) {
 				if (request.getEnrollment() != null || !request.hasCourse(courseId())) continue;
 				XStudent student = server.getStudent(request.getStudentId());
-				if (student == null || !student.canAssign(request)) continue;
+				
+				String status = (student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
+				WaitListMode wl = WaitListMode.None;
+				if (defaultWL != null)
+					wl = defaultWL;
+				else if (status == null || wlStates.contains(status))
+					wl = WaitListMode.WaitList;
+				else if (noSubStates.contains(status))
+					wl = WaitListMode.NoSubs;
+
+				if (student == null || !student.canAssign(request, wl)) continue;
 				if (checkOverrides && request.getEnrollment() == null) {
 					XOverride override = request.getOverride(info);
 					if (override != null && !override.isApproved()) continue;
 				}
 				Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
-				CourseRequest r = SectioningRequest.convert(assignment, request, server);
-				CourseRequestMatcher m = new CourseRequestMatcher(session, info, student, offering, request, isConsentToDoCourse, isMyStudent(student), lookup, server);
+				CourseRequest r = SectioningRequest.convert(assignment, request, server, wl);
+				CourseRequestMatcher m = new CourseRequestMatcher(session, info, student, offering, request, isConsentToDoCourse, isMyStudent(student), lookup, server, wl);
 				values: for (Enrollment en: r.values(assignment)) {
 					if (!query().match(m.setEnrollment(new XEnrollment(en)))) continue;
 					for (Request x: r.getStudent().getRequests()) {
@@ -541,8 +609,8 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					e.setMasterSubject(course.getSubjectArea());
 					e.setMasterCourseNbr(course.getCourseNumber());
 					
-					int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0;
-					int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0;
+					int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0, noSub = 0;
+					int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0, tNoSub = 0;
 					int conNeed = 0, tConNeed = 0, ovrNeed = 0, tOvrNeed = 0;
 					
 					for (XCourseRequest request: enrollments.getRequests()) {
@@ -559,12 +627,24 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 								if (other.getConsentLabel() != null && request.getEnrollment().getApproval() == null) tConNeed ++;
 							} else {
 								XStudent student = server.getStudent(request.getStudentId());
-								if (student != null && student.canAssign(request)) {
+								
+								String status = (student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
+								WaitListMode wl = WaitListMode.None;
+								if (defaultWL != null)
+									wl = defaultWL;
+								else if (status == null || wlStates.contains(status))
+									wl = WaitListMode.WaitList;
+								else if (noSubStates.contains(status))
+									wl = WaitListMode.NoSubs;
+
+								if (student != null && student.canAssign(request, wl)) {
 									tUnasg ++;
 									if (!request.isAlternative() && request.isPrimary(other)) {
 										tUnasgPrim ++;
-										if (request.isWaitlist())
+										if (request.isWaitlist(wl))
 											tWait ++;
+										if (request.isNoSub(wl))
+											tNoSub ++;
 									}
 								}
 							}
@@ -573,18 +653,30 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 						
 						XStudent student = server.getStudent(request.getStudentId());
 						if (student == null) continue;
-						CourseRequestMatcher m = new CourseRequestMatcher(session, other, student, offering, request, isConsentToDoCourse, isMyStudent(student), lookup, server);
+
+						String status = (student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
+						WaitListMode wl = WaitListMode.None;
+						if (defaultWL != null)
+							wl = defaultWL;
+						else if (status == null || wlStates.contains(status))
+							wl = WaitListMode.WaitList;
+						else if (noSubStates.contains(status))
+							wl = WaitListMode.NoSubs;
+
+						CourseRequestMatcher m = new CourseRequestMatcher(session, other, student, offering, request, isConsentToDoCourse, isMyStudent(student), lookup, server, wl);
 						if (query().match(m)) {
 							if (m.enrollment() != null) {
 								enrl ++;
 								if (m.enrollment().getReservation() != null) res ++;
 								if (other.getConsentLabel() != null && m.enrollment().getApproval() == null) conNeed ++;
-							} else if (m.student().canAssign(m.request())) {
+							} else if (m.student().canAssign(m.request(), wl)) {
 								unasg ++;
 								if (!m.request().isAlternative() && m.request().isPrimary(other)) {
 									unasgPrim ++;
-									if (m.request().isWaitlist())
+									if (m.request().isWaitlist(wl))
 										wait ++;
+									if (m.request().isNoSub(wl))
+										noSub ++;
 								}
 							}
 							if (m.request().isOverridePending(other)) ovrNeed ++;
@@ -594,12 +686,14 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 								if (request.getEnrollment().getReservation() != null) tRes ++;
 								if (other.getConsentLabel() != null && request.getEnrollment().getApproval() == null) tConNeed ++;
 							} else {
-								if (student != null && student.canAssign(request)) {
+								if (student != null && student.canAssign(request, wl)) {
 									tUnasg ++;
 									if (!request.isAlternative() && request.isPrimary(other)) {
 										tUnasgPrim ++;
-										if (request.isWaitlist())
+										if (request.isWaitlist(wl))
 											tWait ++;
+										if (request.isNoSub(wl))
+											tNoSub ++;
 									}
 								}
 							}
@@ -610,12 +704,14 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 							tEnrl ++;
 							if (m.enrollment().getReservation() != null) tRes ++;
 							if (other.getConsentLabel() != null && m.enrollment().getApproval() == null) tConNeed ++;
-						} else if (m.student().canAssign(m.request())) {
+						} else if (m.student().canAssign(m.request(), wl)) {
 							tUnasg ++;
 							if (!m.request().isAlternative() && m.request().isPrimary(other)) {
 								tUnasgPrim ++;
-								if (m.request().isWaitlist())
+								if (m.request().isWaitlist(wl))
 									tWait ++;
+								if (m.request().isNoSub(wl))
+									tNoSub ++;
 							}
 						}
 						if (m.request().isOverridePending(other)) tOvrNeed ++;
@@ -657,12 +753,14 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					e.setEnrollment(enrl);
 					e.setReservation(res);
 					e.setWaitlist(wait);
+					e.setNoSub(noSub);
 					e.setUnassigned(unasg);
 					e.setUnassignedPrimary(unasgPrim);
 					
 					e.setTotalEnrollment(tEnrl);
 					e.setTotalReservation(tRes);
 					e.setTotalWaitlist(tWait);
+					e.setTotalNoSub(tNoSub);
 					e.setTotalUnassigned(tUnasg);
 					e.setTotalUnassignedPrimary(tUnasgPrim);
 					
@@ -711,8 +809,8 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				}
 				
 				int match = 0;
-				int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0;
-				int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0;
+				int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0, noSub = 0;
+				int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0, tNoSub = 0;
 				int conNeed = 0, tConNeed = 0;
 				int other = 0;
 
@@ -722,7 +820,17 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					if (!request.getEnrollment().getCourseId().equals(courseId())) {other++; continue; }
 					XStudent student = server.getStudent(request.getStudentId());
 					if (student == null) continue;
-					CourseRequestMatcher m = new CourseRequestMatcher(session, info, student, offering, request, isConsentToDoCourse, isMyStudent(student), lookup, server);
+					
+					String status = (student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
+					WaitListMode wl = WaitListMode.None;
+					if (defaultWL != null)
+						wl = defaultWL;
+					else if (status == null || wlStates.contains(status))
+						wl = WaitListMode.WaitList;
+					else if (noSubStates.contains(status))
+						wl = WaitListMode.NoSubs;
+					
+					CourseRequestMatcher m = new CourseRequestMatcher(session, info, student, offering, request, isConsentToDoCourse, isMyStudent(student), lookup, server, wl);
 					if (query().match(m)) {
 						match++;
 						enrl ++;
@@ -741,31 +849,46 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 						if (!students.contains(request.getStudentId())) continue;
 						if (request.getEnrollment() != null || !request.hasCourse(courseId())) continue;
 						XStudent student = server.getStudent(request.getStudentId());
-						if (student == null || !student.canAssign(request)) continue;
+						
+						String status = (student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
+						WaitListMode wl = WaitListMode.None;
+						if (defaultWL != null)
+							wl = defaultWL;
+						else if (status == null || wlStates.contains(status))
+							wl = WaitListMode.WaitList;
+						else if (noSubStates.contains(status))
+							wl = WaitListMode.NoSubs;
+
+						if (student == null || !student.canAssign(request, wl)) continue;
 						if (checkOverrides && request.getEnrollment() == null) {
 							XOverride override = request.getOverride(info);
 							if (override != null && !override.isApproved()) continue;
 						}
-						CourseRequestMatcher m = new CourseRequestMatcher(session, info, student, offering, request, isConsentToDoCourse, isMyStudent(student), lookup, server);
+						CourseRequestMatcher m = new CourseRequestMatcher(session, info, student, offering, request, isConsentToDoCourse, isMyStudent(student), lookup, server, wl);
 						
 						if (query().match(m)) {
 							match++;
 							unasg++;
 							if (!request.isAlternative() && request.isPrimary(info)) {
 								unasgPrim ++;
-								if (request.isWaitlist())
+								if (request.isWaitlist(wl))
 									wait++;
+								if (request.isNoSub(wl))
+									noSub++;
 							}
 						}
 						tUnasg ++;
 						if (!request.isAlternative() && request.isPrimary(info)) {
 							tUnasgPrim ++;
-							if (request.isWaitlist())
+							if (request.isWaitlist(wl))
 								tWait ++;
+							if (request.isNoSub(wl))
+								tNoSub ++;
 						}
 					}
 				
-				if (match == 0) continue;
+				if (match == 0 && !iShowUnmatchedClasses) continue;
+				e.setNoMatch(match == 0);
 				
 				e.setLimit(section.getLimit());
 				e.setOther(other);
@@ -777,12 +900,14 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				e.setEnrollment(enrl);
 				e.setReservation(res);
 				e.setWaitlist(wait);
+				e.setNoSub(noSub);
 				e.setUnassigned(unasg);
 				e.setUnassignedPrimary(unasgPrim);
 				
 				e.setTotalEnrollment(tEnrl);
 				e.setTotalReservation(tRes);
 				e.setTotalWaitlist(tWait);
+				e.setTotalNoSub(tNoSub);
 				e.setTotalUnassigned(tUnasg);
 				e.setTotalUnassignedPrimary(tUnasgPrim);
 
@@ -851,13 +976,15 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 		protected Set<String> iSubjectAreas;
 		protected Query iQuery;
 		protected CourseLookup iLookup;
+		protected OnlineSectioningServer iServer;
 		
-		public FindEnrollmentInfoCourseMatcher(Set<Long> coursesIcoordinate, Set<Long> coursesIcanApprove, Set<String> subjects, Query query, CourseLookup lookup) {
+		public FindEnrollmentInfoCourseMatcher(Set<Long> coursesIcoordinate, Set<Long> coursesIcanApprove, Set<String> subjects, Query query, CourseLookup lookup, OnlineSectioningServer server) {
 			iCoursesIcoordinate = coursesIcoordinate;
 			iCoursesIcanApprove = coursesIcanApprove;
 			iSubjectAreas = subjects;
 			iQuery = query;
 			iLookup = lookup;
+			iServer = server;
 		}
 		
 
@@ -877,7 +1004,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 		@Override
 		public boolean match(XCourseId id) {
 			XCourse course = (id instanceof XCourse ? (XCourse) id : getServer().getCourse(id.getCourseId()));
-			return course != null && isCourseVisible(course.getCourseId()) && hasMatchingSubjectArea(course.getSubjectArea()) && iQuery.match(new CourseInfoMatcher(course, isConsentToDoCourse(course), iLookup));
+			return course != null && isCourseVisible(course.getCourseId()) && hasMatchingSubjectArea(course.getSubjectArea()) && iQuery.match(new CourseInfoMatcher(course, isConsentToDoCourse(course), iLookup, iServer));
 		}
 		
 	}

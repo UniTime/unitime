@@ -256,11 +256,9 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 						case None: iWaitListHeader.setHTML("&nbsp;"); break;
 						case NoSubs:
 							iWaitListHeader.setHTML(MESSAGES.headNoSubs());
-							iRequests.getTable().setHTML(0, 8, MESSAGES.colNoSubs());
 							break;
 						case WaitList:
 							iWaitListHeader.setHTML(MESSAGES.headWaitList());
-							iRequests.getTable().setHTML(0, 8, MESSAGES.colWaitList());
 							break;
 						}
 						fillInStudentRequests();
@@ -809,9 +807,10 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	}
 	
 	private void resizeNotes() {
-		iNotes.setHeight("50px");
 		if (!iNotes.getText().isEmpty()) {
 			iNotes.setHeight(Math.max(50, iNotes.getElement().getScrollHeight()) + "px");
+		} else {
+			iNotes.setHeight("50px");
 		}
 	}
 	
@@ -830,7 +829,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	private void clearRequests() {
 		for (AdvisorCourseRequestLine line: iCourses) {
 			line.setValue(null);
-			line.setWaitListVisible(iDetails == null || iDetails.getWaitListMode() != WaitListMode.None);
+			line.setWaitListMode(iDetails == null ? WaitListMode.None : iDetails.getWaitListMode());
 		}
 		for (AdvisorCourseRequestLine line: iAlternatives)
 			line.setValue(null);
@@ -849,7 +848,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	private void addCourseLine() {
 		int i = iCourses.size();
 		final AdvisorCourseRequestLine line = new AdvisorCourseRequestLine(iContext, i, false, null, iSpecRegCx);
-		line.setWaitListVisible(iDetails == null || iDetails.getWaitListMode() != WaitListMode.None);
+		line.setWaitListMode(iDetails == null ? WaitListMode.None : iDetails.getWaitListMode());
 		iCourses.add(line);
 		AdvisorCourseRequestLine prev = iCourses.get(i - 1);
 		prev.getCourses().get(0).setHint("");
@@ -1044,6 +1043,13 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 			public void onSuccess(AdvisorCourseRequestSubmission result) {
 				LoadingWidget.getInstance().hide();
 				iDetails = details;
+				if (iDetails.getAdvisorWaitListedCourseIds() != null && iDetails.hasStudentRequest() && iDetails.getRequest() != null) {
+					if (iDetails.getWaitListMode() == WaitListMode.WaitList)
+						iDetails.setAdvisorWaitListedCourseIds(iDetails.getRequest().getWaitListedCourseIds());
+					if (iDetails.getWaitListMode() == WaitListMode.NoSubs)
+						iDetails.setAdvisorWaitListedCourseIds(iDetails.getRequest().getNoSubCourseIds());
+					fillInStudentRequests();
+				}
 				iContext.setStudentId(iDetails == null ? null : iDetails.getStudentId());
 				download(result.getPdf(), result.hasName() ? result.getName() : "crf-" + iTerm.getText() + "-" + iStudentName.getText() + "-" + iStudentExternalId.getText());
 				final String statusLink = (result.hasLink() ?  "\n" + MESSAGES.advisorRequestsPdfLink(GWT.getHostPageBaseURL() + result.getLink()) : "");
@@ -1217,13 +1223,21 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		boolean hasPref = false, hasWarn = false, hasWait = false, hasCrit = false;
 		NumberFormat df = NumberFormat.getFormat("0.#");
 		if (iDetails != null && iDetails.hasStudentRequest()) {
+			switch (iDetails.getStudentRequest().getWaitListMode()) {
+			case NoSubs:
+				iRequests.getTable().setHTML(0, 8, MESSAGES.colNoSubs());
+				break;
+			case WaitList:
+				iRequests.getTable().setHTML(0, 8, MESSAGES.colWaitList());
+				break;
+			}
 			CheckCoursesResponse check = new CheckCoursesResponse(iDetails.getStudentRequest().getConfirmations());
 			hasWarn = iDetails.getStudentRequest().hasConfirmations();
 			int priority = 1;
 			for (Request request: iDetails.getStudentRequest().getCourses()) {
 				if (!request.hasRequestedCourse()) continue;
 				boolean first = true;
-				if (request.isWaitList()) hasWait = true;
+				if (request.isWaitlistOrNoSub(iDetails.getStudentRequest().getWaitListMode())) hasWait = true;
 				if (request.isCritical() || request.isImportant()) hasCrit = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					if (rc.isCourse()) {
@@ -1301,7 +1315,9 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 								(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
 								(first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
 									first && request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") : new WebTable.Cell("")),
-								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell("")),
+								(iDetails.getStudentRequest().getWaitListMode() == WaitListMode.WaitList
+									 ? (first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), (request.hasWaitListedTimeStamp() ? sDF.format(request.getWaitListedTimeStamp()) : "")) : new WebTable.Cell(""))
+									 : (first && request.isNoSub() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestNoSubs(), "") : new WebTable.Cell(""))),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
 								);
 						if (priority > 1 && first)
@@ -1417,7 +1433,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 								(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
 								(first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
 									first && request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") : new WebTable.Cell("")),
-								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell("")),
+								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), (request.hasWaitListedTimeStamp() ? sDF.format(request.getWaitListedTimeStamp()) : "")) : new WebTable.Cell("")),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
 								);
 						if (first)
@@ -1448,7 +1464,9 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 			}
 		}
 		
-		if (iDetails != null && iDetails.hasStudentRequest() && iDetails.getStudentRequest().getMaxCreditOverrideStatus() != null) {
+		if (iDetails != null && iDetails.hasStudentRequest()) {
+			if (iDetails.getStudentRequest().getMaxCreditOverrideStatus() == null)
+				iDetails.getStudentRequest().setMaxCreditOverrideStatus(RequestedCourseStatus.SAVED);
 			ImageResource icon = null;
 			String status = "";
 			String note = null, noteTitle = null;
@@ -1459,7 +1477,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				iconText = iDetails.getStudentRequest().getCreditWarning();
 				hasWarn = true;
 			} else if (iDetails.getStudentRequest().getMaxCreditOverrideStatus() != RequestedCourseStatus.SAVED) {
-				note = noteTitle = iconText = MESSAGES.creditWarning(iDetails.getStudentRequest().getCredit());
+				note = noteTitle = iconText = MESSAGES.creditWarning(iDetails.getStudentRequest().getMaxCredit());
 			}
 			switch (iDetails.getStudentRequest().getMaxCreditOverrideStatus()) {
 			case CREDIT_HIGH:
@@ -1514,7 +1532,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				iconText = (iconText == null ? "" : iconText + "\n") + iDetails.getStudentRequest().getCreditNote();
 				hasWarn = true;
 			}
-			float[] range = iDetails.getStudentRequest().getCreditRange();
+			float[] range = iDetails.getStudentRequest().getCreditRange(iDetails.getAdvisorWaitListedCourseIds());
 			WebTable.Cell credit = new WebTable.Cell(range != null ? range[0] < range[1] ? df.format(range[0]) + " - " + df.format(range[1]) : df.format(range[0]) : "");
 			credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			WebTable.Row row = new WebTable.Row(

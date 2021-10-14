@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -120,15 +121,19 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			Set<Long> students = new HashSet<Long>();
 			Set<Long> matchingStudents = new HashSet<Long>();
 			
-			int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0, gUnasgPrim = 0;
-			int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0, gtUnasgPrim = 0;
+			int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0, gUnasgPrim = 0, gNoSub = 0;
+			int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0, gtUnasgPrim = 0, gtNoSub = 0;
 			int gConNeed = 0, gtConNeed = 0, gOvrNeed = 0, gtOvrNeed = 0;
 			
-			DbFindEnrollmentInfoCourseMatcher m = new DbFindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery, lookup);
+			DbFindEnrollmentInfoCourseMatcher m = new DbFindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery, lookup, server);
 			
 			Map<CourseOffering, List<CourseRequest>> requests = new HashMap<CourseOffering, List<CourseRequest>>();
-			for (CourseRequest cr: (List<CourseRequest>)SectioningStatusFilterAction.getCourseQuery(iFilter, server, helper).select("distinct cr").query(helper.getHibSession()).list()) {
+			cr: for (CourseRequest cr: (List<CourseRequest>)SectioningStatusFilterAction.getCourseQuery(iFilter, server, helper).select("distinct cr").query(helper.getHibSession()).list()) {
 				if (!m.match(cr.getCourseOffering())) continue;
+				if (cr.getClassEnrollments().isEmpty()) { // skip course requests where course demand is enrolled to some other course
+					for (CourseRequest x: cr.getCourseDemand().getCourseRequests())
+						if (!x.equals(cr) && !x.getClassEnrollments().isEmpty()) continue cr;
+				}
 				List<CourseRequest> list = requests.get(cr.getCourseOffering());
 				if (list == null) {
 					list = new ArrayList<CourseRequest>();
@@ -154,15 +159,20 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				e.setControl(course.isIsControl());
 
 				int match = 0;
-				int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0;
-				int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0;
+				int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0, noSub = 0;
+				int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0, tNoSub = 0;
 				int conNeed = 0, tConNeed = 0, ovrNeed = 0, tOvrNeed = 0;
 				
-				for (CourseRequest request: (List<CourseRequest>)helper.getHibSession().createQuery(
+				request: for (CourseRequest request: (List<CourseRequest>)helper.getHibSession().createQuery(
 						"from CourseRequest where courseOffering.uniqueId = :courseId"
 						).setLong("courseId", course.getUniqueId()).setCacheable(true).list()) {
 					
 					if (checkOverrides && !request.isRequestApproved() && request.getClassEnrollments().isEmpty()) continue;
+					
+					if (request.getClassEnrollments().isEmpty()) { // skip course requests where course demand is enrolled to some other course
+						for (CourseRequest x: request.getCourseDemand().getCourseRequests())
+							if (!x.equals(request) && !x.getClassEnrollments().isEmpty()) continue request;
+					}
 					
 					DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(request.getCourseDemand().getStudent()), helper.getStudentNameFormat(), lookup);
 					if (!query().match(crm)) {
@@ -175,15 +185,17 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 							tUnasg ++;
 							if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) {
 								tUnasgPrim ++;
-								if (request.getCourseDemand().isWaitlist())
+								if (request.getCourseDemand().effectiveWaitList())
 									tWait ++;
+								if (request.getCourseDemand().effectiveNoSub())
+									tNoSub ++;
 							}
 						}
 					}
 				}
 
 				Set<Long> addedStudents = new HashSet<Long>();
-				for (CourseRequest request: entry.getValue()) {
+				request: for (CourseRequest request: entry.getValue()) {
 					if (checkOverrides && !request.isRequestApproved() && request.getClassEnrollments().isEmpty()) continue;
 					
 					Student student = request.getCourseDemand().getStudent();
@@ -203,8 +215,10 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 							unasg ++;
 							if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) {
 								unasgPrim ++;
-								if (request.getCourseDemand().isWaitlist())
+								if (request.getCourseDemand().effectiveWaitList())
 									wait ++;
+								if (request.getCourseDemand().effectiveNoSub())
+									noSub ++;
 							}
 						}
 						if (request.isRequestPending()) ovrNeed ++;
@@ -219,8 +233,10 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 							tUnasg ++;
 							if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) {
 								tUnasgPrim ++;
-								if (request.getCourseDemand().isWaitlist())
+								if (request.getCourseDemand().effectiveWaitList())
 									tWait ++;
+								if (request.getCourseDemand().effectiveNoSub())
+									tNoSub ++;
 							}
 						}
 					}
@@ -234,6 +250,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				
 				gEnrl += enrl;
 				gWait += wait;
+				gNoSub += noSub;
 				gUnasg += unasg;
 				gUnasgPrim += unasgPrim;
 				gRes += res;
@@ -242,6 +259,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				
 				gtEnrl += tEnrl;
 				gtWait += tWait;
+				gtNoSub += tNoSub;
 				gtUnasg += tUnasg;
 				gtUnasgPrim += tUnasgPrim;
 				gtRes += tRes;
@@ -285,12 +303,14 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				e.setEnrollment(enrl);
 				e.setReservation(res);
 				e.setWaitlist(wait);
+				e.setNoSub(noSub);
 				e.setUnassigned(unasg);
 				e.setUnassignedPrimary(unasgPrim);
 				
 				e.setTotalEnrollment(tEnrl);
 				e.setTotalReservation(tRes);
 				e.setTotalWaitlist(tWait);
+				e.setTotalNoSub(tNoSub);
 				e.setTotalUnassigned(tUnasg);
 				e.setTotalUnassignedPrimary(tUnasgPrim);
 				
@@ -325,12 +345,14 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			t.setEnrollment(gEnrl);
 			t.setReservation(gRes);
 			t.setWaitlist(gWait);
+			t.setNoSub(gNoSub);
 			t.setUnassigned(gUnasg);
 			t.setUnassignedPrimary(gUnasgPrim);
 			
 			t.setTotalEnrollment(gtEnrl);
 			t.setTotalReservation(gtRes);
 			t.setTotalWaitlist(gtWait);
+			t.setTotalNoSub(gtNoSub);
 			t.setTotalUnassigned(gtUnasg);
 			t.setTotalUnassignedPrimary(gtUnasgPrim);
 			
@@ -369,8 +391,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					e.setMasterCourseNbr(course.getCourseNbr());
 					e.setConfigId(-1l);
 
-					int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0;
-					int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0;
+					int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0, noSub = 0;
+					int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0, tNoSub = 0;
 					int conNeed = 0, tConNeed = 0, ovrNeed = 0, tOvrNeed = 0;
 					
 					for (CourseRequest request: requests) {
@@ -387,8 +409,10 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 								unasg ++;
 								if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) {
 									unasgPrim ++;
-									if (request.getCourseDemand().isWaitlist())
+									if (request.getCourseDemand().effectiveWaitList())
 										wait ++;
+									if (request.getCourseDemand().effectiveNoSub())
+										noSub ++;
 								}
 							}
 							if (request.isRequestPending()) ovrNeed ++;
@@ -402,8 +426,10 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 								tUnasg ++;
 								if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) {
 									tUnasgPrim ++;
-									if (request.getCourseDemand().isWaitlist())
+									if (request.getCourseDemand().effectiveWaitList())
 										tWait ++;
+									if (request.getCourseDemand().effectiveNoSub())
+										tNoSub ++;
 								}
 							}
 							if (request.isRequestPending()) tOvrNeed ++;
@@ -446,12 +472,14 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					e.setEnrollment(enrl);
 					e.setReservation(res);
 					e.setWaitlist(wait);
+					e.setNoSub(noSub);
 					e.setUnassigned(unasg);
 					e.setUnassignedPrimary(unasgPrim);
 					
 					e.setTotalEnrollment(tEnrl);
 					e.setTotalReservation(tRes);
 					e.setTotalWaitlist(tWait);
+					e.setTotalNoSub(tNoSub);
 					e.setTotalUnassigned(tUnasg);
 					e.setTotalUnassignedPrimary(tUnasgPrim);
 					
@@ -582,8 +610,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				}
 				
 				int match = 0;
-				int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0;
-				int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0;
+				int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0, noSub = 0;
+				int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0, tNoSub = 0;
 				int conNeed = 0, tConNeed = 0;
 				int other = 0;
 
@@ -618,19 +646,24 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 						unasg++;
 						if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) {
 							unasgPrim ++;
-							if (request.getCourseDemand().isWaitlist())
+							if (request.getCourseDemand().effectiveWaitList())
 								wait++;
+							if (request.getCourseDemand().effectiveNoSub())
+								noSub ++;
 						}
 					}
 					tUnasg ++;
 					if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) {
 						tUnasgPrim ++;
-						if (request.getCourseDemand().isWaitlist())
+						if (request.getCourseDemand().effectiveWaitList())
 							tWait ++;
+						if (request.getCourseDemand().effectiveNoSub())
+							tNoSub ++;
 					}
 				}
 				
-				if (match == 0) continue;
+				if (match == 0 && !iShowUnmatchedClasses) continue;
+				e.setNoMatch(match == 0);
 				
 				e.setLimit(section.getSectioningLimit());
 				e.setOther(other);
@@ -642,12 +675,14 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				e.setEnrollment(enrl);
 				e.setReservation(res);
 				e.setWaitlist(wait);
+				e.setNoSub(noSub);
 				e.setUnassigned(unasg);
 				e.setUnassignedPrimary(unasgPrim);
 				
 				e.setTotalEnrollment(tEnrl);
 				e.setTotalReservation(tRes);
 				e.setTotalWaitlist(tWait);
+				e.setTotalNoSub(tNoSub);
 				e.setTotalUnassigned(tUnasg);
 				e.setTotalUnassignedPrimary(tUnasgPrim);
 
@@ -724,8 +759,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 	public static class DbFindEnrollmentInfoCourseMatcher extends FindEnrollmentInfoCourseMatcher {
 		private static final long serialVersionUID = 1L;
 		
-		public DbFindEnrollmentInfoCourseMatcher(Set<Long> coursesIcoordinate, Set<Long> coursesIcanApprove, Set<String> subjects, Query query, CourseLookup lookup) {
-			super(coursesIcoordinate, coursesIcanApprove, subjects, query, lookup);
+		public DbFindEnrollmentInfoCourseMatcher(Set<Long> coursesIcoordinate, Set<Long> coursesIcanApprove, Set<String> subjects, Query query, CourseLookup lookup, OnlineSectioningServer server) {
+			super(coursesIcoordinate, coursesIcanApprove, subjects, query, lookup, server);
 		}
 		
 		public boolean isConsentToDoCourse(CourseOffering co) {
@@ -795,6 +830,13 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				else
 					return false;
 			}
+			if ("assignment".equals(attr)) {
+				if ("Wait-Listed".equals(term)) {
+					return course().getInstructionalOffering().effectiveWaitList();
+				} else {
+					return true;
+				}
+			}
 			return null; // pass unknown attributes lower
 		}
 	}
@@ -832,8 +874,15 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 		public AcademicSessionInfo session() { return iSession; }
 		public CourseRequest request() { return iRequest; }
 		public List<StudentClassEnrollment> enrollment() {
-			if (iEnrollment == null)
-				iEnrollment = iRequest.getClassEnrollments();
+			if (iEnrollment == null) {
+				iEnrollment = new ArrayList<StudentClassEnrollment>();
+		    	for (StudentClassEnrollment e: student().getClassEnrollments()) {
+		    		for (CourseRequest cr: request().getCourseDemand().getCourseRequests()) {
+		    			if (cr.getCourseOffering().equals(e.getCourseOffering()))
+		    				iEnrollment.add(e);
+		    		}
+		    	}
+			}
 			return iEnrollment;
 		}
 		public Student student() { return iStudent; }
@@ -885,6 +934,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 		
 		public boolean canAssign() {
 			if (!enrollment().isEmpty()) return true;
+			if (!request().getCourseDemand().isAlternative() && request().getCourseDemand().effectiveWaitList()) return true;
 			int alt = 0;
 			for (CourseDemand demand: student().getCourseDemands()) {
 				boolean course = (!demand.getCourseRequests().isEmpty());
@@ -896,7 +946,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					if (assigned) return false;
 					else assigned = true;
 				}
-				boolean waitlist = (course && demand.isWaitlist());
+				boolean waitlist = (course && (demand.effectiveWaitList() || demand.effectiveNoSub()));
 				if (demand.isAlternative()) {
 					if (assigned)
 						alt --;
@@ -989,7 +1039,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					}
 					return false;
 				} else if (eq("Wait-Listed", term)) {
-					return enrollment().isEmpty() && request().getCourseDemand().isWaitlist();
+					return enrollment().isEmpty() && request().getCourseDemand().effectiveWaitList();
 				} else if (eq("Critical", term)) {
 					return request().getCourseDemand().getEffectiveCritical() == Critical.CRITICAL;
 				} else if (eq("Assigned Critical", term)) {
@@ -1014,6 +1064,12 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 						return true;
 					}
 					return false;
+				} else if (eq("No-Subs", term) || eq("No-Substitutes", term)) {
+					return request().getCourseDemand().effectiveNoSub();
+				} else if (eq("Assigned No-Subs", term) || eq("Assigned  No-Substitutes", term)) {
+					return !enrollment().isEmpty() && request().getCourseDemand().effectiveNoSub();
+				} else if (eq("Not Assigned No-Subs", term) || eq("Not Assigned No-Substitutes", term)) {
+					return enrollment().isEmpty() && request().getCourseDemand().effectiveNoSub();
 				}
 			}
 			
@@ -1026,7 +1082,14 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			
 			if ("waitlisted".equals(attr) || "waitlist".equals(attr)) {
 				if (eq("true", term) || eq("1",term))
-					return enrollment().isEmpty() && request().getCourseDemand().isWaitlist();
+					return enrollment().isEmpty() && request().getCourseDemand().effectiveWaitList();
+				else
+					return !enrollment().isEmpty();
+			}
+			
+			if ("no-sub".equals(attr) || "no-substitution".equals(attr)) {
+				if (eq("true", term) || eq("1",term))
+					return enrollment().isEmpty() && request().getCourseDemand().effectiveNoSub();
 				else
 					return !enrollment().isEmpty();
 			}
@@ -1143,6 +1206,249 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					}
 				}
 				return min <= credit && credit <= max;
+			}
+			
+			if ("rc".equals(attr) || "requested-credit".equals(attr)) {
+				int min = 0, max = Integer.MAX_VALUE;
+				Credit prefix = Credit.eq;
+				String number = term;
+				if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+				else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+				else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+				else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+				else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+				try {
+					int a = Integer.parseInt(number);
+					switch (prefix) {
+						case eq: min = max = a; break; // = a
+						case le: max = a; break; // <= a
+						case ge: min = a; break; // >= a
+						case lt: max = a - 1; break; // < a
+						case gt: min = a + 1; break; // > a
+					}
+				} catch (NumberFormatException e) {}
+				if (term.contains("..")) {
+					try {
+						String a = term.substring(0, term.indexOf('.'));
+						String b = term.substring(term.indexOf("..") + 2);
+						min = Integer.parseInt(a); max = Integer.parseInt(b);
+					} catch (NumberFormatException e) {}
+				}
+				if (min == 0 && max == Integer.MAX_VALUE) return true;
+				float studentMinTot = 0f, studentMaxTot = 0f;
+				int nrCoursesTot = 0;
+				List<Float> minsTot = new ArrayList<Float>();
+				List<Float> maxsTot = new ArrayList<Float>();
+				Set<Long> advisorWaitListedCourseIds = student().getAdvisorWaitListedCourseIds(null);
+				for (CourseDemand demand: student().getCourseDemands()) {
+					if (!demand.getCourseRequests().isEmpty()) {
+						Float minTot = null, maxTot = null;
+						for (CourseRequest r: demand.getCourseRequests()) {
+							CourseCreditUnitConfig c = r.getCourseOffering().getCredit();
+							if (c != null) {
+								if (minTot == null || minTot > c.getMinCredit()) minTot = c.getMinCredit();
+								if (maxTot == null || maxTot < c.getMaxCredit()) maxTot = c.getMaxCredit();
+							}
+						}
+						boolean isWaitList = false;
+						if (!demand.isAlternative()) {
+							if (demand.isWaitListOrNoSub(student().getWaitListMode())) {
+								isWaitList = true;
+							} else if (advisorWaitListedCourseIds != null && !advisorWaitListedCourseIds.isEmpty()) {
+								for (CourseRequest r: demand.getCourseRequests())
+									if (advisorWaitListedCourseIds.contains(r.getCourseOffering().getUniqueId())) {
+										isWaitList = true; break;
+									}
+							}
+						}
+						if (isWaitList) {
+							if (minTot != null) {
+								studentMinTot += minTot; studentMaxTot += maxTot;
+							}
+						} else {
+							if (minTot != null) {
+								minsTot.add(minTot); maxsTot.add(maxTot); 
+								if (!demand.isAlternative()) nrCoursesTot ++;
+							}
+						}
+					}
+				}
+				Collections.sort(minsTot);
+				Collections.sort(maxsTot);
+				for (int i = 0; i < nrCoursesTot; i++) {
+					studentMinTot += minsTot.get(i);
+					studentMaxTot += maxsTot.get(maxsTot.size() - i - 1);
+				}
+				return min <= studentMaxTot && studentMinTot <= max;
+			}
+			
+			if ("fc".equals(attr) || "first-choice-credit".equals(attr)) {
+				int min = 0, max = Integer.MAX_VALUE;
+				Credit prefix = Credit.eq;
+				String number = term;
+				if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+				else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+				else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+				else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+				else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+				try {
+					int a = Integer.parseInt(number);
+					switch (prefix) {
+						case eq: min = max = a; break; // = a
+						case le: max = a; break; // <= a
+						case ge: min = a; break; // >= a
+						case lt: max = a - 1; break; // < a
+						case gt: min = a + 1; break; // > a
+					}
+				} catch (NumberFormatException e) {}
+				if (term.contains("..")) {
+					try {
+						String a = term.substring(0, term.indexOf('.'));
+						String b = term.substring(term.indexOf("..") + 2);
+						min = Integer.parseInt(a); max = Integer.parseInt(b);
+					} catch (NumberFormatException e) {}
+				}
+				if (min == 0 && max == Integer.MAX_VALUE) return true;
+				float credit = 0f;
+				for (CourseDemand demand: student().getCourseDemands()) {
+					if (!demand.getCourseRequests().isEmpty() && !demand.isAlternative()) {
+						for (CourseRequest r: new TreeSet<CourseRequest>(demand.getCourseRequests())) {
+							CourseCreditUnitConfig c = r.getCourseOffering().getCredit();
+							if (c != null) {
+								credit += c.getMinCredit();
+								break;
+							}
+						}
+					}
+				}
+				return min <= credit && credit <= max;
+			}
+			
+			if ("rp".equals(attr)) {
+				if ("subst".equalsIgnoreCase(term)) return request().getCourseDemand().isAlternative();
+				int min = 0, max = Integer.MAX_VALUE;
+				Credit prefix = Credit.eq;
+				String number = term;
+				if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+				else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+				else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+				else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+				else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+				try {
+					int a = Integer.parseInt(number);
+					switch (prefix) {
+						case eq: min = max = a; break; // = a
+						case le: max = a; break; // <= a
+						case ge: min = a; break; // >= a
+						case lt: max = a - 1; break; // < a
+						case gt: min = a + 1; break; // > a
+					}
+				} catch (NumberFormatException e) {}
+				if (term.contains("..")) {
+					try {
+						String a = term.substring(0, term.indexOf('.'));
+						String b = term.substring(term.indexOf("..") + 2);
+						min = Integer.parseInt(a); max = Integer.parseInt(b);
+					} catch (NumberFormatException e) {}
+				}
+				if (min == 0 && max == Integer.MAX_VALUE) return true;
+				return !request().getCourseDemand().isAlternative() && min <= request().getCourseDemand().getPriority() + 1 && request().getCourseDemand().getPriority() + 1 <= max;
+			}
+			
+			if ("choice".equals(attr) || "ch".equals(attr)) {
+				int min = 0, max = Integer.MAX_VALUE;
+				Credit prefix = Credit.eq;
+				String number = term;
+				if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+				else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+				else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+				else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+				else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+				try {
+					int a = Integer.parseInt(number);
+					switch (prefix) {
+						case eq: min = max = a; break; // = a
+						case le: max = a; break; // <= a
+						case ge: min = a; break; // >= a
+						case lt: max = a - 1; break; // < a
+						case gt: min = a + 1; break; // > a
+					}
+				} catch (NumberFormatException e) {}
+				if (term.contains("..")) {
+					try {
+						String a = term.substring(0, term.indexOf('.'));
+						String b = term.substring(term.indexOf("..") + 2);
+						min = Integer.parseInt(a); max = Integer.parseInt(b);
+					} catch (NumberFormatException e) {}
+				}
+				if (min == 0 && max == Integer.MAX_VALUE) return true;
+				if (enrollment() != null) {
+					int choice = request().getOrder() + 1;
+					return min <= choice && choice <= max;
+				} else if (!request().getCourseDemand().isAlternative()) {
+					int choice = request().getCourseDemand().getCourseRequests().size();
+					return min <= choice && choice <= max;
+				} else {
+					return false;
+				}
+			}
+			
+			if ("online".equals(attr) || "face-to-face".equals(attr) || "f2f".equals(attr) || "no-time".equals(attr) || "has-time".equals(attr)) {
+				int min = 0, max = Integer.MAX_VALUE;
+				Credit prefix = Credit.eq;
+				String number = term;
+				if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+				else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+				else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+				else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+				else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+				boolean perc = false;
+				if (number.endsWith("%")) { perc = true; number = number.substring(0, number.length() - 1).trim(); }
+				try {
+					int a = Integer.parseInt(number);
+					switch (prefix) {
+						case eq: min = max = a; break; // = a
+						case le: max = a; break; // <= a
+						case ge: min = a; break; // >= a
+						case lt: max = a - 1; break; // < a
+						case gt: min = a + 1; break; // > a
+					}
+				} catch (NumberFormatException e) {}
+				if (term.contains("..")) {
+					try {
+						String a = term.substring(0, term.indexOf('.'));
+						String b = term.substring(term.indexOf("..") + 2);
+						min = Integer.parseInt(a); max = Integer.parseInt(b);
+					} catch (NumberFormatException e) {}
+				}
+				if (min == 0 && max == Integer.MAX_VALUE) return true;
+				int match = 0, total = 0;
+				for (StudentClassEnrollment section: student().getClassEnrollments()) {
+					Assignment assignment = section.getClazz().getCommittedAssignment();
+					boolean online = true;
+			        if (assignment != null) {
+			        	for (Location loc: assignment.getRooms())
+			        		if (!loc.isIgnoreRoomCheck()) {
+			        			online = false; break;
+			        		}
+			        }
+					if ("online".equals(attr) && online) {
+						match ++;
+					} else if (("face-to-face".equals(attr) || "f2f".equals(attr)) && !online)
+						match ++;
+					else if ("no-time".equals(attr) && assignment == null)
+						match ++;
+					else if ("has-time".equals(attr) && assignment != null)
+						match ++;
+					total ++;
+				}
+				if (total == 0) return false;
+				if (perc) {
+					double percentage = 100.0 * match / total;
+					return min <= percentage && percentage <= max;
+				} else {
+					return min <= match && match <= max;
+				}
 			}
 			
 			if ("overlap".equals(attr)) {

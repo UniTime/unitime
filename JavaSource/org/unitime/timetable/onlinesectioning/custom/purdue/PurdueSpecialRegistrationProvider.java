@@ -61,6 +61,7 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentEnrollmentMessage;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideIntent;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.comparators.ClassComparator;
@@ -77,6 +78,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse;
@@ -120,11 +122,14 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CheckRestrictionsRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CheckRestrictionsResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CompletionStatus;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Crn;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.DeniedRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.EligibilityProblem;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.IncludeReg;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Problem;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.RequestorRole;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ResponseStatus;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.RestrictionsCheckRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistration;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationAvailableGradeMode;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationCancelResponse;
@@ -137,6 +142,7 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SubmitRegistrationResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ValidationMode;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ValidationOperation;
 import org.unitime.timetable.onlinesectioning.custom.purdue.XEInterface.CourseReferenceNumber;
 import org.unitime.timetable.onlinesectioning.custom.purdue.XEInterface.RegisterAction;
 import org.unitime.timetable.onlinesectioning.custom.purdue.XEInterface.RegistrationGradingMode;
@@ -412,6 +418,16 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 	
 	protected void buildChangeList(SpecialRegistration request, OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, Collection<ClassAssignmentInterface.ClassAssignment> assignment, Collection<ErrorMessage> errors, Float credit) {
 		request.changes = new ArrayList<Change>();
+		RestrictionsCheckRequest validation = new RestrictionsCheckRequest();
+		validation.includeReg = IncludeReg.Y;
+		validation.campus = getBannerCampus(server.getAcademicSession());
+		validation.term = getBannerTerm(server.getAcademicSession());
+		validation.sisId = getBannerId(student);
+		validation.mode = ValidationMode.REG;
+		validation.actions = new HashMap<ValidationOperation, List<Crn>>();
+		validation.actions.put(ValidationOperation.ADD, new ArrayList<Crn>());
+		validation.actions.put(ValidationOperation.DROP, new ArrayList<Crn>());
+		
 		float maxCredit = 0f;
 		Map<XCourse, List<XSection>> enrollments = new HashMap<XCourse, List<XSection>>();
 		Map<Long, XOffering> offerings = new HashMap<Long, XOffering>();
@@ -485,6 +501,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								ch.operation = ChangeOperation.ADD;
 								ch.credit = course.getCreditAbbv();
 								if (crns.add(ch.crn)) request.changes.add(ch);
+								SpecialRegistrationHelper.addCrn(validation, ch.crn);
 							}
 						}
 						for (Long id: enrollment.getSectionIds()) {
@@ -497,6 +514,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								ch.operation = ChangeOperation.DROP;
 								ch.credit = course.getCreditAbbv();
 								if (crns.add(ch.crn)) request.changes.add(ch);
+								SpecialRegistrationHelper.dropCrn(validation, ch.crn);
 							}
 						}
 						continue check;
@@ -513,6 +531,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				ch.operation = ChangeOperation.ADD;
 				ch.credit = course.getCreditAbbv();
 				if (crns.add(ch.crn)) request.changes.add(ch);
+				SpecialRegistrationHelper.addCrn(validation, ch.crn);
 			}
 		}
 		
@@ -532,6 +551,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							ch.operation = ChangeOperation.DROP;
 							ch.credit = course.getCreditAbbv();
 							if (crns.add(ch.crn)) request.changes.add(ch);
+							SpecialRegistrationHelper.dropCrn(validation, ch.crn);
 						}
 				}
 			}
@@ -576,6 +596,9 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		if (credit != null && credit > maxCredit) maxCredit = credit;
 		if (maxi || (student.getMaxCredit() != null && student.getMaxCredit() < maxCredit))
 			request.maxCredit = maxCredit;
+		
+		if (!SpecialRegistrationHelper.isEmpty(validation))
+			request.validation = validation;
 	}
 	
 	protected CourseRequest.CourseRequestOverrideIntent combine(Change change, CourseRequest.CourseRequestOverrideIntent oldIntent) {
@@ -815,6 +838,27 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			}
 		}
 		
+		if (ret.hasErrors())
+			for (XRequest request: student.getRequests()) {
+				if (request instanceof XCourseRequest) {
+					XCourseRequest cr = (XCourseRequest) request;
+					if (cr.getEnrollment() == null && !cr.isAlternative() && cr.isWaitlist() && student.getWaitListMode(helper) == WaitListMode.WaitList) {
+						for (XCourseId course: cr.getCourseIds()) {
+							boolean hasError = false;
+							for (ErrorMessage err: ret.getErrors()) {
+								if (course.getCourseName().equals(err.getCourse())) { hasError = true; break; }
+							}
+							if (hasError) {
+								XOffering offering = server.getOffering(course.getOfferingId());
+								if (offering == null || !offering.isWaitList()) continue;
+								denied.add(new ErrorMessage(course.getCourseName(), "", "UT_WAIT", "Course is wait-listed, Wait-List override needs to be requested instead."));
+								ret.setCanSubmit(false);
+							}
+						}
+					}
+				}
+			}
+		
 		Set<String> denials = new HashSet<String>();
 		if (resp.deniedRequests != null && !resp.deniedRequests.isEmpty()) {
 			for (DeniedRequest r: resp.deniedRequests) {
@@ -930,12 +974,13 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					if (r.requestorNotes == null) r.requestorNotes = input.getNote();
 					if (r.maxCredit == null && request.maxCredit != null) r.maxCredit = request.maxCredit;
 					ret.addRequest(convert(server, helper, student, r, false));
-					if (r.cancelledRequests != null)
-						for (CancelledRequest c: r.cancelledRequests)
-							ret.addCancelledRequest(c.regRequestId);
 				}
 			} else {
 				ret.setSuccess(false);
+			}
+			if (response.cancelledRequests != null) {
+				for (CancelledRequest c: response.cancelledRequests)
+					ret.addCancelledRequest(c.regRequestId);
 			}
 			
 			if (isUpdateUniTimeStatuses() && response.data != null && !response.data.isEmpty()) {
@@ -970,20 +1015,22 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							}
 						}
 					if (r.maxCredit != null) {
-						student.setMaxCreditOverride(new XOverride(r.regRequestId, r.dateCreated == null ? new Date() : r.dateCreated.toDate(), maxiStatus != null ? toStatus(maxiStatus) : toStatus(r)));
 						Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
-						if (dbStudent != null) {
+						if (dbStudent != null && dbStudent.getMaxCreditOverrideIntent() != CourseRequestOverrideIntent.WAITLIST) {
 							dbStudent.setOverrideStatus(maxiStatus != null ? toStatus(maxiStatus) : toStatus(r));
 							dbStudent.setOverrideMaxCredit(r.maxCredit);
 							dbStudent.setOverrideExternalId(r.regRequestId);
 							dbStudent.setOverrideTimeStamp(r.dateCreated == null ? new Date() : r.dateCreated.toDate());
+							dbStudent.setOverrideIntent(null);
 							helper.getHibSession().update(dbStudent);
+							student.setMaxCreditOverride(new XOverride(r.regRequestId, r.dateCreated == null ? new Date() : r.dateCreated.toDate(), maxiStatus != null ? toStatus(maxiStatus) : toStatus(r)));
+							studentChanged = true;
 						}
-						studentChanged = true;
 					}
 					for (Map.Entry<String, Set<String>> e: course2errors.entrySet()) {
 						XCourseRequest cr = student.getRequestForCourseName(e.getKey());
 						if (cr != null) {
+							if (cr.isWaitlist() && !cr.isAlternative() && cr.getEnrollment() == null) continue; // ignore wait-listed requests -> wait-list validator takes care of those
 							String message = "";
 							for (String m: e.getValue()) message += (m.isEmpty() ? "" : "\n") + m;
 							if (message.length() > 255)
@@ -1386,7 +1433,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			for (Change change: specialRequest.changes) {
 				if (change.errors != null)
 					for (ChangeError err: change.errors)
-						if ("MAXI".equals(err.code)) {
+						if ("MAXI".equals(err.code) && (change.crn == null || change.crn.isEmpty())) {
 							maxi = err.message;
 							maxStatus = change.status;
 							maxiNote = SpecialRegistrationHelper.getLastNote(change);
@@ -2034,29 +2081,31 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					}
 				}
 				if (student.getMaxCreditOverride() != null && !requestIds.contains(student.getMaxCreditOverride().getExternalId())) {
-					student.setMaxCreditOverride(null);
 					Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
-					if (dbStudent != null) {
+					if (dbStudent != null && dbStudent.getMaxCreditOverrideIntent() != CourseRequestOverrideIntent.WAITLIST) {
 						dbStudent.setOverrideStatus(null);
 						dbStudent.setOverrideMaxCredit(null);
 						dbStudent.setOverrideExternalId(null);
 						dbStudent.setOverrideTimeStamp(null);
+						dbStudent.setOverrideIntent(null);
 						helper.getHibSession().update(dbStudent);
+						student.setMaxCreditOverride(null);
+						studentChanged = true;
 					}
-					studentChanged = true;
 				}
 				for (XRequest request: student.getRequests()) {
 					if (request instanceof XCourseRequest) {
 						XCourseRequest cr = (XCourseRequest)request;
-						if (cr.hasOverrides())
-								for (Iterator<Map.Entry<XCourseId, XOverride>> i = cr.getOverrides().entrySet().iterator(); i.hasNext(); ) {
-									Map.Entry<XCourseId, XOverride> e = i.next();
-									if (!requestIds.contains(e.getValue().getExternalId())) {
-										i.remove();
-										CourseDemand dbCourseDemand = CourseDemandDAO.getInstance().get(cr.getRequestId(), helper.getHibSession());
+						if (cr.hasOverrides()) {
+							overrides: for (Iterator<Map.Entry<XCourseId, XOverride>> i = cr.getOverrides().entrySet().iterator(); i.hasNext(); ) {
+								Map.Entry<XCourseId, XOverride> e = i.next();
+								if (!requestIds.contains(e.getValue().getExternalId())) {
+									CourseDemand dbCourseDemand = CourseDemandDAO.getInstance().get(cr.getRequestId(), helper.getHibSession());
 									if (dbCourseDemand != null) {
 										for (CourseRequest dbCourseRequest: dbCourseDemand.getCourseRequests()) {
 											if (dbCourseRequest.getCourseOffering().getUniqueId().equals(e.getKey().getCourseId())) {
+												if (dbCourseRequest.getCourseRequestOverrideIntent() == CourseRequestOverrideIntent.WAITLIST)
+													continue overrides;
 												dbCourseRequest.setOverrideStatus(null);
 												dbCourseRequest.setOverrideExternalId(null);
 												dbCourseRequest.setOverrideTimeStamp(null);
@@ -2065,10 +2114,12 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 											}
 										}
 									}
-										studentChanged = true;
-									}
-									
+									i.remove();
+									studentChanged = true;
 								}
+								
+							}
+						}
 					}
 				}
 				if (studentChanged) {
@@ -2866,7 +2917,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 	protected boolean isDashboardEnabled(org.unitime.timetable.model.Student student) {
 		if (student == null) return false;
 		StudentSectioningStatus status = student.getEffectiveStatus();
-		return status == null || status.hasOption(StudentSectioningStatus.Option.specreg) || status.hasOption(StudentSectioningStatus.Option.reqval);
+		return status != null && (status.hasOption(StudentSectioningStatus.Option.specreg) || status.hasOption(StudentSectioningStatus.Option.reqval));
 	}
 	
 	protected boolean isDashboardEnabled(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) {
@@ -2875,7 +2926,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		if (status == null) status = server.getAcademicSession().getDefaultSectioningStatus();
 		if (status == null) return true;
 		StudentSectioningStatus dbStatus = StudentSectioningStatus.getPresentStatus(status, server.getAcademicSession().getUniqueId(), helper.getHibSession());
-		return dbStatus != null && dbStatus.hasOption(StudentSectioningStatus.Option.specreg) || dbStatus.hasOption(StudentSectioningStatus.Option.reqval);
+		return dbStatus != null && (dbStatus.hasOption(StudentSectioningStatus.Option.specreg) || dbStatus.hasOption(StudentSectioningStatus.Option.reqval));
 	}
 
 	@Override

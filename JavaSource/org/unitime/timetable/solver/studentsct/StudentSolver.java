@@ -50,6 +50,7 @@ import org.cpsolver.ifs.model.Constraint;
 import org.cpsolver.ifs.model.Model;
 import org.cpsolver.ifs.solution.Solution;
 import org.cpsolver.ifs.solver.Solver;
+import org.cpsolver.ifs.termination.TerminationCondition;
 import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.Callback;
 import org.cpsolver.ifs.util.DataProperties;
@@ -181,12 +182,17 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	protected ProblemLoader<Request, Enrollment, StudentSectioningModel> getDatabaseLoader(StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
 		try {
 			String loaderClass = getProperties().getProperty("General.DatabaseLoader", StudentSectioningDatabaseLoader.class.getName());
-			if (loaderClass != null && !loaderClass.isEmpty())
-				return (ProblemLoader<Request, Enrollment, StudentSectioningModel>) Class.forName(loaderClass).getConstructor(StudentSectioningModel.class, Assignment.class).newInstance(model, assignment);
+			if (loaderClass != null && !loaderClass.isEmpty()) {
+				try {
+					return (ProblemLoader<Request, Enrollment, StudentSectioningModel>) Class.forName(loaderClass).getConstructor(StudentSolver.class, StudentSectioningModel.class, Assignment.class).newInstance(this, model, assignment);
+				} catch (NoSuchMethodException e) {
+					return (ProblemLoader<Request, Enrollment, StudentSectioningModel>) Class.forName(loaderClass).getConstructor(StudentSectioningModel.class, Assignment.class).newInstance(model, assignment);
+				}
+			}
 		} catch (Exception e) {
 			iProgress.error("Failed to create a custom database loader: " + e.getMessage(), e);
 		}
-		return new StudentSectioningDatabaseLoader(model, assignment);
+		return new StudentSectioningDatabaseLoader(this, model, assignment);
 	}
 	
 	@Override
@@ -1119,6 +1125,12 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 		if (getProperties().getPropertyBoolean("General.Validate",false) && isCanValidate()) {
 			ProblemSaver<Request, Enrollment, StudentSectioningModel> saver = getCustomValidator(this); 
 			java.util.concurrent.locks.Lock lock = currentSolution().getLock().readLock();
+			saver.setTerminationCondition(new TerminationCondition<Request, Enrollment>() {
+				@Override
+				public boolean canContinue(Solution<Request, Enrollment> currentSolution) {
+					return !isStop();
+				}
+			});
             lock.lock();
             try {
                 saver.save();

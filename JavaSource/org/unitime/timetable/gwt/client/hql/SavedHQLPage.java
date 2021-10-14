@@ -24,9 +24,11 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.admin.ScriptPage.DateTimeBox;
@@ -34,16 +36,20 @@ import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
+import org.unitime.timetable.gwt.client.sectioning.StudentStatusDialog;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.TimeSelector;
+import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasStyleName;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseBoolean;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseLong;
@@ -53,9 +59,14 @@ import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.services.SectioningService;
+import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface.HQLDeleteRpcRequest;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface.HQLExecuteRpcRequest;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface.HQLOptionsInterface;
@@ -80,6 +91,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
@@ -87,6 +99,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Image;
@@ -104,6 +117,9 @@ public class SavedHQLPage extends Composite {
 	protected static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	protected static final GwtResources RESOURCES = GWT.create(GwtResources.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+
+	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
+	protected static final StudentSectioningMessages SCT_MSG = GWT.create(StudentSectioningMessages.class);
 	
 	private SimpleForm iForm = null;
 	private UniTimeHeaderPanel iHeader = null, iFooter = null, iTableHeader = null, iTableFooter = null;
@@ -121,6 +137,12 @@ public class SavedHQLPage extends Composite {
 	private int iLastSort = 0;
 	private String iLastHistory = null;
 	private int iParametersRow = -1;
+
+	private SectioningProperties iSectioningProperties = null;
+	private Set<Long> iSelectedStudentIds = new HashSet<Long>();
+	private Set<StudentStatusInfo> iStates = null;
+	private StudentStatusDialog iStudentStatusDialog = null;
+	private Map<Long, List<CheckBox>> iStudentId2Checks = new HashMap<Long, List<CheckBox>>();
 	
 	public SavedHQLPage() {
 		iAppearance = Window.Location.getParameter("appearance");
@@ -149,6 +171,7 @@ public class SavedHQLPage extends Composite {
 			public void onClick(ClickEvent event) {
 				iFirstLine = 0;
 				iLastSort = 0;
+				iSelectedStudentIds.clear();
 				execute();
 			}
 		});
@@ -591,8 +614,12 @@ public class SavedHQLPage extends Composite {
 						ToolBox.open(GWT.getHostPageBaseURL() + "examDetail.do?examId=" + event.getData()[0]);
 					else if ("__Event".equals(iFirstField))
 						ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=events#event=" + event.getData()[0]);
-					else if ("__Student".equals(iFirstField))
-						new EnrollmentTable(false, true).showStudentSchedule(Long.valueOf(event.getData()[0]));
+					else if ("__Student".equals(iFirstField)) {
+						EnrollmentTable et = new EnrollmentTable(false, true);
+						et.setAdvisorRecommendations(iSectioningProperties != null && iSectioningProperties.isAdvisorCourseRequests());
+						et.setEmail(iSectioningProperties != null && iSectioningProperties.isEmail());
+						et.showStudentSchedule(Long.valueOf(event.getData()[0]));
+					}
 				}
 			}
 		});
@@ -604,6 +631,36 @@ public class SavedHQLPage extends Composite {
 			public void onValueChange(ValueChangeEvent<String> event) {
 				reload(event.getValue());
 			}
+		});
+		
+		iSectioningService.getProperties(null, new AsyncCallback<SectioningProperties>() {
+			@Override
+			public void onSuccess(SectioningProperties result) {
+				iSectioningProperties = result;
+				iSectioningService.lookupStudentSectioningStates(new AsyncCallback<List<StudentStatusInfo>>() {
+
+					@Override
+					public void onFailure(Throwable caught) {
+					}
+
+					@Override
+					public void onSuccess(List<StudentStatusInfo> result) {
+						iStates = new TreeSet<StudentStatusInfo>(result);
+						iStudentStatusDialog = new StudentStatusDialog(iStates, new StudentStatusDialog.StudentStatusConfirmation() {
+							@Override
+							public boolean isAllMyStudents() {
+								return false;
+							}
+							@Override
+							public int getStudentCount() {
+								return iSelectedStudentIds.size();
+							}
+						});
+					}
+				});
+			}
+			@Override
+			public void onFailure(Throwable caught) {}
 		});
 	}
 	
@@ -1146,6 +1203,7 @@ public class SavedHQLPage extends Composite {
 	}
 	
 	public void populate(Table result) {
+		iStudentId2Checks.clear();
 		if (result == null || result.size() <= 1) {
 			iTableHeader.setMessage(MESSAGES.errorNoResults());
 			iTableHeader.setEnabled("next", false);
@@ -1194,10 +1252,410 @@ public class SavedHQLPage extends Composite {
 						line.add(new HTML(x == null ? "" : x.replace("\\n", "<br>")));
 					}
 				}
+				if (iSectioningProperties != null && "__Student".equals(iFirstField) && iSectioningProperties.isCanSelectStudent()) {
+					if (i == 0) {
+						UniTimeTableHeader hSelect = new UniTimeTableHeader("&otimes;", HasHorizontalAlignment.ALIGN_CENTER);
+						line.set(0, hSelect);
+						hSelect.setWidth("10px");
+						hSelect.addAdditionalStyleName("unitime-CheckBoxColumn");
+						hSelect.addOperation(new Operation() {
+							@Override
+							public String getName() {
+								return SCT_MSG.selectAll();
+							}
+							@Override
+							public boolean hasSeparator() {
+								return false;
+							}
+							@Override
+							public boolean isApplicable() {
+								return iSelectedStudentIds.size() != iTable.getRowCount() - 1;
+							}
+							@Override
+							public void execute() {
+								iSelectedStudentIds.clear();
+								for (int row = 0; row < iTable.getRowCount(); row++) {
+									Widget w = iTable.getWidget(row, 0);
+									if (w instanceof CheckBox) {
+										((CheckBox)w).setValue(true);
+										iSelectedStudentIds.add(Long.valueOf(iTable.getData(row)[0]));
+									}
+								}
+							}
+						});
+						hSelect.addOperation(new Operation() {
+							@Override
+							public String getName() {
+								return SCT_MSG.clearAll();
+							}
+							@Override
+							public boolean hasSeparator() {
+								return false;
+							}
+							@Override
+							public boolean isApplicable() {
+								return iSelectedStudentIds.size() > 0;
+							}
+							@Override
+							public void execute() {
+								iSelectedStudentIds.clear();
+								for (int row = 0; row < iTable.getRowCount(); row++) {
+									Widget w = iTable.getWidget(row, 0);
+									if (w instanceof CheckBox) {
+										((CheckBox)w).setValue(false);
+									}
+								}
+							}
+						});
+						hSelect.addOperation(new Operation() {
+							@Override
+							public String getName() {
+								return SCT_MSG.sendStudentEmail();
+							}
+							@Override
+							public boolean hasSeparator() {
+								return true;
+							}
+							@Override
+							public boolean isApplicable() {
+								return iSelectedStudentIds.size() > 0 && iStudentStatusDialog != null && iSectioningProperties.isEmail();
+							}
+							@Override
+							public void execute() {
+								iStudentStatusDialog.sendStudentEmail(new Command() {
+									@Override
+									public void execute() {
+										List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
+										LoadingWidget.getInstance().show(MESSAGES.waitSendingEmail());
+										sendEmail(studentIds.iterator(), iStudentStatusDialog.getSubject(), iStudentStatusDialog.getMessage(), iStudentStatusDialog.getCC(), 0,
+												iStudentStatusDialog.getIncludeCourseRequests(), iStudentStatusDialog.getIncludeClassSchedule(), iStudentStatusDialog.getIncludeAdvisorRequests(),
+												iStudentStatusDialog.isOptionalEmailToggle());
+									}
+								}, iSectioningProperties.getEmailOptionalToggleCaption(), iSectioningProperties.getEmailOptionalToggleDefault());
+							}
+						});
+						hSelect.addOperation(new Operation() {
+							@Override
+							public String getName() {
+								return SCT_MSG.massCancel();
+							}
+							@Override
+							public boolean hasSeparator() {
+								return false;
+							}
+							@Override
+							public boolean isApplicable() {
+								return iSelectedStudentIds.size() > 0 && iSectioningProperties != null && iSectioningProperties.isMassCancel() && iStudentStatusDialog != null;
+							}
+							@Override
+							public void execute() {
+								iStudentStatusDialog.massCancel(new Command() {
+									@Override
+									public void execute() {
+										UniTimeConfirmationDialog.confirmFocusNo(SCT_MSG.massCancelConfirmation(), new Command() {
+											@Override
+											public void execute() {
+												final List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
+												LoadingWidget.getInstance().show(SCT_MSG.massCanceling());
+												iSectioningService.massCancel(studentIds, iStudentStatusDialog.getStatus(),
+														iStudentStatusDialog.getSubject(), iStudentStatusDialog.getMessage(), iStudentStatusDialog.getCC(), new AsyncCallback<Boolean>() {
+													@Override
+													public void onFailure(Throwable caught) {
+														LoadingWidget.getInstance().hide();
+														UniTimeNotifications.error(caught);
+													}
+
+													@Override
+													public void onSuccess(Boolean result) {
+														LoadingWidget.getInstance().hide();
+													}
+												});									
+											}
+										});
+									}
+								});
+							}
+						});
+						hSelect.addOperation(new Operation() {
+							@Override
+							public String getName() {
+								return SCT_MSG.reloadStudent();
+							}
+							@Override
+							public boolean hasSeparator() {
+								return true;
+							}
+							@Override
+							public boolean isApplicable() {
+								return iSelectedStudentIds.size() > 0 && iSectioningProperties != null && iSectioningProperties.isReloadStudent();
+							}
+							@Override
+							public void execute() {
+								List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
+								LoadingWidget.getInstance().show(SCT_MSG.reloadingStudent());
+								iSectioningService.reloadStudent(studentIds, new AsyncCallback<Boolean>() {
+									@Override
+									public void onFailure(Throwable caught) {
+										LoadingWidget.getInstance().hide();
+										UniTimeNotifications.error(caught);
+									}
+
+									@Override
+									public void onSuccess(Boolean result) {
+										LoadingWidget.getInstance().hide();
+										UniTimeNotifications.info(SCT_MSG.reloadStudentSuccess());
+									}
+								});
+							}
+						});
+						hSelect.addOperation(new Operation() {
+							@Override
+							public String getName() {
+								return SCT_MSG.requestStudentUpdate();
+							}
+							@Override
+							public boolean hasSeparator() {
+								return !iSectioningProperties.isReloadStudent();
+							}
+							@Override
+							public boolean isApplicable() {
+								return iSelectedStudentIds.size() > 0 && iSectioningProperties != null && iSectioningProperties.isRequestUpdate();
+							}
+							@Override
+							public void execute() {
+								List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
+								LoadingWidget.getInstance().show(SCT_MSG.requestingStudentUpdate());
+								iSectioningService.requestStudentUpdate(studentIds, new AsyncCallback<Boolean>() {
+									@Override
+									public void onFailure(Throwable caught) {
+										LoadingWidget.getInstance().hide();
+										UniTimeNotifications.error(caught);
+									}
+
+									@Override
+									public void onSuccess(Boolean result) {
+										LoadingWidget.getInstance().hide();
+										UniTimeNotifications.info(SCT_MSG.requestStudentUpdateSuccess());
+									}
+								});
+							}
+						});
+						hSelect.addOperation(new Operation() {
+							@Override
+							public String getName() {
+								return SCT_MSG.checkOverrideStatus();
+							}
+							@Override
+							public boolean hasSeparator() {
+								return !iSectioningProperties.isRequestUpdate() && !iSectioningProperties.isReloadStudent();
+							}
+							@Override
+							public boolean isApplicable() {
+								return iSelectedStudentIds.size() > 0 && iSectioningProperties != null && iSectioningProperties.isCheckStudentOverrides();
+							}
+							@Override
+							public void execute() {
+								List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
+								LoadingWidget.getInstance().show(SCT_MSG.checkingOverrideStatus());
+								iSectioningService.checkStudentOverrides(studentIds, new AsyncCallback<Boolean>() {
+									@Override
+									public void onFailure(Throwable caught) {
+										LoadingWidget.getInstance().hide();
+										UniTimeNotifications.error(caught);
+									}
+
+									@Override
+									public void onSuccess(Boolean result) {
+										LoadingWidget.getInstance().hide();
+										UniTimeNotifications.info(SCT_MSG.checkStudentOverridesSuccess());
+									}
+								});
+							}
+						});
+						hSelect.addOperation(new Operation() {
+							@Override
+							public String getName() {
+								return SCT_MSG.validateStudentOverrides();
+							}
+							@Override
+							public boolean hasSeparator() {
+								return !iSectioningProperties.isRequestUpdate() && !iSectioningProperties.isCheckStudentOverrides() && !iSectioningProperties.isReloadStudent();
+							}
+							@Override
+							public boolean isApplicable() {
+								return iSelectedStudentIds.size() > 0 && iSectioningProperties != null && iSectioningProperties.isValidateStudentOverrides();
+							}
+							@Override
+							public void execute() {
+								List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
+								LoadingWidget.getInstance().show(SCT_MSG.validatingStudentOverrides());
+								iSectioningService.validateStudentOverrides(studentIds, new AsyncCallback<Boolean>() {
+									@Override
+									public void onFailure(Throwable caught) {
+										LoadingWidget.getInstance().hide();
+										UniTimeNotifications.error(caught);
+									}
+
+									@Override
+									public void onSuccess(Boolean result) {
+										LoadingWidget.getInstance().hide();
+										UniTimeNotifications.info(SCT_MSG.validateStudentOverridesSuccess());
+									}
+								});
+							}
+						});
+						hSelect.addOperation(new Operation() {
+							@Override
+							public String getName() {
+								return SCT_MSG.validateReCheckCriticalCourses();
+							}
+							@Override
+							public boolean hasSeparator() {
+								return !iSectioningProperties.isRequestUpdate() && !iSectioningProperties.isCheckStudentOverrides() && !iSectioningProperties.isValidateStudentOverrides() && !iSectioningProperties.isReloadStudent();
+							}
+							@Override
+							public boolean isApplicable() {
+								return iSelectedStudentIds.size() > 0 && iSectioningProperties != null && iSectioningProperties.isRecheckCriticalCourses();
+							}
+							@Override
+							public void execute() {
+								List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
+								LoadingWidget.getInstance().show(SCT_MSG.recheckingCriticalCourses());
+								iSectioningService.recheckCriticalCourses(studentIds, new AsyncCallback<Boolean>() {
+									@Override
+									public void onFailure(Throwable caught) {
+										LoadingWidget.getInstance().hide();
+										UniTimeNotifications.error(caught);
+									}
+
+									@Override
+									public void onSuccess(Boolean result) {
+										LoadingWidget.getInstance().hide();
+										UniTimeNotifications.info(SCT_MSG.recheckCriticalCoursesSuccess());
+									}
+								});
+							}
+						});
+						hSelect.addOperation(new Operation() {
+							@Override
+							public String getName() {
+								return SCT_MSG.setStudentStatus();
+							}
+							@Override
+							public boolean hasSeparator() {
+								return true;
+							}
+							@Override
+							public boolean isApplicable() {
+								return iSelectedStudentIds.size() > 0 && iSectioningProperties != null && iSectioningProperties.isChangeStatus() && iStudentStatusDialog != null;
+							}
+							@Override
+							public void execute() {
+								iStudentStatusDialog.setStatus(new Command() {
+									@Override
+									public void execute() {
+										final String statusRef = iStudentStatusDialog.getStatus();
+										if ("-".equals(statusRef)) return;
+										List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
+										LoadingWidget.getInstance().show(SCT_MSG.changingStatusTo(statusRef));
+										iSectioningService.changeStatus(studentIds, null, statusRef, new AsyncCallback<Boolean>() {
+
+											@Override
+											public void onFailure(Throwable caught) {
+												LoadingWidget.getInstance().hide();
+												UniTimeNotifications.error(caught);
+											}
+
+											@Override
+											public void onSuccess(Boolean result) {
+												LoadingWidget.getInstance().hide();
+											}
+										});
+										
+									}
+								});
+							}
+						});
+						hSelect.addOperation(new Operation() {
+							@Override
+							public String getName() {
+								return SCT_MSG.setStudentNote();
+							}
+							@Override
+							public boolean hasSeparator() {
+								return false;
+							}
+							@Override
+							public boolean isApplicable() {
+								return iSelectedStudentIds.size() > 0 && iSectioningProperties != null && iSectioningProperties.isChangeStatus() && iStudentStatusDialog != null;
+							}
+							@Override
+							public void execute() {
+								iStudentStatusDialog.setStudentNote(new Command() {
+									@Override
+									public void execute() {
+										LoadingWidget.getInstance().show(SCT_MSG.changingStudentNote());
+										List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
+										final String statusRef = iStudentStatusDialog.getStatus();
+										final String note = iStudentStatusDialog.getNote();
+										iSectioningService.changeStatus(studentIds, note, statusRef, new AsyncCallback<Boolean>() {
+											@Override
+											public void onFailure(Throwable caught) {
+												LoadingWidget.getInstance().hide();
+												UniTimeNotifications.error(caught);
+											}
+
+											@Override
+											public void onSuccess(Boolean result) {
+												LoadingWidget.getInstance().hide();
+											}
+										});
+									}
+								});
+							}
+						});
+					} else {
+						Toggle ch = new Toggle();
+						ch.addClickHandler(new ClickHandler() {
+							@Override
+							public void onClick(ClickEvent event) {
+								event.stopPropagation();
+							}
+						});
+						ch.addClickHandler(new ClickHandler() {
+							@Override
+							public void onClick(ClickEvent event) {
+								event.stopPropagation();
+							}
+						});
+						final Long sid = Long.valueOf(row[0]);
+						List<CheckBox> toggles = iStudentId2Checks.get(sid);
+						if (toggles == null) {
+							toggles = new ArrayList<CheckBox>();
+							iStudentId2Checks.put(sid, toggles);
+						}
+						toggles.add(ch);
+						ch.setValue(iSelectedStudentIds.contains(sid));
+						ch.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+							@Override
+							public void onValueChange(ValueChangeEvent<Boolean> event) {
+								if (event.getValue())
+									iSelectedStudentIds.add(sid);
+								else
+									iSelectedStudentIds.remove(sid);
+								if (iStudentId2Checks.get(sid).size() > 1)
+									for (CheckBox ch: iStudentId2Checks.get(sid))
+										ch.setValue(event.getValue());
+							}
+						});
+						line.set(0, ch);
+					}
+				}
 				iTable.addRow(i == 0 ? null : row, line);
 			}
 			if (iFirstField != null && iFirstField.startsWith("__"))
-				iTable.setColumnVisible(0, false);
+				iTable.setColumnVisible(0, iSectioningProperties != null && "__Student".equals(iFirstField) && iSectioningProperties.isCanSelectStudent());
+
 			iHeader.setEnabled("print", true);
 			iHeader.setEnabled("export", iTable.getRowCount() > 1);
 			iHeader.setEnabled("exportXls", iTable.getRowCount() > 1);
@@ -1406,5 +1864,32 @@ public class SavedHQLPage extends Composite {
 				LoadingWidget.getInstance().hide();
 			}
 		});		
-	}	
+	}
+	
+	private void sendEmail(final Iterator<Long> studentIds, final String subject, final String message, final String cc, final int fails, final boolean courseRequests, final boolean classSchedule, final boolean advisorRequests, final Boolean toggle) {
+		if (!studentIds.hasNext()) {
+			LoadingWidget.getInstance().hide();
+			if (fails == 0) UniTimeNotifications.info(MESSAGES.emailSent());
+			return;
+		}
+		final Long studentId = studentIds.next();
+		iSectioningService.sendEmail(null, studentId, subject, message, cc, courseRequests, classSchedule, advisorRequests, toggle, new AsyncCallback<Boolean>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				iTableHeader.setErrorMessage(MESSAGES.failedEmail(caught.getMessage()));
+				sendEmail(studentIds, subject, message, cc, fails + 1, courseRequests, classSchedule, advisorRequests, toggle);
+			}
+			@Override
+			public void onSuccess(Boolean result) {
+				sendEmail(studentIds, subject, message, cc, fails, courseRequests, classSchedule, advisorRequests, toggle);
+			}
+		});
+	}
+	
+	private static class Toggle extends CheckBox implements HasStyleName {
+		@Override
+		public String getStyleName() {
+			return "unitime-CheckBoxColumn";
+		}
+	}
 }

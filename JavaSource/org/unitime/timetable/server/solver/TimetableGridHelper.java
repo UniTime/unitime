@@ -61,6 +61,7 @@ public class TimetableGridHelper {
 		DepartmentalBalancing,
 		TooBigRooms,
 		StudentGroups,
+		InstructionalType,
 	}
 	
 	public static enum OrderBy {

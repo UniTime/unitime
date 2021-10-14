@@ -35,6 +35,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CourseMessage;
@@ -43,6 +44,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
@@ -77,7 +79,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	private CheckCoursesResponse iLastCheck;
 	
 	Validator<CourseSelection> iCheckForDuplicities;
-	private boolean iCanWaitList = true;
+	private WaitListMode iWaitListMode = WaitListMode.WaitList;
 	private P iHeader, iHeaderTitle, iHeaderWaitlist;
 	private P iAltHeader, iAltHeaderTitle, iAltHeaderNote;
 	private boolean iArrowsVisible = true;
@@ -203,7 +205,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			line.setNext(next); next.setPrevious(line);
 		}
 		line.setArrowsVisible(iArrowsVisible);
-		line.setWaitListVisible(iCanWaitList);
+		line.setWaitListMode(iWaitListMode);
 		insert(line, 1 + i);
 		line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
 			@Override
@@ -247,11 +249,11 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		});
 	}
 	
-	public void setCanWaitList(boolean canWaitList) {
-		iCanWaitList = canWaitList;
-		iHeaderWaitlist.setVisible(canWaitList);
+	public void setWaitListMode(WaitListMode waitListMode) {
+		iWaitListMode = waitListMode;
+		iHeaderWaitlist.setVisible(iWaitListMode == WaitListMode.WaitList || iWaitListMode == WaitListMode.NoSubs);
 		for (CourseRequestLine line: iCourses)
-			line.setWaitListVisible(canWaitList);
+			line.setWaitListMode(iWaitListMode);
 	}
 	
 	public void setArrowsVisible(boolean arrowsVisible, boolean noSubs) {
@@ -294,53 +296,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			iSectioningService.checkCourses(cr,
 					new AsyncCallback<CheckCoursesResponse>() {
 						public void onSuccess(final CheckCoursesResponse result) {
-							iLastCheck = result;
-							if (iCreditStatusIcon != null) {
-								if (result != null && result.hasCreditWarning()) {
-									String warning = result.getCreditWarning();
-									if (result.getMaxCreditOverrideStatus() != null) {
-										switch (result.getMaxCreditOverrideStatus()) {
-										case CREDIT_HIGH:
-											iCreditStatusIcon.setResource(RESOURCES.requestNeeded());
-											warning += "\n" + MESSAGES.creditStatusTooHigh();
-											break;
-										case OVERRIDE_REJECTED:
-											iCreditStatusIcon.setResource(RESOURCES.requestError());
-											warning += "\n" + MESSAGES.creditStatusDenied();
-											break;
-										default:
-											iCreditStatusIcon.setResource(RESOURCES.requestNeeded());
-											break;
-										}
-									} else {
-										iCreditStatusIcon.setResource(RESOURCES.requestNeeded());
-									}
-									iCreditStatusIcon.setAltText(warning);
-									iCreditStatusIcon.setTitle(warning);
-									iCreditStatusIcon.setVisible(true);
-								} else {
-									iCreditStatusIcon.setVisible(false);
-								}
-							}
-							for (CourseRequestLine line: iCourses) {
-								for (CourseSelectionBox box: line.getCourses()) {
-									String message = box.validate();
-									if (message != null) {
-										RequestedCourse rc = box.getValue();
-										iLastCheck.addError(rc.getCourseId(), rc.getCourseName(), "ERROR", message);
-									}
-								}
-							}
-							for (CourseRequestLine line: iAlternatives) {
-								for (CourseSelectionBox box: line.getCourses()) {
-									String message = box.validate();
-									if (message != null) {
-										RequestedCourse rc = box.getValue();
-										iLastCheck.addError(rc.getCourseId(), rc.getCourseName(), "ERROR", message);
-									}
-								}
-							}
-							setErrors(result);
+							setLastCheck(result);
 							LoadingWidget.getInstance().hide();
 							if (result.isError()) {
 								callback.onFailure(null);
@@ -377,6 +333,56 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		}
 	}
 	
+	public void setLastCheck(CheckCoursesResponse result) {
+		iLastCheck = result;
+		if (iCreditStatusIcon != null) {
+			if (result != null && result.hasCreditWarning()) {
+				String warning = result.getCreditWarning();
+				if (result.getMaxCreditOverrideStatus() != null) {
+					switch (result.getMaxCreditOverrideStatus()) {
+					case CREDIT_HIGH:
+						iCreditStatusIcon.setResource(RESOURCES.requestNeeded());
+						warning += "\n" + MESSAGES.creditStatusTooHigh();
+						break;
+					case OVERRIDE_REJECTED:
+						iCreditStatusIcon.setResource(RESOURCES.requestError());
+						warning += "\n" + MESSAGES.creditStatusDenied();
+						break;
+					default:
+						iCreditStatusIcon.setResource(RESOURCES.requestNeeded());
+						break;
+					}
+				} else {
+					iCreditStatusIcon.setResource(RESOURCES.requestNeeded());
+				}
+				iCreditStatusIcon.setAltText(warning);
+				iCreditStatusIcon.setTitle(warning);
+				iCreditStatusIcon.setVisible(true);
+			} else {
+				iCreditStatusIcon.setVisible(false);
+			}
+		}
+		for (CourseRequestLine line: iCourses) {
+			for (CourseSelectionBox box: line.getCourses()) {
+				String message = box.validate();
+				if (message != null) {
+					RequestedCourse rc = box.getValue();
+					iLastCheck.addError(rc.getCourseId(), rc.getCourseName(), "ERROR", message);
+				}
+			}
+		}
+		for (CourseRequestLine line: iAlternatives) {
+			for (CourseSelectionBox box: line.getCourses()) {
+				String message = box.validate();
+				if (message != null) {
+					RequestedCourse rc = box.getValue();
+					iLastCheck.addError(rc.getCourseId(), rc.getCourseName(), "ERROR", message);
+				}
+			}
+		}
+		setErrors(result);
+	}
+	
 	public void setError(String course, String error) {
 		GWT.log(error);
 		for (CourseRequestLine line: iCourses) {
@@ -399,66 +405,84 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	}
 	
 	protected void setErrors(CourseSelectionBox box, CheckCoursesResponse messages) {
-		String message = null;
-		String itemized = null;
-		for (CourseMessage m: messages.getMessages(box.getText())) {
-			if (message == null) {
-				message = m.getMessage();
-				itemized = MESSAGES.courseMessage(m.getMessage());
-			} else {
-				message += "\n" + m.getMessage();
-				itemized += "\n" + MESSAGES.courseMessage(m.getMessage());
-			}
-		}
-		RequestedCourseStatus status = messages.getStatus(box.getText());
-		if (status == null) status = box.getValue().getStatus();
-		if (status == null && !box.isCanDelete()) status = RequestedCourseStatus.ENROLLED;
-		if (message != null) {
-			String note = "";
-			if (box.getValue().hasRequestorNote()) note += "\n<span class='status-note'>" + box.getValue().getRequestorNote() + "</span>";
-			else if (iSpecReg != null && iSpecReg.isAllowChangeRequestNote() && box.getValue().hasRequestId() && status == RequestedCourseStatus.OVERRIDE_PENDING)
-				note += "\n<span class='status-note'>" + MESSAGES.noRequestNoteClickToChange() + "</span>";
-			if (box.getValue().hasStatusNote()) note += "\n<span class='status-note'>" + box.getValue().getStatusNote() + "</span>";
-			if (messages.isError(box.getText()) || messages.isConfirm(box.getText()))
-				box.setError(message + note);
-			else
-				box.setWarning(message + note);
-		}
-		String note = "";
-		if (box.getValue().hasRequestorNote())
-			note += "\n\n" + MESSAGES.requestNote(box.getValue().getRequestorNote());
-		if (box.getValue().hasStatusNote()) note = "\n\n" + MESSAGES.overrideNote(box.getValue().getStatusNote());
-		if (messages.isError(box.getText()) && (status == null || status != RequestedCourseStatus.OVERRIDE_REJECTED)) {
-			box.setStatus(RESOURCES.requestError(), itemized);
-		} else if (status != null) {
-			switch (status) {
-			case ENROLLED:
-				box.setStatus(RESOURCES.requestEnrolled(), MESSAGES.enrolled(box.getText()) + note);
-				break;
-			case OVERRIDE_NEEDED:
-				box.setStatus(RESOURCES.requestNeeded(), (itemized == null ? "" : MESSAGES.overrideNeeded(itemized)) + note);
-				break;
-			case SAVED:
-				box.setStatus(RESOURCES.requestSaved(), (itemized == null ? "" : MESSAGES.requestWarnings(itemized) + "\n\n") + MESSAGES.requested(box.getText()) + note);
-				break;				
-			case OVERRIDE_REJECTED:
-				box.setStatus(RESOURCES.requestRejected(), (itemized == null ? "" : MESSAGES.requestWarnings(itemized) + "\n\n") + MESSAGES.overrideRejected(box.getText()) + note);
-				break;
-			case OVERRIDE_PENDING:
-				box.setStatus(RESOURCES.requestPending(), (itemized == null ? "" : MESSAGES.requestWarnings(itemized) + "\n\n") + MESSAGES.overridePending(box.getText()) + note);
-				break;
-			case OVERRIDE_CANCELLED:
-				box.setStatus(RESOURCES.requestCancelled(), (itemized == null ? "" : MESSAGES.requestWarnings(itemized) + "\n\n") + MESSAGES.overrideCancelled(box.getText()) + note);
-				break;
-			case OVERRIDE_APPROVED:
-				box.setStatus(RESOURCES.requestSaved(), (itemized == null ? "" : MESSAGES.requestWarnings(itemized) + "\n\n") + MESSAGES.overrideApproved(box.getText()) + note);
-				break;
-			default:
-				if (messages.isError(box.getText()))
-					box.setStatus(RESOURCES.requestError(), (itemized == null ? "" : itemized) + note);
+		if (iContext.isSectioning()) {
+			String message = null;
+			for (CourseMessage m: messages.getMessages(box.getText())) {
+				if (m.getStatus() == RequestedCourseStatus.OVERRIDE_APPROVED && !m.isError()) continue;
+				if (message == null)
+					message = m.getMessage();
 				else
-					box.clearStatus();
-				break;
+					message += "\n" + m.getMessage();
+			}
+			if (message != null) {
+				if (messages.isError(box.getText()) || messages.isConfirm(box.getText()))
+					box.setError(message);
+				else
+					box.setWarning(message);
+			}
+		} else {
+			String message = null;
+			String itemized = null;
+			for (CourseMessage m: messages.getMessages(box.getText())) {
+				if (m.getStatus() == RequestedCourseStatus.OVERRIDE_APPROVED && !m.isError()) continue;
+				if (message == null) {
+					message = m.getMessage();
+					itemized = MESSAGES.courseMessage(m.getMessage());
+				} else {
+					message += "\n" + m.getMessage();
+					itemized += "\n" + MESSAGES.courseMessage(m.getMessage());
+				}
+			}
+			RequestedCourseStatus status = messages.getStatus(box.getText());
+			if (status == null) status = box.getValue().getStatus();
+			if (status == null && !box.isCanDelete()) status = RequestedCourseStatus.ENROLLED;
+			if (message != null) {
+				String note = "";
+				if (box.getValue().hasRequestorNote()) note += "\n<span class='status-note'>" + box.getValue().getRequestorNote() + "</span>";
+				else if (iSpecReg != null && iSpecReg.isAllowChangeRequestNote() && box.getValue().hasRequestId() && status == RequestedCourseStatus.OVERRIDE_PENDING)
+					note += "\n<span class='status-note'>" + MESSAGES.noRequestNoteClickToChange() + "</span>";
+				if (box.getValue().hasStatusNote()) note += "\n<span class='status-note'>" + box.getValue().getStatusNote() + "</span>";
+				if (messages.isError(box.getText()) || messages.isConfirm(box.getText()))
+					box.setError(message + note);
+				else
+					box.setWarning(message + note);
+			}
+			String note = "";
+			if (box.getValue().hasRequestorNote())
+				note += "\n\n" + MESSAGES.requestNote(box.getValue().getRequestorNote());
+			if (box.getValue().hasStatusNote()) note = "\n\n" + MESSAGES.overrideNote(box.getValue().getStatusNote());
+			if (messages.isError(box.getText()) && (status == null || status != RequestedCourseStatus.OVERRIDE_REJECTED)) {
+				box.setStatus(RESOURCES.requestError(), itemized);
+			} else if (status != null) {
+				switch (status) {
+				case ENROLLED:
+					box.setStatus(RESOURCES.requestEnrolled(), MESSAGES.enrolled(box.getText()) + note);
+					break;
+				case OVERRIDE_NEEDED:
+					box.setStatus(RESOURCES.requestNeeded(), (itemized == null ? "" : MESSAGES.overrideNeeded(itemized)) + note);
+					break;
+				case SAVED:
+					box.setStatus(RESOURCES.requestSaved(), (itemized == null ? "" : MESSAGES.requestWarnings(itemized) + "\n\n") + MESSAGES.requested(box.getText()) + note);
+					break;				
+				case OVERRIDE_REJECTED:
+					box.setStatus(RESOURCES.requestRejected(), (itemized == null ? "" : MESSAGES.requestWarnings(itemized) + "\n\n") + MESSAGES.overrideRejected(box.getText()) + note);
+					break;
+				case OVERRIDE_PENDING:
+					box.setStatus(RESOURCES.requestPending(), (itemized == null ? "" : MESSAGES.requestWarnings(itemized) + "\n\n") + MESSAGES.overridePending(box.getText()) + note);
+					break;
+				case OVERRIDE_CANCELLED:
+					box.setStatus(RESOURCES.requestCancelled(), (itemized == null ? "" : MESSAGES.requestWarnings(itemized) + "\n\n") + MESSAGES.overrideCancelled(box.getText()) + note);
+					break;
+				case OVERRIDE_APPROVED:
+					box.setStatus(RESOURCES.requestSaved(), (itemized == null ? "" : MESSAGES.requestWarnings(itemized) + "\n\n") + MESSAGES.overrideApproved(box.getText()) + note);
+					break;
+				default:
+					if (messages.isError(box.getText()))
+						box.setStatus(RESOURCES.requestError(), (itemized == null ? "" : itemized) + note);
+					else
+						box.clearStatus();
+					break;
+				}
 			}
 		}
 	}
@@ -483,6 +507,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	
 	public CourseRequestInterface getRequest() {
 		CourseRequestInterface cr = new CourseRequestInterface(iContext);
+		cr.setWaitListMode(iWaitListMode);
 		fillInCourses(cr);
 		fillInAlternatives(cr);
 		cr.setTimeConflictsAllowed(iSpecReg.isEnabled() && iSpecReg.isDisclaimerAccepted() && iSpecReg.areTimeConflictsAllowed());
@@ -494,45 +519,55 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		return cr;
 	}
 
-	public void activate(Long courseId) {
-		if (courseId == null) return;
+	public void activate(RequestedCourse course) {
+		if (course == null) return;
 		for (CourseRequestLine line: iCourses) {
 			for (CourseSelectionBox box: line.getCourses())
-				if (box.isActive(courseId)) return;
+				if (box.isActive(course)) return;
 		}
 		for (CourseRequestLine line: iAlternatives) {
 			for (CourseSelectionBox box: line.getCourses())
-				if (box.isActive(courseId)) return;
+				if (box.isActive(course)) return;
 		}
 		for (CourseRequestLine line: iCourses) {
 			for (CourseSelectionBox box: line.getCourses())
-				box.activate(courseId);
+				box.activate(course);
 		}
 		for (CourseRequestLine line: iAlternatives) {
 			for (CourseSelectionBox box: line.getCourses())
-				box.activate(courseId);
+				box.activate(course);
 		}
 	}
 	
-	public boolean isActive(Long courseId) {
-		if (courseId == null) return true;
+	public void activate(CourseAssignment course) {
+		if (course == null) return;
+		activate(new RequestedCourse(course, CONSTANTS.showCourseTitle()));
+	}
+	
+	public boolean isActive(RequestedCourse course) {
+		if (course == null) return true;
 		for (CourseRequestLine line: iCourses) {
 			for (CourseSelectionBox box: line.getCourses())
-				if (box.isActive(courseId)) return true;
+				if (box.isActive(course)) return true;
 		}
 		for (CourseRequestLine line: iAlternatives) {
 			for (CourseSelectionBox box: line.getCourses())
-				if (box.isActive(courseId)) return true;
+				if (box.isActive(course)) return true;
 		}
 		for (CourseRequestLine line: iCourses) {
 			for (CourseSelectionBox box: line.getCourses())
-				if (box.isInactive(courseId)) return false;
+				if (box.isInactive(course)) return false;
 		}
 		for (CourseRequestLine line: iAlternatives) {
 			for (CourseSelectionBox box: line.getCourses())
-				if (box.isInactive(courseId)) return false;
+				if (box.isInactive(course)) return false;
 		}
 		return true;
+	}
+	
+	public boolean isActive(CourseAssignment course) {
+		if (course == null) return true;
+		return isActive(new RequestedCourse(course, CONSTANTS.showCourseTitle()));
 	}
 	
 	public void setRequest(CourseRequestInterface request) {
@@ -543,7 +578,10 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		while (iAlternatives.size() < request.getAlternatives().size()) addAlternativeLine();;
 		for (int idx = 0; idx < request.getAlternatives().size(); idx++)
 			iAlternatives.get(idx).setValue(request.getAlternatives().get(idx), true);
-		if (request.hasConfirmations()) {
+		if (request.hasWaitListChecks()) {
+			iLastCheck = request.getWaitListChecks();
+			setErrors(iLastCheck);
+		} else if (request.hasConfirmations()) {
 			iLastCheck = new CheckCoursesResponse(request.getConfirmations());
 			setErrors(iLastCheck);
 		} else {
@@ -579,24 +617,77 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		}
 	}
 	
+	public RequestedCourse getRequestedCourse(Long course) {
+		// skip inactive first
+		for (CourseRequestLine line: iCourses)
+			for (CourseSelectionBox box: line.getCourses()) {
+				RequestedCourse rc = box.getValue();
+				if (rc != null && course.equals(rc.getCourseId()) && !rc.isInactive())
+					return rc;
+			}
+		for (CourseRequestLine line: iAlternatives)
+			for (CourseSelectionBox box: line.getCourses()) {
+				RequestedCourse rc = box.getValue();
+				if (rc != null && course.equals(rc.getCourseId()) && !rc.isInactive())
+					return rc;
+			}
+		// all courses next
+		for (CourseRequestLine line: iCourses)
+			for (CourseSelectionBox box: line.getCourses()) {
+				RequestedCourse rc = box.getValue();
+				if (rc != null && course.equals(rc.getCourseId()))
+					return rc;
+			}
+		for (CourseRequestLine line: iAlternatives)
+			for (CourseSelectionBox box: line.getCourses()) {
+				RequestedCourse rc = box.getValue();
+				if (rc != null && course.equals(rc.getCourseId()))
+					return rc;
+			}
+		return null;
+	}
+	
 	public Boolean getWaitList(Long course) {
-		if (iCanWaitList && course != null)
+		if ((iWaitListMode == WaitListMode.WaitList || iWaitListMode == WaitListMode.NoSubs) && course != null) {
+			// skip inactive first
+			for (CourseRequestLine line: iCourses)
+				for (CourseSelectionBox box: line.getCourses()) {
+					RequestedCourse rc = box.getValue();
+					if (rc != null && course.equals(rc.getCourseId()) && !rc.isInactive())
+						return line.getWaitList();
+				}
+			// all courses next
 			for (CourseRequestLine line: iCourses)
 				for (CourseSelectionBox box: line.getCourses()) {
 					RequestedCourse rc = box.getValue();
 					if (rc != null && course.equals(rc.getCourseId()))
 						return line.getWaitList();
 				}
+		}
 		return null;
 	}
 	
 	public void setWaitList(Long course, boolean waitList) {
-		for (CourseRequestLine line: iCourses)
+		// skip inactive first
+		for (CourseRequestLine line: iCourses) {
 			for (CourseSelectionBox box: line.getCourses()) {
 				RequestedCourse rc = box.getValue();
-				if (rc != null && course.equals(rc.getCourseId()))
+				if (rc != null && course.equals(rc.getCourseId()) && !rc.isInactive()) {
 					line.setWaitList(waitList);
+					return;
+				}
 			}
+		}
+		// all courses next
+		for (CourseRequestLine line: iCourses) {
+			for (CourseSelectionBox box: line.getCourses()) {
+				RequestedCourse rc = box.getValue();
+				if (rc != null && course.equals(rc.getCourseId())) {
+					line.setWaitList(waitList);
+					return;
+				}
+			}
+		}
 	}
 	
 	public void clear() {
@@ -685,6 +776,17 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 				clearErrors();
 			}
 		};
+	}
+	
+	public void addRequest(Request request) {
+		for (final CourseRequestLine line: iCourses)
+			if (line.getValue() == null) {
+				line.setValue(request, true);
+				return;
+			}		
+		addCourseLine();
+		final CourseRequestLine line = iCourses.get(iCourses.size() - 1);
+		line.setValue(request, true);
 	}
 
 	public boolean hasCourse(RequestedCourse rc) {

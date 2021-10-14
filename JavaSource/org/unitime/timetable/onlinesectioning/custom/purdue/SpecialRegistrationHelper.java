@@ -104,7 +104,14 @@ public class SpecialRegistrationHelper {
 	}
 	public static void addCrn(RestrictionsCheckRequest request, String crn) { addOperation(request, ValidationOperation.ADD, crn); }
 	public static void dropCrn(RestrictionsCheckRequest request, String crn) { addOperation(request, ValidationOperation.DROP, crn); }
-	public static boolean isEmpty(RestrictionsCheckRequest request) { return request.actions == null || request.actions.isEmpty(); }
+	public static boolean isEmpty(RestrictionsCheckRequest request) {
+		if (request.actions == null || request.actions.isEmpty()) return true;
+		List<Crn> adds = request.actions.get(ValidationOperation.ADD);
+		if (adds != null && !adds.isEmpty()) return false;
+		List<Crn> drops = request.actions.get(ValidationOperation.DROP);
+		if (drops != null && !drops.isEmpty()) return false;
+		return true;
+	}
 
 	public static void addCrn(CheckRestrictionsRequest req, String crn) {
 		if (req.changes == null)
@@ -116,6 +123,12 @@ public class SpecialRegistrationHelper {
 		if (req.alternatives == null)
 			req.alternatives = createValidationRequest(req, ValidationMode.ALT, false);
 		addCrn(req.alternatives, crn);
+	}
+	
+	public static void addWaitListCrn(CheckRestrictionsRequest req, String crn) {
+		if (req.changes == null)
+			req.changes = createValidationRequest(req, ValidationMode.WAITL, true);
+		addCrn(req.changes, crn);
 	}
 	
 	public static boolean isEmpty(CheckRestrictionsRequest req) { 

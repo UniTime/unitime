@@ -54,6 +54,8 @@ public class CourseRequestEligibility extends CheckEligibility {
 			action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
 		else 
 			action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
+		if (check.getAdvisorWaitListedCourseIds() != null && !check.getAdvisorWaitListedCourseIds().isEmpty())
+			action.addOptionBuilder().setKey("Wait-Listed Courses").setValue(check.getAdvisorWaitListedCourseIds().toString());
 	}
 	
 	@Override
@@ -69,7 +71,7 @@ public class CourseRequestEligibility extends CheckEligibility {
 			if (iStudentId != null)
 				action.setStudent(OnlineSectioningLog.Entity.newBuilder().setUniqueId(iStudentId));
 			
-			iCheck.setFlag(EligibilityFlag.CAN_WAITLIST, server.getAcademicSession().isSectioningEnabled() && CustomStudentEnrollmentHolder.isAllowWaitListing());
+			iCheck.setFlag(EligibilityFlag.CAN_WAITLIST, CustomStudentEnrollmentHolder.isAllowWaitListing());
 			
 			org.hibernate.Session hibSession = StudentDAO.getInstance().createNewSession();
 			try {
@@ -113,6 +115,9 @@ public class CourseRequestEligibility extends CheckEligibility {
 				
 				if (status == null || status.hasOption(StudentSectioningStatus.Option.nosubs))
 					iCheck.setFlag(EligibilityFlag.CAN_NO_SUBS, true);
+				
+				if (student != null)
+					iCheck.setAdvisorWaitListedCourseIds(student.getAdvisorWaitListedCourseIds(server));
 				
 				if (iPermissionCanRequirePreferences != null)
 					iCheck.setFlag(EligibilityFlag.CAN_REQUIRE, iPermissionCanRequirePreferences);

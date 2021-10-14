@@ -436,9 +436,11 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                     for (Request r : student.getRequests()) {
                         if (!(r instanceof CourseRequest)) continue; // ignore free times
                         CourseRequest cr = (CourseRequest)r;
-                        if (isComCourse(cr.getCourses().get(0))) {
-                            if (r.isAssigned(assignment)) assigned ++;
-                            else if (student.canAssign(assignment, r) && !r.isAlternative()) notAssigned ++;
+                        Enrollment e = cr.getAssignment(assignment);
+                        if (e != null && isComCourse(e.getCourse())) {
+                        	assigned ++;
+                        } else if (e == null && isComCourse(cr.getCourses().get(0)) && student.canAssign(assignment, r) && !r.isAlternative()) {
+                        	notAssigned ++;
                         }
                     }
                 }
@@ -951,7 +953,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
             			if (e != null && e.isCourseRequest()) {
             				for (Section section: e.getSections()) {
             					if (section.isOnline()) onlineClass ++;
-            					if (section.getTime() == null) arrClass ++;
+            					if (!section.hasTime()) arrClass ++;
             					allClass ++;
             				}
             			}

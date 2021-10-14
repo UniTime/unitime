@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseRequest;
@@ -122,6 +122,7 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 					Student student = StudentDAO.getInstance().get(studentId, helper.getHibSession());
 					if (student != null) {
 						OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
+						WaitListMode wlMode = student.getWaitListMode();
 						
 						action.setStudent(OnlineSectioningLog.Entity.newBuilder()
 							.setUniqueId(student.getUniqueId())
@@ -189,7 +190,7 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 								XOffering offering = server.getOffering(oldEnrollment.getOfferingId());
 								EnrollStudent.updateSpace(server,
 										null,
-										oldEnrollment == null ? null : SectioningRequest.convert(oldStudent, (XCourseRequest)oldRequest, server, offering, oldEnrollment),
+										oldEnrollment == null ? null : SectioningRequest.convert(oldStudent, (XCourseRequest)oldRequest, server, offering, oldEnrollment, wlMode),
 										offering);
 							}
 							OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
@@ -203,8 +204,8 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 							action.addEnrollment(enrollment);
 						}
 						
-						if (iEmail && ApplicationProperty.OnlineSchedulingEmailConfirmation.isTrue()) {
-							StudentEmail email = server.createAction(StudentEmail.class).forStudent(studentId).oldStudent(oldStudent);
+						if (iEmail) {
+							StudentEmail email = server.createAction(StudentEmail.class).forStudent(studentId).fromAction(name()).oldStudent(oldStudent);
 							email.setCC(getCC());
 							email.setEmailSubject(getSubject() == null || getSubject().isEmpty() ? MSG.defaulSubjectMassCancel() : getSubject());
 							email.setMessage(getMessage());

@@ -119,6 +119,9 @@ public interface StudentSectioningConstants extends Constants {
 	
 	@DefaultStringValue("MM/dd/yyyy HH:mm:ss")
 	String timeStampFormat();
+	
+	@DefaultStringValue("MM/dd/yyyy hh:mmaa")
+	String requestWaitListedDateFormat();
 
 	@DefaultBooleanValue(true)
 	@DoNotTranslate
@@ -179,6 +182,9 @@ public interface StudentSectioningConstants extends Constants {
 		"Important",
 		"Assigned Important",
 		"Not Assigned Important",
+		"No-Substitutes",
+		"Assigned No-Subs",
+		"Not Assigned No-Subs",
 	})
 	String[] assignmentType();
 	
@@ -205,6 +211,7 @@ public interface StudentSectioningConstants extends Constants {
 		"Approved",
 		"Rejected",
 		"Cancelled",
+		"Not-Requested",
 	})
 	String[] overrideType();
 	

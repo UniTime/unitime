@@ -20,9 +20,7 @@
 
 use mysql;
 
-drop user timetable@localhost;
-
-create user timetable@localhost identified by 'unitime';
+create user if not exists timetable@localhost identified by 'unitime';
 
 grant all on timetable.* to timetable@localhost;
 

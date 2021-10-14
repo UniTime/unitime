@@ -20,6 +20,8 @@
 package org.unitime.timetable.onlinesectioning.updates;
 
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -46,9 +48,19 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 	private XCourseId iOldCourseId;
 	private XEnrollment iOldEnrollment;
 	private XStudent iOldStudent;
+	private String iSourceAction = "other";
+	private XOffering iFailedOffering;
+	private XCourseId iFailedCourseId;
+	private XEnrollment iFailedEnrollment;
+	private SectioningException iFailure;
 	
 	public NotifyStudentAction forStudent(Long studentId) {
 		iStudentId = studentId;
+		return this;
+	}
+	
+	public NotifyStudentAction fromAction(String actionName) {
+		iSourceAction = actionName;
 		return this;
 	}
 	
@@ -56,6 +68,14 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 		iOldOffering = oldOffering;
 		iOldCourseId = oldCourseId;
 		iOldEnrollment = oldEnrollment;
+		return this;
+	}
+	
+	public NotifyStudentAction failedEnrollment(XOffering failedOffering, XCourseId failedCourseId, XEnrollment failedEnrollment, Exception failure) {
+		iFailedOffering = failedOffering;
+		iFailedCourseId = failedCourseId;
+		iFailedEnrollment = failedEnrollment;
+		iFailure = (failure == null ? null : failure instanceof SectioningException ? (SectioningException) failure : new SectioningException(failure.getMessage(), failure));
 		return this;
 	}
 	
@@ -70,7 +90,51 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 	public Boolean execute(OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 		XStudent student = server.getStudent(getStudentId());
 		if (student != null) {
-			if (iOldOffering != null) {
+			if (iFailedOffering != null) {
+				String message = "Student " + student.getName() + " (" + student.getStudentId() + ") not changed.";
+				String courseName = (iFailedCourseId != null ? iFailedCourseId.getCourseName() : iFailedEnrollment == null ? iFailedOffering.getName() : iFailedOffering.getCourse(iFailedEnrollment.getCourseId()).getCourseName());
+				XCourseRequest request = null;
+				for (XRequest r: student.getRequests()) {
+					if (r instanceof XCourseRequest) {
+						XCourseRequest cr = (XCourseRequest)r;
+						XCourseId id = cr.getCourseIdByOfferingId(iFailedOffering.getOfferingId());
+						if (id != null && (iFailedCourseId == null || id.equals(iFailedCourseId)) && (iFailedEnrollment == null || id.getCourseId().equals(iFailedEnrollment.getCourseId()))) {
+							courseName = id.getCourseName(); request = cr; break;
+						}
+					}
+				}
+				message += "\n  Failed assignment:";
+				XOffering offering = server.getOffering(iFailedOffering.getOfferingId());
+				if (offering == null || request == null || request.getEnrollment() == null) {
+					message += "\n    " + (request == null ? iFailedOffering.toString() : request.toString()) + " NOT ASSIGNED";
+				} else {
+					message += "\n    " + request;
+					if (request.getEnrollment().getApproval() != null)
+						message += " (approved by " + request.getEnrollment().getApproval().getName() + ")";
+					for (XSection section: offering.getSections(request.getEnrollment())) {
+						message += "\n      " + courseName + " " + section.toString(request.getEnrollment().getCourseId());
+					}
+				}
+				if (iFailure != null) {
+					message += "\n  Error: " + iFailure.getMessage();
+					if (iFailure.hasErrors())
+						for (ErrorMessage error: iFailure.getErrors())
+							message += "\n    " + error;
+				}
+				helper.debug(message);
+				if (isEmailEnabled(server, helper)) {
+					server.execute(server.createAction(StudentEmail.class).forStudent(getStudentId()).fromAction(iSourceAction).failedEnrollment(iFailedOffering, iFailedCourseId, iFailedEnrollment, iFailure), helper.getUser(), new ServerCallback<Boolean>() {
+						@Override
+						public void onFailure(Throwable exception) {
+							helper.error("Failed to notify student: " + exception.getMessage(), exception);
+						}
+						@Override
+						public void onSuccess(Boolean result) {
+						}
+					});
+				}
+				return true;
+			} else if (iOldOffering != null) {
 				if (iOldEnrollment != null && !iOldOffering.getOfferingId().equals(iOldEnrollment.getOfferingId()))
 					iOldOffering = server.getOffering(iOldEnrollment.getOfferingId());
 				String message = "Student " + student.getName() + " (" + student.getStudentId() + ") changed.";
@@ -108,8 +172,8 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 					}
 				}
 				helper.debug(message);
-				if (server.getAcademicSession().isSectioningEnabled() && ApplicationProperty.OnlineSchedulingEmailConfirmation.isTrue()) {
-					server.execute(server.createAction(StudentEmail.class).forStudent(getStudentId()).oldEnrollment(iOldOffering, iOldCourseId, iOldEnrollment), helper.getUser(), new ServerCallback<Boolean>() {
+				if (isEmailEnabled(server, helper)) {
+					server.execute(server.createAction(StudentEmail.class).forStudent(getStudentId()).fromAction(iSourceAction).oldEnrollment(iOldOffering, iOldCourseId, iOldEnrollment), helper.getUser(), new ServerCallback<Boolean>() {
 						@Override
 						public void onFailure(Throwable exception) {
 							helper.error("Failed to notify student: " + exception.getMessage(), exception);
@@ -163,8 +227,8 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 					}
 				}
 				helper.debug(message);
-				if (server.getAcademicSession().isSectioningEnabled() && ApplicationProperty.OnlineSchedulingEmailConfirmation.isTrue()) {
-					server.execute(server.createAction(StudentEmail.class).forStudent(getStudentId()).oldStudent(iOldStudent), helper.getUser(), new ServerCallback<Boolean>() {
+				if (isEmailEnabled(server, helper)) {
+					server.execute(server.createAction(StudentEmail.class).forStudent(getStudentId()).fromAction(iSourceAction).oldStudent(iOldStudent), helper.getUser(), new ServerCallback<Boolean>() {
 						@Override
 						public void onFailure(Throwable exception) {
 							helper.error("Failed to notify student: " + exception.getMessage(), exception);
@@ -178,6 +242,12 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 			}
 		}
 		return false;
+	}
+	
+	protected boolean isEmailEnabled(OnlineSectioningServer server, final OnlineSectioningHelper helper) {
+		String override = ApplicationProperty.OnlineSchedulingEmailConfirmationOverride.value(iSourceAction);
+		if (override != null) return "true".equalsIgnoreCase(override);
+		return server.getAcademicSession().isSectioningEnabled() && ApplicationProperty.OnlineSchedulingEmailConfirmation.isTrue();
 	}
 
 	@Override

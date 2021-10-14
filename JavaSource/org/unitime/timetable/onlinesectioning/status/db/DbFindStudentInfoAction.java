@@ -60,7 +60,6 @@ import org.unitime.timetable.model.StudentSectioningStatus.Option;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.status.FindStudentInfoAction;
 import org.unitime.timetable.onlinesectioning.status.SectioningStatusFilterAction;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseLookup;
@@ -93,8 +92,8 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		
 		Map<Long, StudentInfo> students = new HashMap<Long, StudentInfo>();
 		
-		int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0;
-		int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0;
+		int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0, gNoSub = 0;
+		int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0, gtNoSub = 0;
 		int gConNeed = 0, gtConNeed = 0, gOvrNeed = 0, gtOvrNeed = 0;
 		int gDist = 0, gtDist = 0, gNrDC = 0, gtNrDC = 0, gShr = 0, gtShr = 0; 
 		int gFre = 0, gtFre = 0, gPIM = 0, gtPIM = 0, gPSec = 0, gtPSec = 0;
@@ -104,13 +103,20 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		CourseLookup lookup = new CourseLookup(session);
 		DistanceMetric dm = server.getDistanceMetric();
 		
+		boolean useAdvisorWaitLists = server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false);
+		boolean useAdvisorNoSubs = server.getConfig().getPropertyBoolean("Load.UseAdvisorNoSubs", false);
+		
 		DbFindStudentInfoMatcher sm = new DbFindStudentInfoMatcher(session, iQuery, helper.getStudentNameFormat(), iMyStudents); sm.setServer(server);
 		
 		Map<CourseOffering, List<CourseRequest>> requests = new HashMap<CourseOffering, List<CourseRequest>>();
-		for (CourseRequest cr: (List<CourseRequest>)SectioningStatusFilterAction.getCourseQuery(iFilter, server, helper).select("distinct cr").query(helper.getHibSession()).list()) {
+		cr: for (CourseRequest cr: (List<CourseRequest>)SectioningStatusFilterAction.getCourseQuery(iFilter, server, helper).select("distinct cr").query(helper.getHibSession()).list()) {
 			if (!hasMatchingSubjectArea(cr.getCourseOffering().getSubjectAreaAbbv())) continue;
 			if (!isCourseVisible(cr.getCourseOffering().getUniqueId())) continue;			
 			if (!query().match(new DbCourseRequestMatcher(session, cr, isConsentToDoCourse(cr.getCourseOffering()), isMyStudent(cr.getCourseDemand().getStudent()), helper.getStudentNameFormat(), lookup))) continue;
+			if (cr.getClassEnrollments().isEmpty()) { // skip course requests where course demand is enrolled to some other course
+				for (CourseRequest x: cr.getCourseDemand().getCourseRequests())
+					if (!x.equals(cr) && !x.getClassEnrollments().isEmpty()) continue cr;
+			}
 			List<CourseRequest> list = requests.get(cr.getCourseOffering());
 			if (list == null) {
 				list = new ArrayList<CourseRequest>();
@@ -135,7 +141,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					st.setExternalId(student.getExternalUniqueId());
 					st.setCanShowExternalId(iCanShowExtIds);
 					StudentSectioningStatus status = student.getEffectiveStatus();
-					if (CustomStudentEnrollmentHolder.isAllowWaitListing() && (status == null || status.hasOption(Option.waitlist))) {
+					if (status == null || status.hasOption(Option.waitlist)) {
 						st.setWaitListMode(WaitListMode.WaitList);
 					} else if (status != null && status.hasOption(Option.nosubs)) {
 						st.setWaitListMode(WaitListMode.NoSubs);
@@ -178,7 +184,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 	    					st.addAdvisor(helper.getInstructorNameFormat().format(a));
 	    			}
 
-					int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0, tUnasg = 0, tOvrNeed = 0, ovrNeed = 0;
+					int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0, tUnasg = 0, tOvrNeed = 0, ovrNeed = 0, tNoSub = 0;
 					float tCred = 0f;
 					int nrDisCnf = 0, maxDist = 0, share = 0; 
 					int ftShare = 0;
@@ -187,6 +193,9 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					List<Float> mins = new ArrayList<Float>();
 					List<Float> maxs = new ArrayList<Float>();
 					int nrCoursesTot = 0, nrCourses = 0;
+					float studentMin = 0f, studentMax = 0f;
+					float studentMinTot = 0f, studentMaxTot = 0f;
+					Set<Long> advisorWaitListedCourseIds = student.getAdvisorWaitListedCourseIds(useAdvisorWaitLists, useAdvisorNoSubs);
 					for (CourseDemand demand: student.getCourseDemands()) {
 						if (!demand.getCourseRequests().isEmpty()) {
 							Float minTot = null, maxTot = null;
@@ -206,14 +215,35 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 									if (r.isRequestPending()) { ovrNeed ++; gOvrNeed ++ ; }
 								}
 							}
-							if (minTot != null) {
-								minsTot.add(minTot); maxsTot.add(maxTot); 
-								if (!demand.isAlternative()) nrCoursesTot ++;
+							boolean isWaitList = false;
+							if (!demand.isAlternative()) {
+								if (demand.isWaitListOrNoSub(st.getWaitListMode())) {
+									isWaitList = true;
+								} else if (advisorWaitListedCourseIds != null && !advisorWaitListedCourseIds.isEmpty()) {
+									for (CourseRequest r: demand.getCourseRequests())
+										if (advisorWaitListedCourseIds.contains(r.getCourseOffering().getUniqueId())) {
+											isWaitList = true; break;
+										}
+								}
 							}
-							if (min != null) {
-								mins.add(min); maxs.add(max); 
-								if (!demand.isAlternative()) nrCourses ++;
+							if (isWaitList) {
+								if (minTot != null) {
+									studentMinTot += minTot; studentMaxTot += maxTot;
+								}
+								if (min != null) {
+									studentMin += min; studentMax += max;
+								}
+							} else {
+								if (minTot != null) {
+									minsTot.add(minTot); maxsTot.add(maxTot); 
+									if (!demand.isAlternative()) nrCoursesTot ++;
+								}
+								if (min != null) {
+									mins.add(min); maxs.add(max); 
+									if (!demand.isAlternative()) nrCourses ++;
+								}								
 							}
+
 							if (!demand.isAlternative()) tReq ++;
 							List<StudentClassEnrollment> enrollment = null;
 							CourseRequest assigned = null;
@@ -231,8 +261,11 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 								DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, first, isConsentToDoCourse(first.getCourseOffering()), isMyStudent(student), helper.getStudentNameFormat(), lookup);
 								if (crm.canAssign()) {
 									tUnasg ++; gtUnasg ++;
-									if (demand.isWaitlist()) {
+									if (demand.effectiveWaitList()) {
 										tWait ++; gtWait ++;
+									}
+									if (demand.effectiveNoSub()) {
+										tNoSub ++; gtNoSub ++;
 									}
 								}
 							} else {
@@ -300,33 +333,33 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 
 					Collections.sort(mins);
 					Collections.sort(maxs);
-					float min = 0f, max = 0f;
 					for (int i = 0; i < nrCourses; i++) {
-						min += mins.get(i);
-						max += maxs.get(maxs.size() - i - 1);
+						studentMin += mins.get(i);
+						studentMax += maxs.get(maxs.size() - i - 1);
 					}
 					Collections.sort(minsTot);
 					Collections.sort(maxsTot);
-					float minTot = 0f, maxTot = 0f;
 					for (int i = 0; i < nrCoursesTot; i++) {
-						minTot += minsTot.get(i);
-						maxTot += maxsTot.get(maxsTot.size() - i - 1);
+						studentMinTot += minsTot.get(i);
+						studentMaxTot += maxsTot.get(maxsTot.size() - i - 1);
 					}
 					if (student.isRequestPending()) {
 						if (nrCourses == nrCoursesTot) { gOvrNeed ++; ovrNeed ++; }
 						gtOvrNeed ++; tOvrNeed ++;
 					}
-					s.setRequestCredit(min, max);
-					s.setTotalRequestCredit(minTot, maxTot);
+					s.setRequestCredit(studentMin, studentMax);
+					s.setTotalRequestCredit(studentMinTot, studentMaxTot);
 					s.setTotalEnrollment(tEnrl);
 					s.setTotalReservation(tRes);
 					s.setTotalWaitlist(tWait);
+					s.setTotalNoSub(tNoSub);
 					s.setTotalUnassigned(tUnasg);
 					s.setTotalConsentNeeded(tConNeed);
 					s.setTotalOverrideNeeded(tOvrNeed);
 					s.setEnrollment(0);
 					s.setReservation(0);
 					s.setWaitlist(0);
+					s.setNoSub(0);
 					s.setUnassigned(0);
 					s.setConsentNeeded(0);
 					s.setOverrideNeeded(ovrNeed);
@@ -470,12 +503,15 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					}
 				} else if (unassigned.add(crm.request().getCourseDemand().getUniqueId())) {
 					if (crm.canAssign()) {
-						if (crm.request().getCourseDemand().isWaitlist()) {
+						if (crm.request().getCourseDemand().effectiveWaitList()) {
 							s.setWaitlist(s.getWaitlist() + 1); gWait ++;
 							if (s.getTopWaitingPriority() == null)
 								s.setTopWaitingPriority(1 + crm.request().getCourseDemand().getPriority());
 							else
 								s.setTopWaitingPriority(Math.min(1 + crm.request().getCourseDemand().getPriority(), s.getTopWaitingPriority()));
+						}
+						if (crm.request().getCourseDemand().effectiveNoSub()) {
+							s.setNoSub(s.getNoSub() + 1); gNoSub ++;
 						}
 						s.setUnassigned(s.getUnassigned() + 1); gUnasg ++;	
 					}
@@ -508,6 +544,12 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					else if (crm.request().getCourseDemand().getTimestamp().after(s.getRequestedDate()))
 						s.setRequestedDate(crm.request().getCourseDemand().getTimestamp());
 				}
+				if (crm.request().getCourseDemand().getWaitlistedTimeStamp() != null) {
+					if (s.getWaitListedDate() == null)
+						s.setWaitListedDate(crm.request().getCourseDemand().getWaitlistedTimeStamp());
+					else if (crm.request().getCourseDemand().getWaitlistedTimeStamp().after(s.getWaitListedDate()))
+						s.setWaitListedDate(crm.request().getCourseDemand().getWaitlistedTimeStamp());
+				}
 			}
 		}
 		
@@ -524,7 +566,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 				st.setExternalId(student.getExternalUniqueId());
 				st.setCanShowExternalId(iCanShowExtIds);
 				StudentSectioningStatus status = student.getEffectiveStatus();
-				if (CustomStudentEnrollmentHolder.isAllowWaitListing() && (status == null || status.hasOption(Option.waitlist))) {
+				if (status == null || status.hasOption(Option.waitlist)) {
 					st.setWaitListMode(WaitListMode.WaitList);
 				} else if (status != null && status.hasOption(Option.nosubs)) {
 					st.setWaitListMode(WaitListMode.NoSubs);
@@ -571,7 +613,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 				
 				StudentNote note = null;
 				for (StudentNote n: student.getNotes())
-					if (note == null || note.compareTo(n) > 0) note = n;
+					if (note == null || note.compareTo(n) < 0) note = n;
 				if (note != null) s.setNote(note.getTextNote());
 				s.setMyStudent(isMyStudent(student));
 				s.setAdvisedInfo(getAdvisedInfo(student, server, helper));
@@ -604,11 +646,13 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		t.setEnrollment(gEnrl);
 		t.setReservation(gRes);
 		t.setWaitlist(gWait);
+		t.setNoSub(gNoSub);
 		t.setUnassigned(gUnasg);
 		
 		t.setTotalEnrollment(gtEnrl);
 		t.setTotalReservation(gtRes);
 		t.setTotalWaitlist(gtWait);
+		t.setTotalNoSub(gtNoSub);
 		t.setTotalUnassigned(gtUnasg);
 		
 		t.setConsentNeeded(gConNeed);

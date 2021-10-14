@@ -262,7 +262,9 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		if (DEBUG) sLog.debug("commit["+getUniqueId()+","+getOwner().getName()+"] -------------------------------------------------------");
 			
 		boolean isOK = true;
-		if (ownerIds != null && ownerIds.length > 1 && ownerIds.length <= 1000) {
+		if (ApplicationProperty.CourseTimetablingCommitSkipChecking.isTrue()) {
+			// skip conflict checking
+		} else if (ownerIds != null && ownerIds.length > 1 && ownerIds.length <= 1000) {
 			for (Object[] o: (List<Object[]>)hibSession.createQuery(
 					"select r, a1, a2 from Location r inner join r.assignments a1 inner join r.assignments a2 "+
 					"where a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId not in :ownerIds and " +

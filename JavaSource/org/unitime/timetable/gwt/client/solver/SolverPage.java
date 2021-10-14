@@ -36,7 +36,6 @@ import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
-import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
@@ -66,10 +65,11 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasEnabled;
-import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.ImageResourceRenderer;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -505,12 +505,12 @@ public class SolverPage extends SimpleForm {
 	
 	public static class SolverStatus extends P {
 		private P iStatus;
-		private Image iIcon;
+		private Anchor iIcon;
 		
 		public SolverStatus() {
 			super("unitime-SolverStatus");
 			iStatus = new P("status-label");
-			iIcon = new Image(RESOURCES.helpIcon()); iIcon.addStyleName("status-icon");
+			iIcon = new Anchor(new ImageResourceRenderer().render(RESOURCES.helpIcon()), "", "_blank"); iIcon.addStyleName("status-icon");
 			iIcon.setVisible(false);
 			add(iStatus); add(iIcon);
 			RPC.execute(new PageNameRpcRequest("Solver Status"), new AsyncCallback<PageNameInterface>() {
@@ -520,13 +520,7 @@ public class SolverPage extends SimpleForm {
 				public void onSuccess(final PageNameInterface result) {
 					iIcon.setTitle(MESSAGES.pageHelp(result.getName()));
 					iIcon.setVisible(true);
-					iIcon.addClickHandler(new ClickHandler() {
-						@Override
-						public void onClick(ClickEvent event) {
-							if (result.getHelpUrl() == null || result.getHelpUrl().isEmpty()) return;
-							UniTimeFrameDialog.openDialog(MESSAGES.pageHelp(result.getName()), result.getHelpUrl());
-						}
-					});
+					iIcon.setHref(result.getHelpUrl());
 				}
 			});
 		}

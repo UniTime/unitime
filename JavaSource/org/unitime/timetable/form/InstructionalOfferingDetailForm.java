@@ -80,6 +80,7 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     private boolean byReservationOnly;
     private String coordinators;
     private String wkEnroll, wkChange, wkDrop;
+    private String waitList;
     private String weekStartDayOfWeek;
     private String accommodation;
     private boolean hasConflict;
@@ -141,6 +142,7 @@ public class InstructionalOfferingDetailForm extends ActionForm {
         catalogLinkLocation = null;
         byReservationOnly = false; coordinators = null;
         wkEnroll = null; wkChange = null; wkDrop = null;
+        waitList = null;
         weekStartDayOfWeek = null;
         accommodation = null;
         hasConflict = false;
@@ -339,6 +341,9 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     
     public String getWeekStartDayOfWeek() { return weekStartDayOfWeek; }
     public void setWeekStartDayOfWeek(String weekStartDayOfWeek) { this.weekStartDayOfWeek = weekStartDayOfWeek; }
+    
+    public String getWaitList() { return waitList; }
+    public void setWaitList(String waitList) { this.waitList = waitList; }
     
     public boolean isDisplayEnrollmentDeadlineNote() {
     	return (wkEnroll != null && !wkEnroll.isEmpty()) || (wkChange != null && !wkChange.isEmpty()) || (wkDrop != null && !wkDrop.isEmpty());

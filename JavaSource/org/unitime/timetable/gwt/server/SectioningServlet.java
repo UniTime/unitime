@@ -50,7 +50,9 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.SecurityMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.SessionAttribute;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -179,10 +181,12 @@ import org.unitime.timetable.onlinesectioning.custom.CustomCriticalCoursesHolder
 import org.unitime.timetable.onlinesectioning.custom.CustomDegreePlansHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomSpecialRegistrationHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
+import org.unitime.timetable.onlinesectioning.custom.CustomWaitListValidationHolder;
 import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.RequestStudentUpdates;
 import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationDashboardUrlProvider;
+import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEmailProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentHoldsCheckProvider;
 import org.unitime.timetable.onlinesectioning.custom.VariableTitleCourseProvider;
@@ -202,6 +206,8 @@ import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationRetriev
 import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationRetrieveGradeModes;
 import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationSubmit;
 import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationUpdate;
+import org.unitime.timetable.onlinesectioning.specreg.WaitListCheckValidation;
+import org.unitime.timetable.onlinesectioning.specreg.WaitListSubmitOverrides;
 import org.unitime.timetable.onlinesectioning.status.FindEnrollmentAction;
 import org.unitime.timetable.onlinesectioning.status.FindEnrollmentInfoAction;
 import org.unitime.timetable.onlinesectioning.status.FindStudentInfoAction;
@@ -221,10 +227,12 @@ import org.unitime.timetable.onlinesectioning.updates.RejectEnrollmentsAction;
 import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
 import org.unitime.timetable.onlinesectioning.updates.SaveStudentRequests;
 import org.unitime.timetable.onlinesectioning.updates.StudentEmail;
+import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.UserContext.Chameleon;
+import org.unitime.timetable.security.authority.OtherAuthority;
 import org.unitime.timetable.security.context.AnonymousUserContext;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
@@ -300,7 +308,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		
 		CourseMatcher matcher = getCourseMatcher(cx, server);
 		
-		if (server == null) {
+		if (server == null || server instanceof DatabaseServer) {
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			if (query != null && !query.isEmpty() && CustomCourseLookupHolder.hasProvider()) {
 				try {
@@ -322,6 +330,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								course.setTitle(c.getTitle());
 								course.setHasUniqueName(true);
 								course.setHasCrossList(c.getInstructionalOffering().hasCrossList());
+								course.setCanWaitList(c.getInstructionalOffering().effectiveWaitList());
 								boolean unlimited = false;
 								int courseLimit = 0;
 								int snapshotLimit = 0;
@@ -370,12 +379,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			ArrayList<ClassAssignmentInterface.CourseAssignment> results = new ArrayList<ClassAssignmentInterface.CourseAssignment>();
 			org.unitime.timetable.onlinesectioning.match.CourseMatcher parent = matcher.getParentCourseMatcher();
 			for (CourseOffering c: (List<CourseOffering>)hibSession.createQuery(
-					"select c from CourseOffering c where " +
+					"select c from CourseOffering c left outer join c.courseType ct where " +
 					(excludeNotOffered ? "c.instructionalOffering.notOffered is false and " : "") +
 					"c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and (" +
 					"(lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' or lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' - ' || c.title) like :q || '%') " +
 					(query.length()>2 ? "or lower(c.title) like '%' || :q || '%'" : "") + ") " +
-					(matcher.isAllCourseTypes() ? "" : matcher.isNoCourseType() ? types.isEmpty() ? " and c.courseType is null " : " and (c.courseType is null or c.courseType.reference in (" + types + ")) " : " and c.courseType.reference in (" + types + ") ") +
+					(matcher.isAllCourseTypes() ? "" : matcher.isNoCourseType() ? types.isEmpty() ? " and ct is null " : " and (ct is null or ct.reference in (" + types + ")) " : " and ct.reference in (" + types + ") ") +
 					"order by case " +
 					"when lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' then 0 else 1 end," + // matches on course name first
 					"c.subjectArea.subjectAreaAbbreviation, c.courseNbr")
@@ -396,6 +405,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				course.setTitle(c.getTitle());
 				course.setHasUniqueName(true);
 				course.setHasCrossList(c.getInstructionalOffering().hasCrossList());
+				course.setCanWaitList(c.getInstructionalOffering().effectiveWaitList());
 				boolean unlimited = false;
 				int courseLimit = 0;
 				for (Iterator<InstrOfferingConfig> i = c.getInstructionalOffering().getInstrOfferingConfigs().iterator(); i.hasNext(); ) {
@@ -446,7 +456,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		boolean noCourseType = true, allCourseTypes = false;
 		Set<String> allowedCourseTypes = new HashSet<String>();
 		Set<Long> courseIds = null;
-		if (getSessionContext().hasPermissionAnySession(cx.getSessionId(), Right.StudentSchedulingCanLookupAllCourses)) {
+		if (getSessionContext().hasPermissionOtherAuthority(cx.getSessionId(), Right.StudentSchedulingCanLookupAllCourses, getStudentAuthority(cx.getSessionId()))) {
 			allCourseTypes = true;
 			if (cx.getStudentId() != null) {
 				if (server != null && !(server instanceof DatabaseServer)) {
@@ -518,7 +528,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 		OnlineSectioningServer server = getServerInstance(cx.getSessionId(), false);
 		Set<Long> allowedClasses = null;
-		if (server == null) {
+		if (server == null || server instanceof DatabaseServer) {
 			if (!sessionContext.hasPermission(Right.HasRole)) {
 				Session session = SessionDAO.getInstance().get(cx.getSessionId());
 				if (session != null && !session.canNoRoleReportClass())
@@ -684,7 +694,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						&& (!getSessionContext().hasPermissionAnySession(session, Right.StudentSchedulingAdvisor) || !status.hasOption(StudentSectioningStatus.Option.advisor))
 						) continue;
 				} else {
-					if (!getSessionContext().hasPermissionAnySession(session, Right.SchedulingAssistant)) continue;
+					if (!getSessionContext().hasPermissionOtherAuthority(session, Right.SchedulingAssistant, getStudentAuthority(session))) continue;
 				}
 				ret.add(new AcademicSessionProvider.AcademicSessionInfo(
 						session.getUniqueId(),
@@ -710,7 +720,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							&& (!getSessionContext().hasPermissionAnySession(session, Right.StudentSchedulingAdvisor) || !status.hasOption(StudentSectioningStatus.Option.regadvisor))
 							) continue;
 					} else {
-						if (!getSessionContext().hasPermissionAnySession(session, Right.CourseRequests)) continue;
+						if (!getSessionContext().hasPermissionOtherAuthority(session, Right.CourseRequests, getStudentAuthority(session))) continue;
 					}
 					ret.add(new AcademicSessionProvider.AcademicSessionInfo(
 							session.getUniqueId(),
@@ -1090,7 +1100,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			AcademicSessionInfo s = server.getAcademicSession();
 			if (s == null) throw new SectioningException(MSG.exceptionNoServerForSession());
 			if (getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingUser) == null)
-				getSessionContext().checkPermissionAnySession(s, Right.SchedulingAssistant);
+				getSessionContext().checkPermissionOtherAuthority(s, Right.SchedulingAssistant, getStudentAuthority(s));
 			return new AcademicSessionProvider.AcademicSessionInfo(
 					s.getUniqueId(),
 					s.getYear(), s.getTerm(), s.getCampus(),
@@ -1106,7 +1116,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				throw new SectioningException(MSG.exceptionNoServerForSession());
 			AcademicSessionInfo info = new AcademicSessionInfo(session);
 			if (getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingUser) == null)
-				getSessionContext().checkPermissionAnySession(session, Right.CourseRequests);
+				getSessionContext().checkPermissionOtherAuthority(session, Right.CourseRequests, getStudentAuthority(session));
 			return new AcademicSessionProvider.AcademicSessionInfo(
 					session.getUniqueId(),
 					session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
@@ -1171,12 +1181,16 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (!request.getAcademicSessionId().equals(sessionId))
 			throw new SectioningException(MSG.exceptionBadSession());
 		
+		EligibilityCheck last = getLastEligibilityCheck(request);
+
 		if (!request.isOnline()) {
 			OnlineSectioningServer server = getStudentSolver();
 			if (server == null) 
 				throw new SectioningException(MSG.exceptionNoSolver());
 
-			return server.execute(server.createAction(BatchEnrollStudent.class).forStudent(request.getStudentId()).withRequest(request).withAssignment(currentAssignment), currentUser(request));
+			return server.execute(server.createAction(BatchEnrollStudent.class).forStudent(request.getStudentId())
+					.withRequest(request).withAssignment(currentAssignment)
+					.withWaitListCheck(last != null && last.hasFlag(EligibilityFlag.WAIT_LIST_VALIDATION)), currentUser(request));
 		}
 		
 		OnlineSectioningServer server = getServerInstance(request.getAcademicSessionId(), false);
@@ -1184,9 +1198,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (!server.getAcademicSession().isSectioningEnabled())
 			throw new SectioningException(MSG.exceptionNotSupportedFeature());
 		
-		ClassAssignmentInterface ret = server.execute(server.createAction(EnrollStudent.class).forStudent(request.getStudentId()).withRequest(request).withAssignment(currentAssignment), currentUser(request));
+		ClassAssignmentInterface ret = server.execute(server.createAction(EnrollStudent.class).forStudent(request.getStudentId())
+				.withRequest(request).withAssignment(currentAssignment)
+				.withWaitListCheck(last != null && last.hasFlag(EligibilityFlag.WAIT_LIST_VALIDATION)), currentUser(request));
 		
-		EligibilityCheck last = getLastEligibilityCheck(request);
 		if (ret != null && last != null) {
 			for (CourseAssignment ca: ret.getCourseAssignments())
 				for (ClassAssignment a: ca.getClassAssignments()) {
@@ -1314,6 +1329,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							c.setCourseNbr(enrollment.getCourseOffering().getCourseNbr());
 							c.setTitle(enrollment.getCourseOffering().getTitle());
 							c.setHasCrossList(enrollment.getCourseOffering().getInstructionalOffering().hasCrossList());
+							c.setCanWaitList(enrollment.getCourseOffering().getInstructionalOffering().effectiveWaitList());
 							e.setCourse(c);
 							student2enrollment.put(enrollment.getStudent().getUniqueId(), e);
 							if (enrollment.getCourseRequest() != null) {
@@ -1342,6 +1358,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 									e.setAlternative(alt.getCourseOffering().getCourseName());
 								}
 								e.setRequestedDate(enrollment.getCourseRequest().getCourseDemand().getTimestamp());
+								e.setCritical(enrollment.getCourseRequest().getCourseDemand().getEffectiveCritical().ordinal());
 								e.setApprovedDate(enrollment.getApprovedDate());
 								if (enrollment.getApprovedBy() != null) {
 									String name = approvedBy2name.get(enrollment.getApprovedBy());
@@ -1366,7 +1383,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 									}
 									e.setApprovedBy(name == null ? enrollment.getApprovedBy() : name);
 								}
-								e.setWaitList(enrollment.getCourseRequest().getCourseDemand().isWaitlist());
+								e.setWaitList(enrollment.getCourseRequest().getCourseDemand().effectiveWaitList());
+								e.setNoSub(enrollment.getCourseRequest().getCourseDemand().effectiveNoSub());
 							} else {
 								e.setPriority(-1);
 							}
@@ -1424,8 +1442,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							c.setCourseNbr(request.getCourseOffering().getCourseNbr());
 							c.setTitle(request.getCourseOffering().getTitle());
 							c.setHasCrossList(request.getCourseOffering().getInstructionalOffering().hasCrossList());
+							c.setCanWaitList(request.getCourseOffering().getInstructionalOffering().effectiveWaitList());
 							e.setCourse(c);
-							e.setWaitList(request.getCourseDemand().isWaitlist());
+							e.setWaitList(request.getCourseDemand().effectiveWaitList());
+							e.setNoSub(request.getCourseDemand().effectiveNoSub());
 							student2enrollment.put(request.getCourseDemand().getStudent().getUniqueId(), e);
 							e.setPriority(1 + request.getCourseDemand().getPriority());
 							if (request.getCourseDemand().getCourseRequests().size() > 1) {
@@ -1452,6 +1472,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								e.setAlternative(alt.getCourseOffering().getCourseName());
 							}
 							e.setRequestedDate(request.getCourseDemand().getTimestamp());
+							e.setCritical(request.getCourseDemand().getEffectiveCritical().ordinal());
+							e.setWaitListedDate(request.getCourseDemand().getWaitlistedTimeStamp());
 						}
 					return new ArrayList<ClassAssignmentInterface.Enrollment>(student2enrollment.values());
 				} else {
@@ -1489,12 +1511,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					if (student == null) 
 						throw new SectioningException(MSG.exceptionBadStudentId());
 					StudentSectioningStatus status = student.getEffectiveStatus();
-					WaitListMode wlMode = WaitListMode.None;
-					if (CustomStudentEnrollmentHolder.isAllowWaitListing() && (status == null || status.hasOption(Option.waitlist))) {
-						wlMode = WaitListMode.WaitList;
-					} else if (status != null && status.hasOption(Option.nosubs)) {
-						wlMode = WaitListMode.NoSubs;
-					}
+					WaitListMode wlMode = student.getWaitListMode();
 					OnlineSectioningServer server = getServerInstance(student.getSession().getUniqueId(), false);
 					if (server == null) {
 						Comparator<StudentClassEnrollment> cmp = new Comparator<StudentClassEnrollment>() {
@@ -1540,11 +1557,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								course.setCourseNbr(enrollment.getCourseOffering().getCourseNbr());
 								course.setSubject(enrollment.getCourseOffering().getSubjectAreaAbbv());
 								course.setTitle(enrollment.getCourseOffering().getTitle());
-								course.setWaitListed(enrollment.getCourseRequest() != null && enrollment.getCourseRequest().getCourseDemand().getWaitlist() != null && enrollment.getCourseRequest().getCourseDemand().getWaitlist().booleanValue());
 								course.setHasCrossList(enrollment.getCourseOffering().getInstructionalOffering().hasCrossList());
+								course.setCanWaitList(enrollment.getCourseOffering().getInstructionalOffering().effectiveWaitList());
 								credit = enrollment.getCourseOffering().getCredit();
-								if (enrollment.getCourseRequest() != null)
+								if (enrollment.getCourseRequest() != null) {
 									course.setRequestedDate(enrollment.getCourseRequest().getCourseDemand().getTimestamp());
+								}
 							}
 							ClassAssignment clazz = course.addClassAssignment();
 							clazz.setClassId(enrollment.getClazz().getUniqueId());
@@ -1665,14 +1683,16 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								CourseAssignment course = new CourseAssignment();
 								courses.put(request.getCourseOffering().getUniqueId(), course);
 								course.setRequestedDate(demand.getTimestamp());
+								if (demand.effectiveWaitList())
+									course.setWaitListedDate(demand.getWaitlistedTimeStamp());
 								ret.add(course);
 								course.setAssigned(false);
-								course.setWaitListed(demand.getWaitlist() != null && demand.getWaitlist().booleanValue());
 								course.setCourseId(request.getCourseOffering().getUniqueId());
 								course.setCourseNbr(request.getCourseOffering().getCourseNbr());
 								course.setSubject(request.getCourseOffering().getSubjectAreaAbbv());
 								course.setTitle(request.getCourseOffering().getTitle());
 								course.setHasCrossList(request.getCourseOffering().getInstructionalOffering().hasCrossList());
+								course.setCanWaitList(request.getCourseOffering().getInstructionalOffering().effectiveWaitList());
 								ClassAssignment clazz = course.addClassAssignment();
 								clazz.setCourseId(request.getCourseOffering().getUniqueId());
 								clazz.setCourseAssigned(false);
@@ -1685,6 +1705,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						ret.setRequest(getRequest(student));
 						ret.setCanSetCriticalOverrides(getSessionContext().hasPermission(student, Right.StudentSchedulingChangeCriticalOverride));
 						ret.setAdvisorRequest(AdvisorGetCourseRequests.getRequest(student, hibSession));
+						ret.setAdvisorWaitListedCourseIds(student.getAdvisorWaitListedCourseIds(null));
 						if (Customization.StudentHoldsCheckProvider.hasProvider()) {
 							try {
 								OnlineSectioningHelper helper = new OnlineSectioningHelper(hibSession, currentUser());
@@ -1703,10 +1724,15 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								ret.getRequest().setSpecRegDashboardUrl(dash.getDashboardUrl(student));
 							} catch (Exception e) {}
 						}
-						if (ret.getAdvisorRequest() != null)
-							ret.getAdvisorRequest().setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value(student.getSession())));
 						if (ret.getRequest() != null)
 							ret.getRequest().setWaitListMode(wlMode);
+						if (ret.getAdvisorRequest() != null) {
+							String advWlMode = ApplicationProperty.AdvisorRecommendationsWaitListMode.value(student.getSession());
+							if ("Student".equalsIgnoreCase(advWlMode))
+								ret.getAdvisorRequest().setWaitListMode(wlMode);
+							else
+								ret.getAdvisorRequest().setWaitListMode(WaitListMode.valueOf(advWlMode));
+						}
 						
 						for (StudentNote n: student.getNotes()) {
 							ClassAssignmentInterface.Note note = new ClassAssignmentInterface.Note();
@@ -1724,14 +1750,30 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							ret.addNote(note);
 						}
 						
+						if (status != null && status.hasOption(Option.specreg) && Customization.SpecialRegistrationProvider.hasProvider()) {
+							try {
+								SpecialRegistrationProvider sp = Customization.SpecialRegistrationProvider.getProvider();
+								OnlineSectioningHelper helper = new OnlineSectioningHelper(hibSession, currentUser());
+								server = getServerInstance(student.getSession().getUniqueId(), true);
+								ret.setSpecialRegistrations(sp.retrieveAllRegistrations(server, helper, new XStudent(student, helper, server.getAcademicSession().getFreeTimePattern())));
+							} catch (Exception e) {}
+						}
+						
 						return ret;
 					} else {
-						ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(studentId).withRequest(true).withCustomCheck(true).withAdvisorRequest(true).checkHolds(true), currentUser());
+						ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(studentId)
+								.withRequest(true).withCustomCheck(true).withWaitListCheck(true).withAdvisorRequest(true).checkHolds(true).withWaitListMode(wlMode)
+								.withSpecialRegistrations(status != null && status.hasOption(Option.specreg)), currentUser());
 						ret.setCanSetCriticalOverrides(getSessionContext().hasPermission(student, Right.StudentSchedulingChangeCriticalOverride));
-						if (ret.getAdvisorRequest() != null)
-							ret.getAdvisorRequest().setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value(student.getSession())));
 						if (ret.getRequest() != null)
 							ret.getRequest().setWaitListMode(wlMode);
+						if (ret.getAdvisorRequest() != null) {
+							String advWlMode = ApplicationProperty.AdvisorRecommendationsWaitListMode.value(student.getSession());
+							if ("Student".equalsIgnoreCase(advWlMode))
+								ret.getAdvisorRequest().setWaitListMode(wlMode);
+							else
+								ret.getAdvisorRequest().setWaitListMode(WaitListMode.valueOf(advWlMode));
+						}
 						
 						NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
 						for (StudentNote n: student.getNotes()) {
@@ -1748,7 +1790,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								if (advisor != null) note.setOwner(nameFormat.format(advisor));
 							}
 							ret.addNote(note);
-						}	
+						}
 						
 						return ret;
 					}
@@ -1759,8 +1801,22 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
+				
+				WaitListMode wlMode = WaitListMode.NoSubs;
+				
+				ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(studentId).withRequest(true).withAdvisorRequest(true).withWaitListMode(wlMode), currentUser());
+				
+				if (ret.getRequest() != null)
+					ret.getRequest().setWaitListMode(wlMode);
+				if (ret.getAdvisorRequest() != null) {
+					String advWlMode = ApplicationProperty.AdvisorRecommendationsWaitListMode.value(server.getAcademicSession());
+					if ("Student".equalsIgnoreCase(advWlMode))
+						ret.getAdvisorRequest().setWaitListMode(wlMode);
+					else
+						ret.getAdvisorRequest().setWaitListMode(WaitListMode.valueOf(advWlMode));
+				}
 
-				return server.execute(server.createAction(GetAssignment.class).forStudent(studentId).withRequest(true).withAdvisorRequest(true), currentUser());
+				return ret;
 			}
 		} catch (PageAccessException e) {
 			throw e;
@@ -1948,6 +2004,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null,
 							getMyStudents(sessionId),
 							getSubjectAreas())
+							.showUnmatchedClasses(CommonValues.Yes.eq(UserProperty.StudentDashboardShowUnmatchedClasses.get(sessionContext.getUser())))
 							.withFilter(filter), currentUser()
 					);	
 				}
@@ -1959,6 +2016,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null,
 						getMyStudents(sessionId),
 						getSubjectAreas())
+						.showUnmatchedClasses(CommonValues.Yes.eq(UserProperty.StudentDashboardShowUnmatchedClasses.get(sessionContext.getUser())))
 						.withFilter(filter), currentUser()
 				);				
 			} else {
@@ -1966,7 +2024,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 
-				return server.execute(server.createAction(FindEnrollmentInfoAction.class).withParams(query, courseId, null, null, getMyStudents(server.getAcademicSession().getUniqueId()), getSubjectAreas()).withFilter(filter), currentUser());
+				return server.execute(server.createAction(FindEnrollmentInfoAction.class)
+						.withParams(query, courseId, null, null, getMyStudents(server.getAcademicSession().getUniqueId()), getSubjectAreas())
+						.showUnmatchedClasses(CommonValues.Yes.eq(UserProperty.StudentDashboardShowUnmatchedClasses.get(sessionContext.getUser())))
+						.withFilter(filter), currentUser());
 			}
 		} catch (PageAccessException e) {
 			throw e;
@@ -2180,7 +2241,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 				
-				CourseRequestInterface request = server.execute(server.createAction(GetRequest.class).forStudent(cx.getStudentId()), currentUser(cx));
+				CourseRequestInterface request = server.execute(server.createAction(GetRequest.class).forStudent(cx.getStudentId()).withWaitListMode(WaitListMode.NoSubs), currentUser(cx));
 				if (request == null)
 					throw new SectioningException(MSG.exceptionBadStudentId());
 
@@ -2232,6 +2293,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		request.setStudentId(student.getUniqueId());
 		request.setSaved(true);
 		request.setMaxCredit(student.getMaxCredit());
+		request.setWaitListMode(student.getWaitListMode());
 		if (student.getOverrideMaxCredit() != null) {
 			request.setMaxCreditOverride(student.getOverrideMaxCredit());
 			request.setMaxCreditOverrideExternalId(student.getOverrideExternalId());
@@ -2245,6 +2307,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
 			else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.CANCELLED.ordinal())
 				request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_CANCELLED);
+			else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.NOT_CHECKED.ordinal())
+				request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_NEEDED);
 			else
 				request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_PENDING);
 		}
@@ -2306,10 +2370,16 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						boolean hasEnrollments = !course.getClassEnrollments().isEmpty(); 
 						rc.setReadOnly(hasEnrollments);
 						rc.setCanDelete(!hasEnrollments);
+						rc.setCanWaitList(course.getCourseOffering().getInstructionalOffering().effectiveWaitList());
 						if (hasEnrollments)
 							rc.setStatus(RequestedCourseStatus.ENROLLED);
 						else if (course.getOverrideStatus() != null)
-							rc.setStatus(course.isRequestApproved() ? RequestedCourseStatus.OVERRIDE_APPROVED : course.isRequestRejected() ? RequestedCourseStatus.OVERRIDE_REJECTED : course.isRequestCancelled() ? RequestedCourseStatus.OVERRIDE_CANCELLED : RequestedCourseStatus.OVERRIDE_PENDING);
+							rc.setStatus(
+									course.isRequestApproved() ? RequestedCourseStatus.OVERRIDE_APPROVED :
+									course.isRequestRejected() ? RequestedCourseStatus.OVERRIDE_REJECTED :
+									course.isRequestCancelled() ? RequestedCourseStatus.OVERRIDE_CANCELLED :
+									course.isRequestNeeded() ? RequestedCourseStatus.OVERRIDE_NEEDED :
+									RequestedCourseStatus.OVERRIDE_PENDING);
 						else
 							rc.setStatus(RequestedCourseStatus.SAVED);
 						if (hasEnrollments) {
@@ -2349,12 +2419,14 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						else
 							request.getCourses().add(r);
 					}
-					r.setWaitList(cd.getWaitlist());
+					r.setWaitList(cd.effectiveWaitList());
+					r.setNoSub(cd.effectiveNoSub());
 					if (cd.getCriticalOverride() != null)
 						r.setCritical(cd.getCriticalOverride());
 					else
 						r.setCritical(cd.getCritical());
 					r.setTimeStamp(cd.getTimestamp());
+					r.setWaitListedTimeStamp(cd.getWaitlistedTimeStamp());
 					lastRequest = r;
 					lastRequestPriority = cd.getPriority();
 				}
@@ -2373,6 +2445,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				rc.setCourseId(c.getUniqueId());
 				rc.setCourseName(c.getSubjectAreaAbbv() + " " + c.getCourseNbr() + (!CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
 				rc.setCourseTitle(c.getTitle());
+				rc.setCanWaitList(c.getInstructionalOffering().effectiveWaitList());
 				CourseCreditUnitConfig credit = c.getCredit(); 
 				if (credit != null) rc.setCredit(credit.getMinCredit(), credit.getMaxCredit());
 				r.addRequestedCourse(rc);
@@ -2402,7 +2475,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			OnlineSectioningServer server = getStudentSolver();
 			if (server == null) 
 				throw new SectioningException(MSG.exceptionNoSolver());
-			return server.execute(server.createAction(GetRequest.class).forStudent(cx.getStudentId(), cx.isSectioning()), currentUser(cx));
+			return server.execute(server.createAction(GetRequest.class).forStudent(cx.getStudentId(), cx.isSectioning()).withWaitListMode(WaitListMode.NoSubs), currentUser(cx));
 		}
 		OnlineSectioningServer server = getServerInstance(cx.getSessionId() == null ? canEnroll(cx) : cx.getSessionId(), false);
 		EligibilityCheck last = getLastEligibilityCheck(cx);
@@ -2411,6 +2484,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (server != null) {
 			return server.execute(server.createAction(GetRequest.class).forStudent(cx.getStudentId(), cx.isSectioning())
 					.withCustomValidation(!cx.isSectioning())
+					.withWaitListValidation(cx.isSectioning())
 					.withCourseMatcher(getCourseMatcher(cx, server))
 					.withAdvisorRequests(includeAdvisorRequests), currentUser(cx));
 		} else {
@@ -2473,8 +2547,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			OnlineSectioningServer server = getStudentSolver();
 			if (server == null) 
 				throw new SectioningException(MSG.exceptionNoSolver());
-
-			ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(cx.getStudentId()), currentUser(cx));
+			
+			ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(cx.getStudentId()).withWaitListMode(WaitListMode.NoSubs), currentUser(cx));
 			if (ret != null)
 				ret.setCanEnroll(cx.getStudentId() != null);
 			
@@ -2586,21 +2660,25 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			Session session = SessionDAO.getInstance().get(getStatusPageSessionId());
 			StudentStatusInfo info = null;
 			if (session.getDefaultSectioningStatus() != null) {
-				info = toStudentStatusInfo(session.getDefaultSectioningStatus(), courseTypes, admin, advisor);
+				StudentSectioningStatus s = session.getDefaultSectioningStatus();
+				info = toStudentStatusInfo(s, courseTypes, admin, advisor);
 				info.setUniqueId(null);
 				info.setReference("");
 				info.setLabel(MSG.studentStatusSessionDefault(session.getDefaultSectioningStatus().getLabel()));
-				info.setEffectiveStart(null); info.setEffectiveStop(null);
+				info.setEmail(email && s.hasOption(StudentSectioningStatus.Option.email));
+				info.setWaitList(waitlist && s.hasOption(StudentSectioningStatus.Option.waitlist));
+				info.setSpecialRegistration(specreg && s.hasOption(StudentSectioningStatus.Option.specreg));
+				info.setRequestValiadtion(reqval && s.hasOption(StudentSectioningStatus.Option.reqval));
 			} else {
 				info = new StudentStatusInfo();
 				info.setReference("");
 				info.setLabel(MSG.studentStatusSystemDefault());
 				info.setAllEnabled();
+				info.setEmail(email);
+				info.setWaitList(waitlist);
+				info.setSpecialRegistration(specreg);
+				info.setRequestValiadtion(reqval);
 			}
-			info.setEmail(email);
-			info.setWaitList(waitlist);
-			info.setSpecialRegistration(specreg);
-			info.setRequestValiadtion(reqval);
 			ret.add(info);
 		}
 		for (StudentSectioningStatus s: StudentSectioningStatus.findAll(getStatusPageSessionId())) {
@@ -2609,10 +2687,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			StudentStatusInfo info = toStudentStatusInfo(s, courseTypes, admin, advisor);
 			info.setEmail(email && s.hasOption(StudentSectioningStatus.Option.email));
 			info.setWaitList(waitlist && s.hasOption(StudentSectioningStatus.Option.waitlist));
-			info.setWaitList(s.hasOption(StudentSectioningStatus.Option.nosubs));
 			info.setSpecialRegistration(specreg && s.hasOption(StudentSectioningStatus.Option.specreg));
 			info.setRequestValiadtion(reqval && s.hasOption(StudentSectioningStatus.Option.reqval));
-			info.setCanRequire(s.hasOption(StudentSectioningStatus.Option.canreq));
 			ret.add(info);
 		}
 		return ret;
@@ -2888,8 +2964,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				check.setStudentId(cx.getStudentId());
 				check.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, true);
 				check.setFlag(EligibilityFlag.CAN_ENROLL, !server.isPublished());
-				check.setFlag(EligibilityFlag.CAN_WAITLIST, ApplicationProperty.SolverDashboardAllowWaitList.isTrue());
-				check.setFlag(EligibilityFlag.CAN_NO_SUBS, ApplicationProperty.SolverDashboardAllowNoSubs.isTrue());
+				check.setFlag(EligibilityFlag.CAN_WAITLIST, false);
+				check.setFlag(EligibilityFlag.CAN_NO_SUBS, true);
 				check.setFlag(EligibilityFlag.CAN_RESET, ApplicationProperty.SolverDashboardAllowScheduleReset.isTrue());
 				check.setFlag(EligibilityFlag.CONFIRM_DROP, ApplicationProperty.OnlineSchedulingConfirmCourseDrop.isTrue());
 				check.setFlag(EligibilityFlag.QUICK_ADD_DROP, ApplicationProperty.OnlineSchedulingQuickAddDrop.isTrue());
@@ -2947,6 +3023,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					}
 					check.setFlag(EligibilityFlag.CAN_REGISTER, getSessionContext().hasPermissionAnyAuthority(student, Right.StudentSchedulingCanRegister));
 					check.setFlag(EligibilityFlag.CAN_REQUIRE, getSessionContext().hasPermissionAnyAuthority(student, Right.StudentSchedulingCanRequirePreferences));
+					check.setAdvisorWaitListedCourseIds(student.getAdvisorWaitListedCourseIds(null));
 				} else {
 					check = server.execute(server.createAction(CourseRequestEligibility.class).forStudent(cx.getStudentId()).withCheck(check).includeCustomCheck(includeCustomCheck)
 							.withPermission(
@@ -3042,7 +3119,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		
 		getSessionContext().checkPermission(server.getAcademicSession(), Right.StudentSchedulingCheckStudentOverrides);
 		
-		return server.execute(server.createAction(CustomCourseRequestsValidationHolder.Update.class).forStudents(studentIds), currentUser());
+		Boolean r1 = server.execute(server.createAction(CustomCourseRequestsValidationHolder.Update.class).forStudents(studentIds), currentUser());
+		
+		Boolean r2 = server.execute(server.createAction(CustomWaitListValidationHolder.Update.class).forStudents(studentIds), currentUser());
+		
+		return r1 || r2;
 	}
 	
 	@Override
@@ -3052,7 +3133,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		
 		getSessionContext().checkPermission(server.getAcademicSession(), Right.StudentSchedulingValidateStudentOverrides);
 		
-		return server.execute(server.createAction(CustomCourseRequestsValidationHolder.Validate.class).forStudents(studentIds), currentUser());
+		Boolean r1 = server.execute(server.createAction(CustomCourseRequestsValidationHolder.Validate.class).forStudents(studentIds), currentUser());
+		
+		Boolean r2 = server.execute(server.createAction(CustomWaitListValidationHolder.Validate.class).forStudents(studentIds), currentUser());
+		
+		return r1 || r2;
 	}
 	
 	@Override
@@ -3232,6 +3317,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			if (a.getLastName() != null)
 				st.addAdvisor(NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value()).format(a));
 		}
+		st.setCanSelect(
+				getSessionContext().hasPermission(student.getSession(), Right.AdvisorCourseRequests) ||
+				getSessionContext().hasPermission(student.getSession(), Right.StudentSchedulingEmailStudent));
 		return st;
 	}
 
@@ -3352,9 +3440,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (request.getSessionId() == null) throw new PageAccessException(MSG.exceptionNoAcademicSession());
 		if (request.getStudentId() == null) throw new PageAccessException(MSG.exceptionNoStudent());
 		if (request.isPreReg())
-			getSessionContext().checkPermissionAnySession(request.getSessionId(), "Session", Right.CourseRequests);
+			getSessionContext().checkPermissionOtherAuthority(request.getSessionId(), "Session", Right.CourseRequests, getStudentAuthority(request.getSessionId()));
 		else
-			getSessionContext().checkPermissionAnySession(request.getSessionId(), "Session", Right.SchedulingAssistant);
+			getSessionContext().checkPermissionOtherAuthority(request.getSessionId(), "Session", Right.SchedulingAssistant, getStudentAuthority(request.getSessionId()));
 		
 		OnlineSectioningServer server = getServerInstance(request.getSessionId(), true);
 		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
@@ -3422,14 +3510,18 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 		
 		ret.setCanUpdate(false);
-		ret.setDegreePlan(CustomDegreePlansHolder.hasProvider());
+		ret.setDegreePlan(CustomDegreePlansHolder.hasProvider() && getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdvisor));
 		if (Customization.StudentEmailProvider.hasProvider()) {
 			StudentEmailProvider email = Customization.StudentEmailProvider.getProvider();
 			ret.setEmailOptionalToggleCaption(email.getToggleCaptionIfOptional());
 			ret.setEmailOptionalToggleDefault(email.isOptionCheckedByDefault());
 		}
 		try {
-			ret.setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value(student.getSession())));
+			String advWlMode = ApplicationProperty.AdvisorRecommendationsWaitListMode.value(student.getSession());
+			if ("Student".equalsIgnoreCase(advWlMode))
+				ret.setWaitListMode(student.getWaitListMode());
+			else
+				ret.setWaitListMode(WaitListMode.valueOf(advWlMode));
 		} catch (Exception e) {}
 		 
 		if (getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdmin)) {
@@ -3509,7 +3601,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		
 		if (server != null && !(server instanceof DatabaseServer)) {
 			ret.setStudentRequest(server.execute(server.createAction(GetRequest.class).forStudent(student.getUniqueId(), false)
-					.withCustomValidation(true).withCustomRequest(false).withAdvisorRequests(false), currentUser()));
+					.withCustomValidation(true).withWaitListValidation(true).withCustomRequest(false).withAdvisorRequests(false).withWaitListMode(student.getWaitListMode()), currentUser()));
 		} else if (ret.isCanUpdate()) {
 			ret.setStudentRequest(getRequest(student));
 		}
@@ -3523,6 +3615,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			} else {
 				ret.getStudentRequest().setWaitListMode(WaitListMode.None);
 			}
+			if (ret.getRequest() != null) {
+				if (ret.getWaitListMode() == WaitListMode.WaitList && server != null && server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false))
+					ret.setAdvisorWaitListedCourseIds(ret.getRequest().getWaitListedCourseIds());
+				if (ret.getWaitListMode() == WaitListMode.NoSubs && server != null && server.getConfig().getPropertyBoolean("Load.UseAdvisorNoSubs", false))
+					ret.setAdvisorWaitListedCourseIds(ret.getRequest().getNoSubCourseIds());
+			}
 		}
 		
 		// has pin but was not advised yet >> set the pin released default to true
@@ -3530,7 +3628,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			ret.getRequest().setPinReleased(true);
 		
 		// put default note when no note is provided
-		if (ret.getRequest() != null && !ret.getRequest().hasCreditNote() && ret.getRequest().isEmpty()) {
+		if (student.getAdvisorCourseRequests().isEmpty()) {
 			String defaultNote = ApplicationProperty.AdvisorCourseRequestsDefaultNote.valueOfSession(sessionId);
 			if (defaultNote != null && !defaultNote.isEmpty())
 				ret.getRequest().setCreditNote(defaultNote);
@@ -3561,6 +3659,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (emailStudent && details.isCanEmail()) {
 			StudentEmail email = server.createAction(StudentEmail.class)
 					.forStudent(details.getStudentId())
+					.fromAction("advisor-submit")
 					.overridePermissions(false, false, true)
 					.includeAdvisorRequestsPDF();
 			email.setEmailSubject(MSG.defaulSubjectAdvisorRequests());
@@ -3640,8 +3739,14 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		
 		CourseRequestInterface ret = server.execute(server.createAction(AdvisorGetCourseRequests.class).forStudent(cx.getStudentId()).checkDemands(false), currentUser(cx));
 		try {
-			ret.setWaitListMode(WaitListMode.valueOf(ApplicationProperty.AdvisorRecommendationsWaitListMode.value(server.getAcademicSession())));
-		} catch (Exception e) {}
+			String advWlMode = ApplicationProperty.AdvisorRecommendationsWaitListMode.value(server.getAcademicSession());
+			if ("Student".equalsIgnoreCase(advWlMode))
+				ret.setWaitListMode(StudentDAO.getInstance().get(cx.getStudentId()).getWaitListMode());
+			else
+				ret.setWaitListMode(WaitListMode.valueOf(advWlMode));
+		} catch (Exception e) {
+			ret.setWaitListMode(WaitListMode.None);
+		}
 		return ret;
 	}
 
@@ -3679,11 +3784,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				"order by max(acr.timestamp) desc")
 				.setString("externalId", sessionContext.getUser().getExternalUserId())
 				.setLong("sessionId", cx.getAcademicSessionId())
-				.setCacheable(true).setMaxResults(50).list();
+				.setCacheable(false).setMaxResults(50).list();
 		for (Object[] o: notes) {
 			String note = (String)o[0];
 			Integer count = ((Number)o[1]).intValue();
 			Date ts = (Date)o[2];
+			if (note == null || note.isEmpty()) continue;
 			String dispNote = note;
 			if (defaultNote != null && note.contains(defaultNote))
 				dispNote = note.replace(defaultNote, "\u2026");
@@ -3788,5 +3894,85 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			throw new SectioningException(MSG.exceptionNotSupportedFeature());
 		
 		return server.execute(server.createAction(SpecialRegistrationRequestVariableTitleCourse.class).withRequest(request), currentUser());
+	}
+
+	@Override
+	public CheckCoursesResponse waitListCheckValidation(CourseRequestInterface request) throws SectioningException, PageAccessException {
+		checkContext(request);
+		if (request.getSessionId() == null) throw new PageAccessException(MSG.exceptionNoAcademicSession());
+		if (request.getStudentId() == null) throw new PageAccessException(MSG.exceptionNoStudent());
+		getSessionContext().checkPermissionAnyAuthority(request.getStudentId(), "Student", Right.StudentSchedulingCanEnroll);
+		
+		OnlineSectioningServer server = getServerInstance(request.getSessionId(), false);
+		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+		if (!server.getAcademicSession().isSectioningEnabled() || !Customization.WaitListValidationProvider.hasProvider())
+			throw new SectioningException(MSG.exceptionNotSupportedFeature());
+		
+		return server.execute(server.createAction(WaitListCheckValidation.class).withRequest(request), currentUser());
+	}
+
+	@Override
+	public CourseRequestInterface waitListSubmitOverrides(CourseRequestInterface request, Float neededCredit) throws SectioningException, PageAccessException {
+		checkContext(request);
+		if (request.getSessionId() == null) throw new PageAccessException(MSG.exceptionNoAcademicSession());
+		if (request.getStudentId() == null) throw new PageAccessException(MSG.exceptionNoStudent());
+		getSessionContext().checkPermissionAnyAuthority(request.getStudentId(), "Student", Right.StudentSchedulingCanEnroll);
+		
+		OnlineSectioningServer server = getServerInstance(request.getSessionId(), false);
+		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+		if (!server.getAcademicSession().isSectioningEnabled() || !Customization.WaitListValidationProvider.hasProvider())
+			throw new SectioningException(MSG.exceptionNotSupportedFeature());
+		
+		return server.execute(server.createAction(WaitListSubmitOverrides.class).withRequest(request).withCredit(neededCredit), currentUser());
+	}
+
+	protected OtherAuthority getStudentAuthority(Long sessionId) {
+		return new StudentAuthority(getSessionContext(), new SimpleQualifier("Session", sessionId));
+	}
+	
+	protected OtherAuthority getStudentAuthority(Qualifiable session) {
+		return new StudentAuthority(getSessionContext(), session);
+	}
+	
+	protected static class StudentAuthority implements OtherAuthority {
+		private String iRole = null;
+		private boolean iAllowNoRole = false;
+		private Qualifiable[] iFilter = null;
+
+		protected StudentAuthority(SessionContext context, Qualifiable... filter) {
+			UserContext user = context.getUser();
+			iFilter = filter;
+			if (user != null && user.getCurrentAuthority() != null) {
+				iRole = user.getCurrentAuthority().getRole();
+				iAllowNoRole = true;
+				authorities: for (UserAuthority authority: user.getAuthorities()) {
+					for (Qualifiable q: filter)
+						if (!authority.hasQualifier(q)) continue authorities;
+					if (Roles.ROLE_STUDENT.equals(authority.getRole())) {
+						iAllowNoRole = false;
+						break authorities;
+					}
+				}
+			}
+		}
+
+		@Override
+		public boolean isMatch(UserAuthority authority) {
+			if (iRole == null) return false;
+			
+			for (Qualifiable q: iFilter)
+				if (!authority.hasQualifier(q)) return false;
+			
+			// allow current role
+			if (iRole.equals(authority.getRole())) return true;
+			
+			// allow student role
+			if (Roles.ROLE_STUDENT.equals(authority.getRole())) return true;
+			
+			// allow no role (when no matching student role was found)
+			if (iAllowNoRole && Roles.ROLE_NONE.equals(authority.getRole())) return true;
+			
+			return false;
+		}
 	}
 }

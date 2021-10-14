@@ -48,6 +48,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeModes;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.ClassWaitList;
@@ -55,6 +56,8 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
+import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideIntent;
+import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.FreeTime;
@@ -70,6 +73,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
+import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.CriticalCourses;
 import org.unitime.timetable.onlinesectioning.custom.CustomCriticalCoursesHolder;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentFailure;
@@ -79,7 +83,6 @@ import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
-import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
@@ -91,6 +94,8 @@ import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 import org.unitime.timetable.onlinesectioning.solver.CheckAssignmentAction;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction.IdPair;
+import org.unitime.timetable.onlinesectioning.specreg.WaitListCheckValidation;
+import org.unitime.timetable.onlinesectioning.specreg.WaitListSubmitOverrides;
 
 /**
  * @author Tomas Muller
@@ -102,6 +107,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 	private Long iStudentId;
 	private CourseRequestInterface iRequest;
 	private List<ClassAssignmentInterface.ClassAssignment> iAssignment;
+	private boolean iCheckWaitLists = false;
 	
 	public EnrollStudent forStudent(Long studentId) {
 		iStudentId = studentId;
@@ -117,6 +123,11 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 		iAssignment = assignment;
 		return this;
 	}
+	
+	public EnrollStudent withWaitListCheck(boolean checkWaitLists) {
+		iCheckWaitLists = checkWaitLists;
+		return this;
+	}
 
 	public Long getStudentId() { return iStudentId; }
 	public CourseRequestInterface getRequest() { return iRequest; }
@@ -130,6 +141,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 		Set<Long> lockedCourses = new HashSet<Long>();
 		List<EnrollmentFailure> failures = null;
 		boolean includeRequestInTheReturnMessage = false;
+		boolean rescheduling = server.getConfig().getPropertyBoolean("Enrollment.ReSchedulingEnabled", false);
 		getRequest().removeDuplicates();
 		for (ClassAssignmentInterface.ClassAssignment ca: getAssignment())
 			if (ca != null && !ca.isFreeTime() && !ca.isDummy() && !ca.isTeachingAssignment()) {
@@ -138,15 +150,16 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					throw new SectioningException(MSG.exceptionEnrollNotAvailable(MSG.clazz(ca.getSubject(), ca.getCourseNbr(), ca.getSubpart(), ca.getSection())));
 				if (server.isOfferingLocked(course.getOfferingId())) {
 					lockedCourses.add(course.getCourseId());
-					for (CourseRequestInterface.Request r: getRequest().getCourses())
-						if (!r.isWaitList() && r.hasRequestedCourse()) {
-							for (RequestedCourse rc: r.getRequestedCourse())
-								if (rc.hasCourseId()) {
-									if (rc.getCourseId().equals(course.getCourseId())) r.setWaitList(true);
-								} else if (rc.hasCourseName()) {
-									if (course.matchCourseName(rc.getCourseName())) r.setWaitList(true);
-								}
-						}
+					if (rescheduling)
+						for (CourseRequestInterface.Request r: getRequest().getCourses())
+							if (!r.isWaitList() && r.hasRequestedCourse()) {
+								for (RequestedCourse rc: r.getRequestedCourse())
+									if (rc.hasCourseId()) {
+										if (rc.getCourseId().equals(course.getCourseId())) r.setWaitList(true);
+									} else if (rc.hasCourseName()) {
+										if (course.matchCourseName(rc.getCourseName())) r.setWaitList(true);
+									}
+							}
 				} else {
 					offeringIds.add(course.getOfferingId());
 				}
@@ -170,6 +183,8 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 		} catch (Exception e) {
 			helper.warn("Failed to lookup critical courses: " + e.getMessage(), e);
 		}
+		WaitListMode wlMode = WaitListMode.None;
+		boolean hasWaitList = false;
 		
 		Set<ErrorMessage> checkErrors = (getRequest().areTimeConflictsAllowed() || getRequest().areSpaceConflictsAllowed() || getRequest().areLinkedConflictsAllowed() ? new TreeSet<ErrorMessage>() : null);
 		Lock lock = server.lockStudent(getStudentId(), offeringIds, name());
@@ -220,6 +235,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 	                    "left join fetch c.schedulingSubpart as ss " +
 						"where s.uniqueId = :studentId").setLong("studentId", getStudentId()).uniqueResult();
 				if (student == null) throw new SectioningException(MSG.exceptionBadStudentId());
+				wlMode = student.getWaitListMode();
 				
 				XStudent oldStudent = server.getStudent(getStudentId());
 
@@ -227,8 +243,29 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					.setExternalId(oldStudent.getExternalId())
 					.setName(oldStudent.getName());
 				
+				boolean hasWaitListedCourses = false;
+				if (wlMode == WaitListMode.WaitList) {
+					r: for (CourseRequestInterface.Request r: getRequest().getCourses()) {
+						if (r.isWaitList()) {
+							hasWaitListedCourses = true; break;
+						}
+						if (r.hasRequestedCourse())
+							for (CourseRequestInterface.RequestedCourse rc: r.getRequestedCourse()) {
+								if (rc.isCanWaitList()) {
+									hasWaitListedCourses = true; break r;
+								}
+							}
+					}
+					if (!hasWaitListedCourses)
+						for (XRequest r: oldStudent.getRequests())
+							if (!r.isAlternative() && r instanceof XCourseRequest && ((XCourseRequest)r).isWaitlist()) {
+								hasWaitListedCourses = true;
+								break;
+							}
+				}
+				
 				if (CustomStudentEnrollmentHolder.hasProvider()) {
-					failures = CustomStudentEnrollmentHolder.getProvider().enroll(server, helper, oldStudent, enrlCheck, lockedCourses, gradeModes);
+					failures = CustomStudentEnrollmentHolder.getProvider().enroll(server, helper, oldStudent, enrlCheck, lockedCourses, gradeModes, hasWaitListedCourses);
 					for (Iterator<ClassAssignmentInterface.ClassAssignment> i = getAssignment().iterator(); i.hasNext(); ) {
 						ClassAssignmentInterface.ClassAssignment ca = i.next();
 						if (ca == null || ca.isFreeTime() || ca.getClassId() == null || ca.isDummy() || ca.isTeachingAssignment()) continue;
@@ -277,6 +314,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 									cd.setAlternative(false);
 									cd.setPriority(priority);
 									cd.setWaitlist(false);
+									cd.setNoSub(false);
 									cd.setCritical(0);
 									FreeTime free = cd.getFreeTime();
 									if (free == null) {
@@ -328,7 +366,12 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					}
 					cd.setAlternative(false);
 					cd.setPriority(priority);
+					Boolean oldWaitList = cd.isWaitlist();
+					if (Boolean.TRUE.equals(cd.isWaitlist()) || r.isWaitList()) hasWaitList = true;
+					if (r.isWaitList() && !Boolean.TRUE.equals(cd.getWaitlist()))
+						cd.setWaitlistedTimeStamp(ts);
 					cd.setWaitlist(r.isWaitList());
+					cd.setNoSub(r.isNoSub());
 					if (checkCritical) cd.setCritical(isCritical(courses, cc));
 					Iterator<CourseRequest> requests = new TreeSet<CourseRequest>(cd.getCourseRequests()).iterator();
 					int order = 0;
@@ -351,8 +394,27 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						cr.setAllowOverlap(false);
 						cr.setCredit(0);
 						cr.setOrder(order++);
-						if (cr.getCourseOffering() == null || !cr.getCourseOffering().getUniqueId().equals(co.getCourseId()))
+						if (cr.getCourseOffering() == null || !cr.getCourseOffering().getUniqueId().equals(co.getCourseId())) {
 							cr.setCourseOffering(CourseOfferingDAO.getInstance().get(co.getCourseId(), helper.getHibSession()));
+							if (r.isWaitList() && Customization.WaitListValidationProvider.hasProvider()) {
+								cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.NOT_CHECKED);
+								cr.setCourseRequestOverrideIntent(CourseRequestOverrideIntent.WAITLIST);
+								cr.setOverrideExternalId("TBD");
+								cr.setOverrideTimeStamp(ts);
+							}
+						}
+						if (Boolean.TRUE.equals(cd.getWaitlist()) && !Boolean.TRUE.equals(oldWaitList) && Customization.WaitListValidationProvider.hasProvider()) {
+							cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.NOT_CHECKED);
+							cr.setCourseRequestOverrideIntent(CourseRequestOverrideIntent.WAITLIST);
+							cr.setOverrideExternalId("TBD");
+							cr.setOverrideTimeStamp(ts);
+						}
+						if (!Boolean.TRUE.equals(cd.getWaitlist()) && cr.getCourseRequestOverrideIntent() == CourseRequestOverrideIntent.WAITLIST) {
+							cr.setOverrideStatus(null);
+							cr.setOverrideExternalId(null);
+							cr.setOverrideTimeStamp(null);
+							cr.setOverrideIntent(null);
+						}
 						cr.updatePreferences(r.getRequestedCourse(co.getCourseId()), helper.getHibSession());
 						course2request.put(co.getCourseId(), cr);
 						
@@ -413,6 +475,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 									cd.setAlternative(true);
 									cd.setPriority(priority);
 									cd.setWaitlist(false);
+									cd.setNoSub(false);
 									cd.setCritical(0);
 									FreeTime free = cd.getFreeTime();
 									if (free == null) {
@@ -457,7 +520,11 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					}
 					cd.setAlternative(true);
 					cd.setPriority(priority);
+					if (Boolean.TRUE.equals(cd.isWaitlist()) || r.isWaitList()) hasWaitList = true;
+					if (r.isWaitList() && !Boolean.TRUE.equals(cd.getWaitlist()))
+						cd.setWaitlistedTimeStamp(ts);
 					cd.setWaitlist(r.isWaitList());
+					cd.setNoSub(r.isNoSub());
 					cd.setCritical(0);
 					Iterator<CourseRequest> requests = new TreeSet<CourseRequest>(cd.getCourseRequests()).iterator();
 					int order = 0;
@@ -479,8 +546,14 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						cr.setAllowOverlap(false);
 						cr.setCredit(0);
 						cr.setOrder(order++);
-						if (cr.getCourseOffering() == null || !cr.getCourseOffering().getUniqueId().equals(co.getCourseId()))
+						if (cr.getCourseOffering() == null || !cr.getCourseOffering().getUniqueId().equals(co.getCourseId())) {
 							cr.setCourseOffering(CourseOfferingDAO.getInstance().get(co.getCourseId(), helper.getHibSession()));
+							cr.setOverrideStatus(null);
+							cr.setOverrideIntent(null);
+							cr.setOverrideExternalId(null);
+							cr.setOverrideTimeStamp(null);
+						}
+						
 						cr.updatePreferences(r.getRequestedCourse(co.getCourseId()), helper.getHibSession());
 						course2request.put(co.getCourseId(), cr);
 					}
@@ -554,7 +627,9 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							}						
 							cd.setAlternative(false);
 							cd.setPriority(priority++);
+							if (Boolean.TRUE.equals(cd.isWaitlist())) hasWaitList = true;
 							cd.setWaitlist(false);
+							cd.setNoSub(false);
 							if (checkCritical) cd.setCritical(isCritical(ca, cc));
 						}
 						if (cr == null) {
@@ -586,6 +661,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							cd.setAlternative(false);
 							cd.setPriority(priority++);
 							cd.setWaitlist(false);
+							cd.setNoSub(false);
 							if (checkCritical) cd.setCritical(isCritical(ca, cc));
 							cr.setCourseDemand(cd);
 							cd.getCourseRequests().add(cr);
@@ -642,6 +718,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						helper.getHibSession().delete(cd.getFreeTime());
 					for (CourseRequest cr: cd.getCourseRequests())
 						helper.getHibSession().delete(cr);
+					if (Boolean.TRUE.equals(cd.isWaitlist())) hasWaitList = true;
 					student.getCourseDemands().remove(cd);
 					helper.getHibSession().delete(cd);
 				}
@@ -692,45 +769,16 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 								oldSections.add(sectionId);
 					}
 					
-					if (oldSections.isEmpty()) continue; // same assignment
+					if (oldSections.isEmpty()) continue; // no change detected
 					
-					boolean checkOffering = false;
 					XOffering offering = server.getOffering(oldEnrollment.getOfferingId());
-					if (!offering.getReservations().isEmpty()) {
-						checkOffering = true;
-						helper.debug("Check offering for " + oldEnrollment.getCourseName() + ": there are reservations.");
-					} else {
-						XEnrollments enrollments = server.getEnrollments(oldEnrollment.getOfferingId());
-						for (Long sectionId: oldSections) {
-							XSection section = offering.getSection(sectionId);
-							if (section != null && section.getLimit() >= 0 && section.getLimit() - enrollments.countEnrollmentsForSection(sectionId) == 1) {
-								checkOffering = true;
-								helper.debug("Check offering for " + oldEnrollment.getCourseName() + ": section " + section + " became available.");
-								break;
-							}
-						}
-						if (!checkOffering && (newEnrollment == null || !newEnrollment.getConfigId().equals(oldEnrollment.getConfigId()))) {
-							XConfig config = offering.getConfig(oldEnrollment.getConfigId());
-							if (config != null && config.getLimit() >= 0 && config.getLimit() - enrollments.countEnrollmentsForConfig(config.getConfigId()) == 1) {
-								checkOffering = true;
-								helper.debug("Check offering for " + oldEnrollment.getCourseName() + ": config " + config + " became available.");
-							}
-						}
-						if (!checkOffering && (newEnrollment == null || !newEnrollment.getCourseId().equals(oldEnrollment.getCourseId()))) {
-							XCourse course = offering.getCourse(oldEnrollment.getCourseId());
-							if (course != null && course.getLimit() >= 0 && course.getLimit() - enrollments.countEnrollmentsForCourse(course.getCourseId()) == 1) {
-								checkOffering = true;
-								helper.debug("Check offering for " + oldEnrollment.getCourseName() + ": course " + course + " became available.");
-							}
-						}
-					}
-					
-					if (checkOffering)
-						server.execute(server.createAction(CheckOfferingAction.class).forOfferings(oldEnrollment.getOfferingId()), helper.getUser(), offeringChecked);
+
+					if (CheckOfferingAction.isCheckNeeded(server, helper, oldEnrollment, newEnrollment))
+						server.execute(server.createAction(CheckOfferingAction.class).forOfferings(oldEnrollment.getOfferingId()).skipStudents(getStudentId()), helper.getUser(), offeringChecked);
 					
 					updateSpace(server,
-							newEnrollment == null ? null : SectioningRequest.convert(newStudent, newRequest, server, offering, newEnrollment),
-							oldEnrollment == null ? null : SectioningRequest.convert(oldStudent, (XCourseRequest)oldRequest, server, offering, oldEnrollment),
+							newEnrollment == null ? null : SectioningRequest.convert(newStudent, newRequest, server, offering, newEnrollment, wlMode),
+							oldEnrollment == null ? null : SectioningRequest.convert(oldStudent, (XCourseRequest)oldRequest, server, offering, oldEnrollment, wlMode),
 							offering);
 					server.persistExpectedSpaces(oldEnrollment.getOfferingId());
 				}
@@ -755,7 +803,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						}
 					XOffering offering = server.getOffering(newEnrollment.getOfferingId());
 					updateSpace(server,
-							SectioningRequest.convert(newStudent, (XCourseRequest)newRequest, server, offering, newEnrollment),
+							SectioningRequest.convert(newStudent, (XCourseRequest)newRequest, server, offering, newEnrollment, wlMode),
 							null, offering);
 					server.persistExpectedSpaces(newEnrollment.getOfferingId());
 				}
@@ -769,7 +817,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				}
 				action.addEnrollment(stored);
 				
-				server.execute(server.createAction(NotifyStudentAction.class).forStudent(getStudentId()).oldStudent(oldStudent), helper.getUser());
+				server.execute(server.createAction(NotifyStudentAction.class).forStudent(getStudentId()).fromAction(name()).oldStudent(oldStudent), helper.getUser());
 				helper.commitTransaction();
 			} catch (Exception e) {
 				helper.rollbackTransaction();
@@ -795,9 +843,11 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				includeRequestInTheReturnMessage = true;
 			else if (ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue())
 				includeRequestInTheReturnMessage = true;
+			else if (wlMode == WaitListMode.WaitList && hasWaitList)
+				includeRequestInTheReturnMessage = true;
 		}
 		
-		ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(getStudentId()).withMessages(failures).withErrors(checkErrors).withRequest(includeRequestInTheReturnMessage), helper.getUser());
+		ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(getStudentId()).withMessages(failures).withErrors(checkErrors).withRequest(includeRequestInTheReturnMessage).withWaitListMode(wlMode), helper.getUser());
 		if (ret != null && gradeModes.hasGradeModes()) {
 			for (CourseAssignment ca: ret.getCourseAssignments())
 				for (ClassAssignment a: ca.getClassAssignments()) {
@@ -815,6 +865,11 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 		}
 		if (ret != null && gradeModes.hasCurrentCredit())
 			ret.setCurrentCredit(gradeModes.getCurrentCredit());
+		if (iCheckWaitLists && hasWaitList && ret != null && ret.getRequest() != null && wlMode == WaitListMode.WaitList && Customization.WaitListValidationProvider.hasProvider()) {
+			ret.getRequest().setWaitListChecks(server.execute(server.createAction(WaitListCheckValidation.class).withRequest(ret.getRequest()), helper.getUser()));
+			if (ret.getRequest().hasWaitListChecks() && !ret.getRequest().getWaitListChecks().isConfirm() && !ret.getRequest().getWaitListChecks().isError())
+				ret.setRequest(server.execute(server.createAction(WaitListSubmitOverrides.class).withRequest(ret.getRequest()).withCredit(ret.getRequest().getWaitListChecks().getMaxCreditNeeded()), helper.getUser()));
+		}
 		return ret;
 	}
 	

@@ -215,7 +215,7 @@ public class InstructorPermissions {
 	public static class InstructorAttributes extends Instructors {}
 	
 	@PermissionForRight(Right.InstructorAttributeAdd)
-	public static class InstructorAttributeAdd extends Instructors {}
+	public static class InstructorAttributeAdd extends InstructorAdd {}
 	
 	@PermissionForRight(Right.InstructorAttributeEdit)
 	public static class InstructorAttributeEdit implements Permission<InstructorAttribute> {
@@ -225,7 +225,7 @@ public class InstructorPermissions {
 		@Override
 		public boolean check(UserContext user, InstructorAttribute source) {
 			if (source.getDepartment() != null)
-				return permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerEdit);
+				return permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerLimitedEdit);
 			else
 				return user.getCurrentAuthority().hasRight(Right.InstructorGlobalAttributeEdit) && permissionSession.check(user, source.getSession(), DepartmentStatusType.Status.OwnerEdit);
 		}

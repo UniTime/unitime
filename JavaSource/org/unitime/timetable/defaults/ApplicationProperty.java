@@ -79,6 +79,7 @@ import org.unitime.timetable.onlinesectioning.custom.StudentEmailProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentHoldsCheckProvider;
 import org.unitime.timetable.onlinesectioning.custom.VariableTitleCourseProvider;
+import org.unitime.timetable.onlinesectioning.custom.WaitListValidationProvider;
 import org.unitime.timetable.spring.ldap.SpringLdapExternalUidLookup;
 import org.unitime.timetable.spring.ldap.SpringLdapExternalUidTranslation;
 
@@ -345,7 +346,7 @@ public enum ApplicationProperty {
 	@Description("All Pages: enable page help")
 	PageHelpEnabled("tmtbl.wiki.help"),
 
-	@DefaultValue("https://sites.google.com/a/unitime.org/help45/")
+	@DefaultValue("https://help46.unitime.org/")
 	@Description("All Pages: page help url")
 	PageHelpUrl("tmtbl.wiki.url"),
 
@@ -635,6 +636,16 @@ public enum ApplicationProperty {
 	OnlineSchedulingEmailConfirmation("unitime.enrollment.email"),
 	
 	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Online Student Scheduling: enable student email confirmations when wait-list enrollment fails")
+	OnlineSchedulingEmailConfirmationWhenFailed("unitime.enrollment.email.failedWaitList"),
+	
+	@Type(Boolean.class)
+	@Parameter("operation")
+	@Description("Online Student Scheduling: enable student email confirmations from a particular operation %")
+	OnlineSchedulingEmailConfirmationOverride("unitime.enrollment.email.%"),
+	
+	@Type(Boolean.class)
 	@DefaultValue("false")
 	@Description("Online Student Scheduling: check for gradable itypes when checking on which subpart course credit information should be shown")
 	OnlineSchedulingGradableIType("unitime.enrollment.gradableITypes"),
@@ -668,7 +679,7 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
-	@Description("Student Scheduling: provide default alternatice course when there is no alternative provided by student")
+	@Description("Student Scheduling: provide default alternative course when there is no alternative provided by student")
 	@Since(4.2)
 	StudentSchedulingAlternativeCourse("unitime.sectioning.alternativeCourse"),
 	
@@ -1253,6 +1264,19 @@ public enum ApplicationProperty {
 	CustomizationVariableTitleCourseProvider("unitime.custom.VariableTitleCourseProvider"),
 	
 	@Type(Class.class)
+	@Implements(WaitListValidationProvider.class)
+	@Description("Customization: wait-list validation provider")
+	@Since(4.6)
+	CustomizationWaitListValidationProvider("unitime.custom.WaitListValidationProvider"),
+	
+	@Type(Class.class)
+	@Implements(WaitListValidationProvider.class)
+	@Description("Customization: wait-list compatator provider")
+	@DefaultValue("org.unitime.timetable.onlinesectioning.custom.DefaultSectioningRequestComparatorProvider")
+	@Since(4.6)
+	CustomizationWaitListComparatorProvider("unitime.custom.WaitListComparatorProvider"),
+	
+	@Type(Class.class)
 	@Implements(ExternalLinkLookup.class)
 	@Description("Customization: course catalog link provider (interface ExternalLinkLookup, deprecated)")
 	@Deprecated
@@ -1694,6 +1718,20 @@ public enum ApplicationProperty {
 	
 	@Description("People Lookup LDAP: academic title attribute")
 	PeopleLookupLdapAcademicTitleAttribute("tmtbl.lookup.ldap.title"),
+	
+	@Description("People Lookup: default search sources separated by coma (defaults to ldap,students,instructors,staff,managers,events,advisors). This setting can be used to restrict the search to only certain sources and/or define in which order they will be searched.")
+	PeopleLookupDefaultSources("unitime.lookup.source.defaults"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("People Lookup: when searching instructors, prefer instructors with the matching department code in the Staff table")
+	PeopleLookupInstructorsPreferStaffDept("unitime.lookup.instructors.checkStaffDept"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Parameter("user role")
+	@Description("People Lookup: show Email column for given user role (when set to false, emails are not returned -- do not use for roles that can request an event on behalf of someone else)")
+	PeopleLookupShowEmail("unitime.lookup.showEmail.%"),
 
 	@Description("Reservations: default reservation expiration date for all reservation types (given either in the number of days relative to the academic session begin date or as a date in yyyy-mm-dd format)")
 	ReservationExpirationDateGlobal("unitime.reservations.expiration_date"),
@@ -1954,6 +1992,11 @@ public enum ApplicationProperty {
 	@DefaultValue("16")
 	@Description("PDF Font: big size")
 	PdfFontSizeBig("unitime.pdf.fontsize.big"),
+	
+	@Type(Float.class)
+	@DefaultValue("8")
+	@Description("PDF Font: font size used in Examination PDF Reports (New)")
+	PdfFontSizeExams("unitime.pdf.fontsize.exams"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
@@ -2479,18 +2522,6 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
-	@Description("Student Solver Dashboard: allow wait-listing toggle)")
-	@Since(4.4)
-	SolverDashboardAllowWaitList("unitime.solverDashboard.allowWaitList"),
-	
-	@Type(Boolean.class)
-	@DefaultValue("false")
-	@Description("Student Solver Dashboard: allow no-subs toggle)")
-	@Since(4.5)
-	SolverDashboardAllowNoSubs("unitime.solverDashboard.allowNoSubs"),
-
-	@Type(Boolean.class)
-	@DefaultValue("false")
 	@Description("Distribution Preferences: show class suffix (external id) next to the class section number")
 	@Since(4.1)
 	DistributionsShowClassSufix("unitime.distributions.showClassSuffixes"),
@@ -2830,8 +2861,8 @@ public enum ApplicationProperty {
 	AdminStudentGroupsLazyStudents("unitime.admin.studentGroups.lazyLoad"),
 	
 	@DefaultValue("None")
-	@Values({"None, WaitList, NoSubs"})
-	@Description("Advisor Course Recommendation: Allow for wait-lists, no-subs or none of the two.")
+	@Values({"None, WaitList, NoSubs, Student"})
+	@Description("Advisor Course Recommendation: Allow for wait-lists, no-subs or none of the two. It set to Student, use the same setting as on the student (based on the student status).")
 	AdvisorRecommendationsWaitListMode("unitime.acr.waitlist"),
 	
 	@DefaultValue("false")
@@ -2902,6 +2933,28 @@ public enum ApplicationProperty {
 	VariableTitleInstructorIdRequired("unitime.variableTitle.instructorIdRequired"),
 
 	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Variable Title: When set to true, the first character of each word in the title will be made upper case all other characters will be left as is.")
+	@Since(4.5)
+	VariableTitleTitleFirstCharsOfWordsUpperCase("unitime.variableTitle.title.firstUpperCase"),
+
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Course Timetabling Solution Commit: Skip checking for room and instructor conflicts with other committed problems.")
+	@Since(4.5)
+	CourseTimetablingCommitSkipChecking("unitime.commit.skipConflictChecking"),
+
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Instructional Offering: wait-list toggle default value")
+	@Since(4.6)
+	OfferingWaitListDefault("unitime.offering.waitListDefault"),
+	
+	@Type(String.class)
+	@Description("Instructional Offering: prohibit over the limit overrides when wait-listing is enabled. When set, this property should contain the reference of the override that must be marked as prohibited when wait-listing is enabled.")
+	@Since(4.6)
+	OfferingWaitListProhibitedOverride("unitime.offering.waitList.prohibitedOverride"),
+
 	@DefaultValue("false")
 	@Description("Enable Funding Department Functionality.")
 	CoursesFundingDepartmentsEnabled("unitime.courses.funding_departments_enabled"),

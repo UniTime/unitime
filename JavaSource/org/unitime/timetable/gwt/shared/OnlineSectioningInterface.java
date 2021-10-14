@@ -28,8 +28,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
-
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
@@ -48,6 +46,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private String iOverrideRequestDisclaimer = null;
 		private GradeModes iGradeModes = null;
 		private Float iMaxCredit = null;
+		private Set<Long> iAdvisorWaitListedCourseIds = null;
 		
 		public static enum EligibilityFlag implements IsSerializable {
 			IS_ADMIN, IS_ADVISOR, IS_GUEST,
@@ -70,6 +69,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			SR_CHANGE_NOTE,
 			HAS_ADVISOR_REQUESTS,
 			SR_LINK_CONF, SR_EXTENDED,
+			WAIT_LIST_VALIDATION,
 			;
 			
 			public int flag() { return 1 << ordinal(); }
@@ -154,7 +154,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			if (iGradeModes == null) iGradeModes = new GradeModes();
 			iGradeModes.addGradeMode(sectionId, new GradeMode(code, label, honor));
 		}
-		public GradeMode getGradeMode(ClassAssignment section) {
+		public GradeMode getGradeMode(ClassAssignmentInterface.ClassAssignment section) {
 			if (iGradeModes == null) return null;
 			return iGradeModes.getGradeMode(section);
 		}
@@ -163,7 +163,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public boolean hasCreditHours() {
 			return iGradeModes != null && iGradeModes.hasCreditHours();
 		}
-		public Float getCreditHour(ClassAssignment section) {
+		public Float getCreditHour(ClassAssignmentInterface.ClassAssignment section) {
 			if (iGradeModes == null || section == null) return null;
 			return iGradeModes.getCreditHour(section);
 		}
@@ -171,6 +171,9 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			if (iGradeModes == null) iGradeModes = new GradeModes();
 			iGradeModes.addCreditHour(sectionId, credit);
 		}
+		
+		public Set<Long> getAdvisorWaitListedCourseIds() { return iAdvisorWaitListedCourseIds; }
+		public void setAdvisorWaitListedCourseIds(Set<Long> advisorWaitListedCourseIds) { iAdvisorWaitListedCourseIds = advisorWaitListedCourseIds; } 
 	}
 	
 	public static class SectioningProperties implements IsSerializable, Serializable {
@@ -422,7 +425,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			iModes.put(sectionId, mode);
 		}
 		
-		public GradeMode getGradeMode(ClassAssignment a) {
+		public GradeMode getGradeMode(ClassAssignmentInterface.ClassAssignment a) {
 			if (a.getExternalId() == null) return null;
 			if (a.getParentSection() != null && a.getParentSection().equals(a.getSection())) return null;
 			return iModes.get(a.getExternalId());
@@ -441,7 +444,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			return iCreditHours != null && !iCreditHours.isEmpty();
 		}
 		
-		public Float getCreditHour(ClassAssignment a) {
+		public Float getCreditHour(ClassAssignmentInterface.ClassAssignment a) {
 			if (a.getExternalId() == null) return null;
 			if (a.getParentSection() != null && a.getParentSection().equals(a.getSection())) return null;
 			return iCreditHours.get(a.getExternalId());
@@ -544,6 +547,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private boolean iEmailOptionalToggleDefault = false;
 		private WaitListMode iMode = null;
 		private boolean iCanRequire = false;
+		private Set<Long> iAdvisorWaitListedCourseIds = null;
 		
 		public AdvisingStudentDetails() {}
 		public AdvisingStudentDetails(AdvisingStudentDetails clone) {
@@ -563,6 +567,8 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			iMode = clone.iMode;
 			iCanRequire = clone.iCanRequire;
 			iAvailableStatuses = clone.iAvailableStatuses; 
+			iStudentRequest = clone.iStudentRequest;
+			iAdvisorWaitListedCourseIds = clone.iAdvisorWaitListedCourseIds;
 		}
 		
 		public Long getStudentId() { return iStudentId; }
@@ -634,6 +640,9 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		
 		public boolean isCanRequire() { return iCanRequire; }
 		public void setCanRequire(boolean canRequire) { iCanRequire = canRequire; }
+		
+		public Set<Long> getAdvisorWaitListedCourseIds() { return iAdvisorWaitListedCourseIds; }
+		public void setAdvisorWaitListedCourseIds(Set<Long> advisorWaitListedCourseIds) { iAdvisorWaitListedCourseIds = advisorWaitListedCourseIds; }
 	}
 	
 	public static class AdvisorCourseRequestSubmission implements IsSerializable, Serializable {

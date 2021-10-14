@@ -86,7 +86,11 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 		for (Request request: iAdvisorRequests.getCourses()) {
 			if (request.hasRequestedCourse()) {
 				if (request.isCritical() || request.isImportant()) hasCrit = true;
-				if (request.isWaitList()) hasWL = true;
+				if (iMode == WaitListMode.WaitList) {
+					if (request.isWaitList()) hasWL = true;
+				} else {
+					if (request.isNoSub()) hasWL = true;
+				}
 				boolean first = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					WebTable.Row row = null;
@@ -117,7 +121,9 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 								new WebTable.Cell(ToolBox.toString(prefs), true),
 								request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
 								request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") : new WebTable.Cell(""),
-								request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell(""),
+								(iMode == WaitListMode.WaitList
+								? (request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell(""))
+								: (request.isNoSub() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestNoSubs(), "") : new WebTable.Cell(""))),
 								note
 								);
 						} else {

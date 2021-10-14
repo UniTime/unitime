@@ -165,7 +165,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 								}
 							}
 							for (ClassAssignment clazz: result) {
-								if (clazz.isCancelled() || (!clazz.isSaved() && !clazz.isAvailable() && !isSpecialRegistration())) continue;
+								if (clazz.isCancelled() || (!clazz.isSaved() && !clazz.isAvailable() && !isSpecialRegistration() && !course.isCanWaitList())) continue;
 								if (clazz.getSection().equalsIgnoreCase(query) || clazz.getSelection().getText().equalsIgnoreCase(query)) {
 									suggestions.add(new CourseSuggestion(course, clazz, false));
 									if (iSpecReg == null || iSpecReg.isCanRequire())
@@ -264,9 +264,9 @@ public class CourseRequestBox extends P implements CourseSelection {
 					iFilter.setText(iLastCourse.getCourseName());
 				}
 				iFilter.resizeFilterIfNeeded();
-				CourseSelectionEvent.fire(CourseRequestBox.this, getValue());
 				if (iInactive) iFilter.removeStyleName("inactive");
 				iInactive = false;
+				CourseSelectionEvent.fire(CourseRequestBox.this, getValue());
 			}
 		});
 		iFilter.addSelectionHandler(new SelectionHandler<FilterBox.Suggestion>() {
@@ -288,26 +288,27 @@ public class CourseRequestBox extends P implements CourseSelection {
 		return addHandler(handler, ValueChangeEvent.getType());
 	}
 	
-	public boolean isActive(Long courseId) {
-		return !iInactive && iLastCourse != null && courseId.equals(iLastCourse.getCourseId());
+	public boolean isActive(RequestedCourse course) {
+		return !iInactive && course.equals(getValue());
 	}
 	
-	public void activate(Long courseId) {
-		if (iInactive && iLastCourse != null && courseId.equals(iLastCourse.getCourseId())) {
+	public void activate(RequestedCourse course) {
+		if (iInactive && course.equals(getValue())) {
 			iInactive = false;
 			iFilter.removeStyleName("inactive");
+			CourseSelectionEvent.fire(CourseRequestBox.this, getValue());
 		}
 	}
 	
-	public void deactivate(Long courseId) {
-		if (!iInactive && iLastCourse != null && courseId.equals(iLastCourse.getCourseId())) {
+	public void deactivate(RequestedCourse course) {
+		if (!iInactive && course.equals(getValue())) {
 			iInactive = true;
 			iFilter.addStyleName("inactive");
 		}
 	}
 	
-	public boolean isInactive(Long courseId) {
-		return iInactive && iLastCourse != null && courseId.equals(iLastCourse.getCourseId());
+	public boolean isInactive(RequestedCourse course) {
+		return iInactive && course.equals(getValue());
 	}
 
 	@Override
@@ -323,6 +324,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 			ret.setCourseName(course.getCourseName());
 			ret.setCourseTitle(course.getTitle());
 			ret.setCredit(course.guessCreditRange());
+			ret.setCanWaitList(course.isCanWaitList());
 			if (iLastCourse != null && iLastCourse.isCourse() && iLastCourse.hasCourseId() && courseName.equalsIgnoreCase(iLastCourse.getCourseName())) {
 				ret.setStatus(iLastCourse.getStatus());
 				ret.setStatusNote(iLastCourse.getStatusNote());
@@ -330,6 +332,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 				ret.setOverrideTimeStamp(iLastCourse.getOverrideTimeStamp());
 				ret.setRequestId(iLastCourse.getRequestId());
 				ret.setRequestorNote(iLastCourse.getRequestorNote());
+				ret.setCanWaitList(iLastCourse.isCanWaitList());
 			} else
 				ret.setStatus(RequestedCourseStatus.NEW_REQUEST);
 		} else if (iLastCourse != null && iLastCourse.isCourse() && iLastCourse.hasCourseId() && courseName.equalsIgnoreCase(iLastCourse.getCourseName())) {
@@ -343,6 +346,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 			ret.setStatusNote(iLastCourse.getStatusNote());
 			ret.setRequestId(iLastCourse.getRequestId());
 			ret.setRequestorNote(iLastCourse.getRequestorNote());
+			ret.setCanWaitList(iLastCourse.isCanWaitList());
 		} else if (iFreeTimeParser != null) {
 			try {
 				ret.setFreeTime(iFreeTimeParser.parseFreeTime(courseName));
@@ -693,6 +697,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 			iCourse.setCourseName(!course.hasUniqueName() || iShowCourses ? course.getCourseNameWithTitle() : course.getCourseName());
 			iCourse.setCourseTitle(course.getTitle());
 			iCourse.setCredit(course.guessCreditRange());
+			iCourse.setCanWaitList(course.isCanWaitList());
 			if (getText().equals(course.getCourseName()) || getText().startsWith(course.getCourseName() + " ") || 
 				getText().equals(course.getCourseNameWithTitle()) || getText().startsWith(course.getCourseNameWithTitle() + " ")) {
 				for (Chip chip: iFilter.getChips("section"))

@@ -122,7 +122,7 @@ public class CourseRequestsWithProjectedLastLikes extends ProjectedStudentCourse
 	public float getProjection(String areaAbbv, String clasfCode, String majorCode) {
 		int lastLikes = getLastLikes(areaAbbv, clasfCode, majorCode);
 		float estimate = lastLikes * super.getProjection(areaAbbv, clasfCode, majorCode) - getCourseReqs(areaAbbv, clasfCode, majorCode);
-		if (estimate >= 0)
+		if (estimate >= 0 && lastLikes > 0)
 			return estimate / lastLikes;
 		return 0f;
 	}

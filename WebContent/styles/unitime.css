@@ -1713,8 +1713,24 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	border-top: 1px solid #9CB0CE;
 }
 
+.unitime-BlackText {
+	color: black;
+}
+
 .unitime-GrayText {
 	color: #777777;
+}
+
+.unitime-WarningText {
+	color: orange;
+}
+
+.unitime-ErrorText {
+	color: red;
+}
+
+.unitime-GreenText {
+	color: green;
 }
 
 @media print {
@@ -1772,6 +1788,10 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	}
 	.unitime-CourseRequestBox .inactive input[type="text"] {
 		color: black;
+	}
+	.unitime-CheckBoxColumn {
+		visibility: hidden;
+		display: none;
 	}
 }
 
@@ -6226,6 +6246,10 @@ unitime-RoomSharingWidget .legend .blank {
 	border-left: none;
 }
 
+.unitime-EnrollmentsTable .nomatch {
+	color: gray;
+}
+
 .unitime-LogsTable tr:nth-child(odd) {
 	background-color: #eee;
 }
@@ -6985,4 +7009,94 @@ unitime-RoomSharingWidget .legend .blank {
 	vertical-align: top;
 	padding-left: 10px;
 	padding-right: 2px;
+}
+
+.unitime-WaitListsPanel {
+	padding-top: 5px;
+}
+
+.unitime-WaitListsPanel .waitlists-header {
+    padding: 5px 0px 0px 2px;
+    border-top: 1px solid #9CB0CE;	
+}
+
+.unitime-WaitListsPanel .waitlists-header .icon {
+	display: inline-block;
+	margin: 3px 5px 1px 1px;
+}
+
+.unitime-WaitListsPanel .waitlists-header .open-close-icon {
+	display: inline-block;
+	margin: 0px 1px 2px 1px;
+}
+
+.unitime-WaitListsPanel .waitlists-header .title {
+	display: inline-block;
+	font-size: larger;
+	font-weight: bold;
+    color: black;
+    cursor: pointer;
+}
+
+.unitime-WaitListsPanel .waitlists-panel {
+	border: 1px solid #9CB0CE;	
+	overflow: auto;
+	overflow-x: scroll;
+	max-width: calc(100vw - 20px);
+}
+
+.unitime-WaitListsPanel .waitlists-errors {
+	white-space: pre-wrap;
+	min-width: 120px;
+}
+
+.unitime-WaitListsPanel .waitlists-errors .approved {
+	color: green;
+}
+
+.unitime-WaitListsPanel .waitlists-errors .saved {
+	color: orange;
+}
+
+.unitime-WaitListsPanel .waitlists-errors .error {
+	color: red;
+}
+
+.unitime-WaitListsPanel .waitlists-errors .rejected {
+	color: red;
+}
+
+.unitime-WaitListsPanel .waitlists-errors .cancelled {
+	color: gray;
+}
+
+.unitime-WaitListsPanel .waitlists-errors .needed {
+	color: orange;
+}
+
+.unitime-WaitListsPanel .waitlists-errors .note {
+	font-style: italic;
+}
+
+.unitime-WaitListsPanel .date-and-note {
+	white-space: pre-wrap;
+	color: black;
+	font-style: normal;
+	min-width: 120px;
+}
+
+.unitime-SpecialRegistrationsPanel .registrations-table td:nth-child(3) {
+	width: 100px;
+}
+
+.unitime-SpecialRegistrationsPanel .registrations-table td:nth-child(4) {
+	width: 200px;
+}
+
+.unitime-SpecialRegistrationsPanel .registrations-table td:nth-child(7) {
+	width: 400px;
+}
+
+.unitime-CheckBoxColumn {
+	width: 10px;	
 }

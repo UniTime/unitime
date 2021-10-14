@@ -850,4 +850,54 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 			}
 		}
 	}
+	
+	public static void setInstructionalTypeBackgroundColors(TimetableGridModel model, TimetableGridContext context) {
+		Map<Long, List<TimetableGridCell>> id2cells = new HashMap<Long, List<TimetableGridCell>>();
+		for (TimetableGridCell cell: model.getCells()) {
+			if (cell.getType() != Type.Class || cell.getId() == null || cell.getId() < 0 || cell.isCommitted()) continue;
+			List<TimetableGridCell> cells = id2cells.get(cell.getId());
+			if (cells == null) {
+				cells = new ArrayList<TimetableGridCell>();
+				id2cells.put(cell.getId(), cells);
+			}
+			cell.resetInstructors();
+			cells.add(cell);
+		}
+		if (id2cells.isEmpty()) return;
+		
+		String query = "select c.uniqueId, t.itype from Class_ c inner join c.schedulingSubpart.itype t where c.uniqueId in :classIds";
+		if (id2cells.size() <= 1000) {
+			for (Object[] o: (List<Object[]>)Class_DAO.getInstance().getSession().createQuery(query)
+					.setParameterList("classIds", id2cells.keySet(), LongType.INSTANCE).setCacheable(true).list()) {
+				Long classId = (Long)o[0];
+				for (TimetableGridCell cell: id2cells.get(classId)) {
+					cell.setBackground(context.getInstructionalTypeColor((Integer)o[1]));
+				}
+			}
+		} else {
+			List<Long> ids = new ArrayList<Long>(1000);
+			for (Long id: id2cells.keySet()) {
+				ids.add(id);
+				if (ids.size() == 1000) {
+					for (Object[] o: (List<Object[]>)Class_DAO.getInstance().getSession().createQuery(query)
+							.setParameterList("classIds", ids, LongType.INSTANCE).setCacheable(true).list()) {
+						Long classId = (Long)o[0];
+						for (TimetableGridCell cell: id2cells.get(classId)) {
+							cell.setBackground(context.getInstructionalTypeColor((Integer)o[1]));
+						}
+					}
+					ids.clear();
+				}
+			}
+			if (!ids.isEmpty()) {
+				for (Object[] o: (List<Object[]>)Class_DAO.getInstance().getSession().createQuery(query)
+						.setParameterList("classIds", ids, LongType.INSTANCE).setCacheable(true).list()) {
+					Long classId = (Long)o[0];
+					for (TimetableGridCell cell: id2cells.get(classId)) {
+						cell.setBackground(context.getInstructionalTypeColor((Integer)o[1]));
+					}
+				}
+			}
+		}
+	}
 }

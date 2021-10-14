@@ -1349,7 +1349,7 @@
 				<hasRole name="Anonymous"/>
 			</not>
 		</condition>
-		<item name="Page Documentation" page="PAGE_HELP" type="page" target="dialog">
+		<item name="Page Documentation" page="PAGE_HELP" type="page" target="tab">
 			<condition>
 				<propertyEquals name="tmtbl.wiki.help" value="true"/>
 				<hasProperty name="tmtbl.wiki.url"/>
@@ -1416,9 +1416,9 @@
 			<separator/>
 			<item name="Other Documentation" page="tmtbl.help.manual.other" type="property" target="tab"/>
 		</menu>
-		<item name="Tips &amp; Tricks" page="tmtbl.help.tricks" type="property" target="dialog"/>
-		<item name="FAQ" page="tmtbl.help.faq" type="property" target="dialog"/>
-		<item name="Release Notes" page="tmtbl.help.release_notes" type="property" target="dialog"/>
+		<item name="Tips &amp; Tricks" page="tmtbl.help.tricks" type="property" target="tab"/>
+		<item name="FAQ" page="tmtbl.help.faq" type="property" target="tab"/>
+		<item name="Release Notes" page="tmtbl.help.release_notes" type="property" target="tab"/>
 		<item name="Contact Us" page="inquiry.do">
 			<condition>
 				<or>

@@ -2415,6 +2415,7 @@ public class CurriculaServlet implements CurriculaService {
 					}
 					course.setHasUniqueName(true);
 					course.setHasCrossList(c.getInstructionalOffering().hasCrossList());
+					course.setCanWaitList(c.getInstructionalOffering().effectiveWaitList());
 					boolean unlimited = false;
 					int courseLimit = 0;
 					for (Iterator<InstrOfferingConfig> i = c.getInstructionalOffering().getInstrOfferingConfigs().iterator(); i.hasNext(); ) {

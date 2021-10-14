@@ -1154,6 +1154,10 @@ public class SectioningStatusPage extends Composite {
 		line.add(new NumberCell(e.getReservation(), e.getTotalReservation()));
 		line.add(new NumberCell(e.getConsentNeeded(), e.getTotalConsentNeeded()));
 		line.add(new NumberCell(e.getOverrideNeeded(), e.getTotalOverrideNeeded()));
+		if (Boolean.TRUE.equals(e.isNoMatch())) {
+			for (Widget w : line)
+				if (w != null) w.addStyleName("nomatch");
+		}
 		return line;
 	}
 	
@@ -2998,25 +3002,56 @@ public class SectioningStatusPage extends Composite {
 	}
 	
 	public static class WaitListCell extends HTML implements HasCellAlignment {
-		public WaitListCell(int wait, int tWait, int unasg, int tUnasg, Integer topWaitingPriority) {
+		public WaitListCell(int wait, int tWait, int noSub, int tNoSub, int unasg, int tUnasg, Integer topWaitingPriority) {
 			super();
-			if (tWait == 0 || tWait == tUnasg) {
-				// no wait-list or all wait-listed
-				if (unasg == tUnasg) {
-					setHTML(unasg == 0 ? "-" : String.valueOf(unasg));
+			if (tNoSub == 0) {
+				// no no-subs -- like before
+				if (tWait == 0 || tWait == tUnasg) {
+					// no wait-list or all wait-listed
+					if (unasg == tUnasg) {
+						setHTML(unasg == 0 ? "-" : String.valueOf(unasg));
+					} else {
+						setHTML(unasg + " / " + tUnasg);
+					}
+					if (tWait > 0)
+						setHTML(getHTML() + MESSAGES.htmlWaitListSign());
 				} else {
-					setHTML(unasg + " / " + tUnasg);
+					if (wait == tWait && unasg == tUnasg) {
+						setHTML(wait == 0 ? String.valueOf(unasg) : wait == unasg ? wait + MESSAGES.htmlWaitListSign() : (unasg - wait) + " + " + wait + MESSAGES.htmlWaitListSign());
+					} else {
+						setHTML((wait == 0 ? String.valueOf(unasg) : wait == unasg ? wait + MESSAGES.htmlWaitListSign() : (unasg - wait) + " + " + wait + MESSAGES.htmlWaitListSign())
+								+ " / " + tUnasg);
+					}
 				}
-				if (tWait > 0)
-					setHTML(getHTML() + MESSAGES.htmlWaitListSign());
+			} else if (tWait == 0) {
+				// no wait-lists -- like before, but with no-sub
+				if (tNoSub == 0 || tNoSub == tUnasg) {
+					// no no-sub or all no-subs
+					if (unasg == tUnasg) {
+						setHTML((unasg == 0 ? "-" : String.valueOf(unasg)) + (tNoSub > 0 ? MESSAGES.htmlNoSubSign() : ""));
+					} else {
+						setHTML((unasg + " / " + tUnasg) + (tNoSub > 0 ? MESSAGES.htmlNoSubSign() : ""));
+					}
+				} else {
+					if (noSub == tNoSub && unasg == tUnasg) {
+						setHTML((noSub == 0 ? String.valueOf(unasg) : noSub == unasg ? noSub + MESSAGES.htmlNoSubSign() : (unasg - noSub) + " + " + noSub + MESSAGES.htmlNoSubSign()));
+					} else {
+						setHTML(((noSub == 0 ? String.valueOf(unasg) : noSub == unasg ? noSub + MESSAGES.htmlNoSubSign() : (unasg - noSub) + " + " + wait + MESSAGES.htmlNoSubSign()) + " / " + tUnasg));
+					}
+				}
 			} else {
-				if (wait == tWait && unasg == tUnasg) {
-					setHTML(wait == 0 ? String.valueOf(unasg) : wait == unasg ? wait + MESSAGES.htmlWaitListSign() : (unasg - wait) + " + " + wait + MESSAGES.htmlWaitListSign());
-				} else {
-					setHTML((wait == 0 ? String.valueOf(unasg) : wait == unasg ? wait + MESSAGES.htmlWaitListSign() : (unasg - wait) + " + " + wait + MESSAGES.htmlWaitListSign())
-							+ " / " + tUnasg);
-				}
+				if (unasg > noSub + wait)
+					setHTML(String.valueOf(unasg - noSub - wait) + (wait > 0 ? " + " + wait + MESSAGES.htmlWaitListSign() : "") + (noSub > 0 ? " + " + noSub + MESSAGES.htmlNoSubSign() : "") + " / " + tUnasg);
+				else if (wait > 0)
+					setHTML(wait + MESSAGES.htmlWaitListSign() + (noSub > 0 ? " + " + noSub + MESSAGES.htmlNoSubSign() : "") + " / " + tUnasg);
+				else if (noSub > 0)
+					setHTML(noSub + MESSAGES.htmlNoSubSign() + " / " + tUnasg);
+				else if (unasg == tUnasg)
+					setHTML((unasg == 0 ? "-" : String.valueOf(unasg)));
+				else
+					setHTML(unasg + " / " + tUnasg);
 			}
+			
 			if (topWaitingPriority != null)
 				setHTML(getHTML() + " " + MESSAGES.firstWaitListedPrioritySign(topWaitingPriority));
 		}
@@ -3024,6 +3059,8 @@ public class SectioningStatusPage extends Composite {
 		public WaitListCell(StudentInfo e) {
 			this(e.hasWaitlist() ? e.getWaitlist() : 0,
 				e.hasTotalWaitlist() ? e.getTotalWaitlist() : 0,
+				e.hasNoSub() ? e.getNoSub() : 0,
+				e.hasTotalNoSub() ? e.getTotalNoSub() : 0,
 				e.hasUnassigned() ? e.getUnassigned() : 0,
 				e.hasTotalUnassigned() ? e.getTotalUnassigned() : 0,
 				e.getTopWaitingPriority());
@@ -3032,6 +3069,8 @@ public class SectioningStatusPage extends Composite {
 		public WaitListCell(EnrollmentInfo e) {
 			this(e.hasWaitlist() ? e.getWaitlist() : 0,
 				e.hasTotalWaitlist() ? e.getTotalWaitlist() : 0,
+				e.hasNoSub() ? e.getNoSub() : 0,
+				e.hasTotalNoSub() ? e.getTotalNoSub() : 0,
 				e.hasUnassigned() ? e.getUnassignedPrimary() : 0,
 				e.hasTotalUnassigned() ? e.getTotalUnassignedPrimary() : 0,
 				null);
@@ -3133,13 +3172,13 @@ public class SectioningStatusPage extends Composite {
 				if (cmp != 0) return - cmp;
 				break;
 			case WAITLIST:
-				cmp = (e1.getWaitlist() == null ? new Integer(0) : e1.getWaitlist()).compareTo(e2.getWaitlist() == null ? 0 : e2.getWaitlist());
-				if (cmp != 0) return - cmp;
 				cmp = (e1.getUnassignedPrimary() == null ? new Integer(0) : e1.getUnassignedPrimary()).compareTo(e2.getUnassignedPrimary() == null ? 0 : e2.getUnassignedPrimary());
 				if (cmp != 0) return - cmp;
-				cmp = (e1.getTotalWaitlist() == null ? new Integer(0) : e1.getTotalWaitlist()).compareTo(e2.getTotalWaitlist() == null ? 0 : e2.getTotalWaitlist());
+				cmp = (e1.getWaitlist() == null ? new Integer(0) : e1.getWaitlist()).compareTo(e2.getWaitlist() == null ? 0 : e2.getWaitlist());
 				if (cmp != 0) return - cmp;
 				cmp = (e1.getTotalUnassignedPrimary() == null ? new Integer(0) : e1.getTotalUnassignedPrimary()).compareTo(e2.getTotalUnassignedPrimary() == null ? 0 : e2.getTotalUnassignedPrimary());
+				if (cmp != 0) return - cmp;
+				cmp = (e1.getTotalWaitlist() == null ? new Integer(0) : e1.getTotalWaitlist()).compareTo(e2.getTotalWaitlist() == null ? 0 : e2.getTotalWaitlist());
 				if (cmp != 0) return - cmp;
 				break;
 			case RESERVATION:

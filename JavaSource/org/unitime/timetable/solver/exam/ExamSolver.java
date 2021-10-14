@@ -724,7 +724,14 @@ public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> i
                 currentSolution().getAssignment().assign(0, placement);
             }
             change.getAssignments().clear();
-            change.getConflicts().clear();
+            if (assign.isEmpty()) {
+            	for (Iterator<ExamAssignment> i = change.getConflicts().iterator(); i.hasNext(); ) {
+            		ExamAssignment assignment = i.next();
+            		if (assignment == null || !assignment.getExamId().equals(change.getSelected())) i.remove();
+            	}
+            } else {
+            	change.getConflicts().clear();
+            }
             for (ExamPlacement assignment : assign)
                 if (!conflicts.contains(assignment)) 
                     change.getAssignments().add(new ExamAssignmentInfo(assignment, currentSolution().getAssignment()));

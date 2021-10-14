@@ -52,6 +52,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
 import com.google.gwt.core.client.GWT;
@@ -82,6 +83,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 	private StudentSectioningContext iContext;
 	private List<CourseSelectionBox> iCourses = new ArrayList<CourseSelectionBox>();
 	private AriaCheckBox iWaitList = null;
+	private WaitListMode iWaitListMode = WaitListMode.WaitList;
 	private CourseRequestLine iPrevious = null, iNext = null;
 	private Validator<CourseSelection> iValidator = null;
 	private SpecialRegistrationContext iSpecReg;
@@ -127,7 +129,22 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 					ValueChangeEvent.fire(CourseRequestLine.this, getValue());
 				}
 			});
+			iWaitList.setEnabled(false);
 			buttons.add(iWaitList);
+			box.addCourseSelectionHandler(new CourseSelectionHandler() {
+				@Override
+				public void onCourseSelection(CourseSelectionEvent event) {
+					boolean readOnly = event.getValue() != null && (event.getValue().isReadOnly() || event.getValue().isInactive());
+					boolean canSet = false;
+					if (iWaitListMode == WaitListMode.WaitList) {
+						canSet = event.getValue() != null && event.getValue().isCanWaitList();
+					} else if (iWaitListMode == WaitListMode.NoSubs) {
+						canSet = event.getValue() != null && event.getValue().isCanNoSub();
+					}
+					iWaitList.setEnabled(canSet && !readOnly);
+					if (!canSet) iWaitList.setValue(false);
+				}
+			});
 		} else {
 			addStyleName("nowaitlist");
 		}
@@ -157,16 +174,19 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 		return iWaitList != null && iWaitList.isVisible();
 	}
 	
-	public void setWaitListVisible(boolean visible) {
+	public void setWaitListMode(WaitListMode waitListMode) {
+		iWaitListMode = waitListMode;
 		if (iWaitList != null) {
-			iWaitList.setVisible(visible);
+			iWaitList.setVisible(iWaitListMode == WaitListMode.WaitList || iWaitListMode == WaitListMode.NoSubs);
 			changeVisibleStyle();
 		}
 	}
 	
-	public boolean getWaitList() { return iWaitList != null && iWaitList.getValue(); }
+	public boolean getWaitList() {
+		return iWaitListMode == WaitListMode.WaitList  && iWaitList != null && iWaitList.getValue();
+	}
 	public void setWaitList(boolean value) {
-		if (iWaitList != null) iWaitList.setValue(value);
+		if (iWaitList != null && iWaitListMode == WaitListMode.WaitList) iWaitList.setValue(value);
 	}
 	
 	public void setPrevious(CourseRequestLine previous) {
@@ -313,7 +333,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			iNext.delete();
 		} else {
 			iCourses.get(0).setValue(null);
-			if (iWaitList != null && iWaitList.isVisible()) { iWaitList.setEnabled(true); iWaitList.setValue(false); }
+			if (iWaitList != null && iWaitList.isVisible()) { iWaitList.setEnabled(false); iWaitList.setValue(false); }
 			for (int i = iCourses.size() - 1; i > 0; i--) {
 				deleteAlternative(i);
 			}
@@ -371,7 +391,16 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 		}
 		ret.setFilter(iCourses.get(0).getCourseFinder().getFilter());
 		if (iWaitList != null && iWaitList.isVisible()) {
-			ret.setWaitList(iWaitList.getValue());
+			if (iWaitListMode == WaitListMode.WaitList) {
+				ret.setWaitList(iWaitList.getValue());
+				ret.setNoSub(null);
+			} else if (iWaitListMode == WaitListMode.NoSubs) {
+				ret.setWaitList(null);
+				ret.setNoSub(iWaitList.getValue());
+			} else {
+				ret.setWaitList(null);
+				ret.setNoSub(null);
+			}
 		}
 		return (ret.isEmpty() ? null : ret);
 	}
@@ -410,12 +439,23 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 	@Override
 	public void setValue(Request value, boolean fireEvents) {
 		if (value == null) {
-			if (iWaitList != null) iWaitList.setValue(false);
+			if (iWaitList != null) { iWaitList.setValue(false); iWaitList.setEnabled(false); }
 			iCourses.get(0).setValue(null, true);
 			for (int i = iCourses.size() - 1; i > 0; i--)
 				deleteAlternative(i);
 		} else {
-			if (iWaitList != null) iWaitList.setValue(value.isWaitList());
+			if (iWaitList != null) {
+				if (iWaitListMode == WaitListMode.WaitList && value.isCanWaitList()) {
+					iWaitList.setValue(value.isWaitList());
+					iWaitList.setEnabled(!value.isReadOnly() && !value.isInactive());
+				} else if (iWaitListMode == WaitListMode.NoSubs && value.isCanNoSub()) {
+					iWaitList.setValue(value.isNoSub());
+					iWaitList.setEnabled(!value.isReadOnly() && !value.isInactive());
+				} else {
+					iWaitList.setValue(false);
+					iWaitList.setEnabled(false);
+				}
+			}
 			int index = 0;
 			if (value.hasRequestedCourse())
 				for (RequestedCourse rc: value.getRequestedCourse()) {
@@ -436,9 +476,6 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 				iCourses.get(iCourses.size() - 1).setInfo(MESSAGES.advisorNoteWithCredit(value.getAdvisorNote(), value.getAdvisorCredit()));
 			else if (value.hasAdvisorNote())
 				iCourses.get(iCourses.size() - 1).setInfo(MESSAGES.advisorNote(value.getAdvisorNote()));
-		}
-		if (iWaitList != null && iWaitList.isVisible()) {
-			iWaitList.setEnabled(value == null || !value.isReadOnly());
 		}
 		if (iDelete != null) {
 			iDelete.setVisible(value == null || value.isCanDelete());
@@ -754,7 +791,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			activate.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					activate(getValue().getCourseId());
+					activate(getValue());
 					activate.setVisible(false);
 				}
 			});
@@ -816,6 +853,10 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			} else {
 				super.openDialog();
 			}
+		}
+		
+		public boolean hasStatus() {
+			return iStatus != null;
 		}
 		
 		public void setStatus(ImageResource icon, String message) {

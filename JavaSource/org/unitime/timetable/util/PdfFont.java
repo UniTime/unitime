@@ -47,7 +47,7 @@ public class PdfFont {
 		}
 	}
 	
-	private static Font createFont(float size, boolean fixed, boolean bold, boolean italic) {
+	public static Font createFont(float size, boolean fixed, boolean bold, boolean italic) {
 		String font = null;
 		if (fixed)
 			font = ApplicationProperty.PdfFontFixed.value();

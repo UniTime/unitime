@@ -25,6 +25,7 @@ import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.authority.OtherAuthority;
 import org.unitime.timetable.security.evaluation.PermissionCheck;
 import org.unitime.timetable.security.rights.Right;
 
@@ -169,5 +170,35 @@ public class GwtRpcHelper implements SessionContext {
 	@Override
 	public boolean hasPermissionAnySession(Object targetObject, Right right, Qualifiable... filter) {
 		return iCheck.hasPermissionAnySession(getUser(), targetObject, right, filter);
+	}
+
+	@Override
+	public void checkPermissionOtherAuthority(Right right, OtherAuthority other) {
+		iCheck.checkPermission(getUser(), null, null, right, other);
+	}
+
+	@Override
+	public void checkPermissionOtherAuthority(Serializable targetId, String targetType, Right right, OtherAuthority other) {
+		iCheck.checkPermission(getUser(), targetId, targetType, right, other);
+	}
+
+	@Override
+	public void checkPermissionOtherAuthority(Object targetObject, Right right, OtherAuthority other) {
+		iCheck.checkPermission(getUser(), targetObject, right, other);
+	}
+
+	@Override
+	public boolean hasPermissionOtherAuthority(Right right, OtherAuthority other) {
+		return iCheck.hasPermission(getUser(), null, null, right, other);
+	}
+
+	@Override
+	public boolean hasPermissionOtherAuthority(Serializable targetId, String targetType, Right right, OtherAuthority other) {
+		return iCheck.hasPermission(getUser(), targetId, targetType, right, other);
+	}
+
+	@Override
+	public boolean hasPermissionOtherAuthority(Object targetObject, Right right, OtherAuthority other) {
+		return iCheck.hasPermission(getUser(), targetObject, right, other);
 	}
 }

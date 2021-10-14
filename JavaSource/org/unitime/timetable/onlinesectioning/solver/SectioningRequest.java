@@ -39,12 +39,16 @@ import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.FreeTimeRequest;
 import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Request.RequestPriority;
+import org.cpsolver.studentsct.model.Student.StudentPriority;
 import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Subpart;
 import org.cpsolver.studentsct.online.selection.ResectioningWeights;
 import org.cpsolver.studentsct.online.selection.ResectioningWeights.LastSectionProvider;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
+import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -62,7 +66,7 @@ import org.unitime.timetable.onlinesectioning.model.XTime;
 /**
  * @author Tomas Muller
  */
-public class SectioningRequest implements Comparable<SectioningRequest>, LastSectionProvider {
+public class SectioningRequest implements LastSectionProvider {
 	private XCourseRequest iOldRequest, iRequest;
 	private XStudent iOldStudent, iStudent;
 	private XEnrollment iLastEnrollment, iNewEnrollment;
@@ -70,16 +74,45 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 	private boolean iHasIndividualReservation;
 	private OnlineSectioningLog.Action.Builder iAction;
 	private List<Section> iLastSections = new ArrayList<Section>();
+	private RequestPriority iRequestPriority = RequestPriority.Normal;
+	private StudentPriority iStudentPriority = StudentPriority.Normal;
+	private int iAlternativity = 0;
 
-	public SectioningRequest(XOffering offering, XCourseRequest request, XStudent student, OnlineSectioningLog.Action.Builder action) {
+	public SectioningRequest(XOffering offering, XCourseRequest request, XCourseId courseId, XStudent student, StudentPriority priority, OnlineSectioningLog.Action.Builder action) {
 		iRequest = request;
 		iStudent = student;
 		iOffering = offering;
+		if (courseId != null) {
+			iAlternativity = request.getCourseIds().indexOf(courseId);
+		} else {
+			for (int i = 0; i < request.getCourseIds().size(); i++) {
+				if (request.getCourseIds().get(i).getOfferingId().equals(offering.getOfferingId())) {
+					iAlternativity = i; break;
+				}
+			}
+		}
+
+		iStudentPriority = priority;
+		if (action != null)
+			action.addOptionBuilder().setKey("Student Priority").setValue(iStudentPriority.name());
+
+		if (request.isCritical()) {
+			if (request.getCritical() == CourseDemand.Critical.CRITICAL.ordinal())
+				iRequestPriority = RequestPriority.Critical;
+			else if (request.getCritical() == CourseDemand.Critical.IMPORTANT.ordinal())
+				iRequestPriority = RequestPriority.Important;
+		}
+		if (action != null)
+			action.addOptionBuilder().setKey("Request Priority").setValue(iRequestPriority.name());
+
 		iHasIndividualReservation = false;
-		for (XReservation reservation: iOffering.getReservations())
+		for (XReservation reservation: iOffering.getReservations()) {
+			if (!reservation.mustBeUsed() || reservation.isExpired()) continue;
 			if (reservation instanceof XIndividualReservation && ((XIndividualReservation)reservation).getStudentIds().contains(request.getStudentId())) {
 				iHasIndividualReservation = true; break;
 			}
+		}
+		
 		iAction = action;
 	}
 	
@@ -117,53 +150,9 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 		return getRequest().getStudentId().equals(((SectioningRequest)o).getRequest().getStudentId());
 	}
 	
-	public int compareTo(SectioningRequest r) {
-		// Requests with last enrollment (recently unassigned requests) have priority
-		if (getLastEnrollment() == null && r.getLastEnrollment() != null) return 1;
-		if (getLastEnrollment() != null && r.getLastEnrollment() == null) return -1;
-		
-		// Check individual reservations
-		if (hasIndividualReservation() && !r.hasIndividualReservation()) return -1;
-		if (!hasIndividualReservation() && r.hasIndividualReservation()) return 1;
-
-		if (getLastEnrollment() == null) {
-			// Use time stamp
-			if (getRequest().getTimeStamp() != null) {
-				if (r.getRequest().getTimeStamp() != null) {
-					int cmp = getRequest().getTimeStamp().compareTo(r.getRequest().getTimeStamp());
-					if (cmp != 0) return cmp;
-				} else {
-					return 1;
-				}
-			} else if (r.getRequest().getTimeStamp() != null) {
-				return -1;
-			}
-		}
-		
-		// Alternative requests last
-		if (getRequest().isAlternative() && !r.getRequest().isAlternative()) return 1;
-		if (!getRequest().isAlternative() && r.getRequest().isAlternative()) return -1;
-		
-		// Use priority
-		int cmp = new Integer(getRequest().getPriority()).compareTo(r.getRequest().getPriority());
-		if (cmp != 0) return cmp;
-
-		if (getLastEnrollment() != null) {
-			// Use time stamp
-			if (getRequest().getTimeStamp() != null) {
-				if (r.getRequest().getTimeStamp() != null) {
-					cmp = getRequest().getTimeStamp().compareTo(r.getRequest().getTimeStamp());
-					if (cmp != 0) return cmp;
-				} else {
-					return 1;
-				}
-			} else if (r.getRequest().getTimeStamp() != null) {
-				return -1;
-			}
-		}
-		
-		return new Long(getRequest().getStudentId()).compareTo(r.getRequest().getStudentId());
-	}
+	public RequestPriority getRequestPriority() { return iRequestPriority; }
+	public StudentPriority getStudentPriority() { return iStudentPriority; }
+	public int getAlternativity() { return iAlternativity; }
 	
 	public boolean isOverlappingFreeTime(FreeTimeRequest request, Enrollment e) {
 		if (request.getTime() == null || e.isAllowOverlap()) return false;
@@ -180,7 +169,7 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 		double bestValue = 0.0;
 		
 		Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
-		CourseRequest request = convert(assignment, getRequest(), server);
+		CourseRequest request = convert(assignment, getRequest(), server, WaitListMode.WaitList);
 		if (request == null) return null;
 		
 		if (getLastEnrollment() != null)
@@ -365,17 +354,17 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 		return false;
 	}
 	
-	public static CourseRequest convert(Assignment<Request, Enrollment> assignment, XCourseRequest request, OnlineSectioningServer server) {
-		return convert(assignment, server.getStudent(request.getStudentId()), request, server, null, null);
+	public static CourseRequest convert(Assignment<Request, Enrollment> assignment, XCourseRequest request, OnlineSectioningServer server, WaitListMode wlMode) {
+		return convert(assignment, server.getStudent(request.getStudentId()), request, server, null, null, wlMode);
 	}
 	
-	public static Enrollment convert(XCourseRequest request, OnlineSectioningServer server) {
+	public static Enrollment convert(XCourseRequest request, OnlineSectioningServer server, WaitListMode wlMode) {
 		Assignment<Request, Enrollment> assignment = new DefaultSingleAssignment<Request, Enrollment>();
-		CourseRequest cr = convert(assignment, server.getStudent(request.getStudentId()), request, server, null, null);
+		CourseRequest cr = convert(assignment, server.getStudent(request.getStudentId()), request, server, null, null, wlMode);
 		return assignment.getValue(cr);
 	}
 	
-	public static CourseRequest convert(Assignment<Request, Enrollment> assignment, XStudent student, XCourseRequest request, OnlineSectioningServer server, XOffering oldOffering, XEnrollment oldEnrollment) {
+	public static CourseRequest convert(Assignment<Request, Enrollment> assignment, XStudent student, XCourseRequest request, OnlineSectioningServer server, XOffering oldOffering, XEnrollment oldEnrollment, WaitListMode wlMode) {
 		Student clonnedStudent = new Student(request.getStudentId());
 		clonnedStudent.setExternalId(student.getExternalId());
 		clonnedStudent.setName(student.getName());
@@ -397,7 +386,7 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 						offering = oldOffering;
 					courses.add(offering.toCourse(c.getCourseId(), student, server));
 				}
-				CourseRequest clonnedRequest = new CourseRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), clonnedStudent, courses, cr.isWaitlist(), cr.getTimeStamp() == null ? null : cr.getTimeStamp().getTime());
+				CourseRequest clonnedRequest = new CourseRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), clonnedStudent, courses, cr.isWaitListOrNoSub(wlMode), cr.getTimeStamp() == null ? null : cr.getTimeStamp().getTime());
 				cr.fillChoicesIn(clonnedRequest);
 				XEnrollment enrollment = cr.getEnrollment();
 				if (oldEnrollment != null && cr.getCourseIdByOfferingId(oldOffering.getOfferingId()) != null)
@@ -424,6 +413,17 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 				if (request.equals(r)) ret = clonnedRequest;
 			}
 		}
+		if (ret == null) {
+			List<Course> courses = new ArrayList<Course>();
+			for (XCourseId c: request.getCourseIds()) {
+				XOffering offering = server.getOffering(c.getOfferingId());
+				if (oldOffering != null && oldOffering.getOfferingId().equals(c.getOfferingId()))
+					offering = oldOffering;
+				courses.add(offering.toCourse(c.getCourseId(), student, server));
+			}
+			ret = new CourseRequest(request.getRequestId(), request.getPriority(), request.isAlternative(), clonnedStudent, courses, request.isWaitListOrNoSub(wlMode), request.getTimeStamp() == null ? null : request.getTimeStamp().getTime());
+			request.fillChoicesIn(ret);
+		}
 		if (clonnedStudent.getExternalId() != null && !clonnedStudent.getExternalId().isEmpty()) {
 			Collection<Long> offerings = server.getInstructedOfferings(clonnedStudent.getExternalId());
 			if (offerings != null)
@@ -436,9 +436,9 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 		return ret;
 	}
 	
-	public static Enrollment convert(XStudent student, XCourseRequest request, OnlineSectioningServer server, XOffering oldOffering, XEnrollment oldEnrollment) {
+	public static Enrollment convert(XStudent student, XCourseRequest request, OnlineSectioningServer server, XOffering oldOffering, XEnrollment oldEnrollment, WaitListMode wlMode) {
 		Assignment<Request, Enrollment> assignment = new DefaultSingleAssignment<Request, Enrollment>();
-		CourseRequest cr = convert(assignment, student, request, server, oldOffering, oldEnrollment);
+		CourseRequest cr = convert(assignment, student, request, server, oldOffering, oldEnrollment, wlMode);
 		return assignment.getValue(cr);
 	}
 }
