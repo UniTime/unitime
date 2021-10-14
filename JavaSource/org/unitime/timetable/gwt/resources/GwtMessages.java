@@ -6593,4 +6593,19 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Email failed: {0}")
 	String failureSendingEmail(String message);
+	
+	@DefaultMessage("Subject Area")
+	@DoNotTranslate
+	String pageSubjectArea();
+
+	@DefaultMessage("Subject Areas")
+	@DoNotTranslate
+	String pageSubjectAreas();
+
+	@DefaultMessage("Funding Department")
+	String fieldFundingDepartment();	
+	
+	@DefaultMessage("No external funding department")
+	String noFundingDepartment();	
+	
 }

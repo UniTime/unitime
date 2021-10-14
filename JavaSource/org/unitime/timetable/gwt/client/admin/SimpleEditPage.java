@@ -1682,6 +1682,22 @@ public class SimpleEditPage extends Composite {
 						}
 					}
 				} 
+				if (field.isUniqueIfSet()) {
+					Map<String, MyCell> values = uniqueMap.get(col);
+					if (values == null) {
+						values = new HashMap<String, MyCell>(); uniqueMap.put(col, values);
+					}
+					if (!(value == null || value.isEmpty())) {
+						MyCell old = values.put(value, widget);
+						if (old != null) {
+							widget.setError(MESSAGES.errorMustBeUnique(field.getName()));
+							old.setError(MESSAGES.errorMustBeUnique(field.getName()));
+							if (valid == null && detailRecord == null) {
+								valid = MESSAGES.errorMustBeUnique(field.getName());
+							}
+						}
+					}
+				} 
 				if (field.isNotEmpty() || (isParent(record) && field.isParentNotEmpty())) {
 					if (value == null || value.isEmpty()) {
 						widget.setError(MESSAGES.errorMustBeSet(field.getName()));
@@ -1757,6 +1773,22 @@ public class SimpleEditPage extends Composite {
 							valid = MESSAGES.errorMustBeSet(field.getName());
 						}
 					} else {
+						MyCell old = values.put(value, widget);
+						if (old != null) {
+							widget.setError(MESSAGES.errorMustBeUnique(field.getName()));
+							old.setError(MESSAGES.errorMustBeUnique(field.getName()));
+							if (valid == null) {
+								valid = MESSAGES.errorMustBeUnique(field.getName());
+							}
+						}
+					}
+				} 
+				if (field.isUniqueIfSet()) {
+					Map<String, MyCell> values = uniqueMap.get(col);
+					if (values == null) {
+						values = new HashMap<String, MyCell>(); uniqueMap.put(col, values);
+					}
+					if (!(value == null || value.isEmpty())) {
 						MyCell old = values.put(value, widget);
 						if (old != null) {
 							widget.setError(MESSAGES.errorMustBeUnique(field.getName()));
