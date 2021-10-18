@@ -674,6 +674,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 		ClientResource resource = null;
 		Map<String, Set<String>> overrides = new HashMap<String, Set<String>>();
 		Float maxCredit = null;
+		Float oldCredit = null;
 		try {
 			resource = new ClientResource(getSpecialRegistrationApiSiteCheckSpecialRegistrationStatus());
 			resource.setNext(iClient);
@@ -725,6 +726,8 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 										if (err.code != null)
 											problems.add(err.code);
 									}
+							} else if (status(ch.status) == RequestedCourseStatus.OVERRIDE_PENDING && r.maxCredit != null) {
+								oldCredit = r.maxCredit;
 							}
 						}
 				}
@@ -847,7 +850,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 			}
 		}
 		
-		if (!req.changes.isEmpty() || !overrides.isEmpty() || req.maxCredit != null) {
+		if (!req.changes.isEmpty() || !overrides.isEmpty() || req.maxCredit != null || oldCredit != null) {
 			resource = null;
 			try {
 				resource = new ClientResource(getSpecialRegistrationApiSiteSubmitRegistration());
