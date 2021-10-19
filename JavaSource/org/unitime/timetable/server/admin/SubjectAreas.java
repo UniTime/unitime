@@ -1,6 +1,26 @@
+/*
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+*/
 package org.unitime.timetable.server.admin;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.cpsolver.ifs.util.ToolBox;
@@ -18,16 +38,19 @@ import org.unitime.timetable.gwt.shared.SimpleEditInterface.ListItem;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.PageName;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Record;
 import org.unitime.timetable.model.ChangeLog;
-import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.dao.DepartmentDAO;
-import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.ChangeLog.Operation;
 import org.unitime.timetable.model.ChangeLog.Source;
+import org.unitime.timetable.model.dao.DepartmentDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
+import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 
+/**
+ * @author Sean Justice
+ */
 @Service("gwtAdminTable[type=SubjectArea]")
 public class SubjectAreas implements AdminTable {
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
@@ -43,9 +66,12 @@ public class SubjectAreas implements AdminTable {
 		List<Department> deptList = DepartmentDAO.getInstance().findBySession(hibSession, context.getUser().getCurrentAcademicSessionId());
 		List<ListItem> depts = new ArrayList<ListItem>();
 		List<ListItem> fundDepts = new ArrayList<ListItem>();
-		
+
+		Collections.sort(deptList);
 		for (Department dept: deptList) {
-			depts.add(new ListItem(dept.getUniqueId().toString(), dept.getLabel()));
+			if (dept.isExternalFundingDept() == null || !dept.isExternalFundingDept()) {
+				depts.add(new ListItem(dept.getUniqueId().toString(), dept.getLabel()));
+			}
 		}
 		fundDepts.add(new ListItem("-1", MESSAGES.noFundingDepartment()));
 		for (Department dept: deptList) {
@@ -66,13 +92,14 @@ public class SubjectAreas implements AdminTable {
 			r.setField(0, area.getSubjectAreaAbbreviation());
 			r.setField(1, area.getTitle());
 			r.setField(2, area.getExternalUniqueId());
-			r.setField(3, area.getDepartment().getUniqueId().toString(), context.hasPermission(area.getUniqueId(), "SubjectArea", Right.SubjectAreaChangeDepartment));
+			r.setField(3, area.getDepartment().getUniqueId().toString(), context.hasPermission(area, Right.SubjectAreaChangeDepartment));
 			if (ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue()) {
 				r.setField(4, area.getFundingDept() == null?"-1":area.getFundingDept().getUniqueId().toString());
 			}			
-			r.setDeletable(area.getExternalUniqueId() == null && !area.hasOfferedCourses());
+			r.setDeletable(context.hasPermission(area, Right.SubjectAreaDelete));
 		}
-		data.setEditable(context.hasPermission(Right.SubjectAreaEdit));
+		data.setAddable(context.hasPermission(Right.SubjectAreaAdd));
+		data.setEditable(context.hasPermission(Right.SubjectAreaEdit) || context.hasPermission(Right.SubjectAreaAdd));
 		return data;
 	}
 
@@ -91,86 +118,69 @@ public class SubjectAreas implements AdminTable {
 	}
 
 	@Override
-	@PreAuthorize("checkPermission('SubjectAreas')")
+	@PreAuthorize("checkPermission('SubjectAreaAdd')")
 	public void save(Record record, SessionContext context, Session hibSession) {
+		Department dept = DepartmentDAO.getInstance().get(Long.valueOf(record.getField(3)), hibSession);
+		Department fundDept = (record.getField(4) == null || "-1".equals(record.getField(4)) ? null : DepartmentDAO.getInstance().get(Long.valueOf(record.getField(4)), hibSession));
+
 		SubjectArea area = new SubjectArea();
 		area.setSession(SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId(), hibSession));
 		area.setSubjectAreaAbbreviation(record.getField(0));
 		area.setTitle(record.getField(1));
 		area.setExternalUniqueId(record.getField(2));
-		for(String deptId: record.getValues(3)) {
-			Department dept = DepartmentDAO.getInstance().get(Long.valueOf(deptId), hibSession);
-			area.setDepartment(dept);
-			dept.getSubjectAreas().add(area);
-		}
-		for(String deptId: record.getValues(4)) {
-			Department fundDept = DepartmentDAO.getInstance().get(Long.valueOf(deptId), hibSession);
-			if (fundDept != null) {
-				area.setFundingDept(fundDept);
-				fundDept.getSubjectAreas().add(area);
-			}
-		}
+		area.setDepartment(dept);
+		dept.getSubjectAreas().add(area);
+		area.setFundingDept(fundDept);
+		
 		record.setUniqueId((Long)hibSession.save(area));
 		ChangeLog.addChange(hibSession,
 				context,
 				area,
 				area.getSubjectAreaAbbreviation() + " " + area.getTitle(),
-				Source.SIMPLE_EDIT, 
+				Source.SUBJECT_AREA_EDIT, 
 				Operation.CREATE,
-				null,
-				null);
+			    area,
+			    area.getDepartment());
+
 	}	
 
 	protected void update(SubjectArea area, Record record, SessionContext context, Session hibSession) {
 		if (area==null) return;
 		boolean changed = false;
-		Department dept = null;
-		Department fundDept = null;
+		Department dept = DepartmentDAO.getInstance().get(Long.valueOf(record.getField(3)), hibSession);
+		Department fundDept = DepartmentDAO.getInstance().get(Long.valueOf(record.getField(4)), hibSession);
 		changed =
 			changed ||
 			!ToolBox.equals(area.getSubjectAreaAbbreviation(), record.getField(0)) ||
 			!ToolBox.equals(area.getTitle(), record.getField(1)) ||
-			!ToolBox.equals(area.getExternalUniqueId(), record.getField(2));
-		for(String deptId: record.getValues(3)) {
-			dept = DepartmentDAO.getInstance().get(Long.valueOf(deptId), hibSession);
-			changed = changed || !ToolBox.equals(dept, area.getDepartment());
-		}
-		for(String deptId: record.getValues(4)) {
-			fundDept = DepartmentDAO.getInstance().get(Long.valueOf(deptId), hibSession);
-			changed = changed || !ToolBox.equals(fundDept, area.getFundingDept());
-		}
+			!ToolBox.equals(area.getExternalUniqueId(), record.getField(2)) ||
+			!ToolBox.equals(dept, area.getDepartment()) || 
+			!ToolBox.equals(fundDept, area.getFundingDept());
+		
 		if (changed) {
 			area.setSubjectAreaAbbreviation(record.getField(0));
 			area.setTitle(record.getField(1));
 			area.setExternalUniqueId(record.getField(2));
-			if(!(dept == null)) {
-				area.setDepartment(dept);
-				dept.getSubjectAreas().add(area);
-			}
-			if (fundDept == null) {
-				fundDept = area.getFundingDept();
-				if (fundDept != null) {
-					fundDept.getSubjectAreas().remove(area);
-				} 
-				area.setFundingDept(null);
-			} else {
-				area.setFundingDept(fundDept);
-				fundDept.getSubjectAreas().add(area);
-			}
+			if (!dept.equals(area.getDepartment())) {
+				  area.getDepartment().getSubjectAreas().remove(area);
+				  area.setDepartment(dept);
+				  dept.getSubjectAreas().add(area);
+				}
+			area.setFundingDept(fundDept);
 			hibSession.saveOrUpdate(area);		
 			ChangeLog.addChange(hibSession,
 				context,
 				area,
 				area.getSubjectAreaAbbreviation() + " " + area.getTitle(),
-				Source.SIMPLE_EDIT, 
+				Source.SUBJECT_AREA_EDIT, 
 				Operation.UPDATE,
-				null,
-				null);
+				area,
+				area.getDepartment());
 		}
 	}
 	
 	@Override
-	@PreAuthorize("checkPermission('SubjectAreas')")
+	@PreAuthorize("checkPermission(#record.uniqueId, 'SubjectAreaEdit')")
 	public void update(Record record, SessionContext context, Session hibSession) {
 		update(SubjectAreaDAO.getInstance().get(record.getUniqueId(), hibSession), record, context, hibSession);
 	}
@@ -181,15 +191,15 @@ public class SubjectAreas implements AdminTable {
 				context,
 				area,
 				area.getSubjectAreaAbbreviation() + " " + area.getTitle(),
-				Source.SIMPLE_EDIT, 
+				Source.SUBJECT_AREA_EDIT, 
 				Operation.DELETE,
 				null,
-				null);
+			    area.getDepartment());
 		hibSession.delete(area);
 	}
 	
 	@Override
-	@PreAuthorize("checkPermission('SubjectAreas')")
+	@PreAuthorize("checkPermission(#record.uniqueId, 'SubjectAreaDelete')")
 	public void delete(Record record, SessionContext context, Session hibSession) {
 		delete(SubjectAreaDAO.getInstance().get(record.getUniqueId(), hibSession), context, hibSession);
 	}
