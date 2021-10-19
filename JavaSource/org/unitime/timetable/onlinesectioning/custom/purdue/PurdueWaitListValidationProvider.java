@@ -1066,29 +1066,48 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 				request.setMaxCredit(status.data.maxCredit);
 			}
 			if (maxCredit == null) maxCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"));
-			
+
 			if (status != null && status.data != null && status.data.requests != null) {
+				// Retrieve max credit request
+				SpecialRegistration maxCreditReq = null;
+				// Try matching request first
+				if (request.getMaxCreditOverrideExternalId() != null)
+					for (SpecialRegistration r: status.data.requests) {
+						if (r.maxCredit != null && request.getMaxCreditOverrideExternalId().equals(r.regRequestId)) {
+							maxCreditReq = r; break;
+						}
+					}
+				// Get latest not-cancelled max credit override request otherwise
+				if (maxCreditReq == null)
+					for (SpecialRegistration r: status.data.requests) {
+						if (r.maxCredit != null && status(r, true) != RequestedCourseStatus.OVERRIDE_CANCELLED && (maxCreditReq == null || r.dateCreated.isAfter(maxCreditReq.dateCreated))) {
+							maxCreditReq = r;
+						}
+					}
+				
+				if (maxCreditReq != null) {
+					request.setMaxCreditOverrideExternalId(maxCreditReq.regRequestId);
+					request.setMaxCreditOverrideStatus(status(maxCreditReq, true));
+					request.setMaxCreditOverride(maxCreditReq.maxCredit);
+					request.setMaxCreditOverrideTimeStamp(maxCreditReq.dateCreated == null ? null : maxCreditReq.dateCreated.toDate());
+					request.setCreditNote(SpecialRegistrationHelper.note(maxCreditReq, true));
+					String warning = null;
+					if (maxCreditReq.changes != null)
+						for (Change ch: maxCreditReq.changes)
+							if (ch.subject == null && ch.courseNbr == null)
+								if (ch.errors != null)
+									for (ChangeError er: ch.errors)
+										if ("MAXI".equals(er.code) && er.message != null)
+											warning = (warning == null ? "" : warning + "\n") + er.message;
+					request.setCreditWarning(warning);
+					request.setRequestorNote(maxCreditReq.requestorNotes);
+					request.setRequestId(maxCreditReq.regRequestId);
+					for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.waitlist.requestorNoteSuggestions", "").split("[\r\n]+"))
+						if (!suggestion.isEmpty()) request.addRequestorNoteSuggestion(suggestion);
+				}
+				
 				for (SpecialRegistration r: status.data.requests) {
 					if (r.regRequestId == null) continue;
-					if (r.maxCredit != null) {
-						request.setMaxCreditOverrideExternalId(r.regRequestId);
-						request.setMaxCreditOverrideStatus(status(r, true));
-						request.setMaxCreditOverride(r.maxCredit);
-						request.setCreditNote(SpecialRegistrationHelper.note(r, true));
-						String warning = null;
-						if (r.changes != null)
-							for (Change ch: r.changes)
-								if (ch.subject == null && ch.courseNbr == null)
-									if (ch.errors != null)
-										for (ChangeError er: ch.errors)
-											if ("MAXI".equals(er.code) && er.message != null)
-												warning = (warning == null ? "" : warning + "\n") + er.message;
-						request.setCreditWarning(warning);
-						request.setRequestorNote(r.requestorNotes);
-						request.setRequestId(r.regRequestId);
-						for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.waitlist.requestorNoteSuggestions", "").split("[\r\n]+"))
-							if (!suggestion.isEmpty()) request.addRequestorNoteSuggestion(suggestion);
-					}
 					RequestedCourse rc = rcs.get(r.regRequestId);
 					if (rc == null) {
 						if (r.changes != null)
