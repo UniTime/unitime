@@ -69,7 +69,7 @@ public class SubjectAreas implements AdminTable {
 
 		Collections.sort(deptList);
 		for (Department dept: deptList) {
-			if (dept.isExternalFundingDept() == null || !dept.isExternalFundingDept()) {
+			if (dept.isExternalManager() == null || !dept.isExternalManager()) {
 				depts.add(new ListItem(dept.getUniqueId().toString(), dept.getLabel()));
 			}
 		}
@@ -108,13 +108,20 @@ public class SubjectAreas implements AdminTable {
 	public void save(SimpleEditInterface data, SessionContext context, Session hibSession) {
 		for (SubjectArea area: SubjectAreaDAO.getInstance().findBySession(hibSession, context.getUser().getCurrentAcademicSessionId())) {
 			Record r = data.getRecord(area.getUniqueId());
-			if (r == null)
-				delete(area, context, hibSession);
-			else
-				update(area, r, context, hibSession);
+			if (r == null) {
+				if (context.hasPermission(Right.SubjectAreaDelete)) {
+					delete(area, context, hibSession);
+				}
+			} else {
+				if (context.hasPermission(Right.SubjectAreaEdit)) {
+					update(area, r, context, hibSession);
+				}
+			}
 		}
-		for (Record r: data.getNewRecords())
-			save(r, context, hibSession);
+		if (context.hasPermission(Right.SubjectAreaAdd)) {
+			for (Record r: data.getNewRecords())			
+				save(r, context, hibSession);
+		}
 	}
 
 	@Override
@@ -147,6 +154,7 @@ public class SubjectAreas implements AdminTable {
 	protected void update(SubjectArea area, Record record, SessionContext context, Session hibSession) {
 		if (area==null) return;
 		boolean changed = false;
+		boolean fundingEnabled = ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue();
 		Department dept = DepartmentDAO.getInstance().get(Long.valueOf(record.getField(3)), hibSession);
 		Department fundDept = DepartmentDAO.getInstance().get(Long.valueOf(record.getField(4)), hibSession);
 		changed =
@@ -155,7 +163,7 @@ public class SubjectAreas implements AdminTable {
 			!ToolBox.equals(area.getTitle(), record.getField(1)) ||
 			!ToolBox.equals(area.getExternalUniqueId(), record.getField(2)) ||
 			!ToolBox.equals(dept, area.getDepartment()) || 
-			!ToolBox.equals(fundDept, area.getFundingDept());
+			(fundingEnabled && !ToolBox.equals(fundDept, area.getFundingDept()));
 		
 		if (changed) {
 			area.setSubjectAreaAbbreviation(record.getField(0));
@@ -166,8 +174,10 @@ public class SubjectAreas implements AdminTable {
 				  area.setDepartment(dept);
 				  dept.getSubjectAreas().add(area);
 				}
-			area.setFundingDept(fundDept);
-			hibSession.saveOrUpdate(area);		
+			if (fundingEnabled) {
+				area.setFundingDept(fundDept);
+			}
+			hibSession.saveOrUpdate(area);
 			ChangeLog.addChange(hibSession,
 				context,
 				area,
