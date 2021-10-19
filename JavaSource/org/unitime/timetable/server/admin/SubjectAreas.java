@@ -173,7 +173,7 @@ public class SubjectAreas implements AdminTable {
 				  area.getDepartment().getSubjectAreas().remove(area);
 				  area.setDepartment(dept);
 				  dept.getSubjectAreas().add(area);
-				}
+			}
 			if (fundingEnabled) {
 				area.setFundingDept(fundDept);
 			}
