@@ -109,11 +109,11 @@ public class SubjectAreas implements AdminTable {
 		for (SubjectArea area: SubjectAreaDAO.getInstance().findBySession(hibSession, context.getUser().getCurrentAcademicSessionId())) {
 			Record r = data.getRecord(area.getUniqueId());
 			if (r == null) {
-				if (context.hasPermission(Right.SubjectAreaDelete)) {
+				if (context.hasPermission(area, Right.SubjectAreaDelete)) {
 					delete(area, context, hibSession);
 				}
 			} else {
-				if (context.hasPermission(Right.SubjectAreaEdit)) {
+				if (context.hasPermission(area, Right.SubjectAreaEdit)) {
 					update(area, r, context, hibSession);
 				}
 			}
