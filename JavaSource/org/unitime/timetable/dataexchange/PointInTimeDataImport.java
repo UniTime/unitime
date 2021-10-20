@@ -186,7 +186,6 @@ public class PointInTimeDataImport extends EventRelatedImports {
         commitTransaction();
 	}
 
-	@SuppressWarnings("unchecked")
 	private void loadStudents(Element rootElement) throws Exception {
         loadExistingStudents(session.getUniqueId());
 
@@ -217,10 +216,8 @@ public class PointInTimeDataImport extends EventRelatedImports {
         
 	}
 
-	@SuppressWarnings("unchecked")
 	private void elementStudent(Element studentElement) throws Exception {
-		String uidString = getRequiredStringAttribute(studentElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sStudentElementName);
-		Long uid = new Long(uidString);
+		Long uid = getRequiredLongAttribute(studentElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sStudentElementName);
 		String externalId = getRequiredStringAttribute(studentElement, PointInTimeDataExport.sExternalIdAttribute, PointInTimeDataExport.sStudentElementName);
 		PitStudent s = new PitStudent();
 		if (students.get(uid)!= null && students.get(uid).getExternalUniqueId().equals(externalId)) {
@@ -245,12 +242,12 @@ public class PointInTimeDataImport extends EventRelatedImports {
 
 	private void elementAcadAreaMajorClassification(Element element, PitStudent s) throws Exception {
 		PitStudentAcadAreaMajorClassification aamc = new PitStudentAcadAreaMajorClassification();
-		aamc.setAcademicArea(academicAreas.get(new Long(getRequiredStringAttribute(element, PointInTimeDataExport.sAcademicAreaUniqueIdAttribute, PointInTimeDataExport.sAcadAreaMajorClassificationElementName))));
-		aamc.setAcademicClassification(academicClassifications.get(new Long(getRequiredStringAttribute(element, PointInTimeDataExport.sAcademicClassificationUniqueIdAttribute, PointInTimeDataExport.sAcadAreaMajorClassificationElementName))));
-		aamc.setMajor(majors.get(new Long(getRequiredStringAttribute(element, PointInTimeDataExport.sMajorUniqueIdAttribute, PointInTimeDataExport.sAcadAreaMajorClassificationElementName))));
-		String concId = getOptionalStringAttribute(element, PointInTimeDataExport.sConcentrationUniqueIdAttribute);
+		aamc.setAcademicArea(academicAreas.get(getRequiredLongAttribute(element, PointInTimeDataExport.sAcademicAreaUniqueIdAttribute, PointInTimeDataExport.sAcadAreaMajorClassificationElementName)));
+		aamc.setAcademicClassification(academicClassifications.get(getRequiredLongAttribute(element, PointInTimeDataExport.sAcademicClassificationUniqueIdAttribute, PointInTimeDataExport.sAcadAreaMajorClassificationElementName)));
+		aamc.setMajor(majors.get(getRequiredLongAttribute(element, PointInTimeDataExport.sMajorUniqueIdAttribute, PointInTimeDataExport.sAcadAreaMajorClassificationElementName)));
+		Long concId = getOptionalLongAttribute(element, PointInTimeDataExport.sConcentrationUniqueIdAttribute);
 		if (concId != null)
-			aamc.setConcentration(concentrations.get(Long.valueOf(concId)));
+			aamc.setConcentration(concentrations.get(concId));
 		String weight = getOptionalStringAttribute(element, PointInTimeDataExport.sAcademicAreaMajorClassificationWeightAttribute);
 		if (weight != null)
 			aamc.setWeight(Double.valueOf(weight));
@@ -263,9 +260,9 @@ public class PointInTimeDataImport extends EventRelatedImports {
 
 	private void elementAcadAreaMinorClassification(Element element, PitStudent s) throws Exception {
 		PitStudentAcadAreaMinorClassification aamc = new PitStudentAcadAreaMinorClassification();
-		aamc.setAcademicArea(academicAreas.get(new Long(getRequiredStringAttribute(element, PointInTimeDataExport.sAcademicAreaUniqueIdAttribute, PointInTimeDataExport.sAcadAreaMinorClassificationElementName))));
-		aamc.setAcademicClassification(academicClassifications.get(new Long(getRequiredStringAttribute(element, PointInTimeDataExport.sAcademicClassificationUniqueIdAttribute, PointInTimeDataExport.sAcadAreaMinorClassificationElementName))));
-		aamc.setMinor(minors.get(new Long(getRequiredStringAttribute(element, PointInTimeDataExport.sMinorUniqueIdAttribute, PointInTimeDataExport.sAcadAreaMinorClassificationElementName))));
+		aamc.setAcademicArea(academicAreas.get(getRequiredLongAttribute(element, PointInTimeDataExport.sAcademicAreaUniqueIdAttribute, PointInTimeDataExport.sAcadAreaMinorClassificationElementName)));
+		aamc.setAcademicClassification(academicClassifications.get(getRequiredLongAttribute(element, PointInTimeDataExport.sAcademicClassificationUniqueIdAttribute, PointInTimeDataExport.sAcadAreaMinorClassificationElementName)));
+		aamc.setMinor(minors.get(getRequiredLongAttribute(element, PointInTimeDataExport.sMinorUniqueIdAttribute, PointInTimeDataExport.sAcadAreaMinorClassificationElementName)));
 		aamc.setPitStudent(s);
 		s.addTopitAcadAreaMinorClassifications(aamc);
 		aamc.setUniqueId((Long) getHibSession().save(aamc));
@@ -273,9 +270,9 @@ public class PointInTimeDataImport extends EventRelatedImports {
 
 	private void elementEnrollment(Element element, PitStudent s) throws NumberFormatException, Exception {
 		PitStudentClassEnrollment psce = new PitStudentClassEnrollment();
-		psce.setPitClass(pitClasses.get(new Long(getRequiredStringAttribute(element, PointInTimeDataExport.sClassUniqueIdAttribute, PointInTimeDataExport.sEnrollmentElementName))));
+		psce.setPitClass(pitClasses.get(getRequiredLongAttribute(element, PointInTimeDataExport.sClassUniqueIdAttribute, PointInTimeDataExport.sEnrollmentElementName)));
 
-		PitCourseOffering pco = pitCourseOfferings.get(new Long(getRequiredStringAttribute(element, PointInTimeDataExport.sCourseOfferingUniqueIdAttribute, PointInTimeDataExport.sEnrollmentElementName)));
+		PitCourseOffering pco = pitCourseOfferings.get(getRequiredLongAttribute(element, PointInTimeDataExport.sCourseOfferingUniqueIdAttribute, PointInTimeDataExport.sEnrollmentElementName));
 		psce.setPitCourseOffering(pco);
 		psce.setTimestamp(CalendarUtils.getDate(getRequiredStringAttribute(element, PointInTimeDataExport.sTimestampAttribute, PointInTimeDataExport.sEnrollmentElementName), (dateFormat + " " + timeFormat)));
 		psce.setChangedBy(getOptionalStringAttribute(element, PointInTimeDataExport.sChangedByAttribute));
@@ -294,7 +291,6 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		// ????
 	}
 
-	@SuppressWarnings("unchecked")
 	private void loadOfferings(Element rootElement) throws Exception{  
 		Element offeringsElement = rootElement.element(PointInTimeDataExport.sOfferingsElementName);
 		ProgressTracker progressTracker = new ProgressTracker("Instructional Offerings", offeringsElement.elements().size(), 2, this.getClass());
@@ -327,14 +323,13 @@ public class PointInTimeDataImport extends EventRelatedImports {
 
  	}
 	
-	@SuppressWarnings("unchecked")
 	private void elementOffering(Element instructionalOfferingElement) throws Exception {
 
         if(!instructionalOfferingElement.getName().equalsIgnoreCase(PointInTimeDataExport.sOfferingElementName)){
         	throw new Exception("Expecting to find an '" + PointInTimeDataExport.sOfferingElementName + "' at this level, instead found '" + instructionalOfferingElement.getName() + "'.");
         }
         
-        Long uid = new Long(getRequiredStringAttribute(instructionalOfferingElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sOfferingElementName));
+        Long uid = getRequiredLongAttribute(instructionalOfferingElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sOfferingElementName);
         PitInstructionalOffering pio = new PitInstructionalOffering();
         if (instructionalOfferings.get(uid) != null) {
         	pio.setInstructionalOffering(instructionalOfferings.get(uid));
@@ -346,12 +341,12 @@ public class PointInTimeDataImport extends EventRelatedImports {
         pio.setInstrOfferingPermId(getRequiredIntegerAttribute(instructionalOfferingElement, PointInTimeDataExport.sPermanentIdAttribute, PointInTimeDataExport.sOfferingElementName));
         String limitStr = getRequiredStringAttribute(instructionalOfferingElement, PointInTimeDataExport.sLimitAttribute, PointInTimeDataExport.sOfferingElementName);
         if (!"inf".equalsIgnoreCase(limitStr)){
-            pio.setLimit(new Integer(limitStr));        	
+            pio.setLimit(Integer.parseInt(limitStr));        	
         }
         pio.setDemand(getRequiredIntegerAttribute(instructionalOfferingElement, PointInTimeDataExport.sDemandAttribute, PointInTimeDataExport.sOfferingElementName));
-        String uidRollFwdFrmStr = getOptionalStringAttribute(instructionalOfferingElement, PointInTimeDataExport.sUniqueIdRolledForwardFromAttribute);
-        if (uidRollFwdFrmStr != null){
-        	pio.setUniqueIdRolledForwardFrom(new Long(uidRollFwdFrmStr));
+        Long uidRollFwdFrm = getOptionalLongAttribute(instructionalOfferingElement, PointInTimeDataExport.sUniqueIdRolledForwardFromAttribute);
+        if (uidRollFwdFrm != null){
+        	pio.setUniqueIdRolledForwardFrom(uidRollFwdFrm);
         }
         pio.setPointInTimeData(pointInTimeData);
         pio.setUniqueId((Long) getHibSession().save(pio));
@@ -388,8 +383,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	
 
 	private void elementRoomType(Element roomTypeElement) throws Exception {
-		String uidString = getRequiredStringAttribute(roomTypeElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sRoomTypeElementName);
-		Long uid = new Long(uidString);
+		Long uid = getRequiredLongAttribute(roomTypeElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sRoomTypeElementName);
 		String reference = getRequiredStringAttribute(roomTypeElement, PointInTimeDataExport.sReferenceAttribute, PointInTimeDataExport.sRoomTypeElementName);
 		RoomType rt = roomTypesByRef.get(reference);
 		if(rt == null){
@@ -407,8 +401,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	}
 
 	private void elementPositionType(Element positionTypeElement) throws Exception {
-		String uidString = getRequiredStringAttribute(positionTypeElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sRoomTypeElementName);
-		Long uid = new Long(uidString);
+		Long uid = getRequiredLongAttribute(positionTypeElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sRoomTypeElementName);
 		String reference = getRequiredStringAttribute(positionTypeElement, PointInTimeDataExport.sReferenceAttribute, PointInTimeDataExport.sRoomTypeElementName);
 		PositionType pt = positionTypesByRef.get(reference);
 		if(pt == null){
@@ -424,8 +417,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	}
 
 	private void elementTeachingResponsibility(Element teachingResponsibilityElement) throws Exception {
-		String uidString = getRequiredStringAttribute(teachingResponsibilityElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sTeachingResponsibilityElementName);
-		Long uid = new Long(uidString);
+		Long uid = getRequiredLongAttribute(teachingResponsibilityElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sTeachingResponsibilityElementName);
 		String reference = getRequiredStringAttribute(teachingResponsibilityElement, PointInTimeDataExport.sReferenceAttribute, PointInTimeDataExport.sTeachingResponsibilityElementName);
 		TeachingResponsibility tr = teachingResponsibilitiesByRef.get(reference);
 		if(tr == null){
@@ -446,7 +438,6 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		teachingResponsibilities.put(uid, tr);
 	}
 
-	@SuppressWarnings("unchecked")
 	private void initializeRoomTypeData(Element rootElement) throws Exception {
 		for (RoomType roomType : RoomType.findAll()) {
 			roomTypesByRef.put(roomType.getReference(), roomType);
@@ -459,7 +450,6 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		
 	}
 	
-	@SuppressWarnings("unchecked")
 	private void initializeCreditTypeData(Element rootElement) throws Exception {
 		for (CourseCreditType creditType : CourseCreditType.getCourseCreditTypeList()) {
 			creditTypesByRef.put(creditType.getReference(), creditType);
@@ -472,8 +462,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	}
 
 	private void elementCreditType(Element creditTypeElement) throws Exception {
-		String uidString = getRequiredStringAttribute(creditTypeElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sCreditTypeElementName);
-		Long uid = new Long(uidString);
+		Long uid = getRequiredLongAttribute(creditTypeElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sCreditTypeElementName);
 		String reference = getRequiredStringAttribute(creditTypeElement, PointInTimeDataExport.sReferenceAttribute, PointInTimeDataExport.sCreditTypeElementName);
 		CourseCreditType ct = creditTypesByRef.get(reference);
 		if(ct == null){
@@ -493,7 +482,6 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		
 	}
 
-	@SuppressWarnings("unchecked")
 	private void initializeCreditUnitTypeData(Element rootElement) throws Exception {
 		for (CourseCreditUnitType creditUnitType : CourseCreditUnitType.getCourseCreditUnitTypeList()) {
 			creditUnitTypesByRef.put(creditUnitType.getReference(), creditUnitType);
@@ -507,8 +495,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	}
 	
 	private void elementCreditUnitType(Element creditUnitTypeElement) throws Exception {
-		String uidString = getRequiredStringAttribute(creditUnitTypeElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sCreditUnitTypeElementName);
-		Long uid = new Long(uidString);
+		Long uid = getRequiredLongAttribute(creditUnitTypeElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sCreditUnitTypeElementName);
 		String reference = getRequiredStringAttribute(creditUnitTypeElement, PointInTimeDataExport.sReferenceAttribute, PointInTimeDataExport.sCreditUnitTypeElementName);
 		CourseCreditUnitType cut = creditUnitTypesByRef.get(reference);
 		if(cut == null){
@@ -535,7 +522,6 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		}
 		
 	}
-	@SuppressWarnings("unchecked")
 	private void initializeTeachingResponsibilityData(Element rootElement) throws Exception {
 		for (TeachingResponsibility instructorTeachingResponsibility : TeachingResponsibility.getInstructorTeachingResponsibilities()) {
 			teachingResponsibilitiesByRef.put(instructorTeachingResponsibility.getReference(), instructorTeachingResponsibility);
@@ -565,7 +551,6 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		}		
 	}
 
-	@SuppressWarnings("unchecked")
 	private void initializeInstructionalMethodData(Element rootElement) throws Exception {
 		for (InstructionalMethod instructionalMethod : InstructionalMethod.findAll()) {
 			instructionalMethods.put(instructionalMethod.getReference(), instructionalMethod);
@@ -598,7 +583,6 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		}		
 	}
 	
-	@SuppressWarnings("unchecked")
 	private void initializeClassDurationTypeData(Element rootElement) throws Exception {
 		for (ClassDurationType classDurationType : ClassDurationType.findAll()) {
 			classDurationTypes.put(classDurationType.getReference(), classDurationType);
@@ -612,8 +596,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	}
 	
 	private void elementCourseType(Element courseTypeElement) throws Exception{
-		String uidString = getRequiredStringAttribute(courseTypeElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sCourseTypeElementName);
-		Long uid = new Long(uidString);
+		Long uid = getRequiredLongAttribute(courseTypeElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sCourseTypeElementName);
 		String reference = getRequiredStringAttribute(courseTypeElement, PointInTimeDataExport.sReferenceAttribute, PointInTimeDataExport.sCourseTypeElementName);
 		CourseType ct = courseTypesByRef.get(reference);
 		if(ct == null){
@@ -649,22 +632,23 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	
 	protected void initializeSession(Element rootElement, String rootElementName) throws Exception {
 
-		String sessionUidString = getRequiredStringAttribute(rootElement, PointInTimeDataExport.sAcademicSessionUniqueIdAttribute, rootElementName);
+		Long sessionUid = null; 
         String campus = getRequiredStringAttribute(rootElement, PointInTimeDataExport.sAcademicInitiativeAttribute, rootElementName);
         String year   = getRequiredStringAttribute(rootElement, PointInTimeDataExport.sAcademicYearAttribute, rootElementName);
         String term   = getRequiredStringAttribute(rootElement, PointInTimeDataExport.sAcademicTermAttribute, rootElementName);
-		Long sessionUid = null;
 		try {
-			sessionUid = new Long(sessionUidString);			
+			sessionUid = getRequiredLongAttribute(rootElement, PointInTimeDataExport.sAcademicSessionUniqueIdAttribute, rootElementName);			
 		} catch (Exception e) {
-			info("Could not convert sessionUidString to long: " + sessionUidString);
+			info("Could not convert sessionUidString to long.");
 			info("Looking up session using academicInitiative:  " + campus+", academicYear:  " + year + " and academicTerm:  " + term);
 			sessionUid = null;
 		}
         if (sessionUid != null){
         	session = Session.getSessionById(sessionUid);
-			info("Could find session using uniqueId: " + sessionUidString);
-			info("Looking up session using academicInitiative:  " + campus+", academicYear:  " + year + " and academicTerm:  " + term);
+        	if (session != null) {
+				info("Could find session using uniqueId: " + sessionUid);
+				info("Not looking up session using academicInitiative:  " + campus+", academicYear:  " + year + " and academicTerm:  " + term);
+        	}
         }
         if (session == null){
             session = findSession(campus, year, term);        	
@@ -684,9 +668,9 @@ public class PointInTimeDataImport extends EventRelatedImports {
            session.setEventBeginDate(session.getSessionBeginDateTime());
            session.setEventEndDate(session.getSessionEndDateTime());
            session.setStatusType(DepartmentStatusType.findByRef("initial"));
-           session.setLastWeekToEnroll(new Integer(1));
-           session.setLastWeekToChange(new Integer(1));
-           session.setLastWeekToDrop(new Integer(1));
+           session.setLastWeekToEnroll(1);
+           session.setLastWeekToChange(1);
+           session.setLastWeekToDrop(1);
            String defaultDurationType = getOptionalStringAttribute(rootElement, PointInTimeDataExport.sDurationTypeAttribute);
            if (defaultDurationType != null){
                session.setDefaultClassDurationType(classDurationTypes.get(defaultDurationType));        	   
@@ -696,7 +680,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
         pointInTimeData = new PointInTimeData();
         pointInTimeData.setName(getRequiredStringAttribute(rootElement, PointInTimeDataExport.sPointInTimeNameAttribute, rootElementName));
         pointInTimeData.setNote(getRequiredStringAttribute(rootElement, PointInTimeDataExport.sPointInTimeNoteAttribute, rootElementName));
-        pointInTimeData.setSavedSuccessfully(new Boolean(false));
+        pointInTimeData.setSavedSuccessfully(Boolean.FALSE);
         pointInTimeData.setSession(session);
         pointInTimeData.setTimestamp(CalendarUtils.getDate(getRequiredStringAttribute(rootElement, PointInTimeDataExport.sCreatedAttribute, rootElementName), (dateFormat + " " + timeFormat)));
         pointInTimeData.setUniqueId((Long)getHibSession().save(pointInTimeData));
@@ -714,7 +698,6 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		
 	}
 
-	@SuppressWarnings("unchecked")
 	private void initializeCurriculaData(Element rootElement) throws Exception {
 		loadExistingAcademicAreas(session.getUniqueId());
 		loadExistingAcademicClassifications(session.getUniqueId());
@@ -762,7 +745,6 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		trimLeadingZerosFromExternalId = ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue();
 	}
 
-	@SuppressWarnings("unchecked")
 	private void initializeDatePatternData(Element rootElement) throws Exception {
         loadExistingDatePatterns(session.getUniqueId());
 
@@ -775,7 +757,6 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	
 	
 
-	@SuppressWarnings("unchecked")
 	private void initializeTimePatternData(Element rootElement) throws Exception {
         loadExistingTimePatterns(session.getUniqueId());
 
@@ -787,8 +768,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	}
 	
 	private void elementDatePattern(Element datePatternElement) throws Exception {
-		String uidString = getRequiredStringAttribute(datePatternElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sDatePatternElementName);
-		Long uid = new Long(uidString);
+		Long uid = getRequiredLongAttribute(datePatternElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sDatePatternElementName);
 		String name = getRequiredStringAttribute(datePatternElement, PointInTimeDataExport.sNameAttribute, PointInTimeDataExport.sDatePatternElementName);
 		DatePattern dp = datePatternsByName.get(name);
 		if(dp == null){
@@ -796,7 +776,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			dp.setName(name);
 			String numWksStr = getOptionalStringAttribute(datePatternElement, PointInTimeDataExport.sNumberOfWeeksAttribute);
 			if (numWksStr != null) {
-				dp.setNumberOfWeeks(new Float(numWksStr));
+				dp.setNumberOfWeeks(Float.parseFloat(numWksStr));
 			}
 			dp.setOffset(getRequiredIntegerAttribute(datePatternElement, PointInTimeDataExport.sOffsetAttribute, PointInTimeDataExport.sDatePatternElementName));
 			dp.setPattern(getRequiredStringAttribute(datePatternElement, PointInTimeDataExport.sPatternAttribute, PointInTimeDataExport.sDatePatternElementName));
@@ -809,10 +789,8 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	}
 
 
-	@SuppressWarnings("unchecked")
 	private void elementTimePattern(Element timePatternElement) throws Exception {
-		String uidString = getRequiredStringAttribute(timePatternElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sTimePatternElementName);
-		Long uid = new Long(uidString);
+		Long uid = getRequiredLongAttribute(timePatternElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sTimePatternElementName);
 		String name = getRequiredStringAttribute(timePatternElement, PointInTimeDataExport.sNameAttribute, PointInTimeDataExport.sTimePatternElementName);
 		TimePattern tp = timePatternsByName.get(name);
 
@@ -851,7 +829,6 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		
 	}
 
-	@SuppressWarnings("unchecked")
 	private void initializeLocationData(Element rootElement) throws Exception {
         loadExistingBuildings(session.getUniqueId());
         loadExistingLocations(session.getUniqueId());
@@ -868,9 +845,8 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	}
 
 	private void elementNonUniversityLocation(Element nonUniversityLocationElement) throws Exception {
-		String uidString = getRequiredStringAttribute(nonUniversityLocationElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sNonUniversityLocationElementName);
-		Long uid = new Long(uidString);
-		Long permId = new Long(getRequiredStringAttribute(nonUniversityLocationElement, PointInTimeDataExport.sPermanentIdAttribute, PointInTimeDataExport.sNonUniversityLocationElementName));
+		Long uid = getRequiredLongAttribute(nonUniversityLocationElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sNonUniversityLocationElementName);
+		Long permId = getRequiredLongAttribute(nonUniversityLocationElement, PointInTimeDataExport.sPermanentIdAttribute, PointInTimeDataExport.sNonUniversityLocationElementName);
 		String name = getRequiredStringAttribute(nonUniversityLocationElement, PointInTimeDataExport.sNameAttribute, PointInTimeDataExport.sNonUniversityLocationElementName);
 		Location l = locationsByName.get(name + permId.toString());
 		if(l == null){
@@ -878,33 +854,33 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			n.setName(name);
 			n.setSession(session);
 			session.addTorooms(n);
-			String roomTypeStr = getRequiredStringAttribute(nonUniversityLocationElement, PointInTimeDataExport.sRoomTypeIdAttribute, PointInTimeDataExport.sNonUniversityLocationElementName);
-			n.setRoomType(roomTypes.get(new Long(roomTypeStr)));
-			String capacityStr = getRequiredStringAttribute(nonUniversityLocationElement, PointInTimeDataExport.sCapacityAttribute, PointInTimeDataExport.sNonUniversityLocationElementName);
-			n.setCapacity(new Integer(capacityStr));
+			Long roomTypeId = getRequiredLongAttribute(nonUniversityLocationElement, PointInTimeDataExport.sRoomTypeIdAttribute, PointInTimeDataExport.sNonUniversityLocationElementName);
+			n.setRoomType(roomTypes.get(roomTypeId));
+			Integer capacity = getRequiredIntegerAttribute(nonUniversityLocationElement, PointInTimeDataExport.sCapacityAttribute, PointInTimeDataExport.sNonUniversityLocationElementName);
+			n.setCapacity(capacity);
 			String externalId = getOptionalStringAttribute(nonUniversityLocationElement, PointInTimeDataExport.sExternalIdAttribute);
 			if (externalId != null){
 				n.setExternalUniqueId(externalId);
 			}
 			String coordinateXstr = getOptionalStringAttribute(nonUniversityLocationElement, PointInTimeDataExport.sCoordinateXAttribute);
 			if (coordinateXstr != null){
-				Double coordinateX = new Double(coordinateXstr);
+				Double coordinateX = Double.parseDouble(coordinateXstr);
 				n.setCoordinateX(coordinateX);
 			}
 			String coordinateYstr = getOptionalStringAttribute(nonUniversityLocationElement, PointInTimeDataExport.sCoordinateXAttribute);
 			if (coordinateYstr != null){
-				Double coordinateY = new Double(coordinateYstr);
+				Double coordinateY = Double.parseDouble(coordinateYstr);
 				n.setCoordinateY(coordinateY);
 			}
-			n.setIgnoreRoomCheck(new Boolean(false));
-			n.setIgnoreTooFar(new Boolean(false));
-			n.setPermanentId(new Long(getRequiredStringAttribute(nonUniversityLocationElement, PointInTimeDataExport.sPermanentIdAttribute, PointInTimeDataExport.sNonUniversityLocationElementName)));
+			n.setIgnoreRoomCheck(Boolean.FALSE);
+			n.setIgnoreTooFar(Boolean.FALSE);
+			n.setPermanentId(getRequiredLongAttribute(nonUniversityLocationElement, PointInTimeDataExport.sPermanentIdAttribute, PointInTimeDataExport.sNonUniversityLocationElementName));
 			n.setUniqueId((Long)getHibSession().save(n));
-			String ctrlDeptIdStr = getOptionalStringAttribute(nonUniversityLocationElement, PointInTimeDataExport.sControllingDepartmentUniqueIdAttribute);
-			if (ctrlDeptIdStr != null){
+			Long ctrlDeptId = getOptionalLongAttribute(nonUniversityLocationElement, PointInTimeDataExport.sControllingDepartmentUniqueIdAttribute);
+			if (ctrlDeptId != null){
 				RoomDept rd = new RoomDept();
-				rd.setControl(new Boolean(true));
-				rd.setDepartment(departments.get(new Long(ctrlDeptIdStr)));
+				rd.setControl(Boolean.TRUE);
+				rd.setDepartment(departments.get(ctrlDeptId));
 				rd.setRoom(n);
 				n.addToroomDepts(rd);
 				rd.setUniqueId((Long)getHibSession().save(rd));
@@ -914,10 +890,8 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		locations.put(uid, l);
 	}
 
-	@SuppressWarnings("unchecked")
 	private void elementBuilding(Element buildingElement) throws Exception {
-		String uidString = getRequiredStringAttribute(buildingElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sBuildingElementName);
-		Long uid = new Long(uidString);
+		Long uid = getRequiredLongAttribute(buildingElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sBuildingElementName);
 		String abbreviation = getRequiredStringAttribute(buildingElement, PointInTimeDataExport.sAbbreviationAttribute, PointInTimeDataExport.sBuildingElementName);
 		
 		Building b = buildingsByAbbv.get(abbreviation);
@@ -934,12 +908,12 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			}
 			String coordinateXstr = getOptionalStringAttribute(buildingElement, PointInTimeDataExport.sCoordinateXAttribute);
 			if (coordinateXstr != null){
-				Double coordinateX = new Double(coordinateXstr);
+				Double coordinateX = Double.parseDouble(coordinateXstr);
 				b.setCoordinateX(coordinateX);
 				}
 			String coordinateYstr = getOptionalStringAttribute(buildingElement, PointInTimeDataExport.sCoordinateXAttribute);
 			if (coordinateYstr != null){
-				Double coordinateY = new Double(coordinateYstr);
+				Double coordinateY = Double.parseDouble(coordinateYstr);
 				b.setCoordinateY(coordinateY);
 				}
 			b.setUniqueId((Long)getHibSession().save(b));
@@ -952,10 +926,9 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	
 
 	private void elementRoom(Element roomElement, Building building) throws Exception {
-		String uidString = getRequiredStringAttribute(roomElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sRoomElementName);
-		Long uid = new Long(uidString);
+		Long uid = getRequiredLongAttribute(roomElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sRoomElementName);
 		String roomNumber = getRequiredStringAttribute(roomElement, PointInTimeDataExport.sRoomNumberAttribute, PointInTimeDataExport.sRoomElementName);
-		Long permId = new Long(getRequiredStringAttribute(roomElement, PointInTimeDataExport.sPermanentIdAttribute, PointInTimeDataExport.sRoomElementName));
+		Long permId = getRequiredLongAttribute(roomElement, PointInTimeDataExport.sPermanentIdAttribute, PointInTimeDataExport.sRoomElementName);
 		Location l = locationsByName.get(building.getAbbreviation() + roomNumber + permId.toString());
 		
 		if(l == null){
@@ -965,33 +938,33 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			r.setRoomNumber(roomNumber);
 			r.setSession(session);
 			session.addTorooms(r);
-			String roomTypeStr = getRequiredStringAttribute(roomElement, PointInTimeDataExport.sRoomTypeIdAttribute, PointInTimeDataExport.sRoomElementName);
-			r.setRoomType(roomTypes.get(new Long(roomTypeStr)));
-			String capacityStr = getRequiredStringAttribute(roomElement, PointInTimeDataExport.sCapacityAttribute, PointInTimeDataExport.sRoomElementName);
-			r.setCapacity(new Integer(capacityStr));
+			Long roomTypeId = getRequiredLongAttribute(roomElement, PointInTimeDataExport.sRoomTypeIdAttribute, PointInTimeDataExport.sRoomElementName);
+			r.setRoomType(roomTypes.get(roomTypeId));
+			Integer capacity = getRequiredIntegerAttribute(roomElement, PointInTimeDataExport.sCapacityAttribute, PointInTimeDataExport.sRoomElementName);
+			r.setCapacity(capacity);
 			String externalId = getOptionalStringAttribute(roomElement, PointInTimeDataExport.sExternalIdAttribute);
 			if (externalId != null){
 				r.setExternalUniqueId(externalId);
 			}
 			r.setPermanentId(permId);
-			r.setIgnoreRoomCheck(new Boolean(false));
-			r.setIgnoreTooFar(new Boolean(false));
+			r.setIgnoreRoomCheck(Boolean.FALSE);
+			r.setIgnoreTooFar(Boolean.FALSE);
 			String coordinateXstr = getOptionalStringAttribute(roomElement, PointInTimeDataExport.sCoordinateXAttribute);
 			if (coordinateXstr != null){
-				Double coordinateX = new Double(coordinateXstr);
+				Double coordinateX = Double.parseDouble(coordinateXstr);
 				r.setCoordinateX(coordinateX);
 			}
 			String coordinateYstr = getOptionalStringAttribute(roomElement, PointInTimeDataExport.sCoordinateXAttribute);
 			if (coordinateYstr != null){
-				Double coordinateY = new Double(coordinateYstr);
+				Double coordinateY = Double.parseDouble(coordinateYstr);
 				r.setCoordinateY(coordinateY);
 			}
 			r.setUniqueId((Long)getHibSession().save(r));
-			String ctrlDeptIdStr = getOptionalStringAttribute(roomElement, PointInTimeDataExport.sControllingDepartmentUniqueIdAttribute);
-			if (ctrlDeptIdStr != null){
+			Long ctrlDeptId = getOptionalLongAttribute(roomElement, PointInTimeDataExport.sControllingDepartmentUniqueIdAttribute);
+			if (ctrlDeptId != null){
 				RoomDept rd = new RoomDept();
-				rd.setControl(new Boolean(true));
-				rd.setDepartment(departments.get(new Long(ctrlDeptIdStr)));
+				rd.setControl(Boolean.TRUE);
+				rd.setDepartment(departments.get(ctrlDeptId));
 				rd.setRoom(r);
 				r.addToroomDepts(rd);
 				rd.setUniqueId((Long)getHibSession().save(rd));
@@ -1001,7 +974,6 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		locations.put(uid, l);
 	}
 
-	@SuppressWarnings("unchecked")
 	private void initializeDepartmentData(Element rootElement) throws Exception {
 		loadExistingDepartments(session.getUniqueId());
         loadExistingSubjectAreas(session.getUniqueId());
@@ -1014,10 +986,8 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		
 	}
 
-	@SuppressWarnings("unchecked")
 	private void elementDepartment(Element departmentElement) throws Exception{
-		String uniqueIdStr = getRequiredStringAttribute(departmentElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sDepartmentElementName);
-		Long uid = new Long(uniqueIdStr);
+		Long uid = getRequiredLongAttribute(departmentElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sDepartmentElementName);
 		String deptCode = getRequiredStringAttribute(departmentElement, PointInTimeDataExport.sDepartmentCode, PointInTimeDataExport.sDepartmentElementName);
 		Department d = departmentsByCode.get(deptCode);
 		if(d == null){
@@ -1032,14 +1002,14 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			d.setDeptCode(deptCode);
 			d.setExternalUniqueId(externalId);
 			d.setSession(session);
-			d.setAllowEvents(new Boolean(false));
-			d.setAllowReqTime(new Boolean(true));
-			d.setAllowReqRoom(new Boolean(true));
-			d.setAllowReqDistribution(new Boolean(true));
-			d.setAllowStudentScheduling(new Boolean(true));
-			d.setInheritInstructorPreferences(new Boolean(true));
-			d.setExternalManager(new Boolean(false));
-			d.setDistributionPrefPriority(new Integer(0));
+			d.setAllowEvents(Boolean.FALSE);
+			d.setAllowReqTime(Boolean.TRUE);
+			d.setAllowReqRoom(Boolean.TRUE);
+			d.setAllowReqDistribution(Boolean.TRUE);
+			d.setAllowStudentScheduling(Boolean.TRUE);
+			d.setInheritInstructorPreferences(Boolean.TRUE);
+			d.setExternalManager(Boolean.FALSE);
+			d.setDistributionPrefPriority(0);
 			session.addTodepartments(d);
 			d.setUniqueId((Long)getHibSession().save(d));
 			departmentsByCode.put(deptCode, d);
@@ -1060,8 +1030,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		if (departmentalInstructorElement.getName().equals(PointInTimeDataExport.sDeptInstructorElementName)){
 			PitDepartmentalInstructor pitDeptInstr = new PitDepartmentalInstructor();
 
-			String uniqueIdStr = getRequiredStringAttribute(departmentalInstructorElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sDeptInstructorElementName);
-			Long uid = new Long(uniqueIdStr);
+			Long uid = getRequiredLongAttribute(departmentalInstructorElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sDeptInstructorElementName);
 			String externalId = getOptionalStringAttribute(departmentalInstructorElement, PointInTimeDataExport.sExternalIdAttribute);			
 			if (externalId != null) {
 				pitDeptInstr.setExternalUniqueId(externalId);
@@ -1093,9 +1062,9 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			if (email != null){
 				pitDeptInstr.setEmail(email);
 			}
-			String positionTypeIdStr = getOptionalStringAttribute(departmentalInstructorElement, PointInTimeDataExport.sPositionTypeUniqueIdAttribute);
-			if (positionTypeIdStr != null){
-				pitDeptInstr.setPositionType(positionTypes.get(new Long(positionTypeIdStr)));
+			Long positionTypeId = getOptionalLongAttribute(departmentalInstructorElement, PointInTimeDataExport.sPositionTypeUniqueIdAttribute);
+			if (positionTypeId != null){
+				pitDeptInstr.setPositionType(positionTypes.get(positionTypeId));
 			}
 			
 			pitDeptInstr.setDepartment(department);
@@ -1127,8 +1096,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	}
 	
 	private void elementMajor(Element majorElement) throws Exception {
-		String uidString = getRequiredStringAttribute(majorElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sMajorElementName);
-		Long uid = new Long(uidString);
+		Long uid = getRequiredLongAttribute(majorElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sMajorElementName);
 		String code = getRequiredStringAttribute(majorElement, PointInTimeDataExport.sCodeAttribute, PointInTimeDataExport.sMajorElementName);
 		PosMajor major = majorsByCode.get(code);
 		if(major == null){
@@ -1149,8 +1117,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	}
 	
 	private void elementConcentration(PosMajor major, Element concElement) throws Exception {
-		String uidString = getRequiredStringAttribute(concElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sConcentrationElementName);
-		Long uid = new Long(uidString);
+		Long uid = getRequiredLongAttribute(concElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sConcentrationElementName);
 		String code = getRequiredStringAttribute(concElement, PointInTimeDataExport.sCodeAttribute, PointInTimeDataExport.sConcentrationElementName);
 		PosMajorConcentration conc = concentrationsByCode.get(major.getCode() + "/" + code);
 		if (conc == null){
@@ -1169,8 +1136,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	}
 
 	private void elementMinor(Element minorElement) throws Exception {
-		String uidString = getRequiredStringAttribute(minorElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sMinorElementName);
-		Long uid = new Long(uidString);
+		Long uid = getRequiredLongAttribute(minorElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sMinorElementName);
 		String code = getRequiredStringAttribute(minorElement, PointInTimeDataExport.sCodeAttribute, PointInTimeDataExport.sMinorElementName);
 		PosMinor minor = minorsByCode.get(code);
 		if(minor == null){
@@ -1189,8 +1155,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	}
 
 	private void elementAcademicClassification(Element academicClassificationElement) throws Exception {
-		String uidString = getRequiredStringAttribute(academicClassificationElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sAcademicClassificationElementName);
-		Long uid = new Long(uidString);
+		Long uid = getRequiredLongAttribute(academicClassificationElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sAcademicClassificationElementName);
 		String code = getRequiredStringAttribute(academicClassificationElement, PointInTimeDataExport.sCodeAttribute, PointInTimeDataExport.sAcademicClassificationElementName);
 		AcademicClassification ac = academicClassificationsByCode.get(code);
 		if(ac == null){
@@ -1209,8 +1174,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	}
 
 	private void elementAcademicArea(Element academicAreaElement) throws Exception {
-		String uidString = getRequiredStringAttribute(academicAreaElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sAcademicAreaElementName);
-		Long uid = new Long(uidString);
+		Long uid = getRequiredLongAttribute(academicAreaElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sAcademicAreaElementName);
 		String abbreviation = getRequiredStringAttribute(academicAreaElement, PointInTimeDataExport.sAbbreviationAttribute, PointInTimeDataExport.sAcademicAreaElementName);
 		AcademicArea aa = academicAreasByAbbv.get(abbreviation);
 		if(aa == null){
@@ -1320,15 +1284,15 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		pci.setPitClassInstructing(pitClass);
 		pitClass.addTopitClassInstructors(pci);
 		
-		pci.setPitDepartmentalInstructor(pitDepartmentInstructors.get(new Long(getRequiredStringAttribute(classInstructorElement, PointInTimeDataExport.sDepartmentalInstructorUniqueIdAttribute, PointInTimeDataExport.sClassInstructorElementName))));
+		pci.setPitDepartmentalInstructor(pitDepartmentInstructors.get(getRequiredLongAttribute(classInstructorElement, PointInTimeDataExport.sDepartmentalInstructorUniqueIdAttribute, PointInTimeDataExport.sClassInstructorElementName)));
 		pci.setPercentShare(getRequiredIntegerAttribute(classInstructorElement, PointInTimeDataExport.sShareAttribute, PointInTimeDataExport.sClassInstructorElementName));
-		pci.setNormalizedPercentShare(new Integer(0));
-		String responsibilityId = getOptionalStringAttribute(classInstructorElement, PointInTimeDataExport.sResponsibilityUniqueIdAttribute);
+		pci.setNormalizedPercentShare(0);
+		Long responsibilityId = getOptionalLongAttribute(classInstructorElement, PointInTimeDataExport.sResponsibilityUniqueIdAttribute);
 		if (responsibilityId != null) {
-			pci.setResponsibility(teachingResponsibilities.get(new Long(responsibilityId)));
+			pci.setResponsibility(teachingResponsibilities.get(responsibilityId));
 		}
 		
-		pci.setLead(new Boolean(getOptionalBooleanAttribute(classInstructorElement, PointInTimeDataExport.sLeadAttribute, true)));
+		pci.setLead(getOptionalBooleanAttribute(classInstructorElement, PointInTimeDataExport.sLeadAttribute, true));
 
 		pci.setUniqueId((Long)getHibSession().save(pci));
 		
@@ -1339,11 +1303,11 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		pci.setPitInstructionalOffering(pitInstructionalOffering);
 		pitInstructionalOffering.addTopitOfferingCoordinators(pci);
 		
-		pci.setPitDepartmentalInstructor(pitDepartmentInstructors.get(new Long(getRequiredStringAttribute(classInstructorElement, PointInTimeDataExport.sDepartmentalInstructorUniqueIdAttribute, PointInTimeDataExport.sClassInstructorElementName))));
+		pci.setPitDepartmentalInstructor(pitDepartmentInstructors.get(getRequiredLongAttribute(classInstructorElement, PointInTimeDataExport.sDepartmentalInstructorUniqueIdAttribute, PointInTimeDataExport.sClassInstructorElementName)));
 		pci.setPercentShare(getRequiredIntegerAttribute(classInstructorElement, PointInTimeDataExport.sShareAttribute, PointInTimeDataExport.sOfferingCoordinatorElementName));
-		String responsibilityId = getOptionalStringAttribute(classInstructorElement, PointInTimeDataExport.sResponsibilityUniqueIdAttribute);
+		Long responsibilityId = getOptionalLongAttribute(classInstructorElement, PointInTimeDataExport.sResponsibilityUniqueIdAttribute);
 		if (responsibilityId != null) {
-			pci.setResponsibility(teachingResponsibilities.get(new Long(responsibilityId)));
+			pci.setResponsibility(teachingResponsibilities.get(responsibilityId));
 		}
 		
 		pci.setUniqueId((Long)getHibSession().save(pci));
@@ -1362,7 +1326,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			pco.setPermId(getRequiredStringAttribute(courseElement, PointInTimeDataExport.sPermanentIdAttribute, PointInTimeDataExport.sCourseElementName));
 			pco.setExternalUniqueId(getRequiredStringAttribute(courseElement, PointInTimeDataExport.sExternalIdAttribute, PointInTimeDataExport.sCourseElementName));
 
-			Long uid = new Long( getRequiredStringAttribute(courseElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sCourseElementName));
+			Long uid = getRequiredLongAttribute(courseElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sCourseElementName);
 			CourseOffering co = courseOfferings.get(uid);
 			if (co != null 
 					&& co.getSubjectArea().getUniqueId().equals(pco.getSubjectArea().getUniqueId())
@@ -1390,13 +1354,13 @@ public class PointInTimeDataImport extends EventRelatedImports {
 				pco.setNbrExpectedStudents(nbrExpectedStudents);
 			}
 			
-			String courseTypeIdStr = getOptionalStringAttribute(courseElement, PointInTimeDataExport.sCourseTypeIdAttribute);
-			if (courseTypeIdStr != null){
-				pco.setCourseType(courseTypes.get(new Long(courseTypeIdStr)));
+			Long courseTypeId = getOptionalLongAttribute(courseElement, PointInTimeDataExport.sCourseTypeIdAttribute);
+			if (courseTypeId != null){
+				pco.setCourseType(courseTypes.get(courseTypeId));
 			}
-	        String uidRollFwdFrmStr = getOptionalStringAttribute(courseElement, PointInTimeDataExport.sUniqueIdRolledForwardFromAttribute);
-	        if (uidRollFwdFrmStr != null){
-	        	pco.setUniqueIdRolledForwardFrom(new Long(uidRollFwdFrmStr));
+	        Long uidRollFwdFrm = getOptionalLongAttribute(courseElement, PointInTimeDataExport.sUniqueIdRolledForwardFromAttribute);
+	        if (uidRollFwdFrm != null){
+	        	pco.setUniqueIdRolledForwardFrom(uidRollFwdFrm);
 	        }
 	        
 	        String externalId = getOptionalStringAttribute(courseElement, PointInTimeDataExport.sExternalIdAttribute);
@@ -1409,11 +1373,10 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		}		
 	}
 
-	@SuppressWarnings("unchecked")
 	private void elementInstrOffrConfig(Element configElement, PitInstructionalOffering pitInstructionalOffering) throws Exception{
 		PitInstrOfferingConfig pioc = new PitInstrOfferingConfig();
 		
-		InstrOfferingConfig ioc = instrOfferingConfigs.get(new Long( getRequiredStringAttribute(configElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sConfigElementName)));
+		InstrOfferingConfig ioc = instrOfferingConfigs.get(getRequiredLongAttribute(configElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sConfigElementName));
 		if (ioc != null){
 			pioc.setInstrOfferingConfig(ioc);
 		}
@@ -1433,9 +1396,9 @@ public class PointInTimeDataImport extends EventRelatedImports {
 				pioc.setInstructionalMethod(instructionalMethods.get(instructionalMethodStr));
 		}
 		
-        String uidRollFwdFrmStr = getOptionalStringAttribute(configElement, PointInTimeDataExport.sUniqueIdRolledForwardFromAttribute);
-        if (uidRollFwdFrmStr != null){
-        	pioc.setUniqueIdRolledForwardFrom(new Long(uidRollFwdFrmStr));
+		Long uidRollFwdFrm = getOptionalLongAttribute(configElement, PointInTimeDataExport.sUniqueIdRolledForwardFromAttribute);
+        if (uidRollFwdFrm != null){
+        	pioc.setUniqueIdRolledForwardFrom(uidRollFwdFrm);
         }
 
 		pioc.setUniqueId((Long) getHibSession().save(pioc));
@@ -1448,28 +1411,29 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	private void elementClass(Element classElement, PitSchedulingSubpart pitSchedulingSubpart) throws Exception {
 
 		PitClass pc = new PitClass();
-		Long uid = new Long( getRequiredStringAttribute(classElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sClassElementName));
+		Long uid = getRequiredLongAttribute(classElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sClassElementName);
 		Class_ c = classes.get(uid);
 		if (c != null){
 			pc.setClazz(c);
 		}
 		pc.setPitSchedulingSubpart(pitSchedulingSubpart);
 		pitSchedulingSubpart.addTopitClasses(pc);
-		String parentClassUidStr = getOptionalStringAttribute(classElement, PointInTimeDataExport.sParentClassUniqueIdAttribute);
-		if (parentClassUidStr != null){
-			PitClass parentPitClass = pitClasses.get(new Long(parentClassUidStr));
+		Long parentClassUid = getOptionalLongAttribute(classElement, PointInTimeDataExport.sParentClassUniqueIdAttribute);
+		if (parentClassUid != null){
+			PitClass parentPitClass = pitClasses.get(parentClassUid);
 			pc.setPitParentClass(parentPitClass);
 			parentPitClass.addTopitChildClasses(pc);
 		}
 		
-		pc.setDatePattern(datePatterns.get(new Long(getRequiredStringAttribute(classElement, PointInTimeDataExport.sDatePatternUniqueIdAttribute, PointInTimeDataExport.sClassElementName))));
+		pc.setDatePattern(datePatterns.get(getRequiredLongAttribute(classElement, PointInTimeDataExport.sDatePatternUniqueIdAttribute, PointInTimeDataExport.sClassElementName)));
 		
-		String timePatternIdStr = getOptionalStringAttribute(classElement, PointInTimeDataExport.sTimePatternUniqueIdAttribute);
-		if (timePatternIdStr != null) {
-			pc.setTimePattern(timePatterns.get(new Long(timePatternIdStr)));
+		Long timePatternId = getOptionalLongAttribute(classElement, PointInTimeDataExport.sTimePatternUniqueIdAttribute);
+		if (timePatternId != null) {
+			pc.setTimePattern(timePatterns.get(timePatternId));
 		}
 		
-		pc.setManagingDept(departments.get(new Long(getRequiredStringAttribute(classElement, PointInTimeDataExport.sManagingDepartmentUniqueIdAttribute, PointInTimeDataExport.sClassElementName))));
+		pc.setManagingDept(departments.get(getRequiredLongAttribute(classElement, PointInTimeDataExport.sManagingDepartmentUniqueIdAttribute, PointInTimeDataExport.sClassElementName)));
+		pc.setFundingDept(departments.get(getRequiredLongAttribute(classElement, PointInTimeDataExport.sFundingDepartmentUniqueIdAttribute, PointInTimeDataExport.sClassElementName)));
 
 		String classSuffix = getOptionalStringAttribute(classElement, PointInTimeDataExport.sClassSuffixAttribute);
 		if (classSuffix != null) {
@@ -1477,11 +1441,11 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		}
 		
 		pc.setSectionNumber(getRequiredIntegerAttribute(classElement, PointInTimeDataExport.sSectionNumberAttribute, PointInTimeDataExport.sClassElementName));
-		pc.setEnabledForStudentScheduling(new Boolean(getOptionalBooleanAttribute(classElement, PointInTimeDataExport.sStudentSchedulingAttribute, true)));
+		pc.setEnabledForStudentScheduling(getOptionalBooleanAttribute(classElement, PointInTimeDataExport.sStudentSchedulingAttribute, true));
 		
 		String limitStr = getOptionalStringAttribute(classElement, PointInTimeDataExport.sLimitAttribute);
 		if (limitStr != null && !limitStr.equalsIgnoreCase("inf")) {
-			pc.setLimit(new Integer(limitStr));
+			pc.setLimit(Integer.parseInt(limitStr));
 		}
 		
 		Integer numberOfRooms = getOptionalIntegerAttribute(classElement, PointInTimeDataExport.sNumberOfRoomsAttribute);
@@ -1489,9 +1453,9 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			pc.setNbrRooms(numberOfRooms);
 		}
 		
-        String uidRollFwdFrmStr = getOptionalStringAttribute(classElement, PointInTimeDataExport.sUniqueIdRolledForwardFromAttribute);
-        if (uidRollFwdFrmStr != null){
-        	pc.setUniqueIdRolledForwardFrom(new Long(uidRollFwdFrmStr));
+        Long uidRollFwdFrm = getOptionalLongAttribute(classElement, PointInTimeDataExport.sUniqueIdRolledForwardFromAttribute);
+        if (uidRollFwdFrm != null){
+        	pc.setUniqueIdRolledForwardFrom(uidRollFwdFrm);
         }
         
         String externalId = getOptionalStringAttribute(classElement, PointInTimeDataExport.sExternalIdAttribute);
@@ -1502,7 +1466,6 @@ public class PointInTimeDataImport extends EventRelatedImports {
         pc.setUniqueId((Long)getHibSession().save(pc));
         pitClasses.put(uid, pc);
 
-        @SuppressWarnings("unchecked")
 		Iterator<Element> classInstructorElementIt = classElement.elementIterator(PointInTimeDataExport.sClassInstructorElementName);
         while (classInstructorElementIt.hasNext()){
         	Element classInstructorElement = classInstructorElementIt.next();
@@ -1511,7 +1474,6 @@ public class PointInTimeDataImport extends EventRelatedImports {
         
         updateNormalizedPercentShare(pc);
         
-        @SuppressWarnings("unchecked")
 		Iterator<Element> classEventElementIt = classElement.elementIterator(PointInTimeDataExport.sClassEventElementName);
         while (classEventElementIt.hasNext()){
         	Element classEventElement = classEventElementIt.next();
@@ -1536,7 +1498,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			return;
 		}
 		if (ciList.size() == 1){
-			ciList.get(0).setNormalizedPercentShare(new Integer(100));
+			ciList.get(0).setNormalizedPercentShare(100);
 		} else {
 			int totalShare = 0;
 			for (PitClassInstructor pci : ciList){
@@ -1547,7 +1509,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			int totalNormalizedShare = 0;
 			for (PitClassInstructor pci : ciList){
 				if (pci.getPercentShare() != null) {
-					pci.setNormalizedPercentShare(new Integer(100*pci.getPercentShare().intValue()/totalShare));
+					pci.setNormalizedPercentShare(100*pci.getPercentShare().intValue()/totalShare);
 					totalNormalizedShare += pci.getNormalizedPercentShare().intValue();
 				}
 			}
@@ -1559,7 +1521,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 				int remainderToSpreadUntilGone = difference % ciList.size();
 				for (PitClassInstructor pci : ciList){
 					if (pci.getPercentShare() != null) {
-						pci.setNormalizedPercentShare(new Integer(pci.getNormalizedPercentShare().intValue() + numToAddToAll + (remainderToSpreadUntilGone > 0? 1 : (remainderToSpreadUntilGone < 0) ? -1 : 0 )));
+						pci.setNormalizedPercentShare(pci.getNormalizedPercentShare().intValue() + numToAddToAll + (remainderToSpreadUntilGone > 0? 1 : (remainderToSpreadUntilGone < 0) ? -1 : 0 ));
 						checkNormalizedShare += pci.getNormalizedPercentShare().intValue();
 						remainderToSpreadUntilGone += (remainderToSpreadUntilGone > 0 ? -1 : (remainderToSpreadUntilGone < 0 ? 1 : 0));
 					}
@@ -1571,7 +1533,6 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private void elementClassEvent(Element classEventElement, PitClass pc) throws Exception {
 		PitClassEvent pce = new PitClassEvent();
 		pce.setPitClass(pc);
@@ -1583,7 +1544,6 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private void elementClassMeeting(Element classMeetingElement, PitClassEvent pce) throws Exception {
 		PitClassMeeting pcm = new PitClassMeeting();
 		pcm.setPitClassEvent(pce);
@@ -1591,15 +1551,15 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		pcm.setMeetingDate(CalendarUtils.getDate(getRequiredStringAttribute(classMeetingElement, PointInTimeDataExport.sMeetingDateAttribute, PointInTimeDataExport.sClassMeetingElementName), dateFormat));
 		pcm.setStartPeriod(getRequiredIntegerAttribute(classMeetingElement, PointInTimeDataExport.sStartPeriodAttribute, PointInTimeDataExport.sClassMeetingElementName));
 		pcm.setStopPeriod(getRequiredIntegerAttribute(classMeetingElement, PointInTimeDataExport.sStopPeriodAttribute, PointInTimeDataExport.sClassMeetingElementName));
-		String startOffsetStr = getOptionalStringAttribute(classMeetingElement, PointInTimeDataExport.sStartOffsetAttribute);
-		if (startOffsetStr != null) {
-			pcm.setStartOffset(new Integer(startOffsetStr));
+		Integer startOffset = getOptionalIntegerAttribute(classMeetingElement, PointInTimeDataExport.sStartOffsetAttribute);
+		if (startOffset != null) {
+			pcm.setStartOffset(startOffset);
 		}
-		String stopOffsetStr = getOptionalStringAttribute(classMeetingElement, PointInTimeDataExport.sStopOffsetAttribute);
-		if (stopOffsetStr != null) {
-			pcm.setStopOffset(new Integer(stopOffsetStr));
+		Integer stopOffset = getOptionalIntegerAttribute(classMeetingElement, PointInTimeDataExport.sStopOffsetAttribute);
+		if (stopOffset != null) {
+			pcm.setStopOffset(stopOffset);
 		}
-		Location loc = locations.get(new Long(getRequiredStringAttribute(classMeetingElement, PointInTimeDataExport.sLocationUniqueIdAttribute, PointInTimeDataExport.sClassMeetingElementName)));
+		Location loc = locations.get(getRequiredLongAttribute(classMeetingElement, PointInTimeDataExport.sLocationUniqueIdAttribute, PointInTimeDataExport.sClassMeetingElementName));
 		pcm.setLocationPermanentId(loc.getPermanentId());
 		pcm.setTimePatternMinPerMtg(getRequiredIntegerAttribute(classMeetingElement, PointInTimeDataExport.sTimePatternMinutesPerMeetingAttribute, PointInTimeDataExport.sClassMeetingElementName));
 		pcm.setCalculatedMinPerMtg(getRequiredIntegerAttribute(classMeetingElement, PointInTimeDataExport.sCalculatedMinutesPerMeetingAttribute, PointInTimeDataExport.sClassMeetingElementName));
@@ -1624,7 +1584,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	private void elementSubpart(Element subpartElement, PitInstrOfferingConfig pitInstructionalOfferingConfig, PitSchedulingSubpart parentPitSubpart) throws Exception {
 		if (PointInTimeDataExport.sSubpartElementName.equals(subpartElement.getName())) {
 			PitSchedulingSubpart pss = new PitSchedulingSubpart();
-			SchedulingSubpart ss = schedulingSubparts.get(new Long( getRequiredStringAttribute(subpartElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sSubpartElementName)));
+			SchedulingSubpart ss = schedulingSubparts.get(getRequiredLongAttribute(subpartElement, PointInTimeDataExport.sUniqueIdAttribute, PointInTimeDataExport.sSubpartElementName));
 			if (ss != null){
 				pss.setSchedulingSubpart(ss);
 			}
@@ -1638,32 +1598,30 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			pss.setSchedulingSubpartSuffixCache(getRequiredStringAttribute(subpartElement, PointInTimeDataExport.sSuffixAttribute, PointInTimeDataExport.sSubpartElementName));
 			pss.setItype(itypes.get(getRequiredStringAttribute(subpartElement, PointInTimeDataExport.sTypeAttribute, PointInTimeDataExport.sSubpartElementName)));
 			pss.setStudentAllowOverlap(getRequiredBooleanAttribute(subpartElement, PointInTimeDataExport.sStudentAllowOverlapAttribute, PointInTimeDataExport.sSubpartElementName));
-			String creditTypeStr = getOptionalStringAttribute(subpartElement, PointInTimeDataExport.sCreditTypeAttribute);
+			Long creditTypeStr = getOptionalLongAttribute(subpartElement, PointInTimeDataExport.sCreditTypeAttribute);
 			if (creditTypeStr != null) {
-				pss.setCreditType(creditTypes.get(new Long(creditTypeStr)));
+				pss.setCreditType(creditTypes.get(creditTypeStr));
 			}
-			String creditUnitTypeStr = getOptionalStringAttribute(subpartElement, PointInTimeDataExport.sCreditUnitTypeAttribute);
+			Long creditUnitTypeStr = getOptionalLongAttribute(subpartElement, PointInTimeDataExport.sCreditUnitTypeAttribute);
 			if (creditUnitTypeStr != null) {
-				pss.setCreditUnitType(creditUnitTypes.get(new Long(creditUnitTypeStr)));
+				pss.setCreditUnitType(creditUnitTypes.get(creditUnitTypeStr));
 			}
 			String creditStr = getOptionalStringAttribute(subpartElement, PointInTimeDataExport.sCreditAttribute);
 			if (creditStr != null){
-				pss.setCredit(new Float(creditStr));
+				pss.setCredit(Float.parseFloat(creditStr));
 			}
-	        String uidRollFwdFrmStr = getOptionalStringAttribute(subpartElement, PointInTimeDataExport.sUniqueIdRolledForwardFromAttribute);
-	        if (uidRollFwdFrmStr != null){
-	        	pss.setUniqueIdRolledForwardFrom(new Long(uidRollFwdFrmStr));
+	        Long uidRollFwdFrm = getOptionalLongAttribute(subpartElement, PointInTimeDataExport.sUniqueIdRolledForwardFromAttribute);
+	        if (uidRollFwdFrm != null){
+	        	pss.setUniqueIdRolledForwardFrom(uidRollFwdFrm);
 	        }
 	        pss.setUniqueId((Long)getHibSession().save(pss));
 	        
-	        @SuppressWarnings("unchecked")
 			Iterator<Element> classElementIterator = (Iterator<Element>)subpartElement.elementIterator(PointInTimeDataExport.sClassElementName);
 	        while(classElementIterator.hasNext()){
 	        	Element classElement = classElementIterator.next();
 	        	elementClass(classElement, pss);
 	        }
 
-	        @SuppressWarnings("unchecked")
 			Iterator<Element> childSubpartElementIterator = (Iterator<Element>)subpartElement.elementIterator(PointInTimeDataExport.sSubpartElementName);
 	        while(childSubpartElementIterator.hasNext()){
 	        	Element childSubpartElement = childSubpartElementIterator.next();
