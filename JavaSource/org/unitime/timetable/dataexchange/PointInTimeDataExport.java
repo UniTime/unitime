@@ -269,6 +269,7 @@ public class PointInTimeDataExport extends BaseExport {
 	public static String sStudentSchedulingAttribute = "studentScheduling";
 	public static String sNumberOfRoomsAttribute = "numberOfRooms";
 	public static String sManagingDepartmentUniqueIdAttribute = "managingDepartmentUniqueId";
+	public static String sFundingDepartmentUniqueIdAttribute = "fundingDepartmentUniqueId";
 	public static String sClassSuffixAttribute = "classSuffix";
 	public static String sSectionNumberAttribute = "sectionNumber";
 	public static String sClassInstructorElementName = "classInstructor";
@@ -965,6 +966,7 @@ public class PointInTimeDataExport extends BaseExport {
         	exportDepartment(clazz.getManagingDept());
         }
         classElement.addAttribute(sManagingDepartmentUniqueIdAttribute, clazz.getManagingDept().getUniqueId().toString());
+        classElement.addAttribute(sFundingDepartmentUniqueIdAttribute, clazz.getEffectiveFundingDept().getUniqueId().toString());
         if (clazz.getUniqueIdRolledForwardFrom() != null)
         	classElement.addAttribute(sUniqueIdRolledForwardFromAttribute, clazz.getUniqueIdRolledForwardFrom().toString());
 
