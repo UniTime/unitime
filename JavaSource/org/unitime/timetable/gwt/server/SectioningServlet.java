@@ -2909,6 +2909,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		public org.unitime.timetable.onlinesectioning.match.CourseMatcher getParentCourseMatcher() { return iParent; }
 		
 		public void setParentCourseMatcher(org.unitime.timetable.onlinesectioning.match.CourseMatcher parent) { iParent = parent; }
+		
+		@Override
+		public void setServer(OnlineSectioningServer server) {
+			super.setServer(server);
+			if (iParent != null) iParent.setServer(server);
+		}
 
 		@Override
 		public boolean match(XCourseId course) {
