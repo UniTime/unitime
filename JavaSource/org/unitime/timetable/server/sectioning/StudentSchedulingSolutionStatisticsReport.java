@@ -171,6 +171,18 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         }
     }
     
+    public static class AthletesFilter implements StudentFilter {
+        public AthletesFilter() {
+        }
+        @Override
+        public boolean matches(Student student) {
+        	for (org.cpsolver.studentsct.model.StudentGroup aac: student.getGroups()) {
+        		if ("SPORT".equalsIgnoreCase(aac.getType())) return true;
+        	}
+        	return false;
+        }
+    }
+    
     public static class OnlineLateFilter extends OnlineFilter {
         public OnlineLateFilter() {
         }
@@ -233,6 +245,10 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         	GR_STAR("On-campus STAR", new AndFilter(new GroupFilter("STAR"), FILTER_ALL_RES, new NotFilter(new GroupFilter("RE-BATCH")))),
         	GR_VSTAR("Virtual STAR", new AndFilter(new GroupFilter("VSTAR"), FILTER_ALL_RES, new NotFilter(new GroupFilter("RE-BATCH")))),
         OTHER("Other", new AndFilter(FILTER_ALL_RES, new NotFilter(new GroupFilter("RE-BATCH")), new NotFilter(new GroupFilter("PREREG")), new NotFilter(new StarFilter()))),
+        
+        ATHLETES("Athletes", new AndFilter(new AthletesFilter(), FILTER_ALL)),
+        PRIORITY_ATHLETES("Priority\nAthletes", new AndFilter(new AthletesFilter(), new PriorityFilter(StudentPriority.Priority), FILTER_ALL)),
+        OTHER_ATHLETES("Other\nAthletes", new AndFilter(new AthletesFilter(), new NotFilter(new PriorityFilter(StudentPriority.Priority)), FILTER_ALL)),
         ;
         String iName;
         StudentFilter iFilter;
