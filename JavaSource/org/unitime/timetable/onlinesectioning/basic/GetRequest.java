@@ -194,6 +194,7 @@ public class GetRequest extends WaitlistedOnlineSectioningAction<CourseRequestIn
 			if (setInactive && !hasEnrollments) setInactive = false;
 			if (setInactive && server instanceof StudentSolver)
 				setInactive = false;
+			boolean showWaitListPosition = ApplicationProperty.OnlineSchedulingShowWaitListPosition.isTrue();
 			
 			for (XRequest cd: student.getRequests()) {
 				CourseRequestInterface.Request r = null;
@@ -274,7 +275,7 @@ public class GetRequest extends WaitlistedOnlineSectioningAction<CourseRequestIn
 						rc.setOverrideTimeStamp(((XCourseRequest)cd).getOverrideTimeStamp(courseId));
 						((XCourseRequest)cd).fillPreferencesIn(rc, courseId);
 						r.addRequestedCourse(rc);
-						if (rc.isCanWaitList() && ((XCourseRequest)cd).getEnrollment() == null && ((XCourseRequest)cd).isWaitlist()) {
+						if (showWaitListPosition && rc.isCanWaitList() && ((XCourseRequest)cd).getEnrollment() == null && ((XCourseRequest)cd).isWaitlist()) {
 							rc.setWaitListPosition(getWaitListPosition(offering, student, (XCourseRequest)cd, courseId, server, helper));
 						}
 					}

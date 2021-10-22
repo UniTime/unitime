@@ -2953,7 +2953,14 @@ public enum ApplicationProperty {
 	@Type(String.class)
 	@Description("Instructional Offering: prohibit over the limit overrides when wait-listing is enabled. When set, this property should contain the reference of the override that must be marked as prohibited when wait-listing is enabled.")
 	@Since(4.6)
-	OfferingWaitListProhibitedOverride("unitime.offering.waitList.prohibitedOverride")
+	OfferingWaitListProhibitedOverride("unitime.offering.waitList.prohibitedOverride"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Scheduling Assistant: Show the wait-list position to the students. When set to false, the Position culumn would not show in the Wait-Listed Courses table.")
+	@Since(4.6)
+	OnlineSchedulingShowWaitListPosition("unitime.enrollment.waitList.showWaitListPosition"),
+
 	;
 
 	String iKey;

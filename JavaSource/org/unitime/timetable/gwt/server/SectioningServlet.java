@@ -1763,7 +1763,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					} else {
 						ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(studentId)
 								.withRequest(true).withCustomCheck(true).withWaitListCheck(true).withAdvisorRequest(true).checkHolds(true).withWaitListMode(wlMode)
-								.withSpecialRegistrations(status != null && status.hasOption(Option.specreg)), currentUser());
+								.withSpecialRegistrations(status != null && status.hasOption(Option.specreg)).withWaitListPosition(true), currentUser());
 						ret.setCanSetCriticalOverrides(getSessionContext().hasPermission(student, Right.StudentSchedulingChangeCriticalOverride));
 						if (ret.getRequest() != null)
 							ret.getRequest().setWaitListMode(wlMode);

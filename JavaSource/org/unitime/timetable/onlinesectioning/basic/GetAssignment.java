@@ -109,6 +109,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 	private boolean iCheckHolds = false;
 	private boolean iGetSpecRegs = false;
 	private WaitListMode iWaitListMode = null;
+	private boolean iIncludeWaitListPosition = false;
 	
 	public GetAssignment forStudent(Long studentId) {
 		iStudentId = studentId;
@@ -127,6 +128,11 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 	
 	public GetAssignment withRequest(boolean includeRequest) {
 		iIncludeRequest = includeRequest;
+		return this;
+	}
+	
+	public GetAssignment withWaitListPosition(boolean includeWaitListPosition) {
+		iIncludeWaitListPosition = includeWaitListPosition;
 		return this;
 	}
 	
@@ -324,6 +330,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 		boolean setReadOnly = ApplicationProperty.OnlineSchedulingMakeAssignedRequestReadOnly.isTrue();
 		if (helper.getUser() != null && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER)
 			setReadOnly = ApplicationProperty.OnlineSchedulingMakeAssignedRequestReadOnlyIfAdmin.isTrue();
+		boolean showWaitListPosition = iIncludeWaitListPosition || ApplicationProperty.OnlineSchedulingShowWaitListPosition.isTrue();
 		
 		List<CourseSection> unavailabilities = fillUnavailabilitiesIn(ret, student, server, helper, stored);
 		CustomClassAttendanceProvider provider = Customization.CustomClassAttendanceProvider.getProvider();
@@ -876,7 +883,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 						rc.setOverrideTimeStamp(((XCourseRequest)cd).getOverrideTimeStamp(courseId));
 						((XCourseRequest)cd).fillPreferencesIn(rc, courseId);
 						r.addRequestedCourse(rc);
-						if (rc.isCanWaitList() && ((XCourseRequest)cd).getEnrollment() == null && ((XCourseRequest)cd).isWaitlist()) {
+						if (showWaitListPosition && rc.isCanWaitList() && ((XCourseRequest)cd).getEnrollment() == null && ((XCourseRequest)cd).isWaitlist()) {
 							rc.setWaitListPosition(getWaitListPosition(offering, student, (XCourseRequest)cd, courseId, server, helper));
 						}
 					}
