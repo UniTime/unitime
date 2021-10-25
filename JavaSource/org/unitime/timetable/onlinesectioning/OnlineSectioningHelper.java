@@ -111,6 +111,7 @@ public class OnlineSectioningHelper {
     protected CacheMode iCacheMode = null;
     protected XExactTimeConversion iExactTimeConversion = null;
     protected HasGradableSubpart iHasGradableSubpart = null;
+    protected boolean iUseLastAction = false;
     
     public OnlineSectioningHelper() {
     	this(null, null, null);
@@ -480,6 +481,10 @@ public class OnlineSectioningHelper {
     }
     
     public OnlineSectioningLog.Action.Builder addAction(OnlineSectioningAction<?> action, AcademicSessionInfo session) {
+    	return addAction(action, session, false);
+    }
+    
+    public OnlineSectioningLog.Action.Builder addAction(OnlineSectioningAction<?> action, AcademicSessionInfo session, boolean useLastAction) {
     	OnlineSectioningLog.Action.Builder a = OnlineSectioningLog.Action.newBuilder();
     	a.setOperation(action.name());
     	a.setSession(OnlineSectioningLog.Entity.newBuilder()
@@ -487,6 +492,7 @@ public class OnlineSectioningHelper {
     			.setName(session.toCompactString())
     			);
     	a.setStartTime(System.currentTimeMillis());
+    	iUseLastAction = useLastAction;
     	if (iUser != null)
     		a.setUser(iUser);
     	synchronized (iLog) {
@@ -498,7 +504,7 @@ public class OnlineSectioningHelper {
     public OnlineSectioningLog.Action.Builder getAction() {
     	if (iLog.getActionCount() == 0)
     		return iLog.addActionBuilder();
-    	return iLog.getActionBuilder(0);
+    	return iLog.getActionBuilder(iUseLastAction ? iLog.getActionCount() - 1 : 0);
     }
     
     public void logOption(String key, String value) {

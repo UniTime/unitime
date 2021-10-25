@@ -2808,17 +2808,25 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 	
 	private OnlineSectioningLog.Entity currentUser() {
-		return currentUser(null);
+		return currentUser(null, false);
+	}
+	
+	private OnlineSectioningLog.Entity currentUser(boolean manager) {
+		return currentUser(null, manager);
 	}
 	
 	private OnlineSectioningLog.Entity currentUser(StudentSectioningContext cx) {
+		return currentUser(cx, false);
+	}
+	
+	private OnlineSectioningLog.Entity currentUser(StudentSectioningContext cx, boolean manager) {
 		UserContext user = getSessionContext().getUser();
 		UniTimePrincipal principal = (UniTimePrincipal)getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingUser);
 		if (user != null) {
 			OnlineSectioningLog.Entity.Builder entity = OnlineSectioningLog.Entity.newBuilder()
 					.setExternalId(user.getTrueExternalUserId())
 					.setName(user.getTrueName() == null ? user.getUsername() : user.getTrueName())
-					.setType(user instanceof Chameleon || principal != null ?
+					.setType(user instanceof Chameleon || principal != null || manager?
 							OnlineSectioningLog.Entity.EntityType.MANAGER : OnlineSectioningLog.Entity.EntityType.STUDENT);
 			if (cx != null && cx.hasPin())
 				entity.addParameterBuilder().setKey("pin").setValue(cx.getPin());
@@ -2870,7 +2878,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					}
 				}
 			
-			return server.execute(server.createAction(MassCancelAction.class).forStudents(studentIds).withStatus(statusRef).withEmail(subject, message, cc), currentUser());
+			return server.execute(server.createAction(MassCancelAction.class).forStudents(studentIds).withStatus(statusRef).withEmail(subject, message, cc), currentUser(true));
 		} catch (PageAccessException e) {
 			throw e;
 		} catch (SectioningException e) {

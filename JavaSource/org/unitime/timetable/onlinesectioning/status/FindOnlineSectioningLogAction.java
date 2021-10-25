@@ -342,7 +342,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					int j = 0;
 					for (int i = 0; i < e.getParameterCount(); i++) {
 						if ("credit_note".equals(e.getParameter(i).getKey())) creditNote = e.getParameter(i).getValue();
-						if ("credit".equals(e.getParameter(i).getKey())) credit = e.getParameter(i).getValue();
+						else if ("credit".equals(e.getParameter(i).getKey())) credit = e.getParameter(i).getValue();
 						else if ("note".equals(e.getParameter(i).getKey())) note = e.getParameter(i).getValue();
 						else {
 							html += (j > 0 ? ", " : "") + e.getParameter(i).getValue();
