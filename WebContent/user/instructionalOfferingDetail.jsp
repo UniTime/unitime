@@ -492,6 +492,12 @@
 						<img src="images/cancel.png" alt="<%=MSG.waitListDisabled() %>" title="<%=MSG.descWaitListDisabled() %>" border="0" align="top">
 						<loc:message name="descWaitListDisabled"/>
 					</logic:equal>
+					<logic:present name="waitlistProblem" scope="request"> 
+						<br>
+						<bean:define name="waitlistProblem" scope="request" id="waitlistProblem"/>
+						<img src='images/warning.png' alt='WARNING' border='0' align='top' title="${waitlistProblem}">
+						<font color="#FF0000">${waitlistProblem}</font>
+					</logic:present>
 				</TD>
 			</TR>
 		</logic:notEmpty>

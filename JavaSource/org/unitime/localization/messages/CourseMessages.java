@@ -3036,6 +3036,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Wait-listing is not enabled for this offering.")
 	String descWaitListDisabled();
 	
+	@DefaultMessage("{0} allows for {1}.")
+	String problemWaitListProhibitedOverride(String course, String override);
+	
 	@DefaultMessage("Wait-Listing:")
 	String filterWaitlist();
 	

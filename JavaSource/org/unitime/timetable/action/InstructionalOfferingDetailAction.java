@@ -62,6 +62,7 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.OfferingCoordinator;
+import org.unitime.timetable.model.OverrideType;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.SchedulingSubpart;
@@ -409,6 +410,20 @@ public class InstructionalOfferingDetailAction extends Action {
         if (io.effectiveWaitList() != ApplicationProperty.OfferingWaitListDefault.isTrue()) frm.setWaitList(io.effectiveWaitList() ? "true" : "false");
         frm.setWeekStartDayOfWeek(Localization.getDateFormat("EEEE").format(io.getSession().getSessionBeginDateTime()));
         frm.setHasConflict(hasConflicts(request, io));
+        if (io.effectiveWaitList()) {
+			OverrideType prohibitedOverride = OverrideType.findByReference(ApplicationProperty.OfferingWaitListProhibitedOverride.value());
+			if (prohibitedOverride != null) {
+				String message = null;
+				for (CourseOffering co: io.getCourseOfferings()) {
+					if (co.getDisabledOverrides() == null || !co.getDisabledOverrides().contains(prohibitedOverride)) {
+						message = (message == null ? "" : message + "\n") + MSG.problemWaitListProhibitedOverride(co.getCourseName(), prohibitedOverride.getLabel());
+					}
+				}
+				if (message != null)
+					request.setAttribute("waitlistProblem", message);
+			}
+		}
+
         if (ApplicationProperty.OfferingShowClassNotes.isTrue()) {
         	StringBuffer notes = new StringBuffer();
         	List<InstrOfferingConfig> configs = new ArrayList<InstrOfferingConfig>(io.getInstrOfferingConfigs());
