@@ -254,6 +254,20 @@
 							</html:select>
 						</TD>
 					</TR>
+					<logic:notEmpty name="instructionalOfferingListForm" property="waitlist">
+						<TR>
+							<TD>
+								<B><loc:message name="filterWaitlist"/></B>
+							</TD>
+							<TD colspan="2">
+								<html:select property="waitlist">
+									<html:option value="A"><loc:message name="itemWaitListAllCourses"/></html:option>
+									<html:option value="W"><loc:message name="itemWaitListWaitListed"/></html:option>
+									<html:option value="N"><loc:message name="itemWaitListNotWaitListed"/></html:option>
+								</html:select>
+							</TD>
+						</TR>
+					</logic:notEmpty>
 				</TABLE>
 
 				<script language="JavaScript" type="text/javascript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>

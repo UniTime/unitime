@@ -435,4 +435,6 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 	public boolean getFilterNeedInstructor() {
 		return false;
 	}
+	@Override
+	public String getWaitlist() { return null; }
 }

@@ -1828,7 +1828,12 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         			iDocument.open();
         		else
         			iDocument.newPage();
-   		    	iDocument.add(new Paragraph(MSG.labelOfferedCourses(subjectArea.getSubjectAreaAbbreviation()), PdfFont.getBigFont(true)));
+        		if (isFilterWaitlist())
+        			iDocument.add(new Paragraph(MSG.labelOfferedWaitListedCourses(subjectArea.getSubjectAreaAbbreviation()), PdfFont.getBigFont(true)));
+		    	else if (isFilterNonWaitlist())
+		    		iDocument.add(new Paragraph(MSG.labelOfferedNotWaitListedCourses(subjectArea.getSubjectAreaAbbreviation()), PdfFont.getBigFont(true)));
+		    	else
+		    		iDocument.add(new Paragraph(MSG.labelOfferedCourses(subjectArea.getSubjectAreaAbbreviation()), PdfFont.getBigFont(true)));
     		}
     		pdfBuildTableHeader(context.getUser().getCurrentAcademicSessionId());
                   

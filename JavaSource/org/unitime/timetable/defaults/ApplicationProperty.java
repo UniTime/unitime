@@ -2956,6 +2956,12 @@ public enum ApplicationProperty {
 	OfferingWaitListProhibitedOverride("unitime.offering.waitList.prohibitedOverride"),
 	
 	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Instructional Offerings: show wait-list filter")
+	@Since(4.6)
+	OfferingWaitListShowFilter("unitime.offering.waitListFilter"),
+	
+	@Type(Boolean.class)
 	@DefaultValue("true")
 	@Description("Scheduling Assistant: Show the wait-list position to the students. When set to false, the Position culumn would not show in the Wait-Listed Courses table.")
 	@Since(4.6)

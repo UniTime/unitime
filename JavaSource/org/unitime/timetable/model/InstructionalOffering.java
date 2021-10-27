@@ -170,6 +170,19 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 	public String toString() {
 	    return this.getControllingCourseOffering().getCourseName();
 	}
+	
+	public static TreeSet<InstructionalOffering> search(
+	        Long acadSessionId,
+	        Long subjectAreaId,
+	        String courseNbr,
+	        boolean fetchStructure,
+	        boolean fetchCredits,
+	        boolean fetchInstructors,
+	        boolean fetchPreferences,
+	        boolean fetchAssignments,
+	        boolean fetchReservations) {
+		return search(acadSessionId, subjectAreaId, courseNbr, fetchStructure, fetchCredits, fetchInstructors, fetchPreferences, fetchAssignments, fetchReservations, null);
+	}
 
 	/**
 	 * Search for instructional offerings
@@ -187,7 +200,8 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 	        boolean fetchInstructors,
 	        boolean fetchPreferences,
 	        boolean fetchAssignments,
-	        boolean fetchReservations) {
+	        boolean fetchReservations,
+	        String filterWaitList) {
 
 		org.hibernate.Session hibSession = (new InstructionalOfferingDAO()).getSession();
 
@@ -244,6 +258,18 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 			} else {
 				query.append(" and co.courseNbr = :courseNbr ");
 			}
+		}
+		
+		if ("W".equals(filterWaitList)) {
+			if (ApplicationProperty.OfferingWaitListDefault.isTrue())
+				query.append(" and (io.waitlist is null or io.waitlist = true) and io.notOffered = false");
+			else
+				query.append(" and io.waitlist = true and io.notOffered = false");
+		} else if ("N".equals(filterWaitList)) {
+			if (ApplicationProperty.OfferingWaitListDefault.isFalse())
+				query.append(" and (io.waitlist is null or io.waitlist = false) and io.notOffered = false");
+			else
+				query.append(" and io.waitlist = false and io.notOffered = false");
 		}
 
 		query.append(" and co.subjectArea.uniqueId = :subjectAreaId ");

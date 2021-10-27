@@ -814,6 +814,12 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("{0} Offered Courses")
 	String labelOfferedCourses(String subjectAreaAbbv);
 	
+	@DefaultMessage("{0} Wait-Listed Courses")
+	String labelOfferedWaitListedCourses(String subjectAreaAbbv);
+	
+	@DefaultMessage("{0} Not Wait-Listed Courses")
+	String labelOfferedNotWaitListedCourses(String subjectAreaAbbv);
+	
 	@DefaultMessage("There are no courses currently offered for {0} subject.")
 	String errorNoCoursesOffered(String subjectAreaAbbv);
 
@@ -3029,4 +3035,16 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Wait-listing is not enabled for this offering.")
 	String descWaitListDisabled();
+	
+	@DefaultMessage("Wait-Listing:")
+	String filterWaitlist();
+	
+	@DefaultMessage("All Courses")
+	String itemWaitListAllCourses();
+	
+	@DefaultMessage("Wait-Listed Courses")
+	String itemWaitListWaitListed();
+	
+	@DefaultMessage("Not Wait-Listed Courses")
+	String itemWaitListNotWaitListed();
 }

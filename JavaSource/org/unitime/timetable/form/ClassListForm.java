@@ -588,4 +588,6 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
     public void setFilterNeedInstructor(boolean filterNeedInstructor) {
     	this.filterNeedInstructor = filterNeedInstructor;
     }
+	@Override
+	public String getWaitlist() { return null; }
 }

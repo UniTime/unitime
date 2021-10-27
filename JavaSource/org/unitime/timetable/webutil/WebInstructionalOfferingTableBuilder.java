@@ -171,6 +171,7 @@ public class WebInstructionalOfferingTableBuilder {
     private boolean showExamTimetable;
     private boolean showInstructorAssignment;
     private boolean showLms;
+    private String filterWaitlist;
     
 	private boolean iDisplayDistributionPrefs = true;
     private boolean iDisplayTimetable = true;
@@ -317,6 +318,10 @@ public class WebInstructionalOfferingTableBuilder {
     
     public boolean isShowInstructorAssignment() { return showInstructorAssignment; }
     public void setShowInstructorAssignment(boolean showInstructorAssignment) { this.showInstructorAssignment = showInstructorAssignment; }
+    
+    public boolean isFilterWaitlist() { return "W".equals(filterWaitlist); }
+    public boolean isFilterNonWaitlist() { return "N".equals(filterWaitlist); }
+    public void setFilterWaitlist(String filterWaitlist) { this.filterWaitlist = filterWaitlist; }
 
     public boolean isShowLms() {
 		return showLms;
@@ -2211,7 +2216,12 @@ public class WebInstructionalOfferingTableBuilder {
     		    try {
     		    	if (allCoursesAreGiven)
     		    		outputStream.print("<DIV align=\"right\"><A class=\"l7\" href=\"#notOffered" + subjectAreaId + "\">" + MSG.labelNotOfferedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</A></DIV>");
-    			    outputStream.print("<DIV class=\"WelcomeRowHead\"><A name=\"offered" + subjectAreaId + "\"></A>" + MSG.labelOfferedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</DIV>");
+    		    	if (isFilterWaitlist())
+    		    		outputStream.print("<DIV class=\"WelcomeRowHead\"><A name=\"offered" + subjectAreaId + "\"></A>" + MSG.labelOfferedWaitListedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</DIV>");
+    		    	else if (isFilterNonWaitlist())
+    		    		outputStream.print("<DIV class=\"WelcomeRowHead\"><A name=\"offered" + subjectAreaId + "\"></A>" + MSG.labelOfferedNotWaitListedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</DIV>");
+    		    	else
+    		    		outputStream.print("<DIV class=\"WelcomeRowHead\"><A name=\"offered" + subjectAreaId + "\"></A>" + MSG.labelOfferedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</DIV>");
     			} catch (IOException e) {
     				e.printStackTrace();
     			}
@@ -2313,6 +2323,11 @@ public class WebInstructionalOfferingTableBuilder {
 			setShowLms(form.getLms());
 		} else {
 			setShowLms(false);
+		}
+		if (form.getWaitlist() != null) {
+			setFilterWaitlist(form.getWaitlist());
+		} else {
+			setFilterWaitlist(null);
 		}
 	}
 	

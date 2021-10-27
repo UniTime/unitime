@@ -158,7 +158,7 @@ public class PdfWorksheet {
         return true;
     }
     
-    public static boolean print(OutputStream out, Collection<SubjectArea> subjectAreas, String courseNumber) throws IOException, DocumentException {
+    public static boolean print(OutputStream out, Collection<SubjectArea> subjectAreas, String courseNumber, String filterWaitList) throws IOException, DocumentException {
         TreeSet courses = new TreeSet(new Comparator() {
             public int compare(Object o1, Object o2) {
                 CourseOffering co1 = (CourseOffering)o1;
@@ -185,6 +185,18 @@ public class PdfWorksheet {
 				query += " and co.courseNbr = :courseNbr ";
 			}
         }
+        if ("W".equals(filterWaitList)) {
+			if (ApplicationProperty.OfferingWaitListDefault.isTrue())
+				query += " and (co.instructionalOffering.waitlist is null or co.instructionalOffering.waitlist = true) and co.instructionalOffering.notOffered = false";
+			else
+				query += " and co.instructionalOffering.waitlist = true and co.instructionalOffering.notOffered = false";
+		} else if ("N".equals(filterWaitList)) {
+			if (ApplicationProperty.OfferingWaitListDefault.isFalse())
+				query += " and (co.instructionalOffering.waitlist is null or co.instructionalOffering.waitlist = false) and co.instructionalOffering.notOffered = false";
+			else
+				query += " and co.instructionalOffering.waitlist = false and co.instructionalOffering.notOffered = false";
+		}
+        
         Query q = new SessionDAO().getSession().createQuery(query);
         q.setParameterList("subjectIds", subjectIds);
         if (courseNumber != null && !courseNumber.trim().isEmpty())
