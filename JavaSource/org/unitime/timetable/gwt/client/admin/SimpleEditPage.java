@@ -68,6 +68,8 @@ import org.unitime.timetable.gwt.shared.SimpleEditInterface.PageName;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Record;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.RecordComparator;
 import org.unitime.timetable.gwt.shared.UserDataInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 import org.unitime.timetable.gwt.shared.UserDataInterface.GetUserDataRpcRequest;
 import org.unitime.timetable.gwt.shared.UserDataInterface.SetUserDataRpcRequest;
 
@@ -202,6 +204,8 @@ public class SimpleEditPage extends Composite {
 				iEditable = true;
 				iHeader.setEnabled("edit", false);
 				iHeader.setEnabled("search", false);
+				iHeader.setEnabled("export-csv", false);
+				iHeader.setEnabled("export-pdf", false);
 				LoadingWidget.showLoading(MESSAGES.waitPlease());
 				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 					@Override
@@ -218,6 +222,8 @@ public class SimpleEditPage extends Composite {
 			public void onClick(ClickEvent event) {
 				iEditable = false;
 				iHeader.setEnabled("search", iFilter != null);
+				iHeader.setEnabled("export-csv", iFilter == null);
+				iHeader.setEnabled("export-pdf", iFilter == null);
 				LoadingWidget.showLoading(MESSAGES.waitPlease());
 				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 					@Override
@@ -249,6 +255,18 @@ public class SimpleEditPage extends Composite {
 		iHeader.addButton("edit", MESSAGES.buttonEdit(), 75, edit);
 		iHeader.addButton("save", MESSAGES.buttonSave(), 75, save);
 		iHeader.addButton("back", MESSAGES.buttonBack(), 75, back);
+		iHeader.addButton("export-csv", MESSAGES.buttonExportCSV(), 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				exportData("csv");
+			}
+		});
+		iHeader.addButton("export-pdf", MESSAGES.buttonExportPDF(), 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				exportData("pdf");
+			}
+		});
 		iPanel.addHeaderRow(iHeader);
 		
 		iTable = new UniTimeTable<Record>();
@@ -640,6 +658,8 @@ public class SimpleEditPage extends Composite {
 					iPanel.addRow(iTable);
 					iPanel.addNotPrintableBottomRow(iBottom);
 					iHeader.setEnabled("search", true);
+					iHeader.setEnabled("export-csv", false);
+					iHeader.setEnabled("export-pdf", false);
 				}
 			}
 		});
@@ -651,6 +671,8 @@ public class SimpleEditPage extends Composite {
 		iHeader.setEnabled("save", false);
 		iHeader.setEnabled("edit", false);
 		iHeader.setEnabled("back", false);
+		iHeader.setEnabled("export-csv", false);
+		iHeader.setEnabled("export-pdf", false);
 		iHeader.setMessage(MESSAGES.waitLoadingData());
 		LoadingWidget.showLoading(MESSAGES.waitLoadingData());
 		
@@ -1026,6 +1048,8 @@ public class SimpleEditPage extends Composite {
 			iHeader.setEnabled("edit", !iEditable && !iHasLazy);
 			iHeader.setEnabled("add", !iEditable && iData.isAddable());
 			iHeader.setEnabled("search", !iEditable && iFilter != null);
+			iHeader.setEnabled("export-csv", !iEditable);
+			iHeader.setEnabled("export-pdf", !iEditable);
 		}
 		if (iFilter != null) {
 			for (int i = 0; i < iFilter.getValues().length; i++)
@@ -1859,5 +1883,21 @@ public class SimpleEditPage extends Composite {
 			
 			super.onBrowserEvent(event);
 		}
+	}
+	
+	private void exportData(String format) {
+		String query = "output=admin-report." + format + "&type=" + iType;
+		if (iFilter != null && iFilter.getValues() != null)
+			for (String f: iFilter.getValues())
+				query += "&filter=" + f;
+		RPC.execute(EncodeQueryRpcRequest.encode(query), new AsyncCallback<EncodeQueryRpcResponse>() {
+			@Override
+			public void onFailure(Throwable caught) {
+			}
+			@Override
+			public void onSuccess(EncodeQueryRpcResponse result) {
+				ToolBox.open(GWT.getHostPageBaseURL() + "export?q=" + result.getQuery());
+			}
+		});
 	}
 }

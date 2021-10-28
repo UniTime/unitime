@@ -192,12 +192,21 @@ public class PDFPrinter implements Printer {
 					iMaxWidth[idx] = Math.max(iMaxWidth[idx], f.getImage().getScaledWidth());
 				} catch (Exception e) {}
 			}
+			
+			if (f.hasBackground()) {
+				cell.setBackgroundColor(f.getBackground());
+			}
 
 			if (f.hasText()) {
 				Font font = PdfFont.getFont(f.has(F.BOLD), f.has(F.ITALIC));
 				if (f.getColor() != null) font.setColor(f.getColor());
 				if (f.has(F.UNDERLINE)) font.setStyle(Font.UNDERLINE);
 				Paragraph ch = new Paragraph(f.getText(), font);
+				if (f.has(F.RIGHT)) {
+					ch.setAlignment(Element.ALIGN_RIGHT);
+				} else if (f.has(F.CENTER)) {
+					ch.setAlignment(Element.ALIGN_CENTER);
+				}
 				ch.setLeading(0f, 1f);
 				cell.addElement(ch);
 				float width = f.getWidth(font);
@@ -309,6 +318,7 @@ public class PDFPrinter implements Printer {
 		private Double iNumber = null;
 		private Date iDate = null;
 		private Format<?> iFormat = null;
+		private String iBackground = null;
 		
 		public A() {}
 		
@@ -377,8 +387,27 @@ public class PDFPrinter implements Printer {
 			}
 		}
 		
+		public void setBackground(String color) {
+			if (color != null && color.startsWith("#")) color = color.substring(1);
+			iBackground = color;
+		}
+		public boolean hasBackground() { return iBackground != null && !iBackground.isEmpty(); }
+		public Color getBackground() {
+			if ("green".equals(iBackground)) return Color.GREEN;
+			if ("red".equals(iBackground)) return Color.RED;
+			if ("blue".equals(iBackground)) return Color.BLUE;
+			if ("black".equals(iBackground)) return Color.BLACK;
+			try {
+				return hasBackground() ? new Color(Integer.parseInt(iBackground,16)) : Color.WHITE; 
+			} catch (Exception e) {
+				e.printStackTrace();
+				return Color.BLACK;
+			}
+		}
+		
 		public String getText() { return iText == null ? "" : iText; }
 		public boolean hasText() { return iText != null && !iText.isEmpty(); }
+		public void setText(String text) { iText = text; }
 		
 		public boolean hasImage() { return iImage != null; }
 		public Image getImage() { return iImage; }

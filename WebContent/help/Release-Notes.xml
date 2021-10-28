@@ -46,6 +46,23 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Data Exchange: Staff XML Import</name>
+			<description>
+				<line>Added ability to disable incremental mode (when incremental=&quot;false&quot; on the root element).</line>
+				<line>To delete a staff member, delete element can be set to T, Y, or true (case insensitive).</line>
+			</description>
+		</item>
+		<item>
+			<name>Administration: Export PDF/CSV</name>
+			<description>
+				<line>Added an ability to export the admin table in CSV or PDF.</line>
+				<line>Aplies to all 40+ admin pages using SimpleEditPage (gwt.jsp?page=admin&amp;type=XXX).</line>
+			</description>
+		</item>
+	</category>
 </release>
 <release>
 	<version>4.5.177</version>

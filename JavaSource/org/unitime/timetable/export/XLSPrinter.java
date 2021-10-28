@@ -253,19 +253,21 @@ public class XLSPrinter implements Printer {
 		iLastLine = fields;
 	}
 	
-	protected Font getFont(boolean bold, boolean italic, boolean underline, Color c) {
-		Short color = null;
-		if (c == null) c = Color.BLACK;
-		if (c != null) {
-			String colorId = Integer.toHexString(c.getRGB());
-			color = iColors.get(colorId);
-			if (color == null) {
-				HSSFPalette palette = ((HSSFWorkbook)iWorkbook).getCustomPalette();
-				HSSFColor clr = palette.findSimilarColor(c.getRed(), c.getGreen(), c.getBlue());
-				color = (clr == null ? IndexedColors.BLACK.getIndex() : clr.getIndex());
-				iColors.put(colorId, color);
-			}
+	protected Short colorToShort(Color c) {
+		if (c == null) c = Color.black;
+		String colorId = Integer.toHexString(c.getRGB());
+		Short color = iColors.get(colorId);
+		if (color == null) {
+			HSSFPalette palette = ((HSSFWorkbook)iWorkbook).getCustomPalette();
+			HSSFColor clr = palette.findSimilarColor(c.getRed(), c.getGreen(), c.getBlue());
+			color = (clr == null ? IndexedColors.BLACK.getIndex() : clr.getIndex());
+			iColors.put(colorId, color);
 		}
+		return color;
+	}
+	
+	protected Font getFont(boolean bold, boolean italic, boolean underline, Color c) {
+		Short color = colorToShort(c);
 		String fontId = (bold ? "b" : "") + (italic ? "i" : "") + (underline ? "u" : "") + (color == null ? "" : color);
 		Font font = iFonts.get(fontId);
 		if (font == null) {
@@ -286,6 +288,7 @@ public class XLSPrinter implements Printer {
 				+ (f.has(F.BOLD) ? "b" : "") + (f.has(F.ITALIC) ? "i" : "") + (f.has(F.UNDERLINE) ? "u" : "")
 				+ (f.has(F.RIGHT) ? "R" : f.has(F.CENTER) ? "C" : "L")
 				+ (f.hasColor() ? "#" + Integer.toHexString(f.getColor().getRGB()) : "")
+				+ (f.hasBackground() ? "@" + Integer.toHexString(f.getBackground().getRGB()) : "")
 				+ (format == null ? "" : "|" + format);
 		CellStyle style = iStyles.get(styleId);
 		if (style == null) {
@@ -297,6 +300,8 @@ public class XLSPrinter implements Printer {
 			style.setAlignment(f.has(F.RIGHT) ? HorizontalAlignment.RIGHT : f.has(F.CENTER) ? HorizontalAlignment.CENTER : HorizontalAlignment.LEFT);
 			style.setVerticalAlignment(VerticalAlignment.TOP);
 			style.setFont(getFont(f.has(F.BOLD), f.has(F.ITALIC), f.has(F.UNDERLINE), f.getColor()));
+			if (f.hasBackground())
+				style.setFillBackgroundColor(colorToShort(f.getBackground()));
         	style.setWrapText(true);
         	if (format != null)
         		style.setDataFormat(iWorkbook.createDataFormat().getFormat(format));

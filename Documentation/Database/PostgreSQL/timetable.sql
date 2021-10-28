@@ -17321,7 +17321,7 @@ COPY timetable.settings (uniqueid, name, default_value, allowed_values, descript
 108	showVarLimits	no	yes,no	Show the option to set variable class limits
 128	keepSort	no	yes,no	Sort classes on detail pages
 148	roomFeaturesInOneColumn	yes	yes,no	Display Room Features In One Column
-168	roomFeaturesInOneColumn	yes	yes,no	Display Room Features In One Column
+168	dispLastChanges	yes	yes,no	Display information from the change log in pages.
 188	printNoteDisplay	icon	icon,shortened text,full text	Display an icon or shortened text when a class has a schedule print note.
 189	crsOffrNoteDisplay	icon	icon,shortened text,full text	Display an icon or shortened text when a course offering has a schedule note.
 190	mgrNoteDisplay	icon	icon,shortened text,full text	Display an icon or shortened text when a class has a note to the schedule manager.
