@@ -2005,6 +2005,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							getMyStudents(sessionId),
 							getSubjectAreas())
 							.showUnmatchedClasses(CommonValues.Yes.eq(UserProperty.StudentDashboardShowUnmatchedClasses.get(sessionContext.getUser())))
+							.showUnmatchedCourses(CommonValues.Yes.eq(UserProperty.StudentDashboardShowUnmatchedCourses.get(sessionContext.getUser())))
 							.withFilter(filter), currentUser()
 					);	
 				}

@@ -49,6 +49,7 @@ public enum UserProperty {
 	HighlighClassPreferences("highlightClassPrefs", CommonValues.UseSystemDefault, "Highlight preferences that are set directly on classes"),
 	PrimaryCampus("primaryAcademicInitiative", "Primary academic initiative"),
 	StudentDashboardShowUnmatchedClasses("sctdashShowUnmatchedClasses", CommonValues.Yes, "Student Scheduling Dashboard: Show classes not meeting the filter (as grayed out)."),
+	StudentDashboardShowUnmatchedCourses("sctdashShowUnmatchedCourses", CommonValues.No, "Student Scheduling Dashboard: Show courses that have no students meeting the filter (as grayed out)."),
 	;
 
 	String iKey, iDefault, iDescription;

@@ -141,6 +141,20 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				}
 				list.add(cr);
 			}
+			if (iShowUnmatchedCourses && SectioningStatusFilterAction.hasNoMatchCourses(iFilter, helper)) {
+				try {
+					for (CourseOffering co: (List<CourseOffering>)SectioningStatusFilterAction.getCourseQuery(iFilter, server, helper).selectCourses("distinct co", iFilter).query(helper.getHibSession()).list()) {
+						if (requests.containsKey(co)) continue;
+						if (!m.match(co)) continue;
+						requests.put(co, new ArrayList<CourseRequest>());
+					}
+				} catch (Exception e) {
+					iShowUnmatchedCourses = false;
+				}
+			} else {
+				iShowUnmatchedCourses = false;
+			}
+			
 			boolean checkOverrides = !query().hasAttribute("override");
 			
 			for (Map.Entry<CourseOffering, List<CourseRequest>> entry: requests.entrySet()) {
@@ -195,7 +209,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				}
 
 				Set<Long> addedStudents = new HashSet<Long>();
-				request: for (CourseRequest request: entry.getValue()) {
+				for (CourseRequest request: entry.getValue()) {
 					if (checkOverrides && !request.isRequestApproved() && request.getClassEnrollments().isEmpty()) continue;
 					
 					Student student = request.getCourseDemand().getStudent();
@@ -243,10 +257,11 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					if (request.isRequestPending()) tOvrNeed ++;
 				}
 				
-				if (match == 0) {
+				if (match == 0 && !iShowUnmatchedCourses) {
 					students.removeAll(addedStudents);
 					continue;
 				}
+				e.setNoMatch(match == 0);
 				
 				gEnrl += enrl;
 				gWait += wait;
@@ -836,6 +851,14 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				} else {
 					return true;
 				}
+			}
+			if ("im".equals(attr)) {
+				for (InstrOfferingConfig config: course().getInstructionalOffering().getInstrOfferingConfigs()) {
+					InstructionalMethod im = config.getEffectiveInstructionalMethod();
+					if (im != null && term.equals(im.getReference()))
+						return true;
+				}
+				return false;
 			}
 			return null; // pass unknown attributes lower
 		}

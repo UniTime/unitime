@@ -652,6 +652,17 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					return true;
 				}
 			}
+			if ("im".equals(attr)) {
+				XOffering offering = server().getOffering(info().getOfferingId());
+				if (offering != null)
+					for (XConfig config: offering.getConfigs()) {
+						if (config.getInstructionalMethod() == null && term.equals(server().getAcademicSession().getDefaultInstructionalMethod()))
+							return true;
+						if (config.getInstructionalMethod() != null && term.equals(config.getInstructionalMethod().getReference()))
+							return true;
+					}
+				return false;
+			}
 			return null; // pass unknown attributes lower
 		}
 	}

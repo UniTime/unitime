@@ -1413,6 +1413,58 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				}
 			};
 		}
+		
+		public QueryInstance selectCourses(String select, FilterRpcRequest request) {
+			if (request.hasOption("assignment") && "Wait-Listed".equalsIgnoreCase(request.getOption("assignment"))) {
+				if (ApplicationProperty.OfferingWaitListDefault.isTrue()) {
+					addWhere("assignment", "not co.instructionalOffering.waitlist = false");
+				} else {
+					addWhere("assignment", "co.instructionalOffering.waitlist = true");
+				}
+			}
+			return new QueryInstance(select) {
+				@Override
+				public String query() {
+					System.out.println("Q: " + "select " + (iSelect == null ? "distinct co" : iSelect) +
+							" from CourseOffering co " + 
+							(iFrom == null ? "" : iFrom.trim().toLowerCase().startsWith("inner join") ? " " + iFrom : ", " + iFrom) + getFrom(iExclude) +
+							" where s.session.uniqueId = :sessionId" + getWhere(iExclude) + (iWhere == null ? "" : " and (" + iWhere + ")") +
+							(iGroupBy == null ? "" : " group by " + iGroupBy) +
+							(iOrderBy == null ? "" : " order by " + iOrderBy));
+					return
+							"select " + (iSelect == null ? "distinct co" : iSelect) +
+							" from CourseOffering co " + 
+							(iFrom == null ? "" : iFrom.trim().toLowerCase().startsWith("inner join") ? " " + iFrom : ", " + iFrom) + getFrom(iExclude) +
+							" where co.instructionalOffering.session.uniqueId = :sessionId and co.instructionalOffering.notOffered = false" + getWhere(iExclude) + (iWhere == null ? "" : " and (" + iWhere + ")") +
+							(iGroupBy == null ? "" : " group by " + iGroupBy) +
+							(iOrderBy == null ? "" : " order by " + iOrderBy);
+				}
+			};
+		}
+	}
+	
+	public static boolean hasNoMatchCourses(FilterRpcRequest request, OnlineSectioningHelper helper) {
+		if (request.hasOptions("prefer") || request.hasOptions("require"))
+			return false;
+		if (request.hasOptions("area") || request.hasOptions("classification") || request.hasOptions("degree") || request.hasOptions("major") || request.hasOptions("concentration") || request.hasOptions("minor"))
+			return false;
+		if (request.hasOptions("group") || request.hasOptions("accommodation"))
+			return false;
+		for (StudentGroupType type: StudentGroupTypeDAO.getInstance().findAll(helper.getHibSession()))
+			if (request.hasOptions(type.getReference().replace(' ', '_')))
+				return false;
+		if (request.hasOptions("student") || request.hasOption("advisor") || request.hasOption("credit"))
+			return false;
+		if (request.hasOption("mode") || request.hasOptions("override") || request.hasOptions("prefer") || request.hasOptions("require"))
+			return false;
+		if (request.hasOption("assignment") && !"Wait-Listed".equalsIgnoreCase(request.getOption("assignment")))
+			return false;
+		if (request.hasText()) return false;
+		if (request.hasOptions("consent"))
+			return false;
+		if (request.hasOptions("approver") || request.hasOptions("accommodation") || request.hasOptions("operation") || request.hasOptions("overlap"))
+			return false;
+		return true;
 	}
 
 }

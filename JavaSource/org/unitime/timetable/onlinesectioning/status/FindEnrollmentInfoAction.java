@@ -91,6 +91,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 	protected Set<Long> iCoursesIcoordinate, iCoursesIcanApprove, iMyStudents;
 	protected Set<String> iSubjectAreas;
 	protected boolean iShowUnmatchedClasses = true;
+	protected boolean iShowUnmatchedCourses = true;
 	
 	public FindEnrollmentInfoAction withParams(String query, Long courseId, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove, Set<Long> myStudents, Set<String> subjects) {
 		iQuery = new Query(query);
@@ -108,6 +109,11 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 	
 	public FindEnrollmentInfoAction showUnmatchedClasses(boolean showUnmatchedClasses) {
 		iShowUnmatchedClasses = showUnmatchedClasses;
+		return this;
+	}
+	
+	public FindEnrollmentInfoAction showUnmatchedCourses(boolean showUnmatchedCourses) {
+		iShowUnmatchedCourses = showUnmatchedCourses;
 		return this;
 	}
 	
@@ -203,6 +209,8 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 		}
 		WaitListMode defaultWL = null;
 		if (server instanceof StudentSolver) defaultWL = WaitListMode.NoSubs;
+		if (iShowUnmatchedCourses && !SectioningStatusFilterAction.hasNoMatchCourses(iFilter, helper))
+			iShowUnmatchedCourses = false;
 		
 		if (courseId() == null) {
 			Set<Long> students = new HashSet<Long>();
@@ -346,10 +354,11 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					if (m.request().isOverridePending(course)) tOvrNeed ++;
 				}
 				
-				if (match == 0) {
+				if (match == 0 && !iShowUnmatchedCourses) {
 					students.removeAll(addedStudents);
 					continue;
 				}
+				e.setNoMatch(match == 0);
 				
 				gEnrl += enrl;
 				gWait += wait;
