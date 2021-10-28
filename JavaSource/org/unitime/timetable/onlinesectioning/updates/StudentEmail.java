@@ -379,6 +379,13 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 							}
 						}
 						
+						if (ApplicationProperty.OnlineSchedulingEmailCCAdvisors.isTrue(iSourceAction)) {
+							for (Advisor advisor: dbStudent.getAdvisors()) {
+								if (advisor.getEmail() != null && !advisor.getEmail().isEmpty())
+									email.addRecipientCC(advisor.getEmail(), helper.getInstructorNameFormat().format(advisor));
+							}
+						}
+						
 						final StringWriter buffer = new StringWriter();
 						if (ApplicationProperty.OnlineSchedulingEmailIncludeMessage.isTrue()) {
 							PrintWriter out = new PrintWriter(buffer);

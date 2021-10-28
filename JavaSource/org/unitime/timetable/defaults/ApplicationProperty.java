@@ -647,6 +647,12 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
+	@Parameter("operation")
+	@Description("Online Student Scheduling: CC advisors in the student email confirmation from a particular operation %")
+	OnlineSchedulingEmailCCAdvisors("unitime.enrollment.email.%.ccAdvisors"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
 	@Description("Online Student Scheduling: check for gradable itypes when checking on which subpart course credit information should be shown")
 	OnlineSchedulingGradableIType("unitime.enrollment.gradableITypes"),
 
