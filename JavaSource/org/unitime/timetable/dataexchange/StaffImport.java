@@ -77,6 +77,7 @@ public class StaffImport extends BaseImport {
         String term   = root.attributeValue("term");
         String created = root.attributeValue("created");
         String elementName = "staffMember";
+        boolean incremental = "true".equalsIgnoreCase(root.attributeValue("incremental", "true"));
         boolean posCodeWarning = false;
 		try {
 			beginTransaction();
@@ -85,6 +86,11 @@ public class StaffImport extends BaseImport {
 	        
 	        if (session != null && created != null) {
 				ChangeLog.addChange(getHibSession(), getManager(), session, session, created, ChangeLog.Source.DATA_IMPORT_STAFF, ChangeLog.Operation.UPDATE, null, null);
+	        }
+	        
+	        if (!incremental) {
+	        	info("Incremental mode disabled, deleting all Staff content.");
+	        	getHibSession().createQuery("delete Staff").executeUpdate();
 	        }
 	       
 	        for ( Iterator it = root.elementIterator(); it.hasNext(); ) {
@@ -102,21 +108,20 @@ public class StaffImport extends BaseImport {
 						}
 			        }
 		            try {
-		            	staff = findByExternalId(externalId, dept);
+		            	if (incremental)
+		            		staff = findByExternalId(externalId, dept);
 		            } catch (NonUniqueResultException e) {
 		            	error("Multiple staff members exist for the external id " + externalId + ", please provide department code.");
 		            	continue;
 		            }
 				}
+				if ("T".equalsIgnoreCase(element.attributeValue("delete")) || "Y".equalsIgnoreCase(element.attributeValue("delete")) || "true".equalsIgnoreCase(element.attributeValue("delete"))) {
+					if (staff != null) getHibSession().delete(staff);
+					continue;
+				}
 				if(staff == null) {
 					staff = new Staff();
-				}
-				else {
-					if("T".equalsIgnoreCase(element.attributeValue("delete"))) {
-						getHibSession().delete(staff);
-						continue;
-					}
-				}
+				} 
 				staff.setFirstName(getOptionalStringAttribute(element, "firstName"));
 				staff.setMiddleName(getOptionalStringAttribute(element, "middleName"));
 				staff.setLastName(getRequiredStringAttribute(element, "lastName", elementName));
