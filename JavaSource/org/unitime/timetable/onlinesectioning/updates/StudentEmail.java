@@ -76,9 +76,12 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusI
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.AdvisorCourseRequest;
+import org.unitime.timetable.model.CourseDemand;
+import org.unitime.timetable.model.StudentEnrollmentMessage;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.StudentSectioningStatus.Option;
+import org.unitime.timetable.model.dao.CourseDemandDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -306,6 +309,23 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					emailEnabled = true;
 				}
 				
+				String failureMessage = (iFailedCourseId == null || iFailure == null || iFailure.getMessage().isEmpty() ? null : iFailure.getMessage());
+				if (failureMessage != null && failureMessage.length() > 255)
+					failureMessage = failureMessage.substring(0, 252) + "...";
+				if (failureMessage != null) {
+					helper.logOption("failed-course", iFailedCourseId.getCourseName());
+					helper.logOption("failed-error", failureMessage);
+				}
+				
+				if (emailEnabled && failureMessage != null) {
+					XCourseRequest cr = student.getRequestForCourse(iFailedCourseId.getCourseId());
+					if (cr != null && failureMessage.equals(cr.getEnrollmentMessage())) {
+						emailEnabled = false;
+						student.markFailedWaitList(iFailedCourseId);
+						server.update(student, false);
+					}
+				}
+				
 				if (emailEnabled) {
 					final String html = generateMessage(dbStudent, server, helper);
 					if (html != null) {
@@ -511,6 +531,31 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						Date ts = new Date();
 						dbStudent.setScheduleEmailedDate(ts);
 						student.setEmailTimeStamp(ts);
+						if (iFailedCourseId != null) {
+							student.markFailedWaitList(iFailedCourseId);
+							if (failureMessage != null) {
+								XCourseRequest cr = student.getRequestForCourse(iFailedCourseId.getCourseId());
+								cr.setEnrollmentMessage(failureMessage);
+								CourseDemand cd = CourseDemandDAO.getInstance().get(cr.getRequestId());
+								if (cd != null) {
+									if (cd.getEnrollmentMessages() != null)
+										for (Iterator<StudentEnrollmentMessage> i = cd.getEnrollmentMessages().iterator(); i.hasNext(); ) {
+											StudentEnrollmentMessage message = i.next();
+											helper.getHibSession().delete(message);
+											i.remove();
+										}
+									StudentEnrollmentMessage m = new StudentEnrollmentMessage();
+									m.setCourseDemand(cd);
+									m.setLevel(0);
+									m.setType(0);
+									m.setTimestamp(ts);
+									m.setMessage(failureMessage);
+									m.setOrder(0);
+									cd.getEnrollmentMessages().add(m);
+									helper.getHibSession().save(m);
+								}
+							}
+						}
 						
 						helper.getHibSession().saveOrUpdate(dbStudent);
 						helper.getHibSession().flush();
@@ -855,7 +900,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				if (iFailure.hasErrors())
 					for (ErrorMessage error: iFailure.getErrors()) {
 						if (course.getCourseName().startsWith(error.getCourse()))
-							message += "\n" + error;
+							message += "<br>" + error;
 					}
 				input.put("changeMessage", message);
 			}

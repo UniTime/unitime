@@ -45,6 +45,7 @@ import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Request;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.Advisor;
@@ -90,6 +91,7 @@ public class XStudent extends XStudentId implements Externalizable {
     private List<XAdvisorRequest> iAdvisorRequests = null;
     private String iPin;
     private boolean iPinReleased = false;
+    private Map<Long, Long> iFailedWaitLists = new HashMap<Long, Long>();
 
     public XStudent() {
     	super();
@@ -806,5 +808,20 @@ public class XStudent extends XStudentId implements Externalizable {
 		public XAdvisor readObject(ObjectInput input) throws IOException, ClassNotFoundException {
 			return new XAdvisor(input);
 		}
+	}
+	
+	public void markFailedWaitList(XCourseId courseId) {
+		if (courseId != null)
+			iFailedWaitLists.put(courseId.getCourseId(), System.currentTimeMillis());
+	}
+	
+	public boolean isFailedWaitlist(XCourseId courseId) {
+		return isFailedWaitlist(courseId, ApplicationProperty.FailedWaitListDelayInSeconds.intValue());
+	}
+	
+	public boolean isFailedWaitlist(XCourseId courseId, Integer delayInSeconds) {
+		if (courseId == null || delayInSeconds == null || delayInSeconds <= 0) return false;
+		Long last = iFailedWaitLists.get(courseId.getCourseId());
+		return last != null && System.currentTimeMillis() - last < 1000l * delayInSeconds;
 	}
 }

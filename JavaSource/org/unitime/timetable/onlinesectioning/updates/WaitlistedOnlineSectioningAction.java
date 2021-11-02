@@ -76,6 +76,10 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
 			if (!iWaitlistStatuses.contains(status)) return false;
 		}
 		
+		// Check recent failed wait-lists
+		if (student.isFailedWaitlist(request.getCourseIdByOfferingId(offering.getOfferingId())))
+			return false; // 5 minutes
+		
 		// Check wait-list overrides, when configured
 		if (Customization.WaitListValidationProvider.hasProvider()) {
 			// Student has a max credit override >> check credit

@@ -2972,6 +2972,12 @@ public enum ApplicationProperty {
 	@Description("Scheduling Assistant: Show the wait-list position to the students. When set to false, the Position culumn would not show in the Wait-Listed Courses table.")
 	@Since(4.6)
 	OnlineSchedulingShowWaitListPosition("unitime.enrollment.waitList.showWaitListPosition"),
+	
+	@Type(Integer.class)
+	@DefaultValue("300")
+	@Description("Wait-Listing: skip wait-list processing for student-course pairs that failed during the last given number of seconds.")
+	@Since(4.6)
+	FailedWaitListDelayInSeconds("unitime.enrollment.waitList.failedWaitListsDelay"),
 
 	;
 
