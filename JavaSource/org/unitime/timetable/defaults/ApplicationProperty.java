@@ -2978,6 +2978,11 @@ public enum ApplicationProperty {
 	@Description("Wait-Listing: skip wait-list processing for student-course pairs that failed during the last given number of seconds.")
 	@Since(4.6)
 	FailedWaitListDelayInSeconds("unitime.enrollment.waitList.failedWaitListsDelay"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Online Student Scheduling: automatically reload the online student scheduling server(s) when two clusters are merged together.")
+	OnlineSchedulingReloadAfterMerge("unitime.sectioning.reloadAfterMerge"),
 
 	;
 

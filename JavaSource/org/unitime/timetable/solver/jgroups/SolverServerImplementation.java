@@ -669,9 +669,11 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 			
 			// mark server for reload and release the lock
 			if (server.isMaster()) {
-				sLog.info("Marking " + server.getAcademicSession() + " for reload");
-				server.setProperty("ReadyToServe", Boolean.FALSE);
-				server.setProperty("ReloadIsNeeded", Boolean.TRUE);
+				if (ApplicationProperty.OnlineSchedulingReloadAfterMerge.isTrue()) {
+					sLog.info("Marking " + server.getAcademicSession() + " for reload");
+					server.setProperty("ReadyToServe", Boolean.FALSE);
+					server.setProperty("ReloadIsNeeded", Boolean.TRUE);
+				}
 
 				sLog.info("Releasing master lock for " + server.getAcademicSession() + " ...");
 				server.releaseMasterLockIfHeld();
