@@ -1734,7 +1734,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					}
 					if (course.isOverMaxCredit())
 						unassignedMessage = MESSAGES.conflictOverMaxCredit(course.getOverMaxCredit())
-							+ (MESSAGES.courseNotAssigned().equals(unassignedMessage) ? "" : " " + unassignedMessage);
+							+ (MESSAGES.courseNotAssigned().equals(unassignedMessage) ? "" : "\n" + unassignedMessage);
 					WebTable.IconsCell icons = new WebTable.IconsCell();
 					if (course.isLocked())
 						icons.add(RESOURCES.courseLocked(), course.getNote() != null ? course.getNote() : MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()));
@@ -1764,6 +1764,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									unassignedMessage += ".</span>";
 								}
 							}
+							if (course.hasEnrollmentMessage())
+								unassignedMessage += "\n" + course.getEnrollmentMessage();
 							if (w.booleanValue() && !iSpecialRegistrationsPanel.canWaitList(course.getCourseId())) {
 								unassignedMessage += "\n<span class='unitime-ErrorText'>" +
 										MESSAGES.messageWaitListApprovalAlreadyRequested(course.getCourseName()) +
