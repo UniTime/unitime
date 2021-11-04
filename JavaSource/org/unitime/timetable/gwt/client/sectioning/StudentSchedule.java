@@ -1043,9 +1043,11 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				}
 				if (course.isOverMaxCredit())
 					unassignedMessage = MESSAGES.conflictOverMaxCredit(course.getOverMaxCredit())
-						+ (MESSAGES.courseNotAssigned().equals(unassignedMessage) ? "" : " " + unassignedMessage);
-				if (course.getWaitListedDate() != null)
-					unassignedMessage += MESSAGES.conflictWaitListed(sWLF.format(course.getWaitListedDate()));
+						+ (MESSAGES.courseNotAssigned().equals(unassignedMessage) ? "" : "\n" + unassignedMessage);
+				if (course.getWaitListedDate() != null) {
+					unassignedMessage = MESSAGES.conflictWaitListed(sWLF.format(course.getWaitListedDate()))
+							 + (unassignedMessage == null || unassignedMessage.isEmpty() || MESSAGES.courseNotAssigned().equals(unassignedMessage) ? "" : "\n" + unassignedMessage);
+				}
 				for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
 					row = new WebTable.Row(
 							new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
@@ -1057,7 +1059,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())),
 							new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
 							new WebTable.Cell(clazz.getDatePattern()),
-							new WebTable.Cell(unassignedMessage, 3, null),
+							new WebTable.PreCell(unassignedMessage, 3),
 							clazz.getNote() == null ? new WebTable.Cell("") : new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), ""),
 							new WebTable.AbbvTextCell(clazz.getCredit()),
 							new WebTable.Cell(clazz.getEnrolledDate() != null ? sDF.format(clazz.getEnrolledDate()) : course.getRequestedDate() == null ? "" : sDF.format(course.getRequestedDate())));
@@ -1067,7 +1069,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 					row = new WebTable.Row(
 							new WebTable.Cell(course.getSubject()),
 							new WebTable.Cell(course.getCourseNbr()),
-							new WebTable.Cell(unassignedMessage, 12, null),
+							new WebTable.PreCell(unassignedMessage, 12),
 							new WebTable.Cell(course.getRequestedDate() == null ? "" : sDF.format(course.getRequestedDate())));
 				}
 				for (WebTable.Cell cell: row.getCells())

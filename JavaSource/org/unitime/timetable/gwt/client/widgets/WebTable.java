@@ -592,7 +592,7 @@ public class WebTable extends Composite implements HasMobileScroll {
 	public static class PreCell extends Cell {
 		public PreCell(String value, int colSpan) {
 			super(value, colSpan, null);
-			setPre(true);
+			setPre(true); setWordWrap(true);
 		}
 	}
 	

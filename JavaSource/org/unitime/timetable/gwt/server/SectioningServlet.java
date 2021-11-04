@@ -1693,12 +1693,6 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								course.setTitle(request.getCourseOffering().getTitle());
 								course.setHasCrossList(request.getCourseOffering().getInstructionalOffering().hasCrossList());
 								course.setCanWaitList(request.getCourseOffering().getInstructionalOffering().effectiveWaitList());
-								ClassAssignment clazz = course.addClassAssignment();
-								clazz.setCourseId(request.getCourseOffering().getUniqueId());
-								clazz.setCourseAssigned(false);
-								clazz.setCourseNbr(request.getCourseOffering().getCourseNbr());
-								clazz.setTitle(request.getCourseOffering().getTitle());
-								clazz.setSubject(request.getCourseOffering().getSubjectAreaAbbv());
 							}
 						}
 						
