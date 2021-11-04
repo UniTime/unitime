@@ -41,6 +41,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
 import com.google.gwt.core.client.GWT;
@@ -148,7 +149,7 @@ public class WaitListsPanel extends P {
 	public void populate(CourseRequestInterface value) {
 		iRequests = value;
 		iTable.clearTable(1);
-		if (iRequests != null) {
+		if (iRequests != null && iRequests.getWaitListMode() == WaitListMode.WaitList) {
 			NumberFormat df = NumberFormat.getFormat("0.#");
 			boolean hasPrefs = false;
 			boolean hasPosition = false;
