@@ -2263,6 +2263,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("An override has been requested for {0}.\nWaiting for approval...")
 	String overridePending(String course);
 	
+	@DefaultMessage("An override has been requested for {0}.")
+	String overridePendingShort(String course);
+	
 	@DefaultMessage("Requested override for {0} has been cancelled.\nClick the Submit Requests button to re-validate this request and request a new override if it is still needed.")
 	String overrideCancelled(String course);
 
@@ -2413,8 +2416,14 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("A max credit hours override has been requested.\nWaiting for approval...")
 	String creditStatusPending();
 	
+	@DefaultMessage("A max credit hours override has been requested.")
+	String creditStatusPendingShort();
+	
 	@DefaultMessage("The request to increase the maximum credit hours has been cancelled.\nClick the Submit Requests button to re-validate this request and request a new override if it is still needed.")
 	String creditStatusCancelled();
+	
+	@DefaultMessage("The request to increase the maximum credit hours has been cancelled.")
+	String creditStatusCancelledWaitList();
 	
 	@DefaultMessage("The request to increase the maximum credit hours has been approved.")
 	String creditStatusApproved();

@@ -54,6 +54,7 @@ import org.unitime.timetable.model.StudentEnrollmentMessage;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideIntent;
 import org.unitime.timetable.model.StudentSectioningStatus.Option;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
@@ -189,6 +190,30 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 		        	}
 		        	if (message != null)
 		        		e.setEnrollmentMessage(message.getMessage());
+				}
+				if (request.getOverrideStatus() != null) {
+					switch (request.getCourseRequestOverrideStatus()) {
+					case PENDING:
+						e.addEnrollmentMessage(MSG.overridePendingShort(course.getCourseName())); break;
+					case REJECTED:
+						e.addEnrollmentMessage(MSG.overrideRejectedWaitList(course.getCourseName())); break;
+					case CANCELLED:
+						e.addEnrollmentMessage(MSG.overrideCancelledWaitList(course.getCourseName())); break;
+					case NOT_CHECKED:
+						e.addEnrollmentMessage(MSG.overrideNotRequested()); break;
+					}
+				}
+				if (student.getOverrideStatus() != null && student.getMaxCreditOverrideIntent() == CourseRequestOverrideIntent.WAITLIST) {
+					switch (student.getMaxCreditOverrideStatus()) {
+					case PENDING:
+						e.addEnrollmentMessage(MSG.creditStatusPendingShort()); break;
+					case REJECTED:
+						e.addEnrollmentMessage(MSG.creditStatusDenied()); break;
+					case CANCELLED:
+						e.addEnrollmentMessage(MSG.creditStatusCancelledWaitList()); break;
+					case NOT_CHECKED:
+						e.addEnrollmentMessage(MSG.overrideNotRequested()); break;
+					}
 				}
 			}
 			CourseRequest alt = null;

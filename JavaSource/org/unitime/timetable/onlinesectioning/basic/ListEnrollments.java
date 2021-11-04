@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
@@ -52,6 +53,7 @@ import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
 import org.unitime.timetable.onlinesectioning.model.XInstructor;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XOverride;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
@@ -216,6 +218,41 @@ public class ListEnrollments extends WaitlistedOnlineSectioningAction<List<Class
 					e.setWaitListedPosition(getWaitListPosition(offering, student, request, course, server, helper));
 					if (enrollment == null)
 						e.setEnrollmentMessage(request.getEnrollmentMessage());
+					if (request.hasOverrides()) {
+						XOverride override = request.getOverride(course);
+						if (override != null && override.getStatus() != null) {
+							switch (CourseRequestOverrideStatus.values()[override.getStatus()]) {
+							case PENDING:
+								e.addEnrollmentMessage(MSG.overridePendingShort(course.getCourseName())); break;
+							case REJECTED:
+								e.addEnrollmentMessage(MSG.overrideRejectedWaitList(course.getCourseName())); break;
+							case CANCELLED:
+								e.addEnrollmentMessage(MSG.overrideCancelledWaitList(course.getCourseName())); break;
+							case NOT_CHECKED:
+								e.addEnrollmentMessage(MSG.overrideNotRequested()); break;
+							}
+						}
+					}
+					if (student.getMaxCreditOverride() != null && student.getMaxCreditOverride().getStatus() != null && student.getMaxCredit() != null && course.hasCredit()) {
+						float credit = 0f;
+						for (XRequest r: student.getRequests()) {
+							if (r instanceof XCourseRequest && ((XCourseRequest)r).getEnrollment() != null) {
+								credit += ((XCourseRequest)r).getEnrollment().getCredit(server);
+							}
+						}
+						if (credit + course.getMinCredit() > student.getMaxCredit()) {
+							switch (CourseRequestOverrideStatus.values()[student.getMaxCreditOverride().getStatus()]) {
+							case PENDING:
+								e.addEnrollmentMessage(MSG.creditStatusPendingShort()); break;
+							case REJECTED:
+								e.addEnrollmentMessage(MSG.creditStatusDenied()); break;
+							case CANCELLED:
+								e.addEnrollmentMessage(MSG.creditStatusCancelledWaitList()); break;
+							case NOT_CHECKED:
+								e.addEnrollmentMessage(MSG.overrideNotRequested()); break;
+							}
+						}
+					}
 					
 					// fill enrollment information in
 					if (enrollment != null) {

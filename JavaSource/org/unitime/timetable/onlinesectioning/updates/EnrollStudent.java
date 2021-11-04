@@ -517,6 +517,12 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						cd.setCourseRequests(new HashSet<CourseRequest>());
 						cd.setStudent(student);
 						student.getCourseDemands().add(cd);
+					} else {
+						for (Iterator<StudentEnrollmentMessage> i = cd.getEnrollmentMessages().iterator(); i.hasNext(); ) {
+							StudentEnrollmentMessage message = i.next();
+							helper.getHibSession().delete(message);
+							i.remove();
+						}
 					}
 					cd.setAlternative(true);
 					cd.setPriority(priority);

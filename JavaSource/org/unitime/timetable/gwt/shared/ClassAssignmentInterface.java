@@ -1234,6 +1234,12 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public String getEnrollmentMessage() { return iEnrollmentMessage; }
 		public boolean hasEnrollmentMessage() { return iEnrollmentMessage != null && !iEnrollmentMessage.isEmpty(); }
 		public void setEnrollmentMessage(String message) { iEnrollmentMessage = message; }
+		public void addEnrollmentMessage(String message) {
+			if (iEnrollmentMessage == null)
+				iEnrollmentMessage = message;
+			else
+				iEnrollmentMessage += "\n" + message;
+		}
 		
 		public boolean hasCritical() { return iCritical != null; }
 		public boolean isCritical() { return iCritical != null && iCritical.intValue() == 1; }
