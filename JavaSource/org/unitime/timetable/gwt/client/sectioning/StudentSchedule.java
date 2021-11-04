@@ -1367,6 +1367,12 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							if (rc.hasStatusNote()) {
 								note = (note == null ? "" : note + "<br>") + "<span class='note'>" + rc.getStatusNote() + "</span>";
 							}
+							for (ClassAssignmentInterface.CourseAssignment course: iAssignment.getCourseAssignments()) {
+								if (!course.isAssigned() && rc.getCourseId().equals(course.getCourseId()) && course.hasEnrollmentMessage()) {
+									note = (note == null ? "" : note + "<br>") + "<span class='error'>" + course.getEnrollmentMessage() + "</span>";		
+								}
+							}
+							
 							HTML errorsLabel = new HTML(note == null ? "" : note); errorsLabel.addStyleName("waitlists-errors");
 							row.add(errorsLabel);
 							int idx = iWaitLists.addRow(rc, row);
