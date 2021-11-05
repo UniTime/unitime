@@ -587,7 +587,7 @@ public class ReservationServlet implements ReservationService {
 				for (AcademicArea area: cr.getAreas()) {
 					Hashtable<String,HashMap<String, Float>> rules = getRules(hibSession, area.getUniqueId());
 					for (Object[] o: (List<Object[]>)hibSession.createQuery(
-							"select count(distinct s), m.code, f.code from " +
+							"select count(distinct x.student), m.code, f.code from " +
 							"LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.major m " +
 							"inner join a.academicClassification f inner join a.academicArea r"+
 							(ccIds.isEmpty() ? "" : " left outer join a.concentration c") +
@@ -611,14 +611,14 @@ public class ReservationServlet implements ReservationService {
 			if (!mnIds.isEmpty())
 				for (AcademicArea area: cr.getAreas()) {
 					for (Object[] o: (List<Object[]>)hibSession.createQuery(
-							"select count(distinct s), m.code, f.code from " +
+							"select count(distinct x.student), m.code, f.code from " +
 							"LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMinors a inner join a.minor m " +
 							"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co left outer join co.demandOffering do where " +
 							"x.subjectArea.session.uniqueId = :sessionId and co.instructionalOffering.uniqueId = :offeringId and "+
 							"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
 							"(do is not null and do.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and do.permId=x.coursePermId) or (x.coursePermId is null and do.courseNbr=x.courseNbr))))"+
 							"and r.academicAreaAbbreviation = :areaAbbv" +
-							(mnIds.isEmpty() ? "" : " and m.code in (" + mnIds + ")") +
+							(mnCodes.isEmpty() ? "" : " and m.code in (" + mnCodes + ")") +
 							(cfCodes.isEmpty() ? "" : " and f.code in (" + cfCodes + ")") +
 							" group by m.code, f.code")
 							.setLong("sessionId", getAcademicSessionId())
@@ -626,7 +626,8 @@ public class ReservationServlet implements ReservationService {
 							.setString("areaAbbv", area.getAcademicAreaAbbreviation()).setCacheable(true).list()) {
 						int nrStudents = ((Number)o[0]).intValue();
 						lastLike += nrStudents;
-					}				
+						projection += nrStudents;
+					}
 				}
 			if (lastLike > 0) {
 				r.setLastLike(lastLike);
@@ -664,7 +665,7 @@ public class ReservationServlet implements ReservationService {
 				r.setEnrollment(enrollment.intValue());
 
 			Number lastLike = (Number)hibSession.createQuery(
-					"select count(distinct s) from " +
+					"select count(distinct x.student) from " +
 					"LastLikeCourseDemand x inner join x.student s inner join s.groups g, CourseOffering co left outer join co.demandOffering do where " +
 					"x.subjectArea.session.uniqueId = :sessionId and co.uniqueId = :courseId and "+
 					"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
@@ -695,7 +696,7 @@ public class ReservationServlet implements ReservationService {
 			if (enrollment.intValue() > 0)
 				r.setEnrollment(enrollment.intValue());
 			Number lastLike = (Number)hibSession.createQuery(
-					"select count(distinct s) from " +
+					"select count(distinct x.student) from " +
 					"LastLikeCourseDemand x inner join x.student s inner join s.groups g, CourseOffering co left outer join co.demandOffering do where " +
 					"x.subjectArea.session.uniqueId = :sessionId and co.instructionalOffering.uniqueId = :offeringId and "+
 					"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
