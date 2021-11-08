@@ -27,6 +27,20 @@
 	<version>4.5.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Curriculum Reservation: Minors</name>
+			<description>
+				<line>Corrected computation of last-like and projected demands on curriculum reservations.</line>
+				<line>Fixed an &quot;ORA-01722: invalid number&quot; error when there is a reservation with a minor and the course has some last-like demands with minors.</line>
+			</description>
+		</item>
+	</category>
+</release>
+<release>
+	<version>4.5.177</version>
+	<release-date>Fri, 1 Oct 2021</release-date>
+	<category>
 		<title>Student Scheduling</title>
 		<item>
 			<name>Student Scheduling Reports: Tableau Report</name>
