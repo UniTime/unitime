@@ -2839,13 +2839,13 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			Student student = StudentDAO.getInstance().get(cx.getStudentId());
 			if (student != null) {
 				cx.setSessionId(student.getSession().getUniqueId());
-				sLog.warn("ContextCheck: session " + student.getSession().getLabel() + " guessed from student id " + student.getExternalUniqueId());
+				sLog.info("ContextCheck: session " + student.getSession().getLabel() + " guessed from student id " + student.getExternalUniqueId());
 			}
 		}
 		if (cx.getSessionId() == null) {
 			// use last used session otherwise
 			cx.setSessionId(getLastSessionId());
-			sLog.warn("ContextCheck: no session id, using last/current session instead (" + cx.getSessionId() + ")");
+			sLog.info("ContextCheck: no session id, using last/current session instead (" + cx.getSessionId() + ")");
 		} else {
 			setLastSessionId(cx.getSessionId());
 		}
@@ -2856,7 +2856,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (cx.getStudentId() == null)
 			sLog.debug("ContextCheck: no student id (assuming guess access)");
 		if (cx.getStudentId() != null && !cx.getStudentId().equals(getStudentId(cx.getSessionId()))) {
-			sLog.warn("ContextCheck: different student id, permission check: " + getSessionContext().hasPermissionAnySession(cx.getSessionId(), Right.StudentSchedulingAdvisor));
+			sLog.info("ContextCheck: different student id, permission check: " + getSessionContext().hasPermissionAnySession(cx.getSessionId(), Right.StudentSchedulingAdvisor));
 		}
 	}
 	
