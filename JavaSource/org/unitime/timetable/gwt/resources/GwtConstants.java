@@ -461,7 +461,8 @@ public interface GwtConstants extends Constants {
 		"Hard Conflicts",
 		"Departmental Balancing Penalty",
 		"Too Big Rooms",
-		"Student Groups"
+		"Student Groups",
+		"Instructional Type"
 	})
 	String[] timeGridBackground();
 	

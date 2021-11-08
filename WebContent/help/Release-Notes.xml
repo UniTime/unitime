@@ -35,6 +35,12 @@
 				<line>Fixed an &quot;ORA-01722: invalid number&quot; error when there is a reservation with a minor and the course has some last-like demands with minors.</line>
 			</description>
 		</item>
+		<item>
+			<name>Timetable Grid: Instructional Type background</name>
+			<description>
+				<line>Added ability to display class background based on the instructional type of the class.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Event Management</title>
