@@ -207,9 +207,9 @@ public class ExportTranslations {
     			if (PageNames.class.equals(clazz) && iGeneratePageNames) {
 					PageNameGenerator gen = new PageNameGenerator();
 					gen.setSource(iSource);
-					for (String name: gen.execute()) {
-						String prop = gen.name2property(name);
-	    				out.println("# " + prop);
+					for (String prop: gen.execute()) {
+						String name = gen.property2name(prop);
+	    				out.println("# " + name);
 	    				out.println(prop + "=" + unicodeEscape(name, null));
 	    				names.add(prop);
 					}

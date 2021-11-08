@@ -224,7 +224,7 @@ public class MenuBackend implements GwtRpcImplementation<MenuRpcRequest, GwtRpcR
 		MenuInterface menu = new MenuInterface();
 		String name = menuElement.attributeValue("name");
 		String localizedName = (name == null ? null : sPageNames.translateMessage(
-				name.trim().replace(' ', '_').replace("(", "").replace(")", "").replace(':', '_'), null));
+				name.trim().replace(' ', '-').replace("(", "").replace(")", "").replace(':', '-').toLowerCase(), null));
 		menu.setName(localizedName == null ? name : localizedName);
 		menu.setTitle(menuElement.attributeValue("title"));
 		menu.setTarget(menuElement.attributeValue("target"));
