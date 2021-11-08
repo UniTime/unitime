@@ -36,6 +36,16 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Event Management</title>
+		<item>
+			<name>Events: Avoid Duplicate Consecutive Notes</name>
+			<description>
+				<line>Remove duplicate consecutive notes from the display and exports.</line>
+				<line>A duplicate note is created, for instance, when an automatically approved meeting is created (as there is Create and Approve action logged with the same text note).</line>
+			</description>
+		</item>
+	</category>
 </release>
 <release>
 	<version>4.5.177</version>
