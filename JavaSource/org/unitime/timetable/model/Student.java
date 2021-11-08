@@ -300,7 +300,19 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
 					fallback = fallback.getFallBackStatus();
 			}
 		}
-    	return getSession().getDefaultSectioningStatus();
+    	if (getSession().getDefaultSectioningStatus() != null) {
+    		if (getSession().getDefaultSectioningStatus().isEffectiveNow())
+				return getSession().getDefaultSectioningStatus();
+    		StudentSectioningStatus fallback = getSession().getDefaultSectioningStatus().getFallBackStatus();
+			int depth = 10;
+			while (fallback != null && depth -- > 0) {
+				if (fallback.isEffectiveNow())
+					return fallback;
+				else
+					fallback = fallback.getFallBackStatus();
+			}
+    	}
+    	return null;
     }
     
     public WaitListMode getWaitListMode() {

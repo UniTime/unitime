@@ -175,7 +175,19 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 			}
 		}
 		StudentSectioningStatus defaultStatus = (session == null ? null : session.getDefaultSectioningStatus());
-		return (defaultStatus == null ? true : defaultStatus.hasOption(options));
+		if (defaultStatus != null) {
+			if (defaultStatus.isEffectiveNow())
+				return defaultStatus.hasOption(options);
+			StudentSectioningStatus fallback = defaultStatus.getFallBackStatus();
+			int depth = 10;
+			while (fallback != null && depth -- > 0) {
+				if (fallback.isEffectiveNow())
+					return fallback.hasOption(options);
+				else
+					fallback = fallback.getFallBackStatus();
+			}
+		}
+		return true;
 	}
 	
 	public String getEffectivePeriod() {

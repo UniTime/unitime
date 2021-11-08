@@ -134,7 +134,7 @@ public class CourseRequestEligibility extends CheckEligibility {
 					iCheck.setFlag(EligibilityFlag.CAN_REGISTER, false);
 				}
 				
-				StudentSectioningStatus s = StudentSectioningStatus.getPresentStatus(student.getSectioningStatus());
+				StudentSectioningStatus s = StudentSectioningStatus.getPresentStatus(student.getSectioningStatus() != null ? student.getSectioningStatus() : student.getSession().getDefaultSectioningStatus());
 				
 				if (s != null && s.getMessage() != null)
 					iCheck.setMessage(s.getMessage());
