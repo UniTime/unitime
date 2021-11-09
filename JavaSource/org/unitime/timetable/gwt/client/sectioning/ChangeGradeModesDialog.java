@@ -63,6 +63,8 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -71,7 +73,9 @@ import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 
 /**
  * @author Tomas Muller
@@ -158,6 +162,15 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 		iNote.setVisibleLines(5);
 		iNote.setCharacterWidth(80);
 		iNoteWithSuggestions = new AriaSuggestArea(iNote, iSuggestions);
+		iNoteWithSuggestions.addSelectionHandler(new SelectionHandler<SuggestOracle.Suggestion>() {
+			@Override
+			public void onSelection(SelectionEvent<Suggestion> event) {
+				String text = iNote.getText();
+				if (text.indexOf('<') >= 0 && text.indexOf('>') > text.indexOf('<')) {
+					iNote.setSelectionRange(text.indexOf('<'), text.indexOf('>') - text.indexOf('<') + 1);
+				}
+			}
+		});
 		
 		setWidget(iForm);
 		

@@ -120,6 +120,10 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 						@Override
 						public void onSelection(SelectionEvent<Suggestion> event) {
 							cm.setMessage(event.getSelectedItem().getReplacementString());
+							String text = iNote.getText();
+							if (text.indexOf('<') >= 0 && text.indexOf('>') > text.indexOf('<')) {
+								iNote.setSelectionRange(text.indexOf('<'), text.indexOf('>') - text.indexOf('<') + 1);
+							}
 						}
 					});
 					mp.add(suggest);

@@ -204,7 +204,17 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 		iNote.setStyleName("unitime-TextArea"); iNote.addStyleName("request-note");
 		iNote.setVisibleLines(5);
 		iNote.setCharacterWidth(80);
-		iForm.addRow(MESSAGES.propReqVTCourseNote(), new AriaSuggestArea(iNote, iSuggestions));
+		AriaSuggestArea noteWithSuggestions = new AriaSuggestArea(iNote, iSuggestions);
+		iForm.addRow(MESSAGES.propReqVTCourseNote(), noteWithSuggestions);
+		noteWithSuggestions.addSelectionHandler(new SelectionHandler<SuggestOracle.Suggestion>() {
+			@Override
+			public void onSelection(SelectionEvent<Suggestion> event) {
+				String text = iNote.getText();
+				if (text.indexOf('<') >= 0 && text.indexOf('>') > text.indexOf('<')) {
+					iNote.setSelectionRange(text.indexOf('<'), text.indexOf('>') - text.indexOf('<') + 1);
+				}
+			}
+		});
 		
 		iDisclaimer = new CheckBox();
 		iDisclaimer.addStyleName("disclaimer");

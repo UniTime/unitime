@@ -484,7 +484,7 @@ public class AriaSuggestArea extends Composite implements HasText, HasValue<Stri
 			List<SimpleSuggestion> suggestions = new ArrayList<SimpleSuggestion>();
 			for (String suggestion: iSuggestions) {
 				if (suggestion.equalsIgnoreCase(request.getQuery())) continue;
-				if (suggestion.toLowerCase().startsWith(request.getQuery().toLowerCase()))
+				if (suggestion.toLowerCase().startsWith(request.getQuery().toLowerCase()) || suggestion.toLowerCase().contains(" "+ request.getQuery().toLowerCase()))
 					suggestions.add(new SimpleSuggestion(suggestion));
 				if (suggestions.size() >= request.getLimit()) break;
 			}
