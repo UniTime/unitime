@@ -1425,12 +1425,6 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			return new QueryInstance(select) {
 				@Override
 				public String query() {
-					System.out.println("Q: " + "select " + (iSelect == null ? "distinct co" : iSelect) +
-							" from CourseOffering co " + 
-							(iFrom == null ? "" : iFrom.trim().toLowerCase().startsWith("inner join") ? " " + iFrom : ", " + iFrom) + getFrom(iExclude) +
-							" where s.session.uniqueId = :sessionId" + getWhere(iExclude) + (iWhere == null ? "" : " and (" + iWhere + ")") +
-							(iGroupBy == null ? "" : " group by " + iGroupBy) +
-							(iOrderBy == null ? "" : " order by " + iOrderBy));
 					return
 							"select " + (iSelect == null ? "distinct co" : iSelect) +
 							" from CourseOffering co " + 
