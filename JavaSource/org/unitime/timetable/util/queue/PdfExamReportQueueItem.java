@@ -378,12 +378,10 @@ public class PdfExamReportQueueItem extends QueueItem {
                                 " ("+entry.getKey().getDepartment().getLabel()+")</font>");
                         for (Iterator i=entry.getKey().getDepartment().getTimetableManagers().iterator();i.hasNext();) {
                             TimetableManager g = (TimetableManager)i.next();
-                            boolean receiveEmail = true;
-                            for (ManagerRole mr : (Set<ManagerRole>)g.getManagerRoles()){
-                            	if (!mr.getRole().hasRight(Right.DepartmentIndependent)) {
-                            		receiveEmail = mr.isReceiveEmails() == null?false:mr.isReceiveEmails().booleanValue();
-                            		break;
-                            	}
+                            boolean receiveEmail = false;
+                            for (ManagerRole mr : (Set<ManagerRole>)g.getManagerRoles()) {
+                            	if (Boolean.TRUE.equals(mr.isReceiveEmails()) && !mr.getRole().hasRight(Right.DepartmentIndependent) && mr.getRole().hasRight(Right.ExaminationPdfReports))
+                            		receiveEmail = true;
                             }
                             if (receiveEmail){
                                 if (g.getEmailAddress()==null || g.getEmailAddress().length()==0) {
