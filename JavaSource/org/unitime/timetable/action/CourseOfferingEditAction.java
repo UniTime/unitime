@@ -275,7 +275,17 @@ public class CourseOfferingEditAction extends Action {
 	        
 	        co.getDisabledOverrides().clear();
             for (String override: frm.getCourseOverrides())
-            	co.getDisabledOverrides().add(OverrideTypeDAO.getInstance().get(Long.valueOf(override)));	
+            	co.getDisabledOverrides().add(OverrideTypeDAO.getInstance().get(Long.valueOf(override)));
+            
+	        // Update wait-list
+	        if (co.isIsControl()) {
+		        if (frm.getWaitList() == null || frm.getWaitList().isEmpty())
+		        	io.setWaitlist(null);
+		        else
+		        	io.setWaitlist("true".equalsIgnoreCase(frm.getWaitList()));
+		        if (limitedEdit)
+		        	hibSession.update(io);
+	        }
 
 	        if ((!limitedEdit || updateCoordinators) && co.isIsControl().booleanValue()) {
 		        boolean assignTeachingRequest = Department.isInstructorSchedulingCommitted(co.getDepartment().getUniqueId());
@@ -454,11 +464,6 @@ public class CourseOfferingEditAction extends Action {
 			        	io.setLastWeekToDrop(null);
 			        }
 			        io.setNotes(frm.getNotes() == null || frm.getNotes().length() <= 2000 ? frm.getNotes() : frm.getNotes().substring(0, 2000));
-			        
-			        if (frm.getWaitList() == null || frm.getWaitList().isEmpty())
-			        	io.setWaitlist(null);
-			        else
-			        	io.setWaitlist("true".equalsIgnoreCase(frm.getWaitList()));
 
 			        hibSession.update(io);
 		        }
