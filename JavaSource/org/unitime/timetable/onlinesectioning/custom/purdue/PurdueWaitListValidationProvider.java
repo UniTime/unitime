@@ -1116,7 +1116,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 									rc = rcs.get(ch.subject + " " + ch.courseNbr);
 									if (rc != null) {
 										for (ChangeError er: ch.errors)
-											request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), er.code, er.message, status(ch.status), ORD_BANNER);
+											request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), er.code, "Approved " + er.message, status(ch.status), ORD_BANNER);
 										if (rc.getRequestId() == null) {
 											rc.setStatusNote(SpecialRegistrationHelper.note(r, false));
 											rc.setRequestorNote(r.requestorNotes);
@@ -1138,6 +1138,8 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 										request.addConfirmationError(rc.getCourseId(), rc.getCourseName(), er.code, "Denied " + er.message, status(ch.status), ORD_BANNER);
 										request.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.waitlist.deniedOverrideError",
 												"One or more wait-listed courses require registration overrides which have been denied.\nYou cannot wait-list these courses."));
+									} else if (ch.status == ChangeStatus.approved) {
+										request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), er.code, "Approved " + er.message, status(ch.status), ORD_BANNER);
 									} else {
 										request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), er.code, er.message, status(ch.status), ORD_BANNER);
 									}
