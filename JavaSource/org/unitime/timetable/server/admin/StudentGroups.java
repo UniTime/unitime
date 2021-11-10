@@ -209,55 +209,60 @@ public class StudentGroups implements AdminTable, HasLazyFields, HasFilter {
 				!ToolBox.equals(group.getGroupName(), record.getField(2)) ||
 				!ToolBox.equals(group.getType() == null ? "" : group.getType().getUniqueId().toString(), record.getField(3)) ||
 				!ToolBox.equals(group.getExpectedSize() == null ? "" : group.getExpectedSize().toString(), record.getField(4));
-			group.setExternalUniqueId(record.getField(0));
-			group.setGroupAbbreviation(record.getField(1));
-			group.setGroupName(record.getField(2));
-			group.setType(record.getField(3) == null || record.getField(3).isEmpty() ? null : StudentGroupTypeDAO.getInstance().get(Long.valueOf(record.getField(3))));
-			try {
-				group.setExpectedSize(record.getField(4) == null || record.getField(4).isEmpty() ? null : Integer.valueOf(record.getField(4)));
-			} catch (NumberFormatException e) {
-				group.setExpectedSize(null);
+		boolean codeOrTypeChange =
+				!ToolBox.equals(group.getGroupAbbreviation(), record.getField(1)) ||
+				!ToolBox.equals(group.getType() == null ? "" : group.getType().getUniqueId().toString(), record.getField(3));
+		group.setExternalUniqueId(record.getField(0));
+		group.setGroupAbbreviation(record.getField(1));
+		group.setGroupName(record.getField(2));
+		group.setType(record.getField(3) == null || record.getField(3).isEmpty() ? null : StudentGroupTypeDAO.getInstance().get(Long.valueOf(record.getField(3))));
+		try {
+			group.setExpectedSize(record.getField(4) == null || record.getField(4).isEmpty() ? null : Integer.valueOf(record.getField(4)));
+		} catch (NumberFormatException e) {
+			group.setExpectedSize(null);
+		}
+		if (group.getExternalUniqueId() == null && record.getField(5) != null) {
+			Hashtable<String, Student> students = new Hashtable<String, Student>();
+			for (Student s: group.getStudents()) {
+				students.put(s.getExternalUniqueId(), s);
 			}
-			if (group.getExternalUniqueId() == null && record.getField(5) != null) {
-				Hashtable<String, Student> students = new Hashtable<String, Student>();
-				for (Student s: group.getStudents())
-					students.put(s.getExternalUniqueId(), s);
-				for (String line: record.getField(5).split("\\n")) {
-					String extId = (line.indexOf(' ') >= 0 ? line.substring(0, line.indexOf(' ')) : line).trim();
-					if (extId.isEmpty() || students.remove(extId) != null) continue;
-					Student student = Student.findByExternalId(context.getUser().getCurrentAcademicSessionId(), extId);
-					if (student != null) {
-						group.getStudents().add(student);
-						student.getGroups().add(group);
-						changed = true;
-						studentIds.add(student.getUniqueId());
-					}
-				}
-				if (!students.isEmpty()) {
-					for (Student student: students.values()) {
-						studentIds.add(student.getUniqueId());
-						student.getGroups().remove(group);
-					}
-					group.getStudents().removeAll(students.values());
+			for (String line: record.getField(5).split("\\n")) {
+				String extId = (line.indexOf(' ') >= 0 ? line.substring(0, line.indexOf(' ')) : line).trim();
+				if (extId.isEmpty() || students.remove(extId) != null) continue;
+				Student student = Student.findByExternalId(context.getUser().getCurrentAcademicSessionId(), extId);
+				if (student != null) {
+					group.getStudents().add(student);
+					student.getGroups().add(group);
 					changed = true;
+					studentIds.add(student.getUniqueId());
 				}
-				String newStudents = "";
-				for (Student student: new TreeSet<Student>(group.getStudents())) {
-					if (!newStudents.isEmpty()) newStudents += "\n";
-					newStudents += student.getExternalUniqueId() + " " + student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
-				}
-				record.setField(5, newStudents, group.getExternalUniqueId() == null);
 			}
-			hibSession.saveOrUpdate(group);
-			if (changed)
-				ChangeLog.addChange(hibSession,
-						context,
-						group,
-						group.getGroupAbbreviation() + " " + group.getGroupName(),
-						Source.SIMPLE_EDIT, 
-						Operation.UPDATE,
-						null,
-						null);
+			if (!students.isEmpty()) {
+				for (Student student: students.values()) {
+					studentIds.add(student.getUniqueId());
+					student.getGroups().remove(group);
+				}
+				group.getStudents().removeAll(students.values());
+				changed = true;
+			}
+			String newStudents = "";
+			for (Student student: new TreeSet<Student>(group.getStudents())) {
+				if (!newStudents.isEmpty()) newStudents += "\n";
+				newStudents += student.getExternalUniqueId() + " " + student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
+				if (codeOrTypeChange) studentIds.add(student.getUniqueId());
+			}
+			record.setField(5, newStudents, group.getExternalUniqueId() == null);
+		}
+		hibSession.saveOrUpdate(group);
+		if (changed)
+			ChangeLog.addChange(hibSession,
+					context,
+					group,
+					group.getGroupAbbreviation() + " " + group.getGroupName(),
+					Source.SIMPLE_EDIT, 
+					Operation.UPDATE,
+					null,
+					null);
 	}
 
 	@Override
