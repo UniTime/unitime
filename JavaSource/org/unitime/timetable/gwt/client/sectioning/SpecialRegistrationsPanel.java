@@ -721,7 +721,7 @@ public class SpecialRegistrationsPanel extends P {
 			if (response.getStatus() != SpecialRegistrationStatus.Pending) continue; // not in-progress
 			if (!response.hasChanges()) continue; // no changes
 			for (ClassAssignment ca: response.getChanges()) {
-				if (courseId.equals(ca.getCourseId()) && ca.getSpecRegOperation() == SpecialRegistrationOperation.Add)
+				if (courseId.equals(ca.getCourseId()) && ca.getSpecRegOperation() == SpecialRegistrationOperation.Add && ca.getSpecRegStatus() == SpecialRegistrationStatus.Pending)
 					return false;
 			}
 		}

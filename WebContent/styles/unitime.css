@@ -7085,15 +7085,15 @@ unitime-RoomSharingWidget .legend .blank {
 	min-width: 120px;
 }
 
-.unitime-SpecialRegistrationsPanel .registrations-table td:nth-child(3) {
+.unitime-WaitListsPanel .waitlists-table td:nth-child(3) {
 	width: 100px;
 }
 
-.unitime-SpecialRegistrationsPanel .registrations-table td:nth-child(4) {
+.unitime-WaitListsPanel .waitlists-table td:nth-child(4) {
 	width: 200px;
 }
 
-.unitime-SpecialRegistrationsPanel .registrations-table td:nth-child(7) {
+.unitime-WaitListsPanel .waitlists-table td:nth-child(8) {
 	width: 400px;
 }
 
