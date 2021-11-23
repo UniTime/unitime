@@ -959,9 +959,11 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							Hashtable<CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<CourseRequest, TreeSet<Section>>();
 							Collection<Enrollment> enrls = r.getEnrollmentsSkipSameTime(assignment);
 							Enrollment noConfEnrl = null;
+							int nbrEnrl = 0;
 							for (Iterator<Enrollment> e = enrls.iterator(); e.hasNext();) {
 								Enrollment enrl = e.next();
 								if (!course.equals(enrl.getCourse())) continue;
+								nbrEnrl ++;
 								boolean overlaps = false; 
 								for (Enrollment x: enrollments) {
 									if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
@@ -999,6 +1001,18 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 												if (i.hasNext()) ov += ",";
 											}
 										ca.addOverlap(ov);
+									}
+								}
+								if (nbrEnrl == 0) {
+									unavailabilities: for (Unavailability unavailability: enrollment.getStudent().getUnavailabilities()) {
+										for (Config config: course.getOffering().getConfigs())
+											for (Subpart subpart: config.getSubparts())
+												for (Section section: subpart.getSections()) {
+													if (unavailability.isOverlapping(section)) {
+														ca.addOverlap(MSG.teachingAssignment(unavailability.getSection().getName()));
+														continue unavailabilities;
+													}
+												}
 									}
 								}
 							}

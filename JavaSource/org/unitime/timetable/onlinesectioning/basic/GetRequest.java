@@ -29,12 +29,15 @@ import java.util.TreeSet;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentComparator;
 import org.cpsolver.ifs.assignment.AssignmentMap;
+import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.FreeTimeRequest;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.studentsct.model.Unavailability;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
@@ -309,9 +312,11 @@ public class GetRequest extends WaitlistedOnlineSectioningAction<CourseRequestIn
 							});
 							Hashtable<org.cpsolver.studentsct.model.CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<org.cpsolver.studentsct.model.CourseRequest, TreeSet<Section>>();
 							Enrollment noConfEnrl = null;
+							int nbrEnrl = 0;
 							for (Iterator<Enrollment> e = enrls.iterator(); e.hasNext();) {
 								Enrollment enrl = e.next();
 								if (!rc.getCourseId().equals(enrl.getCourse().getId())) continue;
+								nbrEnrl ++;
 								boolean overlaps = false;
 								for (Request q: enrl.getStudent().getRequests()) {
 									if (q.equals(request)) continue;
@@ -358,6 +363,18 @@ public class GetRequest extends WaitlistedOnlineSectioningAction<CourseRequestIn
 										overlaps.add(ov);
 									}
 								}
+								if (nbrEnrl == 0) {
+									unavailabilities: for (Unavailability unavailability: courseRequest.getStudent().getUnavailabilities()) {
+										for (Config config: courseRequest.getCourse(rc.getCourseId()).getOffering().getConfigs())
+											for (Subpart subpart: config.getSubparts())
+												for (Section section: subpart.getSections()) {
+													if (unavailability.isOverlapping(section)) {
+														overlaps.add(MSG.teachingAssignment(unavailability.getSection().getName()));
+														continue unavailabilities;
+													}
+												}
+									}
+								}
 								if (overlaps != null && !overlaps.isEmpty()) {
 									String message = null;
 									for (Iterator<String> i = overlaps.iterator(); i.hasNext();) {
@@ -399,7 +416,7 @@ public class GetRequest extends WaitlistedOnlineSectioningAction<CourseRequestIn
 
 		return request;
 	}
-
+	
 	@Override
 	public String name() {
 		return "get-request";
