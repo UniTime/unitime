@@ -904,17 +904,51 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						for (ClassAssignmentInterface.ClassAssignment ch: specReg.getChanges())
 							if (!ch.isCourseAssigned()) specRegDrops.add(ch.getCourseId()); else specRegAdds.add(ch.getCourseId());
 						for (ClassAssignmentInterface.ClassAssignment ch: specReg.getChanges())
-							if (ch.isCourseAssigned() && (!specRegDrops.contains(ch.getCourseId()) || ch.getSpecRegStatus() != null))
-								courseRequests.addCourse(new RequestedCourse(ch.getCourseId(), CONSTANTS.showCourseTitle() ? ch.getCourseNameWithTitle() : ch.getCourseName()));
-							else if (!ch.isCourseAssigned() && !specRegAdds.contains(ch.getCourseId()))
-								courseRequests.dropCourse(new RequestedCourse(ch.getCourseId(), CONSTANTS.showCourseTitle() ? ch.getCourseNameWithTitle() : ch.getCourseName()));
+							if (ch.isCourseAssigned() && (!specRegDrops.contains(ch.getCourseId()) || ch.getSpecRegStatus() != null)) {
+								RequestedCourse rc = new RequestedCourse(ch.getCourseId(), CONSTANTS.showCourseTitle() ? ch.getCourseNameWithTitle() : ch.getCourseName());
+								rc.setCanWaitList(ch.isCanWaitList());
+								courseRequests.addCourse(rc);
+							} else if (!ch.isCourseAssigned() && !specRegAdds.contains(ch.getCourseId())) {
+								RequestedCourse rc = new RequestedCourse(ch.getCourseId(), CONSTANTS.showCourseTitle() ? ch.getCourseNameWithTitle() : ch.getCourseName());
+								rc.setCanWaitList(ch.isCanWaitList());
+								courseRequests.dropCourse(rc);
+							}
 						LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
 						iSectioningService.section(courseRequests, iLastResult, specReg.getChanges(), new AsyncCallback<ClassAssignmentInterface>() {
 							public void onSuccess(ClassAssignmentInterface result) {
 								if (specReg.hasSpaceConflict() || specReg.hasTimeConflict() || specReg.hasLinkedConflict()) iSpecRegCx.setDisclaimerAccepted(true);
-								fillIn(result);
 								iCourseRequests.setRequest(courseRequests);
+								fillIn(result);
 								addHistory();
+								// Wait-list check 
+								for (final ClassAssignmentInterface.CourseAssignment course: result.getCourseAssignments()) {
+									if (!course.isFreeTime() && specReg.isAdd(course.getCourseId()) && !course.isAssigned() &&
+										course.isCanWaitList() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST) &&
+										course.isNotAvailable() && !iCourseRequests.isWaitListed(course.getCourseId())) {
+										UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), 
+												(course.isFull() ? MESSAGES.suggestionsNoChoicesCourseIsFull(course.getCourseName()) : MESSAGES.suggestionsNoChoices(course.getCourseName()))+ "\n" + MESSAGES.confirmQuickWaitList(course.getCourseName()), new Command() {
+											@Override
+											public void execute() {
+												final CourseRequestInterface undo = iCourseRequests.getRequest();
+												iCourseRequests.setWaitList(course.getCourseId(), true);
+												LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
+												CourseRequestInterface r = iCourseRequests.getRequest(); r.setNoChange(true);
+												iSectioningService.section(r, iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
+													public void onFailure(Throwable caught) {
+														LoadingWidget.getInstance().hide();
+														iStatus.error(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
+														iCourseRequests.setRequest(undo);
+													}
+													public void onSuccess(ClassAssignmentInterface result) {
+														fillIn(result);
+														addHistory();
+													}
+												});
+											}
+										});
+										break;
+									}
+								}
 							}
 							public void onFailure(Throwable caught) {
 								iStatus.error(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);

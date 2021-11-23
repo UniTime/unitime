@@ -1511,6 +1511,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 									ca.setSubject(course.getSubjectAreaAbbv());
 									ca.setCourseNbr(course.getCourseNbr());
 									ca.setTitle(course.getTitle());
+									ca.setCanWaitList(course.getInstructionalOffering().effectiveWaitList());
 									List<Class_> classes = findClassesByExternalId(server.getAcademicSession().getUniqueId(), change.crn);
 									if (!classes.isEmpty()) {
 										Class_ clazz = classes.get(0);
@@ -1616,6 +1617,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					ca.setCourseNbr(course.getCourseNbr());
 					ca.setCourseAssigned(true);
 					ca.setTitle(course.getTitle());
+					ca.setCanWaitList(course.getInstructionalOffering().effectiveWaitList());
 					ca.setClassId(clazz.getUniqueId());
 					ca.setSection(clazz.getClassSuffix(course));
 					if (ca.getSection() == null)
@@ -1781,6 +1783,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					ca.setCourseNbr(course.getCourseNbr());
 					ca.setCourseAssigned(false);
 					ca.setTitle(course.getTitle());
+					ca.setCanWaitList(course.getInstructionalOffering().effectiveWaitList());
 					ca.setClassId(clazz.getUniqueId());
 					ca.setSection(clazz.getClassSuffix(course));
 					if (ca.getSection() == null)

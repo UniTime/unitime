@@ -413,6 +413,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private SpecialRegistrationOperation iSpecRegOperation = null;
 		private GradeMode iGradeMode = null;
 		private Float iCreditHour = null, iCreditMin = null, iCreditMax = null;
+		private Boolean iCanWaitList = null;
 		
 		public ClassAssignment() {}
 		public ClassAssignment(CourseAssignment course) {
@@ -421,6 +422,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			iCourseNbr = course.getCourseNbr();
 			iCourseAssigned = course.isAssigned();
 			iTitle = course.getTitle();
+			iCanWaitList = course.isCanWaitList();
 		}
 		
 		public Long getCourseId() { return iCourseId; }
@@ -789,6 +791,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public Float getCreditMax() { return iCreditMax; }
 		public void setCreditRange(Float creditMin, Float creditMax) { iCreditMin = creditMin; iCreditMax = creditMax; }
 		public boolean hasVariableCredit() { return iCreditMin != null && iCreditMax != null && iCreditMin < iCreditMax; }
+		
+		public boolean isCanWaitList() { return iCanWaitList != null && iCanWaitList.booleanValue(); }
+		public void setCanWaitList(Boolean canWaitList) { iCanWaitList = canWaitList; }
 	}
 	
 	public static class Group implements IsSerializable, Serializable, Comparable<Group> {
