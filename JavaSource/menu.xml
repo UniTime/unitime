@@ -855,7 +855,8 @@
 					<hasPermission name="SolverGroups"/>
 				</condition>
 			</item>
-			<item name="Subject Areas" page="subjectList.do">
+			<item name="Subject Areas" page="admin" type="gwt">
+				<parameter name="type">SubjectArea</parameter>
 				<condition>
 					<hasPermission name="SubjectAreas"/>
 				</condition>
