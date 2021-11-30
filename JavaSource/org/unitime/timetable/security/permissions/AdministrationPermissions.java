@@ -188,11 +188,11 @@ public class AdministrationPermissions {
 
 	@PermissionForRight(Right.SubjectAreaEdit)
 	public static class SubjectAreaEdit implements Permission<SubjectArea> {
-		@Autowired Permission<Session> permissionSession;
+		@Autowired Permission<Department> permissionDepartment;
 
 		@Override
 		public boolean check(UserContext user, SubjectArea source) {
-			return permissionSession.check(user, source.getSession());
+			return permissionDepartment.check(user, source.getDepartment());
 		}
 
 		@Override
