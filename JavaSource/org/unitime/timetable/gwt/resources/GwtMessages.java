@@ -6718,5 +6718,18 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Special Event")
 	String utilSqlUtilizationTypeSpecialEvent();
+
+	@DefaultMessage("Subject Area")
+	@DoNotTranslate
+	String pageSubjectArea();
+
+	@DefaultMessage("Subject Areas")
+	@DoNotTranslate
+	String pageSubjectAreas();
+
+	@DefaultMessage("Funding Department")
+	String fieldFundingDepartment();	
 	
+	@DefaultMessage("No external funding department")
+	String noFundingDepartment();	
 }

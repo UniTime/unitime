@@ -42,6 +42,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 		HIDDEN,
 		READ_ONLY,
 		UNIQUE,
+		UNIQUE_IF_SET,
 		NOT_EMPTY,
 		PARENT_NOT_EMPTY,
 		FLOAT,
@@ -396,6 +397,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 		public boolean isEditable() { return !Flag.READ_ONLY.has(iFlags); }
 		public boolean isVisible() { return !Flag.HIDDEN.has(iFlags); }
 		public boolean isUnique() { return Flag.UNIQUE.has(iFlags); }
+		public boolean isUniqueIfSet() { return Flag.UNIQUE_IF_SET.has(iFlags); }
 		public boolean isNotEmpty() { return Flag.NOT_EMPTY.has(iFlags); }
 		public boolean isParentNotEmpty() { return Flag.PARENT_NOT_EMPTY.has(iFlags); }
 		public boolean isAllowFloatingPoint() { return Flag.FLOAT.has(iFlags); }
