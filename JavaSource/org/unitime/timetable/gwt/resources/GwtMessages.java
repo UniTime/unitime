@@ -6728,8 +6728,17 @@ public interface GwtMessages extends Messages {
 	String pageSubjectAreas();
 
 	@DefaultMessage("Funding Department")
-	String fieldFundingDepartment();	
+	String fieldFundingDepartment();
+	
+	@DefaultMessage("Managers")
+	String fieldManagers();
+	
+	@DefaultMessage("Last Change")
+	String fieldLastChange();
 	
 	@DefaultMessage("No external funding department")
-	String noFundingDepartment();	
+	String noFundingDepartment();
+	
+	@DefaultMessage("{0} by {1}")
+	String lastChange(String date, String manager);
 }

@@ -51,6 +51,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 		DEFAULT_CHECKED,
 		LAZY,
 		NO_CYCLE,
+		NO_DETAIL,
 		;
 		
 		public int toInt() { return 1 << ordinal(); }
@@ -406,6 +407,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 		public boolean isCheckedByDefault() { return Flag.DEFAULT_CHECKED.has(iFlags); }
 		public boolean isLazy() { return Flag.LAZY.has(iFlags); }
 		public boolean isNoCycle() { return Flag.NO_CYCLE.has(iFlags); }
+		public boolean isNoDetail() { return Flag.NO_DETAIL.has(iFlags); }
 		
 		public int hashCode() {
 			return getName().hashCode();
