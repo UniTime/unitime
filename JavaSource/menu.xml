@@ -856,7 +856,7 @@
 				</condition>
 			</item>
 			<item name="Subject Areas" page="admin" type="gwt">
-				<parameter name="type">SubjectArea</parameter>
+				<parameter name="type">subjectArea</parameter>
 				<condition>
 					<hasPermission name="SubjectAreas"/>
 				</condition>
