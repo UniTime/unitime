@@ -2162,6 +2162,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Accommodation Conflicts")
 	String reportAccommodationConflicts();
 	
+	@DefaultMessage("No Break Time Back-to-Backs")
+	String reportBackToBacksNoBreak();
+	
 	@DefaultMessage("{0} (TA)")
 	String teachingAssignment(String className);
 	

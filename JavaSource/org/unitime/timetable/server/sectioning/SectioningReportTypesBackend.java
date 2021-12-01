@@ -81,6 +81,7 @@ public class SectioningReportTypesBackend implements GwtRpcImplementation<Sectio
 		CRITICAL(SCT_MSG.reportCriticalCoursesReport(), CriticalCoursesReport.class.getName(), "pritify", "false"),
 		STATISTICS(SCT_MSG.reportSolutionStatistics(), StudentSchedulingSolutionStatisticsReport.class.getName(), "pritify", "false"),
 		ACCOMMODATIONS(SCT_MSG.reportAccommodationConflicts(), AccommodationConflictsTable.class.getName()),
+		BTB_NO_BREAKS(SCT_MSG.reportBackToBacksNoBreak(), ZeroBreakTimeBackToBacksReport.class.getName()),
 		;
 		
 		String iName, iImplementation;
