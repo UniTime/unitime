@@ -63,7 +63,8 @@ public class Department extends BaseDepartment implements Comparable<Department>
     public static String DEPT_ATTR_NAME = "deptsList";    
     public static String EXTERNAL_DEPT_ATTR_NAME = "externalDepartments";
     
-    public static TreeSet<Department> findAll(Long sessionId) {
+    @SuppressWarnings("unchecked")
+	public static TreeSet<Department> findAll(Long sessionId) {
 		return new TreeSet<Department>((new DepartmentDAO()).
 			getSession().
 			createQuery("select distinct d from Department as d where d.session.uniqueId=:sessionId").
@@ -72,6 +73,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 			list());
     }
     
+	@SuppressWarnings("unchecked")
 	public static TreeSet<Department> findAllExternal(Long sessionId) {
 		return new TreeSet<Department>((new DepartmentDAO()).
 				getSession().
@@ -81,8 +83,9 @@ public class Department extends BaseDepartment implements Comparable<Department>
 				list());
 	}
 	
-    public static TreeSet findAllNonExternal(Long sessionId) {
-        return new TreeSet((new DepartmentDAO()).
+    @SuppressWarnings("unchecked")
+	public static TreeSet<Department> findAllNonExternal(Long sessionId) {
+        return new TreeSet<Department>((new DepartmentDAO()).
                 getSession().
                 createQuery("select distinct d from Department as d where d.externalManager=false and d.session.uniqueId=:sessionId").
                 setLong("sessionId", sessionId.longValue()).
@@ -203,6 +206,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 			((c1.getBlue()-c2.getBlue())*(c1.getBlue()-c2.getBlue())));
 	}
 	
+	@SuppressWarnings("unchecked")
 	public boolean isRoomSharingColorConflicting(String color) {
 		if (getUniqueId() == null) return false;
 		for (String other: (List<String>)DepartmentDAO.getInstance().getSession().createQuery(
@@ -214,10 +218,10 @@ public class Department extends BaseDepartment implements Comparable<Department>
 		return false;
 	}
 	
-	public boolean isRoomSharingColorConflicting(String color, Collection otherDepartments) {
+	public boolean isRoomSharingColorConflicting(String color, Collection<Object> otherDepartments) {
 		if (isRoomSharingColorConflicting(color)) return true;
 		if (otherDepartments!=null && !otherDepartments.isEmpty()) {
-			for (Iterator i=otherDepartments.iterator();i.hasNext();) {
+			for (Iterator<Object> i=otherDepartments.iterator();i.hasNext();) {
 				Object o = i.next();
 				BaseDepartment d = null;
 				if (o instanceof BaseDepartment) {
@@ -236,7 +240,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 		return false;
 	}
 
-	public void fixRoomSharingColor(Collection otherDepartments) {
+	public void fixRoomSharingColor(Collection<Object> otherDepartments) {
 		String color = getRoomSharingColor();
 		if (isRoomSharingColorConflicting(color, otherDepartments)) {
 			int idx = 0;
@@ -254,7 +258,8 @@ public class Department extends BaseDepartment implements Comparable<Department>
 		}
 	}
 	
-	public String getRoomSharingColor(Collection otherDepartments) {
+	@SuppressWarnings("unchecked")
+	public String getRoomSharingColor(@SuppressWarnings("rawtypes") Collection otherDepartments) {
 		if (getRoomSharingColor() == null) {
 			setRoomSharingColor(color2hex(RoomSharingModel.sDepartmentColors[0]));
 		}
@@ -274,7 +279,8 @@ public class Department extends BaseDepartment implements Comparable<Department>
 		return "<span title='"+getHtmlTitle()+"'>"+getShortLabel()+"</span>";
 	}
 
-	public Collection getClasses() {
+	@SuppressWarnings("unchecked")
+	public Collection<Class_> getClasses() {
 		return (new DepartmentDAO()).
 			getSession().
 			createQuery("select distinct c from Class_ as c where c.managingDept=:departmentId or (c.managingDept is null and c.controllingDept=:departmentId)").
@@ -282,7 +288,8 @@ public class Department extends BaseDepartment implements Comparable<Department>
 			list();
 	}
 	
-	public Collection getClassesFetchWithStructure() {
+	@SuppressWarnings("unchecked")
+	public Collection<Class_> getClassesFetchWithStructure() {
 		return (new DepartmentDAO()).
 			getSession().
 			createQuery("select distinct c from Class_ as c " +
@@ -298,7 +305,8 @@ public class Department extends BaseDepartment implements Comparable<Department>
 
 	}
 	
-	public Collection getNotAssignedClasses(Solution solution) {
+	@SuppressWarnings("unchecked")
+	public Collection<Class_> getNotAssignedClasses(Solution solution) {
 		return (new DepartmentDAO()).
 		getSession().
 		createQuery(
@@ -310,8 +318,9 @@ public class Department extends BaseDepartment implements Comparable<Department>
 		list();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static TreeSet<Department> findAllBeingUsed(Long sessionId) {
-		TreeSet ret = new TreeSet(
+		TreeSet<Department> ret = new TreeSet<Department>(
 				(new DepartmentDAO()).
 				getSession().
 				createQuery("select distinct d from Department as d inner join d.timetableManagers as m where d.session.uniqueId=:sessionId").
@@ -394,6 +403,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 		d.setAllowEvents(isAllowEvents());
 		d.setInheritInstructorPreferences(isInheritInstructorPreferences());
 		d.setAllowStudentScheduling(isAllowStudentScheduling());
+		d.setExternalFundingDept(getExternalFundingDept());
 		return d;
 	}
 	
@@ -410,7 +420,8 @@ public class Department extends BaseDepartment implements Comparable<Department>
 			// if a department wasn't found and an external uniqueid exists for this 
 			//   department check to see if the new term has a department that matches 
 			//   the external unique id
-			List l = hibSession.
+			@SuppressWarnings("unchecked")
+			List<Department> l = hibSession.
 			createCriteria(Department.class).
 			add(Restrictions.eq("externalUniqueId",this.getExternalUniqueId())).
 			add(Restrictions.eq("session.uniqueId", newSessionId)).
@@ -462,6 +473,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 	@Override
 	public Department getDepartment() { return this; }
 	
+	@SuppressWarnings("unchecked")
 	public Set<InstructorAttributeType> getAvailableAttributeTypes() {
 		return new TreeSet<InstructorAttributeType>(DepartmentDAO.getInstance().getSession().createQuery(
         		"select distinct t from InstructorAttribute a inner join a.type t " +
@@ -469,6 +481,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 				.setLong("sessionId", getSessionId()).setLong("departmentId", getUniqueId()).setCacheable(true).list());
 	}
 
+	@SuppressWarnings("unchecked")
 	public Set<InstructorAttribute> getAvailableAttributes() {
 		return new TreeSet<InstructorAttribute>(DepartmentDAO.getInstance().getSession().createQuery(
         		"select a from InstructorAttribute a " +
