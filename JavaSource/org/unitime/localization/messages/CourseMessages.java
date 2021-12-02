@@ -760,6 +760,12 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("LMS Integration:")
 	String propertyLms();
 
+	@DefaultMessage("Funding Dept")
+	String columnFundingDept();
+
+	@DefaultMessage("Funding Dept:")
+	String propertyFundingDept();
+
 	@DefaultMessage("Total")
 	String rowCrossListsTotal();
 	
