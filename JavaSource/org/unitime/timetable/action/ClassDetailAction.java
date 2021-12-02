@@ -498,6 +498,11 @@ public class ClassDetailAction extends PreferencesAction {
 		    frm.setSnapshotLimit(c.getSnapshotLimit());
 	        frm.setDatePattern(c.getDatePattern()==null?Long.valueOf(-1):c.getDatePattern().getUniqueId());
 	        frm.setLms(c.getLms() == null? "" : c.getLms().getLabel());
+	        if (ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue()) {
+	        	frm.setFundingDept(c.getEffectiveFundingDept().getLabel());
+	        } else {
+	        	frm.setFundingDept("");
+	        }
 		    frm.setNbrRooms(c.getNbrRooms());
 		    if (c.getNotes()==null)
 		    	frm.setNotes("");

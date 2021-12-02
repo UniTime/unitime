@@ -108,6 +108,7 @@ public class ClassEditForm extends PreferencesForm {
     private List instrResponsibility;
     private String defaultTeachingResponsibilityId;
     private String lms;
+    private String fundingDept;
     
     // --------------------------------------------------------- Classes
 
@@ -286,6 +287,7 @@ public class ClassEditForm extends PreferencesForm {
         TeachingResponsibility tr = TeachingResponsibility.getDefaultInstructorTeachingResponsibility();
         defaultTeachingResponsibilityId = (tr == null ? "" : tr.getUniqueId().toString());
         lms = null;
+        fundingDept = null;
 
         super.reset(mapping, request);
     }
@@ -764,4 +766,13 @@ public class ClassEditForm extends PreferencesForm {
 	public void setLms(String lms) {
 		this.lms = lms;
 	}
+
+	public String getFundingDept() {
+		return fundingDept;
+	}
+
+	public void setFundingDept(String fundingDept) {
+		this.fundingDept = fundingDept;
+	}
+	
 }
