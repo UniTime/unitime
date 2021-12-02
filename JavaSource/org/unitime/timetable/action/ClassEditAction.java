@@ -491,6 +491,11 @@ public class ClassEditAction extends PreferencesAction {
 		    frm.setMaxExpectedCapacity(c.getMaxExpectedCapacity());
 		    frm.setRoomRatio(c.getRoomRatio());
 		    frm.setLms(c.getLms() == null ? "" : c.getLms().getLabel());
+	        if (ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue()) {
+	        	frm.setFundingDept(c.getEffectiveFundingDept().getLabel());
+	        } else {
+	        	frm.setFundingDept("");
+	        }
 		    frm.setEnabledForStudentScheduling(c.isEnabledForStudentScheduling());
 		    frm.setDisplayInstructor(c.isDisplayInstructor());
 

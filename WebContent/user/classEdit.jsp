@@ -283,6 +283,7 @@
 		<html:hidden property="maxExpectedCapacity"/>
 		<html:hidden property="roomRatio"/>
 		<html:hidden property="lms"/>
+		<html:hidden property="fundingDept"/>
 		<TR>
 			<TD><loc:message name="propertyEnrollment"/></TD>
 			<TD>
@@ -348,6 +349,16 @@
 				</TD>
 			</TR>
 		</logic:notEmpty>
+		
+		<logic:notEmpty name="<%=frmName%>" property="fundingDept">
+			<TR>
+				<TD valign="top"><loc:message name="propertyFundingDept"/></TD>
+				<TD>
+					<bean:write name="<%=frmName%>" property="fundingDept" filter="false"/>
+				</TD>
+			</TR>
+		</logic:notEmpty>
+		
 
 		<TR>
 			<TD><loc:message name="propertyDatePattern"/></TD>
