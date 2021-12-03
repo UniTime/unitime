@@ -509,14 +509,14 @@ public class TimeSelector extends Composite implements HasValue<Integer>, Focusa
 			}
 			for (String am: constants.parseTimeAm()) {
 				if (token.toLowerCase().startsWith(am)) {
-					token = token.substring(2); hasAmOrPm = true;
+					token = token.substring(am.length()); hasAmOrPm = true;
 					if (startHour == 12) startHour = 24;
 					break;
 				}
 			}
 			for (String pm: constants.parseTimePm()) {
 				if (token.toLowerCase().startsWith(pm)) {
-					token = token.substring(2); hasAmOrPm = true;
+					token = token.substring(pm.length()); hasAmOrPm = true;
 					if (startHour<12) startHour += 12;
 					break;
 				}
