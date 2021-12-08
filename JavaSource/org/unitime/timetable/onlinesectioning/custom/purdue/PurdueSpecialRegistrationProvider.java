@@ -1310,7 +1310,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			XConfig config = offering.getConfig(subpart.getConfigId());
 			courseId2config.put(course.getCourseId(), config);
 
-			XReservation reservation = null;
+			List<XReservation> reservations = new ArrayList<XReservation>();
+			boolean canAssignOverLimit = false;
 			reservations: for (XReservation r: offering.getReservations()) {
 				if (!r.isApplicable(student, course)) continue;
 				if (r.getLimit() >= 0 && r.getLimit() <= enrollments.countEnrollmentsForReservation(r.getReservationId())) {
@@ -1322,11 +1323,12 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				if (!r.getConfigsIds().isEmpty() && !r.getConfigsIds().contains(config.getConfigId())) continue;
 				for (XSection section: sections)
 					if (r.getSectionIds(section.getSubpartId()) != null && !r.getSectionIds(section.getSubpartId()).contains(section.getSectionId())) continue reservations;
-				if (reservation == null || r.compareTo(reservation) < 0)
-					reservation = r;
+				if (r.canAssignOverLimit())
+					canAssignOverLimit = true;
+				reservations.add(r);
 			}
 			
-			if ((reservation == null || !reservation.canAssignOverLimit()) && !allowSpaceConf) {
+			if (canAssignOverLimit && !allowSpaceConf) {
 				for (XSection section: sections) {
 					if (section.getLimit() >= 0 && section.getLimit() <= enrollments.countEnrollmentsForSection(section.getSectionId())) {
 						boolean contain = false;
@@ -1335,11 +1337,18 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 						if (!contain)
 							errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_NOT_AVAILABLE, MSG.exceptionEnrollNotAvailable(MSG.clazz(course.getSubjectArea(), course.getCourseNumber(), section.getSubpartName(), section.getName()))));
 					}
-					if ((reservation == null || !offering.getSectionReservations(section.getSectionId()).contains(reservation)) && offering.getUnreservedSectionSpace(section.getSectionId(), enrollments) <= 0) {
+					if (offering.getUnreservedSectionSpace(section.getSectionId(), enrollments) <= 0) {
+						boolean hasReservation = false;
+						if (!reservations.isEmpty()) {
+							for (XReservation r: offering.getSectionReservations(section.getSectionId()))
+								if (reservations.contains(r)) {
+									hasReservation = true; break;
+								}
+						}
 						boolean contain = false;
 						for (XEnrollment e: enrollments.getEnrollmentsForSection(section.getSectionId()))
 							if (e.getStudentId().equals(student.getStudentId())) { contain = true; break; }
-						if (!contain)
+						if (!contain && !hasReservation)
 							errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_NOT_AVAILABLE, MSG.exceptionEnrollNotAvailable(MSG.clazz(course.getSubjectArea(), course.getCourseNumber(), section.getSubpartName(), section.getName()))));
 					}
 				}
@@ -1352,11 +1361,18 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 						for (XSection section: sections)
 							errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_NOT_AVAILABLE, MSG.exceptionEnrollNotAvailable(MSG.clazz(course.getSubjectArea(), course.getCourseNumber(), section.getSubpartName(), section.getName()))));
 				}
-				if ((reservation == null || !offering.getConfigReservations(config.getConfigId()).contains(reservation)) && offering.getUnreservedConfigSpace(config.getConfigId(), enrollments) <= 0) {
+				if (offering.getUnreservedConfigSpace(config.getConfigId(), enrollments) <= 0) {
+					boolean hasReservation = false;
+					if (!reservations.isEmpty()) {
+						for (XReservation r: offering.getConfigReservations(config.getConfigId()))
+							if (reservations.contains(r)) {
+								hasReservation = true; break;
+							}
+					}
 					boolean contain = false;
 					for (XEnrollment e: enrollments.getEnrollmentsForConfig(config.getConfigId()))
 						if (e.getStudentId().equals(student.getStudentId())) { contain = true; break; }
-					if (!contain)
+					if (!contain && !hasReservation)
 						for (XSection section: sections)
 							errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_NOT_AVAILABLE, MSG.exceptionEnrollNotAvailable(MSG.clazz(course.getSubjectArea(), course.getCourseNumber(), section.getSubpartName(), section.getName()))));
 				}
