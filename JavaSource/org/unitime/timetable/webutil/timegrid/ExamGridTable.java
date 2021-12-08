@@ -284,9 +284,9 @@ public class ExamGridTable {
         c.setLenient(true);
         c.add(Calendar.WEEK_OF_YEAR, week-1);
         Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
-        while (c.get(Calendar.DAY_OF_WEEK)!=Calendar.MONDAY) c.add(Calendar.DAY_OF_YEAR, -1);
+        while (c.get(Calendar.DAY_OF_WEEK)!=Calendar.SUNDAY) c.add(Calendar.DAY_OF_YEAR, -1);
         String first = df.format(c.getTime());
-        while (c.get(Calendar.DAY_OF_WEEK)!=Calendar.SUNDAY) c.add(Calendar.DAY_OF_YEAR, 1);
+        while (c.get(Calendar.DAY_OF_WEEK)!=Calendar.SATURDAY) c.add(Calendar.DAY_OF_YEAR, 1);
         String end = df.format(c.getTime());
         return "Week "+week+"<br>"+first+" - "+end;
     }
@@ -410,6 +410,14 @@ public class ExamGridTable {
         c.add(Calendar.DAY_OF_WEEK, dayOfWeek - c.get(Calendar.DAY_OF_WEEK));
         Calendar ec = Calendar.getInstance(Locale.US);
         ec.setTime(iForm.getExamBeginDate());
+        /*
+        if (c.get(Calendar.YEAR) > ec.get(Calendar.YEAR)) {
+        	return c.get(Calendar.DAY_OF_YEAR)-ec.get(Calendar.DAY_OF_YEAR) + c.getActualMaximum(Calendar.DAY_OF_YEAR);
+        } if (c.get(Calendar.YEAR) < ec.get(Calendar.YEAR)) {
+        	return c.get(Calendar.DAY_OF_YEAR)-ec.get(Calendar.DAY_OF_YEAR) - c.getActualMaximum(Calendar.DAY_OF_YEAR);
+        } else {
+        	return c.get(Calendar.DAY_OF_YEAR)-ec.get(Calendar.DAY_OF_YEAR);
+        }*/
         return c.get(Calendar.DAY_OF_YEAR)-ec.get(Calendar.DAY_OF_YEAR);
     }
     
