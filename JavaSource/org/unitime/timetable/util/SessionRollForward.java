@@ -86,6 +86,7 @@ import org.unitime.timetable.model.InstructorAttributePref;
 import org.unitime.timetable.model.InstructorCoursePref;
 import org.unitime.timetable.model.InstructorPref;
 import org.unitime.timetable.model.LastLikeCourseDemand;
+import org.unitime.timetable.model.LearningCommunityReservation;
 import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
@@ -3282,6 +3283,28 @@ public class SessionRollForward {
 		if (fromReservation instanceof GroupOverrideReservation) {
 			toReservation = new GroupOverrideReservation();
 			((GroupOverrideReservation)toReservation).setFlags(((GroupOverrideReservation)fromReservation).getFlags());
+		}
+		if (fromReservation instanceof LearningCommunityReservation) {
+			CourseOffering fromCourse = ((LearningCommunityReservation)fromReservation).getCourse();
+			CourseOffering toCourse = CourseOffering.findByIdRolledForwardFrom(toSession.getUniqueId(), fromCourse.getUniqueId());
+			if (toCourse == null){
+		    	if (ApplicationProperty.CourseOfferingNumberMustBeUnique.isTrue()) {
+		    		toCourse = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(
+		    				toSession.getUniqueId(),
+		    				fromCourse.getSubjectArea().getSubjectAreaAbbreviation(),
+		    				fromCourse.getCourseNbr());
+		    	} else {
+		    		toCourse = CourseOffering.findBySessionSubjAreaAbbvCourseNbrTitle(
+		    				toSession.getUniqueId(),
+		    				fromCourse.getSubjectArea().getSubjectAreaAbbreviation(),
+		    				fromCourse.getCourseNbr(),
+		    				fromCourse.getTitle());
+		    	}
+			}
+			
+			if (toCourse == null) return null;
+			toReservation = new LearningCommunityReservation();
+			((LearningCommunityReservation)toReservation).setCourse(toCourse);
 		}
 		
 		if (!rollReservationForward(fromReservation, toReservation, toSession, startDate, expiration)) return null;
