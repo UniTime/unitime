@@ -1174,28 +1174,61 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     				applicable = course.equals(((CourseReservation)r).getCourse());
     			} else if (r instanceof CurriculumReservation) {
     				CurriculumReservation c = (CurriculumReservation)r;
-    				for (StudentAreaClassificationMajor aac: s.getAreaClasfMajors()) {
-    					if (c.getAcademicArea().equals(aac.getAcademicArea().getAcademicAreaAbbreviation()) &&
-    						(c.getClassifications().isEmpty() || c.getClassifications().contains(aac.getAcademicClassification().getCode())) &&
-    						(c.getMajors().isEmpty() || c.getMajors().contains(aac.getMajor().getCode()))) {
-    							applicable = true; break;
-    					}
-    				}
+    				if (!c.getMajors().isEmpty() || c.getMinors().isEmpty())
+    					for (StudentAreaClassificationMajor aac: s.getAreaClasfMajors()) {
+        					if (c.getAcademicAreas().contains(aac.getAcademicArea().getAcademicAreaAbbreviation()) &&
+        						(c.getClassifications().isEmpty() || c.getClassifications().contains(aac.getAcademicClassification().getCode())) &&
+        						(c.getMajors().isEmpty() || c.getMajors().contains(aac.getMajor().getCode()))) {
+        						Set<String> conc = c.getConcentrations(aac.getMajor().getCode());
+        	                    if (conc != null && !conc.isEmpty()) {
+        	                        if (aac.getConcentration() != null && conc.contains(aac.getConcentration().getCode())) {
+        	                        	applicable = true; break;
+        	                        }
+        	                    } else {
+        							applicable = true; break;
+        	                    }
+        					}
+        				}
+    				if (!c.getMinors().isEmpty())
+        				for (StudentAreaClassificationMinor aac: s.getAreaClasfMinors()) {
+        					if (c.getAcademicAreas().contains(aac.getAcademicArea().getAcademicAreaAbbreviation()) &&
+        						(c.getClassifications().isEmpty() || c.getClassifications().contains(aac.getAcademicClassification().getCode())) &&
+        						(c.getMinors().contains(aac.getMinor().getCode()))) {
+        							applicable = true; break;
+        					}
+        				}
     			}
     			if (!applicable) continue;
     			
     			// If it does not need to be used, check if actually used
 				if (!r.mustBeUsed()) {
-    				boolean included = true;
-    				for (Section section: sections) {
-    					if (!r.getConfigs().isEmpty() && !r.getConfigs().contains(section.getSubpart().getConfig())) {
-    						included = false; break;
-    					}
-    					Set<Section> sectionsThisSubpart = r.getSections(section.getSubpart());
-    					if (sectionsThisSubpart != null && !sectionsThisSubpart.contains(section)) {
-    						included = false; break;
-    					}
-    				}
+					boolean included = true;
+					if (r.areRestrictionsInclusive()) {
+						for (Section section: sections) {
+	    					if (!r.getConfigs().isEmpty() && !r.getConfigs().contains(section.getSubpart().getConfig())) {
+	    						included = false; break;
+	    					}
+	    					Set<Section> sectionsThisSubpart = r.getSections(section.getSubpart());
+	    					if (sectionsThisSubpart != null && !sectionsThisSubpart.contains(section)) {
+	    						included = false; break;
+	    					}
+	    				}	
+					} else {
+						included = false;
+						if (r.getConfigs().isEmpty() && r.getSections().isEmpty()) {
+							included = true;
+						} else {
+							for (Section section: sections) {
+								if (r.getConfigs().contains(section.getSubpart().getConfig())) {
+									included = true; break;		
+								}
+								Set<Section> sectionsThisSubpart = r.getSections(section.getSubpart());
+				                if (sectionsThisSubpart != null && sectionsThisSubpart.contains(section)) {
+				                	included =  true; break;
+				                }
+							}
+						}
+					}
     				if (!included) continue;
 				}
 				

@@ -79,18 +79,29 @@ public abstract class Reservation extends BaseReservation implements Comparable<
 	
 	public boolean isMatching(List<StudentClassEnrollment> enrollment) {
 		if (enrollment.isEmpty()) return false;
-		if (!getConfigurations().isEmpty()) {
-			for (StudentClassEnrollment e: enrollment) {
-				if (!getConfigurations().contains(e.getClazz().getSchedulingSubpart().getInstrOfferingConfig()))
-					return false;
+		if (isReservationInclusive()) {
+			if (!getConfigurations().isEmpty()) {
+				for (StudentClassEnrollment e: enrollment) {
+					if (!getConfigurations().contains(e.getClazz().getSchedulingSubpart().getInstrOfferingConfig()))
+						return false;
+				}
 			}
-		}
-		if (!getClasses().isEmpty()) {
-			for (StudentClassEnrollment e: enrollment) {
-				if (!hasClass(e.getClazz())) return false;
+			if (!getClasses().isEmpty()) {
+				for (StudentClassEnrollment e: enrollment) {
+					if (!hasClass(e.getClazz())) return false;
+				}
 			}
+			return true;	
+		} else {
+			if (getConfigurations().isEmpty() && getClasses().isEmpty()) return true;
+			for (StudentClassEnrollment e: enrollment) {
+				if (getConfigurations().contains(e.getClazz().getSchedulingSubpart().getInstrOfferingConfig()))
+					return true;
+				if (getClasses().contains(e.getClazz()))
+					return true;
+			}
+			return false;
 		}
-		return true;
 	}
 	
 	public boolean isMatching(Class_ clazz) {
