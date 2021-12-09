@@ -194,6 +194,9 @@
 					<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
 				</html:select>
 			    </td></tr>
+			<tr><td valign="top" colspan="2">
+				<html:checkbox name="<%=frmName%>" property="rollForwardWaitListsProhibitedOverrides"/> Include Wait-Listing and Prohibited Overrides
+			</td></tr>
 			<tr><td style="padding-top: 20px;" rowspan="2" valign="top">Scheduling Subpart Level Time Preference Options:</td><td style="padding-top: 20px;"><html:radio property="subpartTimePrefsAction" value="<%= SessionRollForward.ROLL_PREFS_ACTION %>"> Roll forward scheduling subpart time preferences</html:radio></td></tr>
 			<tr><td><html:radio property="subpartTimePrefsAction" value="<%= SessionRollForward.DO_NOT_ROLL_ACTION %>"> Do not roll forward scheduling subpart time preferences</html:radio></td></tr>
 			<tr><td style="padding-top: 20px;" rowspan="2" valign="top">Scheduling Subpart Level Location Preference Options:</td><td style="padding-top: 20px;"><html:radio property="subpartLocationPrefsAction" value="<%= SessionRollForward.ROLL_PREFS_ACTION %>"> Roll forward scheduling subpart location preferences</html:radio></td></tr>

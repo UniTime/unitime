@@ -21,6 +21,7 @@ package org.unitime.timetable.util;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -40,6 +41,7 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.OfferingConsentType;
+import org.unitime.timetable.model.OverrideType;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
@@ -444,6 +446,11 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		toInstructionalOffering.setLastWeekToChange(fromInstructionalOffering.getLastWeekToChange());
 		toInstructionalOffering.setLastWeekToDrop(fromInstructionalOffering.getLastWeekToDrop());
 		toInstructionalOffering.setNotes(fromInstructionalOffering.getNotes());
+		if (isWaitListsAndProhibitedOverrides()) {
+			toInstructionalOffering.setWaitlist(fromInstructionalOffering.getWaitlist());
+		} else {
+			toInstructionalOffering.setWaitlist(false);
+		}
 		CourseOffering fromCourseOffering = null;
 		CourseOffering toCourseOffering = null;
 		for(Iterator coIt = fromInstructionalOffering.getCourseOfferings().iterator(); coIt.hasNext();){
@@ -473,6 +480,9 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			toCourseOffering.setConsentType(fromCourseOffering.getConsentType());
 			toCourseOffering.setCourseType(fromCourseOffering.getCourseType());
 			toInstructionalOffering.addTocourseOfferings(toCourseOffering);
+			if (isWaitListsAndProhibitedOverrides() && fromCourseOffering.getDisabledOverrides() != null) {
+				toCourseOffering.setDisabledOverrides(new HashSet<OverrideType>(fromCourseOffering.getDisabledOverrides()));
+			}
 			if(fromCourseOffering.getCreditConfigs() != null && !fromCourseOffering.getCreditConfigs().isEmpty()){
 				CourseCreditUnitConfig ccuc = null;
 				for(Iterator ccIt = fromCourseOffering.getCreditConfigs().iterator(); ccIt.hasNext();){

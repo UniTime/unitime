@@ -123,7 +123,7 @@ public class RollForwardSessionForm extends ActionForm {
 	private Long sessionToRollSessionConfigForwardFrom;
 	private Boolean rollForwardLearningManagementSystems;
 	private Long sessionToRollLearningManagementSystemsForwardFrom;
-
+	private Boolean rollForwardWaitListsProhibitedOverrides;
 	
 	private Boolean rollForwardReservations;
 	private Long sessionToRollReservationsForwardFrom;
@@ -458,6 +458,7 @@ public class RollForwardSessionForm extends ActionForm {
 		startDateGroupReservations = null;
 		rollForwardLearningManagementSystems = new Boolean(false);
 		sessionToRollLearningManagementSystemsForwardFrom = null;
+		rollForwardWaitListsProhibitedOverrides = false;
 	}
 
 	/** 
@@ -1021,7 +1022,7 @@ public class RollForwardSessionForm extends ActionForm {
 		form.startDateGroupReservations = startDateGroupReservations;
 		form.rollForwardLearningManagementSystems = rollForwardLearningManagementSystems;
 		form.sessionToRollLearningManagementSystemsForwardFrom = sessionToRollLearningManagementSystemsForwardFrom;
-
+		form.rollForwardWaitListsProhibitedOverrides = rollForwardWaitListsProhibitedOverrides;
 	}
 	
 	public Boolean getRollForwardTeachingRequests() {
@@ -1077,6 +1078,9 @@ public class RollForwardSessionForm extends ActionForm {
 			Long sessionToRollLearningManagementSystemsForwardFrom) {
 		this.sessionToRollLearningManagementSystemsForwardFrom = sessionToRollLearningManagementSystemsForwardFrom;
 	}
+	
+	public Boolean getRollForwardWaitListsProhibitedOverrides() { return rollForwardWaitListsProhibitedOverrides; }
+	public void setRollForwardWaitListsProhibitedOverrides(Boolean rollForwardWaitListsProhibitedOverrides) { this.rollForwardWaitListsProhibitedOverrides = rollForwardWaitListsProhibitedOverrides; }
 
 
 	public Object clone() {

@@ -198,6 +198,8 @@ public class SessionRollForward {
 	private CancelledClassAction cancelledClassAction = CancelledClassAction.REOPEN;
 	
 	private boolean resetClassSuffix;
+	
+	private boolean waitListsAndProhibitedOverrides; 
 
 	public static String ROLL_PREFS_ACTION = "rollUnchanged";
 	public static String DO_NOT_ROLL_ACTION = "doNotRoll";
@@ -275,6 +277,12 @@ public class SessionRollForward {
 	public void setCancelledClassActionRollForwardParameter(String cancelledClassAction){
 		this.cancelledClassAction = (cancelledClassAction == null ? CancelledClassAction.REOPEN : CancelledClassAction.valueOf(cancelledClassAction));
 	}
+	
+	public void setWaitListsAndProhibitedOverrides(Boolean waitListsAndProhibitedOverrides) {
+		this.waitListsAndProhibitedOverrides = (waitListsAndProhibitedOverrides == null ? false : waitListsAndProhibitedOverrides.booleanValue());
+	}
+	
+	public boolean isWaitListsAndProhibitedOverrides() { return waitListsAndProhibitedOverrides; }
 	
 	public void rollBuildingAndRoomDataForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
@@ -2104,6 +2112,7 @@ public class SessionRollForward {
 			instrOffrRollFwd.setSubpartTimePrefRollForwardParameters(rollForwardSessionForm.getSubpartTimePrefsAction());
 			instrOffrRollFwd.setRollForwardDistributions(rollForwardSessionForm.getRollForwardDistributions());
 			instrOffrRollFwd.setCancelledClassActionRollForwardParameter(rollForwardSessionForm.getCancelledClassAction());
+			instrOffrRollFwd.setWaitListsAndProhibitedOverrides(rollForwardSessionForm.getRollForwardWaitListsProhibitedOverrides());
 			for (Iterator saIt = subjects.iterator(); saIt.hasNext();){
 				subjectArea = (SubjectArea) saIt.next();
 				instrOffrRollFwd.rollForwardInstructionalOfferingsForASubjectArea(subjectArea.getSubjectAreaAbbreviation(), fromSession, toSession);
