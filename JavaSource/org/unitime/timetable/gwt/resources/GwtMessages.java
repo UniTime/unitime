@@ -2798,6 +2798,15 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Name is required.")
 	String errorNameIsEmpty();
+
+	@DefaultMessage("<b>{0}</b> can not be greater than <b>{1}</b> characters.")
+	String errorMaxlength(String name, String length);
+
+	@DefaultMessage("<b>{0}</b>")
+	String errorGeneric(String msg);
+
+	@DefaultMessage("<b>{0}</b> is required")
+	String errorRequired(String name);
 	
 	@DefaultMessage("Abbreviation is required.")
 	String errorAbbreviationIsEmpty();
@@ -4342,6 +4351,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Controlling Department:")
 	String propControllingDepartment();
+
+	@DefaultMessage("Status for classes managed by:")
+	String propStatusManagedBy();
 	
 	@DefaultMessage("Coordinates:")
 	String propCoordinates();
@@ -5294,6 +5306,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Position Types")
 	String optionPositionTypes();
 
+	@DefaultMessage("Department Status")
+	String optionDepartmentStatus();
+	
 	@DefaultMessage("Department Status Type")
 	String optionDepartmentStatusType();
 
@@ -6571,6 +6586,15 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Restriction: Reservation is only enforced on the selected level")
 	String reservationInclusiveFalse();
+
+	@DefaultMessage("Departments")
+	String sectDepartments();
+
+	@DefaultMessage("Add Department")
+	String sectAddDepartment();
+
+	@DefaultMessage("Update Data")
+	String buttonDepartmentsUpdateData();
 	
 	@DefaultMessage("Buildings")
 	String sectBuildings();
@@ -6595,6 +6619,18 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("building")
 	String objectBuilding();
+
+	@DefaultMessage("department")
+	String objectDepartment();
+
+	@DefaultMessage("Edit Department")
+	String sectEditDepartment();
+	
+	@DefaultMessage("The department will be deleted. Continue?")
+	String confirmDepartmentDelete();
+
+	@DefaultMessage("Update data has failed: {0}")
+	String failedDepartmentUpdateData(String reason);
 	
 	@DefaultMessage("Update data has failed: {0}")
 	String failedBuildingUpdateData(String reason);
@@ -6741,4 +6777,97 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("{0} by {1}")
 	String lastChange(String date, String manager);
+
+	@DefaultMessage("Departments")
+	@DoNotTranslate
+	String pageDepartments();
+
+	@DefaultMessage("Add Department")
+	@DoNotTranslate
+	String pageAddDepartment();
+	
+	@DefaultMessage("Edit Department")
+	@DoNotTranslate
+	String pageEditDepartment();
+	
+	@DefaultMessage("Code")
+	String colCode();
+	
+	@DefaultMessage("DeptCode")
+	String propDeptCode();
+	
+	@DefaultMessage("Status Type")
+	String propStatusType();
+	
+	@DefaultMessage("Abbv")
+	String colAbbv();
+
+	@DefaultMessage("External <br>Manager")
+	String colExternalManager();
+
+	@DefaultMessage("External Manager:")
+	String propExternalManager();
+
+	@DefaultMessage("External Manager Abbreviation:")
+	String propExternalManagerAbbreviation();
+
+	@DefaultMessage("External Manager Name:")
+	String propExternalManagerName();
+	
+	@DefaultMessage("Dist Pref <br> Priority")
+	String colDistPrefPriority();
+
+	@DefaultMessage("Dist Pref Priority")
+	String propPrefPriority();
+	
+	@DefaultMessage("Allow <br> Required")
+	String colAllowRequired();
+
+	@DefaultMessage("Allow <br> Required Time")
+	String propAllowReqTime();
+	
+	@DefaultMessage("Instructor <br> Pref")
+	String colInstructorPref();
+
+	@DefaultMessage("Instructor <br> Pref")
+	String propInstructorPref();
+
+	@DefaultMessage("Inherit Instructor <br> Prefs")
+	String propInheritInstructorPref();
+	
+	@DefaultMessage("Allow  Required Room")
+	String propAllowReqRoom();
+
+	@DefaultMessage("Allow  Required Distribution")
+	String propAllowReqDist();
+	
+	@DefaultMessage("Allow Student Scheduling")
+	String propAllowStudentScheduling();
+
+	@DefaultMessage("External Funding Dept")
+	String propExternalFundingDept();
+
+	@DefaultMessage("External <br> Funding Dept")
+	String colExternalFundingDept();
+	
+	@DefaultMessage("Event Management")
+	String propAllowEvents();
+	
+	@DefaultMessage("Events")
+	String colEvents();
+
+	@DefaultMessage("Department/Session Default")
+	String defaultDependentStatus();
+
+	@DefaultMessage("Session Default")
+	String departmentStatusDefault();
+	
+	@DefaultMessage("-")
+	String defaultDependentDepartment();
+	
+	@DefaultMessage("Student<br>Scheduling")
+	String colStudentScheduling();
+	
+	@DefaultMessage("Student<br>Scheduling")
+	String propStudentScheduling();
 }

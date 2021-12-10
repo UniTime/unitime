@@ -850,6 +850,11 @@
 					<hasPermission name="Departments"/>
 				</condition>
 			</item>
+			<item name="Departments2" page="departments" type="gwt">
+				<condition>
+					<hasPermission name="Departments"/>
+				</condition>
+			</item>			
 			<item name="Solver Groups" page="solverGroupEdit.do">
 				<condition>
 					<hasPermission name="SolverGroups"/>

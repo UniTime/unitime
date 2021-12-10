@@ -69,7 +69,7 @@ public class AdminExportToCSV implements Exporter {
 		request.setFilter(filter);
 		request.setType(type);
 		
-		SimpleEditInterface data = GwtRpcServlet.execute(request, applicationContext, helper.getSessionContext());
+		final SimpleEditInterface data = GwtRpcServlet.execute(request, applicationContext, helper.getSessionContext());
 		
 		if (data == null)
 			throw new IllegalArgumentException("No data returned.");
