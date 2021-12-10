@@ -158,7 +158,7 @@ public class WaitListsPanel extends P {
 					boolean firstLine = true;
 					for (RequestedCourse rc: request.getRequestedCourse())
 						if (rc.getStatus() == RequestedCourseStatus.ENROLLED) continue request;
-					for (RequestedCourse rc: request.getRequestedCourse()) {
+					for (final RequestedCourse rc: request.getRequestedCourse()) {
 						if (rc.hasCourseId() && rc.isCanWaitList() && rc.getStatus() != RequestedCourseStatus.ENROLLED) {
 							P p = new P("icons");
 							String style = "pending";
