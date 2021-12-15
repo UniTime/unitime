@@ -38,6 +38,8 @@ public class StudentAreaClassificationMajor extends BaseStudentAreaClassificatio
 		if (cmp != 0) return cmp;
 		cmp = (getDegree() == null ? "" : getDegree().getReference()).compareTo(m.getDegree() == null ? "" : m.getDegree().getReference());
 		if (cmp != 0) return cmp;
+		cmp = (getProgram() == null ? "" : getProgram().getReference()).compareTo(m.getProgram() == null ? "" : m.getProgram().getReference());
+		if (cmp != 0) return cmp;
 		cmp = getMajor().getCode().compareTo(m.getMajor().getCode());
 		if (cmp != 0) return cmp;
 		cmp = (getConcentration() == null ? "" : getConcentration().getCode()).compareTo(m.getConcentration() == null ? "" : m.getConcentration().getCode());

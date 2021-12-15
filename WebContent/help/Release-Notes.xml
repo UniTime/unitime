@@ -137,6 +137,15 @@
 				<line>Online / Face-to-face / Has-Time / No-Time (e.g., face-to-face:&lt;2 for students with less than two face-to-face classes, or online:&gt;50% for students with more than half of their classes online)</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Program</name>
+			<description>
+				<line>Added ability to include an optional program field on a student, with academic area, major, and classification.</line>
+				<line>Included in Student XML and Course Requests XML exports and imports.</line>
+				<line>Student Scheduling Dashboards: Added optional Program column and the ability to filter by program.</line>
+				
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>

@@ -92,6 +92,8 @@ public class StudentSectioningExport extends BaseExport {
 	        			majorEl.addAttribute("concentration", acm.getConcentration().getCode());
 	        		if (acm.getDegree() != null)
 	        			majorEl.addAttribute("degree", acm.getDegree().getReference());
+	        		if (acm.getProgram() != null)
+	        			majorEl.addAttribute("program", acm.getProgram().getReference());
 	        		if (acm.getWeight() != null && acm.getWeight() != 1.0)
 	        			majorEl.addAttribute("weight", acm.getWeight().toString());
 	        	}

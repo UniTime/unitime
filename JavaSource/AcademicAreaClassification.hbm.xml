@@ -72,8 +72,15 @@
             class="Degree"
             column="degree_id"
             not-null="false"
-            foreign-key="fk_degree_session"/>
+            foreign-key="fk_student_acmaj_deg"/>
             
+        <many-to-one
+            name="program"
+            class="Program"
+            column="program_id"
+            not-null="false"
+            foreign-key="fk_student_acmaj_prog"/>
+
         <property
             name="weight"
             column="weight"

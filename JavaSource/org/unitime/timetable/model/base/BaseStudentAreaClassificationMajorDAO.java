@@ -71,4 +71,9 @@ public abstract class BaseStudentAreaClassificationMajorDAO extends _RootDAO<Stu
 	public List<StudentAreaClassificationMajor> findByDegree(org.hibernate.Session hibSession, Long degreeId) {
 		return hibSession.createQuery("from StudentAreaClassificationMajor x where x.degree.uniqueId = :degreeId").setLong("degreeId", degreeId).list();
 	}
+
+	@SuppressWarnings("unchecked")
+	public List<StudentAreaClassificationMajor> findByProgram(org.hibernate.Session hibSession, Long programId) {
+		return hibSession.createQuery("from StudentAreaClassificationMajor x where x.program.uniqueId = :programId").setLong("programId", programId).list();
+	}
 }

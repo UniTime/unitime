@@ -900,6 +900,12 @@
 					<hasPermission name="Degrees"/>
 				</condition>
 			</item>
+			<item name="Programs" page="admin" type="gwt">
+				<parameter name="type">program</parameter>
+				<condition>
+					<hasPermission name="Programs"/>
+				</condition>
+			</item>
 			<item name="Majors" page="admin" type="gwt">
 				<parameter name="type">major</parameter>
 				<condition>

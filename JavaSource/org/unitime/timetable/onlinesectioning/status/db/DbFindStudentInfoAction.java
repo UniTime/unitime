@@ -166,6 +166,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 						st.addMajor(acm.getMajor().getCode(), acm.getMajor().getName());
 						st.addConcentration(acm.getConcentration() == null ? null : acm.getConcentration().getCode(), acm.getConcentration() == null ? null : acm.getConcentration().getName());
 						st.addDegree(acm.getDegree() == null ? null : acm.getDegree().getReference(), acm.getDegree() == null ? null : acm.getDegree().getLabel());
+						st.addProgram(acm.getProgram() == null ? null : acm.getProgram().getReference(), acm.getProgram() == null ? null : acm.getProgram().getLabel());
 					}
 					for (StudentAreaClassificationMinor acm: new TreeSet<StudentAreaClassificationMinor>(student.getAreaClasfMinors())) {
 						st.addMinor(acm.getMinor().getCode(), acm.getMinor().getName());
@@ -591,6 +592,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					st.addMajor(acm.getMajor().getCode(), acm.getMajor().getName());
 					st.addConcentration(acm.getConcentration() == null ? null : acm.getConcentration().getCode(), acm.getConcentration() == null ? null : acm.getConcentration().getName());
 					st.addDegree(acm.getDegree() == null ? null : acm.getDegree().getReference(), acm.getDegree() == null ? null : acm.getDegree().getLabel());
+					st.addProgram(acm.getProgram() == null ? null : acm.getProgram().getReference(), acm.getProgram() == null ? null : acm.getProgram().getLabel());
 				}
 				for (StudentAreaClassificationMinor acm: new TreeSet<StudentAreaClassificationMinor>(student.getAreaClasfMinors())) {
 					st.addMinor(acm.getMinor().getCode(), acm.getMinor().getName());

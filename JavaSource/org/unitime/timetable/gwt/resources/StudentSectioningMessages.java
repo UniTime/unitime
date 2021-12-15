@@ -813,6 +813,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Degr")
 	String colDegree();
 	
+	@DefaultMessage("Program")
+	String colProgram();
+	
 	@DefaultMessage("Minor")
 	String colMinor();
 

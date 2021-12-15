@@ -55,6 +55,7 @@ import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMajorConcentration;
 import org.unitime.timetable.model.PosMinor;
+import org.unitime.timetable.model.Program;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
@@ -179,6 +180,12 @@ public class StudentSectioningImport extends BaseImport {
             for (Degree deg: (List<Degree>)getHibSession().createQuery(
             		"from Degree where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
             	code2degree.put(deg.getReference(), deg);
+            }
+            
+            Map<String, Program> code2program = new Hashtable<String, Program>();
+            for (Program prog: (List<Program>)getHibSession().createQuery(
+            		"from Program where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            	code2program.put(prog.getReference(), prog);
             }
             
             Map<String, PosMinor> code2minor = new Hashtable<String, PosMinor>();
@@ -398,11 +405,13 @@ public class StudentSectioningImport extends BaseImport {
         	    			String code = g.attributeValue("code");
         	    			String concentration = g.attributeValue("concentration");
         	    			String degree = g.attributeValue("degree");
+        	    			String program = g.attributeValue("program");
         	    			Double weight = Double.valueOf(g.attributeValue("weight", "1.0"));
         	    			StudentAreaClassificationMajor acm = sMajors.remove(area + ":" + clasf + ":" + code + (concentration == null ? "" : ":" + concentration));
         	    			if (acm != null) {
         	    				acm.setConcentration(concentration == null ? null : code2concentration.get(area + ":" + code + ":" + concentration));
     	        				acm.setDegree(degree == null ? null : code2degree.get(degree));
+    	        				acm.setProgram(program == null ? null : code2program.get(program));
     	        				acm.setWeight(weight);
     	        				if (student.getUniqueId() != null)
                         			updatedStudents.add(student.getUniqueId());
@@ -419,6 +428,7 @@ public class StudentSectioningImport extends BaseImport {
     	        				acm.setStudent(student);
     	        				acm.setConcentration(concentration == null ? null : code2concentration.get(area + ":" + code + ":" + concentration));
     	        				acm.setDegree(degree == null ? null : code2degree.get(degree));
+    	        				acm.setProgram(program == null ? null : code2program.get(program));
     	        				acm.setWeight(weight);
     	        				student.getAreaClasfMajors().add(acm);
     	        				if (student.getUniqueId() != null)

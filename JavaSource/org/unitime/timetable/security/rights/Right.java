@@ -459,6 +459,9 @@ public enum Right {
     
     Degrees(Session.class),
     DegreeEdit(Session.class),
+    
+    Programs(Session.class),
+    ProgramEdit(Session.class),
 
     Minors(Session.class),
     MinorEdit(Session.class),

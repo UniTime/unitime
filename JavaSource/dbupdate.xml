@@ -14195,4 +14195,59 @@
 		<mysql>alter table %SCHEMA%.student add req_intent bigint(10)</mysql>
 		<pgsql>alter table %SCHEMA%.student add req_intent integer null</pgsql>
 	</update>
+	<update version="245" date="15-Dec-2021" comment="Student Program">
+		<plsql>
+			create table %SCHEMA%.program (
+				uniqueid number(20,0) constraint nn_program_id not null,
+				session_id number(20,0) constraint nn_program_session_id not null,
+				reference varchar2(20 char) constraint nn_program_reference not null,
+				label varchar2(60 char) constraint nn_program_label not null,
+				external_uid varchar2(40 char)
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.program add constraint pk_program primary key (uniqueid)</plsql>
+		<plsql>create unique index %SCHEMA%.uk_program on %SCHEMA%.program(session_id, reference)</plsql>
+		<mysql>
+			create table %SCHEMA%.program (
+				uniqueid decimal(20,0) primary key not null,
+				session_id decimal(20,0) not null,
+				reference varchar(20) not null,
+				label varchar(60) not null,
+				external_uid varchar(40)
+			) engine = INNODB
+		</mysql>
+		<mysql>create unique index uk_program on %SCHEMA%.program(session_id, reference)</mysql>
+		<pgsql>
+			create table %SCHEMA%.program (
+				uniqueid bigint not null,
+			    session_id bigint not null,
+			    reference varchar(20) not null,
+			    label varchar(60) not null,
+				external_uid varchar(40)
+			)
+		</pgsql>
+		<pgsql>alter table %SCHEMA%.program add constraint pk_program primary key (uniqueid)</pgsql>
+		<pgsql>create unique index uk_program on %SCHEMA%.program using btree (session_id, reference)</pgsql>
+		<sql>
+			alter table %SCHEMA%.program add constraint fk_program_session foreign key (session_id)
+			references %SCHEMA%.sessions (uniqueid) on delete cascade
+		</sql>
+		<plsql>alter table %SCHEMA%.student_area_clasf_major add program_id number(20,0)</plsql>
+	    <mysql>alter table %SCHEMA%.student_area_clasf_major add program_id decimal(20,0)</mysql>
+	    <pgsql>alter table %SCHEMA%.student_area_clasf_major add program_id bigint</pgsql>
+	    <sql>
+			alter table %SCHEMA%.student_area_clasf_major add constraint fk_student_acmaj_prog foreign key (program_id)
+			references %SCHEMA%.program (uniqueid) on delete set null
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'Programs'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'Majors'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'ProgramEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'MajorEdit'
+		</sql>
+	</update>	
 </dbupdate>

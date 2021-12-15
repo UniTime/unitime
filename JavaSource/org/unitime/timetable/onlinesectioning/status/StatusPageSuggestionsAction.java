@@ -740,6 +740,10 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				for (XAreaClassificationMajor acm: student().getMajors())
 					if (eq(acm.getDegree(), term)) return true;
 			}
+			if ("program".equals(attr)) {
+				for (XAreaClassificationMajor acm: student().getMajors())
+					if (eq(acm.getProgram(), term)) return true;
+			}
 			if ("minor".equals(attr)) {
 				for (XAreaClassificationMajor acm: student().getMinors())
 					if (eq(acm.getMajor(), term)) return true;
@@ -1604,6 +1608,9 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			} else if ("degree".equals(attr)) {
 				for (XAreaClassificationMajor acm: student().getMajors())
 					if (eq(acm.getDegree(), term)) return true;
+			} else if ("program".equals(attr)) {
+				for (XAreaClassificationMajor acm: student().getMajors())
+					if (eq(acm.getProgram(), term)) return true;
 			} else if ("minor".equals(attr)) {
 				for (XAreaClassificationMajor acm: student().getMinors())
 					if (eq(acm.getMajor(), term)) return true;

@@ -861,7 +861,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private long iId;
 		private Long iSessionId = null;
 		private String iExternalId, iName, iEmail;
-		private List<CodeLabel> iArea, iClassification, iMajor, iAccommodation, iMinor, iConcentration, iDegree;
+		private List<CodeLabel> iArea, iClassification, iMajor, iAccommodation, iMinor, iConcentration, iDegree, iProgram;
 		private List<String> iAdvisor;
 		private Set<Group> iGroups;
 		private boolean iCanShowExternalId = false, iCanSelect = false;
@@ -988,6 +988,28 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			iDegree.add(new CodeLabel(degree, label));
 		}
 		public List<CodeLabel> getDegrees() { return iDegree; }
+		
+		public boolean hasProgram() {
+			if (iProgram == null || iProgram.isEmpty()) return false;
+			for (CodeLabel prog: iProgram)
+				if (!prog.isEmpty()) return true;
+			return false;
+		}
+		public String getProgram(String delim) { 
+			if (iProgram == null) return "";
+			String ret = "";
+			for (Iterator<CodeLabel> i = iProgram.iterator(); i.hasNext(); ) {
+				CodeLabel prog = i.next();
+				if (prog.hasCode()) ret += prog.getCode();
+				if (i.hasNext()) ret += delim;
+			}
+			return ret;
+		}
+		public void addProgram(String program, String label) {
+			if (iProgram == null) iProgram = new ArrayList<CodeLabel>();
+			iProgram.add(new CodeLabel(program, label));
+		}
+		public List<CodeLabel> getPrograms() { return iProgram; }
 		
 		public boolean hasAdvisor() { return iAdvisor != null && !iAdvisor.isEmpty(); }
 		public String getAdvisor(String delim) { 

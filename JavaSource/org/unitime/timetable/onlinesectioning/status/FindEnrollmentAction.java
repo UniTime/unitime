@@ -235,6 +235,7 @@ public class FindEnrollmentAction extends WaitlistedOnlineSectioningAction<List<
 				st.addMajor(acm.getMajor(), acm.getMajorLabel());
 				st.addConcentration(acm.getConcentration(), acm.getConcentrationLabel());
 				st.addDegree(acm.getDegree(), acm.getDegreeLabel());
+				st.addProgram(acm.getProgram(), acm.getProgramLabel());
 			}
 			for (XAreaClassificationMajor acm: student.getMinors()) {
 				st.addMinor(acm.getMajor(), acm.getMajorLabel());

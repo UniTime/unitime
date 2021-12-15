@@ -2216,6 +2216,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         			acm.getMajor().getCode(), acm.getMajor().getName(),
         			(acm.getConcentration() == null ? null : acm.getConcentration().getCode()), (acm.getConcentration() == null ? null : acm.getConcentration().getName()),
         			(acm.getDegree() == null ? null : acm.getDegree().getReference()), (acm.getDegree() == null ? null : acm.getDegree().getLabel()),
+        			(acm.getProgram() == null ? null : acm.getProgram().getReference()), (acm.getProgram() == null ? null : acm.getProgram().getLabel()),
         			acm.getWeight()));
         }
         for (StudentAreaClassificationMinor acm: s.getAreaClasfMinors()) {

@@ -238,6 +238,19 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		}
 		response.add("degree", degrees);
 		
+		List<Entity> programs = new ArrayList<Entity>();
+		for (Object[] o: (List<Object[]>)query.select("aac.program.uniqueId, aac.program.reference, aac.program.label, count(distinct s)")
+				.order("aac.program.reference, aac.program.label").group("aac.program.uniqueId, aac.program.reference, aac.program.label")
+				.exclude("program").exclude("course").exclude("lookup").exclude("prefer").exclude("require").exclude("im").exclude("credit").query(helper.getHibSession()).list()) {
+			Entity c = new Entity(
+					(Long)o[0],
+					(String)o[1],
+					(String)o[2]);
+			c.setCount(((Number)o[3]).intValue());
+			programs.add(c);
+		}
+		response.add("program", programs);
+		
 		List<Entity> groups = new ArrayList<Entity>();
 		for (Object[] o: (List<Object[]>)query.select("g.uniqueId, g.groupAbbreviation, g.groupName, count(distinct s)")
 				.from("inner join s.groups g").where("g.type is null")
@@ -761,6 +774,17 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				id++;
 			}
 			query.addWhere("degree", "aac.degree.reference in (" + degr + ")");
+		}
+		
+		if (request.hasOptions("program")) {
+			String prog = "";
+			int id = 0;
+			for (String d: request.getOptions("program")) {
+				prog += (prog.isEmpty() ? "" : ",") + ":Xpr" + id;
+				query.addParameter("program", "Xpr" + id, d);
+				id++;
+			}
+			query.addWhere("program", "aac.program.reference in (" + prog + ")");
 		}
 
 		if (request.hasOptions("major")) {
@@ -1440,7 +1464,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 	public static boolean hasNoMatchCourses(FilterRpcRequest request, OnlineSectioningHelper helper) {
 		if (request.hasOptions("prefer") || request.hasOptions("require"))
 			return false;
-		if (request.hasOptions("area") || request.hasOptions("classification") || request.hasOptions("degree") || request.hasOptions("major") || request.hasOptions("concentration") || request.hasOptions("minor"))
+		if (request.hasOptions("area") || request.hasOptions("classification") || request.hasOptions("degree") || request.hasOptions("program") || request.hasOptions("major") || request.hasOptions("concentration") || request.hasOptions("minor"))
 			return false;
 		if (request.hasOptions("group") || request.hasOptions("accommodation"))
 			return false;

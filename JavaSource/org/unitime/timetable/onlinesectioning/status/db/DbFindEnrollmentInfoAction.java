@@ -1012,6 +1012,10 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
 					if (acm.getDegree() != null && eq(acm.getDegree().getReference(), term)) return true;
 			}
+			if ("program".equals(attr)) {
+				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
+					if (acm.getProgram() != null && eq(acm.getProgram().getReference(), term)) return true;
+			}
 			if ("minor".equals(attr)) {
 				for (StudentAreaClassificationMinor acm: student().getAreaClasfMinors())
 					if (eq(acm.getMinor().getCode(), term)) return true;
@@ -1843,6 +1847,9 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			} else if ("degree".equals(attr)) {
 				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
 					if (acm.getDegree() != null && eq(acm.getDegree().getReference(), term)) return true;
+			} else if ("program".equals(attr)) {
+				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
+					if (acm.getProgram() != null && eq(acm.getProgram().getReference(), term)) return true;
 			} else if ("minor".equals(attr)) {
 				for (StudentAreaClassificationMinor acm: student().getAreaClasfMinors())
 					if (eq(acm.getMinor().getCode(), term)) return true;
