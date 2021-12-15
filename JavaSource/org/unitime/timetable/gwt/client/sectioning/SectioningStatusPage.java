@@ -3748,6 +3748,7 @@ public class SectioningStatusPage extends Composite {
 		
 		private ACM(Collection<ClassAssignmentInterface.CodeLabel> groups) {
 			setValue(groups);
+			getElement().getStyle().setWhiteSpace(WhiteSpace.NOWRAP);
 		}
 
 		@Override

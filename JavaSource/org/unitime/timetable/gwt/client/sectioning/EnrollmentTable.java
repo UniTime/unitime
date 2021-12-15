@@ -1753,6 +1753,7 @@ public class EnrollmentTable extends Composite {
 					if (group.hasLabel()) g.setTitle(group.getLabel());
 					add(g);
 				}
+				getElement().getStyle().setWhiteSpace(WhiteSpace.NOWRAP);
 			}
 		}
 	}

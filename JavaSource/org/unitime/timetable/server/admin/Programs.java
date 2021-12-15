@@ -56,9 +56,9 @@ public class Programs implements AdminTable {
 	@PreAuthorize("checkPermission('Programs')")
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
 		SimpleEditInterface data = new SimpleEditInterface(
-				new Field(MESSAGES.fieldExternalId(), FieldType.text, 120, 40, Flag.READ_ONLY),
-				new Field(MESSAGES.fieldCode(), FieldType.text, 120, 40, Flag.NOT_EMPTY, Flag.UNIQUE),
-				new Field(MESSAGES.fieldName(), FieldType.text, 300, 100, Flag.NOT_EMPTY));
+				new Field(MESSAGES.fieldExternalId(), FieldType.text, 240, 40, Flag.READ_ONLY),
+				new Field(MESSAGES.fieldCode(), FieldType.text, 120, 20, Flag.NOT_EMPTY, Flag.UNIQUE),
+				new Field(MESSAGES.fieldName(), FieldType.text, 360, 60, Flag.NOT_EMPTY));
 		data.setSortBy(1,2);
 		for (Program program: Program.findBySession(hibSession, context.getUser().getCurrentAcademicSessionId())) {
 			Record r = data.addRecord(program.getUniqueId());
