@@ -106,7 +106,7 @@ Validator (commons-validator-1.3.1.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://jakarta.apache.org/commons/${pom.artifactId.substring(8)}/
 
-Non-Blocking Reactive Foundation for the JVM (reactor-core-3.4.5.jar)
+Non-Blocking Reactive Foundation for the JVM (reactor-core-3.4.6.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/reactor/reactor-core
 
@@ -277,39 +277,39 @@ SLF4J LOG4J-12 Binding (slf4j-log4j12-1.7.12.jar)
 	under MIT License
 	http://www.slf4j.org
 
-Spring AOP (spring-aop-5.3.6.jar)
+Spring AOP (spring-aop-5.3.13.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Beans (spring-beans-5.3.6.jar)
+Spring Beans (spring-beans-5.3.13.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Context (spring-context-5.3.6.jar)
+Spring Context (spring-context-5.3.13.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Context Support (spring-context-support-5.3.6.jar)
+Spring Context Support (spring-context-support-5.3.13.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Core (spring-core-5.3.6.jar)
+Spring Core (spring-core-5.3.13.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Expression Language (SpEL) (spring-expression-5.3.6.jar)
+Spring Expression Language (SpEL) (spring-expression-5.3.13.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Commons Logging Bridge (spring-jcl-5.3.6.jar)
+Spring Commons Logging Bridge (spring-jcl-5.3.13.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring JDBC (spring-jdbc-5.3.6.jar)
+Spring JDBC (spring-jdbc-5.3.13.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Messaging (spring-messaging-5.3.6.jar)
+Spring Messaging (spring-messaging-5.3.13.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
@@ -317,11 +317,11 @@ Spring Struts (spring-struts-3.2.18.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/SpringSource/spring-framework
 
-Spring Transaction (spring-tx-5.3.6.jar)
+Spring Transaction (spring-tx-5.3.13.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Web (spring-web-5.3.6.jar)
+Spring Web (spring-web-5.3.13.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
@@ -329,19 +329,19 @@ Spring Web MVC (spring-webmvc-3.2.18.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/SpringSource/spring-framework
 
-Spring Integration Core (spring-integration-core-5.4.6.jar)
+Spring Integration Core (spring-integration-core-5.4.12.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-integration
 
-Spring Integration File Support (spring-integration-file-5.4.6.jar)
+Spring Integration File Support (spring-integration-file-5.4.12.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-integration
 
-Spring Integration Mail Support (spring-integration-mail-5.4.6.jar)
+Spring Integration Mail Support (spring-integration-mail-5.4.12.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-integration
 
-spring-ldap-core (spring-ldap-core-2.3.3.RELEASE.jar)
+spring-ldap-core (spring-ldap-core-2.3.4.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://www.springframework.org/ldap
 
@@ -349,35 +349,35 @@ Spring Retry (spring-retry-1.3.1.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://www.springsource.org
 
-spring-security-acl (spring-security-acl-5.4.6.jar)
+spring-security-acl (spring-security-acl-5.4.9.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/spring-security
 
-spring-security-aspects (spring-security-aspects-5.4.6.jar)
+spring-security-aspects (spring-security-aspects-5.4.9.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/spring-security
 
-spring-security-cas (spring-security-cas-5.4.6.jar)
+spring-security-cas (spring-security-cas-5.4.9.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/spring-security
 
-spring-security-config (spring-security-config-5.4.6.jar)
+spring-security-config (spring-security-config-5.4.9.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/spring-security
 
-spring-security-core (spring-security-core-5.4.6.jar)
+spring-security-core (spring-security-core-5.4.9.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/spring-security
 
-spring-security-ldap (spring-security-ldap-5.4.6.jar)
+spring-security-ldap (spring-security-ldap-5.4.9.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/spring-security
 
-spring-security-taglibs (spring-security-taglibs-5.4.6.jar)
+spring-security-taglibs (spring-security-taglibs-5.4.9.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/spring-security
 
-spring-security-web (spring-security-web-5.4.6.jar)
+spring-security-web (spring-security-web-5.4.9.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/spring-security
 

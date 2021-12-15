@@ -27,6 +27,7 @@
 	<display-name>
 		UniTime
 	</display-name>
+	<absolute-ordering/>
 	
 	<description>
 		University Timetabling Application

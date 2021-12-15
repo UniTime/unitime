@@ -188,10 +188,9 @@
 			<description>
 				<line>GWT updated to version 2.9.0 (was 2.8.2).</line>
 				<line>Javassist updated to version 3.28.0 (was 3.18.2).</line>
-				<line>GWT updated to version 2.9.0 (was 2.8.2).</line>
-				<line>Spring core libraries updated to version 5.3.6 (was 4.3.40).</line>
-				<line>Spring security updated to 5.4.6 (was 4.2.20).</line>
-				<line>Spring integration updated to 5.4.6 (was 4.3.24).</line>
+				<line>Spring core libraries updated to version 5.3.13 (was 4.3.40).</line>
+				<line>Spring security updated to 5.4.9 (was 4.2.20).</line>
+				<line>Spring integration updated to 5.4.12 (was 4.3.24).</line>
 			</description>
 		</item>
 	</category>
