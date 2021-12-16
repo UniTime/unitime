@@ -1014,7 +1014,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			}
 			if ("program".equals(attr)) {
 				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
-					if (acm.getProgram() != null && eq(acm.getProgram().getReference(), term)) return true;
+					if (acm.getProgram() != null && like(acm.getProgram().getReference(), term)) return true;
 			}
 			if ("minor".equals(attr)) {
 				for (StudentAreaClassificationMinor acm: student().getAreaClasfMinors())
@@ -1713,6 +1713,15 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			if (name == null) return false;
 			return name.equalsIgnoreCase(term);
 		}
+		
+		private boolean like(String name, String term) {
+			if (name == null) return false;
+			if (term.indexOf('%') >= 0) {
+				return name.matches("(?i)" + term.replaceAll("%", ".*"));
+			} else {
+				return name.equalsIgnoreCase(term);
+			}
+		}
 
 		private boolean has(String name, String term) {
 			if (name == null) return false;
@@ -1849,7 +1858,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					if (acm.getDegree() != null && eq(acm.getDegree().getReference(), term)) return true;
 			} else if ("program".equals(attr)) {
 				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
-					if (acm.getProgram() != null && eq(acm.getProgram().getReference(), term)) return true;
+					if (acm.getProgram() != null && like(acm.getProgram().getReference(), term)) return true;
 			} else if ("minor".equals(attr)) {
 				for (StudentAreaClassificationMinor acm: student().getAreaClasfMinors())
 					if (eq(acm.getMinor().getCode(), term)) return true;
@@ -2023,6 +2032,15 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 		private boolean eq(String name, String term) {
 			if (name == null) return false;
 			return name.equalsIgnoreCase(term);
+		}
+		
+		private boolean like(String name, String term) {
+			if (name == null) return false;
+			if (term.indexOf('%') >= 0) {
+				return name.matches("(?i)" + term.replaceAll("%", ".*"));
+			} else {
+				return name.equalsIgnoreCase(term);
+			}
 		}
 
 		private boolean has(String name, String term) {

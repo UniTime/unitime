@@ -742,7 +742,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			}
 			if ("program".equals(attr)) {
 				for (XAreaClassificationMajor acm: student().getMajors())
-					if (eq(acm.getProgram(), term)) return true;
+					if (like(acm.getProgram(), term)) return true;
 			}
 			if ("minor".equals(attr)) {
 				for (XAreaClassificationMajor acm: student().getMinors())
@@ -1479,6 +1479,15 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			if (name == null) return false;
 			return name.equalsIgnoreCase(term);
 		}
+		
+		private boolean like(String name, String term) {
+			if (name == null) return false;
+			if (term.indexOf('%') >= 0) {
+				return name.matches("(?i)" + term.replaceAll("%", ".*"));
+			} else {
+				return name.equalsIgnoreCase(term);
+			}
+		}
 
 		private boolean has(String name, String term) {
 			if (name == null) return false;
@@ -1610,7 +1619,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					if (eq(acm.getDegree(), term)) return true;
 			} else if ("program".equals(attr)) {
 				for (XAreaClassificationMajor acm: student().getMajors())
-					if (eq(acm.getProgram(), term)) return true;
+					if (like(acm.getProgram(), term)) return true;
 			} else if ("minor".equals(attr)) {
 				for (XAreaClassificationMajor acm: student().getMinors())
 					if (eq(acm.getMajor(), term)) return true;
@@ -1807,6 +1816,15 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		private boolean eq(String name, String term) {
 			if (name == null) return false;
 			return name.equalsIgnoreCase(term);
+		}
+		
+		private boolean like(String name, String term) {
+			if (name == null) return false;
+			if (term.indexOf('%') >= 0) {
+				return name.matches("(?i)" + term.replaceAll("%", ".*"));
+			} else {
+				return name.equalsIgnoreCase(term);
+			}
 		}
 
 		private boolean has(String name, String term) {

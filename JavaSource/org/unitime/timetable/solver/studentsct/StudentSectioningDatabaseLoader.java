@@ -3272,6 +3272,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 			if ("area".equals(attr)) {
 				for (AreaClasfMajor acm: student().getMajors())
 					if (eq(acm.getArea(), term)) return true;
+				for (AreaClasfMajor acm: student().getMinors())
+					if (eq(acm.getArea(), term)) return true;
 			} else if ("clasf".equals(attr) || "classification".equals(attr)) {
 				for (AreaClasfMajor acm: student().getMajors())
 					if (eq(acm.getClasf(), term)) return true;
@@ -3281,6 +3283,18 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 			} else if ("group".equals(attr)) {
 				for (Group group: student().getGroups())
 					if (eq(group.getName(), term)) return true;
+			} else if ("concentration".equals(attr)) {
+				for (AreaClasfMajor acm: student().getMajors())
+					if (acm.getConcentration() != null && eq(acm.getConcentration(), term)) return true;
+			} else if ("degree".equals(attr)) {
+				for (AreaClasfMajor acm: student().getMajors())
+					if (acm.getDegree() != null && eq(acm.getDegree(), term)) return true;
+			} else if ("program".equals(attr)) {
+				for (AreaClasfMajor acm: student().getMajors())
+					if (acm.getProgram() != null && like(acm.getProgram(), term)) return true;
+			} else if ("minor".equals(attr)) {
+				for (AreaClasfMajor acm: student().getMinors())
+					if (eq(acm.getMajor(), term)) return true;
 			}
 			return false;
 		}
@@ -3288,6 +3302,15 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 		private boolean eq(String name, String term) {
 			if (name == null) return false;
 			return name.equalsIgnoreCase(term);
+		}
+		
+		private boolean like(String name, String term) {
+			if (name == null) return false;
+			if (term.indexOf('%') >= 0) {
+				return name.matches("(?i)" + term.replaceAll("%", ".*"));
+			} else {
+				return name.equalsIgnoreCase(term);
+			}
 		}
 	}
 }

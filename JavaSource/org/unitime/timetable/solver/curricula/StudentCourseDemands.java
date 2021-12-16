@@ -97,17 +97,24 @@ public interface StudentCourseDemands {
 	
 	public static class AreaClasfMajor implements Comparable<AreaClasfMajor> {
 		String iArea, iClasf, iMajor, iConcentration;
+		String iDegree, iProgram;
 		public AreaClasfMajor(String area, String clasf, String major) {
 			iArea = area; iClasf = clasf; iMajor = major;
 		}
 		public AreaClasfMajor(String area, String clasf, String major, String concentration) {
 			iArea = area; iClasf = clasf; iMajor = major; iConcentration = concentration;
 		}
+		public AreaClasfMajor(String area, String clasf, String major, String concentration, String degree, String program) {
+			iArea = area; iClasf = clasf; iMajor = major; iConcentration = concentration;
+			iDegree = degree; iProgram = program;
+		}
 		
 		public String getArea() { return iArea; }
 		public String getClasf() { return iClasf; }
 		public String getMajor() { return iMajor; }
 		public String getConcentration() { return iConcentration; }
+		public String getDegree() { return iDegree; }
+		public String getProgram() { return iProgram; }
 		
 		public String toString() {
 			return getArea() + 
@@ -205,7 +212,9 @@ public interface StudentCourseDemands {
 			for (StudentAreaClassificationMajor acm: student.getAreaClasfMajors()) {
 				if (acm.getWeight() != null && acm.getWeight() <= 0.0001) continue; // ignore ACMs with zero or close-zero weights
 				iMajors.add(new AreaClasfMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode(),
-						acm.getConcentration() == null ? null : acm.getConcentration().getCode()));
+						acm.getConcentration() == null ? null : acm.getConcentration().getCode(),
+						acm.getDegree() == null ? null : acm.getDegree().getReference(),
+						acm.getProgram() == null ? null : acm.getProgram().getReference()));
 				if (projections != null) {
 					rule += (acm.getWeight() == null ? 1.0 : acm.getWeight()) * projections.getProjection(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode());
 					total += (acm.getWeight() == null ? 1.0 : acm.getWeight());

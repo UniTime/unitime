@@ -777,14 +777,29 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		}
 		
 		if (request.hasOptions("program")) {
-			String prog = "";
-			int id = 0;
+			boolean like = false;
 			for (String d: request.getOptions("program")) {
-				prog += (prog.isEmpty() ? "" : ",") + ":Xpr" + id;
-				query.addParameter("program", "Xpr" + id, d);
-				id++;
+				if (d.indexOf('%') >= 0) { like = true; break; }
 			}
-			query.addWhere("program", "aac.program.reference in (" + prog + ")");
+			if (like) {
+				String q = "";
+				int id = 0;
+				for (String d: request.getOptions("program")) {
+					q += (q.isEmpty() ? "" : " or ") + "aac.program.reference like :Xpr" + id;
+					query.addParameter("program", "Xpr" + id, d);
+					id++;
+				}
+				query.addWhere("program", q);
+			} else {
+				String prog = "";
+				int id = 0;
+				for (String d: request.getOptions("program")) {
+					prog += (prog.isEmpty() ? "" : ",") + ":Xpr" + id;
+					query.addParameter("program", "Xpr" + id, d);
+					id++;
+				}
+				query.addWhere("program", "aac.program.reference in (" + prog + ")");
+			}
 		}
 
 		if (request.hasOptions("major")) {
