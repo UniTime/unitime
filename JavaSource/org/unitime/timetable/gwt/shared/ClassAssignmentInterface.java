@@ -398,6 +398,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private String iDatePattern = null;
 		private String iSubject, iCourseNbr, iSubpart, iSection, iParentSection, iNumber, iTitle;
 		private int[] iLimit = null;
+		private Boolean iAvailable = null;
 		private boolean iPin = false;
 		private int iBackToBackDistance = 0;
 		private String iBackToBackRooms = null;
@@ -621,6 +622,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			return (iLimit[1] > iLimit[0] ? iLimit[1] - iLimit[0] : 0) + " / " + iLimit[1];
 		}
 		public boolean isAvailable() {
+			if (iAvailable != null) return iAvailable;
 			if (iLimit == null) return true;
 			if (iLimit[1] < 0) return true;
 			if (iLimit[0] < 0) return (iLimit[1] != 0);
@@ -630,6 +632,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			if (iLimit == null) return 9999;
 			if (iLimit[0] < 0) return 9999;
 			return iLimit[1] - iLimit[0];
+		}
+		public void setAvailable(Boolean available) {
+			iAvailable = available;
 		}
 		
 		public boolean isPinned() { return iPin; }

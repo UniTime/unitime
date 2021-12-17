@@ -85,11 +85,43 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 			}
 		return false;
 	}
+	
+	protected boolean isAvailable(XEnrollments enrollments, XStudent student, XOffering offering, XCourse course, XConfig config, XSection section) {
+		if (student == null) return true;
+		boolean hasMustBeUsed = false;
+		boolean hasReservation = false;
+		boolean canOverLimit = false;
+		for (XReservation r: offering.getReservations()) {
+			if (!r.isApplicable(student, course)) continue; // reservation does not apply to this student
+			boolean mustBeUsed = (r.mustBeUsed() && (r.isAlwaysExpired() || !r.isExpired()));
+			if (mustBeUsed && !hasMustBeUsed) {
+				hasReservation = false; hasMustBeUsed = true; canOverLimit = false;
+			}
+			if (hasMustBeUsed && !mustBeUsed) continue; // student must use a reservation, but this one is not it
+			if (r.getLimit() >= 0 && r.getLimit() <= enrollments.countEnrollmentsForReservation(r.getReservationId())) continue; // reservation is full
+			if (r.isIncluded(offering, config.getConfigId(), section)) {
+				hasReservation = true;
+				if (r.canAssignOverLimit()) canOverLimit = true;
+			}
+		}
+		if (!canOverLimit) {
+			if (section.getLimit() >= 0 && enrollments.countEnrollmentsForSection(section.getSectionId()) >= section.getLimit()) return false;
+			if (config.getLimit() >= 0 && enrollments.countEnrollmentsForConfig(config.getConfigId()) >= config.getLimit()) return false;
+			if (course.getLimit() >= 0 && enrollments.countEnrollmentsForCourse(course.getCourseId()) >= course.getLimit()) return false;
+		}
+		if (hasReservation) return true;
+		if (hasMustBeUsed) return true;
+		if (offering.getUnreservedSpace(enrollments) <= 0) return false;
+		if (offering.getUnreservedConfigSpace(config.getConfigId(), enrollments) <= 0) return false;
+		if (offering.getUnreservedSectionSpace(section.getSectionId(), enrollments) <= 0) return false;
+		return true;
+	}
 
 	@Override
 	public Collection<ClassAssignment> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		ArrayList<ClassAssignmentInterface.ClassAssignment> ret = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 		Lock lock = server.readLock();
+		boolean checkAvailability = server.getConfig().getPropertyBoolean("ListClasses.CheckClasAvailability", true);
 		try {
 			XCourseId id = server.getCourse(getCourse());
 			if (id == null) throw new SectioningException(MSG.exceptionCourseDoesNotExist(getCourse()));
@@ -130,6 +162,8 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 								if (enrollment.getStudentId().equals(getStudentId())) { a.setSaved(true); break; }
 							}
 						}
+						if (!a.isSaved() && checkAvailability)
+							a.setAvailable(isAvailable(enrollments, student, offering, c, config, section));
 						a.addNote(section.getNote());
 						a.setCredit(subpart.getCredit(c.getCourseId()));
 						a.setCreditRange(subpart.getCreditMin(c.getCourseId()), subpart.getCreditMax(c.getCourseId()));
