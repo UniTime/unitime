@@ -3280,9 +3280,6 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 			} else if ("major".equals(attr)) {
 				for (AreaClasfMajor acm: student().getMajors())
 					if (eq(acm.getMajor(), term)) return true;
-			} else if ("group".equals(attr)) {
-				for (Group group: student().getGroups())
-					if (eq(group.getName(), term)) return true;
 			} else if ("concentration".equals(attr)) {
 				for (AreaClasfMajor acm: student().getMajors())
 					if (acm.getConcentration() != null && eq(acm.getConcentration(), term)) return true;
@@ -3292,9 +3289,30 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 			} else if ("program".equals(attr)) {
 				for (AreaClasfMajor acm: student().getMajors())
 					if (acm.getProgram() != null && like(acm.getProgram(), term)) return true;
+			} else if ("primary-area".equals(attr)) {
+				AreaClasfMajor acm = student().getPrimaryMajor();
+				if (acm != null && eq(acm.getArea(), term)) return true;
+			} else if ("primary-clasf".equals(attr) || "primary-classification".equals(attr)) {
+				AreaClasfMajor acm = student().getPrimaryMajor();
+				if (acm != null && eq(acm.getClasf(), term)) return true;
+			} else if ("primary-major".equals(attr)) {
+				AreaClasfMajor acm = student().getPrimaryMajor();
+				if (acm != null && eq(acm.getMajor(), term)) return true;
+			} else if ("primary-concentration".equals(attr)) {
+				AreaClasfMajor acm = student().getPrimaryMajor();
+				if (acm != null && acm.getConcentration() != null && eq(acm.getConcentration(), term)) return true;
+			} else if ("primary-degree".equals(attr)) {
+				AreaClasfMajor acm = student().getPrimaryMajor();
+				if (acm != null && acm.getDegree() != null && eq(acm.getDegree(), term)) return true;
+			} else if ("primary-program".equals(attr)) {
+				AreaClasfMajor acm = student().getPrimaryMajor();
+				if (acm != null && acm.getProgram() != null && like(acm.getProgram(), term)) return true;
 			} else if ("minor".equals(attr)) {
 				for (AreaClasfMajor acm: student().getMinors())
 					if (eq(acm.getMajor(), term)) return true;
+			} else if ("group".equals(attr)) {
+				for (Group group: student().getGroups())
+					if (eq(group.getName(), term)) return true;
 			}
 			return false;
 		}

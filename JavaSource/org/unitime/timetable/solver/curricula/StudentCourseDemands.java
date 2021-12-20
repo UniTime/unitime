@@ -96,6 +96,7 @@ public interface StudentCourseDemands {
 	public Set<WeightedCourseOffering> getCourses(Long studentId);
 	
 	public static class AreaClasfMajor implements Comparable<AreaClasfMajor> {
+		Double iWeight = 0.0;
 		String iArea, iClasf, iMajor, iConcentration;
 		String iDegree, iProgram;
 		public AreaClasfMajor(String area, String clasf, String major) {
@@ -104,9 +105,9 @@ public interface StudentCourseDemands {
 		public AreaClasfMajor(String area, String clasf, String major, String concentration) {
 			iArea = area; iClasf = clasf; iMajor = major; iConcentration = concentration;
 		}
-		public AreaClasfMajor(String area, String clasf, String major, String concentration, String degree, String program) {
+		public AreaClasfMajor(String area, String clasf, String major, String concentration, String degree, String program, Double weight) {
 			iArea = area; iClasf = clasf; iMajor = major; iConcentration = concentration;
-			iDegree = degree; iProgram = program;
+			iDegree = degree; iProgram = program; iWeight = weight;
 		}
 		
 		public String getArea() { return iArea; }
@@ -115,6 +116,7 @@ public interface StudentCourseDemands {
 		public String getConcentration() { return iConcentration; }
 		public String getDegree() { return iDegree; }
 		public String getProgram() { return iProgram; }
+		public double getWeight() { return iWeight == null ? 0.0 : iWeight.doubleValue(); }
 		
 		public String toString() {
 			return getArea() + 
@@ -135,6 +137,7 @@ public interface StudentCourseDemands {
 		
 		@Override
 		public int compareTo(AreaClasfMajor ac) {
+			if (getWeight() != ac.getWeight()) return (getWeight() > ac.getWeight() ? -1 : 1);
 			return toString().compareTo(ac.toString());
 		}
 	}
@@ -187,7 +190,7 @@ public interface StudentCourseDemands {
 	public static class WeightedStudentId {
 		private long iStudentId;
 		private float iWeight;
-		private Set<AreaClasfMajor> iMajors = new TreeSet<AreaClasfMajor>();
+		private TreeSet<AreaClasfMajor> iMajors = new TreeSet<AreaClasfMajor>();
 		private Set<AreaClasfMajor> iMinors = new TreeSet<AreaClasfMajor>();
 		private Set<String> iCurricula = new TreeSet<String>();
 		private Set<Group> iGroups = new HashSet<Group>();
@@ -214,7 +217,8 @@ public interface StudentCourseDemands {
 				iMajors.add(new AreaClasfMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode(),
 						acm.getConcentration() == null ? null : acm.getConcentration().getCode(),
 						acm.getDegree() == null ? null : acm.getDegree().getReference(),
-						acm.getProgram() == null ? null : acm.getProgram().getReference()));
+						acm.getProgram() == null ? null : acm.getProgram().getReference(),
+						acm.getWeight()));
 				if (projections != null) {
 					rule += (acm.getWeight() == null ? 1.0 : acm.getWeight()) * projections.getProjection(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode());
 					total += (acm.getWeight() == null ? 1.0 : acm.getWeight());
@@ -307,6 +311,10 @@ public interface StudentCourseDemands {
 		
 		public Set<AreaClasfMajor> getMajors() { return iMajors; }
 		public Set<AreaClasfMajor> getMinors() { return iMinors; }
+		public AreaClasfMajor getPrimaryMajor() {
+			if (iMajors == null || iMajors.isEmpty()) return null;
+			return iMajors.first();
+		}
 		
 		public Set<Group> getGroups() { return iGroups; }
 		public Group getGroup(String name) {

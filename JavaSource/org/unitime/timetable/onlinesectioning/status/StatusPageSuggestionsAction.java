@@ -744,6 +744,34 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				for (XAreaClassificationMajor acm: student().getMajors())
 					if (like(acm.getProgram(), term)) return true;
 			}
+			
+			if ("primary-area".equals(attr)) {
+				XAreaClassificationMajor acm = student().getPrimaryMajor();
+				if (acm != null && eq(acm.getArea(), term)) return true;
+			}
+			
+			if ("primary-clasf".equals(attr) || "primary-classification".equals(attr)) {
+				XAreaClassificationMajor acm = student().getPrimaryMajor();
+				if (acm != null && eq(acm.getClassification(), term)) return true;
+			}
+			
+			if ("primary-major".equals(attr)) {
+				XAreaClassificationMajor acm = student().getPrimaryMajor();
+				if (acm != null && eq(acm.getMajor(), term)) return true;
+			}
+			if ("primary-concentration".equals(attr)) {
+				XAreaClassificationMajor acm = student().getPrimaryMajor();
+				if (acm != null && eq(acm.getConcentration(), term)) return true;
+			}
+			if ("primary-degree".equals(attr)) {
+				XAreaClassificationMajor acm = student().getPrimaryMajor();
+				if (acm != null && eq(acm.getDegree(), term)) return true;
+			}
+			if ("primary-program".equals(attr)) {
+				XAreaClassificationMajor acm = student().getPrimaryMajor();
+				if (acm != null && like(acm.getProgram(), term)) return true;
+			}
+			
 			if ("minor".equals(attr)) {
 				for (XAreaClassificationMajor acm: student().getMinors())
 					if (eq(acm.getMajor(), term)) return true;
@@ -1620,6 +1648,24 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			} else if ("program".equals(attr)) {
 				for (XAreaClassificationMajor acm: student().getMajors())
 					if (like(acm.getProgram(), term)) return true;
+			} else if ("primary-area".equals(attr)) {
+				XAreaClassificationMajor acm = student().getPrimaryMajor();
+				if (acm != null && eq(acm.getArea(), term)) return true;
+			} else if ("primary-clasf".equals(attr) || "primary-classification".equals(attr)) {
+				XAreaClassificationMajor acm = student().getPrimaryMajor();
+				if (acm != null && eq(acm.getClassification(), term)) return true;
+			} else if ("primary-major".equals(attr)) {
+				XAreaClassificationMajor acm = student().getPrimaryMajor();
+				if (acm != null && eq(acm.getMajor(), term)) return true;
+			} else if ("primary-concentration".equals(attr)) {
+				XAreaClassificationMajor acm = student().getPrimaryMajor();
+				if (acm != null && eq(acm.getConcentration(), term)) return true;
+			} else if ("primary-degree".equals(attr)) {
+				XAreaClassificationMajor acm = student().getPrimaryMajor();
+				if (acm != null && eq(acm.getDegree(), term)) return true;
+			} else if ("primary-program".equals(attr)) {
+				XAreaClassificationMajor acm = student().getPrimaryMajor();
+				if (acm != null && like(acm.getProgram(), term)) return true;
 			} else if ("minor".equals(attr)) {
 				for (XAreaClassificationMajor acm: student().getMinors())
 					if (eq(acm.getMajor(), term)) return true;

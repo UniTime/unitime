@@ -387,4 +387,14 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     public CourseRequestOverrideIntent getMaxCreditOverrideIntent() {
     	return (getOverrideIntent() == null ? null : CourseRequestOverrideIntent.values()[getOverrideIntent()]); 
     }
+    
+    public StudentAreaClassificationMajor getPrimaryAreaClasfMajor() {
+    	if (getAreaClasfMajors() == null) return null;
+    	StudentAreaClassificationMajor major = null;
+    	for (StudentAreaClassificationMajor m: getAreaClasfMajors()) {
+    		if (major == null || m.compareTo(major) < 0)
+    			major = m;
+    	}
+    	return major;
+    }
 }

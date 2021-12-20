@@ -1016,6 +1016,34 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
 					if (acm.getProgram() != null && like(acm.getProgram().getReference(), term)) return true;
 			}
+			
+			if ("primary-area".equals(attr)) {
+				StudentAreaClassificationMajor acm = student().getPrimaryAreaClasfMajor();
+				if (acm != null && eq(acm.getAcademicArea().getAcademicAreaAbbreviation(), term)) return true;
+			}
+			
+			if ("primary-clasf".equals(attr) || "primary-classification".equals(attr)) {
+				StudentAreaClassificationMajor acm = student().getPrimaryAreaClasfMajor();
+				if (acm != null && eq(acm.getAcademicClassification().getCode(), term)) return true;
+			}
+			
+			if ("primary-major".equals(attr)) {
+				StudentAreaClassificationMajor acm = student().getPrimaryAreaClasfMajor();
+				if (acm != null && eq(acm.getMajor().getCode(), term)) return true;
+			}
+			if ("primary-concentration".equals(attr)) {
+				StudentAreaClassificationMajor acm = student().getPrimaryAreaClasfMajor();
+				if (acm != null && acm.getConcentration() != null && eq(acm.getConcentration().getCode(), term)) return true;
+			}
+			if ("primary-degree".equals(attr)) {
+				StudentAreaClassificationMajor acm = student().getPrimaryAreaClasfMajor();
+				if (acm != null && acm.getDegree() != null && eq(acm.getDegree().getReference(), term)) return true;
+			}
+			if ("primary-program".equals(attr)) {
+				StudentAreaClassificationMajor acm = student().getPrimaryAreaClasfMajor();
+				if (acm != null && acm.getProgram() != null && like(acm.getProgram().getReference(), term)) return true;
+			}
+			
 			if ("minor".equals(attr)) {
 				for (StudentAreaClassificationMinor acm: student().getAreaClasfMinors())
 					if (eq(acm.getMinor().getCode(), term)) return true;
@@ -1859,6 +1887,24 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			} else if ("program".equals(attr)) {
 				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
 					if (acm.getProgram() != null && like(acm.getProgram().getReference(), term)) return true;
+			} else if ("primary-area".equals(attr)) {
+				StudentAreaClassificationMajor acm = student().getPrimaryAreaClasfMajor();
+				if (acm != null && eq(acm.getAcademicArea().getAcademicAreaAbbreviation(), term)) return true;
+			} else if ("primary-clasf".equals(attr) || "primary-classification".equals(attr)) {
+				StudentAreaClassificationMajor acm = student().getPrimaryAreaClasfMajor();
+				if (acm != null && eq(acm.getAcademicClassification().getCode(), term)) return true;
+			} else if ("primary-major".equals(attr)) {
+				StudentAreaClassificationMajor acm = student().getPrimaryAreaClasfMajor();
+				if (acm != null && eq(acm.getMajor().getCode(), term)) return true;
+			} else if ("primary-concentration".equals(attr)) {
+				StudentAreaClassificationMajor acm = student().getPrimaryAreaClasfMajor();
+				if (acm != null && acm.getConcentration() != null && eq(acm.getConcentration().getCode(), term)) return true;
+			} else if ("primary-degree".equals(attr)) {
+				StudentAreaClassificationMajor acm = student().getPrimaryAreaClasfMajor();
+				if (acm != null && acm.getDegree() != null && eq(acm.getDegree().getReference(), term)) return true;
+			} else if ("primary-program".equals(attr)) {
+				StudentAreaClassificationMajor acm = student().getPrimaryAreaClasfMajor();
+				if (acm != null && acm.getProgram() != null && like(acm.getProgram().getReference(), term)) return true;
 			} else if ("minor".equals(attr)) {
 				for (StudentAreaClassificationMinor acm: student().getAreaClasfMinors())
 					if (eq(acm.getMinor().getCode(), term)) return true;

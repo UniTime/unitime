@@ -396,6 +396,16 @@ public class XStudent extends XStudentId implements Externalizable {
         return iMajors;
     }
     
+    public XAreaClassificationMajor getPrimaryMajor() {
+    	if (iMajors == null) return null;
+    	XAreaClassificationMajor major = null;
+    	for (XAreaClassificationMajor m: iMajors) {
+    		if (major == null || m.compareTo(major) < 0)
+    			major = m;
+    	}
+    	return major;
+    }
+    
     /**
      * List of academic area, classification, and minor codes ({@link XAreaClassificationMajor}) for the given student
      */
