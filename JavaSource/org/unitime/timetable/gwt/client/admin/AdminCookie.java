@@ -29,7 +29,7 @@ import com.google.gwt.user.client.Cookies;
 public class AdminCookie {
 	private static AdminCookie sInstance = null;
 	
-	private int iSortTasksBy = 0, iSortTaskExecutionsBy = 0, iSortBuildingsBy = 0;
+	private int iSortTasksBy = 0, iSortTaskExecutionsBy = 0, iSortBuildingsBy = 0, iSortDepartmentsBy = 0;
 	
 	private AdminCookie() {
 		try {
@@ -40,13 +40,14 @@ public class AdminCookie {
 				iSortTasksBy = Integer.valueOf(params[idx++]);
 				iSortTaskExecutionsBy = Integer.valueOf(params[idx++]);
 				iSortBuildingsBy = Integer.valueOf(params[idx++]);
+				iSortDepartmentsBy = Integer.valueOf(params[idx++]);
 			}
 		} catch (Exception e) {
 		}
 	}
 	
 	private void save() {
-		String cookie = iSortTasksBy + "|" + iSortTaskExecutionsBy + "|" + iSortBuildingsBy;
+		String cookie = iSortTasksBy + "|" + iSortTaskExecutionsBy + "|" + iSortBuildingsBy+ "|" + iSortDepartmentsBy;
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:Admin", cookie, expires);
 	}
@@ -65,4 +66,7 @@ public class AdminCookie {
 
 	public int getSortBuildingsBy() { return iSortBuildingsBy; }
 	public void setSortBuildingsBy(int sortBuildingsBy) { iSortBuildingsBy = sortBuildingsBy; save(); }
+	
+	public int getSortDepartmentsBy() { return iSortDepartmentsBy; }
+	public void setSortDepartmentsBy(int sortDepartmentsBy) { iSortDepartmentsBy = sortDepartmentsBy; save(); }
 }

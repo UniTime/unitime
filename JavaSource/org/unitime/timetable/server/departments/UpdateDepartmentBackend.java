@@ -32,7 +32,9 @@ import org.unitime.timetable.gwt.client.departments.DepartmentsEdit.UpdateDepart
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.shared.CurriculaException;
 import org.unitime.timetable.gwt.shared.DepartmentInterface;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ChangeLog;
@@ -57,19 +59,12 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.HibernateException;
-//import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-//import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.form.DepartmentEditForm;
-//import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
-//import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.TimePref;
-//import org.unitime.timetable.model.dao.DepartmentDAO;
-//import org.unitime.timetable.security.SessionContext;
-//import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 
 
@@ -126,16 +121,13 @@ public class UpdateDepartmentBackend implements GwtRpcImplementation<UpdateDepar
 	}
 	//Edit or create a department
 	protected Department saveOrUpdate(DepartmentInterface departmentInterface, SessionContext context) throws GwtRpcException {
-		System.out.println("saveOrUpdate");
-		Transaction tx = null;
-		org.unitime.timetable.model.Session acadSession = null;
 		Department department = null;
-        try {
-        	org.hibernate.Session hibSession = DepartmentDAO.getInstance().getSession();
-        	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
-        		tx = hibSession.beginTransaction();
-        	
-            
+		try {
+		org.unitime.timetable.model.Session acadSession = null;
+		org.hibernate.Session hibSession = DepartmentDAO.getInstance().getSession();
+		
+        try {       	
+        	        
             if (departmentInterface.getId() != null) {
             	department = DepartmentDAO.getInstance().get(departmentInterface.getId(), hibSession);
             }
@@ -200,12 +192,16 @@ public class UpdateDepartmentBackend implements GwtRpcImplementation<UpdateDepar
             } else {
             	hibSession.update(department);
             }
-
-			//HibernateUtil.clearCache();
-	    } catch (Exception e) {
-	    	if (tx!=null) tx.rollback();
-	    	throw new GwtRpcException(e.getMessage(), e);
-	    }
+		
+	    } finally {
+	    	hibSession.flush();
+			hibSession.close();
+		}
+	} catch (PageAccessException e) {
+		throw e;
+	} catch (Exception e) {
+		throw new GwtRpcException(e.getMessage(), e);
+	}
         return department;
 	}
 	
@@ -218,7 +214,6 @@ public class UpdateDepartmentBackend implements GwtRpcImplementation<UpdateDepar
         	tx = hibSession.beginTransaction();
         	Department department = new DepartmentDAO().get(DepartmentInterface.getId(), hibSession);
         	
-        	//if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
         	 if (department.isExternalManager().booleanValue()) {
                  for (Iterator i=hibSession.createQuery("select c from Class_ c where c.managingDept.uniqueId=:deptId").setLong("deptId", department.getUniqueId()).iterate(); i.hasNext();) {
                      Class_ clazz = (Class_)i.next();

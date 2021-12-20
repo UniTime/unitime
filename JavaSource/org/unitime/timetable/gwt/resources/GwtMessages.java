@@ -2814,6 +2814,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Abbreviation must be unique.")
 	String errorAbbreviationMustBeUnique();
 
+	@DefaultMessage("Dept Code is required.")
+	String errorDeptCodeIsEmpty();
+	
+	@DefaultMessage("Dept Code must be unique.")
+	String errorDeptCodeMustBeUnique();
+	
 	@DefaultMessage("Attribute type must be selected.")
 	String errorNoAttributeTypeSelected();
 	
@@ -4198,7 +4204,7 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String codeAvailable();
 	
-	@DefaultMessage("<u>A</u>dd Department...")
+	@DefaultMessage("<u>A</u>dd Department")
 	String buttonAddDepartment();
 	
 	@DefaultMessage("<u>R</u>emove All")
@@ -4336,8 +4342,8 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Controlling Department:")
 	String propControllingDepartment();
 
-	@DefaultMessage("Status for classes managed by:")
-	String propStatusManagedBy();
+	@DefaultMessage("Status for classes managed by: {0}")
+	String propStatusManagedBy(String managedBy);
 	
 	@DefaultMessage("Coordinates:")
 	String propCoordinates();
@@ -6651,7 +6657,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("{0} by {1}")
 	String lastChange(String date, String manager);
 	
-		//Department Messages
+	//Department Messages
 
 	@DefaultMessage("Departments")
 	@DoNotTranslate
@@ -6674,6 +6680,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Status Type")
 	String propStatusType();
 	
+	@DefaultMessage("Number")
+	String colNumber();
+	
 	@DefaultMessage("Abbv")
 	String colAbbv();
 
@@ -6685,9 +6694,18 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("External Manager Abbreviation:")
 	String propExternalManagerAbbreviation();
-
+	
+	@DefaultMessage("External Manager Abbreviation should only be used when the department is marked as External Manager")
+	String errorExternalManagerAbbreviationUse();
+	
 	@DefaultMessage("External Manager Name:")
 	String propExternalManagerName();
+
+	@DefaultMessage("External Manager Name should only be used when the department is marked as External Manager")
+	String errorExternalManagerNameUse();
+
+	@DefaultMessage("Show all departments (including departments with no manager and no subject area)")
+	String checkShowAllDepartments();
 	
 	@DefaultMessage("Dist Pref <br> Priority")
 	String colDistPrefPriority();
@@ -6730,20 +6748,29 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Events")
 	String colEvents();
-
+	
+	@DefaultMessage("Add Status")
+	String buttonDependentAddStatus();
+	
+	@DefaultMessage("Delete All")
+	String buttonDependentDeleteAll();
+	
 	@DefaultMessage("Department/Session Default")
-	String defaultDependentStatus();
+	String propDefaultDependentStatus();
 
 	@DefaultMessage("Session Default")
-	String departmentStatusDefault();
+	String propDepartmentStatusDefault();
 	
 	@DefaultMessage("-")
-	String defaultDependentDepartment();
+	String propDefaultDependentDepartment();
 	
 	@DefaultMessage("Student<br>Scheduling")
 	String colStudentScheduling();
 	
 	@DefaultMessage("Student<br>Scheduling")
 	String propStudentScheduling();
+	
+	@DefaultMessage("Department List - {0}")
+	String propDepartmentlist(String name);	
 	
 }
