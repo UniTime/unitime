@@ -20,40 +20,17 @@
 package org.unitime.timetable.gwt.shared;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.logging.Logger;
-
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
-import org.unitime.timetable.model.TimetableManager;
-
-
-/*
-import org.unitime.timetable.gwt.command.client.GwtRpcResponseBoolean;
-import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
-import org.unitime.timetable.model.ChangeLog;
-import org.unitime.timetable.model.Curriculum;
-import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.DepartmentStatusType;
-import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.util.ReferenceList;
-*/
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
  * @author Tomas Muller
  */
 public class DepartmentInterface implements IsSerializable, Comparable<DepartmentInterface>, GwtRpcResponse {
-
 	private  Long iUniqueId = null;
-	private  Long iId = null;
 	private  Long iSessionId = null;
 	private  String iAcademicSessionName = null;
 	private  String iName = null;
@@ -169,7 +146,7 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 			return t;
 		return t;
 	}
-
+	
 	public String getExternalMgrLabel() { return iExternalMgrLabel; }
 	public void setExternalMgrLabel(String externalMgrLabel) { iExternalMgrLabel = externalMgrLabel; }
 	public String getExternalMgrAbbv() { return iExternalMgrAbbv; }
@@ -244,18 +221,6 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 
 	@Override
 	public int compareTo(DepartmentInterface d) {
-        int cmp = Double.compare(
-        		isExternalManager() == null ? 0 : isExternalManager() ? 1 : 0,
-        		d.isExternalManager() == null ? 0 : d.isExternalManager() ? 1 : 0);
-      /*  if (cmp!=0) return cmp;
-        cmp = new NaturalOrderComparator().compare(
-        		getDeptCode() == null ? "" : getDeptCode(),
-        		d.getDeptCode() == null ? "" : d.getDeptCode());
-        if (cmp!=0) return cmp;
-        cmp = new NaturalOrderComparator().compare(
-        		getAbbreviation() == null ? "" : getAbbreviation(),
-        		d.getAbbreviation() == null ? "" : d.getAbbreviation());
-        if (cmp!=0) return cmp;*/
 		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(d.getUniqueId() == null ? -1 : d.getUniqueId()); 
 	}
 	
@@ -267,6 +232,7 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 	
 	public static enum DepartmentsColumn {
 		CODE, ABBV, NAME, EXTERNAL_MANAGER, SUBJECTS, ROOMS, STATUS, DIST_PREF_PRIORITY, ALLOW_REQUIRED, INSTRUCTOR_PREF, EVENTS, STUDENT_SCHEDULING, EXT_FUNDING_DEPT, LAST_CHANGE,
+
 	}	
 	public static enum UpdateDepartmentAction {
 		CREATE, UPDATE, DELETE, UPDATE_DATA,
@@ -282,7 +248,6 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 		
 		private boolean iCanAdd , iCanUpdateData;
 		private boolean iCanExportPdf = true;
-		//private boolean iCanExportCsv = false;
 		private boolean iCoursesFundingDepartmentsEnabled = false;
 		private String iAcademicSessionName = null;
 		private HashMap<String, String> iStatuses;
@@ -324,13 +289,14 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 	
 	public static class DepartmentsDataResponse implements GwtRpcResponse {
 		private List<DepartmentInterface> iDepartments;
-		private boolean iCanAdd , iCanUpdateData;
+		private boolean iCanAdd , iCanUpdateData, iDepartmentsEnabled;
 		private boolean iCanExportPdf = true;
-		private String iEllipsoid = null;
-		
+		private String iEllipsoid = null;		
 		public boolean isCanAdd() { return iCanAdd; }
 		public void setCanAdd(boolean canAdd) { iCanAdd = canAdd; }
 
+		public boolean isFundingDeptEnabled(){ return iDepartmentsEnabled; }
+		public void setFundingDeptEnabled(boolean fundingDepartmentsEnabled) { iDepartmentsEnabled = fundingDepartmentsEnabled; }		
 		public boolean isCanUpdate() { return iCanUpdateData; }
 		public void setCanUpdate(boolean canUpdate) { iCanUpdateData = canUpdate; }
 		
@@ -339,18 +305,13 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 			iDepartments.add(department);
 		}
 	
-		public DepartmentsDataResponse() {}
-				
+		public DepartmentsDataResponse() {}				
 
 		public boolean isCanExportPdf() { 				
-		 Logger log = Logger.getLogger(DepartmentInterface.class.getName());
-		 log.info("DepartmentsDataResponse.isCanExportPDF()"+iCanExportPdf);
 		 return iCanExportPdf; 
 		}
 		
 		public void setCanExportPdf(boolean canExportPdf) { 
-			Logger log = Logger.getLogger(DepartmentInterface.class.getName());
-			log.info("setCanExportPdf"+canExportPdf);
 			iCanExportPdf = canExportPdf; }
 		
 		public List<DepartmentInterface> getDepartments() { return iDepartments; }
@@ -362,20 +323,11 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 		public void setEllipsoid(String ellipsoid) { iEllipsoid = ellipsoid; }
 	}
 	
-	/* 
-	 * Can delete
-	 */
-	/*public boolean isCanDelete() { 
-		Logger log = Logger.getLogger(DepartmentInterface.class.getName());
-		log.info("iCanDelete"+iCanDelete.booleanValue());
-		return iCanDelete != null && iCanDelete.booleanValue(); }*/
 
 	/* 
 	 * Can Edit, checked in DepartmentsPage
 	 */
 	public boolean isCanEdit() { 
-		Logger log = Logger.getLogger(DepartmentInterface.class.getName());
-		log.info("isCanEdit"+iCanEdit.booleanValue());
 		return iCanEdit != null && iCanEdit.booleanValue(); }
 	
 

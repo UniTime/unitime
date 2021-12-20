@@ -22,9 +22,11 @@ package org.unitime.timetable.gwt.client.departments;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Logger;
 
 import com.google.gwt.i18n.client.NumberFormat;
 
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.client.admin.AdminCookie;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
@@ -49,47 +51,10 @@ public class DepartmentsTable extends UniTimeTable<DepartmentInterface>{
 	private boolean iSelectable = true;
 	
 	public DepartmentsTable() {
-		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
-		for (final DepartmentsColumn col: DepartmentsColumn.values()) {
-			final UniTimeTableHeader h = new UniTimeTableHeader(getColumnName(col));
-			if (DepartmentComparator.isApplicable(col)) {
-				Operation op = new SortOperation() {
-					@Override
-					public void execute() { doSort(col); }
-					@Override
-					public boolean isApplicable() { return getRowCount() > 1 && h.isVisible(); }
-					@Override
-					public boolean hasSeparator() { return false; }
-					@Override
-					public String getName() { return MESSAGES.opSortBy(getColumnName()); }
-					@Override
-					public String getColumnName() { return h.getHTML().replace("<br>", " "); }
-				};
-			
-				h.addOperation(op);
-			}
-			header.add(h);
-		}
-		addRow(null, header);
-		
-		for (int i = 0; i < getCellCount(0); i++)
-			getCellFormatter().setStyleName(0, i, "unitime-ClickableTableHeader");
-		
-		//resetVisibility();
-		//setSortBy(AdminCookie.getInstance().getSortDepartmentsBy());
-		
-		if (iSelectable) {
-			setAllowSelection(true);
-			addMouseClickListener(new MouseClickListener<DepartmentInterface>() {
-				@Override
-				public void onMouseClick(TableEvent<DepartmentInterface> event) {
-					selectRoom(event.getRow(), isSelected(event.getRow()));
-				}
-			});
-		}
+		setHeaderData(false);
 	}
 	
-	public void selectRoom(int row, boolean value) {
+	public void selectDept(int row, boolean value) {
 		Widget w = getWidget(row, 0);
 		if (w != null && w instanceof CheckBox) {
 			((CheckBox)w).setValue(value);
@@ -172,13 +137,14 @@ public class DepartmentsTable extends UniTimeTable<DepartmentInterface>{
 			return allowStudentSchedulingWidget;
 		case EXT_FUNDING_DEPT:
 			P extFundingDeptWidget = new P("extFundingDeptWidget");
-			if(department.isExternalFundingDept() != null && department.isExternalFundingDept() == true ){
-				extFundingDeptWidget.addStyleName("department-accept");
-			}
-			return extFundingDeptWidget;		
+			if (department.isCoursesFundingDepartmentsEnabled() == true) {
+				if(department.isExternalFundingDept() != null && department.isExternalFundingDept() == true )
+				extFundingDeptWidget.addStyleName("department-accept");						
+				return extFundingDeptWidget;		
+			}else
+				return null;
 		case LAST_CHANGE:
-			return new HTML(department.getLastChangeStr(), false);
-			//return new Label(department.getLastChangeStr());				
+			return new HTML(department.getLastChangeStr(), false);			
 		default:
 			return null;
 		}
@@ -195,6 +161,51 @@ public class DepartmentsTable extends UniTimeTable<DepartmentInterface>{
 		addRow(department, line);
 	}
 
+	public void setHeaderData (boolean fundingDepartmentsEnabled) {
+		clearTable();
+		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
+		for (final DepartmentsColumn col: DepartmentsColumn.values()) {
+			
+			Logger log1 = Logger.getLogger(DepartmentsEdit.class.getName());			
+			if (DepartmentComparator.isApplicable(col) &&(col != DepartmentsColumn.EXT_FUNDING_DEPT || (col == DepartmentsColumn.EXT_FUNDING_DEPT  && fundingDepartmentsEnabled == true))){
+				final UniTimeTableHeader h = new UniTimeTableHeader(getColumnName(col));
+				Operation op = new SortOperation() {
+					@Override
+					public void execute() { doSort(col); }
+					@Override
+					public boolean isApplicable() { return getRowCount() > 1 && h.isVisible(); }
+					@Override
+					public boolean hasSeparator() { return false; }
+					@Override
+					public String getName() { return MESSAGES.opSortBy(getColumnName()); }
+					@Override
+					public String getColumnName() { return h.getHTML().replace("<br>", " "); }
+				};
+			
+				h.addOperation(op);
+				header.add(h);
+			}
+			
+		}
+		addRow(null, header);
+		
+		for (int i = 0; i < getCellCount(0); i++)
+			getCellFormatter().setStyleName(0, i, "unitime-ClickableTableHeader");
+		
+		
+		if (iSelectable) {
+			setAllowSelection(true);
+			addMouseClickListener(new MouseClickListener<DepartmentInterface>() {
+				@Override
+				public void onMouseClick(TableEvent<DepartmentInterface> event) {
+					selectDept(event.getRow(), isSelected(event.getRow()));
+				}
+			});
+		}
+		
+		setSortBy(AdminCookie.getInstance().getSortDepartmentsBy());
+	}
+	
 	public void setData(List<DepartmentInterface> departments, boolean showAlldept) {
 		clearTable(1);
 		if (departments != null)
@@ -212,7 +223,7 @@ public class DepartmentsTable extends UniTimeTable<DepartmentInterface>{
 			iSortBy = column;
 			iAsc = true;
 		}
-		AdminCookie.getInstance().setSortBuildingsBy(getSortBy());
+		AdminCookie.getInstance().setSortDepartmentsBy(getSortBy());
 		sort();
 	}
 	
@@ -333,7 +344,7 @@ public class DepartmentsTable extends UniTimeTable<DepartmentInterface>{
 			case INSTRUCTOR_PREF:
 			case EVENTS: 
 			case STUDENT_SCHEDULING: 	
-			case EXT_FUNDING_DEPT: 
+			case EXT_FUNDING_DEPT:
 			case LAST_CHANGE: 
 				return true;
 			default:

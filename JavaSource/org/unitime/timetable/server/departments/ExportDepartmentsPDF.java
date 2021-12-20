@@ -28,16 +28,13 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.springframework.stereotype.Service;
-import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.Exporter;
 import org.unitime.timetable.export.PDFPrinter;
-import org.unitime.timetable.export.PDFPrinter.A;
-import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsPage.SingleTeachingAssingment;
-import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsTable.COLUMN;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.DepartmentInterface.DepartmentsColumn;
 import org.unitime.timetable.model.ChangeLog;
@@ -45,8 +42,6 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ExternalDepartmentStatusType;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.security.SessionContext;
-import org.unitime.timetable.util.ExportUtils;
-import org.unitime.timetable.webutil.PdfWebTable;
 
 @Service("org.unitime.timetable.export.Exporter:departments.pdf")
 public class ExportDepartmentsPDF implements Exporter {
@@ -59,24 +54,16 @@ public class ExportDepartmentsPDF implements Exporter {
 	
 	@Override
 	public void export(ExportHelper helper) throws IOException {
-		//System.out.println ("export");
 		SessionContext context = helper.getSessionContext();
 		boolean dispLastChanges = CommonValues.Yes.eq(UserProperty.DisplayLastChanges.get(context.getUser()));
-		System.out.println("dispLastChanges"+ dispLastChanges); 
 		helper.getSessionContext().checkPermission(Right.Departments);
 		
 		PDFPrinter out = new PDFPrinter(helper.getOutputStream(), false);
 		helper.setup(out.getContentType(), reference(), false);
 		
         DecimalFormat df5 = new DecimalFormat("####0.######");
-        out.printHeader( "Department List - " + context.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel());
-
-        out.printHeader(dispLastChanges ? new String[] { "Number", "Abbv", "Name", "External\nManager", "Subjects", "Rooms",
-                "Status", "Dist Pref\nPriority", "Allow\nRequired", "Instructor\nPref", "Events", "Student\nScheduling", "Ext Funding\nDept","Last\nChange" } 
-        : new String[] { "Number", "Abbreviation", "Name", "External\nManager", "Subjects", "Rooms", "Status",
-                "Dist Pref\nPriority", "Allow\nRequired", "Instructor\nPref", "Events", "Student\nScheduling" , "Ext Funding\nDept","Last\nChange" });
-        
-        
+        out.printHeader( MESSAGES.propDepartmentlist(context.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel()));
+  			
         List<Department> departments = new ArrayList(Department.findAll(helper.getAcademicSessionId()));
 		String sort = helper.getParameter("sort");
 		String showAllDept = helper.getParameter("showAllDept");
@@ -95,7 +82,43 @@ public class ExportDepartmentsPDF implements Exporter {
 				Collections.sort(departments, cmp);
 		}
 
+		/*
+		 * write to pdf
+		 */
+		Boolean printHeaderText = false;
             for (Department d: departments) { 
+            	/*
+            	 * Header
+            	 */
+            	if (printHeaderText == false) {
+                	ArrayList<String> headerText = new ArrayList<String>(); 
+                	headerText.add(MESSAGES.colNumber());
+                	headerText.add(MESSAGES.colAbbv());
+                	headerText.add(MESSAGES.colName());
+                	headerText.add(MESSAGES.colExternalManager().replace("<br>","\n"));
+                	headerText.add(MESSAGES.colSubjects());
+                	headerText.add(MESSAGES.colRooms());
+                	headerText.add(MESSAGES.colStatus());
+                	headerText.add(MESSAGES.colDistPrefPriority().replace("<br>","\n"));
+                	headerText.add(MESSAGES.colAllowRequired().replace("<br>","\n"));
+                	headerText.add(MESSAGES.colInstructorPref().replace("<br>","\n"));
+                	headerText.add(MESSAGES.colEvents());
+                	headerText.add(MESSAGES.colStudentScheduling().replace("<br>","\n"));
+                	if (ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue())
+                		headerText.add(MESSAGES.colExternalFundingDept().replace("<br>","\n"));
+                	if (dispLastChanges)
+                	headerText.add(MESSAGES.colLastChange().replace("<br>","\n"));
+
+                	String[] headerTextStr = new String[headerText.size()]; 
+                	for (int i = 0; i < headerText.size(); i++) {
+                		headerTextStr[i] = headerText.get(i);
+                    }
+                	
+            		out.printHeader(headerTextStr);
+            		printHeaderText = true;
+            	}
+            	
+                
                 if (showAllDept.trim().equalsIgnoreCase("true") || !d.getSubjectAreas().isEmpty() || !d.getTimetableManagers().isEmpty() || d.isExternalManager().booleanValue()) {
 
                     String lastChangeStr = null;
@@ -142,28 +165,41 @@ public class ExportDepartmentsPDF implements Exporter {
                     	}
                     }
 
-                    out.printLine(
-                                d.getDeptCode(),
-                                d.getAbbreviation(),
-                                d.getName(),
-                                (d.isExternalManager().booleanValue()?d.getExternalMgrAbbv():""),
-                                df5.format(d.getSubjectAreas().size()),
-                                df5.format(d.getRoomDepts().size()),
-                                d.effectiveStatusType().getLabel()+ (dependentStatuses == null ? "" : "\n" + dependentStatuses),
-                                (d.getDistributionPrefPriority()==null && d.getDistributionPrefPriority().intValue()!=0 ? "" : d.getDistributionPrefPriority().toString()),
-                                allowReq,
-                                d.isInheritInstructorPreferences() ? "Yes" : "No",
-                                d.isAllowEvents() ? "Yes" : "No",
-                                d.isAllowStudentScheduling() ? "Yes" : "No",
-                                d.isExternalFundingDept()!=null ? (d.isExternalFundingDept()==true ? "Yes" : "No" ): "No",
-                                lastChangeStr );
+                    /*
+                     * Body
+                     */
+                    ArrayList<String> bodyText = new ArrayList<String>(); 
+                    
+                    bodyText.add(d.getDeptCode());
+                    bodyText.add(d.getAbbreviation());
+                    bodyText.add(d.getName());
+                    bodyText.add(d.isExternalManager().booleanValue()?d.getExternalMgrAbbv():"");
+                    bodyText.add(df5.format(d.getSubjectAreas().size()));
+                    bodyText.add(df5.format(d.getRoomDepts().size()));
+                    bodyText.add(d.effectiveStatusType().getLabel()+ (dependentStatuses == null ? "" : "\n" + dependentStatuses));
+                    bodyText.add((d.getDistributionPrefPriority()==null && d.getDistributionPrefPriority().intValue()!=0 ? "" : d.getDistributionPrefPriority().toString()));
+                    bodyText.add(allowReq);
+                    bodyText.add(d.isInheritInstructorPreferences() ? "Yes" : "No");
+                    bodyText.add( d.isAllowEvents() ? "Yes" : "No");
+                    bodyText.add(d.isAllowStudentScheduling() ? "Yes" : "No");
+                	if (ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue())
+                		bodyText.add(d.isExternalFundingDept()!=null ? (d.isExternalFundingDept()==true ? "Yes" : "No" ): "No");
+                	if (dispLastChanges)
+                		bodyText.add(lastChangeStr);
+                	
+                	String[] bodyTextStr = new String[bodyText.size()]; 
+                	for (int i = 0; i < bodyText.size(); i++) {
+                		bodyTextStr[i] = bodyText.get(i);
+                    }
+                	out.printLine(bodyTextStr);
+ 
                 }
             }
             
 		out.close();
 	}
 	
-	public static class DepartmentComparator implements Comparator<Department>{
+	class DepartmentComparator implements Comparator<Department>{
 		private DepartmentsColumn iColumn;
 		private boolean iAsc;
 		
@@ -172,43 +208,83 @@ public class ExportDepartmentsPDF implements Exporter {
 			iAsc = asc;
 		}
 		
-		public int compareById(Department r1, Department r2) {
-			return compare(r1.getUniqueId(), r2.getUniqueId());
-		}
-		
-		public int compareByName(Department r1, Department r2) {
-			return compare(r1.getName(), r2.getName());
-		}
-
-		public int compareByAbbreviation(Department r1, Department r2) {
-			return compare(r1.getAbbreviation(), r2.getAbbreviation());
-		}
-		
 		public int compareByExternalId(Department r1, Department r2) {
 			return compare(r1.getExternalUniqueId(), r2.getExternalUniqueId());
 		}
 		
+		public int compareById(Department r1, Department r2) {
+			return compare(r1.getUniqueId(), r2.getUniqueId());
+		}
+			
+		public int compareByDeptCode(Department r1, Department r2) {
+			return compare(r1.getDeptCode(), r2.getDeptCode());
+		}
+		public int compareByName(Department r1, Department r2) {
+			return compare(r1.getName(), r2.getName());
+		}
+		public int compareByAbbreviation(Department r1, Department r2) {
+			return compare(r1.getAbbreviation(), r2.getAbbreviation());
+		}
+		public int compareByExtMgr(Department r1, Department r2) {
+			return compare(r1.getExternalMgrAbbv(), r2.getExternalMgrAbbv());
+		}	
+		public int compareByStatus(Department r1, Department r2) {
+			return compare(r1.getStatusType().getLabel(), r2.getStatusType().getLabel());
+		}	
+		public int compareByDistPrefPriority(Department r1, Department r2) {
+			return compare(r1.getDistributionPrefPriority(), r2.getDistributionPrefPriority());
+		}	
+		public int compareByAllowReqd(Department r1, Department r2) {
+			return compare(r1.getAllowReqTime(), r2.getAllowReqTime());
+		}
+		public int compareByInstrucPref(Department r1, Department r2) {
+			return compare(r1.isInheritInstructorPreferences(), r2.isInheritInstructorPreferences());
+		}		
+		public int compareByEvent(Department r1, Department r2) {
+			return compare(r1.isAllowEvents(), r2.isAllowEvents());
+		}		
+		public int compareByStdntSched(Department r1, Department r2) {
+			return compare(r1.isAllowStudentScheduling(), r2.isAllowStudentScheduling());
+		}		
+
+		public int compareByExtFundingDept(Department r1, Department r2) {
+			return compare(r1.isExternalFundingDept(), r2.isExternalFundingDept());
+		}
+		
+		public int compareBySubjectCount(Department r1, Department r2) {
+			return compare(r1.getSubjectAreas().size(), r2.getSubjectAreas().size());
+		}
+		public int compareByRoomCount(Department r1, Department r2) {
+			return compare(r1.getRoomDepts().size(), r2.getRoomDepts().size());
+		}		
+				
+		//////////
+
 		protected int compareByColumn(Department r1, Department r2) {
-			switch (iColumn) {
-			case NAME: return compareByName(r1, r2);
+			switch (iColumn) {					
+			case CODE: return compareByDeptCode(r1, r2);
 			case ABBV: return compareByAbbreviation(r1, r2);
-			case EXTERNAL_MANAGER: return compareByExternalId(r1, r2);
+			case NAME: return compareByName(r1, r2);
+			case EXTERNAL_MANAGER: return compareByExtMgr(r1, r2);	
+			case SUBJECTS: return compareBySubjectCount(r1, r2);
+			case ROOMS: return compareByRoomCount(r1, r2);
+			case STATUS: return compareByStatus(r1, r2);
+			case DIST_PREF_PRIORITY: return compareByDistPrefPriority(r1, r2);
+			case ALLOW_REQUIRED: return compareByAllowReqd(r1, r2);
+			case INSTRUCTOR_PREF: return compareByInstrucPref(r1, r2);
+			case EVENTS: return compareByEvent(r1, r2);
+			case STUDENT_SCHEDULING: return compareByStdntSched(r1, r2);	
+			case EXT_FUNDING_DEPT: return compareByExtFundingDept(r1, r2);
+
+						
 			default: return compareByAbbreviation(r1, r2);
 			}
 		}
 		
-		public static boolean isApplicable(DepartmentsColumn column) {
-			switch (column) {
-			case ABBV:
-			case NAME:
-			case EXTERNAL_MANAGER:
-				return true;
-			default:
-				return false;
-			}
+		protected int compare(Boolean b1, Boolean b2) {
+			return (b1 == null ? b2 == null ? 0 : -1 : b2 == null ? 1 : Boolean.compare(b1.booleanValue(), b2.booleanValue())); 
 		}
-		
-		@Override
+	
 		public int compare(Department r1, Department r2) {
 			int cmp = compareByColumn(r1, r2);
 			if (cmp == 0) cmp = compareByAbbreviation(r1, r2);
@@ -227,6 +303,9 @@ public class ExportDepartmentsPDF implements Exporter {
 		protected int compare(Number n1, Number n2) {
 			return (n1 == null ? n2 == null ? 0 : -1 : n2 == null ? 1 : Double.compare(n1.doubleValue(), n2.doubleValue())); 
 		}
+
+
 	}
+
 
 }
