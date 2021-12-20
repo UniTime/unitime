@@ -436,7 +436,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		} else {
 			Collection<ClassAssignmentInterface.CourseAssignment> results = null;
 			try {
-				results = server.execute(server.createAction(ListCourseOfferings.class).forQuery(query).withLimit(limit).withMatcher(matcher), currentUser(cx));
+				results = server.execute(server.createAction(ListCourseOfferings.class).forQuery(query).withLimit(limit).withMatcher(matcher).forStudent(cx.getStudentId()), currentUser(cx));
 			} catch (PageAccessException e) {
 				throw e;
 			} catch (SectioningException e) {

@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.cpsolver.ifs.heuristics.RouletteWheelSelection;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -38,7 +39,11 @@ import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
 
 /**
  * @author Tomas Muller
@@ -48,7 +53,10 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 	
 	protected String iQuery = null;
 	protected Integer iLimit = null;
-	protected CourseMatcher iMatcher = null; 
+	protected CourseMatcher iMatcher = null;
+	protected Long iStudentId;
+	protected String iFilterIM = null;
+	private transient XStudent iStudent = null;
 	
 	public ListCourseOfferings forQuery(String query) {
 		iQuery = query; return this;
@@ -62,10 +70,29 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 		iMatcher = matcher; return this;
 	}
 	
+	public ListCourseOfferings forStudent(Long studentId) {
+		iStudentId = studentId; return this;
+	}
+	
+	public Long getStudentId() {
+		return iStudentId;
+	}
+	
 	@Override
 	public Collection<CourseAssignment> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		Lock lock = server.readLock();
 		try {
+			iStudent = (getStudentId() == null ? null : server.getStudent(getStudentId()));
+			if (iStudent != null) {
+				String filter = server.getConfig().getProperty("Filter.OnlineOnlyStudentFilter", null);
+				if (filter != null && !filter.isEmpty()) {
+					if (new Query(filter).match(new StudentMatcher(iStudent, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
+						iFilterIM = server.getConfig().getProperty("Filter.OnlineOnlyInstructionalModeRegExp");
+					} else if (server.getConfig().getPropertyBoolean("Filter.OnlineOnlyExclusiveCourses", false)) {
+						iFilterIM = server.getConfig().getProperty("Filter.ResidentialInstructionalModeRegExp");
+					}
+				}
+			}
 			return listCourses(server, helper);
 		} finally {
 			lock.release();
@@ -120,9 +147,24 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 		course.setLimit(c.getLimit());
 		course.setSnapShotLimit(c.getSnapshotLimit());
 		XOffering offering = server.getOffering(c.getOfferingId());
+		XEnrollment enrollment = null;
+		if (iFilterIM != null && iStudent != null) {
+			XCourseRequest r = iStudent.getRequestForCourse(c.getCourseId());
+			enrollment = (r == null ? null : r.getEnrollment());
+		}
 		if (offering != null) {
 			course.setAvailability(offering.getCourseAvailability(server.getRequests(c.getOfferingId()), c));
 			for (XConfig config: offering.getConfigs()) {
+				if (iFilterIM != null && (enrollment == null || !config.getConfigId().equals(enrollment.getConfigId()))) {
+					String imRef = (config.getInstructionalMethod() == null ? null : config.getInstructionalMethod().getReference());
+        			if (iFilterIM.isEmpty()) {
+        				if (imRef != null && !imRef.isEmpty())
+        					continue;
+        			} else {
+        				if (imRef == null || !imRef.matches(iFilterIM))
+        					continue;
+        			}
+				}
 				if (config.getInstructionalMethod() != null)
 					course.addInstructionalMethod(config.getInstructionalMethod().getUniqueId(), config.getInstructionalMethod().getLabel());
 				else

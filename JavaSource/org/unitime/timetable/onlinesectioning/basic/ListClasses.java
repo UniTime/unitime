@@ -26,6 +26,7 @@ import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
+import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
@@ -37,6 +38,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
@@ -47,6 +49,7 @@ import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
+import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
 
 /**
  * @author Tomas Muller
@@ -138,7 +141,33 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 			courseAssign.setHasCrossList(offering.hasCrossList());
 			courseAssign.setCanWaitList(offering.isWaitList());
 			XStudent student = (getStudentId() == null ? null : server.getStudent(getStudentId()));
-			for (XConfig config: offering.getConfigs())
+			
+			String filter = server.getConfig().getProperty("Filter.OnlineOnlyStudentFilter", null);
+			String imFilter = null;
+			if (filter != null && !filter.isEmpty()) {
+				if (new Query(filter).match(new StudentMatcher(student, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
+					imFilter = server.getConfig().getProperty("Filter.OnlineOnlyInstructionalModeRegExp");
+				} else if (server.getConfig().getPropertyBoolean("Filter.OnlineOnlyExclusiveCourses", false)) {
+					imFilter = server.getConfig().getProperty("Filter.ResidentialInstructionalModeRegExp");
+				}
+			}
+			XEnrollment enrollment = null;
+			if (student != null) {
+				XCourseRequest r = student.getRequestForCourse(id.getCourseId());
+				enrollment = (r == null ? null : r.getEnrollment());
+			}
+
+			for (XConfig config: offering.getConfigs()) {
+				if (imFilter != null && (enrollment == null || !config.getConfigId().equals(enrollment.getConfigId()))) {
+					String imRef = (config.getInstructionalMethod() == null ? null : config.getInstructionalMethod().getReference());
+        			if (imFilter.isEmpty()) {
+        				if (imRef != null && !imRef.isEmpty())
+        					continue;
+        			} else {
+        				if (imRef == null || !imRef.matches(imFilter))
+        					continue;
+        			}
+				}
 				for (XSubpart subpart: config.getSubparts())
 					for (XSection section: subpart.getSections()) {
 						if (!section.isEnabledForScheduling() && !isAllowDisabled(enrollments, student, offering, id, config, section)) continue;
@@ -157,11 +186,7 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 						a.setClassNumber(section.getName(-1l));
 						a.setCancelled(section.isCancelled());
 						a.setLimit(new int[] { enrollments.countEnrollmentsForSection(section.getSectionId()), section.getLimit()});
-						if (getStudentId() != null) {
-							for (XEnrollment enrollment: enrollments.getEnrollmentsForSection(section.getSectionId())) {
-								if (enrollment.getStudentId().equals(getStudentId())) { a.setSaved(true); break; }
-							}
-						}
+						a.setSaved(enrollment != null && enrollment.getSectionIds().contains(section.getSectionId()));
 						if (!a.isSaved() && checkAvailability)
 							a.setAvailable(isAvailable(enrollments, student, offering, c, config, section));
 						a.addNote(section.getNote());
@@ -194,6 +219,7 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 						a.setExpected(overExp.getExpected(section.getLimit(), expectations.getExpectedSpace(section.getSectionId())));
 						ret.add(a);
 					}
+			}
 		} finally {
 			lock.release();
 		}
