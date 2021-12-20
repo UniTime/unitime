@@ -58,7 +58,6 @@ public class DepartmentPropertiesBackend implements GwtRpcImplementation<Departm
 	   
 		public HashMap<Long, String> getAllDependentDepartments( SessionContext context) { 
 			 TreeSet<Department> departments =  Department.findAllNonExternal(context.getUser().getCurrentAcademicSessionId());
-			 List<String> ret = new ArrayList<String>();
 			 HashMap<Long, String> map = new HashMap<Long,String>();
 			for (Department d: departments){
 				  String deptCode = d.getDepartment().getDeptCode();
@@ -68,34 +67,16 @@ public class DepartmentPropertiesBackend implements GwtRpcImplementation<Departm
 			}
 			  return map;   
 		}
-/*
-		public HashMap<String, String> getAllStatusOptions() { 
-			 TreeSet<DepartmentStatusType> departmentStatusTypes =  DepartmentStatusType.findAllForDepartment();
-			 List<String> ret = new ArrayList<String>();
-			 HashMap<String,String> map = new HashMap<String,String>();
 
-			 for (DepartmentStatusType d: departmentStatusTypes)
-				 map.put(d.getReference(),d.getLabel());
-				  //map.put(d.getStatus(),d.getLabel());
-			 //map.put(d.getStatus(),d.getLabel());
-				 //ret.add(d.toString());
-			  return map;   
-		}*/
 	@Override
 	public DepartmentPropertiesInterface execute(DepartmentPropertiesRequest request, SessionContext context) {
 		DepartmentPropertiesInterface d = new DepartmentPropertiesInterface();	
 		d.setSatusOptions(getStatusOptions());
 		d.setExtDepartmentOptions(getAllDependentDepartments( context));
 		d.setAcademicSessionName(context.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel());
-		
-		boolean coursesFundingDepartmentsEnabled = ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue();
-		if (coursesFundingDepartmentsEnabled) 
-			d.setCoursesFundingDepartmentsEnabled(true);
-				
-		
-		System.out.print("getAcademicSessionName" + d.getAcademicSessionName());
+		d.setCoursesFundingDepartmentsEnabled(ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue());
+					
 		return d;
-		//return new GwtRpcResponseBoolean(context.hasPermission(request.getDepartmentId(), "Department", Right.DepartmentDelete));
 	}
 }
 

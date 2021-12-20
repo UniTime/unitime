@@ -20,16 +20,9 @@
 package org.unitime.timetable.gwt.client.departments;
 
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.TreeSet;
 import java.util.logging.Logger;
-
-import org.apache.struts.action.ActionMessage;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -37,22 +30,15 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
-import org.unitime.timetable.gwt.command.client.GwtRpcResponseBoolean;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.DepartmentInterface.UpdateDepartmentAction;
-//import org.unitime.timetable.gwt.shared.DepartmentInterface.DepartmentCheckCanDeleteRequest;
 import org.unitime.timetable.gwt.shared.DepartmentInterface.DepartmentPropertiesInterface;
 import org.unitime.timetable.gwt.shared.DepartmentInterface.DepartmentPropertiesRequest;
-import org.unitime.timetable.gwt.shared.SimpleEditInterface.ListItem;
-import org.unitime.timetable.model.ExternalDepartmentStatusType;
-import org.unitime.timetable.model.RefTableEntry;
-import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.context.HttpSessionContext;
-
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -81,6 +67,7 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 	private UniTimeWidget<TextBox> iAbbreviation;
 	private UniTimeWidget<TextBox> iExternalManagerAbbreviation;
 	private UniTimeWidget<TextBox> iExternalManagerName;
+	private UniTimeWidget<TextBox>  iDistPrefPriority ;
 	private  UniTimeWidget<CheckBox>  iExternalManager;
 	
 	private UniTimeWidget<Label>   iAcademicSession ;
@@ -92,22 +79,17 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
     private List iDependentStatuses;
     private List<String> iCurrentDependentDepartments = new ArrayList<String>();
     private List<String> iCurrentDependentStatuses = new ArrayList<String>();
-	private FlexTable iCurrentControlDeptFlexTable;
-	private VerticalPanel iCurrentControlDeptMainPanel ;
 
 	private TextBox  iExternalId ;
-	private TextBox  iDistPrefPriority ;
+	
 	private UniTimeWidget<CheckBox> iAllowReqTime;
 	private UniTimeWidget<CheckBox> iAllowReqRoom;
 	private UniTimeWidget<CheckBox> iAllowReqDist;
 	private UniTimeWidget<CheckBox> iAllowEvents;
 	private UniTimeWidget<CheckBox> iInheritInstructorPreferences;
 	private UniTimeWidget<CheckBox> iAllowStudentScheduling ;
-	private UniTimeWidget<CheckBox> iExternalFundingDept ;
-	
+	private UniTimeWidget<CheckBox> iExternalFundingDept ;	
 	private UniTimeHeaderPanel controlDeptHeaderPanel;
-	private UniTimeWidget<Button> iAddStatus ;
-	private UniTimeWidget<Button> iDeleteAll;
 
 	private VerticalPanel iControlDeptMainPanel ;
 	private FlexTable iControlDeptFlexTable;
@@ -118,7 +100,7 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 	public DepartmentsEdit() {
 		/*create the UI */
 		iForm = new SimpleForm();
-		iForm.addStyleName("unitime-DepartmentEdit");
+		iForm.addStyleName("unitime-Dept");
 		
 		iHeader = new UniTimeHeaderPanel();
 	
@@ -156,16 +138,12 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 				RPC.execute(request, new AsyncCallback<DepartmentInterface>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						//Logger log = Logger.getLogger(DepartmentsPage.class.getName());
-						//log.info("onFailure)");
 						LoadingWidget.getInstance().hide();
 						iHeader.setErrorMessage(MESSAGES.failedUpdate(MESSAGES.objectDepartment(), caught.getMessage()));
 						UniTimeNotifications.error(MESSAGES.failedUpdate(MESSAGES.objectDepartment(), caught.getMessage()), caught);
 					}
 					@Override
 					public void onSuccess(DepartmentInterface result) {
-						//Logger log = Logger.getLogger(DepartmentsPage.class.getName());
-						//log.info("onSuccess)");
 						LoadingWidget.getInstance().hide();
 						onBack(true, result.getId());
 					}
@@ -278,6 +256,13 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		iExternalManagerAbbreviation.getWidget().setStyleName("unitime-TextBox");
 		iExternalManagerAbbreviation.getWidget().setMaxLength(10);
 		iExternalManagerAbbreviation.getWidget().setWidth("200px");
+		iExternalManagerAbbreviation.getWidget().addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				iExternalManagerAbbreviation.clearHint();
+				iHeader.clearMessage();
+			}
+		});	
 		iForm.addRow(MESSAGES.propExternalManagerAbbreviation(), iExternalManagerAbbreviation	);
 
 		//ExternalManagerName		
@@ -285,13 +270,27 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		iExternalManagerName.getWidget().setStyleName("unitime-TextBox");
 		iExternalManagerName.getWidget().setMaxLength(30);
 		iExternalManagerName.getWidget().setWidth("200px");
+		iExternalManagerName.getWidget().addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				iExternalManagerName.clearHint();
+				iHeader.clearMessage();
+			}
+		});	
 		iForm.addRow(MESSAGES.propExternalManagerName(), iExternalManagerName);
 
 		//DistPrefPriority		
-		iDistPrefPriority = new TextBox();
-		iDistPrefPriority.setStyleName("unitime-TextBox");
-		iDistPrefPriority.setMaxLength(100);
-		iDistPrefPriority.setWidth("100px");
+		iDistPrefPriority = new UniTimeWidget<TextBox>(new TextBox());
+		iDistPrefPriority.getWidget().setStyleName("unitime-TextBox");
+		iDistPrefPriority.getWidget().setMaxLength(100);
+		iDistPrefPriority.getWidget().setWidth("100px");
+		iDistPrefPriority.getWidget().addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				iDistPrefPriority.clearHint();
+				iHeader.clearMessage();
+			}
+		});			
 		iForm.addRow(MESSAGES.propPrefPriority(), iDistPrefPriority);
 		
 		//AllowReqTime
@@ -331,17 +330,24 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		
 		
 		//Controlling Department Statuses 
-		iAddStatus = new UniTimeWidget<Button>(new Button("Add Status"));		
-		iDeleteAll  = new UniTimeWidget<Button>(new Button("Delete All")); 
+		controlDeptHeaderPanel = new UniTimeHeaderPanel("Controlling Department Statuses");	
+		
+		controlDeptHeaderPanel.addButton("Delete All", MESSAGES.buttonDependentDeleteAll(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				deleteAllDependentDepartments();
+			}
+		});
+		controlDeptHeaderPanel.addButton("Add Status", MESSAGES.buttonDependentAddStatus(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				addNewRow(iDepartment);
+			}
 
+		}); 
+		
 
-		controlDeptHeaderPanel = new UniTimeHeaderPanel("Controlling Department Statuses");
-		controlDeptHeaderPanel.insertWidget(iDeleteAll);
-	    controlDeptHeaderPanel.insertWidget(iAddStatus);  
-	    HTML seperator = new HTML("<hr  style=\"width:100%;\" /><br>");
-	    controlDeptHeaderPanel.add(seperator);
-	     
-		iForm.addRow(controlDeptHeaderPanel);		
+		iForm.addHeaderRow(controlDeptHeaderPanel);		
 
 		iControlDeptMainPanel = new VerticalPanel();
 		iControlDeptFlexTable = new FlexTable();
@@ -349,7 +355,7 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		
 	    iForm.addRow(iControlDeptMainPanel);  
 	    
-		iForm.addRow(new HTML("<br><br>"));
+	    iControlDeptFlexTable.getElement().getStyle().setPaddingBottom(20, Unit.PX);
 		
 		iFooter = iHeader.clonePanel();
 		iForm.addBottomRow(iFooter);
@@ -357,19 +363,33 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 	   }
 
 	/*onBack and isAbbreviationUnique are redefined in DepartmentsPage*/	
-	protected void onBack(boolean refresh, Long DepartmentId) {}
+	protected void onBack(boolean refresh, Long DepartmentId) {
+		
+		
+	}
 	
 	protected boolean isAbbreviationUnique(DepartmentInterface Department) {
 		return true;
 	}
 
+	protected boolean isDeptCodeUnique(DepartmentInterface Department) {
+		return true;
+	}
 	/*
 	 * Set values in UI
 	 */
 	@Override
 	public void setValue(DepartmentInterface department) {
 		Logger log = Logger.getLogger(DepartmentsEdit.class.getName());
-		log.info("setValue");
+		//log.info("setValue");
+		iDeptCode.clearHint();
+		iAbbreviation.clearHint();
+		iName.clearHint();
+		iExternalManagerAbbreviation.clearHint();
+		iExternalManagerName.clearHint();
+		iDistPrefPriority.clearHint();
+		iHeader.clearMessage();
+		
 		iDeptCode.getWidget().setText("");
 		iAbbreviation.getWidget().setText("");
 		iName.getWidget().setText("");
@@ -384,9 +404,9 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		iAllowReqTime.getWidget().setValue(false);	
 		iAllowReqRoom.getWidget().setValue(false);	
 		iAllowReqDist.getWidget().setValue(false);
-		iInheritInstructorPreferences.getWidget().setValue(false);
+		iInheritInstructorPreferences.getWidget().setValue(true);
 		iAllowEvents.getWidget().setValue(false);
-		iAllowStudentScheduling.getWidget().setValue(false);
+		iAllowStudentScheduling.getWidget().setValue(true);
 		iExternalFundingDept.getWidget().setValue(false);
 		
 		iControlDeptFlexTable.removeAllRows();
@@ -420,18 +440,24 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 				}
 				@Override
 				public void onSuccess(DepartmentPropertiesInterface result) {
-					iStatusType.getWidget().addItem(MESSAGES.departmentStatusDefault(),"-1");
+					iStatusType.getWidget().addItem(MESSAGES.propDepartmentStatusDefault(),"-1");
 					for (Entry<String, String> entry : result.getSatusOptions().entrySet()) {    
 						iStatusType.getWidget().addItem(entry.getValue().toString() , entry.getKey().toString());
 					}
 					iAcademicSession.getWidget().setText((result.getAcademicSessionName() == null ? "" : result.getAcademicSessionName()));
-					if (result.isCoursesFundingDepartmentsEnabled() == false)
-					iExternalFundingDept.getWidget().setEnabled(false);
+					
+					//Remove external funding row when switch in config turned off
+					if (result.isCoursesFundingDepartmentsEnabled() == false) {
+						int rowNum = iForm.getRow(MESSAGES.propExternalFundingDept().replace("<br>", ""));
+						iForm.getRowFormatter().setVisible(rowNum, false);
+					}
+						
+				
 				}
 			});
 		
 		} else {
-			iControlDeptFlexTable.setText(0, 1, MESSAGES.propStatusManagedBy() + ((department.getDeptCode() == null) ? "" : department.getDeptCode()) + " - " + ((department.getName() == null) ? "" : department.getName()));
+			iControlDeptFlexTable.setText(0, 1, MESSAGES.propStatusManagedBy( ((department.getDeptCode() == null) ? "" : department.getDeptCode()) + " - " + ((department.getName() == null) ? "" : department.getName())));
 			iHeader.setHeaderTitle(MESSAGES.sectEditDepartment());
 			iHeader.setEnabled("save", false);
 			iHeader.setEnabled("update", department.getCanEdit());
@@ -451,7 +477,7 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 			iExternalManagerName.getWidget().setValue(department.getExternalMgrLabel());
 			
 			iStatusType.getWidget().clear();
-			iStatusType.getWidget().addItem(MESSAGES.departmentStatusDefault(),"-1");
+			iStatusType.getWidget().addItem(MESSAGES.propDepartmentStatusDefault(),"-1");
 			for (Entry<String, String> entry : department.getSatusOptions().entrySet()) {    
 				iStatusType.getWidget().addItem(entry.getValue().toString() , entry.getKey().toString());
 			}
@@ -465,9 +491,7 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 			iInheritInstructorPreferences.getWidget().setValue(department.getInheritInstructorPreferences());
 			iAllowEvents.getWidget().setValue(department.getAllowEvents());		
 			iAllowStudentScheduling.getWidget().setValue(department.getAllowStudentScheduling());
-			iExternalFundingDept.getWidget().setValue(department.getExternalFundingDept());
-			
-			//if(department.getExternalManager().booleanValue() == false){
+					
 			if(department.isExternalManager ()== false){				
 				controlDeptHeaderPanel.setVisible(false);
 				iControlDeptMainPanel.setVisible(false);
@@ -478,8 +502,12 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 				
 			}
 			
-			if (department.isCoursesFundingDepartmentsEnabled() == false)
-			iExternalFundingDept.getWidget().setEnabled(false);
+			iExternalFundingDept.getWidget().setValue(department.getExternalFundingDept());
+			//Remove external funding row when switch in config turned off
+			if (department.isCoursesFundingDepartmentsEnabled() == false) {
+				int rowNum = iForm.getRow(MESSAGES.propExternalFundingDept().replace("<br>", ""));
+				iForm.getRowFormatter().setVisible(rowNum, false);
+			}
 			
 			//Controlling department section
 			if(department.getExternalManager()){
@@ -497,8 +525,7 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 					//number of rows showing current dependent depts
 					iCurrentDependentOptions = new ListBox[iCurrentDependentDepartments.size()] ;
 					iCurrentStatusTypeOptions = new ListBox[iCurrentDependentDepartments.size()] ;
-					iCurrentControlDeptMainPanel = new VerticalPanel();
-					iCurrentControlDeptFlexTable = new FlexTable();
+
 					//Logger log1 = Logger.getLogger(DepartmentsEdit.class.getName());
 					//log1.info("iCurrentDependentDepartments.isEmpty" + iCurrentDependentDepartments.size());
 					for (int i = 0; i < iCurrentDependentDepartments.size(); i++) {
@@ -522,25 +549,13 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 					}
 				}
 
-				iDeleteAll.addClickHandler(new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						deleteAllDependentDepartments();
-					}
-				});	
-
 			}
 			iDepartment = department;
 			
 			//Add row for control dept
 			addNewRow(iDepartment);
 			addNewRow(iDepartment); 
-			iAddStatus.addClickHandler(new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					addNewRow(iDepartment);
-				}
-			});	
+
 		}
 	}
 	
@@ -549,8 +564,6 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 	 */
 	@Override
 	public DepartmentInterface getValue() {
-		//Logger log = Logger.getLogger(DepartmentsEdit.class.getName());
-		//log.info("getValue");
 		iDepartment.setName(iName.getWidget().getText());
 		iDepartment.setDeptCode(iDeptCode.getWidget().getText());
 		iDepartment.setAbbreviation(iAbbreviation.getWidget().getText());	
@@ -611,35 +624,35 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		}
 
 		if (iDeptCode.getWidget().getText().isEmpty()) {
-			iAbbreviation.setErrorHint(MESSAGES.errorAbbreviationIsEmpty());
-			if (ok) iHeader.setErrorMessage(MESSAGES.errorAbbreviationIsEmpty());
+			iDeptCode.setErrorHint(MESSAGES.errorDeptCodeIsEmpty());
+			if (ok) iHeader.setErrorMessage(MESSAGES.errorDeptCodeIsEmpty());
 			ok = false;
-		} else if (!isAbbreviationUnique(getValue())) {
-			iDeptCode.setErrorHint(MESSAGES.errorAbbreviationMustBeUnique());
-			if (ok) iHeader.setErrorMessage(MESSAGES.errorAbbreviationMustBeUnique());
+		} else if (!isDeptCodeUnique(getValue())) {
+			iDeptCode.setErrorHint(MESSAGES.errorDeptCodeMustBeUnique());
+			if (ok) iHeader.setErrorMessage(MESSAGES.errorDeptCodeMustBeUnique());
 			ok = false;
 		}
 
         if (iExternalManager.getWidget().getValue() == true && (iExternalManagerName.getWidget().getText().isEmpty()|| iExternalManagerName.getWidget().getText().length() ==0)) {
-        	iExternalManagerName.setErrorHint(MESSAGES.errorRequired("External Manager Name"));
-			if (ok) iHeader.setErrorMessage(MESSAGES.errorRequired("External Manager Name"));
+        	iExternalManagerName.setErrorHint(MESSAGES.errorRequired(MESSAGES.propExternalManagerName()));
+			if (ok) iHeader.setErrorMessage(MESSAGES.errorRequired(MESSAGES.propExternalManagerName()));
 			ok = false;
         }
  
         if (iExternalManager.getWidget().getValue() == false && (!iExternalManagerName.getWidget().getText().isEmpty()|| iExternalManagerName.getWidget().getText().trim().length() >0)) {
-        	iExternalManagerName.setErrorHint(MESSAGES.errorGeneric("External Manager Name should only be used when the department is marked as 'External Manager'"));
-			if (ok) iHeader.setErrorMessage(MESSAGES.errorGeneric("External Manager Name should only be used when the department is marked as 'External Manager'"));
+        	iExternalManagerName.setErrorHint(MESSAGES.errorGeneric(MESSAGES.errorExternalManagerNameUse()));
+			if (ok) iHeader.setErrorMessage(MESSAGES.errorGeneric(MESSAGES.errorExternalManagerNameUse()));
 			ok = false;
         }
  
         if (iExternalManager.getWidget().getValue() == true && (iExternalManagerAbbreviation.getWidget().getText().isEmpty()|| iExternalManagerAbbreviation.getWidget().getText().length() ==0)) {
-        	iExternalManagerAbbreviation.setErrorHint(MESSAGES.errorRequired("External Manager Abbreviation"));
-			if (ok) iHeader.setErrorMessage(MESSAGES.errorRequired("External Manager Abbreviation"));
+        	iExternalManagerAbbreviation.setErrorHint(MESSAGES.errorRequired(MESSAGES.propExternalManagerAbbreviation()));
+			if (ok) iHeader.setErrorMessage(MESSAGES.errorRequired(MESSAGES.propExternalManagerAbbreviation()));
 			ok = false;
         }
         if (iExternalManager.getWidget().getValue() == false && (!iExternalManagerAbbreviation.getWidget().getText().isEmpty() || iExternalManagerAbbreviation.getWidget().getText().trim().length() >0)) {
-        	iExternalManagerAbbreviation.setErrorHint(MESSAGES.errorGeneric("External Manager Abbreviation should only be used when the department is marked as 'External Manager'"));
-			if (ok) iHeader.setErrorMessage(MESSAGES.errorGeneric("External Manager Abbreviation should only be used when the department is marked as 'External Manager'"));
+        	iExternalManagerAbbreviation.setErrorHint(MESSAGES.errorGeneric(MESSAGES.errorExternalManagerAbbreviationUse()));
+			if (ok) iHeader.setErrorMessage(MESSAGES.errorGeneric(MESSAGES.errorExternalManagerAbbreviationUse()));
 			ok = false;
         }
  
@@ -683,7 +696,7 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		statusTypeOptions.setWidth("300px");
 		statusTypeOptions.setStyleName("gwt-SuggestBox");
 		statusTypeOptions.setVisibleItemCount(1);		
-		statusTypeOptions.addItem(MESSAGES.defaultDependentStatus(), "");
+		statusTypeOptions.addItem(MESSAGES.propDefaultDependentStatus(), "");
 
 	for (Entry<String, String> entry : department.getSatusOptions().entrySet()) {    
 			statusTypeOptions.addItem(entry.getValue().toString() , entry.getKey().toString());
@@ -712,7 +725,7 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		departmentOptions.setWidth("300px");
 		departmentOptions.setStyleName("unitime-TextBox");
 		departmentOptions.setVisibleItemCount(1);
-		departmentOptions.addItem(MESSAGES.defaultDependentDepartment(), "");
+		departmentOptions.addItem(MESSAGES.propDefaultDependentDepartment(), "");
 		for (Entry<Long, String> entry : department.getExtDepartmentOptions().entrySet()) {
 			departmentOptions.addItem(entry.getValue().toString() , entry.getKey().toString());
 		}	

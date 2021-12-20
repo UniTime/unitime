@@ -21,13 +21,9 @@ package org.unitime.timetable.server.departments;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.TreeSet;
-
 import org.cpsolver.ifs.util.DistanceMetric;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
@@ -45,7 +41,6 @@ import org.unitime.timetable.model.RefTableEntry;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.ReferenceList;
-import org.unitime.timetable.defaults.ApplicationProperty;
 
 @GwtRpcImplements(GetDepartmentsRequest.class)
 public class GetDepartmentsDataBackend implements GwtRpcImplementation<GetDepartmentsRequest, DepartmentsDataResponse>{
@@ -58,13 +53,12 @@ public class GetDepartmentsDataBackend implements GwtRpcImplementation<GetDepart
 		response.setCanAdd(context.hasPermission(Right.DepartmentAdd));
 		response.setCanExportPdf(context.hasPermission(Right.Departments));
 		response.setCanUpdate(context.hasPermission(Right.DepartmentEdit));	
-		
+		response.setFundingDeptEnabled(ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue());
 		DistanceMetric.Ellipsoid ellipsoid = DistanceMetric.Ellipsoid.valueOf(ApplicationProperty.DistanceEllipsoid.value());
 		response.setEllipsoid(ellipsoid.getEclipsoindName());
 		
 		/*department list */
 		for (Department dept: Department.findAll(context.getUser().getCurrentAcademicSessionId())) {
-			System.out.println("DepartmentsDataResponse-loop");
 			DepartmentInterface d = new DepartmentInterface();
 			d.setSessionId( dept.getSessionId());
 			d.setCoursesFundingDepartmentsEnabled(ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue()); 
@@ -163,13 +157,11 @@ public class GetDepartmentsDataBackend implements GwtRpcImplementation<GetDepart
 	
 	public String lastChangeStr(Department dept, SessionContext context){
         String lastChangeStr = null;
-        Long lastChangeCmp = null;
     	if (context.hasPermission(Right.HasRole) && CommonValues.Yes.eq(context.getUser().getProperty(UserProperty.DisplayLastChanges))) {
             List changes = ChangeLog.findLastNChanges(dept.getSession().getUniqueId(), null, null, dept.getUniqueId(), 1);
             ChangeLog lastChange = (changes==null || changes.isEmpty() ? null : (ChangeLog) changes.get(0));
             lastChangeStr = (lastChange==null?"":ChangeLog.sDFdate.format(lastChange.getTimeStamp())+" by "+lastChange.getManager().getShortName());
-            lastChangeCmp = new Long(lastChange==null?0:lastChange.getTimeStamp().getTime());
-    	}
+   	}
         return lastChangeStr;
 	}
 	
@@ -188,7 +180,6 @@ public class GetDepartmentsDataBackend implements GwtRpcImplementation<GetDepart
 
 	public HashMap<Long, String> getAllDependentDepartmentOptions( SessionContext context) { 
 		 TreeSet<Department> departments =  Department.findAllNonExternal(context.getUser().getCurrentAcademicSessionId());
-		 List<String> ret = new ArrayList<String>();
 		 HashMap<Long, String> map = new HashMap<Long,String>();
 		for (Department d: departments){
 			  String deptCode = d.getDepartment().getDeptCode();

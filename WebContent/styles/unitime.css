@@ -4148,6 +4148,26 @@ unitime-RoomSharingWidget .legend .blank {
 	color: red;
 }
 
+.unitime-Dept .department-Status {
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.unitime-Dept .department-accept {
+  display: block;
+  height: 13px;  
+  background: transparent url(../images/accept.png) center center no-repeat;
+  
+}
+
+.unitime-Dept .department-StatusItalics {
+	font-style: italic;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
 .unitime-Widget {
 	display: inline-block;
 }

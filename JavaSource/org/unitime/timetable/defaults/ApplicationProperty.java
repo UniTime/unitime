@@ -3006,6 +3006,7 @@ public enum ApplicationProperty {
 	@Description("Edit Course Offering: external managers can edit course offerings.")
 	PermissionCourseOfferingAllowsExternalEdit("unitime.permissions.courseOfferingAllowExternalEdits"),
 
+	@Type(Boolean.class)
 	@DefaultValue("false")
 	@Description("Enable Funding Department Functionality.")
 	CoursesFundingDepartmentsEnabled("unitime.courses.funding_departments_enabled"),
