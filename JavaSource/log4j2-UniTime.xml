@@ -4,10 +4,17 @@
 		<Console name="stdout" target="SYSTEM_OUT">
 			<PatternLayout pattern="[%-d{MM/dd/yy HH:mm:ss}] %-6p %c -> %m%n"/>
 		</Console>
+		<RollingFile name="unitime"
+			fileName="${sys:catalina.base:-.}/logs/unitime.log"
+			filePattern="${sys:catalina.base:-.}/logs/unitime-%d{MM-dd-yyyy}.log.gz" ignoreExceptions="false">
+			<PatternLayout pattern="[%-d{MM/dd/yy HH:mm:ss}] %-6p %c -> %m%n"/>
+			<TimeBasedTriggeringPolicy/>
+		</RollingFile>
 	</Appenders>
 	<Loggers>
 		<Root level="INFO">
 			<AppenderRef ref="stdout"/>
+			<AppenderRef ref="unitime"/>
 		</Root>
 		<Logger name="org.hibernate" level="INFO"/>
 		<Logger name="org.hibernate.cfg" level="WARN"/>

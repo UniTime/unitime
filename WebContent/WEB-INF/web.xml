@@ -18,11 +18,11 @@
  * limitations under the License.
  * 
  -->
-<web-app 
-	version="2.4"
-	xmlns="http://java.sun.com/xml/ns/j2ee"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+         http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1">
 
 	<display-name>
 		UniTime
@@ -197,7 +197,12 @@
 	<servlet-mapping>
 		<servlet-name>remoteLogging</servlet-name>
 		<url-pattern>/unitime/remote_logging</url-pattern>
-	</servlet-mapping> 
+	</servlet-mapping>
+	
+	<filter>
+        <filter-name>log4jServletFilter</filter-name>
+        <filter-class>org.apache.logging.log4j.web.Log4jServletFilter</filter-class>
+    </filter> 
 
 	<!-- Filter to automatically close any open hibernate sessions -->
 	<filter>
@@ -286,6 +291,16 @@
 	</filter>
 
 	<!-- Filter Mappings -->
+	<filter-mapping>
+        <filter-name>log4jServletFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+        <dispatcher>INCLUDE</dispatcher>
+        <dispatcher>ERROR</dispatcher>
+        <dispatcher>ASYNC</dispatcher><!-- Servlet 3.0 w/ disabled auto-initialization only; not supported in 2.5 -->
+    </filter-mapping>
+	
 	<filter-mapping>
 		<filter-name>Encoding Filter</filter-name>
 		<url-pattern>/*</url-pattern>
@@ -387,6 +402,24 @@
 			<param-value>/WEB-INF/applicationContext.xml</param-value>
 	</context-param>
 	
+	<context-param>
+        <param-name>isLog4jAutoInitializationDisabled</param-name>
+        <param-value>true</param-value>
+    </context-param>
+	
+	<context-param>
+		<param-name>log4jContextName</param-name>
+		<param-value>UniTime</param-value>
+	</context-param>
+
+	<context-param>
+		<param-name>log4jConfiguration</param-name>
+		<param-value>log4j2-UniTime.xml</param-value>
+	</context-param>
+	
+	<listener>
+        <listener-class>org.apache.logging.log4j.web.Log4jServletContextListener</listener-class>
+    </listener>
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
 	</listener>

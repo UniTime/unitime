@@ -161,6 +161,10 @@ Apache Log4j SLF4J Binding (log4j-slf4j-impl-2.17.1.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://logging.apache.org/log4j/2.x/log4j-slf4j-impl/
 
+Apache Log4j Web (log4j-web-2.17.1.jar)
+	under Apache Software License (ASL), Version 2.0
+	https://logging.apache.org/log4j/2.x/log4j-web/
+
 Apache POI (poi-3.17.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://poi.apache.org/
