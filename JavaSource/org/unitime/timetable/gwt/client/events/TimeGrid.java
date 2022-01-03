@@ -101,6 +101,7 @@ public class TimeGrid extends Composite {
 	private ResourceType iResourceType;
 	private boolean iShowShadows;
 	private boolean iRTL = false;
+	private Boolean iVerticalSplitByWeek = null;
 	
 	private ArrayList<ArrayList<Meeting>> iMeetings = new ArrayList<ArrayList<Meeting>>();
 	@SuppressWarnings("unchecked")
@@ -279,7 +280,12 @@ public class TimeGrid extends Composite {
 	}
 	
 	private boolean isVerticalSplitByWeek() {
+		if (iVerticalSplitByWeek != null) return iVerticalSplitByWeek;
 		return isSingleRoom() || getResourceType() == ResourceType.PERSON || (CONSTANTS.timeGridStudentGroupDoesNotOverlap() && getResourceType() == ResourceType.GROUP);
+	}
+	
+	public void setVerticalSplitByWeek(Boolean verticalSplitByWeek) {
+		iVerticalSplitByWeek = verticalSplitByWeek;
 	}
 
 	public List<WeekInterface> getSelectedWeeks() { return iSelectedWeeks; }
