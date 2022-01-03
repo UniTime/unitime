@@ -36,6 +36,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.Configurator;
 
 import org.cpsolver.ifs.util.DataProperties;
@@ -71,6 +73,7 @@ import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
 import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.spring.SpringApplicationContextHolder;
+import org.unitime.timetable.util.MessageLogAppender;
 import org.unitime.timetable.util.queue.QueueProcessor;
 import org.unitime.timetable.util.queue.RemoteQueueProcessor;
 
@@ -612,6 +615,14 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 			
 			ApplicationConfig.configureLogging();
 			
+			final MessageLogAppender appender = new MessageLogAppender();
+    		LoggerContext ctx = LoggerContext.getContext(false);
+    		Configuration config = ctx.getConfiguration();
+    		config.addAppender(appender);
+    		config.getRootLogger().addAppender(appender, appender.getMinLevel(), null);
+    		ctx.updateLoggers();
+    		appender.start();
+			
 			StudentSectioningPref.updateStudentSectioningPreferences();
 			
 			final JChannel channel = (JChannel) new UniTimeChannelLookup().getJGroupsChannel(null);
@@ -637,7 +648,10 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
     					
     					sLog.info("Closing the channel...");
     					channel.close();
-    					
+
+    					sLog.info("Stopping message log appender...");
+    					appender.stop();
+
     					sLog.info("Closing hibernate...");
     					HibernateUtil.closeHibernate();
     					
