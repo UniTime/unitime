@@ -269,7 +269,7 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 		try {
 			RpcDispatcher dispatcher = getDispatcher();
 			if (dispatcher != null)
-				dispatcher.callRemoteMethods(null, "setLoggingLevel", new Object[] { name, level }, new Class[] { String.class, Integer.class }, SolverServerImplementation.sAllResponses);
+				dispatcher.callRemoteMethods(null, "setLoggingLevel", new Object[] { name, level }, new Class[] { String.class, String.class }, SolverServerImplementation.sAllResponses);
 			else
 				iServer.setLoggingLevel(name, level);
 		} catch (Exception e) {
