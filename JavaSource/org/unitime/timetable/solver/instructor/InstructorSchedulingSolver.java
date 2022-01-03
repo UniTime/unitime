@@ -188,7 +188,7 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
 		for (int i = 0; i < slot2pref.length; i++)
 			slot2pref[i] = new int[] {0, 0, 0};
 		for (Preference<TimeLocation> p: instructor.getTimePreferences()) {
-			PreferenceInfo pi = new PreferenceInfo(new Long(p.getTarget().hashCode()), p.getTarget().getLongName(useAmPm), Constants.preferenceLevel2preference(p.getPreference()));
+			PreferenceInfo pi = new PreferenceInfo(Long.valueOf(p.getTarget().hashCode()), p.getTarget().getLongName(useAmPm), Constants.preferenceLevel2preference(p.getPreference()));
 			pi.setComparable(String.format("%03d:%05d", p.getTarget().getDayCode(), p.getTarget().getStartSlot()));
 			info.addTimePreference(pi);
 			if (p.getTarget() instanceof EnrolledClass) {

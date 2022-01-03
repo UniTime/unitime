@@ -31,7 +31,9 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.hibernate.Query;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,7 +78,7 @@ import org.unitime.timetable.util.NameInterface;
  */
 @GwtRpcImplements(PersonInterface.LookupRequest.class)
 public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface.LookupRequest, GwtRpcResponseList<PersonInterface>>, ExternalUidLookup {
-	private static Logger sLog = Logger.getLogger(PeopleLookupBackend.class);
+	private static Log sLog = LogFactory.getLog(PeopleLookupBackend.class);
 	private ExternalUidTranslation iTranslation;
 	private LdapTemplate iLdapTemplate;
 	private SearchControls iSearchControls;

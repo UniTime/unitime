@@ -63,7 +63,7 @@ public class HibSessionFilter implements Filter {
 		if (filterConfig==null) return;
 		
 		if (request.getAttribute("TimeStamp")==null)
-			request.setAttribute("TimeStamp", new Double(JProf.currentTimeSec()));
+			request.setAttribute("TimeStamp", Double.valueOf(JProf.currentTimeSec()));
 		
 		try {
 			// Process request

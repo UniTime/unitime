@@ -229,13 +229,13 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     			if ((index + 1) == this.getClassIds().size()){
         			errors.add("mustHaveChildClasses", 
         					new ActionMessage("errors.generic", MSG.errorClassMustHaveChildClasses((String) this.getClassLabels().get(index))));
-        			this.getClassHasErrors().set(index, new Boolean(true));    				
+        			this.getClassHasErrors().set(index, Boolean.valueOf(true));    				
     			} else {
 	    			String parentOfNextClass = (String) this.getParentClassIds().get(index + 1);
 	    			if (parentOfNextClass == null || !parentOfNextClass.equals(classId)){
 	        			errors.add("mustHaveChildClasses", 
 	        					new ActionMessage("errors.generic", MSG.errorClassMustHaveChildClasses((String) this.getClassLabels().get(index))));
-	        			this.getClassHasErrors().set(index, new Boolean(true));    				    				
+	        			this.getClassHasErrors().set(index, Boolean.valueOf(true));    				    				
 	    			}
     			}
     		}
@@ -276,7 +276,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     		}
     		if (minLimit > maxLimit){
     			errors.add("minLimitGreaterThanMaxLimit", new ActionMessage("errors.generic", MSG.errorMaxLessThanMinLimit((String) this.getClassLabels().get(index))));
-    			this.getClassHasErrors().set(index, new Boolean(true));
+    			this.getClassHasErrors().set(index, Boolean.valueOf(true));
     		}    		
     		index++;
     	}
@@ -319,7 +319,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 					}
 				}
 				value2 += clsLimit;
-				subpartLimits.put(subpartKey, new Integer(value2));
+				subpartLimits.put(subpartKey, Integer.valueOf(value2));
 			}
 		}
 				
@@ -334,7 +334,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		// validate that child class limits are >= parent limit
 		for (;it4.hasNext();){
 			parentKey1 = (String) it4.next();
-			parentLimit = new Integer((String) it5.next());
+			parentLimit = Integer.valueOf((String) it5.next());
 			if (childClassLimits.get(parentKey1) != null){
 				subpartLimits = (HashMap) childClassLimits.get(parentKey1);
 				for(Iterator it = subpartLimits.keySet().iterator(); it.hasNext();){
@@ -362,7 +362,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 				subpartId = (String) it7.next();
 				if (!((Boolean)this.getClassHasErrors().get(index)).booleanValue()){
 					if (childClassesUnderLimit.keySet().contains(parentId) && subpartId.equals((String)childClassesUnderLimit.get(parentId))){
-						this.getClassHasErrors().set(index, new Boolean(true)); 
+						this.getClassHasErrors().set(index, Boolean.valueOf(true)); 
 					} 
 				}
 				index++;
@@ -399,7 +399,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     				value1 = ((Integer) subpartClassLimits.get(subpartKey)).intValue();
     			
     			value1 += clsLimit;
-    			subpartClassLimits.put(subpartKey, new Integer(value1));
+    			subpartClassLimits.put(subpartKey, Integer.valueOf(value1));
 			}
 			
 		}
@@ -433,7 +433,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 				subpartId = (String) it7.next();
 				if (!((Boolean)this.getClassHasErrors().get(index)).booleanValue()){
 					if (subpartsUnderLimit.contains(subpartId)){
-						this.getClassHasErrors().set(index, new Boolean(true));	                           					
+						this.getClassHasErrors().set(index, Boolean.valueOf(true));	                           					
 					}
 				}
 				index++;
@@ -444,7 +444,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     private void initClassHasErrorsToFalse(){
 		this.setClassHasErrors(DynamicList.getInstance(new ArrayList(), factoryClasses));
 		for(Iterator it = this.getClassIds().iterator(); it.hasNext();){
-			this.getClassHasErrors().add(new Boolean(false));
+			this.getClassHasErrors().add(Boolean.valueOf(false));
 			it.next();
 		}
     }
@@ -453,8 +453,8 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	this.setClassCanMoveDown(DynamicList.getInstance(new ArrayList(), factoryClasses));
 		this.setClassCanMoveUp(DynamicList.getInstance(new ArrayList(), factoryClasses));
 		for(Iterator it = this.getClassIds().iterator(); it.hasNext();){
-			this.getClassCanMoveDown().add(new Boolean(false));
-			this.getClassCanMoveUp().add(new Boolean(false));
+			this.getClassCanMoveDown().add(Boolean.valueOf(false));
+			this.getClassCanMoveUp().add(Boolean.valueOf(false));
 			it.next();
 		}
     }
@@ -484,20 +484,20 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	instrOffrConfigId = null;
     	instrOfferingName = "";
     	origSubparts = "";
-    	displayMaxLimit = new Boolean(false);
-    	displayOptionForMaxLimit = new Boolean(false);
-    	displayEnrollment = new Boolean(false);
-    	displaySnapshotLimit = new Boolean(false);
-    	displayDisplayInstructors = new Boolean(false);
-    	displayEnabledForStudentScheduling = new Boolean(false);
-    	displayExternalId = new Boolean(false);
-    	editExternalId = new Boolean(false);
-    	editSnapshotLimits = new Boolean(false);
+    	displayMaxLimit = Boolean.valueOf(false);
+    	displayOptionForMaxLimit = Boolean.valueOf(false);
+    	displayEnrollment = Boolean.valueOf(false);
+    	displaySnapshotLimit = Boolean.valueOf(false);
+    	displayDisplayInstructors = Boolean.valueOf(false);
+    	displayEnabledForStudentScheduling = Boolean.valueOf(false);
+    	displayExternalId = Boolean.valueOf(false);
+    	editExternalId = Boolean.valueOf(false);
+    	editSnapshotLimits = Boolean.valueOf(false);
     	enableAllClassesForStudentScheduling = "";
     	displayAllClassesInstructors = "";
     	instructionalMethod = null;
     	instructionalMethodDefault = null;
-    	displayLms = new Boolean(false);
+    	displayLms = Boolean.valueOf(false);
     	resetLists();
     }
     
@@ -568,8 +568,8 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 //    }
     
     private void setClassCannotMove(int classIndex){
-    	this.getClassCanMoveDown().set(classIndex,new Boolean(false));    
-		this.getClassCanMoveUp().set(classIndex,new Boolean(false)); 
+    	this.getClassCanMoveDown().set(classIndex,Boolean.valueOf(false));    
+		this.getClassCanMoveUp().set(classIndex,Boolean.valueOf(false)); 
     }
     
     public void setDirectionsClassesCanMove(){
@@ -609,12 +609,12 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	    	
 	    	lowestParentSubpartIdIndex = this.getSubpartIds().indexOf(parentSubpartId);
 	    	if (lowestParentSubpartIdIndex < parentClassIndex){
-	    		this.getClassCanMoveUp().set(classIndex,new Boolean(true));    
+	    		this.getClassCanMoveUp().set(classIndex,Boolean.valueOf(true));    
 	    	}
 	    	
 	    	highestParentSubpartIdIndex = this.getSubpartIds().lastIndexOf(parentSubpartId);
 	    	if (highestParentSubpartIdIndex > parentClassIndex){
-	    		this.getClassCanMoveDown().set(classIndex, new Boolean(true));
+	    		this.getClassCanMoveDown().set(classIndex, Boolean.valueOf(true));
 	    	}
     	}
    }
@@ -692,15 +692,15 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	Boolean readOnlySubpart = null;
     	while (ssIt.hasNext() && limitIt.hasNext() && cancelIt.hasNext()){
     		Long subpartId = Long.valueOf((String) ssIt.next());
-    		Integer limit = new Integer((String) limitIt.next());
+    		Integer limit = Integer.valueOf((String) limitIt.next());
     		Integer snapshotLimit = null;
     		try {
     			snapshotLimit = (snapLimitIt == null ? null : Integer.valueOf((String)snapLimitIt.next()));
     		} catch (NumberFormatException e) {}
     		boolean cancelled = "true".equals(cancelIt.next());
-     		enableForScheduling = new Boolean(determineBooleanValueAtIndex(this.getEnabledForStudentScheduling(), cnt));    	   	
-     		displayInstructor = new Boolean(determineBooleanValueAtIndex(this.getDisplayInstructors(), cnt));
-       	   	readOnlySubpart = new Boolean(determineBooleanValueAtIndex(this.getReadOnlyClasses(), cnt));
+     		enableForScheduling = Boolean.valueOf(determineBooleanValueAtIndex(this.getEnabledForStudentScheduling(), cnt));    	   	
+     		displayInstructor = Boolean.valueOf(determineBooleanValueAtIndex(this.getDisplayInstructors(), cnt));
+       	   	readOnlySubpart = Boolean.valueOf(determineBooleanValueAtIndex(this.getReadOnlyClasses(), cnt));
      	   	
     		int addLimit = (limit == null || cancelled)?0:limit.intValue();
     		int snapLimit = (snapshotLimit == null || cancelled? 0 : snapshotLimit.intValue());
@@ -715,8 +715,8 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     			getReadOnlySubparts().add(readOnlySubpart);
     			String label = ss.getItypeDesc() + ss.getSchedulingSubpartSuffix();
     			getSubtotalLabels().add(label);
-     			subpartToIndex.put(subpartId, new Integer(i));
-     			subtotalIndex = new Integer(i);
+     			subpartToIndex.put(subpartId, Integer.valueOf(i));
+     			subtotalIndex = Integer.valueOf(i);
    	   			i++;
     		} else {
         		subtotalIndex = (Integer) subpartToIndex.get(subpartId);
@@ -728,7 +728,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
         		this.getSubtotalSnapValues().set(subtotalIndex.intValue(), newSnapSubtotal);
         		boolean oldEnableForScheduling = ((Boolean) this.getEnableAllClassesForStudentSchedulingForSubpart().get(subtotalIndex)).booleanValue();
         		boolean newEnableForScheduling = oldEnableForScheduling && enableForScheduling.booleanValue();
-        		this.getEnableAllClassesForStudentSchedulingForSubpart().set(subtotalIndex, new Boolean(newEnableForScheduling));
+        		this.getEnableAllClassesForStudentSchedulingForSubpart().set(subtotalIndex, Boolean.valueOf(newEnableForScheduling));
         		boolean oldDisplayInstructor = ((Boolean) this.getDisplayAllClassesInstructorsForSubpart().get(subtotalIndex)).booleanValue();
         		boolean newDisplayInstructor = oldDisplayInstructor && displayInstructor.booleanValue();
         		this.getDisplayAllClassesInstructorsForSubpart().set(subtotalIndex, newDisplayInstructor);
@@ -1007,12 +1007,12 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.subpartIds.add(cls.getSchedulingSubpart().getUniqueId().toString());
 		this.itypes.add(cls.getSchedulingSubpart().getItype().getItype().toString());
 		if (cls.getSchedulingSubpart().getChildSubparts() != null && cls.getSchedulingSubpart().getChildSubparts().size() > 0){
-			this.mustHaveChildClasses.add(new Boolean(true));
+			this.mustHaveChildClasses.add(Boolean.valueOf(true));
 		} else {
-			this.mustHaveChildClasses.add(new Boolean(false));			
+			this.mustHaveChildClasses.add(Boolean.valueOf(false));			
 		}
 		this.readOnlyClasses.add(isReadOnly.toString());
-		this.classHasErrors.add(new Boolean(false).toString());	
+		this.classHasErrors.add(Boolean.valueOf(false).toString());	
 		this.enrollments.add(StudentClassEnrollment.sessionHasEnrollments(cls.getSessionId())?(cls.getEnrollment()==null?"0":cls.getEnrollment().toString()):"");
 		if(isInstrOffrConfigUnlimited()) {
 			this.snapshotLimits.add("0");
@@ -1062,10 +1062,10 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 				|| (cls.getExpectedCapacity() == null && cls.getMaxExpectedCapacity() == null) ){
 			// leave display max limit alone.
 		} else {
-			setDisplayMaxLimit(new Boolean(true));
+			setDisplayMaxLimit(Boolean.valueOf(true));
 		}
 		if (getDisplayMaxLimit().booleanValue()){
-			setDisplayOptionForMaxLimit(new Boolean(true));
+			setDisplayOptionForMaxLimit(Boolean.valueOf(true));
 		}
 		this.times.add(cls.buildAssignedTimeHtml(proxy));
 		this.rooms.add(cls.buildAssignedRoomHtml(proxy));
@@ -1320,7 +1320,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.itypes.add(this.getItypes().get(index).toString());
 		this.mustHaveChildClasses.add(this.getMustHaveChildClasses().get(index).toString());
 		this.parentClassIds.add((parentClassId != null)?parentClassId.toString():"");
-		this.readOnlyClasses.add(new Boolean(false).toString());
+		this.readOnlyClasses.add(Boolean.valueOf(false).toString());
 		this.enrollments.add("");
 		this.snapshotLimits.add("");
 		this.minClassLimits.add(this.getMinClassLimits().get(index));
@@ -1367,7 +1367,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 				nextId = id - 1;
 			}
 		}
-		return (new Long(nextId));
+		return (Long.valueOf(nextId));
 	}
 
 	public Long getDeletedClassId() {

@@ -391,7 +391,7 @@ public interface StudentCourseDemands {
 		}
 		
 		public int hashCode() {
-			return new Long(getStudentId()).hashCode();
+			return Long.valueOf(getStudentId()).hashCode();
 		}
 		
 		public boolean equals(Object o) {

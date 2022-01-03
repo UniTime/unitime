@@ -714,7 +714,7 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     			}
     		} else {
     			if (aClass.getRoomRatio() != null){
-    				if (classLimitDisplayed && aClass.getRoomRatio().equals(new Float(1.0))){
+    				if (classLimitDisplayed && aClass.getRoomRatio().equals(1f)){
     					addText(cell, "", true);
     				} else {
     					addText(cell, sRoomRatioFormat.format(aClass.getRoomRatio().floatValue()), true);

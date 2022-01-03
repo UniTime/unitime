@@ -391,17 +391,17 @@ public class SolutionReportAction extends Action {
         				sDoubleFormat.format(factor*g.getSlotsMustUse()/g.getNrRooms())+" ("+sDoubleFormat.format(factor*g.getSlotsMustUseThisSizeOrBigger()/g.getNrRoomsThisSizeOrBigger())+")"
         			},
         			new Comparable[] {
-        				new Integer(g.getMinRoomSize()),
-        				new Integer(g.getActualMinRoomSize()),
-        				new Integer(g.getNrRooms()),
-        				//new Integer(g.getLecturesCanUse()),
-        				new Integer(g.getLecturesUse()),
-        				new Integer(g.getLecturesShouldUse()),
-        				new Integer(g.getLecturesMustUse()),
-        				//new Double(factor*g.getSlotsCanUse()/g.getNrRooms()),
-        				new Double(factor*g.getSlotsUse()/g.getNrRooms()),
-        				new Double(factor*g.getSlotsShouldUse()/g.getNrRooms()),
-        				new Double(factor*g.getSlotsMustUse()/g.getNrRooms())
+        				Integer.valueOf(g.getMinRoomSize()),
+        				Integer.valueOf(g.getActualMinRoomSize()),
+        				Integer.valueOf(g.getNrRooms()),
+        				//Integer.valueOf(g.getLecturesCanUse()),
+        				Integer.valueOf(g.getLecturesUse()),
+        				Integer.valueOf(g.getLecturesShouldUse()),
+        				Integer.valueOf(g.getLecturesMustUse()),
+        				//Double.valueOf(factor*g.getSlotsCanUse()/g.getNrRooms()),
+        				Double.valueOf(factor*g.getSlotsUse()/g.getNrRooms()),
+        				Double.valueOf(factor*g.getSlotsShouldUse()/g.getNrRooms()),
+        				Double.valueOf(factor*g.getSlotsMustUse()/g.getNrRooms())
         			});
         	}
         } catch (Exception e) {
@@ -474,10 +474,10 @@ public class SolutionReportAction extends Action {
         				line[i+2]="<a title='"+toolTip+"'>"+(limit==0?"":(usage>limit?"<font color='red'>":"")+usage+" / "+limit+(usage>limit?"</font>":""))+"</a>";
         				line[i+2]+=(classes.isEmpty()?"":"<br>"+sb.toString());
         			}
-        			cmp[i+2]=new Integer(usage*1000+limit);
+        			cmp[i+2]=Integer.valueOf(usage*1000+limit);
         		}
         		line[1]=(noHtml?""+penalty:(penalty==0?"":"<font color='red'>+"+penalty+"</font>"));
-        		cmp[1]=new Integer(penalty);
+        		cmp[1]=Integer.valueOf(penalty);
         		webTable.addLine(null,line,cmp);
 
         	}
@@ -539,7 +539,7 @@ public class SolutionReportAction extends Action {
         			},
         			new Comparable[] {
         				g.getName(),
-        				new Integer(g.getPreference()), g.getNrViolations(),
+        				Integer.valueOf(g.getPreference()), g.getNrViolations(),
         				ord, null, null
         			});
         	}
@@ -588,7 +588,7 @@ public class SolutionReportAction extends Action {
         			new Comparable[] {
         				g.getInstructorName(),
         				g.getPreference(),
-        				new Double(g.getDistance()),
+        				Double.valueOf(g.getDistance()),
         				new DuoComparable(g.getFirst(),g.getSecond()), null, null, null
         			});
         	}
@@ -658,7 +658,7 @@ public class SolutionReportAction extends Action {
         		int idx = 0;
         		
         		line[idx] = String.valueOf(Math.round(g.getJenrl()));
-        		cmp[idx++] = new Double(g.getJenrl());
+        		cmp[idx++] = Double.valueOf(g.getJenrl());
         		
         		line[idx] = (noHtml?g.getFirst().getClazz().getName()+"\n"+g.getSecond().getClazz().getName():
         			g.getFirst().getClazz().toHtml(true,true)+"<BR>"+g.getSecond().getClazz().toHtml(true,true));
@@ -675,25 +675,25 @@ public class SolutionReportAction extends Action {
         		cmp[idx++] = null;
         		
         		line[idx] = (noHtml?(g.isHard()?"true":""):g.isHard()?"<img src='images/accept.png' border='0'/>":"");
-        		cmp[idx++] = new Integer(g.isHard()?1:0);
+        		cmp[idx++] = Integer.valueOf(g.isHard()?1:0);
         		
         		line[idx] = (g.isDistance()?String.valueOf(Math.round(g.getDistance()))+"m":"");
-        		cmp[idx++] = new Double(g.getDistance());
+        		cmp[idx++] = Double.valueOf(g.getDistance());
         		
         		line[idx] = (noHtml?(g.isFixed()?"true":""):g.isFixed()?"<img src='images/accept.png' border='0'/>":"");
-        		cmp[idx++] = new Integer(g.isFixed()?1:0);
+        		cmp[idx++] = Integer.valueOf(g.isFixed()?1:0);
         		
         		line[idx] = (noHtml?(g.isCommited()?"true":""):g.isCommited()?"<img src='images/accept.png' border='0'/>":"");
-        		cmp[idx++] = new Integer(g.isCommited()?1:0);
+        		cmp[idx++] = Integer.valueOf(g.isCommited()?1:0);
         		
         		if (hasImportant) {
         			line[idx] = (noHtml?(g.isImportant()?"true":""):g.isImportant()?"<img src='images/accept.png' border='0'/>":"");
-        			cmp[idx++] = new Integer(g.isImportant()?1:0);
+        			cmp[idx++] = Integer.valueOf(g.isImportant()?1:0);
         		}
         		
         		if (hasInstructor) {
         			line[idx] = (noHtml?(g.isInstructor()?"true":""):g.isInstructor()?"<img src='images/accept.png' border='0'/>":"");
-        			cmp[idx++] = new Integer(g.isInstructor()?1:0);
+        			cmp[idx++] = Integer.valueOf(g.isInstructor()?1:0);
         		}
         		
         		line[idx] = g.getCurriculumText();
@@ -715,7 +715,7 @@ public class SolutionReportAction extends Action {
     		int idx = 0;
 
     		line[idx] = String.valueOf(total[0]);
-    		cmp[idx++] = new Double(total[0]);
+    		cmp[idx++] = Double.valueOf(total[0]);
     		
     		line[idx] = "<i>Total</i>";
     		cmp[idx++] = new DuoComparable(null, null);
@@ -730,25 +730,25 @@ public class SolutionReportAction extends Action {
     		cmp[idx++] = null;
     		
     		line[idx] = String.valueOf(total[1]);
-    		cmp[idx++] = new Integer(total[1]);
+    		cmp[idx++] = Integer.valueOf(total[1]);
     		
     		line[idx] = String.valueOf(total[2]);
-    		cmp[idx++] = new Double(1000.0 * total[2]);
+    		cmp[idx++] = Double.valueOf(1000.0 * total[2]);
     		
     		line[idx] = String.valueOf(total[3]);
-    		cmp[idx++] = new Integer(total[3]);
+    		cmp[idx++] = Integer.valueOf(total[3]);
     		
     		line[idx] = String.valueOf(total[4]);
-    		cmp[idx++] = new Integer(total[4]);
+    		cmp[idx++] = Integer.valueOf(total[4]);
     		
     		if (hasImportant) {
     			line[idx] = String.valueOf(total[5]);
-    			cmp[idx++] = new Integer(total[5]);
+    			cmp[idx++] = Integer.valueOf(total[5]);
     		}
     		
     		if (hasInstructor) {
     			line[idx] = String.valueOf(total[6]);
-    			cmp[idx++] = new Integer(total[6]);
+    			cmp[idx++] = Integer.valueOf(total[6]);
     		}
     		
     		line[idx] = "";
@@ -823,10 +823,10 @@ public class SolutionReportAction extends Action {
         				line[i+2]="<a title='"+toolTip+"'>"+(limit==0?"":(usage>limit?"<font color='red'>":"")+usage+" / "+limit+(usage>limit?"</font>":""))+"</a>";
         				line[i+2]+=(classes.isEmpty()?"":"<br>"+sb.toString());
         			}
-        			cmp[i+2]=new Integer(usage*1000+limit);
+        			cmp[i+2]=Integer.valueOf(usage*1000+limit);
         		}
         		line[1]=(noHtml?""+penalty:(penalty==0?"":"<font color='red'>+"+penalty+"</font>"));
-        		cmp[1]=new Integer(penalty);
+        		cmp[1]=Integer.valueOf(penalty);
         		webTable.addLine(null,line,cmp);
 
         	}
@@ -887,27 +887,27 @@ public class SolutionReportAction extends Action {
         				g.getClazz(),
         				g.getClazz().getTimeName(),
         				g.getClazz().getRoomName(),
-        				new Double(g.distance),
-        				new Long(g.affectedStudents),
-        				new Long(g.affectedStudentsByTime),
-        				new Long(g.affectedStudentsByRoom),
-        				new Long(g.affectedStudentsByBldg),
-        				new Integer(g.affectedInstructors),
-        				new Integer(g.affectedInstructorsByTime),
-        				new Integer(g.affectedInstructorsByRoom),
-        				new Integer(g.affectedInstructorsByBldg),
-        				new Integer(g.differentRoom),
-        				new Integer(g.differentBuilding),
-        				new Integer(g.differentTime),
-        				new Integer(g.differentDay),
-        				new Integer(g.differentHour),
-        				new Integer(g.tooFarForStudents),
-        				new Integer(g.tooFarForInstructors),
-        				new Integer(g.deltaStudentConflicts),
-        				new Integer(g.newStudentConflicts),
-        				new Double(g.deltaTimePreferences),
-        				new Integer(g.deltaRoomPreferences),
-        				new Integer(g.deltaInstructorDistancePreferences)
+        				Double.valueOf(g.distance),
+        				Long.valueOf(g.affectedStudents),
+        				Long.valueOf(g.affectedStudentsByTime),
+        				Long.valueOf(g.affectedStudentsByRoom),
+        				Long.valueOf(g.affectedStudentsByBldg),
+        				Integer.valueOf(g.affectedInstructors),
+        				Integer.valueOf(g.affectedInstructorsByTime),
+        				Integer.valueOf(g.affectedInstructorsByRoom),
+        				Integer.valueOf(g.affectedInstructorsByBldg),
+        				Integer.valueOf(g.differentRoom),
+        				Integer.valueOf(g.differentBuilding),
+        				Integer.valueOf(g.differentTime),
+        				Integer.valueOf(g.differentDay),
+        				Integer.valueOf(g.differentHour),
+        				Integer.valueOf(g.tooFarForStudents),
+        				Integer.valueOf(g.tooFarForInstructors),
+        				Integer.valueOf(g.deltaStudentConflicts),
+        				Integer.valueOf(g.newStudentConflicts),
+        				Double.valueOf(g.deltaTimePreferences),
+        				Integer.valueOf(g.deltaRoomPreferences),
+        				Integer.valueOf(g.deltaInstructorDistancePreferences)
         			});
         	}
         } catch (Exception e) {

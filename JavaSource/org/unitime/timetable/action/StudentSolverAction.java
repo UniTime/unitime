@@ -159,7 +159,7 @@ public class StudentSolverAction extends Action {
                 return mapping.findForward("showSolver");
             }
             DataProperties config = studentSectioningSolverService.createConfig(myForm.getSetting(), myForm.getParameterValues());
-            config.setProperty("General.StartSolver", new Boolean(start).toString());
+            config.setProperty("General.StartSolver", Boolean.valueOf(start).toString());
     	    if (myForm.getHost() != null)
     	    	config.setProperty("General.Host", myForm.getHost());
     	    if (solver == null) {

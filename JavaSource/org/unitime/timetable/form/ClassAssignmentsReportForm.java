@@ -350,61 +350,61 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 		this.userDeptIds = userDeptIds;
 	}
 	public Boolean getDivSec() {
-		return (new Boolean(true));
+		return (Boolean.valueOf(true));
 	}
 	public Boolean getDemand() {
-		return (new Boolean(false));
+		return (Boolean.valueOf(false));
 	}
 	public Boolean getProjectedDemand() {
-		return (new Boolean(false));
+		return (Boolean.valueOf(false));
 	}
 	public Boolean getMinPerWk() {
-		return (new Boolean(false));
+		return (Boolean.valueOf(false));
 	}
 	public Boolean getLimit() {
-		return (new Boolean(true));
+		return (Boolean.valueOf(true));
 	}
 	public Boolean getSnapshotLimit() {
-		return (new Boolean(false));
+		return (Boolean.valueOf(false));
 	}
 	public Boolean getRoomLimit() {
-		return (new Boolean(false));
+		return (Boolean.valueOf(false));
 	}
 	public Boolean getManager() {
-		return (new Boolean(false));
+		return (Boolean.valueOf(false));
 	}
 	public Boolean getDatePattern() {
-		return (new Boolean(true));
+		return (Boolean.valueOf(true));
 	}
 	public Boolean getTimePattern() {
-		return (new Boolean(false));
+		return (Boolean.valueOf(false));
 	}
 	public Boolean getPreferences() {
-		return (new Boolean(false));
+		return (Boolean.valueOf(false));
 	}
 	public Boolean getInstructor() {
-		return (new Boolean(false));
+		return (Boolean.valueOf(false));
 	}
 	public Boolean getTimetable() {
-		return (new Boolean(true));
+		return (Boolean.valueOf(true));
 	}
 	public Boolean getCredit() {
-		return (new Boolean(false));
+		return (Boolean.valueOf(false));
 	}
 	public Boolean getSubpartCredit() {
-		return (new Boolean(false));
+		return (Boolean.valueOf(false));
 	}
 	public Boolean getSchedulePrintNote() {
-		return (new Boolean(true));
+		return (Boolean.valueOf(true));
 	}
 	public Boolean getNote() {
-		return (new Boolean(false));
+		return (Boolean.valueOf(false));
 	}
     public Boolean getConsent() {
-		return (new Boolean(false));
+		return (Boolean.valueOf(false));
     }
     public Boolean getTitle() {
-		return (new Boolean(false));
+		return (Boolean.valueOf(false));
     }
     
     public Boolean getExams() {

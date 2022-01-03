@@ -108,7 +108,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 		iDistanceMetric = new DistanceMetric(iConfig);
 		TravelTime.populateTravelTimes(iDistanceMetric, context.getAcademicSessionId());
 		try {
-			iActionFactory = ((OnlineSectioningActionFactory)Class.forName(ApplicationProperty.CustomizationOnlineSectioningActionFactory.value()).newInstance());
+			iActionFactory = ((OnlineSectioningActionFactory)Class.forName(ApplicationProperty.CustomizationOnlineSectioningActionFactory.value()).getDeclaredConstructor().newInstance());
 		} catch (Exception e) {
 			LogFactory.getLog(OnlineSectioningServer.class).warn("Failed to initialize online sectioning action factory, using the default one.", e);
 			iActionFactory = new SimpleActionFactory();
@@ -137,7 +137,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 		iDistanceMetric = new DistanceMetric(iConfig);
 		TravelTime.populateTravelTimes(iDistanceMetric, session.getUniqueId());
 		try {
-			iActionFactory = ((OnlineSectioningActionFactory)Class.forName(ApplicationProperty.CustomizationOnlineSectioningActionFactory.value()).newInstance());
+			iActionFactory = ((OnlineSectioningActionFactory)Class.forName(ApplicationProperty.CustomizationOnlineSectioningActionFactory.value()).getDeclaredConstructor().newInstance());
 		} catch (Exception e) {
 			LogFactory.getLog(OnlineSectioningServer.class).warn("Failed to initialize online sectioning action factory, using the default one.", e);
 			iActionFactory = new SimpleActionFactory();

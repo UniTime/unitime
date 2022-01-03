@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+	<Appenders>
+		<Console name="stdout" target="SYSTEM_OUT">
+			<PatternLayout pattern="[%-d{MM/dd/yy HH:mm:ss}] %-6p %c -> %m%n"/>
+		</Console>
+		<RollingFile name="unitime"
+			fileName="${sys:catalina.base:-.}/logs/unitime.log"
+			filePattern="${sys:catalina.base:-.}/logs/unitime-%d{MM-dd-yyyy}.log.gz" ignoreExceptions="false">
+			<PatternLayout pattern="[%-d{MM/dd/yy HH:mm:ss}] %-6p %c -> %m%n"/>
+			<TimeBasedTriggeringPolicy/>
+		</RollingFile>
+	</Appenders>
+	<Loggers>
+		<Root level="INFO">
+			<AppenderRef ref="stdout"/>
+			<AppenderRef ref="unitime"/>
+		</Root>
+		<Logger name="org.hibernate" level="INFO" additivity="false">
+			<AppenderRef ref="stdout"/>
+			<AppenderRef ref="unitime"/>
+		</Logger>
+		<Logger name="org.hibernate.cfg" level="WARN"/>
+		<Logger name="org.hibernate.connection.DriverManagerConnectionProvider" level="WARN"/>
+		<Logger name="org.hibernate.util.JDBCExceptionReporter" level="ERROR"/>
+		<Logger name="org.hibernate.cache.EhCacheProvider" level="ERROR"/>
+		<Logger name="org.hibernate.cache.CacheFactory" level="ERROR"/>
+		<Logger name="org.hibernate.engine.internal.StatefulPersistenceContext" level="ERROR"/>
+		<Logger name="org.hibernate.ps.PreparedStatementCache" level="WARN"/>
+		<Logger name="org.hibernate.engine.transaction.internal.jta.JtaTransaction" level="ERROR"/>
+		<Logger name="net.sf.ehcache.distribution.jgroups.JGroupsCacheReceiver" level="ERROR"/>
+		<Logger name="net.sf.ehcache.distribution.jgroups.JGroupsBootstrapManager" level="WARN"/>
+		<Logger name="org.hibernate.cache.ehcache.AbstractEhcacheRegionFactory" level="ERROR"/>
+		<Logger name="org.infinispan.jmx" level="WARN"/>
+		<Logger name="org.apache.struts.action.ActionMapping" level="ERROR"/>
+	</Loggers>
+</Configuration>

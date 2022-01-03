@@ -31,7 +31,9 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.cpsolver.ifs.heuristics.RouletteWheelSelection;
 import org.restlet.Client;
 import org.restlet.Context;
@@ -81,7 +83,7 @@ import com.google.gson.GsonBuilder;
  * @author Tomas Muller
  */
 public class DegreeWorksCourseRequests implements CourseRequestsProvider, DegreePlansProvider, CriticalCoursesProvider {
-	private static Logger sLog = Logger.getLogger(DegreeWorksCourseRequests.class);
+	private static Log sLog = LogFactory.getLog(DegreeWorksCourseRequests.class);
 	private static StudentSectioningConstants CONST = Localization.create(StudentSectioningConstants.class);
 
 	private Client iClient;

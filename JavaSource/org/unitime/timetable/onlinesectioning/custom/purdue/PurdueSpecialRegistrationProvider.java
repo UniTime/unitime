@@ -35,7 +35,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.cpsolver.coursett.model.Placement;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -177,7 +179,7 @@ import com.google.gson.JsonSerializer;
  * @author Tomas Muller
  */
 public class PurdueSpecialRegistrationProvider implements SpecialRegistrationProvider, SpecialRegistrationDashboardUrlProvider {
-	private static Logger sLog = Logger.getLogger(PurdueSpecialRegistrationProvider.class);
+	private static Log sLog = LogFactory.getLog(PurdueSpecialRegistrationProvider.class);
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 
 	private Client iClient;

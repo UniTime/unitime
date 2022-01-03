@@ -123,7 +123,7 @@ public class RoomFeature extends BaseRoomFeature implements Comparable {
     	RoomFeature rf = (RoomFeature)o;
     	int cmp = getLabel().compareTo(rf.getLabel());
     	if (cmp!=0) return cmp;
-    	return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(rf.getUniqueId() == null ? -1 : rf.getUniqueId());
+    	return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(rf.getUniqueId() == null ? -1 : rf.getUniqueId());
     }
     
     /**

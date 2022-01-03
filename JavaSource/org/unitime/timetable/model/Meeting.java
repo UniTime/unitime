@@ -85,7 +85,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		if (cmp!=0) return cmp;
 		cmp = getRoomLabel().compareTo(other.getRoomLabel());
 		if (cmp!=0) return cmp;
-		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(other.getUniqueId() == null ? -1 : other.getUniqueId());
+		return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(other.getUniqueId() == null ? -1 : other.getUniqueId());
 	}
 	
 	public void setLocation(Location location) {

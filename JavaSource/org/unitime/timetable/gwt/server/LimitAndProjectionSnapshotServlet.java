@@ -41,7 +41,7 @@ import org.unitime.timetable.util.PopulateProjectedDemandSnapshotData;
 @Service("snapshot.gwt")
 public class LimitAndProjectionSnapshotServlet implements LimitAndProjectionSnapshotService {
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
-//	private static Logger sLog = Logger.getLogger(LimitAndProjectionSnapshotServlet.class);
+//	private static Log sLog = LogFactory.getLog(LimitAndProjectionSnapshotServlet.class);
 
 	private @Autowired SessionContext sessionContext;
 	private SessionContext getSessionContext() { return sessionContext; }

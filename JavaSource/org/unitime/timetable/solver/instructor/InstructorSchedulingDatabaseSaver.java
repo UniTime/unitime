@@ -92,7 +92,7 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
             if (!iUpdatedConfigs.isEmpty()) {
             	String className = ApplicationProperty.ExternalActionInstrOfferingConfigAssignInstructors.value();
             	if (className != null && className.trim().length() > 0){
-                	ExternalInstrOfferingConfigAssignInstructorsAction assignAction = (ExternalInstrOfferingConfigAssignInstructorsAction) (Class.forName(className).newInstance());
+                	ExternalInstrOfferingConfigAssignInstructorsAction assignAction = (ExternalInstrOfferingConfigAssignInstructorsAction) (Class.forName(className).getDeclaredConstructor().newInstance());
                 	iProgress.setPhase("Performing external actions ...", iUpdatedConfigs.size());
                 	for (InstrOfferingConfig ioc: iUpdatedConfigs) {
                 		iProgress.incProgress();
@@ -103,7 +103,7 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
             if (!iUpdatedOfferings.isEmpty()) {
             	String className = ApplicationProperty.ExternalActionCourseOfferingEdit.value();
             	if (className != null && className.trim().length() > 0){
-                	ExternalCourseOfferingEditAction editAction = (ExternalCourseOfferingEditAction) (Class.forName(className).newInstance());
+                	ExternalCourseOfferingEditAction editAction = (ExternalCourseOfferingEditAction) (Class.forName(className).getDeclaredConstructor().newInstance());
                 	iProgress.setPhase("Performing external actions ...", iUpdatedOfferings.size());
                 	for (InstructionalOffering io: iUpdatedOfferings) {
                 		iProgress.incProgress();

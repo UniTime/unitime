@@ -190,7 +190,7 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
 			iVariables.clear();
 			for (Iterator i1=root.elementIterator("var");i1.hasNext();) {
 				CBSVariable var = new CBSVariable((Element)i1.next());
-				iVariables.put(new Long(var.getId()),var);
+				iVariables.put(Long.valueOf(var.getId()),var);
 			}
 		}
 	}
@@ -245,7 +245,7 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
 		}
 		public Set values() { return iValues; }
 		public int hashCode() {
-			return (new Long(iExamId)).hashCode();
+			return (Long.valueOf(iExamId)).hashCode();
 		}
 		public boolean equals(Object o) {
 			if (o==null || !(o instanceof CBSVariable)) return false;
@@ -253,7 +253,7 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
 		}
 		public int compareTo(Object o) {
 			if (o==null || !(o instanceof CBSVariable)) return -1;
-			int ret = -(new Integer(iCounter)).compareTo(new Integer(((CBSVariable)o).getCounter()));
+			int ret = -(Integer.valueOf(iCounter)).compareTo(Integer.valueOf(((CBSVariable)o).getCounter()));
 			if (ret!=0) return ret;
 			return toString().compareTo(o.toString());
 		}
@@ -335,7 +335,7 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
 		}
 		public int compareTo(Object o) {
 			if (o==null || !(o instanceof CBSValue)) return -1;
-			int ret = -(new Integer(iCounter)).compareTo(new Integer(((CBSValue)o).getCounter()));
+			int ret = -(Integer.valueOf(iCounter)).compareTo(Integer.valueOf(((CBSValue)o).getCounter()));
 			if (ret!=0) return ret;
 			return toString().compareTo(o.toString());
 		}
@@ -410,7 +410,7 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
 		}
 		public int compareTo(Object o) {
 			if (o==null || !(o instanceof CBSConstraint)) return -1;
-			int ret = -(new Integer(iCounter)).compareTo(new Integer(((CBSConstraint)o).getCounter()));
+			int ret = -(Integer.valueOf(iCounter)).compareTo(Integer.valueOf(((CBSConstraint)o).getCounter()));
 			if (ret!=0) return ret;
 			return toString().compareTo(o.toString());
 		}
@@ -495,7 +495,7 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
 		}
 		public int compareTo(Object o) {
 			if (o==null || !(o instanceof CBSAssignment)) return -1;
-			int ret = -(new Integer(iCounter)).compareTo(new Integer(((CBSAssignment)o).getCounter()));
+			int ret = -(Integer.valueOf(iCounter)).compareTo(Integer.valueOf(((CBSAssignment)o).getCounter()));
 			if (ret!=0) return ret;
 			return toString().compareTo(o.toString());
 		}

@@ -556,7 +556,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 			return new Comparator<ResourceInterface>() {
 				@Override
 				public int compare(ResourceInterface r1, ResourceInterface r2) {
-					int cmp = (r1.getSize() == null ? new Integer(0) : r1.getSize()).compareTo(r2.getSize() == null ? new Integer(0) : r2.getSize());
+					int cmp = (r1.getSize() == null ? Integer.valueOf(0) : r1.getSize()).compareTo(r2.getSize() == null ? Integer.valueOf(0) : r2.getSize());
 					if (cmp != 0) return cmp;
 					cmp = r1.getName().compareTo(r2.getName());
 					return (cmp == 0 ? r1.getId().compareTo(r2.getId()) : cmp);
@@ -576,10 +576,10 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 			return new Comparator<ResourceInterface>() {
 				@Override
 				public int compare(ResourceInterface r1, ResourceInterface r2) {
-					int cmp = (r1.getDistance() == null ? new Double(0.0) : r1.getDistance()).compareTo(r2.getDistance() == null ? new Double(0.0) : r2.getDistance());
+					int cmp = (r1.getDistance() == null ? Double.valueOf(0.0) : r1.getDistance()).compareTo(r2.getDistance() == null ? Double.valueOf(0.0) : r2.getDistance());
 					if (cmp != 0) return cmp;
 					if (preferSize) {
-						cmp = (r1.getSize() == null ? new Integer(0) : r1.getSize()).compareTo(r2.getSize() == null ? new Integer(0) : r2.getSize());
+						cmp = (r1.getSize() == null ? Integer.valueOf(0) : r1.getSize()).compareTo(r2.getSize() == null ? Integer.valueOf(0) : r2.getSize());
 						if (cmp != 0) return cmp;
 					}
 					cmp = r1.getName().compareTo(r2.getName());
@@ -592,10 +592,10 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 				public int compare(ResourceInterface r1, ResourceInterface r2) {
 					int cmp = getOccupancy(r1).compareTo(getOccupancy(r2));
 					if (cmp != 0) return cmp;
-					cmp = (r1.getDistance() == null ? new Double(0.0) : r1.getDistance()).compareTo(r2.getDistance() == null ? new Double(0.0) : r2.getDistance());
+					cmp = (r1.getDistance() == null ? Double.valueOf(0.0) : r1.getDistance()).compareTo(r2.getDistance() == null ? Double.valueOf(0.0) : r2.getDistance());
 					if (cmp != 0) return cmp;
 					if (preferSize) {
-						cmp = (r1.getSize() == null ? new Integer(0) : r1.getSize()).compareTo(r2.getSize() == null ? new Integer(0) : r2.getSize());
+						cmp = (r1.getSize() == null ? Integer.valueOf(0) : r1.getSize()).compareTo(r2.getSize() == null ? Integer.valueOf(0) : r2.getSize());
 						if (cmp != 0) return cmp;
 					}
 					cmp = r1.getName().compareTo(r2.getName());
@@ -759,7 +759,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 							Collections.sort(iSelectedRooms, new Comparator<ResourceInterface>() {
 								@Override
 								public int compare(ResourceInterface r1, ResourceInterface r2) {
-									int cmp = (r1.getSize() == null ? new Integer(-1) : r1.getSize()).compareTo(r2.getSize() == null ? new Integer(-1) : r2.getSize());
+									int cmp = (r1.getSize() == null ? Integer.valueOf(-1) : r1.getSize()).compareTo(r2.getSize() == null ? Integer.valueOf(-1) : r2.getSize());
 									if (cmp != 0) return cmp;
 									return r1.compareTo(r2);
 								}
@@ -863,9 +863,9 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 		TreeSet<EventInterface> data = new TreeSet<EventInterface>(new Comparator<EventInterface>() {
 			@Override
 			public int compare(EventInterface e1, EventInterface e2) {
-				int cmp = new Integer(e1.getMeetings().first().getDayOfYear()).compareTo(e2.getMeetings().first().getDayOfYear());
+				int cmp = Integer.valueOf(e1.getMeetings().first().getDayOfYear()).compareTo(e2.getMeetings().first().getDayOfYear());
 				if (cmp != 0) return cmp;
-				cmp = new Integer(e1.getMeetings().first().getStartSlot()).compareTo(e2.getMeetings().first().getStartSlot());
+				cmp = Integer.valueOf(e1.getMeetings().first().getStartSlot()).compareTo(e2.getMeetings().first().getStartSlot());
 				if (cmp != 0) return cmp;
 				return e1.compareTo(e2);
 			}

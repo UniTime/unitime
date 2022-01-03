@@ -147,7 +147,7 @@ public class EditRoomDeptForm extends ActionForm {
 		Vector ids = new Vector();
 		StringTokenizer stk = new StringTokenizer(departments, ",");
 		while (stk.hasMoreTokens()) {
-			ids.addElement(new Long(stk.nextToken()));
+			ids.addElement(Long.valueOf(stk.nextToken()));
 		}
 		return ids;
 	}

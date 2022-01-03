@@ -33,7 +33,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.cpsolver.studentsct.model.Section;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -48,7 +50,7 @@ import org.unitime.timetable.onlinesectioning.custom.SectionUrlProvider;
  */
 public class PurdueSectionLimitProvider implements SectionLimitProvider, SectionUrlProvider {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
-	private static Logger sLog = Logger.getLogger(PurdueSectionLimitProvider.class);
+	private static Log sLog = LogFactory.getLog(PurdueSectionLimitProvider.class);
 
 	public static String sUrl = "https://esa-oas-prod-wl.itap.purdue.edu/prod/bzwsrch.p_schedule_detail?term=:year:term&crn=:crn";
 	public static String sDummyUrl = "https://esa-oas-prod-wl.itap.purdue.edu/prod/bzwsrch.p_schedule_detail?term=201010&crn=10001";

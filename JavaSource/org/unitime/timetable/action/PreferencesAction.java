@@ -474,7 +474,7 @@ public abstract class PreferencesAction extends Action {
             String subpartId ) {
         
         SchedulingSubpartDAO sdao = new SchedulingSubpartDAO();
-        SchedulingSubpart ss = sdao.get(new Long(subpartId));
+        SchedulingSubpart ss = sdao.get(Long.valueOf(subpartId));
         InstructionalOffering io = ss.getInstrOfferingConfig().getInstructionalOffering();
         CourseOffering co = io.getControllingCourseOffering();
         
@@ -674,7 +674,7 @@ public abstract class PreferencesAction extends Action {
                 Debug.debug("Room: " + id + ": " + pref);
 
         		LocationDAO rdao = new LocationDAO();
-        	    Location room = rdao.get(new Long(id));
+        	    Location room = rdao.get(Long.valueOf(id));
                 
                 RoomPref rp = new RoomPref();
                 rp.setOwner(pg);
@@ -720,7 +720,7 @@ public abstract class PreferencesAction extends Action {
                 Debug.debug("Bldg: " + id + ": " + pref);
 
                 BuildingDAO bdao = new BuildingDAO();
-        	    Building bldg = bdao.get(new Long(id));
+        	    Building bldg = bdao.get(Long.valueOf(id));
                 
                 BuildingPref bp = new BuildingPref();
                 bp.setOwner(pg);
@@ -765,7 +765,7 @@ public abstract class PreferencesAction extends Action {
                 Debug.debug("Dist: " + id + ": " + pref);
 
                 DistributionTypeDAO ddao = new DistributionTypeDAO();
-                DistributionType dist = ddao.get(new Long(id));
+                DistributionType dist = ddao.get(Long.valueOf(id));
                 
                 DistributionPref dp = new DistributionPref();
                 dp.setOwner(pg);
@@ -840,7 +840,7 @@ public abstract class PreferencesAction extends Action {
                 Debug.debug("Room Feat: " + id + ": " + pref);
 
                 RoomFeatureDAO rfdao = new RoomFeatureDAO();
-        	    RoomFeature rf = rfdao.get(new Long(id));
+        	    RoomFeature rf = rfdao.get(Long.valueOf(id));
                 
                 RoomFeaturePref rfp = new RoomFeaturePref();
                 rfp.setOwner(pg);
@@ -886,7 +886,7 @@ public abstract class PreferencesAction extends Action {
                 Debug.debug("Roomgr: " + id + ": " + pref);
 
                 RoomGroupDAO gdao = new RoomGroupDAO();
-                RoomGroup gr = gdao.get(new Long(id));
+                RoomGroup gr = gdao.get(Long.valueOf(id));
                 
                 RoomGroupPref gp = new RoomGroupPref();
                 gp.setOwner(pg);
@@ -932,7 +932,7 @@ public abstract class PreferencesAction extends Action {
                 Debug.debug("Datepattern: " + id + ": " + pref);
 
                 DatePatternDAO dpdao = new DatePatternDAO();
-                DatePattern dp = dpdao.get(new Long(id));           
+                DatePattern dp = dpdao.get(Long.valueOf(id));           
                 
                DatePatternPref dpp = new DatePatternPref();
                dpp.setOwner(pg);
@@ -980,7 +980,7 @@ public abstract class PreferencesAction extends Action {
                 Debug.debug("Course: " + id + ": " + pref);
 
                 CourseOfferingDAO cdao = new CourseOfferingDAO();
-                CourseOffering course = cdao.get(new Long(id));
+                CourseOffering course = cdao.get(Long.valueOf(id));
                 
                 InstructorCoursePref cp = new InstructorCoursePref();
                 cp.setOwner(pg);
@@ -1005,7 +1005,7 @@ public abstract class PreferencesAction extends Action {
                 Debug.debug("Attribute: " + id + ": " + pref);
 
                 InstructorAttributeDAO adao = new InstructorAttributeDAO();
-                InstructorAttribute attribute = adao.get(new Long(id));
+                InstructorAttribute attribute = adao.get(Long.valueOf(id));
                 
                 InstructorAttributePref ap = new InstructorAttributePref();
                 ap.setOwner(pg);
@@ -1051,7 +1051,7 @@ public abstract class PreferencesAction extends Action {
                 Debug.debug("Instructor: " + id + ": " + pref);
 
                 DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
-                DepartmentalInstructor instructor = idao.get(new Long(id));
+                DepartmentalInstructor instructor = idao.get(Long.valueOf(id));
                 
                 InstructorPref ip = new InstructorPref();
                 ip.setOwner(pg);
@@ -1148,7 +1148,7 @@ public abstract class PreferencesAction extends Action {
             boolean timeVertical, Set parentTimePrefs) throws Exception {
         
 		TimePatternDAO timePatternDao = new TimePatternDAO();
-		TimePattern timePattern = (tpat.equals("-1")?null:timePatternDao.get(new Long(tpat)));
+		TimePattern timePattern = (tpat.equals("-1")?null:timePatternDao.get(Long.valueOf(tpat)));
 
 		// Generate grid prefs
 		boolean canUseHardTimePrefs = sessionContext.hasPermission(owner, Right.CanUseHardTimePrefs);
@@ -1327,7 +1327,7 @@ public abstract class PreferencesAction extends Action {
 
 				// Load TimePattern Object
 				TimePatternDAO timePatternDao = new TimePatternDAO();
-				TimePattern timePattern = (tp.equals("-1")?null:timePatternDao.get(new Long(tp)));
+				TimePattern timePattern = (tp.equals("-1")?null:timePatternDao.get(Long.valueOf(tp)));
 
 			// 	Display time grid
 				RequiredTimeTable rtt = (timePattern==null?TimePattern.getDefaultRequiredTimeTable():timePattern.getRequiredTimeTable(

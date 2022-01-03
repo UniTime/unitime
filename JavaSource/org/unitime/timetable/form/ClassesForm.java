@@ -97,12 +97,12 @@ public class ClassesForm extends ActionForm {
 	public Collection getSessions() { return iSessions; }
 	
 	public Boolean canDisplayAllSubjectsAtOnce(){
-		Boolean displayAll = new Boolean(false); 
+		Boolean displayAll = Boolean.valueOf(false); 
 		if (iSession != null){
 			String queryStr = "select count(io) from InstructionalOffering io where io.session.uniqueId = :sessionId";
 			int count = ((Number)SessionDAO.getInstance().getQuery(queryStr).setLong("sessionId", iSession).setCacheable(true).uniqueResult()).intValue();
 			if (count <= 300){
-				displayAll = new Boolean(true);
+				displayAll = Boolean.valueOf(true);
 			}
 		}
 		return(displayAll);

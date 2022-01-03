@@ -3162,60 +3162,60 @@ public class SectioningStatusPage extends Composite {
 				if (cmp != 0) return cmp;
 				break;
 			case LIMIT:
-				cmp = (e1.getAvailable() == null ? new Integer(0) : e1.getAvailable() < 0 ? new Integer(Integer.MAX_VALUE) : e1.getAvailable()).compareTo(
+				cmp = (e1.getAvailable() == null ? Integer.valueOf(0) : e1.getAvailable() < 0 ? Integer.valueOf(Integer.MAX_VALUE) : e1.getAvailable()).compareTo(
 						e2.getAvailable() == null ? 0 : e2.getAvailable() < 0 ? Integer.MAX_VALUE : e2.getAvailable());
 				if (cmp != 0) return cmp;
-				cmp = (e1.getLimit() == null ? new Integer(0) : e1.getLimit()).compareTo(e2.getLimit() == null ? 0 : e2.getLimit());
+				cmp = (e1.getLimit() == null ? Integer.valueOf(0) : e1.getLimit()).compareTo(e2.getLimit() == null ? 0 : e2.getLimit());
 				if (cmp != 0) return cmp;
 				break;
 			case SNAPSHOT:
-				cmp = (e1.getSnapshot() == null ? new Integer(0) : e1.getSnapshot()).compareTo(e2.getSnapshot() == null ? 0 : e2.getSnapshot());
+				cmp = (e1.getSnapshot() == null ? Integer.valueOf(0) : e1.getSnapshot()).compareTo(e2.getSnapshot() == null ? 0 : e2.getSnapshot());
 				if (cmp != 0) return cmp;
-				cmp = (e1.getLimit() == null ? new Integer(0) : e1.getLimit()).compareTo(e2.getLimit() == null ? 0 : e2.getLimit());
+				cmp = (e1.getLimit() == null ? Integer.valueOf(0) : e1.getLimit()).compareTo(e2.getLimit() == null ? 0 : e2.getLimit());
 				if (cmp != 0) return cmp;
 				break;
 			case PROJECTION:
-				cmp = (e1.getProjection() == null ? new Integer(0) : e1.getProjection()).compareTo(e2.getProjection() == null ? 0 : e2.getProjection());
+				cmp = (e1.getProjection() == null ? Integer.valueOf(0) : e1.getProjection()).compareTo(e2.getProjection() == null ? 0 : e2.getProjection());
 				if (cmp != 0) return - cmp;
 				break;
 			case ENROLLMENT:
-				cmp = (e1.getEnrollment() == null ? new Integer(0) : e1.getEnrollment()).compareTo(e2.getEnrollment() == null ? 0 : e2.getEnrollment());
+				cmp = (e1.getEnrollment() == null ? Integer.valueOf(0) : e1.getEnrollment()).compareTo(e2.getEnrollment() == null ? 0 : e2.getEnrollment());
 				if (cmp != 0) return - cmp;
-				cmp = (e1.getTotalEnrollment() == null ? new Integer(0) : e1.getTotalEnrollment()).compareTo(e2.getTotalEnrollment() == null ? 0 : e2.getTotalEnrollment());
+				cmp = (e1.getTotalEnrollment() == null ? Integer.valueOf(0) : e1.getTotalEnrollment()).compareTo(e2.getTotalEnrollment() == null ? 0 : e2.getTotalEnrollment());
 				if (cmp != 0) return - cmp;
 				break;
 			case WAITLIST:
-				cmp = (e1.getUnassignedPrimary() == null ? new Integer(0) : e1.getUnassignedPrimary()).compareTo(e2.getUnassignedPrimary() == null ? 0 : e2.getUnassignedPrimary());
+				cmp = (e1.getUnassignedPrimary() == null ? Integer.valueOf(0) : e1.getUnassignedPrimary()).compareTo(e2.getUnassignedPrimary() == null ? 0 : e2.getUnassignedPrimary());
 				if (cmp != 0) return - cmp;
-				cmp = (e1.getWaitlist() == null ? new Integer(0) : e1.getWaitlist()).compareTo(e2.getWaitlist() == null ? 0 : e2.getWaitlist());
+				cmp = (e1.getWaitlist() == null ? Integer.valueOf(0) : e1.getWaitlist()).compareTo(e2.getWaitlist() == null ? 0 : e2.getWaitlist());
 				if (cmp != 0) return - cmp;
-				cmp = (e1.getTotalUnassignedPrimary() == null ? new Integer(0) : e1.getTotalUnassignedPrimary()).compareTo(e2.getTotalUnassignedPrimary() == null ? 0 : e2.getTotalUnassignedPrimary());
+				cmp = (e1.getTotalUnassignedPrimary() == null ? Integer.valueOf(0) : e1.getTotalUnassignedPrimary()).compareTo(e2.getTotalUnassignedPrimary() == null ? 0 : e2.getTotalUnassignedPrimary());
 				if (cmp != 0) return - cmp;
-				cmp = (e1.getTotalWaitlist() == null ? new Integer(0) : e1.getTotalWaitlist()).compareTo(e2.getTotalWaitlist() == null ? 0 : e2.getTotalWaitlist());
+				cmp = (e1.getTotalWaitlist() == null ? Integer.valueOf(0) : e1.getTotalWaitlist()).compareTo(e2.getTotalWaitlist() == null ? 0 : e2.getTotalWaitlist());
 				if (cmp != 0) return - cmp;
 				break;
 			case RESERVATION:
-				cmp = (e1.getReservation() == null ? new Integer(0) : e1.getReservation()).compareTo(e2.getReservation() == null ? 0 : e2.getReservation());
+				cmp = (e1.getReservation() == null ? Integer.valueOf(0) : e1.getReservation()).compareTo(e2.getReservation() == null ? 0 : e2.getReservation());
 				if (cmp != 0) return - cmp;
-				cmp = (e1.getTotalReservation() == null ? new Integer(0) : e1.getTotalReservation()).compareTo(e2.getTotalReservation() == null ? 0 : e2.getTotalReservation());
+				cmp = (e1.getTotalReservation() == null ? Integer.valueOf(0) : e1.getTotalReservation()).compareTo(e2.getTotalReservation() == null ? 0 : e2.getTotalReservation());
 				if (cmp != 0) return - cmp;
 				break;
 			case NEED_CONSENT:
-				cmp = (e1.getConsentNeeded() == null ? new Integer(0) : new Integer(e1.getConsentNeeded())).compareTo(e2.getConsentNeeded() == null ? 0 : e2.getConsentNeeded());
+				cmp = (e1.getConsentNeeded() == null ? Integer.valueOf(0) : Integer.valueOf(e1.getConsentNeeded())).compareTo(e2.getConsentNeeded() == null ? 0 : e2.getConsentNeeded());
 				if (cmp != 0) return - cmp;
-				cmp = (e1.getTotalConsentNeeded() == null ? new Integer(0) : new Integer(e1.getTotalConsentNeeded())).compareTo(e2.getTotalConsentNeeded() == null ? 0 : e2.getTotalConsentNeeded());
+				cmp = (e1.getTotalConsentNeeded() == null ? Integer.valueOf(0) : Integer.valueOf(e1.getTotalConsentNeeded())).compareTo(e2.getTotalConsentNeeded() == null ? 0 : e2.getTotalConsentNeeded());
 				if (cmp != 0) return - cmp;
 				break;
 			case ALTERNATIVES:
-				cmp = (e1.getUnassignedAlternative() == null ? new Integer(0) : e1.getUnassignedAlternative()).compareTo(e2.getUnassignedAlternative() == null ? 0 : e2.getUnassignedAlternative());
+				cmp = (e1.getUnassignedAlternative() == null ? Integer.valueOf(0) : e1.getUnassignedAlternative()).compareTo(e2.getUnassignedAlternative() == null ? 0 : e2.getUnassignedAlternative());
 				if (cmp != 0) return - cmp;
-				cmp = (e1.getTotalUnassignedAlternative() == null ? new Integer(0) : e1.getTotalUnassignedAlternative()).compareTo(e2.getTotalUnassignedAlternative() == null ? 0 : e2.getTotalUnassignedAlternative());
+				cmp = (e1.getTotalUnassignedAlternative() == null ? Integer.valueOf(0) : e1.getTotalUnassignedAlternative()).compareTo(e2.getTotalUnassignedAlternative() == null ? 0 : e2.getTotalUnassignedAlternative());
 				if (cmp != 0) return - cmp;
 				break;
 			case NEED_OVERRIDE:
-				cmp = (e1.getOverrideNeeded() == null ? new Integer(0) : new Integer(e1.getOverrideNeeded())).compareTo(e2.getOverrideNeeded() == null ? 0 : e2.getOverrideNeeded());
+				cmp = (e1.getOverrideNeeded() == null ? Integer.valueOf(0) : Integer.valueOf(e1.getOverrideNeeded())).compareTo(e2.getOverrideNeeded() == null ? 0 : e2.getOverrideNeeded());
 				if (cmp != 0) return - cmp;
-				cmp = (e1.getTotalOverrideNeeded() == null ? new Integer(0) : new Integer(e1.getTotalOverrideNeeded())).compareTo(e2.getTotalOverrideNeeded() == null ? 0 : e2.getTotalOverrideNeeded());
+				cmp = (e1.getTotalOverrideNeeded() == null ? Integer.valueOf(0) : Integer.valueOf(e1.getTotalOverrideNeeded())).compareTo(e2.getTotalOverrideNeeded() == null ? 0 : e2.getTotalOverrideNeeded());
 				if (cmp != 0) return - cmp;
 				break;
 			}
@@ -3332,39 +3332,39 @@ public class SectioningStatusPage extends Composite {
 			case STATUS:
 				return (e1.getStatus() == null ? "" : e1.getStatus()).compareToIgnoreCase(e2.getStatus() == null ? "" : e2.getStatus());
 			case ENROLLMENT:
-				cmp = (e1.getEnrollment() == null ? new Integer(0) : e1.getEnrollment()).compareTo(e2.getEnrollment() == null ? 0 : e2.getEnrollment());
+				cmp = (e1.getEnrollment() == null ? Integer.valueOf(0) : e1.getEnrollment()).compareTo(e2.getEnrollment() == null ? 0 : e2.getEnrollment());
 				if (cmp != 0) return - cmp;
-				return (e1.getTotalEnrollment() == null ? new Integer(0) : e1.getTotalEnrollment()).compareTo(e2.getTotalEnrollment() == null ? 0 : e2.getTotalEnrollment());
+				return (e1.getTotalEnrollment() == null ? Integer.valueOf(0) : e1.getTotalEnrollment()).compareTo(e2.getTotalEnrollment() == null ? 0 : e2.getTotalEnrollment());
 			case WAITLIST:
-				cmp = (e1.getUnassigned() == null ? new Integer(0) : e1.getUnassigned()).compareTo(e2.getUnassigned() == null ? 0 : e2.getUnassigned());
+				cmp = (e1.getUnassigned() == null ? Integer.valueOf(0) : e1.getUnassigned()).compareTo(e2.getUnassigned() == null ? 0 : e2.getUnassigned());
 				if (cmp != 0) return - cmp;
-				cmp = (e1.getWaitlist() == null ? new Integer(0) : e1.getWaitlist()).compareTo(e2.getWaitlist() == null ? 0 : e2.getWaitlist());
+				cmp = (e1.getWaitlist() == null ? Integer.valueOf(0) : e1.getWaitlist()).compareTo(e2.getWaitlist() == null ? 0 : e2.getWaitlist());
 				if (cmp != 0) return - cmp;
-				cmp = (e1.getTotalUnassigned() == null ? new Integer(0) : e1.getTotalUnassigned()).compareTo(e2.getTotalUnassigned() == null ? 0 : e2.getTotalUnassigned());
+				cmp = (e1.getTotalUnassigned() == null ? Integer.valueOf(0) : e1.getTotalUnassigned()).compareTo(e2.getTotalUnassigned() == null ? 0 : e2.getTotalUnassigned());
 				if (cmp != 0) return - cmp;
-				cmp = (e1.getTotalWaitlist() == null ? new Integer(0) : e1.getTotalWaitlist()).compareTo(e2.getTotalWaitlist() == null ? 0 : e2.getTotalWaitlist());
+				cmp = (e1.getTotalWaitlist() == null ? Integer.valueOf(0) : e1.getTotalWaitlist()).compareTo(e2.getTotalWaitlist() == null ? 0 : e2.getTotalWaitlist());
 				if (cmp != 0) return - cmp;
-				return (e1.getTopWaitingPriority() == null ? new Integer(Integer.MAX_VALUE) : e1.getTopWaitingPriority()).compareTo(e2.getTopWaitingPriority() == null ? Integer.MAX_VALUE : e2.getTopWaitingPriority());
+				return (e1.getTopWaitingPriority() == null ? Integer.valueOf(Integer.MAX_VALUE) : e1.getTopWaitingPriority()).compareTo(e2.getTopWaitingPriority() == null ? Integer.MAX_VALUE : e2.getTopWaitingPriority());
 			case RESERVATION:
-				cmp = (e1.getReservation() == null ? new Integer(0) : e1.getReservation()).compareTo(e2.getReservation() == null ? 0 : e2.getReservation());
+				cmp = (e1.getReservation() == null ? Integer.valueOf(0) : e1.getReservation()).compareTo(e2.getReservation() == null ? 0 : e2.getReservation());
 				if (cmp != 0) return - cmp;
-				return (e1.getTotalReservation() == null ? new Integer(0) : e1.getTotalReservation()).compareTo(e2.getTotalReservation() == null ? 0 : e2.getTotalReservation());
+				return (e1.getTotalReservation() == null ? Integer.valueOf(0) : e1.getTotalReservation()).compareTo(e2.getTotalReservation() == null ? 0 : e2.getTotalReservation());
 			case CONSENT:
-				cmp = (e1.getConsentNeeded() == null ? new Integer(0) : e1.getConsentNeeded()).compareTo(e2.getConsentNeeded() == null ? 0 : e2.getConsentNeeded());
+				cmp = (e1.getConsentNeeded() == null ? Integer.valueOf(0) : e1.getConsentNeeded()).compareTo(e2.getConsentNeeded() == null ? 0 : e2.getConsentNeeded());
 				if (cmp != 0) return - cmp;
-				return (e1.getTotalConsentNeeded() == null ? new Integer(0) : e1.getTotalConsentNeeded()).compareTo(e2.getTotalConsentNeeded() == null ? 0 : e2.getTotalConsentNeeded());
+				return (e1.getTotalConsentNeeded() == null ? Integer.valueOf(0) : e1.getTotalConsentNeeded()).compareTo(e2.getTotalConsentNeeded() == null ? 0 : e2.getTotalConsentNeeded());
 			case CREDIT:
-				cmp = (e1.hasCredit() ? e1.getCredit() : new Float(0f)).compareTo(e2.hasCredit() ? e2.getCredit() : new Float(0f));
+				cmp = (e1.hasCredit() ? e1.getCredit() : Float.valueOf(0f)).compareTo(e2.hasCredit() ? e2.getCredit() : Float.valueOf(0f));
 				if (cmp != 0) return - cmp;
-				return (e1.hasTotalCredit() ? e1.getTotalCredit() : new Float(0f)).compareTo(e2.hasTotalCredit() ? e2.getTotalCredit() : new Float(0f));
+				return (e1.hasTotalCredit() ? e1.getTotalCredit() : Float.valueOf(0f)).compareTo(e2.hasTotalCredit() ? e2.getTotalCredit() : Float.valueOf(0f));
 			case REQ_CREDIT:
-				cmp = (e1.hasRequestCredit() ? new Float(e1.getRequestCreditMin()) : new Float(0f)).compareTo(e2.hasRequestCredit() ? e2.getRequestCreditMin() : 0f);
+				cmp = (e1.hasRequestCredit() ? Float.valueOf(e1.getRequestCreditMin()) : Float.valueOf(0f)).compareTo(e2.hasRequestCredit() ? e2.getRequestCreditMin() : 0f);
 				if (cmp != 0) return - cmp;
-				cmp = (e1.hasRequestCredit() ? new Float(e1.getRequestCreditMax()) : new Float(0f)).compareTo(e2.hasRequestCredit() ? e2.getRequestCreditMax() : 0f);
+				cmp = (e1.hasRequestCredit() ? Float.valueOf(e1.getRequestCreditMax()) : Float.valueOf(0f)).compareTo(e2.hasRequestCredit() ? e2.getRequestCreditMax() : 0f);
 				if (cmp != 0) return - cmp;
-				cmp = (e1.hasTotalRequestCredit() ? new Float(e1.getTotalRequestCreditMin()) : new Float(0f)).compareTo(e2.hasTotalRequestCredit() ? e2.getTotalRequestCreditMin() : 0f);
+				cmp = (e1.hasTotalRequestCredit() ? Float.valueOf(e1.getTotalRequestCreditMin()) : Float.valueOf(0f)).compareTo(e2.hasTotalRequestCredit() ? e2.getTotalRequestCreditMin() : 0f);
 				if (cmp != 0) return - cmp;
-				return (e1.hasTotalRequestCredit() ? new Float(e1.getTotalRequestCreditMax()) : new Float(0f)).compareTo(e2.hasTotalRequestCredit() ? e2.getTotalRequestCreditMax() : 0f);
+				return (e1.hasTotalRequestCredit() ? Float.valueOf(e1.getTotalRequestCreditMax()) : Float.valueOf(0f)).compareTo(e2.hasTotalRequestCredit() ? e2.getTotalRequestCreditMax() : 0f);
 			case REQUEST_TS:
 				return (e1.getRequestedDate() == null ? new Date(0) : e1.getRequestedDate()).compareTo(e2.getRequestedDate() == null ? new Date(0) : e2.getRequestedDate());
 			case ENROLLMENT_TS:
@@ -3374,32 +3374,32 @@ public class SectioningStatusPage extends Composite {
 			case NOTE:
 				return (e1.hasNote() ? e1.getNote().compareTo(e2.hasNote() ? e2.getNote() : "") : "".compareTo(e2.hasNote() ? e2.getNote() : ""));
 			case DIST_CONF:
-				cmp = (e1.hasDistanceConflicts() ? e1.getNrDistanceConflicts() : new Integer(0)).compareTo(e2.hasDistanceConflicts() ? e2.getNrDistanceConflicts() : new Integer(0));
+				cmp = (e1.hasDistanceConflicts() ? e1.getNrDistanceConflicts() : Integer.valueOf(0)).compareTo(e2.hasDistanceConflicts() ? e2.getNrDistanceConflicts() : Integer.valueOf(0));
 				if (cmp != 0) return - cmp;
-				cmp = (e1.hasTotalDistanceConflicts() ? e1.getTotalNrDistanceConflicts() : new Integer(0)).compareTo(e2.hasTotalDistanceConflicts() ? e2.getTotalNrDistanceConflicts() : new Integer(0));
+				cmp = (e1.hasTotalDistanceConflicts() ? e1.getTotalNrDistanceConflicts() : Integer.valueOf(0)).compareTo(e2.hasTotalDistanceConflicts() ? e2.getTotalNrDistanceConflicts() : Integer.valueOf(0));
 				if (cmp != 0) return - cmp;
-				return - (e1.hasDistanceConflicts() ? e1.getLongestDistanceMinutes() : e1.hasTotalDistanceConflicts() ? e1.getTotalLongestDistanceMinutes() : new Integer(0)).compareTo(
-						e2.hasDistanceConflicts() ? e2.getLongestDistanceMinutes() : e2.hasTotalDistanceConflicts() ? e2.getTotalLongestDistanceMinutes() : new Integer(0));
+				return - (e1.hasDistanceConflicts() ? e1.getLongestDistanceMinutes() : e1.hasTotalDistanceConflicts() ? e1.getTotalLongestDistanceMinutes() : Integer.valueOf(0)).compareTo(
+						e2.hasDistanceConflicts() ? e2.getLongestDistanceMinutes() : e2.hasTotalDistanceConflicts() ? e2.getTotalLongestDistanceMinutes() : Integer.valueOf(0));
 			case OVERLAPS:
-				cmp = (e1.hasOverlappingMinutes() ? e1.getOverlappingMinutes() : new Integer(0)).compareTo(e2.hasOverlappingMinutes() ? e2.getOverlappingMinutes() : new Integer(0));
+				cmp = (e1.hasOverlappingMinutes() ? e1.getOverlappingMinutes() : Integer.valueOf(0)).compareTo(e2.hasOverlappingMinutes() ? e2.getOverlappingMinutes() : Integer.valueOf(0));
 				if (cmp != 0) return - cmp;
-				return (e1.hasTotalOverlappingMinutes() ? e1.getTotalOverlappingMinutes() : new Integer(0)).compareTo(e2.hasTotalOverlappingMinutes() ? e2.getTotalOverlappingMinutes() : new Integer(0));
+				return (e1.hasTotalOverlappingMinutes() ? e1.getTotalOverlappingMinutes() : Integer.valueOf(0)).compareTo(e2.hasTotalOverlappingMinutes() ? e2.getTotalOverlappingMinutes() : Integer.valueOf(0));
 			case FT_OVERLAPS:
-				cmp = (e1.hasFreeTimeOverlappingMins() ? e1.getFreeTimeOverlappingMins() : new Integer(0)).compareTo(e2.hasFreeTimeOverlappingMins() ? e2.getFreeTimeOverlappingMins() : new Integer(0));
+				cmp = (e1.hasFreeTimeOverlappingMins() ? e1.getFreeTimeOverlappingMins() : Integer.valueOf(0)).compareTo(e2.hasFreeTimeOverlappingMins() ? e2.getFreeTimeOverlappingMins() : Integer.valueOf(0));
 				if (cmp != 0) return - cmp;
-				return (e1.hasTotalFreeTimeOverlappingMins() ? e1.getTotalFreeTimeOverlappingMins() : new Integer(0)).compareTo(e2.hasTotalFreeTimeOverlappingMins() ? e2.getTotalFreeTimeOverlappingMins() : new Integer(0));
+				return (e1.hasTotalFreeTimeOverlappingMins() ? e1.getTotalFreeTimeOverlappingMins() : Integer.valueOf(0)).compareTo(e2.hasTotalFreeTimeOverlappingMins() ? e2.getTotalFreeTimeOverlappingMins() : Integer.valueOf(0));
 			case PREF_IM:
-				cmp = (e1.hasTotalPrefInstrMethConflict() ? new Integer(e1.getTotalPrefInstrMethConflict() - e1.getPrefInstrMethConflict()) : new Integer(0)).compareTo(e2.hasTotalPrefInstrMethConflict() ? new Integer(e2.getTotalPrefInstrMethConflict() - e2.getPrefInstrMethConflict()) : new Integer(0));
+				cmp = (e1.hasTotalPrefInstrMethConflict() ? Integer.valueOf(e1.getTotalPrefInstrMethConflict() - e1.getPrefInstrMethConflict()) : Integer.valueOf(0)).compareTo(e2.hasTotalPrefInstrMethConflict() ? Integer.valueOf(e2.getTotalPrefInstrMethConflict() - e2.getPrefInstrMethConflict()) : Integer.valueOf(0));
 				if (cmp != 0) return - cmp;
-				return - (e1.hasTotalPrefInstrMethConflict() ? e1.getTotalPrefInstrMethConflict() : new Integer(0)).compareTo(e2.hasTotalPrefInstrMethConflict() ? e2.getTotalPrefInstrMethConflict() : new Integer(0));
+				return - (e1.hasTotalPrefInstrMethConflict() ? e1.getTotalPrefInstrMethConflict() : Integer.valueOf(0)).compareTo(e2.hasTotalPrefInstrMethConflict() ? e2.getTotalPrefInstrMethConflict() : Integer.valueOf(0));
 			case PREF_SEC:
-				cmp = (e1.hasTotalPrefSectionConflict() ? new Integer(e1.getTotalPrefSectionConflict() - e1.getPrefSectionConflict()) : new Integer(0)).compareTo(e2.hasTotalPrefSectionConflict() ? new Integer(e2.getTotalPrefSectionConflict() - e2.getPrefSectionConflict()) : new Integer(0));
+				cmp = (e1.hasTotalPrefSectionConflict() ? Integer.valueOf(e1.getTotalPrefSectionConflict() - e1.getPrefSectionConflict()) : Integer.valueOf(0)).compareTo(e2.hasTotalPrefSectionConflict() ? Integer.valueOf(e2.getTotalPrefSectionConflict() - e2.getPrefSectionConflict()) : Integer.valueOf(0));
 				if (cmp != 0) return - cmp;
-				return -(e1.hasTotalPrefSectionConflict() ? e1.getTotalPrefSectionConflict() : new Integer(0)).compareTo(e2.hasTotalPrefSectionConflict() ? e2.getTotalPrefSectionConflict() : new Integer(0));
+				return -(e1.hasTotalPrefSectionConflict() ? e1.getTotalPrefSectionConflict() : Integer.valueOf(0)).compareTo(e2.hasTotalPrefSectionConflict() ? e2.getTotalPrefSectionConflict() : Integer.valueOf(0));
 			case OVERRIDE:
-				cmp = (e1.getOverrideNeeded() == null ? new Integer(0) : e1.getOverrideNeeded()).compareTo(e2.getOverrideNeeded() == null ? 0 : e2.getOverrideNeeded());
+				cmp = (e1.getOverrideNeeded() == null ? Integer.valueOf(0) : e1.getOverrideNeeded()).compareTo(e2.getOverrideNeeded() == null ? 0 : e2.getOverrideNeeded());
 				if (cmp != 0) return - cmp;
-				return (e1.getTotalOverrideNeeded() == null ? new Integer(0) : e1.getTotalOverrideNeeded()).compareTo(e2.getTotalOverrideNeeded() == null ? 0 : e2.getTotalOverrideNeeded());
+				return (e1.getTotalOverrideNeeded() == null ? Integer.valueOf(0) : e1.getTotalOverrideNeeded()).compareTo(e2.getTotalOverrideNeeded() == null ? 0 : e2.getTotalOverrideNeeded());
 			case ADVISOR:
 				return e1.getStudent().getAdvisor("|").compareTo(e2.getStudent().getAdvisor("|"));
 			case ADVISED_PERC:
@@ -3461,7 +3461,7 @@ public class SectioningStatusPage extends Composite {
 			case TIME_STAMP:
 				return - e1.getTimeStamp().compareTo(e2.getTimeStamp());
 			case EXEC_TIME:
-				return - (e1.getWallTime() == null ? new Long(0) : e1.getWallTime()).compareTo(e2.getWallTime() == null ? 0 : e2.getWallTime());
+				return - (e1.getWallTime() == null ? Long.valueOf(0) : e1.getWallTime()).compareTo(e2.getWallTime() == null ? 0 : e2.getWallTime());
 			case RESULT:
 				return (e1.getResult() == null ? "" : e1.getResult()).compareTo(e2.getResult() == null ? "" : e2.getResult());
 			case MESSAGE:

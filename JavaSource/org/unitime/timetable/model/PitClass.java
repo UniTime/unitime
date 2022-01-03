@@ -255,7 +255,7 @@ public class PitClass extends BasePitClass {
 		float ratio = 0.0f;
 		if (positionTypes != null && !positionTypes.isEmpty()) {
 			if (this.getPitClassInstructors() == null || this.getPitClassInstructors().isEmpty()){
-				if (positionTypes.contains(new Long(-1))){
+				if (positionTypes.contains(Long.valueOf(-1))){
 					ratio = 1.0f;					
 				}
 			} else {
@@ -264,7 +264,7 @@ public class PitClass extends BasePitClass {
 							&& positionTypes.contains(pci.getPitDepartmentalInstructor().getPositionType().getUniqueId())) {
 						ratio += (pci.getNormalizedPercentShare().intValue()/100.0f);
 					} else if (pci.getPitDepartmentalInstructor().getPositionType() == null
-							&& positionTypes.contains(new Long(-1))) {
+							&& positionTypes.contains(Long.valueOf(-1))) {
 						ratio += (pci.getNormalizedPercentShare().intValue()/100.0f);					
 					}
 				}

@@ -33,7 +33,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.util.ToolBox;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
@@ -49,7 +50,7 @@ import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.custom.purdue.BannerTermProvider;
 
 public class DegreeWorksImportTest {
-	protected static Logger sLog = Logger.getLogger(DegreeWorksImportTest.class);
+	private static Log sLog = LogFactory.getLog(DegreeWorksImportTest.class);
 	
 	public static int guessEnrollmentFromLastLike(org.hibernate.Session hibSession, Session session, String area, String major, String classification) {
 		return ((Number)hibSession.createQuery(

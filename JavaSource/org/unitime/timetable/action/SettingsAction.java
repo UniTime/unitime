@@ -131,7 +131,7 @@ public class SettingsAction extends Action {
             }
             else {
                 SettingsDAO sdao = new SettingsDAO();
-                Settings s = sdao.get(new Long(id));
+                Settings s = sdao.get(Long.valueOf(id));
                 if(s==null) {
                     errors.add("key", new ActionMessage("errors.invalid", "Unique Id : " + id));
                     saveErrors(request, errors);

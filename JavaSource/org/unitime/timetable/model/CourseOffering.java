@@ -187,10 +187,10 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 		    co = new CourseOffering();
 		    co.setSubjectArea(subjArea);
 		    co.setCourseNbr(courseNbr);
-		    co.setProjectedDemand(new Integer(0));
-            co.setDemand(new Integer(0));
-		    co.setNbrExpectedStudents(new Integer(0));
-		    co.setIsControl(new Boolean(true));
+		    co.setProjectedDemand(Integer.valueOf(0));
+            co.setDemand(Integer.valueOf(0));
+		    co.setNbrExpectedStudents(Integer.valueOf(0));
+		    co.setIsControl(Boolean.valueOf(true));
 		    co.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)new CourseOfferingDAO().getSession(), co).toString());
 		    
 		    HashSet s = new HashSet();
@@ -198,10 +198,10 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 		    
 	        // Add new Instructional Offering
 		    InstructionalOffering io = new InstructionalOffering();
-		    io.setNotOffered(new Boolean(false));
+		    io.setNotOffered(Boolean.valueOf(false));
 		    io.setSession(acadSession);
 		    io.generateInstrOfferingPermId();
-		    io.setLimit(new Integer(0));
+		    io.setLimit(Integer.valueOf(0));
 		    io.setByReservationOnly(false);
 		    idao.saveOrUpdate(io);
 		    idao.getSession().refresh(io);
@@ -212,7 +212,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 		    cdao.getSession().refresh(subjArea);
         	String className = ApplicationProperty.ExternalActionInstructionalOfferingAdd.value();
         	if (className != null && className.trim().length() > 0){
-	        	ExternalInstructionalOfferingAddAction addAction = (ExternalInstructionalOfferingAddAction) (Class.forName(className).newInstance());
+	        	ExternalInstructionalOfferingAddAction addAction = (ExternalInstructionalOfferingAddAction) (Class.forName(className).getDeclaredConstructor().newInstance());
 	       		addAction.performExternalInstructionalOfferingAddAction(io, hibSession);
         	}
 
@@ -385,7 +385,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
     	if (cmp!=0) return cmp;
     	cmp = getCourseNbr().compareTo(co.getCourseNbr());
     	if (cmp!=0) return cmp;
-    	return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(co.getUniqueId() == null ? -1 : co.getUniqueId());
+    	return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(co.getUniqueId() == null ? -1 : co.getUniqueId());
     }
     
     public CourseCreditUnitConfig getCredit(){

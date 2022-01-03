@@ -249,7 +249,7 @@ public class CrossListsModifyAction extends Action {
                     break;
                 }
                 else {
-                    frm.setReadOnlyCrsOfferingId(new Long(cid));
+                    frm.setReadOnlyCrsOfferingId(Long.valueOf(cid));
                 }                    
             }
         }        
@@ -295,20 +295,20 @@ public class CrossListsModifyAction extends Action {
 	                
 	                // Create new instructional offering 
 	                InstructionalOffering io1 = new InstructionalOffering();
-	                CourseOffering co1 = cdao.get(new Long(origCrs.trim()));
+	                CourseOffering co1 = cdao.get(Long.valueOf(origCrs.trim()));
 	                
 	                sessionContext.checkPermission(co1, Right.CourseOfferingDeleteFromCrossList);
 	                
 	                // Copy attributes of old instr offering - make not offered
 	                io1.setDemand(io.getDemand());
 	                io1.setLimit(io.getLimit());
-	                io1.setNotOffered(new Boolean(true));
+	                io1.setNotOffered(Boolean.valueOf(true));
 	                io1.setSession(io.getSession());
 	                io1.setByReservationOnly(io.getByReservationOnly());
 	                
 	                // Copy attributes of old crs offering - set controlling	                
                     CourseOffering co2 = (CourseOffering)co1.clone();                    
-                    co2.setIsControl(new Boolean(true));
+                    co2.setIsControl(Boolean.valueOf(true));
                     
                     for (CurriculumCourse x: (List<CurriculumCourse>)hibSession.createQuery(
                     		"from CurriculumCourse where course.uniqueId = :courseId")
@@ -358,7 +358,7 @@ public class CrossListsModifyAction extends Action {
 		            
                 	String className = ApplicationProperty.ExternalActionCourseOfferingRemove.value(); 
                 	if (className != null && className.trim().length() > 0){
-                		ExternalCourseOfferingRemoveAction removeAction = (ExternalCourseOfferingRemoveAction) (Class.forName(className).newInstance());
+                		ExternalCourseOfferingRemoveAction removeAction = (ExternalCourseOfferingRemoveAction) (Class.forName(className).getDeclaredConstructor().newInstance());
         	       		removeAction.performExternalCourseOfferingRemoveAction(co1, hibSession);
                 	}
 			        hibSession.delete(co1);
@@ -381,7 +381,7 @@ public class CrossListsModifyAction extends Action {
 	                hibSession.refresh(io1);
 	            	className = ApplicationProperty.ExternalActionInstructionalOfferingInCrosslistAdd.value();
 	            	if (className != null && className.trim().length() > 0){
-	            		ExternalInstructionalOfferingInCrosslistAddAction addAction = (ExternalInstructionalOfferingInCrosslistAddAction) (Class.forName(className).newInstance());
+	            		ExternalInstructionalOfferingInCrosslistAddAction addAction = (ExternalInstructionalOfferingInCrosslistAddAction) (Class.forName(className).getDeclaredConstructor().newInstance());
 	    	       		addAction.performExternalInstructionalOfferingInCrosslistAddAction(io1, hibSession);
 	            	}
 	            }
@@ -391,11 +391,11 @@ public class CrossListsModifyAction extends Action {
 	                Debug.debug("Updating controlling course  and course reservation: " + origCrs);	                
 
 	                // Update controlling course attribute
-	                CourseOffering co = cdao.get(new Long (origCrs));
+	                CourseOffering co = cdao.get(Long.valueOf(origCrs));
 	                if(frm.getCtrlCrsOfferingId().equals(co.getUniqueId()))
-	                    co.setIsControl(new Boolean(true));
+	                    co.setIsControl(Boolean.valueOf(true));
 	                else
-	                    co.setIsControl(new Boolean(false));
+	                    co.setIsControl(Boolean.valueOf(false));
 	                
 	                // Update course reservation
 	                int indx = frm.getIndex(origCrs);
@@ -427,7 +427,7 @@ public class CrossListsModifyAction extends Action {
 	                
 	                Debug.debug("Course added to offering: " + course);
 	
-	                CourseOffering co1 = cdao.get(new Long(course.trim()));                
+	                CourseOffering co1 = cdao.get(Long.valueOf(course.trim()));                
 	                InstructionalOffering io1 = co1.getInstructionalOffering();
 	                SubjectArea sa = io1.getControllingCourseOffering().getSubjectArea();
 	                Set offerings = io1.getCourseOfferings();
@@ -440,9 +440,9 @@ public class CrossListsModifyAction extends Action {
 	                    // Create a copy
 	                    CourseOffering co3 = (CourseOffering)co2.clone();
 	                    if(frm.getCtrlCrsOfferingId().equals(co2.getUniqueId()))
-	                        co3.setIsControl(new Boolean(true));
+	                        co3.setIsControl(Boolean.valueOf(true));
 	                    else
-	                        co3.setIsControl(new Boolean(false));
+	                        co3.setIsControl(Boolean.valueOf(false));
 	                    
 	                    for (CurriculumCourse x: (List<CurriculumCourse>)hibSession.createQuery(
 	                    		"from CurriculumCourse where course.uniqueId = :courseId")
@@ -488,7 +488,7 @@ public class CrossListsModifyAction extends Action {
                         Exam.deleteFromExams(hibSession, co2);
                     	String className = ApplicationProperty.ExternalActionCourseOfferingRemove.value();
                     	if (className != null && className.trim().length() > 0){
-                    		ExternalCourseOfferingRemoveAction removeAction = (ExternalCourseOfferingRemoveAction) (Class.forName(className).newInstance());
+                    		ExternalCourseOfferingRemoveAction removeAction = (ExternalCourseOfferingRemoveAction) (Class.forName(className).getDeclaredConstructor().newInstance());
             	       		removeAction.performExternalCourseOfferingRemoveAction(co2, hibSession);
                     	}
 
@@ -590,7 +590,7 @@ public class CrossListsModifyAction extends Action {
 	        }	
         	String className = ApplicationProperty.ExternalActionCourseCrosslist.value();
         	if (className != null && className.trim().length() > 0){
-	        	ExternalCourseCrosslistAction addAction = (ExternalCourseCrosslistAction) (Class.forName(className).newInstance());
+	        	ExternalCourseCrosslistAction addAction = (ExternalCourseCrosslistAction) (Class.forName(className).getDeclaredConstructor().newInstance());
 	       		addAction.performExternalCourseCrosslistAction(io, hibSession);
         	}
 
@@ -639,7 +639,7 @@ public class CrossListsModifyAction extends Action {
         frm.setReadOnlyCrsOfferingId(null);
         frm.setSubjectAreaId(co.getSubjectArea().getUniqueId());
         frm.setInstrOfferingName(io.getCourseNameWithTitle());
-        frm.setOwnedInstrOffr(true); //?? new Boolean(io.isEditableBy(user)));
+        frm.setOwnedInstrOffr(true); //?? Boolean.valueOf(io.isEditableBy(user)));
         frm.setIoLimit(io.getLimit());
         frm.setUnlimited(io.hasUnlimitedEnrollment());
 

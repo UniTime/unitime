@@ -165,7 +165,7 @@ public class ExamListAction extends Action {
         
         String subjectAreaName = "";
         try {
-            subjectAreaName = new SubjectAreaDAO().get(new Long(myForm.getSubjectAreaId())).getSubjectAreaAbbreviation();
+            subjectAreaName = new SubjectAreaDAO().get(Long.valueOf(myForm.getSubjectAreaId())).getSubjectAreaAbbreviation();
         } catch (Exception e) {}
         
         if (request.getParameter("backId")!=null)

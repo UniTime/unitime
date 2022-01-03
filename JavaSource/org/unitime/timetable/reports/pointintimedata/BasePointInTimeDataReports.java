@@ -99,7 +99,7 @@ public abstract class BasePointInTimeDataReports {
 		@Override
 		public Map<Long, String> getValues(UserContext user) {
 			Map<Long, String> map =  super.getValues(user);
-			map.put(new Long(-1), MSG.labelUnknown());
+			map.put(Long.valueOf(-1), MSG.labelUnknown());
 			
 			return(map);
 		}

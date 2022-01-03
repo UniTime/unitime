@@ -188,7 +188,7 @@ public class ExamPeriodEditAction extends Action {
 	                saveErrors(request, errors);
 	                return mapping.findForward("list");
 	            } else {
-	            	ExamPeriod ep = (new ExamPeriodDAO()).get(new Long(id));
+	            	ExamPeriod ep = (new ExamPeriodDAO()).get(Long.valueOf(id));
 	            	
 	                if(ep==null) {
 	                    errors.add("name", new ActionMessage("errors.invalid", "Unique Id : " + id));

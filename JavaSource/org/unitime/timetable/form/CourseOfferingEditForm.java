@@ -199,7 +199,7 @@ public class CourseOfferingEditForm extends ActionForm {
         creditUnitType = null;
         units = null;
         maxUnits = null;
-        fractionalIncrementsAllowed = new Boolean(false);
+        fractionalIncrementsAllowed = Boolean.valueOf(false);
         creditText = "";
         courseNbr = "";
         ioNotOffered = null;

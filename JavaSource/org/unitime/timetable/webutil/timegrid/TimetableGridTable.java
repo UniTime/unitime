@@ -199,7 +199,7 @@ public class TimetableGridTable {
 	protected int iFirstDay = 0;
 	public Vector getWeeks(SessionContext context) throws Exception {
 		Vector weeks = new Vector();
-		weeks.addElement(new IdValue(new Long(-100),"All weeks"));
+		weeks.addElement(new IdValue(Long.valueOf(-100),"All weeks"));
         Session session = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId());
 		int startWeek = DateUtils.getWeek(session.getSessionBeginDateTime()) - ApplicationProperty.SessionNrExcessDays.intValue()/7;
 		Calendar endCal = Calendar.getInstance(Locale.US);
@@ -209,7 +209,7 @@ public class TimetableGridTable {
 		iFirstDate = DateUtils.getStartDate(session.getSessionStartYear(), startWeek);
 		iFirstDay = DateUtils.getFirstDayOfWeek(session.getSessionStartYear(),startWeek) - session.getDayOfYear(1,session.getPatternStartMonth())-1;
 		while (DateUtils.getStartDate(session.getSessionStartYear(),week).compareTo(endCal.getTime()) <= 0) {
-			weeks.addElement(new IdValue(new Long(week), sDF.format(DateUtils.getStartDate(session.getSessionStartYear(), week))+" - "+sDF.format(DateUtils.getEndDate(session.getSessionStartYear(), week))));
+			weeks.addElement(new IdValue(Long.valueOf(week), sDF.format(DateUtils.getStartDate(session.getSessionStartYear(), week))+" - "+sDF.format(DateUtils.getEndDate(session.getSessionStartYear(), week))));
 			week++;
 		}
 		if (iWeek<startWeek || iWeek>=week) iWeek = -100;

@@ -111,13 +111,13 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 	public void reset(ActionMapping arg0, HttpServletRequest arg1) {
 		op = "";
         nextId = previousId = null;
-        subjectAreaId = new Integer(0);
-    	instrOfferingId = new Long(0);
+        subjectAreaId = Integer.valueOf(0);
+    	instrOfferingId = Long.valueOf(0);
         instrOfferingName = null;
-    	instrOffrConfigLimit = new Integer(0);
-    	instrOffrConfigId = new Long(0);
+    	instrOffrConfigLimit = Integer.valueOf(0);
+    	instrOffrConfigId = Long.valueOf(0);
     	deletedInstrRowNum = null;
-    	displayExternalId = new Boolean(false);
+    	displayExternalId = Boolean.valueOf(false);
     	coordinators = null;
     	TeachingResponsibility tr = TeachingResponsibility.getDefaultInstructorTeachingResponsibility();
     	defaultTeachingResponsibilityId = (tr == null ? "" : tr.getUniqueId().toString());
@@ -176,14 +176,14 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 			// Only display the class name and display flag for the first instructor
 			if(i == 0) {
 				this.classLabels.add(cls.htmlLabel());
-				this.showDisplay.add(new Boolean(true));
+				this.showDisplay.add(Boolean.valueOf(true));
 				this.times.add(cls.buildAssignedTimeHtml(getProxy()));
 				this.rooms.add(cls.buildAssignedRoomHtml(getProxy()));
 				this.externalIds.add(cls.getClassSuffix() == null?"":cls.getClassSuffix());
 			}
 			else {
 				this.classLabels.add("");
-				this.showDisplay.add(new Boolean(false));
+				this.showDisplay.add(Boolean.valueOf(false));
 				this.times.add("");
 				this.rooms.add("");
 				this.externalIds.add("");
@@ -191,7 +191,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 			this.classLabelIndents.add(indent);
 			this.classIds.add(cls.getUniqueId().toString());
 			this.readOnlyClasses.add(isReadOnly.toString());
-			this.classHasErrors.add(new Boolean(false));
+			this.classHasErrors.add(Boolean.valueOf(false));
 			this.displayFlags.add(cls.isDisplayInstructor());
 	
 			if(instructors.size() > 0) {
@@ -203,11 +203,11 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 			else {
 				this.instructorUids.add("");
 				this.percentShares.add("100");
-				this.leadFlags.add(new Boolean(true));
+				this.leadFlags.add(Boolean.valueOf(true));
 				this.responsibilities.add(getDefaultTeachingResponsibilityId());
 			}
 			
-			this.allowDeletes.add(new Boolean(instructors.size() > 1));
+			this.allowDeletes.add(Boolean.valueOf(instructors.size() > 1));
 		} while (++i < instructors.size());
 	}
 
@@ -242,7 +242,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 	}
 
 	public void addInstructor() {
-		int pos = new Integer(this.getAddInstructorId()).intValue();
+		int pos = Integer.valueOf(this.getAddInstructorId()).intValue();
 		this.classLabels.add(pos + 1, "");
 		this.showDisplay.add(pos + 1, Boolean.FALSE);
 		this.times.add(pos + 1, "");
@@ -272,7 +272,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 	    	}
 	    	
 			String classId = (String) classIds.get(i);
-		    Class_ c = cdao.get(new Long(classId));
+		    Class_ c = cdao.get(Long.valueOf(classId));
 
 		    org.hibernate.Session hibSession = cdao.getSession();
         	Transaction tx = hibSession.beginTransaction();
@@ -280,7 +280,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
             // Class all instructors
             Set<ClassInstructor> classInstrs = new HashSet<ClassInstructor>(c.getClassInstructors());
 
-            c.setDisplayInstructor(new Boolean("on".equals(getDisplayFlags().get(i))));
+            c.setDisplayInstructor(Boolean.valueOf("on".equals(getDisplayFlags().get(i))));
 
             // Save instructor data to class
             for ( ; i < classIds.size(); i++) {
@@ -291,10 +291,10 @@ public class ClassInstructorAssignmentForm extends ActionForm {
                 String instrId = (String) getInstructorUids().get(i);
                 if (instrId.length() > 0  && !("-".equals(instrId))) {
 	                String pctShare = (String) getPercentShares().get(i);
-	                Boolean lead = new Boolean("on".equals(getLeadFlags().get(i)));
+	                Boolean lead = Boolean.valueOf("on".equals(getLeadFlags().get(i)));
 	                String responsibility = (String) getResponsibilities().get(i);
 	                
-	                DepartmentalInstructor deptInstr =  new DepartmentalInstructorDAO().get(new Long(instrId));
+	                DepartmentalInstructor deptInstr =  new DepartmentalInstructorDAO().get(Long.valueOf(instrId));
 	                
 	                ClassInstructor classInstr = null;
 	                for (Iterator<ClassInstructor> j = classInstrs.iterator(); j.hasNext();) {
@@ -321,7 +321,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 		                }
 	                }
 	                classInstr.setLead(lead);
-	                classInstr.setPercentShare(new Integer(pctShare));
+	                classInstr.setPercentShare(Integer.valueOf(pctShare));
 	                try {
 	                	classInstr.setResponsibility(TeachingResponsibilityDAO.getInstance().get(Long.valueOf(responsibility)));
 	                } catch (NumberFormatException e) {
@@ -360,7 +360,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 	    	}
 	    	
 			String classId = (String) classIds.get(i);
-		    Class_ c = cdao.get(new Long(classId));
+		    Class_ c = cdao.get(Long.valueOf(classId));
 
 		    org.hibernate.Session hibSession = cdao.getSession();
         	Transaction tx = hibSession.beginTransaction();

@@ -201,7 +201,7 @@ public class ListSolutionsAction extends Action {
                 			hibSession.update(solution);
                 	    	String className = ApplicationProperty.ExternalActionSolutionCommit.value();
                 	    	if (className != null && className.trim().length() > 0){
-                	    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).newInstance());              	    		
+                	    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).getDeclaredConstructor().newInstance());              	    		
                 	    		commitAction.performExternalSolutionCommitAction(touchedSolutionSet, hibSession);
                 	    	}
                 			solutionBean.setCommited(committed?sDF.format(solution.getCommitDate()):null);
@@ -210,7 +210,7 @@ public class ListSolutionsAction extends Action {
                 			solution.uncommitSolution(hibSession, sessionContext.getUser().getExternalUserId());
                 			String className = ApplicationProperty.ExternalActionSolutionCommit.value();
                 	    	if (className != null && className.trim().length() > 0){
-                	    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).newInstance());
+                	    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).getDeclaredConstructor().newInstance());
                 	    		HashSet<Solution> solutions = new HashSet<Solution>();
                 	    		solutions.add(solution);
                 	    		commitAction.performExternalSolutionCommitAction(solutions, hibSession);
@@ -258,7 +258,7 @@ public class ListSolutionsAction extends Action {
                 				solution.uncommitSolution(hibSession, sessionContext.getUser().getExternalUserId());
                     	    	String className = ApplicationProperty.ExternalActionSolutionCommit.value();
                     	    	if (className != null && className.trim().length() > 0){
-                    	    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).newInstance());
+                    	    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).getDeclaredConstructor().newInstance());
                     	    		HashSet<Solution> solutions = new HashSet<Solution>();
                     	    		solutions.add(solution);
                     	    		commitAction.performExternalSolutionCommitAction(solutions, hibSession);
@@ -325,7 +325,7 @@ public class ListSolutionsAction extends Action {
             		org.hibernate.Session hibSession = dao.getSession();
             		if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
             			tx = hibSession.beginTransaction();
-            		Solution solution = (new SolutionDAO()).get(new Long(id));
+            		Solution solution = (new SolutionDAO()).get(Long.valueOf(id));
             		if(solution==null) {
             			errors.add("uniqueId", new ActionMessage("errors.invalid", "Unique Id : " + id));
             			saveErrors(request, errors);
@@ -485,7 +485,7 @@ public class ListSolutionsAction extends Action {
 						new Comparable[] {
 							solution.getCreated(),
 							type,
-							(solution.isCommited().booleanValue()?new Long(solution.getCommitDate().getTime()):new Long(0)),
+							(solution.isCommited().booleanValue()?Long.valueOf(solution.getCommitDate().getTime()):Long.valueOf(0)),
 							ownerName,
 							assigned,
 							totVal,

@@ -1170,9 +1170,9 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		TreeSet<EventInterface> data = new TreeSet<EventInterface>(new Comparator<EventInterface>() {
 			@Override
 			public int compare(EventInterface e1, EventInterface e2) {
-				int cmp = new Integer(e1.getMeetings().first().getDayOfYear()).compareTo(e2.getMeetings().first().getDayOfYear());
+				int cmp = Integer.valueOf(e1.getMeetings().first().getDayOfYear()).compareTo(e2.getMeetings().first().getDayOfYear());
 				if (cmp != 0) return cmp;
-				cmp = new Integer(e1.getMeetings().first().getStartSlot()).compareTo(e2.getMeetings().first().getStartSlot());
+				cmp = Integer.valueOf(e1.getMeetings().first().getStartSlot()).compareTo(e2.getMeetings().first().getStartSlot());
 				if (cmp != 0) return cmp;
 				return e1.compareTo(e2);
 			}

@@ -226,28 +226,28 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 		courseNbr = "";
 		instructionalOfferings = null;
 		subjectAreas = new ArrayList();
-		divSec = new Boolean(false);
-		demand = new Boolean(false);
-		projectedDemand = new Boolean(false);
-		minPerWk = new Boolean(false);
-		limit = new Boolean(false);
-		snapshotLimit = new Boolean(false);
-		roomLimit = new Boolean(false);
-		manager = new Boolean(false);
-		datePattern = new Boolean(false);
-		timePattern = new Boolean(false);
-		preferences = new Boolean(false);
-		instructor = new Boolean(false);
-		timetable = new Boolean(false);
-		credit = new Boolean(false);
-		subpartCredit = new Boolean(false);
-		schedulePrintNote = new Boolean(false);
-		note = new Boolean(false);
-		title = new Boolean(false);
-		consent = new Boolean(false);
-		exams = new Boolean(false);
-		instructorAssignment = new Boolean(false);
-		lms = new Boolean(false);
+		divSec = Boolean.valueOf(false);
+		demand = Boolean.valueOf(false);
+		projectedDemand = Boolean.valueOf(false);
+		minPerWk = Boolean.valueOf(false);
+		limit = Boolean.valueOf(false);
+		snapshotLimit = Boolean.valueOf(false);
+		roomLimit = Boolean.valueOf(false);
+		manager = Boolean.valueOf(false);
+		datePattern = Boolean.valueOf(false);
+		timePattern = Boolean.valueOf(false);
+		preferences = Boolean.valueOf(false);
+		instructor = Boolean.valueOf(false);
+		timetable = Boolean.valueOf(false);
+		credit = Boolean.valueOf(false);
+		subpartCredit = Boolean.valueOf(false);
+		schedulePrintNote = Boolean.valueOf(false);
+		note = Boolean.valueOf(false);
+		title = Boolean.valueOf(false);
+		consent = Boolean.valueOf(false);
+		exams = Boolean.valueOf(false);
+		instructorAssignment = Boolean.valueOf(false);
+		lms = Boolean.valueOf(false);
 		waitlist = null;
 		sortBy = ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME);
 	}
@@ -532,7 +532,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	public String[] getSortByOptions() { return ClassCourseComparator.getNames(); }
 	
 	public Boolean getEnrollmentInformation(){
-		return(new Boolean(getDemand().booleanValue() 
+		return(Boolean.valueOf(getDemand().booleanValue() 
 				&& getProjectedDemand().booleanValue()
 				&& getLimit().booleanValue()
 				&& getRoomLimit().booleanValue()));
@@ -542,7 +542,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	}
 	
 	public Boolean getDateTimeInformation(){
-		return(new Boolean(getDatePattern().booleanValue() 
+		return(Boolean.valueOf(getDatePattern().booleanValue() 
 				&& getMinPerWk().booleanValue()
 				&& getTimePattern().booleanValue()));
 	}
@@ -550,7 +550,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 		; //do nothing
 	}
 	public Boolean getCatalogInformation(){
-		return(new Boolean(getTitle().booleanValue() 
+		return(Boolean.valueOf(getTitle().booleanValue() 
 				&& getCredit().booleanValue()
 				&& getSubpartCredit().booleanValue()
 				&& getConsent().booleanValue()

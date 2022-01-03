@@ -36,14 +36,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.unitime.commons.Email;
 import org.unitime.commons.hibernate.util.HibernateUtil;
@@ -89,7 +88,7 @@ import com.lowagie.text.DocumentException;
  */
 public abstract class PdfLegacyExamReport extends AbstractReport {
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
-    protected static Logger sLog = Logger.getLogger(PdfLegacyExamReport.class);
+	private static Log sLog = LogFactory.getLog(PdfLegacyExamReport.class);
     
     public static Hashtable<String,Class> sRegisteredReports = new Hashtable();
     public static String sAllRegisteredReports = "";
@@ -1070,18 +1069,6 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
     
 	public static void main(String[] args) {
         try {
-            Properties props = new Properties();
-            props.setProperty("log4j.rootLogger", "DEBUG, A1");
-            props.setProperty("log4j.appender.A1", "org.apache.log4j.ConsoleAppender");
-            props.setProperty("log4j.appender.A1.layout", "org.apache.log4j.PatternLayout");
-            props.setProperty("log4j.appender.A1.layout.ConversionPattern","%-5p %c{2}: %m%n");
-            props.setProperty("log4j.logger.org.hibernate","INFO");
-            props.setProperty("log4j.logger.org.hibernate.cfg","WARN");
-            props.setProperty("log4j.logger.org.hibernate.cache.EhCacheProvider","ERROR");
-            props.setProperty("log4j.logger.org.unitime.commons.hibernate","INFO");
-            props.setProperty("log4j.logger.net","INFO");
-            PropertyConfigurator.configure(props);
-            
             HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
             
             Session session = Session.getSessionUsingInitiativeYearTerm(

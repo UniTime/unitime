@@ -29,7 +29,9 @@ import java.util.List;
 
 import javax.servlet.ServletException;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -69,7 +71,7 @@ import org.xml.sax.InputSource;
 @GwtRpcImplements(MenuRpcRequest.class)
 @DependsOn({"startupService"})
 public class MenuBackend implements GwtRpcImplementation<MenuRpcRequest, GwtRpcResponseList<MenuInterface>>, InitializingBean {
-	private static Logger sLog = Logger.getLogger(MenuBackend.class);
+	private static Log sLog = LogFactory.getLog(MenuBackend.class);
     protected Element iRoot = null;
     private static PageNames sPageNames = Localization.create(PageNames.class);
     

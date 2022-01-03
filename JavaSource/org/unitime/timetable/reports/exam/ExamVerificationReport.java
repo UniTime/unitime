@@ -29,7 +29,9 @@ import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.BuildingPref;
@@ -69,7 +71,7 @@ import com.lowagie.text.DocumentException;
  * @author Tomas Muller
  */
 public class ExamVerificationReport extends PdfLegacyExamReport {
-    protected static Logger sLog = Logger.getLogger(ExamVerificationReport.class);
+    protected static Log sLog = LogFactory.getLog(ExamVerificationReport.class);
     private boolean iSkipHoles = true;
     // Skip subparts of the same itype as parent subpart
     private boolean iSkipSuffixSubparts = ApplicationProperty.ExaminationPdfReportsSkipSuffixSubpart.isTrue();

@@ -31,8 +31,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
@@ -60,7 +61,7 @@ import freemarker.template.TemplateSequenceModel;
  * @author Maciej Zygmunt
  */
 public class AGHCourseDetailsProvider implements CourseDetailsProvider, CourseUrlProvider {
-	private static Logger sLog = Logger.getLogger(AGHCourseDetailsProvider.class);
+	private static Log sLog = LogFactory.getLog(AGHCourseDetailsProvider.class);
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private static StudentSectioningConstants CONST = Localization.create(StudentSectioningConstants.class);
 	private static final long serialVersionUID = 1L;
@@ -186,8 +187,8 @@ public class AGHCourseDetailsProvider implements CourseDetailsProvider, CourseUr
 		String years = null;
 		try {
 			String classificationSt=findClassificationBySessionSubjAreaAbbvCourseNbr(session.getUniqueId(), subject, courseNbr);
-			Integer classification=new Integer( classificationSt.substring(classificationSt.length()-1));
-			years=syllabusLink(new Integer(session.getYear()), session.getTerm(), classification);
+			Integer classification=Integer.valueOf( classificationSt.substring(classificationSt.length()-1));
+			years=syllabusLink(Integer.valueOf(session.getYear()), session.getTerm(), classification);
 		} catch (Exception e) {
 		}
 		return years;
@@ -221,7 +222,7 @@ public class AGHCourseDetailsProvider implements CourseDetailsProvider, CourseUr
 		// current year minus shift
 		yearLink = year - yearShift;
 		// link = beginning + next year
-		syllabusLinkRw = yearLink.toString() + "-" + new Integer(yearLink + 1).toString();
+		syllabusLinkRw = yearLink.toString() + "-" + Integer.valueOf(yearLink + 1).toString();
 
 		return syllabusLinkRw;
 	}
@@ -304,9 +305,6 @@ public class AGHCourseDetailsProvider implements CourseDetailsProvider, CourseUr
 
 	public static void main(String[] args) {
 		try {
-			
-			BasicConfigurator.configure();
-			Debug.init(ApplicationProperties.getProperties());
 			Debug.info(" - Initializing Hibernate ... ");
 			_RootDAO.initialize();
 

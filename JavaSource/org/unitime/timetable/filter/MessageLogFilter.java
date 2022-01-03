@@ -20,7 +20,6 @@
 package org.unitime.timetable.filter;
 
 import java.io.IOException;
-import java.util.Enumeration;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -29,9 +28,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.apache.log4j.NDC;
+import org.apache.logging.log4j.ThreadContext;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.unitime.timetable.security.UserContext;
@@ -47,11 +44,6 @@ public class MessageLogFilter implements Filter {
 
 	@Override
 	public void destroy() {
-		for (Enumeration e = LogManager.getCurrentLoggers(); e.hasMoreElements(); ) {
-			Logger logger = (Logger)e.nextElement();
-			logger.removeAppender("mlog");
-		}
-		LogManager.getRootLogger().removeAppender("mlog");
 	}
 	
 	private UserContext getUser() {
@@ -66,12 +58,12 @@ public class MessageLogFilter implements Filter {
 		try {
 			UserContext user = getUser();
 			if (user != null) {
-				NDC.push("uid:" + user.getTrueExternalUserId()); count++;
+				ThreadContext.push("uid:"+ user.getTrueExternalUserId()); count++;
 				if (user.getCurrentAuthority() != null) {
-					NDC.push("role:" + user.getCurrentAuthority().getRole()); count++;
+					ThreadContext.push("role:"+ user.getCurrentAuthority().getRole()); count++;
 					Long sessionId = user.getCurrentAcademicSessionId();
 					if (sessionId != null) {
-						NDC.push("sid:" + sessionId); count++;
+						ThreadContext.push("sid:"+ sessionId); count++;
 					}
 				}
 			}
@@ -81,7 +73,7 @@ public class MessageLogFilter implements Filter {
 	
 	private void ndcPop(int count) {
 		for (int i = 0; i < count; i++)
-			NDC.pop();
+			ThreadContext.pop();
 	}
 
 	@Override

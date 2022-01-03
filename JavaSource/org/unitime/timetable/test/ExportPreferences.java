@@ -462,7 +462,7 @@ public class ExportPreferences {
 			
 			HibernateUtil.configureHibernate(args[0]);
 
-	        (new ExportPreferences()).exportAll(new Long(args[1]), new File(args[2]));
+	        (new ExportPreferences()).exportAll(Long.valueOf(args[1]), new File(args[2]));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

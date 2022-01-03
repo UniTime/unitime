@@ -134,7 +134,7 @@ public class SolverSettingsAction extends Action {
                 
             		setting.setName(myForm.getName());
             		setting.setDescription(myForm.getDescription());                
-            		setting.setAppearance(new Integer(myForm.getAppearanceIdx()));
+            		setting.setAppearance(Integer.valueOf(myForm.getAppearanceIdx()));
             		Set params = setting.getParameters();
             		if (params==null) {
             			params = new HashSet();
@@ -201,7 +201,7 @@ public class SolverSettingsAction extends Action {
                     if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
                     	tx = hibSession.beginTransaction();
             	
-            		SolverPredefinedSetting setting = dao.get(new Long(id), hibSession);
+            		SolverPredefinedSetting setting = dao.get(Long.valueOf(id), hibSession);
             		if(setting==null) {
             			errors.add("name", new ActionMessage("errors.invalid", "Unique Id : " + id));
             			saveErrors(request, errors);
@@ -242,7 +242,7 @@ public class SolverSettingsAction extends Action {
                 SolverPredefinedSettingDAO dao = new SolverPredefinedSettingDAO();
                 org.hibernate.Session hibSession = dao.getSession();
             
-                SolverPredefinedSetting setting = dao.get(new Long(id), hibSession);
+                SolverPredefinedSetting setting = dao.get(Long.valueOf(id), hibSession);
                 
                 if(setting==null) {
                     errors.add("name", new ActionMessage("errors.invalid", "Unique Id : " + id));

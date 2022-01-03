@@ -23,7 +23,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Session;
@@ -49,7 +51,7 @@ import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
  * @author Tomas Muller
  */
 public class OnlineStudentSchedulingUpdater extends Thread {
-	private Logger iLog;
+	private Log iLog;
 	private long iSleepTimeInSeconds = 5;
 	private boolean iRun = true;
 	
@@ -65,7 +67,7 @@ public class OnlineStudentSchedulingUpdater extends Thread {
 		setDaemon(true);
 		setName("Updater[" + getAcademicSession().toCompactString() + "]");
 		iSleepTimeInSeconds = ApplicationProperty.OnlineSchedulingQueueUpdateInterval.intValue();
-		iLog = Logger.getLogger(OnlineStudentSchedulingUpdater.class + ".updater[" + getAcademicSession().toCompactString() + "]"); 
+		iLog = LogFactory.getLog(OnlineStudentSchedulingUpdater.class + ".updater[" + getAcademicSession().toCompactString() + "]"); 
 	}
 	
 	public void run() {

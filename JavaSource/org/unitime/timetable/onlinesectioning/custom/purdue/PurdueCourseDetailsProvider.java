@@ -29,7 +29,9 @@ import java.net.URLEncoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -46,7 +48,7 @@ import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 public class PurdueCourseDetailsProvider implements CourseDetailsProvider, CourseUrlProvider {
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
-	private static Logger sLog = Logger.getLogger(PurdueCourseDetailsProvider.class);
+	private static Log sLog = LogFactory.getLog(PurdueCourseDetailsProvider.class);
 
 	public static String sUrl = "https://selfservice.mypurdue.purdue.edu/prod/bzwsrch.p_catalog_detail?term=:year:term&subject=:subject&cnbr=:courseNbr&enhanced=Y";
 	public static String sDummyUrl = "https://selfservice.mypurdue.purdue.edu/prod/bzwsrch.p_catalog_detail?term=201020&subject=AAE&cnbr=20300&enhanced=Y";

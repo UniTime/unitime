@@ -31,7 +31,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.localization.impl.Localization;
@@ -105,7 +107,7 @@ import org.unitime.timetable.util.LocationPermIdGenerator;
 @GwtRpcImplements(RoomUpdateRpcRequest.class)
 public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequest, RoomDetailInterface> {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
-	private static Logger sLog = Logger.getLogger(RoomUpdateBackend.class);
+	private static Log sLog = LogFactory.getLog(RoomUpdateBackend.class);
 
 	@Override
 	public RoomDetailInterface execute(RoomUpdateRpcRequest request, SessionContext context) {
@@ -448,7 +450,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 							if (d != null) {
 								id2dept.put(option.getId(), d);
 								managerIds += (managerIds.isEmpty() ? "" : ",") + d.getUniqueId();
-								dept2char.put(option.getId(), new Character(pref++));
+								dept2char.put(option.getId(), Character.valueOf(pref++));
 								add.add(d);
 							} else {
 								dept2char.put(option.getId(), org.cpsolver.coursett.model.RoomSharingModel.sFreeForAllPrefChar);
@@ -841,7 +843,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 						if (d != null) {
 							id2dept.put(option.getId(), d);
 							managerIds += (managerIds.isEmpty() ? "" : ",") + d.getUniqueId();
-							dept2char.put(option.getId(), new Character(pref++));
+							dept2char.put(option.getId(), Character.valueOf(pref++));
 							add.add(d);
 						} else {
 							dept2char.put(option.getId(), org.cpsolver.coursett.model.RoomSharingModel.sFreeForAllPrefChar);

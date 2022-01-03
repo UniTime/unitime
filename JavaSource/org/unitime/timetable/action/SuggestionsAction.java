@@ -139,7 +139,7 @@ public class SuggestionsAction extends Action {
         	String dates = request.getParameter("dates");
         	if (id==null)
         		throw new Exception("No class selected.");
-        	model.setClassId(new Long(id));
+        	model.setClassId(Long.valueOf(id));
         	if (days==null || slot==null || pattern==null)
         		throw new Exception("No time selected.");
         	if (dates==null)
@@ -614,12 +614,12 @@ public class SuggestionsAction extends Action {
             	    			ClassAssignmentDetails.dispNumber(s.getViolatedStudentConflicts()-empty.getViolatedStudentConflicts())+sb
             	    			},
             	             new Comparable[] {
-            	                new Double(s.getValue()-empty.getValue()),
+            	                Double.valueOf(s.getValue()-empty.getValue()),
             	                classesSort.toString(),
             	                datesSort.toString(),
             	                timesSort.toString(),
             	                roomsSort.toString(),
-            	                new Long(s.getViolatedStudentConflicts()-empty.getViolatedStudentConflicts())
+            	                Long.valueOf(s.getViolatedStudentConflicts()-empty.getViolatedStudentConflicts())
             	             });
         	    else
             	    webTable.addLine("onClick=\"document.location='suggestions.do?id="+idx+"&op="+op+"&noCacheTS=" + new Date().getTime()+"';\"",
@@ -642,22 +642,22 @@ public class SuggestionsAction extends Action {
             	                ClassAssignmentDetails.dispNumber(s.getPerturbationPenalty()-empty.getPerturbationPenalty())
             	             },
             	             new Comparable[] {
-            	                new Double(s.getValue()-empty.getValue()),
+            	                Double.valueOf(s.getValue()-empty.getValue()),
             	                classes.toString(),
             	                datesSort.toString(),
             	                timesSort.toString(),
             	                roomsSort.toString(),
-            	                new Integer(s.getUnassignedVariables()-empty.getUnassignedVariables()),
-            	                new Long(s.getViolatedStudentConflicts()-empty.getViolatedStudentConflicts()),
-            	                new Double(s.getGlobalTimePreference()-empty.getGlobalTimePreference()),
-            	                new Long(s.getGlobalRoomPreference()-empty.getGlobalRoomPreference()),
-            	                new Long(s.getGlobalGroupConstraintPreference()-empty.getGlobalGroupConstraintPreference()),
-            	                new Long(s.getInstructorDistancePreference()-empty.getInstructorDistancePreference()),
-            	                new Long(s.getUselessSlots()-empty.getUselessSlots()),
-            	                new Long(s.getTooBigRooms()-empty.getTooBigRooms()),
-            	                new Double(s.getDepartmentSpreadPenalty()-empty.getDepartmentSpreadPenalty()),
-            	                new Double(s.getSpreadPenalty()-empty.getSpreadPenalty()),
-            	                new Double(s.getPerturbationPenalty()-empty.getPerturbationPenalty())
+            	                Integer.valueOf(s.getUnassignedVariables()-empty.getUnassignedVariables()),
+            	                Long.valueOf(s.getViolatedStudentConflicts()-empty.getViolatedStudentConflicts()),
+            	                Double.valueOf(s.getGlobalTimePreference()-empty.getGlobalTimePreference()),
+            	                Long.valueOf(s.getGlobalRoomPreference()-empty.getGlobalRoomPreference()),
+            	                Long.valueOf(s.getGlobalGroupConstraintPreference()-empty.getGlobalGroupConstraintPreference()),
+            	                Long.valueOf(s.getInstructorDistancePreference()-empty.getInstructorDistancePreference()),
+            	                Long.valueOf(s.getUselessSlots()-empty.getUselessSlots()),
+            	                Long.valueOf(s.getTooBigRooms()-empty.getTooBigRooms()),
+            	                Double.valueOf(s.getDepartmentSpreadPenalty()-empty.getDepartmentSpreadPenalty()),
+            	                Double.valueOf(s.getSpreadPenalty()-empty.getSpreadPenalty()),
+            	                Double.valueOf(s.getPerturbationPenalty()-empty.getPerturbationPenalty())
             	             });
         	}
         } catch (Exception e) {
@@ -818,11 +818,11 @@ public class SuggestionsAction extends Action {
         						s.getDistributionConstraintInfoAsHtml(context, solver,true,(idx+1), 0) 
         	    				},
         	    				new Comparable[] {
-        						new Integer(-ca.getAssignedTime().getDays()*1000+ca.getAssignedTime().getStartSlot()),
-        						new Long(s.getViolatedStudentConflicts()),
-        						new Long(s.getViolatedStudentConflicts()),
-        						new Long(s.getGlobalGroupConstraintPreference()),
-        						new Long(s.getGlobalGroupConstraintPreference())
+        						Integer.valueOf(-ca.getAssignedTime().getDays()*1000+ca.getAssignedTime().getStartSlot()),
+        						Long.valueOf(s.getViolatedStudentConflicts()),
+        						Long.valueOf(s.getViolatedStudentConflicts()),
+        						Long.valueOf(s.getGlobalGroupConstraintPreference()),
+        						Long.valueOf(s.getGlobalGroupConstraintPreference())
         	             	});
         		} else {
         			webTable.addLine(null,//"onClick=\"selectTime(event, '"+ca.getAssignedTime().getDays()+"', '"+ca.getAssignedTime().getStartSlot()+"', '"+ca.getAssignedTime().getPatternId()+"');\"",
@@ -834,9 +834,9 @@ public class SuggestionsAction extends Action {
         						s.getStudentConflictInfosAsHtml(context, solver, true,(idx+1), 0)
         	    				},
         	    				new Comparable[] {
-        						new Integer(-ca.getAssignedTime().getDays()*1000+ca.getAssignedTime().getStartSlot()),
-        						new Long(s.getViolatedStudentConflicts()),
-        						new Long(s.getViolatedStudentConflicts())
+        						Integer.valueOf(-ca.getAssignedTime().getDays()*1000+ca.getAssignedTime().getStartSlot()),
+        						Long.valueOf(s.getViolatedStudentConflicts()),
+        						Long.valueOf(s.getViolatedStudentConflicts())
         	             	});
         		}
         	}

@@ -20,6 +20,7 @@
 package org.unitime.timetable.export.pointintimedata;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -27,7 +28,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -58,7 +61,7 @@ import org.unitime.timetable.security.rights.Right;
 @Service("org.unitime.timetable.export.Exporter:pitd-report.csv")
 public class PointInTimeDataReportsExportToCSV implements Exporter {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
-	private static Logger sLog = Logger.getLogger(PointInTimeDataReportsExportToCSV.class);
+	private static Log sLog = LogFactory.getLog(PointInTimeDataReportsExportToCSV.class);
 	
 	@Override
 	public String reference() {
@@ -77,11 +80,23 @@ public class PointInTimeDataReportsExportToCSV implements Exporter {
 		Class rptCls = BasePointInTimeDataReports.sPointInTimeDataReportRegister.get(report);
 		BasePointInTimeDataReports rpt = null;
 		try {
-			rpt = (BasePointInTimeDataReports) rptCls.newInstance();
+			rpt = (BasePointInTimeDataReports) rptCls.getDeclaredConstructor().newInstance();
 		} catch (InstantiationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SecurityException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -146,11 +161,23 @@ public class PointInTimeDataReportsExportToCSV implements Exporter {
 			Class rptCls = BasePointInTimeDataReports.sPointInTimeDataReportRegister.get(report.getId());
 			BasePointInTimeDataReports rpt = null;
 			try {
-				rpt = (BasePointInTimeDataReports) rptCls.newInstance();
+				rpt = (BasePointInTimeDataReports) rptCls.getDeclaredConstructor().newInstance();
 			} catch (InstantiationException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NoSuchMethodException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SecurityException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

@@ -359,7 +359,7 @@ public class SolverGroupEditAction extends Action {
         			group.getName(),
         			deptCmp,
         			mgrCmp,
-        			new Long(commitDate==null?-1:commitDate.getTime())
+        			Long.valueOf(commitDate==null?-1:commitDate.getTime())
         		});
         }
         

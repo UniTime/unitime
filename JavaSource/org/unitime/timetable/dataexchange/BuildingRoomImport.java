@@ -111,7 +111,7 @@ public class BuildingRoomImport extends BaseImport {
 		if (examCapacityStr != null && examCapacityStr.trim().length() > 0){
 			room.setExamCapacity(Integer.decode(examCapacityStr));
 		} else {
-			room.setExamCapacity(new Integer(0));
+			room.setExamCapacity(Integer.valueOf(0));
 		}
 		room.setIsInstructional(Boolean.valueOf(element.attributeValue("instructional")));
 		room.setRoomType(RoomType.findByReference(element.attributeValue("scheduledRoomType")));
@@ -146,7 +146,7 @@ public class BuildingRoomImport extends BaseImport {
 		dept.setDepartmentCode(deptCode);
 		String percent = element.attributeValue("percent");
 		if(percent == null) {
-			dept.setPercent(new Integer(100));
+			dept.setPercent(Integer.valueOf(100));
 		}
 		else {
 			dept.setPercent(Integer.decode(percent));

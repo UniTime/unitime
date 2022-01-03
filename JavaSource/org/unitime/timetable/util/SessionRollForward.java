@@ -1049,15 +1049,15 @@ public class SessionRollForward {
 				if (toDepartment == null){
 					toDepartment = new Department();
 					toDepartment.setAbbreviation("TEMP");
-					toDepartment.setAllowReqRoom(new Boolean(false));
-					toDepartment.setAllowReqTime(new Boolean(false));
-					toDepartment.setAllowReqDistribution(new Boolean(false));
+					toDepartment.setAllowReqRoom(Boolean.valueOf(false));
+					toDepartment.setAllowReqTime(Boolean.valueOf(false));
+					toDepartment.setAllowReqDistribution(Boolean.valueOf(false));
 					toDepartment.setDeptCode("TEMP");
-					toDepartment.setExternalManager(new Boolean(false));
+					toDepartment.setExternalManager(Boolean.valueOf(false));
 					toDepartment.setExternalUniqueId(null);
 					toDepartment.setName("Temp Department For New Subjects");
 					toDepartment.setSession(toSession);
-					toDepartment.setDistributionPrefPriority(new Integer(0));
+					toDepartment.setDistributionPrefPriority(Integer.valueOf(0));
 					toDepartment.setInheritInstructorPreferences(true);
 					toDepartment.setAllowEvents(false);
 					toDepartment.setAllowStudentScheduling(true);
@@ -1218,7 +1218,7 @@ public class SessionRollForward {
 								cnt = prefCount.get(key).intValue();
 							}
 							cnt++;
-							prefCount.put(key, new Integer(cnt));
+							prefCount.put(key, Integer.valueOf(cnt));
 						}
 					}
 				}
@@ -1336,7 +1336,7 @@ public class SessionRollForward {
 								cnt = prefCount.get(key).intValue();
 							}
 							cnt++;
-							prefCount.put(key, new Integer(cnt));
+							prefCount.put(key, Integer.valueOf(cnt));
 						}
 					}
 				}
@@ -1430,7 +1430,7 @@ public class SessionRollForward {
 								cnt = prefCount.get(key).intValue();
 							}
 							cnt++;
-							prefCount.put(key, new Integer(cnt));
+							prefCount.put(key, Integer.valueOf(cnt));
 						}
 					}
 				}
@@ -1514,7 +1514,7 @@ public class SessionRollForward {
 								cnt = prefCount.get(key).intValue();
 							}
 							cnt++;
-							prefCount.put(key, new Integer(cnt));
+							prefCount.put(key, Integer.valueOf(cnt));
 						}
 					}
 				}
@@ -1594,7 +1594,7 @@ public class SessionRollForward {
 								cnt = prefCount.get(key).intValue();
 							}
 							cnt++;
-							prefCount.put(key, new Integer(cnt));
+							prefCount.put(key, Integer.valueOf(cnt));
 						}
 					}
 				}
@@ -1884,7 +1884,7 @@ public class SessionRollForward {
 		toExam.setSession(toSession);
 		toExam.setUniqueIdRolledForwardFrom(fromExam.getUniqueId());
 		if (fromExam.getAveragePeriod() != null && fromExam.getAssignedPeriod() != null){
-			toExam.setAvgPeriod(new Integer((fromExam.getAvgPeriod().intValue() + fromExam.getAssignedPeriod().getIndex())/2));
+			toExam.setAvgPeriod(Integer.valueOf((fromExam.getAvgPeriod().intValue() + fromExam.getAssignedPeriod().getIndex())/2));
 		} else if (fromExam.getAveragePeriod() != null){
 			toExam.setAvgPeriod(fromExam.getAvgPeriod());
 		} else if (fromExam.getAssignedPeriod() != null){
@@ -2212,7 +2212,7 @@ public class SessionRollForward {
 			if (l != null && ! l.isEmpty()){
 				cnt = ((Long)l.get(0)).intValue();
 			}
-			getSessionHasCourseCatalogList().put(session, new Boolean(cnt != 0));	
+			getSessionHasCourseCatalogList().put(session, Boolean.valueOf(cnt != 0));	
 		}
 		return(((Boolean)getSessionHasCourseCatalogList().get(session)).booleanValue());
 	}
@@ -2232,7 +2232,7 @@ public class SessionRollForward {
 			if (l != null && ! l.isEmpty()){	
 				cnt = ((Long)l.get(0)).intValue();
 			}
-			getSessionHasExternalBuildingList().put(session, new Boolean(cnt != 0));
+			getSessionHasExternalBuildingList().put(session, Boolean.valueOf(cnt != 0));
 		}
 		return(((Boolean) getSessionHasExternalBuildingList().get(session)).booleanValue());
 	}
@@ -2252,7 +2252,7 @@ public class SessionRollForward {
 			if (l != null && ! l.isEmpty()){
 				cnt = ((Long)l.get(0)).intValue();
 			}
-			getSessionHasExternalRoomList().put(session, new Boolean(cnt != 0));
+			getSessionHasExternalRoomList().put(session, Boolean.valueOf(cnt != 0));
 		}
 		return(((Boolean) getSessionHasExternalRoomList().get(session)).booleanValue());
 	}
@@ -2272,7 +2272,7 @@ public class SessionRollForward {
 			if (l != null && ! l.isEmpty()){
 				cnt = ((Long)l.get(0)).intValue();
 			}
-			getSessionHasExternalRoomDeptList().put(session, new Boolean(cnt != 0));
+			getSessionHasExternalRoomDeptList().put(session, Boolean.valueOf(cnt != 0));
 		}
 		return(((Boolean) getSessionHasExternalRoomDeptList().get(session)).booleanValue());
 	}
@@ -2292,7 +2292,7 @@ public class SessionRollForward {
 			if (l != null && ! l.isEmpty()){
 				cnt = ((Long)l.get(0)).intValue();
 			}
-			getSessionHasExternalRoomFeatureList().put(session, new Boolean(cnt != 0));
+			getSessionHasExternalRoomFeatureList().put(session, Boolean.valueOf(cnt != 0));
 		}
 		return(((Boolean) getSessionHasExternalRoomFeatureList().get(session)).booleanValue());
 	}
@@ -2741,15 +2741,15 @@ public class SessionRollForward {
     				if (tempDept == null){
     					tempDept = new Department();
     					tempDept.setAbbreviation("TEMP");
-    					tempDept.setAllowReqRoom(new Boolean(false));
-    					tempDept.setAllowReqTime(new Boolean(false));
-    					tempDept.setAllowReqDistribution(new Boolean(false));
+    					tempDept.setAllowReqRoom(Boolean.valueOf(false));
+    					tempDept.setAllowReqTime(Boolean.valueOf(false));
+    					tempDept.setAllowReqDistribution(Boolean.valueOf(false));
     					tempDept.setDeptCode("TEMP");
-    					tempDept.setExternalManager(new Boolean(false));
+    					tempDept.setExternalManager(Boolean.valueOf(false));
     					tempDept.setExternalUniqueId(null);
     					tempDept.setName("Temp Department For New Curricula");
     					tempDept.setSession(toSession);
-    					tempDept.setDistributionPrefPriority(new Integer(0));
+    					tempDept.setDistributionPrefPriority(Integer.valueOf(0));
     					tempDept.setInheritInstructorPreferences(true);
     					tempDept.setAllowEvents(false);
     					tempDept.setAllowStudentScheduling(false);

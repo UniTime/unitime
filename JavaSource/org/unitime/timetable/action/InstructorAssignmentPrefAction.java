@@ -126,7 +126,7 @@ public class InstructorAssignmentPrefAction extends PreferencesAction {
             
             // If subpart id is not null - load subpart info
             DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
-            DepartmentalInstructor inst = idao.get(new Long(instructorId));
+            DepartmentalInstructor inst = idao.get(Long.valueOf(instructorId));
             LookupTables.setupInstructorDistribTypes(request, sessionContext, inst);
             
             // Check permissions
@@ -181,7 +181,7 @@ public class InstructorAssignmentPrefAction extends PreferencesAction {
             frm.setAvailableTimePatterns(null);
             if(op.equals("init")) {
             	initPrefs(frm, inst, null, true);
-            	timePatterns.add(new TimePattern(new Long(-1)));
+            	timePatterns.add(new TimePattern(Long.valueOf(-1)));
             }
             
     		// Process Preferences Action
@@ -256,7 +256,7 @@ public class InstructorAssignmentPrefAction extends PreferencesAction {
 		try {	
 			tx = hibSession.beginTransaction();
 			
-			DepartmentalInstructor inst = idao.get(new Long(frm.getInstructorId()), hibSession);
+			DepartmentalInstructor inst = idao.get(Long.valueOf(frm.getInstructorId()), hibSession);
 
 			if (frm.getMaxLoad() != null && !frm.getMaxLoad().isEmpty()) {
 				try {

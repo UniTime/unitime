@@ -180,7 +180,7 @@ public class ClassAssignmentsReportSearchAction extends LocalizedLookupDispatchA
 					}
 				ids.append("&subjectAreaIds="+classListForm.getSubjectAreaIds()[i]);
 				subjIds.append(classListForm.getSubjectAreaIds()[i]);
-				names.append(((new SubjectAreaDAO()).get(new Long(classListForm.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
+				names.append(((new SubjectAreaDAO()).get(Long.valueOf(classListForm.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
 			}
 			sessionContext.setAttribute(SessionAttribute.ClassAssignmentsSubjectAreas, subjIds);
 			if("search".equals(action)){

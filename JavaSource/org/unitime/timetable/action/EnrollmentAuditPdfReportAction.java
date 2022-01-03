@@ -33,7 +33,8 @@ import java.util.zip.ZipOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -61,7 +62,7 @@ import org.unitime.timetable.util.Constants;
  */
 @Service("/enrollmentAuditPdfReport")
 public class EnrollmentAuditPdfReportAction extends Action {
-    protected static Logger sLog = Logger.getLogger(EnrollmentAuditPdfReportAction.class);
+	private static Log sLog = LogFactory.getLog(EnrollmentAuditPdfReportAction.class);
     
     @Autowired SessionContext sessionContext;
 

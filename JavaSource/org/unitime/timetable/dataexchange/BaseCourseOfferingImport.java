@@ -604,7 +604,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
        
         Boolean offered = getRequiredBooleanAttribute(element, "offered", "offered");
         if (io.isNotOffered() == null || (!"create-if-not-exists".equals(action) && io.isNotOffered().equals(offered))) {
-         	io.setNotOffered(new Boolean(!offered.booleanValue()));
+         	io.setNotOffered(Boolean.valueOf(!offered.booleanValue()));
          	addNote("\toffered status changed");
          	changed = true;
         }
@@ -719,10 +719,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			dp = new DatePattern();
 			dp.setName("import - " + c.getClassLabel());
 			dp.setPattern(pattern);
-			dp.setOffset(new Integer(offset));			
+			dp.setOffset(Integer.valueOf(offset));			
 			dp.setSession(session);
-			dp.setType(new Integer(3));
-			dp.setVisible(new Boolean(false));
+			dp.setType(Integer.valueOf(3));
+			dp.setVisible(Boolean.valueOf(false));
 			this.getHibSession().save(dp);
 			this.getHibSession().flush();
 			this.getHibSession().refresh(dp);
@@ -1044,7 +1044,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				String id = getRequiredStringAttribute(instructorElement, "id", elementName);
 	            if (trimLeadingZerosFromExternalId){
 	            	try {
-	            		Integer num = new Integer(id);
+	            		Integer num = Integer.valueOf(id);
 	            		id = num.toString();
 					} catch (Exception e) {
 						// do nothing
@@ -1084,7 +1084,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						di.setMiddleName(middleName);
 						di.setAcademicTitle(acadTitle);
 						di.setLastName((lastName != null?lastName:"Unknown Name"));
-						di.setIgnoreToFar(new Boolean(false));
+						di.setIgnoreToFar(Boolean.valueOf(false));
 						getHibSession().save(di);
 						getHibSession().flush();
 						getHibSession().refresh(di);
@@ -1165,7 +1165,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	        }
 	        Float minCredit = null;
 	        if (minCreditStr != null){
-	        	minCredit = new Float(minCreditStr);
+	        	minCredit = Float.valueOf(minCreditStr);
 	        }
 	        String maxCreditStr = getOptionalStringAttribute(credit, "maximumCredit");
 	        Float maxCredit = null;
@@ -1198,7 +1198,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	        }
 	        Float minCredit = null;
 	        if (minCreditStr != null){
-	        	minCredit = new Float(minCreditStr);
+	        	minCredit = Float.valueOf(minCreditStr);
 	        }
 	        String maxCreditStr = getOptionalStringAttribute(credit, "maximumCredit");
 	        Float maxCredit = null;
@@ -1338,10 +1338,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				CourseOffering co = ico.getCourseOffering();
 				co.setInstructionalOffering(io);
 				if (co.getNbrExpectedStudents() == null){
-					co.setNbrExpectedStudents(new Integer(0));
+					co.setNbrExpectedStudents(Integer.valueOf(0));
 				}
 				if (co.getDemand() == null){
-					co.setDemand(new Integer(0));
+					co.setDemand(Integer.valueOf(0));
 				}
 				io.addTocourseOfferings(co);
 				co.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)new CourseOfferingDAO().getSession(), this).toString());
@@ -1479,10 +1479,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				if (!exists){
 					addNote("\tmatching course offering not found, added new: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
 					if (nco.getNbrExpectedStudents() == null){
-						nco.setNbrExpectedStudents(new Integer(0));
+						nco.setNbrExpectedStudents(Integer.valueOf(0));
 					}
 					if (nco.getDemand() == null){
-						nco.setDemand(new Integer(0));
+						nco.setDemand(Integer.valueOf(0));
 					}
 					nco.setSubjectAreaAbbv(nco.getSubjectArea().getSubjectAreaAbbreviation());
 					nco.setInstructionalOffering(io);
@@ -1540,10 +1540,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				boolean addNew = false;
 				String name = getRequiredStringAttribute(configElement, "name", elementName);
 				String limitStr = getRequiredStringAttribute(configElement, "limit", elementName);
-				Integer limit = new Integer(0);
-				Boolean unlimited = new Boolean(false);
+				Integer limit = Integer.valueOf(0);
+				Boolean unlimited = Boolean.valueOf(false);
 				if (limitStr.equalsIgnoreCase("inf")){
-					unlimited = new Boolean(true);
+					unlimited = Boolean.valueOf(true);
 				} else {
 					limit = Integer.valueOf(limitStr);
 				}
@@ -1685,7 +1685,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					managingDept = Department.findByDeptCode(managingDeptStr.trim(), session.getUniqueId());
 				}
 				String limitStr = getRequiredStringAttribute(classElement, "limit", elementName);
-				Integer limit = new Integer(0);
+				Integer limit = Integer.valueOf(0);
 				if (!limitStr.equalsIgnoreCase("inf")){
 					limit = Integer.valueOf(limitStr);
 				}
@@ -1708,7 +1708,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 							origClass.setClassSuffix(suffix);
 							Integer origSectionNbr = origClass.getSectionNumberCache();
 							try {
-								origClass.setSectionNumberCache(new Integer(suffix));
+								origClass.setSectionNumberCache(Integer.valueOf(suffix));
 							} catch (Exception e) {
 								origClass.setSectionNumberCache(origSectionNbr);			
 							}
@@ -1792,22 +1792,22 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					clazz.setClassSuffix(suffix);
 					clazz.setCancelled(false);
 					try {
-						clazz.setSectionNumberCache(new Integer(suffix));
+						clazz.setSectionNumberCache(Integer.valueOf(suffix));
 					} catch (Exception e) {
 						// Ignore Exception						
 					}
 					
 					clazz.setExpectedCapacity(limit);
 					clazz.setMaxExpectedCapacity(limit);
-					clazz.setRoomRatio(new Float(1.0));
+					clazz.setRoomRatio(1f);
 					if (nbrRooms != null)
 						clazz.setNbrRooms(nbrRooms);
 					else
-						clazz.setNbrRooms(new Integer(1));
+						clazz.setNbrRooms(Integer.valueOf(1));
 					clazz.setEnabledForStudentScheduling(enabledForStudentScheduling);
 					clazz.setSchedulePrintNote(scheduleNote);
 					clazz.setCancelled(cancelled);
-					clazz.setDisplayInstructor(new Boolean(true));
+					clazz.setDisplayInstructor(Boolean.valueOf(true));
 					if(parentClass != null){
 						clazz.setParentClass(parentClass);
 						parentClass.addTochildClasses(clazz);
@@ -1885,8 +1885,8 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						changed = true;
 					}
 					int numRooms = 1;
-					if (nbrRooms == null && clazz.getNbrRooms() != null && !clazz.getNbrRooms().equals(new Integer(numRooms))){
-						clazz.setNbrRooms(new Integer(numRooms));
+					if (nbrRooms == null && clazz.getNbrRooms() != null && !clazz.getNbrRooms().equals(Integer.valueOf(numRooms))){
+						clazz.setNbrRooms(Integer.valueOf(numRooms));
 						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " number of rooms changed");
 						changed = true;
 					}
@@ -1902,8 +1902,8 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					if (locations != null && !locations.isEmpty()){
 						numRooms += locations.size();
 					}
-					if (nbrRooms == null && clazz.getNbrRooms() != null && !clazz.getNbrRooms().equals(new Integer(numRooms))){
-						clazz.setNbrRooms(new Integer(numRooms));
+					if (nbrRooms == null && clazz.getNbrRooms() != null && !clazz.getNbrRooms().equals(Integer.valueOf(numRooms))){
+						clazz.setNbrRooms(Integer.valueOf(numRooms));
 						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " number of rooms changed");
 						changed = true;
 					}
@@ -2266,7 +2266,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				boolean isAdd = false;
 				Integer minPerWeek = getOptionalIntegerAttribute(subpart, "minPerWeek");
 				if (minPerWeek == null){
-					minPerWeek = new Integer(0);
+					minPerWeek = Integer.valueOf(0);
 				}
 				String typeStr = getRequiredStringAttribute(subpart, "type", elementName);
 				ItypeDesc itype = findItypeForString(typeStr);
@@ -2421,7 +2421,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			io.getCourseOfferings().remove(co);
 			if (co.isIsControl().booleanValue()){
 				CourseOffering newControl = (CourseOffering) io.getCourseOfferings().iterator().next();
-				newControl.setIsControl(new Boolean(true));
+				newControl.setIsControl(Boolean.valueOf(true));
 			}
 			co.setInstructionalOffering(null);
 			existingCourseOfferings.remove(co.getUniqueId());
@@ -3056,7 +3056,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				String id = getRequiredStringAttribute(instructorElement, "id", elementName);
 	            if (trimLeadingZerosFromExternalId){
 	            	try {
-	            		Integer num = new Integer(id);
+	            		Integer num = Integer.valueOf(id);
 	            		id = num.toString();
 					} catch (Exception e) {
 						// do nothing
@@ -3091,7 +3091,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						di.setAcademicTitle(acadTitles.get(id));
 						String lastName = lastNames.get(id);
 						di.setLastName((lastName != null?lastName:"Unknown Name"));
-						di.setIgnoreToFar(new Boolean(false));
+						di.setIgnoreToFar(Boolean.valueOf(false));
 						getHibSession().save(di);
 						getHibSession().flush();
 						getHibSession().refresh(di);

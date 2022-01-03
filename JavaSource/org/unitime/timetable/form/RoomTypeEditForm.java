@@ -64,7 +64,7 @@ public class RoomTypeEditForm extends ActionForm {
 	}
 
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		iOp = "List"; iUniqueId = new Long(-1);
+		iOp = "List"; iUniqueId = Long.valueOf(-1);
         iReference = null; iLabel = null;
         iCanEdit = false; iType = 0;
         iOrder = RoomType.findAll().size();

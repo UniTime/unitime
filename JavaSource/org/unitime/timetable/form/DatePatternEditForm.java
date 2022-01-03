@@ -112,7 +112,7 @@ public class DatePatternEditForm extends ActionForm {
 	}
 	
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		iOp = null; iUniqueId = new Long(-1); iType = DatePattern.sTypes[0]; 
+		iOp = null; iUniqueId = Long.valueOf(-1); iType = DatePattern.sTypes[0]; 
 		iIsUsed = false; iVisible = false; iName = ""; iIsDefault = false; iNumberOfWeeks = null;
 		iDepartmentId = null; iDepartmentIds.clear(); iParentId = null; iParentIds.clear();
 		iPreviousId = null; iNextId = null;
@@ -152,8 +152,8 @@ public class DatePatternEditForm extends ActionForm {
 	
 	public void update(DatePattern dp, HttpServletRequest request, org.hibernate.Session hibSession) throws Exception {
 		dp.setName(getName());
-		dp.setVisible(new Boolean(getVisible()));
-		dp.setType(new Integer(getTypeInt()));
+		dp.setVisible(Boolean.valueOf(getVisible()));
+		dp.setType(Integer.valueOf(getTypeInt()));
 		dp.setPatternAndOffset(request);
 		if (getNumberOfWeeks() != null && !getNumberOfWeeks().isEmpty()) {
 			try {
@@ -210,8 +210,8 @@ public class DatePatternEditForm extends ActionForm {
 		DatePattern dp = new DatePattern();
 		dp.setName(getName());
 		dp.setSession(SessionDAO.getInstance().get(getSessionId(), hibSession));
-		dp.setVisible(new Boolean(getVisible()));
-		dp.setType(new Integer(getTypeInt()));
+		dp.setVisible(Boolean.valueOf(getVisible()));
+		dp.setType(Integer.valueOf(getTypeInt()));
 		dp.setPatternAndOffset(request);
 		if (getNumberOfWeeks() != null && !getNumberOfWeeks().isEmpty()) {
 			try {
@@ -336,8 +336,8 @@ public class DatePatternEditForm extends ActionForm {
 		}
 		if (request.getParameter("cal_select")!=null) {
 			dp.setName(getName());
-			dp.setVisible(new Boolean(getVisible()));
-			dp.setType(new Integer(getTypeInt()));
+			dp.setVisible(Boolean.valueOf(getVisible()));
+			dp.setType(Integer.valueOf(getTypeInt()));
 			dp.setPatternAndOffset(request);
 			if (getNumberOfWeeks() != null && !getNumberOfWeeks().isEmpty()) {
 				try {

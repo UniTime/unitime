@@ -43,9 +43,9 @@ public class LastChangesForm extends ActionForm {
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 		iOp = null; 
         iN = 100;
-        iDepartmentId = new Long(-1);
-        iSubjAreaId = new Long(-1);
-        iManagerId = new Long(-1);
+        iDepartmentId = Long.valueOf(-1);
+        iSubjAreaId = Long.valueOf(-1);
+        iManagerId = Long.valueOf(-1);
 	}
 	
 	public String getOp() { return iOp; }
@@ -68,7 +68,7 @@ public class LastChangesForm extends ActionForm {
     }
     
     public void save(HttpServletRequest request) {
-        request.getSession().setAttribute("LastChanges.N", new Integer(getN()));
+        request.getSession().setAttribute("LastChanges.N", Integer.valueOf(getN()));
         if (getDepartmentId()==null)
             request.getSession().removeAttribute("LastChanges.DepartmentId");
         else

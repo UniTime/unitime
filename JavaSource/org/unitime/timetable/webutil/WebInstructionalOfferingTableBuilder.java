@@ -1248,7 +1248,7 @@ public class WebInstructionalOfferingTableBuilder {
     			}
     		} else {
     			if (aClass.getRoomRatio() != null){
-    				if (classLimitDisplayed && aClass.getRoomRatio().equals(new Float(1.0))){
+    				if (classLimitDisplayed && aClass.getRoomRatio().equals(1f)){
     					cell = initNormalCell("&nbsp;", isEditable);
     				} else {
     					cell = initNormalCell(sRoomRatioFormat.format(aClass.getRoomRatio().floatValue()), isEditable);

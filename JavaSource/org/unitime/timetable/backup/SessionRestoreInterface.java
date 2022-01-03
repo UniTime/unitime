@@ -21,6 +21,7 @@ package org.unitime.timetable.backup;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 
 import org.dom4j.DocumentException;
 
@@ -28,5 +29,5 @@ import org.dom4j.DocumentException;
  * @author Tomas Muller
  */
 public interface SessionRestoreInterface {
-	public void restore(InputStream input, BackupProgress progress) throws IOException, InstantiationException, IllegalAccessException, DocumentException;
+	public void restore(InputStream input, BackupProgress progress) throws IOException, InstantiationException, IllegalAccessException, DocumentException, InvocationTargetException, NoSuchMethodException;
 }

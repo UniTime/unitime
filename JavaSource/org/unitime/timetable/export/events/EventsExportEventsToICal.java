@@ -27,7 +27,8 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.springframework.stereotype.Service;
@@ -85,7 +86,7 @@ import biweekly.util.Recurrence.Frequency;
  */
 @Service("org.unitime.timetable.export.Exporter:events.ics")
 public class EventsExportEventsToICal extends EventsExporter {
-	private static Logger sLog = Logger.getLogger(EventsExportEventsToICal.class);
+	private static Log sLog = LogFactory.getLog(EventsExportEventsToICal.class);
 	
 	@Override
 	public String reference() {

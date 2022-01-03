@@ -135,7 +135,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
         		getAbbreviation() == null ? "" : getAbbreviation(),
         		d.getAbbreviation() == null ? "" : d.getAbbreviation());
         if (cmp!=0) return cmp;
-		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(d.getUniqueId() == null ? -1 : d.getUniqueId()); 
+		return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(d.getUniqueId() == null ? -1 : d.getUniqueId()); 
 	}
 
 	public String htmlLabel(){
@@ -358,7 +358,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 					if (status == null) {
 						status = t.getStatusType().getStatus();
 					} else {
-						status = new Integer(status | t.getStatusType().getStatus());
+						status = Integer.valueOf(status | t.getStatusType().getStatus());
 					}
 				}
 			}

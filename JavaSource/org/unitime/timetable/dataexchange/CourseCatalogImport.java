@@ -83,12 +83,12 @@ public class CourseCatalogImport extends BaseImport {
                     if(minCredit != null) 
                         catalog.setFixedMinimumCredit(Float.parseFloat(minCredit));
                     else
-                        catalog.setFixedMinimumCredit(new Float(MIN_CREDIT));
+                        catalog.setFixedMinimumCredit(Float.valueOf(MIN_CREDIT));
                     String maxCredit = credit.attributeValue("maximumCredit");
                     if(maxCredit != null)
                         catalog.setMaximumCredit(Float.parseFloat(maxCredit));
                     else
-                        catalog.setMaximumCredit(new Float(MAX_CREDIT));
+                        catalog.setMaximumCredit(Float.valueOf(MAX_CREDIT));
                 }
 
                 getHibSession().saveOrUpdate(catalog);  // to set the uniqueId
@@ -124,14 +124,14 @@ public class CourseCatalogImport extends BaseImport {
                 	credit.setFixedMinimumCredit(Float.parseFloat(minCredit));
                 }
                 else {
-                	credit.setFixedMinimumCredit(new Float(MIN_CREDIT));
+                	credit.setFixedMinimumCredit(Float.valueOf(MIN_CREDIT));
                 }
                 String maxCredit = element.attributeValue("maximumCredit");
                 if(maxCredit != null) {
                 	credit.setMaximumCredit(Float.parseFloat(maxCredit));
                 }
                 else {
-                	credit.setMaximumCredit(new Float(MAX_CREDIT));
+                	credit.setMaximumCredit(Float.valueOf(MAX_CREDIT));
                 }
             }
             credit.setFractionalCreditAllowed(Boolean.valueOf(element.attributeValue("fractionalCreditAllowed")));

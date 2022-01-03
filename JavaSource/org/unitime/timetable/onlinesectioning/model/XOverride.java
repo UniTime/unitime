@@ -86,8 +86,8 @@ public class XOverride implements Serializable, Externalizable {
 		iExternalId = (String)in.readObject();
 		iTimeStamp = (in.readBoolean() ? new Date(in.readLong()) : null);
 		int status = in.readInt();
-		iStatus = (status < 0 ? null : new Integer(status));
-		iValue = (in.readBoolean() ? new Float(in.readFloat()) : null);
+		iStatus = (status < 0 ? null : Integer.valueOf(status));
+		iValue = (in.readBoolean() ? Float.valueOf(in.readFloat()) : null);
 	}
 
 	@Override

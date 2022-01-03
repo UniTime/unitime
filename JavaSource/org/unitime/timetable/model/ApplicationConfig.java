@@ -23,8 +23,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
+
 import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.model.base.BaseApplicationConfig;
@@ -113,11 +114,13 @@ public class ApplicationConfig extends BaseApplicationConfig {
         org.hibernate.Session hibSession = ApplicationConfigDAO.getInstance().createNewSession();
         try {
         	for (ApplicationConfig config: (List<ApplicationConfig>)hibSession.createQuery("from ApplicationConfig where key like 'log4j.logger.%'").list()) {
-        		Level level = Level.toLevel(config.getValue());
+        		Level level = Level.getLevel(config.getValue());
         		boolean root = "log4j.logger.root".equals(config.getKey());
-        		Logger logger = (root ? Logger.getRootLogger() : Logger.getLogger(config.getKey().substring("log4j.logger.".length())));
-        		logger.setLevel(level);
-        		Debug.info("Logging level for " + logger.getName() + " set to " + level);
+        		if (root)
+        			Configurator.setRootLevel(level);
+        		else
+        			Configurator.setLevel(config.getKey().substring("log4j.logger.".length()), level);
+        		Debug.info("Logging level for " + (root ? "root" : config.getKey().substring("log4j.logger.".length())) + " set to " + level);
         	}
         } finally {
         	hibSession.close();

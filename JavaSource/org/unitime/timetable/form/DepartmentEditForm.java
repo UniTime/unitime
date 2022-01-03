@@ -277,11 +277,11 @@ public class DepartmentEditForm extends ActionForm {
 		Department department;
 		Session acadSession = null;
 		
-		if( getId().equals(new Long(0))) {
+		if( getId().equals(Long.valueOf(0))) {
 			department = new Department();
 			acadSession = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId()); 
 			department.setSession(acadSession);
-			department.setDistributionPrefPriority(new Integer(0));
+			department.setDistributionPrefPriority(Integer.valueOf(0));
 			acadSession.addTodepartments(department);
 			department.setExternalStatusTypes(new HashSet<ExternalDepartmentStatusType>());
 		}
@@ -295,13 +295,13 @@ public class DepartmentEditForm extends ActionForm {
 				department.setDeptCode(getDeptCode());
 				department.setAbbreviation(getAbbv());
 				department.setExternalUniqueId(getExternalId());
-				department.setDistributionPrefPriority(new Integer(getDistPrefPriority()));
-				department.setExternalManager(new Boolean(getIsExternal()));
+				department.setDistributionPrefPriority(Integer.valueOf(getDistPrefPriority()));
+				department.setExternalManager(Boolean.valueOf(getIsExternal()));
 				department.setExternalMgrLabel(getExtName());
 				department.setExternalMgrAbbv(getExtAbbv());
-	            department.setAllowReqRoom(new Boolean(getAllowReqRoom()));
-	            department.setAllowReqTime(new Boolean(getAllowReqTime()));
-	            department.setAllowReqDistribution(new Boolean(getAllowReqDist()));
+	            department.setAllowReqRoom(Boolean.valueOf(getAllowReqRoom()));
+	            department.setAllowReqTime(Boolean.valueOf(getAllowReqTime()));
+	            department.setAllowReqDistribution(Boolean.valueOf(getAllowReqDist()));
 	            department.setAllowEvents(getAllowEvents());
 	            department.setAllowStudentScheduling(getAllowStudentScheduling());
 	            department.setInheritInstructorPreferences(getInheritInstructorPreferences());
@@ -344,7 +344,7 @@ public class DepartmentEditForm extends ActionForm {
                     context, 
                     department, 
                     ChangeLog.Source.DEPARTMENT_EDIT, 
-                    (getId().equals(new Long(0))?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), 
+                    (getId().equals(Long.valueOf(0))?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), 
                     null, 
                     department);
 

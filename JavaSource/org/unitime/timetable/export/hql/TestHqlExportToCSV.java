@@ -23,7 +23,9 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.dom4j.Document;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
@@ -58,7 +60,7 @@ import org.unitime.timetable.security.rights.Right;
 @Service("org.unitime.timetable.export.Exporter:hql-test.csv")
 public class TestHqlExportToCSV implements Exporter {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
-	private static Logger sLog = Logger.getLogger(TestHqlExportToCSV.class);
+	private static Log sLog = LogFactory.getLog(TestHqlExportToCSV.class);
 	
 	@Override
 	public String reference() {

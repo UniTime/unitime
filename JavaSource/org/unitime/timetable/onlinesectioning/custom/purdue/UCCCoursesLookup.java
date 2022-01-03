@@ -31,7 +31,9 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
 import org.hibernate.type.BigDecimalType;
@@ -52,7 +54,7 @@ import org.unitime.timetable.onlinesectioning.model.XCourse;
  * @author Tomas Muller
  */
 public class UCCCoursesLookup implements CustomCourseLookup {
-	private static Logger sLog = Logger.getLogger(UCCCoursesLookup.class);
+	private static Log sLog = LogFactory.getLog(UCCCoursesLookup.class);
 	
 	private ExternalTermProvider iExternalTermProvider;
 	

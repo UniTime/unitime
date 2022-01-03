@@ -74,7 +74,7 @@ public class CourseDetailsBackend implements GwtRpcImplementation<CourseDetailsR
 		try {
 			String providerClass = ApplicationProperty.CustomizationCourseDetails.value();
 			if (providerClass != null)
-				return ((CourseDetailsProvider)Class.forName(providerClass).newInstance()).getDetails(session, subject, courseNbr);
+				return ((CourseDetailsProvider)Class.forName(providerClass).getDeclaredConstructor().newInstance()).getDetails(session, subject, courseNbr);
 		} catch (Exception e) {}
 		return null;
 	}
@@ -83,7 +83,7 @@ public class CourseDetailsBackend implements GwtRpcImplementation<CourseDetailsR
 		try {
 			String providerClass = ApplicationProperty.CustomizationCourseLink.value();
 			if (providerClass != null)
-				return ((CourseUrlProvider)Class.forName(providerClass).newInstance()).getCourseUrl(session, subject, courseNbr);
+				return ((CourseUrlProvider)Class.forName(providerClass).getDeclaredConstructor().newInstance()).getCourseUrl(session, subject, courseNbr);
 		} catch (Exception e) {}
 		return null;
 	}

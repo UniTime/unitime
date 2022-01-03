@@ -210,7 +210,7 @@ public class InstructorInfoEditAction extends InstructorAction {
 		
 		try {	
 			tx = hibSession.beginTransaction();
-	        DepartmentalInstructor inst = idao.get(new Long(instructorId));
+	        DepartmentalInstructor inst = idao.get(Long.valueOf(instructorId));
 	        
             ChangeLog.addChange(
                     hibSession, 
@@ -255,7 +255,7 @@ public class InstructorInfoEditAction extends InstructorAction {
 			
             String className = ApplicationProperty.ExternalActionClassEdit.value();
         	if (className != null && className.trim().length() > 0){
-            	ExternalClassEditAction editAction = (ExternalClassEditAction) (Class.forName(className).newInstance());
+            	ExternalClassEditAction editAction = (ExternalClassEditAction) (Class.forName(className).getDeclaredConstructor().newInstance());
             	for(Class_ c : updatedClasses){
             		editAction.performExternalClassEditAction(c, hibSession);
             	}
@@ -284,7 +284,7 @@ public class InstructorInfoEditAction extends InstructorAction {
 
 	    String instructorId = frm.getInstructorId();
 	    DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
-        DepartmentalInstructor inst = idao.get(new Long(instructorId));      
+        DepartmentalInstructor inst = idao.get(Long.valueOf(instructorId));      
 	    
         // populate form
 		frm.setInstructorId(instructorId);

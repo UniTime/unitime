@@ -77,6 +77,6 @@ public class ClassDurationType extends BaseClassDurationType implements Comparab
 	public int compareTo(ClassDurationType t) {
 		int cmp = getLabel().compareTo(t.getLabel());
 		if (cmp != 0) return cmp;
-		return (getUniqueId() == null ? new Long(0) : getUniqueId()).compareTo(t.getUniqueId() == null ? 0 : t.getUniqueId());
+		return (getUniqueId() == null ? Long.valueOf(0) : getUniqueId()).compareTo(t.getUniqueId() == null ? 0 : t.getUniqueId());
 	}
 }

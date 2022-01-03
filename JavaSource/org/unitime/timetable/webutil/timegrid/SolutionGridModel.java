@@ -380,7 +380,7 @@ public class SolutionGridModel extends TimetableGridModel {
 			}
 		}
         if (instructor.getPositionType()!=null)
-            setType(new Long(instructor.getPositionType().getSortOrder()));
+            setType(Long.valueOf(instructor.getPositionType().getSortOrder()));
 	}
 	
 	public SolutionGridModel(String solutionIdsStr, Department dept, org.hibernate.Session hibSession, TimetableGridContext context) {

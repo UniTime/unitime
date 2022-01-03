@@ -222,11 +222,11 @@ public class InstructionalOfferingModifyAction extends Action {
         }
 
         if (op.equalsIgnoreCase("multipleLimits")){
-        	frm.setDisplayMaxLimit(new Boolean(!frm.getDisplayMaxLimit().booleanValue()));
+        	frm.setDisplayMaxLimit(Boolean.valueOf(!frm.getDisplayMaxLimit().booleanValue()));
         	if (!frm.getDisplayMaxLimit().booleanValue()){
         		if (!frm.maxLimitCanBeHidden()){
-        			frm.setDisplayMaxLimit(new Boolean(true));
-        			frm.setDisplayOptionForMaxLimit(new Boolean(true));
+        			frm.setDisplayMaxLimit(Boolean.valueOf(true));
+        			frm.setDisplayOptionForMaxLimit(Boolean.valueOf(true));
         		}
         	}
         }
@@ -297,7 +297,7 @@ public class InstructionalOfferingModifyAction extends Action {
         frm.setEditSnapshotLimits(ApplicationProperty.ClassSetupEditSnapshotLimits.isTrue() && io.getSnapshotLimitDate() != null && sessionContext.hasPermission(Right.MultipleClassSetupSnapshotLimits));
         frm.setInstructionalMethod(ioc.getInstructionalMethod() == null ? -1l : ioc.getInstructionalMethod().getUniqueId());
         frm.setInstructionalMethodDefault(io.getSession().getDefaultInstructionalMethod() == null ? null : io.getSession().getDefaultInstructionalMethod().getLabel());
-		frm.setDisplayLms(new Boolean(isLmsInfoDefined()));
+		frm.setDisplayLms(Boolean.valueOf(isLmsInfoDefined()));
 
         String name = io.getCourseNameWithTitle();
         if (io.hasMultipleConfigurations()) {
@@ -317,7 +317,7 @@ public class InstructionalOfferingModifyAction extends Action {
     		if (ss.getClasses() == null || ss.getClasses().size() == 0)
     			throw new Exception(MSG.errorInitialIOSetupIncomplete());
     		if (ss.getParentSubpart() == null){
-        		loadClasses(frm, ss.getClasses(), new Boolean(true), new String(), proxy);
+        		loadClasses(frm, ss.getClasses(), Boolean.valueOf(true), new String(), proxy);
         	}
         }
         frm.initializeOrigSubparts();
@@ -334,26 +334,26 @@ public class InstructionalOfferingModifyAction extends Action {
     	if (classes != null && classes.size() > 0){
     		ArrayList classesList = new ArrayList(classes);
             Collections.sort(classesList, new ClassComparator(ClassComparator.COMPARE_BY_ITYPE) );
-	    	Boolean readOnlyClass = new Boolean(false);
+	    	Boolean readOnlyClass = Boolean.valueOf(false);
 	    	Class_ cls = null;
 	    	boolean first = true;
 	    	for(Iterator it = classesList.iterator(); it.hasNext();){
 	    		cls = (Class_) it.next();
 	    		if (first){
-	    			frm.setDisplayEnrollment(new Boolean(StudentClassEnrollment.sessionHasEnrollments(sessionContext.getUser().getCurrentAcademicSessionId())));
-	    			frm.setDisplaySnapshotLimit(new Boolean(cls.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getSnapshotLimitDate() != null));
+	    			frm.setDisplayEnrollment(Boolean.valueOf(StudentClassEnrollment.sessionHasEnrollments(sessionContext.getUser().getCurrentAcademicSessionId())));
+	    			frm.setDisplaySnapshotLimit(Boolean.valueOf(cls.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getSnapshotLimitDate() != null));
 	    			first = false;
 	    		}
 	    		if (!isReadOnly.booleanValue()){
-	    			readOnlyClass = new Boolean(isReadOnly.booleanValue());
+	    			readOnlyClass = Boolean.valueOf(isReadOnly.booleanValue());
 	    		} else {
-	    			readOnlyClass = new Boolean(!sessionContext.hasPermission(cls, Right.MultipleClassSetupClass));
+	    			readOnlyClass = Boolean.valueOf(!sessionContext.hasPermission(cls, Right.MultipleClassSetupClass));
 	    		}
 	    		if (readOnlyClass) frm.setInstrOffrConfigUnlimitedReadOnly(true);
 				frm.addToClasses(cls, readOnlyClass && !cls.isCancelled(), indent, proxy, UserProperty.NameFormat.get(sessionContext.getUser()),
 						sessionContext.hasPermission(cls, Right.ClassDelete),
 						sessionContext.hasPermission(cls, Right.ClassCancel));
-	    		loadClasses(frm, cls.getChildClasses(), new Boolean(true), indent + "&nbsp;&nbsp;&nbsp;&nbsp;", proxy);
+	    		loadClasses(frm, cls.getChildClasses(), Boolean.valueOf(true), indent + "&nbsp;&nbsp;&nbsp;&nbsp;", proxy);
 	    	}
     	}
     }
@@ -421,7 +421,7 @@ public class InstructionalOfferingModifyAction extends Action {
 	        String className = ApplicationProperty.ExternalActionInstrOffrConfigChange.value();
 	        ExternalInstrOffrConfigChangeAction configChangeAction = null;
         	if (className != null && className.trim().length() > 0){
-	        	configChangeAction = (ExternalInstrOffrConfigChangeAction) (Class.forName(className).newInstance());
+	        	configChangeAction = (ExternalInstrOffrConfigChangeAction) (Class.forName(className).getDeclaredConstructor().newInstance());
 	        	if (!configChangeAction.validateConfigChangeCanOccur(ioc.getInstructionalOffering(), hibSession)){
 	        		throw new Exception("Configuration change violates rules for Add On, rolling back the change.");
 	        	}
@@ -695,24 +695,24 @@ public class InstructionalOfferingModifyAction extends Action {
 		Date timeStamp = new Date();
 
 		for(;it1.hasNext();){
-			Long classId = new Long(it1.next().toString());
-			Long subpartId = new Long(it2.next().toString());
+			Long classId = Long.valueOf(it1.next().toString());
+			Long subpartId = Long.valueOf(it2.next().toString());
 			String parentId = it3.next().toString();
 			Long parentClassId = null;
 			if (parentId.length() != 0)
-				parentClassId = new Long(parentId);
-			Integer minClassLimit = new Integer(it4.next().toString());
+				parentClassId = Long.valueOf(parentId);
+			Integer minClassLimit = Integer.valueOf(it4.next().toString());
 			String managingDeptIdString = (String)it5.next();
 			Long managingDeptId = null;
 			if (managingDeptIdString.length() != 0)
-				managingDeptId = new Long(managingDeptIdString);
+				managingDeptId = Long.valueOf(managingDeptIdString);
 			String datePatternId = it6.next().toString();
 			Long datePattern = null;
 			if (datePatternId.length() != 0)
-				datePattern = new Long(datePatternId);
-			Integer numberOfRooms = new Integer(it7.next().toString());
-			Integer maxClassLimit = new Integer(it8.next().toString());
-			Float roomRatio = new Float(it9.next().toString());
+				datePattern = Long.valueOf(datePatternId);
+			Integer numberOfRooms = Integer.valueOf(it7.next().toString());
+			Integer maxClassLimit = Integer.valueOf(it8.next().toString());
+			Float roomRatio = Float.valueOf(it9.next().toString());
 			if (frm.isInstrOffrConfigUnlimited()) {
 				roomRatio = 1.0f;
 				minClassLimit = 0;
@@ -722,17 +722,17 @@ public class InstructionalOfferingModifyAction extends Action {
 			String displayInstructorStr = null;
 			if(it10.hasNext())
 				displayInstructorStr = (String) it10.next();
-			Boolean displayInstructor = new Boolean(false);
+			Boolean displayInstructor = Boolean.valueOf(false);
 			if (displayInstructorStr != null && displayInstructorStr.length() > 0){
-				displayInstructor = new Boolean(true);
+				displayInstructor = Boolean.valueOf(true);
 			}
 			String enabledForStudentSchedulingStr = null;
 			if (it11.hasNext()) {
 				enabledForStudentSchedulingStr = (String) it11.next();
 			}
-			Boolean enabledForStudentScheduling = new Boolean(false);
+			Boolean enabledForStudentScheduling = Boolean.valueOf(false);
 			if (enabledForStudentSchedulingStr != null && enabledForStudentSchedulingStr.length() > 0){
-				enabledForStudentScheduling = new Boolean(true);
+				enabledForStudentScheduling = Boolean.valueOf(true);
 			}
 			String suffix = (it12 == null ? null : it12.next().toString());
 			if (suffix != null && suffix.isEmpty()) suffix = null;
@@ -746,7 +746,7 @@ public class InstructionalOfferingModifyAction extends Action {
 			}
 			Long lmsId = null;
 			if (lmsStrId != null && lmsStrId.length() != 0)
-				lmsId = new Long(lmsStrId);
+				lmsId = Long.valueOf(lmsStrId);
 
 			if (classId.longValue() < 0){
 				Class_ newClass = new Class_();
@@ -820,16 +820,16 @@ public class InstructionalOfferingModifyAction extends Action {
 		Date timeStamp = new Date();
 
 		for(;it1.hasNext();){
-			Long classId = new Long(it1.next().toString());
-			Integer minClassLimit = new Integer(it2.next().toString());
-			Long managingDeptId = new Long(it3.next().toString());
+			Long classId = Long.valueOf(it1.next().toString());
+			Integer minClassLimit = Integer.valueOf(it2.next().toString());
+			Long managingDeptId = Long.valueOf(it3.next().toString());
 			String datePatternId = it4.next().toString();
 			Long datePattern = null;
 			if (datePatternId.length() != 0)
-				datePattern = new Long(datePatternId);
-			Integer numberOfRooms = new Integer(it5.next().toString());
-			Integer maxClassLimit = new Integer(it6.next().toString());
-			Float roomRatio = new Float(it7.next().toString());
+				datePattern = Long.valueOf(datePatternId);
+			Integer numberOfRooms = Integer.valueOf(it5.next().toString());
+			Integer maxClassLimit = Integer.valueOf(it6.next().toString());
+			Float roomRatio = Float.valueOf(it7.next().toString());
 			if (frm.isInstrOffrConfigUnlimited()) {
 				roomRatio = 1.0f;
 				minClassLimit = 0;
@@ -840,20 +840,20 @@ public class InstructionalOfferingModifyAction extends Action {
 			if(it8.hasNext()){
 				displayInstructorStr = (String) it8.next();
 			}
-			Boolean displayInstructor = new Boolean(false);
+			Boolean displayInstructor = Boolean.valueOf(false);
 			if (displayInstructorStr != null && displayInstructorStr.length() > 0){
-				displayInstructor = new Boolean(true);
+				displayInstructor = Boolean.valueOf(true);
 			}
 			String enabledForStudentSchedulingStr = null;
 			if (it9.hasNext()){
 				enabledForStudentSchedulingStr = (String)it9.next();
 			}
-			Boolean enabledForStudentScheduling = new Boolean(false);
+			Boolean enabledForStudentScheduling = Boolean.valueOf(false);
 			if (enabledForStudentSchedulingStr != null && enabledForStudentSchedulingStr.length() > 0){
-				enabledForStudentScheduling = new Boolean(true);
+				enabledForStudentScheduling = Boolean.valueOf(true);
 			}
 			String suffix = (it11 != null ? it11.next().toString() : null);
-			Boolean cancelled = new Boolean("true".equals(it12.next()));
+			Boolean cancelled = Boolean.valueOf("true".equals(it12.next()));
 			Integer snapshotLimit = null;
 			try {
 				snapshotLimit = (it13 == null ? null : Integer.valueOf(it13.next().toString()));
@@ -865,12 +865,12 @@ public class InstructionalOfferingModifyAction extends Action {
 			}
 			Long lmsId = null;
 			if (lmsStrId != null && lmsStrId.length() != 0)
-				lmsId = new Long(lmsStrId);
+				lmsId = Long.valueOf(lmsStrId);
 
 			Long parentClassId = null;
 			String parentClassIdString = (String) it10.next();
 			if (parentClassIdString != null && parentClassIdString.length() > 0){
-				parentClassId = new Long(parentClassIdString);
+				parentClassId = Long.valueOf(parentClassIdString);
 			}
 			if (classId.longValue() > 0){
 				boolean changed = false;
@@ -887,7 +887,7 @@ public class InstructionalOfferingModifyAction extends Action {
 						hibSession.update(origParent);
 					}
 				}
-				if (managingDeptId.equals(new Long(-1))){
+				if (managingDeptId.equals(Long.valueOf(-1))){
 					managingDeptId = modifiedClass.getControllingDept().getUniqueId();
 				}
 				if (!modifiedClass.getManagingDept().getUniqueId().equals(managingDeptId)){

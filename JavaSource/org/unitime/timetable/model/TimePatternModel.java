@@ -274,7 +274,7 @@ public class TimePatternModel implements RequiredTimeTableModel {
         	if ((dayCode & Constants.DAY_CODES[i])==0) continue;
         	int s = slot + i*Constants.SLOTS_PER_DAY;
         	for (int j=0; j<getSlotsPerMtg(); j++)
-        		slots.addElement(new Integer(s+j));
+        		slots.addElement(Integer.valueOf(s+j));
         }
 
         return slots;
@@ -292,7 +292,7 @@ public class TimePatternModel implements RequiredTimeTableModel {
 
         for (int i=0; i<Constants.DAY_CODES.length; i++) {
         	if ((dayCode & Constants.DAY_CODES[i])==0) continue;
-        	slots.addElement(new Integer(slot + i*Constants.SLOTS_PER_DAY));
+        	slots.addElement(Integer.valueOf(slot + i*Constants.SLOTS_PER_DAY));
         }
 
         return slots;
@@ -843,7 +843,7 @@ public class TimePatternModel implements RequiredTimeTableModel {
     	int iCnt = 0;
     	public void addPref(String prologPref, int count) {
     		Integer use = (Integer)iUsage.get(prologPref);
-    		use = new Integer((use==null?0:use.intValue())+count);
+    		use = Integer.valueOf((use==null?0:use.intValue())+count);
     		iUsage.put(prologPref, use);
     		iCnt += count;
     	}

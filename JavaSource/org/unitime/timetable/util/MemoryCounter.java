@@ -23,7 +23,7 @@ import java.lang.reflect.*;
 import java.util.*;
 
 import org.apache.commons.logging.Log;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.infinispan.Cache;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.manager.EmbeddedCacheManager;

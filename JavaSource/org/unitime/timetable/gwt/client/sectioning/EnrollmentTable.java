@@ -1981,13 +1981,13 @@ public class EnrollmentTable extends Composite {
 				case COURSE:
 					return e1.getCourseName().compareTo(e2.getCourseName());
 				case PRIORITY:
-					cmp = new Integer(e1.getPriority()).compareTo(e2.getPriority());
+					cmp = Integer.valueOf(e1.getPriority()).compareTo(e2.getPriority());
 					if (cmp != 0) return cmp;
 					return e1.getAlternative().compareTo(e2.getAlternative());
 				case ALTERNATIVE:
 					cmp = e1.getAlternative().compareTo(e2.getAlternative());
 					if (cmp != 0) return cmp;
-					return new Integer(e1.getPriority()).compareTo(e2.getPriority());
+					return Integer.valueOf(e1.getPriority()).compareTo(e2.getPriority());
 				case AREA:
 					cmp = e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
 					if (cmp != 0) return cmp;

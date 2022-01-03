@@ -290,7 +290,7 @@ public class DistributionPref extends BaseDistributionPref {
    		int cmp = getDistributionType().getReference().compareTo(p.getDistributionType().getReference()); 
    		if (cmp!=0) return cmp;
    		
-   		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(p.getUniqueId() == null ? -1 : p.getUniqueId());
+   		return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(p.getUniqueId() == null ? -1 : p.getUniqueId());
    }
     
     public Object clone() {

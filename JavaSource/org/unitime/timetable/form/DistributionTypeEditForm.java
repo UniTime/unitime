@@ -104,13 +104,13 @@ public class DistributionTypeEditForm extends RefTableEntryEditForm {
 		return (((DistributionType)refTableEntry).isInstructorPref()==null?false:((DistributionType)refTableEntry).isInstructorPref().booleanValue());
 	}
 	public void setInstructorPref(boolean instructorPref) {
-		((DistributionType)refTableEntry).setInstructorPref(new Boolean(instructorPref));
+		((DistributionType)refTableEntry).setInstructorPref(Boolean.valueOf(instructorPref));
 	}
     public boolean isExamPref() {
         return (((DistributionType)refTableEntry).isExamPref()==null?false:((DistributionType)refTableEntry).isExamPref().booleanValue());
     }
     public void setExamPref(boolean examPref) {
-        ((DistributionType)refTableEntry).setExamPref(new Boolean(examPref));
+        ((DistributionType)refTableEntry).setExamPref(Boolean.valueOf(examPref));
     }
 	public String getAllowedPref() {
 		return ((DistributionType)refTableEntry).getAllowedPref();

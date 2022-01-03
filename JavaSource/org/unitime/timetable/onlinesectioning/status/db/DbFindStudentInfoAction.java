@@ -629,7 +629,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 			public int compare(StudentInfo s1, StudentInfo s2) {
 				int cmp = s1.getStudent().getName().compareTo(s2.getStudent().getName());
 				if (cmp != 0) return cmp;
-				return new Long(s1.getStudent().getId()).compareTo(s2.getStudent().getId());
+				return Long.valueOf(s1.getStudent().getId()).compareTo(s2.getStudent().getId());
 			}
 		});
 		

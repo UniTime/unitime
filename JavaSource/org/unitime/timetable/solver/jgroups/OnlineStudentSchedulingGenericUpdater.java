@@ -29,7 +29,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.cpsolver.ifs.util.DataProperties;
 import org.jgroups.Address;
 import org.jgroups.blocks.RpcDispatcher;
@@ -45,7 +47,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
  * @author Tomas Muller
  */
 public class OnlineStudentSchedulingGenericUpdater extends Thread {
-	private Logger iLog;
+	private Log iLog;
 	private long iSleepTimeInSeconds = 5;
 	private boolean iRun = true, iPause = false;
 	
@@ -59,7 +61,7 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 		setDaemon(true);
 		setName("Updater[generic]");
 		iSleepTimeInSeconds = ApplicationProperty.OnlineSchedulingQueueLoadInterval.intValue(); 
-		iLog = Logger.getLogger(OnlineStudentSchedulingGenericUpdater.class + ".updater[generic]"); 
+		iLog = LogFactory.getLog(OnlineStudentSchedulingGenericUpdater.class + ".updater[generic]"); 
 	}
 	
 	@Override

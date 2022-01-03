@@ -1000,7 +1000,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             		iProgress.message(msglevel("noTimePattern", Progress.MSGLEVEL_WARN), MSG.warnWrongTimePattern(getClassLabel(clazz), clazz.getSchedulingSubpart().getMinutesPerWk(), (dtype == null ? MSG.defaultDurationTypeName() : dtype.getLabel()), pattern.getName()));
             		minPerWeek = pattern.getMinPerMtg()*pattern.getNrMeetings();
             		if (iFixMinPerWeek)
-            			clazz.getSchedulingSubpart().setMinutesPerWk(new Integer(minPerWeek));
+            			clazz.getSchedulingSubpart().setMinutesPerWk(Integer.valueOf(minPerWeek));
             	}
                 
                 for (int time=0;time<pattern.getNrTimes(); time++) {
@@ -1461,7 +1461,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             	ic = new SoftInstructorConstraint(instructor.getUniqueId(),instructor.getExternalUniqueId(),instructor.getName(iInstructorFormat),ignDist);
             else
             	ic = new InstructorConstraint(instructor.getUniqueId(),instructor.getExternalUniqueId(),instructor.getName(iInstructorFormat),ignDist);
-            ic.setType(instructor.getPositionType()==null?new Long(Long.MAX_VALUE):new Long(instructor.getPositionType().getSortOrder()));
+            ic.setType(instructor.getPositionType()==null?Long.valueOf(Long.MAX_VALUE):Long.valueOf(instructor.getPositionType().getSortOrder()));
     		//loadInstructorAvailability(instructor, ic, hibSession);
 			getModel().addConstraint(ic);
     		iInstructors.put(instructor.getUniqueId(),ic);
@@ -1611,7 +1611,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		}
     	} else if ("SAME_INSTR".equals(type.getReference())) {
     		if (PreferenceLevel.sRequired.equals(pref.getPrefProlog()))
-    			gc = new InstructorConstraint(new Long(-id),null, type.getLabel(),false);
+    			gc = new InstructorConstraint(Long.valueOf(-id),null, type.getLabel(),false);
     	} else if ("SPREAD".equals(type.getReference())) {
     		gc = new SpreadConstraint(getModel().getProperties(), MSG.nameSpreadConstraint());
     	} else if ("MIN_ROOM_USE".equals(type.getReference())) {
@@ -3040,7 +3040,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         		if (totalCourseLimit == 0) continue;
         		
         		if (totalCourseLimit != offeringLimit)
-        			factor = new Double(((double)offeringLimit) / totalCourseLimit);    			
+        			factor = Double.valueOf(((double)offeringLimit) / totalCourseLimit);    			
     		}
     		
     		for (CourseOffering course: offering.getCourseOfferings()) {
@@ -3866,7 +3866,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                         room.getIgnoreTooFar(), room);
                 List<RoomLocation> roomLocations = new ArrayList<RoomLocation>(1); roomLocations.add(roomLocation);
                 Lecture lecture = new Lecture(
-                        new Long(--iFakeLectureId), null, null, time.getEventName(), 
+                        Long.valueOf(--iFakeLectureId), null, null, time.getEventName(), 
                         timeLocations, roomLocations, 1, 
                         new Placement(null,timeLocation,roomLocations), 0, 0, 1.0);
                 lecture.setNote(time.getEventType());
@@ -3962,7 +3962,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 	placement = new Placement(null,timeLocation,(RoomLocation)null);
                 }
                 Lecture lecture = new Lecture(
-                        new Long(--iFakeLectureId), null, null, time.getEventName(), 
+                        Long.valueOf(--iFakeLectureId), null, null, time.getEventName(), 
                         timeLocations, roomLocations, placement.getNrRooms(), 
                         placement, 0, 0, 1.0);
                 lecture.setNote(time.getEventType());

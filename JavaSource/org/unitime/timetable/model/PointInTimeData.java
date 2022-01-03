@@ -91,7 +91,7 @@ public class PointInTimeData extends BasePointInTimeData implements Comparable<O
 		if (cmp != 0) {
 			return(cmp);
 		}
-		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(pitd.getUniqueId() == null ? -1 : pitd.getUniqueId());
+		return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(pitd.getUniqueId() == null ? -1 : pitd.getUniqueId());
 		
 	}
 

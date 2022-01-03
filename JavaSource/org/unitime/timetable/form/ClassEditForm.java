@@ -225,7 +225,7 @@ public class ClassEditForm extends PreferencesForm {
                 String pl = rpl.get(i).toString();
                 if (pl.trim().equalsIgnoreCase("1")) {
                     String roomId = rp.get(i).toString();                    
-                    Location room = new LocationDAO().get(new Long(roomId));
+                    Location room = new LocationDAO().get(Long.valueOf(roomId));
                     int rCap = room.getCapacity().intValue();
                     if(rCap<iRoomCapacity) {
         	            errors.add("roomPref", 

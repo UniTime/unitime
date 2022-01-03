@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringReader;
+import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -34,14 +35,12 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.PropertyConfigurator;
 import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.ifs.util.ProgressWriter;
 import org.dom4j.Document;
@@ -262,7 +261,7 @@ public class SessionRestore implements SessionRestoreInterface {
 		return null;
 	}
 	
-	public void create(TableData.Table table) throws InstantiationException, IllegalAccessException, DocumentException {
+	public void create(TableData.Table table) throws InstantiationException, IllegalAccessException, DocumentException, InvocationTargetException, NoSuchMethodException {
 		ClassMetadata metadata = iHibSessionFactory.getClassMetadata(table.getName());
 		if (metadata == null) {
 			iSkippedTables.put(table.getName(), table);
@@ -288,7 +287,7 @@ public class SessionRestore implements SessionRestoreInterface {
 		iProgress.setPhase(metadata.getEntityName().substring(metadata.getEntityName().lastIndexOf('.') + 1) + " [" + table.getRecordCount() + "]", table.getRecordCount());
 		for (TableData.Record record: table.getRecordList()) {
 			iProgress.incProgress();
-			Object object = metadata.getMappedClass().newInstance();
+			Object object = metadata.getMappedClass().getDeclaredConstructor().newInstance();
 			for (String property: metadata.getPropertyNames()) {
 				TableData.Element element = null;
 				for (TableData.Element e: record.getElementList())
@@ -300,7 +299,7 @@ public class SessionRestore implements SessionRestoreInterface {
 				Type type = metadata.getPropertyType(property);
 				if (type instanceof PrimitiveType) {
 					if (type instanceof BooleanType) {
-						value = new Boolean("true".equals(element.getValue(0)));
+						value = Boolean.valueOf("true".equals(element.getValue(0)));
 					} else if (type instanceof ByteType) {
 						value = Byte.valueOf(element.getValue(0));
 					} else if (type instanceof CharacterType) {
@@ -458,7 +457,7 @@ public class SessionRestore implements SessionRestoreInterface {
 		}
 		if (entity.getObject() instanceof ItypeDesc) {
 			ItypeDesc itype = (ItypeDesc)entity.getObject();
-			itype.setItype(new Integer(entity.getId()));
+			itype.setItype(Integer.valueOf(entity.getId()));
 		}
 		if (entity.getObject() instanceof DistributionType) {
 			int maxReqId = ((Number)iHibSession.createQuery("select max(requirementId) from DistributionType").uniqueResult()).intValue();
@@ -471,7 +470,7 @@ public class SessionRestore implements SessionRestoreInterface {
 	}
 	
 	
-	public void restore(InputStream input, BackupProgress progress) throws IOException, InstantiationException, IllegalAccessException, DocumentException {
+	public void restore(InputStream input, BackupProgress progress) throws IOException, InstantiationException, IllegalAccessException, DocumentException, InvocationTargetException, NoSuchMethodException {
 		iIn = input;
         iProgress = progress;
         iHibSession = new _RootDAO().createNewSession();
@@ -669,7 +668,7 @@ public class SessionRestore implements SessionRestoreInterface {
 					Object value = null;
 					if (type instanceof PrimitiveType) {
 						if (type instanceof BooleanType) {
-							value = new Boolean("true".equals(element.getValue(0)));
+							value = Boolean.valueOf("true".equals(element.getValue(0)));
 						} else if (type instanceof ByteType) {
 							value = Byte.valueOf(element.getValue(0));
 						} else if (type instanceof CharacterType) {
@@ -984,24 +983,12 @@ public class SessionRestore implements SessionRestoreInterface {
 	
 	public static void main(String[] args) {
 		try {
-            Properties props = new Properties();
-            props.setProperty("log4j.rootLogger", "DEBUG, A1");
-            props.setProperty("log4j.appender.A1", "org.apache.log4j.ConsoleAppender");
-            props.setProperty("log4j.appender.A1.layout", "org.apache.log4j.PatternLayout");
-            props.setProperty("log4j.appender.A1.layout.ConversionPattern","%-5p %m%n");
-            props.setProperty("log4j.logger.org.hibernate","INFO");
-            props.setProperty("log4j.logger.org.hibernate.cfg","WARN");
-            props.setProperty("log4j.logger.org.hibernate.cache.EhCacheProvider","ERROR");
-            props.setProperty("log4j.logger.org.unitime.commons.hibernate","INFO");
-            props.setProperty("log4j.logger.net","INFO");
-            PropertyConfigurator.configure(props);
-            
             HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
 
             FileInputStream in = new FileInputStream(args[0]);
             
             sLog.info("Using " + ApplicationProperty.SessionRestoreInterface.value());
-            SessionRestore restore = (SessionRestore)Class.forName(ApplicationProperty.SessionRestoreInterface.value()).newInstance();
+            SessionRestore restore = (SessionRestore)Class.forName(ApplicationProperty.SessionRestoreInterface.value()).getDeclaredConstructor().newInstance();
             
             PrintWriter debug = null;
             if (args.length >= 2) {

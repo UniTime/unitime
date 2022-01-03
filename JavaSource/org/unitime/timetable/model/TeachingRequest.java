@@ -180,7 +180,7 @@ public class TeachingRequest extends BaseTeachingRequest implements Comparable<T
 		}
 		if (i2.hasNext()) return -1;
 		if (i1.hasNext()) return 1;
-		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(r.getUniqueId() == null ? -1 : r.getUniqueId());
+		return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(r.getUniqueId() == null ? -1 : r.getUniqueId());
 	}
 	
 	public boolean isCancelled() {

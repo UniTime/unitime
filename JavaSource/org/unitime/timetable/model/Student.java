@@ -198,7 +198,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     public int compareTo(Student student) {
         int cmp = NameFormat.LAST_FIRST.format(this).compareTo(NameFormat.LAST_FIRST.format(student));
         if (cmp!=0) return cmp;
-        return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(student.getUniqueId() == null ? -1 : student.getUniqueId());
+        return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(student.getUniqueId() == null ? -1 : student.getUniqueId());
     }
     
     public static Hashtable<Long,Set<Long>> findConflictingStudents(Long classId, int startSlot, int length, List<Date> dates) {
@@ -268,7 +268,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     }
     
     public void setMaxCreditOverrideStatus(CourseRequestOverrideStatus status) {
-    	setOverrideStatus(status == null ? null : new Integer(status.ordinal()));
+    	setOverrideStatus(status == null ? null : Integer.valueOf(status.ordinal()));
     }
     
     public boolean isRequestApproved() {

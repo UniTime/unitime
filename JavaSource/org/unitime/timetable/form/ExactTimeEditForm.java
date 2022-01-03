@@ -90,16 +90,16 @@ public class ExactTimeEditForm extends ActionForm {
 		return ((ExactTimeMins)iExactTimeMins.elementAt(idx)).getBreakTime().intValue();
 	}
 	public void setMinsPerMtgMin(int idx, int minsPerMtgMin) {
-		((ExactTimeMins)iExactTimeMins.elementAt(idx)).setMinsPerMtgMin(new Integer(minsPerMtgMin));
+		((ExactTimeMins)iExactTimeMins.elementAt(idx)).setMinsPerMtgMin(Integer.valueOf(minsPerMtgMin));
 	}
 	public void setMinsPerMtgMax(int idx, int minsPerMtgMax) {
-		((ExactTimeMins)iExactTimeMins.elementAt(idx)).setMinsPerMtgMax(new Integer(minsPerMtgMax));
+		((ExactTimeMins)iExactTimeMins.elementAt(idx)).setMinsPerMtgMax(Integer.valueOf(minsPerMtgMax));
 	}
 	public void setNrTimeSlots(int idx, int nrTimeSlots) {
-		((ExactTimeMins)iExactTimeMins.elementAt(idx)).setNrSlots(new Integer(nrTimeSlots));
+		((ExactTimeMins)iExactTimeMins.elementAt(idx)).setNrSlots(Integer.valueOf(nrTimeSlots));
 	}
 	public void setBreakTime(int idx, int breakTime) {
-		((ExactTimeMins)iExactTimeMins.elementAt(idx)).setBreakTime(new Integer(breakTime));
+		((ExactTimeMins)iExactTimeMins.elementAt(idx)).setBreakTime(Integer.valueOf(breakTime));
 	}
 }
 

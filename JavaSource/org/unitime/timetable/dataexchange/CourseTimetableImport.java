@@ -362,7 +362,7 @@ public class CourseTimetableImport extends BaseImport {
 					datePattern.setName(datePatternName == null ? "import - " + clazz.getClassLabel() : datePatternName);
 					datePattern.setSession(iSession);
 					datePattern.setPatternBitSet(pattern);
-					datePattern.setType(new Integer(3));
+					datePattern.setType(Integer.valueOf(3));
 					datePattern.setVisible(false);
 					datePattern.setParents(new HashSet<DatePattern>());
 					getHibSession().saveOrUpdate(datePattern);

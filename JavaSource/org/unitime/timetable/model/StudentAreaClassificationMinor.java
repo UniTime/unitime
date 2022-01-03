@@ -36,7 +36,7 @@ public class StudentAreaClassificationMinor extends BaseStudentAreaClassificatio
 		if (cmp != 0) return cmp;
 		cmp = getMinor().getCode().compareTo(m.getMinor().getCode());
 		if (cmp != 0) return cmp;
-		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(m.getUniqueId() == null ? -1 : m.getUniqueId());
+		return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(m.getUniqueId() == null ? -1 : m.getUniqueId());
 	}
 
 }

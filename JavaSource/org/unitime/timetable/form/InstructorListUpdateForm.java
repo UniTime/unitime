@@ -100,7 +100,7 @@ public class InstructorListUpdateForm extends ActionForm {
 		if (httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME) != null) {
 			String deptId = (String) httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME);
 			try {
-				Department d = new DepartmentDAO().get(new Long(deptId));
+				Department d = new DepartmentDAO().get(Long.valueOf(deptId));
 				if (d != null) {
 					setDeptName(d.getName().trim());
 				}

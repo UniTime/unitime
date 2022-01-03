@@ -26,6 +26,8 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.cpsolver.coursett.TimetableLoader;
 import org.cpsolver.coursett.TimetableXMLLoader;
 import org.cpsolver.coursett.model.Lecture;
@@ -47,7 +49,7 @@ import org.unitime.timetable.solver.interactive.SuggestionsModel;
 public class InteractiveTimetablingTest {
     private static java.text.SimpleDateFormat sDateFormat = new java.text.SimpleDateFormat("yyMMdd_HHmmss",java.util.Locale.US);
     private static java.text.DecimalFormat sDoubleFormat = new java.text.DecimalFormat("0.000",new java.text.DecimalFormatSymbols(Locale.US));
-    private static org.apache.log4j.Logger sLogger = org.apache.log4j.Logger.getLogger(InteractiveTimetablingTest.class);
+    private static Log sLogger = LogFactory.getLog(InteractiveTimetablingTest.class);
 
 	public static void main(String[] args) {
         try {

@@ -113,7 +113,7 @@ public class RoomGroupEditAction extends SpringAwareLookupDispatchAction {
 		RoomGroupEditForm roomGroupEditForm = (RoomGroupEditForm) form;
 			
 		//get roomGroup from request
-		Long id =  new Long(Long.parseLong(request.getParameter("id")));	
+		Long id =  Long.valueOf(Long.parseLong(request.getParameter("id")));	
 		roomGroupEditForm.setId(id.toString());
 		RoomGroupDAO rdao = new RoomGroupDAO();
 		RoomGroup rg = rdao.get(id);
@@ -197,7 +197,7 @@ public class RoomGroupEditAction extends SpringAwareLookupDispatchAction {
 			HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 		RoomGroupEditForm roomGroupEditForm = (RoomGroupEditForm) form;
-		Long id = new Long(roomGroupEditForm.getId());
+		Long id = Long.valueOf(roomGroupEditForm.getId());
 		RoomGroupDAO rgdao = new RoomGroupDAO();
 		
 		org.hibernate.Session hibSession = rgdao.getSession();
@@ -301,7 +301,7 @@ public class RoomGroupEditAction extends SpringAwareLookupDispatchAction {
 			HttpServletRequest request, 
 			HttpServletResponse response) throws Exception {
 			
-		Long id = new Long(roomGroupEditForm.getId()); 
+		Long id = Long.valueOf(roomGroupEditForm.getId()); 
 		LocationDAO rdao = new LocationDAO();
 		RoomGroupDAO rgdao = new RoomGroupDAO();
 		RoomGroup rg = rgdao.get(id);

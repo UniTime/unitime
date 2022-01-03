@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.onlinesectioning.custom;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -35,10 +37,10 @@ public class Holder<T> {
 	String iDefaultProvider = null;
 	T iProvider;
 	String iProviderClass;
-	Logger iLog;
+	Log iLog;
 	
 	public Holder(Class<T> name, ApplicationProperty property, Class<? extends T> defaultProvider) {
-		iLog = Logger.getLogger(name);
+		iLog = LogFactory.getLog(name);
 		iName = name.getSimpleName().replaceAll("(?<=[^A-Z])([A-Z])"," $1");
 		iProperty = property;
 		iDefaultProvider = (defaultProvider == null ? null : defaultProvider.getName());

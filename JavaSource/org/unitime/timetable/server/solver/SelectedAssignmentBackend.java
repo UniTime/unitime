@@ -250,7 +250,7 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
         					for (Iterator j=confs.iterator();j.hasNext();) {
         						Placement commitedPlacement = (Placement)j.next();
         						Integer current = (Integer)x.get(commitedPlacement);
-        						x.put(commitedPlacement, new Integer(1 + (current == null ? 0 : current.intValue())));
+        						x.put(commitedPlacement, Integer.valueOf(1 + (current == null ? 0 : current.intValue())));
         					}
         				}
         				committed.put(p, x);
@@ -290,7 +290,7 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
             					for (Iterator j=confs.iterator();j.hasNext();) {
             						Placement commitedPlacement = (Placement)j.next();
             						Integer current = (Integer)x.get(commitedPlacement);
-            						x.put(commitedPlacement, new Integer(1 + (current == null ? 0 : current.intValue())));
+            						x.put(commitedPlacement, Integer.valueOf(1 + (current == null ? 0 : current.intValue())));
             					}
             				}
             				committed.put(p, x);
@@ -514,7 +514,7 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
         public int compare(ClassAssignmentDetails d1, ClassAssignmentDetails d2) {
             int i1 = iOrder.indexOf(d1.getClazz().getClassId());
             int i2 = iOrder.indexOf(d2.getClazz().getClassId());
-            return (new Integer(i1)).compareTo(new Integer(i2));
+            return (Integer.valueOf(i1)).compareTo(Integer.valueOf(i2));
         }
     }
 	

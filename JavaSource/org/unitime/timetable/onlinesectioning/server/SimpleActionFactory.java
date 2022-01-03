@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.onlinesectioning.server;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningActionFactory;
@@ -31,10 +33,18 @@ public class SimpleActionFactory implements OnlineSectioningActionFactory {
 	@Override
 	public <X extends OnlineSectioningAction> X createAction(Class<X> clazz) throws SectioningException {
 		try {
-			return clazz.newInstance();
+			return clazz.getDeclaredConstructor().newInstance();
 		} catch (InstantiationException e) {
 			throw new SectioningException(e.getMessage(), e);
 		} catch (IllegalAccessException e) {
+			throw new SectioningException(e.getMessage(), e);
+		} catch (IllegalArgumentException e) {
+			throw new SectioningException(e.getMessage(), e);
+		} catch (InvocationTargetException e) {
+			throw new SectioningException(e.getMessage(), e);
+		} catch (NoSuchMethodException e) {
+			throw new SectioningException(e.getMessage(), e);
+		} catch (SecurityException e) {
 			throw new SectioningException(e.getMessage(), e);
 		}
 	}

@@ -24,8 +24,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Assignment;
@@ -63,8 +64,7 @@ public class SimpleDefaultPreferences {
 	public static void main(String[] args) {
 		try {
 			// Configure logging
-			BasicConfigurator.configure();
-			Logger log = Logger.getLogger(SimpleDefaultPreferences.class);
+			Log log = LogFactory.getLog(SimpleDefaultPreferences.class);
 			
 			// Configure hibernate
 			HibernateUtil.configureHibernate(ApplicationProperties.getProperties());

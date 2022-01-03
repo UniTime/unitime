@@ -101,7 +101,7 @@ public class StaffImport extends BaseImport {
 				if (externalId != null && externalId.length() > 0) {
 		            if (trimLeadingZerosFromExternalId){
 		            	try {
-		            		Integer num = new Integer(externalId);
+		            		Integer num = Integer.valueOf(externalId);
 		            		externalId = num.toString();
 						} catch (Exception e) {
 							// do nothing

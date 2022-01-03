@@ -169,8 +169,8 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 
 		public MultipleCourseEnrollmentsAuditResult(Object[] result) {
 			super(result);
-			if (result[7] != null) this.studentUniqueId = new Long(result[7].toString());
-			if (result[9] != null) this.subpartId = new Long(result[9].toString());
+			if (result[7] != null) this.studentUniqueId = Long.valueOf(result[7].toString());
+			if (result[9] != null) this.subpartId = Long.valueOf(result[9].toString());
 			findClasses();
 		}
 				

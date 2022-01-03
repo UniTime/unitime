@@ -510,7 +510,7 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
     					times,
     					rooms,
     					new TableCellBoolean(g.isHard()).setFormattedValue(g.isHard() ? MESSAGES.exportTrue() : MESSAGES.exportFalse()),
-    					new TableCellInterface<Double>(g.isDistance() ? new Double(g.getDistance()) : null).setFormattedValue(g.isDistance() ? MESSAGES.reportDistanceInMeter((int)Math.round(g.getDistance())) : ""),
+    					new TableCellInterface<Double>(g.isDistance() ? Double.valueOf(g.getDistance()) : null).setFormattedValue(g.isDistance() ? MESSAGES.reportDistanceInMeter((int)Math.round(g.getDistance())) : ""),
     					new TableCellBoolean(g.isFixed()).setFormattedValue(g.isFixed() ? MESSAGES.exportTrue() : MESSAGES.exportFalse()),
     					new TableCellBoolean(g.isCommited()).setFormattedValue(g.isCommited() ? MESSAGES.exportTrue() : MESSAGES.exportFalse()),
     					new TableCellBoolean(g.isImportant()).setFormattedValue(g.isImportant() ? MESSAGES.exportTrue() : MESSAGES.exportFalse()),

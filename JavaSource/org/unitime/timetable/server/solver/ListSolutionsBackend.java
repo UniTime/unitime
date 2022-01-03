@@ -153,7 +153,7 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
             			hibSession.update(solution);
             	    	String className = ApplicationProperty.ExternalActionSolutionCommit.value();
             	    	if (className != null && !className.isEmpty()) {
-            	    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).newInstance());              	    		
+            	    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).getDeclaredConstructor().newInstance());              	    		
             	    		commitAction.performExternalSolutionCommitAction(touchedSolutionSet, hibSession);
             	    	}
 					}
@@ -177,7 +177,7 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
 						solution.uncommitSolution(hibSession, context.getUser().getExternalUserId());
             			String className = ApplicationProperty.ExternalActionSolutionCommit.value();
             			if (className != null && !className.isEmpty()) {
-            	    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).newInstance());
+            	    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).getDeclaredConstructor().newInstance());
             	    		HashSet<Solution> solutions = new HashSet<Solution>();
             	    		solutions.add(solution);
             	    		commitAction.performExternalSolutionCommitAction(solutions, hibSession);
@@ -196,7 +196,7 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
             				solution.uncommitSolution(hibSession, context.getUser().getExternalUserId());
                 	    	String className = ApplicationProperty.ExternalActionSolutionCommit.value();
                 	    	if (className != null && !className.isEmpty()) {
-                	    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).newInstance());
+                	    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).getDeclaredConstructor().newInstance());
                 	    		HashSet<Solution> solutions = new HashSet<Solution>();
                 	    		solutions.add(solution);
                 	    		commitAction.performExternalSolutionCommitAction(solutions, hibSession);

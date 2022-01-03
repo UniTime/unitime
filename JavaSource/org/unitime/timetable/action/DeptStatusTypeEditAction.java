@@ -111,7 +111,7 @@ public class DeptStatusTypeEditAction extends Action {
                 errors.add("reference", new ActionMessage("errors.invalid", "Unique Id : " + id));
                 saveErrors(request, errors);
             } else {
-                DepartmentStatusType s = (new DepartmentStatusTypeDAO()).get(new Long(id));
+                DepartmentStatusType s = (new DepartmentStatusTypeDAO()).get(Long.valueOf(id));
             	
                 if(s==null) {
                     errors.add("reference", new ActionMessage("errors.invalid", "Unique Id : " + id));
@@ -370,7 +370,7 @@ public class DeptStatusTypeEditAction extends Action {
         		});
         }
         
-        request.setAttribute("DeptStatusType.last", new Integer(statuses.size()-1));
+        request.setAttribute("DeptStatusType.last", Integer.valueOf(statuses.size()-1));
 	    request.setAttribute("DeptStatusType.table", webTable.printTable(WebTable.getOrder(sessionContext,"deptStatusTypes.ord")));
     }	
 }

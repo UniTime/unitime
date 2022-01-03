@@ -114,7 +114,7 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
 		HttpServletResponse response) throws Exception {
 		
 		SessionEditForm sessionEditForm = (SessionEditForm) form;		
-		Long id =  new Long(Long.parseLong(request.getParameter("sessionId")));
+		Long id =  Long.valueOf(Long.parseLong(request.getParameter("sessionId")));
 		Session acadSession = Session.getSessionById(id);
 		
 		sessionContext.checkPermission(acadSession, Right.AcademicSessionEdit);
@@ -163,7 +163,7 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
 			HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 
-		Long id =  new Long(Long.parseLong(request.getParameter("sessionId")));
+		Long id =  Long.valueOf(Long.parseLong(request.getParameter("sessionId")));
 		
         if (id.equals(sessionContext.getUser().getCurrentAcademicSessionId())) {
             ActionMessages errors = new ActionMessages();
@@ -250,7 +250,7 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
 
             if (sessionEditForm.getDefaultDatePatternId()!=null && 
                     sessionEditForm.getDefaultDatePatternId().trim().length()>0) {
-                DatePattern d = new DatePatternDAO().get(new Long(sessionEditForm.getDefaultDatePatternId()));
+                DatePattern d = new DatePatternDAO().get(Long.valueOf(sessionEditForm.getDefaultDatePatternId()));
                 sessn.setDefaultDatePattern(d);
             }
             

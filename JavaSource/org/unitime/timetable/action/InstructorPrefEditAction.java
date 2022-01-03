@@ -151,7 +151,7 @@ public class InstructorPrefEditAction extends PreferencesAction {
             
             // If subpart id is not null - load subpart info
             DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
-            DepartmentalInstructor inst = idao.get(new Long(instructorId));
+            DepartmentalInstructor inst = idao.get(Long.valueOf(instructorId));
             LookupTables.setupInstructorDistribTypes(request, sessionContext, inst);
             
             // Cancel - Go back to Instructors Detail Screen
@@ -251,7 +251,7 @@ public class InstructorPrefEditAction extends PreferencesAction {
             frm.setAvailableTimePatterns(null);
             if(op.equals("init")) {
             	initPrefs(frm, inst, null, true);
-            	timePatterns.add(new TimePattern(new Long(-1)));
+            	timePatterns.add(new TimePattern(Long.valueOf(-1)));
         		//timePatterns.addAll(TimePattern.findApplicable(request,30,false));
             }
             

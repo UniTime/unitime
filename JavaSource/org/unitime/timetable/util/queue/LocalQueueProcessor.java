@@ -30,7 +30,9 @@ import java.util.UUID;
 import javax.activation.DataSource;
 import javax.activation.FileDataSource;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 
 /**
  * 
@@ -39,7 +41,7 @@ import org.apache.log4j.Logger;
  */
 
 public class LocalQueueProcessor extends Thread implements QueueProcessor {
-    protected static Logger sLog = Logger.getLogger(QueueProcessor.class);
+    protected static Log sLog = LogFactory.getLog(QueueProcessor.class);
     protected static long sTimeToKeep = 1000 * 60 * 60 * 10; // Keep done items for at least 10 hours.
     protected static long sTimeToSleep = 1000 * 60 * 60; // Sleep no more than an hour.
 

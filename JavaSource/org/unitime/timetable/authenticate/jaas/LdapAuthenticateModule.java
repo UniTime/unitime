@@ -37,7 +37,8 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.login.LoginException;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.unitime.timetable.ApplicationProperties;
 
 /**
@@ -45,7 +46,7 @@ import org.unitime.timetable.ApplicationProperties;
  */
 @Deprecated
 public class LdapAuthenticateModule extends AuthenticateModule {
-	private static Logger sLog = Logger.getLogger(LdapAuthenticateModule.class);
+	private static Log sLog = LogFactory.getLog(LdapAuthenticateModule.class);
 	private String iExternalUid;
 
 	/**

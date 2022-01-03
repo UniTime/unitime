@@ -111,9 +111,9 @@ public class LastChange extends BodyTagSupport {
                         lastChange.getManager().getShortName(),
                         ChangeLog.sDF.format(lastChange.getTimeStamp())},
                 new Comparable[] {
-                        lastChange.getSourceTitle(), //new Integer(lastChange.getSource().ordinal()),
+                        lastChange.getSourceTitle(), //Integer.valueOf(lastChange.getSource().ordinal()),
                         lastChange.getObjectTitle(),
-                        new Integer(lastChange.getOperation().ordinal()),
+                        Integer.valueOf(lastChange.getOperation().ordinal()),
                         lastChange.getManager().getName(),
                         lastChange.getTimeStamp().getTime()});
         return 1;

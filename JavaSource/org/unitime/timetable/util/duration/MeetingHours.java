@@ -70,8 +70,8 @@ public class MeetingHours extends MeetingCountingDuration {
 		if (hours <= 0 || datePattern == null) return null;
 		if (datePattern.getType() != null && datePattern.getType() == DatePattern.sTypePatternSet) {
 			for (DatePattern child: datePattern.findChildren())
-				return new Integer(Math.round(((float)hours) / child.getEffectiveNumberOfWeeks()));
+				return Integer.valueOf(Math.round(((float)hours) / child.getEffectiveNumberOfWeeks()));
 		}
-		return new Integer(Math.round(((float)hours) / datePattern.getEffectiveNumberOfWeeks()));
+		return Integer.valueOf(Math.round(((float)hours) / datePattern.getEffectiveNumberOfWeeks()));
 	}
 }

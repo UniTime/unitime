@@ -30,7 +30,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.ClassInstructor;
@@ -61,7 +63,7 @@ import com.lowagie.text.DocumentException;
  * @author Tomas Muller
  */
 public class StudentExamReport extends PdfLegacyExamReport {
-    protected static Logger sLog = Logger.getLogger(StudentExamReport.class);
+    protected static Log sLog = LogFactory.getLog(StudentExamReport.class);
     Hashtable<Long,Student> iStudents = null;
     Hashtable<Long,ClassEvent> iClass2event = null;
     Hashtable<Long,Location> iLocations = null;

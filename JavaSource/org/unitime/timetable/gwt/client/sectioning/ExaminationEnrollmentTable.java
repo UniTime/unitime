@@ -413,12 +413,12 @@ public class ExaminationEnrollmentTable extends EnrollmentTable {
 			case 3:
 				return title(o1).compareTo(title(o2));
 			case 4:
-				int cmp = (o1.hasDayOfYear() ? o1.getDayOfYear() : new Integer(-1)).compareTo(o2.hasDayOfYear() ? o2.getDayOfYear() : new Integer(-1));
+				int cmp = (o1.hasDayOfYear() ? o1.getDayOfYear() : Integer.valueOf(-1)).compareTo(o2.hasDayOfYear() ? o2.getDayOfYear() : Integer.valueOf(-1));
 				if (cmp != 0) return cmp;
 			case 5:
-				cmp = (o1.hasStartSlot() ? o1.getStartSlot() : new Integer(-1)).compareTo(o2.hasStartSlot() ? o2.getStartSlot() : new Integer(-1));
+				cmp = (o1.hasStartSlot() ? o1.getStartSlot() : Integer.valueOf(-1)).compareTo(o2.hasStartSlot() ? o2.getStartSlot() : Integer.valueOf(-1));
 				if (cmp != 0) return cmp;
-				return (o1.hasEndSlot() ? o1.getEndSlot() : new Integer(-1)).compareTo(o2.hasEndSlot() ? o2.getEndSlot() : new Integer(-1));
+				return (o1.hasEndSlot() ? o1.getEndSlot() : Integer.valueOf(-1)).compareTo(o2.hasEndSlot() ? o2.getEndSlot() : Integer.valueOf(-1));
 			case 6:
 				return location(o1).compareTo(location(o2));
 			case 7:

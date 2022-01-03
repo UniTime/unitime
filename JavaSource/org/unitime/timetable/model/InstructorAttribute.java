@@ -40,7 +40,7 @@ public class InstructorAttribute extends BaseInstructorAttribute implements Comp
 		if (cmp != 0) return cmp;
 		cmp = getName().compareTo(s.getName());
 		if (cmp != 0) return cmp;
-		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(s.getUniqueId() == null ? -1 : s.getUniqueId());
+		return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(s.getUniqueId() == null ? -1 : s.getUniqueId());
 	}
 	
 	public static List<InstructorAttribute> getAllGlobalAttributes(Long sessionId) throws HibernateException {

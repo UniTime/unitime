@@ -120,13 +120,13 @@ public class DatePatternEditAction extends Action {
 	        if (request.getParameterValues("depts")!=null) {
 	        	String[] depts = request.getParameterValues("depts");
 	        	for (int i=0;i<depts.length;i++)
-	        		myForm.getDepartmentIds().add(new Long(depts[i]));
+	        		myForm.getDepartmentIds().add(Long.valueOf(depts[i]));
 	        }
 	        
 	        if (request.getParameterValues("prnts")!=null) {
 	        	String[] prnts = request.getParameterValues("prnts");
 	        	for (int i=0;i<prnts.length;i++){
-	        		myForm.getParentIds().add(new Long(prnts[i]));
+	        		myForm.getParentIds().add(Long.valueOf(prnts[i]));
 	        	}	        	      
 	        }
 	        
@@ -291,9 +291,9 @@ public class DatePatternEditAction extends Action {
 	                request.setAttribute("DatePatterns.pattern", myForm.getDatePattern(request).getPatternHtml(true, myForm.getUniqueId()));
 	                return mapping.findForward("list");
 	            } else {
-	            	DatePattern pattern = (new DatePatternDAO()).get(new Long(id));
-	            	myForm.setPreviousId(Navigation.getPrevious(sessionContext, Navigation.sInstructionalOfferingLevel, new Long(id)));
-	            	myForm.setNextId(Navigation.getNext(sessionContext, Navigation.sInstructionalOfferingLevel, new Long(id)));
+	            	DatePattern pattern = (new DatePatternDAO()).get(Long.valueOf(id));
+	            	myForm.setPreviousId(Navigation.getPrevious(sessionContext, Navigation.sInstructionalOfferingLevel, Long.valueOf(id)));
+	            	myForm.setNextId(Navigation.getNext(sessionContext, Navigation.sInstructionalOfferingLevel, Long.valueOf(id)));
 	            	
 	                if(pattern==null) {
 	                    errors.add("name", new ActionMessage("errors.invalid", "Unique Id : " + id));
@@ -408,7 +408,7 @@ public class DatePatternEditAction extends Action {
             				int offset = dp.getPatternOffset();
         					for (int x=0;x<dp.getPattern().length();x++) {
                                 if (dp.getPattern().charAt(x)!='1') continue;
-       							days.add(new Integer(x+offset));
+       							days.add(Integer.valueOf(x+offset));
         					}
             			}
 
@@ -423,7 +423,7 @@ public class DatePatternEditAction extends Action {
                 				int offset = xdp.getPatternOffset();
             					for (int x=0;x<xdp.getPattern().length();x++) {
             						if (xdp.getPattern().charAt(x)!='1') continue;
-            						xdays.add(new Integer(x+offset));
+            						xdays.add(Integer.valueOf(x+offset));
             					}
                 			}
 

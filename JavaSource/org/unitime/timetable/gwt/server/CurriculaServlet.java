@@ -33,7 +33,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.RoomLocation;
 import org.cpsolver.ifs.util.ToolBox;
@@ -108,7 +109,7 @@ import org.unitime.timetable.util.NameFormat;
 @Service("curricula.gwt")
 public class CurriculaServlet implements CurriculaService {
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
-	private static Logger sLog = Logger.getLogger(CurriculaServlet.class);
+	private static Log sLog = LogFactory.getLog(CurriculaServlet.class);
 	private static DecimalFormat sDF = new DecimalFormat("0.0");
 	private CourseDetailsProvider iCourseDetailsProvider;
 	
@@ -119,7 +120,7 @@ public class CurriculaServlet implements CurriculaService {
 			try {
 				String providerClass = ApplicationProperty.CustomizationCourseDetails.value();
 				if (providerClass != null)
-					iCourseDetailsProvider = (CourseDetailsProvider)Class.forName(providerClass).newInstance();
+					iCourseDetailsProvider = (CourseDetailsProvider)Class.forName(providerClass).getDeclaredConstructor().newInstance();
 			} catch (Exception e) {
 				sLog.warn("Failed to initialize course detail provider: " + e.getMessage());
 				iCourseDetailsProvider = new DefaultCourseDetailsProvider();
@@ -2662,7 +2663,7 @@ public class CurriculaServlet implements CurriculaService {
 								if (lastLike != null) ll += lastLike;
 							}
 						}
-						rules4default.put(clasf, new Number[] { null, new Integer(ll) });
+						rules4default.put(clasf, new Number[] { null, Integer.valueOf(ll) });
 					}
 					List<MajorInterface> majorsOfArea = majors.get(area.getId());
 					if (majorsOfArea != null)
@@ -2672,7 +2673,7 @@ public class CurriculaServlet implements CurriculaService {
 							rules4area.put(major, rules4major);
 							for (AcademicClassificationInterface clasf: classifications) {
 								Integer lastLike = (clasf2ll == null ? null : clasf2ll.get(clasf.getCode()));
-								rules4major.put(clasf, new Number[] { null, new Integer(lastLike == null ? 0 : lastLike) });
+								rules4major.put(clasf, new Number[] { null, Integer.valueOf(lastLike == null ? 0 : lastLike) });
 							}
 						}
 				}

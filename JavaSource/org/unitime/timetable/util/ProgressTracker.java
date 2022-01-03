@@ -22,7 +22,8 @@ package org.unitime.timetable.util;
 import java.util.Date;
 import java.util.TreeMap;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.LogFactory;
+
 
 public class ProgressTracker {
 	
@@ -113,7 +114,7 @@ public class ProgressTracker {
 	public void logProgressIfNeeded(){
 		String progressString = getProgressStringIfNeeded();
 		if (progressString != null) {
-			Logger.getLogger(cls).info(progressString);	
+			LogFactory.getLog(cls).info(progressString);	
 		}
 	}
 	
@@ -128,7 +129,7 @@ public class ProgressTracker {
 			this.lastPrintedPercent = printPct;		
 			this.previousElapsedTime = timeNow.getTime() - timeOfLastPrint.getTime();
 			this.timeOfLastPrint = timeNow;
-			this.elapseTimeLog.put(new Integer(printPct), new Long(previousElapsedTime));
+			this.elapseTimeLog.put(Integer.valueOf(printPct), Long.valueOf(previousElapsedTime));
 		}
 	
 		return(progressString);
@@ -303,7 +304,7 @@ public class ProgressTracker {
 
 		String analysis = getElapsedTimeAnalysisString();
 		if (analysis != null) {
-			Logger.getLogger(cls).info(analysis);	
+			LogFactory.getLog(cls).info(analysis);	
 		}
 	}
 

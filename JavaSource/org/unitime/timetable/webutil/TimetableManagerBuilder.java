@@ -176,7 +176,7 @@ public class TimetableManagerBuilder {
                     lastChangeStr = (lastChange==null?"&nbsp;":"<span title='"+lastChange.getLabel()+"'>"+lastChange.getSourceTitle()+" ("+lastChange.getOperationTitle()+") on "+ChangeLog.sDFdate.format(lastChange.getTimeStamp())+"</span>");
                 else
                     lastChangeStr = (lastChange==null?"":lastChange.getSourceTitle()+" ("+lastChange.getOperationTitle()+") on "+ChangeLog.sDFdate.format(lastChange.getTimeStamp()));
-                lastChangeCmp = new Long(lastChange==null?0:lastChange.getTimeStamp().getTime());
+                lastChangeCmp = Long.valueOf(lastChange==null?0:lastChange.getTimeStamp().getTime());
             }
 		    
 		    // Add to web table

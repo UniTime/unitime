@@ -90,7 +90,7 @@ public class LastLikeCourseDemandImport extends BaseImport {
 	            String externalId = element.attributeValue("externalId");
 	            if (trimLeadingZerosFromExternalId){
 	            	try {
-	            		Integer num = new Integer(externalId);
+	            		Integer num = Integer.valueOf(externalId);
 	            		externalId = num.toString();
 					} catch (Exception e) {
 						// do nothing
@@ -102,8 +102,8 @@ public class LastLikeCourseDemandImport extends BaseImport {
 	            	student.setFirstName("Unknown");
 	            	student.setLastName("Student");
 	            	student.setExternalUniqueId(externalId);
-	            	student.setFreeTimeCategory(new Integer(0));
-	            	student.setSchedulePreference(new Integer(0));
+	            	student.setFreeTimeCategory(Integer.valueOf(0));
+	            	student.setSchedulePreference(Integer.valueOf(0));
 	            	student.setSession(session);
 	            	getHibSession().save(student);
 	            	getHibSession().flush();

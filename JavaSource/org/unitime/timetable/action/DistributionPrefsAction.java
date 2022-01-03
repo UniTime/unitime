@@ -284,13 +284,13 @@ public class DistributionPrefsAction extends Action {
 
         if (frm.getDistType()!=null && !frm.getDistType().equals(Preference.BLANK_PREF_VALUE)) {
         	Vector prefs = new Vector();
-        	DistributionType dist = (new DistributionTypeDAO().get(new Long(frm.getDistType())));
+        	DistributionType dist = (new DistributionTypeDAO().get(Long.valueOf(frm.getDistType())));
         	frm.setDescription(dist.getDescr());
         	boolean containsPref = false; 
         	for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList()) {
         		if (dist.isAllowed(pref)) {
         			prefs.addElement(pref);
-        			if (frm.getPrefLevel()!=null && !frm.getPrefLevel().equals(Preference.BLANK_PREF_VALUE) && pref.getPrefId().equals(new Integer(frm.getPrefLevel()))) containsPref = true;
+        			if (frm.getPrefLevel()!=null && !frm.getPrefLevel().equals(Preference.BLANK_PREF_VALUE) && pref.getPrefId().equals(Integer.valueOf(frm.getPrefLevel()))) containsPref = true;
         		}
         	}
         	if (!containsPref)
@@ -465,7 +465,7 @@ public class DistributionPrefsAction extends Action {
 		                
 		        		result = new Vector(q.list());
 		        		if(result!=null && result.size()>0) {
-		        			Collections.sort(result, new SchedulingSubpartComparator(subjectAreaId==null || subjectAreaId.length()==0?null:new Long(subjectAreaId)));
+		        			Collections.sort(result, new SchedulingSubpartComparator(subjectAreaId==null || subjectAreaId.length()==0?null:Long.valueOf(subjectAreaId)));
 		        			subpartList = new Vector();
 		        		    for(int i=0; i<result.size(); i++) {
 		        		        SchedulingSubpart a = (SchedulingSubpart)result.get(i);
@@ -569,7 +569,7 @@ public class DistributionPrefsAction extends Action {
  
         // Get distribution pref info
         DistributionPrefDAO dpDao = new DistributionPrefDAO();
-        DistributionPref dp = dpDao.get(new Long(distPrefId));
+        DistributionPref dp = dpDao.get(Long.valueOf(distPrefId));
         frm.setDistType(dp.getDistributionType().getUniqueId().toString());
         frm.setStructure(dp.getStructure());
         frm.setOwner(dp.getOwner().getUniqueId().toString());
@@ -677,7 +677,7 @@ public class DistributionPrefsAction extends Action {
         	tx = hibSession.beginTransaction();
         	
         	if(distPrefId!=null && distPrefId.trim().length()>0) {
-        		Long distPrefUid = new Long(distPrefId);
+        		Long distPrefUid = Long.valueOf(distPrefId);
         		if(distPrefUid.longValue()>0) {
         			dp = dpDao.get(distPrefUid, hibSession);
         			Set s = dp.getDistributionObjects();
@@ -694,7 +694,7 @@ public class DistributionPrefsAction extends Action {
             	}
             } else dp = new DistributionPref();
             
-            dp.setDistributionType(new DistributionTypeDAO().get( new Long(frm.getDistType()), hibSession));
+            dp.setDistributionType(new DistributionTypeDAO().get( Long.valueOf(frm.getDistType()), hibSession));
             dp.setStructure(frm.getStructure());
         	dp.setPrefLevel(PreferenceLevel.getPreferenceLevel( Integer.parseInt(frm.getPrefLevel()) ));
         
@@ -709,7 +709,7 @@ public class DistributionPrefsAction extends Action {
             
 	            // Subpart
     	        if(cl.equals(DistributionPrefsForm.ALL_CLASSES_SELECT)) {
-        	    	SchedulingSubpart subpart = new SchedulingSubpartDAO().get(new Long(su), hibSession);
+        	    	SchedulingSubpart subpart = new SchedulingSubpartDAO().get(Long.valueOf(su), hibSession);
 	            	if (owningDept==null) owningDept = subpart.getManagingDept();
     	        	else if (!owningDept.getUniqueId().equals(subpart.getManagingDept().getUniqueId())) {
     	        		if (owningDept.getDistributionPrefPriority().intValue()<subpart.getManagingDept().getDistributionPrefPriority().intValue())
@@ -726,7 +726,7 @@ public class DistributionPrefsAction extends Action {
             
 	            // Class
     	        else {
-        	    	Class_ clazz = new Class_DAO().get(new Long(cl), hibSession);
+        	    	Class_ clazz = new Class_DAO().get(Long.valueOf(cl), hibSession);
 	            	if (owningDept==null) owningDept = clazz.getManagingDept();
     	        	else if (!owningDept.equals(clazz.getManagingDept())) {
     	        		if (owningDept.getDistributionPrefPriority().intValue()<clazz.getManagingDept().getDistributionPrefPriority().intValue())
@@ -741,7 +741,7 @@ public class DistributionPrefsAction extends Action {
         	    	dObj.setPrefGroup(clazz);
             	}
             
-            	dObj.setSequenceNumber(new Integer(i+1));
+            	dObj.setSequenceNumber(Integer.valueOf(i+1));
             	dObj.setDistributionPref(dp);
             	dObj.getPrefGroup().getDistributionObjects().add(dObj);
             	
@@ -844,7 +844,7 @@ public class DistributionPrefsAction extends Action {
 	            tx = hibSession.beginTransaction();
 	        
             HashSet relatedInstructionalOfferings = new HashSet();
-	        DistributionPref dp = dpDao.get(new Long(distPrefId));
+	        DistributionPref dp = dpDao.get(Long.valueOf(distPrefId));
 	        
 	        sessionContext.checkPermission(dp, Right.DistributionPreferenceDelete);
 	        

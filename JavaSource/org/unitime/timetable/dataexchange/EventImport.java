@@ -69,7 +69,7 @@ public class EventImport extends EventRelatedImports {
         String className = ApplicationProperty.InstructorExternalIdLookupClass.value();
         if (className != null) {
 	        try {
-	        	iLookup = (ExternalUidLookup)Class.forName(className).newInstance();
+	        	iLookup = (ExternalUidLookup)Class.forName(className).getDeclaredConstructor().newInstance();
 	        } catch (Exception e) {
 	        	warn("Unable to instantiate external id lookup: " + e.getMessage(), e);
 	        }
@@ -209,7 +209,7 @@ public class EventImport extends EventRelatedImports {
 		String email = getOptionalStringAttribute(specialEventElement, "email");
 		Boolean requiredAttendance = getOptionalBooleanAttribute(specialEventElement, "attendanceRequired");
 		if (requiredAttendance == null){
-			requiredAttendance = new Boolean(false);
+			requiredAttendance = Boolean.valueOf(false);
 		}
 		
 		CourseEvent event = new CourseEvent();
@@ -280,7 +280,7 @@ public class EventImport extends EventRelatedImports {
 		String approvedDateStr = getOptionalStringAttribute(meetingElement, "approvedDateTime");
 		
 		if (classCanOverride == null){
-			classCanOverride = new Boolean(true);
+			classCanOverride = Boolean.valueOf(true);
 		}
 		
 		TimeObject timeObj = new TimeObject(startTimeStr, endTimeStr, null);
@@ -392,7 +392,7 @@ public class EventImport extends EventRelatedImports {
 		String email = getOptionalStringAttribute(eventContactElement, "email");
 		String phone = getOptionalStringAttribute(eventContactElement, "phone");
 		try {
-		   Long numId = new Long (externalId);
+		   Long numId = Long.valueOf(externalId);
 		   if (numId != null && numId.longValue() > 0){
 			   externalId = numId.toString();
 		   }

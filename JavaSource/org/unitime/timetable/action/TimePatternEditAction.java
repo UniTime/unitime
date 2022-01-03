@@ -94,7 +94,7 @@ public class TimePatternEditAction extends Action {
         if (request.getParameterValues("depts")!=null) {
         	String[] depts = request.getParameterValues("depts");
         	for (int i=0;i<depts.length;i++)
-        		myForm.getDepartmentIds().add(new Long(depts[i]));
+        		myForm.getDepartmentIds().add(Long.valueOf(depts[i]));
         }
 
         if (op==null) {
@@ -202,9 +202,9 @@ public class TimePatternEditAction extends Action {
                 saveErrors(request, errors);
                 return mapping.findForward("list");
             } else {
-            	TimePattern pattern = (new TimePatternDAO()).get(new Long(id));
-            	myForm.setPreviousId(Navigation.getPrevious(sessionContext, Navigation.sInstructionalOfferingLevel, new Long(id)));
-            	myForm.setNextId(Navigation.getNext(sessionContext, Navigation.sInstructionalOfferingLevel, new Long(id)));
+            	TimePattern pattern = (new TimePatternDAO()).get(Long.valueOf(id));
+            	myForm.setPreviousId(Navigation.getPrevious(sessionContext, Navigation.sInstructionalOfferingLevel, Long.valueOf(id)));
+            	myForm.setNextId(Navigation.getNext(sessionContext, Navigation.sInstructionalOfferingLevel, Long.valueOf(id)));
                 if(pattern==null) {
                     errors.add("name", new ActionMessage("errors.invalid", "Unique Id : " + id));
                     saveErrors(request, errors);

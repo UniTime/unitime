@@ -384,7 +384,7 @@ public class EditRoomAction extends Action {
 				RoomDept rd = (RoomDept)i.next();
 				boolean newControl = editRoomForm.getControlDept()!=null && editRoomForm.getControlDept().equals(rd.getDepartment().getUniqueId().toString());
 				if (newControl!=rd.isControl().booleanValue()) {
-					rd.setControl(new Boolean(newControl));
+					rd.setControl(Boolean.valueOf(newControl));
 					hibSession.saveOrUpdate(rd);
 				}
 			}

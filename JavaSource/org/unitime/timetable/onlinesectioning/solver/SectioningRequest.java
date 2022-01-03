@@ -143,7 +143,7 @@ public class SectioningRequest implements LastSectionProvider {
 		return getOldRequest().getOptions(getOldOffering().getOfferingId());
 	}
 	
-	public int hashCode() { return new Long(getRequest().getStudentId()).hashCode(); }
+	public int hashCode() { return Long.valueOf(getRequest().getStudentId()).hashCode(); }
 	
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof SectioningRequest)) return false;

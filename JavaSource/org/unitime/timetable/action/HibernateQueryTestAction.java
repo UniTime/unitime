@@ -19,24 +19,18 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.ByteArrayOutputStream;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.log4j.Appender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.WriterAppender;
+
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -49,11 +43,11 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.engine.jdbc.internal.BasicFormatterImpl;
-import org.hibernate.engine.jdbc.internal.Formatter;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.hql.internal.QueryExecutionRequestException;
+import org.hibernate.hql.internal.ast.ASTQueryTranslatorFactory;
+import org.hibernate.hql.spi.QueryTranslator;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.CollectionType;
 import org.hibernate.type.Type;
@@ -85,8 +79,6 @@ import org.unitime.timetable.webutil.Navigation;
  */
 @Service("/hibernateQueryTest")
 public class HibernateQueryTestAction extends Action {
-	
-	private static Level iOriginalLevel = null;
 	
 	@Autowired SessionContext sessionContext;
 
@@ -177,13 +169,6 @@ public class HibernateQueryTestAction extends Action {
         	return null;
         }
         
-        Logger sqlLog = Logger.getLogger("org.hibernate.SQL");
-        if (iOriginalLevel == null)
-        	iOriginalLevel = sqlLog.getLevel();
-        sqlLog.setLevel(Level.DEBUG);
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        Appender myAppender = new WriterAppender(new PatternLayout("%m%n"), out);
-        sqlLog.addAppender(myAppender);
         frm.setExport(false);
         
         if(errors.size()==0) {
@@ -280,6 +265,16 @@ public class HibernateQueryTestAction extends Action {
 		            hibSession.flush();
 		            HibernateUtil.clearCache();
 		        }
+		        
+		        try {
+		        	String hqlQueryString = q.getQueryString();
+		        	ASTQueryTranslatorFactory queryTranslatorFactory = new ASTQueryTranslatorFactory();
+		        	QueryTranslator queryTranslator = queryTranslatorFactory.createQueryTranslator("", hqlQueryString, java.util.Collections.EMPTY_MAP, (SessionFactoryImplementor) hibSession.getSessionFactory(), null);
+		        	queryTranslator.compile(java.util.Collections.EMPTY_MAP, false);
+		        	request.setAttribute("sql", queryTranslator.getSQLString());
+		        } catch (Exception e) {
+		        	Debug.error(e);
+		        }
             }
             catch (Exception e) {
                 errors.add("query", 
@@ -287,28 +282,6 @@ public class HibernateQueryTestAction extends Action {
                 Debug.error(e);
             }
         }
-        
-        sqlLog.removeAppender(myAppender);
-        sqlLog.setLevel(iOriginalLevel == null ? Level.INFO : iOriginalLevel);
-        out.flush(); out.close();
-        String sql = "";
-        try {
-        for (StringTokenizer stk = new StringTokenizer(new String(out.toByteArray()),"\n");stk.hasMoreTokens();) {
-            String line = (String)stk.nextToken();
-            String comment = null; 
-            if (line.indexOf("/*")>=0 && line.indexOf("/*")<line.indexOf("*/")) {
-                comment = line.substring(line.indexOf("/*")+2, line.indexOf("*/"));
-                line = line.substring(0, line.indexOf("/*")) + line.substring(line.indexOf("*/")+2);
-            }
-            if (sql.length()>0) sql+="<br><br>";
-            if (comment!=null)
-                sql += "<font color='gray'>-- "+comment+"</font>";
-            Formatter f = new BasicFormatterImpl();
-            sql += f.format(line).replaceAll("\n", "<br>").replaceAll(" ", "&nbsp;");
-        }
-        } catch (Exception e) {}
-        if (sql.length()>0)
-            request.setAttribute("sql",sql);
         
         String url = "hibernateQueryTest.do?query="+URLEncoder.encode(frm.getQuery(), "utf-8")+"&start="+frm.getStart()+"&op=Back";
         if (url.length() <= 2000) {

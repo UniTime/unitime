@@ -63,8 +63,8 @@ public class SemesterMinutes extends MinutesPerWeek {
 		if (semesterMinutes <= 0 || datePattern == null) return null;
 		if (datePattern.getType() != null && datePattern.getType() == DatePattern.sTypePatternSet) {
 			for (DatePattern child: datePattern.findChildren())
-				return new Integer(Math.round(semesterMinutes / (50f * child.getEffectiveNumberOfWeeks())));
+				return Integer.valueOf(Math.round(semesterMinutes / (50f * child.getEffectiveNumberOfWeeks())));
 		}
-		return new Integer(Math.round(semesterMinutes / (50f * datePattern.getEffectiveNumberOfWeeks())));
+		return Integer.valueOf(Math.round(semesterMinutes / (50f * datePattern.getEffectiveNumberOfWeeks())));
 	}
 }

@@ -706,7 +706,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 			}
 			
 			SpecialRegistrationVariableCredit change = new SpecialRegistrationVariableCredit(iVarCredit);
-			change.setOriginalCredit(iClass.getCreditHour() != null ? iClass.getCreditHour() : iClass.getCredit() != null ? new Float(iClass.guessCreditCount()) : null);
+			change.setOriginalCredit(iClass.getCreditHour() != null ? iClass.getCreditHour() : iClass.getCredit() != null ? Float.valueOf(iClass.guessCreditCount()) : null);
 			change.setCredit(Float.valueOf(credit));
 			return change;
 		}

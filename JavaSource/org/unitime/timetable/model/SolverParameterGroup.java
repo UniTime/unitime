@@ -97,5 +97,5 @@ public class SolverParameterGroup extends BaseSolverParameterGroup {
 	}
 
 	public SolverParameterGroup.SolverType getSolverType() { return getType() == null ? null : SolverParameterGroup.SolverType.values()[getType()]; }
-	public void setSolverType(SolverParameterGroup.SolverType type) { setType(type == null ? null : new Integer(type.ordinal())); }
+	public void setSolverType(SolverParameterGroup.SolverType type) { setType(type == null ? null : Integer.valueOf(type.ordinal())); }
 }

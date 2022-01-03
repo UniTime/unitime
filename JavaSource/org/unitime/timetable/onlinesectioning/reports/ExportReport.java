@@ -28,7 +28,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 
 import com.google.protobuf.CodedOutputStream;
@@ -38,7 +40,7 @@ import com.google.protobuf.TextFormat;
  * @author Tomas Muller
  */
 public class ExportReport implements OnlineSectioningReport.Report {
-	protected static Logger sLog = Logger.getLogger(ExportReport.class);
+	protected static Log sLog = LogFactory.getLog(ExportReport.class);
 	private CodedOutputStream iOut = null;
 	private PrintWriter iPrint = null;
 	

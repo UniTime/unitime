@@ -120,7 +120,7 @@ public class InstructionalOfferingShowSearchAction extends Action {
 					}
 					ids.append("&subjectAreaIds="+id);
 					subjIds.append(id);
-					names.append(((new SubjectAreaDAO()).get(new Long(id))).getSubjectAreaAbbreviation());
+					names.append(((new SubjectAreaDAO()).get(Long.valueOf(id))).getSubjectAreaAbbreviation());
 				}
 				
 
@@ -172,7 +172,7 @@ public class InstructionalOfferingShowSearchAction extends Action {
 							request, 
 							"instructionalOfferingSearch.do?doit=Search&loadInstrFilter=1&subjectAreaIds="+frm.getSubjectAreaIds()[0]+"&courseNbr="+frm.getCourseNbr(), 
 							"Instructional Offerings ("+
-								(frm.getSubjectAreaAbbv()==null?((new SubjectAreaDAO()).get(new Long(frm.getSubjectAreaIds()[0]))).getSubjectAreaAbbreviation():frm.getSubjectAreaAbbv())+
+								(frm.getSubjectAreaAbbv()==null?((new SubjectAreaDAO()).get(Long.valueOf(frm.getSubjectAreaIds()[0]))).getSubjectAreaAbbreviation():frm.getSubjectAreaAbbv())+
 								(frm.getCourseNbr()==null || frm.getCourseNbr().length()==0?"":" "+frm.getCourseNbr())+
 								")", 
 							true, true);

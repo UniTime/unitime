@@ -63,7 +63,7 @@ public class ExamDistributionPrefsForm extends ActionForm {
 	private String filterCourseNbr;
 	
     protected DynamicListObjectFactory factory = new DynamicListObjectFactory() {
-        public Object create() { return new Long(-1); }
+        public Object create() { return Long.valueOf(-1); }
     };
 
     public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {

@@ -70,7 +70,7 @@ public class RoomCookie {
 				}
 				while (idx < params.length) {
 					String[] x = params[idx++].split(":");
-					iFutures.put(Long.valueOf(x[0]), new Integer(x[1]));
+					iFutures.put(Long.valueOf(x[0]), Integer.valueOf(x[1]));
 				}
 			}
 		} catch (Exception e) {

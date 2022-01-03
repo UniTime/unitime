@@ -675,7 +675,7 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 					null);
 		}
         if (instructor.getPositionType()!=null)
-            model.setType(new Long(instructor.getPositionType().getSortOrder()));
+            model.setType(Long.valueOf(instructor.getPositionType().getSortOrder()));
     	
     	return model;
     }

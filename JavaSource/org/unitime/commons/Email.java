@@ -37,7 +37,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 public abstract class Email {
 
 	public static Email createEmail() throws Exception {
-		return (Email)Class.forName(ApplicationProperty.EmailProvider.value()).newInstance();
+		return (Email)Class.forName(ApplicationProperty.EmailProvider.value()).getDeclaredConstructor().newInstance();
 	}
 	
 	public abstract void setSubject(String subject) throws Exception;

@@ -138,7 +138,7 @@ public class TimePatternEditForm extends ActionForm {
 	}
 
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		iOp = null; iUniqueId = new Long(-1); iType = TimePattern.sTypes[0]; iNrMtgs = ""; iMinPerMtg = ""; iSlotsPerMtg = "";
+		iOp = null; iUniqueId = Long.valueOf(-1); iType = TimePattern.sTypes[0]; iNrMtgs = ""; iMinPerMtg = ""; iSlotsPerMtg = "";
 		iDayCodes = ""; iStartTimes = ""; iEditable = false; iVisible = false; iName = ""; iBreakTime = "";
 		iDepartmentId = null; iDepartmentIds.clear();
 		iPreviousId = null; iNextId = null;
@@ -172,13 +172,13 @@ public class TimePatternEditForm extends ActionForm {
 	
 	public void update(TimePattern tp, org.hibernate.Session hibSession) throws Exception {
 		tp.setName(getName());
-		tp.setVisible(new Boolean(getVisible()));
-		tp.setType(new Integer(getTypeInt()));
-		tp.setBreakTime(new Integer(getBreakTime()));
+		tp.setVisible(Boolean.valueOf(getVisible()));
+		tp.setType(Integer.valueOf(getTypeInt()));
+		tp.setBreakTime(Integer.valueOf(getBreakTime()));
 		if (getEditable()) {
-			tp.setMinPerMtg(new Integer(getMinPerMtg()));
-			tp.setNrMeetings(new Integer(getNrMtgs()));
-			tp.setSlotsPerMtg(new Integer(getSlotsPerMtg()));
+			tp.setMinPerMtg(Integer.valueOf(getMinPerMtg()));
+			tp.setNrMeetings(Integer.valueOf(getNrMtgs()));
+			tp.setSlotsPerMtg(Integer.valueOf(getSlotsPerMtg()));
 			for (Iterator i=tp.getTimes().iterator();i.hasNext();) {
 				TimePatternTime t = (TimePatternTime)i.next();
 				hibSession.delete(t);
@@ -231,12 +231,12 @@ public class TimePatternEditForm extends ActionForm {
 	public TimePattern create(SessionContext context, org.hibernate.Session hibSession) throws Exception {
 		TimePattern tp = new TimePattern();
 		tp.setName(getName());
-		tp.setVisible(new Boolean(getVisible()));
-		tp.setType(new Integer(getTypeInt()));
-		tp.setMinPerMtg(new Integer(getMinPerMtg()));
-		tp.setNrMeetings(new Integer(getNrMtgs()));
-		tp.setBreakTime(new Integer(getBreakTime()));
-		tp.setSlotsPerMtg(new Integer(getSlotsPerMtg()));
+		tp.setVisible(Boolean.valueOf(getVisible()));
+		tp.setType(Integer.valueOf(getTypeInt()));
+		tp.setMinPerMtg(Integer.valueOf(getMinPerMtg()));
+		tp.setNrMeetings(Integer.valueOf(getNrMtgs()));
+		tp.setBreakTime(Integer.valueOf(getBreakTime()));
+		tp.setSlotsPerMtg(Integer.valueOf(getSlotsPerMtg()));
 		tp.setTimes(str2startSlots(getStartTimes(),"\n, "));
 		tp.setDays(str2dayCodes(getDayCodes(),"\n, "));
 		tp.setSession(SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId(), hibSession));
@@ -421,7 +421,7 @@ public class TimePatternEditForm extends ActionForm {
 					throw new Exception("Days '"+token+"' invalid -- wrong number of days.");
 			} catch (NumberFormatException e) {}
 			TimePatternDays days = new TimePatternDays();
-			days.setDayCode(new Integer(dayCode));
+			days.setDayCode(Integer.valueOf(dayCode));
 			if (ret.contains(days))
 				throw new Exception("Days '"+token+"' included more than once.");
 			ret.add(days);
@@ -458,7 +458,7 @@ public class TimePatternEditForm extends ActionForm {
 			if (slot<0)
 				throw new Exception("Invalid time '"+token+"'.");
 			TimePatternTime time = new TimePatternTime();
-			time.setStartSlot(new Integer(slot));
+			time.setStartSlot(Integer.valueOf(slot));
 			if (ret.contains(time))
 				throw new Exception("Time '"+token+"' included more than once.");
 			ret.add(time);
@@ -468,14 +468,14 @@ public class TimePatternEditForm extends ActionForm {
 	
 	public String getExample() {
 		try {
-			TimePattern tp = new TimePattern(new Long(Long.MAX_VALUE));
+			TimePattern tp = new TimePattern(Long.valueOf(Long.MAX_VALUE));
 			tp.setName(getName());
-			tp.setVisible(new Boolean(getVisible()));
-			tp.setType(new Integer(getTypeInt()));
-			tp.setMinPerMtg(new Integer(getMinPerMtg()));
-			tp.setNrMeetings(new Integer(getNrMtgs()));
-			tp.setBreakTime(new Integer(getBreakTime()));
-			tp.setSlotsPerMtg(new Integer(getSlotsPerMtg()));
+			tp.setVisible(Boolean.valueOf(getVisible()));
+			tp.setType(Integer.valueOf(getTypeInt()));
+			tp.setMinPerMtg(Integer.valueOf(getMinPerMtg()));
+			tp.setNrMeetings(Integer.valueOf(getNrMtgs()));
+			tp.setBreakTime(Integer.valueOf(getBreakTime()));
+			tp.setSlotsPerMtg(Integer.valueOf(getSlotsPerMtg()));
 			tp.setTimes(str2startSlots(getStartTimes(),"\n, "));
 			tp.setDays(str2dayCodes(getDayCodes(),"\n, "));
 			if (tp.getTimes().isEmpty() || tp.getDays().isEmpty()) return null;

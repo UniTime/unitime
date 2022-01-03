@@ -353,7 +353,7 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
     		try {
             	String className = ApplicationProperty.ExternalActionInstrOfferingConfigAssignInstructors.value();
             	if (className != null && className.trim().length() > 0) {
-            			ExternalInstrOfferingConfigAssignInstructorsAction assignAction = (ExternalInstrOfferingConfigAssignInstructorsAction) (Class.forName(className).newInstance());
+            			ExternalInstrOfferingConfigAssignInstructorsAction assignAction = (ExternalInstrOfferingConfigAssignInstructorsAction) (Class.forName(className).getDeclaredConstructor().newInstance());
             			for (InstrOfferingConfig ioc: updateConfigs)
             				assignAction.performExternalInstrOfferingConfigAssignInstructorsAction(ioc, hibSession);
             	}
@@ -366,7 +366,7 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
     		try {
             	String className = ApplicationProperty.ExternalActionCourseOfferingEdit.value();
             	if (className != null && className.trim().length() > 0) {
-            			ExternalCourseOfferingEditAction editAction = (ExternalCourseOfferingEditAction) (Class.forName(className).newInstance());
+            			ExternalCourseOfferingEditAction editAction = (ExternalCourseOfferingEditAction) (Class.forName(className).getDeclaredConstructor().newInstance());
             			editAction.performExternalCourseOfferingEditAction(offering, hibSession);
             	}
     		} catch (Exception e) {

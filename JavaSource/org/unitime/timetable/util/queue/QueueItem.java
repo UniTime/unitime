@@ -26,7 +26,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.jgroups.Address;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
@@ -194,7 +194,7 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 
 	@Override
 	public boolean isDebugEnabled() {
-		return Logger.getLogger(getClass()).isDebugEnabled();
+		return LogManager.getLogger(getClass()).isDebugEnabled();
 	}
 
 	@Override
@@ -209,12 +209,12 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 
 	@Override
 	public boolean isInfoEnabled() {
-		return Logger.getLogger(getClass()).isInfoEnabled();
+		return LogManager.getLogger(getClass()).isInfoEnabled();
 	}
 
 	@Override
 	public boolean isTraceEnabled() {
-		return Logger.getLogger(getClass()).isTraceEnabled();
+		return LogManager.getLogger(getClass()).isTraceEnabled();
 	}
 
 	@Override
@@ -224,7 +224,7 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 
 	@Override
 	public void trace(Object message) {
-		Logger.getLogger(getClass()).trace(message);
+		LogManager.getLogger(getClass()).trace(message);
 		synchronized (iLog) {
 			iLog.add(new QueueMessage(QueueMessage.Level.TRACE, message));
 		}
@@ -232,7 +232,7 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 
 	@Override
 	public void trace(Object message, Throwable t) {
-		Logger.getLogger(getClass()).trace(message, t);
+		LogManager.getLogger(getClass()).trace(message, t);
 		synchronized (iLog) {
 			iLog.add(new QueueMessage(QueueMessage.Level.TRACE, message, t));
 		}
@@ -240,7 +240,7 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 
 	@Override
 	public void debug(Object message) {
-		Logger.getLogger(getClass()).debug(message);
+		LogManager.getLogger(getClass()).debug(message);
 		synchronized (iLog) {
 			iLog.add(new QueueMessage(QueueMessage.Level.DEBUG, message));
 		}
@@ -248,7 +248,7 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 
 	@Override
 	public void debug(Object message, Throwable t) {
-		Logger.getLogger(getClass()).debug(message, t);
+		LogManager.getLogger(getClass()).debug(message, t);
 		synchronized (iLog) {
 			iLog.add(new QueueMessage(QueueMessage.Level.DEBUG, message, t));
 		}
@@ -256,7 +256,7 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 
 	@Override
 	public void info(Object message) {
-		Logger.getLogger(getClass()).info(message);
+		LogManager.getLogger(getClass()).info(message);
 		synchronized (iLog) {
 			iLog.add(new QueueMessage(QueueMessage.Level.INFO, message));
 		}
@@ -264,7 +264,7 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 
 	@Override
 	public void info(Object message, Throwable t) {
-		Logger.getLogger(getClass()).info(message, t);
+		LogManager.getLogger(getClass()).info(message, t);
 		synchronized (iLog) {
 			iLog.add(new QueueMessage(QueueMessage.Level.INFO, message, t));
 		}
@@ -272,7 +272,7 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 
 	@Override
 	public void warn(Object message) {
-		Logger.getLogger(getClass()).warn(message);
+		LogManager.getLogger(getClass()).warn(message);
 		synchronized (iLog) {
 			iLog.add(new QueueMessage(QueueMessage.Level.WARN, message));
 		}
@@ -280,7 +280,7 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 
 	@Override
 	public void warn(Object message, Throwable t) {
-		Logger.getLogger(getClass()).warn(message, t);
+		LogManager.getLogger(getClass()).warn(message, t);
 		synchronized (iLog) {
 			iLog.add(new QueueMessage(QueueMessage.Level.WARN, message, t));
 		}
@@ -288,7 +288,7 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 
 	@Override
 	public void error(Object message) {
-		Logger.getLogger(getClass()).error(message);
+		LogManager.getLogger(getClass()).error(message);
 		synchronized (iLog) {
 			iLog.add(new QueueMessage(QueueMessage.Level.ERROR, message));
 		}
@@ -296,7 +296,7 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 
 	@Override
 	public void error(Object message, Throwable t) {
-		Logger.getLogger(getClass()).error(message, t);
+		LogManager.getLogger(getClass()).error(message, t);
 		synchronized (iLog) {
 			iLog.add(new QueueMessage(QueueMessage.Level.ERROR, message, t));
 		}
@@ -304,7 +304,7 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 
 	@Override
 	public void fatal(Object message) {
-		Logger.getLogger(getClass()).fatal(message);
+		LogManager.getLogger(getClass()).fatal(message);
 		synchronized (iLog) {
 			iLog.add(new QueueMessage(QueueMessage.Level.FATAL, message));
 		}
@@ -312,7 +312,7 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 
 	@Override
 	public void fatal(Object message, Throwable t) {
-		Logger.getLogger(getClass()).fatal(message, t);
+		LogManager.getLogger(getClass()).fatal(message, t);
 		synchronized (iLog) {
 			iLog.add(new QueueMessage(QueueMessage.Level.FATAL, message, t));
 		}

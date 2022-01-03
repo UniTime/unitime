@@ -634,7 +634,7 @@ public class WebTable {
             context.setAttribute(SessionAttribute.TableOrder, orderInfo);
         } 
         if (order!=null) orderInfo.put(code,Integer.valueOf(order));
-        else if (!orderInfo.containsKey(code)) orderInfo.put(code,new Integer(defOrder));
+        else if (!orderInfo.containsKey(code)) orderInfo.put(code,Integer.valueOf(defOrder));
     }
 
     /** set order (index of ordered column) for given session and table 

@@ -180,7 +180,7 @@ public class UnassignedAction extends Action {
 						new Comparable[] {
 						row,
 						row.getInstructor(),
-						new Integer(row.getNrStudents()),
+						Integer.valueOf(row.getNrStudents()),
 						row.getInitial()});
 				}
 			}
@@ -246,7 +246,7 @@ public class UnassignedAction extends Action {
 					new Comparable[] {
 					row,
 					row.getInstructor(),
-					new Integer(row.getNrStudents()),
+					Integer.valueOf(row.getNrStudents()),
 					row.getInitial()});
 			}
 		}

@@ -28,7 +28,9 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -104,7 +106,7 @@ import org.unitime.timetable.util.Constants;
 public class ReservationServlet implements ReservationService {
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
-	private static Logger sLog = Logger.getLogger(ReservationServlet.class);
+	private static Log sLog = LogFactory.getLog(ReservationServlet.class);
 
 	private @Autowired SessionContext sessionContext;
 	private SessionContext getSessionContext() { return sessionContext; }
@@ -996,7 +998,7 @@ public class ReservationServlet implements ReservationService {
 				
 				String className = ApplicationProperty.ExternalActionCourseOfferingReservationEdit.value();
 		    	if (className != null && !className.trim().isEmpty()){
-		    		ExternalCourseOfferingReservationEditAction editAction = (ExternalCourseOfferingReservationEditAction) Class.forName(className).newInstance();
+		    		ExternalCourseOfferingReservationEditAction editAction = (ExternalCourseOfferingReservationEditAction) Class.forName(className).getDeclaredConstructor().newInstance();
 		    		editAction.performExternalCourseOfferingReservationEditAction(r.getInstructionalOffering(), hibSession);
 		    	}
 		    	
@@ -1044,7 +1046,7 @@ public class ReservationServlet implements ReservationService {
 				
 				String className = ApplicationProperty.ExternalActionCourseOfferingReservationEdit.value();
 		    	if (className != null && !className.trim().isEmpty()){
-		    		ExternalCourseOfferingReservationEditAction editAction = (ExternalCourseOfferingReservationEditAction) Class.forName(className).newInstance();
+		    		ExternalCourseOfferingReservationEditAction editAction = (ExternalCourseOfferingReservationEditAction) Class.forName(className).getDeclaredConstructor().newInstance();
 		    		editAction.performExternalCourseOfferingReservationEditAction(offering, hibSession);
 		    	}
 		    	

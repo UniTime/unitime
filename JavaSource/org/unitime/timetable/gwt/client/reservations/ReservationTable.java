@@ -734,7 +734,7 @@ public class ReservationTable extends Composite {
 				return new Comparator<ReservationInterface>() {
 					@Override
 					public int compare(ReservationInterface r1, ReservationInterface r2) {
-						int cmp = new Integer(r1.getPriority()).compareTo(r2.getPriority());
+						int cmp = Integer.valueOf(r1.getPriority()).compareTo(r2.getPriority());
 						if (cmp != 0) return cmp;
 						return r1.compareTo(r2);
 					}
@@ -743,7 +743,7 @@ public class ReservationTable extends Composite {
 				return new Comparator<ReservationInterface>() {
 					@Override
 					public int compare(ReservationInterface r1, ReservationInterface r2) {
-						int cmp = new Integer(r1.getPriority()).compareTo(r2.getPriority());
+						int cmp = Integer.valueOf(r1.getPriority()).compareTo(r2.getPriority());
 						if (cmp != 0) return cmp;
 						cmp = r1.toString().compareTo(r2.toString());
 						if (cmp != 0) return cmp;
@@ -767,7 +767,7 @@ public class ReservationTable extends Composite {
 				return new Comparator<ReservationInterface>() {
 					@Override
 					public int compare(ReservationInterface r1, ReservationInterface r2) {
-						int cmp = new Integer(r1.getLimit() == null ? Integer.MAX_VALUE : r1.getLimit()).compareTo(r2.getLimit() == null ? Integer.MAX_VALUE : r2.getLimit());
+						int cmp = Integer.valueOf(r1.getLimit() == null ? Integer.MAX_VALUE : r1.getLimit()).compareTo(r2.getLimit() == null ? Integer.MAX_VALUE : r2.getLimit());
 						if (cmp != 0) return -cmp;
 						return r1.compareTo(r2);
 					}
@@ -776,7 +776,7 @@ public class ReservationTable extends Composite {
 				return new Comparator<ReservationInterface>() {
 					@Override
 					public int compare(ReservationInterface r1, ReservationInterface r2) {
-						int cmp = new Integer(r1.getLastLike() == null ? -1 : r1.getLastLike()).compareTo(r2.getLastLike() == null ? -1 : r2.getLastLike());
+						int cmp = Integer.valueOf(r1.getLastLike() == null ? -1 : r1.getLastLike()).compareTo(r2.getLastLike() == null ? -1 : r2.getLastLike());
 						if (cmp != 0) return -cmp;
 						return r1.compareTo(r2);
 					}
@@ -785,7 +785,7 @@ public class ReservationTable extends Composite {
 				return new Comparator<ReservationInterface>() {
 					@Override
 					public int compare(ReservationInterface r1, ReservationInterface r2) {
-						int cmp = new Integer(r1.getProjection() == null ? -1 : r1.getProjection()).compareTo(r2.getProjection() == null ? -1 : r2.getProjection());
+						int cmp = Integer.valueOf(r1.getProjection() == null ? -1 : r1.getProjection()).compareTo(r2.getProjection() == null ? -1 : r2.getProjection());
 						if (cmp != 0) return -cmp;
 						return r1.compareTo(r2);
 					}
@@ -794,7 +794,7 @@ public class ReservationTable extends Composite {
 				return new Comparator<ReservationInterface>() {
 					@Override
 					public int compare(ReservationInterface r1, ReservationInterface r2) {
-						int cmp = new Integer(r1.getEnrollment() == null ? -1 : r1.getEnrollment()).compareTo(r2.getEnrollment() == null ? -1 : r2.getEnrollment());
+						int cmp = Integer.valueOf(r1.getEnrollment() == null ? -1 : r1.getEnrollment()).compareTo(r2.getEnrollment() == null ? -1 : r2.getEnrollment());
 						if (cmp != 0) return -cmp;
 						return r1.compareTo(r2);
 					}
@@ -803,7 +803,7 @@ public class ReservationTable extends Composite {
 				return new Comparator<ReservationInterface>() {
 					@Override
 					public int compare(ReservationInterface r1, ReservationInterface r2) {
-						int cmp = new Long(r1.getExpirationDate() == null ? Long.MAX_VALUE : r1.getExpirationDate().getTime()).compareTo(r2.getExpirationDate() == null ? Long.MAX_VALUE : r2.getExpirationDate().getTime());
+						int cmp = Long.valueOf(r1.getExpirationDate() == null ? Long.MAX_VALUE : r1.getExpirationDate().getTime()).compareTo(r2.getExpirationDate() == null ? Long.MAX_VALUE : r2.getExpirationDate().getTime());
 						if (cmp != 0) return cmp;
 						return r1.compareTo(r2);
 					}
@@ -812,7 +812,7 @@ public class ReservationTable extends Composite {
 				return new Comparator<ReservationInterface>() {
 					@Override
 					public int compare(ReservationInterface r1, ReservationInterface r2) {
-						int cmp = new Long(r1.getStartDate() == null ? Long.MIN_VALUE : r1.getStartDate().getTime()).compareTo(r2.getStartDate() == null ? Long.MIN_VALUE : r2.getStartDate().getTime());
+						int cmp = Long.valueOf(r1.getStartDate() == null ? Long.MIN_VALUE : r1.getStartDate().getTime()).compareTo(r2.getStartDate() == null ? Long.MIN_VALUE : r2.getStartDate().getTime());
 						if (cmp != 0) return cmp;
 						return r1.compareTo(r2);
 					}

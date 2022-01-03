@@ -27,7 +27,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.restlet.Client;
@@ -101,7 +103,7 @@ import com.google.gson.JsonSerializer;
  * @author Tomas Muller
  */
 public class SimplifiedCourseRequestsValidationProvider implements CourseRequestsValidationProvider, StudentHoldsCheckProvider, AdvisorCourseRequestsValidationProvider {
-	private static Logger sLog = Logger.getLogger(SimplifiedCourseRequestsValidationProvider.class);
+	private static Log sLog = LogFactory.getLog(SimplifiedCourseRequestsValidationProvider.class);
 	private static StudentSectioningMessages MESSAGES = Localization.create(StudentSectioningMessages.class);
 	protected static final StudentSectioningConstants CONSTANTS = Localization.create(StudentSectioningConstants.class);
 	protected static Format<Number> sCreditFormat = Formats.getNumberFormat("0.##");

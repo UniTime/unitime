@@ -134,7 +134,7 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 				getSubjectAreaAbbreviation() == null ? "" : getSubjectAreaAbbreviation(),
 				s.getSubjectAreaAbbreviation() == null ? "" : s.getSubjectAreaAbbreviation());
 		if (cmp != 0) return cmp;
-		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(s.getUniqueId() == null ? -1 : s.getUniqueId());
+		return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(s.getUniqueId() == null ? -1 : s.getUniqueId());
 	}
 
 	public String toString() {

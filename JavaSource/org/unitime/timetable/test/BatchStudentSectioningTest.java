@@ -33,8 +33,8 @@ import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.DefaultSingleAssignment;
 import org.cpsolver.ifs.heuristics.BacktrackNeighbourSelection;
@@ -231,7 +231,7 @@ public class BatchStudentSectioningTest {
                 ToolBox.configureLogging();
                 cfg.setProperty("General.Output", System.getProperty("user.home", ".")+File.separator+"Sectioning-Test");
             }
-            Logger.getLogger(BacktrackNeighbourSelection.class).setLevel(cfg.getPropertyBoolean("Debug.BacktrackNeighbourSelection",false)?Level.DEBUG:Level.INFO);
+            Configurator.setLevel(BacktrackNeighbourSelection.class.getName(), cfg.getPropertyBoolean("Debug.BacktrackNeighbourSelection",false)?Level.DEBUG:Level.INFO);
             
             HibernateUtil.configureHibernate(cfg);
             

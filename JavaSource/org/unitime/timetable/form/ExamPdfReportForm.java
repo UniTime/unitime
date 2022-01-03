@@ -24,7 +24,9 @@ import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
@@ -50,7 +52,7 @@ import org.unitime.timetable.util.Formats;
  */
 public class ExamPdfReportForm extends ExamReportForm {
 	private static final long serialVersionUID = 4349609058043519671L;
-	protected static Logger sLog = Logger.getLogger(ExamPdfReportForm.class);
+	protected static Log sLog = LogFactory.getLog(ExamPdfReportForm.class);
     private String[] iReports = null; 
     private String iMode = null;
     private boolean iAll = false;

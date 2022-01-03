@@ -113,7 +113,7 @@ public class RoomFeatureEditAction extends SpringAwareLookupDispatchAction {
 		RoomFeatureEditForm roomFeatureEditForm = (RoomFeatureEditForm) form;
 		
 		//get roomFeature from request
-		Long id =  new Long(Long.parseLong(request.getParameter("id")));
+		Long id =  Long.valueOf(Long.parseLong(request.getParameter("id")));
 		roomFeatureEditForm.setId(id.toString());
 		RoomFeatureDAO rdao = new RoomFeatureDAO();
 		RoomFeature rf = rdao.get(id);
@@ -184,7 +184,7 @@ public class RoomFeatureEditAction extends SpringAwareLookupDispatchAction {
 			HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 		RoomFeatureEditForm roomFeatureEditForm = (RoomFeatureEditForm) form;
-		Long id = new Long(roomFeatureEditForm.getId());
+		Long id = Long.valueOf(roomFeatureEditForm.getId());
 		RoomFeatureDAO rdao = new RoomFeatureDAO();
 		org.hibernate.Session hibSession = rdao.getSession();
 		Transaction tx = null;
@@ -279,7 +279,7 @@ public class RoomFeatureEditAction extends SpringAwareLookupDispatchAction {
 			HttpServletRequest request, 
 			HttpServletResponse response) throws Exception {
 		
-		Long id = new Long(roomFeatureEditForm.getId());
+		Long id = Long.valueOf(roomFeatureEditForm.getId());
 		
 		org.hibernate.Session hibSession = (new RoomFeatureDAO()).getSession();
 		Transaction tx = null;

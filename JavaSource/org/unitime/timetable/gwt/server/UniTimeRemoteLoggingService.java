@@ -25,7 +25,9 @@ import java.util.logging.LogRecord;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 
 import com.google.gwt.core.server.StackTraceDeobfuscator;
 import com.google.gwt.logging.shared.RemoteLoggingService;
@@ -35,7 +37,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
  * @author Tomas Muller
  */
 public class UniTimeRemoteLoggingService extends RemoteServiceServlet implements RemoteLoggingService {
-	private static Logger sLogger = Logger.getLogger(UniTimeRemoteLoggingService.class);
+	private static Log sLogger = LogFactory.getLog(UniTimeRemoteLoggingService.class);
 	private static final long serialVersionUID = 1L;
 	private StackTraceDeobfuscator iDeobfuscator = null;
 	
@@ -52,7 +54,7 @@ public class UniTimeRemoteLoggingService extends RemoteServiceServlet implements
 		try {
 			if (iDeobfuscator != null && record.getThrown() != null)
 				iDeobfuscator.deobfuscateStackTrace(record.getThrown(), getPermutationStrongName());
-			Logger logger = Logger.getLogger(record.getLoggerName());
+			Log logger = LogFactory.getLog(record.getLoggerName());
 			if (record.getLevel().intValue() >= Level.SEVERE.intValue()) {
 				logger.error(record.getMessage(), record.getThrown());
 			} else if (record.getLevel().intValue() >= Level.WARNING.intValue()) {

@@ -107,7 +107,7 @@ public class SolverInfoDefAction extends Action {
             }
             else {
             	SolverInfoDefDAO dao = new SolverInfoDefDAO();
-            	SolverInfoDef info = dao.get(new Long(id));
+            	SolverInfoDef info = dao.get(Long.valueOf(id));
                 if(info==null) {
                     errors.add("name", new ActionMessage("errors.invalid", "Unique Id : " + id));
                     saveErrors(request, errors);

@@ -128,13 +128,13 @@ public class LastChangesAction extends Action {
                     lastChange.getOperationTitle()
                     },
                 new Comparable[] {
-                    new Long(lastChange.getTimeStamp().getTime()),
+                    Long.valueOf(lastChange.getTimeStamp().getTime()),
                     (lastChange.getDepartment()==null?"":lastChange.getDepartment().getDeptCode()),
                     (lastChange.getSubjectArea()==null?"":lastChange.getSubjectArea().getSubjectAreaAbbreviation()),
                     lastChange.getManager().getName(),
-                    lastChange.getSourceTitle(), //new Integer(lastChange.getSource().ordinal()),
+                    lastChange.getSourceTitle(), //Integer.valueOf(lastChange.getSource().ordinal()),
                     lastChange.getObjectTitle(),
-                    new Integer(lastChange.getOperation().ordinal())
+                    Integer.valueOf(lastChange.getOperation().ordinal())
                     });
         return 1;
     }

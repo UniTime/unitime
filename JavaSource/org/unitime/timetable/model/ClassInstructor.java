@@ -64,7 +64,7 @@ public class ClassInstructor extends BaseClassInstructor implements Comparable {
         ClassInstructor i = (ClassInstructor)o;
         int cmp = nameLastNameFirst().compareToIgnoreCase(i.nameLastNameFirst());
         if (cmp!=0) return cmp;
-        return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(i.getUniqueId() == null ? -1 : i.getUniqueId());
+        return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(i.getUniqueId() == null ? -1 : i.getUniqueId());
     }
     
     public String toString(){

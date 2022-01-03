@@ -307,7 +307,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iValidateOverrides = model.getProperties().getPropertyBoolean("Load.ValidateOverrides", iValidateOverrides);
         if ((iValidateOverrides || iCheckOverrideStatus) && ApplicationProperty.CustomizationCourseRequestsValidation.value() != null) {
         	try {
-        		iValidationProvider = ((CourseRequestsValidationProvider)Class.forName(ApplicationProperty.CustomizationCourseRequestsValidation.value()).newInstance());
+        		iValidationProvider = ((CourseRequestsValidationProvider)Class.forName(ApplicationProperty.CustomizationCourseRequestsValidation.value()).getDeclaredConstructor().newInstance());
         	} catch (Exception e) {
         		iProgress.error("Failed to create course request validation provider: " + e.getMessage());
         	}
@@ -316,7 +316,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iCheckCriticalCourses = model.getProperties().getPropertyBoolean("Load.CheckCriticalCourses", iCheckCriticalCourses);
         if (iCheckCriticalCourses && ApplicationProperty.CustomizationCriticalCourses.value() != null) {
         	try {
-        		iCriticalCoursesProvider = ((CriticalCoursesProvider)Class.forName(ApplicationProperty.CustomizationCriticalCourses.value()).newInstance());
+        		iCriticalCoursesProvider = ((CriticalCoursesProvider)Class.forName(ApplicationProperty.CustomizationCriticalCourses.value()).getDeclaredConstructor().newInstance());
         	} catch (Exception e) {
         		iProgress.error("Failed to create critical courses provider: " + e.getMessage());
         	}
@@ -582,7 +582,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         Lecture lecture = new Lecture(c.getUniqueId(), null, c.getSchedulingSubpart().getUniqueId(), c.getClassLabel(iShowClassSuffix, iShowConfigName), times, rooms, rooms.size(), new Placement(null,time,rooms), 0, 0, 1.0);
         lecture.setNote(c.getNotes());
         Placement p = (Placement)lecture.getInitialAssignment();
-        p.setAssignmentId(new Long(iMakeupAssignmentId++));
+        p.setAssignmentId(Long.valueOf(iMakeupAssignmentId++));
         lecture.setBestAssignment(p, 0l);
         iProgress.trace("makup placement for "+c.getClassLabel(iShowClassSuffix, iShowConfigName)+": "+p.getLongName(iUseAmPm));
         return p;

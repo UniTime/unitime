@@ -179,7 +179,7 @@ public class SolverAction extends Action {
     	    if (myForm.getHost() != null)
     	    	config.setProperty("General.Host", myForm.getHost());
     	    config.setProperty("General.SolverGroupId", ownerId);
-    	    config.setProperty("General.StartSolver", new Boolean(start).toString());
+    	    config.setProperty("General.StartSolver", Boolean.valueOf(start).toString());
     	    if (solver == null) {
         	    solver = courseTimetablingSolverService.createSolver(config);
         	} else if (start) {

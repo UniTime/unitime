@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.solver.curricula.students;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.solution.Solution;
 import org.cpsolver.ifs.termination.GeneralTerminationCondition;
 import org.cpsolver.ifs.termination.TerminationCondition;
@@ -28,7 +30,7 @@ import org.cpsolver.ifs.util.DataProperties;
  * @author Tomas Muller
  */
 public class CurTermination implements TerminationCondition<CurVariable, CurValue>{
-    protected static org.apache.log4j.Logger sLogger = org.apache.log4j.Logger.getLogger(GeneralTerminationCondition.class);
+    protected static Log sLogger = LogFactory.getLog(GeneralTerminationCondition.class);
     private int iMaxIter;
     private double iTimeOut;
     private boolean iStopWhenComplete;

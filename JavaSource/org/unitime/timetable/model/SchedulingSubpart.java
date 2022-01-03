@@ -706,7 +706,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 					for (Iterator j=distributionPref.getDistributionObjects().iterator();j.hasNext();) {
 						DistributionObject dObj = (DistributionObject)j.next();
 						if (seqNo.compareTo(dObj.getSequenceNumber())<0) {
-							dObj.setSequenceNumber(new Integer(dObj.getSequenceNumber().intValue()-1));
+							dObj.setSequenceNumber(Integer.valueOf(dObj.getSequenceNumber().intValue()-1));
 							hibSession.saveOrUpdate(dObj);
 						}
 					}

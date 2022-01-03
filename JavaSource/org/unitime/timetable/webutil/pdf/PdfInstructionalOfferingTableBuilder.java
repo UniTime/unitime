@@ -1032,7 +1032,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     			}
     		} else {
     			if (aClass.getRoomRatio() != null){
-    				if (classLimitDisplayed && aClass.getRoomRatio().equals(new Float(1.0))){
+    				if (classLimitDisplayed && aClass.getRoomRatio().equals(1f)){
     					addText(cell, "", false, false, Element.ALIGN_RIGHT, color, true);
     				} else {
     					addText(cell, sRoomRatioFormat.format(aClass.getRoomRatio().floatValue()), false, false, Element.ALIGN_RIGHT, color, true);

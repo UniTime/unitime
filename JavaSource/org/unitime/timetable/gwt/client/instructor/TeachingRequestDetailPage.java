@@ -797,7 +797,7 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 							@Override
 							public void onSuccess(TeachingRequestInfo result) {
 								InstructorInfo instructor = result.getInstructor(iInstructor.getInstructorId());
-								populate(result, instructor == null ? null : new Integer(instructor.getAssignmentIndex()), null);
+								populate(result, instructor == null ? null : Integer.valueOf(instructor.getAssignmentIndex()), null);
 							}
 						});
 						return;

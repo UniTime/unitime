@@ -25,7 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
@@ -43,7 +45,7 @@ import org.unitime.timetable.util.NameFormat;
  * @author Tomas Muller
  */
 public class PurdueVariableTitleCourseProvider implements VariableTitleCourseProvider {
-	private static Logger sLog = Logger.getLogger(PurdueVariableTitleCourseProvider.class);
+	private static Log sLog = LogFactory.getLog(PurdueVariableTitleCourseProvider.class);
 	private ExternalTermProvider iExternalTermProvider;
 	
 	public PurdueVariableTitleCourseProvider() {

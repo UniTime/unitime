@@ -191,7 +191,7 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 					}
 				ids.append("&subjectAreaIds="+classListForm.getSubjectAreaIds()[i]);
 				subjIds.append(classListForm.getSubjectAreaIds()[i]);
-				names.append(((new SubjectAreaDAO()).get(new Long(classListForm.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
+				names.append(((new SubjectAreaDAO()).get(Long.valueOf(classListForm.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
 			}
 			sessionContext.setAttribute(SessionAttribute.ClassesSubjectAreas, subjIds);
 			sessionContext.setAttribute(SessionAttribute.ClassesCourseNumber, classListForm.getCourseNbr());

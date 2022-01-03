@@ -151,7 +151,7 @@ public class InstructorSchedulingBackendHelper {
 				TimePref tp = (TimePref)p;
 				info.setAvailability(tp.getPreference());
 				for (Preference<TimeLocation> pf: loadTimePreferences((TimePref)p)) {
-					PreferenceInfo pi = new PreferenceInfo(new Long(pf.getTarget().hashCode()), pf.getTarget().getLongName(CONSTANTS.useAmPm()), Constants.preferenceLevel2preference(pf.getPreference()));
+					PreferenceInfo pi = new PreferenceInfo(Long.valueOf(pf.getTarget().hashCode()), pf.getTarget().getLongName(CONSTANTS.useAmPm()), Constants.preferenceLevel2preference(pf.getPreference()));
 					pi.setComparable(String.format("%03d:%05d", pf.getTarget().getDayCode(), pf.getTarget().getStartSlot()));
 					info.addTimePreference(pi);
 					for (Enumeration<Integer> i = pf.getTarget().getSlots(); i.hasMoreElements(); ) {
@@ -350,7 +350,7 @@ public class InstructorSchedulingBackendHelper {
 				TimePref tp = (TimePref)p;
 				info.setAvailability(tp.getPreference());
 				for (Preference<TimeLocation> pf: loadTimePreferences((TimePref)p)) {
-					PreferenceInfo pi = new PreferenceInfo(new Long(-pf.getTarget().hashCode()), pf.getTarget().getLongName(CONSTANTS.useAmPm()), Constants.preferenceLevel2preference(pf.getPreference()));
+					PreferenceInfo pi = new PreferenceInfo(Long.valueOf(-pf.getTarget().hashCode()), pf.getTarget().getLongName(CONSTANTS.useAmPm()), Constants.preferenceLevel2preference(pf.getPreference()));
 					pi.setComparable(String.format("%03d:%05d", pf.getTarget().getDayCode(), pf.getTarget().getStartSlot()));
 					info.addTimePreference(pi);
 					for (Enumeration<Integer> i = pf.getTarget().getSlots(); i.hasMoreElements(); ) {

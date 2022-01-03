@@ -201,7 +201,7 @@ public class InstructorDetailAction extends PreferencesAction {
 	        
 	        // If subpart id is not null - load subpart info
 	        DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
-	        DepartmentalInstructor inst = idao.get(new Long(instructorId));
+	        DepartmentalInstructor inst = idao.get(Long.valueOf(instructorId));
 	        LookupTables.setupInstructorDistribTypes(request, sessionContext, inst);
 	        
 	        //Edit Information - Redirect to info edit screen
@@ -507,7 +507,7 @@ public class InstructorDetailAction extends PreferencesAction {
 		        Set timePatterns = new HashSet();
 		        frm.setAvailableTimePatterns(null);
 		        initPrefs(frm, inst, null, false);
-		        timePatterns.add(new TimePattern(new Long(-1)));
+		        timePatterns.add(new TimePattern(Long.valueOf(-1)));
 		    	//timePatterns.addAll(TimePattern.findApplicable(request,30,false));
 		        
 				// Process Preferences Action

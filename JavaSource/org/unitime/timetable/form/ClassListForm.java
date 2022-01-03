@@ -166,23 +166,23 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 		subjectAreas = new ArrayList();
 		subjectAreaIds = new String[0];
 		
-		demandIsVisible = new Boolean(false);
-		demand = new Boolean(false);
-		limit = new Boolean(false);
-		snapshotLimit = new Boolean(false);
-		roomLimit = new Boolean(false);
-		datePattern = new Boolean(false);
-		timePattern = new Boolean(false);
-		instructor = new Boolean(false);
-		preferences = new Boolean(false);
-		timetable = new Boolean(false);
-		manager = new Boolean(false);
-		divSec = new Boolean(false);
-		schedulePrintNote = new Boolean(false);
-		note = new Boolean(false);
-		exams = new Boolean(false);
-		instructorAssignment = new Boolean(false);
-		lms = new Boolean(false);
+		demandIsVisible = Boolean.valueOf(false);
+		demand = Boolean.valueOf(false);
+		limit = Boolean.valueOf(false);
+		snapshotLimit = Boolean.valueOf(false);
+		roomLimit = Boolean.valueOf(false);
+		datePattern = Boolean.valueOf(false);
+		timePattern = Boolean.valueOf(false);
+		instructor = Boolean.valueOf(false);
+		preferences = Boolean.valueOf(false);
+		timetable = Boolean.valueOf(false);
+		manager = Boolean.valueOf(false);
+		divSec = Boolean.valueOf(false);
+		schedulePrintNote = Boolean.valueOf(false);
+		note = Boolean.valueOf(false);
+		exams = Boolean.valueOf(false);
+		instructorAssignment = Boolean.valueOf(false);
+		lms = Boolean.valueOf(false);
 		includeCancelledClasses = false;
 		filterNeedInstructor = false;
 		
@@ -500,10 +500,10 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 		return (demand);
 	}
 	public Boolean getProjectedDemand() {
-		return (new Boolean(false));
+		return (Boolean.valueOf(false));
 	}
 	public Boolean getMinPerWk() {
-		return (new Boolean(false));
+		return (Boolean.valueOf(false));
 	}
 	public Boolean getDivSec() {
 		return divSec;
@@ -518,10 +518,10 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 		this.manager = manager;
 	}
 	public Boolean getCredit() {
-		return (new Boolean(false));
+		return (Boolean.valueOf(false));
 	}
 	public Boolean getSubpartCredit() {
-		return (new Boolean(false));
+		return (Boolean.valueOf(false));
 	}
 	public Boolean getSchedulePrintNote() {
 		return schedulePrintNote;
@@ -542,10 +542,10 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
         this.exams = exams;
     }
     public Boolean getConsent() {
-		return (new Boolean(false));
+		return (Boolean.valueOf(false));
     }
     public Boolean getTitle() {
-		return (new Boolean(false));
+		return (Boolean.valueOf(false));
     }
 	public void setDemand(Boolean demand) {
 		this.demand = demand;

@@ -98,7 +98,7 @@ public class RoomSharingModel extends org.cpsolver.coursett.model.RoomSharingMod
 		if (location.getManagerIds()!=null) {
 			for (StringTokenizer stk = new StringTokenizer(location.getManagerIds(),",");stk.hasMoreTokens();) {
 				Long id = Long.valueOf(stk.nextToken());
-				oldDeptPrefs.put(new Character(pref++), id);
+				oldDeptPrefs.put(Character.valueOf(pref++), id);
 			}
 		}
 		
@@ -135,7 +135,7 @@ public class RoomSharingModel extends org.cpsolver.coursett.model.RoomSharingMod
 				iDepartmentColors[idx] = Department.hex2color(mgr.getRoomSharingColor());
 			else
 				iDepartmentColors[idx] = Department.hex2color(mgr.getRoomSharingColor(departments));
-			iDepartmentIdx.put(mgr.getUniqueId(),new Integer(idx));
+			iDepartmentIdx.put(mgr.getUniqueId(),Integer.valueOf(idx));
 		}
 		
 		if (iEditingDepartments!=null) {
@@ -169,7 +169,7 @@ public class RoomSharingModel extends org.cpsolver.coursett.model.RoomSharingMod
 					iPreference[d][t]=sFreeForAllPref;
 					iEditable[d][t]=allEditable;
 				} else {
-					Long id = (Long)oldDeptPrefs.get(new Character(pref));
+					Long id = (Long)oldDeptPrefs.get(Character.valueOf(pref));
 					if (id!=null) {
 						boolean containsId = false;
 						for (int i=0;i<iDepartmentIds.length;i++) {

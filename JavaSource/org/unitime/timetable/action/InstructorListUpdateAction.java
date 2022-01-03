@@ -269,7 +269,7 @@ public class InstructorListUpdateAction extends Action {
 						
 						HttpSession httpSession = request.getSession();
 						String deptId = (String) httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME);
-						Department d = new DepartmentDAO().get(new Long(deptId));
+						Department d = new DepartmentDAO().get(Long.valueOf(deptId));
 						inst.setDepartment(d);
 						d.getInstructors().add(inst);
 						
@@ -307,7 +307,7 @@ public class InstructorListUpdateAction extends Action {
 			tx.commit();
             String className = ApplicationProperty.ExternalActionClassEdit.value();
         	if (className != null && className.trim().length() > 0){
-            	ExternalClassEditAction editAction = (ExternalClassEditAction) (Class.forName(className).newInstance());
+            	ExternalClassEditAction editAction = (ExternalClassEditAction) (Class.forName(className).getDeclaredConstructor().newInstance());
             	for(Class_ c : updatedClasses){
             		editAction.performExternalClassEditAction(c, hibSession);
             	}
@@ -334,7 +334,7 @@ public class InstructorListUpdateAction extends Action {
 		HttpSession httpSession = request.getSession();
 		if (httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME) != null) {
 			String deptId = (String) httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME);
-			Department d = new DepartmentDAO().get(new Long(deptId));
+			Department d = new DepartmentDAO().get(Long.valueOf(deptId));
 			List available = Staff.getStaffByDept(d.getDeptCode().trim(), sessionContext.getUser().getCurrentAcademicSessionId());			
 			Collections.sort(available, new StaffComparator(StaffComparator.COMPARE_BY_POSITION));
 			return available;

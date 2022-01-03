@@ -98,7 +98,7 @@ public class TeachingRequestsTable extends UniTimeTable<SingleTeachingAssingment
 	}
 	
 	void populate(GwtRpcResponseList<TeachingRequestInfo> results, FilterRpcRequest filter) {
-		final Boolean assigned = (filter != null && filter.hasOption("assigned") ? new Boolean("true".equalsIgnoreCase(filter.getOption("assigned"))) : null);
+		final Boolean assigned = (filter != null && filter.hasOption("assigned") ? Boolean.valueOf("true".equalsIgnoreCase(filter.getOption("assigned"))) : null);
 		clearTable();
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		UniTimeTableHeader sortHeader = null; COLUMN sortColumn = null; boolean asc = true;

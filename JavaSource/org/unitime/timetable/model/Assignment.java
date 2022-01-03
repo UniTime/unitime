@@ -82,7 +82,7 @@ public class Assignment extends BaseAssignment {
 		Vector ret = new Vector();
 		for (int i=0;i<Constants.DAY_CODES.length;i++)
 			if ((getDays().intValue()&Constants.DAY_CODES[i])!=0)
-				ret.addElement(new Integer(getStartSlot().intValue()+i*Constants.SLOTS_PER_DAY));
+				ret.addElement(Integer.valueOf(getStartSlot().intValue()+i*Constants.SLOTS_PER_DAY));
 		return ret;
 	}
 	

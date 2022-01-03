@@ -329,7 +329,7 @@ public class TasksTable extends UniTimeTable<TaskInterface> implements TakesValu
 		}
 		
 		protected int compareByTime(TaskExecutionInterface t1, TaskExecutionInterface t2) {
-			int cmp = new Integer(t1.getSlot()).compareTo(t2.getSlot());
+			int cmp = Integer.valueOf(t1.getSlot()).compareTo(t2.getSlot());
 			if (cmp != 0) return cmp;
 			return t1.getDayOfYear().compareTo(t2.getDayOfYear());
 		}

@@ -28,7 +28,9 @@ import java.util.TreeSet;
 
 import javax.servlet.ServletException;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.cpsolver.ifs.util.CSVFile.CSVLine;
@@ -48,7 +50,7 @@ import org.unitime.timetable.onlinesectioning.model.XStudentId;
  * @author Tomas Muller
  */
 public class CriticalCoursesFile implements CriticalCoursesProvider {
-	private static Logger sLog = Logger.getLogger(CriticalCoursesFile.class);
+	private static Log sLog = LogFactory.getLog(CriticalCoursesFile.class);
 	
 	private static Map<String, CriticalCoursesImpl> iCriticalCourses = null;
 	

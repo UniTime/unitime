@@ -95,7 +95,7 @@ public class SuggestionsFilterBackend extends FilterBoxBackend<SuggestionsFilter
 					days = t.getDayCode() << firstDay;
 					days = (days & 127) + (days >> 7);
 				}
-				times.add(new Entity(new Long(- (Constants.sDayCode2Order[days] << 7) - t.getStartSlot()), getDaysName(t.getDayCode()) + " " + t.getStartTimeHeader(CONSTANTS.useAmPm()), getDaysName(t.getDayCode()) + " " + t.getStartTimeHeader(CONSTANTS.useAmPm()) + " - " + t.getEndTimeHeader(CONSTANTS.useAmPm())));
+				times.add(new Entity(Long.valueOf(- (Constants.sDayCode2Order[days] << 7) - t.getStartSlot()), getDaysName(t.getDayCode()) + " " + t.getStartTimeHeader(CONSTANTS.useAmPm()), getDaysName(t.getDayCode()) + " " + t.getStartTimeHeader(CONSTANTS.useAmPm()) + " - " + t.getEndTimeHeader(CONSTANTS.useAmPm())));
 				allDays = (allDays | t.getDayCode());
 			}
 			entities.put("date", dates);
@@ -104,7 +104,7 @@ public class SuggestionsFilterBackend extends FilterBoxBackend<SuggestionsFilter
 		Set<Entity> daysOfWeek = new TreeSet<Entity>();
 		for (int i = 0; i < Constants.DAY_CODES.length; i++) {
 			if ((allDays & Constants.DAY_CODES[i]) != 0) {
-				Entity e = new Entity(new Long(i), Constants.DAY_NAMES_FULL[i], CONSTANTS.longDays()[i], "translated-value", CONSTANTS.longDays()[i]);
+				Entity e = new Entity(Long.valueOf(i), Constants.DAY_NAMES_FULL[i], CONSTANTS.longDays()[i], "translated-value", CONSTANTS.longDays()[i]);
 				e.setProperty("order", String.valueOf((7 + i - firstDay) % 7));
 				daysOfWeek.add(e);
 			}

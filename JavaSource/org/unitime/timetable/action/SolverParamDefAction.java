@@ -120,7 +120,7 @@ public class SolverParamDefAction extends Action {
             			List list = hibSession.createCriteria(SolverParameterDef.class).add(Restrictions.eq("group",def.getGroup())).add(Restrictions.gt("order", def.getOrder())).list();
             			for (Iterator i=list.iterator();i.hasNext();) {
             				SolverParameterDef d = (SolverParameterDef)i.next();
-            				d.setOrder(new Integer(d.getOrder().intValue()-1));
+            				d.setOrder(Integer.valueOf(d.getOrder().intValue()-1));
             				dao.save(d,hibSession);
             			}
             			myForm.setOrder(-1);
@@ -130,7 +130,7 @@ public class SolverParamDefAction extends Action {
             		if (def.getGroup() == null && group != null)
             			group.getParameters().add(def);
             		if (myForm.getOrder()<0) {
-            			def.setOrder(new Integer(group == null ? 0 : group.getParameters().size() - 1));
+            			def.setOrder(Integer.valueOf(group == null ? 0 : group.getParameters().size() - 1));
             		}
                 	def.setGroup(group);
                 	dao.saveOrUpdate(def,hibSession);
@@ -157,7 +157,7 @@ public class SolverParamDefAction extends Action {
                 saveErrors(request, errors);
             } else {
             	SolverParameterDefDAO dao = new SolverParameterDefDAO();
-            	SolverParameterDef def = dao.get(new Long(id));
+            	SolverParameterDef def = dao.get(Long.valueOf(id));
                 if(def==null) {
                     errors.add("name", new ActionMessage("errors.invalid", "Unique Id : " + id));
                     saveErrors(request, errors);
@@ -192,7 +192,7 @@ public class SolverParamDefAction extends Action {
     			
     			for (Iterator i=list.iterator();i.hasNext();) {
     				SolverParameterDef d = (SolverParameterDef)i.next();
-    				d.setOrder(new Integer(d.getOrder().intValue()-1));
+    				d.setOrder(Integer.valueOf(d.getOrder().intValue()-1));
     				dao.save(d,hibSession);
     			}
     			if (def.getGroup() != null)
@@ -222,21 +222,21 @@ public class SolverParamDefAction extends Action {
     			
     			SolverParameterDef def = dao.get(myForm.getUniqueId(), hibSession);
     			if ("Move Up".equals(op)) {
-    				List list = hibSession.createCriteria(SolverParameterDef.class).add(Restrictions.eq("group",def.getGroup())).add(Restrictions.eq("order", new Integer(def.getOrder().intValue()-1))).list();
+    				List list = hibSession.createCriteria(SolverParameterDef.class).add(Restrictions.eq("group",def.getGroup())).add(Restrictions.eq("order", Integer.valueOf(def.getOrder().intValue()-1))).list();
     				if (!list.isEmpty()) {
     					SolverParameterDef prior = (SolverParameterDef)list.get(0);
-    					prior.setOrder(new Integer(prior.getOrder().intValue()+1));
+    					prior.setOrder(Integer.valueOf(prior.getOrder().intValue()+1));
     					dao.save(prior,hibSession);
-    					def.setOrder(new Integer(def.getOrder().intValue()-1));
+    					def.setOrder(Integer.valueOf(def.getOrder().intValue()-1));
         				dao.save(def,hibSession);
     				}
     			} else {
-    				List list = hibSession.createCriteria(SolverParameterDef.class).add(Restrictions.eq("group",def.getGroup())).add(Restrictions.eq("order", new Integer(def.getOrder().intValue()+1))).list();
+    				List list = hibSession.createCriteria(SolverParameterDef.class).add(Restrictions.eq("group",def.getGroup())).add(Restrictions.eq("order", Integer.valueOf(def.getOrder().intValue()+1))).list();
     				if (!list.isEmpty()) {
     					SolverParameterDef next = (SolverParameterDef)list.get(0);
-    					next.setOrder(new Integer(next.getOrder().intValue()-1));
+    					next.setOrder(Integer.valueOf(next.getOrder().intValue()-1));
     					dao.save(next,hibSession);
-    					def.setOrder(new Integer(def.getOrder().intValue()+1));
+    					def.setOrder(Integer.valueOf(def.getOrder().intValue()+1));
         				dao.save(def,hibSession);
     				}
     			}
@@ -352,7 +352,7 @@ public class SolverParamDefAction extends Action {
 							def.getType(),
 							def.getDefault()});
 					if (def.getUniqueId().equals(uniqueId))
-						request.setAttribute("SolverParameterDef.last", new Integer(parameters.size()-1));
+						request.setAttribute("SolverParameterDef.last", Integer.valueOf(parameters.size()-1));
 		        }
 		        tables.append(webTable.printTable(WebTable.getOrder(sessionContext,"solverParamDef.ord")));
 			}

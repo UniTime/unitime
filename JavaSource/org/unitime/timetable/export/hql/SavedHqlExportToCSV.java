@@ -29,7 +29,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.dom4j.Document;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
@@ -67,7 +69,7 @@ import org.unitime.timetable.util.Formats;
 @Service("org.unitime.timetable.export.Exporter:hql-report.csv")
 public class SavedHqlExportToCSV implements Exporter {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
-	private static Logger sLog = Logger.getLogger(SavedHqlExportToCSV.class);
+	private static Log sLog = LogFactory.getLog(SavedHqlExportToCSV.class);
 	
 	@Override
 	public String reference() {
@@ -238,7 +240,7 @@ public class SavedHqlExportToCSV implements Exporter {
 					for (SavedHQLInterface.IdValue v: options)
 						if (parameter.getName().equals(v.getValue())) { value = v.getText(); break; }
 					if (parameter.getType().equalsIgnoreCase("boolean")) {
-						q.setBoolean(parameter.getName(), value == null ? null : new Boolean("true".equalsIgnoreCase(value)));
+						q.setBoolean(parameter.getName(), value == null ? null : Boolean.valueOf("true".equalsIgnoreCase(value)));
 					} else if (parameter.getType().equalsIgnoreCase("long")) {
 						q.setLong(parameter.getName(), value == null || value.isEmpty() ? null : Long.valueOf(value));
 					} else if (parameter.getType().equalsIgnoreCase("int") || parameter.getType().equalsIgnoreCase("integer") || parameter.getType().equalsIgnoreCase("slot") || parameter.getType().equalsIgnoreCase("time")) {

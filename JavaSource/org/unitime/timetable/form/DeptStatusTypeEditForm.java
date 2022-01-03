@@ -94,7 +94,7 @@ public class DeptStatusTypeEditForm extends ActionForm {
 	}
 
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		iOp = "List"; iUniqueId = new Long(-1);
+		iOp = "List"; iUniqueId = Long.valueOf(-1);
         iReference = null; iLabel = null;
         iApply = 0; iOrder = DepartmentStatusType.findAll().size();
         iCanManagerView         = false;
@@ -136,11 +136,11 @@ public class DeptStatusTypeEditForm extends ActionForm {
     public void setApply(Long apply) { iApply = (apply==null?-1:(int)apply.longValue()); }
     public Vector getApplyOptions() {
         Vector options = new Vector();
-        options.add(new IdValue(new Long(DepartmentStatusType.Apply.Session.toInt()), "Session"));
-        options.add(new IdValue(new Long(DepartmentStatusType.Apply.Department.toInt()), "Department"));
-        options.add(new IdValue(new Long(DepartmentStatusType.Apply.ExamStatus.toInt()), "Examinations"));
-        options.add(new IdValue(new Long(DepartmentStatusType.Apply.Session.toInt() | DepartmentStatusType.Apply.Department.toInt()), "Session & Department"));
-        options.add(new IdValue(new Long(DepartmentStatusType.Apply.Session.toInt() | DepartmentStatusType.Apply.Department.toInt() | DepartmentStatusType.Apply.ExamStatus.toInt()), "All"));
+        options.add(new IdValue(Long.valueOf(DepartmentStatusType.Apply.Session.toInt()), "Session"));
+        options.add(new IdValue(Long.valueOf(DepartmentStatusType.Apply.Department.toInt()), "Department"));
+        options.add(new IdValue(Long.valueOf(DepartmentStatusType.Apply.ExamStatus.toInt()), "Examinations"));
+        options.add(new IdValue(Long.valueOf(DepartmentStatusType.Apply.Session.toInt() | DepartmentStatusType.Apply.Department.toInt()), "Session & Department"));
+        options.add(new IdValue(Long.valueOf(DepartmentStatusType.Apply.Session.toInt() | DepartmentStatusType.Apply.Department.toInt() | DepartmentStatusType.Apply.ExamStatus.toInt()), "All"));
         return options;
     }
     public void setCanManagerView(boolean canManagerView) { iCanManagerView = canManagerView; }

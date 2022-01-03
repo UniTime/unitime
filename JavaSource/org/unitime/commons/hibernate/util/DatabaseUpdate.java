@@ -230,7 +230,7 @@ public abstract class DatabaseUpdate {
             
             String additionalUpdates = ApplicationProperty.DatabaseUpdateAddonClass.value();
             if (additionalUpdates != null && !additionalUpdates.trim().isEmpty()){
-            	DatabaseUpdate du = (DatabaseUpdate) (Class.forName(additionalUpdates).newInstance());;
+            	DatabaseUpdate du = (DatabaseUpdate) (Class.forName(additionalUpdates).getDeclaredConstructor().newInstance());;
             	du.performUpdate();
             }
         } catch (Exception e) {

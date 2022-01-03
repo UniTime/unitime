@@ -156,11 +156,11 @@ public class TimetableManagerEditAction extends Action {
                 return mapping.findForward(mapPath);
             }
 
-            Roles role = new RolesDAO().get(new Long(frm.getRole()));
+            Roles role = new RolesDAO().get(Long.valueOf(frm.getRole()));
             frm.addToRoles(role); 
             if (frm.getRoles().size()==1)
                 frm.setPrimaryRole(role.getRoleId().toString());
-            frm.getRoleReceiveEmailFlags().add(new Boolean(true));
+            frm.getRoleReceiveEmailFlags().add(Boolean.valueOf(true));
       }
         
         // Add Department
@@ -173,7 +173,7 @@ public class TimetableManagerEditAction extends Action {
                 return mapping.findForward(mapPath);
             }
 
-            Department dept = new DepartmentDAO().get(new Long(frm.getDept()));            
+            Department dept = new DepartmentDAO().get(Long.valueOf(frm.getDept()));            
             frm.addToDepts(dept);    
         }
         
@@ -187,7 +187,7 @@ public class TimetableManagerEditAction extends Action {
                 return mapping.findForward(mapPath);
             }
 
-            SolverGroup sg = new SolverGroupDAO().get(new Long(frm.getSolverGr()));            
+            SolverGroup sg = new SolverGroupDAO().get(Long.valueOf(frm.getSolverGr()));            
             frm.addToSolverGrs(sg);    
         }
 
@@ -284,7 +284,7 @@ public class TimetableManagerEditAction extends Action {
         if (id!=null && id.trim().length()>0 && frm.getLookupEnabled().booleanValue()) {
             
         	String className = ApplicationProperty.ManagerExternalIdLookupClass.value();        	
-        	ExternalUidLookup lookup = (ExternalUidLookup) (Class.forName(className).newInstance());
+        	ExternalUidLookup lookup = (ExternalUidLookup) (Class.forName(className).getDeclaredConstructor().newInstance());
        		UserInfo results = lookup.doLookup(id);
        		if (results == null) return;
 			frm.setExternalId(results.getExternalId());
@@ -340,7 +340,7 @@ public class TimetableManagerEditAction extends Action {
             throw new Exception ("Manager Id could not be read.");
         
         try {
-            mgrId = new Long (uniqueId);
+            mgrId = Long.valueOf(uniqueId);
         }
         catch (Exception e) {
             throw new Exception ("Invalid Manager Id : " + uniqueId);
@@ -365,7 +365,7 @@ public class TimetableManagerEditAction extends Action {
             frm.addToRoles(role);
             if (mgrRole.isPrimary().booleanValue())
                 frm.setPrimaryRole(role.getRoleId().toString());
-            frm.getRoleReceiveEmailFlags().add(mgrRole.isReceiveEmails() == null? new Boolean(false): mgrRole.isReceiveEmails());
+            frm.getRoleReceiveEmailFlags().add(mgrRole.isReceiveEmails() == null? Boolean.valueOf(false): mgrRole.isReceiveEmails());
         }
 
         Long sessionId = sessionContext.getUser().getCurrentAcademicSessionId();
@@ -431,20 +431,20 @@ public class TimetableManagerEditAction extends Action {
         List roleReceiveEmails = frm.getRoleReceiveEmailFlags();
         Iterator receiveEmailIt = roleReceiveEmails.iterator();
        	for (Iterator i=roles.iterator(); i.hasNext(); ) {
-       	    Roles role = rDao.get(new Long(i.next().toString()));
+       	    Roles role = rDao.get(Long.valueOf(i.next().toString()));
        	    ManagerRole mgrRole = new ManagerRole();
        	    mgrRole.setRole(role);
        	    mgrRole.setTimetableManager(mgr);
        	    if (frm.getPrimaryRole().equals(role.getRoleId().toString()))
-       	        mgrRole.setPrimary(new Boolean(true));
+       	        mgrRole.setPrimary(Boolean.valueOf(true));
        	    else
-       	        mgrRole.setPrimary(new Boolean(false));
+       	        mgrRole.setPrimary(Boolean.valueOf(false));
        	    if (receiveEmailIt.hasNext()){
        	    	String receiveEmailsStr = (String) receiveEmailIt.next();
-       	    	Boolean receiveEmails = new Boolean("on".equalsIgnoreCase(receiveEmailsStr)); 
+       	    	Boolean receiveEmails = Boolean.valueOf("on".equalsIgnoreCase(receiveEmailsStr)); 
        	    	mgrRole.setReceiveEmails(receiveEmails);
        	    } else {
-       	    	mgrRole.setReceiveEmails(new Boolean(false));
+       	    	mgrRole.setReceiveEmails(Boolean.valueOf(false));
        	    }
        	    
        	    mgr.addTomanagerRoles(mgrRole);
@@ -454,7 +454,7 @@ public class TimetableManagerEditAction extends Action {
        	// Add departments
 		mgr.setDepartments(new HashSet<Department>());
        	for (Iterator i=frm.getDepts().iterator(); i.hasNext(); ) {
-       	    Department dept = dDao.get(new Long(i.next().toString()));
+       	    Department dept = dDao.get(Long.valueOf(i.next().toString()));
        	    mgr.getDepartments().add(dept);
        	    dept.getTimetableManagers().add(mgr);
     		hibSession.saveOrUpdate(dept);
@@ -462,7 +462,7 @@ public class TimetableManagerEditAction extends Action {
        	
        	mgr.setSolverGroups(new HashSet<SolverGroup>());
        	for (Iterator i=frm.getSolverGrs().iterator(); i.hasNext(); ) {
-       	    SolverGroup sg = sgDao.get(new Long(i.next().toString()));
+       	    SolverGroup sg = sgDao.get(Long.valueOf(i.next().toString()));
        	    mgr.getSolverGroups().add(sg);
        	    sg.getTimetableManagers().add(mgr);
     		hibSession.saveOrUpdate(sg);
@@ -507,7 +507,7 @@ public class TimetableManagerEditAction extends Action {
         
         Transaction tx = hibSession.beginTransaction();
 
-        TimetableManager mgr = mgrDao.get(new Long(frm.getUniqueId()));
+        TimetableManager mgr = mgrDao.get(Long.valueOf(frm.getUniqueId()));
         mgr.setFirstName(frm.getFirstName());
         mgr.setMiddleName(frm.getMiddleName());
         mgr.setLastName(frm.getLastName());
@@ -525,12 +525,12 @@ public class TimetableManagerEditAction extends Action {
         // Check if roles added or updated
         Iterator receiveEmailIt = roleReceiveEmails.iterator();
        	for (Iterator i=roles.iterator(); i.hasNext(); ) {
-       	    Roles role = rDao.get(new Long(i.next().toString()));
-       	    Boolean receiveEmail = new Boolean(false);
+       	    Roles role = rDao.get(Long.valueOf(i.next().toString()));
+       	    Boolean receiveEmail = Boolean.valueOf(false);
        	    if (receiveEmailIt.hasNext()){
        	    	String str = (String)receiveEmailIt.next();
        	    	str = (str == null?"false":(str.equalsIgnoreCase("on")?"true":str));
-       	    	receiveEmail = new Boolean(str);
+       	    	receiveEmail = Boolean.valueOf(str);
        	    }
        	    boolean found = false;
        	    
@@ -542,9 +542,9 @@ public class TimetableManagerEditAction extends Action {
            	    // Exists - check if primary
            	    if (eRole.equals(role)) {
                	    if (frm.getPrimaryRole().equals(role.getRoleId().toString()))
-               	        eMgrRole.setPrimary(new Boolean(true));
+               	        eMgrRole.setPrimary(Boolean.valueOf(true));
                	    else
-               	        eMgrRole.setPrimary(new Boolean(false));
+               	        eMgrRole.setPrimary(Boolean.valueOf(false));
                	    
                	    found = true;
                	    eMgrRole.setReceiveEmails(receiveEmail);
@@ -560,9 +560,9 @@ public class TimetableManagerEditAction extends Action {
 	       	    mgrRole.setRole(role);
 	       	    mgrRole.setTimetableManager(mgr);
 	       	    if (frm.getPrimaryRole().equals(role.getRoleId().toString()))
-	       	        mgrRole.setPrimary(new Boolean(true));
+	       	        mgrRole.setPrimary(Boolean.valueOf(true));
 	       	    else
-	       	        mgrRole.setPrimary(new Boolean(false));
+	       	        mgrRole.setPrimary(Boolean.valueOf(false));
 	       	    mgrRole.setReceiveEmails(receiveEmail);
 	       	    mgr.addTomanagerRoles(mgrRole);
            	}           	
@@ -575,7 +575,7 @@ public class TimetableManagerEditAction extends Action {
        	    boolean found = false;
 
            	for (Iterator i=roles.iterator(); i.hasNext(); ) {
-           	    Roles role = rDao.get(new Long(i.next().toString()));
+           	    Roles role = rDao.get(Long.valueOf(i.next().toString()));
            	    if (eRole.equals(role)) {
            	        found = true;
            	        break;
@@ -597,7 +597,7 @@ public class TimetableManagerEditAction extends Action {
        	
         // Check if depts added or updated
        	for (Iterator i=depts.iterator(); i.hasNext(); ) {
-       	    Department dept = dDao.get(new Long(i.next().toString()));
+       	    Department dept = dDao.get(Long.valueOf(i.next().toString()));
        	    boolean found = false;
            	for (Iterator j=mgrDepts.iterator(); j.hasNext(); ) {
            	    Department eDept = (Department) j.next();
@@ -620,7 +620,7 @@ public class TimetableManagerEditAction extends Action {
        	    if (!eDept.getSessionId().equals(sessionId)) continue; //SKIP DEPARTMENTS OF DIFFERENT SESSIONS!!!
        	    boolean found = false;
            	for (Iterator i=depts.iterator(); i.hasNext(); ) {
-           	    Department dept = dDao.get(new Long(i.next().toString()));
+           	    Department dept = dDao.get(Long.valueOf(i.next().toString()));
            	    if (eDept.equals(dept)) {
            	        found = true;
            	        break;
@@ -644,7 +644,7 @@ public class TimetableManagerEditAction extends Action {
        	
         // Check if solver group added or updated
        	for (Iterator i=solverGrs.iterator(); i.hasNext(); ) {
-       	    SolverGroup sg = sgDao.get(new Long(i.next().toString()));
+       	    SolverGroup sg = sgDao.get(Long.valueOf(i.next().toString()));
        	    boolean found = false;
            	for (Iterator j=mgrSolverGrs.iterator(); j.hasNext(); ) {
            		SolverGroup eSg = (SolverGroup) j.next();
@@ -667,7 +667,7 @@ public class TimetableManagerEditAction extends Action {
        	    if (!eSg.getSession().getUniqueId().equals(sessionId)) continue; //SKIP DEPARTMENTS OF DIFFERENT SESSIONS!!!
        	    boolean found = false;
            	for (Iterator i=solverGrs.iterator(); i.hasNext(); ) {
-           		SolverGroup sg = sgDao.get(new Long(i.next().toString()));
+           		SolverGroup sg = sgDao.get(Long.valueOf(i.next().toString()));
            	    if (eSg.equals(sg)) {
            	        found = true;
            	        break;
@@ -710,7 +710,7 @@ public class TimetableManagerEditAction extends Action {
         
         TimetableManagerDAO mgrDao = new TimetableManagerDAO();
         Session hibSession = mgrDao.getSession();
-        TimetableManager mgr = mgrDao.get(new Long(frm.getUniqueId()));
+        TimetableManager mgr = mgrDao.get(Long.valueOf(frm.getUniqueId()));
 
         Transaction tx = hibSession.beginTransaction();
        	

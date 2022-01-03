@@ -35,7 +35,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentMap;
@@ -163,7 +165,7 @@ import com.google.gson.JsonSerializer;
  * @author Tomas Muller
  */
 public class PurdueCourseRequestsValidationProvider implements CourseRequestsValidationProvider, AdvisorCourseRequestsValidationProvider {
-	private static Logger sLog = Logger.getLogger(PurdueCourseRequestsValidationProvider.class);
+	private static Log sLog = LogFactory.getLog(PurdueCourseRequestsValidationProvider.class);
 	protected static final StudentSectioningMessages MESSAGES = Localization.create(StudentSectioningMessages.class);
 	protected static final StudentSectioningConstants CONSTANTS = Localization.create(StudentSectioningConstants.class);
 	protected static Format<Number> sCreditFormat = Formats.getNumberFormat("0.##");
@@ -362,8 +364,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		if (!isValidationEnabled(server, helper, original)) return;
 		
 		Integer CONF_NONE = null;
-		Integer CONF_UNITIME = new Integer(0);
-		Integer CONF_BANNER = new Integer(1);
+		Integer CONF_UNITIME = Integer.valueOf(0);
+		Integer CONF_BANNER = Integer.valueOf(1);
 		
 		OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig(), server.getOverExpectedCriterion());
 		boolean linkedClassesMustBeUsed = server.getConfig().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
@@ -1574,9 +1576,9 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		// Do not check when validation is disabled
 		if (!isValidationEnabled(server, helper, original)) return;
 		
-		Integer ORD_UNITIME = new Integer(0);
-		Integer ORD_BANNER = new Integer(1);
-		Integer ORD_CREDIT = new Integer(2);
+		Integer ORD_UNITIME = Integer.valueOf(0);
+		Integer ORD_BANNER = Integer.valueOf(1);
+		Integer ORD_CREDIT = Integer.valueOf(2);
 		
 		Set<Long> advisorCoursesNoAlt = new HashSet<Long>();
 		if (original.hasAdvisorRequests() && isAdvisedNoAlts())
@@ -2995,8 +2997,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		if (!isAdvisorValidationEnabled(server, helper, original, details.getStatus() == null ? null : details.getStatus().getReference())) return;
 		CourseRequestInterface request = details.getRequest();
 		
-		Integer CONF_UNITIME = new Integer(0);
-		Integer CONF_BANNER = new Integer(1);
+		Integer CONF_UNITIME = Integer.valueOf(0);
+		Integer CONF_BANNER = Integer.valueOf(1);
 		
 		OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig(), server.getOverExpectedCriterion());
 		boolean linkedClassesMustBeUsed = server.getConfig().getPropertyBoolean("LinkedClasses.mustBeUsed", false);

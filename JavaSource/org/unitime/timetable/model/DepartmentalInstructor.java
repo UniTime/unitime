@@ -305,7 +305,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		DepartmentalInstructor i = (DepartmentalInstructor)o;
 		int cmp = nameLastNameFirst().compareToIgnoreCase(i.nameLastNameFirst());
 		if (cmp!=0) return cmp;
-		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(i.getUniqueId() == null ? -1 : i.getUniqueId());
+		return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(i.getUniqueId() == null ? -1 : i.getUniqueId());
 	}
 
 	/**
@@ -532,7 +532,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     	ExternalUidLookup lookup = null;
         String className = ApplicationProperty.InstructorExternalIdLookupClass.value();
         if (className != null)
-        	lookup = (ExternalUidLookup)Class.forName(className).newInstance();
+        	lookup = (ExternalUidLookup)Class.forName(className).getDeclaredConstructor().newInstance();
         return (lookup == null ? null : lookup.doLookup(externalId));
     }
     
@@ -733,7 +733,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		cal.setTime(getSession().getSessionBeginDateTime());
 		if (sb!=null) {
 			setUnavailableDays(sb.substring(0,lastOne-firstOne+1));
-			setUnavailableOffset(new Integer(cal.get(Calendar.DAY_OF_YEAR)-firstOne-1));
+			setUnavailableOffset(Integer.valueOf(cal.get(Calendar.DAY_OF_YEAR)-firstOne-1));
 		} else {
 			setUnavailableDays(null); setUnavailableOffset(null);
 		}

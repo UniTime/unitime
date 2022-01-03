@@ -311,7 +311,7 @@ public class InstructionalOfferingDetailAction extends Action {
 	        Exam.deleteFromExams(hibSession, io);
         	String className = ApplicationProperty.ExternalActionInstructionalOfferingDelete.value();
         	if (className != null && className.trim().length() > 0){
-	        	ExternalInstructionalOfferingDeleteAction deleteAction = (ExternalInstructionalOfferingDeleteAction) (Class.forName(className).newInstance());
+	        	ExternalInstructionalOfferingDeleteAction deleteAction = (ExternalInstructionalOfferingDeleteAction) (Class.forName(className).getDeclaredConstructor().newInstance());
 	       		deleteAction.performExternalInstructionalOfferingDeleteAction(io, hibSession);
         	}
         	
@@ -372,7 +372,7 @@ public class InstructionalOfferingDetailAction extends Action {
             String instrOfferingIdStr) throws Exception {
         
         // Load Instr Offering
-        Long instrOfferingId = new Long(instrOfferingIdStr);
+        Long instrOfferingId = Long.valueOf(instrOfferingIdStr);
         InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
         InstructionalOffering io = idao.get(instrOfferingId);
         Long subjectAreaId = io.getControllingCourseOffering().getSubjectArea().getUniqueId();
@@ -530,7 +530,7 @@ public class InstructionalOfferingDetailAction extends Action {
         @SuppressWarnings("deprecation")
 		String linkLookupClass = ApplicationProperty.CourseCatalogLinkProvider.value(); 
         if (linkLookupClass!=null && linkLookupClass.trim().length()>0) {
-        	ExternalLinkLookup lookup = (ExternalLinkLookup) (Class.forName(linkLookupClass).newInstance());
+        	ExternalLinkLookup lookup = (ExternalLinkLookup) (Class.forName(linkLookupClass).getDeclaredConstructor().newInstance());
        		Map results = lookup.getLink(io);
             if (results==null)
                 throw new Exception (lookup.getErrorMessage());
@@ -595,7 +595,7 @@ public class InstructionalOfferingDetailAction extends Action {
             }
             
             // Set flag to not offered
-            io.setNotOffered(new Boolean(true));
+            io.setNotOffered(Boolean.valueOf(true));
             
             idao.saveOrUpdate(io);
 
@@ -617,7 +617,7 @@ public class InstructionalOfferingDetailAction extends Action {
             
         	String className = ApplicationProperty.ExternalActionInstructionalOfferingNotOffered.value();
         	if (className != null && className.trim().length() > 0){
-	        	ExternalInstructionalOfferingNotOfferedAction notOfferedAction = (ExternalInstructionalOfferingNotOfferedAction) (Class.forName(className).newInstance());
+	        	ExternalInstructionalOfferingNotOfferedAction notOfferedAction = (ExternalInstructionalOfferingNotOfferedAction) (Class.forName(className).getDeclaredConstructor().newInstance());
 	       		notOfferedAction.performExternalInstructionalOfferingNotOfferedAction(io, hibSession);
         	}
 
@@ -651,7 +651,7 @@ public class InstructionalOfferingDetailAction extends Action {
 	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
             
             // Set flag to offered
-            io.setNotOffered(new Boolean(false));
+            io.setNotOffered(Boolean.valueOf(false));
             
             idao.saveOrUpdate(io);
             
@@ -673,7 +673,7 @@ public class InstructionalOfferingDetailAction extends Action {
 
         	String className = ApplicationProperty.ExternalActionInstructionalOfferingOffered.value();
         	if (className != null && className.trim().length() > 0){
-	        	ExternalInstructionalOfferingOfferedAction offeredAction = (ExternalInstructionalOfferingOfferedAction) (Class.forName(className).newInstance());
+	        	ExternalInstructionalOfferingOfferedAction offeredAction = (ExternalInstructionalOfferingOfferedAction) (Class.forName(className).getDeclaredConstructor().newInstance());
 	       		offeredAction.performExternalInstructionalOfferingOfferedAction(io, hibSession);
         	}
 

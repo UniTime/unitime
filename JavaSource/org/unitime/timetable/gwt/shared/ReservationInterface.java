@@ -100,7 +100,7 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 	public int compareTo(ReservationInterface r2) {
 		int cmp = getOffering().getAbbv().compareTo(r2.getOffering().getAbbv());
 		if (cmp != 0) return cmp;
-		cmp = new Integer(getPriority()).compareTo(r2.getPriority());
+		cmp = Integer.valueOf(getPriority()).compareTo(r2.getPriority());
 		if (cmp != 0) return cmp;
 		cmp = this.toString().compareTo(r2.toString());
 		if (cmp != 0) return cmp;

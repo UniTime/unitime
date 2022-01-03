@@ -95,7 +95,7 @@ public class InstructorAction extends Action {
             InstructorEditForm frm, 
             HttpServletRequest request) throws Exception {
         
-        Staff staff = new StaffDAO().get(new Long(frm.getSearchSelect()));
+        Staff staff = new StaffDAO().get(Long.valueOf(frm.getSearchSelect()));
         frm.setPuId(staff.getExternalUniqueId());
         frm.setFname(staff.getFirstName()!=null ? staff.getFirstName().trim() : "");
         frm.setMname(staff.getMiddleName()!=null ? staff.getMiddleName().trim() : "");
@@ -141,7 +141,7 @@ public class InstructorAction extends Action {
 	        InstructorEditForm frm, 
 	        HttpServletRequest request) throws Exception {
 	    
-	    frm.setMatchFound(new Boolean(false));
+	    frm.setMatchFound(Boolean.valueOf(false));
 	    String fname = frm.getFname();
 	    String lname = frm.getLname();
 	    String login = frm.getCareerAcct();
@@ -160,7 +160,7 @@ public class InstructorAction extends Action {
 	    frm.setStaffMatch(staffList);
 
 	    if (staffList!=null && staffList.size()>0)
-            frm.setMatchFound(new Boolean(true));
+            frm.setMatchFound(Boolean.valueOf(true));
 	}
 
     /**
@@ -171,7 +171,7 @@ public class InstructorAction extends Action {
         String id = frm.getCareerAcct();
         if (id!=null && id.trim().length()>0 && frm.getLookupEnabled().booleanValue()) {
         	String className = ApplicationProperty.InstructorExternalIdLookupClass.value(); 
-        	ExternalUidLookup lookup = (ExternalUidLookup) (Class.forName(className).newInstance());
+        	ExternalUidLookup lookup = (ExternalUidLookup) (Class.forName(className).getDeclaredConstructor().newInstance());
        		return lookup.doLookup(id);
         }
         return null;
@@ -198,7 +198,7 @@ public class InstructorAction extends Action {
 			String instrId = frm.getInstructorId();
 			
 			if (instrId!=null && instrId.trim().length()>0) {
-			    inst = new DepartmentalInstructorDAO().get(new Long(instrId));
+			    inst = new DepartmentalInstructorDAO().get(Long.valueOf(instrId));
 			}
 			else {    
 			    inst = new DepartmentalInstructor();
@@ -236,7 +236,7 @@ public class InstructorAction extends Action {
 			inst.setEmail(frm.getEmail());
 						
 			if (frm.getPosType() != null && frm.getPosType().trim().length()>0) {
-				PositionType pt = PositionType.findById(new Long(frm.getPosType().trim()));
+				PositionType pt = PositionType.findById(Long.valueOf(frm.getPosType().trim()));
 				if (pt != null) {
 					inst.setPositionType(pt);
 				}
@@ -254,14 +254,14 @@ public class InstructorAction extends Action {
 			//get department
 			if (sessionContext.getAttribute(SessionAttribute.DepartmentId) != null) {
 				String deptId = (String) sessionContext.getAttribute(SessionAttribute.DepartmentId);
-				d = new DepartmentDAO().get(new Long(deptId));
+				d = new DepartmentDAO().get(Long.valueOf(deptId));
 				inst.setDepartment(d);
 				d.getInstructors().add(inst);
 			}
 			else
 			    throw new Exception("Department Id could not be retrieved from session");
             
-            inst.setIgnoreToFar(new Boolean(frm.getIgnoreDist()));
+            inst.setIgnoreToFar(Boolean.valueOf(frm.getIgnoreDist()));
             
 			hibSession.saveOrUpdate(inst);
 

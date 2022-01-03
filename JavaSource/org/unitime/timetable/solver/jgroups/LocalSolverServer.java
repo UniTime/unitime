@@ -26,7 +26,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.jgroups.Address;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -140,7 +142,7 @@ public class LocalSolverServer extends AbstractSolverServer {
 	}
 	
 	public class Updater extends Thread {
-		private Logger iLog;
+		private Log iLog;
 		private long iSleepTimeInSeconds = 5;
 		private boolean iRun = true, iPause = false;
 		
@@ -149,7 +151,7 @@ public class LocalSolverServer extends AbstractSolverServer {
 			setDaemon(true);
 			setName("Updater[generic]");
 			iSleepTimeInSeconds = ApplicationProperty.OnlineSchedulingQueueLoadInterval.intValue();
-			iLog = Logger.getLogger(OnlineStudentSchedulingGenericUpdater.class + ".updater[generic]");
+			iLog = LogFactory.getLog(OnlineStudentSchedulingGenericUpdater.class + ".updater[generic]");
 		}
 		
 		@Override

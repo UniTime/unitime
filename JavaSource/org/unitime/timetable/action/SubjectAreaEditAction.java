@@ -209,7 +209,7 @@ public class SubjectAreaEditAction extends Action {
 
         	String className = ApplicationProperty.ExternalActionCourseOfferingRemove.value();
 			if (className != null && className.trim().length() > 0){
-        		ExternalCourseOfferingRemoveAction removeAction = (ExternalCourseOfferingRemoveAction) (Class.forName(className).newInstance());
+        		ExternalCourseOfferingRemoveAction removeAction = (ExternalCourseOfferingRemoveAction) (Class.forName(className).getDeclaredConstructor().newInstance());
     			for (Iterator i = sa.getCourseOfferings().iterator(); i.hasNext(); ) {
     	        	CourseOffering co = (CourseOffering) i.next();
     	        	removeAction.performExternalCourseOfferingRemoveAction(co, hibSession);
@@ -422,7 +422,7 @@ public class SubjectAreaEditAction extends Action {
 			}
             String className = ApplicationProperty.ExternalActionClassEdit.value();
         	if (className != null && className.trim().length() > 0){
-            	ExternalClassEditAction editAction = (ExternalClassEditAction) (Class.forName(className).newInstance());
+            	ExternalClassEditAction editAction = (ExternalClassEditAction) (Class.forName(className).getDeclaredConstructor().newInstance());
             	for(Class_ c : updatedClasses){
             		editAction.performExternalClassEditAction(c, hibSession);
             	}

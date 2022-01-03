@@ -185,7 +185,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             Long configId = null;
 
             try {
-                configId = new Long(request.getParameter("configId"));
+                configId = Long.valueOf(request.getParameter("configId"));
             }
             catch (Exception e) {
                 throw new Exception (MSG.errorConfigIDNotValid() + request.getParameter("configId"));
@@ -212,7 +212,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
             // For duplication set configID to 0
 //            if(op.equalsIgnoreCase(rsc.getMessage("button.duplicateConfig"))) {
-//                frm.setConfigId(new Long(0));
+//                frm.setConfigId(Long.valueOf(0));
 //                frm.setName(InstrOfferingConfig.getGeneratedName(
 //                        ( new InstrOfferingConfigDAO().get(configId)).getInstructionalOffering() ));
 //            }
@@ -232,7 +232,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 			
             sessionContext.checkPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.InstrOfferingConfigAdd);
 
-            loadDetailFromCourseOffering(frm, new Long(courseOfferingId), true, false);
+            loadDetailFromCourseOffering(frm, Long.valueOf(courseOfferingId), true, false);
             sessionContext.setAttribute(SessionAttribute.InstructionalOfferingConfigList, null);
             request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, "");
 
@@ -252,7 +252,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	            throw new Exception (MSG.exceptionCourseOfferingIdNeeded());
 	        
             // Get first available config
-            loadDetailFromCourseOffering(frm, new Long(courseOfferingId), true, true);
+            loadDetailFromCourseOffering(frm, Long.valueOf(courseOfferingId), true, true);
             sessionContext.setAttribute(SessionAttribute.InstructionalOfferingConfigList, null);
             request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, "");
 
@@ -456,13 +456,13 @@ public class InstructionalOfferingConfigEditAction extends Action {
         frm.setInstructionalMethodDefault(io.getSession().getDefaultInstructionalMethod() == null ? null : io.getSession().getDefaultInstructionalMethod().getLabel());
 
 	    Set configs = io.getInstrOfferingConfigs();
-	    frm.setConfigCount(new Integer (configs.size()));
+	    frm.setConfigCount(Integer.valueOf(configs.size()));
 
 	    // Catalog Link
         @SuppressWarnings("deprecation")
 		String linkLookupClass = ApplicationProperty.CourseCatalogLinkProvider.value();
         if (linkLookupClass!=null && linkLookupClass.trim().length()>0) {
-        	ExternalLinkLookup lookup = (ExternalLinkLookup) (Class.forName(linkLookupClass).newInstance());
+        	ExternalLinkLookup lookup = (ExternalLinkLookup) (Class.forName(linkLookupClass).getDeclaredConstructor().newInstance());
        		Map results = lookup.getLink(io);
             if (results==null)
                 throw new Exception (lookup.getErrorMessage());
@@ -527,7 +527,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
         // Create object
         ItypeDescDAO itypeDao = new ItypeDescDAO();
-        ItypeDesc itype = itypeDao.get(new Integer(frm.getItype()));
+        ItypeDesc itype = itypeDao.get(Integer.valueOf(frm.getItype()));
         if(itype==null)
             throw new Exception ("Instructional Type not found");
 
@@ -833,7 +833,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
 	        io.computeLabels(hibSession);
 	        if (!ioc.isUnlimitedEnrollment().booleanValue())
-	        	io.setLimit(new Integer(io.getLimit().intValue() - ioc.getLimit().intValue()));
+	        	io.setLimit(Integer.valueOf(io.getLimit().intValue() - ioc.getLimit().intValue()));
 
             ChangeLog.addChange(
                     hibSession,
@@ -855,7 +855,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	        String className = ApplicationProperty.ExternalActionInstrOffrConfigChange.value();
 	        ExternalInstrOffrConfigChangeAction configChangeAction = null;
         	if (className != null && className.trim().length() > 0){
-	        	configChangeAction = (ExternalInstrOffrConfigChangeAction) (Class.forName(className).newInstance());
+	        	configChangeAction = (ExternalInstrOffrConfigChangeAction) (Class.forName(className).getDeclaredConstructor().newInstance());
 	        	if (!configChangeAction.validateConfigChangeCanOccur(io, hibSession)){
 	        		throw new Exception("Configuration change violates rules for Add On, rolling back the change.");
 	        	}
@@ -916,16 +916,16 @@ public class InstructionalOfferingConfigEditAction extends Action {
             hibSession = iocDao.getSession();
             tx = hibSession.beginTransaction();
 
-            io = ioDao.get(new Long(frm.getInstrOfferingId()));
+            io = ioDao.get(Long.valueOf(frm.getInstrOfferingId()));
             Long configId = frm.getConfigId();
-            Boolean unlimitedEnroll = (frm.getUnlimited()==null) ? new Boolean(false) : frm.getUnlimited();
+            Boolean unlimitedEnroll = (frm.getUnlimited()==null) ? Boolean.valueOf(false) : frm.getUnlimited();
             int limit = (unlimitedEnroll.booleanValue()) ? 0 : frm.getLimit();
             ClassDurationType dtype = (frm.getDurationType() == null || frm.getDurationType() < 0 ? null : ClassDurationTypeDAO.getInstance().get(frm.getDurationType(), hibSession));
             InstructionalMethod imeth = (frm.getInstructionalMethod() == null || frm.getInstructionalMethod() < 0 ? null : InstructionalMethodDAO.getInstance().get(frm.getInstructionalMethod(), hibSession));
 
             if (configId==null || configId.intValue()==0) {
                 ioc = new InstrOfferingConfig();
-                ioc.setLimit(new Integer(limit));
+                ioc.setLimit(Integer.valueOf(limit));
                 ioc.setName(frm.getName());
                 ioc.setUnlimitedEnrollment(unlimitedEnroll);
                 ioc.setInstructionalOffering(io);
@@ -938,7 +938,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             }
             else {
                 ioc = iocDao.get(configId);
-                ioc.setLimit(new Integer(limit));
+                ioc.setLimit(Integer.valueOf(limit));
                 ioc.setName(frm.getName());
                 ioc.setUnlimitedEnrollment(unlimitedEnroll);
                 ioc.setClassDurationType(dtype);
@@ -973,7 +973,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	        String className = ApplicationProperty.ExternalActionInstrOffrConfigChange.value();
 	        ExternalInstrOffrConfigChangeAction configChangeAction = null;
         	if (className != null && className.trim().length() > 0){
-	        	configChangeAction = (ExternalInstrOffrConfigChangeAction) (Class.forName(className).newInstance());
+	        	configChangeAction = (ExternalInstrOffrConfigChangeAction) (Class.forName(className).getDeclaredConstructor().newInstance());
 	        	if (!configChangeAction.validateConfigChangeCanOccur(io, hibSession)){
 	        		throw new Exception("Configuration change violates rules for Add On, rolling back the change.");
 	        	}
@@ -1267,7 +1267,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
         if(managingDept!=null)
             sic.setManagingDeptId(Long.parseLong(managingDept));
         if(disabled!=null)
-            sic.setDisabled(new Boolean(request.getParameter("disabled" + sic.getId())).booleanValue());
+            sic.setDisabled(Boolean.valueOf(request.getParameter("disabled" + sic.getId())).booleanValue());
 
         // Read attributes
         long sid = sic.getSubpartId();
@@ -1300,7 +1300,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             subpart = new SchedulingSubpart();
             subpart.setInstrOfferingConfig(ioc);
             subpart.setItype(sic.getItype());
-            subpart.setMinutesPerWk(new Integer(mpw));
+            subpart.setMinutesPerWk(Integer.valueOf(mpw));
             subpart.setParentSubpart(parent);
             subpart.setAutoSpreadInTime(ApplicationProperty.SchedulingSubpartAutoSpreadInTimeDefault.isTrue());
             subpart.setStudentAllowOverlap(ApplicationProperty.SchedulingSubpartStudentOverlapsDefault.isTrue());
@@ -1327,14 +1327,14 @@ public class InstructionalOfferingConfigEditAction extends Action {
             sid = subpart.getUniqueId().longValue();
             Debug.debug("New subpart uniqueid: " + sid);
             sic.setSubpartId(sid);
-            notDeletedSubparts.put(new Long(sid), "");
+            notDeletedSubparts.put(Long.valueOf(sid), "");
         } // End If: Subpart does not exist
 
         // Subpart exists
         else {
             Debug.debug("Subpart exists ... Updating");
 
-            notDeletedSubparts.put(new Long(sid), "");
+            notDeletedSubparts.put(Long.valueOf(sid), "");
 
             Set s = ioc.getSchedulingSubparts();
             for (Iterator i=s.iterator(); i.hasNext(); ) {
@@ -1359,7 +1359,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	            // If minutes per week has changed then delete time pattern and time prefs
 	            if (subpart.getMinutesPerWk().intValue()!=mpw) {
 	                Debug.debug("Minutes per week changed ... Deleting time prefs on subpart and classes");
-		            subpart.setMinutesPerWk(new Integer(mpw));
+		            subpart.setMinutesPerWk(Integer.valueOf(mpw));
 	            }
 	            
 	            if (ApplicationProperty.ConfigEditDeleteTimePrefs.isTrue()) {
@@ -1416,7 +1416,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
 	                    //Weaken time preferences if the new manager is external
 	                    if (a instanceof TimePref) {
-                            Department mgDept = new DepartmentDAO().get(new Long(mdId));
+                            Department mgDept = new DepartmentDAO().get(Long.valueOf(mdId));
                             if (mgDept.isExternalManager().booleanValue()) {
                                 //weaken only when both controling and managing departments do not allow required time
                                 if (subpart.getControllingDept().isAllowReqTime()==null || !subpart.getControllingDept().isAllowReqTime().booleanValue()) {
@@ -1452,15 +1452,15 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	            for (Iterator i=classes.iterator(); i.hasNext(); ) {
 	                Debug.debug("Updating expected capacity and room capacity on class ...");
 	                Class_ c = (Class_) i.next();
-	                c.setExpectedCapacity(new Integer(mnlpc));
-	                c.setMaxExpectedCapacity(new Integer(mxlpc));
-	                c.setRoomRatio(new Float(rr));
-	                c.setNbrRooms(new Integer(nr));
+	                c.setExpectedCapacity(Integer.valueOf(mnlpc));
+	                c.setMaxExpectedCapacity(Integer.valueOf(mxlpc));
+	                c.setRoomRatio(Float.valueOf(rr));
+	                c.setNbrRooms(Integer.valueOf(nr));
 	                if (c.getDisplayInstructor() == null){
-	                	c.setDisplayInstructor(new Boolean(true));
+	                	c.setDisplayInstructor(Boolean.valueOf(true));
 	                }
 	                if (c.getEnabledForStudentScheduling() == null){
-	                	c.setEnabledForStudentScheduling(new Boolean(true));
+	                	c.setEnabledForStudentScheduling(Boolean.valueOf(true));
 	                }
 
 	                if (managerChanged) {
@@ -1468,7 +1468,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 		                    Debug.debug("Class Managing department changed ...");
 
                             // Update Managing Department
-                            c.setManagingDept(new DepartmentDAO().get(new Long(mdId)), sessionContext.getUser(), hibSession);
+                            c.setManagingDept(new DepartmentDAO().get(Long.valueOf(mdId)), sessionContext.getUser(), hibSession);
 
 		                    // Remove from distribution prefs
 		                    c.deleteAllDistributionPreferences(hibSession);
@@ -1702,9 +1702,9 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	            if (c.getParentClass()!=null) {
 		            Integer classCount = (Integer) cpClasses.get(c.getParentClass().getUniqueId());
 		            if (classCount==null)
-		                cpClasses.put(c.getParentClass().getUniqueId(), new Integer(1));
+		                cpClasses.put(c.getParentClass().getUniqueId(), Integer.valueOf(1));
 		            else
-		                cpClasses.put(c.getParentClass().getUniqueId(), new Integer(classCount.intValue()+1));
+		                cpClasses.put(c.getParentClass().getUniqueId(), Integer.valueOf(classCount.intValue()+1));
 	            }
 	        }
 	        int cpNumClasses = cpClasses.size();
@@ -1776,15 +1776,15 @@ public class InstructionalOfferingConfigEditAction extends Action {
                 for (int ct=0; ct<(nc-numCls); ct++) {
                     Class_ c = new Class_();
         	        c.setSchedulingSubpart(subpart);
-                    c.setExpectedCapacity(new Integer(mnlpc));
-                    c.setMaxExpectedCapacity(new Integer(mxlpc));
-                    c.setRoomRatio(new Float(rr));
-                    c.setNbrRooms(new Integer(nr));
-                    c.setDisplayInstructor(new Boolean(true));
-                    c.setEnabledForStudentScheduling(new Boolean(true));
+                    c.setExpectedCapacity(Integer.valueOf(mnlpc));
+                    c.setMaxExpectedCapacity(Integer.valueOf(mxlpc));
+                    c.setRoomRatio(Float.valueOf(rr));
+                    c.setNbrRooms(Integer.valueOf(nr));
+                    c.setDisplayInstructor(Boolean.valueOf(true));
+                    c.setEnabledForStudentScheduling(Boolean.valueOf(true));
         	        c.setPreferences(new HashSet());
         	        if (md>0)
-        	            c.setManagingDept(new DepartmentDAO().get(new Long(md)), sessionContext.getUser(), hibSession);
+        	            c.setManagingDept(new DepartmentDAO().get(Long.valueOf(md)), sessionContext.getUser(), hibSession);
         	        c.setCancelled(false);
         	        subpart.addToclasses(c);
                 }
@@ -1824,9 +1824,9 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	    	            if (c.getParentClass()!=null) {
 	    		            Integer classCount = (Integer) cpClasses.get(c.getParentClass().getUniqueId());
 	    		            if (classCount==null)
-	    		                cpClasses.put(c.getParentClass().getUniqueId(), new Integer(1));
+	    		                cpClasses.put(c.getParentClass().getUniqueId(), Integer.valueOf(1));
 	    		            else
-	    		                cpClasses.put(c.getParentClass().getUniqueId(), new Integer(classCount.intValue()+1));
+	    		                cpClasses.put(c.getParentClass().getUniqueId(), Integer.valueOf(classCount.intValue()+1));
 	    	            }
 	    	        }
                     int diff = (numCls - nc) / cpClasses.size();
@@ -1933,7 +1933,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	                }
 	            }
 
-                cpClasses.put(c.getUniqueId(), new Integer(childClassCount));
+                cpClasses.put(c.getUniqueId(), Integer.valueOf(childClassCount));
 	        }
 
             ArrayList parentClassKeys = new ArrayList(cpClasses.keySet());

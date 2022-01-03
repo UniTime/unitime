@@ -190,7 +190,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 		TimetableManager m = (TimetableManager)o;
 		int cmp = getName().compareTo(m.getName());
 		if (cmp!=0) return cmp;
-		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(m.getUniqueId() == null ? -1 : m.getUniqueId());
+		return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(m.getUniqueId() == null ? -1 : m.getUniqueId());
 	}
 	
 	public String toString() { return getName(); }

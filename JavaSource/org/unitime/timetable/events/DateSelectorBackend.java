@@ -162,7 +162,7 @@ public class DateSelectorBackend extends EventAction<RequestSessionDetails, GwtR
 	}
 	
 	private static int compare(Calendar c1, Calendar c2, int field) {
-		return new Integer(c1.get(field)).compareTo(c2.get(field));
+		return Integer.valueOf(c1.get(field)).compareTo(c2.get(field));
 	}
 
 }

@@ -24,9 +24,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.Level;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.Property;
 import org.hibernate.CacheMode;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -37,20 +38,14 @@ import org.unitime.timetable.model.dao.MessageLogDAO;
 /**
  * @author Tomas Muller
  */
-public class MessageLogAppender extends AppenderSkeleton {
-	private Saver iSaver = null;
-	private Level iMinLevel = null;
+public class MessageLogAppender extends AbstractAppender {
 	
-	@Override
-	public void close() {
-		if (iSaver != null)
-			iSaver.interrupt();
+	public MessageLogAppender() {
+		super("message-log", null, null, true, Property.EMPTY_ARRAY);
 	}
 
-	@Override
-	public boolean requiresLayout() {
-		return false;
-	}
+	private Saver iSaver = null;
+	private Level iMinLevel = null;
 	
 	private Saver getSaver() {
 		if (iSaver == null) {
@@ -68,12 +63,19 @@ public class MessageLogAppender extends AppenderSkeleton {
 	}
 	
 	@Override
-	protected void append(LoggingEvent event) {
-		if (!event.getLevel().isGreaterOrEqual(getMinLevel())) return;
-		if (event.getLogger().equals(MessageLogAppender.class.getName())) return;
+	public void stop() {
+		if (iSaver != null)
+			iSaver.interrupt();
+		super.stop();
+	}
+	
+	@Override
+	public void append(LogEvent event) {
+		if (!event.getLevel().isMoreSpecificThan(getMinLevel())) return;
+		if (MessageLogAppender.class.getName().equals(event.getLoggerName())) return;
 		
 		MessageLog m = new MessageLog();
-		m.setLevel(event.getLevel().toInt());
+		m.setLevel(event.getLevel().intLevel());
 
 		String logger = event.getLoggerName();
 		if (logger.indexOf('.') >= 0) logger = logger.substring(logger.lastIndexOf('.') + 1);
@@ -81,14 +83,13 @@ public class MessageLogAppender extends AppenderSkeleton {
 		
 		m.setMessage(event.getMessage() == null ? null : event.getMessage().toString());
 		
-		m.setTimeStamp(new Date(event.getTimeStamp()));
+		m.setTimeStamp(new Date(event.getTimeMillis()));
 		
-		m.setNdc(event.getNDC());
-		
+		m.setNdc(event.getContextStack().toString());
 		String thread = event.getThreadName();
 		m.setThread(thread == null ? null : thread.length() > 100 ? thread.substring(0, 100) : thread);
 		
-		Throwable t = (event.getThrowableInformation() != null ? event.getThrowableInformation().getThrowable() : null);
+		Throwable t = event.getThrown();
 		if (t != null) {
 			String ex = "";
 			while (t != null) {

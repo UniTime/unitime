@@ -704,7 +704,7 @@ public class Class_ extends BaseClass_ {
     		if (cmp.compare(clazz, this)<0) idx++;
     	}
 
-    	sectionNumber = new Integer(getSchedulingSubpart().getInstrOfferingConfig().getFirstSectionNumber(getSchedulingSubpart().getItype())+idx);
+    	sectionNumber = Integer.valueOf(getSchedulingSubpart().getInstrOfferingConfig().getFirstSectionNumber(getSchedulingSubpart().getItype())+idx);
 		setSectionNumberCache(sectionNumber);
 
     	if (save) {
@@ -971,7 +971,7 @@ public class Class_ extends BaseClass_ {
 					for (Iterator j=distributionPref.getDistributionObjects().iterator();j.hasNext();) {
 						DistributionObject dObj = (DistributionObject)j.next();
 						if (seqNo.compareTo(dObj.getSequenceNumber())<0) {
-							dObj.setSequenceNumber(new Integer(dObj.getSequenceNumber().intValue()-1));
+							dObj.setSequenceNumber(Integer.valueOf(dObj.getSequenceNumber().intValue()-1));
 							hibSession.saveOrUpdate(dObj);
 						}
 					}
@@ -990,7 +990,7 @@ public class Class_ extends BaseClass_ {
     public Integer getMinRoomLimit() {
     	int expCap = (getExpectedCapacity()==null?0:getExpectedCapacity().intValue());
     	float roomRatio = (getRoomRatio()==null?0.0f:getRoomRatio().floatValue());
-    	return new Integer(Math.round(expCap<=0?roomRatio:expCap*roomRatio));
+    	return Integer.valueOf(Math.round(expCap<=0?roomRatio:expCap*roomRatio));
     }
 
     public static List findAll(Long sessionId) {
@@ -1197,7 +1197,7 @@ public class Class_ extends BaseClass_ {
 	}
 	
 	public boolean isOddOrEvenWeeksOnly(){
-		if (effectiveDatePattern() != null && effectiveDatePattern().getType().equals(new Integer(DatePattern.sTypeAlternate))){
+		if (effectiveDatePattern() != null && effectiveDatePattern().getType().equals(Integer.valueOf(DatePattern.sTypeAlternate))){
 			return(true);
 		}
 		return(false);
@@ -1408,7 +1408,7 @@ public class Class_ extends BaseClass_ {
             new _RootDAO().getSession().refresh(this);
             String className = ApplicationProperty.ExternalActionClassEdit.value();
         	if (className != null && className.trim().length() > 0){
-            	ExternalClassEditAction editAction = (ExternalClassEditAction) (Class.forName(className).newInstance());
+            	ExternalClassEditAction editAction = (ExternalClassEditAction) (Class.forName(className).getDeclaredConstructor().newInstance());
            		editAction.performExternalClassEditAction(this, hibSession);
         	}
 
@@ -1534,7 +1534,7 @@ public class Class_ extends BaseClass_ {
             new _RootDAO().getSession().refresh(this);
             String className = ApplicationProperty.ExternalActionClassEdit.value();
         	if (className != null && className.trim().length() > 0){
-            	ExternalClassEditAction editAction = (ExternalClassEditAction) (Class.forName(className).newInstance());
+            	ExternalClassEditAction editAction = (ExternalClassEditAction) (Class.forName(className).getDeclaredConstructor().newInstance());
            		editAction.performExternalClassEditAction(this, hibSession);
         	}
             

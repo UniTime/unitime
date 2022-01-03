@@ -255,10 +255,10 @@ public abstract class EventRelatedImports extends BaseImport {
 		public Meeting asMeeting(){
 			Meeting meeting = new Meeting();
 			
-			meeting.setClassCanOverride(new Boolean(true));
-			meeting.setStartOffset(new Integer(0));
+			meeting.setClassCanOverride(Boolean.valueOf(true));
+			meeting.setStartOffset(Integer.valueOf(0));
 			meeting.setStartPeriod(this.getStartPeriod());
-			meeting.setStopOffset(new Integer(0));
+			meeting.setStopOffset(Integer.valueOf(0));
 			meeting.setStopPeriod(this.getEndPeriod());
             meeting.setStatus(Meeting.Status.PENDING);
 

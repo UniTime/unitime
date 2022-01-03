@@ -77,8 +77,8 @@ public class SemesterHours extends SemesterMinutes {
 		if (semesterHours <= 0 || datePattern == null) return null;
 		if (datePattern.getType() != null && datePattern.getType() == DatePattern.sTypePatternSet) {
 			for (DatePattern child: datePattern.findChildren())
-				return new Integer(Math.round(semesterHours / child.getEffectiveNumberOfWeeks()));
+				return Integer.valueOf(Math.round(semesterHours / child.getEffectiveNumberOfWeeks()));
 		}
-		return new Integer(Math.round(semesterHours / datePattern.getEffectiveNumberOfWeeks()));
+		return Integer.valueOf(Math.round(semesterHours / datePattern.getEffectiveNumberOfWeeks()));
 	}
 }

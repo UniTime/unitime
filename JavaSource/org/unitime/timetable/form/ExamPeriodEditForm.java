@@ -287,7 +287,7 @@ public class ExamPeriodEditForm extends ActionForm {
 	}
 	
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		iOp = null; iUniqueId = new Long(-1); iDate = null; 
+		iOp = null; iUniqueId = Long.valueOf(-1); iDate = null; 
 		iStart = null; iLength = null; iStartOffset = null; iStopOffset = null;
 		iStart2 = null; iLength2 = null; iStartOffset2 = null; iStopOffset2 = null;
 		iStart3 = null; iLength3 = null; iStartOffset3 = null; iStopOffset3 = null;
@@ -376,8 +376,8 @@ public class ExamPeriodEditForm extends ActionForm {
 	    ep.setLength(iLength / Constants.SLOT_LENGTH_MIN);
 	    ep.setPrefLevel(new PreferenceLevelDAO().get(iPrefLevel));
 	    ep.setExamType(ExamTypeDAO.getInstance().get(iType));
-	    ep.setEventStartOffset(iStartOffset == null?new Integer(0):new Integer(iStartOffset.intValue()/Constants.SLOT_LENGTH_MIN));
-	    ep.setEventStopOffset(iStopOffset == null?new Integer(0):new Integer(iStopOffset.intValue()/Constants.SLOT_LENGTH_MIN));
+	    ep.setEventStartOffset(iStartOffset == null?Integer.valueOf(0):Integer.valueOf(iStartOffset.intValue()/Constants.SLOT_LENGTH_MIN));
+	    ep.setEventStopOffset(iStopOffset == null?Integer.valueOf(0):Integer.valueOf(iStopOffset.intValue()/Constants.SLOT_LENGTH_MIN));
 		hibSession.saveOrUpdate(ep);
 	}
 	
@@ -394,8 +394,8 @@ public class ExamPeriodEditForm extends ActionForm {
         ep.setLength(iLength / Constants.SLOT_LENGTH_MIN);
         ep.setPrefLevel(new PreferenceLevelDAO().get(iPrefLevel));
         ep.setExamType(ExamTypeDAO.getInstance().get(iType));
-        ep.setEventStartOffset(iStartOffset == null?new Integer(0):new Integer(iStartOffset.intValue() / Constants.SLOT_LENGTH_MIN));
-        ep.setEventStopOffset(iStopOffset == null?new Integer(0):new Integer(iStopOffset.intValue() / Constants.SLOT_LENGTH_MIN));
+        ep.setEventStartOffset(iStartOffset == null?Integer.valueOf(0):Integer.valueOf(iStartOffset.intValue() / Constants.SLOT_LENGTH_MIN));
+        ep.setEventStopOffset(iStopOffset == null?Integer.valueOf(0):Integer.valueOf(iStopOffset.intValue() / Constants.SLOT_LENGTH_MIN));
         hibSession.saveOrUpdate(ep);
 		setUniqueId(ep.getUniqueId());
 		return ep;
@@ -482,8 +482,8 @@ public class ExamPeriodEditForm extends ActionForm {
 				} else {
 				    period.setStartSlot(start);
 				    period.setLength(length.get(start) / Constants.SLOT_LENGTH_MIN);
-				    period.setEventStartOffset(eventStartOffsets.get(start) == null?new Integer(null):new Integer(eventStartOffsets.get(start)/Constants.SLOT_LENGTH_MIN));
-				    period.setEventStopOffset(eventStopOffsets.get(start) == null?new Integer(null):new Integer(eventStopOffsets.get(start)/Constants.SLOT_LENGTH_MIN));
+				    period.setEventStartOffset(eventStartOffsets.get(start) == null?Integer.valueOf(null):Integer.valueOf(eventStartOffsets.get(start)/Constants.SLOT_LENGTH_MIN));
+				    period.setEventStopOffset(eventStopOffsets.get(start) == null?Integer.valueOf(null):Integer.valueOf(eventStopOffsets.get(start)/Constants.SLOT_LENGTH_MIN));
 				    hibSession.update(period);
 				}
 			}
@@ -496,8 +496,8 @@ public class ExamPeriodEditForm extends ActionForm {
 				    ep.setDateOffset(day);
 				    ep.setStartSlot(start);
 				    ep.setLength(length.get(start) / Constants.SLOT_LENGTH_MIN);
-				    ep.setEventStartOffset(eventStartOffsets.get(start) == null?new Integer(null):new Integer(eventStartOffsets.get(start)/Constants.SLOT_LENGTH_MIN));
-				    ep.setEventStopOffset(eventStopOffsets.get(start) == null?new Integer(null):new Integer(eventStopOffsets.get(start)/Constants.SLOT_LENGTH_MIN));
+				    ep.setEventStartOffset(eventStartOffsets.get(start) == null?Integer.valueOf(null):Integer.valueOf(eventStartOffsets.get(start)/Constants.SLOT_LENGTH_MIN));
+				    ep.setEventStopOffset(eventStopOffsets.get(start) == null?Integer.valueOf(null):Integer.valueOf(eventStopOffsets.get(start)/Constants.SLOT_LENGTH_MIN));
 				    ep.setExamType(ExamTypeDAO.getInstance().get(iType));
 				    ep.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
 				    hibSession.save(ep);

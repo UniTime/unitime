@@ -113,7 +113,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	public int compareTo(InstructorInterface instructor) {
 		int cmp = getOrderName().compareToIgnoreCase(instructor.getOrderName());
 		if (cmp != 0) return cmp;
-		return (getId() == null ? new Long(-1l) : getId()).compareTo(instructor.getId() == null ? -1l : instructor.getId());
+		return (getId() == null ? Long.valueOf(-1l) : getId()).compareTo(instructor.getId() == null ? -1l : instructor.getId());
 	}
 
 	@Override
@@ -416,7 +416,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 			if (cmp != 0) return cmp;
 			cmp = getName().compareTo(a.getName());
 			if (cmp != 0) return cmp;
-			return (getId() == null ? new Long(0) : getId()).compareTo(a.getId() == null ? new Long(0) : a.getId());
+			return (getId() == null ? Long.valueOf(0) : getId()).compareTo(a.getId() == null ? Long.valueOf(0) : a.getId());
 		}
 	}
 	

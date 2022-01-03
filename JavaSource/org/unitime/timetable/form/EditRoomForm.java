@@ -357,7 +357,7 @@ public class EditRoomForm extends ActionForm {
     	List<IdValue> ret = new ArrayList<IdValue>();
     	ret.add(new IdValue(-1l, "Default"));
     	for (RoomTypeOption.Status state: RoomTypeOption.Status.values()) {
-    		ret.add(new IdValue(new Long(state.ordinal()), state.toString()));
+    		ret.add(new IdValue(Long.valueOf(state.ordinal()), state.toString()));
     	}
     	return ret;
     }

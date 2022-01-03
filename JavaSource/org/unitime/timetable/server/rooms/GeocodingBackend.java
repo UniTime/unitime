@@ -23,7 +23,9 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.restlet.Client;
 import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
@@ -46,7 +48,7 @@ import com.google.gson.reflect.TypeToken;
  */
 @GwtRpcImplements(GeocodeRequest.class)
 public class GeocodingBackend implements GwtRpcImplementation<GeocodeRequest, GeocodeResponse>, InitializingBean, DisposableBean {
-	private static Logger sLog = Logger.getLogger(GeocodingBackend.class);
+	private static Log sLog = LogFactory.getLog(GeocodingBackend.class);
 	private Client iClient;
 	
 	@Override

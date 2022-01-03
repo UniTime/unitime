@@ -61,11 +61,11 @@ public class DepartmentalInstructorComparator implements Comparator {
         DepartmentalInstructor s2 = (DepartmentalInstructor) o2;
         
         if (compareBy==COMPARE_BY_POSITION) {
-            Integer l1 = new Integer(-1);
+            Integer l1 = Integer.valueOf(-1);
             if (s1.getPositionType()!=null) 
                 l1 = s1.getPositionType().getSortOrder();
             
-            Integer l2 = new Integer(-1);
+            Integer l2 = Integer.valueOf(-1);
             if (s2.getPositionType()!=null)
                 l2 = s2.getPositionType().getSortOrder();
             

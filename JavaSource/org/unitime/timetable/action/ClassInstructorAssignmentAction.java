@@ -179,7 +179,7 @@ public class ClassInstructorAssignmentAction extends Action {
 
                 	String className = ApplicationProperty.ExternalActionInstrOfferingConfigAssignInstructors.value();
                 	if (className != null && className.trim().length() > 0){
-        	        	ExternalInstrOfferingConfigAssignInstructorsAction assignAction = (ExternalInstrOfferingConfigAssignInstructorsAction) (Class.forName(className).newInstance());
+        	        	ExternalInstrOfferingConfigAssignInstructorsAction assignAction = (ExternalInstrOfferingConfigAssignInstructorsAction) (Class.forName(className).getDeclaredConstructor().newInstance());
         	       		assignAction.performExternalInstrOfferingConfigAssignInstructorsAction(ioc, InstrOfferingConfigDAO.getInstance().getSession());
                 	}
 

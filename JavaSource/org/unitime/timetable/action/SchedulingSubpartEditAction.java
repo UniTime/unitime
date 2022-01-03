@@ -169,7 +169,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
 
         // If subpart id is not null - load subpart info
         SchedulingSubpartDAO sdao = new SchedulingSubpartDAO();
-        SchedulingSubpart ss = sdao.get(new Long(subpartId));
+        SchedulingSubpart ss = sdao.get(Long.valueOf(subpartId));
 
         // Cancel - Go back to Instructional Offering Screen
         if(op.equals(MSG.actionBackToDetail())
@@ -215,7 +215,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         doLoad(request, frm, ss, subpartId);
 
         if (op.equals("init")) {
-        	frm.setDatePattern(ss.getDatePattern()==null?new Long(-1):ss.getDatePattern().getUniqueId());
+        	frm.setDatePattern(ss.getDatePattern()==null?Long.valueOf(-1):ss.getDatePattern().getUniqueId());
         }
 
         // Update Preferences for Subpart
@@ -365,9 +365,9 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         frm.setCourseTitle(co.getTitle());
 
     	if (ss.getParentSubpart() != null && ss.getItype().equals(ss.getParentSubpart().getItype())){
-    		frm.setSameItypeAsParent(new Boolean(true));
+    		frm.setSameItypeAsParent(Boolean.valueOf(true));
     	} else {
-    		frm.setSameItypeAsParent(new Boolean(false));
+    		frm.setSameItypeAsParent(Boolean.valueOf(false));
     	}
 
         if (frm.getCreditFormat() == null){
@@ -443,7 +443,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         if (frm.getInstructionalType() == null || frm.getInstructionalType().length() == 0){
         	// do nothing
         } else {
-        	ItypeDesc newItype = new ItypeDescDAO().get(new Integer(frm.getInstructionalType()));
+        	ItypeDesc newItype = new ItypeDescDAO().get(Integer.valueOf(frm.getInstructionalType()));
         	if (newItype != null){
         		ss.setItype(newItype);
         	}
@@ -490,18 +490,18 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         				CourseCreditUnitConfig origConfig = ss.getCredit();
             			ss.setCredit(null);
             			sdao.getSession().delete(origConfig);
-            			ss.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), new Boolean(false)));
+            			ss.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), Boolean.valueOf(false)));
             			ss.getCredit().setOwner(ss);
         			}
         		} else {
         			CourseCreditUnitConfig origConfig = ss.getCredit();
         			ss.setCredit(null);
         			sdao.getSession().delete(origConfig);
-        			ss.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), new Boolean(false)));
+        			ss.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), Boolean.valueOf(false)));
         			ss.getCredit().setOwner(ss);
         		}
         	} else {
-    			ss.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), new Boolean(false)));
+    			ss.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), Boolean.valueOf(false)));
     			ss.getCredit().setOwner(ss);
         	}
         }
@@ -517,7 +517,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
  
         String className = ApplicationProperty.ExternalActionSchedulingSubpartEdit.value();
     	if (className != null && className.trim().length() > 0){
-        	ExternalSchedulingSubpartEditAction editAction = (ExternalSchedulingSubpartEditAction) (Class.forName(className).newInstance());
+        	ExternalSchedulingSubpartEditAction editAction = (ExternalSchedulingSubpartEditAction) (Class.forName(className).getDeclaredConstructor().newInstance());
        		editAction.performExternalSchedulingSubpartEditAction(ss, sdao.getSession());
     	}
 

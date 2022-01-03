@@ -426,18 +426,18 @@ public class CourseOfferingEditAction extends Action {
 		        				CourseCreditUnitConfig origConfig = co.getCredit();
 		            			co.setCredit(null);
 		            			hibSession.delete(origConfig);
-		            			co.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), new Boolean(true)));
+		            			co.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), Boolean.valueOf(true)));
 		            			co.getCredit().setOwner(co);
 		        			}
 		        		} else {
 		        			CourseCreditUnitConfig origConfig = co.getCredit();
 		        			co.setCredit(null);
 		        			hibSession.delete(origConfig);
-		        			co.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), new Boolean(true)));
+		        			co.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), Boolean.valueOf(true)));
 		        			co.getCredit().setOwner(co);
 		        		}
 		        	} else {
-		    			co.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), new Boolean(true)));
+		    			co.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), Boolean.valueOf(true)));
 		    			co.getCredit().setOwner(co);
 		        	}
 
@@ -498,7 +498,7 @@ public class CourseOfferingEditAction extends Action {
         		if (io == null){
         			io = co.getInstructionalOffering();
         		}
-	        	ExternalCourseOfferingEditAction editAction = (ExternalCourseOfferingEditAction) (Class.forName(className).newInstance());
+	        	ExternalCourseOfferingEditAction editAction = (ExternalCourseOfferingEditAction) (Class.forName(className).getDeclaredConstructor().newInstance());
 	       		editAction.performExternalCourseOfferingEditAction(io, hibSession);
         	}
         }
@@ -531,19 +531,19 @@ public class CourseOfferingEditAction extends Action {
             co.setSubjectArea(subjArea);
             co.setSubjectAreaAbbv(subjArea.getSubjectAreaAbbreviation());
 		    co.setCourseNbr(frm.getCourseNbr());
-		    co.setProjectedDemand(new Integer(0));
-            co.setDemand(new Integer(0));
-		    co.setNbrExpectedStudents(new Integer(0));
-		    co.setIsControl(new Boolean(true));
+		    co.setProjectedDemand(Integer.valueOf(0));
+            co.setDemand(Integer.valueOf(0));
+		    co.setNbrExpectedStudents(Integer.valueOf(0));
+		    co.setIsControl(Boolean.valueOf(true));
 		    co.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)new CourseOfferingDAO().getSession(), co).toString());
 		    subjArea.getCourseOfferings().add(co);
 
 	        // Add new Instructional Offering
 		    InstructionalOffering io = new InstructionalOffering();
-		    io.setNotOffered(new Boolean(false));
+		    io.setNotOffered(Boolean.valueOf(false));
 		    io.setSession(subjArea.getSession());
 		    io.generateInstrOfferingPermId();
-		    io.setLimit(new Integer(0));
+		    io.setLimit(Integer.valueOf(0));
 		    
 		    co.setInstructionalOffering(io);
 		    io.addTocourseOfferings(co);
@@ -627,7 +627,7 @@ public class CourseOfferingEditAction extends Action {
 	        frm.setCourseOfferingId((Long)hibSession.save(co));
 
 	        if (frm.getCreditFormat() != null && !frm.getCreditFormat().isEmpty() && !frm.getCreditFormat().equals(Constants.BLANK_OPTION_VALUE)) {
-	        	co.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), new Boolean(true)));
+	        	co.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), Boolean.valueOf(true)));
     			co.getCredit().setOwner(co);
 	        }
 
@@ -661,13 +661,13 @@ public class CourseOfferingEditAction extends Action {
             
 		    String className1 = ApplicationProperty.ExternalActionInstructionalOfferingAdd.value();
         	if (className1 != null && className1.trim().length() > 0){
-	        	ExternalInstructionalOfferingAddAction addAction = (ExternalInstructionalOfferingAddAction) (Class.forName(className1).newInstance());
+	        	ExternalInstructionalOfferingAddAction addAction = (ExternalInstructionalOfferingAddAction) (Class.forName(className1).getDeclaredConstructor().newInstance());
 	       		addAction.performExternalInstructionalOfferingAddAction(io, hibSession);
         	}
 
         	String className2 = ApplicationProperty.ExternalActionCourseOfferingEdit.value();
         	if (className2 != null && className2.trim().length() > 0){
-	        	ExternalCourseOfferingEditAction editAction = (ExternalCourseOfferingEditAction) (Class.forName(className2).newInstance());
+	        	ExternalCourseOfferingEditAction editAction = (ExternalCourseOfferingEditAction) (Class.forName(className2).getDeclaredConstructor().newInstance());
 	       		editAction.performExternalCourseOfferingEditAction(io, hibSession);
         	}
         } catch (Exception e) {
@@ -697,7 +697,7 @@ public class CourseOfferingEditAction extends Action {
     		sessionContext.checkPermission(crsOfferingId, "CourseOffering", Right.EditCourseOffering);
 
         // Load Course Offering
-        Long courseOfferingId = new Long(crsOfferingId);
+        Long courseOfferingId = Long.valueOf(crsOfferingId);
 
         CourseOfferingDAO cdao = new CourseOfferingDAO();
         final CourseOffering co = cdao.get(courseOfferingId);
@@ -735,7 +735,7 @@ public class CourseOfferingEditAction extends Action {
         if (co.getConsentType()!=null)
             frm.setConsent(co.getConsentType().getUniqueId());
         else
-            frm.setConsent(new Long(-1));
+            frm.setConsent(Long.valueOf(-1));
         LookupTables.setupConsentType(request);
         LookupTables.setupCoordinatorTeachingResponsibilities(request);
 
@@ -785,7 +785,7 @@ public class CourseOfferingEditAction extends Action {
             @SuppressWarnings("deprecation")
 			String linkLookupClass = ApplicationProperty.CourseCatalogLinkProvider.value();
             if (linkLookupClass!=null && linkLookupClass.trim().length()>0) {
-            	ExternalLinkLookup lookup = (ExternalLinkLookup) (Class.forName(linkLookupClass).newInstance());
+            	ExternalLinkLookup lookup = (ExternalLinkLookup) (Class.forName(linkLookupClass).getDeclaredConstructor().newInstance());
            		Map results = lookup.getLink(io);
                 if (results==null)
                     throw new Exception (lookup.getErrorMessage());

@@ -372,25 +372,25 @@ public class ExamEditAction extends PreferencesAction {
                 frm.getSubjectArea().add(config.getControllingCourseOffering().getSubjectArea().getUniqueId());
                 frm.getCourseNbr().add(config.getControllingCourseOffering().getUniqueId());
                 frm.getItype().add(-config.getUniqueId());
-                frm.getClassNumber().add(new Long(-1));
+                frm.getClassNumber().add(Long.valueOf(-1));
             } else if ("InstrOfferingConfig".equals(firstType)) {
                 InstrOfferingConfig config = new InstrOfferingConfigDAO().get(firstId);
                 frm.getSubjectArea().add(config.getControllingCourseOffering().getSubjectArea().getUniqueId());
                 frm.getCourseNbr().add(config.getControllingCourseOffering().getUniqueId());
                 frm.getItype().add(-config.getUniqueId());
-                frm.getClassNumber().add(new Long(-1));
+                frm.getClassNumber().add(Long.valueOf(-1));
             } else if ("InstructionalOffering".equals(firstType)) {
                 InstructionalOffering offering = new InstructionalOfferingDAO().get(firstId);
                 frm.getSubjectArea().add(offering.getControllingCourseOffering().getSubjectArea().getUniqueId());
                 frm.getCourseNbr().add(offering.getControllingCourseOffering().getUniqueId());
                 frm.getItype().add(Long.MIN_VALUE+1);
-                frm.getClassNumber().add(new Long(-1));
+                frm.getClassNumber().add(Long.valueOf(-1));
             } else if ("CourseOffering".equals(firstType)) {
                 CourseOffering course = new CourseOfferingDAO().get(firstId);
                 frm.getSubjectArea().add(course.getSubjectArea().getUniqueId());
                 frm.getCourseNbr().add(course.getUniqueId());
                 frm.getItype().add(Long.MIN_VALUE);
-                frm.getClassNumber().add(new Long(-1));
+                frm.getClassNumber().add(Long.valueOf(-1));
             }
         }
         
@@ -512,8 +512,8 @@ public class ExamEditAction extends PreferencesAction {
             if (exam.getAssignedPeriod()!=null && (!exam.getLength().equals(oldLength) || oldPrintOffset!=(exam.getPrintOffset()==null?0:exam.getPrintOffset()))) {
                 for (Iterator i=event.getMeetings().iterator();i.hasNext();) {
                     Meeting m = (Meeting)i.next();
-                    m.setStartOffset(new Integer(exam.getAssignedPeriod().getExamEventStartOffsetForExam(exam)));
-                    m.setStopOffset(new Integer(exam.getAssignedPeriod().getExamEventStopOffsetForExam(exam)));
+                    m.setStartOffset(Integer.valueOf(exam.getAssignedPeriod().getExamEventStartOffsetForExam(exam)));
+                    m.setStopOffset(Integer.valueOf(exam.getAssignedPeriod().getExamEventStopOffsetForExam(exam)));
                 }
             }
         }

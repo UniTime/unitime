@@ -231,7 +231,7 @@ public class TaskExecutionsTable extends UniTimeTable<TaskExecutionInterface> im
 		}
 		
 		protected int compareByTime(TaskExecutionInterface e1, TaskExecutionInterface e2) {
-			int cmp = new Integer(e1.getSlot()).compareTo(e2.getSlot());
+			int cmp = Integer.valueOf(e1.getSlot()).compareTo(e2.getSlot());
 			if (cmp != 0) return cmp;
 			return e1.getDayOfYear().compareTo(e2.getDayOfYear());
 		}
@@ -239,7 +239,7 @@ public class TaskExecutionsTable extends UniTimeTable<TaskExecutionInterface> im
 		protected int compareByDate(TaskExecutionInterface e1, TaskExecutionInterface e2) {
 			int cmp = e1.getDayOfYear().compareTo(e2.getDayOfYear());
 			if (cmp != 0) return cmp;
-			return new Integer(e1.getSlot()).compareTo(e2.getSlot());
+			return Integer.valueOf(e1.getSlot()).compareTo(e2.getSlot());
 		}
 
 		protected int compareByStatus(TaskExecutionInterface e1, TaskExecutionInterface e2) {

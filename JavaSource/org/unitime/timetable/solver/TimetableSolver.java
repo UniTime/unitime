@@ -919,8 +919,8 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     		if (placement==null) return null;
         	Assignment assignment = new Assignment();
         	assignment.setClassName(lecture.getName());
-    		assignment.setDays(new Integer(placement.getTimeLocation().getDayCode()));
-    		assignment.setStartSlot(new Integer(placement.getTimeLocation().getStartSlot()));
+    		assignment.setDays(Integer.valueOf(placement.getTimeLocation().getDayCode()));
+    		assignment.setStartSlot(Integer.valueOf(placement.getTimeLocation().getStartSlot()));
     		if (placement.getTimeLocation().getDatePatternId()!=null) {
     			assignment.setDatePattern(DatePatternDAO.getInstance().get(placement.getTimeLocation().getDatePatternId()));
     		}

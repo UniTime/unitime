@@ -64,8 +64,8 @@ public class MeetingMinutes extends MeetingCountingDuration {
 		if (minutes <= 0 || datePattern == null) return null;
 		if (datePattern.getType() != null && datePattern.getType() == DatePattern.sTypePatternSet) {
 			for (DatePattern child: datePattern.findChildren())
-				return new Integer(Math.round(minutes / (50f * child.getEffectiveNumberOfWeeks())));
+				return Integer.valueOf(Math.round(minutes / (50f * child.getEffectiveNumberOfWeeks())));
 		}
-		return new Integer(Math.round(minutes / (50f * datePattern.getEffectiveNumberOfWeeks())));
+		return Integer.valueOf(Math.round(minutes / (50f * datePattern.getEffectiveNumberOfWeeks())));
 	}
 }

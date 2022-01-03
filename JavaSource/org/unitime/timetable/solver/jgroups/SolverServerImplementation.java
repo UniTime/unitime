@@ -33,9 +33,11 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
+
 import org.cpsolver.ifs.util.DataProperties;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
@@ -575,9 +577,7 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 	}
 	
 	private static void configureLogging(Properties properties) {
-        PropertyConfigurator.configure(properties);
-        
-        Logger log = Logger.getRootLogger();
+		Logger log = LogManager.getRootLogger();
         log.info("-----------------------------------------------------------------------");
         log.info("UniTime Log File");
         log.info("");
@@ -605,8 +605,8 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
     		if (System.getProperty("catalina.base") == null)
     			ApplicationProperties.getDefaultProperties().setProperty("catalina.base",
     					ApplicationProperty.DataDir.value());
-    		    		
-			configureLogging(ApplicationProperties.getDefaultProperties());
+    		    
+    		configureLogging(ApplicationProperties.getDefaultProperties());
     		
 			HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
 			
@@ -693,13 +693,19 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 	}
 
 	@Override
-	public void setLoggingLevel(String name, Integer level) {
-		sLog.info("Set logging level for " + (name == null ? "root" : name) + " to " + (level == null ? "null" : Level.toLevel(level)));
-		Logger logger = (name == null ? Logger.getRootLogger() : Logger.getLogger(name));
-		if (level == null)
-			logger.setLevel(null);
-		else
-			logger.setLevel(Level.toLevel(level));
+	public void setLoggingLevel(String name, String level) {
+		sLog.info("Set logging level for " + (name == null ? "root" : name) + " to " + (level == null ? "null" : level));
+		if (level == null) {
+			if (name == null || name.isEmpty())
+				Configurator.setRootLevel(Level.INFO);
+			else
+				Configurator.setLevel(name, null);
+		} else {
+			if (name == null || name.isEmpty())
+				Configurator.setRootLevel(Level.getLevel(level));
+			else
+				Configurator.setLevel(name, Level.getLevel(level));
+		}
 	}
 
 	@Override

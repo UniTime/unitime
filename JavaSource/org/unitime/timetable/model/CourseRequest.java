@@ -69,7 +69,7 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
         CourseRequest cr = (CourseRequest)o;
         int cmp = getOrder().compareTo(cr.getOrder());
         if (cmp!=0) return cmp;
-        return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(cr.getUniqueId() == null ? -1 : cr.getUniqueId());
+        return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(cr.getUniqueId() == null ? -1 : cr.getUniqueId());
     }
     
     public List<StudentClassEnrollment> getClassEnrollments() {
@@ -139,7 +139,7 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
     }
     
     public void setCourseRequestOverrideStatus(CourseRequestOverrideStatus status) {
-    	setOverrideStatus(status == null ? null : new Integer(status.ordinal()));
+    	setOverrideStatus(status == null ? null : Integer.valueOf(status.ordinal()));
     }
     
     public void setCourseRequestOverrideIntent(CourseRequestOverrideIntent intent) {

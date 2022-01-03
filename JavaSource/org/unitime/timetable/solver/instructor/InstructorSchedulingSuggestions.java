@@ -334,7 +334,7 @@ public class InstructorSchedulingSuggestions {
     	
     	SuggestionInfo suggestion = new SuggestionInfo();
     	suggestion.setValue(iModel.getTotalValue(iAssignment) - iValue);
-    	suggestion.setId(new Long(iNrDomainValues ++));
+    	suggestion.setId(Long.valueOf(iNrDomainValues ++));
     	for (Criterion<TeachingRequest.Variable, TeachingAssignment> c: iModel.getCriteria()) {
     		double v = c.getValue(iAssignment);
     		Double base = iValues.get(c.getName());
@@ -366,7 +366,7 @@ public class InstructorSchedulingSuggestions {
     protected SuggestionInfo createSuggestion(double value) {
     	SuggestionInfo suggestion = new SuggestionInfo();
     	suggestion.setValue(value);
-    	suggestion.setId(new Long(iNrSolutions ++));
+    	suggestion.setId(Long.valueOf(iNrSolutions ++));
     	for (Criterion<TeachingRequest.Variable, TeachingAssignment> c: iModel.getCriteria()) {
     		double v = c.getValue(iAssignment);
     		Double base = iValues.get(c.getName());

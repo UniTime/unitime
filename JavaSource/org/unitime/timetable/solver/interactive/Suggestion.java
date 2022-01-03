@@ -136,7 +136,7 @@ public class Suggestion implements Serializable, Comparable {
         					for (Iterator j=confs.iterator();j.hasNext();) {
         						Placement commitedPlacement = (Placement)j.next();
         						Integer current = (Integer)x.get(commitedPlacement);
-        						x.put(commitedPlacement, new Integer(1+(current==null?0:current.intValue())));
+        						x.put(commitedPlacement, Integer.valueOf(1+(current==null?0:current.intValue())));
         					}
         				}
         				committed.put(p,x);
@@ -260,7 +260,7 @@ public class Suggestion implements Serializable, Comparable {
 					for (Iterator j=confs.iterator();j.hasNext();) {
 						Placement commitedPlacement = (Placement)j.next();
 						Integer current = (Integer)committed.get(commitedPlacement);
-						committed.put(commitedPlacement, new Integer(1+(current==null?0:current.intValue())));
+						committed.put(commitedPlacement, Integer.valueOf(1+(current==null?0:current.intValue())));
 					}
 				}
 			}

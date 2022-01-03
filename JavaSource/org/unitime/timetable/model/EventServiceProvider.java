@@ -55,7 +55,7 @@ public class EventServiceProvider extends BaseEventServiceProvider implements Co
 	public int compareTo(EventServiceProvider p) {
 		int cmp = getLabel().compareToIgnoreCase(p.getLabel());
 		if (cmp != 0) return cmp;
-		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(p.getUniqueId() == null ? -1 : p.getUniqueId());
+		return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(p.getUniqueId() == null ? -1 : p.getUniqueId());
 	}
 	
 	public static TreeSet<EventServiceProvider> getServiceProviders(UserContext user) {

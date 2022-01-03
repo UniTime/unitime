@@ -167,7 +167,7 @@ public class ClassDetailAction extends PreferencesAction {
 
 	        // If class id is not null - load class info
 	        Class_DAO cdao = new Class_DAO();
-	        Class_ c = cdao.get(new Long(classId));
+	        Class_ c = cdao.get(Long.valueOf(classId));
 
 	        // Edit Preference - Redirect to prefs edit screen
 	        if(op.equals(MSG.actionEditClass())
@@ -368,7 +368,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        							assignment.getClazz().getClassLabel(),
 	        							suffix == null ? "" : suffix,
 	        							assignment.getClazz().getEnrollment(),
-	        							assignment.getClazz().getSnapshotLimit() == null ? new Integer(0) :assignment.getClazz().getSnapshotLimit(),
+	        							assignment.getClazz().getSnapshotLimit() == null ? Integer.valueOf(0) :assignment.getClazz().getSnapshotLimit(),
 	        							assignment.getClazz().instructorText(nameFormat, ","),
 	        							dp == null ? "" : dp.getName(),
 	        							new MultiComparable(t == null ? 0 : t.getDayCode(), t == null ? 0 : t.getStartSlot()),
@@ -488,7 +488,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        	frm.setSubpart(null);
 	        frm.setCourseName(cco.getInstructionalOffering().getCourseName());
 	        frm.setCourseTitle(cco.getTitle());
-	        frm.setIsCrosslisted(new Boolean(cco.getInstructionalOffering().getCourseOfferings().size()>1));
+	        frm.setIsCrosslisted(Boolean.valueOf(cco.getInstructionalOffering().getCourseOfferings().size()>1));
 	        frm.setAccommodation(StudentAccomodation.toHtml(StudentAccomodation.getAccommodations(c)));
 	        frm.setIsCancelled(c.isCancelled());
 	        
@@ -496,7 +496,7 @@ public class ClassDetailAction extends PreferencesAction {
 		    frm.setExpectedCapacity(c.getExpectedCapacity());
 		    frm.setEnrollment(c.getEnrollment());
 		    frm.setSnapshotLimit(c.getSnapshotLimit());
-	        frm.setDatePattern(c.getDatePattern()==null?new Long(-1):c.getDatePattern().getUniqueId());
+	        frm.setDatePattern(c.getDatePattern()==null?Long.valueOf(-1):c.getDatePattern().getUniqueId());
 	        frm.setLms(c.getLms() == null? "" : c.getLms().getLabel());
 		    frm.setNbrRooms(c.getNbrRooms());
 		    if (c.getNotes()==null)

@@ -154,7 +154,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		if (instructionalOffering != null){
 			CourseOffering courseOffering = createToCourseOfferingFromCourseCatalog(courseCatalogEntry, toSession);
 			courseOffering.setInstructionalOffering(instructionalOffering);
-			instructionalOffering.setNotOffered(new Boolean(true));
+			instructionalOffering.setNotOffered(Boolean.valueOf(true));
 			instructionalOffering.addTocourseOfferings(courseOffering);
 			InstrOfferingConfig instrOffrConfig = createToInstrOfferingConfigFromCourseCatalog(courseCatalogEntry, toSession);
 			if (instrOffrConfig != null){
@@ -257,7 +257,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 						}
 					}
 					if (found){
-						CourseCreditUnitConfig ccuc = CourseCreditUnitConfig.createCreditUnitConfigOfFormat(csc.getCreditFormat(), csc.getCreditType(), csc.getCreditUnitType(), csc.getFixedMinimumCredit(), csc.getMaximumCredit(), csc.isFractionalCreditAllowed(), new Boolean(true));
+						CourseCreditUnitConfig ccuc = CourseCreditUnitConfig.createCreditUnitConfigOfFormat(csc.getCreditFormat(), csc.getCreditType(), csc.getCreditUnitType(), csc.getFixedMinimumCredit(), csc.getMaximumCredit(), csc.isFractionalCreditAllowed(), Boolean.valueOf(true));
 						ccuc.setOwner(toSubpart);
 						toSubpart.setCredit(ccuc);
 					}
@@ -281,7 +281,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 				maxUnits = vrcuc.getMaxUnits();
 				fractionalIncrementsAllowed = vrcuc.isFractionalIncrementsAllowed();
 			}
-			CourseCreditUnitConfig ccuc = CourseCreditUnitConfig.createCreditUnitConfigOfFormat(fromSubpart.getCredit().getCreditFormat(), fromSubpart.getCredit().getCreditType(), fromSubpart.getCredit().getCreditUnitType(), units, maxUnits, fractionalIncrementsAllowed, new Boolean(false));
+			CourseCreditUnitConfig ccuc = CourseCreditUnitConfig.createCreditUnitConfigOfFormat(fromSubpart.getCredit().getCreditFormat(), fromSubpart.getCredit().getCreditType(), fromSubpart.getCredit().getCreditUnitType(), units, maxUnits, fractionalIncrementsAllowed, Boolean.valueOf(false));
 			ccuc.setOwner(toSubpart);
 			toSubpart.setCredit(ccuc);
 		}	
@@ -463,7 +463,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			toCourseOffering.setSubjectArea(toSa);
 			toCourseOffering.setCourseNbr(fromCourseOffering.getCourseNbr());
 			if (fromInstructionalOffering.getCourseOfferings().size() == 1){
-				toCourseOffering.setIsControl(new Boolean(true));
+				toCourseOffering.setIsControl(Boolean.valueOf(true));
 			} else {
 				toCourseOffering.setIsControl(fromCourseOffering.isIsControl());
 			}
@@ -524,7 +524,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			return(null);
 		}
 		InstructionalOffering toInstructionalOffering = new InstructionalOffering();
-		toInstructionalOffering.setNotOffered(new Boolean(false));
+		toInstructionalOffering.setNotOffered(Boolean.valueOf(false));
 		toInstructionalOffering.setSession(session);
 		toInstructionalOffering.setByReservationOnly(false);
 		return(toInstructionalOffering);
@@ -536,8 +536,8 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		}
 		InstrOfferingConfig toInstrOfferingConfig = new InstrOfferingConfig();
 		toInstrOfferingConfig.setName("1");
-		toInstrOfferingConfig.setLimit(new Integer(0));
-		toInstrOfferingConfig.setUnlimitedEnrollment(new Boolean(false));
+		toInstrOfferingConfig.setLimit(Integer.valueOf(0));
+		toInstrOfferingConfig.setUnlimitedEnrollment(Boolean.valueOf(false));
 		if(courseCatalogEntry.getSubparts() != null  && !courseCatalogEntry.getSubparts().isEmpty()){
 			CourseSubpartCredit courseSubpartCredit = null;
 			SchedulingSubpart schedSupart = null;
@@ -547,11 +547,11 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 				schedSupart = new SchedulingSubpart();
 				schedSupart.setInstrOfferingConfig(toInstrOfferingConfig);
 				toInstrOfferingConfig.addToschedulingSubparts(schedSupart);
-				schedSupart.setMinutesPerWk(new Integer(0));
+				schedSupart.setMinutesPerWk(Integer.valueOf(0));
 				schedSupart.setAutoSpreadInTime(ApplicationProperty.SchedulingSubpartAutoSpreadInTimeDefault.isTrue());
 				schedSupart.setStudentAllowOverlap(ApplicationProperty.SchedulingSubpartStudentOverlapsDefault.isTrue());
-				schedSupart.setItype(itDao.get(new Integer(Integer.parseInt(courseSubpartCredit.getSubpartId()))));
-				CourseCreditUnitConfig ccuc = CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseSubpartCredit.getCreditFormat(), courseSubpartCredit.getCreditType(), courseSubpartCredit.getCreditUnitType(), courseSubpartCredit.getFixedMinimumCredit(), courseSubpartCredit.getMaximumCredit(), courseSubpartCredit.isFractionalCreditAllowed(), new Boolean(false));
+				schedSupart.setItype(itDao.get(Integer.valueOf(Integer.parseInt(courseSubpartCredit.getSubpartId()))));
+				CourseCreditUnitConfig ccuc = CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseSubpartCredit.getCreditFormat(), courseSubpartCredit.getCreditType(), courseSubpartCredit.getCreditUnitType(), courseSubpartCredit.getFixedMinimumCredit(), courseSubpartCredit.getMaximumCredit(), courseSubpartCredit.isFractionalCreditAllowed(), Boolean.valueOf(false));
 				if (ccuc instanceof ArrangeCreditUnitConfig) {					
 					ArrangeCreditUnitConfig toAcuc = (ArrangeCreditUnitConfig)ccuc;
 					toAcuc.setOwner(schedSupart);
@@ -580,15 +580,15 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		CourseOffering toCourseOffering = new CourseOffering();
 		toCourseOffering.setSubjectArea(SubjectArea.findByAbbv(session.getUniqueId(), courseCatalogEntry.getSubject()));
 		toCourseOffering.setCourseNbr(courseCatalogEntry.getCourseNumber());
-		toCourseOffering.setIsControl(new Boolean(true));
+		toCourseOffering.setIsControl(Boolean.valueOf(true));
 		toCourseOffering.setExternalUniqueId(courseCatalogEntry.getExternalUniqueId());
 		toCourseOffering.setPermId(courseCatalogEntry.getPermanentId());
 		toCourseOffering.setTitle(courseCatalogEntry.getTitle());
-		toCourseOffering.setNbrExpectedStudents(new Integer(0));
-		toCourseOffering.setDemand(new Integer(0));
+		toCourseOffering.setNbrExpectedStudents(Integer.valueOf(0));
+		toCourseOffering.setDemand(Integer.valueOf(0));
 		toCourseOffering.setConsentType(OfferingConsentType.getOfferingConsentTypeForReference(courseCatalogEntry.getApprovalType()));
 		if (courseCatalogEntry.getCreditFormat() != null) {
-			CourseCreditUnitConfig ccuc = CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseCatalogEntry.getCreditFormat(), courseCatalogEntry.getCreditType(), courseCatalogEntry.getCreditUnitType(), courseCatalogEntry.getFixedMinimumCredit(), courseCatalogEntry.getMaximumCredit(), courseCatalogEntry.isFractionalCreditAllowed(), new Boolean(true));
+			CourseCreditUnitConfig ccuc = CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseCatalogEntry.getCreditFormat(), courseCatalogEntry.getCreditType(), courseCatalogEntry.getCreditUnitType(), courseCatalogEntry.getFixedMinimumCredit(), courseCatalogEntry.getMaximumCredit(), courseCatalogEntry.isFractionalCreditAllowed(), Boolean.valueOf(true));
 			if (ccuc instanceof ArrangeCreditUnitConfig) {					
 				ArrangeCreditUnitConfig toAcuc = (ArrangeCreditUnitConfig)ccuc;
 				toAcuc.setOwner(toCourseOffering);
@@ -641,7 +641,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 				toCourseOffering.setUniqueIdRolledForwardFrom(fromCourseOffering.getUniqueId());
 				toInstructionalOffering.addTocourseOfferings(toCourseOffering);
 				if(courseCatalogEntry.getCreditType() != null){
-					CourseCreditUnitConfig ccuc = CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseCatalogEntry.getCreditFormat(), courseCatalogEntry.getCreditType(), courseCatalogEntry.getCreditUnitType(), courseCatalogEntry.getFixedMinimumCredit(), courseCatalogEntry.getMaximumCredit(), courseCatalogEntry.isFractionalCreditAllowed(), new Boolean(true));
+					CourseCreditUnitConfig ccuc = CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseCatalogEntry.getCreditFormat(), courseCatalogEntry.getCreditType(), courseCatalogEntry.getCreditUnitType(), courseCatalogEntry.getFixedMinimumCredit(), courseCatalogEntry.getMaximumCredit(), courseCatalogEntry.isFractionalCreditAllowed(), Boolean.valueOf(true));
 					if (ccuc instanceof ArrangeCreditUnitConfig) {					
 						ArrangeCreditUnitConfig toAcuc = (ArrangeCreditUnitConfig)ccuc;
 						toAcuc.setOwner(toCourseOffering);
@@ -663,7 +663,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			}
 		}
 		if (toInstructionalOffering.getCourseOfferings().size() == 1){
-			toCourseOffering.setIsControl(new Boolean(true));
+			toCourseOffering.setIsControl(Boolean.valueOf(true));
 		}
 
 		if (toInstructionalOffering.getInstrOfferingPermId() == null){

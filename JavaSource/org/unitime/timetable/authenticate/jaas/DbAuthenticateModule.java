@@ -30,7 +30,9 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.login.LoginException;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.unitime.timetable.model.User;
 import org.unitime.timetable.model.dao.UserDAO;
 import org.unitime.timetable.spring.security.MD5PasswordEncoder;
@@ -43,7 +45,7 @@ import org.unitime.timetable.spring.security.MD5PasswordEncoder;
  */
 @Deprecated
 public class DbAuthenticateModule extends AuthenticateModule {
-	private static Logger sLog = Logger.getLogger(DbAuthenticateModule.class);
+	private static Log sLog = LogFactory.getLog(DbAuthenticateModule.class);
 
 	private String iExternalUid;
 

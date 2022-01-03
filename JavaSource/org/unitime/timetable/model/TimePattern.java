@@ -315,14 +315,14 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     	Integer breakTime = super.getBreakTime();
     	if (breakTime!=null) return breakTime;
     	if (getSlotsPerMtg()==null)
-    		return new Integer(10);
+    		return Integer.valueOf(10);
 		if (getSlotsPerMtg().intValue()%12==0)
-			return new Integer(10);
+			return Integer.valueOf(10);
 		if (getSlotsPerMtg().intValue()>6)
-			return new Integer(15);
+			return Integer.valueOf(15);
 		if (getType().intValue()==sTypeExactTime)
-			return new Integer(10);
-		return new Integer(0);
+			return Integer.valueOf(10);
+		return Integer.valueOf(0);
     }
     
 	public Object clone() {

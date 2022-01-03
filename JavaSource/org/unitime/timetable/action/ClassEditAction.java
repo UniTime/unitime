@@ -207,7 +207,7 @@ public class ClassEditAction extends PreferencesAction {
 
         // If class id is not null - load class info
         Class_DAO cdao = new Class_DAO();
-        Class_ c = cdao.get(new Long(classId));
+        Class_ c = cdao.get(Long.valueOf(classId));
 
 		// Add Distribution Preference - Redirect to dist prefs screen
 	    if(op.equals(MSG.actionAddDistributionPreference())) {
@@ -293,7 +293,7 @@ public class ClassEditAction extends PreferencesAction {
     	            
                     String className = ApplicationProperty.ExternalActionClassEdit.value();
                 	if (className != null && className.trim().length() > 0){
-                    	ExternalClassEditAction editAction = (ExternalClassEditAction) (Class.forName(className).newInstance());
+                    	ExternalClassEditAction editAction = (ExternalClassEditAction) (Class.forName(className).getDeclaredConstructor().newInstance());
                    		editAction.performExternalClassEditAction(c, hibSession);
                 	}
 
@@ -329,7 +329,7 @@ public class ClassEditAction extends PreferencesAction {
                     String instrId = instructors.get(i).toString();
                     if (Preference.BLANK_PREF_VALUE.equals(instrId)) continue;
                     boolean lead = "on".equals(instrLead.get(i));
-                    if (lead) leadInstructors.add((new DepartmentalInstructorDAO()).get(new Long(instrId)));
+                    if (lead) leadInstructors.add((new DepartmentalInstructorDAO()).get(Long.valueOf(instrId)));
                 }
         		op="init";
         	} catch (NumberFormatException e) {}
@@ -482,7 +482,7 @@ public class ClassEditAction extends PreferencesAction {
         // Load from class only for initial load or reload
         if(op.equals("init")) {
 	        frm.setExpectedCapacity(c.getExpectedCapacity());
-	        frm.setDatePattern(c.getDatePattern()==null?new Long(-1):c.getDatePattern().getUniqueId());
+	        frm.setDatePattern(c.getDatePattern()==null?Long.valueOf(-1):c.getDatePattern().getUniqueId());
 	        frm.setNbrRooms(c.getNbrRooms());
 	        frm.setNotes(c.getNotes());
 	        frm.setManagingDept(c.getManagingDept().getUniqueId());
@@ -531,10 +531,10 @@ public class ClassEditAction extends PreferencesAction {
 	    c.setRoomRatio(frm.getRoomRatio());
 	    
 	    Boolean disb = frm.getEnabledForStudentScheduling();
-	    c.setEnabledForStudentScheduling(disb==null ? new Boolean(false) : disb);
+	    c.setEnabledForStudentScheduling(disb==null ? Boolean.valueOf(false) : disb);
 
 	    Boolean di = frm.getDisplayInstructor();
-	    c.setDisplayInstructor(di==null ? new Boolean(false) : di);
+	    c.setDisplayInstructor(di==null ? Boolean.valueOf(false) : di);
 	    
 	    boolean assignTeachingRequest = Department.isInstructorSchedulingCommitted(c.getControllingDept().getUniqueId());
 
@@ -556,7 +556,7 @@ public class ClassEditAction extends PreferencesAction {
             boolean lead = "on".equals(instrLead.get(i));
             String resp = instrResponsibility.get(i).toString();
 
-            DepartmentalInstructor deptInstr = new DepartmentalInstructorDAO().get(new Long(instrId));
+            DepartmentalInstructor deptInstr = new DepartmentalInstructorDAO().get(Long.valueOf(instrId));
             
             ClassInstructor classInstr = null;
             for (Iterator<ClassInstructor> j = classInstrs.iterator(); j.hasNext();) {
@@ -582,11 +582,11 @@ public class ClassEditAction extends PreferencesAction {
                 	}
                 }
             }
-            classInstr.setLead(new Boolean(lead));
+            classInstr.setLead(Boolean.valueOf(lead));
             try {
-            	classInstr.setPercentShare(new Integer(pctShare));
+            	classInstr.setPercentShare(Integer.valueOf(pctShare));
             } catch (NumberFormatException e) {
-            	classInstr.setPercentShare(new Integer(0));
+            	classInstr.setPercentShare(Integer.valueOf(0));
             }
             try {
             	classInstr.setResponsibility(TeachingResponsibilityDAO.getInstance().get(Long.valueOf(resp), hibSession));

@@ -275,7 +275,7 @@
 									sessionContext,
 				    		        WebSolver.getClassAssignmentProxy(session),
 				    		        WebSolver.getExamSolver(session),
-				    		        new Long(frm.getSchedulingSubpartId()), 
+				    		        Long.valueOf(frm.getSchedulingSubpartId()), 
 				    		        out,
 				    		        request.getParameter("backType"),
 				    		        request.getParameter("backId"));

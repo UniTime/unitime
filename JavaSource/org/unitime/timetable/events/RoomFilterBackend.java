@@ -310,11 +310,11 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 				if (d1 == null && d2 != null) return -1;
 				if (d1 != null && d2 == null) return 1;
 				if (d1 != null) {
-					int cmp = new Long(Math.round(d1)).compareTo(Math.round(d2));
+					int cmp = Long.valueOf(Math.round(d1)).compareTo(Math.round(d2));
 					if (cmp != 0) return cmp;
 				}
 				if (sortBySize) {
-					int cmp = new Integer(l1.getCapacity() != null ? l1.getCapacity() : Integer.MAX_VALUE).compareTo(l2.getCapacity() != null ? l2.getCapacity() : Integer.MAX_VALUE);
+					int cmp = Integer.valueOf(l1.getCapacity() != null ? l1.getCapacity() : Integer.MAX_VALUE).compareTo(l2.getCapacity() != null ? l2.getCapacity() : Integer.MAX_VALUE);
 					if (cmp != 0) return cmp;
 				}
 				return l1.getLabel().compareTo(l2.getLabel());

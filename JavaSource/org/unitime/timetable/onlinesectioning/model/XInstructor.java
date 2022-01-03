@@ -128,7 +128,7 @@ public class XInstructor implements Serializable, Externalizable {
     
     @Override
     public int hashCode() {
-        return new Long(getIntructorId()).hashCode();
+        return Long.valueOf(getIntructorId()).hashCode();
     }
 
 	@Override

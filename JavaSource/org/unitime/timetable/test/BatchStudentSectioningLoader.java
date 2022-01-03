@@ -205,7 +205,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
         Lecture lecture = new Lecture(c.getUniqueId(), null, c.getSchedulingSubpart().getUniqueId(), c.getClassLabel(), times, rooms, rooms.size(), new Placement(null,time,rooms), 0, 0, 1.0);
         lecture.setNote(c.getNotes());
         Placement p = (Placement)lecture.getInitialAssignment();
-        p.setAssignmentId(new Long(iMakeupAssignmentId++));
+        p.setAssignmentId(Long.valueOf(iMakeupAssignmentId++));
         lecture.setBestAssignment(p, 0l);
         sLog.debug("        -- makup placement for "+c.getClassLabel()+": "+p.getLongName(true));
         return p;
@@ -385,7 +385,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
                     CourseRequest courseRequest = (CourseRequest)request;
                     Course course = (Course)courseRequest.getCourses().get(0);
                     Integer cnt = (Integer)(student.isDummy()?lastLike:real).get(course);
-                    (student.isDummy()?lastLike:real).put(course, new Integer((cnt==null?0:cnt.intValue())+1));
+                    (student.isDummy()?lastLike:real).put(course, Integer.valueOf((cnt==null?0:cnt.intValue())+1));
                 }
             }
         }

@@ -222,7 +222,7 @@ public class SchedulingSubpartTableBuilder {
         if(request.getParameter("md" + sic.getId())!=null)
             sic.setManagingDeptId(Long.parseLong(request.getParameter("md" + sic.getId())));
         if(request.getParameter("disabled" + sic.getId())!=null)
-            sic.setDisabled(new Boolean(request.getParameter("disabled" + sic.getId())).booleanValue());
+            sic.setDisabled(Boolean.valueOf(request.getParameter("disabled" + sic.getId())).booleanValue());
 
 		// Read attributes
 		int mnlpc = sic.getMinLimitPerClass();
@@ -424,7 +424,7 @@ public class SchedulingSubpartTableBuilder {
         if (md==Constants.MANAGED_BY_MULTIPLE_DEPTS)
             return "Multiple Departments";
 
-        Department d = new DepartmentDAO().get(new Long (md));
+        Department d = new DepartmentDAO().get(Long.valueOf(md));
         if (d!=null) {
             if (d.isExternalManager().booleanValue())
                 return d.getExternalMgrLabel();

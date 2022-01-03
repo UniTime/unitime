@@ -111,7 +111,7 @@ public class SubjectListAction extends Action {
                     List changes = ChangeLog.findLastNChanges(d.getSession().getUniqueId(), null, null, d.getUniqueId(), 1);
                     ChangeLog lastChange =  (changes == null || changes.isEmpty() ? null : (ChangeLog) changes.get(0));
                     lastChangeStr =  (lastChange == null ? "" : ChangeLog.sDFdate.format(lastChange.getTimeStamp()) + " by " + lastChange.getManager().getShortName());
-                    lastChangeCmp = new Long( lastChange == null ? 0 : lastChange.getTimeStamp().getTime());
+                    lastChangeCmp = Long.valueOf( lastChange == null ? 0 : lastChange.getTimeStamp().getTime());
                 }
 
                 webTable.addLine(
@@ -174,7 +174,7 @@ public class SubjectListAction extends Action {
         						.getTimeStamp()) + " by "
         				+ lastChange.getManager().getShortName()
         				+ "</span>");
-        		lastChangeCmp = new Long(
+        		lastChangeCmp = Long.valueOf(
         			lastChange == null ? 0 : lastChange.getTimeStamp().getTime());
         	}
 

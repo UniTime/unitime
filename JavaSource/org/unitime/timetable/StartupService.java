@@ -19,7 +19,8 @@
 */
 package org.unitime.timetable;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -52,9 +53,6 @@ public class StartupService implements InitializingBean, DisposableBean {
 
 		try {
 			
-			Debug.info(" - Initializing Logging ... ");
-            Debug.init(ApplicationProperties.getProperties());
-            
 			Debug.info(" - Initializing Hibernate ... ");							
 			_RootDAO.initialize();
 			
@@ -63,7 +61,12 @@ public class StartupService implements InitializingBean, DisposableBean {
 			
 	         Debug.info(" - Creating Message Log Appender ... ");
 	         iMessageLogAppender = new MessageLogAppender();
-	         Logger.getRootLogger().addAppender(iMessageLogAppender);
+	         LoggerContext ctx = LoggerContext.getContext(false);
+	         Configuration config = ctx.getConfiguration();
+	         config.addAppender(iMessageLogAppender);
+	         config.getRootLogger().addAppender(iMessageLogAppender, iMessageLogAppender.getMinLevel(), null);
+	         ctx.updateLoggers();
+	         iMessageLogAppender.start();
 			
 			if (RoomAvailability.getInstance()!=null) {
 			    Debug.info(" - Initializing Room Availability Service ... ");
@@ -115,8 +118,11 @@ public class StartupService implements InitializingBean, DisposableBean {
 	         LocalQueueProcessor.stopProcessor();
 	         
 	         Debug.info(" - Removing Message Log Appender ... ");
-	         Logger.getRootLogger().removeAppender(iMessageLogAppender);
-	         iMessageLogAppender.close();
+	         LoggerContext ctx = LoggerContext.getContext(false);
+	         Configuration config = ctx.getConfiguration();
+	         config.getRootLogger().removeAppender("message-log");
+	         ctx.updateLoggers();
+	         iMessageLogAppender.stop();
 	         
 	         Debug.info(" - Closing Hibernate ... ");
 	         (new _BaseRootDAO() {

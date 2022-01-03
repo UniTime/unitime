@@ -120,7 +120,7 @@ public class EditRoomDeptAction extends Action {
 		    		ActionMessages errors = new ActionMessages();
 		    		errors.add("roomDept", new ActionMessage("errors.required", "Department") );
 		    		saveErrors(request, errors);
-		    	} else if (editRoomDeptForm.getDepartmentIds().contains(new Long(editRoomDeptForm.getDept()))) {
+		    	} else if (editRoomDeptForm.getDepartmentIds().contains(Long.valueOf(editRoomDeptForm.getDept()))) {
 		    		ActionMessages errors = new ActionMessages();
 		    		errors.add("roomDept", new ActionMessage("errors.alreadyPresent", "Department") );
 		    		saveErrors(request, errors);
@@ -134,7 +134,7 @@ public class EditRoomDeptAction extends Action {
 		    		ActionMessages errors = new ActionMessages();
 		    		errors.add("roomDept", new ActionMessage("errors.required", "Department") );
 		    		saveErrors(request, errors);
-		    	} else if (!editRoomDeptForm.getDepartmentIds().contains(new Long(editRoomDeptForm.getDept()))) {
+		    	} else if (!editRoomDeptForm.getDepartmentIds().contains(Long.valueOf(editRoomDeptForm.getDept()))) {
 		    		ActionMessages errors = new ActionMessages();
 		    		errors.add("roomDept", new ActionMessage("errors.notPresent", "Department") );
 		    		saveErrors(request, errors);
@@ -207,7 +207,7 @@ public class EditRoomDeptAction extends Action {
 			org.hibernate.Session hibSession = ldao.getSession(); 
 			tx = hibSession.beginTransaction();
 
-			Location location = ldao.get(new Long(editRoomDeptForm.getId()), hibSession);
+			Location location = ldao.get(Long.valueOf(editRoomDeptForm.getId()), hibSession);
 			
 			sessionContext.checkPermission(location, Right.RoomEditAvailability);
 		

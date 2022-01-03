@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.server.pointintimedata;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
@@ -47,11 +49,23 @@ public class PITDQueriesBackend implements GwtRpcImplementation<PITDQueriesRpcRe
 			Class rptCls = BasePointInTimeDataReports.sPointInTimeDataReportRegister.get(key);
 			BasePointInTimeDataReports rpt = null;
 			try {
-				rpt = (BasePointInTimeDataReports) rptCls.newInstance();
+				rpt = (BasePointInTimeDataReports) rptCls.getDeclaredConstructor().newInstance();
 			} catch (InstantiationException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NoSuchMethodException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SecurityException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

@@ -140,7 +140,7 @@ public class ComputeConflictTableBackend implements GwtRpcImplementation<Compute
 				if (confs == null) continue;
 				for (Placement commitedPlacement: confs) {
 					Integer current = committed.get(commitedPlacement);
-					committed.put(commitedPlacement, new Integer(1+(current==null?0:current.intValue())));
+					committed.put(commitedPlacement, Integer.valueOf(1+(current==null?0:current.intValue())));
 				}
 			}
 		}

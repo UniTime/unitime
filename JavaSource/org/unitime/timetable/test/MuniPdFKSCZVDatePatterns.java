@@ -23,10 +23,9 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Properties;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.cpsolver.coursett.TimetableXMLLoader.DatePattern;
 import org.cpsolver.coursett.model.Lecture;
 import org.cpsolver.coursett.model.Placement;
@@ -48,7 +47,7 @@ import org.unitime.timetable.util.Constants;
  * @author Tomas Muller
  */
 public class MuniPdFKSCZVDatePatterns extends Extension<Lecture, Placement> {
-    protected static Logger sLog = Logger.getLogger(MuniPdFKSCZVDatePatterns.class);
+	private static Log sLog = LogFactory.getLog(MuniPdFKSCZVDatePatterns.class);
     private Hashtable<Integer, List<DatePattern>> iDatePatternsExt = new Hashtable<Integer, List<DatePattern>>();
     private Hashtable<Integer, List<DatePattern>> iDatePatternsAll = new Hashtable<Integer, List<DatePattern>>();
 
@@ -262,18 +261,6 @@ public class MuniPdFKSCZVDatePatterns extends Extension<Lecture, Placement> {
 
     public static void main(String[] args) {
         try {
-            Properties props = new Properties();
-            props.setProperty("log4j.rootLogger", "DEBUG, A1");
-            props.setProperty("log4j.appender.A1", "org.apache.log4j.ConsoleAppender");
-            props.setProperty("log4j.appender.A1.layout", "org.apache.log4j.PatternLayout");
-            props.setProperty("log4j.appender.A1.layout.ConversionPattern","%-5p %c{2}: %m%n");
-            props.setProperty("log4j.logger.org.hibernate","INFO");
-            props.setProperty("log4j.logger.org.hibernate.cfg","WARN");
-            props.setProperty("log4j.logger.org.hibernate.cache.EhCacheProvider","ERROR");
-            props.setProperty("log4j.logger.org.unitime.commons.hibernate","INFO");
-            props.setProperty("log4j.logger.net","INFO");
-            PropertyConfigurator.configure(props);
-            
             HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
 
             org.hibernate.Session hibSession = new _RootDAO().getSession();

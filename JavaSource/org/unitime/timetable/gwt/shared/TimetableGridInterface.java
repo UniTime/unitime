@@ -421,7 +421,7 @@ public class TimetableGridInterface implements GwtRpcResponse {
 			int cmp = getName(":").compareTo(c.getName(":"));
 			if (cmp != 0) return cmp;
 			if (getType() != c.getType()) return getType().compareTo(c.getType());
-			return (hasId() ? getId() : new Long(0)).compareTo(c.hasId() ? c.getId() : new Long(0));
+			return (hasId() ? getId() : Long.valueOf(0)).compareTo(c.hasId() ? c.getId() : Long.valueOf(0));
 		}
 		
 		public int getMinLines(boolean showRoom, boolean showInstructor, boolean showTime, boolean showPreference, boolean showDate) {

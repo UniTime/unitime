@@ -33,7 +33,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentMap;
 import org.cpsolver.studentsct.model.Config;
@@ -129,7 +131,7 @@ import com.google.gson.JsonSerializer;
  */
 
 public class PurdueWaitListValidationProvider implements WaitListValidationProvider {
-	private static Logger sLog = Logger.getLogger(PurdueWaitListValidationProvider.class);
+	private static Log sLog = LogFactory.getLog(PurdueWaitListValidationProvider.class);
 	protected static final StudentSectioningMessages MESSAGES = Localization.create(StudentSectioningMessages.class);
 	protected static final StudentSectioningConstants CONSTANTS = Localization.create(StudentSectioningConstants.class);
 	protected static Format<Number> sCreditFormat = Formats.getNumberFormat("0.##");

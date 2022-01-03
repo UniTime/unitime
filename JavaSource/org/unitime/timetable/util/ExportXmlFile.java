@@ -21,7 +21,8 @@ package org.unitime.timetable.util;
 
 import java.io.FileOutputStream;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
@@ -47,9 +48,6 @@ public class ExportXmlFile {
 
 	public static void main(String[] args) {
 		try {
-			// Configure logging
-	        org.apache.log4j.BasicConfigurator.configure();
-	        
 	        // Configure hibernate
 	        HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
 	        
@@ -74,7 +72,7 @@ public class ExportXmlFile {
             }
 	        
 		} catch (Exception e) {
-			Logger.getLogger(ImportXmlFile.class).error("Error: " +e.getMessage(), e);
+			LogManager.getLogger(ImportXmlFile.class).error("Error: " +e.getMessage(), e);
 		} finally {
 	        // Close hibernate
 	        HibernateUtil.closeHibernate();

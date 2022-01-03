@@ -118,7 +118,7 @@ public class SolutionChangesAction extends Action {
     	String changeTable = getChangesTable(model.getSimpleMode(),model.getReversedMode(),request,sessionContext,courseTimetablingSolverService.getSolver(),"Changes",changes);
         if (changeTable!=null) {
         	request.setAttribute("SolutionChanges.table",changeTable);
-        	request.setAttribute("SolutionChanges.table.colspan",new Integer(model.getSimpleMode()?5:14));
+        	request.setAttribute("SolutionChanges.table.colspan",Integer.valueOf(model.getSimpleMode()?5:14));
         } else
         	request.setAttribute("SolutionChanges.message","No changes."); 
         
@@ -215,7 +215,7 @@ public class SolutionChangesAction extends Action {
             	                datesSort,
             	                timesSort,
             	                roomsSort,
-            	                new Long(aInf.getNrStudentConflicts()-bInf.getNrStudentConflicts())
+            	                Long.valueOf(aInf.getNrStudentConflicts()-bInf.getNrStudentConflicts())
             	             });
         	    else
             	    webTable.addLine((link!=null?"onClick=\"showGwtDialog('Suggestions', 'suggestions.do?"+link+"&op=Try','900','90%');\"":null),
@@ -240,16 +240,16 @@ public class SolutionChangesAction extends Action {
         	             		datesSort,
         	                	timesSort,
         	                	roomsSort,
-            	                new Long(aInf.getNrStudentConflicts()-bInf.getNrStudentConflicts()),
-            	                new Double(aInf.getTimePreference()-bInf.getTimePreference()),
-            	                new Long(aInf.sumRoomPreference()-bInf.sumRoomPreference()),
-            	                new Long(aInf.getGroupConstraintPref()-bInf.getGroupConstraintPref()),
-            	                new Long(aInf.getBtbInstructorPreference()-bInf.getBtbInstructorPreference()),
-            	                new Long(aInf.getUselessHalfHours()-bInf.getUselessHalfHours()),
-            	                new Long(aInf.getTooBigRoomPreference()-bInf.getTooBigRoomPreference()),
-            	                new Double(aInf.getDeptBalancPenalty()-bInf.getDeptBalancPenalty()),
-            	                new Double(aInf.getSpreadPenalty()-bInf.getSpreadPenalty()),
-            	                new Double(aInf.getPerturbationPenalty()-bInf.getPerturbationPenalty())
+            	                Long.valueOf(aInf.getNrStudentConflicts()-bInf.getNrStudentConflicts()),
+            	                Double.valueOf(aInf.getTimePreference()-bInf.getTimePreference()),
+            	                Long.valueOf(aInf.sumRoomPreference()-bInf.sumRoomPreference()),
+            	                Long.valueOf(aInf.getGroupConstraintPref()-bInf.getGroupConstraintPref()),
+            	                Long.valueOf(aInf.getBtbInstructorPreference()-bInf.getBtbInstructorPreference()),
+            	                Long.valueOf(aInf.getUselessHalfHours()-bInf.getUselessHalfHours()),
+            	                Long.valueOf(aInf.getTooBigRoomPreference()-bInf.getTooBigRoomPreference()),
+            	                Double.valueOf(aInf.getDeptBalancPenalty()-bInf.getDeptBalancPenalty()),
+            	                Double.valueOf(aInf.getSpreadPenalty()-bInf.getSpreadPenalty()),
+            	                Double.valueOf(aInf.getPerturbationPenalty()-bInf.getPerturbationPenalty())
             	             });
         	}
         } catch (Exception e) {
@@ -326,7 +326,7 @@ public class SolutionChangesAction extends Action {
         	                datesSort,
         	                timesSort,
         	                roomsSort,
-        	                new Long(aInf.getNrStudentConflicts()-bInf.getNrStudentConflicts())
+        	                Long.valueOf(aInf.getNrStudentConflicts()-bInf.getNrStudentConflicts())
         	             });
     	    else
         	    webTable.addLine(null,
@@ -351,16 +351,16 @@ public class SolutionChangesAction extends Action {
     	             		datesSort,
     	                	timesSort,
     	                	roomsSort,
-        	                new Long(aInf.getNrStudentConflicts()-bInf.getNrStudentConflicts()),
-        	                new Double(aInf.getTimePreference()-bInf.getTimePreference()),
-        	                new Long(aInf.sumRoomPreference()-bInf.sumRoomPreference()),
-        	                new Long(aInf.getGroupConstraintPref()-bInf.getGroupConstraintPref()),
-        	                new Long(aInf.getBtbInstructorPreference()-bInf.getBtbInstructorPreference()),
-        	                new Long(aInf.getUselessHalfHours()-bInf.getUselessHalfHours()),
-        	                new Long(aInf.getTooBigRoomPreference()-bInf.getTooBigRoomPreference()),
-        	                new Double(aInf.getDeptBalancPenalty()-bInf.getDeptBalancPenalty()),
-        	                new Double(aInf.getSpreadPenalty()-bInf.getSpreadPenalty()),
-        	                new Double(aInf.getPerturbationPenalty()-bInf.getPerturbationPenalty())
+        	                Long.valueOf(aInf.getNrStudentConflicts()-bInf.getNrStudentConflicts()),
+        	                Double.valueOf(aInf.getTimePreference()-bInf.getTimePreference()),
+        	                Long.valueOf(aInf.sumRoomPreference()-bInf.sumRoomPreference()),
+        	                Long.valueOf(aInf.getGroupConstraintPref()-bInf.getGroupConstraintPref()),
+        	                Long.valueOf(aInf.getBtbInstructorPreference()-bInf.getBtbInstructorPreference()),
+        	                Long.valueOf(aInf.getUselessHalfHours()-bInf.getUselessHalfHours()),
+        	                Long.valueOf(aInf.getTooBigRoomPreference()-bInf.getTooBigRoomPreference()),
+        	                Double.valueOf(aInf.getDeptBalancPenalty()-bInf.getDeptBalancPenalty()),
+        	                Double.valueOf(aInf.getSpreadPenalty()-bInf.getSpreadPenalty()),
+        	                Double.valueOf(aInf.getPerturbationPenalty()-bInf.getPerturbationPenalty())
         	             });
     	}
     	return webTable;

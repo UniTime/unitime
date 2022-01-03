@@ -138,7 +138,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 
 	        // If subpart id is not null - load subpart info
 	        SchedulingSubpartDAO sdao = new SchedulingSubpartDAO();
-	        SchedulingSubpart ss = sdao.get(new Long(subpartId));
+	        SchedulingSubpart ss = sdao.get(Long.valueOf(subpartId));
 
 	        // Edit Preference - Redirect to prefs edit screen
 	        if(op.equals(MSG.actionEditSubpart())
@@ -288,7 +288,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        frm.setCourseTitle(co.getTitle());
 	        frm.setAutoSpreadInTime(ss.isAutoSpreadInTime());
 	        frm.setStudentAllowOverlap(ss.isStudentAllowOverlap());
-	        frm.setDatePattern(ss.getDatePattern()==null?new Long(-1):ss.getDatePattern().getUniqueId());
+	        frm.setDatePattern(ss.getDatePattern()==null?Long.valueOf(-1):ss.getDatePattern().getUniqueId());
 	        if (frm.getCreditText() == null || frm.getCreditText().length() == 0){
 		        if (ss.getCredit() != null){
 		        	CourseCreditUnitConfig credit = ss.getCredit();
@@ -296,9 +296,9 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 		        }
 	        }
 	    	if (ss.getParentSubpart() != null && ss.getItype().equals(ss.getParentSubpart().getItype())){
-	    		frm.setSameItypeAsParent(new Boolean(true));
+	    		frm.setSameItypeAsParent(Boolean.valueOf(true));
 	    	} else {
-	    		frm.setSameItypeAsParent(new Boolean(false));
+	    		frm.setSameItypeAsParent(Boolean.valueOf(false));
 	    	}
 
 	        SchedulingSubpart next = ss.getNextSchedulingSubpart(sessionContext, Right.SchedulingSubpartDetail);

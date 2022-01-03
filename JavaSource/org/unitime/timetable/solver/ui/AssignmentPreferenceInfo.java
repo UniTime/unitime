@@ -236,7 +236,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 	    return p.getPreferenceInt();
 	}
 	public Map<Long,Integer> getRoomPreference() { return iRoomPreference; }
-	public void setRoomPreference(Long roomId, int roomPreference) { iRoomPreference.put(roomId,new Integer(roomPreference)); }
+	public void setRoomPreference(Long roomId, int roomPreference) { iRoomPreference.put(roomId,Integer.valueOf(roomPreference)); }
 	public int getBestRoomPreference() { return iBestRoomPreference; }
 	public void setBestRoomPreference(int bestRoomPreference) { iBestRoomPreference = bestRoomPreference; }
 	public int getNrStudentConflicts() { return iNrStudentConflicts; }

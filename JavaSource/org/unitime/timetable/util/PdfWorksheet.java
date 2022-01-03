@@ -380,7 +380,7 @@ public class PdfWorksheet {
                 SchedulingSubpart subpart = (SchedulingSubpart)j.next();
                 if (subpart.getMinutesPerWk().intValue()<=0) continue;
                 Integer credit = (Integer)creditPerIType.get(subpart.getItype());
-                creditPerIType.put(subpart.getItype(), new Integer((credit==null?0:credit.intValue())+subpart.getMinutesPerWk().intValue()));
+                creditPerIType.put(subpart.getItype(), Integer.valueOf((credit==null?0:credit.intValue())+subpart.getMinutesPerWk().intValue()));
             }
             TreeSet itypes = new TreeSet(new Comparator() {
                 public int compare(Object o1, Object o2) {

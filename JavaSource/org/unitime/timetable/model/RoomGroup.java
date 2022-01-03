@@ -118,7 +118,7 @@ public class RoomGroup extends BaseRoomGroup implements Comparable {
     	if (cmp!=0) return cmp;
     	cmp = getName().compareTo(rg.getName());
     	if (cmp!=0) return cmp;
-    	return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(rg.getUniqueId() == null ? -1 : rg.getUniqueId());
+    	return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(rg.getUniqueId() == null ? -1 : rg.getUniqueId());
     }
     
 	public boolean hasLocation (Location location) {

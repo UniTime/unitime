@@ -283,7 +283,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
                         wl.setStudent(s);
                         wl.setCourseOffering(co);
                         wl.setTimestamp(iTimeStamp);
-                        wl.setType(new Integer(0));
+                        wl.setType(Integer.valueOf(0));
                         s.getWaitlists().add(wl);
                         hibSession.save(wl);
                     }

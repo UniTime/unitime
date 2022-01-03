@@ -117,7 +117,7 @@ public class DepartmentListAction extends Action {
                             List changes = ChangeLog.findLastNChanges(d.getSession().getUniqueId(), null, null, d.getUniqueId(), 1);
                             ChangeLog lastChange = (changes==null || changes.isEmpty() ? null : (ChangeLog) changes.get(0));
                             lastChangeStr = (lastChange==null?"":ChangeLog.sDFdate.format(lastChange.getTimeStamp())+" by "+lastChange.getManager().getShortName());
-                            lastChangeCmp = new Long(lastChange==null?0:lastChange.getTimeStamp().getTime());
+                            lastChangeCmp = Long.valueOf(lastChange==null?0:lastChange.getTimeStamp().getTime());
                     }
                     String allowReq = "";
                     int allowReqOrd = 0;
@@ -175,11 +175,11 @@ public class DepartmentListAction extends Action {
                             d.getAbbreviation(),
                             d.getName(),
                             (d.isExternalManager().booleanValue() ? d.getExternalMgrAbbv() : ""),
-                            new Integer(d.getSubjectAreas().size()),
-                            new Integer(d.getRoomDepts().size()),
+                            Integer.valueOf(d.getSubjectAreas().size()),
+                            Integer.valueOf(d.getRoomDepts().size()),
                             d.effectiveStatusType().getOrd(),
                             d.getDistributionPrefPriority(),
-                            new Integer(allowReqOrd),
+                            Integer.valueOf(allowReqOrd),
                             d.isInheritInstructorPreferences(),
                             d.isAllowEvents(),
                             d.isAllowStudentScheduling(),
@@ -235,7 +235,7 @@ public class DepartmentListAction extends Action {
     							+ " by "
     							+ lastChange.getManager()
     							.getShortName() + "</span>");
-    					lastChangeCmp = new Long(lastChange == null ? 0
+    					lastChangeCmp = Long.valueOf(lastChange == null ? 0
     							: lastChange.getTimeStamp().getTime());
     			}
     			
@@ -306,12 +306,12 @@ public class DepartmentListAction extends Action {
     						(d.isExternalManager()
     						.booleanValue() ? d
     						.getExternalMgrAbbv() : ""),
-    						new Integer(d.getSubjectAreas()
+    						Integer.valueOf(d.getSubjectAreas()
     						.size()),
-    						new Integer(d.getRoomDepts().size()),
+    						Integer.valueOf(d.getRoomDepts().size()),
     						d.effectiveStatusType().getOrd(),
     						d.getDistributionPrefPriority(),
-    						new Integer(allowReqOrd),
+    						Integer.valueOf(allowReqOrd),
     						d.isInheritInstructorPreferences(),
     						d.isAllowEvents(),
     						d.isAllowStudentScheduling(),

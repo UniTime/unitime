@@ -130,7 +130,7 @@ public class SolverGroupEditForm extends ActionForm {
 		iAssignedManagers.clear();
 		iDepartmentsEditable = true;
 		if (group==null) {
-			iUniqueId = new Long(-1);
+			iUniqueId = Long.valueOf(-1);
 			iName = null; iAbbv = null;
 			iOp = "Save";
 			for (Iterator i=departments.iterator();i.hasNext();) {

@@ -1066,21 +1066,21 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         					secNum++;
         				} else {
        						divNum++; secNum = 1;
-       						while (takenDivNums.contains(new Integer(divNum))) divNum++;
+       						while (takenDivNums.contains(Integer.valueOf(divNum))) divNum++;
         				}
         			} else {
         				secNum++;
         			}
     			} else {
     				divNum++; secNum = 1;
-    				while (takenDivNums.contains(new Integer(divNum))) divNum++;
+    				while (takenDivNums.contains(Integer.valueOf(divNum))) divNum++;
     			}
             } else if (lastClazz!=null) {
                 divNum++; secNum = 1;
-                while (takenDivNums.contains(new Integer(divNum))) divNum++;
+                while (takenDivNums.contains(Integer.valueOf(divNum))) divNum++;
     		} else {
     			divNum = 1; secNum = 1;
-    			while (takenDivNums.contains(new Integer(divNum))) divNum++;
+    			while (takenDivNums.contains(Integer.valueOf(divNum))) divNum++;
     		}
     		
     		if (divNum==100 && secNum==1) {
@@ -1134,14 +1134,14 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         				secNum++;
         			} else {
         				divNum++; secNum = 1;
-           				while (takenDivNums.contains(new Integer(divNum))) divNum++;
+           				while (takenDivNums.contains(Integer.valueOf(divNum))) divNum++;
         			}
                 } else if (lastClazz!=null) {
                     divNum++; secNum = 1;
-                    while (takenDivNums.contains(new Integer(divNum))) divNum++;
+                    while (takenDivNums.contains(Integer.valueOf(divNum))) divNum++;
                 } else {
         			divNum = 1; secNum = 1;
-        			while (takenDivNums.contains(new Integer(divNum))) divNum++;
+        			while (takenDivNums.contains(Integer.valueOf(divNum))) divNum++;
         		}
 
         		if (divNum==100 && secNum==1) {
@@ -1194,14 +1194,14 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
             				secNum++;
             			} else {
             				divNum++; secNum = 1;
-               				while (takenDivNums.contains(new Integer(divNum))) divNum++;
+               				while (takenDivNums.contains(Integer.valueOf(divNum))) divNum++;
             			}
                     } else if (lastClazz!=null) {
                         divNum++; secNum = 1;
-                        while (takenDivNums.contains(new Integer(divNum))) divNum++;
+                        while (takenDivNums.contains(Integer.valueOf(divNum))) divNum++;
             		} else {
             			divNum = 1; secNum = 1;
-            			while (takenDivNums.contains(new Integer(divNum))) divNum++;
+            			while (takenDivNums.contains(Integer.valueOf(divNum))) divNum++;
             		}
 
             		if (divNum==100 && secNum==1) {
@@ -1244,13 +1244,13 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
                 takenDivNums = takenDivisionNumbers(clazz.getSchedulingSubpart());
             }
             divNum = 1;
-            while (takenDivNums.contains(new Integer(divNum)))
+            while (takenDivNums.contains(Integer.valueOf(divNum)))
                 divNum++;
             if (divNum==100) {
                 messages.add("Division number exceeded 99 for scheduling subpart "+clazz.getSchedulingSubpart().getSchedulingSubpartLabel()+".");
             }
             clazz.setClassSuffix(sSufixFormat.format(divNum)+sSufixFormat.format(1));
-            takenDivNums.add(new Integer(divNum));
+            takenDivNums.add(Integer.valueOf(divNum));
             lastSubpart = clazz.getSchedulingSubpart();
             hibSession.update(clazz);
         }

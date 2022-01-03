@@ -120,7 +120,7 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 				}
 				ids.append("&subjectAreaIds="+frm.getSubjectAreaIds()[i]);
 				subjIds.append(frm.getSubjectAreaIds()[i]);
-				names.append(((new SubjectAreaDAO()).get(new Long(frm.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
+				names.append(((new SubjectAreaDAO()).get(Long.valueOf(frm.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
 			}
 			
 		    // Set Session Variables

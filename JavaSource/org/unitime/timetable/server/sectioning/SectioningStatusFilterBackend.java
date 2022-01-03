@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.server.sectioning;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.SessionAttribute;
@@ -52,7 +54,7 @@ import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 @GwtRpcImplements(SectioningStatusFilterRpcRequest.class)
 public class SectioningStatusFilterBackend implements GwtRpcImplementation<SectioningStatusFilterRpcRequest, FilterRpcResponse> {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
-	private static Logger sLog = Logger.getLogger(SectioningStatusFilterBackend.class);
+	private static Log sLog = LogFactory.getLog(SectioningStatusFilterBackend.class);
 	
 	private @Autowired SolverService<StudentSolverProxy> studentSectioningSolverService;
 	

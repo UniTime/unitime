@@ -80,7 +80,7 @@ public class DepartmentImport extends BaseImport {
                     department.setAllowEvents(false);
                     department.setAllowStudentScheduling(true);
                     department.setInheritInstructorPreferences(true);
-                    department.setDistributionPrefPriority(new Integer(0));
+                    department.setDistributionPrefPriority(Integer.valueOf(0));
                 } else {
                     if("T".equalsIgnoreCase(element.attributeValue("delete"))) {
                         getHibSession().delete(department);

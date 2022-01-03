@@ -148,8 +148,8 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
             Progress p = Progress.getInstance(super.currentSolution().getModel());
             ret.put("STATUS",p.getStatus());
             ret.put("PHASE",p.getPhase());
-            ret.put("PROGRESS",new Long(p.getProgress()));
-            ret.put("MAX_PROGRESS",new Long(p.getProgressMax()));
+            ret.put("PROGRESS",Long.valueOf(p.getProgress()));
+            ret.put("MAX_PROGRESS",Long.valueOf(p.getProgressMax()));
             ret.put("VERSION", Constants.getVersion());
             return ret;
         } catch (Exception e) {

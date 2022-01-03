@@ -27,8 +27,9 @@ import java.text.DecimalFormat;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
+
 import org.cpsolver.exam.Test;
 import org.cpsolver.exam.model.Exam;
 import org.cpsolver.exam.model.ExamPlacement;
@@ -104,7 +105,9 @@ public class ExamTest {
                 cfg.setProperty("General.Output", System.getProperty("user.home", ".")+File.separator+"Exam-Test");
             }
             if (!"true".equals(System.getProperty("debug","false")))
-                Logger.getRootLogger().setLevel(Level.INFO);
+            	Configurator.setRootLevel(Level.INFO);
+            else
+            	Configurator.setRootLevel(Level.DEBUG);
             
             HibernateUtil.configureHibernate(cfg);
             

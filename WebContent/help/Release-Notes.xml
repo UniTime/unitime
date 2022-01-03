@@ -80,7 +80,7 @@
 					<line>Course request priority (critical courses) first, student priority second, wait-listed time stamp last.</line>
 					<line>Students with a pending override, a time conflict, or students over max credit are skipped.</line>
 					<line>The order can be customized (e.g., only be based on the wait-listed time stamp)</line>
-				</line> 
+				</line>
 				<line>Email notifications added when custom enrollment fails (it is not possible to enroll student because of registration error).</line>
 				<line>Wait-list toggle is no longer automatically enabled when a student attempts to enroll to a course that is currently locked.</line>
 				<line>Various improvements across all the wait-listing functionality.</line>
@@ -143,7 +143,7 @@
 				<line>Added ability to include an optional program field on a student, with academic area, major, and classification.</line>
 				<line>Included in Student XML and Course Requests XML exports and imports.</line>
 				<line>Student Scheduling Dashboards: Added optional Program column and the ability to filter by program.</line>
-				
+
 			</description>
 		</item>
 	</category>
@@ -200,6 +200,7 @@
 				<line>Spring core libraries updated to version 5.3.13 (was 4.3.40).</line>
 				<line>Spring security updated to 5.4.9 (was 4.2.20).</line>
 				<line>Spring integration updated to 5.4.12 (was 4.3.24).</line>
+				<line>Log4j updated to 2.17.1 (was 1.2.17).</line>
 			</description>
 		</item>
 	</category>

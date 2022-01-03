@@ -25,7 +25,6 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -56,8 +55,6 @@ import org.unitime.timetable.util.queue.QueueItem;
  */
 @Service("/examPdfReport")
 public class ExamPdfReportAction extends Action {
-    protected static Logger sLog = Logger.getLogger(ExamPdfReportAction.class);
-    
     @Autowired SessionContext sessionContext;
     
     @Autowired SolverService<ExamSolverProxy> examinationSolverService;

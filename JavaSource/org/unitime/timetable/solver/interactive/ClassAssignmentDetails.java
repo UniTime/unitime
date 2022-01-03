@@ -638,7 +638,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		}
 		public int compareTo(Object o) {
 			if (o==null || !(o instanceof RoomInfo)) return -1;
-			//int cmp = -(new Long(getSize())).compareTo(new Long(((RoomInfo)o).getSize()));
+			//int cmp = -(Long.valueOf(getSize())).compareTo(Long.valueOf(((RoomInfo)o).getSize()));
 			//if (cmp!=0) return cmp;
 			return getName().compareTo(((RoomInfo)o).getName());
 		}
@@ -1142,7 +1142,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		return dispNumberShort(iAssignedAssignmentInfo==null,(iAssignmentInfo==null?0.0:iAssignmentInfo.getPerturbationPenalty()),(iAssignedAssignmentInfo==null?0.0:iAssignedAssignmentInfo.getPerturbationPenalty()));
 	}
 	public Comparable getPertPenaltyCmp() {
-		return new Double((iAssignmentInfo==null?0.0:iAssignmentInfo.getPerturbationPenalty())-(iAssignedAssignmentInfo==null?0.0:iAssignedAssignmentInfo.getPerturbationPenalty()));
+		return Double.valueOf((iAssignmentInfo==null?0.0:iAssignmentInfo.getPerturbationPenalty())-(iAssignedAssignmentInfo==null?0.0:iAssignedAssignmentInfo.getPerturbationPenalty()));
 	}
 	public String getNrStudentConflicts() {
 		String s = dispNumberShort(iAssignedAssignmentInfo==null,(iAssignmentInfo==null?0:iAssignmentInfo.getNrStudentConflicts()),(iAssignedAssignmentInfo==null?0:iAssignedAssignmentInfo.getNrStudentConflicts()));
@@ -1165,55 +1165,55 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		return s+" ("+sb+")";
 	}
 	public Comparable getNrStudentConflictsCmp() {
-		return new Integer((iAssignmentInfo==null?0:iAssignmentInfo.getNrStudentConflicts())-(iAssignedAssignmentInfo==null?0:iAssignedAssignmentInfo.getNrStudentConflicts()));
+		return Integer.valueOf((iAssignmentInfo==null?0:iAssignmentInfo.getNrStudentConflicts())-(iAssignedAssignmentInfo==null?0:iAssignedAssignmentInfo.getNrStudentConflicts()));
 	}
 	public String getTimePreference() {
 		return dispNumberShort(iAssignedAssignmentInfo==null,(iAssignmentInfo==null?0.0:iAssignmentInfo.getNormalizedTimePreference()),(iAssignedAssignmentInfo==null?0.0:iAssignedAssignmentInfo.getNormalizedTimePreference()));
 	}
 	public Comparable getTimePreferenceCmp() {
-		return new Double((iAssignmentInfo==null?0.0:iAssignmentInfo.getNormalizedTimePreference())-(iAssignedAssignmentInfo==null?0.0:iAssignedAssignmentInfo.getNormalizedTimePreference()));
+		return Double.valueOf((iAssignmentInfo==null?0.0:iAssignmentInfo.getNormalizedTimePreference())-(iAssignedAssignmentInfo==null?0.0:iAssignedAssignmentInfo.getNormalizedTimePreference()));
 	}
 	public String getRoomPreference() {
 		return dispNumberShort(iAssignedAssignmentInfo==null,(iAssignmentInfo==null?0.0:iAssignmentInfo.sumRoomPreference()),(iAssignedAssignmentInfo==null?0.0:iAssignedAssignmentInfo.sumRoomPreference()));
 	}
 	public Comparable getRoomPreferenceCmp() {
-		return new Double((iAssignmentInfo==null?0.0:iAssignmentInfo.sumRoomPreference())-(iAssignedAssignmentInfo==null?0.0:iAssignedAssignmentInfo.sumRoomPreference()));
+		return Double.valueOf((iAssignmentInfo==null?0.0:iAssignmentInfo.sumRoomPreference())-(iAssignedAssignmentInfo==null?0.0:iAssignedAssignmentInfo.sumRoomPreference()));
 	}
 	public String getBtbInstructorPreference() {
 		return dispNumberShort(iAssignedAssignmentInfo==null,(iAssignmentInfo==null?0:iAssignmentInfo.getBtbInstructorPreference()),(iAssignedAssignmentInfo==null?0:iAssignedAssignmentInfo.getBtbInstructorPreference()));
 	}
 	public Comparable getBtbInstructorPreferenceCmp() {
-		return new Double((iAssignmentInfo==null?0.0:iAssignmentInfo.getBtbInstructorPreference())-(iAssignedAssignmentInfo==null?0.0:iAssignedAssignmentInfo.getBtbInstructorPreference()));
+		return Double.valueOf((iAssignmentInfo==null?0.0:iAssignmentInfo.getBtbInstructorPreference())-(iAssignedAssignmentInfo==null?0.0:iAssignedAssignmentInfo.getBtbInstructorPreference()));
 	}
 	public String getIsTooBig() {
 		return dispNumberShort(iAssignedAssignmentInfo==null,(iAssignmentInfo==null?0:iAssignmentInfo.getTooBigRoomPreference()),(iAssignedAssignmentInfo==null?0:iAssignedAssignmentInfo.getTooBigRoomPreference()));
 	}
 	public Comparable getIsTooBigCmp() {
-		return new Integer((iAssignmentInfo==null?0:iAssignmentInfo.getTooBigRoomPreference())-(iAssignedAssignmentInfo==null?0:iAssignedAssignmentInfo.getTooBigRoomPreference()));
+		return Integer.valueOf((iAssignmentInfo==null?0:iAssignmentInfo.getTooBigRoomPreference())-(iAssignedAssignmentInfo==null?0:iAssignedAssignmentInfo.getTooBigRoomPreference()));
 	}
 	public String getUselessHalfHours() {
 		return dispNumberShort(iAssignedAssignmentInfo==null,(iAssignmentInfo==null?0:iAssignmentInfo.getUselessHalfHours()),(iAssignedAssignmentInfo==null?0:iAssignedAssignmentInfo.getUselessHalfHours()));
 	}
 	public Comparable getUselessHalfHoursCmp() {
-		return new Integer((iAssignmentInfo==null?0:iAssignmentInfo.getUselessHalfHours())-(iAssignedAssignmentInfo==null?0:iAssignedAssignmentInfo.getUselessHalfHours()));
+		return Integer.valueOf((iAssignmentInfo==null?0:iAssignmentInfo.getUselessHalfHours())-(iAssignedAssignmentInfo==null?0:iAssignedAssignmentInfo.getUselessHalfHours()));
 	}
 	public String getDeptBalancPenalty() {
 		return dispNumberShort(iAssignedAssignmentInfo==null,(iAssignmentInfo==null?0:iAssignmentInfo.getDeptBalancPenalty()),(iAssignedAssignmentInfo==null?0:iAssignedAssignmentInfo.getDeptBalancPenalty()));
 	}
 	public Comparable getDeptBalancPenaltyCmp() {
-		return new Double((iAssignmentInfo==null?0.0:iAssignmentInfo.getDeptBalancPenalty())-(iAssignedAssignmentInfo==null?0.0:iAssignedAssignmentInfo.getDeptBalancPenalty()));
+		return Double.valueOf((iAssignmentInfo==null?0.0:iAssignmentInfo.getDeptBalancPenalty())-(iAssignedAssignmentInfo==null?0.0:iAssignedAssignmentInfo.getDeptBalancPenalty()));
 	}
 	public String getSpreadPenalty() {
 		return dispNumberShort(iAssignedAssignmentInfo==null,(iAssignmentInfo==null?0:iAssignmentInfo.getSpreadPenalty()),(iAssignedAssignmentInfo==null?0:iAssignedAssignmentInfo.getSpreadPenalty()));
 	}
 	public Comparable getSpreadPenaltyCmp() {
-		return new Double((iAssignmentInfo==null?0:iAssignmentInfo.getSpreadPenalty())-(iAssignedAssignmentInfo==null?0:iAssignedAssignmentInfo.getSpreadPenalty()));
+		return Double.valueOf((iAssignmentInfo==null?0:iAssignmentInfo.getSpreadPenalty())-(iAssignedAssignmentInfo==null?0:iAssignedAssignmentInfo.getSpreadPenalty()));
 	}
 	public String getGroupConstraintPref() {
 		return dispNumberShort(iAssignedAssignmentInfo==null,(iAssignmentInfo==null?0:iAssignmentInfo.getGroupConstraintPref()),(iAssignedAssignmentInfo==null?0:iAssignedAssignmentInfo.getGroupConstraintPref()));
 	}
 	public Comparable getGroupConstraintPrefCmp() {
-		return new Integer((iAssignmentInfo==null?0:iAssignmentInfo.getGroupConstraintPref())-(iAssignedAssignmentInfo==null?0:iAssignedAssignmentInfo.getGroupConstraintPref()));
+		return Integer.valueOf((iAssignmentInfo==null?0:iAssignmentInfo.getGroupConstraintPref())-(iAssignedAssignmentInfo==null?0:iAssignedAssignmentInfo.getGroupConstraintPref()));
 	}
 	public AssignmentPreferenceInfo getInfo() {
 		return iAssignmentInfo;

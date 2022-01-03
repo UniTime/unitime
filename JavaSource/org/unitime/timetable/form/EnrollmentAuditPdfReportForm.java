@@ -25,7 +25,9 @@ import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
@@ -45,7 +47,7 @@ public class EnrollmentAuditPdfReportForm extends ActionForm {
 	 */
 	private static final long serialVersionUID = -4537752846296511516L;
 
-	protected static Logger sLog = Logger.getLogger(EnrollmentAuditPdfReportForm.class);
+	protected static Log sLog = LogFactory.getLog(EnrollmentAuditPdfReportForm.class);
 
     private String iOp = null;
 	private Long iSubjectArea = null;

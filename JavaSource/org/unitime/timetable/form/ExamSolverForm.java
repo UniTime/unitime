@@ -55,9 +55,9 @@ public class ExamSolverForm extends ActionForm {
 	private Vector iSettings = new Vector();
 	private Hashtable iParamValues = new Hashtable();
 	private Hashtable iDefaults = new Hashtable();
-	private static Long sEmpty = new Long(-1);
-	private static Long sDefault = new Long(-2);
-	private static Long sSolver = new Long(-3);
+	private static Long sEmpty = Long.valueOf(-1);
+	private static Long sDefault = Long.valueOf(-2);
+	private static Long sSolver = Long.valueOf(-3);
 	private Vector iParams = new Vector();
 	private String iHost = null;
 	private Long iExamType = null;
@@ -235,10 +235,10 @@ public class ExamSolverForm extends ActionForm {
 	public String getParameterValue(Long id) { return (String)iParamValues.get(id); }
 	public void setParameterValue(Long id, String value) { iParamValues.put(id, value); }
 	public Hashtable getParameterValues() { return iParamValues; }
-	public String getParameterValue(long id) { return getParameterValue(new Long(id)); }
-	public String getParameterValue(int id) { return getParameterValue(new Long(id)); }
-	public void setParameterValue(long id, String value) { setParameterValue(new Long(id), value); }
-	public void setParameterValue(int id, String value) { setParameterValue(new Long(id), value); }
+	public String getParameterValue(long id) { return getParameterValue(Long.valueOf(id)); }
+	public String getParameterValue(int id) { return getParameterValue(Long.valueOf(id)); }
+	public void setParameterValue(long id, String value) { setParameterValue(Long.valueOf(id), value); }
+	public void setParameterValue(int id, String value) { setParameterValue(Long.valueOf(id), value); }
 	public Collection getEnum(String type) {
 		Vector options = new Vector();
 		options.add("");

@@ -878,9 +878,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		}
 		
 		public int compareTo(MeetingInterface meeting) {
-			int cmp = new Integer(getDayOfYear()).compareTo(meeting.getDayOfYear());
+			int cmp = Integer.valueOf(getDayOfYear()).compareTo(meeting.getDayOfYear());
 			if (cmp != 0) return cmp;
-			cmp = new Integer(getStartSlot()).compareTo(meeting.getStartSlot());
+			cmp = Integer.valueOf(getStartSlot()).compareTo(meeting.getStartSlot());
 			if (cmp != 0) return cmp;
 			cmp = getLocationName().compareTo(meeting.getLocationName());
 			if (cmp != 0) return cmp;
@@ -977,15 +977,15 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public int compareTo(MeetingInterface conflict) {
 			int cmp = getType().compareTo(((MeetingConflictInterface)conflict).getType());
 			if (cmp != 0) return cmp;
-			cmp = new Integer(getDayOfYear()).compareTo(conflict.getDayOfYear());
+			cmp = Integer.valueOf(getDayOfYear()).compareTo(conflict.getDayOfYear());
 			if (cmp != 0) return cmp;
-			cmp = new Integer(getStartSlot()).compareTo(conflict.getStartSlot());
+			cmp = Integer.valueOf(getStartSlot()).compareTo(conflict.getStartSlot());
 			if (cmp != 0) return cmp;
-			cmp = new Integer(getEndSlot()).compareTo(conflict.getEndSlot());
+			cmp = Integer.valueOf(getEndSlot()).compareTo(conflict.getEndSlot());
 			if (cmp != 0) return cmp;
 			cmp = getName().compareTo(((MeetingConflictInterface)conflict).getName());
 			if (cmp != 0) return cmp;
-			return (getId() == null ? new Long(-1) : getId()).compareTo(conflict.getId() == null ? new Long(-1) : conflict.getId());
+			return (getId() == null ? Long.valueOf(-1) : getId()).compareTo(conflict.getId() == null ? Long.valueOf(-1) : conflict.getId());
 		}
 		
 		public String toString() {
@@ -1380,7 +1380,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			} else if (!getType().equals(note.getType())) {
 				return getType().compareTo(note.getType());
 			}
-			return (getId() == null ? new Long(-1l) : getId()).compareTo(note.getId() == null ? -1l : note.getId());
+			return (getId() == null ? Long.valueOf(-1l) : getId()).compareTo(note.getId() == null ? -1l : note.getId());
 		}
     }
     
@@ -1541,7 +1541,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public int compareTo(RelatedObjectInterface o) {
 			int cmp = toString().compareTo(o.toString());
 			if (cmp != 0) return cmp;
-			return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(o.getUniqueId() == null ? -1 : o.getUniqueId());
+			return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(o.getUniqueId() == null ? -1 : o.getUniqueId());
 		}
     }
     

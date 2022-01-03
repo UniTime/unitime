@@ -78,7 +78,7 @@ public class XStudentNote implements Serializable, Comparable<XStudentNote>, Ext
 	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 		long id = in.readLong();
-		iId = (id < 0 ? null : new Long(id));
+		iId = (id < 0 ? null : Long.valueOf(id));
 		iNote = (String)in.readObject();
 		iUserId = (String)in.readObject();
 		long ts = in.readLong();

@@ -55,7 +55,7 @@ public class Advisor extends BaseAdvisor implements NameInterface, Comparable<Ad
     public int compareTo(Advisor advisor) {
         int cmp = NameFormat.LAST_FIRST.format(this).compareTo(NameFormat.LAST_FIRST.format(advisor));
         if (cmp!=0) return cmp;
-        return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(advisor.getUniqueId() == null ? -1 : advisor.getUniqueId());
+        return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(advisor.getUniqueId() == null ? -1 : advisor.getUniqueId());
     }
     
     public boolean lookupDetails() {

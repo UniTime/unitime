@@ -26,8 +26,8 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.hibernate.SessionFactory;
 import org.jgroups.Address;
 import org.unitime.timetable.ApplicationProperties;
@@ -225,13 +225,19 @@ public abstract class AbstractSolverServer implements SolverServer {
 	}
 
 	@Override
-	public void setLoggingLevel(String name, Integer level) {
-		sLog.info("Set logging level for " + (name == null ? "root" : name) + " to " + (level == null ? "null" : Level.toLevel(level)));
-		Logger logger = (name == null ? Logger.getRootLogger() : Logger.getLogger(name));
-		if (level == null)
-			logger.setLevel(null);
-		else
-			logger.setLevel(Level.toLevel(level));
+	public void setLoggingLevel(String name, String level) {
+		sLog.info("Set logging level for " + (name == null ? "root" : name) + " to " + (level == null ? "null" : level));
+		if (level == null) {
+			if (name == null || name.isEmpty())
+				Configurator.setRootLevel(Level.INFO);
+			else
+				Configurator.setLevel(name, null);
+		} else {
+			if (name == null || name.isEmpty())
+				Configurator.setRootLevel(Level.getLevel(level));
+			else
+				Configurator.setLevel(name, Level.getLevel(level));
+		}
 	}
 
 	@Override

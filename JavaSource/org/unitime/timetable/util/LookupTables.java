@@ -213,7 +213,7 @@ public class LookupTables {
 
     public static void setupDatePatterns(HttpServletRequest request, UserContext user, String inheritString, DatePattern inheritedDatePattern, Department department, DatePattern currentDatePattern) {
     	Vector list = new Vector();
-    	list.addElement(new IdValue(new Long(-1),inheritString+(inheritedDatePattern==null?"":" ("+inheritedDatePattern.getName()+")")));
+    	list.addElement(new IdValue(Long.valueOf(-1),inheritString+(inheritedDatePattern==null?"":" ("+inheritedDatePattern.getName()+")")));
     	try {
     		for (DatePattern dp: DatePattern.findAll(user, department, currentDatePattern))
     			list.addElement(new IdValue(dp.getUniqueId(),dp.getName()));
@@ -233,7 +233,7 @@ public class LookupTables {
      */
     public static void setupDatePatterns(HttpServletRequest request, org.unitime.timetable.model.Session acadSession, boolean includeExtended, String inheritString, DatePattern inheritedDatePattern, Department department, DatePattern currentDatePattern) {
     	Vector list = new Vector();
-    	list.addElement(new IdValue(new Long(-1),inheritString+(inheritedDatePattern==null?"":" ("+inheritedDatePattern.getName()+")")));
+    	list.addElement(new IdValue(Long.valueOf(-1),inheritString+(inheritedDatePattern==null?"":" ("+inheritedDatePattern.getName()+")")));
     	try {
     		for (DatePattern dp: DatePattern.findAll(acadSession, includeExtended, department, currentDatePattern))
     			list.addElement(new IdValue(dp.getUniqueId(),dp.getName()));
@@ -249,7 +249,7 @@ public class LookupTables {
 
 	public static void setupLearningManagementSystemInfos(HttpServletRequest request, UserContext user, boolean includeExtended, String inheritString, LearningManagementSystemInfo inheritedDatePattern) {
 	    	Vector list = new Vector();
-	    	list.addElement(new IdValue(new Long(-1),inheritString+(inheritedDatePattern==null?"":" ("+inheritedDatePattern.getLabel()+")")));
+	    	list.addElement(new IdValue(Long.valueOf(-1),inheritString+(inheritedDatePattern==null?"":" ("+inheritedDatePattern.getLabel()+")")));
 	    	try {
 	    		for (LearningManagementSystemInfo lms: LearningManagementSystemInfo.findAll(user))
 	    			list.addElement(new IdValue(lms.getUniqueId(),lms.getLabel()));

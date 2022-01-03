@@ -172,7 +172,7 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 		if (location.getManagerIds() != null) {
 			for (StringTokenizer stk = new StringTokenizer(location.getManagerIds(), ","); stk.hasMoreTokens();) {
 				Long id = Long.valueOf(stk.nextToken());
-				char2dept.put(new Character(pref++), id);
+				char2dept.put(Character.valueOf(pref++), id);
 			}
 		}
 
@@ -239,7 +239,7 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 		for (RoomSharingOption option: request.getModel().getOptions()) {
 			if (option.getId() >= 0) {
 				managerIds += (managerIds.isEmpty() ? "" : ",") + option.getId();
-				dept2char.put(option.getId(), new Character(pref++));
+				dept2char.put(option.getId(), Character.valueOf(pref++));
 				add.add(option.getId());
 			}
 		}

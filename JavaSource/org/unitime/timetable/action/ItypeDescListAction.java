@@ -102,7 +102,7 @@ public class ItypeDescListAction extends Action {
 				                        itypeDesc.getDesc(),
 				                        (itypeDesc.getSis_ref()==null?"":itypeDesc.getSis_ref()),
 				                        itypeDesc.getBasic(),
-				                        (itypeDesc.getParent()==null?new Integer(-1):itypeDesc.getParent().getItype()),
+				                        (itypeDesc.getParent()==null?Integer.valueOf(-1):itypeDesc.getParent().getItype()),
 				                        (itypeDesc.isOrganized()?0:1)});
 	        }
 	        

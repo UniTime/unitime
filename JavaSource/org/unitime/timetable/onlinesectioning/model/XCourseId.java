@@ -131,7 +131,7 @@ public class XCourseId implements Serializable, Comparable<XCourseId>, Externali
 		if (cmp!=0) return cmp;
 		cmp = (getTitle() == null ? "" : getTitle()).compareToIgnoreCase(c.getTitle() == null ? "" : c.getTitle());
 		if (cmp!=0) return cmp;
-		return (getCourseId() == null ? new Long(-1) : getCourseId()).compareTo(c.getCourseId() == null ? -1 : c.getCourseId());
+		return (getCourseId() == null ? Long.valueOf(-1) : getCourseId()).compareTo(c.getCourseId() == null ? -1 : c.getCourseId());
 	}
 	
 	public boolean matchCourseName(String queryInLowerCase) {

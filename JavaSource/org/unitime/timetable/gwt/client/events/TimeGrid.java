@@ -714,7 +714,7 @@ public class TimeGrid extends Composite {
 			MeetingInterface meeting = null;
 			TreeSet<MeetingInterface> dates = new TreeSet<MeetingInterface>(new Comparator<MeetingInterface>() {
 				public int compare(MeetingInterface m1, MeetingInterface m2) {
-					return new Integer(m1.getDayOfYear()).compareTo(new Integer(m2.getDayOfYear()));
+					return Integer.valueOf(m1.getDayOfYear()).compareTo(Integer.valueOf(m2.getDayOfYear()));
 				}
 			});
 			TreeSet<String> rooms = new TreeSet<String>();

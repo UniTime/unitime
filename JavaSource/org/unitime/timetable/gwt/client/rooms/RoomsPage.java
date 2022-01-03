@@ -373,7 +373,7 @@ public class RoomsPage extends Composite {
 							iFilter.setErrorHint(MESSAGES.errorNoRoomsMatchingFilter());
 							UniTimeNotifications.error(MESSAGES.errorNoRoomsMatchingFilter());
 						} else {
-							iRoomDepartmentsEdit.setRooms(result.getResults(), iRoomsTable.hasSortBy() ? new Integer(iRoomsTable.getSortBy()) : null);
+							iRoomDepartmentsEdit.setRooms(result.getResults(), iRoomsTable.hasSortBy() ? Integer.valueOf(iRoomsTable.getSortBy()) : null);
 							iRoomDepartmentsEdit.show();
 						}
 					}

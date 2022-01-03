@@ -28,11 +28,11 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -55,7 +55,7 @@ import org.unitime.timetable.solver.jgroups.SolverServer;
  * @author Tomas Muller
  */
 public abstract class OnlineSectioningTestFwk { 
-	protected static Logger sLog = Logger.getLogger(OnlineSectioningTestFwk.class);
+	protected static Log sLog = LogFactory.getLog(OnlineSectioningTestFwk.class);
 	protected static DecimalFormat sDF = new DecimalFormat("0.000");
 	protected OnlineSectioningServer iServer = null;
 	private Pool iTasks;
@@ -69,29 +69,6 @@ public abstract class OnlineSectioningTestFwk {
 	private Map<String, Counter> iCounters = new Hashtable<String, Counter>();
 	private Map<String, Map<String, Map<String, Counter>>> iReports = new Hashtable<String, Map<String,Map<String,Counter>>>();
     
-	protected void configureLogging() {
-        Properties props = new Properties();
-        props.setProperty("log4j.rootLogger", "DEBUG, A1");
-        props.setProperty("log4j.appender.A1", "org.apache.log4j.ConsoleAppender");
-        props.setProperty("log4j.appender.A1.layout", "org.apache.log4j.PatternLayout");
-        props.setProperty("log4j.appender.A1.layout.ConversionPattern","%-5p %c{2}: %m%n");
-        props.setProperty("log4j.logger.org.hibernate","INFO");
-        props.setProperty("log4j.logger.org.hibernate.cfg","WARN");
-        props.setProperty("log4j.logger.org.hibernate.cache.EhCacheProvider","ERROR");
-        props.setProperty("log4j.logger.org.unitime.commons.hibernate","INFO");
-        props.setProperty("log4j.logger.net","INFO");
-        props.setProperty("log4j.logger.org.unitime.timetable.onlinesectioning","WARN");
-        props.setProperty("log4j.logger.org.unitime.timetable.onlinesectioning.test","INFO");
-        props.setProperty("log4j.logger." + OnlineSectioningTestFwk.class.getName(), "INFO");
-        props.setProperty("log4j.logger.org.cpsolver.ifs.util.JProf", "INFO");
-        props.setProperty("log4j.logger.org.jgroups", "INFO");
-        props.setProperty("log4j.logger.net.sf.ehcache.distribution.jgroups", "WARN");
-        props.setProperty("log4j.logger.org.hibernate.cache.ehcache.AbstractEhcacheRegionFactory", "ERROR");
-        props.setProperty("log4j.logger.net.sf.ehcache.distribution.jgroups.JGroupsCacheReceiver", "ERROR");
-        props.setProperty("log4j.logger.org.unitime.timetable.solver.jgroups.DummySolverServer", "INFO");
-        PropertyConfigurator.configure(props);
-	}
-	
 	public <X extends OnlineSectioningAction> X createAction(Class<X> clazz) {
 		return getServer().createAction(clazz);
 	}
@@ -313,8 +290,6 @@ public abstract class OnlineSectioningTestFwk {
 	
 	public void test(int nrTasks, int... nrConcurrent) {
 		try {
-			configureLogging();
-			
 	        HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
 	        
 			startServer();

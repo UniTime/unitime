@@ -92,8 +92,8 @@ public class WeeklyMinutes extends MinutesPerWeek {
 		if (weeklyMinutes <= 0 || datePattern == null) return null;
 		if (datePattern.getType() != null && datePattern.getType() == DatePattern.sTypePatternSet) {
 			for (DatePattern child: datePattern.findChildren())
-				return new Integer(Math.round((getSemesterWeeks(datePattern) * weeklyMinutes) / (child.getEffectiveNumberOfWeeks() * 50f)));
+				return Integer.valueOf(Math.round((getSemesterWeeks(datePattern) * weeklyMinutes) / (child.getEffectiveNumberOfWeeks() * 50f)));
 		}
-		return new Integer(Math.round((getSemesterWeeks(datePattern) * weeklyMinutes) / (datePattern.getEffectiveNumberOfWeeks() * 50f)));
+		return Integer.valueOf(Math.round((getSemesterWeeks(datePattern) * weeklyMinutes) / (datePattern.getEffectiveNumberOfWeeks() * 50f)));
 	}
 }

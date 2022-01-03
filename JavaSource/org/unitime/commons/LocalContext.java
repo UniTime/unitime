@@ -495,7 +495,7 @@ public class LocalContext implements Context, NameParser, InitialContextFactory,
 		String className = (String)(env == null ? null : env.get(Context.INITIAL_CONTEXT_FACTORY));
 		if (className != null) {
 			try {
-				return (InitialContextFactory)Class.forName(className).newInstance();
+				return (InitialContextFactory)Class.forName(className).getDeclaredConstructor().newInstance();
 			} catch (Exception e) {
 				throw new NamingException(e.getMessage());
 			}

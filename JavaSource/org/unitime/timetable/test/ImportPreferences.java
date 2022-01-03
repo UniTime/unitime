@@ -102,7 +102,7 @@ public class ImportPreferences {
 		timePattern.setMinPerMtg(Integer.valueOf(element.attributeValue("minPerMtg")));
 		timePattern.setSlotsPerMtg(Integer.valueOf(element.attributeValue("slotsPerMtg")));
 		timePattern.setNrMeetings(Integer.valueOf(element.attributeValue("nrMeetings")));
-		timePattern.setVisible(new Boolean(element.attributeValue("visible")));
+		timePattern.setVisible(Boolean.valueOf(element.attributeValue("visible")));
 		timePattern.setType(Integer.valueOf(element.attributeValue("type")));
 		HashSet days = new HashSet();
 		for (Iterator i=element.elementIterator("dayCode");i.hasNext();) {
@@ -129,7 +129,7 @@ public class ImportPreferences {
 		sLog.info("Creating date pattern "+name);
 		datePattern = new DatePattern();
 		datePattern.setName(name);
-		datePattern.setVisible(new Boolean(element.attributeValue("visible")));
+		datePattern.setVisible(Boolean.valueOf(element.attributeValue("visible")));
 		datePattern.setType(Integer.valueOf(element.attributeValue("type")));
 		datePattern.setSession(iSession);
 		datePattern.setOffset(Integer.valueOf(element.attributeValue("offset")));
@@ -315,19 +315,19 @@ public class ImportPreferences {
 		}
 		if (clazz.getExpectedCapacity().intValue()!=expectedCapacity) {
 			sLog.info("  -- changing min. class limit to "+expectedCapacity+" (was "+clazz.getExpectedCapacity()+")");
-			clazz.setExpectedCapacity(new Integer(expectedCapacity));
+			clazz.setExpectedCapacity(Integer.valueOf(expectedCapacity));
 		}
 		if (clazz.getMaxExpectedCapacity().intValue()!=maxExpectedCapacity) {
 			sLog.info("  -- changing max. class limit to "+maxExpectedCapacity+" (was "+clazz.getMaxExpectedCapacity()+")");
-			clazz.setMaxExpectedCapacity(new Integer(maxExpectedCapacity));
+			clazz.setMaxExpectedCapacity(Integer.valueOf(maxExpectedCapacity));
 		}
 		if (clazz.getNbrRooms().intValue()!=numberOfRooms) {
 			sLog.info("  -- changing number of rooms to "+numberOfRooms+" (was "+clazz.getNbrRooms()+")");
-			clazz.setNbrRooms(new Integer(numberOfRooms));
+			clazz.setNbrRooms(Integer.valueOf(numberOfRooms));
 		}
 		if (clazz.getRoomRatio().floatValue()!=roomRatio) {
 			sLog.info("  -- changing room ratio to "+roomRatio+" (was "+clazz.getRoomRatio()+")");
-			clazz.setRoomRatio(new Float(roomRatio));
+			clazz.setRoomRatio(Float.valueOf(roomRatio));
 		}
 		if (!ToolBox.equals(notes,clazz.getNotes())) {
 			sLog.info("  -- changing notes to "+notes+" (was "+clazz.getNotes()+")");
@@ -413,9 +413,9 @@ public class ImportPreferences {
 			}
 			ClassInstructor ci = new ClassInstructor();
 			ci.setInstructor(instructor);
-			ci.setLead(new Boolean(el.attributeValue("isLead")));
+			ci.setLead(Boolean.valueOf(el.attributeValue("isLead")));
 			ci.setPercentShare(Integer.valueOf(el.attributeValue("percentShare")));
-			ci.setLead(new Boolean(el.attributeValue("isTentative", "false")));
+			ci.setLead(Boolean.valueOf(el.attributeValue("isTentative", "false")));
 			String responsibility = el.attributeValue("responsibility");
 			if (responsibility != null)
 				ci.setResponsibility(TeachingResponsibility.getTeachingResponsibility(responsibility, hibSession));
@@ -490,7 +490,7 @@ public class ImportPreferences {
 		int minutesPerWk = Integer.parseInt(element.attributeValue("minutesPerWk"));
 		if (subpart.getMinutesPerWk().intValue()!=minutesPerWk) {
 			sLog.info("  -- changing minutes per meeting to "+minutesPerWk+" (was "+subpart.getMinutesPerWk()+")");
-			subpart.setMinutesPerWk(new Integer(minutesPerWk));
+			subpart.setMinutesPerWk(Integer.valueOf(minutesPerWk));
 		}
 		
 		importPreferences(subpart, element);
@@ -662,12 +662,12 @@ public class ImportPreferences {
 				}
 				co.setProjectedDemand(Integer.valueOf(x.attributeValue("projectedDemand")));
 				co.setDemand(Integer.valueOf(x.attributeValue("demand","0")));
-				co.setIsControl(new Boolean(x.attributeValue("isControl")));
+				co.setIsControl(Boolean.valueOf(x.attributeValue("isControl")));
 				co.setPermId(x.attributeValue("permId"));
 				courseOfferings.add(co);
 			}
 			io = new InstructionalOffering();
-		    io.setNotOffered(new Boolean(false));
+		    io.setNotOffered(Boolean.valueOf(false));
 		    io.setSession(iSession);
 		    io.setInstrOfferingPermId(Integer.valueOf(element.attributeValue("instrOfferingPermId")));
 		    io.setCourseOfferings(courseOfferings);
@@ -680,7 +680,7 @@ public class ImportPreferences {
 			hibSession.refresh(io);
 		} else if (io.isNotOffered().booleanValue()) {
 			sLog.info("  -- changing not offered offering");
-			io.setNotOffered(new Boolean(false));
+			io.setNotOffered(Boolean.valueOf(false));
 			hibSession.update(io);
 		}
 		Hashtable classTable = new Hashtable();
@@ -692,7 +692,7 @@ public class ImportPreferences {
 				int limit = Integer.parseInt(x.attributeValue("limit"));
 				if (limit!=c.getLimit().intValue()) {
 					sLog.info("  -- changing limit to "+limit+" (was "+c.getLimit()+")");
-					c.setLimit(new Integer(limit));
+					c.setLimit(Integer.valueOf(limit));
 				}
 				hibSession.update(c);
 				for (Iterator k=x.elementIterator("schedulingSubpart");k.hasNext();) {
@@ -707,7 +707,7 @@ public class ImportPreferences {
 			c.setLimit(Integer.valueOf(x.attributeValue("limit")));
 			c.setUnlimitedEnrollment(Boolean.FALSE);
 			if (x.attributeValue("unlimitedEnrollment")!=null)
-				c.setUnlimitedEnrollment(new Boolean(x.attributeValue("unlimitedEnrollment")));
+				c.setUnlimitedEnrollment(Boolean.valueOf(x.attributeValue("unlimitedEnrollment")));
 			hibSession.save(c);
 			hibSession.flush();
 			hibSession.refresh(c);
@@ -771,10 +771,10 @@ public class ImportPreferences {
 						roomRatio = ((float)roomCapacity)/expectedCapacity;
 					}
 				}
-				clazz.setExpectedCapacity(new Integer(expectedCapacity));
-				clazz.setMaxExpectedCapacity(new Integer(maxExpectedCapacity));
-				clazz.setRoomRatio(new Float(roomRatio));
-				clazz.setNbrRooms(new Integer(numberOfRooms));
+				clazz.setExpectedCapacity(Integer.valueOf(expectedCapacity));
+				clazz.setMaxExpectedCapacity(Integer.valueOf(maxExpectedCapacity));
+				clazz.setRoomRatio(Float.valueOf(roomRatio));
+				clazz.setNbrRooms(Integer.valueOf(numberOfRooms));
 				clazz.setDisplayInstructor(Boolean.TRUE);
 				clazz.setEnabledForStudentScheduling(Boolean.TRUE);
 				if (x.attributeValue("parent")!=null)
@@ -954,7 +954,7 @@ public class ImportPreferences {
 		}
 		public int hashCode() {
 			if (hashCode==null) {
-				hashCode = new Integer(toString().hashCode());
+				hashCode = Integer.valueOf(toString().hashCode());
 			}
 			return hashCode.intValue();
 		}

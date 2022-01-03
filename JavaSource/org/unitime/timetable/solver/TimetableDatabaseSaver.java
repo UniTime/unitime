@@ -115,7 +115,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
 	public TimetableDatabaseSaver(org.cpsolver.ifs.solver.Solver solver) {
         super(solver);
         iProgress = Progress.getInstance(getModel());
-        iSessionId = new Long(getModel().getProperties().getPropertyLong("General.SessionId",-1));
+        iSessionId = Long.valueOf(getModel().getProperties().getPropertyLong("General.SessionId",-1));
         iSolverGroupId = getModel().getProperties().getPropertyLongArry("General.SolverGroupId",null);
         iSolutionId = getModel().getProperties().getPropertyLongArry("General.SolutionId",null);
         iCreateNew = getModel().getProperties().getPropertyBoolean("General.CreateNewSolution",iCreateNew);
@@ -194,7 +194,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
 				tx.commit();
 		    	String className = ApplicationProperty.ExternalActionSolutionCommit.value();
 		    	if (className != null && className.trim().length() > 0){
-		    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).newInstance());
+		    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).getDeclaredConstructor().newInstance());
 		    		commitAction.performExternalSolutionCommitAction(touchedSolutions, hibSession);
 		    	}
     		}
@@ -291,7 +291,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     					    	if (className != null && className.trim().length() > 0){
     					    		HashSet<Solution> touchedSolutions = new HashSet<Solution>();
     					    		touchedSolutions.add(solution);
-    					    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).newInstance());
+    					    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).getDeclaredConstructor().newInstance());
     					    		commitAction.performExternalSolutionCommitAction(touchedSolutions, hibSession);
     					    	}
 
@@ -409,8 +409,8 @@ public class TimetableDatabaseSaver extends TimetableSaver {
         			assignment.setClazz(clazz);
         			assignment.setClassId(clazz.getUniqueId());
         			assignment.setClassName(lecture.getName());
-        			assignment.setDays(new Integer(placement.getTimeLocation().getDayCode()));
-        			assignment.setStartSlot(new Integer(placement.getTimeLocation().getStartSlot()));
+        			assignment.setDays(Integer.valueOf(placement.getTimeLocation().getDayCode()));
+        			assignment.setStartSlot(Integer.valueOf(placement.getTimeLocation().getStartSlot()));
         			assignment.setTimePattern(pattern);
         			if (placement.getTimeLocation().getDatePatternId() != null)
         				assignment.setDatePattern(DatePatternDAO.getInstance().get(placement.getTimeLocation().getDatePatternId(), hibSession));
@@ -468,7 +468,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     			Class_ clazz2 = (new Class_DAO()).get(((Lecture)jenrlConstraint.second()).getClassId());
     			
     			JointEnrollment jenrl = new JointEnrollment();
-    			jenrl.setJenrl(new Double(jenrlConstraint.getJenrl()));
+    			jenrl.setJenrl(Double.valueOf(jenrlConstraint.getJenrl()));
     			jenrl.setClass1(clazz1);
     			jenrl.setClass2(clazz2);
     			jenrl.setSolution(solution);

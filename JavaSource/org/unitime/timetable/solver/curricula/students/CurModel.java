@@ -34,8 +34,9 @@ import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
+
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.DefaultSingleAssignment;
 import org.cpsolver.ifs.assignment.context.AssignmentConstraintContext;
@@ -568,11 +569,11 @@ public class CurModel extends ModelWithContext<CurVariable, CurValue, CurModel.C
     
     public static void main(String[] args) {
     	try {
-    		Logger.getRootLogger().setLevel(Level.DEBUG);
+    		Configurator.setRootLevel(Level.DEBUG);
     		
     		List<CurStudent> students = new ArrayList<CurStudent>();
     		for (int i = 0; i < 20; i++)
-    			students.add(new CurStudent(new Long(1 + i), (i < 10 ? 0.5f: 2f)));
+    			students.add(new CurStudent(Long.valueOf(1 + i), (i < 10 ? 0.5f: 2f)));
     		CurModel m = new CurModel(students);
     		for (int i = 1; i <= 10; i++)
     			m.addCourse((long)i, "C" + i,  2 * i, null);

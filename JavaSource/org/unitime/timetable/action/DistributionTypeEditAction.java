@@ -98,14 +98,14 @@ public class DistributionTypeEditAction extends Action {
 			Long sessionId = sessionContext.getUser().getCurrentAcademicSessionId();
 			
 			if (op==null) {
-				Long id =  new Long(Long.parseLong(request.getParameter("id")));
+				Long id =  Long.valueOf(Long.parseLong(request.getParameter("id")));
 				myForm.setRefTableEntry((new DistributionTypeDAO()).get(id), sessionId);
 			}
 			
 	        if (request.getParameterValues("depts")!=null) {
 	        	String[] depts = request.getParameterValues("depts");
 	        	for (int i=0;i<depts.length;i++)
-	        		myForm.getDepartmentIds().add(new Long(depts[i]));
+	        		myForm.getDepartmentIds().add(Long.valueOf(depts[i]));
 	        }
 
 	        List list = (new DepartmentDAO()).getSession()

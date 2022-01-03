@@ -265,7 +265,7 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 		}
 	}
 	
-	public void setLoggingLevel(String name, Integer level) {
+	public void setLoggingLevel(String name, String level) {
 		try {
 			RpcDispatcher dispatcher = getDispatcher();
 			if (dispatcher != null)

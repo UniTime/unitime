@@ -74,7 +74,7 @@ public class ExamsForm extends ActionForm {
 		iUser = null;
 		iPassword = null;
 		iMessage = null;
-		canRetrieveAllExamForAllSubjects = new Boolean(false);
+		canRetrieveAllExamForAllSubjects = Boolean.valueOf(false);
 	}
 	
 	public String getOp() { return iOp; }
@@ -89,12 +89,12 @@ public class ExamsForm extends ActionForm {
 	public Collection getSessions() { return iSessions; }
 	
 	public Boolean canDisplayAllSubjectsAtOnce(){
-		Boolean displayAll = new Boolean(false); 
+		Boolean displayAll = Boolean.valueOf(false); 
 		if (iSession != null){
 			String queryStr = "select count(e) from Exam e where e.session.uniqueId = :sessionId";
 			int count = ((Number)SessionDAO.getInstance().getQuery(queryStr).setLong("sessionId", iSession).setCacheable(true).uniqueResult()).intValue();
 			if (count <= 300){
-				displayAll = new Boolean(true);
+				displayAll = Boolean.valueOf(true);
 			}
 		}
 		return(displayAll);

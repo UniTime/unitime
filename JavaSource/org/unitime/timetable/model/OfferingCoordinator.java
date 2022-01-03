@@ -34,6 +34,6 @@ public class OfferingCoordinator extends BaseOfferingCoordinator implements Comp
 		if (cmp != 0) return cmp;
 		cmp = (getResponsibility() == null ? "" : getResponsibility().getAbbreviation()).compareTo(o.getResponsibility() == null ? "" : o.getResponsibility().getAbbreviation());
 		if (cmp != 0) return cmp;
-		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(o.getUniqueId() == null ? -1 : o.getUniqueId());
+		return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(o.getUniqueId() == null ? -1 : o.getUniqueId());
 	}
 }

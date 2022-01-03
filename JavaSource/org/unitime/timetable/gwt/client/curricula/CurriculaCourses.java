@@ -1186,14 +1186,14 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 		if (column % 2 == 0) {
 			Float s0 = ((ShareTextBox)iTable.getWidget(r0, column)).getDisplayedShare();
 			Float s1 = ((ShareTextBox)iTable.getWidget(r1, column)).getDisplayedShare();
-			return - (s0 == null ? new Float(0) : s0).compareTo(s1 == null ? new Float(0) : s1);
+			return - (s0 == null ? Float.valueOf(0) : s0).compareTo(s1 == null ? Float.valueOf(0) : s1);
 		} else {
 			EnrollmentLabel l0 = ((EnrollmentLabel)iTable.getWidget(r0, column));
 			EnrollmentLabel l1 = ((EnrollmentLabel)iTable.getWidget(r1, column));
 			Mode mode = CurriculumCookie.getInstance().getCurriculaCoursesMode();
 			Integer i0 = (mode == Mode.ENRL ? l0.iEnrollment : mode == Mode.LAST ? l0.iLastLike : mode == Mode.REQ ? l0.iRequested : l0.iProjection);
 			Integer i1 = (mode == Mode.ENRL ? l1.iEnrollment : mode == Mode.LAST ? l1.iLastLike : mode == Mode.REQ ? l0.iRequested : l1.iProjection);
-			return - (i0 == null ? new Integer(0) : i0).compareTo(i1 == null ? new Integer(0) : i1);
+			return - (i0 == null ? Integer.valueOf(0) : i0).compareTo(i1 == null ? Integer.valueOf(0) : i1);
 		}
 	}
 	
@@ -1618,7 +1618,7 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 		public void update() {
 			if (iShare == null)  {
 				if (iDefaultShare != null) {
-					if (CurriculumCookie.getInstance().getCurriculaCoursesPercent() || new Integer(0).equals(iClassifications.getExpected(iColumn)))
+					if (CurriculumCookie.getInstance().getCurriculaCoursesPercent() || Integer.valueOf(0).equals(iClassifications.getExpected(iColumn)))
 						setText(NF.format(100.0 * iDefaultShare) + "%");
 					else {
 						Integer exp = iClassifications.getExpected(iColumn);
@@ -1629,7 +1629,7 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 					setText("");
 					getElement().getStyle().clearColor();
 				}
-			} else if (CurriculumCookie.getInstance().getCurriculaCoursesPercent() || new Integer(0).equals(iClassifications.getExpected(iColumn))) {
+			} else if (CurriculumCookie.getInstance().getCurriculaCoursesPercent() || Integer.valueOf(0).equals(iClassifications.getExpected(iColumn))) {
 				setText(NF.format(100.0 * iShare) + "%");
 				getElement().getStyle().clearColor();
 			} else {

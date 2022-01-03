@@ -129,10 +129,6 @@ Joda-Time (joda-time-2.8.2.jar)
 jstl (jstl-1.2.jar)
 	under Common Development and Distribution License (CDDL), Version 1.0
 
-Apache Log4j (log4j-1.2.17.jar)
-	under Apache Software License (ASL), Version 2.0
-	http://logging.apache.org/log4j/1.2/
-
 biweekly (biweekly-0.4.3.jar)
 	under BSD or BSD-style License
 	http://sourceforge.net/p/biweekly
@@ -148,6 +144,22 @@ JGroups Replication (ehcache-jgroupsreplication-1.7.jar)
 Apache Commons Collections (commons-collections4-4.1.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://commons.apache.org/proper/commons-collections/
+
+Apache Log4j API (log4j-api-2.17.1.jar)
+	under Apache Software License (ASL), Version 2.0
+	https://logging.apache.org/log4j/2.x/log4j-api/
+
+Apache Log4j Core (log4j-core-2.17.1.jar)
+	under Apache Software License (ASL), Version 2.0
+	https://logging.apache.org/log4j/2.x/log4j-core/
+
+Apache Log4j Commons Logging Bridge (log4j-jcl-2.17.1.jar)
+	under Apache Software License (ASL), Version 2.0
+	https://logging.apache.org/log4j/2.x/log4j-jcl/
+
+Apache Log4j SLF4J Binding (log4j-slf4j-impl-2.17.1.jar)
+	under Apache Software License (ASL), Version 2.0
+	https://logging.apache.org/log4j/2.x/log4j-slf4j-impl/
 
 Apache POI (poi-3.17.jar)
 	under Apache Software License (ASL), Version 2.0
@@ -237,7 +249,7 @@ JBossTS jbossjta (jbossjta-4.16.6.Final.jar)
 	under GNU Lesser General Public License (LGPL), Version 2.1
 	http://www.jboss.org/jbosstm/
 
-JBoss Logging 3 (jboss-logging-3.1.3.GA.jar)
+JBoss Logging 3 (jboss-logging-3.4.2.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.jboss.org
 
@@ -269,11 +281,7 @@ Restlet Core - API and Engine (org.restlet-2.3.12.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://restlet.org/org.restlet
 
-SLF4J API Module (slf4j-api-1.7.12.jar)
-	under MIT License
-	http://www.slf4j.org
-
-SLF4J LOG4J-12 Binding (slf4j-log4j12-1.7.12.jar)
+SLF4J API Module (slf4j-api-1.7.25.jar)
 	under MIT License
 	http://www.slf4j.org
 
@@ -381,7 +389,7 @@ spring-security-web (spring-security-web-5.4.9.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/spring-security
 
-CPSolver (cpsolver-1.3-SNAPSHOT.jar)
+CPSolver (cpsolver-1.4-SNAPSHOT.jar)
 	under GNU Lesser General Public License (LGPL), Version 3
 	http://www.cpsolver.org
 

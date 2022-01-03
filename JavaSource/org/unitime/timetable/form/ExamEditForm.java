@@ -124,7 +124,7 @@ public class ExamEditForm extends PreferencesForm {
 
     protected DynamicListObjectFactory idfactory = new DynamicListObjectFactory() {
         public Object create() {
-            return new Long(-1);
+            return Long.valueOf(-1);
         }
     };
 
@@ -212,10 +212,10 @@ public class ExamEditForm extends PreferencesForm {
     
     public void addExamOwner(ExamOwner owner) {
         if (owner==null) {
-            getSubjectArea().add(new Long(-1));
-            getCourseNbr().add(new Long(-1));
-            getItype().add(new Long(-1));
-            getClassNumber().add(new Long(-1));
+            getSubjectArea().add(Long.valueOf(-1));
+            getCourseNbr().add(Long.valueOf(-1));
+            getItype().add(Long.valueOf(-1));
+            getClassNumber().add(Long.valueOf(-1));
         } else {
             switch (owner.getOwnerType()) {
             case ExamOwner.sOwnerTypeClass :
@@ -230,21 +230,21 @@ public class ExamEditForm extends PreferencesForm {
                 getSubjectArea().add(config.getControllingCourseOffering().getSubjectArea().getUniqueId());
                 getCourseNbr().add(config.getControllingCourseOffering().getUniqueId());
                 getItype().add(-config.getUniqueId());
-                getClassNumber().add(new Long(-1));
+                getClassNumber().add(Long.valueOf(-1));
                 break;
             case ExamOwner.sOwnerTypeCourse :
                 CourseOffering course = (CourseOffering)owner.getOwnerObject();
                 getSubjectArea().add(course.getSubjectArea().getUniqueId());
                 getCourseNbr().add(course.getUniqueId());
                 getItype().add(Long.MIN_VALUE);
-                getClassNumber().add(new Long(-1));
+                getClassNumber().add(Long.valueOf(-1));
                 break;
             case ExamOwner.sOwnerTypeOffering :
                 InstructionalOffering offering = (InstructionalOffering)owner.getOwnerObject();
                 getSubjectArea().add(offering.getControllingCourseOffering().getSubjectArea().getUniqueId());
                 getCourseNbr().add(offering.getControllingCourseOffering().getUniqueId());
                 getItype().add(Long.MIN_VALUE+1);
-                getClassNumber().add(new Long(-1));
+                getClassNumber().add(Long.valueOf(-1));
                 break;
             }
         }

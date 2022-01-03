@@ -635,7 +635,7 @@ public class RoomListAction extends Action {
 				idx++;
 				
 				text[idx] = (editable?"":"<font color='gray'>")+df5.format(location.getCapacity())+(editable?"":"</font>");
-				comp[idx] = new Long(location.getCapacity().intValue());
+				comp[idx] = Long.valueOf(location.getCapacity().intValue());
 				idx++;
 				
 				if (examType != null) {
@@ -644,13 +644,13 @@ public class RoomListAction extends Action {
 	                    comp[idx] = location.getExamCapacity();
 	                } else {
 	                    text[idx] = "&nbsp;";
-	                    comp[idx] = new Integer(0);
+	                    comp[idx] = Integer.valueOf(0);
 	                }
 	                idx++;
 	                
 	                if (location.getArea() == null) {
 	                	text[idx] = "&nbsp;";
-	                    comp[idx] = new Double(0);
+	                    comp[idx] = Double.valueOf(0);
 	                } else {
 	                	text[idx] = dfa.format(location.getArea());
 	                	comp[idx] = location.getArea();
@@ -684,7 +684,7 @@ public class RoomListAction extends Action {
 				} else {
 	                if (location.getArea() == null) {
 	                	text[idx] = "&nbsp;";
-	                    comp[idx] = new Double(0);
+	                    comp[idx] = Double.valueOf(0);
 	                } else {
 	                	text[idx] = dfa.format(location.getArea());
 	                	comp[idx] = location.getArea();
@@ -714,11 +714,11 @@ public class RoomListAction extends Action {
 	                if (location instanceof NonUniversityLocation) {
 	                    boolean itf = (location.isIgnoreTooFar()==null?false:location.isIgnoreTooFar().booleanValue());
 	                    text[idx] = (itf?"<IMG border='0' title='Ignore too far distances' alt='true' align='absmiddle' src='images/accept.png'>":"&nbsp;");
-	                    comp[idx] = new Integer(itf?1:0);
+	                    comp[idx] = Integer.valueOf(itf?1:0);
 	                    idx++;
 	                    boolean con = (location.isIgnoreRoomCheck()==null?true:location.isIgnoreRoomCheck().booleanValue());
 	                    text[idx] = (con?"<IMG border='0' title='Create Constraint' alt='true' align='absmiddle' src='images/accept.png'>":"&nbsp;");
-	                    comp[idx] = new Integer(con?1:0);
+	                    comp[idx] = Integer.valueOf(con?1:0);
 	                    idx++;
 	                }
 	    
@@ -787,10 +787,10 @@ public class RoomListAction extends Action {
 	                if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All") && !roomListForm.getDeptCodeX().matches("Exam[0-9]*")) {
 	                    if (controlDept!=null && controlDept.getDeptCode().equals(roomListForm.getDeptCodeX())) {
 	                        text[idx] = "<IMG border='0' title='Selected department is controlling this room.' alt='true' align='absmiddle' src='images/accept.png'>";
-	                        comp[idx] = new Integer(1);
+	                        comp[idx] = Integer.valueOf(1);
 	                    } else {
 	                        text[idx] = "";
-	                        comp[idx] = new Integer(0);
+	                        comp[idx] = Integer.valueOf(0);
 	                    }
 	                } else {
 	                    if (controlDept!=null) {
@@ -1210,7 +1210,7 @@ public class RoomListAction extends Action {
 			idx++;
 			
 			text[idx] = df5.format(location.getCapacity());
-			comp[idx] = new Long(location.getCapacity().intValue());
+			comp[idx] = Long.valueOf(location.getCapacity().intValue());
 			idx++;
 			
 			if (examType != null) {
@@ -1219,13 +1219,13 @@ public class RoomListAction extends Action {
                     comp[idx] = location.getExamCapacity();
                 } else {
                     text[idx] = "";
-                    comp[idx] = new Integer(0);
+                    comp[idx] = Integer.valueOf(0);
                 }
                 idx++;
                 
                 if (location.getArea() == null) {
                 	text[idx] = "";
-                    comp[idx] = new Double(0);
+                    comp[idx] = Double.valueOf(0);
                 } else {
                 	text[idx] = dfa.format(location.getArea());
                 	comp[idx] = location.getArea();
@@ -1243,7 +1243,7 @@ public class RoomListAction extends Action {
 			} else {
                 if (location.getArea() == null) {
                 	text[idx] = "";
-                    comp[idx] = new Double(0);
+                    comp[idx] = Double.valueOf(0);
                 } else {
                 	text[idx] = dfa.format(location.getArea());
                 	comp[idx] = location.getArea();
@@ -1273,11 +1273,11 @@ public class RoomListAction extends Action {
                 if (location instanceof NonUniversityLocation) {
                     boolean itf = (location.isIgnoreTooFar()==null?false:location.isIgnoreTooFar().booleanValue());
                     text[idx] = (itf?"Yes":"No");
-                    comp[idx] = new Integer(itf?1:0);
+                    comp[idx] = Integer.valueOf(itf?1:0);
                     idx++;
                     boolean con = (location.isIgnoreRoomCheck()==null?true:location.isIgnoreRoomCheck().booleanValue());
                     text[idx] = (con?"YES":"No");
-                    comp[idx] = new Integer(con?1:0);
+                    comp[idx] = Integer.valueOf(con?1:0);
                     idx++;
                 }
     
@@ -1331,10 +1331,10 @@ public class RoomListAction extends Action {
                 if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All") && !roomListForm.getDeptCodeX().matches("Exam[0-9]*")) {
                     if (controlDept!=null && controlDept.getDeptCode().equals(roomListForm.getDeptCodeX())) {
                         text[idx] = "Yes";
-                        comp[idx] = new Integer(1);
+                        comp[idx] = Integer.valueOf(1);
                     } else {
                         text[idx] = "No";
-                        comp[idx] = new Integer(0);
+                        comp[idx] = Integer.valueOf(0);
                     }
                 } else {
                     if (controlDept!=null) {

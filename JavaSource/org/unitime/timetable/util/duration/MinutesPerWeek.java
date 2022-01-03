@@ -145,6 +145,6 @@ public class MinutesPerWeek implements DurationModel {
 	
 	@Override
 	public Integer getArrangedHours(int minsPerWeek, DatePattern datePattern) {
-		return minsPerWeek <= 0 ? null : new Integer(Math.round(minsPerWeek / 50f));
+		return minsPerWeek <= 0 ? null : Integer.valueOf(Math.round(minsPerWeek / 50f));
 	}
 }

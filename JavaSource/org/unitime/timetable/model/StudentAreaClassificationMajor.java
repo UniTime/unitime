@@ -44,7 +44,7 @@ public class StudentAreaClassificationMajor extends BaseStudentAreaClassificatio
 		if (cmp != 0) return cmp;
 		cmp = (getConcentration() == null ? "" : getConcentration().getCode()).compareTo(m.getConcentration() == null ? "" : m.getConcentration().getCode());
 		if (cmp != 0) return cmp;
-		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(m.getUniqueId() == null ? -1 : m.getUniqueId());
+		return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(m.getUniqueId() == null ? -1 : m.getUniqueId());
 	}
 
 }

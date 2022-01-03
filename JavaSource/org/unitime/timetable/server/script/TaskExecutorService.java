@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -44,7 +46,7 @@ import org.unitime.timetable.solver.service.SolverServerService;
 @Service("periodicTaskExecutor")
 @DependsOn({"startupService", "solverServerService"})
 public class TaskExecutorService implements InitializingBean, DisposableBean {
-	private static Logger sLog = Logger.getLogger(TaskExecutorService.class);
+	private static Log sLog = LogFactory.getLog(TaskExecutorService.class);
 	private TaskExecutor iExecutor = null;
 	
 	@Autowired SolverServerService solverServerService;

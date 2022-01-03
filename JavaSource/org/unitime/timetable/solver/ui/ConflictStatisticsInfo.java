@@ -211,7 +211,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			iVariables.clear();
 			for (Iterator i1=root.elementIterator("var");i1.hasNext();) {
 				CBSVariable var = new CBSVariable((Element)i1.next());
-				iVariables.put(new Long(var.getId()),var);
+				iVariables.put(Long.valueOf(var.getId()),var);
 			}
 		}
 	}
@@ -266,14 +266,14 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		}
 		public Set<CBSValue> values() { return iValues; }
 		public int hashCode() {
-			return (new Long(iClassId)).hashCode();
+			return (Long.valueOf(iClassId)).hashCode();
 		}
 		public boolean equals(Object o) {
 			if (o==null || !(o instanceof CBSVariable)) return false;
 			return ((CBSVariable)o).getId()==getId();
 		}
 		public int compareTo(Counter o) {
-			int ret = -(new Integer(iCounter)).compareTo(o.getCounter());
+			int ret = -(Integer.valueOf(iCounter)).compareTo(o.getCounter());
 			if (ret!=0) return ret;
 			return toString().compareTo(o.toString());
 		}
@@ -399,7 +399,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			return v.getRoomIds().equals(getRoomIds()) && v.getDayCode()==getDayCode() && v.getStartSlot()==getStartSlot() && v.getPatternId().equals(getPatternId()) && v.getDatePatternId().equals(getDatePatternId());
 		}
 		public int compareTo(Counter o) {
-			int ret = -(new Integer(iCounter)).compareTo(o.getCounter());
+			int ret = -(Integer.valueOf(iCounter)).compareTo(o.getCounter());
 			if (ret!=0) return ret;
 			return toString().compareTo(o.toString());
 		}
@@ -481,7 +481,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			return c.getId()==getId() && c.getType()==getType();
 		}
 		public int compareTo(Counter o) {
-			int ret = -(new Integer(iCounter)).compareTo(o.getCounter());
+			int ret = -(Integer.valueOf(iCounter)).compareTo(o.getCounter());
 			if (ret!=0) return ret;
 			return toString().compareTo(o.toString());
 		}
@@ -610,7 +610,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			return a.getId()==getId() && a.getRoomIds().equals(getRoomIds()) && a.getDayCode()==getDayCode() && a.getStartSlot()==getStartSlot() && a.getPatternId().equals(getPatternId()) && a.getDatePatternId().equals(getDatePatternId());
 		}
 		public int compareTo(Counter o) {
-			int ret = -(new Integer(iCounter)).compareTo(o.getCounter());
+			int ret = -(Integer.valueOf(iCounter)).compareTo(o.getCounter());
 			if (ret!=0) return ret;
 			return toString().compareTo(o.toString());
 		}

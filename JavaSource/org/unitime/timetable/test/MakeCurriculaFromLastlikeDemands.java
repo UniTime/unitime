@@ -26,12 +26,11 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
@@ -55,7 +54,7 @@ import org.unitime.timetable.util.Constants;
  * @author Tomas Muller
  */
 public class MakeCurriculaFromLastlikeDemands {
-    protected static Logger sLog = Logger.getLogger(MakeCurriculaFromLastlikeDemands.class);
+	private static Log sLog = LogFactory.getLog(MakeCurriculaFromLastlikeDemands.class);
     private Long iSessionId = null;
     private float iShareLimit = 0.00f;
     private int iEnrlLimit = 1;
@@ -282,7 +281,7 @@ public class MakeCurriculaFromLastlikeDemands {
                         course.setPercShare(share);
                         
                         Integer cx = deptCounter.get(course.getCourse().getDepartment());
-                        deptCounter.put(course.getCourse().getDepartment(), new Integer(courseStudents.get(e4.getKey()).size() + (cx == null ? 0 : cx.intValue())));
+                        deptCounter.put(course.getCourse().getDepartment(), Integer.valueOf(courseStudents.get(e4.getKey()).size() + (cx == null ? 0 : cx.intValue())));
                     }
                 }
         	
@@ -565,18 +564,6 @@ public class MakeCurriculaFromLastlikeDemands {
     
 	public static void main(String args[]) {
         try {
-            Properties props = new Properties();
-            props.setProperty("log4j.rootLogger", "DEBUG, A1");
-            props.setProperty("log4j.appender.A1", "org.apache.log4j.ConsoleAppender");
-            props.setProperty("log4j.appender.A1.layout", "org.apache.log4j.PatternLayout");
-            props.setProperty("log4j.appender.A1.layout.ConversionPattern","%-5p %c{2}: %m%n");
-            props.setProperty("log4j.logger.org.hibernate","INFO");
-            props.setProperty("log4j.logger.org.hibernate.cfg","WARN");
-            props.setProperty("log4j.logger.org.hibernate.cache.EhCacheProvider","ERROR");
-            props.setProperty("log4j.logger.org.unitime.commons.hibernate","INFO");
-            props.setProperty("log4j.logger.net","INFO");
-            PropertyConfigurator.configure(props);
-            
             HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
 
             org.hibernate.Session hibSession = new _RootDAO().getSession();

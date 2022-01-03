@@ -253,7 +253,7 @@ public class OnlineSectioningTest extends OnlineSectioningTestFwk {
 	        int idx = 0;
 	        while (roulette.hasMoreElements()) {
 	            int[] dt = roulette.nextElement();
-	            iWeight.put(dt[0] + "." + dt[1], new Double(((double) idx) / (roulette.size() - 1)));
+	            iWeight.put(dt[0] + "." + dt[1], Double.valueOf(((double) idx) / (roulette.size() - 1)));
 	            idx++;
 	        }
 	    }

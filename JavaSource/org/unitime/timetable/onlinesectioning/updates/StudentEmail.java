@@ -235,7 +235,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		try {
 			String providerClass = ApplicationProperty.CustomizationCourseLink.value();
 			if (providerClass != null)
-				iCourseUrlProvider = (CourseUrlProvider)Class.forName(providerClass).newInstance();
+				iCourseUrlProvider = (CourseUrlProvider)Class.forName(providerClass).getDeclaredConstructor().newInstance();
 		} catch (Exception e) {}
 		Lock lock = server.lockStudent(getStudentId(), null, name());
 		try {

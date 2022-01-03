@@ -68,11 +68,11 @@ public class EventComparator {
 	}
 	
 	protected static int compareByLimit(EventInterface e1, EventInterface e2) {
-		return -(e1.hasMaxCapacity() ? e1.getMaxCapacity() : new Integer(0)).compareTo(e2.hasMaxCapacity() ? e2.getMaxCapacity() : new Integer(0));
+		return -(e1.hasMaxCapacity() ? e1.getMaxCapacity() : Integer.valueOf(0)).compareTo(e2.hasMaxCapacity() ? e2.getMaxCapacity() : Integer.valueOf(0));
 	}
 	
 	protected static int compareByEnrollment(EventInterface e1, EventInterface e2) {
-		return -(e1.hasEnrollment() ? e1.getEnrollment() : new Integer(0)).compareTo(e2.hasEnrollment() ? e2.getEnrollment() : new Integer(0));
+		return -(e1.hasEnrollment() ? e1.getEnrollment() : Integer.valueOf(0)).compareTo(e2.hasEnrollment() ? e2.getEnrollment() : Integer.valueOf(0));
 	}
 	
 	public static int compareFallback(EventInterface e1, EventInterface e2) {
@@ -171,23 +171,23 @@ public class EventComparator {
 	}
 	
 	protected static int compareByAllocatedTime(MeetingInterface m1, MeetingInterface m2) {
-		int cmp = new Integer(m1.getStartSlot()).compareTo(m2.getStartSlot());
+		int cmp = Integer.valueOf(m1.getStartSlot()).compareTo(m2.getStartSlot());
 		if (cmp != 0) return cmp;
-		return new Integer(m1.getEndSlot()).compareTo(m2.getEndSlot());
+		return Integer.valueOf(m1.getEndSlot()).compareTo(m2.getEndSlot());
 	}
 	
 	protected static int compareByPublishedTime(MeetingInterface m1, MeetingInterface m2) {
-		int cmp = new Integer((5 * m1.getStartSlot()) + m1.getStartOffset()).compareTo((5 * m2.getStartSlot()) + m2.getStartOffset());
+		int cmp = Integer.valueOf((5 * m1.getStartSlot()) + m1.getStartOffset()).compareTo((5 * m2.getStartSlot()) + m2.getStartOffset());
 		if (cmp != 0) return cmp;
-		return new Integer((5 * m1.getEndSlot()) + m2.getEndOffset()).compareTo((5 * m2.getEndSlot()) + m2.getEndOffset());
+		return Integer.valueOf((5 * m1.getEndSlot()) + m2.getEndOffset()).compareTo((5 * m2.getEndSlot()) + m2.getEndOffset());
 	}
 
 	protected static int compareBySetupTime(MeetingInterface m1, MeetingInterface m2) {
-		return new Integer(m1.getStartOffset()).compareTo(m2.getStartOffset());
+		return Integer.valueOf(m1.getStartOffset()).compareTo(m2.getStartOffset());
 	}
 
 	protected static int compareByTeardownTime(MeetingInterface m1, MeetingInterface m2) {
-		return new Integer(m2.getEndOffset()).compareTo(m1.getEndOffset());
+		return Integer.valueOf(m2.getEndOffset()).compareTo(m1.getEndOffset());
 	}
 	
 	protected static int compareByLocation(MeetingInterface m1, MeetingInterface m2) {
@@ -195,7 +195,7 @@ public class EventComparator {
 	}
 	
 	protected static int compareByCapacity(MeetingInterface m1, MeetingInterface m2) {
-		return (m1.getLocation() == null ? new Integer(-1) : m1.getLocation().getSize()).compareTo(m2.getLocation() == null ? new Integer(-1) : m2.getLocation().getSize());
+		return (m1.getLocation() == null ? Integer.valueOf(-1) : m1.getLocation().getSize()).compareTo(m2.getLocation() == null ? Integer.valueOf(-1) : m2.getLocation().getSize());
 	}
 	
 	protected static int compareByMeetingContact(MeetingInterface m1, MeetingInterface m2) {

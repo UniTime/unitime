@@ -165,7 +165,7 @@ public class Hint implements Serializable {
             Hint p2 = (Hint)o2;
             int i1 = iOrder.indexOf(p1.getClassId());
             int i2 = iOrder.indexOf(p2.getClassId());
-            return (new Integer(i1)).compareTo(new Integer(i2));
+            return (Integer.valueOf(i1)).compareTo(Integer.valueOf(i2));
         }
     }
     

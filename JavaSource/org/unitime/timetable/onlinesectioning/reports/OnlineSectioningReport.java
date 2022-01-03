@@ -27,12 +27,12 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.TreeSet;
 
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.unitime.commons.hibernate.util.HibernateUtil;
@@ -47,7 +47,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
  * @author Tomas Muller
  */
 public class OnlineSectioningReport implements Runnable {
-	protected static Logger sLog = Logger.getLogger(OnlineSectioningReport.class);
+	protected static Log sLog = LogFactory.getLog(OnlineSectioningReport.class);
 	protected static DecimalFormat sDF = new DecimalFormat("0.00000");
 	private Report iReport = null;
 	
@@ -59,18 +59,6 @@ public class OnlineSectioningReport implements Runnable {
 	}
 	
 	public void run() {
-        Properties props = new Properties();
-        props.setProperty("log4j.rootLogger", "DEBUG, A1");
-        props.setProperty("log4j.appender.A1", "org.apache.log4j.ConsoleAppender");
-        props.setProperty("log4j.appender.A1.layout", "org.apache.log4j.PatternLayout");
-        props.setProperty("log4j.appender.A1.layout.ConversionPattern","%-5p %c{2}: %m%n");
-        props.setProperty("log4j.logger.org.hibernate","INFO");
-        props.setProperty("log4j.logger.org.hibernate.cfg","WARN");
-        props.setProperty("log4j.logger.org.hibernate.cache.EhCacheProvider","ERROR");
-        props.setProperty("log4j.logger.org.unitime.commons.hibernate","INFO");
-        props.setProperty("log4j.logger.net","INFO");
-        PropertyConfigurator.configure(props);
-        
         try {
         	HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
         } catch (Exception e) {

@@ -98,7 +98,7 @@ public class SolverParamGroupsAction extends Action {
                 group.setDescription(myForm.getDescription());     
                 group.setType(myForm.getType());
                 if (myForm.getOrder()<0) {
-                	group.setOrder(new Integer(dao.findAll().size()));
+                	group.setOrder(Integer.valueOf(dao.findAll().size()));
                 }
                 dao.saveOrUpdate(group);
                 
@@ -115,7 +115,7 @@ public class SolverParamGroupsAction extends Action {
                 saveErrors(request, errors);
             } else {
             	SolverParameterGroupDAO dao = new SolverParameterGroupDAO();
-            	SolverParameterGroup group = dao.get(new Long(id));
+            	SolverParameterGroup group = dao.get(Long.valueOf(id));
                 if(group==null) {
                     errors.add("name", new ActionMessage("errors.invalid", "Unique Id : " + id));
                     saveErrors(request, errors);
@@ -146,7 +146,7 @@ public class SolverParamGroupsAction extends Action {
     			
     			for (Iterator i=list.iterator();i.hasNext();) {
     				SolverParameterGroup g = (SolverParameterGroup)i.next();
-    				g.setOrder(new Integer(g.getOrder().intValue()-1));
+    				g.setOrder(Integer.valueOf(g.getOrder().intValue()-1));
     				dao.save(g,hibSession);
     			}
     			
@@ -172,21 +172,21 @@ public class SolverParamGroupsAction extends Action {
     			
     			SolverParameterGroup group = dao.get(myForm.getUniqueId(), hibSession);
     			if ("Move Up".equals(op)) {
-    				List list = hibSession.createCriteria(SolverParameterGroup.class).add(Restrictions.eq("order", new Integer(group.getOrder().intValue()-1))).list();
+    				List list = hibSession.createCriteria(SolverParameterGroup.class).add(Restrictions.eq("order", Integer.valueOf(group.getOrder().intValue()-1))).list();
     				if (!list.isEmpty()) {
     					SolverParameterGroup prior = (SolverParameterGroup)list.get(0);
-    					prior.setOrder(new Integer(prior.getOrder().intValue()+1));
+    					prior.setOrder(Integer.valueOf(prior.getOrder().intValue()+1));
     					dao.save(prior,hibSession);
-        				group.setOrder(new Integer(group.getOrder().intValue()-1));
+        				group.setOrder(Integer.valueOf(group.getOrder().intValue()-1));
         				dao.save(group,hibSession);
     				}
     			} else {
-    				List list = hibSession.createCriteria(SolverParameterGroup.class).add(Restrictions.eq("order", new Integer(group.getOrder().intValue()+1))).list();
+    				List list = hibSession.createCriteria(SolverParameterGroup.class).add(Restrictions.eq("order", Integer.valueOf(group.getOrder().intValue()+1))).list();
     				if (!list.isEmpty()) {
     					SolverParameterGroup next = (SolverParameterGroup)list.get(0);
-    					next.setOrder(new Integer(next.getOrder().intValue()-1));
+    					next.setOrder(Integer.valueOf(next.getOrder().intValue()-1));
     					dao.save(next,hibSession);
-        				group.setOrder(new Integer(group.getOrder().intValue()+1));
+        				group.setOrder(Integer.valueOf(group.getOrder().intValue()+1));
         				dao.save(group,hibSession);
     				}
     			}
@@ -259,7 +259,7 @@ public class SolverParamGroupsAction extends Action {
 	    }
 
 	    request.setAttribute("SolverParameterGroup.table", webTable.printTable(WebTable.getOrder(sessionContext,"solverParamGroups.ord")));
-	    request.setAttribute("SolverParameterGroup.last", new Integer(size-1));
+	    request.setAttribute("SolverParameterGroup.last", Integer.valueOf(size-1));
     }	
 
 }

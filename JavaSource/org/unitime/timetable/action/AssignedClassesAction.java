@@ -165,7 +165,7 @@ public class AssignedClassesAction extends Action {
         String assignedTable = getAssignmentTable(model.getSimpleMode(),request,"Assigned Classes",assignedClasses);
         if (assignedTable!=null) {
         	request.setAttribute("AssignedClasses.table",assignedTable);
-        	request.setAttribute("AssignedClasses.table.colspan",new Integer(model.getSimpleMode()?6:15));
+        	request.setAttribute("AssignedClasses.table.colspan",Integer.valueOf(model.getSimpleMode()?6:15));
         } else
         	request.setAttribute("AssignedClasses.message","No assigned class.");
         
@@ -274,7 +274,7 @@ public class AssignedClassesAction extends Action {
             	                ca.getTimeName(),
             	                ca.getRoomName(),
             	                ca.getInstructorName(),
-            	                new Long(ci.getNrStudentConflicts())
+            	                Long.valueOf(ci.getNrStudentConflicts())
             	             });
         	    else
             	    webTable.addLine("onClick=\"showGwtDialog('Suggestions', 'suggestions.do?id="+ca.getClazz().getClassId()+"&op=Reset','900','90%');\"",
@@ -305,16 +305,16 @@ public class AssignedClassesAction extends Action {
     	                		ca.getTimeName(),
     	                		ca.getRoomName(),
     	                		ca.getInstructorName(),
-    	                		new Long(ci.getNrStudentConflicts()),
-            	                new Double(ci.getTimePreference()),
-            	                new Long(ci.sumRoomPreference()),
-            	                new Long(ci.getGroupConstraintPref()),
-            	                new Long(ci.getBtbInstructorPreference()),
-            	                new Long(ci.getUselessHalfHours()),
-            	                new Long(ci.getTooBigRoomPreference()),
-            	                new Double(ci.getDeptBalancPenalty()),
-            	                new Double(ci.getSpreadPenalty()),
-            	                new Double(ci.getPerturbationPenalty())
+    	                		Long.valueOf(ci.getNrStudentConflicts()),
+            	                Double.valueOf(ci.getTimePreference()),
+            	                Long.valueOf(ci.sumRoomPreference()),
+            	                Long.valueOf(ci.getGroupConstraintPref()),
+            	                Long.valueOf(ci.getBtbInstructorPreference()),
+            	                Long.valueOf(ci.getUselessHalfHours()),
+            	                Long.valueOf(ci.getTooBigRoomPreference()),
+            	                Double.valueOf(ci.getDeptBalancPenalty()),
+            	                Double.valueOf(ci.getSpreadPenalty()),
+            	                Double.valueOf(ci.getPerturbationPenalty())
             	             });
         	}
         	return webTable;
@@ -388,7 +388,7 @@ public class AssignedClassesAction extends Action {
             	                ca.getTimeName(),
             	                ca.getRoomName(),
             	                ca.getInstructorName(),
-            	                new Long(ci.getNrStudentConflicts())
+            	                Long.valueOf(ci.getNrStudentConflicts())
             	             });
         	    else
             	    webTable.addLine("onClick=\"showGwtDialog('Suggestions', 'suggestions.do?id="+ca.getClazz().getClassId()+"&op=Reset','900','90%');\"",
@@ -415,16 +415,16 @@ public class AssignedClassesAction extends Action {
     	                		ca.getTimeName(),
     	                		ca.getRoomName(),
     	                		ca.getInstructorName(),
-    	                		new Long(ci.getNrStudentConflicts()),
-            	                new Double(ci.getTimePreference()),
-            	                new Long(ci.sumRoomPreference()),
-            	                new Long(ci.getGroupConstraintPref()),
-            	                new Long(ci.getBtbInstructorPreference()),
-            	                new Long(ci.getUselessHalfHours()),
-            	                new Long(ci.getTooBigRoomPreference()),
-            	                new Double(ci.getDeptBalancPenalty()),
-            	                new Double(ci.getSpreadPenalty()),
-            	                new Double(ci.getPerturbationPenalty())
+    	                		Long.valueOf(ci.getNrStudentConflicts()),
+            	                Double.valueOf(ci.getTimePreference()),
+            	                Long.valueOf(ci.sumRoomPreference()),
+            	                Long.valueOf(ci.getGroupConstraintPref()),
+            	                Long.valueOf(ci.getBtbInstructorPreference()),
+            	                Long.valueOf(ci.getUselessHalfHours()),
+            	                Long.valueOf(ci.getTooBigRoomPreference()),
+            	                Double.valueOf(ci.getDeptBalancPenalty()),
+            	                Double.valueOf(ci.getSpreadPenalty()),
+            	                Double.valueOf(ci.getPerturbationPenalty())
             	             });
         	}
         } catch (Exception e) {

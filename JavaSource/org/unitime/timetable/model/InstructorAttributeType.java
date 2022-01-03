@@ -34,7 +34,7 @@ public class InstructorAttributeType extends BaseInstructorAttributeType impleme
 	public int compareTo(InstructorAttributeType o) {
 		int cmp = getLabel().compareTo(o.getLabel());
 		if (cmp != 0) return cmp;
-		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(o.getUniqueId() == null ? -1 : o.getUniqueId());
+		return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(o.getUniqueId() == null ? -1 : o.getUniqueId());
 	}
 
 }

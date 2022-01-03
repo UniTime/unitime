@@ -135,7 +135,7 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
             Vector sp = (Vector) webSession.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME);
 
             // Check that config name doesn't already exist
-            InstructionalOffering io = new InstructionalOfferingDAO().get( new Long(this.getInstrOfferingId()) );
+            InstructionalOffering io = new InstructionalOfferingDAO().get( Long.valueOf(this.getInstrOfferingId()) );
             if (io.existsConfig(this.getName(), this.getConfigId())) {
                 errors.add("subparts", new ActionMessage("errors.generic", "A configuration with this name already exists in this offering. Use a unique name"));
             }
@@ -336,9 +336,9 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
         itype="";
         limit = 0;
         op = "";
-        unlimited = new Boolean(false);
-        configCount = new Integer(0);
-        configId = new Long(0);
+        unlimited = Boolean.valueOf(false);
+        configCount = Integer.valueOf(0);
+        configId = Long.valueOf(0);
         name=null;
         catalogLinkLabel = null;
         catalogLinkLocation = null;

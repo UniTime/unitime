@@ -90,7 +90,7 @@ public class WSCHByBuildingDayOfWeekHourOfDay extends WSCHByDayOfWeekAndHourOfDa
 		nonUniversityLocationBuilding.setAbbreviation(MSG.labelUnknown());
 		nonUniversityLocationBuilding.setAbbrName(MSG.labelUnknown());
 		nonUniversityLocationBuilding.setName(MSG.labelUnknown());
-		nonUniversityLocationBuilding.setUniqueId(new Long(-1));
+		nonUniversityLocationBuilding.setUniqueId(Long.valueOf(-1));
 		
 		for(Location l : pointInTimeData.getSession().getRooms()) {
 			if (l instanceof Room) {

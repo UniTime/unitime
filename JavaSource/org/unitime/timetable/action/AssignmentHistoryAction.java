@@ -91,7 +91,7 @@ public class AssignmentHistoryAction extends Action {
         	String historyTable = getHistoryTable(model.getSimpleMode(),request,sessionContext,courseTimetablingSolverService.getSolver(),"History",solver.getAssignmentRecords());
             if (historyTable!=null) {
             	request.setAttribute("AssignmentHistory.table",historyTable);
-            	request.setAttribute("AssignmentHistory.table.colspan",new Integer(model.getSimpleMode()?7:17));
+            	request.setAttribute("AssignmentHistory.table.colspan",Integer.valueOf(model.getSimpleMode()?7:17));
             } else
             	request.setAttribute("AssignmentHistory.message","No assignment history available at the moment."); 
         } else {
@@ -207,12 +207,12 @@ public class AssignmentHistoryAction extends Action {
             	    			},
             	             new Comparable[] {
             	             	record.getTimeStamp(),
-            	                new Double(aSg.getValue()-bSg.getValue()),
+            	                Double.valueOf(aSg.getValue()-bSg.getValue()),
             	                classes.toString(),
             	                datesSort.toString(),
             	                timesSort.toString(),
             	                roomsSort.toString(),
-            	                new Long(aSg.getViolatedStudentConflicts()-bSg.getViolatedStudentConflicts())
+            	                Long.valueOf(aSg.getViolatedStudentConflicts()-bSg.getViolatedStudentConflicts())
             	             });
         	    else
             	    webTable.addLine((hasBefore?"onClick=\"onClick=\"showGwtDialog('Suggestions', 'suggestions.do?hist="+idx+"&op=ShowHistory','900','90%');\"":null),
@@ -237,22 +237,22 @@ public class AssignmentHistoryAction extends Action {
             	             },
             	             new Comparable[] {
         	             		record.getTimeStamp(),
-            	                new Double(aSg.getValue()-bSg.getValue()),
+            	                Double.valueOf(aSg.getValue()-bSg.getValue()),
             	                classes.toString(),
             	                datesSort.toString(),
             	                timesSort.toString(),
             	                roomsSort.toString(),
-            	                new Integer(aSg.getUnassignedVariables()-bSg.getUnassignedVariables()),
-            	                new Long(aSg.getViolatedStudentConflicts()-bSg.getViolatedStudentConflicts()),
-            	                new Double(aSg.getGlobalTimePreference()-bSg.getGlobalTimePreference()),
-            	                new Long(aSg.getGlobalRoomPreference()-bSg.getGlobalRoomPreference()),
-            	                new Long(aSg.getGlobalGroupConstraintPreference()-bSg.getGlobalGroupConstraintPreference()),
-            	                new Long(aSg.getInstructorDistancePreference()-bSg.getInstructorDistancePreference()),
-            	                new Long(aSg.getUselessSlots()-bSg.getUselessSlots()),
-            	                new Long(aSg.getTooBigRooms()-bSg.getTooBigRooms()),
-            	                new Double(aSg.getDepartmentSpreadPenalty()-bSg.getDepartmentSpreadPenalty()),
-            	                new Double(aSg.getSpreadPenalty()-bSg.getSpreadPenalty()),
-            	                new Double(aSg.getPerturbationPenalty()-bSg.getPerturbationPenalty())
+            	                Integer.valueOf(aSg.getUnassignedVariables()-bSg.getUnassignedVariables()),
+            	                Long.valueOf(aSg.getViolatedStudentConflicts()-bSg.getViolatedStudentConflicts()),
+            	                Double.valueOf(aSg.getGlobalTimePreference()-bSg.getGlobalTimePreference()),
+            	                Long.valueOf(aSg.getGlobalRoomPreference()-bSg.getGlobalRoomPreference()),
+            	                Long.valueOf(aSg.getGlobalGroupConstraintPreference()-bSg.getGlobalGroupConstraintPreference()),
+            	                Long.valueOf(aSg.getInstructorDistancePreference()-bSg.getInstructorDistancePreference()),
+            	                Long.valueOf(aSg.getUselessSlots()-bSg.getUselessSlots()),
+            	                Long.valueOf(aSg.getTooBigRooms()-bSg.getTooBigRooms()),
+            	                Double.valueOf(aSg.getDepartmentSpreadPenalty()-bSg.getDepartmentSpreadPenalty()),
+            	                Double.valueOf(aSg.getSpreadPenalty()-bSg.getSpreadPenalty()),
+            	                Double.valueOf(aSg.getPerturbationPenalty()-bSg.getPerturbationPenalty())
             	             });
         	}
         } catch (Exception e) {
@@ -344,12 +344,12 @@ public class AssignmentHistoryAction extends Action {
         	    			},
         	             new Comparable[] {
         	             	record.getTimeStamp(),
-        	                new Double(aSg.getValue()-bSg.getValue()),
+        	                Double.valueOf(aSg.getValue()-bSg.getValue()),
         	                classes.toString(),
         	                datesSort.toString(),
         	                timesSort.toString(),
         	                roomsSort.toString(),
-        	                new Long(aSg.getViolatedStudentConflicts()-bSg.getViolatedStudentConflicts())
+        	                Long.valueOf(aSg.getViolatedStudentConflicts()-bSg.getViolatedStudentConflicts())
         	             });
     	    else
         	    webTable.addLine(null,
@@ -374,22 +374,22 @@ public class AssignmentHistoryAction extends Action {
         	             },
         	             new Comparable[] {
     	             		record.getTimeStamp(),
-        	                new Double(aSg.getValue()-bSg.getValue()),
+        	                Double.valueOf(aSg.getValue()-bSg.getValue()),
         	                classes.toString(),
         	                datesSort.toString(),
         	                timesSort.toString(),
         	                roomsSort.toString(),
-        	                new Integer(aSg.getUnassignedVariables()-bSg.getUnassignedVariables()),
-        	                new Long(aSg.getViolatedStudentConflicts()-bSg.getViolatedStudentConflicts()),
-        	                new Double(aSg.getGlobalTimePreference()-bSg.getGlobalTimePreference()),
-        	                new Long(aSg.getGlobalRoomPreference()-bSg.getGlobalRoomPreference()),
-        	                new Long(aSg.getGlobalGroupConstraintPreference()-bSg.getGlobalGroupConstraintPreference()),
-        	                new Long(aSg.getInstructorDistancePreference()-bSg.getInstructorDistancePreference()),
-        	                new Long(aSg.getUselessSlots()-bSg.getUselessSlots()),
-        	                new Long(aSg.getTooBigRooms()-bSg.getTooBigRooms()),
-        	                new Double(aSg.getDepartmentSpreadPenalty()-bSg.getDepartmentSpreadPenalty()),
-        	                new Double(aSg.getSpreadPenalty()-bSg.getSpreadPenalty()),
-        	                new Double(aSg.getPerturbationPenalty()-bSg.getPerturbationPenalty())
+        	                Integer.valueOf(aSg.getUnassignedVariables()-bSg.getUnassignedVariables()),
+        	                Long.valueOf(aSg.getViolatedStudentConflicts()-bSg.getViolatedStudentConflicts()),
+        	                Double.valueOf(aSg.getGlobalTimePreference()-bSg.getGlobalTimePreference()),
+        	                Long.valueOf(aSg.getGlobalRoomPreference()-bSg.getGlobalRoomPreference()),
+        	                Long.valueOf(aSg.getGlobalGroupConstraintPreference()-bSg.getGlobalGroupConstraintPreference()),
+        	                Long.valueOf(aSg.getInstructorDistancePreference()-bSg.getInstructorDistancePreference()),
+        	                Long.valueOf(aSg.getUselessSlots()-bSg.getUselessSlots()),
+        	                Long.valueOf(aSg.getTooBigRooms()-bSg.getTooBigRooms()),
+        	                Double.valueOf(aSg.getDepartmentSpreadPenalty()-bSg.getDepartmentSpreadPenalty()),
+        	                Double.valueOf(aSg.getSpreadPenalty()-bSg.getSpreadPenalty()),
+        	                Double.valueOf(aSg.getPerturbationPenalty()-bSg.getPerturbationPenalty())
         	             });
     	}
         

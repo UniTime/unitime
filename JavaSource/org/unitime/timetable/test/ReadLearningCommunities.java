@@ -27,13 +27,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -62,7 +62,7 @@ import org.unitime.timetable.model.dao._RootDAO;
  * @author Tomas Muller
  */
 public class ReadLearningCommunities {
-    protected static Logger sLog = Logger.getLogger(ReadLearningCommunities.class);
+    protected static Log sLog = LogFactory.getLog(ReadLearningCommunities.class);
     
     private static String abbv(String name) {
         StringBuffer sb = new StringBuffer();
@@ -87,18 +87,6 @@ public class ReadLearningCommunities {
 
 	public static void main(String[] args) {
         try {
-            Properties props = new Properties();
-            props.setProperty("log4j.rootLogger", "DEBUG, A1");
-            props.setProperty("log4j.appender.A1", "org.apache.log4j.ConsoleAppender");
-            props.setProperty("log4j.appender.A1.layout", "org.apache.log4j.PatternLayout");
-            props.setProperty("log4j.appender.A1.layout.ConversionPattern","%-5p %c{2}: %m%n");
-            props.setProperty("log4j.logger.org.hibernate","INFO");
-            props.setProperty("log4j.logger.org.hibernate.cfg","WARN");
-            props.setProperty("log4j.logger.org.hibernate.cache.EhCacheProvider","ERROR");
-            props.setProperty("log4j.logger.org.unitime.commons.hibernate","INFO");
-            props.setProperty("log4j.logger.net","INFO");
-            PropertyConfigurator.configure(props);
-            
             HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
 
             org.hibernate.Session hibSession = new _RootDAO().getSession();

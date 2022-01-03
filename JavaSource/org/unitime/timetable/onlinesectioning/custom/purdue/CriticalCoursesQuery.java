@@ -33,7 +33,9 @@ import java.util.TreeSet;
 
 import javax.servlet.ServletException;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
@@ -67,7 +69,7 @@ import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
  * @author Tomas Muller
  */
 public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlansProvider {
-	private static Logger sLog = Logger.getLogger(CriticalCoursesFile.class);
+	private static Log sLog = LogFactory.getLog(CriticalCoursesFile.class);
 	private ExternalTermProvider iExternalTermProvider;
 	
 	public CriticalCoursesQuery() throws ServletException, IOException {

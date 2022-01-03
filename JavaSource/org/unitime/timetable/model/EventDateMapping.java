@@ -86,7 +86,7 @@ public class EventDateMapping extends BaseEventDateMapping implements Comparable
 	public int compareTo(EventDateMapping m) {
 		int cmp = getClassDateOffset().compareTo(m.getClassDateOffset());
 		if (cmp != 0) return cmp;
-		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(m.getUniqueId() == null ? -1 : m.getUniqueId());
+		return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(m.getUniqueId() == null ? -1 : m.getUniqueId());
 	}
 
 	public static class Class2EventDateMap {

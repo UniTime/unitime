@@ -20,14 +20,15 @@
 package org.unitime.timetable.server.admin;
 
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -65,14 +66,14 @@ public class Loggers implements AdminTable {
 	@PreAuthorize("checkPermission('ApplicationConfig')")
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
 		List<ListItem> levels = new ArrayList<ListItem>();
-		levels.add(new ListItem(String.valueOf(Level.ALL_INT), MESSAGES.levelAll()));
-		levels.add(new ListItem(String.valueOf(Level.TRACE_INT), MESSAGES.levelTrace()));
-		levels.add(new ListItem(String.valueOf(Level.DEBUG_INT), MESSAGES.levelDebug()));
-		levels.add(new ListItem(String.valueOf(Level.INFO_INT), MESSAGES.levelInfo()));
-		levels.add(new ListItem(String.valueOf(Level.WARN_INT), MESSAGES.levelWarning()));
-		levels.add(new ListItem(String.valueOf(Level.ERROR_INT), MESSAGES.levelError()));
-		levels.add(new ListItem(String.valueOf(Level.FATAL_INT), MESSAGES.levelFatal()));
-		levels.add(new ListItem(String.valueOf(Level.OFF_INT), MESSAGES.levelOff()));
+		levels.add(new ListItem(Level.ALL.name(), MESSAGES.levelAll()));
+		levels.add(new ListItem(Level.TRACE.name(), MESSAGES.levelTrace()));
+		levels.add(new ListItem(Level.DEBUG.name(), MESSAGES.levelDebug()));
+		levels.add(new ListItem(Level.INFO.name(), MESSAGES.levelInfo()));
+		levels.add(new ListItem(Level.WARN.name(), MESSAGES.levelWarning()));
+		levels.add(new ListItem(Level.ERROR.name(), MESSAGES.levelError()));
+		levels.add(new ListItem(Level.FATAL.name(), MESSAGES.levelFatal()));
+		levels.add(new ListItem(Level.OFF.name(), MESSAGES.levelOff()));
 		
 		SimpleEditInterface data = new SimpleEditInterface(
 				new Field(MESSAGES.fieldLogger(), FieldType.text, 400, 1024, Flag.UNIQUE),
@@ -82,17 +83,18 @@ public class Loggers implements AdminTable {
 		long id = 0;
 		SimpleEditInterface.Record root = data.addRecord(id++, false);
 		root.setField(0, " root", false);
-		root.setField(1, String.valueOf(LogManager.getRootLogger().getLevel().toInt()));
+		root.setField(1, LogManager.getRootLogger().getLevel().name());
 		
-		for (Enumeration e = LogManager.getCurrentLoggers(); e.hasMoreElements(); ) {
-			Logger logger = (Logger)e.nextElement();
-			if (logger.getLevel() == null) continue;
-			ApplicationConfig config = ApplicationConfig.getConfig("log4j.logger." + logger.getName());
-			SimpleEditInterface.Record record = data.addRecord(id++, ApplicationProperties.getDefaultProperties().getProperty("log4j.logger." + logger.getName()) == null && config != null);
-			record.setField(0, logger.getName(), false);
-			record.setField(1, String.valueOf(logger.getLevel().toInt()));
+		LoggerContext cx = LoggerContext.getContext(false);
+		for (Map.Entry<String, LoggerConfig> e: cx.getConfiguration().getLoggers().entrySet()) {
+			String name = e.getKey();
+			Level level = e.getValue().getLevel();
+			if (level == null || name.isEmpty()) continue;
+			ApplicationConfig config = ApplicationConfig.getConfig("log4j.logger." + name);
+			SimpleEditInterface.Record record = data.addRecord(id++, ApplicationProperties.getDefaultProperties().getProperty("log4j.logger." + name) == null && config != null);
+			record.setField(0, name, false);
+			record.setField(1, level.name());	
 		}
-
 		data.setEditable(context.hasPermission(Right.ApplicationConfig));
 		return data;
 	}
@@ -111,12 +113,14 @@ public class Loggers implements AdminTable {
 			}
 		}
 		
-		for (Enumeration e = LogManager.getCurrentLoggers(); e.hasMoreElements(); ) {
-			Logger logger = (Logger)e.nextElement();
-			if (logger.getLevel() == null) continue;
-			Record r = records.get(logger.getName());
+		LoggerContext cx = LoggerContext.getContext(false);
+		for (Map.Entry<String, LoggerConfig> e: cx.getConfiguration().getLoggers().entrySet()) {
+			String name = e.getKey();
+			Level level = e.getValue().getLevel();
+			if (level == null || name.isEmpty()) continue;
+			Record r = records.get(name);
 			if (r == null)
-				delete(logger.getName(), context, hibSession);
+				delete(name, context, hibSession);
 			else
 				update(r, context, hibSession);
 		}
@@ -136,8 +140,8 @@ public class Loggers implements AdminTable {
 	@PreAuthorize("checkPermission('ApplicationConfig')")
 	public void update(Record record, SessionContext context, Session hibSession) {
 		boolean root = record.getUniqueId() != null && record.getUniqueId() == 0;
-		Level level = Level.toLevel(Integer.valueOf(record.getField(1)));
-		solverServerService.setLoggingLevel(root ? null : record.getField(0), level.toInt());
+		Level level = Level.getLevel(record.getField(1));
+		solverServerService.setLoggingLevel(root ? null : record.getField(0), level == null ? null : level.name());
 		record.setUniqueId(root ? 0 : System.currentTimeMillis());
 		
 		String defaultValue = ApplicationProperties.getDefaultProperties().getProperty(root ? "log4j.rootLogger" : "log4j.logger." + record.getField(0));

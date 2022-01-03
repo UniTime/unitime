@@ -147,12 +147,12 @@ public class SolverSettingsForm extends ActionForm {
 		return (Boolean)useDefaults.get(id); 
 	}
 	public void setUseDefault(Long id, Boolean useDefault) { useDefaults.put(id,useDefault); }
-	public boolean getUseDefault(int id) { return getUseDefault(new Long(id)).booleanValue(); }
-	public void setUseDefault(int id, boolean useDefault) { setUseDefault(new Long(id), new Boolean(useDefault)); }
+	public boolean getUseDefault(int id) { return getUseDefault(Long.valueOf(id)).booleanValue(); }
+	public void setUseDefault(int id, boolean useDefault) { setUseDefault(Long.valueOf(id), Boolean.valueOf(useDefault)); }
 	public String getParameter(Long id) { return (String)params.get(id); }
 	public void setParameter(Long id, String value) { params.put(id, value); }
-	public String getParameter(int id) { return getParameter(new Long(id)); }
-	public void setParameter(int id, String value) { setParameter(new Long(id), value); }
+	public String getParameter(int id) { return getParameter(Long.valueOf(id)); }
+	public void setParameter(int id, String value) { setParameter(Long.valueOf(id), value); }
 	public String[] getAppearances() { return SolverPredefinedSetting.sAppearances; }
 	public Collection getEnum(String type) {
 		Vector options = new Vector();

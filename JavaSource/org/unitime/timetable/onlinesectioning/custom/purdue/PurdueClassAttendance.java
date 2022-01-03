@@ -28,7 +28,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.restlet.Client;
 import org.restlet.Context;
 import org.restlet.data.MediaType;
@@ -75,7 +77,7 @@ import com.google.gson.JsonSerializer;
  * @author Tomas Muller
  */
 public class PurdueClassAttendance implements CustomClassAttendanceProvider {
-	private static Logger sLog = Logger.getLogger(PurdueClassAttendance.class);
+	private static Log sLog = LogFactory.getLog(PurdueClassAttendance.class);
 	private static GwtConstants CONST = Localization.create(GwtConstants.class);
 	
 	private Client iClient;

@@ -111,7 +111,7 @@ public class RoomTypeEditAction extends Action {
                 errors.add("reference", new ActionMessage("errors.invalid", "Unique Id : " + id));
                 saveErrors(request, errors);
             } else {
-                RoomType t = RoomTypeDAO.getInstance().get(new Long(id));
+                RoomType t = RoomTypeDAO.getInstance().get(Long.valueOf(id));
             	
                 if(t==null) {
                     errors.add("reference", new ActionMessage("errors.invalid", "Unique Id : " + id));
@@ -251,7 +251,7 @@ public class RoomTypeEditAction extends Action {
         		});
         }
         
-        request.setAttribute("RoomType.last", new Integer(types.size()-1));
+        request.setAttribute("RoomType.last", Integer.valueOf(types.size()-1));
 	    request.setAttribute("RoomType.table", webTable.printTable(WebTable.getOrder(sessionContext,"roomTypes.ord")));
     }	
 }

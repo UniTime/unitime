@@ -26,7 +26,9 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
@@ -41,7 +43,7 @@ import com.lowagie.text.DocumentException;
  * @author Tomas Muller
  */
 public class ScheduleByCourseReport extends PdfLegacyExamReport {
-    protected static Logger sLog = Logger.getLogger(ScheduleByCourseReport.class);
+    protected static Log sLog = LogFactory.getLog(ScheduleByCourseReport.class);
     
     public ScheduleByCourseReport(int mode, File file, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
         super(mode, file, "SCHEDULE BY COURSE", session, examType, subjectAreas, exams);

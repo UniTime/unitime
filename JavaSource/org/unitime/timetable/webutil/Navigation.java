@@ -45,7 +45,7 @@ public class Navigation {
 			try {
 				return (Long)ids[level].elementAt(idx+1);
 			} catch (ArrayIndexOutOfBoundsException e) {
-				return new Long(-1);
+				return Long.valueOf(-1);
 			}
 		}
 		return null;
@@ -58,7 +58,7 @@ public class Navigation {
 			try {
 				return (Long)ids[level].elementAt(idx-1);
 			} catch (ArrayIndexOutOfBoundsException e) {
-				return new Long(-1);
+				return Long.valueOf(-1);
 			}
 		}
 		return null;

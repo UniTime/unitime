@@ -211,7 +211,7 @@ public class RoomGroupListAction extends Action {
 					new Comparable[] {
 							rg.getName(),
                             rg.getAbbv(),
-							new Integer(rg.isDefaultGroup().booleanValue()?0:1),
+							Integer.valueOf(rg.isDefaultGroup().booleanValue()?0:1),
 							null,
 							(rg.getDescription() == null ? "" : rg.getDescription())
 					});
@@ -347,7 +347,7 @@ public class RoomGroupListAction extends Action {
 					new Comparable[] {
 							rg.getName(),
                             rg.getAbbv(),
-							new Integer(rg.isDefaultGroup().booleanValue()?0:1),
+							Integer.valueOf(rg.isDefaultGroup().booleanValue()?0:1),
 							null,
 							(rg.getDescription() == null ? "" : rg.getDescription())
 					});

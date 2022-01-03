@@ -83,7 +83,7 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
         datePattern = null;
         unlimitedEnroll = null;
         parentSubpartId = null; parentSubpartLabel = null; managingDeptName = null; sameItypeAsParent = null;
-        creditFormat = null; creditType = null; creditUnitType = null; units = null; maxUnits = null; fractionalIncrementsAllowed = new Boolean(false); creditText = "";
+        creditFormat = null; creditType = null; creditUnitType = null; units = null; maxUnits = null; fractionalIncrementsAllowed = Boolean.valueOf(false); creditText = "";
         autoSpreadInTime = Boolean.FALSE;
         studentAllowOverlap = Boolean.FALSE;
         subpartCreditEditAllowed = ApplicationProperty.SubpartCreditEditable.isTrue();

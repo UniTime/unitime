@@ -48,7 +48,7 @@ public class RoomDept extends BaseRoomDept implements Comparable {
 		RoomDept rd = (RoomDept)o;
 		int cmp = getDepartment().getDeptCode().compareTo(rd.getDepartment().getDeptCode());
 		if (cmp!=0) return cmp;
-		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(rd.getUniqueId() == null ? -1 : rd.getUniqueId());
+		return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(rd.getUniqueId() == null ? -1 : rd.getUniqueId());
 	}
 
 }

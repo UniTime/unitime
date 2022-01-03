@@ -33,7 +33,9 @@ import java.util.Locale;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
@@ -48,7 +50,7 @@ import com.lowagie.text.DocumentException;
  * @author Tomas Muller
  */
 public class PeriodChartReport extends PdfLegacyExamReport {
-    protected static Logger sLog = Logger.getLogger(ScheduleByCourseReport.class);
+    protected static Log sLog = LogFactory.getLog(ScheduleByCourseReport.class);
     
     public PeriodChartReport(int mode, File file, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
         super(mode, file, "PERIOD ASSIGNMENT", session, examType, subjectAreas, exams);
@@ -333,7 +335,7 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                     }
                     max = Math.max(max, linesThisPeriod.size());
                     Integer td = (Integer)totalADay.get(period.getDateOffset());
-                    totalADay.put(period.getDateOffset(),new Integer(total+(td==null?0:td.intValue())));
+                    totalADay.put(period.getDateOffset(),Integer.valueOf(total+(td==null?0:td.intValue())));
                     lines.add(linesThisPeriod);
                 }
                 for (int i=0;i<max;i++) {

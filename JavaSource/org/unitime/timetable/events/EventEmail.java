@@ -41,7 +41,8 @@ import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 
 import org.apache.commons.fileupload.FileItem;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.type.LongType;
 import org.unitime.commons.CalendarVTimeZoneGenerator;
 import org.unitime.commons.Email;
@@ -89,7 +90,7 @@ public class EventEmail {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	protected static Map<Long, String> sMessageId = new Hashtable<Long, String>();
-	private static Logger sLog = Logger.getLogger(EventEmail.class);
+	private static Log sLog = LogFactory.getLog(EventEmail.class);
 	
 	private SaveOrApproveEventRpcRequest iRequest = null;
 	private SaveOrApproveEventRpcResponse iResponse = null;

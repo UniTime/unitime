@@ -383,7 +383,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			List<Entity> overrides = new ArrayList<Entity>();
 			for (CourseRequest.CourseRequestOverrideStatus status: CourseRequest.CourseRequestOverrideStatus.values()) {
 				try {
-					overrides.add(new Entity(new Long(-1 - status.ordinal()), Constants.toInitialCase(status.name()), CONSTANTS.overrideType()[status.ordinal()], "translated-value", CONSTANTS.overrideType()[status.ordinal()])); 
+					overrides.add(new Entity(Long.valueOf(-1 - status.ordinal()), Constants.toInitialCase(status.name()), CONSTANTS.overrideType()[status.ordinal()], "translated-value", CONSTANTS.overrideType()[status.ordinal()])); 
 				} catch (ArrayIndexOutOfBoundsException e) {}
 			}
 			if (!iRequest.hasOptions("assignment"))
@@ -398,7 +398,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			for (Iterator<Entity> i = overrides.iterator(); i.hasNext(); )
 				if (i.next().getCount() == 0) i.remove();
 			if (!overrides.isEmpty()) {
-				Entity none = new Entity(new Long(-100), "none", CONSTANTS.noOverride(), "translated-value", CONSTANTS.noOverride());
+				Entity none = new Entity(Long.valueOf(-100), "none", CONSTANTS.noOverride(), "translated-value", CONSTANTS.noOverride());
 				// none.setCount(((Number)query.select("count(distinct xcr)").where("xcr.overrideStatus is null").from("inner join s.courseDemands xcd inner join xcd.courseRequests xcr").exclude("override").query(helper.getHibSession()).uniqueResult()).intValue());
 				overrides.add(none);
 				response.add("override", overrides);

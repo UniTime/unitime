@@ -136,10 +136,10 @@ public class DistributionTypeListAction extends Action {
 		    		d.getReference(),
 		    		d.getAbbreviation(),
 		    		d.getLabel(),
-		    		new Integer(d.isExamPref().booleanValue()?1:0),
+		    		Integer.valueOf(d.isExamPref().booleanValue()?1:0),
 		    		d.isVisible(),
-		    		new Integer(d.isInstructorPref().booleanValue()?1:0),
-		    		new Integer(d.isSequencingRequired()?1:0),
+		    		Integer.valueOf(d.isInstructorPref().booleanValue()?1:0),
+		    		Integer.valueOf(d.isSequencingRequired()?1:0),
 		    		null,
 		    		deptCmp,
 		    		d.getDescr()

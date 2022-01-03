@@ -269,7 +269,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 	public int compareTo(CurriculumInterface curriculum) {
 		int cmp = getAbbv().compareTo(curriculum.getAbbv());
 		if (cmp != 0) return cmp;
-		return (getId() == null ? new Long(-1) : getId()).compareTo(curriculum.getId() == null ? -1 : curriculum.getId());
+		return (getId() == null ? Long.valueOf(-1) : getId()).compareTo(curriculum.getId() == null ? -1 : curriculum.getId());
 	}
 
 	public static class AcademicAreaInterface implements IsSerializable, Comparable<AcademicAreaInterface> {

@@ -1223,7 +1223,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             	if (c.getOtherExam() == null) {
             		cmp = (getOtherEventName() == null ? "" : getOtherEventName()).compareTo(c.getOtherEventName() == null ? "" : c.getOtherEventName());
             		if (cmp != 0) return cmp;
-            		return (getOtherEventId() == null ? new Long(0) : getOtherEventId()).compareTo(c.getOtherEventId() == null ? new Long(0) : c.getOtherEventId());
+            		return (getOtherEventId() == null ? Long.valueOf(0) : getOtherEventId()).compareTo(c.getOtherEventId() == null ? Long.valueOf(0) : c.getOtherEventId());
             	} else return -1;
             }
             if (c.getOtherExam()==null) return 1;

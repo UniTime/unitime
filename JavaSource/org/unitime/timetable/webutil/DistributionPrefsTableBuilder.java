@@ -203,7 +203,7 @@ public class DistributionPrefsTableBuilder {
 	}
 	
 	public String getDistPrefsTableForInstructionalOffering(HttpServletRequest request, SessionContext context, InstructionalOffering instructionalOffering) throws Exception {
-		//Collection prefs = DistributionPref.getPreferences(instructionalOffering.getSessionId(), null, false, new Long(instructionalOffering.getUniqueId().intValue()));
+		//Collection prefs = DistributionPref.getPreferences(instructionalOffering.getSessionId(), null, false, Long.valueOf(instructionalOffering.getUniqueId().intValue()));
 		
 		Set leadInstructors = new HashSet();
 		Set prefs = new TreeSet();

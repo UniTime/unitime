@@ -146,7 +146,7 @@ public class Room extends BaseRoom {
 		if (dept != null){
 			roomDept = new RoomDept();
 			roomDept.setRoom(this);
-			roomDept.setControl(new Boolean(ExternalRoomDepartment.isControllingExternalDept(externalRoomDept, externalRoomDepts)));
+			roomDept.setControl(Boolean.valueOf(ExternalRoomDepartment.isControllingExternalDept(externalRoomDept, externalRoomDepts)));
 			roomDept.setDepartment(dept);
 			this.addToroomDepts(roomDept);
 			dept.addToroomDepts(roomDept);
@@ -206,8 +206,8 @@ public class Room extends BaseRoom {
 				r.setArea(er.getArea());
 				r.setDisplayName(er.getDisplayName());
 				r.setExternalUniqueId(er.getExternalUniqueId());
-				r.setIgnoreRoomCheck(new Boolean(false));
-				r.setIgnoreTooFar(new Boolean(false));
+				r.setIgnoreRoomCheck(Boolean.valueOf(false));
+				r.setIgnoreTooFar(Boolean.valueOf(false));
 				r.setRoomNumber(er.getRoomNumber());
 				r.setRoomType(er.getRoomType());
 				r.setSession(session);

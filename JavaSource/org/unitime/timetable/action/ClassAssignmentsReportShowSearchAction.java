@@ -142,7 +142,7 @@ public class ClassAssignmentsReportShowSearchAction extends Action {
 					for (int i=0;i<classListForm.getSubjectAreaIds().length;i++) {
 						if (i>0) names.append(","); 
 						ids.append("&subjectAreaIds="+classListForm.getSubjectAreaIds()[i]);
-						names.append(((new SubjectAreaDAO()).get(new Long(classListForm.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
+						names.append(((new SubjectAreaDAO()).get(Long.valueOf(classListForm.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
 					}
 					BackTracker.markForBack(
 							request, 

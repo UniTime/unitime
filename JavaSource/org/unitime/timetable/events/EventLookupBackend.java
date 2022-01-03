@@ -32,7 +32,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.events.EventFilterBackend.EventQuery.EventInstance;
@@ -103,7 +104,7 @@ import org.unitime.timetable.util.Formats;
  */
 @GwtRpcImplements(EventLookupRpcRequest.class)
 public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRpcResponseList<EventInterface>>{
-	private static Logger sLog = Logger.getLogger(EventLookupBackend.class);
+	private static Log sLog = LogFactory.getLog(EventLookupBackend.class);
 
 	@Override
 	public GwtRpcResponseList<EventInterface> execute(EventLookupRpcRequest request, EventContext context) {

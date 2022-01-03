@@ -121,7 +121,7 @@ public class BatchStudentSectioningSaver extends StudentSectioningSaver {
                         wl.setStudent(s);
                         wl.setCourseOffering(iCourses.get(((Course)courseRequest.getCourses().get(0)).getId()));
                         wl.setTimestamp(new Date());
-                        wl.setType(new Integer(0));
+                        wl.setType(Integer.valueOf(0));
                         hibSession.save(wl);
                     }
                 } else {

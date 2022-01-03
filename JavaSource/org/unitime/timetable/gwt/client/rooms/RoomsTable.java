@@ -890,7 +890,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		
 		@Override
 		public Integer getValue() {
-			return getText().isEmpty() ? null : new Integer(getText());
+			return getText().isEmpty() ? null : Integer.valueOf(getText());
 		}
 
 		@Override

@@ -178,17 +178,17 @@ public class ExamDistributionPrefsAction extends Action {
                 frm.setCourseNbr(0, exam.firstCourseOffering().getUniqueId());
                 frm.setExamType(exam.getExamType().getUniqueId());
 	        }
-            frm.getSubjectArea().add(new Long(-1));
-            frm.getCourseNbr().add(new Long(-1));
-            frm.getExam().add(new Long(-1));
+            frm.getSubjectArea().add(Long.valueOf(-1));
+            frm.getCourseNbr().add(Long.valueOf(-1));
+            frm.getExam().add(Long.valueOf(-1));
         }
         
         // Add new class
         if(op.equals(rsc.getMessage("button.addExam"))) {
             Debug.debug("Adding new Class ...");
-            frm.getSubjectArea().add(new Long(-1));
-            frm.getCourseNbr().add(new Long(-1));
-            frm.getExam().add(new Long(-1));
+            frm.getSubjectArea().add(Long.valueOf(-1));
+            frm.getCourseNbr().add(Long.valueOf(-1));
+            frm.getExam().add(Long.valueOf(-1));
         }
 
         if (op.equals(rsc.getMessage("button.search")) || op.equals(rsc.getMessage("button.exportPDF")) || op.equals(rsc.getMessage("button.exportCSV"))) {
@@ -240,13 +240,13 @@ public class ExamDistributionPrefsAction extends Action {
 
         if (frm.getDistType()!=null && !frm.getDistType().equals(Preference.BLANK_PREF_VALUE)) {
         	Vector prefs = new Vector();
-        	DistributionType dist = (new DistributionTypeDAO().get(new Long(frm.getDistType())));
+        	DistributionType dist = (new DistributionTypeDAO().get(Long.valueOf(frm.getDistType())));
         	frm.setDescription(dist.getDescr());
         	boolean containsPref = false; 
         	for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList()) {
         		if (dist.isAllowed(pref)) {
         			prefs.addElement(pref);
-        			if (frm.getPrefLevel()!=null && !frm.getPrefLevel().equals(Preference.BLANK_PREF_VALUE) && pref.getPrefId().equals(new Integer(frm.getPrefLevel()))) containsPref = true;
+        			if (frm.getPrefLevel()!=null && !frm.getPrefLevel().equals(Preference.BLANK_PREF_VALUE) && pref.getPrefId().equals(Integer.valueOf(frm.getPrefLevel()))) containsPref = true;
         		}
         	}
         	if (!containsPref)
@@ -337,7 +337,7 @@ public class ExamDistributionPrefsAction extends Action {
     	sessionContext.checkPermission(distPrefId, "DistributionPref", Right.ExaminationDistributionPreferenceDetail);
     	
         // Get distribution pref info
-        DistributionPref dp = new DistributionPrefDAO().get(new Long(distPrefId));
+        DistributionPref dp = new DistributionPrefDAO().get(Long.valueOf(distPrefId));
         frm.setDistType(dp.getDistributionType().getUniqueId().toString());
         frm.setDescription(dp.getDistributionType().getDescr());
         frm.setPrefLevel(dp.getPrefLevel().getPrefId().toString());
@@ -394,7 +394,7 @@ public class ExamDistributionPrefsAction extends Action {
     			dp.setDistributionObjects(s);
             } else dp = new DistributionPref();
             
-            dp.setDistributionType(new DistributionTypeDAO().get( new Long(frm.getDistType()), hibSession));
+            dp.setDistributionType(new DistributionTypeDAO().get( Long.valueOf(frm.getDistType()), hibSession));
             dp.setGrouping(-1);
         	dp.setPrefLevel(PreferenceLevel.getPreferenceLevel( Integer.parseInt(frm.getPrefLevel()) ));
         
@@ -415,7 +415,7 @@ public class ExamDistributionPrefsAction extends Action {
                 DistributionObject dObj = new DistributionObject();                 
                 dObj.setPrefGroup(exam);
                 dObj.setDistributionPref(dp);
-                dObj.setSequenceNumber(new Integer(++idx));
+                dObj.setSequenceNumber(Integer.valueOf(++idx));
                 exam.getDistributionObjects().add(dObj);
                 dp.addTodistributionObjects(dObj);
         	}
@@ -464,7 +464,7 @@ public class ExamDistributionPrefsAction extends Action {
 	            tx = hibSession.beginTransaction();
 	        
             HashSet relatedExams = new HashSet();
-	        DistributionPref dp = dpDao.get(new Long(distPrefId));
+	        DistributionPref dp = dpDao.get(Long.valueOf(distPrefId));
 	        PreferenceGroup owner = (PreferenceGroup) dp.getOwner();
 	        owner.getPreferences().remove(dp);
 			for (Iterator i=dp.getDistributionObjects().iterator();i.hasNext();) {

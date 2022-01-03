@@ -158,7 +158,7 @@ public class XConfig implements Serializable, Comparable<XConfig>, Externalizabl
     
     @Override
     public int hashCode() {
-        return new Long(getConfigId()).hashCode();
+        return Long.valueOf(getConfigId()).hashCode();
     }
 
 	@Override

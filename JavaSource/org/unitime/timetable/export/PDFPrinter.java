@@ -338,14 +338,14 @@ public class PDFPrinter implements Printer {
 		}
 		
 		public A(Number number, Format<Number> format, F... flags) {
-			iNumber = (number == null ? null : new Double(number.doubleValue())); iFormat = format;
+			iNumber = (number == null ? null : Double.valueOf(number.doubleValue())); iFormat = format;
 			iText = (number == null ? null : format.format(number));
 			for (F f: flags)
 				iFlag = f.set(iFlag);
 		}
 		
 		public A(Number number, F... flags) {
-			iNumber = (number == null ? null : new Double(number.doubleValue())); iFormat = null;
+			iNumber = (number == null ? null : Double.valueOf(number.doubleValue())); iFormat = null;
 			iText = (number == null ? null : number.toString());
 			for (F f: flags)
 				iFlag = f.set(iFlag);

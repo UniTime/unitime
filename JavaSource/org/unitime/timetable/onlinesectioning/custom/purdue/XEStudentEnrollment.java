@@ -30,7 +30,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.restlet.Client;
@@ -83,7 +85,7 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 public class XEStudentEnrollment implements StudentEnrollmentProvider {
-	private static Logger sLog = Logger.getLogger(XEStudentEnrollment.class);
+	private static Log sLog = LogFactory.getLog(XEStudentEnrollment.class);
 	private static StudentSectioningMessages MESSAGES = Localization.create(StudentSectioningMessages.class);
 	protected static Format<Number> sCreditFormat = Formats.getNumberFormat("0.##");
 	

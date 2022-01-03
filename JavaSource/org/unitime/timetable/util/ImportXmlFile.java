@@ -21,7 +21,8 @@ package org.unitime.timetable.util;
 
 import java.io.File;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.LogFactory;
+
 import org.dom4j.Document;
 import org.dom4j.io.SAXReader;
 import org.unitime.commons.hibernate.util.HibernateUtil;
@@ -44,9 +45,6 @@ public class ImportXmlFile {
 
 	public static void main(String[] args) {
 		try {
-			// Configure logging
-	        org.apache.log4j.PropertyConfigurator.configure(ApplicationProperties.getProperties());
-	        
 	        // Configure hibernate
 	        HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
 	        
@@ -62,7 +60,7 @@ public class ImportXmlFile {
 	        // Close hibernate
 	        HibernateUtil.closeHibernate();
 		} catch (Exception e) {
-			Logger.getLogger(ImportXmlFile.class).error("Error: " +e.getMessage(), e);
+			LogFactory.getLog(ImportXmlFile.class).error("Error: " +e.getMessage(), e);
 		}
     }
 	

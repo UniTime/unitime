@@ -128,7 +128,7 @@ public class TaskInterface implements GwtRpcResponse, Comparable<TaskInterface> 
 	public int compareTo(TaskInterface o) {
 		int cmp = getName().compareTo(o.getName());
 		if (cmp != 0) return cmp;
-		return (getId() == null ? new Long(0) : getId()).compareTo(o.getId() == null ? 0 : o.getId());
+		return (getId() == null ? Long.valueOf(0) : getId()).compareTo(o.getId() == null ? 0 : o.getId());
 	}
 	
 	@Override
@@ -228,7 +228,7 @@ public class TaskInterface implements GwtRpcResponse, Comparable<TaskInterface> 
 		public int compareTo(TaskExecutionInterface exec) {
 			int cmp = getDayOfYear().compareTo(exec.getDayOfYear());
 			if (cmp != 0) return cmp;
-			cmp = new Integer(getSlot()).compareTo(exec.getSlot());
+			cmp = Integer.valueOf(getSlot()).compareTo(exec.getSlot());
 			if (cmp != 0) return cmp;
 			return (getId() == null ? exec.getId() == null ? 0 : -1 : exec.getId() == null ? 1 : getId().compareTo(exec.getId()));
 		}

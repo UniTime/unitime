@@ -101,7 +101,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 			int count = ((Number)o[1]).intValue();
 			type2count.put(type, count);
 		}
-		Entity individualType = new Entity(new Long(0), "Individual", MESSAGES.reservationIndividualAbbv(), "translated-value", MESSAGES.reservationIndividualAbbv());
+		Entity individualType = new Entity(Long.valueOf(0), "Individual", MESSAGES.reservationIndividualAbbv(), "translated-value", MESSAGES.reservationIndividualAbbv());
 		Integer individualCnt = type2count.get(0);
 		if (individualCnt != null)
 			individualType.setCount(individualCnt);
@@ -109,7 +109,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 		if (individualOverrideCnt != null)
 			individualType.setCount(individualType.getCount() + individualOverrideCnt);
 		response.add("type", individualType);
-		Entity groupType = new Entity(new Long(0), "Group", MESSAGES.reservationStudentGroupAbbv(), "translated-value", MESSAGES.reservationStudentGroupAbbv());
+		Entity groupType = new Entity(Long.valueOf(0), "Group", MESSAGES.reservationStudentGroupAbbv(), "translated-value", MESSAGES.reservationStudentGroupAbbv());
 		Integer groupCnt = type2count.get(1);
 		if (groupCnt != null)
 			groupType.setCount(groupCnt);
@@ -117,12 +117,12 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 		if (groupOverrideCnt != null)
 			groupType.setCount(groupType.getCount() + groupOverrideCnt);
 		response.add("type", groupType);
-		Entity lcType = new Entity(new Long(0), "LC", MESSAGES.reservationLearningCommunityAbbv(), "translated-value", MESSAGES.reservationLearningCommunityAbbv());
+		Entity lcType = new Entity(Long.valueOf(0), "LC", MESSAGES.reservationLearningCommunityAbbv(), "translated-value", MESSAGES.reservationLearningCommunityAbbv());
 		Integer lcCnt = type2count.get(7);
 		if (lcCnt != null)
 			lcType.setCount(lcCnt);
 		response.add("type", lcType);
-		Entity curriculumType = new Entity(new Long(0), "Curriculum", MESSAGES.reservationCurriculumAbbv(), "translated-value", MESSAGES.reservationCurriculumAbbv());
+		Entity curriculumType = new Entity(Long.valueOf(0), "Curriculum", MESSAGES.reservationCurriculumAbbv(), "translated-value", MESSAGES.reservationCurriculumAbbv());
 		Integer curriculumCnt = type2count.get(2);
 		if (curriculumCnt != null)
 			curriculumType.setCount(curriculumCnt);
@@ -130,11 +130,11 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 		if (curriculumOverrideCnt != null)
 			curriculumType.setCount(curriculumType.getCount() + curriculumOverrideCnt);
 		response.add("type", curriculumType);
-		Entity courseType = new Entity(new Long(0), "Course", MESSAGES.reservationCourseAbbv(), "translated-value", MESSAGES.reservationCourseAbbv());
+		Entity courseType = new Entity(Long.valueOf(0), "Course", MESSAGES.reservationCourseAbbv(), "translated-value", MESSAGES.reservationCourseAbbv());
 		Integer courseCnt = type2count.get(3);
 		if (courseCnt != null)
 			courseType.setCount(courseCnt);
-		Entity overrideType = new Entity(new Long(0), "Override", MESSAGES.reservationOverrideAbbv(), "translated-value", MESSAGES.reservationOverrideAbbv());
+		Entity overrideType = new Entity(Long.valueOf(0), "Override", MESSAGES.reservationOverrideAbbv(), "translated-value", MESSAGES.reservationOverrideAbbv());
 		Integer overrideCnt = type2count.get(4);
 		if (overrideCnt != null)
 			overrideType.setCount(overrideCnt);
@@ -203,7 +203,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 			List<Entity> types = new ArrayList<Entity>();
 			for (Object[] typeAndCount: (List<Object[]>)query.select("r.type, count(distinct r)").where("r.class = OverrideReservation").group("r.type").order("r.type").exclude("override").query(hibSession).list()) {
 				OverrideType type = OverrideType.values()[((Number)typeAndCount[0]).intValue()];
-				Entity e = new Entity(new Long(type.ordinal()), type.getReference(), CONSTANTS.reservationOverrideTypeAbbv()[type.ordinal()]);
+				Entity e = new Entity(Long.valueOf(type.ordinal()), type.getReference(), CONSTANTS.reservationOverrideTypeAbbv()[type.ordinal()]);
 				e.setCount(((Number)typeAndCount[1]).intValue());
 				types.add(e);
 			}

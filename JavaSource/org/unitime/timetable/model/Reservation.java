@@ -226,7 +226,7 @@ public abstract class Reservation extends BaseReservation implements Comparable<
             cap = min(cap, subpartCap);
         }
         
-        return (cap < 0 ? null : new Integer(cap));
+        return (cap < 0 ? null : Integer.valueOf(cap));
     }
 
     private static int min(int l1, int l2) {

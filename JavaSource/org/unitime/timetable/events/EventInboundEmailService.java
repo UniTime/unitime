@@ -38,7 +38,8 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Event;
@@ -52,7 +53,7 @@ import org.unitime.timetable.model.dao._RootDAO;
 @Service("eventInboundEmailService")
 public class EventInboundEmailService {
 	private Pattern iSubjectPattern = Pattern.compile("(?i)\\[EVENT-([0-9a-f]+)\\]");
-	private static Logger sLog = Logger.getLogger(EventInboundEmailService.class);
+	private static Log sLog = LogFactory.getLog(EventInboundEmailService.class);
 	
 	public void process(MimeMessage message) throws MessagingException, IOException {
 		sLog.info("Recieved message: " + message.getSubject());

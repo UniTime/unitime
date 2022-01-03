@@ -43,7 +43,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.cpsolver.coursett.model.TimeLocation;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,7 +112,7 @@ import biweekly.util.Recurrence.Frequency;
 public class CalendarServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	protected static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
-	private static Logger sLog = Logger.getLogger(CalendarServlet.class);
+	private static Log sLog = LogFactory.getLog(CalendarServlet.class);
 
 	@Override
 	public void init() {

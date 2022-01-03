@@ -220,7 +220,7 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     }
 
     public Comparable getPeriodOrd() {
-        if (iPeriodIdx>=0) return new Integer(iPeriodIdx);
+        if (iPeriodIdx>=0) return Integer.valueOf(iPeriodIdx);
         else return iPeriod;
     }
     

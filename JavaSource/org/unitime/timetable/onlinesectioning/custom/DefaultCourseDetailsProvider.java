@@ -33,8 +33,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
@@ -55,7 +56,7 @@ import freemarker.template.TemplateException;
  * @author Tomas Muller
  */
 public class DefaultCourseDetailsProvider implements CourseDetailsProvider, CourseUrlProvider {
-	private static Logger sLog = Logger.getLogger(DefaultCourseDetailsProvider.class);
+	private static Log sLog = LogFactory.getLog(DefaultCourseDetailsProvider.class);
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private static CourseMessages CMSG = Localization.create(CourseMessages.class);
 	private static GwtMessages GMSG = Localization.create(GwtMessages.class);
@@ -173,8 +174,6 @@ public class DefaultCourseDetailsProvider implements CourseDetailsProvider, Cour
 	
 	public static void main(String[] args) {
 		try {
-			BasicConfigurator.configure();
-
 			ApplicationProperties.getDefaultProperties().setProperty(
 					ApplicationProperty.CustomizationExternalTerm.key(),
 					BannerTermProvider.class.getName());

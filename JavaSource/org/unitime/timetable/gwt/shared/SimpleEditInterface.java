@@ -171,7 +171,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 			if (s2 == null) return -1;
 			switch (field.getType()) {
 			case students:
-				return new Integer(s1.isEmpty() ? 0 : s1.split("\\n").length).compareTo(s2.isEmpty() ? 0 : s2.split("\\n").length);
+				return Integer.valueOf(s1.isEmpty() ? 0 : s1.split("\\n").length).compareTo(s2.isEmpty() ? 0 : s2.split("\\n").length);
 			default:
 				try {
 					Double d1 = Double.parseDouble(s1.isEmpty() ? "0": s1);

@@ -24,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -644,10 +645,18 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	@Override
 	public <X extends OnlineSectioningAction> X createAction(Class<X> clazz) {
 		try {
-			return clazz.newInstance();
+			return clazz.getDeclaredConstructor().newInstance();
 		} catch (InstantiationException e) {
 			throw new SectioningException(e.getMessage(), e);
 		} catch (IllegalAccessException e) {
+			throw new SectioningException(e.getMessage(), e);
+		} catch (IllegalArgumentException e) {
+			throw new SectioningException(e.getMessage(), e);
+		} catch (InvocationTargetException e) {
+			throw new SectioningException(e.getMessage(), e);
+		} catch (NoSuchMethodException e) {
+			throw new SectioningException(e.getMessage(), e);
+		} catch (SecurityException e) {
 			throw new SectioningException(e.getMessage(), e);
 		}
 	}

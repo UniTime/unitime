@@ -25,7 +25,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
@@ -41,7 +43,7 @@ import org.unitime.timetable.model.dao.EventDAO;
  */
 public class EventExpirationService extends Thread {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
-	private static Logger sLog = Logger.getLogger(EventExpirationService.class); 
+	private static Log sLog = LogFactory.getLog(EventExpirationService.class); 
 	private long iSleepTimeInMinutes = 5;
 	private boolean iActive = true;
 	private static EventExpirationService sInstance;

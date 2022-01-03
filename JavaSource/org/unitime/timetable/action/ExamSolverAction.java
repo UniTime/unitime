@@ -163,7 +163,7 @@ public class ExamSolverAction extends Action {
             }
             DataProperties config = examinationSolverService.createConfig(myForm.getSetting(), myForm.getParameterValues());
             config.put("Exam.Type", String.valueOf(myForm.getExamType()));
-            config.put("General.StartSolver", new Boolean(start).toString());
+            config.put("General.StartSolver", Boolean.valueOf(start).toString());
             request.getSession().setAttribute("Exam.Type", myForm.getExamType());
     	    if (myForm.getHost() != null)
     	    	config.setProperty("General.Host", myForm.getHost());

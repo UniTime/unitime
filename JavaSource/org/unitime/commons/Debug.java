@@ -23,7 +23,6 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.Locale;
-import java.util.Properties;
 
 import org.apache.commons.logging.LogFactory;
 
@@ -156,17 +155,4 @@ public class Debug {
     public static synchronized String getMem() {
         return sNumberFormat.format((Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory()) / 1048576.0)+"M ";
     }
-    
-
-    public static synchronized void init(Properties properties) {
-        try {
-            Class.
-                forName("org.apache.log4j.PropertyConfigurator").
-                getMethod("configure", new Class[] {Properties.class}).
-                invoke(null, new Object[]{properties});
-        } catch (Exception e) {
-            System.err.println("Unable to init log4j -- "+e.getMessage());
-        }
-    }
-    
 }

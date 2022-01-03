@@ -101,7 +101,7 @@ public class ScriptConnector extends ApiConnector {
 			if (item == null)
 				helper.sendError(HttpServletResponse.SC_NO_CONTENT, "No task found for " + helper.getParameter("finished"));
 			else
-				helper.setResponse(new Boolean(item.finished() != null));
+				helper.setResponse(Boolean.valueOf(item.finished() != null));
 		} else if (helper.getParameter("delete") != null) {
 			Boolean ret = solverServerService.getQueueProcessor().remove(helper.getParameter("delete"));
 			helper.setResponse(ret);

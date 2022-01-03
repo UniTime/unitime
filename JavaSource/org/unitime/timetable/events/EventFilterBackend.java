@@ -88,7 +88,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 			type2count.put(type, count);
 		}
 		for (int i = 0; i < Event.sEventTypesAbbv.length; i++) {
-			Entity e = new Entity(new Long(i), Event.sEventTypesAbbv[i], CONSTANTS.eventTypeAbbv()[i], "translated-value", CONSTANTS.eventTypeShort()[i]);
+			Entity e = new Entity(Long.valueOf(i), Event.sEventTypesAbbv[i], CONSTANTS.eventTypeAbbv()[i], "translated-value", CONSTANTS.eventTypeShort()[i]);
 			Integer count = type2count.get(i);
 			e.setCount(count == null ? 0 : count);
 			response.add("type", e);
@@ -115,7 +115,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 			case Constants.DAY_SUN: type = 6; break;
 			}
 			Integer count = day2count.get(type);
-			Entity e = new Entity(new Long(type), day, CONSTANTS.longDays()[i], "translated-value", CONSTANTS.longDays()[i]);
+			Entity e = new Entity(Long.valueOf(type), day, CONSTANTS.longDays()[i], "translated-value", CONSTANTS.longDays()[i]);
 			e.setCount(count == null ? 0 : count);
 			response.add("day", e);
 		}
