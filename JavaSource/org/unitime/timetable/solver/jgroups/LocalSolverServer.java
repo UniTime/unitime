@@ -151,7 +151,7 @@ public class LocalSolverServer extends AbstractSolverServer {
 			setDaemon(true);
 			setName("Updater[generic]");
 			iSleepTimeInSeconds = ApplicationProperty.OnlineSchedulingQueueLoadInterval.intValue();
-			iLog = LogFactory.getLog(OnlineStudentSchedulingGenericUpdater.class + ".updater[generic]");
+			iLog = LogFactory.getLog(OnlineStudentSchedulingGenericUpdater.class.getName() + ".updater[generic]");
 		}
 		
 		@Override

@@ -19,27 +19,37 @@
 */
 package org.unitime.timetable.solver.jgroups;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
-
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.RollingFileAppender;
+import org.apache.logging.log4j.core.appender.rolling.CompositeTriggeringPolicy;
+import org.apache.logging.log4j.core.appender.rolling.CronTriggeringPolicy;
+import org.apache.logging.log4j.core.appender.rolling.DefaultRolloverStrategy;
+import org.apache.logging.log4j.core.appender.rolling.SizeBasedTriggeringPolicy;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.Configurator;
-
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.cpsolver.ifs.util.DataProperties;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
@@ -579,7 +589,80 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 		}
 	}
 	
-	private static void configureLogging(Properties properties) {
+	private static String removeExtension(String name) {
+		int idx = name.lastIndexOf('.');
+		if (idx >= 0) return name.substring(0, idx);
+		return name;
+	}
+	
+	public static void configureLogging(String logFile, Properties properties) {
+        LoggerContext ctx = LoggerContext.getContext(false);
+        Configuration config = ctx.getConfiguration();
+        if (config.getAppender("unitime") == null && logFile != null) {
+        	File file = new File(logFile);
+    		System.out.println("Log File:" + file.getAbsolutePath());
+    		File logDir = file.getParentFile();
+    		if (logDir != null) logDir.mkdirs();
+            CompositeTriggeringPolicy policy = CompositeTriggeringPolicy.createPolicy(
+            		SizeBasedTriggeringPolicy.createPolicy("100M"),
+            		CronTriggeringPolicy.createPolicy(config, "true", "0 0 0 * * ?")
+            		);
+            DefaultRolloverStrategy strategy = DefaultRolloverStrategy.newBuilder()
+            		.withMax("10")
+            		.withConfig(config)
+            		.build();
+            PatternLayout layout = PatternLayout.newBuilder()
+            		.withConfiguration(config)
+            		.withPattern("%d{dd-MMM-yy HH:mm:ss.SSS} [%t] %-5p %c{2}: %m%n")
+            		.build();
+            RollingFileAppender appender = RollingFileAppender.newBuilder()
+            		.withFileName(file.getAbsolutePath())
+            		.withFilePattern((logDir == null ? "" : logDir.getAbsolutePath() + File.separator) + 
+            				removeExtension(file.getName()) + "-${hostName}-%d{yyyy-MM-dd}-%i.log.gz")
+            		.withPolicy(policy)
+            		.withStrategy(strategy)
+            		.setLayout(layout)
+            		.setName("unitime")
+            		.setConfiguration(config)
+            		.build();
+            appender.start();
+            config.addAppender(appender);
+            config.getRootLogger().addAppender(appender, Level.DEBUG, null);
+    		ctx.updateLoggers();
+        }
+        
+        if (properties != null) {
+        	boolean update = false;
+            for (Map.Entry<Object, Object> e: properties.entrySet()) {
+                String property = (String)e.getKey();
+                String value = (String)e.getValue();
+                if (property.startsWith("log4j.logger.")) {
+                    String name = property.substring("log4j.logger.".length());
+                    if (value.indexOf(',') < 0) {
+                    	Configurator.setLevel(name, Level.getLevel(value));
+                    } else {
+                        String level = value.substring(0, value.indexOf(','));
+                        LoggerConfig loggerConfig = config.getLoggerConfig(name);
+                        if (!name.equals(loggerConfig.getName())) {
+                            loggerConfig = new LoggerConfig(name, loggerConfig.getLevel(), true);
+                            config.addLogger(name, loggerConfig);
+                        }
+                        String appender = value.substring(value.indexOf(',') + 1);
+                        for (String a: appender.split(",")) {
+                        	loggerConfig.removeAppender(a);
+                        	Appender x = config.getAppender(a);
+                        	if (x != null) {
+                        		loggerConfig.addAppender(config.getAppender(a), Level.getLevel(level), null);
+                        		update = true;
+                        	}
+                        }
+                    }
+                }
+            }
+            if (update)
+            	ctx.updateLoggers();
+        }
+        
 		Logger log = LogManager.getRootLogger();
         log.info("-----------------------------------------------------------------------");
         log.info("UniTime Log File");
@@ -596,6 +679,10 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
         log.info("Classpath:   " + System.getProperty("java.class.path"));
         log.info("Memory:      " + (Runtime.getRuntime().maxMemory() / 1024 / 1024) + " MB");
         log.info("Cores:       " + Runtime.getRuntime().availableProcessors());
+        try {
+        	log.info("Host:        " + InetAddress.getLocalHost().getHostName());
+        	log.info("Address:     " + InetAddress.getLocalHost().getHostAddress());
+        } catch (UnknownHostException e) {}
         log.info("");
 	}
 	
@@ -609,7 +696,9 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
     			ApplicationProperties.getDefaultProperties().setProperty("catalina.base",
     					ApplicationProperty.DataDir.value());
     		    
-    		configureLogging(ApplicationProperties.getDefaultProperties());
+    		configureLogging(
+    				ApplicationProperty.DataDir.value() + File.separator + "logs" + File.separator + "unitime.log",
+    				ApplicationProperties.getDefaultProperties());
     		
 			HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
 			
@@ -618,10 +707,10 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 			final MessageLogAppender appender = new MessageLogAppender();
     		LoggerContext ctx = LoggerContext.getContext(false);
     		Configuration config = ctx.getConfiguration();
+    		appender.start();
     		config.addAppender(appender);
     		config.getRootLogger().addAppender(appender, appender.getMinLevel(), null);
     		ctx.updateLoggers();
-    		appender.start();
 			
 			StudentSectioningPref.updateStudentSectioningPreferences();
 			
@@ -650,6 +739,10 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
     					channel.close();
 
     					sLog.info("Stopping message log appender...");
+    					LoggerContext ctx = LoggerContext.getContext(false);
+    					Configuration config = ctx.getConfiguration();
+    					config.getRootLogger().removeAppender("message-log");
+    					ctx.updateLoggers();
     					appender.stop();
 
     					sLog.info("Closing hibernate...");

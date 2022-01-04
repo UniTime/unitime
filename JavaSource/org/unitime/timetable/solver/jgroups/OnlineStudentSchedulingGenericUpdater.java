@@ -61,7 +61,7 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 		setDaemon(true);
 		setName("Updater[generic]");
 		iSleepTimeInSeconds = ApplicationProperty.OnlineSchedulingQueueLoadInterval.intValue(); 
-		iLog = LogFactory.getLog(OnlineStudentSchedulingGenericUpdater.class + ".updater[generic]"); 
+		iLog = LogFactory.getLog(OnlineStudentSchedulingGenericUpdater.class.getName() + ".updater[generic]"); 
 	}
 	
 	@Override

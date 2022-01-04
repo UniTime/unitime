@@ -2,7 +2,7 @@
 <Configuration>
 	<Appenders>
 		<Console name="stdout" target="SYSTEM_OUT">
-			<PatternLayout pattern="[%-d{MM/dd/yy HH:mm:ss}] %-6p %c -> %m%n"/>
+			<PatternLayout pattern="[%-d{MM/dd/yy HH:mm:ss}] %-5p %c{1}> %m%n"/>
 		</Console>
 	</Appenders>
 	<Loggers>
@@ -23,5 +23,6 @@
 		<Logger name="org.hibernate.cache.ehcache.AbstractEhcacheRegionFactory" level="ERROR"/>
 		<Logger name="org.infinispan.jmx" level="WARN"/>
 		<Logger name="org.apache.struts.action.ActionMapping" level="ERROR"/>
+		<Logger name="org.unitime.commons.hibernate.connection.DBCPConnectionProvider" level="INFO"/>
 	</Loggers>
 </Configuration>
