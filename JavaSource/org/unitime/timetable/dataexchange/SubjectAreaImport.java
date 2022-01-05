@@ -83,6 +83,13 @@ public class SubjectAreaImport  extends BaseImport {
                 }
                 subjectArea.setDepartment(department);
 
+                String fundingDeptCode = element.attributeValue("fundingDepartment");
+                if (fundingDeptCode != null) {
+                	Department fundingDepartment = findByDeptCode(fundingDeptCode, session.getSessionId());
+                	subjectArea.setFundingDept(fundingDepartment);
+                }else
+                	subjectArea.setFundingDept(null);
+    
                 getHibSession().saveOrUpdate(subjectArea);
                 flushIfNeeded(false);
             }

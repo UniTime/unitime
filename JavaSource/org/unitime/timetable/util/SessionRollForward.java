@@ -1004,6 +1004,10 @@ public class SessionRollForward {
 							if (!toSubject.equals(fromSubject)){
 								toSubjectArea.setSubjectAreaAbbreviation(toSubject);
 							}
+							if (fromSubjectArea.getFundingDept() != null){
+								Department toFundingDept = fromSubjectArea.getFundingDept().findSameDepartmentInSession(toSession);
+								toSubjectArea.setFundingDept(toFundingDept);
+							}
 							toSubjectArea.setSession(toSession);
 							toSession.addTosubjectAreas(toSubjectArea);
 							if (fromSubjectArea.getDepartment() != null) {
@@ -1017,6 +1021,7 @@ public class SessionRollForward {
 									sDao.getSession().evict(fromSubjectArea);
 								}
 							}
+							
 						}
 					}
 				}
@@ -1091,6 +1096,10 @@ public class SessionRollForward {
 					fromSubjectArea = (SubjectArea) it.next();
 					if (fromSubjectArea != null){
 						toSubjectArea = (SubjectArea)fromSubjectArea.clone();
+						if (fromSubjectArea.getFundingDept() != null){
+							Department toFundingDept = fromSubjectArea.getFundingDept().findSameDepartmentInSession(toSession);
+							toSubjectArea.setFundingDept(toFundingDept);
+						}
 						toSubjectArea.setDepartment(null);
 						toSubjectArea.setSession(toSession);
 						toSession.addTosubjectAreas(toSubjectArea);
