@@ -122,28 +122,30 @@ public class ExportDepartmentsPDF implements Exporter {
                 if (showAllDept.trim().equalsIgnoreCase("true") || !d.getSubjectAreas().isEmpty() || !d.getTimetableManagers().isEmpty() || d.isExternalManager().booleanValue()) {
 
                     String lastChangeStr = null;
-                    Long lastChangeCmp = null;
+                    
                     if (dispLastChanges) {
                             List changes = ChangeLog.findLastNChanges(d.getSession().getUniqueId(), null, null, d.getUniqueId(), 1);
                             ChangeLog lastChange = (changes==null || changes.isEmpty() ? null : (ChangeLog) changes.get(0));
-                            lastChangeStr = (lastChange==null?"":ChangeLog.sDFdate.format(lastChange.getTimeStamp())+" by "+lastChange.getManager().getShortName());
-                            lastChangeCmp = new Long(lastChange==null?0:lastChange.getTimeStamp().getTime());
+                            lastChangeStr = (lastChange==null?"":MESSAGES.lastChange(
+                            	    ChangeLog.sDFdate.format(lastChange.getTimeStamp()),
+                            	    lastChange.getManager().getShortName()));
+
                     }
                     String allowReq = "";
                     int allowReqOrd = 0;
                     if (d.isAllowReqRoom() != null && d.isAllowReqRoom().booleanValue()) {
                     	if (!allowReq.isEmpty()) allowReq += ", ";
-                    	allowReq += "room";
+                    	allowReq += MESSAGES.colRooms();
                     	allowReqOrd += 1;
                     }
                     if (d.isAllowReqTime() != null && d.isAllowReqTime().booleanValue()) {
                     	if (!allowReq.isEmpty()) allowReq += ", ";
-                    	allowReq += "time";
+                    	allowReq += MESSAGES.colTimeStamp();
                     	allowReqOrd += 2;
                     }
                     if (d.isAllowReqDistribution() != null && d.isAllowReqDistribution().booleanValue()) {
                     	if (!allowReq.isEmpty()) allowReq += ", ";
-                    	allowReq += "distribution";
+                    	allowReq += MESSAGES.colDistribution();
                     	allowReqOrd += 4;
                     }
                     if (allowReqOrd == 7) allowReq = "all";
@@ -179,11 +181,11 @@ public class ExportDepartmentsPDF implements Exporter {
                     bodyText.add(d.effectiveStatusType().getLabel()+ (dependentStatuses == null ? "" : "\n" + dependentStatuses));
                     bodyText.add((d.getDistributionPrefPriority()==null && d.getDistributionPrefPriority().intValue()!=0 ? "" : d.getDistributionPrefPriority().toString()));
                     bodyText.add(allowReq);
-                    bodyText.add(d.isInheritInstructorPreferences() ? "Yes" : "No");
-                    bodyText.add( d.isAllowEvents() ? "Yes" : "No");
-                    bodyText.add(d.isAllowStudentScheduling() ? "Yes" : "No");
+                    bodyText.add(d.isInheritInstructorPreferences() ? MESSAGES.exportTrue()  : MESSAGES.exportFalse() );
+                    bodyText.add( d.isAllowEvents() ? MESSAGES.exportTrue()  : MESSAGES.exportFalse() );
+                    bodyText.add(d.isAllowStudentScheduling() ? MESSAGES.exportTrue()  : MESSAGES.exportFalse() );
                 	if (ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue())
-                		bodyText.add(d.isExternalFundingDept()!=null ? (d.isExternalFundingDept()==true ? "Yes" : "No" ): "No");
+                		bodyText.add(d.isExternalFundingDept()!=null ? (d.isExternalFundingDept()==true ? MESSAGES.exportTrue()  : MESSAGES.exportFalse() ): MESSAGES.exportFalse() );
                 	if (dispLastChanges)
                 		bodyText.add(lastChangeStr);
                 	
@@ -258,8 +260,6 @@ public class ExportDepartmentsPDF implements Exporter {
 			return compare(r1.getRoomDepts().size(), r2.getRoomDepts().size());
 		}		
 				
-		//////////
-
 		protected int compareByColumn(Department r1, Department r2) {
 			switch (iColumn) {					
 			case CODE: return compareByDeptCode(r1, r2);

@@ -1043,6 +1043,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Distribution Conflicts")
 	String colDistributionConflicts();
+
+	@DefaultMessage("Distribution")
+	String colDistribution();
 	
 	@DefaultMessage("Time")
 	String colTimeStamp();
@@ -4343,7 +4346,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Parameters:")
 	String propParameters();
 	
-	@DefaultMessage("External Id:")
+	@DefaultMessage("External ID:")
 	String propExternalId();
 	
 	@DefaultMessage("Capacity:")
@@ -6799,7 +6802,8 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Code")
 	String colCode();
 	
-	@DefaultMessage("DeptCode")
+	
+	@DefaultMessage("Code:")
 	String propDeptCode();
 	
 	@DefaultMessage("Status Type")
@@ -6808,9 +6812,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Number")
 	String colNumber();
 	
-	@DefaultMessage("Abbv")
+	@DefaultMessage("Abbreviation")
 	String colAbbv();
 
+	@DefaultMessage("Department Status:")
+	String propDepartmentStatus();
+	
 	@DefaultMessage("External <br>Manager")
 	String colExternalManager();
 
@@ -6832,43 +6839,43 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Show all departments (including departments with no manager and no subject area)")
 	String checkShowAllDepartments();
 	
-	@DefaultMessage("Dist Pref <br> Priority")
+	@DefaultMessage("Dist Pref  <br> Priority")
 	String colDistPrefPriority();
 
-	@DefaultMessage("Dist Pref Priority")
+	@DefaultMessage("Distribution Preference Priority:")
 	String propPrefPriority();
 	
 	@DefaultMessage("Allow <br> Required")
 	String colAllowRequired();
 
-	@DefaultMessage("Allow <br> Required Time")
+	@DefaultMessage("Allow <br> Required Time:")
 	String propAllowReqTime();
 	
-	@DefaultMessage("Instructor <br> Pref")
+	@DefaultMessage("Instructor <br> Preferences")
 	String colInstructorPref();
 
-	@DefaultMessage("Instructor <br> Pref")
+	@DefaultMessage("Instructor <br> Preferences")
 	String propInstructorPref();
 
-	@DefaultMessage("Inherit Instructor <br> Prefs")
+	@DefaultMessage("Inherit Instructor <br> Preferences:")
 	String propInheritInstructorPref();
 	
-	@DefaultMessage("Allow  Required Room")
+	@DefaultMessage("Allow  Required Room:")
 	String propAllowReqRoom();
 
-	@DefaultMessage("Allow  Required Distribution")
+	@DefaultMessage("Allow  Required Distribution:")
 	String propAllowReqDist();
 	
-	@DefaultMessage("Allow Student Scheduling")
+	@DefaultMessage("Allow Student Scheduling:")
 	String propAllowStudentScheduling();
 
-	@DefaultMessage("External Funding Dept")
+	@DefaultMessage("External Funding Deptartment:")
 	String propExternalFundingDept();
 
-	@DefaultMessage("External <br> Funding Dept")
+	@DefaultMessage("External <br> Funding Deptartment")
 	String colExternalFundingDept();
 	
-	@DefaultMessage("Event Management")
+	@DefaultMessage("Event Management:")
 	String propAllowEvents();
 	
 	@DefaultMessage("Events")

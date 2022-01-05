@@ -23,49 +23,25 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-
-import org.cpsolver.ifs.util.ToolBox;
-import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.gwt.client.departments.DepartmentsEdit.UpdateDepartmentRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
-import org.unitime.timetable.gwt.shared.CurriculaException;
 import org.unitime.timetable.gwt.shared.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.PageAccessException;
-import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.ExternalDepartmentStatusType;
-import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-
-//import java.util.Iterator;
-
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessages;
-import org.apache.struts.util.MessageResources;
-import org.hibernate.HibernateException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.unitime.commons.Debug;
-import org.unitime.timetable.form.DepartmentEditForm;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.TimePref;
-import org.unitime.timetable.util.Constants;
+
 
 
 @GwtRpcImplements(UpdateDepartmentRequest.class)
@@ -80,7 +56,6 @@ public class UpdateDepartmentBackend implements GwtRpcImplementation<UpdateDepar
 		case CREATE:			
 			context.checkPermission(Right.DepartmentAdd);
 			department = saveOrUpdate(request.getDepartment(), context);               
-            //department = DepartmentDAO.getInstance().get( request.getDepartment().getId(), hibSession);
             ChangeLog.addChange(
                     hibSession, 
                     context, 
@@ -92,7 +67,6 @@ public class UpdateDepartmentBackend implements GwtRpcImplementation<UpdateDepar
 			break;
 		case UPDATE:
 			context.checkPermission(request.getDepartment().getId(), "Department", Right.DepartmentEdit);
-			//department = DepartmentDAO.getInstance().get( request.getDepartment().getId(), hibSession);
 			department = saveOrUpdate(request.getDepartment(), context);
             ChangeLog.addChange(
                     hibSession, 
@@ -141,22 +115,22 @@ public class UpdateDepartmentBackend implements GwtRpcImplementation<UpdateDepar
             }
                        
             department.setDeptCode(departmentInterface.getDeptCode());
-            department.setAllowReqTime(new Boolean(departmentInterface.getAllowReqTime()));
+            department.setAllowReqTime(departmentInterface.getAllowReqTime());
             department.setAbbreviation(departmentInterface.getAbbreviation());
             department.setName(departmentInterface.getName()); 
             department.setExternalUniqueId(departmentInterface.getExternalId() != null && departmentInterface.getExternalId().isEmpty() ? null : departmentInterface.getExternalId());
-            department.setDistributionPrefPriority(new Integer(departmentInterface.getDistributionPrefPriority()));
-            department.setExternalManager(new Boolean(departmentInterface.getExternalManager()));
+            department.setDistributionPrefPriority(departmentInterface.getDistributionPrefPriority());
+            department.setExternalManager(departmentInterface.getExternalManager());
             department.setExternalMgrAbbv(departmentInterface.getExternalMgrAbbv());
-            department.setAllowReqDistribution(new Boolean(departmentInterface.getAllowReqDistribution()));          
-            department.setExternalFundingDept(new Boolean(departmentInterface.getExternalFundingDept()));  
+            department.setAllowReqDistribution(departmentInterface.getAllowReqDistribution());          
+            department.setExternalFundingDept(departmentInterface.getExternalFundingDept());  
             department.setExternalMgrLabel(departmentInterface.getExternalMgrLabel());            
-            department.setAllowReqRoom(new Boolean(departmentInterface.getAllowReqRoom()));
+            department.setAllowReqRoom(departmentInterface.getAllowReqRoom());
             department.setAllowEvents(departmentInterface.getAllowEvents());
             department.setAllowStudentScheduling(departmentInterface.getAllowStudentScheduling());
             department.setInheritInstructorPreferences(departmentInterface.getInheritInstructorPreferences());  
             department.setStatusType(DepartmentStatusType.findByRef(departmentInterface.getStatusTypeStr()));     
-            //external dept///////////////           
+         
             List<ExternalDepartmentStatusType> statuses = new ArrayList<ExternalDepartmentStatusType>(department.getExternalStatusTypes());
             if (department.isExternalManager()) {
             	for (int i = 0; i < Math.min(departmentInterface.iDependentDepartments.size(), departmentInterface.iDependentStatuses.size()); i++) {

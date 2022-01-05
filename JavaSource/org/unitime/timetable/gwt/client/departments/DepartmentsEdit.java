@@ -51,7 +51,6 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -68,20 +67,15 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 	private UniTimeWidget<TextBox> iExternalManagerAbbreviation;
 	private UniTimeWidget<TextBox> iExternalManagerName;
 	private UniTimeWidget<TextBox>  iDistPrefPriority ;
-	private  UniTimeWidget<CheckBox>  iExternalManager;
-	
+	private  UniTimeWidget<CheckBox>  iExternalManager;	
 	private UniTimeWidget<Label>   iAcademicSession ;
 	private UniTimeWidget<TextBox>   iDeptCode ;
 	private UniTimeWidget<ListBox>  iStatusType; 
     private ListBox  [] iCurrentDependentOptions;
     private ListBox [] iCurrentStatusTypeOptions;
-    private List iDependentDepartments;
-    private List iDependentStatuses;
     private List<String> iCurrentDependentDepartments = new ArrayList<String>();
     private List<String> iCurrentDependentStatuses = new ArrayList<String>();
-
-	private TextBox  iExternalId ;
-	
+	private TextBox  iExternalId ;	
 	private UniTimeWidget<CheckBox> iAllowReqTime;
 	private UniTimeWidget<CheckBox> iAllowReqRoom;
 	private UniTimeWidget<CheckBox> iAllowReqDist;
@@ -90,12 +84,9 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 	private UniTimeWidget<CheckBox> iAllowStudentScheduling ;
 	private UniTimeWidget<CheckBox> iExternalFundingDept ;	
 	private UniTimeHeaderPanel controlDeptHeaderPanel;
-
 	private VerticalPanel iControlDeptMainPanel ;
-	private FlexTable iControlDeptFlexTable;
-	  
+	private FlexTable iControlDeptFlexTable;	  
 	private DepartmentInterface iDepartment = null;
-	private DepartmentPropertiesInterface iProperties;
 	
 	public DepartmentsEdit() {
 		/*create the UI */
@@ -238,7 +229,7 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		iStatusType.getWidget().setWidth("300px");
 		iStatusType.getWidget().setStyleName("gwt-SuggestBox");
 		iStatusType.getWidget().setVisibleItemCount(1);
-		iForm.addRow(MESSAGES.optionDepartmentStatus(), iStatusType);
+		iForm.addRow(MESSAGES.propDepartmentStatus(), iStatusType);
 		
 		//ExternalID		
 		iExternalId = new TextBox();
@@ -255,7 +246,7 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		iExternalManagerAbbreviation	 = new UniTimeWidget<TextBox>(new TextBox());
 		iExternalManagerAbbreviation.getWidget().setStyleName("unitime-TextBox");
 		iExternalManagerAbbreviation.getWidget().setMaxLength(10);
-		iExternalManagerAbbreviation.getWidget().setWidth("200px");
+		iExternalManagerAbbreviation.getWidget().setWidth("100px");
 		iExternalManagerAbbreviation.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
@@ -420,7 +411,7 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		
 		
 		if (department == null) {
-			log.info("department is equal to null" );
+			//log.info("department is equal to null" );
 			controlDeptHeaderPanel.setVisible(false);
 			iControlDeptMainPanel.setVisible(false);
 			iExternalManager.getWidget().setEnabled(true);
@@ -466,9 +457,12 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 			iDeptCode.getWidget().setText(department.getDeptCode() == null ? "" : department.getDeptCode());
 			iAbbreviation.getWidget().setText(department.getAbbreviation() == null ? "" : department.getAbbreviation());
 			iName.getWidget().setText(department.getName() == null ? "" : department.getName());
-			if (department.isCanChangeExtManager() == false)
+			if (department.isCanChangeExtManager() == false) {
 				iExternalManager.getWidget().setEnabled(false);	
-								
+				iExternalManagerAbbreviation.getWidget().setEnabled(false);	
+				iExternalManagerName.getWidget().setEnabled(false);	
+			}
+												
 			iAcademicSession.getWidget().setText((department.getAcademicSessionName() == null ? "" : department.getAcademicSessionName()));
 			iExternalId.setText(department.getExternalId() == null ? "" : department.getExternalId());
 			iDistPrefPriority.setText(department.getDistributionPrefPriority() == null ? "0" : department.getDistributionPrefPriority().toString());

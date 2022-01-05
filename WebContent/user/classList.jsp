@@ -35,6 +35,8 @@
 <html:form action="/classSearch">
 <tt:session-context/>
 <% session.setAttribute("callingPage", "classSearch"); %>
-<% new WebClassListTableBuilder().htmlTableForClasses(sessionContext, WebSolver.getClassAssignmentProxy(session),WebSolver.getExamSolver(session),frm, out, request.getParameter("backType"), request.getParameter("backId"));%>
+
+<%  new WebClassListTableBuilder().htmlTableForClasses(sessionContext, WebSolver.getClassAssignmentProxy(session),WebSolver.getExamSolver(session),frm, out, request.getParameter("backType"), request.getParameter("backId"));%>
+
 </html:form>
 
