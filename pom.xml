@@ -552,20 +552,12 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
-				<version>2.5</version>
+				<version>3.2.0</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.4</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
+				<version>3.2.0</version>
 				<configuration>
 					<archive>
 						<manifest>
@@ -661,7 +653,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>buildnumber-maven-plugin</artifactId>
-				<version>1.1</version>
+				<version>3.0.0</version>
 				<executions>
 					<execution>
 						<phase>validate</phase>
@@ -679,7 +671,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.7</version>
+				<version>3.0.0</version>
 				<executions>
 					<execution>
 						<phase>validate</phase>
@@ -688,12 +680,12 @@
 						</goals>
 						<configuration>
 							<exportAntProperties>true</exportAntProperties>
-							<tasks>
+							<target>
 								<buildnumber/>
 								<tstamp>
 									<format property="build.date" pattern="EEE, d MMM yyyy" locale="en"/>
 								</tstamp>
-							</tasks>
+							</target>
 						</configuration>
 					</execution>
 				</executions>
@@ -701,7 +693,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>license-maven-plugin</artifactId>
-				<version>1.7</version>
+				<version>1.9</version>
 				<executions>
 					<execution>
 						<id>default-cli</id>
