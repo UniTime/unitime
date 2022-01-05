@@ -290,8 +290,7 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 	public static class DepartmentsDataResponse implements GwtRpcResponse {
 		private List<DepartmentInterface> iDepartments;
 		private boolean iCanAdd , iCanUpdateData, iDepartmentsEnabled;
-		private boolean iCanExportPdf = true;
-		private String iEllipsoid = null;		
+		private boolean iCanExportPdf = true;	
 		public boolean isCanAdd() { return iCanAdd; }
 		public void setCanAdd(boolean canAdd) { iCanAdd = canAdd; }
 
@@ -317,10 +316,7 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 		public List<DepartmentInterface> getDepartments() { return iDepartments; }
 		
 		public boolean hasDepartments() { return iDepartments != null && !iDepartments.isEmpty(); }
-
-		public String getEllipsoid() { return iEllipsoid; }
-		public boolean hasEllipsoid() { return iEllipsoid != null & !iEllipsoid.isEmpty(); }
-		public void setEllipsoid(String ellipsoid) { iEllipsoid = ellipsoid; }
+		
 	}
 	
 

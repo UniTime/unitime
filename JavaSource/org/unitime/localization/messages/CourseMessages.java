@@ -448,6 +448,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Examinations")
 	String columnExams();
 
+	@DefaultMessage("Funding Department")
+	String columnFundingDepartment();
+	
 	@DefaultMessage("Examination")
 	String columnExam();
 	

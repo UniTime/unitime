@@ -134,6 +134,7 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowLimit()) ret+=1;
     	if (isShowSnapshotLimit()) ret+=1;
     	if (isShowRoomRatio()) ret+=1;
+    	if (isShowFundingDepartment()) ret+=1;
     	if (isShowManager()) ret+=1;
     	if (isShowDatePattern()) ret+=1;
     	if (isShowMinPerWk()) ret+=1;
@@ -183,6 +184,9 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	}
     	if (isShowRoomRatio()) {
     		line.add(createCell(MSG.columnRoomRatio()));
+    	}
+    	if (isShowFundingDepartment()) {
+    		line.add(createCell(MSG.columnFundingDepartment()));
     	}
     	if (isShowManager()) {
     		line.add(createCell(MSG.columnManager()));
@@ -655,6 +659,20 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         return cell;
     }
 
+    private CSVField csvBuildFundingDepartment(PreferenceGroup prefGroup, boolean isEditable){
+    	CSVField cell = createCell();
+
+    	Department managingDept = null;
+    	if (prefGroup instanceof Class_) {
+    		managingDept = ((Class_)prefGroup).getEffectiveFundingDept();
+    	} 
+    	if (managingDept!=null) {
+    		addText(cell, managingDept.getShortLabel(), true);
+    	}
+
+        return cell;
+    }
+    
     private CSVField csvBuildManager(PreferenceGroup prefGroup, boolean isEditable){
     	CSVField cell = createCell();
 
@@ -900,6 +918,9 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowRoomRatio()){
     		line.add(csvBuildRoomLimit(prefGroup, isEditable, classLimitDisplayed));
        	} 
+    	if (isShowFundingDepartment()){
+    		line.add(csvBuildFundingDepartment(prefGroup, isEditable));
+     	}  	
     	if (isShowManager()){
     		line.add(csvBuildManager(prefGroup, isEditable));
      	} 
@@ -1054,6 +1075,9 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         	    line.add(createCell());
         	} 
         	if (isShowRoomRatio()){
+        	    line.add(createCell());
+        	} 
+        	if (isShowFundingDepartment()){
         	    line.add(createCell());
         	} 
         	if (isShowManager()){
@@ -1216,6 +1240,9 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowRoomRatio()){
     		emptyCels ++;
     	} 
+    	if (isShowFundingDepartment()){
+    		emptyCels ++;
+    	}
     	if (isShowManager()){
     		emptyCels ++;
     	}

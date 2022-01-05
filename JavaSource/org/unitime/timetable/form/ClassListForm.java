@@ -62,10 +62,11 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	private Boolean preferences;
 	private Boolean timetable;
 	private Boolean manager;
+	private Boolean fundingDepartment;
 	private Boolean divSec;
 	private Boolean schedulePrintNote;
 	private Boolean note;
-	private Boolean exams;
+	private Boolean exams;	
 	private Boolean instructorAssignment;
 	private Boolean lms;
 	private boolean includeCancelledClasses;
@@ -166,23 +167,24 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 		subjectAreas = new ArrayList();
 		subjectAreaIds = new String[0];
 		
-		demandIsVisible = Boolean.valueOf(false);
-		demand = Boolean.valueOf(false);
-		limit = Boolean.valueOf(false);
-		snapshotLimit = Boolean.valueOf(false);
-		roomLimit = Boolean.valueOf(false);
-		datePattern = Boolean.valueOf(false);
-		timePattern = Boolean.valueOf(false);
-		instructor = Boolean.valueOf(false);
-		preferences = Boolean.valueOf(false);
-		timetable = Boolean.valueOf(false);
-		manager = Boolean.valueOf(false);
-		divSec = Boolean.valueOf(false);
-		schedulePrintNote = Boolean.valueOf(false);
-		note = Boolean.valueOf(false);
-		exams = Boolean.valueOf(false);
-		instructorAssignment = Boolean.valueOf(false);
-		lms = Boolean.valueOf(false);
+		demandIsVisible = new Boolean(false);
+		demand = new Boolean(false);
+		limit = new Boolean(false);
+		snapshotLimit = new Boolean(false);
+		roomLimit = new Boolean(false);
+		datePattern = new Boolean(false);
+		timePattern = new Boolean(false);
+		instructor = new Boolean(false);
+		preferences = new Boolean(false);
+		timetable = new Boolean(false);
+		manager = new Boolean(false);
+		fundingDepartment = new Boolean(false);
+		divSec = new Boolean(false);
+		schedulePrintNote = new Boolean(false);
+		note = new Boolean(false);
+		exams = new Boolean(false);		
+		instructorAssignment = new Boolean(false);
+		lms = new Boolean(false);
 		includeCancelledClasses = false;
 		filterNeedInstructor = false;
 		
@@ -514,6 +516,10 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	public Boolean getManager() {
 		return manager;
 	}
+	public Boolean getFundingDepartment() {
+		 return fundingDepartment;
+	}
+	
 	public void setManager(Boolean manager) {
 		this.manager = manager;
 	}
@@ -541,6 +547,7 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
     public void setExams(Boolean exams) {
         this.exams = exams;
     }
+
     public Boolean getConsent() {
 		return (Boolean.valueOf(false));
     }
@@ -569,6 +576,12 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
     public void setIncludeCancelledClasses(boolean includeCancelledClasses) {
     	this.includeCancelledClasses = includeCancelledClasses;
     }	
+
+
+    public void setFundingDepartment(Boolean fundingDepartment) {
+        this.fundingDepartment = fundingDepartment;
+    }
+    
     public Boolean getInstructorAssignment() {
     	return instructorAssignment;
     }
@@ -590,4 +603,5 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
     }
 	@Override
 	public String getWaitlist() { return null; }
+
 }
