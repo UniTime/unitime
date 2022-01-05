@@ -19,25 +19,19 @@
 */
 package org.unitime.timetable.server.departments;
 
-import java.util.ArrayList;
+
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.TreeSet;
 
-import org.unitime.timetable.gwt.command.client.GwtRpcResponseBoolean;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
-import org.unitime.timetable.gwt.shared.DepartmentInterface;
-//import org.unitime.timetable.gwt.shared.DepartmentInterface.DepartmentCheckCanDeleteRequest;
 import org.unitime.timetable.gwt.shared.DepartmentInterface.DepartmentPropertiesInterface;
 import org.unitime.timetable.gwt.shared.DepartmentInterface.DepartmentPropertiesRequest;
-import org.unitime.timetable.gwt.shared.SimpleEditInterface.ListItem;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.RefTableEntry;
 import org.unitime.timetable.security.SessionContext;
-import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.ReferenceList;
 import org.unitime.timetable.defaults.ApplicationProperty;
 

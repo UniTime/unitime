@@ -22,14 +22,11 @@ package org.unitime.timetable.gwt.client.departments;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.logging.Logger;
-
 import com.google.gwt.i18n.client.NumberFormat;
-
-import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.client.admin.AdminCookie;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
+import org.unitime.timetable.gwt.client.rooms.RoomsTable.IntegerCell;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.HasColumnName;
@@ -37,7 +34,6 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.DepartmentInterface.DepartmentsColumn;
-
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
@@ -84,8 +80,7 @@ public class DepartmentsTable extends UniTimeTable<DepartmentInterface>{
 	
 	public String getUser() { return UniTimePageHeader.getInstance().getMiddle().getText(); }
 	
-	public Widget getColumnWidget(DepartmentsColumn column, DepartmentInterface department) {
-		//DecimalFormat df5 = new DecimalFormat("####0");
+	public Widget getColumnWidget(DepartmentsColumn column, DepartmentInterface department) {;
 		NumberFormat df5 = NumberFormat.getFormat("####0");
 		switch (column) {
 		case CODE:
@@ -98,9 +93,11 @@ public class DepartmentsTable extends UniTimeTable<DepartmentInterface>{
 		case EXTERNAL_MANAGER:
 			return new Label(department.isExternalManager().booleanValue()? department.getExternalMgrAbbv():"");
 		case SUBJECTS:
-			return new Label( df5.format(department.getSubjectAreaCount()));			
+			return new IntegerCell(department.getSubjectAreaCount());
+		//	return new Label( df5.format(department.getSubjectAreaCount()));			
 		case ROOMS:
-			return new Label(df5.format(department.getRoomDeptCount()));
+			return new IntegerCell(department.getRoomDeptCount());
+			//return new Label(df5.format(department.getRoomDeptCount()));
 		case STATUS:
 			P widget = new P("departments-status");
 				P ext = new P("ext-status"); ext.setText(department.effectiveStatusType());
@@ -114,7 +111,7 @@ public class DepartmentsTable extends UniTimeTable<DepartmentInterface>{
 				}				
 				return widget;
 		case DIST_PREF_PRIORITY :
-			return new Label(department.getDistributionPrefPriority()==null && department.getDistributionPrefPriority().intValue()!=0 ? "" : department.getDistributionPrefPriority().toString());
+			return new IntegerCell(department.getDistributionPrefPriority()==null && department.getDistributionPrefPriority()==0 ? 0 : department.getDistributionPrefPriority());
 		case ALLOW_REQUIRED:
 			return new Label(department.allowReq());
 		case INSTRUCTOR_PREF:
@@ -165,8 +162,7 @@ public class DepartmentsTable extends UniTimeTable<DepartmentInterface>{
 		clearTable();
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		for (final DepartmentsColumn col: DepartmentsColumn.values()) {
-			
-			Logger log1 = Logger.getLogger(DepartmentsEdit.class.getName());			
+						
 			if (DepartmentComparator.isApplicable(col) &&(col != DepartmentsColumn.EXT_FUNDING_DEPT || (col == DepartmentsColumn.EXT_FUNDING_DEPT  && fundingDepartmentsEnabled == true))){
 				final UniTimeTableHeader h = new UniTimeTableHeader(getColumnName(col));
 				Operation op = new SortOperation() {
@@ -223,7 +219,7 @@ public class DepartmentsTable extends UniTimeTable<DepartmentInterface>{
 			iSortBy = column;
 			iAsc = true;
 		}
-		AdminCookie.getInstance().setSortDepartmentsBy(getSortBy());
+		AdminCookie.getInstance().setSortDepartmentsBy(getSortBy());		
 		sort();
 	}
 	
@@ -327,9 +323,6 @@ public class DepartmentsTable extends UniTimeTable<DepartmentInterface>{
 			}
 		}
 		
-		/*
-		 * if applicable the sort arrow appears 
-		 */
 		public static boolean isApplicable(DepartmentsColumn column) {
 			switch (column) {
 			case CODE: 

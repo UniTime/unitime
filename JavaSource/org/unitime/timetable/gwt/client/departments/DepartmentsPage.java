@@ -19,9 +19,11 @@
  */
 package org.unitime.timetable.gwt.client.departments;
 
-import java.util.logging.Logger;
+import java.util.List;
+//import java.util.logging.Logger;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.admin.AdminCookie;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.shared.DepartmentInterface;
@@ -30,7 +32,6 @@ import org.unitime.timetable.gwt.shared.DepartmentInterface.DepartmentsDataRespo
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
-import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
@@ -53,7 +54,7 @@ public class DepartmentsPage extends Composite {
 	private SimpleForm iListDepartmentsForm;
 	private UniTimeHeaderPanel iListDepartmentsHeader, iListDepartmentsFooter;
 	private DepartmentsTable iDepartmentsTable;
-	private DepartmentsTable iDepartmentsFullTable;
+	private DepartmentsDataResponse departmentsDataFullList;
 	private DepartmentsEdit iDepartmentsEdit;
 	private CheckBox iShowAllDept;
 
@@ -93,15 +94,15 @@ public class DepartmentsPage extends Composite {
 		iDepartmentsTable = new DepartmentsTable();
 		iListDepartmentsForm.addRow(iDepartmentsTable);
 		
-		iDepartmentsFullTable = new DepartmentsTable();
 		
 		//Footer
 		iListDepartmentsFooter = iListDepartmentsHeader.clonePanel("");
+		
 		// Footer Show All dept checkbox
 		iShowAllDept = new CheckBox(MESSAGES.checkShowAllDepartments());
 		iListDepartmentsFooter.insertLeft(iShowAllDept, true);
 		iListDepartmentsForm.addBottomRow(iListDepartmentsFooter);
-
+		iShowAllDept.setValue(AdminCookie.getInstance().getShowAllDepartments() == 1?true:false);
 		
 		// Hook up a handler to find out when it's clicked.
 		iShowAllDept.addClickHandler(new ClickHandler() {
@@ -109,6 +110,8 @@ public class DepartmentsPage extends Composite {
 			public void onClick(ClickEvent event) {
 				// load
 				LoadingWidget.getInstance().show(MESSAGES.waitLoadingData());
+				
+				AdminCookie.getInstance().setShowAllDepartments(iShowAllDept.getValue() == true?1:0);
 				// Get all departments
 				listDepartments();
 			}
@@ -120,7 +123,6 @@ public class DepartmentsPage extends Composite {
 		// Get all departments
 		listDepartments();
 
-		// UI to update, add or back
 		iDepartmentsEdit = new DepartmentsEdit() {
 			
 			//Override on back event from DepartmentEdit page
@@ -134,6 +136,7 @@ public class DepartmentsPage extends Composite {
 					RPC.execute(new GetDepartmentsRequest(),new AsyncCallback<DepartmentsDataResponse>() {
 								@Override
 								public void onSuccess(DepartmentsDataResponse result) {
+									departmentsDataFullList = result;
 									iListDepartmentsHeader.setEnabled("add",result.isCanAdd());
 									iListDepartmentsHeader.setEnabled("export",result.isCanExportPdf());
 									//department list
@@ -180,12 +183,16 @@ public class DepartmentsPage extends Composite {
 			@Override
 			protected boolean isAbbreviationUnique(
 					DepartmentInterface department) {
-				for (int i = 0; i < iDepartmentsFullTable.getRowCount(); i++) {
-					DepartmentInterface b = iDepartmentsFullTable.getData(i);
+				List<DepartmentInterface> departmentFullList = departmentsDataFullList.getDepartments();
+				for (int i = 0; i < departmentFullList.size(); i++) {
+					DepartmentInterface b = departmentFullList.get(i);
 					if (department.getAbbreviation() != null) {
-						if (b != null && !b.getId().equals(department.getId())
-								&& b.getAbbreviation().equalsIgnoreCase(department.getAbbreviation())) {
-							return false;
+						if (b != null) {
+							if ( !b.getId().equals(department.getId())
+									&& b.getAbbreviation() != null
+									&& b.getAbbreviation().equalsIgnoreCase(department.getAbbreviation())) {
+								return false;
+							}
 						}
 					}
 
@@ -196,8 +203,9 @@ public class DepartmentsPage extends Composite {
 			@Override
 			protected boolean isDeptCodeUnique(
 					DepartmentInterface department) {
-				for (int i = 0; i < iDepartmentsFullTable.getRowCount(); i++) {
-					DepartmentInterface b = iDepartmentsFullTable.getData(i);
+				List<DepartmentInterface> departmentFullList = departmentsDataFullList.getDepartments();
+				for (int i = 0; i < departmentFullList.size(); i++) {
+					DepartmentInterface b = departmentFullList.get(i);
 					if (department.getDeptCode() != null) {
 						if (b != null && !b.getId().equals(department.getId())
 								&& b.getDeptCode().equalsIgnoreCase(department.getDeptCode())) {
@@ -224,7 +232,6 @@ public class DepartmentsPage extends Composite {
 	}
 
 	protected void editDepartment(DepartmentInterface department) {
-		Logger log = Logger.getLogger(DepartmentsPage.class.getName());
 		iDepartmentsEdit.setValue(department);
 		iPanel.setWidget(iDepartmentsEdit);
 		iDepartmentsEdit.show();
@@ -239,17 +246,15 @@ public class DepartmentsPage extends Composite {
 				new AsyncCallback<DepartmentsDataResponse>() {
 					@Override
 					public void onSuccess(DepartmentsDataResponse result) {
+						departmentsDataFullList = result;
 						iListDepartmentsHeader.setEnabled("add",result.isCanAdd());
 						iListDepartmentsHeader.setEnabled("export",result.isCanExportPdf());
-						Logger log = Logger.getLogger(DepartmentsPage.class
-								.getName());
 						iDepartmentsTable.removeAllRows();
 						iDepartmentsTable.setHeaderData(result.isFundingDeptEnabled());
 						iDepartmentsTable.setAllowSelection(true);
 						iDepartmentsTable.setAllowMultiSelect(false);
 						
 						// list departments
-						iDepartmentsFullTable.setData(result.getDepartments(),true);
 						iDepartmentsTable.setData(result.getDepartments(),iShowAllDept.getValue());
 						
 						LoadingWidget.getInstance().hide();

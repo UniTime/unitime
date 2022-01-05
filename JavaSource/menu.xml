@@ -845,12 +845,7 @@
 					<hasPermission name="TimetableManagers"/>
 				</condition>
 			</item>
-			<item name="Departments" page="departmentList.do">
-				<condition>
-					<hasPermission name="Departments"/>
-				</condition>
-			</item>
-			<item name="Departments2" page="departments" type="gwt">
+			<item name="Departments" page="departments" type="gwt">
 				<condition>
 					<hasPermission name="Departments"/>
 				</condition>
