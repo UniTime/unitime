@@ -89,8 +89,9 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 		return false;
 	}
 	
-	protected boolean isAvailable(XEnrollments enrollments, XStudent student, XOffering offering, XCourse course, XConfig config, XSection section) {
+	protected boolean isAvailable(XEnrollments enrollments, XStudent student, XOffering offering, XCourse course, XConfig config, XSection section, XEnrollment enrollment) {
 		if (student == null) return true;
+		
 		boolean hasMustBeUsed = false;
 		boolean hasReservation = false;
 		boolean canOverLimit = false;
@@ -107,16 +108,19 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 				if (r.canAssignOverLimit()) canOverLimit = true;
 			}
 		}
+		boolean hasSection = (enrollment != null && enrollment.getSectionIds().contains(section.getSectionId()));
+		boolean hasConfig = (enrollment != null && config.getConfigId().equals(enrollment.getConfigId()));
+		boolean hasCourse = (enrollment != null && course.getCourseId().equals(enrollment.getCourseId()));
 		if (!canOverLimit) {
-			if (section.getLimit() >= 0 && enrollments.countEnrollmentsForSection(section.getSectionId()) >= section.getLimit()) return false;
-			if (config.getLimit() >= 0 && enrollments.countEnrollmentsForConfig(config.getConfigId()) >= config.getLimit()) return false;
-			if (course.getLimit() >= 0 && enrollments.countEnrollmentsForCourse(course.getCourseId()) >= course.getLimit()) return false;
+			if (!hasSection && section.getLimit() >= 0 && enrollments.countEnrollmentsForSection(section.getSectionId()) >= section.getLimit()) return false;
+			if (!hasConfig && config.getLimit() >= 0 && enrollments.countEnrollmentsForConfig(config.getConfigId()) >= config.getLimit()) return false;
+			if (!hasCourse && course.getLimit() >= 0 && enrollments.countEnrollmentsForCourse(course.getCourseId()) >= course.getLimit()) return false;
 		}
 		if (hasReservation) return true;
 		if (hasMustBeUsed) return true;
-		if (offering.getUnreservedSpace(enrollments) <= 0) return false;
-		if (offering.getUnreservedConfigSpace(config.getConfigId(), enrollments) <= 0) return false;
-		if (offering.getUnreservedSectionSpace(section.getSectionId(), enrollments) <= 0) return false;
+		if (!hasCourse && offering.getUnreservedSpace(enrollments) <= 0) return false;
+		if (!hasConfig && offering.getUnreservedConfigSpace(config.getConfigId(), enrollments) <= 0) return false;
+		if (!hasSection && offering.getUnreservedSectionSpace(section.getSectionId(), enrollments) <= 0) return false;
 		return true;
 	}
 
@@ -188,7 +192,7 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 						a.setLimit(new int[] { enrollments.countEnrollmentsForSection(section.getSectionId()), section.getLimit()});
 						a.setSaved(enrollment != null && enrollment.getSectionIds().contains(section.getSectionId()));
 						if (!a.isSaved() && checkAvailability)
-							a.setAvailable(isAvailable(enrollments, student, offering, c, config, section));
+							a.setAvailable(isAvailable(enrollments, student, offering, c, config, section, enrollment));
 						a.addNote(section.getNote());
 						a.setCredit(subpart.getCredit(c.getCourseId()));
 						a.setCreditRange(subpart.getCreditMin(c.getCourseId()), subpart.getCreditMax(c.getCourseId()));
