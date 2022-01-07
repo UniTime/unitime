@@ -113,7 +113,7 @@ public class DepartmentsTable extends UniTimeTable<DepartmentInterface>{
 		case DIST_PREF_PRIORITY :
 			return new IntegerCell(department.getDistributionPrefPriority()==null && department.getDistributionPrefPriority()==0 ? 0 : department.getDistributionPrefPriority());
 		case ALLOW_REQUIRED:
-			return new Label(department.allowReq());
+			return new Label(department.allowReq(MESSAGES));
 		case INSTRUCTOR_PREF:
 			P instrucPrefWidget = new P("instruc-pref");
 			if(department.isInheritInstructorPreferences()){
@@ -284,7 +284,7 @@ public class DepartmentsTable extends UniTimeTable<DepartmentInterface>{
 			return compare(r1.getDistributionPrefPriority(), r2.getDistributionPrefPriority());
 		}	
 		public int compareByAllowReqd(DepartmentInterface r1, DepartmentInterface r2) {
-			return compare(r1.allowReq(), r2.allowReq());
+			return compare(r1.allowReq(MESSAGES), r2.allowReq(MESSAGES));
 		}
 		public int compareByInstrucPref(DepartmentInterface r1, DepartmentInterface r2) {
 			return compare(r1.isInheritInstructorPreferences(), r2.isInheritInstructorPreferences());
