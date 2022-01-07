@@ -52,10 +52,7 @@ public class GetDepartmentsDataBackend implements GwtRpcImplementation<GetDepart
 		/*permission */
 		response.setCanAdd(context.hasPermission(Right.DepartmentAdd));
 		response.setCanExportPdf(context.hasPermission(Right.Departments));
-		response.setCanUpdate(context.hasPermission(Right.DepartmentEdit));	
 		response.setFundingDeptEnabled(ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue());
-		//DistanceMetric.Ellipsoid ellipsoid = DistanceMetric.Ellipsoid.valueOf(ApplicationProperty.DistanceEllipsoid.value());
-		//response.setEllipsoid(ellipsoid.getEclipsoindName());
 		
 		/*department list */
 		for (Department dept: Department.findAll(context.getUser().getCurrentAcademicSessionId())) {
@@ -93,6 +90,7 @@ public class GetDepartmentsDataBackend implements GwtRpcImplementation<GetDepart
 			d.setDependentStatuses(dependentStatuses);	
 			d.setSatusOptions(getStatusOptions());
 			d.setExtDepartmentOptions(getAllDependentDepartmentOptions(context));
+			d.setExternalId(dept.getExternalUniqueId());
 			d.setCanEdit(context.hasPermission(dept, Right.DepartmentEdit));
 			response.addDepartment(d);
 		}
