@@ -140,7 +140,7 @@ public class ExportDepartmentsPDF implements Exporter {
                     }
                     if (d.isAllowReqTime() != null && d.isAllowReqTime().booleanValue()) {
                     	if (!allowReq.isEmpty()) allowReq += ", ";
-                    	allowReq += MESSAGES.colTimeStamp();
+                    	allowReq += MESSAGES.colTime();
                     	allowReqOrd += 2;
                     }
                     if (d.isAllowReqDistribution() != null && d.isAllowReqDistribution().booleanValue()) {
@@ -148,7 +148,7 @@ public class ExportDepartmentsPDF implements Exporter {
                     	allowReq += MESSAGES.colDistribution();
                     	allowReqOrd += 4;
                     }
-                    if (allowReqOrd == 7) allowReq = "all";
+                    if (allowReqOrd == 7) allowReq = MESSAGES.colAll();
                     
                     String dependentStatuses = null;
                     if (d.isExternalManager() && d.getExternalStatusTypes() != null && !d.getExternalStatusTypes().isEmpty()) {

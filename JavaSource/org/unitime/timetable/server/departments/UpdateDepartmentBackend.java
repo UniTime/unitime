@@ -169,7 +169,6 @@ public class UpdateDepartmentBackend implements GwtRpcImplementation<UpdateDepar
 		
 	    } finally {
 	    	hibSession.flush();
-			hibSession.close();
 		}
 	} catch (PageAccessException e) {
 		throw e;

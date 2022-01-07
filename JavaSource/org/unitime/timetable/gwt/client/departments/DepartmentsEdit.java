@@ -43,6 +43,8 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -87,6 +89,7 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 	private VerticalPanel iControlDeptMainPanel ;
 	private FlexTable iControlDeptFlexTable;	  
 	private DepartmentInterface iDepartment = null;
+	private int iExtManagerAbbvLine =0;
 	
 	public DepartmentsEdit() {
 		/*create the UI */
@@ -241,7 +244,28 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		//ExternalManager		
 		iExternalManager = new UniTimeWidget<CheckBox>(new CheckBox()); 
 		iForm.addRow(MESSAGES.propExternalManager(), iExternalManager);
+		iExternalManager.getWidget().addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				if(event.getValue()) {
+					iExternalManagerAbbreviation.getWidget().setEnabled(true);
+					iExternalManagerName.getWidget().setEnabled(true);
+					iForm.getRowFormatter().setVisible(iExtManagerAbbvLine, true);
+					iForm.getRowFormatter().setVisible(iExtManagerAbbvLine + 1, true);					
+				}else {
+					iExternalManagerAbbreviation.getWidget().setText("");
+					iExternalManagerName.getWidget().setText("");
+					iExternalManagerAbbreviation.getWidget().setEnabled(false);
+					iExternalManagerName.getWidget().setEnabled(false);
+					iForm.getRowFormatter().setVisible(iExtManagerAbbvLine, false);
+					iForm.getRowFormatter().setVisible(iExtManagerAbbvLine + 1, false);
+				}
+				
+			}
+			
+		});
+		
 		//ExternalManagerAbbreviation		
 		iExternalManagerAbbreviation	 = new UniTimeWidget<TextBox>(new TextBox());
 		iExternalManagerAbbreviation.getWidget().setStyleName("unitime-TextBox");
@@ -254,7 +278,7 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 				iHeader.clearMessage();
 			}
 		});	
-		iForm.addRow(MESSAGES.propExternalManagerAbbreviation(), iExternalManagerAbbreviation	);
+		iExtManagerAbbvLine = iForm.addRow(MESSAGES.propExternalManagerAbbreviation(), iExternalManagerAbbreviation	);
 
 		//ExternalManagerName		
 		iExternalManagerName  = new UniTimeWidget<TextBox>(new TextBox());
@@ -385,9 +409,14 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		iAbbreviation.getWidget().setText("");
 		iName.getWidget().setText("");
 		iExternalId.setText("");
-		iDistPrefPriority.setText("");
+		iDistPrefPriority.getWidget().setText("");
 		iExternalManagerAbbreviation.getWidget().setText("");
 		iExternalManagerName.getWidget().setText("");	
+		iExternalManagerAbbreviation.getWidget().setEnabled(false);
+		iExternalManagerName.getWidget().setEnabled(false);
+		iForm.getRowFormatter().setVisible(iExtManagerAbbvLine, false);
+		iForm.getRowFormatter().setVisible(iExtManagerAbbvLine + 1, false);
+		
 		iStatusType.getWidget().clear();
 		iAbbreviation.clearHint();
 		iHeader.clearMessage();
@@ -457,18 +486,18 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 			iDeptCode.getWidget().setText(department.getDeptCode() == null ? "" : department.getDeptCode());
 			iAbbreviation.getWidget().setText(department.getAbbreviation() == null ? "" : department.getAbbreviation());
 			iName.getWidget().setText(department.getName() == null ? "" : department.getName());
-			if (department.isCanChangeExtManager() == false) {
-				iExternalManager.getWidget().setEnabled(false);	
-				iExternalManagerAbbreviation.getWidget().setEnabled(false);	
-				iExternalManagerName.getWidget().setEnabled(false);	
-			}
-												
+			iExternalManager.getWidget().setEnabled(department.isCanChangeExtManager());	
+											
 			iAcademicSession.getWidget().setText((department.getAcademicSessionName() == null ? "" : department.getAcademicSessionName()));
 			iExternalId.setText(department.getExternalId() == null ? "" : department.getExternalId());
-			iDistPrefPriority.setText(department.getDistributionPrefPriority() == null ? "0" : department.getDistributionPrefPriority().toString());
+			iDistPrefPriority.getWidget().setText(department.getDistributionPrefPriority() == null ? "0" : department.getDistributionPrefPriority().toString());
 			iExternalManager.getWidget().setValue(department.getExternalManager());
 			iExternalManagerAbbreviation.getWidget().setValue(department.getExternalMgrAbbv());
 			iExternalManagerName.getWidget().setValue(department.getExternalMgrLabel());
+			iExternalManagerAbbreviation.getWidget().setEnabled(department.getExternalManager());
+			iExternalManagerName.getWidget().setEnabled(department.getExternalManager());
+			iForm.getRowFormatter().setVisible(iExtManagerAbbvLine, department.getExternalManager());
+			iForm.getRowFormatter().setVisible(iExtManagerAbbvLine + 1, department.getExternalManager());
 			
 			iStatusType.getWidget().clear();
 			iStatusType.getWidget().addItem(MESSAGES.propDepartmentStatusDefault(),"-1");
@@ -575,7 +604,12 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		iDepartment.setInheritInstructorPreferences(iInheritInstructorPreferences.getWidget().getValue().booleanValue());
 		iDepartment.setAllowEvents(iAllowEvents.getWidget().getValue().booleanValue());
 		iDepartment.setAllowStudentScheduling(iAllowStudentScheduling.getWidget().getValue().booleanValue());
+		try {
+			iDepartment.setDistributionPrefPriority(Integer.valueOf(iDistPrefPriority.getWidget().getText()));
+		} catch (NumberFormatException e) {}
+		
 
+		
 		List dependentDepartmentIds  = new ArrayList();
 		List dependentStatuses = new ArrayList();
 

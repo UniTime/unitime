@@ -121,8 +121,6 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	private Boolean lms;
 	
 	private String waitlist;
-	
-	private Boolean fundingDepartment;
 
 	/**
 	 * @return Returns the ctrlInstrOfferingId.
@@ -569,6 +567,6 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 
 	@Override
 	public Boolean getFundingDepartment() {
-		return fundingDepartment;
+		return false;
 	}
 }

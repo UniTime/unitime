@@ -590,7 +590,7 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 				line.add(new P("blank"));
 				P p = new P("button"); 
 				if (other.size() >= 20) {
-					Button button = new Button(MESSAGES.buttonAddDepartment(), new ClickHandler() {
+					Button button = new Button(MESSAGES.buttonRoomSharingAddDepartment(), new ClickHandler() {
 						
 						@Override
 						public void onClick(ClickEvent event) {
@@ -714,7 +714,7 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 							text.setFocus(true);
 						}
 					});
-					Character ch = UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonAddDepartment());
+					Character ch = UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonRoomSharingAddDepartment());
 					if (ch != null) button.setAccessKey(ch);
 					p.add(button);
 				}

@@ -1049,7 +1049,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Time")
 	String colTimeStamp();
-	
+
 	@DefaultMessage("Configuration")
 	String colSolverConfiguration();
 	
@@ -4209,6 +4209,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("<u>A</u>dd Department")
 	String buttonAddDepartment();
+
+	@DefaultMessage("<u>A</u>dd Department...")
+	String buttonRoomSharingAddDepartment();
 	
 	@DefaultMessage("<u>R</u>emove All")
 	String buttonRemoveAll();
@@ -4330,7 +4333,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Parameters:")
 	String propParameters();
 	
-	@DefaultMessage("External ID:")
+	@DefaultMessage("External Id:")
 	String propExternalId();
 	
 	@DefaultMessage("Capacity:")
@@ -5917,6 +5920,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("All")
 	String departmentsAllLabel();
 
+	@DefaultMessage("All")
+	String colAll();
+	
 	@DefaultMessage("All Departments")
 	String departmentsAllTitle();
 	

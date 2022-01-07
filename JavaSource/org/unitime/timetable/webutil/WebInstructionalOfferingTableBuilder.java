@@ -545,10 +545,7 @@ public class WebInstructionalOfferingTableBuilder {
     		cell.setStyleClass("WebTableHeaderSecondRow");
     		row2.addContent(cell);
     	}
-    /*	if (isShowFundingDepartment()) {
-    		cell = this.headerCell(MSG.columnFundingDepartment(), 2, 1);
-    		row.addContent(cell); 
-    	}*/
+
     	if (isShowTitle()){
     		cell = this.headerCell(MSG.columnTitle(), 2, 1);
     		row.addContent(cell);    		

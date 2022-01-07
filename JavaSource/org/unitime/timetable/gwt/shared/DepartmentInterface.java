@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
+import org.unitime.timetable.gwt.resources.GwtMessages;
+
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
@@ -71,25 +73,25 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 	
 	public DepartmentInterface() {}
 	
-	public String allowReq(){
+	public String allowReq(GwtMessages msg){
 		 String allowReq = "";
         int allowReqOrd = 0;
        if (isAllowReqRoom() != null && isAllowReqRoom().booleanValue()) {
        	if (!allowReq.isEmpty()) allowReq += ", ";
-       	allowReq += "room";
+       	allowReq +=  msg.colRooms();
        	allowReqOrd += 1;
        }
        if (isAllowReqTime() != null && isAllowReqTime().booleanValue()) {
        	if (!allowReq.isEmpty()) allowReq += ", ";
-       	allowReq += "time";
+       	allowReq +=  msg.colTime();
        	allowReqOrd += 2;
        }
        if (isAllowReqDistribution() != null && isAllowReqDistribution().booleanValue()) {
        	if (!allowReq.isEmpty()) allowReq += ", ";
-       	allowReq += "distribution";
+       	allowReq +=   msg.colDistribution(); 
        	allowReqOrd += 4;
        }
-       if (allowReqOrd == 7) allowReq = "all";
+       if (allowReqOrd == 7) allowReq =  msg.colAll();
        if (allowReqOrd == 0) allowReq = "";
        return allowReq;
 	}
@@ -289,15 +291,13 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 	
 	public static class DepartmentsDataResponse implements GwtRpcResponse {
 		private List<DepartmentInterface> iDepartments;
-		private boolean iCanAdd , iCanUpdateData, iDepartmentsEnabled;
+		private boolean iCanAdd , iDepartmentsEnabled;
 		private boolean iCanExportPdf = true;	
 		public boolean isCanAdd() { return iCanAdd; }
 		public void setCanAdd(boolean canAdd) { iCanAdd = canAdd; }
 
 		public boolean isFundingDeptEnabled(){ return iDepartmentsEnabled; }
 		public void setFundingDeptEnabled(boolean fundingDepartmentsEnabled) { iDepartmentsEnabled = fundingDepartmentsEnabled; }		
-		public boolean isCanUpdate() { return iCanUpdateData; }
-		public void setCanUpdate(boolean canUpdate) { iCanUpdateData = canUpdate; }
 		
 		public void addDepartment(DepartmentInterface department) {
 			if (iDepartments == null) iDepartments = new ArrayList<DepartmentInterface>();
