@@ -50,9 +50,9 @@ gwt-servlet (gwt-servlet-2.9.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.gwtproject.org/gwt-servlet/
 
-Protocol Buffer Java API (protobuf-java-2.6.1.jar)
-	under BSD or BSD-style License
-	https://developers.google.com/protocol-buffers/
+Protocol Buffers [Core] (protobuf-java-3.19.2.jar)
+	under 3-Clause BSD License
+	https://developers.google.com/protocol-buffers/protobuf-java/
 
 iText, a Free Java-PDF library (itext-2.1.7.jar)
 	under GNU Lesser General Public License (LGPL), Version 2.1
