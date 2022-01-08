@@ -34,6 +34,7 @@ import org.hibernate.Transaction;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.MessageLog;
 import org.unitime.timetable.model.dao.MessageLogDAO;
+import org.unitime.timetable.model.dao._RootDAO;
 
 /**
  * @author Tomas Muller
@@ -156,7 +157,7 @@ public class MessageLogAppender extends AbstractAppender {
 						}
 					}
 					if (messagesToSave != null) {
-						Session hibSession = MessageLogDAO.getInstance().createNewSession();
+						Session hibSession = MessageLogDAO.getInstance().getSession();
 						hibSession.setCacheMode(CacheMode.IGNORE);
 						Transaction tx = hibSession.beginTransaction();
 						try {
@@ -167,13 +168,13 @@ public class MessageLogAppender extends AbstractAppender {
 						} catch (Exception e) {
 							tx.rollback();
 							System.err.println("Failed to persist " + messagesToSave.size() + " log entries:" + e.getMessage());
-						} finally {
-							hibSession.close();
 						}
 					}
 					if (!iActive) break;
 				} catch (Exception e) {
 					System.err.println("Failed to persist log entries:" + e.getMessage());
+				} finally {
+					_RootDAO.closeCurrentThreadSessions();
 				}
 			}
 		}
