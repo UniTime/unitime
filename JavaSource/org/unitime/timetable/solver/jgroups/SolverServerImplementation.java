@@ -42,10 +42,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.RollingFileAppender;
-import org.apache.logging.log4j.core.appender.rolling.CompositeTriggeringPolicy;
-import org.apache.logging.log4j.core.appender.rolling.CronTriggeringPolicy;
-import org.apache.logging.log4j.core.appender.rolling.DefaultRolloverStrategy;
-import org.apache.logging.log4j.core.appender.rolling.SizeBasedTriggeringPolicy;
+import org.apache.logging.log4j.core.appender.rolling.TimeBasedTriggeringPolicy;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.LoggerConfig;
@@ -589,12 +586,6 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 		}
 	}
 	
-	private static String removeExtension(String name) {
-		int idx = name.lastIndexOf('.');
-		if (idx >= 0) return name.substring(0, idx);
-		return name;
-	}
-	
 	public static void configureLogging(String logFile, Properties properties) {
         LoggerContext ctx = LoggerContext.getContext(false);
         Configuration config = ctx.getConfiguration();
@@ -603,14 +594,7 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
     		System.out.println("Log File:" + file.getAbsolutePath());
     		File logDir = file.getParentFile();
     		if (logDir != null) logDir.mkdirs();
-            CompositeTriggeringPolicy policy = CompositeTriggeringPolicy.createPolicy(
-            		SizeBasedTriggeringPolicy.createPolicy("100M"),
-            		CronTriggeringPolicy.createPolicy(config, "true", "0 0 0 * * ?")
-            		);
-            DefaultRolloverStrategy strategy = DefaultRolloverStrategy.newBuilder()
-            		.withMax("10")
-            		.withConfig(config)
-            		.build();
+    		TimeBasedTriggeringPolicy policy = TimeBasedTriggeringPolicy.newBuilder().build();
             PatternLayout layout = PatternLayout.newBuilder()
             		.withConfiguration(config)
             		.withPattern("%d{dd-MMM-yy HH:mm:ss.SSS} [%t] %-5p %c{2}: %m%n")
@@ -618,16 +602,16 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
             RollingFileAppender appender = RollingFileAppender.newBuilder()
             		.withFileName(file.getAbsolutePath())
             		.withFilePattern((logDir == null ? "" : logDir.getAbsolutePath() + File.separator) + 
-            				removeExtension(file.getName()) + "-${hostName}-%d{yyyy-MM-dd}-%i.log.gz")
+            				file.getName() + ".%d{yyyy-MM-dd}")
             		.withPolicy(policy)
-            		.withStrategy(strategy)
             		.setLayout(layout)
             		.setName("unitime")
             		.setConfiguration(config)
             		.build();
             appender.start();
             config.addAppender(appender);
-            config.getRootLogger().addAppender(appender, Level.DEBUG, null);
+            config.getRootLogger().addAppender(appender, Level.INFO, null);
+            config.getRootLogger().removeAppender("stdout");
     		ctx.updateLoggers();
         }
         

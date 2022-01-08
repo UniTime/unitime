@@ -6,7 +6,7 @@
 		</Console>
 		<RollingFile name="unitime"
 			fileName="${sys:catalina.base:-.}/logs/unitime.log"
-			filePattern="${sys:catalina.base:-.}/logs/unitime-${hostName}-%d{yyyy-MM-dd}.log.gz" ignoreExceptions="false">
+			filePattern="${sys:catalina.base:-.}/logs/unitime.log.%d{yyyy-MM-dd}" ignoreExceptions="false">
 			<PatternLayout pattern="%d{dd-MMM-yy HH:mm:ss.SSS} [%t] %-5p %c{2}> %m%n"/>
 			<TimeBasedTriggeringPolicy/>
 		</RollingFile>
