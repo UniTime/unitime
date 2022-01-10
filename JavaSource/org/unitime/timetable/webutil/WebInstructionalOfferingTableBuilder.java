@@ -462,13 +462,12 @@ public class WebInstructionalOfferingTableBuilder {
     		cell = this.headerCell(MSG.columnRoomRatio(), 2, 1);
     		row.addContent(cell);
     	}
-    	if (isShowFundingDepartment()){
-    		cell = this.headerCell(MSG.columnFundingDepartment(), 2, 1);
-    		row.addContent(cell);
-    	}
-    	
     	if (isShowManager()){
     		cell = this.headerCell(MSG.columnManager(), 2, 1);
+    		row.addContent(cell);
+    	}
+    	if (isShowFundingDepartment()){
+    		cell = this.headerCell(MSG.columnFundingDepartment(), 2, 1);
     		row.addContent(cell);
     	}
     	if (isShowDatePattern()){
@@ -525,7 +524,7 @@ public class WebInstructionalOfferingTableBuilder {
     	}
     	if (isShowInstructor()){
     		cell = this.headerCell(MSG.columnInstructor(), 2, 1);
-    		row.addContent(cell);    		
+    		row.addContent(cell);
     	}
     	if (getDisplayTimetable() && isShowTimetable()){
 	    	cell = headerCell("--------" + MSG.columnTimetable() + "--------", 1, 3);
@@ -1448,12 +1447,12 @@ public class WebInstructionalOfferingTableBuilder {
      	if (isShowRoomRatio()){
     		row.addContent(this.buildRoomLimit(prefGroup, isEditable, classLimitDisplayed));
        	} 
-     	if (isShowFundingDepartment()){
-    		row.addContent(this.buildFundingDepartment(prefGroup, isEditable));
-       	} 
     	if (isShowManager()){
     		row.addContent(this.buildManager(prefGroup, isEditable));
      	} 
+     	if (isShowFundingDepartment()){
+    		row.addContent(this.buildFundingDepartment(prefGroup, isEditable));
+       	} 
     	if (isShowDatePattern()){
     		row.addContent(this.buildDatePatternCell(classAssignment,prefGroup, isEditable));
      	} 
@@ -1730,10 +1729,10 @@ public class WebInstructionalOfferingTableBuilder {
         	if (isShowRoomRatio()){
                 row.addContent(initNormalCell("", isEditable));
         	} 
-        	if (isShowFundingDepartment()){
+        	if (isShowManager()){
                 row.addContent(initNormalCell("", isEditable));
         	} 
-        	if (isShowManager()){
+        	if (isShowFundingDepartment()){
                 row.addContent(initNormalCell("", isEditable));
         	} 
         	if (isShowDatePattern()){
@@ -1914,12 +1913,12 @@ public class WebInstructionalOfferingTableBuilder {
     	if (isShowRoomRatio()){
     		emptyCells ++;
     	} 
-    	if (isShowFundingDepartment()){
-    		emptyCells ++;
-    	} 
     	if (isShowManager()){
     		emptyCells ++;
     	}
+    	if (isShowFundingDepartment()){
+    		emptyCells ++;
+    	} 
     	if (isShowDatePattern()){
     		emptyCells ++;
        	}
@@ -2534,6 +2533,4 @@ public class WebInstructionalOfferingTableBuilder {
 	public void setShowSubpartCredit(boolean showSubpartCredit) {
 		this.showSubpartCredit = showSubpartCredit;
 	}
-	
-
 }
