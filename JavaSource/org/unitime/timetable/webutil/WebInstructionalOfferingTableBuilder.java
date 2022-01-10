@@ -1210,7 +1210,7 @@ public class WebInstructionalOfferingTableBuilder {
         return(cell);
     }
 
-    private TableCell buildFundingDepartment(PreferenceGroup prefGroup, boolean isEditable){
+    protected TableCell buildFundingDepartment(PreferenceGroup prefGroup, boolean isEditable){
     	TableCell cell = null;
     	Department fundingDepartment = null;
     	if (prefGroup instanceof Class_) {
