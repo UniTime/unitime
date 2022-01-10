@@ -170,8 +170,8 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowLimit()) ret+=1;
     	if (isShowSnapshotLimit()) ret+=1;
     	if (isShowRoomRatio()) ret+=1;
-    	if (isShowFundingDepartment()) ret+=1;
     	if (isShowManager()) ret+=1;
+    	if (isShowFundingDepartment()) ret+=1;
     	if (isShowDatePattern()) ret+=1;
     	if (isShowMinPerWk()) ret+=1;
     	if (isShowTimePattern()) ret+=1;
@@ -202,8 +202,8 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowLimit()) width[idx++] = 50f;
     	if (isShowSnapshotLimit()) width[idx++] = 50f;
     	if (isShowRoomRatio()) width[idx++] = 50f;
-    	if (isShowFundingDepartment()) width[idx++] = 75f;
     	if (isShowManager()) width[idx++] = 75f;
+    	if (isShowFundingDepartment()) width[idx++] = 75f;
     	if (isShowDatePattern()) width[idx++] = 100f;
     	if (isShowMinPerWk()) width[idx++] = 60f;
     	if (isShowTimePattern()) width[idx++] = 80f;
@@ -291,14 +291,14 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		addText(c, MSG.columnRoomRatio(), true, Element.ALIGN_RIGHT);
     		iPdfTable.addCell(c);
     	}
-    	if (isShowFundingDepartment()){
-    		PdfPCell c = createCell();
-    		addText(c, MSG.columnFundingDepartment(), true, Element.ALIGN_LEFT);
-    		iPdfTable.addCell(c);
-    	}
     	if (isShowManager()){
     		PdfPCell c = createCell();
     		addText(c, MSG.columnManager(), true, Element.ALIGN_LEFT);
+    		iPdfTable.addCell(c);
+    	}
+    	if (isShowFundingDepartment()){
+    		PdfPCell c = createCell();
+    		addText(c, MSG.columnFundingDepartment(), true, Element.ALIGN_LEFT);
     		iPdfTable.addCell(c);
     	}
     	if (isShowDatePattern()){
@@ -412,12 +412,12 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		c.setBorderWidthBottom(1);
     		iPdfTable.addCell(c);
     	}
-    	if (isShowFundingDepartment()){
+    	if (isShowManager()){
     		PdfPCell c = createCell();
     		c.setBorderWidthBottom(1);
     		iPdfTable.addCell(c);
     	}
-    	if (isShowManager()){
+    	if (isShowFundingDepartment()){
     		PdfPCell c = createCell();
     		c.setBorderWidthBottom(1);
     		iPdfTable.addCell(c);
@@ -1253,10 +1253,10 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		iPdfTable.addCell(pdfBuildRoomLimit(prefGroup, isEditable, classLimitDisplayed));
        	} 
     	if (isShowManager()){
-    		iPdfTable.addCell(pdfBuildFundingDepartment(prefGroup, isEditable));
-     	} 
-    	if (isShowManager()){
     		iPdfTable.addCell(pdfBuildManager(prefGroup, isEditable));
+     	} 
+    	if (isShowFundingDepartment()){
+    		iPdfTable.addCell(pdfBuildFundingDepartment(prefGroup, isEditable));
      	} 
     	if (isShowDatePattern()){
     		iPdfTable.addCell(pdfBuildDatePatternCell(classAssignment, prefGroup, isEditable));
@@ -1415,10 +1415,10 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         	if (isShowRoomRatio()){
         	    iPdfTable.addCell(createCell());
         	} 
-        	if (isShowFundingDepartment()){
+        	if (isShowManager()){
         	    iPdfTable.addCell(createCell());
         	} 
-        	if (isShowManager()){
+        	if (isShowFundingDepartment()){
         	    iPdfTable.addCell(createCell());
         	} 
         	if (isShowDatePattern()){
@@ -1580,10 +1580,10 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowRoomRatio()){
     		emptyCels ++;
     	} 
-    	if (isShowFundingDepartment()){
+    	if (isShowManager()){
     		emptyCels ++;
     	}
-    	if (isShowManager()){
+    	if (isShowFundingDepartment()){
     		emptyCels ++;
     	}
     	if (isShowDatePattern()){

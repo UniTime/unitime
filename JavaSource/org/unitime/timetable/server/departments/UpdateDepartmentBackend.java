@@ -49,7 +49,6 @@ public class UpdateDepartmentBackend implements GwtRpcImplementation<UpdateDepar
 
 	@Override
 	public DepartmentInterface execute(UpdateDepartmentRequest request, SessionContext context) {
-		Transaction tx = null;
 		org.hibernate.Session hibSession = DepartmentDAO.getInstance().getSession();
 		Department department = null;
 		switch (request.getAction()) {
@@ -109,7 +108,7 @@ public class UpdateDepartmentBackend implements GwtRpcImplementation<UpdateDepar
             	department = new Department();
             	acadSession = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId()); 
             	department.setSession(SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId(), hibSession));
-            	department.setDistributionPrefPriority(new Integer(0));
+            	department.setDistributionPrefPriority(0);
     			acadSession.addTodepartments(department);
     			department.setExternalStatusTypes(new HashSet<ExternalDepartmentStatusType>());
             }
