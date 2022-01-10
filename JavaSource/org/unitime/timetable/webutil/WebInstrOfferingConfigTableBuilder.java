@@ -31,6 +31,7 @@ import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.commons.web.htmlgen.TableStream;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.ClassDurationType;
@@ -211,6 +212,12 @@ public class WebInstrOfferingConfigTableBuilder extends
 	    	columnList.add(MSG.columnTimetable());
 	    	if(LearningManagementSystemInfo.isLmsInfoDefinedForSession(ioc.getSessionId())) {
 	    		columnList.add(MSG.columnLms());
+	    	}
+	    	if (ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue()) {
+	    		ss: for (SchedulingSubpart ss: ioc.getSchedulingSubparts()) {
+		        	for (Class_ c: ss.getClasses())
+		        		if (c.getFundingDept() != null) { columnList.add(MSG.columnFundingDepartment()); break ss; }
+		        }
 	    	}
             setVisibleColumns(columnList);
 	        boolean hasInstructorAssignments = false;

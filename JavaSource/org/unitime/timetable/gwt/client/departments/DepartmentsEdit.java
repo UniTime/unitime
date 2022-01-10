@@ -22,7 +22,6 @@ package org.unitime.timetable.gwt.client.departments;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.logging.Logger;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -395,8 +394,6 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 	 */
 	@Override
 	public void setValue(DepartmentInterface department) {
-		Logger log = Logger.getLogger(DepartmentsEdit.class.getName());
-		//log.info("setValue");
 		iDeptCode.clearHint();
 		iAbbreviation.clearHint();
 		iName.clearHint();

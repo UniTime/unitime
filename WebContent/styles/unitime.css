@@ -4168,6 +4168,14 @@ unitime-RoomSharingWidget .legend .blank {
 	overflow: hidden;
 }
 
+.unitime-Departments td {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-Departments tr:last-child td {
+	border-bottom: none;
+}
+
 .unitime-Widget {
 	display: inline-block;
 }

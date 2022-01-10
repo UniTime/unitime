@@ -22,7 +22,6 @@ package org.unitime.timetable.gwt.client.departments;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import com.google.gwt.i18n.client.NumberFormat;
 import org.unitime.timetable.gwt.client.admin.AdminCookie;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
@@ -48,6 +47,7 @@ public class DepartmentsTable extends UniTimeTable<DepartmentInterface>{
 	
 	public DepartmentsTable() {
 		setHeaderData(false);
+		addStyleName("unitime-Departments");
 	}
 	
 	public void selectDept(int row, boolean value) {
@@ -81,7 +81,6 @@ public class DepartmentsTable extends UniTimeTable<DepartmentInterface>{
 	public String getUser() { return UniTimePageHeader.getInstance().getMiddle().getText(); }
 	
 	public Widget getColumnWidget(DepartmentsColumn column, DepartmentInterface department) {;
-		NumberFormat df5 = NumberFormat.getFormat("####0");
 		switch (column) {
 		case CODE:
 			return new Label(department.getDeptCode() == null ? "" : department.getDeptCode());
@@ -94,10 +93,8 @@ public class DepartmentsTable extends UniTimeTable<DepartmentInterface>{
 			return new Label(department.isExternalManager().booleanValue()? department.getExternalMgrAbbv():"");
 		case SUBJECTS:
 			return new IntegerCell(department.getSubjectAreaCount());
-		//	return new Label( df5.format(department.getSubjectAreaCount()));			
 		case ROOMS:
 			return new IntegerCell(department.getRoomDeptCount());
-			//return new Label(df5.format(department.getRoomDeptCount()));
 		case STATUS:
 			P widget = new P("departments-status");
 				P ext = new P("ext-status"); ext.setText(department.effectiveStatusType());
@@ -141,7 +138,7 @@ public class DepartmentsTable extends UniTimeTable<DepartmentInterface>{
 			}else
 				return null;
 		case LAST_CHANGE:
-			return new HTML(department.getLastChangeStr(), false);			
+			return new HTML(department.getLastChangeStr() == null ? "" : department.getLastChangeStr(), false);			
 		default:
 			return null;
 		}
@@ -204,12 +201,15 @@ public class DepartmentsTable extends UniTimeTable<DepartmentInterface>{
 	
 	public void setData(List<DepartmentInterface> departments, boolean showAlldept) {
 		clearTable(1);
+		boolean hasLastChange = false;
 		if (departments != null)
 			for (DepartmentInterface department: departments)
 	             if (showAlldept|| department.getSubjectAreaCount() != 0 || department.getTimetableManagersCount() != 0  || department.isExternalManager().booleanValue()) 
 	             {
 	            	 addRow(department);
+	            	 if (department.getLastChangeStr() != null) hasLastChange = true;
 	             }
+		setColumnVisible(getCellCount(0) - 1, hasLastChange);
 		sort();
 	}
 	protected void doSort(DepartmentsColumn column) {

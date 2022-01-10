@@ -95,6 +95,15 @@
 							<loc:message name="columnManager"/>
 						</TD>
 					</TR>
+					<tt:propertyEquals name="unitime.courses.funding_departments_enabled" value="true">
+						<TR>
+							<TD></TD>
+							<TD>
+								<html:checkbox property="fundingDepartment" />
+								<loc:message name="columnFundingDepartment"/>
+							</TD>
+						</TR>
+					</tt:propertyEquals>
 					<TR>
 						<TD></TD>
 						<TD>
@@ -172,16 +181,6 @@
 							</TD>
 						</TR>
 					</sec:authorize>
-					
-					<tt:propertyEquals name="unitime.courses.funding_departments_enabled" value="true">
-						<TR>
-							<TD></TD>
-							<TD>
-								<html:checkbox property="fundingDepartment" />
-								<loc:message name="columnFundingDepartment"/>
-							</TD>
-						</TR>
-					</tt:propertyEquals>
 					
 					<TR>
 						<TD>
