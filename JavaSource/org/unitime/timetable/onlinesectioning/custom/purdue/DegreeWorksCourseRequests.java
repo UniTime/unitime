@@ -180,7 +180,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 			for (XCourseId c: courses)
 				return c;
 		if (!courses.isEmpty() || "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.includeNotOfferedCourses", "true")))
-			return new XCourseId(null, null, course.courseDiscipline + " " + course.courseNumber);
+			return new XCourseId(null, null, course.courseDiscipline, course.courseNumber);
 		return null;
 	}
 	

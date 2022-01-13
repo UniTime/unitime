@@ -41,7 +41,8 @@ public class XCourseId implements Serializable, Comparable<XCourseId>, Externali
 	private static final long serialVersionUID = 1L;
 	private Long iOfferingId;
 	private Long iCourseId;
-	private String iCourseName;
+    private String iSubjectArea = null;
+    private String iCourseNumber = null;
 	private String iTitle = null;
     private boolean iHasUniqueName = true;
     private String iType = null;
@@ -55,21 +56,24 @@ public class XCourseId implements Serializable, Comparable<XCourseId>, Externali
 	public XCourseId(CourseOffering course) {
 		iOfferingId = course.getInstructionalOffering().getUniqueId();
 		iCourseId = course.getUniqueId();
-		iCourseName = course.getCourseName().trim();
+		iSubjectArea = course.getSubjectAreaAbbv().trim();
+		iCourseNumber = course.getCourseNbr().trim();
 		iTitle = (course.getTitle() == null ? null : course.getTitle().trim());
 		iType = (course.getCourseType() == null ? null : course.getCourseType().getReference());
 	}
 	
-	public XCourseId(Long offeringId, Long courseId, String courseName) {
+	public XCourseId(Long offeringId, Long courseId, String subjectArea, String courseNumber) {
 		iOfferingId = offeringId;
 		iCourseId = courseId;
-		iCourseName = courseName;
+		iSubjectArea = subjectArea;
+		iCourseNumber = courseNumber;
 	}
 	
 	public XCourseId(XCourseId course) {
 		iOfferingId = course.getOfferingId();
 		iCourseId = course.getCourseId();
-		iCourseName = course.getCourseName();
+		iSubjectArea = course.getSubjectArea();
+		iCourseNumber = course.getCourseNumber();
 		iTitle = course.getTitle();
 		iType = course.getType();
 	}
@@ -77,7 +81,8 @@ public class XCourseId implements Serializable, Comparable<XCourseId>, Externali
 	public XCourseId(Course course) {
 		iOfferingId = course.getOffering().getId();
 		iCourseId = course.getId();
-		iCourseName = course.getName();
+		iSubjectArea = course.getSubjectArea();
+		iCourseNumber = course.getCourseNumber();
 	}
 
 	/** Instructional offering unique id */
@@ -90,9 +95,19 @@ public class XCourseId implements Serializable, Comparable<XCourseId>, Externali
 		return iCourseId;
 	}
 	
+	/** Subject area */
+	public String getSubjectArea() {
+		return iSubjectArea;
+	}
+	
+	/** Course number */
+	public String getCourseNumber() {
+		return iCourseNumber;
+	}
+	
 	/** Course name */
 	public String getCourseName() {
-		return iCourseName;
+		return getSubjectArea() + " " + getCourseNumber();
 	}
 	
 	/** Course title */
@@ -136,9 +151,20 @@ public class XCourseId implements Serializable, Comparable<XCourseId>, Externali
 	
 	public boolean matchCourseName(String queryInLowerCase) {
 		if (getCourseName().toLowerCase().startsWith(queryInLowerCase)) return true;
+		if (getCourseNumber().toLowerCase().startsWith(queryInLowerCase)) return true;
+		if (getCourseName().indexOf('-') >= 0 && getCourseName().substring(getCourseName().lastIndexOf('-') + 1).trim().toLowerCase().startsWith(queryInLowerCase))
+			return true;
 		if (getTitle() == null) return false;
 		if ((getCourseName() + " " + getTitle()).toLowerCase().startsWith(queryInLowerCase)) return true;
 		if ((getCourseName() + " - " + getTitle()).toLowerCase().startsWith(queryInLowerCase)) return true;
+		return false;
+	}
+	
+	public boolean matchCourse(String queryInLowerCase) {
+		if (getCourseName().equalsIgnoreCase(queryInLowerCase)) return true;
+		if (getTitle() == null) return false;
+		if ((getCourseName() + " " + getTitle()).equalsIgnoreCase(queryInLowerCase)) return true;
+		if ((getCourseName() + " - " + getTitle()).equalsIgnoreCase(queryInLowerCase)) return true;
 		return false;
 	}
 	
@@ -161,7 +187,8 @@ public class XCourseId implements Serializable, Comparable<XCourseId>, Externali
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 		iOfferingId = in.readLong();
 		iCourseId = in.readLong();
-		iCourseName = (String)in.readObject();
+		iSubjectArea = (String)in.readObject();
+		iCourseNumber = (String)in.readObject();
 		iTitle = (String)in.readObject();
 		iHasUniqueName = in.readBoolean();
 		iType = (String)in.readObject();
@@ -171,7 +198,8 @@ public class XCourseId implements Serializable, Comparable<XCourseId>, Externali
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeLong(iOfferingId);
 		out.writeLong(iCourseId);
-		out.writeObject(iCourseName);
+		out.writeObject(iSubjectArea);
+		out.writeObject(iCourseNumber);
 		out.writeObject(iTitle);
 		out.writeBoolean(iHasUniqueName);
 		out.writeObject(iType);

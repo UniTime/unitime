@@ -1414,7 +1414,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 	public List<XCourseId> getCourseIds(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		List<XCourseId> ids = new ArrayList<XCourseId>(); 
 		for (Object[] line: (List<Object[]>)getCourseQuery(iRequest, server, helper).select("distinct co.instructionalOffering.uniqueId, co.uniqueId, co.subjectAreaAbbv, co.courseNbr").query(helper.getHibSession()).list()) {
-			ids.add(new XCourseId(((Number)line[0]).longValue(), ((Number)line[1]).longValue(), line[2] + " " + line[3]));
+			ids.add(new XCourseId(((Number)line[0]).longValue(), ((Number)line[1]).longValue(), (String)line[2], (String)line[3]));
 		}
 		return ids;
 	}

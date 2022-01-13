@@ -87,7 +87,7 @@ public class XEnrollment extends XCourseId implements Serializable {
 	}
 	
 	public XEnrollment(Enrollment enrollment) {
-		super(enrollment.getOffering().getId(), enrollment.getCourse().getId(), enrollment.getCourse().getName());
+		super(enrollment.getOffering().getId(), enrollment.getCourse().getId(), enrollment.getCourse().getSubjectArea(), enrollment.getCourse().getCourseNumber());
 		iStudentId = enrollment.getStudent().getId();
 		iConfigId = enrollment.getConfig().getId();
 		for (Section section: enrollment.getSections()) {

@@ -157,7 +157,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 									if (rc.hasCourseId()) {
 										if (rc.getCourseId().equals(course.getCourseId())) r.setWaitList(true);
 									} else if (rc.hasCourseName()) {
-										if (course.matchCourseName(rc.getCourseName())) r.setWaitList(true);
+										if (course.matchCourse(rc.getCourseName())) r.setWaitList(true);
 									}
 							}
 				} else {
@@ -1000,7 +1000,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
     protected static int isCritical(ClassAssignmentInterface.ClassAssignment course, CriticalCourses critical) {
 		if (critical == null) return 0;
 		if (course == null || course.getCourseId() == null) return 0;
-		return critical.isCritical(new XCourseId(null, course.getCourseId(), course.getCourseName()));
+		return critical.isCritical(new XCourseId(null, course.getCourseId(), course.getSubject(), course.getCourseNbr()));
 	}
     
 	@Override
