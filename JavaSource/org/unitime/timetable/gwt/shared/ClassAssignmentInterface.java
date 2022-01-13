@@ -182,6 +182,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Date iWaitListedDate = null;
 		private Integer iSelection = null;
 		private Float iOverMaxCredit;
+		private ArrayList<CodeLabel> iOverrides = null;
 
 		private ArrayList<ClassAssignment> iAssignments = new ArrayList<ClassAssignment>();
 		private Set<IdValue> iInstructionalMethods = null;
@@ -276,6 +277,13 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public boolean isCanWaitList() { return iCanWaitList; }
 		public void setCanWaitList(boolean waitList) { iCanWaitList = waitList; }
+		
+		public boolean hasOverrides() { return iOverrides != null && !iOverrides.isEmpty(); }
+		public void addOverride(String overrideCode, String overrideLabel) {
+			if (iOverrides == null) iOverrides = new ArrayList<CodeLabel>();
+			iOverrides.add(new CodeLabel(overrideCode, overrideLabel));
+		}
+		public List<CodeLabel> getOverrides() { return iOverrides; }
 
 		public void setInstead(String instead) { iInstead = instead; }
 		public String getInstead() { return iInstead; }

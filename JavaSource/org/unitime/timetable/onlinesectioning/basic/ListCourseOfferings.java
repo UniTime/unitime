@@ -23,13 +23,20 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.cpsolver.ifs.heuristics.RouletteWheelSelection;
+import org.hibernate.criterion.Order;
+import org.hibernate.type.LongType;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.OverrideType;
+import org.unitime.timetable.model.dao.OverrideTypeDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -93,7 +100,22 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 					}
 				}
 			}
-			return listCourses(server, helper);
+			List<CourseAssignment> courses = listCourses(server, helper);
+			if (courses != null && !courses.isEmpty() && courses.size() <= 1000) {
+				List<OverrideType> overrides = OverrideTypeDAO.getInstance().findAll(helper.getHibSession(), Order.asc("label"));
+				if (overrides != null && !overrides.isEmpty()) {
+					Map<Long, CourseAssignment> table = new HashMap<Long, CourseAssignment>();
+					for (CourseAssignment ca: courses)
+						table.put(ca.getCourseId(), ca);
+					for (CourseOffering co: (List<CourseOffering>)helper.getHibSession().createQuery("from CourseOffering co left join fetch co.disabledOverrides do where co.uniqueId in :courseIds")
+							.setParameterList("courseIds", table.keySet(), LongType.INSTANCE).list()) {
+						for (OverrideType override: overrides)
+							if (!co.getDisabledOverrides().contains(override))
+								table.get(co.getUniqueId()).addOverride(override.getReference(), override.getLabel());
+					}
+				}
+			}
+			return courses;
 		} finally {
 			lock.release();
 		}
@@ -172,6 +194,7 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 			}
 			course.setHasCrossList(offering.hasCrossList());
 			course.setCanWaitList(offering.isWaitList());
+			
 		}
 		return course;
 	}

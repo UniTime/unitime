@@ -4975,6 +4975,20 @@ unitime-RoomSharingWidget .legend .blank {
 	padding: 2px 10px 2px 2px;
 }
 
+.unitime-CourseFinderDialog .course-table .courses-wl .gwt-Label {
+	display: inline-block;
+	padding-right: 3px;
+}
+
+.unitime-CourseFinderDialog .course-table .courses-wl .gwt-Label:after {
+	content: ',';
+}
+
+.unitime-CourseFinderDialog .course-table .courses-wl .gwt-Label:last-child:after {
+	padding-right: 0px;
+	content: '';
+}
+
 .unitime-CourseSelectionBox {
 	white-space: nowrap;
 }

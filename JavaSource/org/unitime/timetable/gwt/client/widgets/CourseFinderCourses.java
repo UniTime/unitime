@@ -37,6 +37,7 @@ import org.unitime.timetable.gwt.client.widgets.CourseFinder.ResponseHandler;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CodeLabel;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
@@ -108,6 +109,7 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 		head.add(new UniTimeTableHeader(MESSAGES.colTitle()));
 		head.add(new UniTimeTableHeader(MESSAGES.colCredit()));
 		head.add(new UniTimeTableHeader(MESSAGES.colNote()));
+		head.add(new UniTimeTableHeader(MESSAGES.colWaitListAndAllowedOverrides()));
 		iCourses.addRow(null, head);
 		iCourses.addMouseDoubleClickListener(new UniTimeTable.MouseDoubleClickListener<CourseAssignment>() {
 			@Override
@@ -265,7 +267,7 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 				}
 				public void onSuccess(Collection<CourseAssignment> result) {
 					iCourses.clearTable(1);
-					boolean hasCredit = false, hasNote = false;
+					boolean hasCredit = false, hasNote = false, hasWaitList = false;
 					for (CourseAssignment record: result) {
 						List<Widget> line = new ArrayList<Widget>();
 						line.add(new Label(record.getSubject(), false));
@@ -282,6 +284,21 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 						}
 						line.add(new HTML(record.getNote() == null ? "" : record.getNote()));
 						if (record.hasNote()) hasNote = true;
+						P wl = new P("courses-wl");
+						if (record.isCanWaitList()) {
+							Label l = new Label(MESSAGES.courseAllowsForWaitListing());
+							l.setTitle(MESSAGES.courseAllowsForWaitListingTitle(record.getCourseName())); 
+							wl.add(l);
+							hasWaitList = true;
+						}
+						if (record.hasOverrides()) {
+							for (CodeLabel override: record.getOverrides()) {
+								Label l = new Label(override.getCode()); l.setTitle(override.getLabel());
+								wl.add(l);
+								hasWaitList = true;
+							}
+						}
+						line.add(wl);
 						if (record.hasTitle()) {
 							if (record.hasNote()) {
 								line.add(new AriaHiddenLabel(ARIA.courseFinderCourseWithTitleAndNote(record.getSubject(), record.getCourseNbr(), record.getTitle(), record.getNote())));
@@ -301,6 +318,7 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 					}
 					iCourses.setColumnVisible(4, hasCredit);
 					iCourses.setColumnVisible(5, hasNote);
+					iCourses.setColumnVisible(6, hasWaitList);
 					if (result.size() == 1)
 						iCourses.setSelected(1, true);
 					if (iCourses.getSelectedRow() >= 0) {

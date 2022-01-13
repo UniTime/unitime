@@ -205,6 +205,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Position")
 	String colWaitListPosition();
 	
+	@DefaultMessage("WL/Ovrd")
+	String colWaitListAndAllowedOverrides();
+	
 	/* Academic Session Selector messages
 	 */
 	@DefaultMessage("No academic session is selected.")
@@ -710,6 +713,12 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Wait-Listed")
 	String courseWaitListed();
+	
+	@DefaultMessage("Wait-Listing")
+	String courseAllowsForWaitListing();
+	
+	@DefaultMessage("Course {0} allows to be wait-listed.")
+	String courseAllowsForWaitListingTitle(String course);
 	
 	@DefaultMessage("No Substitutions")
 	String courseNoSubs();

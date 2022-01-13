@@ -39,6 +39,7 @@ import org.apache.commons.logging.LogFactory;
 import org.cpsolver.coursett.model.Placement;
 import org.hibernate.CacheMode;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Order;
 import org.hibernate.type.LongType;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -122,6 +123,7 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.LearningCommunityReservation;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.OverrideType;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SchedulingSubpart;
@@ -151,6 +153,7 @@ import org.unitime.timetable.model.dao.CourseTypeDAO;
 import org.unitime.timetable.model.dao.CurriculumDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.OnlineSectioningLogDAO;
+import org.unitime.timetable.model.dao.OverrideTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.model.dao.StudentGroupDAO;
@@ -376,7 +379,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			for (String ref: matcher.getAllowedCourseTypes())
 				types += (types.isEmpty() ? "" : ", ") + "'" + ref + "'";
 			if (!matcher.isAllCourseTypes() && !matcher.isNoCourseType() && types.isEmpty()) throw new SectioningException(MSG.exceptionCourseDoesNotExist(query));
-			
+
+			List<OverrideType> overrides = OverrideTypeDAO.getInstance().findAll(hibSession, Order.asc("label"));
+
 			boolean excludeNotOffered = ApplicationProperty.CourseRequestsShowNotOffered.isFalse();
 			ArrayList<ClassAssignmentInterface.CourseAssignment> results = new ArrayList<ClassAssignmentInterface.CourseAssignment>();
 			org.unitime.timetable.onlinesectioning.match.CourseMatcher parent = matcher.getParentCourseMatcher();
@@ -410,6 +415,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				course.setHasUniqueName(true);
 				course.setHasCrossList(c.getInstructionalOffering().hasCrossList());
 				course.setCanWaitList(c.getInstructionalOffering().effectiveWaitList());
+				if (overrides != null && !overrides.isEmpty()) {
+					for (OverrideType override: overrides)
+						if (!c.getDisabledOverrides().contains(override))
+							course.addOverride(override.getReference(), override.getLabel());
+				}
 				boolean unlimited = false;
 				int courseLimit = 0;
 				for (Iterator<InstrOfferingConfig> i = c.getInstructionalOffering().getInstrOfferingConfigs().iterator(); i.hasNext(); ) {

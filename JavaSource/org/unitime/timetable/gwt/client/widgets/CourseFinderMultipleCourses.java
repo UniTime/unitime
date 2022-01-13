@@ -37,6 +37,7 @@ import org.unitime.timetable.gwt.client.widgets.CourseFinder.ResponseHandler;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CodeLabel;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
@@ -111,6 +112,7 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 		head.add(new UniTimeTableHeader(MESSAGES.colTitle()));
 		head.add(new UniTimeTableHeader(MESSAGES.colCredit()));
 		head.add(new UniTimeTableHeader(MESSAGES.colNote()));
+		head.add(new UniTimeTableHeader(MESSAGES.colWaitListAndAllowedOverrides()));
 		iCourses.addRow(null, head);
 		iCourses.setColumnVisible(0, iAllowMultiSelection);
 		iCourses.addMouseDoubleClickListener(new UniTimeTable.MouseDoubleClickListener<CourseAssignment>() {
@@ -280,7 +282,7 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 				}
 				public void onSuccess(Collection<CourseAssignment> result) {
 					iCourses.clearTable(1);
-					boolean hasCredit = false, hasNote = false;
+					boolean hasCredit = false, hasNote = false, hasWaitList = false;
 					for (final CourseAssignment record: result) {
 						List<Widget> line = new ArrayList<Widget>();
 						CheckBox ch = new CheckBox();
@@ -326,6 +328,21 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 						}
 						line.add(new Label(record.getNote() == null ? "" : record.getNote()));
 						if (record.hasNote()) hasNote = true;
+						P wl = new P("courses-wl");
+						if (record.isCanWaitList()) {
+							Label l = new Label(MESSAGES.courseAllowsForWaitListing());
+							l.setTitle(MESSAGES.courseAllowsForWaitListingTitle(record.getCourseName())); 
+							wl.add(l);
+							hasWaitList = true;
+						}
+						if (record.hasOverrides()) {
+							for (CodeLabel override: record.getOverrides()) {
+								Label l = new Label(override.getCode()); l.setTitle(override.getLabel());
+								wl.add(l);
+								hasWaitList = true;
+							}
+						}
+						line.add(wl);
 						if (record.hasTitle()) {
 							if (record.hasNote()) {
 								line.add(new AriaHiddenLabel(ARIA.courseFinderCourseWithTitleAndNote(record.getSubject(), record.getCourseNbr(), record.getTitle(), record.getNote())));
@@ -343,8 +360,9 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 						if (iLastQuery.equalsIgnoreCase(MESSAGES.courseName(record.getSubject(), record.getCourseNbr())) || (record.getTitle() != null && iLastQuery.equalsIgnoreCase(MESSAGES.courseNameWithTitle(record.getSubject(), record.getCourseNbr(), record.getTitle()))))
 							iCourses.setSelected(row, true);
 					}
-					iCourses.setColumnVisible(4, hasCredit);
-					iCourses.setColumnVisible(5, hasNote);
+					iCourses.setColumnVisible(5, hasCredit);
+					iCourses.setColumnVisible(6, hasNote);
+					iCourses.setColumnVisible(7, hasWaitList);
 					if (result.size() == 1)
 						iCourses.setSelected(1, true);
 					if (iCourses.getSelectedRow() >= 0) {
