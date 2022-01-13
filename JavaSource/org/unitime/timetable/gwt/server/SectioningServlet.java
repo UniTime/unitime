@@ -2834,11 +2834,16 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			if (cx != null && cx.hasPin())
 				entity.addParameterBuilder().setKey("pin").setValue(cx.getPin());
 			if (principal != null && principal.getStudentExternalId() != null) entity.addParameterBuilder().setKey("student").setValue(principal.getStudentExternalId());
-			if (sessionContext != null) {
+			if (cx != null && cx.getAcademicSessionId() != null) {
 				entity.addParameterBuilder().setKey("admin").setValue(
-						sessionContext.hasPermissionAnySession(cx.getAcademicSessionId(), Right.StudentSchedulingAdmin) ? "true" : "false");
+						getSessionContext().hasPermissionAnySession(cx.getAcademicSessionId(), Right.StudentSchedulingAdmin) ? "true" : "false");
 				entity.addParameterBuilder().setKey("advisor").setValue(
-						sessionContext.hasPermissionAnySession(cx.getAcademicSessionId(), Right.StudentSchedulingAdvisor) ? "true" : "false");
+						getSessionContext().hasPermissionAnySession(cx.getAcademicSessionId(), Right.StudentSchedulingAdvisor) ? "true" : "false");
+			} else {
+				entity.addParameterBuilder().setKey("admin").setValue(
+						getSessionContext().hasPermission(Right.StudentSchedulingAdmin) ? "true" : "false");
+				entity.addParameterBuilder().setKey("advisor").setValue(
+						getSessionContext().hasPermission(Right.StudentSchedulingAdvisor) ? "true" : "false");
 			}
 			return entity.build();
 		} else if (principal != null) {
@@ -2848,11 +2853,16 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					.setType(OnlineSectioningLog.Entity.EntityType.MANAGER);
 			if (cx != null && cx.hasPin())
 				entity.addParameterBuilder().setKey("pin").setValue(cx.getPin());
-			if (sessionContext != null) {
+			if (cx != null && cx.getAcademicSessionId() != null) {
 				entity.addParameterBuilder().setKey("admin").setValue(
-						sessionContext.hasPermissionAnySession(cx.getAcademicSessionId(), Right.StudentSchedulingAdmin) ? "true" : "false");
+						getSessionContext().hasPermissionAnySession(cx.getAcademicSessionId(), Right.StudentSchedulingAdmin) ? "true" : "false");
 				entity.addParameterBuilder().setKey("advisor").setValue(
-						sessionContext.hasPermissionAnySession(cx.getAcademicSessionId(), Right.StudentSchedulingAdvisor) ? "true" : "false");
+						getSessionContext().hasPermissionAnySession(cx.getAcademicSessionId(), Right.StudentSchedulingAdvisor) ? "true" : "false");
+			} else {
+				entity.addParameterBuilder().setKey("admin").setValue(
+						getSessionContext().hasPermission(Right.StudentSchedulingAdmin) ? "true" : "false");
+				entity.addParameterBuilder().setKey("advisor").setValue(
+						getSessionContext().hasPermission(Right.StudentSchedulingAdvisor) ? "true" : "false");
 			}
 			return entity.build();
 		} else {
