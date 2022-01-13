@@ -145,6 +145,20 @@ public class OnlineSectioningHelper {
     public boolean isAdmin() {
     	return (getUser() != null && getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER);
     }
+    
+    public boolean hasAdminPermission() {
+    	if (getUser().getParameterCount() > 0)
+			for (OnlineSectioningLog.Property p: getUser().getParameterList())
+				if ("admin".equals(p.getKey())) return "true".equals(p.getValue());
+		return false;
+    }
+    
+    public boolean hasAvisorPermission() {
+    	if (getUser().getParameterCount() > 0)
+			for (OnlineSectioningLog.Property p: getUser().getParameterList())
+				if ("advisor".equals(p.getKey())) return "true".equals(p.getValue());
+		return false;
+    }
 
     public void log(Message m) {
     	if (m.getLevel() != LogLevel.DEBUG) {

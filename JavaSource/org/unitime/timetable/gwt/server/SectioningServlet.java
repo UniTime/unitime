@@ -1486,8 +1486,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							.canShowExternalIds(sessionContext.hasPermission(Right.EnrollmentsShowExternalId))
 							.canRegister(sessionContext.hasPermission(Right.CourseRequests))
 							.canUseAssistant(sessionContext.hasPermission(Right.SchedulingAssistant))
-							.withPermissions(getSessionContext().hasPermissionAnySession(Right.StudentSchedulingAdmin),
-									getSessionContext().hasPermissionAnySession(Right.StudentSchedulingAdvisor),
+							.withPermissions(getSessionContext().hasPermissionAnySession(offering.getSession(), Right.StudentSchedulingAdmin),
+									getSessionContext().hasPermissionAnySession(offering.getSession(), Right.StudentSchedulingAdvisor),
 									getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyMyStudents),
 									getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyAllStudents)),
 							currentUser());
@@ -2807,29 +2807,27 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 	
 	private OnlineSectioningLog.Entity currentUser() {
-		return currentUser(null, false);
-	}
-	
-	private OnlineSectioningLog.Entity currentUser(boolean manager) {
-		return currentUser(null, manager);
+		return currentUser(null);
 	}
 	
 	private OnlineSectioningLog.Entity currentUser(StudentSectioningContext cx) {
-		return currentUser(cx, false);
-	}
-	
-	private OnlineSectioningLog.Entity currentUser(StudentSectioningContext cx, boolean manager) {
 		UserContext user = getSessionContext().getUser();
 		UniTimePrincipal principal = (UniTimePrincipal)getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingUser);
 		if (user != null) {
 			OnlineSectioningLog.Entity.Builder entity = OnlineSectioningLog.Entity.newBuilder()
 					.setExternalId(user.getTrueExternalUserId())
 					.setName(user.getTrueName() == null ? user.getUsername() : user.getTrueName())
-					.setType(user instanceof Chameleon || principal != null || manager?
+					.setType(user instanceof Chameleon || principal != null ?
 							OnlineSectioningLog.Entity.EntityType.MANAGER : OnlineSectioningLog.Entity.EntityType.STUDENT);
 			if (cx != null && cx.hasPin())
 				entity.addParameterBuilder().setKey("pin").setValue(cx.getPin());
 			if (principal != null && principal.getStudentExternalId() != null) entity.addParameterBuilder().setKey("student").setValue(principal.getStudentExternalId());
+			if (sessionContext != null) {
+				entity.addParameterBuilder().setKey("admin").setValue(
+						sessionContext.hasPermissionAnySession(cx.getAcademicSessionId(), Right.StudentSchedulingAdmin) ? "true" : "false");
+				entity.addParameterBuilder().setKey("advisor").setValue(
+						sessionContext.hasPermissionAnySession(cx.getAcademicSessionId(), Right.StudentSchedulingAdvisor) ? "true" : "false");
+			}
 			return entity.build();
 		} else if (principal != null) {
 			OnlineSectioningLog.Entity.Builder entity = OnlineSectioningLog.Entity.newBuilder()
@@ -2838,6 +2836,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					.setType(OnlineSectioningLog.Entity.EntityType.MANAGER);
 			if (cx != null && cx.hasPin())
 				entity.addParameterBuilder().setKey("pin").setValue(cx.getPin());
+			if (sessionContext != null) {
+				entity.addParameterBuilder().setKey("admin").setValue(
+						sessionContext.hasPermissionAnySession(cx.getAcademicSessionId(), Right.StudentSchedulingAdmin) ? "true" : "false");
+				entity.addParameterBuilder().setKey("advisor").setValue(
+						sessionContext.hasPermissionAnySession(cx.getAcademicSessionId(), Right.StudentSchedulingAdvisor) ? "true" : "false");
+			}
 			return entity.build();
 		} else {
 			return null;
@@ -2877,7 +2881,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					}
 				}
 			
-			return server.execute(server.createAction(MassCancelAction.class).forStudents(studentIds).withStatus(statusRef).withEmail(subject, message, cc), currentUser(true));
+			return server.execute(server.createAction(MassCancelAction.class).forStudents(studentIds).withStatus(statusRef).withEmail(subject, message, cc), currentUser());
 		} catch (PageAccessException e) {
 			throw e;
 		} catch (SectioningException e) {

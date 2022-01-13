@@ -143,16 +143,32 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		return ApplicationProperties.getProperty("banner.xe.site");
 	}
 	
-	protected String getBannerUser(boolean admin) {
-		if (admin) {
+	protected String getBannerUser(boolean manager) {
+		if (manager) {
 			String user = ApplicationProperties.getProperty("banner.xe.admin.user");
 			if (user != null) return user;
 		}
 		return ApplicationProperties.getProperty("banner.xe.user");
 	}
 	
-	protected String getBannerPassword(boolean admin) {
-		if (admin) {
+	protected String getBannerPassword(boolean manager) {
+		if (manager) {
+			String pwd = ApplicationProperties.getProperty("banner.xe.admin.password");
+			if (pwd != null) return pwd;
+		}
+		return ApplicationProperties.getProperty("banner.xe.password");
+	}
+	
+	protected String getBannerUser(OnlineSectioningHelper helper) {
+		if (helper.isAdmin()) {
+			String user = ApplicationProperties.getProperty("banner.xe.admin.user");
+			if (user != null) return user;
+		}
+		return ApplicationProperties.getProperty("banner.xe.user");
+	}
+	
+	protected String getBannerPassword(OnlineSectioningHelper helper) {
+		if (helper.isAdmin()) {
 			String pwd = ApplicationProperties.getProperty("banner.xe.admin.password");
 			if (pwd != null) return pwd;
 		}
@@ -164,7 +180,17 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 	}
 	
 	protected boolean isBannerAdmin() {
-		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.xe.admin", "false"));
+		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.xe.admin", "false"));	
+	}
+	
+	protected boolean isBannerAdmin(OnlineSectioningHelper helper) {
+		if (helper.isAdmin() && isBannerAdmin()) {
+			if (helper.hasAdminPermission())
+				return true;
+			else if (helper.hasAvisorPermission())
+				return "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.xe.advisorIsAdmin", "false"));
+		}
+		return false;
 	}
 	
 	protected boolean isBannerWaitlist() {
@@ -263,15 +289,14 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			AcademicSessionInfo session = server.getAcademicSession();
 			String term = getBannerTerm(session);
 			String campus = getBannerCampus(session);
-			boolean manager = helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER;
-			boolean admin = manager & isBannerAdmin();
+			boolean admin = isBannerAdmin(helper);
 			if (helper.isDebugEnabled())
 				helper.debug("Checking eligility for " + student.getName() + " (term: " + term + ", id:" + getBannerId(student) + (admin ? ", admin" : pin != null ? ", pin:" + pin : "") + ")");
 			
 			// First, check student registration status
 			resource = new ClientResource(getBannerSite());
 			resource.setNext(iClient);
-			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(manager), getBannerPassword(manager));
+			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(helper), getBannerPassword(helper));
 			Gson gson = getGson(helper);
 			XEInterface.RegisterResponse original = null;
 
@@ -448,8 +473,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			AcademicSessionInfo session = server.getAcademicSession();
 			String term = getBannerTerm(session);
 			String campus = getBannerCampus(session);
-			boolean manager = helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER;
-			boolean admin = manager & isBannerAdmin();
+			boolean admin = isBannerAdmin(helper);
 			if (helper.isDebugEnabled())
 				helper.debug("Enrolling " + student.getName() + " to " + enrollments + " (term: " + term + ", id:" + getBannerId(student) + (admin ? ", admin" : pin != null ? ", pin:" + pin : "") + ")");
 			
@@ -476,7 +500,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			// First, check student registration status
 			resource = new ClientResource(getBannerSite());
 			resource.setNext(iClient);
-			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(manager), getBannerPassword(manager));
+			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(helper), getBannerPassword(helper));
 			Gson gson = getGson(helper);
 			XEInterface.RegisterResponse original = null;
 			
@@ -1155,7 +1179,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			// First, check student registration status
 			resource = new ClientResource(getBannerSite());
 			resource.setNext(iClient);
-			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(true), getBannerPassword(true));
+			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(helper), getBannerPassword(helper));
 
 			resource.addQueryParameter("term", term);
 			resource.addQueryParameter("bannerId", getBannerId(student));
