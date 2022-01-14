@@ -386,10 +386,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			}
 		}
 		for (CourseRequestInterface.Request c: request.getCourses())
-			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, hasAssignment);
+			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, hasAssignment, true);
 		// if (student.getRequests().isEmpty()) return;
 		for (CourseRequestInterface.Request c: request.getAlternatives())
-			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, hasAssignment);
+			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, hasAssignment, true);
 		Set<XCourseId> lcCourses = new HashSet<XCourseId>();
 		Set<XCourseId> fixedCourses = new HashSet<XCourseId>();
 		boolean ignoreLcCourses = isIngoreLCRegistrationErrors();
@@ -3019,10 +3019,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			}
 		}
 		for (CourseRequestInterface.Request c: request.getCourses())
-			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, hasAssignment);
+			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, hasAssignment, true);
 		// if (student.getRequests().isEmpty()) return;
 		for (CourseRequestInterface.Request c: request.getAlternatives())
-			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, hasAssignment);
+			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, hasAssignment, true);
 		Set<XCourseId> lcCourses = new HashSet<XCourseId>();
 		Set<XCourseId> fixedCourses = new HashSet<XCourseId>();
 		boolean ignoreLcCourses = isIngoreLCRegistrationErrors();

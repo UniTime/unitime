@@ -144,13 +144,21 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 			courseAssign.setCanWaitList(offering.isWaitList());
 			XStudent student = (getStudentId() == null ? null : server.getStudent(getStudentId()));
 			
-			String filter = server.getConfig().getProperty("Filter.OnlineOnlyStudentFilter", null);
 			String imFilter = null;
-			if (filter != null && !filter.isEmpty()) {
-				if (new Query(filter).match(new StudentMatcher(student, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
-					imFilter = server.getConfig().getProperty("Filter.OnlineOnlyInstructionalModeRegExp");
-				} else if (server.getConfig().getPropertyBoolean("Filter.OnlineOnlyExclusiveCourses", false)) {
-					imFilter = server.getConfig().getProperty("Filter.ResidentialInstructionalModeRegExp");
+			if (student != null) {
+				String filter = server.getConfig().getProperty("Filter.OnlineOnlyStudentFilter", null);
+				if (filter != null && !filter.isEmpty()) {
+					if (new Query(filter).match(new StudentMatcher(student, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
+						imFilter = server.getConfig().getProperty("Filter.OnlineOnlyInstructionalModeRegExp");
+					} else if (server.getConfig().getPropertyBoolean("Filter.OnlineOnlyExclusiveCourses", false)) {
+						imFilter = server.getConfig().getProperty("Filter.ResidentialInstructionalModeRegExp");
+					}
+				}
+				if (imFilter != null) {
+					if (helper.hasAdminPermission() && server.getConfig().getPropertyBoolean("Filter.OnlineOnlyAdminOverride", false))
+						imFilter = null;
+					else if (helper.hasAvisorPermission() && server.getConfig().getPropertyBoolean("Filter.OnlineOnlyAdvisorOverride", false))
+						imFilter = null;
 				}
 			}
 			XEnrollment enrollment = null;
@@ -160,14 +168,19 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 			}
 
 			for (XConfig config: offering.getConfigs()) {
-				if (imFilter != null && (enrollment == null || !config.getConfigId().equals(enrollment.getConfigId()))) {
+				boolean imAvailable = true;
+				if (imFilter != null) {
 					String imRef = (config.getInstructionalMethod() == null ? null : config.getInstructionalMethod().getReference());
         			if (imFilter.isEmpty()) {
-        				if (imRef != null && !imRef.isEmpty())
-        					continue;
+        				if (imRef != null && !imRef.isEmpty()) {
+        					if (enrollment == null || !config.getConfigId().equals(enrollment.getConfigId())) continue;
+        					imAvailable = false;
+        				}
         			} else {
-        				if (imRef == null || !imRef.matches(imFilter))
-        					continue;
+        				if (imRef == null || !imRef.matches(imFilter)) {
+        					if (enrollment == null || !config.getConfigId().equals(enrollment.getConfigId())) continue;
+        					imAvailable = false;
+        				}
         			}
 				}
 				for (XSubpart subpart: config.getSubparts())
@@ -190,7 +203,7 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 						a.setLimit(new int[] { enrollments.countEnrollmentsForSection(section.getSectionId()), section.getLimit()});
 						a.setSaved(enrollment != null && enrollment.getSectionIds().contains(section.getSectionId()));
 						if (!a.isSaved() && checkAvailability)
-							a.setAvailable(isAvailable(enrollments, student, offering, c, config, section, enrollment));
+							a.setAvailable(imAvailable && isAvailable(enrollments, student, offering, c, config, section, enrollment));
 						a.addNote(section.getNote());
 						a.setCredit(subpart.getCredit(c.getCourseId()));
 						a.setCreditRange(subpart.getCreditMin(c.getCourseId()), subpart.getCreditMax(c.getCourseId()));

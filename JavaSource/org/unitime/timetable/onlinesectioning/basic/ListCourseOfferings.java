@@ -100,6 +100,12 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 					}
 				}
 			}
+			if (iFilterIM != null) {
+				if (helper.hasAdminPermission() && server.getConfig().getPropertyBoolean("Filter.OnlineOnlyAdminOverride", false))
+					iFilterIM = null;
+				else if (helper.hasAvisorPermission() && server.getConfig().getPropertyBoolean("Filter.OnlineOnlyAdvisorOverride", false))
+					iFilterIM = null;
+			}
 			List<CourseAssignment> courses = listCourses(server, helper);
 			if (courses != null && !courses.isEmpty() && courses.size() <= 1000) {
 				List<OverrideType> overrides = OverrideTypeDAO.getInstance().findAll(helper.getHibSession(), Order.asc("label"));
