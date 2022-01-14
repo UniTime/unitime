@@ -4978,6 +4978,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-CourseFinderDialog .course-table .courses-wl .gwt-Label {
 	display: inline-block;
 	padding-right: 3px;
+	white-space: nowrap;
 }
 
 .unitime-CourseFinderDialog .course-table .courses-wl .gwt-Label:after {
