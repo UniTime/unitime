@@ -90,13 +90,11 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 	}
 	
 	protected boolean isAvailable(XEnrollments enrollments, XStudent student, XOffering offering, XCourse course, XConfig config, XSection section, XEnrollment enrollment) {
-		if (student == null) return true;
-		
 		boolean hasMustBeUsed = false;
 		boolean hasReservation = false;
 		boolean canOverLimit = false;
 		for (XReservation r: offering.getReservations()) {
-			if (!r.isApplicable(student, course)) continue; // reservation does not apply to this student
+			if (student != null && !r.isApplicable(student, course)) continue; // reservation does not apply to this student
 			boolean mustBeUsed = (r.mustBeUsed() && (r.isAlwaysExpired() || !r.isExpired()));
 			if (mustBeUsed && !hasMustBeUsed) {
 				hasReservation = false; hasMustBeUsed = true; canOverLimit = false;
