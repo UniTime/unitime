@@ -58,6 +58,7 @@ import org.unitime.timetable.model.CurriculumOverrideReservation;
 import org.unitime.timetable.model.CurriculumProjectionRule;
 import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.DatePatternPref;
 import org.unitime.timetable.model.Degree;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
@@ -1641,6 +1642,87 @@ public class SessionRollForward {
 					}
 				}
 			}
+		}
+	}
+	
+	protected void rollForwardDatePatternPrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession, org.hibernate.Session hibSession){
+		if (fromPrefGroup.getDatePatternPreferences() != null 
+				&& !fromPrefGroup.getDatePatternPreferences().isEmpty() 
+				&& (!(fromPrefGroup instanceof Class_) || isClassRollForward())
+				&& (!(fromPrefGroup instanceof SchedulingSubpart) || isSubpartTimeRollForward())){
+			DatePatternPref fromDatePatternPref = null;
+			DatePatternPref toDatePatternPref = null;
+			for (Iterator it = fromPrefGroup.getDatePatternPreferences().iterator(); it.hasNext();){
+				fromDatePatternPref = (DatePatternPref) it.next();
+				DatePattern toDatePattern = DatePattern.findByName(toSession, fromDatePatternPref.getDatePattern().getName());
+				if (toDatePattern == null){
+					iLog.warn("To Date Pattern not found:  " + fromDatePatternPref.getDatePattern().getName() + " for " + fromPrefGroup.htmlLabel());
+					continue;
+				}
+				toDatePatternPref = (DatePatternPref)fromDatePatternPref.clone();
+				toDatePatternPref.setDatePattern(toDatePattern);
+				toDatePatternPref.setOwner(toPrefGroup);
+				toPrefGroup.addTopreferences(toDatePatternPref);
+			}
+		}
+		if (fromPrefGroup instanceof SchedulingSubpart && isClassPrefsPushUp() && (toPrefGroup.getDatePatternPreferences() == null || toPrefGroup.getDatePatternPreferences().isEmpty())) {
+			SchedulingSubpart ss = (SchedulingSubpart) fromPrefGroup;
+			if (ss.getClasses() != null && !ss.getClasses().isEmpty()){
+				HashMap<String, DatePatternPref> prefMap = new HashMap<String, DatePatternPref>();
+				HashMap<String, Integer> prefCount = new HashMap<String, Integer>();
+				String key;
+				int clsCnt = 0;
+				DatePattern firstDp = null; int dpCount = 0; 
+				for (Iterator cIt = ss.getClasses().iterator(); cIt.hasNext();){
+					Class_ c = (Class_)cIt.next();
+					if (CancelledClassAction.SKIP == getCancelledClassAction() && c.isCancelled()) continue;
+					clsCnt ++;
+					DatePattern dp = c.effectiveDatePattern();
+					if (dp != null) {
+						if (firstDp == null) { firstDp = dp; dpCount ++; }
+						else if (firstDp.equals(dp)) dpCount ++;
+					}
+					if (c.getDatePatternPreferences() != null && !c.getDatePatternPreferences().isEmpty()){
+						for (Iterator rfpIt = c.getDatePatternPreferences().iterator(); rfpIt.hasNext();){
+							DatePatternPref dfp = (DatePatternPref) rfpIt.next();
+							key = dfp.getPrefLevel().getPrefName() + dfp.getDatePattern().getUniqueId().toString();
+							prefMap.put(key, dfp);
+							int cnt = 0;
+							if (prefCount.containsKey(key)){
+								cnt = prefCount.get(key).intValue();
+							}
+							cnt++;
+							prefCount.put(key, Integer.valueOf(cnt));
+						}
+					}
+				}
+				if (firstDp != null && dpCount == clsCnt && !firstDp.equals(ss.effectiveDatePattern())) {
+					DatePattern toDatePattern = DatePattern.findByName(toSession, firstDp.getName());
+					if (toDatePattern == null){
+						iLog.warn("To Date Pattern not found:  " + firstDp.getName() + " for " + fromPrefGroup.htmlLabel());
+					} else {
+						((SchedulingSubpart)toPrefGroup).setDatePattern(toDatePattern);
+						for (Class_ c: ((SchedulingSubpart)toPrefGroup).getClasses()) {
+							c.setDatePattern(null);
+							hibSession.update(c);
+						}
+					}
+				}
+				for (String pref : prefCount.keySet()){
+					if (prefCount.get(pref).intValue() == clsCnt){
+						DatePatternPref fromDatePatternPref = prefMap.get(pref);
+						DatePattern toDatePattern = DatePattern.findByName(toSession, fromDatePatternPref.getDatePattern().getName());
+						if (toDatePattern == null){
+							iLog.warn("To Date Pattern not found:  " + fromDatePatternPref.getDatePattern().getName() + " for " + fromPrefGroup.htmlLabel());
+							continue;
+						}
+						DatePatternPref toDatePatternPref = (DatePatternPref)fromDatePatternPref.clone();
+						toDatePatternPref.setDatePattern(toDatePattern);
+						toDatePatternPref.setOwner(toPrefGroup);
+						toPrefGroup.addTopreferences(toDatePatternPref);
+					}
+				}
+			}				
 		}
 	}
 

@@ -329,6 +329,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			rollForwardRoomPrefs(fromClass, toClass, toSession);
 			rollForwardRoomGroupPrefs(fromClass, toClass, toSession);
 			rollForwardRoomFeaturePrefs(fromClass, toClass, toSession);
+			rollForwardDatePatternPrefs(fromClass, toClass, toSession, hibSession);
 		}
 		if (isRollForwardDistributions())
 			rollForwardDistributionPrefs(fromClass, toClass, toSession, hibSession);
@@ -405,6 +406,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		rollForwardRoomPrefs(fromSubpart, toSubpart, toSession);
 		rollForwardRoomGroupPrefs(fromSubpart, toSubpart, toSession);
 		rollForwardRoomFeaturePrefs(fromSubpart, toSubpart, toSession);
+		rollForwardDatePatternPrefs(fromSubpart, toSubpart, toSession, hibSession);
 		if (isRollForwardDistributions()) rollForwardDistributionPrefs(fromSubpart, toSubpart, toSession, hibSession);
 		if (fromSubpart.getChildSubparts() != null && fromSubpart.getChildSubparts().size() > 0){
 			List<SchedulingSubpart> childSubparts = new ArrayList<SchedulingSubpart>(fromSubpart.getChildSubparts());
