@@ -29,7 +29,6 @@ import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.solver.Solver;
 import org.cpsolver.studentsct.StudentSectioningSaver;
 import org.cpsolver.studentsct.model.Config;
-import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.Offering;
@@ -45,7 +44,6 @@ import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentSectioningQueue;
-import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.dao.SessionDAO;
 
 
@@ -106,37 +104,21 @@ public class BatchStudentSectioningSaver extends StudentSectioningSaver {
             StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
             hibSession.delete(sce); i.remove();
         }
-        for (Iterator i=s.getWaitlists().iterator();i.hasNext();) {
-            WaitList wl = (WaitList)i.next();
-            hibSession.delete(wl); i.remove();
-        }
         for (Iterator e=student.getRequests().iterator();e.hasNext();) {
             Request request = (Request)e.next();
             Enrollment enrollment = (Enrollment)getAssignment().getValue(request);
-            if (request instanceof CourseRequest) {
-                CourseRequest courseRequest = (CourseRequest)request;
-                if (enrollment==null) {
-                    if (courseRequest.isWaitlist() && student.canAssign(getAssignment(), courseRequest)) {
-                        WaitList wl = new WaitList();
-                        wl.setStudent(s);
-                        wl.setCourseOffering(iCourses.get(((Course)courseRequest.getCourses().get(0)).getId()));
-                        wl.setTimestamp(new Date());
-                        wl.setType(Integer.valueOf(0));
-                        hibSession.save(wl);
-                    }
-                } else {
-                    org.unitime.timetable.model.CourseRequest cr = iRequests.get(request.getId()+":"+enrollment.getOffering().getId());
-                    if (cr==null) continue;
-                    for (Iterator i=enrollment.getAssignments().iterator();i.hasNext();) {
-                        Section section = (Section)i.next();
-                        StudentClassEnrollment sce = new StudentClassEnrollment();
-                        sce.setStudent(s);
-                        sce.setClazz(iClasses.get(section.getId()));
-                        sce.setCourseRequest(cr);
-                        sce.setCourseOffering(cr.getCourseOffering());
-                        sce.setTimestamp(new Date());
-                        hibSession.save(sce);
-                    }
+            if (enrollment != null && request instanceof CourseRequest) {
+                org.unitime.timetable.model.CourseRequest cr = iRequests.get(request.getId()+":"+enrollment.getOffering().getId());
+                if (cr==null) continue;
+                for (Iterator i=enrollment.getAssignments().iterator();i.hasNext();) {
+                    Section section = (Section)i.next();
+                    StudentClassEnrollment sce = new StudentClassEnrollment();
+                    sce.setStudent(s);
+                    sce.setClazz(iClasses.get(section.getId()));
+                    sce.setCourseRequest(cr);
+                    sce.setCourseOffering(cr.getCourseOffering());
+                    sce.setTimestamp(new Date());
+                    hibSession.save(sce);
                 }
             }
         }

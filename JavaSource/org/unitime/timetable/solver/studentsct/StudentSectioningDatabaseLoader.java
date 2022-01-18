@@ -147,7 +147,6 @@ import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TravelTime;
-import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -1268,7 +1267,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     protected void checkOverrideStatuses(org.hibernate.Session hibSession, List<org.unitime.timetable.model.Student> students) {
     	List<org.unitime.timetable.model.Student> filteredStudents = new ArrayList<org.unitime.timetable.model.Student>();
 		for (org.unitime.timetable.model.Student s: students) {
-			if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty() && s.getWaitlists().isEmpty()) continue;
+			if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty()) continue;
     		if (iCheckForNoBatchStatus && s.hasSectioningStatusOption(StudentSectioningStatus.Option.nobatch)) continue;
             if (iStudentQuery != null && !iStudentQuery.match(new DbStudentMatcher(s))) continue;
             filteredStudents.add(s);
@@ -1284,7 +1283,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     		setPhase("Validate overrides...", students.size());
     		for (org.unitime.timetable.model.Student s: students) {
         		incProgress();
-        		if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty() && s.getWaitlists().isEmpty()) continue;
+        		if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty()) continue;
         		if (iCheckForNoBatchStatus && s.hasSectioningStatusOption(StudentSectioningStatus.Option.nobatch)) continue;
                 if (iStudentQuery != null && !iStudentQuery.match(new DbStudentMatcher(s))) continue;
         		validateOverrides(hibSession, s);
@@ -1292,7 +1291,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 		} else {
 			List<org.unitime.timetable.model.Student> filteredStudents = new ArrayList<org.unitime.timetable.model.Student>();
 			for (org.unitime.timetable.model.Student s: students) {
-				if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty() && s.getWaitlists().isEmpty()) continue;
+				if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty()) continue;
         		if (iCheckForNoBatchStatus && s.hasSectioningStatusOption(StudentSectioningStatus.Option.nobatch)) continue;
                 if (iStudentQuery != null && !iStudentQuery.match(new DbStudentMatcher(s))) continue;
                 filteredStudents.add(s);
@@ -1674,7 +1673,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             }
         }
 
-        if (!s.getClassEnrollments().isEmpty() || !s.getWaitlists().isEmpty()) {
+        if (!s.getClassEnrollments().isEmpty()) {
         	TreeSet<Course> courses = new TreeSet<Course>(new Comparator<Course>() {
         		public int compare(Course c1, Course c2) {
         			return (c1.getSubjectArea() + " " + c1.getCourseNumber()).compareTo(c2.getSubjectArea() + " " + c2.getCourseNumber());
@@ -1689,15 +1688,6 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     continue;
                 }
                 if (enrl.getTimestamp() != null) timeStamp.put(enrl.getCourseOffering().getUniqueId(), enrl.getTimestamp().getTime());
-                courses.add(course);
-        	}
-        	for (WaitList w: s.getWaitlists()) {
-        		Course course = courseTable.get(w.getCourseOffering().getUniqueId());
-                if (course==null) {
-                    iProgress.warn("Student " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ") requests course " + w.getCourseOffering().getCourseName()+" that is not loaded.");
-                    continue;
-                }
-                if (w.getTimestamp() != null) timeStamp.put(w.getCourseOffering().getUniqueId(), w.getTimestamp().getTime());
                 courses.add(course);
         	}
         	int priority = 0;
@@ -2598,7 +2588,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             setPhase("Loading student requests...", students.size());
             for (Iterator i=students.iterator();i.hasNext();) {
                 org.unitime.timetable.model.Student s = (org.unitime.timetable.model.Student)i.next(); incProgress();
-                if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty() && s.getWaitlists().isEmpty()) continue;
+                if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty()) continue;
                 Student student = loadStudent(hibSession, s, courseTable, classTable);
                 if (student == null) continue;
                 if (iUseAdvisorWaitLists)
@@ -3067,7 +3057,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     		setPhase("Checking critical courses...", students.size());
     		for (org.unitime.timetable.model.Student s: students) {
         		incProgress();
-        		if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty() && s.getWaitlists().isEmpty()) continue;
+        		if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty()) continue;
         		if (iCheckForNoBatchStatus && s.hasSectioningStatusOption(StudentSectioningStatus.Option.nobatch)) continue;
                 if (iStudentQuery != null && !iStudentQuery.match(new DbStudentMatcher(s))) continue;
                 checkCriticalCourses(hibSession, s);
@@ -3075,7 +3065,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 		} else {
 			List<org.unitime.timetable.model.Student> filteredStudents = new ArrayList<org.unitime.timetable.model.Student>();
 			for (org.unitime.timetable.model.Student s: students) {
-				if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty() && s.getWaitlists().isEmpty()) continue;
+				if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty()) continue;
         		if (iCheckForNoBatchStatus && s.hasSectioningStatusOption(StudentSectioningStatus.Option.nobatch)) continue;
                 if (iStudentQuery != null && !iStudentQuery.match(new DbStudentMatcher(s))) continue;
                 filteredStudents.add(s);

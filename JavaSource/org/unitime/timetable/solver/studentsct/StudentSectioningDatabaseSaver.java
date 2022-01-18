@@ -56,7 +56,6 @@ import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.StudentSectioningStatus.Option;
-import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.dao.SessionDAO;
 
 
@@ -160,10 +159,6 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             StudentClassEnrollment sce = i.next();
             sce.getClazz().getStudentEnrollments().remove(sce);
             hibSession.delete(sce); i.remove();
-        }
-        for (Iterator<WaitList> i = s.getWaitlists().iterator(); i.hasNext(); ) {
-            WaitList wl = i.next();
-            hibSession.delete(wl); i.remove();
         }
         
         if (iUpdateCourseRequests && BatchEnrollStudent.sRequestsChangedStatus.equals(student.getStatus())) {
@@ -270,52 +265,34 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         for (Iterator e=student.getRequests().iterator();e.hasNext();) {
             Request request = (Request)e.next();
             Enrollment enrollment = (Enrollment)getAssignment().getValue(request);
-            if (request instanceof CourseRequest) {
-                CourseRequest courseRequest = (CourseRequest)request;
-                if (enrollment==null) {
-                    if (courseRequest.isWaitlist() && student.canAssign(getAssignment(), courseRequest)) {
-                        CourseOffering co = iCourses.get(courseRequest.getCourses().get(0).getId());
-                        if (co == null) {
-                        	iProgress.warn("Course offering " + courseRequest.getCourses().get(0).getId() + " not found.");
-                        	continue;
-                        }
-                        WaitList wl = new WaitList();
-                        wl.setStudent(s);
-                        wl.setCourseOffering(co);
-                        wl.setTimestamp(iTimeStamp);
-                        wl.setType(Integer.valueOf(0));
-                        s.getWaitlists().add(wl);
-                        hibSession.save(wl);
+            if (enrollment != null && request instanceof CourseRequest) {
+                org.unitime.timetable.model.CourseRequest cr = iRequests.get(request.getId()+":"+enrollment.getOffering().getId());
+                for (Iterator j=enrollment.getAssignments().iterator();j.hasNext();) {
+                    Section section = (Section)j.next();
+                    Class_ clazz = iClasses.get(section.getId());
+                    if (clazz == null) {
+                    	iProgress.warn("Class " + section.getId() + " not found.");
+                    	continue;
                     }
-                } else {
-                    org.unitime.timetable.model.CourseRequest cr = iRequests.get(request.getId()+":"+enrollment.getOffering().getId());
-                    for (Iterator j=enrollment.getAssignments().iterator();j.hasNext();) {
-                        Section section = (Section)j.next();
-                        Class_ clazz = iClasses.get(section.getId());
-                        if (clazz == null) {
-                        	iProgress.warn("Class " + section.getId() + " not found.");
-                        	continue;
-                        }
-                        StudentClassEnrollment sce = new StudentClassEnrollment();
-                        sce.setChangedBy(StudentClassEnrollment.SystemChange.BATCH.toString());
-                        sce.setStudent(s);
-                        sce.setClazz(clazz);
-                        if (cr == null) {
-                        	CourseOffering co = iCourses.get(enrollment.getCourse().getId());
-                        	if (co == null)
-                        		co = clazz.getSchedulingSubpart().getControllingCourseOffering();
-                        	sce.setCourseOffering(co);
-                        } else {
-                            sce.setCourseRequest(cr);
-                            sce.setCourseOffering(cr.getCourseOffering());
-                        }
-                        sce.setTimestamp(iTimeStamp);
-                        s.getClassEnrollments().add(sce);
-                        hibSession.save(sce);
+                    StudentClassEnrollment sce = new StudentClassEnrollment();
+                    sce.setChangedBy(StudentClassEnrollment.SystemChange.BATCH.toString());
+                    sce.setStudent(s);
+                    sce.setClazz(clazz);
+                    if (cr == null) {
+                    	CourseOffering co = iCourses.get(enrollment.getCourse().getId());
+                    	if (co == null)
+                    		co = clazz.getSchedulingSubpart().getControllingCourseOffering();
+                    	sce.setCourseOffering(co);
+                    } else {
+                        sce.setCourseRequest(cr);
+                        sce.setCourseOffering(cr.getCourseOffering());
                     }
-                    if (cr != null)
-                    	hibSession.saveOrUpdate(cr);
+                    sce.setTimestamp(iTimeStamp);
+                    s.getClassEnrollments().add(sce);
+                    hibSession.save(sce);
                 }
+                if (cr != null)
+                	hibSession.saveOrUpdate(cr);
             }
         }
         hibSession.saveOrUpdate(s);
