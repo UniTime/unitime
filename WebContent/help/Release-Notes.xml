@@ -135,6 +135,7 @@
 				<line>Choice / alternativity (e.g., choice:&gt;1 for cases where an alternative course is assigned, or not-assigned primary course request has at least one alternative)</line>
 				<line>Request Priority (e.g., rp:&lt;=2 for course requests that are of priority 1 or 2)</line>
 				<line>Online / Face-to-face / Has-Time / No-Time (e.g., face-to-face:&lt;2 for students with less than two face-to-face classes, or online:&gt;50% for students with more than half of their classes online)</line>
+				<line>Added ability to filter by primary academic area, classification, major, concentration, or program (e.g., primary-area:A)</line>
 			</description>
 		</item>
 		<item>
@@ -143,7 +144,20 @@
 				<line>Added ability to include an optional program field on a student, with academic area, major, and classification.</line>
 				<line>Included in Student XML and Course Requests XML exports and imports.</line>
 				<line>Student Scheduling Dashboards: Added optional Program column and the ability to filter by program.</line>
-
+			</description>
+		</item>
+		<item>
+			<name>Course Finder</name>
+			<description>
+				<line>Sections that the student cannot be enrolled in are grayed out even when there is space in them.</line>
+				<line>Hide sections and instructional methods not allowed by the Online-Only filter.</line>
+				<line>Added a column listing whether the course is wait-listed and/or has some allowed overrides.</line>
+			</description>
+		</item>
+		<item>
+			<name>Banner XE API</name>
+			<description>
+				<line>Added ability define whether advisors using the XE API will set or not set the admin flag (systemIn parameter).</line>
 			</description>
 		</item>
 	</category>
@@ -172,18 +186,23 @@
 	<category>
 		<title>Administration</title>
 		<item>
+			<name>Roll Forward Session</name>
+			<description>
+				<line>Roll date pattern preferences (for alternative date patterns) forward.</line>
+				<line>Corrected rolling forward of learning community reservations (special case of student group reservation).</line>
+				<line>Added ability to roll forward wait-listing (is an offering wait-listed) and prohibited overrides.</line>
+			</description>
+		</item>
+		<item>
 			<name>Added Support for JDK 16+</name>
 			<description>
 				<line>Various dependencies updated to avoid illegal access exceptions.</line>
 				<line>MemoryCounter updated to avoid illegal access calls (using the Unsafe access instead).</line>
-				<line>Known issues:
-					<line>Spring LDAP is still not fully JDK 16+ compatible, JAVA_OPTS must include --add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED for the time being.</line>
-					<line>Due to this issue, LDAP authentication is disabled by default, to enable add the following line to catalina.properties:
-						<line>unitime.spring.context.security=securityContextLDAP.xml</line>
-					</line>
+				<line>LDAP authentication is disabled by default, to enable add the following line to catalina.properties:
+					<line>unitime.spring.context.security=securityContextLDAP.xml</line>
 				</line>
 			</description>
-		</item>
+		</item>		
 		<item>
 			<name>Added Support for Apache Tomcat 10</name>
 			<description>
@@ -197,9 +216,10 @@
 			<description>
 				<line>GWT updated to version 2.9.0 (was 2.8.2).</line>
 				<line>Javassist updated to version 3.28.0 (was 3.18.2).</line>
-				<line>Spring core libraries updated to version 5.3.13 (was 4.3.40).</line>
+				<line>Spring core libraries updated to version 5.3.14 (was 4.3.40).</line>
 				<line>Spring security updated to 5.4.9 (was 4.2.20).</line>
 				<line>Spring integration updated to 5.4.12 (was 4.3.24).</line>
+				<line>Protocol Buffers updated to version 3.18.2 (was 2.6.1)</line>
 				<line>Log4j updated to 2.17.1 (was 1.2.17).</line>
 			</description>
 		</item>
