@@ -37,6 +37,7 @@ import org.cpsolver.coursett.model.TimeLocation;
 import org.dom4j.Element;
 import org.unitime.timetable.dataexchange.StudentEnrollmentImport.Pair;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.AdvisorClassPref;
@@ -69,6 +70,7 @@ import org.unitime.timetable.model.StudentInstrMthPref;
 import org.unitime.timetable.model.StudentSectioningPref;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.dao.InstructionalMethodDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
@@ -1038,6 +1040,14 @@ public class StudentSectioningImport extends BaseImport {
             		}
 
             		updatedStudents.add(student.getUniqueId());
+            		
+            		if (student.getWaitListMode() == WaitListMode.WaitList) {
+                		student.resetWaitLists(
+                				WaitList.WaitListType.XML_IMPORT,
+                				StudentClassEnrollment.SystemChange.IMPORT.toString(),
+                				ts,
+                				getHibSession());
+            		}
             	}
             	
             	Element recommendationsEl = studentElement.element("updateAdvisorRecommendations");

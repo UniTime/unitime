@@ -2983,6 +2983,11 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Online Student Scheduling: automatically reload the online student scheduling server(s) when two clusters are merged together.")
 	OnlineSchedulingReloadAfterMerge("unitime.sectioning.reloadAfterMerge"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Wait-Listing: log wait-list changes into the WaitList table.")
+	WaitListLogging("unitime.enrollment.waitList.logging"),
 
 	;
 

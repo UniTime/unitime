@@ -46,6 +46,7 @@ import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
@@ -55,6 +56,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.StudentSectioningStatus.Option;
 import org.unitime.timetable.model.dao.SessionDAO;
 
@@ -296,6 +298,13 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             }
         }
         hibSession.saveOrUpdate(s);
+        
+        if (s.getWaitListMode() == WaitListMode.WaitList)
+            s.resetWaitLists(
+        			WaitList.WaitListType.BATCH_SOLVER,
+        			iOwnerId,
+        			iTimeStamp,
+        			hibSession);
     }    
     
     public void save(Session session, org.hibernate.Session hibSession) {

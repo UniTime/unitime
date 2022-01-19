@@ -45,6 +45,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.exception.SQLGrammarException;
 import org.hibernate.hql.internal.QueryExecutionRequestException;
 import org.hibernate.hql.internal.ast.ASTQueryTranslatorFactory;
 import org.hibernate.hql.spi.QueryTranslator;
@@ -196,6 +197,17 @@ public class HibernateQueryTestAction extends Action {
 		        _RootDAO rdao = new _RootDAO();
 		        Session hibSession = rdao.getSession();
 		        Query q = hibSession.createQuery(query);
+		        
+		        try {
+		        	String hqlQueryString = q.getQueryString();
+		        	ASTQueryTranslatorFactory queryTranslatorFactory = new ASTQueryTranslatorFactory();
+		        	QueryTranslator queryTranslator = queryTranslatorFactory.createQueryTranslator("", hqlQueryString, java.util.Collections.EMPTY_MAP, (SessionFactoryImplementor) hibSession.getSessionFactory(), null);
+		        	queryTranslator.compile(java.util.Collections.EMPTY_MAP, false);
+		        	request.setAttribute("sql", queryTranslator.getSQLString());
+		        } catch (Exception e) {
+		        	Debug.error(e);
+		        }
+		        
 		        q.setFirstResult(frm.getStart());
 		        if (limit > 0) q.setMaxResults(limit + 1);
 		        try {
@@ -265,18 +277,13 @@ public class HibernateQueryTestAction extends Action {
 		            hibSession.flush();
 		            HibernateUtil.clearCache();
 		        }
-		        
-		        try {
-		        	String hqlQueryString = q.getQueryString();
-		        	ASTQueryTranslatorFactory queryTranslatorFactory = new ASTQueryTranslatorFactory();
-		        	QueryTranslator queryTranslator = queryTranslatorFactory.createQueryTranslator("", hqlQueryString, java.util.Collections.EMPTY_MAP, (SessionFactoryImplementor) hibSession.getSessionFactory(), null);
-		        	queryTranslator.compile(java.util.Collections.EMPTY_MAP, false);
-		        	request.setAttribute("sql", queryTranslator.getSQLString());
-		        } catch (Exception e) {
-		        	Debug.error(e);
-		        }
-            }
-            catch (Exception e) {
+            } catch (SQLGrammarException e) {
+            	if (e.getSQLException() != null)
+            		errors.add("query", new ActionMessage("errors.generic", e.getSQLException().getMessage()));
+            	else
+            		errors.add("query", new ActionMessage("errors.generic", e.getMessage()));
+            	Debug.error(e);
+            } catch (Exception e) {
                 errors.add("query", 
                         	new ActionMessage("errors.generic", e.getMessage()));
                 Debug.error(e);

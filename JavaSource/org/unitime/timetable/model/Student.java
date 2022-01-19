@@ -21,10 +21,12 @@ package org.unitime.timetable.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.Query;
@@ -396,5 +398,120 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     			major = m;
     	}
     	return major;
+    }
+    
+    public CourseRequest getCourseRequest(CourseOffering co) {
+    	for (CourseDemand cd: getCourseDemands())
+    		for (CourseRequest cr: cd.getCourseRequests())
+    			if (cr.getCourseOffering().equals(co)) return cr;
+    	return null;
+    }
+    
+    public WaitList addWaitList(CourseOffering co, WaitList.WaitListType type, boolean waitListed, String changedBy, Date timeStamp, org.hibernate.Session hibSession) {
+    	if (ApplicationProperty.WaitListLogging.isFalse()) return null;
+    	if (co == null) return null;
+    	WaitList last = null;
+    	CourseRequest cr = getCourseRequest(co);
+    	if (cr != null && getWaitlists() != null && !getWaitlists().isEmpty()) {
+    		for (WaitList wl: getWaitlists()) {
+    			if ((last == null || last.compareTo(wl) < 0) && wl.hasMatchingCourse(cr.getCourseDemand()))
+    				last = wl;
+    		}
+    	}
+    	boolean lastWaitListed = (last == null ? false : last.isWaitListed());
+    	boolean lastEnrolled = (last == null ? false : last.getEnrolledCourse() != null);
+    	boolean enrolled = (cr == null ? null : cr.getCourseDemand().isEnrolled());
+    	if (lastWaitListed != waitListed || lastEnrolled != enrolled) {
+    		WaitList wl = new WaitList();
+    		wl.setChangedBy(changedBy);
+    		wl.setCourseOffering(cr == null ? co : cr.getCourseDemand().getFirstChoiceCourseOffering());
+    		wl.setEnrolledCourse(enrolled ? co : null);
+    		wl.setTimestamp(timeStamp);
+    		wl.setWaitListType(type);
+    		wl.setWaitListed(waitListed);
+    		wl.setStudent(this);
+    		wl.setCourseDemand(cr == null ? null : cr.getCourseDemand());
+    		wl.fillInNotes();
+    		addTowaitlists(wl);
+    		if (hibSession != null) hibSession.save(wl);
+    		return wl;
+    	} else {
+    		return null;
+    	}
+    }
+    
+    public void resetWaitLists(WaitList.WaitListType type, String changedBy, Date timeStamp, org.hibernate.Session hibSession) {
+    	if (ApplicationProperty.WaitListLogging.isFalse()) return;
+    	if (timeStamp == null) timeStamp = new Date();
+    	Map<CourseOffering, WaitList> waitlists = new HashMap<CourseOffering, WaitList>();
+		if (getWaitlists() != null)
+			for (WaitList wl: getWaitlists()) {
+				WaitList other = waitlists.get(wl.getCourseOffering());
+				if (other == null || other.compareTo(wl) < 0)
+					waitlists.put(wl.getCourseOffering(), wl);
+			}
+		for (StudentClassEnrollment e: getClassEnrollments()) {
+			WaitList wl = waitlists.remove(e.getCourseOffering());
+			if (wl != null && wl.isWaitListed()) {
+				// wait-list enrolled
+				wl = new WaitList();
+				wl.setChangedBy(changedBy);
+				wl.setTimestamp(timeStamp);
+				CourseRequest cr = getCourseRequest(e.getCourseOffering());
+				wl.setCourseOffering(cr != null ? cr.getCourseDemand().getFirstChoiceCourseOffering() : e.getCourseOffering());
+				wl.setCourseDemand(cr == null ? null : cr.getCourseDemand());
+				wl.setEnrolledCourse(e.getCourseOffering());
+				wl.setWaitListType(type);
+				wl.setWaitListed(false);
+				wl.setStudent(this);
+				wl.setWaitListedTimeStamp(cr == null ? null : cr.getCourseDemand().getWaitlistedTimeStamp());
+				wl.fillInNotes();
+				addTowaitlists(wl);
+				if (hibSession != null) hibSession.save(wl);
+			}
+		}
+		for (CourseDemand cd: getCourseDemands()) {
+			if (cd.isWaitlist() && !cd.isEnrolled()) {
+				CourseOffering co = cd.getFirstChoiceCourseOffering();
+				if (co != null) {
+					WaitList old = waitlists.remove(co);
+					if (old == null || !old.isWaitListed() || !WaitList.computeRequest(cd).equals(old.getRequest())) {
+						// new wait-lists
+						WaitList wl = new WaitList();
+						wl.setChangedBy(changedBy);
+						wl.setTimestamp(timeStamp);
+						wl.setCourseOffering(co);
+						wl.setCourseDemand(cd);
+						wl.setWaitListType(type);
+						wl.setWaitListed(true);
+						wl.setStudent(this);
+						wl.setWaitListedTimeStamp(cd.getWaitlistedTimeStamp());
+						wl.fillInNotes();
+						addTowaitlists(wl);
+						if (hibSession != null) hibSession.save(wl);
+					}
+				}
+			}
+		}
+		for (Map.Entry<CourseOffering, WaitList> e: waitlists.entrySet()) {
+			CourseOffering co = e.getKey();
+			WaitList old = e.getValue();
+			if (old.isWaitListed()) {
+				// removed wait-list
+				WaitList wl = new WaitList();
+				wl.setChangedBy(changedBy);
+				wl.setTimestamp(timeStamp);
+				wl.setCourseOffering(co);
+				CourseRequest cr = getCourseRequest(co);
+				wl.setCourseDemand(cr == null ? null : cr.getCourseDemand());
+				wl.setWaitListType(type);
+				wl.setWaitListed(false);
+				wl.setStudent(this);
+				wl.setWaitListedTimeStamp(old.getWaitListedTimeStamp());
+				wl.fillInNotes();
+				addTowaitlists(wl);
+				if (hibSession != null) hibSession.save(wl);
+			}
+		}
     }
 }

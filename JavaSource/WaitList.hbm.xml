@@ -59,5 +59,51 @@
             type="java.util.Date"
             not-null="true"/>
 
+		<property
+            name="waitListed"
+            column="waitlisted"
+            type="java.lang.Boolean"
+            not-null="true"/>
+
+        <property
+            name="changedBy"
+            column="changed_by"
+            type="java.lang.String"
+            not-null="false"
+            length="40"/>
+            
+		<property
+            name="request"
+            column="request"
+            type="java.lang.String"
+            not-null="false"
+            length="255"/>
+            
+        <property
+            name="enrollment"
+            column="enrollment"
+            type="java.lang.String"
+            not-null="false"
+            length="255"/>
+
+        <property
+            name="waitListedTimeStamp"
+            column="waitlist_ts"
+            type="java.util.Date"
+            not-null="false"/>
+
+		<many-to-one
+            name="enrolledCourse"
+            class="CourseOffering"
+            column="enrolled_course_id"
+            not-null="false"
+            foreign-key="fk_waitlist_enrolled_course"/>
+
+		<many-to-one
+            name="courseDemand"
+            class="CourseDemand"
+            column="demand_id"
+            not-null="false"
+            foreign-key="fk_waitlist_course_demand"/>
     </class>
 </hibernate-mapping>

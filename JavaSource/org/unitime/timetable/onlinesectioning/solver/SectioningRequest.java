@@ -77,11 +77,13 @@ public class SectioningRequest implements LastSectionProvider {
 	private RequestPriority iRequestPriority = RequestPriority.Normal;
 	private StudentPriority iStudentPriority = StudentPriority.Normal;
 	private int iAlternativity = 0;
+	private XCourseId iCourseId = null;
 
 	public SectioningRequest(XOffering offering, XCourseRequest request, XCourseId courseId, XStudent student, StudentPriority priority, OnlineSectioningLog.Action.Builder action) {
 		iRequest = request;
 		iStudent = student;
 		iOffering = offering;
+		iCourseId = courseId;
 		if (courseId != null) {
 			iAlternativity = request.getCourseIds().indexOf(courseId);
 		} else {
@@ -116,7 +118,10 @@ public class SectioningRequest implements LastSectionProvider {
 		iAction = action;
 	}
 	
-	public XCourseId getCourseId() { return getRequest().getCourseIdByOfferingId(getOffering().getOfferingId()); }
+	public XCourseId getCourseId() {
+		if (iCourseId != null) return iCourseId;
+		return getRequest().getCourseIdByOfferingId(getOffering().getOfferingId());
+	}
 	
 	public XOffering getOffering() { return (iOffering == null ? iOldOffering : iOffering); }
 	public SectioningRequest setOldOffering(XOffering offering) { iOldOffering = offering; return this; }

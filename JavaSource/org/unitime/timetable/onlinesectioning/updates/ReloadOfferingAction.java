@@ -50,7 +50,9 @@ import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -276,7 +278,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 				org.unitime.timetable.model.Student student = newStudents.get(oldStudent.getStudentId());
 				if (student == null)
 					student = StudentDAO.getInstance().get(oldStudent.getStudentId(), helper.getHibSession());
-				XStudent newStudent = (student == null ? null : ReloadAllData.loadStudent(student, null, server, helper));
+				XStudent newStudent = (student == null ? null : ReloadAllData.loadStudent(student, null, server, helper, WaitList.WaitListType.RELOAD));
 				if (newStudent != null)
 					server.update(newStudent, true);
 				else
@@ -287,7 +289,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 		}
 		for (org.unitime.timetable.model.Student student: newStudents.values()) {
 			XStudent oldStudent = server.getStudent(student.getUniqueId());
-			XStudent newStudent = ReloadAllData.loadStudent(student, null, server, helper);
+			XStudent newStudent = ReloadAllData.loadStudent(student, null, server, helper, WaitList.WaitListType.RELOAD);
 			if (newStudent != null)
 				server.update(newStudent, true);
 			else if (oldStudent != null)
@@ -564,6 +566,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					if (cd != null && cd.isWaitlist()) {
 						cd.setWaitlist(false);
 						helper.getHibSession().saveOrUpdate(cd);
+						student.addWaitList(co, WaitList.WaitListType.WAIT_LIST_PORCESSING, false, helper.getUser().getExternalId(), ts, helper.getHibSession());
 					}
 					if (r.getRequest().isWaitlist())
 						r.setRequest(server.waitlist(r.getRequest(), false));
@@ -572,6 +575,9 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 						cd.setWaitlistedTimeStamp(ts);
 						cd.setWaitlist(true);
 						helper.getHibSession().saveOrUpdate(cd);
+						student.addWaitList(
+								CourseOfferingDAO.getInstance().get(r.getCourseId().getCourseId(), helper.getHibSession()),
+								WaitList.WaitListType.WAIT_LIST_PORCESSING, true, helper.getUser().getExternalId(), ts, helper.getHibSession());
 					}
 					if (!r.getRequest().isWaitlist())
 						r.setRequest(server.waitlist(r.getRequest(), true));

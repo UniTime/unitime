@@ -14249,5 +14249,38 @@
 			select distinct r.role_id, 'ProgramEdit'
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'MajorEdit'
 		</sql>
-	</update>	
+	</update>
+	<update version="246" date="18-Jan-2022" comment="Wait-List Logging">
+		<sql>delete from %SCHEMA%.waitlist</sql>
+		<mysql>alter table %SCHEMA%.waitlist add changed_by varchar(40) null</mysql>
+		<plsql>alter table %SCHEMA%.waitlist add changed_by varchar2(40 char)</plsql>
+		<pgsql>alter table %SCHEMA%.waitlist add changed_by varchar(40)</pgsql>
+	    <plsql>alter table %SCHEMA%.waitlist add waitlisted number(1) default 0</plsql>
+	    <plsql>alter table %SCHEMA%.waitlist add constraint nn_waitlist_wl check (waitlisted is not null)</plsql>
+	    <mysql>alter table %SCHEMA%.waitlist add waitlisted int(1) not null default 0</mysql>
+	    <pgsql>alter table %SCHEMA%.waitlist add waitlisted boolean not null default false</pgsql>
+		<plsql>alter table %SCHEMA%.waitlist add enrolled_course_id number(20,0)</plsql>
+	    <mysql>alter table %SCHEMA%.waitlist add enrolled_course_id decimal(20,0)</mysql>
+	    <pgsql>alter table %SCHEMA%.waitlist add enrolled_course_id bigint</pgsql>
+	    <sql>
+			alter table %SCHEMA%.waitlist add constraint fk_waitlist_enrolled_course foreign key (enrolled_course_id)
+			references %SCHEMA%.course_offering (uniqueid) on delete set null
+		</sql>
+		<plsql>alter table %SCHEMA%.waitlist add demand_id number(20,0)</plsql>
+	    <mysql>alter table %SCHEMA%.waitlist add demand_id decimal(20,0)</mysql>
+	    <pgsql>alter table %SCHEMA%.waitlist add demand_id bigint</pgsql>
+	    <sql>
+			alter table %SCHEMA%.waitlist add constraint fk_waitlist_course_demand foreign key (demand_id)
+			references %SCHEMA%.course_demand (uniqueid) on delete set null
+		</sql>
+		<mysql>alter table %SCHEMA%.waitlist add request varchar(255) null</mysql>
+		<plsql>alter table %SCHEMA%.waitlist add request varchar2(255 char)</plsql>
+		<pgsql>alter table %SCHEMA%.waitlist add request varchar(255)</pgsql>
+		<mysql>alter table %SCHEMA%.waitlist add enrollment varchar(255) null</mysql>
+		<plsql>alter table %SCHEMA%.waitlist add enrollment varchar2(255 char)</plsql>
+		<pgsql>alter table %SCHEMA%.waitlist add enrollment varchar(255)</pgsql>
+		<plsql>alter table %SCHEMA%.waitlist add waitlist_ts timestamp</plsql>
+	    <mysql>alter table %SCHEMA%.waitlist add waitlist_ts datetime</mysql>
+	    <pgsql>alter table %SCHEMA%.waitlist add waitlist_ts timestamp with time zone</pgsql>
+	</update>
 </dbupdate>

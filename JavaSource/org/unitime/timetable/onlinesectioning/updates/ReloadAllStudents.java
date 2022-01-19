@@ -26,6 +26,7 @@ import java.util.Map;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
@@ -64,7 +65,7 @@ public class ReloadAllStudents extends ReloadAllData {
 	                    "where s.session.uniqueId=:sessionId").
 	                    setLong("sessionId",server.getAcademicSession().getUniqueId()).list();
 	            for (org.unitime.timetable.model.Student student: students) {
-	            	XStudent s = loadStudent(student, requestMap, server, helper);
+	            	XStudent s = loadStudent(student, requestMap, server, helper, WaitList.WaitListType.RELOAD);
 	            	if (s != null)
 	            		server.update(s, true);
 	            }

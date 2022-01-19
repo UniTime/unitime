@@ -39,6 +39,7 @@ import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -234,7 +235,7 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 						
 						XStudent newStudent = null;
 						try {
-							newStudent = ReloadAllData.loadStudent(student, null, server, helper);
+							newStudent = ReloadAllData.loadStudent(student, null, server, helper, WaitList.WaitListType.MASS_CANCEL);
 							if (newStudent != null) {
 								server.update(newStudent, true);
 								OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();

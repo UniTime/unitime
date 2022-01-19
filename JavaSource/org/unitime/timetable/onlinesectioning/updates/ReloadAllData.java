@@ -37,6 +37,7 @@ import org.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpart;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpartCache;
@@ -46,6 +47,7 @@ import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -162,7 +164,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 	                    "where s.session.uniqueId=:sessionId").
 	                    setLong("sessionId",server.getAcademicSession().getUniqueId()).list();
 	            for (org.unitime.timetable.model.Student student: students) {
-	            	XStudent s = loadStudent(student, requestMap, server, helper);
+	            	XStudent s = loadStudent(student, requestMap, server, helper, WaitList.WaitListType.RELOAD);
 	            	if (s != null)
 	            		server.update(s, true);
 	            }
@@ -204,6 +206,10 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
     }
     
     public static XStudent loadStudent(org.unitime.timetable.model.Student s, Map<Long, List<XCourseRequest>> requestMap, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+    	return loadStudent(s, requestMap, server, helper, null); 
+    }
+    
+    public static XStudent loadStudent(org.unitime.timetable.model.Student s, Map<Long, List<XCourseRequest>> requestMap, OnlineSectioningServer server, OnlineSectioningHelper helper, WaitList.WaitListType resetWaitListType) {
     	XStudent student = new XStudent(s, helper, server.getAcademicSession().getFreeTimePattern());
     	
     	for (Iterator<XRequest> i = student.getRequests().iterator(); i.hasNext(); ) {
@@ -273,6 +279,9 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
     			}
     		}
     	}
+    	
+    	if (resetWaitListType != null && s.getWaitListMode() == WaitListMode.WaitList)
+    		s.resetWaitLists(resetWaitListType, helper.getUser().getExternalId(), null, helper.getHibSession());
     	
         return student;
     }

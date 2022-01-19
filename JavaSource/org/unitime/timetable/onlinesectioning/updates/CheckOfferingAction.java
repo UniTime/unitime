@@ -43,6 +43,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -407,6 +408,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 						if (cd != null && cd.isWaitlist()) {
 							cd.setWaitlist(false);
 							helper.getHibSession().saveOrUpdate(cd);
+							student.addWaitList(co, WaitList.WaitListType.WAIT_LIST_PORCESSING, false, helper.getUser().getExternalId(), ts, helper.getHibSession());
 						}
 						if (r.getRequest().isWaitlist())
 							server.waitlist(r.getRequest(), false);
@@ -414,6 +416,9 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 						if (cd != null && !cd.isWaitlist()) {
 							cd.setWaitlist(true);
 							helper.getHibSession().saveOrUpdate(cd);
+							student.addWaitList(
+									CourseOfferingDAO.getInstance().get(r.getCourseId().getCourseId(), helper.getHibSession()),
+									WaitList.WaitListType.WAIT_LIST_PORCESSING, true, helper.getUser().getExternalId(), ts, helper.getHibSession());
 						}
 						if (!r.getRequest().isWaitlist())
 							server.waitlist(r.getRequest(), true);

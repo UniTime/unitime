@@ -64,6 +64,7 @@ import org.unitime.timetable.model.FreeTime;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentEnrollmentMessage;
+import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.onlinesectioning.HasCacheMode;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -736,6 +737,14 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				}
 				
 				helper.getHibSession().saveOrUpdate(student);
+				
+				if (wlMode == WaitListMode.WaitList) {
+					student.resetWaitLists(
+							WaitList.WaitListType.SCHEDULING_ASSISTANT,
+							helper.getUser().getExternalId(),
+							ts,
+							helper.getHibSession());
+				}
 				
 				// Reload student
 				XStudent newStudent = new XStudent(oldStudent, student.getCourseDemands(), helper, server.getAcademicSession().getFreeTimePattern());

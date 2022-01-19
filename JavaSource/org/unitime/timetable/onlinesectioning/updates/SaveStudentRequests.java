@@ -37,6 +37,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.CourseDemand;
@@ -45,6 +46,7 @@ import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.FreeTime;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideIntent;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
@@ -502,6 +504,13 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 		helper.getHibSession().saveOrUpdate(student);
 		helper.getHibSession().flush();
 		
+		if (request.getWaitListMode() == WaitListMode.WaitList) {
+			student.resetWaitLists(
+					WaitList.WaitListType.COURSE_REQUESTS,
+					StudentClassEnrollment.SystemChange.IMPORT.toString(),
+					ts,
+					helper.getHibSession());
+		}
 		return course2request;
 	}
 	
