@@ -500,5 +500,19 @@
 	            not-null="true"
 	            foreign-key="fk_program_session"/>
         </union-subclass>
+        <union-subclass name="Campus" table="campus" abstract="false">
+	        <property
+	            name="externalUniqueId"
+	            column="external_uid"
+	            type="java.lang.String"
+	            not-null="false"
+	            length="40"/>
+	        <many-to-one
+	            name="session"
+	            class="Session"
+	            column="session_id"
+	            not-null="true"
+	            foreign-key="fk_campus_session"/>
+        </union-subclass>
     </class>
 </hibernate-mapping>

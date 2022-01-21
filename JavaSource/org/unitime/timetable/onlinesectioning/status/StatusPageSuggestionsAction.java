@@ -744,6 +744,10 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				for (XAreaClassificationMajor acm: student().getMajors())
 					if (like(acm.getProgram(), term)) return true;
 			}
+			if ("campus".equals(attr)) {
+				for (XAreaClassificationMajor acm: student().getMajors())
+					if (like(acm.getCampus(), term)) return true;
+			}
 			
 			if ("primary-area".equals(attr)) {
 				XAreaClassificationMajor acm = student().getPrimaryMajor();
@@ -770,6 +774,10 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			if ("primary-program".equals(attr)) {
 				XAreaClassificationMajor acm = student().getPrimaryMajor();
 				if (acm != null && like(acm.getProgram(), term)) return true;
+			}
+			if ("primary-campus".equals(attr)) {
+				XAreaClassificationMajor acm = student().getPrimaryMajor();
+				if (acm != null && like(acm.getCampus(), term)) return true;
 			}
 			
 			if ("minor".equals(attr)) {
@@ -1648,6 +1656,9 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			} else if ("program".equals(attr)) {
 				for (XAreaClassificationMajor acm: student().getMajors())
 					if (like(acm.getProgram(), term)) return true;
+			} else if ("campus".equals(attr)) {
+				for (XAreaClassificationMajor acm: student().getMajors())
+					if (like(acm.getCampus(), term)) return true;
 			} else if ("primary-area".equals(attr)) {
 				XAreaClassificationMajor acm = student().getPrimaryMajor();
 				if (acm != null && eq(acm.getArea(), term)) return true;
@@ -1666,6 +1677,9 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			} else if ("primary-program".equals(attr)) {
 				XAreaClassificationMajor acm = student().getPrimaryMajor();
 				if (acm != null && like(acm.getProgram(), term)) return true;
+			} else if ("primary-campus".equals(attr)) {
+				XAreaClassificationMajor acm = student().getPrimaryMajor();
+				if (acm != null && like(acm.getCampus(), term)) return true;
 			} else if ("minor".equals(attr)) {
 				for (XAreaClassificationMajor acm: student().getMinors())
 					if (eq(acm.getMajor(), term)) return true;

@@ -874,7 +874,8 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private long iId;
 		private Long iSessionId = null;
 		private String iExternalId, iName, iEmail;
-		private List<CodeLabel> iArea, iClassification, iMajor, iAccommodation, iMinor, iConcentration, iDegree, iProgram;
+		private List<CodeLabel> iArea, iClassification, iMajor, iAccommodation, iMinor, iConcentration, iDegree, iProgram, iCampus;
+		private String iDefaultCampus = null;
 		private List<String> iAdvisor;
 		private Set<Group> iGroups;
 		private boolean iCanShowExternalId = false, iCanSelect = false;
@@ -1023,6 +1024,32 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			iProgram.add(new CodeLabel(program, label));
 		}
 		public List<CodeLabel> getPrograms() { return iProgram; }
+		
+		public boolean hasCampus() {
+			if (iCampus == null || iCampus.isEmpty()) return false;
+			for (CodeLabel camp: iCampus)
+				if (!camp.isEmpty() && !camp.getCode().equals(iDefaultCampus)) return true;
+			return false;
+		}
+		public String getCampus(String delim) { 
+			if (iCampus == null) return "";
+			String ret = "";
+			for (Iterator<CodeLabel> i = iCampus.iterator(); i.hasNext(); ) {
+				CodeLabel prog = i.next();
+				if (prog.hasCode()) ret += prog.getCode();
+				if (i.hasNext()) ret += delim;
+			}
+			return ret;
+		}
+		public void addCampus(String campus, String label) {
+			if (iCampus == null) iCampus = new ArrayList<CodeLabel>();
+			iCampus.add(new CodeLabel(campus, label));
+		}
+		public List<CodeLabel> getCampuses() { return iCampus; }
+
+		public void setDefaultCampus(String campus) { iDefaultCampus = campus; }
+		public String getDefaultCampus() { return iDefaultCampus; }
+		public boolean hasDefaultCampus() { return iDefaultCampus != null && !iDefaultCampus.isEmpty(); }
 		
 		public boolean hasAdvisor() { return iAdvisor != null && !iAdvisor.isEmpty(); }
 		public String getAdvisor(String delim) { 

@@ -251,6 +251,24 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		}
 		response.add("program", programs);
 		
+		if (!(server instanceof StudentSolver)) {
+			List<Entity> campuses = new ArrayList<Entity>();
+			boolean hasDefaultCampus = false;
+			for (Object[] o: (List<Object[]>)query.select("aac.campus.uniqueId, aac.campus.reference, aac.campus.label, count(distinct s)")
+					.order("aac.campus.reference, aac.campus.label").group("aac.campus.uniqueId, aac.campus.reference, aac.campus.label")
+					.exclude("campus").exclude("course").exclude("lookup").exclude("prefer").exclude("require").exclude("im").exclude("credit").query(helper.getHibSession()).list()) {
+				Entity c = new Entity(
+						(Long)o[0],
+						(String)o[1],
+						(String)o[2]);
+				c.setCount(((Number)o[3]).intValue());
+				if (server.getAcademicSession().getCampus().equals(o[1])) hasDefaultCampus = true;
+				campuses.add(c);
+			}
+			if (campuses.size() == 1 && hasDefaultCampus) campuses.clear();
+			response.add("campus", campuses);
+		}
+		
 		List<Entity> groups = new ArrayList<Entity>();
 		for (Object[] o: (List<Object[]>)query.select("g.uniqueId, g.groupAbbreviation, g.groupName, count(distinct s)")
 				.from("inner join s.groups g").where("g.type is null")
@@ -799,6 +817,32 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 					id++;
 				}
 				query.addWhere("program", "aac.program.reference in (" + prog + ")");
+			}
+		}
+		
+		if (request.hasOptions("campus")) {
+			boolean like = false;
+			for (String d: request.getOptions("campus")) {
+				if (d.indexOf('%') >= 0) { like = true; break; }
+			}
+			if (like) {
+				String q = "";
+				int id = 0;
+				for (String d: request.getOptions("campus")) {
+					q += (q.isEmpty() ? "" : " or ") + "aac.campus.reference like :Xcp" + id;
+					query.addParameter("campus", "Xcp" + id, d);
+					id++;
+				}
+				query.addWhere("campus", q);
+			} else {
+				String prog = "";
+				int id = 0;
+				for (String d: request.getOptions("campus")) {
+					prog += (prog.isEmpty() ? "" : ",") + ":Xcp" + id;
+					query.addParameter("campus", "Xcp" + id, d);
+					id++;
+				}
+				query.addWhere("campus", "aac.campus.reference in (" + prog + ")");
 			}
 		}
 
@@ -1479,7 +1523,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 	public static boolean hasNoMatchCourses(FilterRpcRequest request, OnlineSectioningHelper helper) {
 		if (request.hasOptions("prefer") || request.hasOptions("require"))
 			return false;
-		if (request.hasOptions("area") || request.hasOptions("classification") || request.hasOptions("degree") || request.hasOptions("program") || request.hasOptions("major") || request.hasOptions("concentration") || request.hasOptions("minor"))
+		if (request.hasOptions("area") || request.hasOptions("classification") || request.hasOptions("degree") || request.hasOptions("program") || request.hasOptions("campus") || request.hasOptions("major") || request.hasOptions("concentration") || request.hasOptions("minor"))
 			return false;
 		if (request.hasOptions("group") || request.hasOptions("accommodation"))
 			return false;

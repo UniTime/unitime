@@ -253,7 +253,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
 				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasReqCredit = false, hasCredit = false, hasDistances = false, hasOverlaps = false,
 				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false, hasOverride = false, hasAdvisor = false,
-				hasAdvisedInfo = false, hasMinor = false, hasConc = false, hasDeg = false, hasProg = false;
+				hasAdvisedInfo = false, hasMinor = false, hasConc = false, hasDeg = false, hasProg = false, hasCamp = false;
 		Set<String> groupTypes = new TreeSet<String>();
 		if (students != null)
 			for (ClassAssignmentInterface.StudentInfo e: students) {
@@ -286,6 +286,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 				if (e.getStudent().hasConcentration()) hasConc = true;
 				if (e.getStudent().hasDegree()) hasDeg = true;
 				if (e.getStudent().hasProgram()) hasProg = true;
+				if (e.getStudent().hasCampus()) hasCamp = true;
 			}
 		
 		List<String> header = new ArrayList<String>();
@@ -293,6 +294,9 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 			header.add(MESSAGES.colStudentExternalId());
 		
 		header.add(MESSAGES.colStudent());
+		if (hasCamp)
+			header.add(MESSAGES.colCampus());
+		
 		if (hasArea) {
 			header.add(MESSAGES.colArea());
 			header.add(MESSAGES.colClassification());
@@ -393,6 +397,8 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 					if (hasExtId)
 						line.add(info.getStudent().isCanShowExternalId() ? info.getStudent().getExternalId() : "");
 					line.add(info.getStudent().getName());
+					if (hasCamp)
+						line.add(info.getStudent().getCampus("\n"));
 					if (hasArea) {
 						line.add(info.getStudent().getArea("\n"));
 						line.add(info.getStudent().getClassification("\n"));
@@ -487,14 +493,22 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 						line.add((info.getEmailDate() == null ? null : df.format(info.getEmailDate())));
 				} else {
 					line.add(MESSAGES.total());
+					line.add(number(null, students.size() - 1));
 					if (hasExtId)
 						line.add("");
-					line.add(number(null, students.size() - 1));
+					if (hasCamp)
+						line.add("");
 					if (hasArea) {
 						line.add("");
 						line.add("");
 					}
+					if (hasDeg)
+						line.add("");
+					if (hasProg)
+						line.add("");
 					if (hasMajor)
+						line.add("");
+					if (hasConc)
 						line.add("");
 					if (hasMinor)
 						line.add("");

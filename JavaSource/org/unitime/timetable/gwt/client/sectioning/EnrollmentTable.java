@@ -929,7 +929,7 @@ public class EnrollmentTable extends Composite {
 		}
 		
 		boolean hasPriority = false, hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasAlternative = false, hasReservation = false, hasRequestedDate = false, hasEnrolledDate = false, hasConflict = false, hasMessage = false;
-		boolean hasAdvisor = false, hasMinor = false, hasConc = false, hasDeg = false, hasProg = false, hasWaitlistedDate = false, hasWaitListedPosition = false, hasCritical = false;
+		boolean hasAdvisor = false, hasMinor = false, hasConc = false, hasDeg = false, hasProg = false, hasCamp = false, hasWaitlistedDate = false, hasWaitListedPosition = false, hasCritical = false;
 		Set<String> groupTypes = new HashSet<String>();
 		for (ClassAssignmentInterface.Enrollment e: enrollments) {
 			if (filter(f, e)) continue;
@@ -950,6 +950,7 @@ public class EnrollmentTable extends Composite {
 			if (e.getStudent().hasConcentration()) hasConc = true;
 			if (e.getStudent().hasDegree()) hasDeg = true;
 			if (e.getStudent().hasProgram()) hasProg = true;
+			if (e.getStudent().hasCampus()) hasCamp = true;
 			if (e.hasWaitListedDate()) hasWaitlistedDate = true;
 			if (e.hasWaitListedPosition()) hasWaitListedPosition = true;
 			if (e.isCritical() || e.isImportant()) hasCritical = true;
@@ -967,6 +968,13 @@ public class EnrollmentTable extends Composite {
 			hAlternative = new UniTimeTableHeader(MESSAGES.colAlternative());
 			header.add(hAlternative);
 			addSortOperation(hAlternative, EnrollmentComparator.SortBy.ALTERNATIVE, MESSAGES.colAlternative());
+		}
+		
+		UniTimeTableHeader hCampus = null;
+		if (hasCamp) {
+			hCampus = new UniTimeTableHeader(MESSAGES.colCampus());
+			header.add(hCampus);
+			addSortOperation(hCampus, EnrollmentComparator.SortBy.CAMPUS, MESSAGES.colCampus());
 		}
 		
 		UniTimeTableHeader hArea = null, hClasf = null;
@@ -1055,7 +1063,7 @@ public class EnrollmentTable extends Composite {
 		for (final String subpart: subparts) {
 			UniTimeTableHeader hSubpart = new UniTimeTableHeader(subpart);
 			hSubparts.put(subpart, hSubpart);
-			final int col = 1 + (canSelect ? 1 : 0) + (hasExtId ? 1 : 0) + (crosslist ? 1 : 0) + (hasPriority ? 1 : 0) + (hasAlternative ? 1 : 0) + (hasArea ? 2 : 0) + (hasDeg ? 1 : 0) +  (hasProg ? 1 : 0) + (hasMajor ? 1 : 0) + (hasConc ? 1 : 0) + (hasMinor ? 1 : 0) + (hasGroup ? 1 : 0) + (hasAcmd ? 1 : 0) + (hasReservation ? 1 : 0) + groupTypes.size();
+			final int col = 1 + (canSelect ? 1 : 0) + (hasExtId ? 1 : 0) + (crosslist ? 1 : 0) + (hasPriority ? 1 : 0) + (hasAlternative ? 1 : 0) + (hasArea ? 2 : 0) + (hasDeg ? 1 : 0) +  (hasProg ? 1 : 0) + (hasCamp ? 1 : 0) + (hasMajor ? 1 : 0) + (hasConc ? 1 : 0) + (hasMinor ? 1 : 0) + (hasGroup ? 1 : 0) + (hasAcmd ? 1 : 0) + (hasReservation ? 1 : 0) + groupTypes.size();
 			hSubpart.addOperation(new Operation() {
 				@Override
 				public void execute() {
@@ -1398,6 +1406,8 @@ public class EnrollmentTable extends Composite {
 				line.add(new Label(enrollment.getPriority() <= 0 ? "" : MESSAGES.priority(enrollment.getPriority())));
 			if (hasAlternative)
 				line.add(new Label(enrollment.getAlternative(), false));
+			if (hasCamp)
+				line.add(new ACM(enrollment.getStudent().getCampuses()));
 			if (hasArea) {
 				line.add(new ACM(enrollment.getStudent().getAreas()));
 				line.add(new ACM(enrollment.getStudent().getClassifications()));
@@ -1630,6 +1640,7 @@ public class EnrollmentTable extends Composite {
 			case ADVISOR: h = hAdvisor; break;
 			case DEGREE: h = hDegree; break;
 			case PROGRAM: h = hProgram; break;
+			case CAMPUS: h = hCampus; break;
 			case WAITLIST_TS: h = hWaitlistTS; break;
 			case WAITLIST_POS: h = hWaitlistPOS; break;
 			case CRITICAL: h = hCritical; break;
@@ -1927,6 +1938,7 @@ public class EnrollmentTable extends Composite {
 			CONCENTRATION,
 			DEGREE,
 			PROGRAM,
+			CAMPUS,
 			WAITLIST_TS,
 			WAITLIST_POS,
 			CRITICAL,
@@ -2016,6 +2028,10 @@ public class EnrollmentTable extends Composite {
 					return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
 				case PROGRAM:
 					cmp = e1.getStudent().getProgram("|").compareTo(e2.getStudent().getProgram("|"));
+					if (cmp != 0) return cmp;
+					return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
+				case CAMPUS:
+					cmp = e1.getStudent().getCampus("|").compareTo(e2.getStudent().getCampus("|"));
 					if (cmp != 0) return cmp;
 					return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
 				case GROUP:

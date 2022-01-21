@@ -33,6 +33,7 @@ import org.dom4j.Element;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
+import org.unitime.timetable.model.Campus;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.Degree;
 import org.unitime.timetable.model.PosMajor;
@@ -124,6 +125,12 @@ public class StudentImport extends BaseImport {
             	code2program.put(prog.getReference(), prog);
             }
             
+            Map<String, Campus> code2campus = new Hashtable<String, Campus>();
+            for (Campus camp: (List<Campus>)getHibSession().createQuery(
+            		"from Campus where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            	code2campus.put(camp.getReference(), camp);
+            }
+            
             Map<String, PosMinor> code2minor = new Hashtable<String, PosMinor>();
             for (PosMinor minor: (List<PosMinor>)getHibSession().createQuery(
             		"from PosMinor where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
@@ -153,7 +160,7 @@ public class StudentImport extends BaseImport {
 	            while (trimLeadingZerosFromExternalId && externalId.startsWith("0")) externalId = externalId.substring(1);
 
 	            importStudent(element, externalId, students, session, updatedStudents,
-	            		abbv2area, code2clasf, code2major, code2minor, code2group, code2accomodation, code2concentration, code2degree, code2program);
+	            		abbv2area, code2clasf, code2major, code2minor, code2group, code2accomodation, code2concentration, code2degree, code2program, code2campus);
 	        }
 
 	        if (!incremental)
@@ -178,11 +185,11 @@ public class StudentImport extends BaseImport {
 	protected Student importStudent(Element element, String externalId, Hashtable<String, Student> students, Session session, Set<Long> updatedStudents,
 			Map<String, AcademicArea> abbv2area, Map<String, AcademicClassification> code2clasf, Map<String, PosMajor> code2major, Map<String, PosMinor> code2minor,
 			Map<String, StudentGroup> code2group, Map<String, StudentAccomodation> code2accomodation, Map<String, PosMajorConcentration> code2conc,
-			Map<String, Degree> code2degree, Map<String, Program> code2program) {
+			Map<String, Degree> code2degree, Map<String, Program> code2program, Map<String, Campus> code2campus) {
 		
         Student student = updateStudentInfo(element, externalId, students, session, updatedStudents);
 		
-		updateStudentMajors(element, student, updatedStudents, abbv2area, code2clasf, code2major, code2conc, code2degree, code2program);
+		updateStudentMajors(element, student, updatedStudents, abbv2area, code2clasf, code2major, code2conc, code2degree, code2program, code2campus);
 		
 		updateStudentMinors(element, student, updatedStudents, abbv2area, code2clasf, code2minor);
 
@@ -252,7 +259,9 @@ public class StudentImport extends BaseImport {
     	return student;
 	}
 	
-	protected void updateStudentMajors(Element element, Student student, Set<Long> updatedStudents, Map<String, AcademicArea> abbv2area, Map<String, AcademicClassification> code2clasf, Map<String, PosMajor> code2major, Map<String, PosMajorConcentration> code2conc, Map<String, Degree> code2degree, Map<String, Program> code2program) {
+	protected void updateStudentMajors(Element element, Student student, Set<Long> updatedStudents,
+			Map<String, AcademicArea> abbv2area, Map<String, AcademicClassification> code2clasf, Map<String, PosMajor> code2major,
+			Map<String, PosMajorConcentration> code2conc, Map<String, Degree> code2degree, Map<String, Program> code2program, Map<String, Campus> code2campus) {
 		Map<String, Set<String>> area2classifications = new HashMap<String, Set<String>>();
 		if (element.element("studentAcadAreaClass") != null) {
 			for (Iterator i2 = element.element("studentAcadAreaClass").elementIterator("acadAreaClass"); i2.hasNext();) {
@@ -291,6 +300,7 @@ public class StudentImport extends BaseImport {
 				String concentration = e.attributeValue("concentration");
 				String degree = e.attributeValue("degree");
 				String program = e.attributeValue("program");
+				String campus = e.attributeValue("campus");
 				Double weight = Double.valueOf(e.attributeValue("weight", "1.0"));
 				
     			String clasf = e.attributeValue("academicClass");
@@ -313,16 +323,19 @@ public class StudentImport extends BaseImport {
     	        				acm.setConcentration(concentration == null ? null : code2conc.get(area + ":" + code + ":" + concentration));
     	        				acm.setDegree(degree == null ? null : code2degree.get(degree));
     	        				acm.setProgram(program == null ? null : code2program.get(program));
+    	        				acm.setCampus(campus == null ? null : code2campus.get(campus));
     	        				acm.setWeight(weight);
     	        				student.getAreaClasfMajors().add(acm);
     	                		if (student.getUniqueId() != null)
     	                			updatedStudents.add(student.getUniqueId());
     	    				} else if (!ToolBox.equals(concentration, acm.getConcentration() == null ? null : acm.getConcentration().getCode())
     	    						|| !ToolBox.equals(degree, acm.getDegree() == null ? null : acm.getDegree().getReference())
-    	    						|| !ToolBox.equals(program, acm.getProgram() == null ? null : acm.getProgram().getReference())) {
+    	    						|| !ToolBox.equals(program, acm.getProgram() == null ? null : acm.getProgram().getReference())
+    	    						|| !ToolBox.equals(campus, acm.getCampus() == null ? null : acm.getCampus().getReference())) {
     	    					acm.setConcentration(concentration == null ? null : code2conc.get(area + ":" + code + ":" + concentration));
     	    					acm.setDegree(degree == null ? null : code2degree.get(degree));
     	    					acm.setProgram(program == null ? null : code2program.get(program));
+    	    					acm.setCampus(campus == null ? null : code2campus.get(campus));
     	    					acm.setWeight(weight);
     	    					iHibSession.update(acm);
     	    					if (student.getUniqueId() != null)
@@ -350,16 +363,19 @@ public class StudentImport extends BaseImport {
         				acm.setConcentration(concentration == null ? null : code2conc.get(area + ":" + code + ":" + concentration));
         				acm.setDegree(degree == null ? null : code2degree.get(degree));
         				acm.setProgram(program == null ? null : code2program.get(program));
+        				acm.setCampus(campus == null ? null : code2campus.get(campus));
         				acm.setWeight(weight);
         				student.getAreaClasfMajors().add(acm);
                 		if (student.getUniqueId() != null)
                 			updatedStudents.add(student.getUniqueId());
     				} else if (!ToolBox.equals(concentration, acm.getConcentration() == null ? null : acm.getConcentration().getCode())
     						|| !ToolBox.equals(degree, acm.getDegree() == null ? null : acm.getDegree().getReference())
-    						|| !ToolBox.equals(program, acm.getProgram() == null ? null : acm.getProgram().getReference())) {
+    						|| !ToolBox.equals(program, acm.getProgram() == null ? null : acm.getProgram().getReference())
+    						|| !ToolBox.equals(campus, acm.getCampus() == null ? null : acm.getCampus().getReference())) {
     					acm.setConcentration(concentration == null ? null : code2conc.get(area + ":" + code + ":" + concentration));
     					acm.setDegree(degree == null ? null : code2degree.get(degree));
     					acm.setProgram(program == null ? null : code2program.get(program));
+    					acm.setCampus(campus == null ? null : code2campus.get(campus));
     					acm.setWeight(weight);
     					iHibSession.update(acm);
     					if (student.getUniqueId() != null)

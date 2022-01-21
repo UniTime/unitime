@@ -1991,6 +1991,14 @@ public class SectioningStatusPage extends Composite {
 					iStudentInfoVisibleColumns.groupTypes.add(g.getType());
 		}
 		
+		UniTimeTableHeader hCampus = null;
+		if (iStudentInfoVisibleColumns.hasCamp) {
+			hCampus = new UniTimeTableHeader(MESSAGES.colCampus());
+			//hMajor.setWidth("100px");
+			header.add(hCampus);
+			addSortOperation(hCampus, StudentComparator.SortBy.CAMPUS, MESSAGES.colCampus());
+		}
+
 		UniTimeTableHeader hArea = null, hClasf = null;
 		if (iStudentInfoVisibleColumns.hasArea) {
 			hArea = new UniTimeTableHeader(MESSAGES.colArea());
@@ -2019,7 +2027,7 @@ public class SectioningStatusPage extends Composite {
 			header.add(hProgram);
 			addSortOperation(hProgram, StudentComparator.SortBy.PROGRAM, MESSAGES.colProgram());
 		}
-
+		
 		UniTimeTableHeader hMajor = null;
 		if (iStudentInfoVisibleColumns.hasMajor) {
 			hMajor = new UniTimeTableHeader(MESSAGES.colMajor());
@@ -2274,6 +2282,7 @@ public class SectioningStatusPage extends Composite {
 			case MINOR: h = hMinor; break;
 			case DEGREE: h = hDegree; break;
 			case PROGRAM: h = hProgram; break;
+			case CAMPUS: h = hCampus; break;
 			}
 			if (h != null) {
 				Collections.sort(result, new StudentComparator(sort, asc, g));
@@ -2354,6 +2363,8 @@ public class SectioningStatusPage extends Composite {
 				line.add(new Label(info.getStudent().isCanShowExternalId() ? info.getStudent().getExternalId() : "", false));
 			}
 			line.add(new TitleCell(info.getStudent().getName()));
+			if (iStudentInfoVisibleColumns.hasCamp)
+				line.add(new ACM(info.getStudent().getCampuses()));
 			if (iStudentInfoVisibleColumns.hasArea) {
 				line.add(new ACM(info.getStudent().getAreas()));
 				line.add(new ACM(info.getStudent().getClassifications()));
@@ -2382,6 +2393,8 @@ public class SectioningStatusPage extends Composite {
 			else
 				line.add(new Label(MESSAGES.total()));
 			line.add(new NumberCell(null, iStudentInfos.size() - 1));
+			if (iStudentInfoVisibleColumns.hasCamp)
+				line.add(new HTML("&nbsp;", false));
 			if (iStudentInfoVisibleColumns.hasArea) {
 				line.add(new HTML("&nbsp;", false));
 				line.add(new HTML("&nbsp;", false));
@@ -3271,6 +3284,7 @@ public class SectioningStatusPage extends Composite {
 			CONCENTRATION,
 			DEGREE,
 			PROGRAM,
+			CAMPUS,
 			;
 		}
 		
@@ -3319,6 +3333,10 @@ public class SectioningStatusPage extends Composite {
 				return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
 			case PROGRAM:
 				cmp = e1.getStudent().getProgram("|").compareTo(e2.getStudent().getProgram("|"));
+				if (cmp != 0) return cmp;
+				return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
+			case CAMPUS:
+				cmp = e1.getStudent().getCampus("|").compareTo(e2.getStudent().getCampus("|"));
 				if (cmp != 0) return cmp;
 				return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
 			case GROUP:
@@ -3667,7 +3685,7 @@ public class SectioningStatusPage extends Composite {
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
 				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false, hasReqCred = false, hasDistances = false, hasOverlaps = false,
 				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false, hasOverride = false, hasExtId = false,
-				hasAdvisor = false, hasAdvisedInfo = false, hasMinor = false, hasConc = false, hasDeg = false, hasProg = false;
+				hasAdvisor = false, hasAdvisedInfo = false, hasMinor = false, hasConc = false, hasDeg = false, hasProg = false, hasCamp = false;
 		int selectableStudents = 0;
 		Set<String> groupTypes = new TreeSet<String>();
 		
@@ -3705,6 +3723,7 @@ public class SectioningStatusPage extends Composite {
 				if (e.getStudent().hasConcentration()) hasConc = true;
 				if (e.getStudent().hasDegree()) hasDeg = true;
 				if (e.getStudent().hasProgram()) hasProg = true;
+				if (e.getStudent().hasCampus()) hasCamp = true;
 			}
 		}
 	}

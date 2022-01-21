@@ -3305,6 +3305,14 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pagePrograms();
 	
+	@DefaultMessage("Campus")
+	@DoNotTranslate
+	String pageCampus();
+
+	@DefaultMessage("Campuses")
+	@DoNotTranslate
+	String pageCampuses();
+	
 	@DefaultMessage("Offering Consent Type")
 	@DoNotTranslate
 	String pageOfferingConsentType();
@@ -5775,6 +5783,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("program")
 	String tagProgram();
+	
+	@DefaultMessage("campus")
+	String tagCampus();
 	
 	@DefaultMessage("minor")
 	String tagMinor();

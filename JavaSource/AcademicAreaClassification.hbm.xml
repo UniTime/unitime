@@ -81,6 +81,13 @@
             not-null="false"
             foreign-key="fk_student_acmaj_prog"/>
 
+        <many-to-one
+            name="campus"
+            class="Campus"
+            column="campus_id"
+            not-null="false"
+            foreign-key="fk_student_acmaj_campus"/>
+
         <property
             name="weight"
             column="weight"

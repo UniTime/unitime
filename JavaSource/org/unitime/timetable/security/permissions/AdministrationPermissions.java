@@ -372,6 +372,9 @@ public class AdministrationPermissions {
 	
 	@PermissionForRight(Right.Programs)
 	public static class Programs extends SimpleSessionPermission {}
+	
+	@PermissionForRight(Right.Campuses)
+	public static class Campuses extends SimpleSessionPermission {}
 
 	@PermissionForRight(Right.Minors)
 	public static class Minors extends SimpleSessionPermission {}
@@ -402,6 +405,9 @@ public class AdministrationPermissions {
 	
 	@PermissionForRight(Right.ProgramEdit)
 	public static class ProgramEdit extends Concentrations {}
+	
+	@PermissionForRight(Right.CampusEdit)
+	public static class CampusEdit extends Concentrations {}
 
 	@PermissionForRight(Right.MinorEdit)
 	public static class MinorEdit extends MajorEdit {}

@@ -924,6 +924,12 @@
 					<hasPermission name="Minors"/>
 				</condition>
 			</item>
+			<item name="Campuses" page="admin" type="gwt">
+				<parameter name="type">campus</parameter>
+				<condition>
+					<hasPermission name="Campuses"/>
+				</condition>
+			</item>
 			<item name="Student Groups" page="admin" type="gwt">
 				<parameter name="type">group</parameter>
 				<condition>

@@ -1016,6 +1016,10 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
 					if (acm.getProgram() != null && like(acm.getProgram().getReference(), term)) return true;
 			}
+			if ("campus".equals(attr)) {
+				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
+					if (acm.getCampus() != null && like(acm.getCampus().getReference(), term)) return true;
+			}
 			
 			if ("primary-area".equals(attr)) {
 				StudentAreaClassificationMajor acm = student().getPrimaryAreaClasfMajor();
@@ -1042,6 +1046,10 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			if ("primary-program".equals(attr)) {
 				StudentAreaClassificationMajor acm = student().getPrimaryAreaClasfMajor();
 				if (acm != null && acm.getProgram() != null && like(acm.getProgram().getReference(), term)) return true;
+			}
+			if ("primary-campus".equals(attr)) {
+				StudentAreaClassificationMajor acm = student().getPrimaryAreaClasfMajor();
+				if (acm != null && acm.getCampus() != null && like(acm.getCampus().getReference(), term)) return true;
 			}
 			
 			if ("minor".equals(attr)) {
@@ -1887,6 +1895,9 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			} else if ("program".equals(attr)) {
 				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
 					if (acm.getProgram() != null && like(acm.getProgram().getReference(), term)) return true;
+			} else if ("campus".equals(attr)) {
+				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
+					if (acm.getCampus() != null && like(acm.getCampus().getReference(), term)) return true;
 			} else if ("primary-area".equals(attr)) {
 				StudentAreaClassificationMajor acm = student().getPrimaryAreaClasfMajor();
 				if (acm != null && eq(acm.getAcademicArea().getAcademicAreaAbbreviation(), term)) return true;
@@ -1905,6 +1916,9 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			} else if ("primary-program".equals(attr)) {
 				StudentAreaClassificationMajor acm = student().getPrimaryAreaClasfMajor();
 				if (acm != null && acm.getProgram() != null && like(acm.getProgram().getReference(), term)) return true;
+			} else if ("primary-campus".equals(attr)) {
+				StudentAreaClassificationMajor acm = student().getPrimaryAreaClasfMajor();
+				if (acm != null && acm.getCampus() != null && like(acm.getCampus().getReference(), term)) return true;
 			} else if ("minor".equals(attr)) {
 				for (StudentAreaClassificationMinor acm: student().getAreaClasfMinors())
 					if (eq(acm.getMinor().getCode(), term)) return true;

@@ -112,6 +112,8 @@ public class StudentExport extends BaseExport {
         			majorElement.addAttribute("degree", aac.getDegree().getReference());
         		if (aac.getProgram() != null)
         			majorElement.addAttribute("program", aac.getProgram().getReference());
+        		if (aac.getCampus() != null)
+        			majorElement.addAttribute("campus", aac.getCampus().getReference());
         		if (aac.getWeight() != null && aac.getWeight() != 1.0)
         			majorElement.addAttribute("weight", aac.getWeight().toString());
         	}

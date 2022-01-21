@@ -46,6 +46,7 @@ import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
+import org.unitime.timetable.model.Campus;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -100,6 +101,7 @@ import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.Program;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
@@ -133,6 +135,7 @@ import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao.AcademicAreaDAO;
 import org.unitime.timetable.model.dao.AcademicClassificationDAO;
 import org.unitime.timetable.model.dao.BuildingDAO;
+import org.unitime.timetable.model.dao.CampusDAO;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseCatalogDAO;
 import org.unitime.timetable.model.dao.CurriculumDAO;
@@ -158,6 +161,7 @@ import org.unitime.timetable.model.dao.OfferingCoordinatorDAO;
 import org.unitime.timetable.model.dao.PeriodicTaskDAO;
 import org.unitime.timetable.model.dao.PosMajorDAO;
 import org.unitime.timetable.model.dao.PosMinorDAO;
+import org.unitime.timetable.model.dao.ProgramDAO;
 import org.unitime.timetable.model.dao.ReservationDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.RoomDeptDAO;
@@ -2752,6 +2756,34 @@ public class SessionRollForward {
             		hibSession.save(newConc);
             	}
             }
+        }
+        
+        // roll forward programs, if needed
+        Hashtable<String, Program> programs = new Hashtable<String, Program>();
+        for (Program program: ProgramDAO.getInstance().findBySession(hibSession, toSession.getUniqueId())) {
+        	programs.put(program.getReference(), program);
+        }
+        if (programs.isEmpty()) {
+        	for (Program program: ProgramDAO.getInstance().findBySession(hibSession, fromSession.getUniqueId())) {
+        		Program newProgram = (Program)program.clone();
+        		newProgram.setSession(toSession);
+        		hibSession.save(newProgram);
+        		programs.put(newProgram.getReference(), newProgram);
+        	}
+        }
+        
+     // roll forward campuses, if needed
+        Hashtable<String, Campus> campuses = new Hashtable<String, Campus>();
+        for (Campus campus: CampusDAO.getInstance().findBySession(hibSession, toSession.getUniqueId())) {
+        	campuses.put(campus.getReference(), campus);
+        }
+        if (campuses.isEmpty()) {
+        	for (Campus campus: CampusDAO.getInstance().findBySession(hibSession, fromSession.getUniqueId())) {
+        		Campus newCampus = (Campus)campus.clone();
+        		newCampus.setSession(toSession);
+        		hibSession.save(newCampus);
+        		campuses.put(newCampus.getReference(), newCampus);
+        	}
         }
         
         // roll forward minors, if needed
