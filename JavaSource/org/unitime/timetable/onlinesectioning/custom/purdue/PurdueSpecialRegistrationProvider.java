@@ -497,8 +497,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 						for (XSection s: sections) {
 							if (!enrollment.getSectionIds().contains(s.getSectionId())) {
 								Change ch = new Change();
-								ch.subject = course.getSubjectArea();
-								ch.courseNbr = course.getCourseNumber();
+								ch.setCourse(course.getSubjectArea(), course.getCourseNumber(), iExternalTermProvider, server.getAcademicSession());
 								ch.crn = s.getExternalId(course.getCourseId());
 								ch.operation = ChangeOperation.ADD;
 								ch.credit = course.getCreditAbbv();
@@ -510,8 +509,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							XSection s = offerings.get(course.getCourseId()).getSection(id);
 							if (!sections.contains(s)) {
 								Change ch = new Change();
-								ch.subject = course.getSubjectArea();
-								ch.courseNbr = course.getCourseNumber();
+								ch.setCourse(course.getSubjectArea(), course.getCourseNumber(), iExternalTermProvider, server.getAcademicSession());
 								ch.crn = s.getExternalId(course.getCourseId());
 								ch.operation = ChangeOperation.DROP;
 								ch.credit = course.getCreditAbbv();
@@ -527,8 +525,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			// new course
 			for (XSection section: sections) {
 				Change ch = new Change();
-				ch.subject = course.getSubjectArea();
-				ch.courseNbr = course.getCourseNumber();
+				ch.setCourse(course.getSubjectArea(), course.getCourseNumber(), iExternalTermProvider, server.getAcademicSession());
 				ch.crn = section.getExternalId(course.getCourseId());
 				ch.operation = ChangeOperation.ADD;
 				ch.credit = course.getCreditAbbv();
@@ -547,8 +544,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 						for (XSection section: offering.getSections(enrollment)) {
 							XCourse course = offering.getCourse(enrollment.getCourseId());
 							Change ch = new Change();
-							ch.subject = course.getSubjectArea();
-							ch.courseNbr = course.getCourseNumber();
+							ch.setCourse(course.getSubjectArea(), course.getCourseNumber(), iExternalTermProvider, server.getAcademicSession());
 							ch.crn = section.getExternalId(course.getCourseId());
 							ch.operation = ChangeOperation.DROP;
 							ch.credit = course.getCreditAbbv();
@@ -568,8 +564,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				Change ch = (m.getSection() != null ? changes.get(m.getSection()) : m.getCourse() != null ? changes.get(m.getCourse()) : null);
 				if (ch == null && m.getCourse() != null) {
 					ch = new Change();
-					ch.subject = m.getCourse().substring(0, m.getCourse().lastIndexOf(' '));
-					ch.courseNbr = m.getCourse().substring(m.getCourse().lastIndexOf(' ') + 1);
+					ch.setCourse(
+							m.getCourse().substring(0, m.getCourse().lastIndexOf(' ')),
+							m.getCourse().substring(m.getCourse().lastIndexOf(' ') + 1),
+							iExternalTermProvider, server.getAcademicSession());
 					ch.crn = m.getSection();
 					ch.operation = ChangeOperation.KEEP;
 					ch.errors = new ArrayList<ChangeError>();
@@ -2796,8 +2794,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 						else
 							crns += "," + crn;
 					Change ch = new Change();
-					ch.courseNbr = change.getCourse();
-					ch.subject = change.getSubject();
+					ch.setCourse(change.getSubject(), change.getCourse(), iExternalTermProvider, server.getAcademicSession());
 					ch.crn = crns;
 					ch.operation = ChangeOperation.CHGMODE;
 					ch.credit = change.getCredit();
@@ -2817,8 +2814,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				for (SpecialRegistrationCreditChange change: request.getCreditChanges()) {
 					if (!change.hasApprovals()) continue;
 					Change ch = new Change();
-					ch.courseNbr = change.getCourse();
-					ch.subject = change.getSubject();
+					ch.setCourse(change.getSubject(), change.getCourse(), iExternalTermProvider, server.getAcademicSession());
 					ch.crn = change.getCrn();
 					ch.operation = ChangeOperation.CHGVARCR;
 					ch.selectedCreditHour = change.getCredit().toString();
@@ -3004,8 +3000,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				req.maxCredit = request.getMaxCredit();
 			
 			Change change = new Change();
-			change.courseNbr = request.getCourse().getCourseNbr();
-			change.subject = request.getCourse().getSubject();
+			change.setCourse(request.getCourse().getSubject(), request.getCourse().getCourseNbr(), iExternalTermProvider, server.getAcademicSession());
 			change.operation = ChangeOperation.CHGVARTL;
 			if (request.getCredit() != null)
 				change.selectedCreditHour = Formats.getNumberFormat("0.#").format(request.getCredit());

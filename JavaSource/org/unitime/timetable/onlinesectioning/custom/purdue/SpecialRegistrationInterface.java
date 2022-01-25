@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.joda.time.DateTime;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
+import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 
 /**
  * @author Tomas Muller
@@ -129,6 +131,10 @@ public class SpecialRegistrationInterface {
 		public String subject;
 		/** Course number (can be null in case of the MAXI error) */
 		public String courseNbr;
+		/** Banner's subject area (can be null in case of the MAXI error) */
+		public String bannerSubject;
+		/** Banner's course number (can be null in case of the MAXI error) */
+		public String bannerCourseNbr;
 		/** Comma separated list of crns (only used during registration) */
 		public String crn;
 		/** Change operation */
@@ -167,6 +173,24 @@ public class SpecialRegistrationInterface {
 		public String apiYear;
 		/** UniTime's academic session term (only used when operation = CHGVARTL) */ 
 		public String apiTerm;
+		
+		public void setCourse(String subject, String courseNbr, ExternalTermProvider ext, AcademicSessionInfo session) {
+			this.subject = subject;
+			this.courseNbr = courseNbr;
+			if (ext != null && session != null) {
+				this.bannerSubject = ext.getExternalSubject(session, subject, courseNbr);
+				this.bannerCourseNbr = ext.getExternalCourseNumber(session, subject, courseNbr);
+			} else {
+				if (subject.indexOf(" - ") >= 0)
+					this.bannerSubject = subject.substring(subject.indexOf(" - ") + 3);
+				else
+					this.bannerSubject = subject;
+				if (courseNbr.length() > 5)
+					this.bannerCourseNbr = courseNbr.substring(0, 5);
+				else
+					this.bannerCourseNbr = courseNbr;
+			}
+		}
 	}
 	
 
@@ -227,12 +251,34 @@ public class SpecialRegistrationInterface {
 		public String subject;
 		/** Course number */
 		public String courseNbr;
+		/** Banner's subject area (can be null in case of the MAXI error) */
+		public String bannerSubject;
+		/** Banner's course number (can be null in case of the MAXI error) */
+		public String bannerCourseNbr;
 		/** Course title */
 		public String title;
 		/** Lower bound on the credit */
 		public Float creditHrs;
 		/** Alternatives, if provided */
 		public List<CourseCredit> alternatives;
+		
+		public void setCourse(String subject, String courseNbr, ExternalTermProvider ext, AcademicSessionInfo session) {
+			this.subject = subject;
+			this.courseNbr = courseNbr;
+			if (ext != null && session != null) {
+				this.bannerSubject = ext.getExternalSubject(session, subject, courseNbr);
+				this.bannerCourseNbr = ext.getExternalCourseNumber(session, subject, courseNbr);
+			} else {
+				if (subject.indexOf(" - ") >= 0)
+					this.bannerSubject = subject.substring(subject.indexOf(" - ") + 3);
+				else
+					this.bannerSubject = subject;
+				if (courseNbr.length() > 5)
+					this.bannerCourseNbr = courseNbr.substring(0, 5);
+				else
+					this.bannerCourseNbr = courseNbr;
+			}
+		}
 	}
 	
 	/** Class representing a special registration that has been cancelled */

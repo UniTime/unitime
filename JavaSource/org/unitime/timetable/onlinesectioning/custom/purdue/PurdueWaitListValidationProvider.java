@@ -791,8 +791,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						}
 						if (!errors.isEmpty()) {
 							Change ch = new Change();
-							ch.subject = subject;
-							ch.courseNbr = courseNbr;
+							ch.setCourse(subject, courseNbr, iExternalTermProvider, server.getAcademicSession());
 							ch.crn = "";
 							ch.errors = errors;
 							ch.operation = ChangeOperation.ADD;
@@ -815,15 +814,13 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 					if (course == null) continue;
 					if (cc == null) {
 						cc = new CourseCredit();
-						cc.subject = course.getSubjectArea();
-						cc.courseNbr = course.getCourseNumber();
+						cc.setCourse(course.getSubjectArea(), course.getSubjectArea(), iExternalTermProvider, server.getAcademicSession());
 						cc.title = course.getTitle();
 						cc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
 					} else {
 						if (cc.alternatives == null) cc.alternatives = new ArrayList<CourseCredit>();
 						CourseCredit acc = new CourseCredit();
-						acc.subject = course.getSubjectArea();
-						acc.courseNbr = course.getCourseNumber();
+						acc.setCourse(course.getSubjectArea(), course.getSubjectArea(), iExternalTermProvider, server.getAcademicSession());
 						acc.title = course.getTitle();
 						acc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
 						cc.alternatives.add(acc);
@@ -1537,8 +1534,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 							}
 							if (change == null) {
 								change = new Change();
-								change.subject = cr.getCourseOffering().getSubjectAreaAbbv();
-								change.courseNbr = cr.getCourseOffering().getCourseNbr();
+								change.setCourse(cr.getCourseOffering().getSubjectAreaAbbv(), cr.getCourseOffering().getCourseNbr(), iExternalTermProvider, server.getAcademicSession());
 								change.crn = "";
 								change.errors = new ArrayList<ChangeError>();
 								change.operation = ChangeOperation.ADD;
@@ -1582,15 +1578,13 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 					if (course == null) continue;
 					if (cc == null) {
 						cc = new CourseCredit();
-						cc.subject = course.getSubjectArea();
-						cc.courseNbr = course.getCourseNumber();
+						cc.setCourse(course.getSubjectArea(), course.getSubjectArea(), iExternalTermProvider, server.getAcademicSession());
 						cc.title = course.getTitle();
 						cc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
 					} else {
 						if (cc.alternatives == null) cc.alternatives = new ArrayList<CourseCredit>();
 						CourseCredit acc = new CourseCredit();
-						acc.subject = course.getSubjectArea();
-						acc.courseNbr = course.getCourseNumber();
+						acc.setCourse(course.getSubjectArea(), course.getSubjectArea(), iExternalTermProvider, server.getAcademicSession());
 						acc.title = course.getTitle();
 						acc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
 						cc.alternatives.add(acc);

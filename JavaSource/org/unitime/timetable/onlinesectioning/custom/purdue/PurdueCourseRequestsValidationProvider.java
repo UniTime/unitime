@@ -1213,8 +1213,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						}
 						if (!errors.isEmpty()) {
 							Change ch = new Change();
-							ch.subject = subject;
-							ch.courseNbr = courseNbr;
+							ch.setCourse(subject, courseNbr, iExternalTermProvider, server.getAcademicSession());
 							ch.crn = "";
 							ch.errors = errors;
 							ch.operation = ChangeOperation.ADD;
@@ -1249,8 +1248,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						}
 						if (!errors.isEmpty()) {
 							Change ch = new Change();
-							ch.subject = subject;
-							ch.courseNbr = courseNbr;
+							ch.setCourse(subject, courseNbr, iExternalTermProvider, server.getAcademicSession());
 							ch.crn = "";
 							ch.errors = errors;
 							ch.operation = ChangeOperation.ADD;
@@ -1282,15 +1280,13 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					if (course == null) continue;
 					if (cc == null) {
 						cc = new CourseCredit();
-						cc.subject = course.getSubjectArea();
-						cc.courseNbr = course.getCourseNumber();
+						cc.setCourse(course.getSubjectArea(), course.getSubjectArea(), iExternalTermProvider, server.getAcademicSession());
 						cc.title = course.getTitle();
 						cc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
 					} else {
 						if (cc.alternatives == null) cc.alternatives = new ArrayList<CourseCredit>();
 						CourseCredit acc = new CourseCredit();
-						acc.subject = course.getSubjectArea();
-						acc.courseNbr = course.getCourseNumber();
+						acc.setCourse(course.getSubjectArea(), course.getSubjectArea(), iExternalTermProvider, server.getAcademicSession());
 						acc.title = course.getTitle();
 						acc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
 						cc.alternatives.add(acc);
@@ -2459,8 +2455,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				}
 				if (change == null) {
 					change = new Change();
-					change.subject = course.getSubjectArea();
-					change.courseNbr = course.getCourseNumber();
+					change.setCourse(course.getSubjectArea(), course.getCourseNumber(), iExternalTermProvider, server.getAcademicSession());
 					change.crn = "";
 					change.errors = new ArrayList<ChangeError>();
 					change.operation = ChangeOperation.ADD;
@@ -2494,8 +2489,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				}
 				if (change == null) {
 					change = new Change();
-					change.subject = course.getSubjectArea();
-					change.courseNbr = course.getCourseNumber();
+					change.setCourse(course.getSubjectArea(), course.getCourseNumber(), iExternalTermProvider, server.getAcademicSession());
 					change.crn = "";
 					change.errors = new ArrayList<ChangeError>();
 					change.operation = ChangeOperation.ADD;
@@ -2529,15 +2523,13 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					if (course == null) continue;
 					if (cc == null) {
 						cc = new CourseCredit();
-						cc.subject = course.getSubjectArea();
-						cc.courseNbr = course.getCourseNumber();
+						cc.setCourse(course.getSubjectArea(), course.getSubjectArea(), iExternalTermProvider, server.getAcademicSession());
 						cc.title = course.getTitle();
 						cc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
 					} else {
 						if (cc.alternatives == null) cc.alternatives = new ArrayList<CourseCredit>();
 						CourseCredit acc = new CourseCredit();
-						acc.subject = course.getSubjectArea();
-						acc.courseNbr = course.getCourseNumber();
+						acc.setCourse(course.getSubjectArea(), course.getSubjectArea(), iExternalTermProvider, server.getAcademicSession());
 						acc.title = course.getTitle();
 						acc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
 						cc.alternatives.add(acc);
