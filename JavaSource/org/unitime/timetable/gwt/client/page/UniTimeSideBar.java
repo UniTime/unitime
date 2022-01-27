@@ -39,6 +39,8 @@ import org.unitime.timetable.gwt.shared.MenuInterface;
 import org.unitime.timetable.gwt.shared.MenuInterface.PageNameInterface;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.Position;
@@ -295,6 +297,16 @@ public class UniTimeSideBar extends UniTimeMenu {
 		sideBarCookie += "|W:" + iPanel.getElement().getClientWidth();
 		Cookies.setCookie("UniTime:SideBar", sideBarCookie);
 		resizeWideTables();
+		if (iPanel.getElement().getClientWidth() != iDisclosurePanel.getElement().getClientWidth()) {
+			// panel width has not been updated, force redraw by hiding it and showing it again
+			iPanel.setVisible(false);
+			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+				@Override
+				public void execute() {
+					iPanel.setVisible(true);
+				}
+			});
+		}
 	}
 	
 	private void openNodes(Set<String> nodes, TreeItem item, String prefix) {
