@@ -3909,7 +3909,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		VariableTitleCourseProvider provider = Customization.VariableTitleCourseProvider.getProvider();
 		OnlineSectioningHelper helper = new OnlineSectioningHelper(SessionDAO.getInstance().getSession(), currentUser(cx));
 		
-		return provider.getVariableTitleCourses(query, limit, server, helper);
+		return provider.getVariableTitleCourses(query, limit, cx.getStudentId(), server, helper);
 	}
 	
 	@Override
@@ -3927,7 +3927,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		VariableTitleCourseProvider provider = Customization.VariableTitleCourseProvider.getProvider();
 		OnlineSectioningHelper helper = new OnlineSectioningHelper(SessionDAO.getInstance().getSession(), currentUser(cx));
 		
-		return provider.getVariableTitleCourse(course, server, helper);
+		return provider.getVariableTitleCourse(course, cx.getStudentId(), server, helper);
 	}
 
 	@Override

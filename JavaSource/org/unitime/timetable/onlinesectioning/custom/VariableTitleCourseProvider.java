@@ -30,8 +30,8 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
  */
 public interface VariableTitleCourseProvider {
 	
-	public Collection<VariableTitleCourseInfo> getVariableTitleCourses(String query, int limit, OnlineSectioningServer server, OnlineSectioningHelper helper);
-	public VariableTitleCourseInfo getVariableTitleCourse(String course, OnlineSectioningServer server, OnlineSectioningHelper helper);
+	public Collection<VariableTitleCourseInfo> getVariableTitleCourses(String query, int limit, Long studentId, OnlineSectioningServer server, OnlineSectioningHelper helper);
+	public VariableTitleCourseInfo getVariableTitleCourse(String course, Long studentId, OnlineSectioningServer server, OnlineSectioningHelper helper);
 	
 	public void dispose();
 }
