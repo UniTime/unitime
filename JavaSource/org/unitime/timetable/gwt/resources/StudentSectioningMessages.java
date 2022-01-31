@@ -3228,4 +3228,79 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Replaces")
 	String colWaitListSwapWithCourseOffering();
+
+	@DefaultMessage("<u>P</u>references")
+	String buttonStudentSchedulingPreferences();
+	
+	@DefaultMessage("Show student scheduling prefernences for the selected academic session.")
+	String hintStudentSchedulingPreferences();
+	
+	@DefaultMessage("Student Scheduling Preferences")
+	String dialogStudentSchedulingPreferences();
+	
+	@DefaultMessage("Class Dates:")
+	String propSchedulingPrefDates();
+	
+	@DefaultMessage("From: ")
+	String propSchedulingPrefDatesFrom();
+	
+	@DefaultMessage("- To: ")
+	String propSchedulingPrefDatesTo();
+	
+	@DefaultMessage("The above dates are optional, and it is also possible to put in just the start or the end date. When provided, UniTime is not allowed to select a class that falls outside of the above dates.")
+	String propSchedulingPrefDatesDescription();
+	
+	@DefaultMessage("Class Modality:")
+	String propSchedulingPrefModality();
+	
+	@DefaultMessage("Prefer Face-to-Face")
+	String itemSchedulingModalityPreferFaceToFace();
+	
+	@DefaultMessage("When possible, UniTime tries to avoid arranged hours and online classes.")
+	String descSchedulingModalityPreferFaceToFace();
+	
+	@DefaultMessage("Prefer Online")
+	String itemSchedulingModalityPreferOnline();
+	
+	@DefaultMessage("When possible, UniTime tries to avoid face-to-face classes.")
+	String descSchedulingModalityPreferOnline();
+	
+	@DefaultMessage("Require Online")
+	String itemSchedulingModalityRequireOnline();
+	
+	@DefaultMessage("UniTime is not allowed to select a class that is not online.")
+	String descSchedulingModalityRequireOnline();
+	
+	@DefaultMessage("No Preference")
+	String itemSchedulingModalityNoPreference();
+	
+	@DefaultMessage("")
+	String descSchedulingModalityNoPreference();
+	
+	@DefaultMessage("Schedule Gaps:")
+	String propSchedulingPrefBackToBack();
+	
+	@DefaultMessage("No Preference")
+	String itemSchedulingBackToBackNoPreference();
+	
+	@DefaultMessage("")
+	String descSchedulingBackToBackNoPreference();
+	
+	@DefaultMessage("Prefer Back-to-Backs")
+	String itemSchedulingBackToBackPrefer();
+	
+	@DefaultMessage("When possible, UniTime tries to avoid gaps in the schedule (dense schedule).")
+	String descSchedulingBackToBackPrefer();
+
+	@DefaultMessage("Avoid Back-to-Backs")
+	String itemSchedulingBackToBackDiscourage();
+	
+	@DefaultMessage("When possible, UniTime tries to avoid back-to-back classes (sparse schedule).")
+	String descSchedulingBackToBackDiscourage();
+
+	@DefaultMessage("<u>A</u>pply")
+	String buttonSchedulingPrefApply();
+	
+	@DefaultMessage("<u>C</u>lose")
+	String buttonSchedulingPrefClose();
 }

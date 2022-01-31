@@ -4197,6 +4197,7 @@ unitime-RoomSharingWidget .legend .blank {
 	text-align: right;
 	margin-top: -2px;
 	white-space: nowrap;
+	padding-right: 2px;
 }
 
 .unitime-Widget .error-hint {
@@ -7222,5 +7223,30 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-WaitListedRequestPreferences .new-wait-list {
-	font-style: italic;	
+	font-style: italic;
+
+}
+
+.unitime-StudentSchedulingPreferencesDialog {
+	max-width: 500px;
+}
+
+.unitime-StudentSchedulingPreferencesDialog .dates .from {
+	display: inline-block;
+	vertical-align: top;
+	padding-right: 2px;
+}
+
+.unitime-StudentSchedulingPreferencesDialog .dates .to {
+	display: inline-block;
+	vertical-align: top;
+	padding-left: 10px;
+	padding-right: 2px;
+}
+
+.unitime-StudentSchedulingPreferencesDialog .description {
+	text-align: justify;
+	font-style: italic;
+	padding-right: 5px;
+	padding-bottom: 2px;
 }

@@ -161,7 +161,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	
 	private VerticalPanel iPanel;
 	private P iFooter, iHeader;
-	private AriaMultiButton iRequests, iReset, iSchedule, iEnroll, iPrint, iExport = null, iSave, iStartOver, iDegreePlan, iChangeGradeModes, iAdvisorReqs;
+	private AriaMultiButton iRequests, iReset, iSchedule, iEnroll, iPrint, iExport = null, iSave, iStartOver, iDegreePlan, iChangeGradeModes, iAdvisorReqs, iPreferences;
 	
 	private AriaTabBar iAssignmentTab;
 	private DockPanel iAssignmentDock;
@@ -200,6 +200,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private CheckBox iCustomCheckbox = null;
 	private DegreePlansSelectionDialog iDegreePlansSelectionDialog = null;
 	private DegreePlanDialog iDegreePlanDialog = null;
+	private StudentSchedulingPreferencesDialog iSchedulingPreferencesDialog = null;
 	
 	private ChangeGradeModesDialog iChangeGradeModesDialog = null;
 	private RequestVariableTitleCourseDialog iRequestVariableTitleCourseDialog = null;
@@ -333,6 +334,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		
 		P leftFooterPanel = new P("left-panel");
 		P leftHeaderPanel = new P("left-panel");
+		iPreferences = new AriaMultiButton(RESOURCES.preferences(), MESSAGES.buttonStudentSchedulingPreferences());
+		iPreferences.setTitle(MESSAGES.hintStudentSchedulingPreferences());
+		iPreferences.setVisible(false);
+		iPreferences.setEnabled(false);
+		leftFooterPanel.add(iPreferences);
+		leftHeaderPanel.add(iPreferences.createClone()); 
+		
 		iDegreePlan = new AriaMultiButton(MESSAGES.buttonDegreePlan());
 		iDegreePlan.setTitle(MESSAGES.hintDegreePlan());
 		iDegreePlan.setVisible(false);
@@ -466,6 +474,15 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		});
 		iQuickAdd.setEnabled(false);
 		iQuickAdd.setVisible(false);
+		
+		iPreferences.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				if (iSchedulingPreferencesDialog == null)
+					iSchedulingPreferencesDialog = new StudentSchedulingPreferencesDialog();
+				iSchedulingPreferencesDialog.center();
+			}
+		});
 		
 		iDegreePlan.addClickHandler(new ClickHandler() {
 			@Override
@@ -2360,6 +2377,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				iExport.setVisible(true); iExport.setEnabled(true);
 			}
 			iSchedule.setVisible(false); iSchedule.setEnabled(false);
+			iPreferences.setVisible(false); iPreferences.setEnabled(false);
 			iDegreePlan.setVisible(false); iDegreePlan.setEnabled(false);
 			iAdvisorReqs.setVisible(false); iAdvisorReqs.setEnabled(false);
 			iAssignmentGrid.scrollDown();
@@ -2420,6 +2438,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		}
 		if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.HAS_ADVISOR_REQUESTS)) {
 			iAdvisorReqs.setVisible(true); iAdvisorReqs.setEnabled(true);
+		}
+		if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.SHOW_SCHEDULING_PREFS)) {
+			iPreferences.setVisible(true); iPreferences.setEnabled(true);
 		}
 		clearMessage();
 		ResizeEvent.fire(this, getOffsetWidth(), getOffsetHeight());
@@ -2492,6 +2513,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.HAS_ADVISOR_REQUESTS)) {
 									iAdvisorReqs.setVisible(true); iAdvisorReqs.setEnabled(true);
 								}
+								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.SHOW_SCHEDULING_PREFS)) {
+									iPreferences.setVisible(true); iPreferences.setEnabled(true);
+								}
 								lastRequest(true);
 								if (ret != null) ret.onSuccess(iEligibilityCheck);
 							}
@@ -2514,6 +2538,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								}
 								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.HAS_ADVISOR_REQUESTS)) {
 									iAdvisorReqs.setVisible(true); iAdvisorReqs.setEnabled(true);
+								}
+								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.SHOW_SCHEDULING_PREFS)) {
+									iPreferences.setVisible(true); iPreferences.setEnabled(true);
 								}
 								lastRequest(true);
 								if (ret != null) ret.onSuccess(iEligibilityCheck);
@@ -2539,6 +2566,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.HAS_ADVISOR_REQUESTS)) {
 							iAdvisorReqs.setVisible(true); iAdvisorReqs.setEnabled(true);
 						}
+						if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.SHOW_SCHEDULING_PREFS)) {
+							iPreferences.setVisible(true); iPreferences.setEnabled(true);
+						}
 						lastRequest(true);
 						if (ret != null) ret.onSuccess(iEligibilityCheck);
 					}
@@ -2550,6 +2580,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					}
 					iSchedule.setVisible(false);  iSchedule.setEnabled(false);
 					iSave.setVisible(false); iSave.setEnabled(false);
+					iPreferences.setVisible(false); iPreferences.setEnabled(false);
 					iDegreePlan.setVisible(false); iDegreePlan.setEnabled(false);
 					iAdvisorReqs.setVisible(false); iAdvisorReqs.setEnabled(false);
 					if (result.hasMessage()) {

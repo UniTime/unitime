@@ -70,6 +70,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			HAS_ADVISOR_REQUESTS,
 			SR_LINK_CONF, SR_EXTENDED,
 			WAIT_LIST_VALIDATION,
+			SHOW_SCHEDULING_PREFS,
 			;
 			
 			public int flag() { return 1 << ordinal(); }
