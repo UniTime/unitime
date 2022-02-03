@@ -294,7 +294,19 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 				r.getAction().setStartTime(System.currentTimeMillis());
 				long c0 = OnlineSectioningHelper.getCpuTime();
 				r.getAction().addOptionBuilder().setKey("Index").setValue(index + " of " + queue.size()); index++;
+				XEnrollment dropEnrollment = r.getDropEnrollment();
 				XEnrollment enrollment = r.resection(server, w, sq);
+				
+				if (dropEnrollment != null) {
+					XOffering dropOffering = server.getOffering(dropEnrollment.getOfferingId());
+					if (dropOffering != null) {
+						OnlineSectioningLog.Enrollment.Builder e = OnlineSectioningLog.Enrollment.newBuilder();
+						e.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
+						for (Long sectionId: dropEnrollment.getSectionIds())
+							e.addSection(OnlineSectioningHelper.toProto(dropOffering.getSection(sectionId), dropEnrollment));
+						r.getAction().addEnrollment(e);
+					}
+				}
 				
 				if (enrollment != null) {
 					enrollment.setTimeStamp(ts);
@@ -324,6 +336,8 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 				
 				XCourseRequest prev = r.getRequest();
 				Long studentId = prev.getStudentId();
+				if (dropEnrollment != null)
+					server.assign(r.getDropRequest(), null);
 				if (enrollment != null) {
 					r.setRequest(server.assign(r.getRequest(), enrollment));
 				} else if (r.getRequest() != null) {
@@ -368,6 +382,11 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 							enrl.getClazz().getStudentEnrollments().remove(enrl);
 							helper.getHibSession().delete(enrl);
 							i.remove();
+						} else if (dropEnrollment != null && dropEnrollment.getCourseId().equals(enrl.getCourseOffering().getUniqueId())) {
+							helper.debug("Deleting " + enrl.getClazz().getClassLabel(), r.getAction());
+							enrl.getClazz().getStudentEnrollments().remove(enrl);
+							helper.getHibSession().delete(enrl);
+							i.remove();	
 						}
 					}
 					CourseDemand cd = null;
@@ -438,6 +457,8 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 					if (tx) helper.commitTransaction();
 					r.getAction().setResult(enrollment == null ? OnlineSectioningLog.Action.ResultType.NULL : OnlineSectioningLog.Action.ResultType.SUCCESS);
 				} catch (Exception e) {
+					if (dropEnrollment != null)
+						server.assign(r.getDropRequest(), dropEnrollment);
 					server.assign(r.getRequest(), r.getLastEnrollment());
 					r.getAction().setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
 					helper.error((r.getCourseId() == null ? offering.getName() : r.getCourseId().getCourseName()) + ": " + (e.getMessage() == null ? "Unable to resection student." : e.getMessage()), e, r.getAction());

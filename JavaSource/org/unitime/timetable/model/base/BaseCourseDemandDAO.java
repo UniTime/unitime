@@ -48,6 +48,11 @@ public abstract class BaseCourseDemandDAO extends _RootDAO<CourseDemand,Long> {
 	}
 
 	@SuppressWarnings("unchecked")
+	public List<CourseDemand> findByWaitListSwapWithCourseOffering(org.hibernate.Session hibSession, Long waitListSwapWithCourseOfferingId) {
+		return hibSession.createQuery("from CourseDemand x where x.waitListSwapWithCourseOffering.uniqueId = :waitListSwapWithCourseOfferingId").setLong("waitListSwapWithCourseOfferingId", waitListSwapWithCourseOfferingId).list();
+	}
+
+	@SuppressWarnings("unchecked")
 	public List<CourseDemand> findByFreeTime(org.hibernate.Session hibSession, Long freeTimeId) {
 		return hibSession.createQuery("from CourseDemand x where x.freeTime.uniqueId = :freeTimeId").setLong("freeTimeId", freeTimeId).list();
 	}

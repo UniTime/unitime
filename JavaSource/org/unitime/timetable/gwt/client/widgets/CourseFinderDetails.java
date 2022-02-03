@@ -89,7 +89,7 @@ public class CourseFinderDetails extends HTML implements CourseFinder.CourseFind
 	}
 
 	@Override
-	public void onSetValue(RequestedCourse course) {}
+	public void onSetValue(RequestedCourse... course) {}
 
 	@Override
 	public void onGetValue(RequestedCourse course) {}

@@ -84,6 +84,7 @@ public class XCourseRequest extends XRequest {
     private Map<XCourseId, XOverride> iOverrides = null;
     private int iCritical = 0;
     private Date iWaitListedTimeStamp = null;
+    private XCourseId iWaitListSwapWithCourseOffering = null;
 
     public XCourseRequest() {}
     
@@ -174,6 +175,8 @@ public class XCourseRequest extends XRequest {
         	if (message != null)
         		iMessage = message.getMessage();
         }
+        if (demand.getWaitListSwapWithCourseOffering() != null)
+        	iWaitListSwapWithCourseOffering = new XCourseId(demand.getWaitListSwapWithCourseOffering());
     }
     
     public XCourseRequest(Student student, CourseOffering course, int priority, OnlineSectioningHelper helper, Collection<StudentClassEnrollment> classes) {
@@ -302,6 +305,10 @@ public class XCourseRequest extends XRequest {
      */
     public List<XCourseId> getCourseIds() {
         return iCourseIds;
+    }
+    
+    public XCourseId getWaitListSwapWithCourseOffering() {
+    	return iWaitListSwapWithCourseOffering;
     }
     
     /**
@@ -666,6 +673,9 @@ public class XCourseRequest extends XRequest {
         }
         
         iCritical = in.readInt();
+        iWaitListSwapWithCourseOffering = null;
+        if (in.readBoolean())
+        	iWaitListSwapWithCourseOffering = new XCourseId(in);
 	}
 
 	@Override
@@ -729,6 +739,9 @@ public class XCourseRequest extends XRequest {
 			}
 		
 		out.writeInt(iCritical);
+		out.writeBoolean(iWaitListSwapWithCourseOffering != null);
+		if (iWaitListSwapWithCourseOffering != null)
+			iWaitListSwapWithCourseOffering.writeExternal(out);
 	}
 	
 	public static class XCourseRequestSerializer implements Externalizer<XCourseRequest> {

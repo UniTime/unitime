@@ -131,6 +131,12 @@ public class SpecialRegistrationHelper {
 		addCrn(req.changes, crn);
 	}
 	
+	public static void dropWaitListCrn(CheckRestrictionsRequest req, String crn) {
+		if (req.changes == null)
+			req.changes = createValidationRequest(req, ValidationMode.WAITL, true);
+		dropCrn(req.changes, crn);
+	}
+	
 	public static boolean isEmpty(CheckRestrictionsRequest req) { 
 		return (req.changes == null || isEmpty(req.changes)) && (req.alternatives == null || isEmpty(req.alternatives)); 
 	}

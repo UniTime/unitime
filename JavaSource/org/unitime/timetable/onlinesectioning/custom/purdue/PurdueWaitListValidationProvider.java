@@ -70,6 +70,7 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityChe
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.CourseDemandDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -109,6 +110,7 @@ import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XOverride;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
@@ -393,6 +395,20 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 				}
 				if (enrolled) continue;
 				
+				XCourse dropCourse = null;
+				Set<String> dropCrns = null;
+				if (line.hasWaitListSwapWithCourseOfferingId()) {
+					dropCourse = server.getCourse(line.getWaitListSwapWithCourseOfferingId());
+					XCourseRequest cr = original.getRequestForCourse(line.getWaitListSwapWithCourseOfferingId());
+					if (cr != null && cr.getEnrollment() != null && cr.getEnrollment().getCourseId().equals(line.getWaitListSwapWithCourseOfferingId())) {
+						dropCrns = new TreeSet<String>();
+						XOffering dropOffering = server.getOffering(dropCourse.getOfferingId());
+						for (XSection section: dropOffering.getSections(cr.getEnrollment())) {
+							dropCrns.add(section.getExternalId(line.getWaitListSwapWithCourseOfferingId())); 
+						}
+					}
+				}
+				
 				for (RequestedCourse rc: line.getRequestedCourse()) {
 					if (rc.hasCourseId()) {
 						XCourse xcourse = server.getCourse(rc.getCourseId());
@@ -404,7 +420,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						
 						// get possible enrollments into the course
 						Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
-						CourseRequest courseRequest = SectioningRequest.convert(assignment, new XCourseRequest(original, xcourse), server, WaitListMode.WaitList);
+						CourseRequest courseRequest = SectioningRequest.convert(assignment, new XCourseRequest(original, xcourse), dropCourse, server, WaitListMode.WaitList);
 						Collection<Enrollment> enrls = courseRequest.getEnrollmentsSkipSameTime(assignment);
 						
 						// get a test enrollment (preferably a non-conflicting one)
@@ -449,6 +465,11 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 							SpecialRegistrationHelper.addWaitListCrn(req, crn);
 							crns.add(crn);
 						}
+						if (dropCrns != null)
+							for (String crn: dropCrns) {
+								SpecialRegistrationHelper.dropWaitListCrn(req, crn);
+								crns.add(crn);
+							}
 						
 						// call validation
 						CheckRestrictionsResponse resp = null;
@@ -1423,6 +1444,18 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 		Float maxCredit = null;
 		Float maxCreditNeeded = null;
 		for (CourseDemand cd: student.getCourseDemands()) {
+			XCourseId dropCourse = null;
+			Set<String> dropCrns = null;
+			if (cd.getWaitListSwapWithCourseOffering() != null) {
+				dropCourse = new XCourseId(cd.getWaitListSwapWithCourseOffering());
+				dropCrns = new TreeSet<String>();
+				for (StudentClassEnrollment enrl: student.getClassEnrollments()) {
+					if (cd.getWaitListSwapWithCourseOffering().equals(enrl.getCourseOffering())) {
+						dropCrns.add(enrl.getClazz().getExternalId(cd.getWaitListSwapWithCourseOffering()));
+					}
+				}
+			}
+			
 			if (Boolean.TRUE.equals(cd.isWaitlist()) && Boolean.FALSE.equals(cd.isAlternative()) && !cd.isEnrolled())
 				for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests()) {
 					// skip courses that cannot be wait-listed
@@ -1433,7 +1466,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 					
 					// get possible enrollments into the course
 					Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
-					CourseRequest courseRequest = SectioningRequest.convert(assignment, new XCourseRequest(student, cr.getCourseOffering(), 0, helper, null), server, WaitListMode.WaitList);
+					CourseRequest courseRequest = SectioningRequest.convert(assignment, new XCourseRequest(student, cr.getCourseOffering(), 0, helper, null), dropCourse, server, WaitListMode.WaitList);
 					Collection<Enrollment> enrls = courseRequest.getEnrollmentsSkipSameTime(assignment);
 					
 					// get a test enrollment (preferably a non-conflicting one)
@@ -1478,6 +1511,11 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						SpecialRegistrationHelper.addWaitListCrn(req, crn);
 						crns.add(crn);
 					}
+					if (dropCrns != null)
+						for (String crn: dropCrns) {
+							SpecialRegistrationHelper.dropWaitListCrn(req, crn);
+							crns.add(crn);
+						}
 					
 					// call validation
 					CheckRestrictionsResponse validation = null;

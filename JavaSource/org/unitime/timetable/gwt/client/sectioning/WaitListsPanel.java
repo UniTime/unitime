@@ -35,6 +35,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CourseMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
@@ -122,6 +123,7 @@ public class WaitListsPanel extends P {
 		header.add(new UniTimeTableHeader(MESSAGES.colCourse()));
 		header.add(new UniTimeTableHeader(MESSAGES.colTitle()));
 		header.add(new UniTimeTableHeader(MESSAGES.colCredit()));
+		header.add(new UniTimeTableHeader(MESSAGES.colWaitListSwapWithCourseOffering()));
 		header.add(new UniTimeTableHeader(MESSAGES.colWaitListPosition()));
 		header.add(new UniTimeTableHeader(MESSAGES.colRequirements()));
 		header.add(new UniTimeTableHeader(MESSAGES.colWaitListErrors()));
@@ -146,11 +148,12 @@ public class WaitListsPanel extends P {
 		setVisible(iTable.getRowCount() > 1);
 	}
 
-	public void populate(CourseRequestInterface value) {
+	public void populate(CourseRequestInterface value, ClassAssignmentInterface saved) {
 		iRequests = value;
 		iTable.clearTable(1);
 		if (iRequests != null && iRequests.getWaitListMode() == WaitListMode.WaitList) {
 			NumberFormat df = NumberFormat.getFormat("0.#");
+			boolean hasSwap = false;
 			boolean hasPrefs = false;
 			boolean hasPosition = false;
 			request: for (Request request: iRequests.getCourses()) {
@@ -217,6 +220,21 @@ public class WaitListsPanel extends P {
 							row.add(new Label(rc.getCourseName()));
 							row.add(new Label(rc.hasCourseTitle() ? rc.getCourseTitle() : ""));
 							row.add(new Label(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : ""));
+							
+							if (firstLine && request.getWaitListSwapWithCourseOfferingId() != null && saved != null) {
+								Label swap = null;
+								for (ClassAssignmentInterface.CourseAssignment course: saved.getCourseAssignments()) {
+									if (request.getWaitListSwapWithCourseOfferingId().equals(course.getCourseId()) && !course.isTeachingAssignment() && course.isAssigned()) {
+										swap = new Label(course.getCourseName());
+										swap.setTitle(MESSAGES.conflictWaitListSwapWithNoCourseOffering(course.getCourseNameWithTitle()));
+										hasSwap = true;
+										break;
+									}
+								}
+								row.add(swap == null ? new Label("") : swap);
+							} else {
+								row.add(new Label(""));	
+							}
 							
 							if (rc.hasWaitListPosition() && rc.getStatus() != RequestedCourseStatus.NEW_REQUEST && rc.getStatus() != RequestedCourseStatus.OVERRIDE_NEEDED) {
 								hasPosition = true;
@@ -335,6 +353,7 @@ public class WaitListsPanel extends P {
 				row.add(new Label(df.format(iRequests.getMaxCreditOverride())));
 				row.add(new Label(""));
 				row.add(new Label(""));
+				row.add(new Label(""));
 				String note = null;
 				if (iRequests.hasCreditWarning())
 					note = "<span class='"+style+"'>" + iRequests.getCreditWarning() + "</span>";
@@ -350,8 +369,9 @@ public class WaitListsPanel extends P {
 						iTable.getCellFormatter().addStyleName(idx, c, "top-border-dashed");
 				}
 			}
-			iTable.setColumnVisible(5, hasPosition);
-			iTable.setColumnVisible(6, hasPrefs);
+			iTable.setColumnVisible(5, hasSwap);
+			iTable.setColumnVisible(6, hasPosition);
+			iTable.setColumnVisible(7, hasPrefs);
 		}
 		setVisible(iTable.getRowCount() > 1);
 		iPanel.setVisible(iOpenCloseImage.getValue() && iTable.getRowCount() > 1);

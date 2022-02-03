@@ -67,6 +67,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
@@ -2463,6 +2464,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						r.setCritical(cd.getCritical());
 					r.setTimeStamp(cd.getTimestamp());
 					r.setWaitListedTimeStamp(cd.getWaitlistedTimeStamp());
+					r.setWaitListSwapWithCourseOfferingId(cd.getWaitListSwapWithCourseOffering() == null ? null : cd.getWaitListSwapWithCourseOffering().getUniqueId());
 					lastRequest = r;
 					lastRequestPriority = cd.getPriority();
 				}
@@ -4043,6 +4045,80 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			if (iAllowNoRole && Roles.ROLE_NONE.equals(authority.getRole())) return true;
 			
 			return false;
+		}
+	}
+
+	@Override
+	public Collection<CourseAssignment> getCoursesFromRequest(StudentSectioningContext cx, Request query) throws SectioningException, PageAccessException {
+		checkContext(cx);
+		if (cx.getSessionId()==null) throw new SectioningException(MSG.exceptionNoAcademicSession());
+		
+		OnlineSectioningServer server = getServerInstance(cx.getSessionId(), false);
+		
+		if (server == null || server instanceof DatabaseServer) {
+			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
+			List<OverrideType> overrides = OverrideTypeDAO.getInstance().findAll(hibSession, Order.asc("label"));
+			
+			ArrayList<ClassAssignmentInterface.CourseAssignment> results = new ArrayList<ClassAssignmentInterface.CourseAssignment>();
+			
+			for (Long courseId: query.getCourseIds()) {
+				CourseOffering c = CourseOfferingDAO.getInstance().get(courseId);
+				if (c == null) continue;
+				CourseAssignment course = new CourseAssignment();
+				course.setCourseId(c.getUniqueId());
+				course.setSubject(c.getSubjectAreaAbbv());
+				course.setCourseNbr(c.getCourseNbr());
+				course.setTitle(c.getTitle());
+				course.setNote(c.getScheduleBookNote());
+				if (c.getCredit() != null) {
+					course.setCreditText(c.getCredit().creditText());
+					course.setCreditAbbv(c.getCredit().creditAbbv());
+				}
+				course.setTitle(c.getTitle());
+				course.setHasUniqueName(true);
+				course.setHasCrossList(c.getInstructionalOffering().hasCrossList());
+				course.setCanWaitList(c.getInstructionalOffering().effectiveWaitList());
+				if (overrides != null && !overrides.isEmpty()) {
+					for (OverrideType override: overrides)
+						if (!c.getDisabledOverrides().contains(override))
+							course.addOverride(override.getReference(), override.getLabel());
+				}
+				boolean unlimited = false;
+				int courseLimit = 0;
+				for (Iterator<InstrOfferingConfig> i = c.getInstructionalOffering().getInstrOfferingConfigs().iterator(); i.hasNext(); ) {
+					InstrOfferingConfig cfg = i.next();
+					if (cfg.isUnlimitedEnrollment()) unlimited = true;
+					if (cfg.getLimit() != null) courseLimit += cfg.getLimit();
+				}
+				if (c.getReservation() != null)
+					courseLimit = c.getReservation();
+	            if (courseLimit >= 9999) unlimited = true;
+				course.setLimit(unlimited ? -1 : courseLimit);
+				course.setProjected(c.getProjectedDemand());
+				course.setEnrollment(c.getEnrollment());
+				course.setLastLike(c.getDemand());
+				results.add(course);
+				for (InstrOfferingConfig config: c.getInstructionalOffering().getInstrOfferingConfigs()) {
+					if (config.getEffectiveInstructionalMethod() != null)
+						course.addInstructionalMethod(config.getEffectiveInstructionalMethod().getUniqueId(), config.getEffectiveInstructionalMethod().getLabel());
+					else
+						course.setHasNoInstructionalMethod(true);
+				}
+			}
+			return results;
+		} else {
+			Collection<ClassAssignmentInterface.CourseAssignment> results = null;
+			try {
+				results = server.execute(server.createAction(ListCourseOfferings.class).forRequest(query).forStudent(cx.getStudentId()), currentUser(cx));
+			} catch (PageAccessException e) {
+				throw e;
+			} catch (SectioningException e) {
+				throw e;
+			} catch (Exception e) {
+				sLog.error(e.getMessage(), e);
+				throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
+			}
+			return results;
 		}
 	}
 }

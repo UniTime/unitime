@@ -86,7 +86,14 @@
             name="waitlistedTimeStamp"
             column="waitlist_ts"
             type="java.util.Date"
-            not-null="false"/>        
+            not-null="false"/>
+            
+		<many-to-one
+            name="waitListSwapWithCourseOffering"
+            class="CourseOffering"
+            column="wl_course_swap_id"
+            foreign-key="fk_course_demand_course_swap"
+            not-null="false"/>
 
         <many-to-one
             name="freeTime"

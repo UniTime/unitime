@@ -7171,3 +7171,56 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-HQLTable td {
 	vertical-align: top;
 }
+
+.unitime-WaitListedRequestPreferences {
+	width: 800px;
+}
+
+.unitime-WaitListedRequestPreferences .course-table {
+	margin-bottom: 3px;
+}
+
+.unitime-WaitListedRequestPreferences .course-details-tabs {
+	width: 100%;
+}
+
+.unitime-WaitListedRequestPreferences .course-details {
+	border: 1px solid #9CB0CE;
+	height: 30vh;
+}
+
+.unitime-WaitListedRequestPreferences .instructional-methods {
+	vertical-align: middle;	
+	text-align: right;
+	padding-right: 5px;
+}
+
+.unitime-WaitListedRequestPreferences .instructional-methods .preference-label {
+	display: inline-block;
+	padding: 2px 2px 4px 2px;
+	vertical-align: bottom;
+}
+
+.unitime-WaitListedRequestPreferences .instructional-method {
+	display: inline-block;
+	padding: 2px 10px 2px 2px;
+}
+
+.unitime-WaitListedRequestPreferences .course-table .courses-wl .gwt-Label {
+	display: inline-block;
+	padding-right: 3px;
+	white-space: nowrap;
+}
+
+.unitime-WaitListedRequestPreferences .course-table .courses-wl .gwt-Label:after {
+	content: ',';
+}
+
+.unitime-WaitListedRequestPreferences .course-table .courses-wl .gwt-Label:last-child:after {
+	padding-right: 0px;
+	content: '';
+}
+
+.unitime-WaitListedRequestPreferences .new-wait-list {
+	font-style: italic;	
+}

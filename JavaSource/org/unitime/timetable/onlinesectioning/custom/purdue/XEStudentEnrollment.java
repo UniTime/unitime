@@ -1179,6 +1179,14 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			for (Iterator<String> i = idsToDrop.iterator(); i.hasNext(); )
 				if (idsToAdd.remove(i.next())) i.remove();
 			
+			XEnrollment dropEnrollment = sectioningRequest.getDropEnrollment();
+			if (dropEnrollment != null) {
+				XOffering dropOffering = server.getOffering(dropEnrollment.getOfferingId());
+				if (dropOffering != null)
+					for (XSection section: dropOffering.getSections(dropEnrollment))
+						idsToDrop.add(section.getExternalId(dropEnrollment.getCourseId()));		
+			}
+			
 			// Return the new enrollment when there is no change detected
 			if (idsToAdd.isEmpty() && idsToDrop.isEmpty())
 				return enrollment;

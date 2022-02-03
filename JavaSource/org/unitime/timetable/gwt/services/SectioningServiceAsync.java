@@ -137,4 +137,5 @@ public interface SectioningServiceAsync {
 	void listVariableTitleCourses(StudentSectioningContext cx, String query, int limit, AsyncCallback<Collection<VariableTitleCourseInfo>> callback) throws SectioningException, PageAccessException;
 	void getVariableTitleCourse(StudentSectioningContext cx, String course, AsyncCallback<VariableTitleCourseInfo> callback) throws SectioningException, PageAccessException;
 	void requestVariableTitleCourse(VariableTitleCourseRequest request, AsyncCallback<VariableTitleCourseResponse> callback) throws SectioningException, PageAccessException;
+	void getCoursesFromRequest(StudentSectioningContext cx, CourseRequestInterface.Request query, AsyncCallback<Collection<ClassAssignmentInterface.CourseAssignment>> callback) throws SectioningException, PageAccessException;	
 }

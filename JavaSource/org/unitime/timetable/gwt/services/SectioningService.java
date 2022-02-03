@@ -138,4 +138,5 @@ public interface SectioningService extends RemoteService {
 	Collection<VariableTitleCourseInfo> listVariableTitleCourses(StudentSectioningContext cx, String query, int limit) throws SectioningException, PageAccessException;
 	VariableTitleCourseInfo getVariableTitleCourse(StudentSectioningContext cx, String course) throws SectioningException, PageAccessException;
 	VariableTitleCourseResponse requestVariableTitleCourse(VariableTitleCourseRequest request) throws SectioningException, PageAccessException;
+	Collection<ClassAssignmentInterface.CourseAssignment> getCoursesFromRequest(StudentSectioningContext cx, CourseRequestInterface.Request query) throws SectioningException, PageAccessException;
 }

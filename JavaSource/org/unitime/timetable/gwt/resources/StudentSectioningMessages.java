@@ -3174,4 +3174,40 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("{0} of {1}")
 	String waitListPosition(Integer position, Integer total);
+	
+	@DefaultMessage("Wait-List Preferences")
+	String dialogWaitListedRequestPreferences();
+	
+	@DefaultMessage("Update Preferences")
+	String buttonSubmitWaitListedRequestPreferences();
+	
+	@DefaultMessage("Close Dialog")
+	String buttonCloseWaitListedRequestPreferences();
+	
+	@DefaultMessage("Update wait-list preferences for {0}")
+	String iconWaitListedRequestPreferences(String course);
+	
+	@DefaultMessage("Wait-Listed:")
+	String propWaitListSwapWithWaitListed();
+	
+	@DefaultMessage("New wait-list")
+	String checkWaitListSwapWithNewWaitList();
+	
+	@DefaultMessage("Swap with course:")
+	String propWaitListSwapWithCourseOffering();
+	
+	@DefaultMessage("When a course is selected, it will be automatically swapped with the wait-listed course. This means that it will be only dropped when you can get the wait-listed course instead.")
+	String descWaitListSwapWithCourseOffering();
+	
+	@DefaultMessage("No swap course selected.")
+	String itemWaitListSwapWithNoCourseOffering();
+	
+	@DefaultMessage("Replaces {0}.")
+	String conflictWaitListSwapWithNoCourseOffering(String course);
+	
+	@DefaultMessage("Requires {0}.")
+	String conflictRequiredPreferences(String prefs);
+	
+	@DefaultMessage("Replaces")
+	String colWaitListSwapWithCourseOffering();
 }

@@ -34,6 +34,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.OverrideType;
 import org.unitime.timetable.model.dao.OverrideTypeDAO;
@@ -60,6 +61,7 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 	private static final long serialVersionUID = 1L;
 	
 	protected String iQuery = null;
+	protected CourseRequestInterface.Request iRequest = null;
 	protected Integer iLimit = null;
 	protected CourseMatcher iMatcher = null;
 	protected Long iStudentId;
@@ -68,6 +70,10 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 	
 	public ListCourseOfferings forQuery(String query) {
 		iQuery = query; return this;
+	}
+	
+	public ListCourseOfferings forRequest(CourseRequestInterface.Request request) {
+		iRequest = request; return this;	
 	}
 	
 	public ListCourseOfferings withLimit(Integer limit) {
@@ -107,7 +113,17 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 				else if (helper.hasAvisorPermission() && server.getConfig().getPropertyBoolean("Filter.OnlineOnlyAdvisorOverride", false))
 					iFilterIM = null;
 			}
-			List<CourseAssignment> courses = listCourses(server, helper);
+			List<CourseAssignment> courses = null;
+			if (iRequest != null) {
+				courses = new ArrayList<CourseAssignment>();
+				for (Long courseId: iRequest.getCourseIds()) {
+					XCourse course = server.getCourse(courseId);
+					if (course != null)
+						courses.add(convert(course, server));
+				}
+			} else {
+				courses = listCourses(server, helper);
+			}
 			if (courses != null && !courses.isEmpty() && courses.size() <= 1000) {
 				List<OverrideType> overrides = OverrideTypeDAO.getInstance().findAll(helper.getHibSession(), Order.asc("label"));
 				if (overrides != null && !overrides.isEmpty()) {

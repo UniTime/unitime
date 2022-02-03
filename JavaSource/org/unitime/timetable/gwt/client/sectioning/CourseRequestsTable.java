@@ -670,6 +670,26 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		return null;
 	}
 	
+	public CourseRequestLine getWaitListedLine(Long course) {
+		if ((iWaitListMode == WaitListMode.WaitList || iWaitListMode == WaitListMode.NoSubs) && course != null) {
+			// skip inactive first
+			for (CourseRequestLine line: iCourses)
+				for (CourseSelectionBox box: line.getCourses()) {
+					RequestedCourse rc = box.getValue();
+					if (rc != null && course.equals(rc.getCourseId()) && !rc.isInactive())
+						return line;
+				}
+			// all courses next
+			for (CourseRequestLine line: iCourses)
+				for (CourseSelectionBox box: line.getCourses()) {
+					RequestedCourse rc = box.getValue();
+					if (rc != null && course.equals(rc.getCourseId()))
+						return line;
+				}
+		}
+		return null;
+	}
+	
 	public void setWaitList(Long course, boolean waitList) {
 		// skip inactive first
 		for (CourseRequestLine line: iCourses) {

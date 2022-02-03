@@ -461,7 +461,19 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 				long c0 = OnlineSectioningHelper.getCpuTime();
 				r.getAction().setStartTime(System.currentTimeMillis());
 				r.getAction().addOptionBuilder().setKey("Index").setValue(index + " of " + queue.size()); index++;
+				XEnrollment dropEnrollment = r.getDropEnrollment();
 				XEnrollment e = r.resection(server, w, sq);
+				
+				if (dropEnrollment != null) {
+					XOffering dropOffering = server.getOffering(dropEnrollment.getOfferingId());
+					if (dropOffering != null) {
+						OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
+						enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
+						for (Long sectionId: dropEnrollment.getSectionIds())
+							enrollment.addSection(OnlineSectioningHelper.toProto(dropOffering.getSection(sectionId), dropEnrollment));
+						r.getAction().addEnrollment(enrollment);
+					}
+				}
 				
 				if (e != null) {
 					e.setTimeStamp(ts);
@@ -499,6 +511,8 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					continue;
 				}
 				
+				if (dropEnrollment != null)
+					server.assign(r.getDropRequest(), null);
 				if (e != null) {
 					r.setRequest(server.assign(r.getRequest(), e));
 				}
@@ -518,6 +532,11 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 							approvedBy = enrl.getApprovedBy();
 							approvedDate = enrl.getApprovedDate();
 						}
+						enrl.getClazz().getStudentEnrollments().remove(enrl);
+						helper.getHibSession().delete(enrl);
+						i.remove();
+					} else if (dropEnrollment != null && dropEnrollment.getCourseId().equals(enrl.getCourseOffering().getUniqueId())) {
+						helper.debug("Deleting " + enrl.getClazz().getClassLabel(), r.getAction());
 						enrl.getClazz().getStudentEnrollments().remove(enrl);
 						helper.getHibSession().delete(enrl);
 						i.remove();
@@ -574,6 +593,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					if (cd != null && !cd.isWaitlist()) {
 						cd.setWaitlistedTimeStamp(ts);
 						cd.setWaitlist(true);
+						cd.setWaitListSwapWithCourseOffering(null);
 						helper.getHibSession().saveOrUpdate(cd);
 						student.addWaitList(
 								CourseOfferingDAO.getInstance().get(r.getCourseId().getCourseId(), helper.getHibSession()),

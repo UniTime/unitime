@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
@@ -88,6 +89,8 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 	private Validator<CourseSelection> iValidator = null;
 	private SpecialRegistrationContext iSpecReg;
 	private ImageButton iDelete;
+	private Long iWaitListSwapWithCourseOfferingId = null;
+	private Date iWaitListedTimeStamp = null;
 	
 	public CourseRequestLine(StudentSectioningContext context, int priority, boolean alternate, Validator<CourseSelection> validator, SpecialRegistrationContext specreg) {
 		super("unitime-CourseRequestLine");
@@ -385,6 +388,8 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 	@Override
 	public Request getValue() {
 		Request ret = new Request();
+		ret.setWaitListSwapWithCourseOfferingId(iWaitListSwapWithCourseOfferingId);
+		ret.setWaitListedTimeStamp(iWaitListedTimeStamp);
 		for (CourseSelectionBox box: iCourses) {
 			RequestedCourse rc = box.getValue();
 			if (!rc.isEmpty()) ret.addRequestedCourse(rc);
@@ -439,6 +444,8 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 	@Override
 	public void setValue(Request value, boolean fireEvents) {
 		if (value == null) {
+			iWaitListSwapWithCourseOfferingId = null;
+			iWaitListedTimeStamp = null;
 			if (iWaitList != null) { iWaitList.setValue(false); iWaitList.setEnabled(false); }
 			iCourses.get(0).setValue(null, true);
 			for (int i = iCourses.size() - 1; i > 0; i--)
@@ -476,6 +483,8 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 				iCourses.get(iCourses.size() - 1).setInfo(MESSAGES.advisorNoteWithCredit(value.getAdvisorNote(), value.getAdvisorCredit()));
 			else if (value.hasAdvisorNote())
 				iCourses.get(iCourses.size() - 1).setInfo(MESSAGES.advisorNote(value.getAdvisorNote()));
+			iWaitListSwapWithCourseOfferingId = value.getWaitListSwapWithCourseOfferingId();
+			iWaitListedTimeStamp = value.getWaitListedTimeStamp();
 		}
 		if (iDelete != null) {
 			iDelete.setVisible(value == null || value.isCanDelete());

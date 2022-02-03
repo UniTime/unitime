@@ -14450,4 +14450,13 @@
 			references %SCHEMA%.department (uniqueid) on delete set null
 		</pgsql>
 	</update>
+	<update version="249" date="3-Feb-2022" comment="Waitlist course swap">
+		<plsql>alter table %SCHEMA%.course_demand add wl_course_swap_id number(20,0)</plsql>
+	    <mysql>alter table %SCHEMA%.course_demand add wl_course_swap_id decimal(20,0)</mysql>
+	    <pgsql>alter table %SCHEMA%.course_demand add wl_course_swap_id bigint</pgsql>
+	    <sql>
+			alter table %SCHEMA%.course_demand add constraint fk_course_demand_course_swap foreign key (wl_course_swap_id)
+			references %SCHEMA%.course_offering (uniqueid) on delete set null
+		</sql>
+	</update>
 </dbupdate>

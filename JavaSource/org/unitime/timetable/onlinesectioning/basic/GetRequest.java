@@ -289,6 +289,7 @@ public class GetRequest extends WaitlistedOnlineSectioningAction<CourseRequestIn
 					r.setCritical(((XCourseRequest)cd).getCritical());
 					r.setTimeStamp(((XCourseRequest)cd).getTimeStamp());
 					r.setWaitListedTimeStamp(((XCourseRequest)cd).getWaitListedTimeStamp());
+					r.setWaitListSwapWithCourseOfferingId(((XCourseRequest)cd).getWaitListSwapWithCourseOffering() == null ? null : ((XCourseRequest)cd).getWaitListSwapWithCourseOffering().getCourseId());
 					if (r.hasRequestedCourse()) {
 						if (cd.isAlternative())
 							request.getAlternatives().add(r);

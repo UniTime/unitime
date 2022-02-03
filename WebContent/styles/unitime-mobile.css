@@ -673,6 +673,10 @@
 		max-width: 90vw;
 		max-height: 40vh;
 	}
+	
+	.unitime-WaitListedRequestPreferences {
+		width: calc(90vw + 20px);
+	}
 }
 
 @media all and (max-width: 400px) {

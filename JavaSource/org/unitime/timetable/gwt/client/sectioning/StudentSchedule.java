@@ -198,6 +198,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		header.add(new UniTimeTableHeader(MESSAGES.colCourse()));
 		header.add(new UniTimeTableHeader(MESSAGES.colTitle()));
 		header.add(new UniTimeTableHeader(MESSAGES.colCredit()));
+		header.add(new UniTimeTableHeader(MESSAGES.colWaitListSwapWithCourseOffering()));
 		header.add(new UniTimeTableHeader(MESSAGES.colWaitListPosition()));
 		header.add(new UniTimeTableHeader(MESSAGES.colRequirements()));
 		header.add(new UniTimeTableHeader(MESSAGES.colWaitListErrors()));
@@ -1280,6 +1281,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		iWaitLists.clearTable(1);
 		if (iAssignment != null && iAssignment.hasRequest()) {
 			NumberFormat df = NumberFormat.getFormat("0.#");
+			boolean hasSwap = false;
 			boolean hasPosition = false;
 			boolean hasPrefs = false;
 			request: for (Request request: iAssignment.getRequest().getCourses()) {
@@ -1331,6 +1333,21 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							row.add(new Label(rc.getCourseName()));
 							row.add(new Label(rc.hasCourseTitle() ? rc.getCourseTitle() : ""));
 							row.add(new Label(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : ""));
+							
+							if (firstLine && request.getWaitListSwapWithCourseOfferingId() != null && iAssignment != null) {
+								Label swap = null;
+								for (ClassAssignmentInterface.CourseAssignment course: iAssignment.getCourseAssignments()) {
+									if (request.getWaitListSwapWithCourseOfferingId().equals(course.getCourseId()) && !course.isTeachingAssignment() && course.isAssigned()) {
+										swap = new Label(course.getCourseName());
+										swap.setTitle(MESSAGES.conflictWaitListSwapWithNoCourseOffering(course.getCourseNameWithTitle()));
+										hasSwap = true;
+										break;
+									}
+								}
+								row.add(swap == null ? new Label("") : swap);
+							} else {
+								row.add(new Label(""));	
+							}
 							
 							if (rc.hasWaitListPosition() && rc.getStatus() != RequestedCourseStatus.NEW_REQUEST && rc.getStatus() != RequestedCourseStatus.OVERRIDE_NEEDED) {
 								hasPosition = true;
@@ -1441,6 +1458,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				row.add(new Label(df.format(iAssignment.getRequest().getMaxCreditOverride())));
 				row.add(new Label(""));
 				row.add(new Label(""));
+				row.add(new Label(""));
 				String note = null;
 				if (iAssignment.getRequest().hasCreditWarning())
 					note = "<span class='"+style+"'>" + iAssignment.getRequest().getCreditWarning() + "</span>";
@@ -1456,8 +1474,9 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						iWaitLists.getCellFormatter().addStyleName(idx, c, "top-border-dashed");								
 				}
 			}
-			iWaitLists.setColumnVisible(5, hasPosition);
-			iWaitLists.setColumnVisible(6, hasPrefs);
+			iWaitLists.setColumnVisible(5, hasSwap);
+			iWaitLists.setColumnVisible(6, hasPosition);
+			iWaitLists.setColumnVisible(7, hasPrefs);
 		}
 		
 		iTabs.getTabBar().setTabEnabled(5, iWaitLists.getRowCount() > 1);
