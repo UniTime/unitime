@@ -23,7 +23,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.unitime.timetable.model.base.BaseInstrOfferingConfig;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
@@ -323,4 +325,19 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
     	}
     	return snapShotLimit;
 	}
+	
+	@SuppressWarnings("unchecked")
+	public TreeSet<Department> findPossibleFundingDepts(org.hibernate.Session hibSession){
+		TreeSet<Department> deptSet = new TreeSet<>();
+		String query = "from Department d where d.externalFundingDept = true and d.session.uniqueId = :sessId";
+		deptSet.addAll((List<Department>)(hibSession.createQuery(query).setLong("sessId", this.getSessionId()).setCacheable(true).list()));
+		for (CourseOffering co : this.getInstructionalOffering().getCourseOfferings()){
+			deptSet.add(co.getDepartment());
+			deptSet.add(co.getEffectiveFundingDept());
+		}
+		deptSet.add(this.getInstructionalOffering().getDepartment());
+		deptSet.add(this.getInstructionalOffering().getEffectiveFundingDept());
+		return deptSet;
+	}
+
 }
