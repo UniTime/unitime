@@ -1599,22 +1599,17 @@ public class Class_ extends BaseClass_ {
 			Debug.error(e);
 		}
 		if (a!=null) {
-			Iterator it2 = a.getRooms().iterator();
-			while (it2.hasNext()){
-				Location room = (Location)it2.next();
+            boolean first = true;
+			for(Location room : a.getRooms()) {
+        		if (first) { first = false; } else { sb.append(", "); }
 				sb.append(room.getLabel());
 			}	
 		} else {
 			if (getEffectiveTimePreferences().isEmpty()){
 	            boolean first = true;
-	            for(Iterator it = getEffectiveRoomPreferences().iterator(); it.hasNext();){
-	            	RoomPref rp = (RoomPref) it.next();
+	            for (RoomPref rp : (Set<RoomPref>)getEffectiveRoomPreferences()) {
 	            	if (rp.getPrefLevel().getPrefId().toString().equals(PreferenceLevel.PREF_LEVEL_REQUIRED)){
-	            		if (first) {
-	            			first = false;
-	            		} else {
-	            			sb.append("<br>");
-	            		}
+	            		if (first) { first = false; } else { sb.append(", "); }
 	            		sb.append(rp.getRoom().getLabel());
 	            	}
 	            }

@@ -6786,4 +6786,83 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Department List - {0}")
 	String propDepartmentlist(String name);	
 	
+	@DefaultMessage("Assign Instructors")
+	@DoNotTranslate
+	String pageAssignInstructors();
+
+	@DefaultMessage("CheckConflicts")
+	String colCheckConflicts();
+
+	@DefaultMessage("Responsibility")
+	String colTeachingResponsibility();
+
+	@DefaultMessage("Display")
+	String colDisplayInstructors();
+
+	@DefaultMessage("Course Supervisor / Student System Access:")
+	String labelCourseCoordinators();
+
+	@DefaultMessage("Class")
+	String fieldClassName();
+	
+	@DefaultMessage("% Share")
+	String fieldPercentShare();
+	
+	@DefaultMessage("Check<br>Conflicts")
+	String fieldCheckConflicts();
+	
+	@DefaultMessage("Responsibility")
+	String fieldResponsibility();
+	
+	@DefaultMessage("Display<br>(All: {0})")
+	String fieldDisplay(String buttonCharacter);
+
+	@DefaultMessage("Class Unique Id")
+	String fieldClassUid();
+	
+	@DefaultMessage("Instructional Offering Config Unique Id")
+	String fieldConfigUid();
+
+	@DefaultMessage("Error")
+	String fieldError();
+
+	@DefaultMessage("Add Additional Instructor Row")
+	String fieldAdd();
+	
+	@DefaultMessage("Insert a new row below this row.")
+	String fieldInsertRowBelow();
+
+	@DefaultMessage("Delete Instructor Row")
+	String fieldDelete();
+	
+	@DefaultMessage("First Record For Class UniqueId")
+	String fieldFirstRecordForClassUid();	
+
+	@DefaultMessage("<u>U</u>nassign All")
+	String buttonUnassignAll();
+	
+	@DefaultMessage("Assign Instructors")
+	String buttonAssignInstructors();
+	
+	@DefaultMessage("Instructional offering configuration id not provided.")
+	String errorConfigurationIdNotProvided();
+
+	@DefaultMessage("Instructional offering configuration with matching unique id not found.")
+	String errorConfigurationIdNotFound();
+
+	@DefaultMessage("User does not have permission to remove all instructors.")
+	String errorDeleteAllInstructorsPermission();
+
+	@DefaultMessage("Missing data for class: {0}")
+	String errorInstructorInputDataNotFoundForClass(String className);
+	
+	@DefaultMessage("Duplicate instructor {0} with same responsibility {1} for class. {2}")
+	String errorDuplicateInstructorData(String instrName, String responsibility, String course);
+	
+	@DefaultMessage("Initial setup of Instructional Offering Config has not been completed.")
+	String exceptionInitialIOSetupIncomplete();
+	
+	@DefaultMessage("Failed to Send Update to External System:  {0} = {1}")
+	String exceptionExternalSystemUpdateFailure(String exceptionType, String failedClassName);
+	
 }

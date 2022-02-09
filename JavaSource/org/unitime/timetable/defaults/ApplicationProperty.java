@@ -2989,6 +2989,11 @@ public enum ApplicationProperty {
 	@Description("Enable Funding Department Functionality.")
 	CoursesFundingDepartmentsEnabled("unitime.courses.funding_departments_enabled"),
 
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Course Assign Instructors: switch the user interface back to the old (Struts-based) assign instructor page")
+	LegacyCourseAssignInstructors("unitime.legacy.course.assign_instructors"),
+
 	;
 
 	String iKey;
