@@ -87,7 +87,7 @@ public class WebInstrOfferingConfigTableBuilder extends
 		        btnTable.append("<td>");
 		        btnTable.append("	<form method='post' action='instructionalOfferingConfigEdit.do' class='FormWithNoPadding'>");
 		        btnTable.append("		<input type='hidden' name='configId' value='" + ioc.getUniqueId().toString() + "'>");
-		        btnTable.append("		<input type='submit' name='op' value='" + MSG.actionEditConfiguration() + "' title='" + MSG.titleEditConfiguration() + "' class='btn'>");
+		        btnTable.append("		<input type='submit' name='op' value='" + MSG.actionEditConfiguration() + "' title='" + MSG.titleEditConfiguration() + "' class='gwt-Button'>");
 		        btnTable.append("	</form>");
 		        btnTable.append("</td>");
 	        }
@@ -96,17 +96,25 @@ public class WebInstrOfferingConfigTableBuilder extends
 		        btnTable.append("<td>");
 		        btnTable.append("	<form method='post' action='instructionalOfferingModify.do' class='FormWithNoPadding'>");
 		        btnTable.append("		<input type='hidden' name='uid' value='" + ioc.getUniqueId().toString() + "'>");
-		        btnTable.append("		<input type='submit' name='op' value='" + MSG.actionClassSetup() +"' title='" + MSG.titleClassSetup() + "' class='btn'> ");
+		        btnTable.append("		<input type='submit' name='op' value='" + MSG.actionClassSetup() +"' title='" + MSG.titleClassSetup() + "' class='gwt-Button'> ");
 		        btnTable.append("	</form>");
 		        btnTable.append("</td>");
 	        }
 
-	        if (context.hasPermission(ioc, Right.AssignInstructors)) {
+	        if (ApplicationProperty.LegacyCourseAssignInstructors.isTrue() && context.hasPermission(ioc, Right.AssignInstructors)) {
 	        	btnTable.append("<td>");
 		        btnTable.append("	<form method='post' action='classInstructorAssignment.do' class='FormWithNoPadding'>");
 		        btnTable.append("		<input type='hidden' name='uid' value='" + ioc.getUniqueId().toString() + "'>");
-		        btnTable.append("		<input type='submit' name='op' value='" + MSG.actionAssignInstructors() + "' title='" + MSG.titleAssignInstructors() + "' class='btn'> ");
+		        btnTable.append("		<input type='submit' name='op' value='" + MSG.actionAssignInstructors() + "' title='" + MSG.titleAssignInstructors() + "' class='gwt-Button'> ");
 		        btnTable.append("	</form>");
+		        btnTable.append("</td>");
+	        }
+
+	        if (ApplicationProperty.LegacyCourseAssignInstructors.isFalse() && context.hasPermission(ioc, Right.AssignInstructors)) {
+	        	btnTable.append("<td>");
+				btnTable.append("<div id='UniTimeGWT:AssignInstructorsButton' style=\"display: none;\">");
+				btnTable.append(ioc.getUniqueId().toString());
+				btnTable.append("</div>");
 		        btnTable.append("</td>");
 	        }
 

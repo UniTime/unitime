@@ -26,7 +26,7 @@ import org.unitime.timetable.model.base.BaseClassInstructor;
 /**
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
-public class ClassInstructor extends BaseClassInstructor implements Comparable {
+public class ClassInstructor extends BaseClassInstructor implements Comparable<ClassInstructor> {
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -59,7 +59,7 @@ public class ClassInstructor extends BaseClassInstructor implements Comparable {
 		}
 	}
 
-    public int compareTo(Object o) {
+    public int compareTo(ClassInstructor o) {
         if (o==null || !(o instanceof ClassInstructor)) return -1;
         ClassInstructor i = (ClassInstructor)o;
         int cmp = nameLastNameFirst().compareToIgnoreCase(i.nameLastNameFirst());
