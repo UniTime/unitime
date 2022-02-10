@@ -112,9 +112,9 @@ public class WebInstrOfferingConfigTableBuilder extends
 
 	        if (ApplicationProperty.LegacyCourseAssignInstructors.isFalse() && context.hasPermission(ioc, Right.AssignInstructors)) {
 	        	btnTable.append("<td>");
-				btnTable.append("<div id='UniTimeGWT:AssignInstructorsButton' style=\"display: none;\">");
+				btnTable.append("<span id='" + ioc.getUniqueId().toString() + "' name='UniTimeGWT:AssignInstructorsButton' style=\"display: none;\">");
 				btnTable.append(ioc.getUniqueId().toString());
-				btnTable.append("</div>");
+				btnTable.append("</span>");
 		        btnTable.append("</td>");
 	        }
 

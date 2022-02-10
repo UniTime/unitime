@@ -27,7 +27,6 @@ import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.resources.GwtMessages;
-import org.unitime.timetable.gwt.shared.ReservationInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -50,26 +49,20 @@ public class AssignInstructorsButton extends Composite {
 	private UniTimeHeaderPanel iHeader;
 	
 	
-	private List<AssignInstructorClickHandler> iAssignInstructorClickHandlers = new ArrayList<AssignInstructorClickHandler>();
+	private List<ClickHandler> iAssignInstructorsClickHandlers = new ArrayList<ClickHandler>();
 	
-	private Button findButtonAndFixMargins(P panel, int depth) {
+	private Button findButtonAndFixMargins(P panel) {
 		panel.getElement().getStyle().setMargin(0, Unit.PX);
 		panel.getElement().getStyle().setPadding(0, Unit.PX);
 		Button b = null;
-		int level = depth;
 		for (int i = 0; i < panel.getWidgetCount(); i++) {
 			Widget w = (Widget) panel.getWidget(i);
 			if (w instanceof P) {
 				P np = (P) w;
-				b = findButtonAndFixMargins(np, level + 1);
+				b = findButtonAndFixMargins(np);
 			} else if (w instanceof Button) {
 				b = (Button) w;
 				b.getElement().getStyle().setMargin(0, Unit.PX);
-//				b.getElement().getStyle().setMarginLeft(1, Unit.PX);
-//				b.getElement().getStyle().setMarginRight(0, Unit.PX);
-//				b.getElement().getStyle().setMarginTop(0, Unit.PX);
-//				b.getElement().getStyle().setMarginBottom(0, Unit.PX);
-//				b.getElement().getStyle().setPadding(0, Unit.PX);
 			} else if (w instanceof UIObject){
 				UIObject o = (UIObject) w;
 				o.getElement().getStyle().setMargin(0, Unit.PX);
@@ -86,9 +79,7 @@ public class AssignInstructorsButton extends Composite {
 		iAssignInstructorsPanel.removeStyleName("unitime-NotPrintableBottomLine");
 		
 		iHeader = new UniTimeHeaderPanel("");
-//		iHeader.removeStyleName("unitime-HeaderPanel");
 		iHeader.setTitleStyleName("unitime3-HeaderTitle");
-//		iHeader.setStyleName("unitime-ButtonPanel");
 		
 		
 		if (editable) {
@@ -98,10 +89,8 @@ public class AssignInstructorsButton extends Composite {
 					ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=assignClassInstructors&configId=" + iConfigId);
 				}
 			});
-			
-			findButtonAndFixMargins(iHeader, 1);
-			iAssignInstructorsPanel.getElement().getStyle().setMargin(0, Unit.PX);
-			iAssignInstructorsPanel.getElement().getStyle().setPadding(0, Unit.PX);
+
+			findButtonAndFixMargins(iHeader);
 			
 		}
 
@@ -115,42 +104,22 @@ public class AssignInstructorsButton extends Composite {
 	
 	public void insert(final RootPanel panel) {
 		iConfigId = Long.valueOf(panel.getElement().getInnerText());
-//	
+
 		panel.getElement().setInnerText(null);
 		panel.add(this);
 		panel.setVisible(true);
-		addAssignInstructorClickHandler(new AssignInstructorClickHandler() {
+		addAssignInstructorsClickHandler(new  ClickHandler() {
 			@Override
-			public void onClick(AssignInstructorClickedEvent evt) {
+			public void onClick(ClickEvent evt) {
 				ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=assignClassInstructors&configId=" + iConfigId);
 			}
 		});
 	}
 
 
-	public static class AssignInstructorClickedEvent {
-		private ReservationInterface iReservation;
-		
-		public AssignInstructorClickedEvent(ReservationInterface reservation) {
-			iReservation = reservation;
-		}
-		
-		public ReservationInterface getReservation() {
-			return iReservation;
-		}
-	}
-	
-	public interface AssignInstructorClickHandler {
-		public void onClick(AssignInstructorClickedEvent evt);
-	}
-	
-	public void addAssignInstructorClickHandler(AssignInstructorClickHandler h) {
-		iAssignInstructorClickHandlers.add(h);
+	public void addAssignInstructorsClickHandler(ClickHandler h) {
+		iAssignInstructorsClickHandlers.add(h);
 	}
 
-		
-	public void setErrorMessage(String message) {
-		iHeader.setErrorMessage(message);
-	}
 			
 }
