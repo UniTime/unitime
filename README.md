@@ -65,15 +65,15 @@ a sponsored project of the [Apereo Foundation][apereo] in March 2015.
 [events]: https://www.unitime.org/uct_events.php
 [students]: https://www.unitime.org/uct_students.php
 [help]: http://help.unitime.org
-[install]: http://help.unitime.org/Timetabling_Installation
+[install]: https://help.unitime.org/installation
 [demo]: https://demo.unitime.org
 [builds]: https://builds.unitime.org
 [xml]: https://www.unitime.org/uct_interfaces.php
 [publications]: https://www.unitime.org/publications.php
 [downloads]: https://sourceforge.net/projects/unitime/files
-[build]: http://help.unitime.org/build
+[build]:https://help.unitime.org/building-unitime
 [eclipse]: http://help.unitime.org/eclipse
 [docs]: http://bit.ly/unitime43docs
 [apereo]: https://www.apereo.org
-[customization]: http://help.unitime.org/Customizations
-[localization]: http://help.unitime.org/Localization
+[customization]: https://help.unitime.org/customizations
+[localization]: https://help.unitime.org/localization
