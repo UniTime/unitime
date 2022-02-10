@@ -82,7 +82,7 @@ public enum Components {
 	studentEnrollments("UniTimeGWT:StudentEnrollments", new ComponentFactory() { public void insert(RootPanel panel) { new StudentScheduleTable(true, true, false).insert(panel); } }),
 	teachingAssignments("UniTimeGWT:TeachingAssignments", new ComponentFactory() { public void insert(RootPanel panel) { new TeachingAssignmentsWidget().insert(panel); } }),
 	dynamicMap("UniTimeGWT:Map", new ComponentFactory() { public void insert(RootPanel panel) { MapWidget.insert(panel); } }),
-	assignClassInstructors("UniTimeGWT:AssignInstructorsButton", new ComponentFactory() { public void insert(RootPanel panel) { new AssignInstructorsButton(true).insert(panel); } }),
+	assignClassInstructors("UniTimeGWT:AssignInstructorsButton", true, new ComponentFactory() { public void insert(RootPanel panel) { new AssignInstructorsButton(true).insert(panel); } }),
 	;
 	
 	private String iId;
