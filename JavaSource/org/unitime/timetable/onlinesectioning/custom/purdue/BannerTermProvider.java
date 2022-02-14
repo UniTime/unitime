@@ -59,4 +59,9 @@ public class BannerTermProvider implements ExternalTermProvider {
 		}
 		return iCourseNumberLength;
 	}
+
+	@Override
+	public String getExternalCourseCampus(AcademicSessionInfo session, String subjectArea, String courseNumber) {
+		return session.getCampus();
+	}
 }

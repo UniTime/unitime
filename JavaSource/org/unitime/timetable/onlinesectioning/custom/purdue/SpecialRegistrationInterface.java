@@ -131,6 +131,8 @@ public class SpecialRegistrationInterface {
 		public String subject;
 		/** Course number (can be null in case of the MAXI error) */
 		public String courseNbr;
+		/** Banner's campus (can be null in case of the MAXI error) */
+		public String bannerCourseCampus;
 		/** Banner's subject area (can be null in case of the MAXI error) */
 		public String bannerSubject;
 		/** Banner's course number (can be null in case of the MAXI error) */
@@ -180,11 +182,15 @@ public class SpecialRegistrationInterface {
 			if (ext != null && session != null) {
 				this.bannerSubject = ext.getExternalSubject(session, subject, courseNbr);
 				this.bannerCourseNbr = ext.getExternalCourseNumber(session, subject, courseNbr);
+				this.bannerCourseCampus = ext.getExternalCourseCampus(session, subject, courseNbr);
 			} else {
-				if (subject.indexOf(" - ") >= 0)
+				if (subject.indexOf(" - ") >= 0) {
 					this.bannerSubject = subject.substring(subject.indexOf(" - ") + 3);
-				else
+					this.bannerCourseCampus = subject.substring(0, subject.indexOf(" - "));
+				} else {
 					this.bannerSubject = subject;
+					this.bannerCourseCampus = session.getCampus();
+				}
 				if (courseNbr.length() > 5)
 					this.bannerCourseNbr = courseNbr.substring(0, 5);
 				else
@@ -251,6 +257,8 @@ public class SpecialRegistrationInterface {
 		public String subject;
 		/** Course number */
 		public String courseNbr;
+		/** Banner's campus (can be null in case of the MAXI error) */
+		public String bannerCourseCampus;
 		/** Banner's subject area (can be null in case of the MAXI error) */
 		public String bannerSubject;
 		/** Banner's course number (can be null in case of the MAXI error) */
@@ -268,11 +276,15 @@ public class SpecialRegistrationInterface {
 			if (ext != null && session != null) {
 				this.bannerSubject = ext.getExternalSubject(session, subject, courseNbr);
 				this.bannerCourseNbr = ext.getExternalCourseNumber(session, subject, courseNbr);
+				this.bannerCourseCampus = ext.getExternalCourseCampus(session, subject, courseNbr);
 			} else {
-				if (subject.indexOf(" - ") >= 0)
+				if (subject.indexOf(" - ") >= 0) {
 					this.bannerSubject = subject.substring(subject.indexOf(" - ") + 3);
-				else
+					this.bannerCourseCampus = subject.substring(0, subject.indexOf(" - "));
+				} else {
 					this.bannerSubject = subject;
+					this.bannerCourseCampus = session.getCampus();
+				}
 				if (courseNbr.length() > 5)
 					this.bannerCourseNbr = courseNbr.substring(0, 5);
 				else
