@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.api.ApiConnector;
@@ -55,12 +56,19 @@ import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.updates.ReloadOfferingAction;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.service.SolverServerService;
 
 @Service("/api/var-title-crs")
 public class VariableTitleCourseConnector extends ApiConnector {
+	@Autowired
+	private SolverServerService solverServerService;
 	
 	@Override
 	protected String getName() {
@@ -608,8 +616,27 @@ public class VariableTitleCourseConnector extends ApiConnector {
 		}
 		
 		// Notify the online scheduling server that the variable course title has changed
-		StudentSectioningQueue.offeringChanged(helper.getHibSession(), helper.getSessionContext().getUser(), instructionalOffering.getSessionId(), instructionalOffering.getUniqueId());
-		helper.getHibSession().flush();
+		OnlineSectioningServer server = getOnlineSectioningServer(instructionalOffering.getSessionId());
+		if (server != null && server.isReady()) {
+			// Online student scheduling server is ready, immediately reload the offering
+			server.execute(server.createAction(ReloadOfferingAction.class).forOfferings(instructionalOffering.getUniqueId()), getUser());
+		} else {
+			// Online student scheduling server is not loaded or not ready, just create a notification
+			StudentSectioningQueue.offeringChanged(helper.getHibSession(), helper.getSessionContext().getUser(), instructionalOffering.getSessionId(), instructionalOffering.getUniqueId());
+			helper.getHibSession().flush();
+		}
+	}
+	
+	
+	protected OnlineSectioningServer getOnlineSectioningServer(Long sessionId) {
+		return (solverServerService == null ? null : solverServerService.getOnlineStudentSchedulingContainer().getSolver(sessionId.toString()));
+	}
+
+	protected OnlineSectioningLog.Entity getUser() {
+		return OnlineSectioningLog.Entity.newBuilder()
+				.setExternalId(StudentClassEnrollment.SystemChange.SYSTEM.name())
+				.setName(StudentClassEnrollment.SystemChange.SYSTEM.getName())
+				.setType(OnlineSectioningLog.Entity.EntityType.OTHER).build();
 	}
 	
 	private ExternalInstrOffrConfigChangeAction lookupExternalConfigChangeAction() throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, ClassNotFoundException {
