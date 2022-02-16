@@ -375,7 +375,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 			html += "<tr><td class='unitime-MainTableHeader' colspan='2'>"+ (e.hasType() ? Constants.toInitialCase(e.getType().name()) + " ": "") + MSG.enrollmentsTable() + "</td></tr>";
 			html += "<tr><td colspan='2'><table cellspacing='0' cellpadding='2'>" +
 					"<td class='unitime-TableHeader'>" + MSG.colCourse() + "</td>" +
-					"<td class='unitime-TableHeader'>" + MSG.colSubject() + "</td>" +
+					"<td class='unitime-TableHeader'>" + MSG.colSubpart() + "</td>" +
 					"<td class='unitime-TableHeader'>" + MSG.colClass() + "</td>" +
 					"<td class='unitime-TableHeader'>" + MSG.colDays() + "</td>" +
 					"<td class='unitime-TableHeader'>" + MSG.colStart() + "</td>" +
