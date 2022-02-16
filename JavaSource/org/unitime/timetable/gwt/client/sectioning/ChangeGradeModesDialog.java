@@ -285,7 +285,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 					if (clazz.isAssigned()) {
 						row = new WebTable.Row(
 								new WebTable.Cell(firstClazz ? clazz.getSubject() : "").aria(clazz.getSubject()),
-								new WebTable.Cell(firstClazz ? CONSTANTS.showCourseTitle() ? clazz.getCourseNameWithTitle() : clazz.getCourseName() : "").aria(CONSTANTS.showCourseTitle() ? clazz.getCourseNameWithTitle() : clazz.getCourseName()),
+								new WebTable.Cell(firstClazz ? clazz.getCourseNbr(CONSTANTS.showCourseTitle()) : "").aria(clazz.getCourseNbr(CONSTANTS.showCourseTitle())),
 								new WebTable.Cell(clazz.getSubpart()),
 								new WebTable.Cell(clazz.getSection()),
 								new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())).aria(clazz.getDaysString(CONSTANTS.longDays(), " ")),
@@ -301,7 +301,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 					} else {
 						row = new WebTable.Row(
 								new WebTable.Cell(firstClazz ? clazz.getSubject() : "").aria(clazz.getSubject()),
-								new WebTable.Cell(firstClazz ? CONSTANTS.showCourseTitle() ? clazz.getCourseNameWithTitle() : clazz.getCourseName() : "").aria(CONSTANTS.showCourseTitle() ? clazz.getCourseNameWithTitle() : clazz.getCourseName()),
+								new WebTable.Cell(firstClazz ? clazz.getCourseNbr(CONSTANTS.showCourseTitle()) : "").aria(clazz.getCourseNbr(CONSTANTS.showCourseTitle())),
 								new WebTable.Cell(clazz.getSubpart()),
 								new WebTable.Cell(clazz.getSection()),
 								new WebTable.Cell(MESSAGES.arrangeHours(), 3, null),
