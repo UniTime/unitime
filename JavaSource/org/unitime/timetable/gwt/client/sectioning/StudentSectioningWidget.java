@@ -46,6 +46,8 @@ import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
@@ -986,6 +988,19 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		panel.add(iSpecialRegistrationsPanel);
 		
 		iWaitListsPanel = new WaitListsPanel(iSpecRegCx);
+		iWaitListsPanel.getTable().addMouseClickListener(new MouseClickListener<RequestedCourse>() {
+			@Override
+			public void onMouseClick(TableEvent<RequestedCourse> event) {
+				if (event.getData() != null) {
+					CourseRequestLine line = iCourseRequests.getWaitListedLine(event.getData().getCourseId());
+					if (line != null) {
+						clearMessage();
+						getWaitListedRequestPreferences().setSchedule(iLastAssignment);
+						getWaitListedRequestPreferences().show(line, event.getData().getCourseId());
+					}
+				}
+			}
+		});
 		panel.add(iWaitListsPanel);
 
 		iShowUnassignments.setVisible(false);

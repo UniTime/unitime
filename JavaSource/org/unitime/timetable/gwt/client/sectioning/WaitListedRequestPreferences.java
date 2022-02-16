@@ -111,6 +111,7 @@ public class WaitListedRequestPreferences extends UniTimeDialogBox implements Ha
 	private ListBox iEnrolledCoursesList = null;
 	private CourseRequestLine iLine = null;
 	private CheckBox iWaitListed;
+	private Long iSelectCourseId = null;
 	
 	public WaitListedRequestPreferences(StudentSectioningContext context) {
 		super(true, true);
@@ -245,8 +246,13 @@ public class WaitListedRequestPreferences extends UniTimeDialogBox implements Ha
 	}
 	
 	public void show(CourseRequestLine line) {
+		show(line, null);
+	}
+	
+	public void show(CourseRequestLine line, Long courseId) {
 		if (line == null) return;
 		iLine = line;
+		iSelectCourseId = courseId;
 		setValue(line.getValue());
 		center();
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
@@ -446,6 +452,7 @@ public class WaitListedRequestPreferences extends UniTimeDialogBox implements Ha
 			public void onSuccess(Collection<CourseAssignment> result) {
 				iCourses.clearTable(1);
 				boolean hasCredit = false, hasNote = false, hasWaitList = false;
+				int selectLineIndex = 1;
 				for (final CourseAssignment record: result) {
 					List<Widget> line = new ArrayList<Widget>();
 					line.add(new Label(record.getSubject(), false));
@@ -490,12 +497,13 @@ public class WaitListedRequestPreferences extends UniTimeDialogBox implements Ha
 							line.add(new AriaHiddenLabel(ARIA.courseFinderCourse(record.getSubject(), record.getCourseNbr())));
 						}
 					}
-					iCourses.addRow(record, line);
+					int lineIdx = iCourses.addRow(record, line);
+					if (iSelectCourseId != null && iSelectCourseId.equals(record.getCourseId())) selectLineIndex = lineIdx;
 				}
 				iCourses.setColumnVisible(5, hasCredit);
 				iCourses.setColumnVisible(6, hasNote);
 				iCourses.setColumnVisible(7, hasWaitList);
-				iCourses.setSelected(1, true);
+				iCourses.setSelected(selectLineIndex, true);
 				scrollToSelectedRow();
 				if (fireEvents)
 					ValueChangeEvent.fire(WaitListedRequestPreferences.this, getValue());

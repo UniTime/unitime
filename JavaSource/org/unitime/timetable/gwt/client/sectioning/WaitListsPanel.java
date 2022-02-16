@@ -134,6 +134,10 @@ public class WaitListsPanel extends P {
 		setVisible(false);
 	}
 	
+	public UniTimeTable<RequestedCourse> getTable() {
+		return iTable;
+	}
+	
 	public void showWaiting() {
 		iWaiting.setVisible(true);
 		iOpenCloseImage.setVisible(false);
