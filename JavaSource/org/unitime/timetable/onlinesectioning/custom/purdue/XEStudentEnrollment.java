@@ -51,6 +51,7 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeModes;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.model.Student;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -379,7 +380,17 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				}
 				check.setMessage(reason);
 			} else if (student.getStudentId() == null) {
-				check.setMessage("UniTime enrollment data are not synchronized with Banner enrollment data, please try again later.");
+				boolean keepMessage = check.hasMessage() && (
+						((Number)helper.getHibSession().createQuery(
+								"select count(s) from Student s where s.externalUniqueId = :id and " +
+								"s.session.academicYear = :year and s.session.academicTerm = :term and s.session.academicInitiative != :campus"
+								).setString("id", student.getExternalId())
+								.setString("term", server.getAcademicSession().getTerm())
+								.setString("year", server.getAcademicSession().getYear())
+								.setString("campus", server.getAcademicSession().getCampus())
+								.uniqueResult()).intValue() > 0);
+				if (!keepMessage)
+					check.setMessage("UniTime enrollment data are not synchronized with Banner enrollment data, please try again later.");
 				check.setFlag(EligibilityFlag.CAN_ENROLL, false);
 				if (isCanRequestUpdates()) {
 					List<XStudent> students = new ArrayList<XStudent>(1); students.add(student);
