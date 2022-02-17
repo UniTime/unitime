@@ -87,6 +87,12 @@
 				<line>When the unitime.email.class is set to one of the above, ALL UniTime emails are only logged or sent to the predefined test recipient instead.</line>
 			</description>
 		</item>
+		<item>
+			<name>People Lookup: Source Mapping</name>
+			<description>
+				<line>Corrected source mapping when unitime.lookup.source.defaults property is used.</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>
