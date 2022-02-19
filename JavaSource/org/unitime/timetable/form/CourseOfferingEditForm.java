@@ -98,6 +98,7 @@ public class CourseOfferingEditForm extends ActionForm {
     private String notes;
     private String defaultTeachingResponsibilityId;
     private Set<String> overrides;
+    private String waitList;
 
     // --------------------------------------------------------- Methods
 
@@ -164,6 +165,10 @@ public class CourseOfferingEditForm extends ActionForm {
 					}
 				}
 			}
+			
+			OverrideType prohibitedOverride = OverrideType.findByReference(ApplicationProperty.OfferingWaitListProhibitedOverride.value());
+			if (prohibitedOverride != null && (waitList == null || waitList.isEmpty() ? ApplicationProperty.OfferingWaitListDefault.isTrue() : "true".equalsIgnoreCase(waitList)) && !overrides.contains(prohibitedOverride.getUniqueId().toString()))
+				errors.add("waitList", new ActionMessage("errors.generic", MSG.errorWaitListingOverrideMustBeProhibited(prohibitedOverride.getLabel())));
 		}
 
         return errors;
@@ -210,6 +215,7 @@ public class CourseOfferingEditForm extends ActionForm {
         byReservationOnly = false;
         wkEnroll = null; wkChange = null; wkDrop = null;
         wkEnrollDefault = null; wkChangeDefault = null; wkDropDefault = null;
+        waitList = null;
         weekStartDayOfWeek = null;
         courseTypeId = null;
         add = false;
@@ -411,7 +417,7 @@ public class CourseOfferingEditForm extends ActionForm {
     public void setWkEnroll(String wkEnroll) { this.wkEnroll = wkEnroll; }
     public Integer getWkEnrollDefault() { return wkEnrollDefault; }
     public void setWkEnrollDefault(Integer wkEnrollDefault) { this.wkEnrollDefault = wkEnrollDefault; }
-
+    
     public String getWkChange() { return wkChange; }
     public void setWkChange(String wkChange) { this.wkChange = wkChange; }
     public Integer getWkChangeDefault() { return wkChangeDefault; }
@@ -424,6 +430,9 @@ public class CourseOfferingEditForm extends ActionForm {
     
     public String getWeekStartDayOfWeek() { return weekStartDayOfWeek; }
     public void setWeekStartDayOfWeek(String weekStartDayOfWeek) { this.weekStartDayOfWeek = weekStartDayOfWeek; }
+    
+    public String getWaitList() { return waitList; }
+    public void setWaitList(String waitList) { this.waitList = waitList; }
     
     public String getCourseTypeId() { return courseTypeId; }
     public void setCourseTypeId(String courseTypeId) { this.courseTypeId = courseTypeId; }

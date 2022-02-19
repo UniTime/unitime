@@ -44,6 +44,7 @@ public class SpecialRegistrationInterface {
 	public static enum ApiMode {
 		PREREG, // pre-registration (Course Requests page is used)
 		REG, // registration (Scheduling Assistant page is used)
+		WAITL, // wait-listing (Scheduling Assistant page is used)
 		;
 	}
 	
@@ -107,6 +108,8 @@ public class SpecialRegistrationInterface {
 		public String requestorNotes;
 		/** Request completion status (only read, never sent) */
 		public CompletionStatus completionStatus;
+		/** Validation request */
+		public RestrictionsCheckRequest validation;
 	}
 	
 	/** Possible operations for a change (work order) */
@@ -249,11 +252,6 @@ public class SpecialRegistrationInterface {
 	 *
 	 */
 	public static class SubmitRegistrationResponse extends SpecialRegistration {
-		/**
-		 * List of special registrations that have been cancelled (to create this request).
-		 * (only read, never sent; only used in submitRegistration response during registration)
-		 */
-		public List<CancelledRequest> cancelledRequests;
 	}
 
 	/**
@@ -396,6 +394,7 @@ public class SpecialRegistrationInterface {
 	public static enum ValidationMode {
 		REG, // registration changes
 		ALT, // alternate changes
+		WAITL, // wait-list changes
 		;
 	}
 	

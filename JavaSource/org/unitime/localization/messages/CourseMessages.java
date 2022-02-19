@@ -448,6 +448,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Examinations")
 	String columnExams();
 
+	@DefaultMessage("Funding Department")
+	String columnFundingDepartment();
+	
 	@DefaultMessage("Examination")
 	String columnExam();
 	
@@ -760,6 +763,12 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("LMS Integration:")
 	String propertyLms();
 
+	@DefaultMessage("Funding Dept")
+	String columnFundingDept();
+
+	@DefaultMessage("Funding Dept:")
+	String propertyFundingDept();
+
 	@DefaultMessage("Total")
 	String rowCrossListsTotal();
 	
@@ -813,6 +822,12 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("{0} Offered Courses")
 	String labelOfferedCourses(String subjectAreaAbbv);
+	
+	@DefaultMessage("{0} Wait-Listed Courses")
+	String labelOfferedWaitListedCourses(String subjectAreaAbbv);
+	
+	@DefaultMessage("{0} Not Wait-Listed Courses")
+	String labelOfferedNotWaitListedCourses(String subjectAreaAbbv);
 	
 	@DefaultMessage("There are no courses currently offered for {0} subject.")
 	String errorNoCoursesOffered(String subjectAreaAbbv);
@@ -2168,6 +2183,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Duplicate coordinator for a course.")
 	String errorDuplicateCoordinator();
 	
+	@DefaultMessage("Wait-listing cannot be enabled when {0} is allowed.")
+	String errorWaitListingOverrideMustBeProhibited(String override);
+	
 	@DefaultMessage("This instructor is allowed to teach two back-to-back classes that are too far away.")
 	String descriptionInstructorIgnoreTooFar();
 	
@@ -3005,4 +3023,40 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Availability")
 	String instructorNotAvailableType();
+	
+	@DefaultMessage("Wait-Listing:")
+	String propertyWaitListing();
+	
+	@DefaultMessage("Default (Enabled)")
+	String waitListDefaultEnabled();
+	
+	@DefaultMessage("Default (Disabled)")
+	String waitListDefaultDisabled();
+	
+	@DefaultMessage("Enabled")
+	String waitListEnabled();
+	
+	@DefaultMessage("Disabled")
+	String waitListDisabled();
+	
+	@DefaultMessage("Wait-listing is enabled for this offering.")
+	String descWaitListEnabled();
+	
+	@DefaultMessage("Wait-listing is not enabled for this offering.")
+	String descWaitListDisabled();
+	
+	@DefaultMessage("{0} allows for {1}.")
+	String problemWaitListProhibitedOverride(String course, String override);
+	
+	@DefaultMessage("Wait-Listing:")
+	String filterWaitlist();
+	
+	@DefaultMessage("All Courses")
+	String itemWaitListAllCourses();
+	
+	@DefaultMessage("Wait-Listed Courses")
+	String itemWaitListWaitListed();
+	
+	@DefaultMessage("Not Wait-Listed Courses")
+	String itemWaitListNotWaitListed();
 }

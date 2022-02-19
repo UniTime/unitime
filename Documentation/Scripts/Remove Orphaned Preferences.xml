@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE scripts PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/Script.dtd">
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<scripts created="Tue Sep 28 11:10 EDT 2021">
+<script name="Preferences: Remove Orphaned Preferences" permission="Academic Session Add" engine="python" created="Tue Sep 28 11:08:24 EDT 2021">
+  <description><![CDATA[Removes all orphaned preferences.]]></description>
+  <body><![CDATA[
+
+def deleteOrphanedDistributionObjects():
+    countQuery = "select count(uniqueId) from DistributionObject where prefGroup not in (from PreferenceGroup)"
+    uniqueIdsToDeleteCount = hibSession.createQuery(countQuery).uniqueResult()
+    if 0 == uniqueIdsToDeleteCount:
+	log.debug("-- no orphaned DistributionObjects to delete.")
+    else:
+	log.debug("-- %s orphaned DistributionObjects to delete." % uniqueIdsToDeleteCount)
+	deleteHql = "delete DistributionObject where prefGroup not in (from PreferenceGroup)"
+	log.debug("-- delete statement:  %s" % (deleteHql))
+	hibSession.createQuery(deleteHql).executeUpdate();
+
+def deleteOrphanedPreferenceOfType(prefType):
+    countQuery = "select count(uniqueId) from %s where owner not in (from PreferenceGroup)" % prefType
+    uniqueIdsToDeleteCount = hibSession.createQuery(countQuery).uniqueResult()
+    if 0 == uniqueIdsToDeleteCount:
+	log.debug("-- no %s orphaned preferences to delete." % prefType)
+    else:
+	log.debug("-- %s %s orphaned preferences to delete." % (uniqueIdsToDeleteCount, prefType))
+	deleteHql = "delete %s where owner not in (from PreferenceGroup)" % prefType
+	log.debug("-- delete statement:  %s" % (deleteHql))
+	hibSession.createQuery(deleteHql).executeUpdate();
+
+def execute():
+    deleteOrphanedDistributionObjects()
+    prefTypeArray = ["DistributionPref", "RoomPref", "RoomGroupPref", "RoomFeaturePref", "BuildingPref", "TimePref", "DatePatternPref", "ExamPeriodPref", "InstructorAttributePref", "InstructorCoursePref", "InstructorPref" ]
+    for prefType in prefTypeArray:
+	deleteOrphanedPreferenceOfType(prefType)
+
+execute()
+]]></body>
+</script>
+</scripts>

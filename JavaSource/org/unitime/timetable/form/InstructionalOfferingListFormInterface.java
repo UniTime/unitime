@@ -45,5 +45,7 @@ public interface InstructionalOfferingListFormInterface {
 	public Boolean getExams();
 	public Boolean getInstructorAssignment();
 	public Boolean getLms();
+	public String getWaitlist();
 	public String getSortBy();
+	public Boolean getFundingDepartment();
 }

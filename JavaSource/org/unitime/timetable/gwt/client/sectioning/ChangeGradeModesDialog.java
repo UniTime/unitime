@@ -25,6 +25,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.AriaSuggestArea;
+import org.unitime.timetable.gwt.client.aria.AriaTextArea;
 import org.unitime.timetable.gwt.client.aria.HasAriaLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
@@ -61,6 +63,8 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -69,8 +73,9 @@ import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.TextArea;
+import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 
 /**
  * @author Tomas Muller
@@ -93,9 +98,11 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 	private ArrayList<ClassAssignmentInterface.ClassAssignment> iEnrollment;
 	private List<RetrieveSpecialRegistrationResponse> iApprovals;
 	private P iApproval = null;
-	private TextArea iNote = null;
+	private AriaTextArea iNote = null;
+	private AriaSuggestArea iNoteWithSuggestions;
 	private List<CheckBox> iDisclaimers = new ArrayList<CheckBox>();
 	private Float iCurrentCredit, iMaxCredit;
+	private List<String> iSuggestions = new ArrayList<String>();
 	private StudentSectioningContext iContext;
 	
 	public ChangeGradeModesDialog(StudentSectioningContext context, ScheduleStatus status) {
@@ -150,10 +157,20 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 		iForm.addRow(iApproval);
 
 		iForm.addBottomRow(iButtons);
-		iNote = new TextArea();
+		iNote = new AriaTextArea();
 		iNote.setStyleName("unitime-TextArea"); iNote.addStyleName("request-note");
 		iNote.setVisibleLines(5);
 		iNote.setCharacterWidth(80);
+		iNoteWithSuggestions = new AriaSuggestArea(iNote, iSuggestions);
+		iNoteWithSuggestions.addSelectionHandler(new SelectionHandler<SuggestOracle.Suggestion>() {
+			@Override
+			public void onSelection(SelectionEvent<Suggestion> event) {
+				String text = iNote.getText();
+				if (text.indexOf('<') >= 0 && text.indexOf('>') > text.indexOf('<')) {
+					iNote.setSelectionRange(text.indexOf('<'), text.indexOf('>') - text.indexOf('<') + 1);
+				}
+			}
+		});
 		
 		setWidget(iForm);
 		
@@ -209,6 +226,9 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 				ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 				iTable.clearData(true);
 				iCurrentCredit = result.getCurrentCredit(); iMaxCredit = result.getMaxCredit();
+				iSuggestions.clear();
+				if (result.hasSuggestions())
+					iSuggestions.addAll(result.getSuggestions());
 				
 				Long lastCourseId = null;
 				GradeModeChange change = null;
@@ -398,7 +418,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 		}
 		if (approvals || credApprovals || (credChanges && iMaxCredit != null && cred > iMaxCredit)) {
 			P m = new P("message"); m.setHTML(MESSAGES.gradeModeChangesNote()); iApproval.add(m);
-			iApproval.add(iNote);
+			iApproval.add(iNoteWithSuggestions);
 		}
 		if (!disclaimers.isEmpty()) {
 			P m = new P("message"); m.setHTML(MESSAGES.gradeModeDisclaimers()); iApproval.add(m);

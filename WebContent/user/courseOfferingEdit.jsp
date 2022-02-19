@@ -629,6 +629,50 @@
 		</sec:authorize>		
 	</logic:equal>
 	
+	<logic:equal name="courseOfferingEditForm" property="isControl" value="true">
+		<TR>
+			<TD valign="top"><loc:message name="propertyWaitListing"/></TD>
+			<TD valign="top">
+				<html:select property="waitList">
+					<tt:propertyEquals name="unitime.offering.waitListDefault" value="true">
+						<html:option value=""><loc:message name="waitListDefaultEnabled"/></html:option>
+					</tt:propertyEquals>
+					<tt:propertyNotEquals name="unitime.offering.waitListDefault" value="true">
+						<html:option value=""><loc:message name="waitListDefaultDisabled"/></html:option>
+					</tt:propertyNotEquals>
+					<html:option value="true"><loc:message name="waitListEnabled"/></html:option>
+					<html:option value="false"><loc:message name="waitListDisabled"/></html:option>
+				</html:select>
+			</TD>
+		</TR>
+	</logic:equal>
+	<logic:notEqual name="courseOfferingEditForm" property="isControl" value="true">
+		<TR>
+			<TD valign="top"><loc:message name="propertyWaitListing"/></TD>
+			<TD valign="top">
+				<logic:empty name="courseOfferingEditForm" property="waitList">
+					<tt:propertyEquals name="unitime.offering.waitListDefault" value="true">
+						<img src="images/accept.png" alt="<%=MSG.waitListDefaultEnabled() %>" title="<%=MSG.waitListDefaultEnabled() %>" border="0" align="top">
+						<loc:message name="waitListDefaultEnabled"/>
+					</tt:propertyEquals>
+					<tt:propertyNotEquals name="unitime.offering.waitListDefault" value="true">
+					<img src="images/cancel.png" alt="<%=MSG.waitListDisabled() %>" title="<%=MSG.descWaitListDisabled() %>" border="0" align="top">
+						<loc:message name="waitListDefaultDisabled"/>
+					</tt:propertyNotEquals>
+				</logic:empty>
+				<logic:equal name="courseOfferingEditForm" property="waitList" value="true">
+					<img src="images/accept.png" alt="<%=MSG.waitListDefaultEnabled() %>" title="<%=MSG.waitListDefaultEnabled() %>" border="0" align="top">
+					<loc:message name="waitListEnabled"/>
+				</logic:equal>
+				<logic:equal name="courseOfferingEditForm" property="waitList" value="false">
+					<img src="images/cancel.png" alt="<%=MSG.waitListDisabled() %>" title="<%=MSG.descWaitListDisabled() %>" border="0" align="top">
+					<loc:message name="waitListDisabled"/>
+				</logic:equal>
+			</TD>
+		</TR>
+		<html:hidden property="waitList"/>
+	</logic:notEqual>
+	
 	<logic:notEmpty name="courseOfferingEditForm" property="overrideTypes">
 		<TR>
 			<TD valign="top"><loc:message name="propertyDisabledOverrides"/> </TD>

@@ -27,7 +27,9 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 import java.util.TreeSet;
 
@@ -45,7 +47,7 @@ import org.xml.sax.InputSource;
 import com.google.gwt.i18n.client.Messages.DefaultMessage;
 
 public class PageNameGenerator {
-	private TreeSet<String> iPageNames = new TreeSet<String>();
+	private Map<String, String> iPageNames = new HashMap<String, String>();
 	private File iSource;
 	
 	public PageNameGenerator() {
@@ -55,11 +57,39 @@ public class PageNameGenerator {
 		iSource = source;
 	}
 	
+	protected boolean addValue(String name) {
+		String key = name2property(name);
+		if (iPageNames.containsKey(key)) {
+			return false;
+		} else {
+			iPageNames.put(key, name);
+			return true;
+		}
+	}
+	
+	protected boolean addKey(String key) {
+		if (iPageNames.containsKey(key)) {
+			return false;
+		} else {
+			iPageNames.put(key, property2name(key));
+			return true;
+		}
+	}
+	
+	protected boolean addPair(String key, String name) {
+		if (iPageNames.containsKey(key)) {
+			return false;
+		} else {
+			iPageNames.put(key, name);
+			return true;
+		}
+	}
+	
 	public void checkPageNamecClass() {
 		for (Method method: PageNames.class.getMethods()) {
 			DefaultMessage dm = method.getAnnotation(DefaultMessage.class);
 			if (dm != null)
-				if (iPageNames.add(dm.value()))
+				if (addValue(dm.value()))
 					System.out.println("[names] " + dm.value());
 		}
 	}
@@ -102,7 +132,7 @@ public class PageNameGenerator {
 			Element item = (Element)i.next();
 			String name = item.attributeValue("name");			
 			if (name != null && !name.isEmpty()) {
-				if (iPageNames.add(name))
+				if (addValue(name))
 					System.out.println(" [menu] " + name);
 			}
 		}
@@ -110,10 +140,30 @@ public class PageNameGenerator {
 			Element menu = (Element)i.next();
 			String name = menu.attributeValue("name");			
 			if (name != null && !name.isEmpty()) {
-				if (iPageNames.add(name))
+				if (addValue(name))
 					System.out.println(" [menu] " + name);
 			}
 			parseMenu(menu);
+		}
+	}
+	
+	public void checkProperties() throws IOException {
+		Properties properties = new Properties();
+		InputStream is = PageNameGenerator.class.getClassLoader().getResourceAsStream("org/unitime/localization/messages/PageNames.properties");
+		if (is == null && iSource != null) {
+			is = new FileInputStream(new File(iSource, "org" + File.separator + "unitime" + File.separator + "localization" + File.separator + "messages" + File.separator + "PageNames" + ".properties"));
+		}
+		if (is == null) return;
+		try {
+			properties.load(is);
+		} finally {
+			is.close();
+		}
+		for (Map.Entry<Object, Object> e: properties.entrySet()) {
+			String key = (String)e.getKey();
+			String name = (String)e.getValue();
+			if (addPair(key, name))
+				System.out.println("   [default] " + name);
 		}
 	}
 	
@@ -130,9 +180,9 @@ public class PageNameGenerator {
 			is.close();
 		}
 		for (Object o: properties.keySet()) {
-			String name = property2name((String)o);
-			if (iPageNames.add(name))
-				System.out.println("   [" + locale + "] " + name);
+			String key = (String)o;
+			if (addKey(key))
+				System.out.println("   [" + locale + "] " + property2name(key));
 		}
 	}
 	
@@ -143,7 +193,7 @@ public class PageNameGenerator {
 			if (!doNotTranslate) continue;
 			DefaultMessage dm = method.getAnnotation(DefaultMessage.class);
 			if (dm != null && !dm.value().contains("{0}"))
-				if (iPageNames.add(dm.value()))
+				if (addValue(dm.value()))
 					System.out.println("  [gwt] " + dm.value());
 		}
 	}
@@ -157,7 +207,7 @@ public class PageNameGenerator {
 				Element entry = (Element)i.next();
 				String name = entry.element("pageName").getTextTrim();
 				String title = entry.element("title").getTextTrim();
-				if (name2property(title).equals(name) && iPageNames.add(title))
+				if (name2old(title).equals(name) && addValue(title))
 					System.out.println(" [help] " + title);
 			}
 			for (Iterator i = feed.elementIterator("link"); i.hasNext(); ) {
@@ -179,18 +229,24 @@ public class PageNameGenerator {
 		}
 	}
 	
-	public String name2property(String name) {
+	public String name2old(String name) {
 		return name.trim().replace(' ', '_').replace("(", "").replace(")", "").replace(':', '_');
 	}
 	
+	public String name2property(String name) {
+		return name.trim().replace(' ', '-').replace("(", "").replace(")", "").replace(':', '-').toLowerCase();
+	}
+	
 	public String property2name(String property) {
-		return property.trim().replace('_', ' ').replace('_', ':');
+		if (iPageNames.containsKey(property))
+			return iPageNames.get(property);
+		return org.unitime.timetable.util.Constants.toInitialCase(property.trim()).replace('-', ' ');
 	}
 	
 	public Properties getProperties() {
 		Properties properties = new Properties();
-		for (String name: iPageNames) {
-			properties.put(name2property(name), name);
+		for (Map.Entry<String, String> e: iPageNames.entrySet()) {
+			properties.put(e.getKey(), e.getValue());
 		}
 		return properties;
 	}
@@ -200,8 +256,9 @@ public class PageNameGenerator {
 		checkMenuXML();
 		checkGwtMessages();
 		checkOnlineHelp();
+		checkProperties();
 		checkLocale("cs");
-		return iPageNames;
+		return new TreeSet<String>(iPageNames.keySet());
 	}
 	
 	public static void main(String[] args) {

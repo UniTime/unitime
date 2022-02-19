@@ -23,10 +23,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -34,6 +36,7 @@ import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentComparator;
 import org.cpsolver.ifs.assignment.AssignmentMap;
 import org.cpsolver.ifs.util.DistanceMetric;
+import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
@@ -41,6 +44,8 @@ import org.cpsolver.studentsct.model.FreeTimeRequest;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.studentsct.model.Unavailability;
 import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -52,9 +57,9 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.dao.StudentDAO;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -65,7 +70,9 @@ import org.unitime.timetable.onlinesectioning.custom.CustomClassAttendanceProvid
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsValidationHolder;
 import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationDashboardUrlProvider;
+import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentHoldsCheckProvider;
+import org.unitime.timetable.onlinesectioning.custom.WaitListValidationProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentError;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentFailure;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
@@ -84,12 +91,13 @@ import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
+import org.unitime.timetable.onlinesectioning.updates.WaitlistedOnlineSectioningAction;
 import org.unitime.timetable.util.Formats;
 
 /**
  * @author Tomas Muller
  */
-public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInterface>{
+public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignmentInterface>{
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private static StudentSectioningConstants CONSTANTS = Localization.create(StudentSectioningConstants.class);
@@ -99,8 +107,12 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 	private Set<ErrorMessage> iErrors;
 	private boolean iIncludeRequest = false;
 	private boolean iCustomCheck = false;
+	private boolean iWaitListCheck = false;
 	private boolean iIncludeAdvisorRequest = false;
 	private boolean iCheckHolds = false;
+	private boolean iGetSpecRegs = false;
+	private WaitListMode iWaitListMode = null;
+	private boolean iIncludeWaitListPosition = false;
 	
 	public GetAssignment forStudent(Long studentId) {
 		iStudentId = studentId;
@@ -122,6 +134,11 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 		return this;
 	}
 	
+	public GetAssignment withWaitListPosition(boolean includeWaitListPosition) {
+		iIncludeWaitListPosition = includeWaitListPosition;
+		return this;
+	}
+	
 	public GetAssignment withAdvisorRequest(boolean includeRequest) {
 		iIncludeAdvisorRequest = includeRequest;
 		return this;
@@ -132,43 +149,82 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 		return this;
 	}
 	
+	public GetAssignment withWaitListCheck(boolean waitListCheck) {
+		iWaitListCheck = waitListCheck;
+		return this;
+	}
+	
 	public GetAssignment checkHolds(boolean check) {
 		iCheckHolds = check;
+		return this;
+	}
+	
+	public GetAssignment withSpecialRegistrations(boolean specReg) {
+		iGetSpecRegs = specReg;
+		return this;
+	}
+
+	public GetAssignment withWaitListMode(WaitListMode wlMode) {
+		iWaitListMode = wlMode;
 		return this;
 	}
 
 	@Override
 	public ClassAssignmentInterface execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		XStudent student = null;
+		ClassAssignmentInterface ret = null;
 		Lock lock = server.readLock();
 		try {
-			XStudent student = server.getStudent(iStudentId);
+			student = server.getStudent(iStudentId);
 			if (student == null) return null;
-			ClassAssignmentInterface ret = computeAssignment(server, helper, student, student.getRequests(), iMessages, iErrors, iIncludeRequest);
+			if (iWaitListMode == null)
+				iWaitListMode = student.getWaitListMode(helper);
 			
-			if (ret.hasRequest() && iCustomCheck && CustomCourseRequestsValidationHolder.hasProvider())
-				CustomCourseRequestsValidationHolder.getProvider().check(server, helper, ret.getRequest());
+			ret = computeAssignment(server, helper, student, student.getRequests(), iMessages, iErrors, iIncludeRequest, iWaitListMode);
 			
-			if (iIncludeAdvisorRequest)
+			if (iIncludeAdvisorRequest) {
 				ret.setAdvisorRequest(AdvisorGetCourseRequests.getRequest(student, server, helper));
-			
-			if (iCheckHolds && ret.hasRequest() && Customization.StudentHoldsCheckProvider.hasProvider()) {
-				try {
-					StudentHoldsCheckProvider provider = Customization.StudentHoldsCheckProvider.getProvider();
-					ret.getRequest().setErrorMessage(provider.getStudentHoldError(server, helper, student));
-				} catch (Exception e) {}
+				ret.setAdvisorWaitListedCourseIds(student.getAdvisorWaitListedCourseIds(server));
+				if (ret.hasAdvisorRequest())
+					for (OnlineSectioningLog.Request log: OnlineSectioningHelper.toProto(ret.getAdvisorRequest()))
+						helper.getAction().addRecommendation(log);
 			}
-			
-			if (iCheckHolds && ret.hasRequest() && Customization.SpecialRegistrationDashboardUrlProvider.hasProvider()) {
-				try {
-					SpecialRegistrationDashboardUrlProvider provider = Customization.SpecialRegistrationDashboardUrlProvider.getProvider();
-					ret.getRequest().setSpecRegDashboardUrl(provider.getDashboardUrl(server, helper, student));
-				} catch (Exception e) {}
-			}
-			
-			return ret;
 		} finally {
 			lock.release();
 		}
+		
+		if (ret.hasRequest() && iCustomCheck && CustomCourseRequestsValidationHolder.hasProvider())
+			CustomCourseRequestsValidationHolder.getProvider().check(server, helper, ret.getRequest());
+		
+		if (ret.hasRequest() && iWaitListCheck && iWaitListMode == WaitListMode.WaitList && Customization.WaitListValidationProvider.hasProvider()) {
+			WaitListValidationProvider wp = Customization.WaitListValidationProvider.getProvider();
+			wp.check(server, helper, ret.getRequest());
+		}
+		
+		if (iCheckHolds && ret.hasRequest() && Customization.StudentHoldsCheckProvider.hasProvider()) {
+			try {
+				StudentHoldsCheckProvider provider = Customization.StudentHoldsCheckProvider.getProvider();
+				ret.getRequest().setErrorMessage(provider.getStudentHoldError(server, helper, student));
+			} catch (Exception e) {}
+		}
+		
+		if (iCheckHolds && ret.hasRequest() && Customization.SpecialRegistrationDashboardUrlProvider.hasProvider()) {
+			try {
+				SpecialRegistrationDashboardUrlProvider provider = Customization.SpecialRegistrationDashboardUrlProvider.getProvider();
+				ret.getRequest().setSpecRegDashboardUrl(provider.getDashboardUrl(server, helper, student));
+			} catch (Exception e) {}
+		}
+		
+		if (iGetSpecRegs && Customization.SpecialRegistrationProvider.hasProvider()) {
+			try {
+				SpecialRegistrationProvider sp = Customization.SpecialRegistrationProvider.getProvider();
+				ret.setSpecialRegistrations(sp.retrieveAllRegistrations(server, helper, student));
+			} catch (Exception e) {
+				helper.warn("Failed to retrieve special registrations: " + e.getMessage(), e);
+			}
+		}
+		
+		return ret;
 	}
 	
 	public static List<CourseSection> fillUnavailabilitiesIn(ClassAssignmentInterface ret, XStudent student, OnlineSectioningServer server, OnlineSectioningHelper helper, OnlineSectioningLog.Enrollment.Builder eb) {
@@ -196,14 +252,15 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 				
 		    	if (server.isOfferingLocked(course.getOfferingId()))
 					ca.setLocked(true);
+		    	ca.setCanWaitList(offering.isWaitList());
 				ca.setAssigned(true);
 				ca.setCourseId(course.getCourseId());
 				ca.setSubject(course.getSubjectArea());
-				ca.setWaitListed(false);
 				ca.setCourseNbr(course.getCourseNumber());
 				ca.setTitle(course.getTitle());
 				ca.setTeachingAssignment(true);
 				ca.setHasCrossList(offering.hasCrossList());
+				ca.setCanWaitList(offering.isWaitList());
 				
 				Set<Long> added = new HashSet<Long>();
 		    	for (XConfig config: offering.getConfigs())
@@ -261,7 +318,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 		return sections;
 	}
 	
-	public static ClassAssignmentInterface computeAssignment(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<XRequest> studentRequests, List<EnrollmentFailure> messages, Set<ErrorMessage> errors, boolean includeRequest) {
+	public ClassAssignmentInterface computeAssignment(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<XRequest> studentRequests, List<EnrollmentFailure> messages, Set<ErrorMessage> errors, boolean includeRequest, WaitListMode wlMode) {
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_REQUEST);
 		DistanceMetric m = server.getDistanceMetric();
 		OverExpectedCriterion overExp = server.getOverExpectedCriterion();
@@ -276,10 +333,12 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 		boolean setReadOnly = ApplicationProperty.OnlineSchedulingMakeAssignedRequestReadOnly.isTrue();
 		if (helper.getUser() != null && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER)
 			setReadOnly = ApplicationProperty.OnlineSchedulingMakeAssignedRequestReadOnlyIfAdmin.isTrue();
+		boolean showWaitListPosition = iIncludeWaitListPosition || ApplicationProperty.OnlineSchedulingShowWaitListPosition.isTrue();
 		
 		List<CourseSection> unavailabilities = fillUnavailabilitiesIn(ret, student, server, helper, stored);
 		CustomClassAttendanceProvider provider = Customization.CustomClassAttendanceProvider.getProvider();
 		StudentClassAttendance attendance = (provider == null ? null : provider.getCustomClassAttendanceForStudent(StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession()), helper, null));
+		Map<Long, Set<String>> wlOverlaps = null;
 		
 		float credit = 0f;
 		if (student.getMaxCredit() != null)
@@ -316,88 +375,193 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 
 				if (server.isOfferingLocked(course.getOfferingId()))
 					ca.setLocked(true);
+				ca.setCanWaitList(offering.isWaitList());
 				ca.setAssigned(enrollment != null);
 				ca.setCourseId(course.getCourseId());
 				ca.setSubject(course.getSubjectArea());
-				ca.setWaitListed(r.isWaitlist());
 				ca.setCourseNbr(course.getCourseNumber());
 				ca.setTitle(course.getTitle());
 				ca.setEnrollmentMessage(r.getEnrollmentMessage());
 				ca.setRequestedDate(r.getTimeStamp());
+				if (offering.isWaitList() && r.isWaitlist(wlMode))
+					ca.setWaitListedDate(r.getWaitListedTimeStamp());
 				ca.setHasCrossList(offering.hasCrossList());
 				if (enrollment == null) {
-					TreeSet<Enrollment> overlap = new TreeSet<Enrollment>(new Comparator<Enrollment>() {
-						@Override
-						public int compare(Enrollment o1, Enrollment o2) {
-							return o1.getRequest().compareTo(o2.getRequest());
-						}
-					});
-					Hashtable<CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<CourseRequest, TreeSet<Section>>();
-					Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
-					Collection<Enrollment> avEnrls = SectioningRequest.convert(assignment, r, server).getAvaiableEnrollmentsSkipSameTime(assignment);
-					for (Iterator<Enrollment> e = avEnrls.iterator(); e.hasNext();) {
-						Enrollment enrl = e.next();
-						for (Request q: enrl.getStudent().getRequests()) {
-							if (q.equals(request)) continue;
-							Enrollment x = assignment.getValue(q);
-							if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
-					        for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
-					        	SctAssignment a = i.next();
-								if (a.isOverlapping(enrl.getAssignments())) {
-									overlap.add(x);
-									if (x.getRequest() instanceof CourseRequest) {
-										CourseRequest cr = (CourseRequest)x.getRequest();
-										TreeSet<Section> ss = overlapingSections.get(cr);
-										if (ss == null) { ss = new TreeSet<Section>(new AssignmentComparator<Section, Request, Enrollment>(assignment)); overlapingSections.put(cr, ss); }
-										ss.add((Section)a);
+					if (r.isWaitlist() && offering.isWaitList()) {
+						Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
+						CourseRequest courseRequest = SectioningRequest.convert(assignment, r, server, wlMode);
+						Collection<Enrollment> enrls = courseRequest.getEnrollmentsSkipSameTime(assignment);
+						for (Course c: courseRequest.getCourses()) {
+							XOffering off = (c.getId() == courseId.getCourseId() ? offering : server.getOffering(c.getOffering().getId()));
+							if (off == null || !off.isWaitList()) continue;
+							TreeSet<Enrollment> overlap = new TreeSet<Enrollment>(new Comparator<Enrollment>() {
+								@Override
+								public int compare(Enrollment o1, Enrollment o2) {
+									return o1.getRequest().compareTo(o2.getRequest());
+								}
+							});
+							Hashtable<CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<CourseRequest, TreeSet<Section>>();
+							Enrollment noConfEnrl = null;
+							int nbrEnrl = 0;
+							for (Iterator<Enrollment> e = enrls.iterator(); e.hasNext();) {
+								Enrollment enrl = e.next();
+								if (!c.equals(enrl.getCourse())) continue;
+								nbrEnrl ++;
+								boolean overlaps = false;
+								for (Request q: enrl.getStudent().getRequests()) {
+									if (q.equals(enrl.getRequest())) continue;
+									Enrollment x = assignment.getValue(q);
+									if (q instanceof FreeTimeRequest) {
+										if (isFreeTimeOverlapping((FreeTimeRequest)q, enrl)) {
+											overlaps = true;
+											overlap.add(((FreeTimeRequest)q).createEnrollment());
+										}
+									} else if (x != null && x.getAssignments() != null && !x.getAssignments().isEmpty()) {
+										for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
+								        	SctAssignment a = i.next();
+											if (a.isOverlapping(enrl.getAssignments())) {
+												overlaps = true;
+												overlap.add(x);
+												if (x.getRequest() instanceof CourseRequest) {
+													CourseRequest cr = (CourseRequest)x.getRequest();
+													TreeSet<Section> ss = overlapingSections.get(cr);
+													if (ss == null) { ss = new TreeSet<Section>(new AssignmentComparator<Section, Request, Enrollment>(assignment)); overlapingSections.put(cr, ss); }
+													ss.add((Section)a);
+												}
+											}
+								        }
 									}
 								}
-					        }
-						}
-					}
-					for (Enrollment q: overlap) {
-						if (q.getRequest() instanceof FreeTimeRequest) {
-							ca.addOverlap(OnlineSectioningHelper.toString((FreeTimeRequest)q.getRequest()));
-						} else {
-							CourseRequest cr = (CourseRequest)q.getRequest();
-							Course o = q.getCourse();
-							String ov = MSG.course(o.getSubjectArea(), o.getCourseNumber());
-							if (overlapingSections.get(cr).size() == 1)
-								for (Iterator<Section> i = overlapingSections.get(cr).iterator(); i.hasNext();) {
-									Section s = i.next();
-									ov += " " + s.getSubpart().getName();
-									if (i.hasNext()) ov += ",";
-								}
-							ca.addOverlap(ov);
-						}
-					}
-					if (avEnrls.isEmpty()) {
-						ca.setNotAvailable(true);
-						if (course.getLimit() >= 0) {
-							Collection<XCourseRequest> requests = server.getRequests(course.getOfferingId());
-							int enrl = 0;
-							if (requests != null) {
-								for (XCourseRequest x: requests)
-									if (x.getEnrollment() != null && x.getEnrollment().getCourseId().equals(course.getCourseId()))
-										enrl ++;
+								if (!overlaps && noConfEnrl == null)
+									noConfEnrl = enrl;
 							}
-							ca.setFull(enrl >= course.getLimit());
+							if (noConfEnrl == null) {
+								if (wlOverlaps == null) wlOverlaps = new HashMap<Long, Set<String>>();
+								Set<String> overlaps = new TreeSet<String>();
+								wlOverlaps.put(c.getId(), overlaps);
+								for (Enrollment q: overlap) {
+									if (q.getRequest() instanceof FreeTimeRequest) {
+										String ov = OnlineSectioningHelper.toString((FreeTimeRequest)q.getRequest());
+										overlaps.add(ov);
+										if (c.getId() == course.getCourseId()) ca.addOverlap(ov);
+									} else {
+										CourseRequest cr = (CourseRequest)q.getRequest();
+										Course o = q.getCourse();
+										String ov = MSG.course(o.getSubjectArea(), o.getCourseNumber());
+										if (overlapingSections.get(cr).size() == 1)
+											for (Iterator<Section> i = overlapingSections.get(cr).iterator(); i.hasNext();) {
+												Section s = i.next();
+												ov += " " + s.getSubpart().getName();
+												if (i.hasNext()) ov += ",";
+											}
+										overlaps.add(ov);
+										if (c.getId() == course.getCourseId()) ca.addOverlap(ov);
+									}
+								}
+								if (nbrEnrl == 0) {
+									unavailabilities: for (Unavailability unavailability: courseRequest.getStudent().getUnavailabilities()) {
+										for (Config config: c.getOffering().getConfigs())
+											for (Subpart subpart: config.getSubparts())
+												for (Section section: subpart.getSections()) {
+													if (unavailability.isOverlapping(section)) {
+														String ov = MSG.teachingAssignment(unavailability.getSection().getName());
+														overlaps.add(ov);
+														if (c.getId() == course.getCourseId()) ca.addOverlap(ov);
+														continue unavailabilities;
+													}
+												}
+									}
+								}
+							}
+						}
+						if (student.getMaxCredit() != null) {
+							Float minCred = course.getMinCredit();
+							for (XCourseId altCourseId: r.getCourseIds()) {
+								if (altCourseId.equals(courseId)) continue;
+								XOffering altOffering = server.getOffering(altCourseId.getOfferingId());
+								XCourse altCourse = altOffering.getCourse(altCourseId);
+								Float altMinCred = altCourse.getMinCredit();
+								if (altMinCred != null && (minCred == null || minCred > altMinCred))
+									minCred = altMinCred;
+							}
+							if (minCred != null && credit + minCred > student.getMaxCredit()) {
+								ca.setOverMaxCredit(student.getMaxCredit());
+							}
+						}
+					} else {
+						TreeSet<Enrollment> overlap = new TreeSet<Enrollment>(new Comparator<Enrollment>() {
+							@Override
+							public int compare(Enrollment o1, Enrollment o2) {
+								return o1.getRequest().compareTo(o2.getRequest());
+							}
+						});
+						Hashtable<CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<CourseRequest, TreeSet<Section>>();
+						Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
+						Collection<Enrollment> avEnrls = SectioningRequest.convert(assignment, r, server, wlMode).getAvaiableEnrollmentsSkipSameTime(assignment);
+						for (Iterator<Enrollment> e = avEnrls.iterator(); e.hasNext();) {
+							Enrollment enrl = e.next();
+							for (Request q: enrl.getStudent().getRequests()) {
+								if (q.equals(enrl.getRequest())) continue;
+								Enrollment x = assignment.getValue(q);
+								if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
+						        for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
+						        	SctAssignment a = i.next();
+									if (a.isOverlapping(enrl.getAssignments())) {
+										overlap.add(x);
+										if (x.getRequest() instanceof CourseRequest) {
+											CourseRequest cr = (CourseRequest)x.getRequest();
+											TreeSet<Section> ss = overlapingSections.get(cr);
+											if (ss == null) { ss = new TreeSet<Section>(new AssignmentComparator<Section, Request, Enrollment>(assignment)); overlapingSections.put(cr, ss); }
+											ss.add((Section)a);
+										}
+									}
+						        }
+							}
+						}
+						for (Enrollment q: overlap) {
+							if (q.getRequest() instanceof FreeTimeRequest) {
+								ca.addOverlap(OnlineSectioningHelper.toString((FreeTimeRequest)q.getRequest()));
+							} else {
+								CourseRequest cr = (CourseRequest)q.getRequest();
+								Course o = q.getCourse();
+								String ov = MSG.course(o.getSubjectArea(), o.getCourseNumber());
+								if (overlapingSections.get(cr).size() == 1)
+									for (Iterator<Section> i = overlapingSections.get(cr).iterator(); i.hasNext();) {
+										Section s = i.next();
+										ov += " " + s.getSubpart().getName();
+										if (i.hasNext()) ov += ",";
+									}
+								ca.addOverlap(ov);
+							}
+						}
+						if (avEnrls.isEmpty()) {
+							ca.setNotAvailable(true);
+							if (course.getLimit() >= 0) {
+								Collection<XCourseRequest> requests = server.getRequests(course.getOfferingId());
+								int enrl = 0;
+								if (requests != null) {
+									for (XCourseRequest x: requests)
+										if (x.getEnrollment() != null && x.getEnrollment().getCourseId().equals(course.getCourseId()))
+											enrl ++;
+								}
+								ca.setFull(enrl >= course.getLimit());
+							}
+						}
+						if (student.getMaxCredit() != null) {
+							Float minCred = course.getMinCredit();
+							for (XCourseId altCourseId: r.getCourseIds()) {
+								if (altCourseId.equals(courseId)) continue;
+								XOffering altOffering = server.getOffering(altCourseId.getOfferingId());
+								XCourse altCourse = altOffering.getCourse(altCourseId);
+								Float altMinCred = altCourse.getMinCredit();
+								if (altMinCred != null && (minCred == null || minCred > altMinCred))
+									minCred = altMinCred;
+							}
+							if (minCred != null && credit + minCred > student.getMaxCredit())
+								ca.setOverMaxCredit(student.getMaxCredit());
 						}
 					}
-					if (student.getMaxCredit() != null) {
-						Float minCred = course.getMinCredit();
-						for (XCourseId altCourseId: r.getCourseIds()) {
-							if (altCourseId.equals(courseId)) continue;
-							XOffering altOffering = server.getOffering(altCourseId.getOfferingId());
-							XCourse altCourse = altOffering.getCourse(altCourseId);
-							Float altMinCred = altCourse.getMinCredit();
-							if (altMinCred != null && (minCred == null || minCred > altMinCred))
-								minCred = altMinCred;
-						}
-						if (minCred != null && credit + minCred > student.getMaxCredit())
-							ca.setOverMaxCredit(student.getMaxCredit());
-					}
-					if (!r.isWaitlist()) nrUnassignedCourses++;
+					if (!r.isWaitListOrNoSub(wlMode)) nrUnassignedCourses++;
 					int alt = nrUnassignedCourses;
 					for (XRequest q: studentRequests) {
 						if (q instanceof XCourseRequest && !q.equals(request)) {
@@ -657,6 +821,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 			request.setSaved(true);
 			request.setAcademicSessionId(server.getAcademicSession().getUniqueId());
 			request.setMaxCredit(student.getMaxCredit());
+			request.setWaitListMode(wlMode);
 			if (student.getMaxCreditOverride() != null) {
 				request.setMaxCreditOverride(student.getMaxCreditOverride().getValue());
 				request.setMaxCreditOverrideExternalId(student.getMaxCreditOverride().getExternalId());
@@ -670,6 +835,8 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 					request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
 				else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.CANCELLED.ordinal())
 					request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_CANCELLED);
+				else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.NOT_CHECKED.ordinal())
+					request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_NEEDED);
 				else
 					request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_PENDING);
 			}
@@ -724,17 +891,26 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 								rc.setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
 							else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.CANCELLED.ordinal())
 								rc.setStatus(RequestedCourseStatus.OVERRIDE_CANCELLED);
+							else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.NOT_CHECKED.ordinal())
+								rc.setStatus(RequestedCourseStatus.OVERRIDE_NEEDED);
 							else
 								rc.setStatus(RequestedCourseStatus.OVERRIDE_PENDING);
 						}
+						XOffering offering = server.getOffering(c.getOfferingId());
+						rc.setCanWaitList(offering != null && offering.isWaitList());
 						rc.setOverrideExternalId(((XCourseRequest)cd).getOverrideExternalId(courseId));
 						rc.setOverrideTimeStamp(((XCourseRequest)cd).getOverrideTimeStamp(courseId));
 						((XCourseRequest)cd).fillPreferencesIn(rc, courseId);
 						r.addRequestedCourse(rc);
+						if (showWaitListPosition && rc.isCanWaitList() && ((XCourseRequest)cd).getEnrollment() == null && ((XCourseRequest)cd).isWaitlist()) {
+							rc.setWaitListPosition(getWaitListPosition(offering, student, (XCourseRequest)cd, courseId, server, helper));
+						}
 					}
-					r.setWaitList(((XCourseRequest)cd).isWaitlist());
+					r.setWaitList(((XCourseRequest)cd).isWaitlist(wlMode));
+					r.setNoSub(((XCourseRequest)cd).isNoSub(wlMode));
 					r.setCritical(((XCourseRequest)cd).getCritical());
 					r.setTimeStamp(((XCourseRequest)cd).getTimeStamp());
+					r.setWaitListedTimeStamp(((XCourseRequest)cd).getWaitListedTimeStamp());
 					if (r.hasRequestedCourse()) {
 						if (cd.isAlternative())
 							request.getAlternatives().add(r);
@@ -743,6 +919,24 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 					}
 					lastRequest = r;
 					lastRequestPriority = cd.getPriority();
+					if (r.isWaitList()) {
+						for (RequestedCourse rc: r.getRequestedCourse()) {
+							Set<String> overlaps = (wlOverlaps == null || rc.getCourseId() == null ? null : wlOverlaps.get(rc.getCourseId()));
+							if (overlaps != null && !overlaps.isEmpty()) {
+								String message = null;
+								for (Iterator<String> i = overlaps.iterator(); i.hasNext();) {
+									String ov = i.next();
+									if (message == null)
+										message = MSG.conflictWithFirst(ov);
+									else if (i.hasNext())
+										message += MSG.conflictWithMiddle(ov);
+									else
+										message += MSG.conflictWithLast(ov);
+								}
+								request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), "WL-OVERLAP", message + ".", 0);
+							}
+						}
+					}
 				}
 			}
 			ret.setRequest(request);
@@ -765,5 +959,23 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 		public XCourse getCourse() { return iCourse; }
 		public XSection getSection() { return iSection; }
 	}
+	
+	public static boolean isFreeTimeOverlapping(FreeTimeRequest r, Enrollment e) {
+		if (r.isAlternative() || r.getPriority() >= e.getRequest().getPriority())
+			return false;
+        if (r.getTime() == null)
+            return false;
+        for (SctAssignment assignment : e.getAssignments()) {
+            if (assignment.isAllowOverlap())
+                continue;
+            if (assignment.getTime() == null)
+                continue;
+            if (assignment instanceof FreeTimeRequest)
+                return false;
+            if (r.getTime().hasIntersection(assignment.getTime()))
+                return true;
+        }
+        return false;
+    }
 
 }

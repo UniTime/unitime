@@ -259,6 +259,7 @@ public class PointInTimeDataExport extends BaseExport {
 	public static String sStudentSchedulingAttribute = "studentScheduling";
 	public static String sNumberOfRoomsAttribute = "numberOfRooms";
 	public static String sManagingDepartmentUniqueIdAttribute = "managingDepartmentUniqueId";
+	public static String sFundingDepartmentUniqueIdAttribute = "fundingDepartmentUniqueId";
 	public static String sClassSuffixAttribute = "classSuffix";
 	public static String sSectionNumberAttribute = "sectionNumber";
 	public static String sClassInstructorElementName = "classInstructor";
@@ -951,6 +952,7 @@ public class PointInTimeDataExport extends BaseExport {
         	exportDepartment(clazz.getManagingDept());
         }
         classElement.addAttribute(sManagingDepartmentUniqueIdAttribute, clazz.getManagingDept().getUniqueId().toString());
+        classElement.addAttribute(sFundingDepartmentUniqueIdAttribute, clazz.getEffectiveFundingDept().getUniqueId().toString());
         if (clazz.getUniqueIdRolledForwardFrom() != null)
         	classElement.addAttribute(sUniqueIdRolledForwardFromAttribute, clazz.getUniqueIdRolledForwardFrom().toString());
 
@@ -1104,7 +1106,7 @@ public class PointInTimeDataExport extends BaseExport {
 
 		int firstPeriod = ((meeting.getStartPeriod().intValue() * Constants.SLOT_LENGTH_MIN) 
 							+ (meeting.getStartOffset() != null ? meeting.getStartOffset().intValue() : 0)) / Constants.SLOT_LENGTH_MIN;
-		int lastPeriod = (new Double(Math.ceil(((meeting.getStopPeriod().doubleValue() * (double) Constants.SLOT_LENGTH_MIN) 
+		int lastPeriod = (Double.valueOf(Math.ceil(((meeting.getStopPeriod().doubleValue() * (double) Constants.SLOT_LENGTH_MIN) 
 				+ (meeting.getStopOffset() != null ? meeting.getStopOffset().doubleValue() : (double) 0)) / (double) Constants.SLOT_LENGTH_MIN))).intValue();
 		
 		int totalMinPerMeeting = calcTotalMinPerMeeting(meeting); 
@@ -1114,7 +1116,7 @@ public class PointInTimeDataExport extends BaseExport {
 		} else {
 			timePatMinPerMtg = clazz.getCommittedAssignment().getMinutesPerMeeting();
 		}
-		int totalTimePeriodsNeeded = (new Double(Math.ceil((double)timePatMinPerMtg / (double) Constants.SLOT_LENGTH_MIN))).intValue();
+		int totalTimePeriodsNeeded = (Double.valueOf(Math.ceil((double)timePatMinPerMtg / (double) Constants.SLOT_LENGTH_MIN))).intValue();
 		int meetPeriodsCount = 0;
 		int extraPeriodsCount = 0;
 		if (totalMinPerMeeting <= timePatMinPerMtg) {
@@ -1130,10 +1132,10 @@ public class PointInTimeDataExport extends BaseExport {
 			
 		} else {
 			int totalIncorporatedBreakTime = totalMinPerMeeting - timePatMinPerMtg;
-			int numIncorporatedBreaks = (new Double(Math.ceil((double)timePatMinPerMtg / ApplicationProperty.StandardClassMeetingLengthInMinutes.doubleValue()))).intValue() - 1;
+			int numIncorporatedBreaks = (Double.valueOf(Math.ceil((double)timePatMinPerMtg / ApplicationProperty.StandardClassMeetingLengthInMinutes.doubleValue()))).intValue() - 1;
 			int minPerHourOfIncorporatedBreaks = (numIncorporatedBreaks == 0 ? 0 : totalIncorporatedBreakTime / numIncorporatedBreaks);
 			int numBreakPeriods = minPerHourOfIncorporatedBreaks/Constants.SLOT_LENGTH_MIN;
-			int numPeriodsPerStandardHour = (new Double(Math.ceil(ApplicationProperty.StandardClassMeetingLengthInMinutes.doubleValue()/Constants.SLOT_LENGTH_MIN))).intValue();
+			int numPeriodsPerStandardHour = (Double.valueOf(Math.ceil(ApplicationProperty.StandardClassMeetingLengthInMinutes.doubleValue()/Constants.SLOT_LENGTH_MIN))).intValue();
 			boolean markAsMeeting = true;
 			int meetCount = 0;
 			int skipCount = 0;

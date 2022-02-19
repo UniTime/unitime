@@ -50,8 +50,9 @@
  							<@classTableLine line/>
  						</#list>
  					</table></tr></tr>
- 				<#elseif changeMessage??>
- 					<tr><td style="color: red; text-align: center; font-style: italic; font-weight: normal;">${changeMessage}</td></tr>
+ 				</#if>
+ 				<#if changeMessage??>
+ 					<tr><td style="color: red; text-align: center; font-style: italic; font-weight: normal; white-space: pre-wrap;">${changeMessage}</td></tr>
  				</#if>
  			<#elseif changes??>
  				<tr><td style="width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;">${msg.emailEnrollmentChanges()}</td></tr>
@@ -156,7 +157,7 @@
 <#macro classTableLine line>
 	<#assign style="white-space: nowrap;">
 	<#assign stylebr="">
-	<#assign stylelink="color: inherit;">
+	<#assign stylelink="color: inherit; text-decoration: none;">
 	<#if line.first>
 		<#assign style="white-space: nowrap; border-top: 1px dashed #9CB0CE;">
 		<#assign stylebr="border-top: 1px dashed #9CB0CE;">
@@ -192,9 +193,13 @@
 	 		<td style="${style}">${line.type}</td>
 	 		<td style="${style}">${line.name}</td>
 	 		<#if line.time??>
-	 			<td style="${style}">${line.days}</td>
-				<td style="${style}">${line.start}</td>
-				<td style="${style}">${line.end}</td>
+	 			<#if line.time.days gt 0>
+	 				<td style="${style}">${line.days}</td>
+					<td style="${style}">${line.start}</td>
+					<td style="${style}">${line.end}</td>
+				<#else>
+					<td style="${style}" colspan="3">${line.arrangeHours}</td>
+				</#if>
 				<td style="${style}">${line.date}</td>
 		 	<#else>
 		 		<td style="${style}" colspan="4">${line.arrangeHours}</td>
@@ -214,7 +219,7 @@
 	<#else>
 		<#assign style="white-space: nowrap; color: red; border-top: 1px dashed #9CB0CE;">
 		<#assign stylebr="color: red; border-top: 1px dashed #9CB0CE;">
-		<#assign stylelink="color: inherit;">
+		<#assign stylelink="color: inherit; text-decoration: none;">
 	 	<tr style='vertical-align: top'>
 	 		<#if line.url??>
 				<td style="${style}"><a href="${line.url}" style="${stylelink}">${line.subject}</a></td>
@@ -254,6 +259,7 @@
 
 <#macro courseRequestsLine line>
 	<#assign style="white-space: nowrap; vertical-align: top;">
+	<#assign stylelink="color: inherit; text-decoration: none;">
 	<#if line.first>
 		<#assign style="border-top: 1px dashed #9CB0CE; white-space: nowrap; vertical-align: top;">
 	</#if>
@@ -265,10 +271,19 @@
 	</#if>
  	<tr>
  		<#if line.last>
- 			<td style="${style} font-weight: bold;" colspan='2'>${line.courseName}</td>
- 		<#else>
+ 			<#if line.url??>
+ 				<td style="${style} font-weight: bold;" colspan='2'><a href="${line.url}" style="${stylelink}">${line.courseName}</a></td>
+ 			<#else>
+				<td style="${style} font-weight: bold;" colspan='2'>${line.courseName}</td>
+			</#if>
+ 		</#if>
+ 		<#if !line.last>
  			<td style="${style}">${line.priority}</td>
- 			<td style="${style}">${line.courseName}</td>
+ 			<#if line.url??>
+		 		<td style="${style}"><a href="${line.url}" style="${stylelink}">${line.courseName}</a></td>
+			<#else>
+				<td style="${style}">${line.courseName}</td>
+			</#if>
  		</#if>
  		<td style="${style}">${line.courseTitle}</td>
  		<td style="${style} padding-right: 5px;" align="right">${line.credit}</td>
@@ -292,11 +307,12 @@
  		<#if requests.hasWait && wlMode == 'WaitList'><td style="${style}">
  			<#if line.waitlist>
  				<img src='http://www.unitime.org/icons/action_check.png' width='16' height='16' title='${msg.descriptionRequestWaitListed()}' alt='${msg.courseWaitListed()}'>
+ 				<#if line.waitListDate??>${line.waitListDate}</#if>
  			</#if>
  		</td></#if>
  		<#if requests.hasWait && wlMode == 'NoSubs'><td style="${style}">
  			<#if line.waitlist>
- 				<img src='http://www.unitime.org/icons/action_check.png' width='16' height='16' title='${msg.descriptionRequestWaitListed()}' alt='${msg.courseNoSubs()}'>
+ 				<img src='http://www.unitime.org/icons/action_check.png' width='16' height='16' title='${msg.descriptionRequestNoSubs()}' alt='${msg.courseNoSubs()}'>
  			</#if>
  		</td></#if>
  	</tr>
@@ -318,6 +334,7 @@
 
 <#macro advisorRequestsLine line>
 	<#assign style="white-space: nowrap; vertical-align: top;">
+	<#assign stylelink="color: inherit; text-decoration: none;">
 	<#if line.first>
 		<#assign style="border-top: 1px dashed #9CB0CE; white-space: nowrap; vertical-align: top;">
 	</#if>
@@ -329,27 +346,44 @@
 	</#if>
  	<tr>
  		<#if line.last>
- 			<td style="${style} font-weight: bold;" colspan='2'>${line.courseName}</td>
- 		<#else>
+ 			<#if line.url??>
+ 				<td style="${style} font-weight: bold;" colspan='2'><a href="${line.url}" style="${stylelink}">${line.courseName}</a></td>
+ 			<#else>
+				<td style="${style} font-weight: bold;" colspan='2'>${line.courseName}</td>
+			</#if>
+ 		</#if>
+ 		<#if !line.last>
  			<td style="${style}">${line.priority}</td>
- 			<td style="${style}">${line.courseName}</td>
+ 			<#if line.url??>
+		 		<td style="${style}"><a href="${line.url}" style="${stylelink}">${line.courseName}</a></td>
+			<#else>
+				<td style="${style}">${line.courseName}</td>
+			</#if>
  		</#if>
  		<td style="${style}">${line.courseTitle}</td>
  		<td style="${style} padding-right: 5px;" align="right">${line.credit}</td>
- 		<#if advisor.hasPref><td style="${style}">${line.prefs}</td></#if>
+ 		<#if advisor.hasPref && !line.last><td style="${style} white-space:pre-wrap;">${line.prefs}</td></#if>
  		<#if line.rows gt 0>
+ 			<#assign noteColSpan="1">
+ 			<#if line.last>
+ 				<#if (advisor.hasWait && awlMode == 'WaitList') || (advisor.hasWait && awlMode == 'NoSubs')>
+ 					<#assign noteColSpan="3">
+ 				<#else>
+ 					<#assign noteColSpan="2">
+ 				</#if>
+ 			</#if>
  			<#if line.note?? && line.note?has_content>
- 				<td style="${style} white-space: pre-wrap;" rowSpan="${line.rows}">${line.note}</td>
+ 				<td style="${style} white-space: pre-wrap;" rowSpan="${line.rows}" colSpan="${noteColSpan}">${line.note}</td>
  			<#else>
- 				<td style="${style}" rowSpan="${line.rows}"></td>
+ 				<td style="${style}" rowSpan="${line.rows}" colSpan="${noteColSpan}"></td>
  			</#if>
  		</#if>
- 		<#if advisor.hasWait && awlMode == 'WaitList'><td style="${style}">
+ 		<#if advisor.hasWait && awlMode == 'WaitList' && !line.last><td style="${style}">
  			<#if line.waitlist>
  				<img src='http://www.unitime.org/icons/action_check.png' width='16' height='16' title='${msg.descriptionRequestWaitListed()}' alt='${msg.courseWaitListed()}'>
  			</#if>
  		</td></#if>
- 		<#if advisor.hasWait && awlMode == 'NoSubs'><td style="${style}">
+ 		<#if advisor.hasWait && awlMode == 'NoSubs' && !line.last><td style="${style}">
  			<#if line.waitlist>
  				<img src='http://www.unitime.org/icons/action_check.png' width='16' height='16' title='${msg.descriptionRequestWaitListed()}' alt='${msg.courseNoSubs()}'>
  			</#if>

@@ -22,6 +22,7 @@ package org.unitime.timetable.onlinesectioning.custom;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
@@ -121,11 +122,12 @@ public class OnlineOnlyCourseMatcherProvider implements CourseMatcherProvider {
 					InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(course.getOfferingId());
 					if (offering != null) {
 						for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
+							InstructionalMethod configIm = config.getEffectiveInstructionalMethod();
 							if (iInstructionalMode.isEmpty()) {
-								if (config.getInstructionalMethod() == null || config.getInstructionalMethod().getReference() == null || config.getInstructionalMethod().getReference().isEmpty())
+								if (configIm == null || configIm.getReference() == null || configIm.getReference().isEmpty())
 		        					return true;
 							} else {
-								if (config.getInstructionalMethod() != null && config.getInstructionalMethod().getReference() != null && config.getInstructionalMethod().getReference().matches(iInstructionalMode))
+								if (configIm != null && configIm.getReference() != null && configIm.getReference().matches(iInstructionalMode))
 		        					return true;
 							}
 						}
@@ -177,11 +179,12 @@ public class OnlineOnlyCourseMatcherProvider implements CourseMatcherProvider {
 					InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(course.getOfferingId());
 					if (offering != null) {
 						for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
+							InstructionalMethod configIm = config.getEffectiveInstructionalMethod();
 							if (iInstructionalMode.isEmpty()) {
-								if (config.getInstructionalMethod() == null || config.getInstructionalMethod().getReference() == null || config.getInstructionalMethod().getReference().isEmpty())
+								if (configIm == null || configIm.getReference() == null || configIm.getReference().isEmpty())
 		        					return true;
 							} else {
-								if (config.getInstructionalMethod() != null && config.getInstructionalMethod().getReference() != null && config.getInstructionalMethod().getReference().matches(iInstructionalMode))
+								if (configIm != null && configIm.getReference() != null && configIm.getReference().matches(iInstructionalMode))
 		        					return true;
 							}
 						}

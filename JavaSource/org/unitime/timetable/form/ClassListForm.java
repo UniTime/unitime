@@ -62,10 +62,11 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	private Boolean preferences;
 	private Boolean timetable;
 	private Boolean manager;
+	private Boolean fundingDepartment;
 	private Boolean divSec;
 	private Boolean schedulePrintNote;
 	private Boolean note;
-	private Boolean exams;
+	private Boolean exams;	
 	private Boolean instructorAssignment;
 	private Boolean lms;
 	private boolean includeCancelledClasses;
@@ -177,10 +178,11 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 		preferences = new Boolean(false);
 		timetable = new Boolean(false);
 		manager = new Boolean(false);
+		fundingDepartment = new Boolean(false);
 		divSec = new Boolean(false);
 		schedulePrintNote = new Boolean(false);
 		note = new Boolean(false);
-		exams = new Boolean(false);
+		exams = new Boolean(false);		
 		instructorAssignment = new Boolean(false);
 		lms = new Boolean(false);
 		includeCancelledClasses = false;
@@ -514,6 +516,10 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	public Boolean getManager() {
 		return manager;
 	}
+	public Boolean getFundingDepartment() {
+		 return fundingDepartment;
+	}
+	
 	public void setManager(Boolean manager) {
 		this.manager = manager;
 	}
@@ -541,6 +547,7 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
     public void setExams(Boolean exams) {
         this.exams = exams;
     }
+
     public Boolean getConsent() {
 		return (new Boolean(false));
     }
@@ -569,6 +576,12 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
     public void setIncludeCancelledClasses(boolean includeCancelledClasses) {
     	this.includeCancelledClasses = includeCancelledClasses;
     }	
+
+
+    public void setFundingDepartment(Boolean fundingDepartment) {
+        this.fundingDepartment = fundingDepartment;
+    }
+    
     public Boolean getInstructorAssignment() {
     	return instructorAssignment;
     }
@@ -588,4 +601,7 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
     public void setFilterNeedInstructor(boolean filterNeedInstructor) {
     	this.filterNeedInstructor = filterNeedInstructor;
     }
+	@Override
+	public String getWaitlist() { return null; }
+
 }

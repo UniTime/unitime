@@ -51,6 +51,12 @@
             column="waitlist"
             type="java.lang.Boolean"
             not-null="true"/>
+            
+        <property
+            name="noSub"
+            column="nosub"
+            type="java.lang.Boolean"
+            not-null="false"/>
 
         <property
             name="alternative"
@@ -75,6 +81,12 @@
             column="critical_override"
             type="java.lang.Integer"
             not-null="false"/>
+
+		<property
+            name="waitlistedTimeStamp"
+            column="waitlist_ts"
+            type="java.util.Date"
+            not-null="false"/>        
 
         <many-to-one
             name="freeTime"

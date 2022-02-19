@@ -162,13 +162,17 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	}
 	public String getEventNote(String linebreak) {
 		String note = "";
-		if (hasNotes())
+		if (hasNotes()) {
+			String last = null;
 			for (NoteInterface n: getNotes()) {
 				if (n.getNote() != null && !n.getNote().isEmpty()) {
+					if (n.getNote().equals(last)) continue;
 					if (!note.isEmpty()) note += linebreak;
 					note += n.getNote();
+					last = n.getNote();
 				}
 			}
+		}
 		return note;
 	}
 	public NoteInterface getLastNote() {

@@ -64,10 +64,12 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	private String iErrorMessage = null;
 	private String iSpecRegDashboardUrl = null;
 	private String iRequestorNote = null;
+	private List<String> iRequestorNoteSuggestions = null;
 	private String iRequestId = null;
 	private String iPopupMessage = null;
 	private Boolean iPinReleased = null;
 	private WaitListMode iMode = null;
+	private CheckCoursesResponse iWaitListChecks = null;
 	
 	public CourseRequestInterface() {}
 	public CourseRequestInterface(StudentSectioningContext cx) {
@@ -95,6 +97,54 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		} else {
 			getCourses().add(request);
 		}
+	}
+	
+	public boolean isActive(Long courseId) {
+		if (courseId == null) return false;
+		for (Request r: getCourses()) {
+			if (r.hasRequestedCourse())
+				for (RequestedCourse rc: r.getRequestedCourse())
+					if (courseId.equals(rc.getCourseId()) && !rc.isInactive())
+						return true;
+		}
+		for (Request r: getAlternatives()) {
+			if (r.hasRequestedCourse())
+				for (RequestedCourse rc: r.getRequestedCourse())
+					if (courseId.equals(rc.getCourseId()) && !rc.isInactive())
+						return true;
+		}
+		return false;
+	}
+	
+	public boolean isWaitListed(Long courseId) {
+		if (courseId == null) return false;
+		for (Request r: getCourses()) {
+			if (r.hasRequestedCourse() && r.isWaitList())
+				for (RequestedCourse rc: r.getRequestedCourse())
+					if (courseId.equals(rc.getCourseId())) return true;
+		}
+		for (Request r: getAlternatives()) {
+			if (r.hasRequestedCourse() && r.isWaitList())
+				for (RequestedCourse rc: r.getRequestedCourse())
+					if (courseId.equals(rc.getCourseId())) return true;
+		}
+		return false;
+	}
+	
+	public boolean sameWaitListedCourses(CourseRequestInterface other) {
+		if (other == null) return false;
+		int nrWaitListed = 0;
+		r: for (Request r: getCourses()) {
+			if (r.isWaitList()) {
+				nrWaitListed ++;
+				for (Request o: other.getCourses())
+					if (o.isWaitList() && r.sameCourses(o)) continue r;
+				return false;
+			}
+		}
+		for (Request o: other.getCourses())
+			if (o.isWaitList()) nrWaitListed --;
+		return nrWaitListed == 0;
 	}
 	
 	public boolean isSaved() { return iSaved; }
@@ -227,10 +277,11 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		return __getRequestPriority(course);
 	}
 	
-	public float[] getCreditRange() {
+	public float[] getCreditRange(Set<Long> advisorWaitListedCourseIds) {
 		List<Float> mins = new ArrayList<Float>();
 		List<Float> maxs = new ArrayList<Float>();
 		int nrCourses = 0;
+		float tMin = 0f, tMax = 0f;
 		for (Request r: getCourses()) {
 			if (r.hasRequestedCourse()) {
 				Float min = null, max = null;
@@ -241,7 +292,11 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 					}
 				}
 				if (min != null) {
-					mins.add(min); maxs.add(max); nrCourses ++;
+					if (r.isWaitListOrNoSub(iMode, advisorWaitListedCourseIds)) {
+						tMin += min; tMax += max;
+					} else {
+						mins.add(min); maxs.add(max); nrCourses ++;
+					}
 				}
 			}
 		}
@@ -261,17 +316,17 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		}
 		Collections.sort(mins);
 		Collections.sort(maxs);
-		float min = 0f, max = 0f;
 		for (int i = 0; i < nrCourses; i++) {
-			min += mins.get(i);
-			max += maxs.get(maxs.size() - i - 1);
+			tMin += mins.get(i);
+			tMax += maxs.get(maxs.size() - i - 1);
 		}
-		return new float[] {min, max};
+		return new float[] {tMin, tMax};
 	}
 	
-	public float getCredit() {
+	public float getCredit(Set<Long> advisorWaitListedCourseIds) {
 		List<Float> credits = new ArrayList<Float>();
 		int nrCourses = 0;
+		float total = 0f;
 		for (Request r: getCourses()) {
 			if (r.hasRequestedCourse()) {
 				Float credit = null;
@@ -281,7 +336,11 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 					}
 				}
 				if (credit != null) {
-					credits.add(credit); nrCourses ++;
+					if (r.isWaitListOrNoSub(iMode, advisorWaitListedCourseIds)) {
+						total += credit;
+					} else {
+						credits.add(credit); nrCourses ++;
+					}
 				}
 			}
 		}
@@ -299,7 +358,6 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			}
 		}
 		Collections.sort(credits);
-		float total = 0f;
 		for (int i = 0; i < nrCourses; i++) {
 			total += credits.get(credits.size() - i - 1);
 		}
@@ -309,6 +367,33 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	public boolean isPinReleased() { return iPinReleased != null && iPinReleased.booleanValue(); }
 	public void setPinReleased(boolean pinReleased) { iPinReleased = pinReleased; }
 	public boolean hasReleasedPin() { return isPinReleased() && hasPin(); }
+	
+	public Set<Long> getWaitListedCourseIds() {
+		Set<Long> courseIds = new HashSet<Long>();
+		for (Request request: getCourses()) {
+			if (request.hasRequestedCourse() && request.isWaitList())
+				for (RequestedCourse rc: request.getRequestedCourse()) {
+					if (rc.hasCourseId())
+						courseIds.add(rc.getCourseId());
+					break;
+				}
+		}
+		return courseIds;
+	}
+	
+	public Set<Long> getNoSubCourseIds() {
+		Set<Long> courseIds = new HashSet<Long>();
+		for (Request request: getCourses()) {
+			if (request.hasRequestedCourse() && request.isNoSub())
+				for (RequestedCourse rc: request.getRequestedCourse()) {
+					if (rc.hasCourseId())
+						courseIds.add(rc.getCourseId());
+					break;
+				}
+		}
+		return courseIds;
+	}
+
 	
 	@Override
 	public boolean equals(Object o) {
@@ -482,8 +567,11 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		private String iOverrideExternalId = null;
 		private Date iOverrideTimeStamp = null;
 		private String iRequestorNote = null;
+		private List<String> iRequestorNoteSuggestions = null;
 		private String iRequestId = null;
 		private Boolean iInactive = null;  
+		private Boolean iCanWaitList = null;
+		private String iWaitListPosition = null;
 		
 		public RequestedCourse() {}
 		public RequestedCourse(List<FreeTime> freeTime) {
@@ -532,9 +620,17 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		}
 		public boolean hasRequestorNote() { return iRequestorNote != null && !iRequestorNote.isEmpty() && !" ".equals(iRequestorNote); }
 		public String getRequestorNote() { return iRequestorNote; }
+		public boolean hasRequestorNoteSuggestions() { return iRequestorNoteSuggestions != null && !iRequestorNoteSuggestions.isEmpty(); }
+		public List<String> getRequestorNoteSuggestions() { return iRequestorNoteSuggestions; }
+		public void addRequestorNoteSuggestion(String suggestion) {
+			if (iRequestorNoteSuggestions == null)
+				iRequestorNoteSuggestions = new ArrayList<String>();
+			iRequestorNoteSuggestions.add(suggestion);
+		}
 		public void setRequestId(String id) { iRequestId = id; }
 		public boolean hasRequestId() { return iRequestId != null && !iRequestId.isEmpty() && !" ".equals(iRequestId); }
 		public String getRequestId() { return iRequestId; }
+		
 		public void setOverrideExternalId(String externalId) { iOverrideExternalId = externalId; }
 		public String getOverrideExternalId() { return iOverrideExternalId; }
 		public void setOverrideTimeStamp(Date timeStamp) { iOverrideTimeStamp = timeStamp; }
@@ -562,6 +658,11 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		
 		public boolean isInactive() { return iInactive != null && iInactive.booleanValue(); }
 		public void setInactive(Boolean inactive) { iInactive = inactive; }
+		
+		public boolean isCanWaitList() { return iCanWaitList != null && iCanWaitList.booleanValue(); }
+		public void setCanWaitList(Boolean canWaitList) { iCanWaitList = canWaitList; }
+		
+		public boolean isCanNoSub() { return isCourse(); }
 		
 		public boolean isEmpty() { return !isCourse() && !isFreeTime(); }
 		
@@ -662,9 +763,13 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			if (iSelectedIntructionalMethods != null) iSelectedIntructionalMethods.clear();
 		}
 		
+		public String getWaitListPosition() { return iWaitListPosition; }
+		public void setWaitListPosition(String wlPosition) { iWaitListPosition = wlPosition; }
+		public boolean hasWaitListPosition() { return iWaitListPosition != null && !iWaitListPosition.isEmpty(); }
+		
 		@Override
 		public int hashCode() {
-			return (hasCourseId() ? getCourseId().hashCode() : getCourseName().hashCode());
+			return (isCourse() ? getCourseName() : toString()).toLowerCase().hashCode();
 		}
 		
 		@Override
@@ -757,13 +862,46 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	public void setConfirmations(Collection<CourseMessage> confirmations) {
 		iConfirmations = (confirmations == null ? null : new ArrayList<CourseMessage>(confirmations));
 	}
+	public List<CourseMessage> getConfirmations(String courseName) {
+		List<CourseMessage> ret = new ArrayList<CourseMessage>();
+		if (hasConfirmations())
+			for (CourseMessage m: getConfirmations())
+				if (m.hasCourse() && courseName.equals(m.getCourse())) ret.add(m);
+		return ret;
+	}
+	public String getConfirmation(String courseName, String delim, String... exclude) {
+		if (!hasConfirmations()) return null;
+		String ret = null;
+		if (hasConfirmations())
+			m: for (CourseMessage m: getConfirmations())
+				if (m.hasCourse() && courseName.equals(m.getCourse())) {
+					for (String e: exclude)
+						if (e.equals(m.getCode())) continue m;
+					if (ret == null)
+						ret = m.getMessage();
+					else
+						ret += delim + m.getMessage();
+				}
+		return ret;
+	}
+	public boolean isError(String courseName) {
+		if (!hasConfirmations()) return false;
+		if (hasConfirmations())
+			for (CourseMessage m: getConfirmations())
+				if (m.hasCourse() && courseName.equals(m.getCourse())) {
+					if (m.isError()) return true;
+				}
+		return false;
+	}
 	
 	public static class Request implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private List<RequestedCourse> iRequestedCourse = null;
 		private Boolean iWaitList = false;
+		private Boolean iNoSub = false;
 		private Integer iCritical = null;
 		private Date iTimeStamp = null;
+		private Date iWaitListedTimeStamp = null;
 		private String iFilter = null;
 		private String iAdvisorCredit = null;
 		private String iAdvisorNote = null;
@@ -862,6 +1000,49 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		public boolean isWaitList() { return iWaitList != null && iWaitList.booleanValue(); }
 		public void setWaitList(Boolean waitList) { iWaitList = waitList; }
 		
+		public boolean isWaitListOrNoSub(WaitListMode wlMode, Set<Long> advisorWaitListedCourseIds) {
+			if (wlMode == WaitListMode.WaitList && isCanWaitList()) {
+				if (iWaitList != null && iWaitList.booleanValue()) return true;
+			}
+			if (wlMode == WaitListMode.NoSubs) {
+				if (iNoSub != null && iNoSub.booleanValue()) return true;
+			}
+			if (advisorWaitListedCourseIds != null && hasRequestedCourse()) {
+				for (RequestedCourse rc: getRequestedCourse()) {
+					if (rc.hasCourseId() && advisorWaitListedCourseIds.contains(rc.getCourseId())) return true;
+				}
+			}
+			return false;
+		}
+
+		public boolean isCanWaitList() {
+			if (iRequestedCourse == null) return false;
+			for (RequestedCourse rc: iRequestedCourse) {
+				if (rc.isCanWaitList()) return true;
+				break;
+			}
+			return false;
+		}
+		
+		public boolean hasNoSub() { return iNoSub != null; }
+		public boolean isNoSub() { return iNoSub != null && iNoSub.booleanValue(); }
+		public void setNoSub(Boolean noSub) { iNoSub = noSub; }
+		
+		public boolean isCanNoSub() {
+			if (iRequestedCourse == null) return false;
+			for (RequestedCourse rc: iRequestedCourse) {
+				if (rc.isCourse()) return true;
+				break;
+			}
+			return false;
+		}
+		
+		public boolean isWaitlistOrNoSub(WaitListMode wlMode) {
+			if (wlMode == WaitListMode.WaitList) return isWaitList();
+			if (wlMode == WaitListMode.NoSubs) return isNoSub();
+			return false;
+		}
+
 		public boolean hasCritical() { return iCritical != null; }
 		public boolean isCritical() { return iCritical != null && iCritical.intValue() == 1; }
 		public boolean isImportant() { return iCritical != null && iCritical.intValue() == 2; }
@@ -871,6 +1052,10 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		public boolean hasTimeStamp() { return iTimeStamp != null; }
 		public Date getTimeStamp() { return iTimeStamp; }
 		public void setTimeStamp(Date ts) { iTimeStamp = ts; }
+		
+		public boolean hasWaitListedTimeStamp() { return iWaitListedTimeStamp != null; }
+		public Date getWaitListedTimeStamp() { return iWaitListedTimeStamp; }
+		public void setWaitListedTimeStamp(Date ts) { iWaitListedTimeStamp = ts; }
 		
 		public boolean hasFilter() { return iFilter != null && !iFilter.isEmpty(); }
 		public String getFilter() { return iFilter; }
@@ -940,7 +1125,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof Request)) return false;
 			Request r = (Request)o;
-			if (isWaitList() != r.isWaitList() || countRequestedCourses() != r.countRequestedCourses()) return false;
+			if (isWaitList() != r.isWaitList() || isNoSub() != r.isNoSub() || countRequestedCourses() != r.countRequestedCourses()) return false;
 			for (int i = 0; i < countRequestedCourses(); i++) {
 				RequestedCourse c1 = getRequestedCourse(i);
 				RequestedCourse c2 = r.getRequestedCourse(i);
@@ -948,6 +1133,16 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			}
 			if (!(hasAdvisorNote() ? getAdvisorNote() : "").equals(r.hasAdvisorNote() ? r.getAdvisorNote() : "")) return false;
 			if (!(hasAdvisorCredit() ? getAdvisorCredit() : "").equals(r.hasAdvisorCredit() ? r.getAdvisorCredit() : "")) return false;
+			return true;
+		}
+		
+		public boolean sameCourses(Request r) {
+			if (countRequestedCourses() != r.countRequestedCourses()) return false;
+			for (int i = 0; i < countRequestedCourses(); i++) {
+				RequestedCourse c1 = getRequestedCourse(i);
+				RequestedCourse c2 = r.getRequestedCourse(i);
+				if (!c1.equals(c2) || !c1.sameSelectedClasses(c2) || !c1.sameSelectedIntructionalMethods(c2)) return false;
+			}
 			return true;
 		}
 	}
@@ -1037,6 +1232,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		private String iErrorMessage = null;
 		private String iCreditWarning = null;
 		private String iCreditNote = null;
+		private Float iMaxCreditNeeded = null;
 		private RequestedCourseStatus iMaxCreditOverrideStatus = null;
 		
 		public CheckCoursesResponse() {}
@@ -1131,6 +1327,9 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 					if (m.isConfirm()) ret.add(m.getConfirm());
 			return ret;
 		}
+		
+		public Float getMaxCreditNeeded() { return iMaxCreditNeeded; }
+		public void setMaxCreditNeeded(Float maxCreditNeeded) { iMaxCreditNeeded = maxCreditNeeded; }
 		
 		public List<CourseMessage> getMessages(String courseName) {
 			List<CourseMessage> ret = new ArrayList<CourseMessage>();
@@ -1285,6 +1484,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		private Integer iConfirm;
 		private Integer iOrder;
 		private RequestedCourseStatus iStatus;
+		private List<String> iSuggestions;
 		
 		public CourseMessage() {}
 		
@@ -1312,6 +1512,14 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		
 		public String getCode() { return iCode; }
 		public void setCode(String code) { iCode = code; }
+		
+		public boolean hasSuggestions() { return iSuggestions != null && !iSuggestions.isEmpty(); }
+		public List<String> getSuggestions() { return iSuggestions; }
+		public void addSuggestion(String suggestion) {
+			if (iSuggestions == null)
+				iSuggestions = new ArrayList<String>();
+			iSuggestions.add(suggestion);
+		}
 		
 		public RequestedCourseStatus getStatus() { return iStatus; }
 		public CourseMessage setStatus(RequestedCourseStatus status) { iStatus = status; return this; }
@@ -1391,6 +1599,13 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	}
 	public boolean hasRequestorNote() { return iRequestorNote != null && !iRequestorNote.isEmpty() && !" ".equals(iRequestorNote); }
 	public String getRequestorNote() { return iRequestorNote; }
+	public boolean hasRequestorNoteSuggestions() { return iRequestorNoteSuggestions != null && !iRequestorNoteSuggestions.isEmpty(); }
+	public List<String> getRequestorNoteSuggestions() { return iRequestorNoteSuggestions; }
+	public void addRequestorNoteSuggestion(String suggestion) {
+		if (iRequestorNoteSuggestions == null)
+			iRequestorNoteSuggestions = new ArrayList<String>();
+		iRequestorNoteSuggestions.add(suggestion);
+	}
 	public void setRequestId(String id) { iRequestId = id; }
 	public boolean hasRequestId() { return iRequestId != null && !iRequestId.isEmpty() && !" ".equals(iRequestId); }
 	public String getRequestId() { return iRequestId; }
@@ -1420,24 +1635,24 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	}
 	
 	public void removeInactiveDuplicates() {
-		Set<Long> activeCourseIds = new HashSet<Long>();
+		Set<RequestedCourse> activeCourses = new HashSet<RequestedCourse>();
 		for (Request r: iCourses) {
 			if (r.hasRequestedCourse())
 				for (RequestedCourse rc: r.getRequestedCourse())
-					if (!rc.isInactive() && rc.hasCourseId())
-						activeCourseIds.add(rc.getCourseId());
+					if (!rc.isInactive() && rc.isCourse())
+						activeCourses.add(rc);
 		}
 		for (Request r: iAlternatives) {
 			if (r.hasRequestedCourse())
 				for (RequestedCourse rc: r.getRequestedCourse())
-					if (!rc.isInactive() && rc.hasCourseId())
-						activeCourseIds.add(rc.getCourseId());
+					if (!rc.isInactive() && rc.isCourse())
+						activeCourses.add(rc);
 		}
 		for (Request r: iCourses) {
 			if (r.hasRequestedCourse())
 				for (Iterator<RequestedCourse> i = r.getRequestedCourse().iterator(); i.hasNext(); ) {
 					RequestedCourse rc = i.next();
-					if (rc.isInactive() && rc.hasCourseId() && activeCourseIds.contains(rc.getCourseId()))
+					if (rc.isInactive() && rc.isCourse() && activeCourses.contains(rc))
 						i.remove();
 				}
 		}
@@ -1445,7 +1660,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			if (r.hasRequestedCourse())
 				for (Iterator<RequestedCourse> i = r.getRequestedCourse().iterator(); i.hasNext(); ) {
 					RequestedCourse rc = i.next();
-					if (rc.isInactive() && rc.hasCourseId() && activeCourseIds.contains(rc.getCourseId()))
+					if (rc.isInactive() && rc.hasCourseId() && activeCourses.contains(rc))
 						i.remove();
 				}
 		}
@@ -1468,13 +1683,13 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	}
 	
 	public boolean removeDuplicates() {
-		Set<Long> courseIds = new HashSet<Long>();
+		Set<RequestedCourse> courses = new HashSet<RequestedCourse>();
 		boolean deleted = false;
 		for (Request r: iCourses) {
 			if (r.hasRequestedCourse())
 				for (Iterator<RequestedCourse> i = r.getRequestedCourse().iterator(); i.hasNext(); ) {
 					RequestedCourse rc = i.next();
-					if (rc.hasCourseId() && !courseIds.add(rc.getCourseId())) {
+					if (rc.isCourse() && !courses.add(rc)) {
 						i.remove();
 						deleted = true;
 					}
@@ -1484,7 +1699,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			if (r.hasRequestedCourse())
 				for (Iterator<RequestedCourse> i = r.getRequestedCourse().iterator(); i.hasNext(); ) {
 					RequestedCourse rc = i.next();
-					if (rc.hasCourseId() && !courseIds.add(rc.getCourseId())) {
+					if (rc.isCourse() && !courses.add(rc)) {
 						i.remove();
 						deleted = true;
 					}
@@ -1500,7 +1715,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			if (!r.hasRequestedCourse()) continue;
 			boolean skip = false;
 			for (RequestedCourse rc: r.getRequestedCourse()) {
-				if (rc.isCourse() && getRequestPriority(rc) != null) { skip = true; break; }
+				if (rc.hasCourseId() && getRequestPriority(rc) != null) { skip = true; break; }
 			}
 			if (!skip) {
 				getCourses().add(r);
@@ -1511,7 +1726,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			if (!r.hasRequestedCourse()) continue;
 			boolean skip = false;
 			for (RequestedCourse rc: r.getRequestedCourse()) {
-				if (rc.isCourse() && getRequestPriority(rc) != null) { skip = true; break; }
+				if (rc.hasCourseId() && getRequestPriority(rc) != null) { skip = true; break; }
 			}
 			if (!skip) {
 				getAlternatives().add(r);
@@ -1530,5 +1745,41 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	}
 	public void setWaitListMode(WaitListMode mode) {
 		iMode = mode;
+	}
+	
+	public boolean hasWaitListChecks() {
+		return iWaitListChecks != null;
+	}
+	public CheckCoursesResponse getWaitListChecks() {
+		return iWaitListChecks;
+	}
+	public void setWaitListChecks(CheckCoursesResponse waitListChecks) {
+		iWaitListChecks = waitListChecks;
+		setConfirmations(waitListChecks == null ? null : waitListChecks.getMessages());
+		setErrorMessage(waitListChecks == null ? null : waitListChecks.getErrorMessage());
+		setCreditNote(waitListChecks == null ? null : waitListChecks.getCreditNote());
+		setCreditWarning(waitListChecks == null ? null : waitListChecks.getCreditWarning());
+		setMaxCreditOverride(waitListChecks == null ? null : waitListChecks.getMaxCreditNeeded());
+		setMaxCreditOverrideStatus(waitListChecks == null ? null : waitListChecks.getMaxCreditOverrideStatus());
+	}
+	
+	public RequestedCourseStatus getStatus(String courseName) {
+		RequestedCourseStatus status = null;
+		if (hasConfirmations())
+			for (CourseMessage m: getConfirmations()) {
+				if (m.getStatus() != null && m.hasCourse() && courseName.equals(m.getCourse())) {
+					if (status == null || m.getStatus().ordinal() > status.ordinal()) status = m.getStatus();
+				}
+			}
+		if (status != null) return status;
+		for (Request r: getCourses())
+			if (r.hasRequestedCourse())
+				for (RequestedCourse rc: r.getRequestedCourse())
+					if (courseName.equals(rc.getCourseName()) && !rc.isInactive()) return rc.getStatus();
+		for (Request r: getAlternatives())
+			if (r.hasRequestedCourse())
+				for (RequestedCourse rc: r.getRequestedCourse())
+					if (courseName.equals(rc.getCourseName()) && !rc.isInactive()) return rc.getStatus();
+		return null;
 	}
 }

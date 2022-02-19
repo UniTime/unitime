@@ -40,6 +40,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Float;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.dom.client.Style.WhiteSpace;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -172,7 +173,6 @@ public class WebTable extends Composite implements HasMobileScroll {
 						Roles.getGridcellRole().setAriaLabelProperty(iTable.getCellFormatter().getElement(i, j), cell.getAriaLabel());
 				} else
 					iTable.setWidget(i, j, cell.getWidget());
-				iTable.getFlexCellFormatter().setWordWrap(i, j, cell.getWordWrap());
 				iTable.getFlexCellFormatter().setStyleName(i, j, (cell.getStyleName() == null ? "unitime-TableHeader" : cell.getStyleName()));
 				if (cell.getWidth() != null)
 					iTable.getFlexCellFormatter().setWidth(i, j, cell.getWidth());
@@ -181,6 +181,11 @@ public class WebTable extends Composite implements HasMobileScroll {
 				iTable.getFlexCellFormatter().setVerticalAlignment(i, j, cell.getVerticalAlignment());
 				iTable.getFlexCellFormatter().setHorizontalAlignment(i, j, cell.getHorizontalAlignment());
 				iTable.getFlexCellFormatter().getElement(i, j).setTitle(cell.getTitle());
+				if (cell.isPre()) {
+					iTable.getFlexCellFormatter().getElement(i, j).getStyle().setWhiteSpace(cell.getWordWrap() ? WhiteSpace.PRE_WRAP : WhiteSpace.PRE);
+				} else {
+					iTable.getFlexCellFormatter().setWordWrap(i, j, cell.getWordWrap());
+				}
 				Roles.getColumnheaderRole().set(iTable.getCellFormatter().getElement(i, j));
 			}
 			Roles.getRowRole().set(iTable.getRowFormatter().getElement(i));
@@ -319,7 +324,11 @@ public class WebTable extends Composite implements HasMobileScroll {
 				} else
 					iTable.setWidget(i+getHeaderRowsCount(), j, cell.getWidget());
 				iTable.getFlexCellFormatter().setVisible(i+getHeaderRowsCount(), j, true);
-				iTable.getFlexCellFormatter().setWordWrap(i+getHeaderRowsCount(), j, cell.getWordWrap());
+				if (cell.isPre()) {
+					iTable.getFlexCellFormatter().getElement(i+getHeaderRowsCount(), j).getStyle().setWhiteSpace(cell.getWordWrap() ? WhiteSpace.PRE_WRAP : WhiteSpace.PRE);
+				} else {
+					iTable.getFlexCellFormatter().setWordWrap(i+getHeaderRowsCount(), j, cell.getWordWrap());
+				}
 				iTable.getFlexCellFormatter().setColSpan(i+getHeaderRowsCount(), j, cell.getColSpan());
 				iTable.getFlexCellFormatter().setRowSpan(i+getHeaderRowsCount(), j, cell.getRowSpan());
 				iTable.getFlexCellFormatter().setStyleName(i+getHeaderRowsCount(), j, cell.getStyleName());
@@ -478,7 +487,12 @@ public class WebTable extends Composite implements HasMobileScroll {
 					t.setHTML(getRowIdx() + iTable.getHeaderRowsCount(), col, (cell.getValue() == null || cell.getValue().isEmpty() ? "&nbsp;" : cell.getValue()));
 				else
 					t.setWidget(getRowIdx() + iTable.getHeaderRowsCount(), col, cell.getWidget());
-				t.getFlexCellFormatter().setWordWrap(getRowIdx() + iTable.getHeaderRowsCount(), col, cell.getWordWrap());
+				
+				if (cell.isPre()) {
+					t.getFlexCellFormatter().getElement(getRowIdx() + iTable.getHeaderRowsCount(), col).getStyle().setWhiteSpace(cell.getWordWrap() ? WhiteSpace.PRE_WRAP : WhiteSpace.PRE);
+				} else {
+					t.getFlexCellFormatter().setWordWrap(getRowIdx() + iTable.getHeaderRowsCount(), col, cell.getWordWrap());
+				}
 				t.getFlexCellFormatter().setColSpan(getRowIdx() + iTable.getHeaderRowsCount(), col, cell.getColSpan());
 				t.getFlexCellFormatter().setStyleName(getRowIdx() + iTable.getHeaderRowsCount(), col, cell.getStyleName());
 				t.getFlexCellFormatter().setWidth(getRowIdx() + iTable.getHeaderRowsCount(), col, cell.getWidth());
@@ -508,6 +522,7 @@ public class WebTable extends Composite implements HasMobileScroll {
 		Row iRow = null;
 		int iColIdx = -1;
 		boolean iWrap = false;
+		boolean iPre = false;
 		VerticalAlignmentConstant iVerticalAlignment = HasVerticalAlignment.ALIGN_TOP;
 		HorizontalAlignmentConstant iHorizontalAlignment = HasHorizontalAlignment.ALIGN_LEFT;
 		String iAriaLabel = null;
@@ -549,6 +564,8 @@ public class WebTable extends Composite implements HasMobileScroll {
 		public void setHorizontalAlignment(HorizontalAlignmentConstant vertical) { iHorizontalAlignment = vertical; }
 		public boolean getWordWrap() { return iWrap; }
 		public void setWordWrap(boolean wrap) { iWrap = wrap; }
+		public boolean isPre() { return iPre; }
+		public void setPre(boolean pre) { iPre = pre; }
 		public void setTitle(String title) { iTitle = title; }
 		public String getTitle() { return iTitle; }
 		public Cell title(String title) { iTitle = title; return this; }
@@ -569,6 +586,13 @@ public class WebTable extends Composite implements HasMobileScroll {
 		public Cell aria(String text) {
 			iAriaLabel = text;
 			return this;
+		}
+	}
+	
+	public static class PreCell extends Cell {
+		public PreCell(String value, int colSpan) {
+			super(value, colSpan, null);
+			setPre(true); setWordWrap(true);
 		}
 	}
 	

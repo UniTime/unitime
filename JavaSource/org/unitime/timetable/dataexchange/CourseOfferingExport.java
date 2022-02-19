@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.cpsolver.coursett.model.TimeLocation;
@@ -92,7 +93,8 @@ public class CourseOfferingExport extends BaseExport {
     protected boolean iExportAssignments = true, iExportGroupInfos = false;
     protected Integer iDefaultMaxNbrRooms = null;
     
-    public void saveXml(Document document, Session session, Properties parameters) throws Exception {
+    @SuppressWarnings("unchecked")
+	public void saveXml(Document document, Session session, Properties parameters) throws Exception {
         try {
             beginTransaction();
             
@@ -131,22 +133,20 @@ public class CourseOfferingExport extends BaseExport {
             
             if (examsOnly) {
                 if ("all".equals(parameters.getProperty("tmtbl.export.exam.type", "all")) || "final".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))) {
-                    for (Iterator i=new TreeSet(Exam.findAllFinal(session.getUniqueId())).iterator();i.hasNext();) {
-                        Exam exam = (Exam)i.next();
+                    for (Exam exam : new TreeSet<Exam>(Exam.findAllFinal(session.getUniqueId()))) {
                         exportExam(root, null, exam, session);
                     }
                 }
                 if ("all".equals(parameters.getProperty("tmtbl.export.exam.type", "all")) || "midterm".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))) {
-                    for (Iterator i=new TreeSet(Exam.findAllMidterm(session.getUniqueId())).iterator();i.hasNext();) {
-                        Exam exam = (Exam)i.next();
-                        exportExam(root, null, exam, session);
+                    for (Exam exam : new TreeSet<Exam>(Exam.findAllMidterm(session.getUniqueId()))) {
+                         exportExam(root, null, exam, session);
                     }
                 }
             } else {
                 info("Loading offerings...");
                 String subjects = parameters.getProperty("tmtbl.export.subjects");
                 
-                List offerings = null;
+                List<InstructionalOffering> offerings = null;
                 if (subjects == null || subjects.isEmpty()) {
                 	offerings = getHibSession().createQuery(
                             "select distinct io from InstructionalOffering io " +
@@ -180,7 +180,7 @@ public class CourseOfferingExport extends BaseExport {
                 
                 if (!"none".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))) {
                     info("Loading exams...");
-                    List allExams = getHibSession().createQuery(
+                    List<Exam> allExams = getHibSession().createQuery(
                             "select x from Exam x left join fetch x.owners o " +
                             "where x.session.uniqueId=:sessionId"+
                             ("midterm".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))?" and x.examType.type="+ExamType.sExamTypeMidterm:"")+
@@ -189,16 +189,14 @@ public class CourseOfferingExport extends BaseExport {
                             setLong("sessionId",session.getUniqueId().longValue()).
                             setFetchSize(1000).list();
                     
-                    iExams = new Hashtable();
+                    iExams = new Hashtable<Long, TreeSet<Exam>>();
                     info("Checking exams...");
-                    for (Iterator i=allExams.iterator();i.hasNext();) {
-                        Exam exam = (Exam)i.next();
-                        for (Iterator j=exam.getOwners().iterator();j.hasNext();) {
-                            ExamOwner owner = (ExamOwner)j.next();
+                    for (Exam exam : allExams) {
+                        for (ExamOwner owner : exam.getOwners()) {
                             Long offeringId = owner.getCourse().getInstructionalOffering().getUniqueId();
                             TreeSet<Exam> exams = iExams.get(offeringId);
                             if (exams==null) {
-                                exams = new TreeSet();
+                                exams = new TreeSet<Exam>();
                                 iExams.put(offeringId,exams); 
                             }
                             exams.add(exam);
@@ -208,8 +206,7 @@ public class CourseOfferingExport extends BaseExport {
             
                 
                 info("Exporting "+offerings.size()+" offerings ...");
-                for (Iterator i=offerings.iterator();i.hasNext();) {
-                    InstructionalOffering io = (InstructionalOffering)i.next();
+                for (InstructionalOffering io : offerings) {
                     exportInstructionalOffering(root, io, session);
                 }
             }
@@ -226,13 +223,11 @@ public class CourseOfferingExport extends BaseExport {
         offeringElement.addAttribute("id", (offering.getExternalUniqueId()!=null?offering.getExternalUniqueId():offering.getUniqueId().toString()));
         offeringElement.addAttribute("offered", (offering.isNotOffered()?"false":"true"));
         offeringElement.addAttribute("action", "insert");
-        for (Iterator i=offering.getCourseOfferings().iterator();i.hasNext();) {
-            CourseOffering course = (CourseOffering)i.next();
+        for (CourseOffering course : offering.getCourseOfferings()) {
             exportCourse(offeringElement.addElement("course"), course, session);
         }
         if (!offering.isNotOffered())
-            for (Iterator i=offering.getInstrOfferingConfigs().iterator();i.hasNext();) {
-                InstrOfferingConfig config = (InstrOfferingConfig)i.next();
+            for (InstrOfferingConfig config : offering.getInstrOfferingConfigs()) {
                 exportConfig(offeringElement.addElement("config"), config, session);
             }
         if (iExams!=null) {
@@ -277,10 +272,12 @@ public class CourseOfferingExport extends BaseExport {
         	courseElement.addElement("consent").addAttribute("type", course.getConsentType().getReference());
         if (course.getTitle()!=null)
             courseElement.addAttribute("title", course.getTitle());
+        if (ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue() && course.getFundingDept() != null) {
+        	courseElement.addAttribute("fundingDepartment", course.getFundingDept().getDeptCode());
+        }
         if (course.getScheduleBookNote()!=null)
             courseElement.addAttribute("scheduleBookNote", course.getScheduleBookNote());
-        for (Iterator i=course.getCreditConfigs().iterator();i.hasNext();) {
-            CourseCreditUnitConfig credit = (CourseCreditUnitConfig)i.next();
+        for (CourseCreditUnitConfig credit : course.getCreditConfigs()) {
             exportCredit(courseElement.addElement("courseCredit"), credit, session);
         }
     }
@@ -292,17 +289,15 @@ public class CourseOfferingExport extends BaseExport {
         	configElement.addAttribute("durationType", config.getClassDurationType().getReference());
         if (config.getInstructionalMethod() != null)
         	configElement.addAttribute("instructionalMethod", config.getInstructionalMethod().getReference());
-        for (Iterator i=config.getSchedulingSubparts().iterator();i.hasNext();) {
-            SchedulingSubpart subpart = (SchedulingSubpart)i.next();
+        for (SchedulingSubpart subpart : config.getSchedulingSubparts()) {
             if (subpart.getParentSubpart()==null) {
                 exportSubpart(configElement.addElement("subpart"), subpart, session);
             }
         }
-        for (Iterator i=config.getSchedulingSubparts().iterator();i.hasNext();) {
-            SchedulingSubpart subpart = (SchedulingSubpart)i.next();
+        for (SchedulingSubpart subpart : config.getSchedulingSubparts()) {
             if (subpart.getParentSubpart()==null) {
-                for (Iterator j=subpart.getClasses().iterator();j.hasNext();)
-                    exportClass(configElement.addElement("class"), (Class_)j.next(), session);
+                for (Class_ clazz : subpart.getClasses())
+                    exportClass(configElement.addElement("class"), clazz, session);
             }
         }
     }
@@ -311,12 +306,10 @@ public class CourseOfferingExport extends BaseExport {
         subpartElement.addAttribute("type", subpart.getItypeDesc().trim());
         subpartElement.addAttribute("suffix", subpart.getSchedulingSubpartSuffix());
         subpartElement.addAttribute("minPerWeek", subpart.getMinutesPerWk().toString());
-        for (Iterator i=subpart.getCreditConfigs().iterator();i.hasNext();) {
-            CourseCreditUnitConfig credit = (CourseCreditUnitConfig)i.next();
+        for (CourseCreditUnitConfig credit : subpart.getCreditConfigs()) {
             exportCredit(subpartElement.addElement("subpartCredit"), credit, session);
         }
-        for (Iterator i=subpart.getChildSubparts().iterator();i.hasNext();) {
-            SchedulingSubpart childSubpart = (SchedulingSubpart)i.next();
+        for (SchedulingSubpart childSubpart : subpart.getChildSubparts()) {
             exportSubpart(subpartElement.addElement("subpart"), childSubpart, session);
         }
     }
@@ -336,8 +329,7 @@ public class CourseOfferingExport extends BaseExport {
         classElement.addAttribute("cancelled", clazz.isCancelled() ? "true" : "false");
         if (clazz.getNbrRooms() != 1)
         	classElement.addAttribute("nbrRooms", clazz.getNbrRooms().toString());
-        for (Iterator i=clazz.getChildClasses().iterator();i.hasNext();) {
-            Class_ childClazz = (Class_)i.next();
+        for (Class_ childClazz : clazz.getChildClasses()) {
             exportClass(classElement.addElement("class"), childClazz, session);
         }
         if (clazz.getManagingDept() != null && !clazz.getManagingDept().equals(clazz.getControllingDept()))
@@ -349,9 +341,10 @@ public class CourseOfferingExport extends BaseExport {
                 exportArrHours(classElement, clazz, session);
             }
         }
+        if (ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue()  && clazz.getFundingDept() != null)
+        	classElement.addAttribute("fundingDepartment", clazz.getManagingDept().getDeptCode());
         if (clazz.isDisplayInstructor())
-            for (Iterator i=clazz.getClassInstructors().iterator();i.hasNext();) {
-                ClassInstructor instructor = (ClassInstructor)i.next();
+            for (ClassInstructor instructor : clazz.getClassInstructors()) {
                 if (instructor.getInstructor().getExternalUniqueId()!=null)
                     exportInstructor(classElement.addElement("instructor"), instructor, session);
             }
@@ -423,8 +416,7 @@ public class CourseOfferingExport extends BaseExport {
     }
     
     protected void exportRooms(Element classElement, Assignment assignment, Session session) {
-        for (Iterator i=assignment.getRooms().iterator();i.hasNext();) {
-            Location location = (Location)i.next();
+        for (Location location : assignment.getRooms()) {
             if (location instanceof Room) {
                 Room room = (Room)location;
                 Element roomElement = classElement.addElement("room");
@@ -495,9 +487,9 @@ public class CourseOfferingExport extends BaseExport {
         }
     }
     
-    protected void exportRequiredRooms(Element classElement, Class_ clazz, Session session) {
-        for (Iterator i=clazz.getEffectiveRoomPreferences().iterator();i.hasNext();) {
-            RoomPref rp = (RoomPref)i.next();
+    @SuppressWarnings("unchecked")
+	protected void exportRequiredRooms(Element classElement, Class_ clazz, Session session) {
+        for (RoomPref rp : (Set<RoomPref>) clazz.getEffectiveRoomPreferences()) {
             if (PreferenceLevel.sRequired.equals(rp.getPrefLevel().getPrefProlog())) {
                 if (rp.getRoom() instanceof Room) {
                     Room room = (Room)rp.getRoom();
@@ -533,7 +525,8 @@ public class CourseOfferingExport extends BaseExport {
         if (exam.getMaxNbrRooms() != null && !exam.getMaxNbrRooms().equals(iDefaultMaxNbrRooms))
         	examElement.addAttribute("maxRooms", String.valueOf(exam.getMaxNbrRooms()));
         Map<Long, Element> courseElements = new HashMap<Long, Element>();
-        for (Iterator i=exam.getOwnerObjects().iterator();i.hasNext();) {
+        for (@SuppressWarnings("unchecked")
+		Iterator<Object> i=exam.getOwnerObjects().iterator();i.hasNext();) {
             Object owner = (Object)i.next();
             if (owner instanceof Class_) {
                 Class_ clazz = (Class_)owner;
@@ -602,8 +595,7 @@ public class CourseOfferingExport extends BaseExport {
             	}
             }
         }
-        for (Iterator i=exam.getInstructors().iterator();i.hasNext();) {
-            DepartmentalInstructor instructor = (DepartmentalInstructor)i.next();
+        for (DepartmentalInstructor instructor : exam.getInstructors()) {
             if (instructor.getExternalUniqueId()!=null)
                 exportInstructor(examElement.addElement("instructor"), instructor, session);
         }
@@ -612,8 +604,7 @@ public class CourseOfferingExport extends BaseExport {
             periodElement.addAttribute("date", sDateFormat.format(exam.getAssignedPeriod().getStartDate()));
             periodElement.addAttribute("startTime", sTimeFormat.format(exam.getStartTime(exam.getAssignedPeriod())));
             periodElement.addAttribute("endTime", sTimeFormat.format(exam.getEndTime(exam.getAssignedPeriod())));
-            for (Iterator i=exam.getAssignedRooms().iterator();i.hasNext();) {
-                Location location = (Location)i.next();
+            for (Location location : exam.getAssignedRooms()) {
                 if (location instanceof Room) {
                     Room room = (Room)location;
                     Element roomElement = examElement.addElement("room");

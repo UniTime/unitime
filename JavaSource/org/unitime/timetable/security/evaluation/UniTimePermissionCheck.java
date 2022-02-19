@@ -44,6 +44,9 @@ import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.authority.Filter;
+import org.unitime.timetable.security.authority.OtherAuthority;
+import org.unitime.timetable.security.authority.RoleFilter;
 import org.unitime.timetable.security.permissions.Permission;
 import org.unitime.timetable.security.permissions.Permission.PermissionDepartment;
 import org.unitime.timetable.security.permissions.Permission.PermissionSession;
@@ -315,13 +318,12 @@ public class UniTimePermissionCheck implements PermissionCheck, InitializingBean
 	}
 
 	@Override
-	public void checkPermissionAnyAuthority(UserContext user, Serializable targetId, String targetType, Right right, Qualifiable... filter) throws AccessDeniedException {
+	public void checkPermission(UserContext user, Serializable targetId, String targetType, Right right, OtherAuthority other) throws AccessDeniedException {
 		if (user == null)
 			throw new AccessDeniedException(MSG.noAuthentication(right == null ? "NULL" : right.toString()));
 		AccessDeniedException ret = null;
-		authorities: for (UserAuthority authority: user.getAuthorities()) {
-			for (Qualifiable q: filter)
-				if (!authority.hasQualifier(q)) continue authorities;
+		for (UserAuthority authority: user.getAuthorities()) {
+			if (!other.isMatch(authority)) continue;
 			try {
 				checkPermission(new UserContextWrapper(user, authority), targetId, targetType, right);
 				return;
@@ -333,13 +335,12 @@ public class UniTimePermissionCheck implements PermissionCheck, InitializingBean
 	}
 
 	@Override
-	public void checkPermissionAnyAuthority(UserContext user, Object targetObject, Right right, Qualifiable... filter) throws AccessDeniedException {
+	public void checkPermission(UserContext user, Object targetObject, Right right, OtherAuthority other) throws AccessDeniedException {
 		if (user == null)
 			throw new AccessDeniedException(MSG.noAuthentication(right == null ? "NULL" : right.toString()));
 		AccessDeniedException ret = null;
-		authorities: for (UserAuthority authority: user.getAuthorities()) {
-			for (Qualifiable q: filter)
-				if (!authority.hasQualifier(q)) continue authorities;
+		for (UserAuthority authority: user.getAuthorities()) {
+			if (!other.isMatch(authority)) continue;
 			try {
 				checkPermission(new UserContextWrapper(user, authority), targetObject, right);
 				return;
@@ -348,6 +349,16 @@ public class UniTimePermissionCheck implements PermissionCheck, InitializingBean
 			}
 		}
 		throw (ret != null ? ret : new AccessDeniedException(MSG.noMatchingAuthority(right.toString())));
+	}
+	
+	@Override
+	public void checkPermissionAnyAuthority(UserContext user, Serializable targetId, String targetType, Right right, Qualifiable... filter) throws AccessDeniedException {
+		checkPermission(user, targetId, targetType, right, new Filter(filter));
+	}
+
+	@Override
+	public void checkPermissionAnyAuthority(UserContext user, Object targetObject, Right right, Qualifiable... filter) throws AccessDeniedException {
+		checkPermission(user, targetObject, right, new Filter(filter));
 	}
 	
 	@Override
@@ -357,19 +368,7 @@ public class UniTimePermissionCheck implements PermissionCheck, InitializingBean
 		if (user.getCurrentAuthority() == null)
 			throw new AccessDeniedException(MSG.noAuthority(right == null ? "NULL" : right.toString()));
 		String role = user.getCurrentAuthority().getRole();
-		AccessDeniedException ret = null;
-		authorities: for (UserAuthority authority: user.getAuthorities()) {
-			if (!role.equals(authority.getRole())) continue authorities;
-			for (Qualifiable q: filter)
-				if (!authority.hasQualifier(q)) continue authorities;
-			try {
-				checkPermission(new UserContextWrapper(user, authority), targetId, targetType, right);
-				return;
-			} catch (AccessDeniedException e) {
-				if (ret == null) ret = e;
-			}
-		}
-		throw (ret != null ? ret : new AccessDeniedException(MSG.noMatchingAuthority(right.toString())));
+		checkPermission(user, targetId, targetType, right, new RoleFilter(role, filter));
 	}
 
 	@Override
@@ -379,21 +378,9 @@ public class UniTimePermissionCheck implements PermissionCheck, InitializingBean
 		if (user.getCurrentAuthority() == null)
 			throw new AccessDeniedException(MSG.noAuthority(right == null ? "NULL" : right.toString()));
 		String role = user.getCurrentAuthority().getRole();
-		AccessDeniedException ret = null;
-		authorities: for (UserAuthority authority: user.getAuthorities()) {
-			if (!role.equals(authority.getRole())) continue authorities;
-			for (Qualifiable q: filter)
-				if (!authority.hasQualifier(q)) continue authorities;
-			try {
-				checkPermission(new UserContextWrapper(user, authority), targetObject, right);
-				return;
-			} catch (AccessDeniedException e) {
-				if (ret == null) ret = e;
-			}
-		}
-		throw (ret != null ? ret : new AccessDeniedException(MSG.noMatchingAuthority(right.toString())));
+		checkPermission(user, targetObject, right, new RoleFilter(role, filter));
 	}
-	
+
 	@Override
     public boolean hasPermission(UserContext user, Serializable targetId, String targetType, Right right) {
 		if (user == null || user.getCurrentAuthority() == null) return false;
@@ -544,53 +531,47 @@ public class UniTimePermissionCheck implements PermissionCheck, InitializingBean
 	}
 	
 	@Override
-	public boolean hasPermissionAnyAuthority(UserContext user, Serializable targetId, String targetType, Right right, Qualifiable... filter) {
+	public boolean hasPermission(UserContext user, Serializable targetId, String targetType, Right right, OtherAuthority other) {
 		if (user == null) return false;
-		authorities: for (UserAuthority authority: user.getAuthorities()) {
-			for (Qualifiable q: filter)
-				if (!authority.hasQualifier(q)) continue authorities;
-			if (hasPermission(new UserContextWrapper(user, authority), targetId, targetType, right)) return true;
+		for (UserAuthority authority: user.getAuthorities()) {
+			if (other.isMatch(authority) && hasPermission(new UserContextWrapper(user, authority), targetId, targetType, right)) return true;
 		}
 		return false;
 	}
 
 	@Override
-	public boolean hasPermissionAnyAuthority(UserContext user, Object targetObject, Right right, Qualifiable... filter) throws AccessDeniedException {
+	public boolean hasPermission(UserContext user, Object targetObject, Right right, OtherAuthority other) throws AccessDeniedException {
 		if (user == null) return false;
-		authorities: for (UserAuthority authority: user.getAuthorities()) {
-			for (Qualifiable q: filter)
-				if (!authority.hasQualifier(q)) continue authorities;
-			if (hasPermission(new UserContextWrapper(user, authority), targetObject, right)) return true;
+		for (UserAuthority authority: user.getAuthorities()) {
+			if (other.isMatch(authority) && hasPermission(new UserContextWrapper(user, authority), targetObject, right)) return true;
 		}
 		return false;
+	}
+	
+	@Override
+	public boolean hasPermissionAnyAuthority(UserContext user, Serializable targetId, String targetType, Right right, Qualifiable... filter) {
+		return hasPermission(user, targetId, targetType, right, new Filter(filter));
+	}
+
+	@Override
+	public boolean hasPermissionAnyAuthority(UserContext user, Object targetObject, Right right, Qualifiable... filter) throws AccessDeniedException {
+		return hasPermission(user, targetObject, right, new Filter(filter));
 	}
 
 	@Override
 	public boolean hasPermissionAnySession(UserContext user, Serializable targetId, String targetType, Right right, Qualifiable... filter) {
 		if (user == null || user.getCurrentAuthority() == null) return false;
 		String role = user.getCurrentAuthority().getRole();
-		authorities: for (UserAuthority authority: user.getAuthorities()) {
-			if (!role.equals(authority.getRole())) continue authorities;
-			for (Qualifiable q: filter)
-				if (!authority.hasQualifier(q)) continue authorities;
-			if (hasPermission(new UserContextWrapper(user, authority), targetId, targetType, right)) return true;
-		}
-		return false;
+		return hasPermission(user, targetId, targetType, right, new RoleFilter(role, filter));
 	}
 
 	@Override
 	public boolean hasPermissionAnySession(UserContext user, Object targetObject, Right right, Qualifiable... filter) throws AccessDeniedException {
 		if (user == null || user.getCurrentAuthority() == null) return false;
 		String role = user.getCurrentAuthority().getRole();
-		authorities: for (UserAuthority authority: user.getAuthorities()) {
-			if (!role.equals(authority.getRole())) continue authorities;
-			for (Qualifiable q: filter)
-				if (!authority.hasQualifier(q)) continue authorities;
-			if (hasPermission(new UserContextWrapper(user, authority), targetObject, right)) return true;
-		}
-		return false;
+		return hasPermission(user, targetObject, right, new RoleFilter(role, filter));
 	}
-	
+
 	public static class UserContextWrapper implements UserContext {
 		private static final long serialVersionUID = 1L;
 		UserAuthority iAuthority;

@@ -208,6 +208,12 @@
             column="snapshot_limit_date"
             type="java.sql.Timestamp"
             not-null="false"/>
+
+        <property
+            name="waitlist"
+            column="waitlist"
+            type="java.lang.Boolean"
+            not-null="false"/>
             
 	</class>
 	

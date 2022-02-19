@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import org.infinispan.Cache;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.unitime.commons.Debug;
 import org.unitime.timetable.solver.jgroups.SolverContainer;
 
 /**
@@ -34,62 +35,83 @@ import org.unitime.timetable.solver.jgroups.SolverContainer;
  */
 public final class MemoryCounter {
 	public static final MemorySizes sSizes = new MemorySizes();
-	private final Map iVisited = new IdentityHashMap();
-	private final Stack iStack = new Stack();
-
+	private Map iVisited = new IdentityHashMap();
+	private Stack iStack = new Stack();
+	
+	public MemoryCounter() {}
+	
 	public synchronized long estimate(Object obj) {
-		assert iVisited.isEmpty();
-		assert iStack.isEmpty();
-		long result = _estimate(obj);
-		while (!iStack.isEmpty()) {
-			result += _estimate(iStack.pop());
+		try {
+			return new MemoryCounter().deepSizeOfObject(obj);
+		} catch (Throwable t) {
+			Debug.error("Failed to estimate size of " + obj.getClass().getSimpleName() + ": " + t.getMessage(), t);
+			return 0;
 		}
-		iVisited.clear();
-		return result;
 	}
-
+	
 	private boolean skipObject(Object obj) {
-		if (obj instanceof String) {
-			// this will not cause a memory leak since
-			// unused interned Strings will be thrown away
-			if (obj == ((String) obj).intern()) {
-				return true;
-			}
-		}
+		if ((obj instanceof String) && (obj == ((String) obj).intern())) return true;
 		if (obj instanceof Marshaller || obj instanceof EmbeddedCacheManager || obj instanceof Thread || obj instanceof Log || obj instanceof Logger || obj instanceof SolverContainer) return true;
 		return (obj == null) || iVisited.containsKey(obj);
 	}
 
-	private long _estimate(Object obj) {
-		if (skipObject(obj))
+	private static long roundUpToNearestEightBytes(long result) {
+		if ((result % 8) != 0) {
+			result += 8 - (result % 8);
+		}
+		return result;
+	}
+
+	public long deepSizeOfObject(Object obj) {
+		try {
+			long result = deepSizeOf(obj);
+			while (!iStack.isEmpty()) {
+				result += deepSizeOf(iStack.pop());
+			}
+			return result;
+		} catch (Throwable e) {
+			Debug.error("Unable to estimate size of " + obj.getClass().getSimpleName() + ": " + e.getMessage(), e);
 			return 0;
+		}
+	}
+	
+	private long deepSizeOf(Object obj) {
+		if (skipObject(obj)) return 0;
 		if (obj instanceof Cache) {
-			return _estimate(((Cache)obj).getAdvancedCache().getDataContainer().entrySet().toArray());
+			return deepSizeOf(((Cache)obj).getAdvancedCache().getDataContainer().entrySet().toArray());
 		}
 		iVisited.put(obj, null);
-		long result = 0;
 		Class clazz = obj.getClass();
 		if (clazz.isArray()) {
-			return _estimateArray(obj);
+			long result = 16;
+			int length = Array.getLength(obj);
+			if (length != 0) {
+				Class arrayElementClazz = obj.getClass().getComponentType();
+				if (arrayElementClazz.isPrimitive()) {
+					result += length * sSizes.getPrimitiveArrayElementSize(arrayElementClazz);
+				} else {
+					for (int i = 0; i < length; i++) {
+						result += sSizes.getPointerSize() + deepSizeOf(Array.get(obj, i));
+					}
+				}
+			}
+			return result;
 		}
+		long result = 0;		
 		while (clazz != null) {
 			Field[] fields = clazz.getDeclaredFields();
 			for (int i = 0; i < fields.length; i++) {
-				if (!Modifier.isStatic(fields[i].getModifiers())) {
-					if (fields[i].getType().isPrimitive()) {
-						result += sSizes.getPrimitiveFieldSize(fields[i]
-								.getType());
-					} else {
-						result += sSizes.getPointerSize();
-						fields[i].setAccessible(true);
-						try {
-							Object toBeDone = fields[i].get(obj);
-							if (toBeDone != null) {
-								iStack.add(toBeDone);
-							}
-						} catch (IllegalAccessException ex) {
-							assert false;
-						}
+				for (Field f : clazz.getDeclaredFields()) {
+		            if (!Modifier.isStatic(f.getModifiers())) { //skip statics
+		            	if (f.getType().isPrimitive()) {
+		            		result += sSizes.getPrimitiveFieldSize(f.getType());
+		            	} else {
+		            		result += sSizes.getPointerSize();
+		            		long offset = UtilUnsafe.UNSAFE.objectFieldOffset(f);
+							Object tempObject = UtilUnsafe.UNSAFE.getObject(obj, offset);
+							if (tempObject != null)
+								iStack.add(tempObject);
+		            	}
 					}
 				}
 			}
@@ -98,45 +120,19 @@ public final class MemoryCounter {
 		result += sSizes.getClassSize();
 		return roundUpToNearestEightBytes(result);
 	}
-
-	private long roundUpToNearestEightBytes(long result) {
-		if ((result % 8) != 0) {
-			result += 8 - (result % 8);
-		}
-		return result;
-	}
-
-	protected long _estimateArray(Object obj) {
-		long result = 16;
-		int length = Array.getLength(obj);
-		if (length != 0) {
-			Class arrayElementClazz = obj.getClass().getComponentType();
-			if (arrayElementClazz.isPrimitive()) {
-				result += length
-						* sSizes.getPrimitiveArrayElementSize(arrayElementClazz);
-			} else {
-				for (int i = 0; i < length; i++) {
-					result += sSizes.getPointerSize()
-							+ _estimate(Array.get(obj, i));
-				}
-			}
-		}
-		return result;
-	}
-
+	
 	public static class MemorySizes {
 		private final Map primitiveSizes = new IdentityHashMap() {
 			private static final long serialVersionUID = 1L;
-
 			{
-				put(boolean.class, new Integer(1));
-				put(byte.class, new Integer(1));
-				put(char.class, new Integer(2));
-				put(short.class, new Integer(2));
-				put(int.class, new Integer(4));
-				put(float.class, new Integer(4));
-				put(double.class, new Integer(8));
-				put(long.class, new Integer(8));
+				put(boolean.class, 1);
+				put(byte.class, 1);
+				put(char.class, 2);
+				put(short.class, 2);
+				put(int.class, 4);
+				put(float.class, 4);
+				put(double.class, 8);
+				put(long.class, 8);
 			}
 		};
 
@@ -155,5 +151,22 @@ public final class MemoryCounter {
 		public int getClassSize() {
 			return 8;
 		}
+	}
+	
+	static class UtilUnsafe {
+		public static final sun.misc.Unsafe UNSAFE;
+		static {
+			Object theUnsafe = null;
+			Exception exception = null;
+			try {
+	            Class<?> uc = Class.forName("sun.misc.Unsafe");
+	            Field f = uc.getDeclaredField("theUnsafe");
+	            f.setAccessible(true);
+	            theUnsafe = f.get(uc);
+	        } catch (Exception e) { exception = e; }
+	        UNSAFE = (sun.misc.Unsafe) theUnsafe;
+	        if (UNSAFE == null) throw new Error("Could not obtain access to sun.misc.Unsafe", exception);
+	    }
+	    private UtilUnsafe() { }
 	}
 }

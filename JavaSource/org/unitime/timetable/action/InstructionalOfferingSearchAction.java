@@ -152,6 +152,7 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 		    	sessionContext.getUser().setProperty("InstructionalOfferingList.exams", (frm.getExams() == null ? "0" : frm.getExams() ? "1" : "0"));
 		    	sessionContext.getUser().setProperty("InstructionalOfferingList.instructorAssignment", (frm.getInstructorAssignment() == null ? "0" : frm.getInstructorAssignment() ? "1" : "0"));
 		    	sessionContext.getUser().setProperty("InstructionalOfferingList.lms", (frm.getLms() == null ? "0" : frm.getLms() ? "1" : "0"));
+		    	sessionContext.getUser().setProperty("InstructionalOfferingList.waitlist", (frm.getWaitlist() == null ? null : frm.getWaitlist()));
 		    	sessionContext.getUser().setProperty("InstructionalOfferingList.consent", frm.getConsent() ? "1" : "0");
 		    	sessionContext.getUser().setProperty("InstructionalOfferingList.sortBy", frm.getSortBy());
 		    }
@@ -221,7 +222,7 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
                         frm.getSubjectAreaIds(), 
                         sessionContext,  
                         true, 
-                        frm.getCourseNbr()==null || frm.getCourseNbr().length()==0);
+                        frm.areAllCoursesGiven());
             
             out.flush(); out.close();
             
@@ -251,7 +252,7 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
                         frm.getSubjectAreaIds(), 
                         sessionContext,  
                         true, 
-                        frm.getCourseNbr()==null || frm.getCourseNbr().length()==0);
+                        frm.areAllCoursesGiven());
             
             out.flush(); out.close();
             
@@ -285,6 +286,10 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 		frm.setExams("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.exams", "0")));
 		frm.setInstructorAssignment("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.instructorAssignment", "0")));
 		frm.setLms("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.lms", "0")));
+		if (ApplicationProperty.OfferingWaitListShowFilter.isTrue())
+			frm.setWaitlist(sessionContext.getUser().getProperty("InstructionalOfferingList.waitlist", "A"));
+		else
+			frm.setWaitlist(null);
 	}
 	
 	
@@ -310,7 +315,7 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
         	
         	OutputStream out = ExportUtils.getPdfOutputStream(response, "worksheet");
         	
-            PdfWorksheet.print(out, subjectAreas, frm.getCourseNbr());
+            PdfWorksheet.print(out, subjectAreas, frm.getCourseNbr(), frm.getWaitlist());
             
             out.flush(); out.close();
 
@@ -332,7 +337,7 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
         Map<Long, TreeSet<InstructionalOffering>> map = new Hashtable<Long, TreeSet<InstructionalOffering>>();
         for (String subjectAreaId: form.getSubjectAreaIds()) {
         	TreeSet<InstructionalOffering> ts = InstructionalOffering.search(sessionId, Long.valueOf(subjectAreaId), form.getCourseNbr(),
-        			fetchStructure, fetchCredits, fetchInstructors, fetchPreferences, fetchAssignments, fetchReservations);
+        			fetchStructure, fetchCredits, fetchInstructors, fetchPreferences, fetchAssignments, fetchReservations, form.getWaitlist());
         	if (ts.isEmpty()) continue;
         	map.put(Long.valueOf(subjectAreaId), ts);
         	

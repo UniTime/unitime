@@ -27,6 +27,7 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.unitime.timetable.reports.AbstractReport.Line;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfFont;
 
@@ -39,7 +40,7 @@ import com.lowagie.text.pdf.PdfWriter;
 /**
  * @author Tomas Muller
  */
-public class PdfLegacyReport {
+public class PdfLegacyReport implements ReportWriter {
     protected int iNrChars = 133;
     protected int iNrLines = 50;
     private OutputStream iOut = null;
@@ -54,6 +55,9 @@ public class PdfLegacyReport {
     private String iCont = null;
     private String iHeader[] = null;
     private String iFooter = null;
+    private Line iHeaderLine[] = null;
+    private int iMode = sModeNormal;
+    private Listener iListner;
     
     private boolean iEmpty = true;
     
@@ -66,8 +70,9 @@ public class PdfLegacyReport {
         iTitle2 = title2;
         iSubject = subject;
         iSession = session;
+        iMode = mode;
         
-        if (file!=null) open(new FileOutputStream(file), mode);
+        if (file!=null) open(new FileOutputStream(file));
     }
     
     public PdfLegacyReport(int mode, OutputStream out, String title, String title2, String subject, String session) throws IOException, DocumentException{
@@ -75,21 +80,28 @@ public class PdfLegacyReport {
         iTitle2 = title2;
         iSubject = subject;
         iSession = session;
+        iMode = mode;
         
-        if (out!=null) open(out, mode);
+        if (out!=null) open(out);
     }
     
     public void open(File file, int mode) throws DocumentException, IOException {
-    	open(new FileOutputStream(file), mode);
+    	iMode = mode;
+    	open(new FileOutputStream(file));
     }
     
     public void open(OutputStream out, int mode) throws DocumentException, IOException {
+    	iMode = mode;
+    	open(out);
+    }
+    
+    public void open(OutputStream out) throws DocumentException, IOException {
         iOut = out;
-        if (mode==sModeText) {
+        if (iMode==sModeText) {
             iPrint = new PrintWriter(iOut);
         } else {
-            iNrLines = (mode==sModeLedger?116:50);
-            iDoc = new Document(mode==sModeLedger?PageSize.LEDGER.rotate():PageSize.LETTER.rotate());
+            iNrLines = (iMode==sModeLedger?116:50);
+            iDoc = new Document(iMode==sModeLedger?PageSize.LEDGER.rotate():PageSize.LETTER.rotate());
 
             PdfWriter.getInstance(iDoc, iOut);
 
@@ -104,22 +116,32 @@ public class PdfLegacyReport {
         iPageNo = 0; iLineNo = 0;
     }
     
-    protected void setPageName(String pageName) {
+    @Override
+    public void setPageName(String pageName) {
         iPageId = pageName;
     }
     
-    protected void setCont(String cont) {
+    @Override
+    public void setCont(String cont) {
         iCont = cont;
     }
     
-    protected void setHeader(String[] header) {
+    public void setHeader(String[] header) {
         iHeader = header;
     }
-    protected String[] getHeader() {
-        return iHeader;
+    
+    @Override
+    public void setHeader(Line... line) {
+    	iHeaderLine = line;
     }
     
-    protected void setFooter(String footer) {
+    @Override
+    public Line[] getHeader() {
+        return iHeaderLine;
+    }
+    
+    @Override
+    public void setFooter(String footer) {
         iFooter = footer;
     }
     
@@ -138,23 +160,27 @@ public class PdfLegacyReport {
         out(rep(ch,iNrChars));
     }
     
-    protected String lpad(String s, char ch, int len) {
+    public String lpad(String s, char ch, int len) {
+        if (s==null) s="";
+        if (s.length()>len) return s.substring(0,len);
         while (s.length()<len) s = ch + s;
         return s;
     }
     
-    protected String lpad(String s, int len) {
+    public String lpad(String s, int len) {
         if (s==null) s="";
         if (s.length()>len) return s.substring(0,len);
         return lpad(s,' ',len);
     }
 
     protected String rpad(String s, char ch, int len) {
+        if (s==null) s="";
+        if (s.length()>len) return s.substring(0,len);
         while (s.length()<len) s = s + ch;
         return s;
     }
     
-    protected String rpad(String s, int len) {
+    public String rpad(String s, int len) {
         if (s==null) s="";
         if (s.length()>len) return s.substring(0,len);
         return rpad(s,' ',len);
@@ -168,7 +194,7 @@ public class PdfLegacyReport {
         return s;
     }
 
-    protected String mpad(String s, int len) {
+    public String mpad(String s, int len) {
         return mpad(s,' ',len);
     }
     
@@ -190,24 +216,29 @@ public class PdfLegacyReport {
 
     protected String renderEnd(String line, String s) {
         return render(line, s, iNrChars-s.length());
-    }    
-    
-    public void printHeader() throws DocumentException {
-        out(renderEnd(
-                renderMiddle("UniTime "+Constants.getVersion(),iTitle),
-                iTitle2));
-        out(mpad(
-                new SimpleDateFormat("EEE MMM dd, yyyy").format(new Date()),
-                iSession,' ',iNrChars));
-        outln('=');
-        iLineNo=0;
-        if (iCont!=null && iCont.length()>0)
-            println("("+iCont+" Continued)");
-        if (iHeader!=null) for (int i=0;i<iHeader.length;i++) println(iHeader[i]);
-        headerPrinted();
     }
     
-    protected void headerPrinted() {};
+    public void printHeader() throws DocumentException {
+    	printHeader(true);
+    }
+    
+    public void printHeader(boolean newPage) throws DocumentException {
+    	if (newPage) {
+            out(renderEnd(
+                    renderMiddle("UniTime "+Constants.getVersion(),iTitle),
+                    iTitle2));
+            out(mpad(
+                    new SimpleDateFormat("EEE MMM dd, yyyy").format(new Date()),
+                    iSession,' ',iNrChars));
+            outln('=');
+            iLineNo=0;
+            if (iCont!=null && iCont.length()>0)
+                println("("+iCont+" Continued)");
+    	}
+        if (iHeader!=null) for (int i=0;i<iHeader.length;i++) println(iHeader[i]);
+        if (iHeaderLine != null) for (int i=0;i<iHeaderLine.length;i++) printLine(iHeaderLine[i]);
+        if (iListner != null) iListner.headerPrinted();
+    }
     
     protected void printFooter() throws DocumentException {
         iEmpty=false;
@@ -231,7 +262,8 @@ public class PdfLegacyReport {
         printFooter();
     }
     
-    protected void newPage() throws DocumentException {
+    @Override
+    public void newPage() throws DocumentException {
         while (iLineNo<iNrLines) {
             out(""); iLineNo++;
         }
@@ -248,7 +280,11 @@ public class PdfLegacyReport {
         return iLineNo;
     }
     
-    protected void println(String text) throws DocumentException {
+    public int getNrLinesPerPage() {
+    	return iNrLines;
+    }
+    
+    public void println(String text) throws DocumentException {
         out(text);
         iLineNo++;
         if (iLineNo>=iNrLines) newPage();
@@ -267,4 +303,38 @@ public class PdfLegacyReport {
             iOut.close();
         }
     }
+    
+    public int getNrCharsPerLine() {
+    	return iNrChars;
+    }
+    
+	@Override
+	public void printLine(Line line) throws DocumentException {
+		println(line.render());
+	}
+
+	@Override
+	public void printSeparator(Line line) throws DocumentException {
+		if (line != null) {
+			printLine(line);
+		} else {
+			if (iHeader != null && iHeader.length > 0)
+				println(iHeader[iHeader.length - 1]);
+			if (iHeaderLine != null && iHeaderLine.length > 0)
+				printLine(iHeaderLine[iHeaderLine.length - 1]);
+		}
+	}
+
+	@Override
+	public int getSeparatorNrLines() {
+		return 1;
+	}
+
+	@Override
+	public void setListener(Listener listener) {
+		iListner = listener;
+	}
+	
+	@Override
+	public boolean isSkipRepeating() { return true; }
 }

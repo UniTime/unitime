@@ -24,6 +24,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -191,6 +192,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 	public static String getHTML(OnlineSectioningLog.Action action) {
 		DateFormat df = Localization.getDateFormat(CONST.timeStampFormat());
 		NumberFormat nf = Localization.getNumberFormat(CONST.executionTimeFormat());
+		DateFormat rf = Localization.getDateFormat(CONST.requestDateFormat());
 		String html = "<table class='unitime-ChangeLog'>";
 		html += "<tr><td class='unitime-MainTableHeader' colspan='2'>General</td></tr>";
 		html += "<tr><td><b>" + MSG.colOperation() + ":</b></td><td>" + Constants.toInitialCase(action.getOperation().replace('-', ' ')) + "</td></tr>";
@@ -235,23 +237,31 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 			html += "<tr><td colspan='2'><table cellspacing='0' cellpadding='2'>" +
 					"<td class='unitime-TableHeader'>" + MSG.colPriority() + "</td>" +
 					"<td class='unitime-TableHeader'>" + MSG.colCourse() + "</td>" +
-					"<td class='unitime-TableHeader'>" + MSG.colPreferences() + "</td></tr>";
+					"<td class='unitime-TableHeader'>" + MSG.colPreferences() + "</td>" +
+					"<td class='unitime-TableHeader'>" + MSG.colCritical() + "</td>" +
+					"<td class='unitime-TableHeader'>" + MSG.colWaitList() + "</td>" +
+					"<td class='unitime-TableHeader'>" + MSG.colRequestTimeStamp() + "</td></tr>";
 		}
 		int notAlt = 0, lastFT = -1;
+		String creditNote = null;
 		for (OnlineSectioningLog.Request r: action.getRequestList()) {
 			if (!r.getAlternative()) notAlt = r.getPriority() + 1;
 			int idx = 0;
 			for (OnlineSectioningLog.Time f: r.getFreeTimeList()) {
 				if (idx == 0) {
 					html += (r.getPriority() > 0 && lastFT != r.getPriority() ? "<tr><td class='top-border-dashed'>" : "<tr><td>") + (lastFT == r.getPriority() ? "" : !r.getAlternative() ? MSG.courseRequestsPriority(1 + r.getPriority()) : MSG.courseRequestsAlternate(1 + r.getPriority() - notAlt)) + "</td>";
-					html += (r.getPriority() > 0 && lastFT != r.getPriority() ?"<td class='top-border-dashed' colspan='2'>":"<td colspan='2'>") + CONST.freePrefix() + " ";
+					html += (r.getPriority() > 0 && lastFT != r.getPriority() ?"<td class='top-border-dashed' colspan='4'>":"<td colspan='4'>") + CONST.freePrefix() + " ";
 				} else {
 					html += ", ";
 				}
 				idx++;
 				html += DayCode.toString(f.getDays()) + " "  + time(f.getStart()) + " - " + time(f.getStart() + f.getLength());
-				html += "</td></tr>";
 				lastFT = r.getPriority();
+			}
+			if (r.getFreeTimeCount() > 0) {
+				html += (r.getPriority() > 0 ? "</td><td class='top-border-dashed'>" : "</td><td>" );
+				html += (r.hasTimeStamp() ? rf.format(new Date(r.getTimeStamp())) : "");
+				html += "</td></tr>";
 			}
 			if (r.getFreeTimeList().isEmpty())
 				for (OnlineSectioningLog.Entity e: r.getCourseList()) {
@@ -261,17 +271,103 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					} else {
 						html += "<tr><td></td><td>";
 					}
-					idx++;
 					html += e.getName();
-					html += (r.getPriority() > 0 && idx == 1 ? "</td><td class='top-border-dashed'>" : "</td><td>" );
-					for (int i = 0; i < e.getParameterCount(); i++)
+					html += (r.getPriority() > 0 && idx == 0 ? "</td><td class='top-border-dashed'>" : "</td><td>" );
+					for (int i = 0; i < e.getParameterCount(); i++) {
+						if ("credit_note".equals(e.getParameter(i).getKey())) {
+							creditNote = e.getParameter(i).getValue();
+							continue;
+						}
 						html += (i > 0 ? ", " : "") + e.getParameter(i).getValue();
+					}
+					html += (r.getPriority() > 0 && idx == 0 ? "</td><td class='top-border-dashed'>" : "</td><td>" );
+					html += (idx == 0 && r.getCritical() ? MSG.opSetCritical() : idx == 0 && r.getImportant() ? MSG.opSetImportant() : "");
+					html += (r.getPriority() > 0 && idx == 0 ? "</td><td class='top-border-dashed'>" : "</td><td>" );
+					html += (idx == 0 && r.getWaitList() && r.hasWaitlistedTimeStamp() ? df.format(new Date(r.getWaitlistedTimeStamp())) :
+						idx == 0 && r.getWaitList() ? MSG.courseWaitListed() : idx == 0 && r.getNoSubs() ? MSG.courseNoSubs() : "");
+					html += (r.getPriority() > 0 && idx == 0 ? "</td><td class='top-border-dashed'>" : "</td><td>" );
+					html += (idx == 0 && r.hasTimeStamp() ? rf.format(new Date(r.getTimeStamp())) : "");
 					html += "</td></tr>";
+					idx++;
 				}
+		}
+		if (creditNote != null && !creditNote.isEmpty()) {
+			html += "<tt><td class='top-border-dashed' colspan='6'>" + creditNote + "</td></tr>";	
 		}
 		if (!action.getRequestList().isEmpty()) {
 			html += "</table></td></tr>";
 		}
+		
+		if (!action.getRecommendationList().isEmpty()) {
+			html += "<tr><td class='unitime-MainTableHeader' colspan='2'>" + MSG.advisorRequestsCourses() + "</td></tr>";
+			html += "<tr><td colspan='2'><table cellspacing='0' cellpadding='2'>" +
+					"<td class='unitime-TableHeader'>" + MSG.colPriority() + "</td>" +
+					"<td class='unitime-TableHeader'>" + MSG.colCourse() + "</td>" +
+					"<td class='unitime-TableHeader'>" + MSG.colPreferences() + "</td>" +
+					"<td class='unitime-TableHeader'>" + MSG.colCredit() + "</td>" +
+					"<td class='unitime-TableHeader'>" + MSG.colNote() + "</td>" +
+					"<td class='unitime-TableHeader'>" + MSG.colCritical() + "</td>" +
+					"<td class='unitime-TableHeader'>" + MSG.colWaitList() + "</td></tr>";
+		}
+		notAlt = 0; lastFT = -1;
+		creditNote = null;
+		for (OnlineSectioningLog.Request r: action.getRecommendationList()) {
+			if (!r.getAlternative()) notAlt = r.getPriority() + 1;
+			int idx = 0;
+			for (OnlineSectioningLog.Time f: r.getFreeTimeList()) {
+				if (idx == 0) {
+					html += (r.getPriority() > 0 && lastFT != r.getPriority() ? "<tr><td class='top-border-dashed'>" : "<tr><td>") + (lastFT == r.getPriority() ? "" : !r.getAlternative() ? MSG.courseRequestsPriority(1 + r.getPriority()) : MSG.courseRequestsAlternate(1 + r.getPriority() - notAlt)) + "</td>";
+					html += (r.getPriority() > 0 && lastFT != r.getPriority() ?"<td class='top-border-dashed' colspan='4'>":"<td colspan='4'>") + CONST.freePrefix() + " ";
+				} else {
+					html += ", ";
+				}
+				idx++;
+				html += DayCode.toString(f.getDays()) + " "  + time(f.getStart()) + " - " + time(f.getStart() + f.getLength());
+				lastFT = r.getPriority();
+			}
+			if (r.getFreeTimeCount() > 0) {
+				html += "</td></tr>";
+			}
+			if (r.getFreeTimeList().isEmpty())
+				for (OnlineSectioningLog.Entity e: r.getCourseList()) {
+					if (idx == 0) {
+						html += (r.getPriority() > 0 ? "<tr><td class='top-border-dashed'>" : "<tr><td>") + (!r.getAlternative() ? MSG.courseRequestsPriority(1 + r.getPriority()) : MSG.courseRequestsAlternate(1 + r.getPriority() - notAlt)) + "</td>";
+						html += (r.getPriority() > 0 ?"<td class='top-border-dashed'>":"<td>");
+					} else {
+						html += "<tr><td></td><td>";
+					}
+					html += e.getName();
+					html += (r.getPriority() > 0 && idx == 0 ? "</td><td class='top-border-dashed'>" : "</td><td>" );
+					String credit = null, note = null;
+					int j = 0;
+					for (int i = 0; i < e.getParameterCount(); i++) {
+						if ("credit_note".equals(e.getParameter(i).getKey())) creditNote = e.getParameter(i).getValue();
+						else if ("credit".equals(e.getParameter(i).getKey())) credit = e.getParameter(i).getValue();
+						else if ("note".equals(e.getParameter(i).getKey())) note = e.getParameter(i).getValue();
+						else {
+							html += (j > 0 ? ", " : "") + e.getParameter(i).getValue();
+							j++;
+						}
+					}
+					html += (r.getPriority() > 0 && idx == 0 ? "</td><td class='top-border-dashed'>" : "</td><td>" );
+					if (credit != null) html += credit;
+					html += (r.getPriority() > 0 && idx == 0 ? "</td><td class='top-border-dashed'>" : "</td><td>" );
+					if (note != null) html += note;
+					html += (r.getPriority() > 0 && idx == 0 ? "</td><td class='top-border-dashed'>" : "</td><td>" );
+					html += (idx == 0 && r.getCritical() ? MSG.opSetCritical() : idx == 0 && r.getImportant() ? MSG.opSetImportant() : "");
+					html += (r.getPriority() > 0 && idx == 0 ? "</td><td class='top-border-dashed'>" : "</td><td>" );
+					html += (idx == 0 && r.getWaitList() ? MSG.courseWaitListed() : idx == 0 && r.getNoSubs() ? MSG.courseNoSubs() : "");
+					html += "</td></tr>";
+					idx++;
+				}
+		}
+		if (creditNote != null && !creditNote.isEmpty()) {
+			html += "<tr><td class='top-border-dashed' colspan='7'>" + creditNote + "</td></tr>";	
+		}
+		if (!action.getRecommendationList().isEmpty()) {
+			html += "</table></td></tr>";
+		}
+		
 		for (OnlineSectioningLog.Enrollment e: action.getEnrollmentList()) {
 			html += "<tr><td class='unitime-MainTableHeader' colspan='2'>"+ (e.hasType() ? Constants.toInitialCase(e.getType().name()) + " ": "") + MSG.enrollmentsTable() + "</td></tr>";
 			html += "<tr><td colspan='2'><table cellspacing='0' cellpadding='2'>" +
@@ -283,7 +379,8 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					"<td class='unitime-TableHeader'>" + MSG.colEnd() + "</td>" +
 					"<td class='unitime-TableHeader'>" + MSG.colDate() + "</td>" +
 					"<td class='unitime-TableHeader'>" + MSG.colRoom() + "</td>" +
-					"<td class='unitime-TableHeader'>" + MSG.colInstructor() + "</td></tr>";
+					"<td class='unitime-TableHeader'>" + MSG.colInstructor() + "</td>" +
+					"<td class='unitime-TableHeader'>" + MSG.colEnrollmentTimeStamp() + "</td></tr>";
 			for (OnlineSectioningLog.Section s: e.getSectionList()) {
 				if (!s.hasCourse()) continue;
 				String loc = "";
@@ -299,13 +396,15 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 				html += "<tr>" +
 						"<td>" + s.getCourse().getName() + "</td>" +
 						"<td>" + s.getSubpart().getName() + "</td>" +
-						"<td>" + s.getClazz().getName() + "</td>" +
-						"<td>" + (s.hasTime() ? DayCode.toString(s.getTime().getDays()) : "") + "</td>" +
+						"<td>" + s.getClazz().getName() + (s.getClazz().hasExternalId() && !s.getClazz().getExternalId().equals(s.getClazz().getName()) ? " - " + s.getClazz().getExternalId() : "") + "</td>" +
+						(!s.hasTime() || s.getTime().getDays() == 0 ? "<td colspan='3'>" + MSG.arrangeHours() + "</td>"
+						: "<td>" + (s.hasTime() ? DayCode.toString(s.getTime().getDays()) : MSG.arrangeHours()) + "</td>" +
 						"<td>" + (s.hasTime() ? time(s.getTime().getStart()) : "") + "</td>" +
-						"<td>" + (s.hasTime() ? time(s.getTime().getStart() + s.getTime().getLength()) : "") + "</td>" +
+						"<td>" + (s.hasTime() ? time(s.getTime().getStart() + s.getTime().getLength()) : "") + "</td>") +
 						"<td>" + (s.hasTime() && s.getTime().hasPattern() ? s.getTime().getPattern() : "") + "</td>" +
 						"<td>" + loc + "</td>" +
 						"<td>" + instr + "</td>" +
+						"<td>" + (s.hasTimeStamp() ? rf.format(new Date(s.getTimeStamp())) : "") + "</td>" + 
 						"</tr>";
 			}
 			html += "</table></td></tr>";
@@ -330,7 +429,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 	protected static String getRequestMessage(OnlineSectioningLog.Action action) {
 		String request = "";
 		int notAlt = 0, lastFT = -1;
-		for (OnlineSectioningLog.Request r: action.getRequestList()) {
+		for (OnlineSectioningLog.Request r: (action.getRequestCount() > 0 ? action.getRequestList() : action.getRecommendationList())) {
 			if (!r.getAlternative()) notAlt = r.getPriority() + 1;
 			int idx = 0;
 			for (OnlineSectioningLog.Time f: r.getFreeTimeList()) {
@@ -343,7 +442,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 				request += DayCode.toString(f.getDays()) + " "  + time(f.getStart()) + " - " + time(f.getStart() + f.getLength());
 				lastFT = r.getPriority();
 			}
-			if (r.getFreeTimeList().isEmpty())
+			if (r.getFreeTimeList().isEmpty()) {
 				for (OnlineSectioningLog.Entity e: r.getCourseList()) {
 					if (idx == 0) {
 						request += (request.isEmpty() ? "" : "\n") + (r.getAlternative() ? "A" + (1 + r.getPriority() - notAlt) : String.valueOf(1 + r.getPriority())) + ". ";
@@ -353,6 +452,9 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					idx++;
 					request += e.getName();
 				}
+				if (r.getWaitList()) request += " (w)";
+				else if (r.getNoSubs()) request += " (s)";
+			}
 		}
 		return request;
 	}

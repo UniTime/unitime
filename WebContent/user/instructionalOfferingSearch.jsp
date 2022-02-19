@@ -45,7 +45,7 @@
 				<script language="JavaScript" type="text/javascript">blToggleHeader('<loc:message name="filter"/>','dispFilter');blStart('dispFilter');</script>
 				<TABLE border="0" cellspacing="0" cellpadding="3">
 					<TR>
-						<TD>
+						<TD style="min-width: 120px;">
 							<B><loc:message name="filterOptionalColumns" /></B>
 						</TD>
 						<TD colspan="2">
@@ -249,28 +249,28 @@
 							<B><loc:message name="filterSortBy"/></B>
 						</TD>
 						<TD colspan="2">
-							<html:select property="sortBy">
+							<html:select property="sortBy" style="min-width: 200px;">
 								<html:options property="sortByOptions"/>
 							</html:select>
 						</TD>
 					</TR>
 				</TABLE>
-
-				<script language="JavaScript" type="text/javascript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
-				<TABLE class="wide-table">
-					<TR>
-						<TD colspan='2' align='right'>
-							<br>
-						</TD>
-					</TR>
-				</TABLE>
-				<script language="JavaScript" type="text/javascript">blEnd('dispFilter');</script>
-			
+				<script language="JavaScript" type="text/javascript">blEnd('dispFilter');blStartCollapsed('dispFilter');blEnd('dispFilter');</script>
 			</TD>
 		</TR>
+		<logic:notEmpty name="instructionalOfferingListForm" property="waitlist">
+			<TR><TD colspan='6' style='padding-top: 0px;'>
+			<span style='min-width: 120px; display: inline-block; padding: 3px;'><B><loc:message name="filterWaitlist"/></B></span>
+			<html:select property="waitlist" style="min-width: 200px;" styleId="waitlistFilter">
+				<html:option value="A"><loc:message name="itemWaitListAllCourses"/></html:option>
+				<html:option value="W"><loc:message name="itemWaitListWaitListed"/></html:option>
+				<html:option value="N"><loc:message name="itemWaitListNotWaitListed"/></html:option>
+			</html:select>
+			</TD></TR>
+		</logic:notEmpty>
 		<TR>
-			<TH valign="top" nowrap><loc:message name="filterSubject"/></TH>
-			<TD valign="top" nowrap>
+			<TH valign="top" nowrap style='padding-top: 10px;'><loc:message name="filterSubject"/></TH>
+			<TD valign="top" nowrap style='padding-top: 10px;'>
 				<% if (frm.getSubjectAreas().size()==1) { %>
 					<html:select property="subjectAreaIds" styleId="subjectAreaIds">
 						<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
@@ -281,12 +281,12 @@
 					</html:select>
 				<% } %>
 			</TD>
-			<TH valign="top" nowrap><loc:message name="filterCourseNumber"/></TH>
-			<TD valign="top" nowrap>
-				<tt:course-number property="courseNbr" configuration="subjectId=\${subjectAreaIds};notOffered=include" size="15"
+			<TH valign="top" nowrap style='padding-top: 10px;'><loc:message name="filterCourseNumber"/></TH>
+			<TD valign="top" nowrap style='padding-top: 10px;'>
+				<tt:course-number property="courseNbr" configuration="subjectId=\${subjectAreaIds};notOffered=include;waitlist=\${waitlistFilter}" size="15"
 					title="Course numbers can be specified using wildcard (*). E.g. 2*"/>
 			</TD>
-			<TD valign="top" nowrap>
+			<TD valign="top" nowrap style='padding-top: 10px;'>
 				&nbsp;&nbsp;&nbsp;
 				<html:submit
 					accesskey="<%=MSG.accessSearchInstructionalOfferings()%>" styleClass="btn" title='<%=MSG.titleSearchInstructionalOfferings(MSG.accessSearchInstructionalOfferings())%>'
@@ -326,7 +326,7 @@
 				</sec:authorize>
 				
 			</TD>
-			<TD width="100%"></TD>
+			<TD width="100%" style='padding-top: 10px;'></TD>
 		</TR>
 		<TR>
 			<TD colspan="6" align="center">

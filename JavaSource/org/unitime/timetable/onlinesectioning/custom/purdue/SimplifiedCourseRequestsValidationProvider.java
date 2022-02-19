@@ -215,6 +215,14 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specReg.checkForPin", "true"));
 	}
 	
+	protected boolean isWaitListNoAlts() {
+		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.waitListNoAlts", "false"));
+	}
+	
+	protected boolean isAdvisedNoAlts() {
+		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.advisedNoAlts", "true"));
+	}
+	
 	protected String getBannerId(org.unitime.timetable.model.Student student) {
 		String id = student.getExternalUniqueId();
 		while (id.length() < 9) id = "0" + id;
@@ -528,10 +536,29 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 		
 		Integer ORD_UNITIME = 0;
 		
+		Set<Long> advisorCoursesNoAlt = new HashSet<Long>();
+		if (original.hasAdvisorRequests() && isAdvisedNoAlts())
+			for (XAdvisorRequest ar: original.getAdvisorRequests()) {
+				int count = 0;
+				for (XAdvisorRequest x: original.getAdvisorRequests()) {
+					if (x.getPriority() == ar.getPriority()) count ++;
+				}
+				if (count == 1 && ar.getCourseId() != null) advisorCoursesNoAlt.add(ar.getCourseId().getCourseId());
+			}
+		else if (original.hasAdvisorRequests() && isWaitListNoAlts())
+			for (XAdvisorRequest ar: original.getAdvisorRequests()) {
+				if (ar.isWaitListOrNoSub() && !ar.isSubstitute()) {
+					int count = 0;
+					for (XAdvisorRequest x: original.getAdvisorRequests()) {
+						if (x.getPriority() == ar.getPriority() && !x.isSubstitute()) count ++;
+					}
+					if (count == 1 && ar.getCourseId() != null) advisorCoursesNoAlt.add(ar.getCourseId().getCourseId());
+				}
+			}
 		for (CourseRequestInterface.Request r: request.getCourses()) {
 			if (r.hasRequestedCourse() && r.getRequestedCourse().size() == 1) {
 				RequestedCourse rc = r.getRequestedCourse(0);
-				if (rc.getCourseId() != null && !rc.isReadOnly()) {
+				if (rc.getCourseId() != null && !rc.isReadOnly() && !advisorCoursesNoAlt.contains(rc.getCourseId())) {
 					request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), "NO_ALT",
 							ApplicationProperties.getProperty("purdue.specreg.messages.courseHasNoAlt", "No alternative course provided.").replace("{course}", rc.getCourseName()), ORD_UNITIME);
 				}
@@ -581,14 +608,15 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 		
 		Float maxCredit = original.getMaxCredit();
 		if (maxCredit == null) maxCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"));
-
-		if (maxCredit < request.getCredit()) {
+		
+		Set<Long> advisorWaitListedCourseIds = original.getAdvisorWaitListedCourseIds(server);
+		if (maxCredit < request.getCredit(advisorWaitListedCourseIds)) {
 			for (RequestedCourse rc: getOverCreditRequests(request, maxCredit)) {
 				request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), "CREDIT",
-						ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())), null,
+						ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit(advisorWaitListedCourseIds))), null,
 						ORD_UNITIME);
 			}
-			request.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())));
+			request.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit(advisorWaitListedCourseIds))));
 			request.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_HIGH);
 		}
 		
@@ -709,12 +737,30 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 				if (cr.getCourseIds().size() == 1 && !cr.isAlternative()) coursesWithNotAlt.add(cr.getCourseIds().get(0).getCourseId());
 			}
 		}
-		
+		Set<Long> advisorCoursesNoAlt = new HashSet<Long>();
+		if (original.hasAdvisorRequests() && isAdvisedNoAlts())
+			for (XAdvisorRequest ar: original.getAdvisorRequests()) {
+				int count = 0;
+				for (XAdvisorRequest x: original.getAdvisorRequests()) {
+					if (x.getPriority() == ar.getPriority()) count ++;
+				}
+				if (count == 1 && ar.getCourseId() != null) advisorCoursesNoAlt.add(ar.getCourseId().getCourseId());
+			}
+		else if (original.hasAdvisorRequests() && isWaitListNoAlts())
+			for (XAdvisorRequest ar: original.getAdvisorRequests()) {
+				if (ar.isWaitListOrNoSub() && !ar.isSubstitute()) {
+					int count = 0;
+					for (XAdvisorRequest x: original.getAdvisorRequests()) {
+						if (x.getPriority() == ar.getPriority() && !x.isSubstitute()) count ++;
+					}
+					if (count == 1 && ar.getCourseId() != null) advisorCoursesNoAlt.add(ar.getCourseId().getCourseId());
+				}
+			}
 		boolean questionNoAlt = false;
 		for (CourseRequestInterface.Request r: request.getCourses()) {
 			if (r.hasRequestedCourse() && r.getRequestedCourse().size() == 1) {
 				RequestedCourse rc = r.getRequestedCourse(0);
-				if (rc.getCourseId() != null && !rc.isReadOnly()) {
+				if (rc.getCourseId() != null && !rc.isReadOnly() && !advisorCoursesNoAlt.contains(rc.getCourseId())) {
 					response.addMessage(rc.getCourseId(), rc.getCourseName(), "NO_ALT",
 							ApplicationProperties.getProperty("purdue.specreg.messages.courseHasNoAlt", "No alternative course provided.").replace("{course}", rc.getCourseName()),
 							!coursesWithNotAlt.contains(rc.getCourseId()) ? CONF_UNITIME : CONF_NONE);
@@ -976,19 +1022,20 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 		Float maxCredit = original.getMaxCredit();
 		if (maxCredit == null) maxCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"));
 		
-		if (maxCredit != null && request.getCredit() > maxCredit) {
+		Set<Long> advisorWaitListedCourseIds = original.getAdvisorWaitListedCourseIds(server);
+		if (maxCredit != null && request.getCredit(advisorWaitListedCourseIds) > maxCredit) {
 			for (RequestedCourse rc: getOverCreditRequests(request, maxCredit)) {
 				response.addMessage(rc.getCourseId(), rc.getCourseName(), "CREDIT",
-						ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit()))
+						ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit(advisorWaitListedCourseIds)))
 						, CONF_NONE);
 			}
 			response.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit",
 					"Maximum of {max} credit hours exceeded.")
-					.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())));
+					.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit(advisorWaitListedCourseIds))));
 			response.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_HIGH);
 			creditError = ApplicationProperties.getProperty("purdue.specreg.messages.maxCreditError",
 					"Maximum of {max} credit hours exceeded.\nYou may not be able to get a full schedule.")
-					.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit()));
+					.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit(advisorWaitListedCourseIds)));
 		}
 
 		String minCreditLimit = ApplicationProperties.getProperty("purdue.specreg.minCreditCheck");
@@ -1262,18 +1309,34 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 		
 		Integer CONF_UNITIME = 0;
 		
-		boolean questionNoAlt = false;
+		Set<Long> courseIds = new HashSet<Long>();
 		for (CourseRequestInterface.Request r: request.getCourses()) {
-			if (r.hasRequestedCourse() && r.getRequestedCourse().size() == 1) {
-				RequestedCourse rc = r.getRequestedCourse(0);
-				if (rc.getCourseId() != null && !rc.isReadOnly()) {
-					response.addMessage(rc.getCourseId(), rc.getCourseName(), "NO_ALT",
-							ApplicationProperties.getProperty("purdue.specreg.messages.courseHasNoAlt", "No alternative course provided.").replace("{course}", rc.getCourseName()),
-							CONF_UNITIME);
-					questionNoAlt = true;
+			if (r.hasRequestedCourse())
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					if (rc.hasCourseId() && !courseIds.add(rc.getCourseId())) {
+						response.addError(rc.getCourseId(), rc.getCourseName(), "DUPL",
+								ApplicationProperties.getProperty("purdue.specreg.messages.duplicateCourse", "Course {course} used multiple times.").replace("{course}", rc.getCourseName())
+								);
+						if (!response.hasErrorMessage())
+							response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.duplicateCourse", "Course {course} used multiple times.").replace("{course}", rc.getCourseName()));
+					}
+				}
+		}
+		
+		boolean questionNoAlt = false;
+		if (!isAdvisedNoAlts())
+			for (CourseRequestInterface.Request r: request.getCourses()) {
+				if (r.hasRequestedCourse() && r.getRequestedCourse().size() == 1) {
+					if (r.isWaitList() && isWaitListNoAlts()) continue;
+					RequestedCourse rc = r.getRequestedCourse(0);
+					if (rc.getCourseId() != null && !rc.isReadOnly()) {
+						response.addMessage(rc.getCourseId(), rc.getCourseName(), "NO_ALT",
+								ApplicationProperties.getProperty("purdue.specreg.messages.courseHasNoAlt", "No alternative course provided.").replace("{course}", rc.getCourseName()),
+								CONF_UNITIME);
+						questionNoAlt = true;
+					}
 				}
 			}
-		}
 		
 		String filter = server.getConfig().getProperty("Load.OnlineOnlyStudentFilter", null);
 		boolean questionRestrictionsNotMet = false;
@@ -1451,19 +1514,19 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 		Float maxCredit = original.getMaxCredit();
 		if (maxCredit == null) maxCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"));
 		
-		if (maxCredit != null && request.getCredit() > maxCredit) {
+		if (maxCredit != null && request.getCredit(null) > maxCredit) {
 			for (RequestedCourse rc: getOverCreditRequests(request, maxCredit)) {
 				response.addMessage(rc.getCourseId(), rc.getCourseName(), "CREDIT",
-						ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit()))
+						ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit(null)))
 						, CONF_UNITIME);
 			}
 			response.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit",
 					"Maximum of {max} credit hours exceeded.")
-					.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())));
+					.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit(null))));
 			response.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_HIGH);
 			creditError = ApplicationProperties.getProperty("purdue.specreg.messages.acr.maxCreditError",
 					"Maximum of {max} credit hours exceeded.\nThe student may not be able to get a full schedule.")
-					.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit()));
+					.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit(null)));
 		}
 
 		String minCreditLimit = ApplicationProperties.getProperty("purdue.specreg.minCreditCheck");

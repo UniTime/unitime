@@ -53,6 +53,21 @@ public class CourseNumbersSuggestionsBackend implements GwtRpcImplementation<Sug
         
         GwtRpcResponseList<SuggestionInterface> result = new GwtRpcResponseList<SuggestionInterface>();
         
+        String wlFilter = "";
+        if (params.containsKey("waitlist")) {
+        	if ("W".equals(params.get("waitlist"))) {
+        		if (ApplicationProperty.OfferingWaitListDefault.isTrue())
+        			wlFilter = " and (co.instructionalOffering.waitlist is null or co.instructionalOffering.waitlist = true) and co.instructionalOffering.notOffered = false ";
+    			else
+    				wlFilter = " and co.instructionalOffering.waitlist = true and co.instructionalOffering.notOffered = false ";
+        	} else if ("N".equals(params.get("waitlist"))) {
+        		if (ApplicationProperty.OfferingWaitListDefault.isFalse())
+        			wlFilter = " and (co.instructionalOffering.waitlist is null or co.instructionalOffering.waitlist = false) and co.instructionalOffering.notOffered = false ";
+    			else
+    				wlFilter = " and co.instructionalOffering.waitlist = false and co.instructionalOffering.notOffered = false ";
+        	}
+        }
+        
         if (params.containsKey("subjectAbbv")) {
         	Long sessionId = null;
         	try {
@@ -67,6 +82,7 @@ public class CourseNumbersSuggestionsBackend implements GwtRpcImplementation<Sug
             			"where co.subjectArea.session.uniqueId = :sessionId and co.subjectArea.subjectAreaAbbreviation = :subjectAbbv " +
             			("include".equals(params.get("notOffered")) ? "" : "and co.instructionalOffering.notOffered = false ") +
             			("exclude".equals(params.get("crossListed")) ? "and co.isControl = true " : "") +
+            			wlFilter + 
             			(ApplicationProperty.CourseOfferingTitleSearch.isTrue() && request.getQuery().length() > 2
             			? "and (co.courseNbr like :q or lower(co.title) like lower('%' || :q))"
             			: "and co.courseNbr like :q") + " order by co.courseNbr")
@@ -89,6 +105,7 @@ public class CourseNumbersSuggestionsBackend implements GwtRpcImplementation<Sug
             			"where co.subjectArea.uniqueId = :subjectId " +
             			("include".equals(params.get("notOffered")) ? "" : "and co.instructionalOffering.notOffered = false ") +
             			("exclude".equals(params.get("crossListed")) ? "and co.isControl = true " : "") +
+            			wlFilter + 
             			(ApplicationProperty.CourseOfferingTitleSearch.isTrue() && request.getQuery().length() > 2
             			? "and (co.courseNbr like :q or lower(co.title) like lower('%' || :q))"
             			: "and co.courseNbr like :q") + " order by co.courseNbr")

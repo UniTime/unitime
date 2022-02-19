@@ -201,21 +201,20 @@ public interface StudentCourseDemands {
 			iStudent = student;
 			iStudentId = student.getUniqueId();
 			iWeight = weight;
-			float rule = 1.0f; int cnt = 0;
+			float rule = 0.0f, total = 0.0f;
 			for (StudentAreaClassificationMajor acm: student.getAreaClasfMajors()) {
+				if (acm.getWeight() != null && acm.getWeight() <= 0.0001) continue; // ignore ACMs with zero or close-zero weights
 				iMajors.add(new AreaClasfMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode(),
 						acm.getConcentration() == null ? null : acm.getConcentration().getCode()));
 				if (projections != null) {
-					rule *= projections.getProjection(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode());
-					cnt ++;
+					rule += (acm.getWeight() == null ? 1.0 : acm.getWeight()) * projections.getProjection(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode());
+					total += (acm.getWeight() == null ? 1.0 : acm.getWeight());
 				}
 			}
 			for (StudentAreaClassificationMinor acm: student.getAreaClasfMinors())
 				iMinors.add(new AreaClasfMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMinor().getCode()));
-			if (cnt == 1)
-				iWeight = rule;
-			else if (cnt > 1)
-				iWeight = (float) Math.pow(rule, 1.0 / cnt);
+			if (total > 0.0)
+				iWeight = rule / total;
 			for (StudentGroup g: student.getGroups())
 				iGroups.add(new Group(g.getUniqueId(), g.getGroupAbbreviation(), g.getType() == null || g.getType().isKeepTogether()));
 		}

@@ -119,6 +119,8 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	private Boolean instructorAssignment;
 	
 	private Boolean lms;
+	
+	private String waitlist;
 
 	/**
 	 * @return Returns the ctrlInstrOfferingId.
@@ -246,6 +248,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 		exams = new Boolean(false);
 		instructorAssignment = new Boolean(false);
 		lms = new Boolean(false);
+		waitlist = null;
 		sortBy = ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME);
 	}
 
@@ -479,6 +482,14 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
     public void setInstructorAssignment(Boolean instructorAssignment) {
     	this.instructorAssignment = instructorAssignment;
     }
+    
+    public String getWaitlist() {
+    	return waitlist;
+    }
+    
+    public void setWaitlist(String waitlist) {
+    	this.waitlist = waitlist;
+    }
 
     protected void finalize() throws Throwable {
         Debug.debug("!!! Finalizing InstructionalOfferingListForm ... ");
@@ -512,6 +523,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
         consent=null;
         instructorAssignment = null;
         lms = null;
+        waitlist = null;
         super.finalize();
     }
 
@@ -547,5 +559,14 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	}
 	public void setCatalogInformation(){
 		; //do nothing
+	}
+	
+	public boolean areAllCoursesGiven() {
+		return (getCourseNbr()==null || getCourseNbr().isEmpty()) && !"W".equals(getWaitlist()) && !"N".equals(getWaitlist());
+	}
+
+	@Override
+	public Boolean getFundingDepartment() {
+		return false;
 	}
 }

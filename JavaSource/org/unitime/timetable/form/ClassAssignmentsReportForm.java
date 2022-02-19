@@ -424,6 +424,10 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 		return false;
 	}
 	@Override
+	public Boolean getFundingDepartment() {
+		return (new Boolean(false));
+	}
+	@Override
 	public Boolean getInstructorAssignment() {
 		return false;
 	}
@@ -435,4 +439,6 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 	public boolean getFilterNeedInstructor() {
 		return false;
 	}
+	@Override
+	public String getWaitlist() { return null; }
 }

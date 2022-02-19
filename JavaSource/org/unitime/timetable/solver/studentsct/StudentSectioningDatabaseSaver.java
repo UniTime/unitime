@@ -55,6 +55,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.StudentSectioningStatus.Option;
 import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.dao.SessionDAO;
 
@@ -166,6 +167,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         }
         
         if (iUpdateCourseRequests && BatchEnrollStudent.sRequestsChangedStatus.equals(student.getStatus())) {
+        	StudentSectioningStatus status = s.getEffectiveStatus();
         	Set<CourseDemand> remaining = new TreeSet<CourseDemand>(s.getCourseDemands());
         	Date ts = new Date();
         	for (Request request: student.getRequests()) {
@@ -178,7 +180,18 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         		}
         		if (cd != null) {
         			cd.setPriority(request.getPriority());
-        			cd.setWaitlist(request instanceof CourseRequest && ((CourseRequest)request).isWaitlist());
+        			if (status == null || status.hasOption(Option.waitlist)) {
+        				if (request instanceof CourseRequest && ((CourseRequest)request).isWaitlist() && !Boolean.TRUE.equals(cd.getWaitlist()))
+        					cd.setWaitlistedTimeStamp(ts);
+        				cd.setWaitlist(request instanceof CourseRequest && ((CourseRequest)request).isWaitlist());
+        				cd.setNoSub(false);
+        			} else if (status.hasOption(Option.nosubs)) {
+        				cd.setWaitlist(false);
+        				cd.setNoSub(request instanceof CourseRequest && ((CourseRequest)request).isWaitlist());
+        			} else {
+        				cd.setWaitlist(false);
+        				cd.setNoSub(false);
+        			}
         			cd.setCritical(CourseDemand.Critical.fromRequestPriority(request.getRequestPriority()).ordinal());
         			if (request instanceof CourseRequest)
         				cd.updatePreferences((CourseRequest)request, hibSession);
@@ -195,6 +208,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         			if (request instanceof FreeTimeRequest) {
         				FreeTimeRequest ft = (FreeTimeRequest)request;
     					cd.setWaitlist(false);
+    					cd.setNoSub(false);
     					FreeTime free = new FreeTime();
     					cd.setFreeTime(free);
     					free.setCategory(0);
@@ -206,7 +220,18 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
     					hibSession.saveOrUpdate(free);
         			} else {
         				CourseRequest cr = (CourseRequest)request;
-        				cd.setWaitlist(cr.isWaitlist());
+        				if (status == null || status.hasOption(Option.waitlist)) {
+        					if (cr.isWaitlist() && !Boolean.TRUE.equals(cd.getWaitlist()))
+        						cd.setWaitlistedTimeStamp(ts);
+        					cd.setWaitlist(cr.isWaitlist());
+        					cd.setNoSub(false);
+        				} else if (status.hasOption(Option.nosubs)) {
+        					cd.setNoSub(cr.isWaitlist());
+        					cd.setWaitlist(false);
+        				} else {
+        					cd.setWaitlist(false);
+        					cd.setNoSub(false);
+        				}
         				cd.setCourseRequests(new HashSet<org.unitime.timetable.model.CourseRequest>());
         				cd.setTimestamp(new Date(cr.getTimeStamp()));
         				int order = 0;

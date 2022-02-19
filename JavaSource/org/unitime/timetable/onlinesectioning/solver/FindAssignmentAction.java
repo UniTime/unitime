@@ -106,6 +106,7 @@ import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
 import org.unitime.timetable.onlinesectioning.model.XDistribution;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XOverride;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XReservation;
 import org.unitime.timetable.onlinesectioning.model.XReservationType;
@@ -563,6 +564,21 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		
 		long t3 = System.currentTimeMillis();
 		helper.debug("Sectioning took "+(t3-t0)+"ms (model "+(t1-t0)+"ms, sectioning "+(t2-t1)+"ms, conversion "+(t3-t2)+"ms)");
+		
+		if (getRequest().isNoChange() && getAssignment() != null && ret != null) {
+			for (ClassAssignmentInterface.CourseAssignment course: ret.getCourseAssignments()) {
+				if (!course.isFreeTime() && !course.isTeachingAssignment())
+					for (ClassAssignmentInterface.ClassAssignment ca: course.getClassAssignments()) {
+						for (ClassAssignmentInterface.ClassAssignment old: getAssignment()) {
+							if (old != null && ca.getClassId().equals(old.getClassId())) {
+								if (old.hasError()) ca.setError(old.getError());
+								if (old.hasWarn()) ca.setWarn(old.getWarn());
+								if (old.hasInfo()) ca.setInfo(old.getInfo());
+							}
+						}
+					}
+			}
+		}
 
 		List<ClassAssignmentInterface> rets = new ArrayList<ClassAssignmentInterface>(1);
 		rets.add(ret);
@@ -853,7 +869,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				}
 			}
 			if (!cr.isEmpty()) {
-				CourseRequest clonnedRequest = new CourseRequest(student.getRequests().size() + 1, student.getRequests().size(), alternative, student, cr, request.isWaitList(), null);
+				CourseRequest clonnedRequest = new CourseRequest(student.getRequests().size() + 1, student.getRequests().size(), alternative, student, cr, request.isWaitList() || request.isNoSub(), null);
 				clonnedRequest.getSelectedChoices().addAll(selChoices);
 				clonnedRequest.getRequiredChoices().addAll(reqChoices);
 				if (originalStudent != null)
@@ -927,89 +943,206 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					ca.setCourseId(course.getId());
 					ca.setSubject(course.getSubjectArea());
 					ca.setCourseNbr(course.getCourseNumber());
-					XCourse xc = server.getCourse(course.getId());
-					if (xc != null) ca.setTitle(xc.getTitle());
-					ca.setWaitListed(r.isWaitlist());
+					XOffering offering = server.getOffering(course.getOffering().getId());
+					ca.setTitle(offering.getCourse(course.getId()).getTitle());
 					ca.setHasCrossList(course.getOffering().getCourses().size() > 1);
+					ca.setCanWaitList(offering.isWaitList());
 					if (!r.isWaitlist()) 
 						nrUnassignedCourses++;
 					if (computeOverlaps) {
-						TreeSet<Enrollment> overlap = new TreeSet<Enrollment>(new Comparator<Enrollment>() {
-							public int compare(Enrollment e1, Enrollment e2) {
-								return e1.getRequest().compareTo(e2.getRequest());
+						if (r.isWaitlist()) {
+							TreeSet<Enrollment> overlap = new TreeSet<Enrollment>(new Comparator<Enrollment>() {
+								public int compare(Enrollment e1, Enrollment e2) {
+									return e1.getRequest().compareTo(e2.getRequest());
+								}
+							});
+							Hashtable<CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<CourseRequest, TreeSet<Section>>();
+							Collection<Enrollment> enrls = r.getEnrollmentsSkipSameTime(assignment);
+							Enrollment noConfEnrl = null;
+							int nbrEnrl = 0;
+							for (Iterator<Enrollment> e = enrls.iterator(); e.hasNext();) {
+								Enrollment enrl = e.next();
+								if (!course.equals(enrl.getCourse())) continue;
+								nbrEnrl ++;
+								boolean overlaps = false; 
+								for (Enrollment x: enrollments) {
+									if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
+									if (x == enrollment) continue;
+									if (x.getRequest() instanceof FreeTimeRequest && x.getRequest().getPriority() > r.getPriority()) continue;
+							        for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
+							        	SctAssignment a = i.next();
+										if (a.isOverlapping(enrl.getAssignments())) {
+											overlaps = true;
+											overlap.add(x);
+											if (x.getRequest() instanceof CourseRequest) {
+												CourseRequest cr = (CourseRequest)x.getRequest();
+												TreeSet<Section> ss = overlapingSections.get(cr);
+												if (ss == null) { ss = new TreeSet<Section>(new AssignmentComparator<Section, Request, Enrollment>(assignment)); overlapingSections.put(cr, ss); }
+												ss.add((Section)a);
+											}
+										}
+							        }
+								}
+						        if (!overlaps && noConfEnrl == null)
+									noConfEnrl = enrl;
 							}
-						});
-						Hashtable<CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<CourseRequest, TreeSet<Section>>();
-						Collection<Enrollment> avEnrls = r.getAvaiableEnrollmentsSkipSameTime(assignment);
-						for (Iterator<Enrollment> e = avEnrls.iterator(); e.hasNext();) {
-							Enrollment enrl = e.next();
+							if (noConfEnrl == null) {
+								for (Enrollment q: overlap) {
+									if (q.getRequest() instanceof FreeTimeRequest) {
+										ca.addOverlap(OnlineSectioningHelper.toString((FreeTimeRequest)q.getRequest()));
+									} else {
+										CourseRequest cr = (CourseRequest)q.getRequest();
+										Course o = q.getCourse();
+										String ov = o.getSubjectArea() + " " + o.getCourseNumber();
+										if (overlapingSections.get(cr).size() == 1)
+											for (Iterator<Section> i = overlapingSections.get(cr).iterator(); i.hasNext();) {
+												Section s = i.next();
+												ov += " " + s.getSubpart().getName();
+												if (i.hasNext()) ov += ",";
+											}
+										ca.addOverlap(ov);
+									}
+								}
+								if (nbrEnrl == 0) {
+									unavailabilities: for (Unavailability unavailability: enrollment.getStudent().getUnavailabilities()) {
+										for (Config config: course.getOffering().getConfigs())
+											for (Subpart subpart: config.getSubparts())
+												for (Section section: subpart.getSections()) {
+													if (unavailability.isOverlapping(section)) {
+														ca.addOverlap(MSG.teachingAssignment(unavailability.getSection().getName()));
+														continue unavailabilities;
+													}
+												}
+									}
+								}
+							}
+							if (r.getAvaiableEnrollments(assignment).isEmpty()) {
+								ca.setNotAvailable(true);
+								ca.setFull(course.getLimit() == 0);
+							}
+							if (r.getStudent().hasMaxCredit()) {
+								Float minCred = null;
+								for (Course c: r.getCourses()) {
+									if (c.hasCreditValue() && (minCred == null || minCred > c.getCreditValue()))
+										minCred = c.getCreditValue();
+								}
+								if (minCred != null && assignedCredit + minCred > r.getStudent().getMaxCredit())
+									ca.setOverMaxCredit(r.getStudent().getMaxCredit());
+							} else if (r.getStudent().getId() >= 0 && !(server instanceof StudentSolver)) {
+								XStudent original = server.getStudent(r.getStudent().getId());
+								if (original != null && original.hasMaxCredit()) {
+									Float minCred = null;
+									for (Course c: r.getCourses()) {
+										if (c.hasCreditValue() && (minCred == null || minCred > c.getCreditValue()))
+											minCred = c.getCreditValue();
+									}
+									if (minCred != null && assignedCredit + minCred > original.getMaxCredit())
+										ca.setOverMaxCredit(original.getMaxCredit());
+								}
+							}
+						} else {
+							TreeSet<Enrollment> overlap = new TreeSet<Enrollment>(new Comparator<Enrollment>() {
+								public int compare(Enrollment e1, Enrollment e2) {
+									return e1.getRequest().compareTo(e2.getRequest());
+								}
+							});
+							Hashtable<CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<CourseRequest, TreeSet<Section>>();
+							Collection<Enrollment> avEnrls = r.getAvaiableEnrollmentsSkipSameTime(assignment);
+							for (Iterator<Enrollment> e = avEnrls.iterator(); e.hasNext();) {
+								Enrollment enrl = e.next();
+								for (Enrollment x: enrollments) {
+									if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
+									if (x == enrollment) continue;
+							        for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
+							        	SctAssignment a = i.next();
+										if (a.isOverlapping(enrl.getAssignments())) {
+											overlap.add(x);
+											if (x.getRequest() instanceof CourseRequest) {
+												CourseRequest cr = (CourseRequest)x.getRequest();
+												TreeSet<Section> ss = overlapingSections.get(cr);
+												if (ss == null) { ss = new TreeSet<Section>(new AssignmentComparator<Section, Request, Enrollment>(assignment)); overlapingSections.put(cr, ss); }
+												ss.add((Section)a);
+											}
+										}
+							        }
+								}
+							}
+							for (Enrollment q: overlap) {
+								if (q.getRequest() instanceof FreeTimeRequest) {
+									ca.addOverlap(OnlineSectioningHelper.toString((FreeTimeRequest)q.getRequest()));
+								} else {
+									CourseRequest cr = (CourseRequest)q.getRequest();
+									Course o = q.getCourse();
+									String ov = o.getSubjectArea() + " " + o.getCourseNumber();
+									if (overlapingSections.get(cr).size() == 1)
+										for (Iterator<Section> i = overlapingSections.get(cr).iterator(); i.hasNext();) {
+											Section s = i.next();
+											ov += " " + s.getSubpart().getName();
+											if (i.hasNext()) ov += ",";
+										}
+									ca.addOverlap(ov);
+								}
+							}
+							unavailabilities: for (Unavailability unavailability: enrollment.getStudent().getUnavailabilities()) {
+								for (Config config: course.getOffering().getConfigs())
+									for (Subpart subpart: config.getSubparts())
+										for (Section section: subpart.getSections()) {
+											if (unavailability.isOverlapping(section)) {
+												ca.addOverlap(MSG.teachingAssignment(unavailability.getSection().getName()));
+												continue unavailabilities;
+											}
+										}
+							}
+							int alt = nrUnassignedCourses;
 							for (Enrollment x: enrollments) {
 								if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
 								if (x == enrollment) continue;
-						        for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
-						        	SctAssignment a = i.next();
-									if (a.isOverlapping(enrl.getAssignments())) {
-										overlap.add(x);
-										if (x.getRequest() instanceof CourseRequest) {
-											CourseRequest cr = (CourseRequest)x.getRequest();
-											TreeSet<Section> ss = overlapingSections.get(cr);
-											if (ss == null) { ss = new TreeSet<Section>(new AssignmentComparator<Section, Request, Enrollment>(assignment)); overlapingSections.put(cr, ss); }
-											ss.add((Section)a);
-										}
+								if (x.getRequest().isAlternative() && x.getRequest() instanceof CourseRequest) {
+									if (--alt == 0) {
+										Course o = x.getCourse();
+										ca.setInstead(o.getSubjectArea() + " " +o.getCourseNumber());
+										break;
 									}
-						        }
+								}
 							}
-						}
-						for (Enrollment q: overlap) {
-							if (q.getRequest() instanceof FreeTimeRequest) {
-								ca.addOverlap(OnlineSectioningHelper.toString((FreeTimeRequest)q.getRequest()));
-							} else {
-								CourseRequest cr = (CourseRequest)q.getRequest();
-								Course o = q.getCourse();
-								String ov = o.getSubjectArea() + " " + o.getCourseNumber();
-								if (overlapingSections.get(cr).size() == 1)
-									for (Iterator<Section> i = overlapingSections.get(cr).iterator(); i.hasNext();) {
-										Section s = i.next();
-										ov += " " + s.getSubpart().getName();
-										if (i.hasNext()) ov += ",";
-									}
-								ca.addOverlap(ov);
+							if (avEnrls.isEmpty()) {
+								ca.setNotAvailable(true);
+								ca.setFull(course.getLimit() == 0);
 							}
-						}
-						unavailabilities: for (Unavailability unavailability: enrollment.getStudent().getUnavailabilities()) {
-							for (Config config: course.getOffering().getConfigs())
-								for (Subpart subpart: config.getSubparts())
-									for (Section section: subpart.getSections()) {
-										if (unavailability.isOverlapping(section)) {
-											ca.addOverlap(MSG.teachingAssignment(unavailability.getSection().getName()));
-											continue unavailabilities;
-										}
+							if (r.getStudent().hasMaxCredit()) {
+								Float minCred = null;
+								for (Course c: r.getCourses()) {
+									if (c.hasCreditValue() && (minCred == null || minCred > c.getCreditValue()))
+										minCred = c.getCreditValue();
+								}
+								if (minCred != null && assignedCredit + minCred > r.getStudent().getMaxCredit())
+									ca.setOverMaxCredit(r.getStudent().getMaxCredit());
+							} else if (r.getStudent().getId() >= 0 && !(server instanceof StudentSolver)) {
+								XStudent original = server.getStudent(r.getStudent().getId());
+								if (original != null && original.hasMaxCredit()) {
+									Float minCred = null;
+									for (Course c: r.getCourses()) {
+										if (c.hasCreditValue() && (minCred == null || minCred > c.getCreditValue()))
+											minCred = c.getCreditValue();
 									}
-						}
-						int alt = nrUnassignedCourses;
-						for (Enrollment x: enrollments) {
-							if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
-							if (x == enrollment) continue;
-							if (x.getRequest().isAlternative() && x.getRequest() instanceof CourseRequest) {
-								if (--alt == 0) {
-									Course o = x.getCourse();
-									ca.setInstead(o.getSubjectArea() + " " +o.getCourseNumber());
-									break;
+									if (minCred != null && assignedCredit + minCred > original.getMaxCredit())
+										ca.setOverMaxCredit(original.getMaxCredit());
 								}
 							}
 						}
-						if (avEnrls.isEmpty()) {
-							ca.setNotAvailable(true);
-							ca.setFull(course.getLimit() == 0);
-						}
-						if (r.getStudent().hasMaxCredit()) {
-							Float minCred = null;
-							for (Course c: r.getCourses()) {
-								if (c.hasCreditValue() && (minCred == null || minCred > c.getCreditValue()))
-									minCred = c.getCreditValue();
+					}
+					if (r.isWaitlist() && r.getStudent().getId() >= 0 && !(server instanceof StudentSolver)) {
+						XStudent original = server.getStudent(r.getStudent().getId());
+						for (XRequest or: original.getRequests()) {
+							if (or instanceof XCourseRequest) {
+								XCourseRequest ocr = (XCourseRequest)or;
+								if (ocr.isWaitlist() && !ocr.getCourseIds().isEmpty() && ocr.getCourseIds().get(0).getCourseId().equals(course.getId())) {
+									XOverride ov = ocr.getOverride(ocr.getCourseIds().get(0));
+									if (ov == null || !ov.isNoChecked())
+										ca.setWaitListedDate(ocr.getWaitListedTimeStamp());
+									break;
+								}
 							}
-							if (minCred != null && assignedCredit + minCred > r.getStudent().getMaxCredit())
-								ca.setOverMaxCredit(r.getStudent().getMaxCredit());
 						}
 					}
 					ret.add(ca);
@@ -1052,7 +1185,6 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				if (server.isOfferingLocked(course.getOffering().getId()))
 					ca.setLocked(true);
 				ca.setAssigned(true);
-				ca.setWaitListed(r.isWaitlist());
 				ca.setCourseId(course.getId());
 				ca.setSubject(course.getSubjectArea());
 				ca.setCourseNbr(course.getCourseNumber());
@@ -1069,6 +1201,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					}
 				}
 				XOffering offering = server.getOffering(course.getOffering().getId());
+				ca.setCanWaitList(offering.isWaitList());
 				ca.setTitle(offering.getCourse(course.getId()).getTitle());
 				XEnrollments enrl = server.getEnrollments(offering.getOfferingId());
 				for (Iterator<Section> i = sections.iterator(); i.hasNext();) {

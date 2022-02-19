@@ -79,7 +79,9 @@ public class CourseNumbersSuggestBox extends SuggestOracle {
 		for (MatchResult matcher = iRegExp.exec(conf); matcher != null; matcher = iRegExp.exec(conf)) {
 			Element element = DOM.getElementById(matcher.getGroup(1));
 			String value = "";
-			if ("select".equalsIgnoreCase(element.getTagName())) {
+			if (element == null) {
+				// do nothing
+			} else if ("select".equalsIgnoreCase(element.getTagName())) {
 				ListBox list = ListBox.wrap(element);
 				for (int i = 0; i < list.getItemCount(); i++) {
 					if (list.isItemSelected(i))

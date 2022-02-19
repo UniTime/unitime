@@ -25,6 +25,7 @@ import org.unitime.timetable.gwt.client.admin.SimpleEditPage;
 import org.unitime.timetable.gwt.client.admin.TasksPage;
 import org.unitime.timetable.gwt.client.curricula.CurriculaPage;
 import org.unitime.timetable.gwt.client.curricula.CurriculumProjectionRulesPage;
+import org.unitime.timetable.gwt.client.departments.DepartmentsPage;
 import org.unitime.timetable.gwt.client.events.EventResourceTimetable;
 import org.unitime.timetable.gwt.client.events.EventRoomAvailability;
 import org.unitime.timetable.gwt.client.hql.SavedHQLPage;
@@ -34,6 +35,7 @@ import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsChangesPag
 import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsPage;
 import org.unitime.timetable.gwt.client.instructor.TeachingRequestsPage;
 import org.unitime.timetable.gwt.client.limitandprojectionsnapshot.LimitAndProjectionSnapshotPage;
+import org.unitime.timetable.gwt.client.offerings.AssignClassInstructorsPage;
 import org.unitime.timetable.gwt.client.pointintimedata.PointInTimeDataReportsPage;
 import org.unitime.timetable.gwt.client.reservations.ReservationEdit;
 import org.unitime.timetable.gwt.client.reservations.ReservationsPage;
@@ -270,6 +272,14 @@ public enum Pages {
 	buildings(new PageFactory() {
 		public Widget create() { return new BuildingsPage(); }
 		public String name(GwtMessages messages) { return messages.pageBuildings(); }
+		}),
+	departments(new PageFactory() {
+			public Widget create() { return new DepartmentsPage(); }
+			public String name(GwtMessages messages) { return messages.pageDepartments(); }
+			}),
+	assignClassInstructors(new PageFactory() {
+		public Widget create() { return new AssignClassInstructorsPage(); }
+		public String name(GwtMessages messages) { return messages.pageAdministration(); }
 		}),
 	;
 	

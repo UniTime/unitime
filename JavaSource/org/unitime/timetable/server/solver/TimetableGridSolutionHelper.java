@@ -59,6 +59,7 @@ import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.ExactTimeMins;
+import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Room;
@@ -313,6 +314,7 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 				if (assignmentInfo.getStudentGroupComment() != null) {
 					cell.setPreference(assignmentInfo.getStudentGroupComment());
 				}
+				break;
 			}
 			
 			if (!cell.hasPreference()) {
@@ -337,6 +339,11 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 			cell.setProperty(Property.DepartmentBalance, sDF.format(assignmentInfo.getDeptBalancPenalty()));
 		} else {
 			cell.setProperty(Property.Owner, assignment.getSolution().getOwner().getName());
+		}
+		
+		if (bgMode == BgMode.InstructionalType.ordinal()) {
+			ItypeDesc it = assignment.getClazz().getSchedulingSubpart().getItype();
+			if (it != null) cell.setBackground(context.getInstructionalTypeColor(it.getItype()));
 		}
 		
 		if (bgMode == BgMode.DistributionConstPref.ordinal()) {
@@ -856,5 +863,4 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 		
 		return model;
     }
-
 }

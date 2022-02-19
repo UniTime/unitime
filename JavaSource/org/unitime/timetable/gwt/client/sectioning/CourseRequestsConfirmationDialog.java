@@ -21,6 +21,8 @@ package org.unitime.timetable.gwt.client.sectioning;
 
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
+import org.unitime.timetable.gwt.client.aria.AriaSuggestArea;
+import org.unitime.timetable.gwt.client.aria.AriaTextArea;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -37,6 +39,8 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.resources.client.ImageResource;
@@ -44,7 +48,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.TextArea;
+import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 
 /**
  * @author Tomas Muller
@@ -58,7 +62,7 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 	private AsyncCallback<Boolean> iCommand;
 	private String iMessage;
 	private boolean iValue = false;
-	private TextArea iNote = null;
+	private AriaTextArea iNote = null;
 	private Image iImage;
 	private CheckBox iCheckBox = null;
 
@@ -70,7 +74,7 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 		iCommand = callback;
 		
 		P panel = new P("unitime-ConfirmationPanel");
-		setEscapeToHide(true);
+		// setEscapeToHide(true);
 		
 		P bd = new P("body-panel");
 		panel.add(bd);
@@ -99,7 +103,7 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 				ctab.add(crow);
 				last = cm.getCourse();
 			} else if ("REQUEST_NOTE".equals(cm.getCode())) {
-				iNote = new TextArea();
+				iNote = new AriaTextArea();
 				iNote.setStyleName("unitime-TextArea"); iNote.addStyleName("request-note");
 				iNote.setVisibleLines(5);
 				iNote.setCharacterWidth(80);
@@ -110,7 +114,22 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 						cm.setMessage(event.getValue());
 					}
 				});
-				mp.add(iNote);
+				if (cm.hasSuggestions()) {
+					AriaSuggestArea suggest = new AriaSuggestArea(iNote, cm.getSuggestions());
+					suggest.addSelectionHandler(new SelectionHandler<Suggestion>() {
+						@Override
+						public void onSelection(SelectionEvent<Suggestion> event) {
+							cm.setMessage(event.getSelectedItem().getReplacementString());
+							String text = iNote.getText();
+							if (text.indexOf('<') >= 0 && text.indexOf('>') > text.indexOf('<')) {
+								iNote.setSelectionRange(text.indexOf('<'), text.indexOf('>') - text.indexOf('<') + 1);
+							}
+						}
+					});
+					mp.add(suggest);
+				} else {
+					mp.add(iNote);
+				}
 			} else if ("CHECK_BOX".equals(cm.getCode())) {
 				if (ctab != null) { mp.add(ctab); ctab = null; }
 				iCheckBox = new CheckBox(cm.getMessage());

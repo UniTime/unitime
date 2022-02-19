@@ -22,6 +22,7 @@ package org.unitime.timetable.onlinesectioning.status;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,6 +42,7 @@ import org.unitime.timetable.gwt.server.Query.AmbigousTermMatcher;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.CourseDemand;
@@ -586,16 +588,20 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		private XCourse iInfo;
 		private boolean iConsentToDoCourse;
 		private CourseLookup iLookup;
+		private OnlineSectioningServer iServer;
 		
-		public CourseInfoMatcher(XCourse course, boolean isConsentToDoCourse, CourseLookup lookup) {
+		public CourseInfoMatcher(XCourse course, boolean isConsentToDoCourse, CourseLookup lookup, OnlineSectioningServer server) {
 			iInfo = course;
 			iConsentToDoCourse = isConsentToDoCourse;
 			iLookup = lookup;
+			iServer = server;
 		}
 		
 		public XCourse info() { return iInfo; }
 		
 		public boolean isConsentToDoCourse() { return iConsentToDoCourse; }
+		
+		public OnlineSectioningServer server() { return iServer; }
 		
 		@Override
 		public Boolean match(String attr, String term) {
@@ -638,6 +644,25 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				else
 					return false;
 			}
+			if ("assignment".equals(attr)) {
+				if ("Wait-Listed".equals(term)) {
+					XOffering offering = server().getOffering(info().getOfferingId());
+					return offering != null && offering.isWaitList();
+				} else {
+					return true;
+				}
+			}
+			if ("im".equals(attr)) {
+				XOffering offering = server().getOffering(info().getOfferingId());
+				if (offering != null)
+					for (XConfig config: offering.getConfigs()) {
+						if (config.getInstructionalMethod() == null && term.equals(server().getAcademicSession().getDefaultInstructionalMethod()))
+							return true;
+						if (config.getInstructionalMethod() != null && term.equals(config.getInstructionalMethod().getReference()))
+							return true;
+					}
+				return false;
+			}
 			return null; // pass unknown attributes lower
 		}
 	}
@@ -649,27 +674,30 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		private XOffering iOffering;
 		private Date iFirstDate;
 		private String iDefaultStatus;
-		private OnlineSectioningServer iServer;
 		private boolean iMyStudent;
-		private XEnrollment iEnrollment;
+		private XEnrollment iEnrollment, iTestEnrollment = null;
+		private WaitListMode iWaitListMode;
 		
-		public CourseRequestMatcher(AcademicSessionInfo session, XCourse info, XStudent student, XOffering offering, XCourseRequest request, boolean isConsentToDoCourse, boolean isMyStudent, CourseLookup lookup, OnlineSectioningServer server) {
-			super(info, isConsentToDoCourse, lookup);
+		public CourseRequestMatcher(AcademicSessionInfo session, XCourse info, XStudent student, XOffering offering, XCourseRequest request, boolean isConsentToDoCourse, boolean isMyStudent, CourseLookup lookup, OnlineSectioningServer server, WaitListMode wlMode) {
+			super(info, isConsentToDoCourse, lookup, server);
 			iFirstDate = session.getDatePatternFirstDate();
 			iStudent = student;
 			iRequest = request;
 			iEnrollment = request.getEnrollment();
 			iDefaultStatus = session.getDefaultSectioningStatus();
 			iOffering = offering;
-			iServer = server;
 			iMyStudent = isMyStudent;
+			iWaitListMode = wlMode; 
 		}
 		
 		public XCourseRequest request() { return iRequest; }
-		public XEnrollment enrollment() { return iEnrollment; }
+		public XEnrollment enrollment() {
+			if (iTestEnrollment != null) return iTestEnrollment;
+			return iEnrollment;
+		}
+		public boolean isAssigned() { return iEnrollment != null; }
 		public XStudent student() { return iStudent; }
 		public String status() { return student().getStatus() == null ? iDefaultStatus : student().getStatus(); }
-		public OnlineSectioningServer server() { return iServer; }
 		public XCourseId course() {
 			if (enrollment() != null) return enrollment();
 			for (XCourseId course: request().getCourseIds())
@@ -679,7 +707,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		public XOffering offering() {
 			return iOffering;
 		}
-		public CourseRequestMatcher setEnrollment(XEnrollment e) { iEnrollment = e; return this; }
+		public CourseRequestMatcher setEnrollment(XEnrollment e) { iTestEnrollment = e; return this; }
 		
 		@Override
 		public Boolean match(String attr, String term) {
@@ -755,48 +783,60 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			
 			if ("assignment".equals(attr)) {
 				if (eq("Assigned", term)) {
-					return enrollment() != null;
+					return isAssigned();
 				} else if (eq("Reserved", term)) {
-					return enrollment() != null && enrollment().getReservation() != null;
+					return isAssigned() && enrollment().getReservation() != null;
 				} else if (eq("Not Assigned", term)) {
-					return enrollment() == null && !request().isAlternative();
+					return !isAssigned() && !request().isAlternative();
 				} else if (eq("Wait-Listed", term)) {
-					return enrollment() == null && request().isWaitlist();
+					return !isAssigned() && request().isWaitlist(iWaitListMode);
 				} else if (eq("Critical", term)) {
 					return request().getCritical() == CourseDemand.Critical.CRITICAL.ordinal();
 				} else if (eq("Assigned Critical", term)) {
-					return request().getCritical() == CourseDemand.Critical.CRITICAL.ordinal() && enrollment() != null;
+					return request().getCritical() == CourseDemand.Critical.CRITICAL.ordinal() && isAssigned();
 				} else if (eq("Not Assigned Critical", term)) {
-					return request().getCritical() == CourseDemand.Critical.CRITICAL.ordinal() && enrollment() == null;
+					return request().getCritical() == CourseDemand.Critical.CRITICAL.ordinal() && !isAssigned();
 				} else if (eq("Important", term)) {
 					return request().getCritical() == CourseDemand.Critical.IMPORTANT.ordinal();
 				} else if (eq("Assigned Important", term)) {
-					return request().getCritical() == CourseDemand.Critical.IMPORTANT.ordinal() && enrollment() != null;
+					return request().getCritical() == CourseDemand.Critical.IMPORTANT.ordinal() && isAssigned();
 				} else if (eq("Not Assigned Important", term)) {
-					return request().getCritical() == CourseDemand.Critical.IMPORTANT.ordinal() && enrollment() == null;
+					return request().getCritical() == CourseDemand.Critical.IMPORTANT.ordinal() && !isAssigned();
+				} else if (eq("No-Subs", term) || eq("No-Substitutes", term)) {
+					return request().isNoSub(iWaitListMode);
+				} else if (eq("Assigned No-Subs", term) || eq("Assigned  No-Substitutes", term)) {
+					return isAssigned() && request().isNoSub(iWaitListMode);
+				} else if (eq("Not Assigned No-Subs", term) || eq("Not Assigned No-Substitutes", term)) {
+					return !isAssigned() && request().isNoSub(iWaitListMode);
 				}
-				
 			}
 			
 			if ("assigned".equals(attr) || "scheduled".equals(attr)) {
 				if (eq("true", term) || eq("1",term))
-					return enrollment() != null;
+					return isAssigned();
 				else
-					return enrollment() == null;
+					return !isAssigned();
 			}
 			
 			if ("waitlisted".equals(attr) || "waitlist".equals(attr)) {
 				if (eq("true", term) || eq("1",term))
-					return enrollment() == null && request().isWaitlist();
+					return !isAssigned() && request().isWaitlist();
 				else
-					return enrollment() != null;
+					return isAssigned();
+			}
+			
+			if ("no-substitutes".equals(attr) || "no-subs".equals(attr)) {
+				if (eq("true", term) || eq("1",term))
+					return !isAssigned() && request().isNoSub();
+				else
+					return isAssigned();
 			}
 			
 			if ("reservation".equals(attr) || "reserved".equals(attr)) {
 				if (eq("true", term) || eq("1",term))
-					return enrollment() != null && enrollment().getReservation() != null;
+					return isAssigned() && enrollment().getReservation() != null;
 				else
-					return enrollment() != null && enrollment().getReservation() == null;
+					return isAssigned() && enrollment().getReservation() == null;
 			}
 			
 			if ("consent".equals(attr)) {
@@ -899,10 +939,117 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 						XOffering o = server().getOffering(cr.getEnrollment().getOfferingId());
 						XConfig g = (o == null ? null : o.getConfig(cr.getEnrollment().getConfigId()));
 						if (g != null) {
-							if ("!".equals(im) && g.getInstructionalMethod() != null && !g.getInstructionalMethod().getReference().equals(iServer.getAcademicSession().getDefaultInstructionalMethod())) continue;
+							if ("!".equals(im) && g.getInstructionalMethod() != null && !g.getInstructionalMethod().getReference().equals(server().getAcademicSession().getDefaultInstructionalMethod())) continue;
 							if (im != null && !"!".equals(im) && (g.getInstructionalMethod() == null || !im.equalsIgnoreCase(g.getInstructionalMethod().getReference()))) continue;
 							for (XSubpart xs: g.getSubparts()) {
 								credit += xs.getCreditValue(cr.getEnrollment().getCourseId());
+							}
+						}
+					}
+				}
+				return min <= credit && credit <= max;
+			}
+			
+			if ("rc".equals(attr) || "requested-credit".equals(attr)) {
+				int min = 0, max = Integer.MAX_VALUE;
+				Credit prefix = Credit.eq;
+				String number = term;
+				if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+				else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+				else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+				else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+				else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+				try {
+					int a = Integer.parseInt(number);
+					switch (prefix) {
+						case eq: min = max = a; break; // = a
+						case le: max = a; break; // <= a
+						case ge: min = a; break; // >= a
+						case lt: max = a - 1; break; // < a
+						case gt: min = a + 1; break; // > a
+					}
+				} catch (NumberFormatException e) {}
+				if (term.contains("..")) {
+					try {
+						String a = term.substring(0, term.indexOf('.'));
+						String b = term.substring(term.indexOf("..") + 2);
+						min = Integer.parseInt(a); max = Integer.parseInt(b);
+					} catch (NumberFormatException e) {}
+				}
+				if (min == 0 && max == Integer.MAX_VALUE) return true;
+				float studentMinTot = 0f, studentMaxTot = 0f;
+				int nrCoursesTot = 0;
+				List<Float> minsTot = new ArrayList<Float>();
+				List<Float> maxsTot = new ArrayList<Float>();
+				Set<Long> advisorWaitListedCourseIds = student().getAdvisorWaitListedCourseIds(server());
+				for (XRequest r: student().getRequests()) {
+					if (r instanceof XCourseRequest) {
+						XCourseRequest cr = (XCourseRequest)r;
+						Float minTot = null, maxTot = null;
+						for (XCourseId courseId: cr.getCourseIds()) {
+							XCourse c = server().getCourse(courseId.getCourseId());
+							if (c != null && c.hasCredit()) {
+								if (minTot == null || minTot > c.getMinCredit()) minTot = c.getMinCredit();
+								if (maxTot == null || maxTot < c.getMaxCredit()) maxTot = c.getMaxCredit();
+							}
+						}
+						if (cr.isWaitListOrNoSub(iWaitListMode, advisorWaitListedCourseIds)) {
+							if (minTot != null) {
+								studentMinTot += minTot; studentMaxTot += maxTot;
+							}
+						} else {
+							if (minTot != null) {
+								minsTot.add(minTot); maxsTot.add(maxTot); 
+								if (!r.isAlternative()) nrCoursesTot ++;
+							}
+						}
+					}
+				}
+				Collections.sort(minsTot);
+				Collections.sort(maxsTot);
+				for (int i = 0; i < nrCoursesTot; i++) {
+					studentMinTot += minsTot.get(i);
+					studentMaxTot += maxsTot.get(maxsTot.size() - i - 1);
+				}
+				return min <= studentMaxTot && studentMinTot <= max;
+			}
+			
+			if ("fc".equals(attr) || "first-choice-credit".equals(attr)) {
+				int min = 0, max = Integer.MAX_VALUE;
+				Credit prefix = Credit.eq;
+				String number = term;
+				if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+				else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+				else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+				else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+				else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+				try {
+					int a = Integer.parseInt(number);
+					switch (prefix) {
+						case eq: min = max = a; break; // = a
+						case le: max = a; break; // <= a
+						case ge: min = a; break; // >= a
+						case lt: max = a - 1; break; // < a
+						case gt: min = a + 1; break; // > a
+					}
+				} catch (NumberFormatException e) {}
+				if (term.contains("..")) {
+					try {
+						String a = term.substring(0, term.indexOf('.'));
+						String b = term.substring(term.indexOf("..") + 2);
+						min = Integer.parseInt(a); max = Integer.parseInt(b);
+					} catch (NumberFormatException e) {}
+				}
+				if (min == 0 && max == Integer.MAX_VALUE) return true;
+				float credit = 0f;
+				for (XRequest r: student().getRequests()) {
+					if (r instanceof XCourseRequest && !r.isAlternative()) {
+						XCourseRequest cr = (XCourseRequest)r;
+						for (XCourseId courseId: cr.getCourseIds()) {
+							XCourse c = server().getCourse(courseId.getCourseId());
+							if (c != null && c.hasCredit()) {
+								credit += c.getMinCredit();
+								break;
 							}
 						}
 					}
@@ -968,15 +1115,79 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					} catch (NumberFormatException e) {}
 				}
 				if (min == 0 && max == Integer.MAX_VALUE) return true;
-				if (enrollment() == null) return false;
-				int choice = 1;
-				for (XCourseId course: request().getCourseIds()) {
-					if (course.getCourseId().equals(enrollment().getCourseId())) {
-						return min <= choice && choice <= max;
+				if (enrollment() != null) {
+					int choice = 1;
+					for (XCourseId course: request().getCourseIds()) {
+						if (course.getCourseId().equals(enrollment().getCourseId())) {
+							return min <= choice && choice <= max;
+						}
+						choice++;
 					}
-					choice++;
+					return false;
+				} else if (!request().isAlternative()) {
+					int choice = request().getCourseIds().size();
+					return min <= choice && choice <= max;
+				} else {
+					return false;
 				}
-				return false;
+			}
+			
+			if ("online".equals(attr) || "face-to-face".equals(attr) || "f2f".equals(attr) || "no-time".equals(attr) || "has-time".equals(attr)) {
+				int min = 0, max = Integer.MAX_VALUE;
+				Credit prefix = Credit.eq;
+				String number = term;
+				if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+				else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+				else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+				else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+				else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+				boolean perc = false;
+				if (number.endsWith("%")) { perc = true; number = number.substring(0, number.length() - 1).trim(); }
+				try {
+					int a = Integer.parseInt(number);
+					switch (prefix) {
+						case eq: min = max = a; break; // = a
+						case le: max = a; break; // <= a
+						case ge: min = a; break; // >= a
+						case lt: max = a - 1; break; // < a
+						case gt: min = a + 1; break; // > a
+					}
+				} catch (NumberFormatException e) {}
+				if (term.contains("..")) {
+					try {
+						String a = term.substring(0, term.indexOf('.'));
+						String b = term.substring(term.indexOf("..") + 2);
+						min = Integer.parseInt(a); max = Integer.parseInt(b);
+					} catch (NumberFormatException e) {}
+				}
+				if (min == 0 && max == Integer.MAX_VALUE) return true;
+				int match = 0, total = 0;
+				for (XRequest r: student().getRequests()) {
+					if (r instanceof XCourseRequest) {
+						XCourseRequest cr = (XCourseRequest)r;
+						if (cr.getEnrollment() == null) continue;
+						XOffering o = server().getOffering(cr.getEnrollment().getOfferingId());
+						if (o != null)
+							for (XSection section: o.getSections(cr.getEnrollment())) {
+								if ("online".equals(attr) && section.isOnline())
+									match ++;
+								else if (("face-to-face".equals(attr) || "f2f".equals(attr)) && !section.isOnline())
+									match ++;
+								else if ("no-time".equals(attr) && (section.getTime() == null || section.getTime().getDays() == 0))
+									match ++;
+								else if ("has-time".equals(attr) && section.getTime() != null && section.getTime().getDays() != 0)
+									match ++;
+								total ++;
+							}
+					}
+				}
+				if (total == 0) return false;
+				if (perc) {
+					double percentage = 100.0 * match / total;
+					return min <= percentage && percentage <= max;
+				} else {
+					return min <= match && match <= max;
+				}
 			}
 			
 			if ("overlap".equals(attr)) {

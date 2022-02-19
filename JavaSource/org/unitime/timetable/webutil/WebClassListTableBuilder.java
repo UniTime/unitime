@@ -122,7 +122,7 @@ public class WebClassListTableBuilder extends
         
         if (isShowExam())
             setShowExamTimetable(examAssignment!=null || Exam.hasTimetable(context.getUser().getCurrentAcademicSessionId()));
-
+ 
         TableStream table = null;
         int ct = 0;
         Iterator it = classes.iterator();

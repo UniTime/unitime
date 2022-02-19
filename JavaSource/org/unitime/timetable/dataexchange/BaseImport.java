@@ -94,27 +94,41 @@ public abstract class BaseImport extends DataExchangeHelper {
 	
 	protected Integer getRequiredIntegerAttribute(Element element, String attributeName, String elementName) throws Exception {
 		String attributeStr = getRequiredStringAttribute(element, attributeName, elementName);
-		return(new Integer(attributeStr));
+		return(Integer.parseInt(attributeStr));
 	}
 	
 	protected Integer getOptionalIntegerAttribute(Element element, String attributeName) {
 		String attributeStr = getOptionalStringAttribute(element, attributeName);
 		if (attributeStr != null){
-			return(new Integer(attributeStr));
+			return(Integer.parseInt(attributeStr));
 		} else {
 			return(null);
 		}
 	}
 	
+	protected Long getRequiredLongAttribute(Element element, String attributeName, String elementName) throws Exception {
+		String attributeStr = getRequiredStringAttribute(element, attributeName, elementName);
+		return(Long.parseLong(attributeStr));
+	}
+	
+	protected Long getOptionalLongAttribute(Element element, String attributeName) {
+		String attributeStr = getOptionalStringAttribute(element, attributeName);
+		if (attributeStr != null){
+			return(Long.parseLong(attributeStr));
+		} else {
+			return(null);
+		}
+	}
+
 	protected Boolean getRequiredBooleanAttribute(Element element, String attributeName, String elementName) throws Exception {
 		String attributeStr = getRequiredStringAttribute(element, attributeName, elementName);
-		return(new Boolean(attributeStr));
+		return(Boolean.getBoolean(attributeStr));
 	}
 	
 	protected Boolean getOptionalBooleanAttribute(Element element, String attributeName) {
 		String attributeStr = getOptionalStringAttribute(element, attributeName);
 		if (attributeStr != null) {
-			return(new Boolean(attributeStr));
+			return(Boolean.getBoolean(attributeStr));
 		} else {
 			return(null);
 		}

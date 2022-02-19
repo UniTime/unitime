@@ -30,7 +30,6 @@ import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.ImageButton;
 import org.unitime.timetable.gwt.client.widgets.OpenCloseSectionImage;
 import org.unitime.timetable.gwt.client.widgets.P;
-import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
@@ -47,6 +46,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesRespo
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationOperation;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationStatus;
 
 import com.google.gwt.core.client.GWT;
@@ -79,7 +79,7 @@ public class SpecialRegistrationsPanel extends P {
 	protected static StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	protected static StudentSectioningResources RESOURCES = GWT.create(StudentSectioningResources.class);
 	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
-	private static DateTimeFormat sModifiedDateFormat = ServerDateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
+	private static DateTimeFormat sModifiedDateFormat = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
 	protected static final GwtResources GWT_RESOURCES =  GWT.create(GwtResources.class);
 
 	
@@ -713,6 +713,19 @@ public class SpecialRegistrationsPanel extends P {
 			}
 		}
 		return hasDrop && !hasAdd;
+	}
+	
+	public boolean canWaitList(Long courseId) {
+		if (courseId == null) return true;
+		for (RetrieveSpecialRegistrationResponse response: iRegistrations) {
+			if (response.getStatus() != SpecialRegistrationStatus.Pending) continue; // not in-progress
+			if (!response.hasChanges()) continue; // no changes
+			for (ClassAssignment ca: response.getChanges()) {
+				if (courseId.equals(ca.getCourseId()) && ca.getSpecRegOperation() == SpecialRegistrationOperation.Add && ca.getSpecRegStatus() == SpecialRegistrationStatus.Pending)
+					return false;
+			}
+		}
+		return true;
 	}
 	
 	protected void cancel(final RetrieveSpecialRegistrationResponse reg) {

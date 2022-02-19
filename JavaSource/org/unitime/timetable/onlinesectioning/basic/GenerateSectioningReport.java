@@ -64,7 +64,13 @@ import org.cpsolver.studentsct.reservation.LearningCommunityReservation;
 import org.cpsolver.studentsct.reservation.Reservation;
 import org.cpsolver.studentsct.reservation.ReservationOverride;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.CourseDemand;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -129,6 +135,17 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
     		Hashtable<Long, Section> sections = new Hashtable<Long, Section>();
     		Hashtable<Long, Reservation> reservations = new Hashtable<Long, Reservation>();
     		Set<XDistribution> linkedSections = new HashSet<XDistribution>();
+
+    		AcademicSessionInfo session = server.getAcademicSession();
+    		Set<String> wlStates = new HashSet<String>();
+    		Set<String> noSubStates = new HashSet<String>();
+    		Session dbSession = SessionDAO.getInstance().get(session.getUniqueId());
+    		for (StudentSectioningStatus status: StudentSectioningStatusDAO.getInstance().findAll(helper.getHibSession())) {
+    				if (StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.waitlist))
+    					wlStates.add(status.getReference());
+    				else if (StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.nosubs))
+    					noSubStates.add(status.getReference());
+    		}
 
     		for (XCourseId ci: server.findCourses(new AnyCourseMatcher())) {
 	        	XOffering offering = server.getOffering(ci.getOfferingId());
@@ -286,6 +303,14 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 			for (XStudentId id: server.findStudents(new AnyStudentMatcher())) {
 				XStudent student = (id instanceof XStudent ? (XStudent)id : server.getStudent(id.getStudentId()));
 				if (student == null) return null;
+				
+				String status = (student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
+				WaitListMode wl = WaitListMode.None;
+				if (status == null || wlStates.contains(status))
+					wl = WaitListMode.WaitList;
+				else if (noSubStates.contains(status))
+					wl = WaitListMode.NoSubs;
+
 				Student clonnedStudent = new Student(student.getStudentId());
 				clonnedStudent.setExternalId(student.getExternalId());
 				clonnedStudent.setName(student.getName());
@@ -330,7 +355,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 							if (course != null) req.add(course);
 						}
 						if (!req.isEmpty()) {
-							CourseRequest clonnedRequest = new CourseRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), clonnedStudent, req, cr.isWaitlist(), cr.getTimeStamp() == null ? null : cr.getTimeStamp().getTime());
+							CourseRequest clonnedRequest = new CourseRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), clonnedStudent, req, cr.isWaitListOrNoSub(wl), cr.getTimeStamp() == null ? null : cr.getTimeStamp().getTime());
 							if (cr.isCritical()) {
 								if (cr.getCritical() == CourseDemand.Critical.CRITICAL.ordinal())
 									clonnedRequest.setRequestPriority(RequestPriority.Critical);

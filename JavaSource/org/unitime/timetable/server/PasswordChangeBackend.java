@@ -32,7 +32,6 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.encoding.MessageDigestPasswordEncoder;
 import org.unitime.commons.Email;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -48,6 +47,7 @@ import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.dao.UserDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.spring.security.MD5PasswordEncoder;
 import org.unitime.timetable.util.Constants;
 
 import freemarker.template.Configuration;
@@ -193,7 +193,7 @@ public class PasswordChangeBackend implements GwtRpcImplementation<PasswordChang
 	}
 	
 	private static String encode(String password) {
-		return new MessageDigestPasswordEncoder("MD5", true).encodePassword(password, null);
+		return MD5PasswordEncoder.getEncodedPassword(password);
 	}
 	
 }

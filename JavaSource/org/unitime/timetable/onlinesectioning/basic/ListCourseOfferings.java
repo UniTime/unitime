@@ -87,6 +87,7 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 	
 	protected List<CourseAssignment> customCourseLookup(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		try {
+			if (iMatcher != null) iMatcher.setServer(server);
 			if (iQuery != null && !iQuery.isEmpty() && CustomCourseLookupHolder.hasProvider()) {
 				List<XCourse> courses = CustomCourseLookupHolder.getProvider().getCourses(server, helper, iQuery, true);
 				if (courses != null && !courses.isEmpty()) {
@@ -128,6 +129,7 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 					course.setHasNoInstructionalMethod(true);
 			}
 			course.setHasCrossList(offering.hasCrossList());
+			course.setCanWaitList(offering.isWaitList());
 		}
 		return course;
 	}

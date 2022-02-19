@@ -150,7 +150,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 						throw (RuntimeException)e;
 					throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 				}
-				server.execute(server.createAction(NotifyStudentAction.class).forStudent(getStudentId()).oldStudent(oldStudent), helper.getUser());
+				server.execute(server.createAction(NotifyStudentAction.class).forStudent(getStudentId()).fromAction(name()).oldStudent(oldStudent), helper.getUser());
 				
 				helper.commitTransaction();
 				
@@ -219,6 +219,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 							cd.setAlternative(false);
 							cd.setPriority(priority);
 							cd.setWaitlist(false);
+							cd.setNoSub(false);
 							cd.setCritical(0);
 							FreeTime free = cd.getFreeTime();
 							if (free == null) {
@@ -272,7 +273,10 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 				}
 				cd.setAlternative(false);
 				cd.setPriority(priority);
+				if (r.isWaitList() && !Boolean.TRUE.equals(cd.getWaitlist()))
+					cd.setWaitlistedTimeStamp(ts);
 				cd.setWaitlist(r.isWaitList());
+				cd.setNoSub(r.isNoSub());
 				cd.setCritical(isCritical(false, courses, critical));
 				Iterator<CourseRequest> requests = new TreeSet<CourseRequest>(cd.getCourseRequests()).iterator();
 				int order = 0;
@@ -337,6 +341,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 							cd.setAlternative(true);
 							cd.setPriority(priority);
 							cd.setWaitlist(false);
+							cd.setNoSub(false);
 							cd.setCritical(0);
 							FreeTime free = cd.getFreeTime();
 							if (free == null) {
@@ -390,7 +395,10 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 				}
 				cd.setAlternative(true);
 				cd.setPriority(priority);
+				if (r.isWaitList() && !Boolean.TRUE.equals(cd.getWaitlist()))
+					cd.setWaitlistedTimeStamp(ts);
 				cd.setWaitlist(r.isWaitList());
+				cd.setNoSub(r.isNoSub());
 				cd.setCritical(isCritical(true, courses, critical));
 				Iterator<CourseRequest> requests = new TreeSet<CourseRequest>(cd.getCourseRequests()).iterator();
 				int order = 0;
@@ -489,6 +497,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 			RequestedCourseStatus.OVERRIDE_CANCELLED == request.getMaxCreditOverrideStatus() ? CourseRequestOverrideStatus.CANCELLED :
 			RequestedCourseStatus.OVERRIDE_REJECTED == request.getMaxCreditOverrideStatus() ? CourseRequestOverrideStatus.REJECTED : null);
 		student.setOverrideMaxCredit(request.getMaxCreditOverride());
+		student.setOverrideIntent(null);
 		
 		helper.getHibSession().saveOrUpdate(student);
 		helper.getHibSession().flush();

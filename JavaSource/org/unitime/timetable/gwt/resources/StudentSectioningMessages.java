@@ -181,6 +181,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Preferences")
 	String colPreferences();
 	
+	@DefaultMessage("Requirements")
+	String colRequirements();
+	
 	@DefaultMessage("Warnings")
 	String colWarnings();
 	
@@ -198,6 +201,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("<br>Admin")
 	String colCanAdminChange();
+	
+	@DefaultMessage("Position")
+	String colWaitListPosition();
 	
 	/* Academic Session Selector messages
 	 */
@@ -478,9 +484,6 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("<u>V</u>ariable Credits")
 	String buttonChangeVariableCredits();
 	
-	@DefaultMessage("Submit Approval Requests")
-	String buttonSubmitSpecReg();
-	
 	@DefaultMessage("Register for the above schedule.")
 	String hintEnroll();
 	
@@ -549,6 +552,12 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("<u>N</u>otes")
 	String tabNotes();
+	
+	@DefaultMessage("Requested <u>A</u>pprovals")
+	String tabSpecialRegistrations();
+	
+	@DefaultMessage("<u>W</u>ait-Listed Courses")
+	String tabWaitListedCourses();
 	
 	@DefaultMessage("Course requests have been successfully submitted.")
 	String saveRequestsOK();
@@ -725,6 +734,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Exceeds maximum of {0,number,0.#} credit hours.")
 	String conflictOverMaxCredit(float maxCredit);
+	
+	@DefaultMessage("Wait-listed on {0}.")
+	String conflictWaitListed(String date);
 	
 	@DefaultMessage("Failed to load the application ({0}).")
 	String failedToLoadTheApp(String message);
@@ -1216,12 +1228,18 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("<sup><font color='#2066CE'>w)</font></sup>")
 	String htmlWaitListSign();
+	
+	@DefaultMessage("<sup><font color='#2066CE'>n)</font></sup>")
+	String htmlNoSubSign();
 		
 	@DefaultMessage(" (r)")
 	String csvReservationSign();
 	
 	@DefaultMessage(" (w)")
 	String csvWaitListSign();
+	
+	@DefaultMessage(" (n)")
+	String csvNoSubSign();
 	
 	@DefaultMessage("No results matching filter {0} found.")
 	String exceptionNoMatchingResultsFound(String filter);
@@ -1268,10 +1286,10 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage(" ({0}p)")
 	String csvFirstWaitListedPrioritySign(int priority);
 	
-	@DefaultMessage("r) Space available only with a reservation.<br>w) Wait-listed or No-Subs requests.")
+	@DefaultMessage("r) Space available only with a reservation.<br>w) Wait-listed and n) No-Subs requests.")
 	String sectioningStatusReservationHint();
 	
-	@DefaultMessage("(p) denotes priority of the first wait-listed/no-subs course request.")
+	@DefaultMessage("(p) denotes priority of the first wait-listed course request.")
 	String sectioningStatusPriorityHint();
 	
 	@DefaultMessage("Enrollment disabled.")
@@ -1498,6 +1516,18 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("You are now enrolled in {0} {1}")
 	String emailEnrollmentNew(String subject, String courseNbr);
+	
+	@DefaultMessage("Unable to enroll a wait-listed course: {0} {1}")
+	String emailEnrollmentFailedWaitListed(String subject, String courseNbr);
+	
+	@DefaultMessage("Unable to enroll {0} {1}: {2}")
+	String emailEnrollmentFailed(String subject, String courseNbr, String error);
+	
+	@DefaultMessage("Unable to drop {0} {1}: {2}")
+	String emailDropFailed(String subject, String courseNbr, String error);
+	
+	@DefaultMessage("The schedule change failed due to the following error: {0}\nAdditional approvals may be needed. Please consult your advisor.")
+	String emailEnrollmentFailedMessage(String error);
 
 	@DefaultMessage("No class schedule.")
 	String emailNoSchedule();
@@ -1636,10 +1666,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("You have made some changes in your course requests. Please click the Submit Requests button to update your submission.")
 	String warnRequestsChangedOnCourseRequest();
-	
-	@DefaultMessage("You have made some changes in your schedule. Please click the Submit Approval Requests button to validate your changes and request approvals if needed.")
-	String warnSpecialRegistrationChanged();
-		
+			
 	@DefaultMessage("There are unsaved changes in your schedule. Do you really want to discard these changes without updating your registration?")
 	String queryLeaveChangesOnClassSchedule();
 	
@@ -1729,10 +1756,10 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Together with other registration changes, the course {0} will be dropped. Do you want to proceed?")
 	String confirmEnrollmentCourseDrop(String course);
-	
+		
 	@DefaultMessage("Together with other registration changes, the critical course {0} will be dropped. This may prohibit progress towards degree. Please consult with your academic advisor. Do you want to proceed?")
 	String confirmEnrollmentCriticalCourseDrop(String course);
-
+	
 	@DefaultMessage("<u>N</u>ew Course")
 	String buttonQuickAdd();
 	
@@ -1753,6 +1780,9 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Do you want to drop {0} from your schedule?")
 	String confirmQuickDrop(String course);
+	
+	@DefaultMessage("Do you want to wait-list {0}?")
+	String confirmQuickWaitList(String course);
 	
 	@DefaultMessage("<u>D</u>egree Plan")
 	String buttonDegreePlan();
@@ -1805,9 +1835,15 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Submitted")
 	String colSpecRegSubmitted();
 	
+	@DefaultMessage("Wait-Listed")
+	String colWaitListedTimeStamp();
+	
 	@DefaultMessage("Registration Errors")
 	String colSpecRegErrors();
 	
+	@DefaultMessage("Registration Errors")
+	String colWaitListErrors();
+
 	@DefaultMessage("Last Note")
 	String colSpecRegNote();
 	
@@ -1846,6 +1882,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Failed to load degree plan: {0}")
 	String failedListDegreePlans(String reason);
+	
+	@DefaultMessage("Failed to validate wait-listed courses: {0}")
+	String failedWaitListValidation(String reason);
 	
 	@DefaultMessage("This plan is locked.")
 	String hintLockedPlan();
@@ -2161,8 +2200,11 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Advised")
 	String modeAdvised();
 	
-	@DefaultMessage("Request is wait-listed or marked as no-subs.")
+	@DefaultMessage("Request is wait-listed.")
 	String descriptionRequestWaitListed();
+	
+	@DefaultMessage("Request is marked as no-subs.")
+	String descriptionRequestNoSubs();
 	
 	@DefaultMessage("Course request is critical.")
 	String descriptionRequestCritical();
@@ -2194,6 +2236,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Warning")
 	String reqStatusWarning();
 	
+	@DefaultMessage("Not Requested")
+	String reqStatusNeeded();
+	
 	@DefaultMessage("You are already enrolled in {0}.\nThis course request cannot be modified or deleted.")
 	String enrolled(String course);
 	
@@ -2203,18 +2248,30 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("The following registration errors have been detected:\n{0}")
 	String overrideNeeded(String errors);
 	
+	@DefaultMessage("Registration errors were detected, but no override has been requested.")
+	String overrideNotRequested();
+	
 	@DefaultMessage("The following issues have been detected:\n{0}")
 	String requestWarnings(String errors);
 	
 	@DefaultMessage("Requested override for {0} has been denied.\nPlease select a different course or remove this course request.")
 	String overrideRejected(String course);
 	
+	@DefaultMessage("Requested override for {0} has been denied.")
+	String overrideRejectedWaitList(String course);
+	
 	@DefaultMessage("An override has been requested for {0}.\nWaiting for approval...")
 	String overridePending(String course);
 	
+	@DefaultMessage("An override has been requested for {0}.")
+	String overridePendingShort(String course);
+	
 	@DefaultMessage("Requested override for {0} has been cancelled.\nClick the Submit Requests button to re-validate this request and request a new override if it is still needed.")
 	String overrideCancelled(String course);
-	
+
+	@DefaultMessage("Requested override for {0} has been cancelled.")
+	String overrideCancelledWaitList(String course);
+
 	@DefaultMessage("Requested override for {0} has been approved.")
 	String overrideApproved(String course);
 	
@@ -2359,8 +2416,14 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("A max credit hours override has been requested.\nWaiting for approval...")
 	String creditStatusPending();
 	
+	@DefaultMessage("A max credit hours override has been requested.")
+	String creditStatusPendingShort();
+	
 	@DefaultMessage("The request to increase the maximum credit hours has been cancelled.\nClick the Submit Requests button to re-validate this request and request a new override if it is still needed.")
 	String creditStatusCancelled();
+	
+	@DefaultMessage("The request to increase the maximum credit hours has been cancelled.")
+	String creditStatusCancelledWaitList();
 	
 	@DefaultMessage("The request to increase the maximum credit hours has been approved.")
 	String creditStatusApproved();
@@ -2836,7 +2899,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Failed to load advisor course recommendations: {0}")
 	String failedAdvisorRequests(String reason);
 	
-	@DefaultMessage("Advisor Recommendations")
+	@DefaultMessage("Advisor <u>R</u>ecommendations")
 	String tabAdvisorRequests();
 	
 	@DefaultMessage("Course requests not filled in.")
@@ -3057,4 +3120,37 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("None of the above")
 	String itemReqVTNoInstructor();
+	
+	@DefaultMessage("Wait-list overrides not requested.")
+	String waitListOverridesNotRequested();
+	
+	@DefaultMessage("Wait-list overrides have been successfully requested.")
+	String waitListOverridesRequested();
+	
+	@DefaultMessage("Checking wait-lists...")
+	String waitValidateWaitLists();
+	
+	@DefaultMessage("Requesting wait-list overrides...")
+	String waitRequestWaitListOverrides();
+	
+	@DefaultMessage("Failed to request wait-list overrides: {0}")
+	String failedRequestWaitListOverrides(String message);
+	
+	@DefaultMessage("Wait-Listed Courses")
+	String panelWaitListedCourses();
+	
+	@DefaultMessage("Course {0} will no longer be wait-listed. Do you want to proceed?")
+	String confirmCourseDropFromWaitList(String course);
+	
+	@DefaultMessage("Course {0} cannot be wait-listed as there is a pending approval requested already.")
+	String errorWaitListApprovalAlreadyRequested(String course);
+	
+	@DefaultMessage("Please cancel the corresponding approval requests and click the Submit Schedule again.")
+	String errorWaitListApprovalCancelFirst();
+	
+	@DefaultMessage("Course {0} has a pending approval requested already. Cancel the approval request before wait-listing it.")
+	String messageWaitListApprovalAlreadyRequested(String course);
+	
+	@DefaultMessage("{0} of {1}")
+	String waitListPosition(Integer position, Integer total);
 }

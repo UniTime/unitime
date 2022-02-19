@@ -36,6 +36,8 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.custom.CustomSpecialRegistrationHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
+import org.unitime.timetable.onlinesectioning.custom.Customization;
+import org.unitime.timetable.onlinesectioning.custom.WaitListValidationProvider;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
@@ -169,8 +171,8 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 				} else {
 					iCheck.setFlag(EligibilityFlag.CAN_ENROLL, false);
 				}
-
-				StudentSectioningStatus s = StudentSectioningStatus.getPresentStatus(student.getSectioningStatus());
+				
+				StudentSectioningStatus s = StudentSectioningStatus.getPresentStatus(student.getSectioningStatus() != null ? student.getSectioningStatus() : student.getSession().getDefaultSectioningStatus());
 				
 				if (s != null && s.getMessage() != null)
 					iCheck.setMessage(s.getMessage());
@@ -207,7 +209,14 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 					CustomStudentEnrollmentHolder.getProvider().checkEligibility(server, helper, iCheck, xstudent);
 				if (CustomSpecialRegistrationHolder.hasProvider())
 					CustomSpecialRegistrationHolder.getProvider().checkEligibility(server, helper, iCheck, xstudent);
+				if (iCheck.hasFlag(EligibilityFlag.CAN_WAITLIST)) {
+					WaitListValidationProvider wp = Customization.WaitListValidationProvider.getProvider();
+					if (wp != null) wp.checkEligibility(server, helper, iCheck, xstudent);
+				}
 			}
+			
+			if (xstudent != null)
+				iCheck.setAdvisorWaitListedCourseIds(xstudent.getAdvisorWaitListedCourseIds(server));
 
 			logCheck(action, iCheck);
 			return iCheck;

@@ -80,7 +80,7 @@ public class ExamPdfReportForm extends ExamReportForm {
     private boolean iRoomDispNames = false;
     
     public static Hashtable<String,Class> sRegisteredReports = new Hashtable();
-    public static String[] sModes = {"PDF (Letter)", "PDF (Ledger)", "Text"};
+    public static String[] sModes = {"PDF (Letter)", "PDF (Ledger)", "Text", "CSV", "PDF (New)", "XLS"};
     public static int sDeliveryDownload = 0;
     public static int sDeliveryEmail = 1;
     

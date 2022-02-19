@@ -101,6 +101,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		FilterRpcResponse response = new FilterRpcResponse();
 		
 		StudentQuery query = getQuery(iRequest, server, helper);
+		CourseQuery courseQuery = getCourseQuery(iRequest, server, helper);
 		
 		Map<Long, Entity> areas = new HashMap<Long, Entity>();
 		for (Object[] o: (List<Object[]>)query.select("aac.academicArea.uniqueId, aac.academicArea.academicAreaAbbreviation, aac.academicArea.title, count(distinct s.uniqueId)")
@@ -315,7 +316,6 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		assignment.add(new Entity(0l, "Assigned", CONSTANTS.assignmentType()[0], "translated-value", CONSTANTS.assignmentType()[0]));
 		assignment.add(new Entity(1l, "Reserved", CONSTANTS.assignmentType()[1], "translated-value", CONSTANTS.assignmentType()[1]));
 		assignment.add(new Entity(2l, "Not Assigned", CONSTANTS.assignmentType()[2], "translated-value", CONSTANTS.assignmentType()[2]));
-		assignment.add(new Entity(3l, "Wait-Listed", CONSTANTS.assignmentType()[3], "translated-value", CONSTANTS.assignmentType()[3]));
 		if (CONSTANTS.assignmentType().length > 4)
 			assignment.add(new Entity(4l, "Critical", CONSTANTS.assignmentType()[4], "translated-value", CONSTANTS.assignmentType()[4]));
 		else
@@ -340,6 +340,20 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			assignment.add(new Entity(9l, "Not Assigned Important", CONSTANTS.assignmentType()[9], "translated-value", CONSTANTS.assignmentType()[9]));
 		else
 			assignment.add(new Entity(9l, "Not Assigned Important", "Not Assigned Important"));
+		if (CONSTANTS.assignmentType().length > 10)
+			assignment.add(new Entity(10l, "No-Substitutes", CONSTANTS.assignmentType()[10], "translated-value", CONSTANTS.assignmentType()[10]));
+		else
+			assignment.add(new Entity(10l, "No-Substitutes", "No-Substitutes"));
+		if (CONSTANTS.assignmentType().length > 11)
+			assignment.add(new Entity(11l, "Assigned No-Subs", CONSTANTS.assignmentType()[11], "translated-value", CONSTANTS.assignmentType()[11]));
+		else
+			assignment.add(new Entity(11l, "Assigned No-Subs", "Assigned No-Subs"));
+		if (CONSTANTS.assignmentType().length > 12)
+			assignment.add(new Entity(12l, "Not Assigned No-Subs", CONSTANTS.assignmentType()[12], "translated-value", CONSTANTS.assignmentType()[12]));
+		else
+			assignment.add(new Entity(12l, "Not Assigned No-Subs", "Not Assigned No-Subs"));
+		if (!(server instanceof StudentSolver))
+			assignment.add(new Entity(3l, "Wait-Listed", CONSTANTS.assignmentType()[3], "translated-value", CONSTANTS.assignmentType()[3]));
 		response.add("assignment", assignment);
 		
 		List<Entity> consent = new ArrayList<Entity>();
@@ -355,13 +369,16 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		if ("true".equals(iRequest.getOption("online"))) {
 			List<Entity> overrides = new ArrayList<Entity>();
 			for (CourseRequest.CourseRequestOverrideStatus status: CourseRequest.CourseRequestOverrideStatus.values()) {
-				overrides.add(new Entity(new Long(-1 - status.ordinal()), Constants.toInitialCase(status.name()), CONSTANTS.overrideType()[status.ordinal()], "translated-value", CONSTANTS.overrideType()[status.ordinal()])); 
+				try {
+					overrides.add(new Entity(new Long(-1 - status.ordinal()), Constants.toInitialCase(status.name()), CONSTANTS.overrideType()[status.ordinal()], "translated-value", CONSTANTS.overrideType()[status.ordinal()])); 
+				} catch (ArrayIndexOutOfBoundsException e) {}
 			}
-			for (Object[] o: (List<Object[]>)query.select("s.overrideStatus, count(distinct s)").where("s.overrideStatus is not null").order("s.overrideStatus").group("s.overrideStatus").exclude("credit").exclude("override").query(helper.getHibSession()).list()) {
-				Entity e = overrides.get((Integer)o[0]);
-				e.setCount(((Number)o[1]).intValue());
-			}
-			for (Object[] o: (List<Object[]>)query.select("xcr.overrideStatus, count(distinct xcr)").where("xcr.overrideStatus is not null").order("xcr.overrideStatus").group("xcr.overrideStatus").from("inner join s.courseDemands xcd inner join xcd.courseRequests xcr").exclude("credit").exclude("override").query(helper.getHibSession()).list()) {
+			if (!iRequest.hasOptions("assignment"))
+				for (Object[] o: (List<Object[]>)query.select("s.overrideStatus, count(distinct s)").where("s.overrideStatus is not null").order("s.overrideStatus").group("s.overrideStatus").exclude("credit").exclude("override").query(helper.getHibSession()).list()) {
+					Entity e = overrides.get((Integer)o[0]);
+					e.setCount(((Number)o[1]).intValue());
+				}
+			for (Object[] o: (List<Object[]>)courseQuery.select("cr.overrideStatus, count(distinct cr)").where("cr.overrideStatus is not null").order("cr.overrideStatus").group("cr.overrideStatus").exclude("credit").exclude("override").query(helper.getHibSession()).list()) {
 				Entity e = overrides.get((Integer)o[0]);
 				e.setCount(e.getCount() + ((Number)o[1]).intValue());
 			}
@@ -981,14 +998,34 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			query.addWhere("mode", "s.advisorCourseRequests is empty");
 		}
 		
-		if (request.hasOption("override")) {
-			CourseRequestOverrideStatus status = null;
-			for (CourseRequestOverrideStatus s: CourseRequestOverrideStatus.values())
-				if (s.name().equalsIgnoreCase(request.getOption("override"))) { status = s; break; }
-			if (status != null) {
+		if (request.hasOptions("override")) {
+			String where = "";
+			int id = 0;
+			boolean none = false;
+			for (String o: request.getOptions("override")) {
+				if ("none".equalsIgnoreCase(o) || "null".equalsIgnoreCase(o)) {
+					none = true; continue;
+				}
+				CourseRequestOverrideStatus status = null;
+				for (CourseRequestOverrideStatus s: CourseRequestOverrideStatus.values())
+					if (s.name().equalsIgnoreCase(o)) { status = s; break; }
+				if (status != null) {
+					where += (where.isEmpty() ? "" : ",") + ":Xstatus" + id;
+					query.addParameter("override", "Xstatus" + id, status.ordinal());
+					id++;
+				}
+			}
+			if (id > 0) {
+				if (none) {
+					query.addFrom("override", "CourseRequest xcr");
+					query.addWhere("override", "xcr.courseDemand.student = s and (xcr.overrideStatus is null or s.overrideStatus in (" + where + ") or xcr.overrideStatus in (" + where + "))");
+				} else {
+					query.addFrom("override", "CourseRequest xcr");
+					query.addWhere("override", "xcr.courseDemand.student = s and (s.overrideStatus in (" + where + ") or xcr.overrideStatus in (" + where + "))");
+				}
+			} else if (none) {
 				query.addFrom("override", "CourseRequest xcr");
-				query.addWhere("override", "xcr.courseDemand.student = s and (s.overrideStatus = :Xstatus or xcr.overrideStatus = :Xstatus)");
-				query.addParameter("override", "Xstatus", status.ordinal());
+				query.addWhere("override", "xcr.courseDemand.student = s and xcr.overrideStatus is null");
 			}
 		}
 		
@@ -1018,6 +1055,15 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			query.addFrom("require", "inner join s.courseDemands rcd inner join rcd.courseRequests rcr inner join rcr.preferences rp");
 			if (id > 0)
 				query.addWhere("require", "rp.label in (" + where + ") and rp.required = true");
+		}
+		
+		if (request.hasOption("assignment") && "Wait-Listed".equalsIgnoreCase(request.getOption("assignment"))) {
+			query.addFrom("assignment", "CourseRequest wcr");
+			if (ApplicationProperty.OfferingWaitListDefault.isTrue()) {
+				query.addWhere("assignment", "wcr.courseDemand.waitlist = true and wcr.courseDemand.student = s and not wcr.courseOffering.instructionalOffering.waitlist = false");
+			} else {
+				query.addWhere("assignment", "wcr.courseDemand.waitlist = true and wcr.courseDemand.student = s and wcr.courseOffering.instructionalOffering.waitlist = true");
+			}
 		}
 		
 		if (request.hasOptions("im")) {
@@ -1282,6 +1328,46 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				query.addFrom("im", "inner join co.instructionalOffering.instrOfferingConfigs cfg");
 			}
 		}
+		
+		if (request.hasOption("assignment") && "Wait-Listed".equalsIgnoreCase(request.getOption("assignment"))) {
+			query.addFrom("assignment", null);
+			if (ApplicationProperty.OfferingWaitListDefault.isTrue()) {
+				query.addWhere("assignment", "not co.instructionalOffering.waitlist = false and cd.waitlist = true");
+			} else {
+				query.addWhere("assignment", "co.instructionalOffering.waitlist = true and cd.waitlist = true");
+			}
+		}
+		
+		if (request.hasOptions("override")) {
+			String where = "";
+			int id = 0;
+			boolean none = false;
+			for (String o: request.getOptions("override")) {
+				if ("none".equalsIgnoreCase(o) || "null".equalsIgnoreCase(o)) {
+					none = true; continue;
+				}
+				CourseRequestOverrideStatus status = null;
+				for (CourseRequestOverrideStatus s: CourseRequestOverrideStatus.values())
+					if (s.name().equalsIgnoreCase(o)) { status = s; break; }
+				if (status != null) {
+					where += (where.isEmpty() ? "" : ",") + ":Xstatus" + id;
+					query.addParameter("override", "Xstatus" + id, status.ordinal());
+					id++;
+				}
+			}
+			if (id > 0) {
+				if (none) {
+					query.addFrom("override", null);
+					query.addWhere("override", "cr.overrideStatus is null or cr.overrideStatus in (" + where + ")");
+				} else {
+					query.addFrom("override", null);
+					query.addWhere("override", "cr.overrideStatus in (" + where + ")");
+				}
+			} else if (none) {
+				query.addFrom("override", null);
+				query.addWhere("override", "cr.overrideStatus is null");
+			}
+		}
 
 		return query;
 	}
@@ -1327,6 +1413,52 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				}
 			};
 		}
+		
+		public QueryInstance selectCourses(String select, FilterRpcRequest request) {
+			if (request.hasOption("assignment") && "Wait-Listed".equalsIgnoreCase(request.getOption("assignment"))) {
+				if (ApplicationProperty.OfferingWaitListDefault.isTrue()) {
+					addWhere("assignment", "not co.instructionalOffering.waitlist = false");
+				} else {
+					addWhere("assignment", "co.instructionalOffering.waitlist = true");
+				}
+			}
+			return new QueryInstance(select) {
+				@Override
+				public String query() {
+					return
+							"select " + (iSelect == null ? "distinct co" : iSelect) +
+							" from CourseOffering co " + 
+							(iFrom == null ? "" : iFrom.trim().toLowerCase().startsWith("inner join") ? " " + iFrom : ", " + iFrom) + getFrom(iExclude) +
+							" where co.instructionalOffering.session.uniqueId = :sessionId and co.instructionalOffering.notOffered = false" + getWhere(iExclude) + (iWhere == null ? "" : " and (" + iWhere + ")") +
+							(iGroupBy == null ? "" : " group by " + iGroupBy) +
+							(iOrderBy == null ? "" : " order by " + iOrderBy);
+				}
+			};
+		}
+	}
+	
+	public static boolean hasNoMatchCourses(FilterRpcRequest request, OnlineSectioningHelper helper) {
+		if (request.hasOptions("prefer") || request.hasOptions("require"))
+			return false;
+		if (request.hasOptions("area") || request.hasOptions("classification") || request.hasOptions("degree") || request.hasOptions("major") || request.hasOptions("concentration") || request.hasOptions("minor"))
+			return false;
+		if (request.hasOptions("group") || request.hasOptions("accommodation"))
+			return false;
+		for (StudentGroupType type: StudentGroupTypeDAO.getInstance().findAll(helper.getHibSession()))
+			if (request.hasOptions(type.getReference().replace(' ', '_')))
+				return false;
+		if (request.hasOptions("student") || request.hasOption("advisor") || request.hasOption("credit"))
+			return false;
+		if (request.hasOption("mode") || request.hasOptions("override") || request.hasOptions("prefer") || request.hasOptions("require"))
+			return false;
+		if (request.hasOption("assignment") && !"Wait-Listed".equalsIgnoreCase(request.getOption("assignment")))
+			return false;
+		if (request.hasText()) return false;
+		if (request.hasOptions("consent"))
+			return false;
+		if (request.hasOptions("approver") || request.hasOptions("accommodation") || request.hasOptions("operation") || request.hasOptions("overlap"))
+			return false;
+		return true;
 	}
 
 }

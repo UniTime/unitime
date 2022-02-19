@@ -20,14 +20,26 @@
 package org.unitime.timetable.onlinesectioning.basic;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.assignment.AssignmentComparator;
+import org.cpsolver.ifs.assignment.AssignmentMap;
 import org.cpsolver.ifs.util.DistanceMetric;
+import org.cpsolver.studentsct.model.Course;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.SctAssignment;
+import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -38,14 +50,13 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
-import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -54,17 +65,20 @@ import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
 import org.unitime.timetable.onlinesectioning.model.XInstructor;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XOverride;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
+import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
+import org.unitime.timetable.onlinesectioning.updates.WaitlistedOnlineSectioningAction;
 import org.unitime.timetable.util.Formats;
 
 /**
  * @author Tomas Muller
  */
-public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignmentInterface.Enrollment>> {
+public class ListEnrollments extends WaitlistedOnlineSectioningAction<List<ClassAssignmentInterface.Enrollment>> {
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	
@@ -116,7 +130,6 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 			
 			Set<String> regStates = new HashSet<String>();
 			Set<String> assStates = new HashSet<String>();
-			boolean waitListEnabled = CustomStudentEnrollmentHolder.isAllowWaitListing();
 			Set<String> wlStates = new HashSet<String>();
 			Set<String> noSubStates = new HashSet<String>();
 			AcademicSessionInfo session = server.getAcademicSession();
@@ -130,7 +143,7 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 					|| (iIsAdmin && StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.regadmin))
 					|| (iIsAdvisor && StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.regadvisor))
 					) regStates.add(status.getReference());
-				if (waitListEnabled && StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.waitlist))
+				if (StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.waitlist))
 					wlStates.add(status.getReference());
 				else if (StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.nosubs))
 					noSubStates.add(status.getReference());
@@ -146,10 +159,16 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 					if (enrollment != null && !course.getCourseId().equals(enrollment.getCourseId())) continue;
 					
 					XStudent student = server.getStudent(request.getStudentId());
-					if (enrollment == null && !student.canAssign(request)) continue;
 					String status = student.getStatus();
 					if (status == null) status = session.getDefaultSectioningStatus();
-					
+					WaitListMode wl = WaitListMode.None;
+					if (status == null || wlStates.contains(status))
+						wl = WaitListMode.WaitList;
+					else if (noSubStates.contains(status))
+						wl = WaitListMode.NoSubs;
+
+					if (enrollment == null && !student.canAssign(request, wl)) continue;
+
 					ClassAssignmentInterface.Enrollment e = new ClassAssignmentInterface.Enrollment();
 
 					// fill student information in
@@ -158,12 +177,7 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 					st.setSessionId(server.getAcademicSession().getUniqueId());
 					st.setExternalId(student.getExternalId());
 					st.setCanShowExternalId(iCanShowExtIds);
-					if ((status == null && waitListEnabled) || (status != null && wlStates.contains(status)))
-						st.setWaitListMode(WaitListMode.WaitList);
-					else if (status != null && noSubStates.contains(status))
-						st.setWaitListMode(WaitListMode.NoSubs);
-					else
-						st.setWaitListMode(WaitListMode.None);
+					st.setWaitListMode(wl);
 					st.setCanRegister(iCanRegister && (status == null || regStates.contains(status)));
 					st.setCanUseAssistant(iCanUseAssistant && (status == null || assStates.contains(status)));
 					st.setName(student.getName());
@@ -196,8 +210,10 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 					c.setCourseNbr(course.getCourseNumber());
 					c.setTitle(course.getTitle());
 					c.setHasCrossList(offering.hasCrossList());
+					c.setCanWaitList(offering.isWaitList());
 					e.setCourse(c);
 					e.setWaitList(request.isWaitlist());
+					e.setNoSub(request.isNoSub());
 					if (!request.getCourseIds().get(0).equals(course))
 						e.setAlternative(request.getCourseIds().get(0).getCourseName());
 					if (request.isAlternative()) {
@@ -209,8 +225,124 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 					}
 					if (request.getTimeStamp() != null)
 						e.setRequestedDate(request.getTimeStamp());
-					if (enrollment == null)
+					e.setCritical(request.getCritical());
+					if (request.getWaitListedTimeStamp() != null && request.getEnrollment() == null)
+						e.setWaitListedDate(request.getWaitListedTimeStamp());
+					e.setWaitListedPosition(getWaitListPosition(offering, student, request, course, server, helper));
+					if (enrollment == null) {
 						e.setEnrollmentMessage(request.getEnrollmentMessage());
+						if (request.hasOverrides()) {
+							XOverride override = request.getOverride(course);
+							if (override != null && override.getStatus() != null) {
+								switch (CourseRequestOverrideStatus.values()[override.getStatus()]) {
+								case PENDING:
+									e.addEnrollmentMessage(MSG.overridePendingShort(course.getCourseName())); break;
+								case REJECTED:
+									e.addEnrollmentMessage(MSG.overrideRejectedWaitList(course.getCourseName())); break;
+								case CANCELLED:
+									e.addEnrollmentMessage(MSG.overrideCancelledWaitList(course.getCourseName())); break;
+								case NOT_CHECKED:
+									e.addEnrollmentMessage(MSG.overrideNotRequested()); break;
+								}
+							}
+						}
+						if (student.getMaxCreditOverride() != null && student.getMaxCreditOverride().getStatus() != null && student.getMaxCredit() != null && course.hasCredit()) {
+							float credit = 0f;
+							for (XRequest r: student.getRequests()) {
+								if (r instanceof XCourseRequest && ((XCourseRequest)r).getEnrollment() != null) {
+									credit += ((XCourseRequest)r).getEnrollment().getCredit(server);
+								}
+							}
+							if (credit + course.getMinCredit() > student.getMaxCredit()) {
+								switch (CourseRequestOverrideStatus.values()[student.getMaxCreditOverride().getStatus()]) {
+								case PENDING:
+									e.addEnrollmentMessage(MSG.creditStatusPendingShort()); break;
+								case REJECTED:
+									e.addEnrollmentMessage(MSG.creditStatusDenied()); break;
+								case CANCELLED:
+									e.addEnrollmentMessage(MSG.creditStatusCancelledWaitList()); break;
+								case NOT_CHECKED:
+									e.addEnrollmentMessage(MSG.overrideNotRequested()); break;
+								}
+							}
+						}
+						if (request.isWaitlist(wl) && offering.isWaitList()) {
+							Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
+							org.cpsolver.studentsct.model.CourseRequest courseRequest = SectioningRequest.convert(assignment, request, server,  wl);
+							Collection<Enrollment> enrls = courseRequest.getEnrollmentsSkipSameTime(assignment);
+							TreeSet<Enrollment> overlap = new TreeSet<Enrollment>(new Comparator<Enrollment>() {
+								@Override
+								public int compare(Enrollment o1, Enrollment o2) {
+									return o1.getRequest().compareTo(o2.getRequest());
+								}
+							});
+							Hashtable<org.cpsolver.studentsct.model.CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<org.cpsolver.studentsct.model.CourseRequest, TreeSet<Section>>();
+							Enrollment noConfEnrl = null;
+							for (Iterator<Enrollment> f = enrls.iterator(); f.hasNext();) {
+								Enrollment enrl = f.next();
+								if (!course.getCourseId().equals(enrl.getCourse().getId())) continue;
+								boolean overlaps = false;
+								for (Request q: enrl.getStudent().getRequests()) {
+									if (q.equals(request)) continue;
+									Enrollment x = assignment.getValue(q);
+									if (q instanceof FreeTimeRequest) {
+										if (GetAssignment.isFreeTimeOverlapping((FreeTimeRequest)q, enrl)) {
+											overlaps = true;
+											overlap.add(((FreeTimeRequest)q).createEnrollment());
+										}
+									} else if (x != null && x.getAssignments() != null && !x.getAssignments().isEmpty()) {
+										for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
+								        	SctAssignment a = i.next();
+											if (a.isOverlapping(enrl.getAssignments())) {
+												overlaps = true;
+												overlap.add(x);
+												if (x.getRequest() instanceof org.cpsolver.studentsct.model.CourseRequest) {
+													org.cpsolver.studentsct.model.CourseRequest cr = (org.cpsolver.studentsct.model.CourseRequest)x.getRequest();
+													TreeSet<Section> ss = overlapingSections.get(cr);
+													if (ss == null) { ss = new TreeSet<Section>(new AssignmentComparator<Section, Request, Enrollment>(assignment)); overlapingSections.put(cr, ss); }
+													ss.add((Section)a);
+												}
+											}
+								        }
+									}
+								}
+								if (!overlaps && noConfEnrl == null)
+									noConfEnrl = enrl;
+							}
+							if (noConfEnrl == null) {
+								Set<String> overlaps = new TreeSet<String>();
+								for (Enrollment q: overlap) {
+									if (q.getRequest() instanceof FreeTimeRequest) {
+										overlaps.add(OnlineSectioningHelper.toString((FreeTimeRequest)q.getRequest()));
+									} else {
+										org.cpsolver.studentsct.model.CourseRequest cr = (org.cpsolver.studentsct.model.CourseRequest)q.getRequest();
+										Course o = q.getCourse();
+										String ov = MSG.course(o.getSubjectArea(), o.getCourseNumber());
+										if (overlapingSections.get(cr).size() == 1)
+											for (Iterator<Section> i = overlapingSections.get(cr).iterator(); i.hasNext();) {
+												Section s = i.next();
+												ov += " " + s.getSubpart().getName();
+												if (i.hasNext()) ov += ",";
+											}
+										overlaps.add(ov);
+									}
+								}
+								if (overlaps != null && !overlaps.isEmpty()) {
+									String message = null;
+									for (Iterator<String> i = overlaps.iterator(); i.hasNext();) {
+										String ov = i.next();
+										if (message == null)
+											message = MSG.conflictWithFirst(ov);
+										else if (i.hasNext())
+											message += MSG.conflictWithMiddle(ov);
+										else
+											message += MSG.conflictWithLast(ov);
+									}
+									e.addEnrollmentMessage(message + ".");
+								}
+							}
+						}
+					}
 					
 					// fill enrollment information in
 					if (enrollment != null) {

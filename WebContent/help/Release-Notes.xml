@@ -28,11 +28,170 @@
 	<version>4.6.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
-		<title>TBD</title>
+		<title>Online Student Scheduling: Wait-Listing</title>
 		<item>
-			<name>Various Improvements</name>
+			<name>Configuration</name>
 			<description>
-				<line>A number of improvements are planned for the UniTime 4.6 release, including major changes to the wait-listing.</line>
+				<line>Only certain courses may be enabled for wait-listing (there is a toggle on the Edit Course Offering page).
+					<line>By default, only selected courses can be wait-listed. This can be changed using unitime.offering.waitListDefault which defaults to false.</line>
+					<line>Certain overrides can be disabled for wait-listed courses (using unitime.offering.waitList.prohibitedOverride).
+						<line>For example, a student should not be allowed to request a class limit override for a course that can be wait-listed.</line>
+					</line>
+				</line>
+				<line>There is now a different toggle for wait-listing (Wait-List) and for just indicating that a course cannot be substituted (No-Subs).
+					<line>A student (Course Requests, Scheduling Assistant) can use one or the other, based on the student status.</line>
+					<line>An advisor (Course Recommendations) can use one or the other, based on the unitime.acr.waitlist setting (defaults to None) or based on the student status.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling Assistant</name>
+			<description>
+				<line>An additional information about wait-listed courses is displayed, in the Wait-Listed Courses section (shown when at least one course is wait-listed).</line>
+				<line>As only some course can be wait-listed, the Wait-List checkbox is only available if the first-choice course can be wait-listed.</line>
+				<line>There is a warning when a wait-listed course overlaps with the rest of the schedule.</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling Dashboard</name>
+			<description>
+				<line>Wait-List and No-Sub toggles are separated, including the Filter / assignment.</line>
+				<line>A course only shows as wait-listed while the student is allowed to wait-list and the course can be wait-listed.</line>
+				<line>Show wait-listed courses in the detail of a student, and additional wait-list information (like the wait-listed time stamp, or student's position on the wait-list) on various places of the page.</line>
+				<line>Various improvements in the filtering for wait-listed courses.</line>
+			</description>
+		</item>
+		<item>
+			<name>Custom Validation</name>
+			<description>
+				<line>A custom validation of the wait-listed course requests can be implemented using the WaitListValidationProvider class.
+					<line>The validation does work similarly to pre-registration, using a test schedule, but doing one course at a time on top of the existing schedule.</line>
+					<line>It may include max credit overrides.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Process Changes</name>
+			<description>
+				<line>Re-scheduling is disabled by default (students are not moved around during course unlock).
+					<line>Can be enabled by setting solver configuration parameter Enrollment.ReSchedulingEnabled to true.</line>
+				</line>
+				<line>Students wait-listed for a course are processed in the following order:
+					<line>Course request priority (critical courses) first, student priority second, wait-listed time stamp last.</line>
+					<line>Students with a pending override, a time conflict, or students over max credit are skipped.</line>
+					<line>The order can be customized (e.g., only be based on the wait-listed time stamp)</line>
+				</line> 
+				<line>Email notifications added when custom enrollment fails (it is not possible to enroll student because of registration error).</line>
+				<line>Wait-list toggle is no longer automatically enabled when a student attempts to enroll to a course that is currently locked.</line>
+				<line>Various improvements across all the wait-listing functionality.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Special Registration: Variable Title Workflow</name>
+			<description>
+				<line>Added an ability to plug-in a variable title course request workflow.</line>
+				<line>This include a new functionality on the Scheduling Assistant page and an API that can be used to create a variable title course in UniTime.</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Requests: Requested Credit</name>
+			<description>
+				<line>Requested credit computation updated to consider students (and optionally) advisor's no-subs/wait-listed courses.
+					<line>A no-sub/wait-listed course cannot be replaced by a substitute course.</line>
+					<line>The advisor recommendations are only considered when the solver parameter Load.UseAdvisorWaitLists is set to true.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Online Student Scheduling Dashboard: Requested Approvals</name>
+			<description>
+				<line>Details of a student: show student's requested approvals in a new tab when available.</line>
+			</description>
+		</item>
+		<item>
+			<name>Batch Student Scheduling: Section Times</name>
+			<description>
+				<line>Added ability to load arranged hours (no time) classes with a time (listing the date pattern but no time) and rooms (that are required by the class).
+					<line>This allows the effective date pattern and required room to show on arranged hours classes on the solver dashboard.</line>
+					<line>Can be disabled by setting the solver parameter Load.ArrangedHoursPlacements to false (defaults to true).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling Dashboards: Enrollments</name>
+			<description>
+				<line>When showing classes of a course, list all classes (but the classes that do not match the filter are grayed out).</line>
+				<line>It is possible to switch between showing all classes and just the matching classes using the sctdashShowUnmatchedClasses user setting parameter (defaults to yes, show unmatched classes).</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling Dashboards: Additional Filter Capabilities</name>
+			<description>
+				<line>Requested credit range (e.g., requested-credit:&gt;=15 for students that requested 15+ credit hours)</line>
+				<line>First-choice credit range (e.g., first-choice-credit:&gt;=15 for students with their first-choice requested courses of 15 or more credit hours)</line>
+				<line>Choice / alternativity (e.g., choice:&gt;1 for cases where an alternative course is assigned, or not-assigned primary course request has at least one alternative)</line>
+				<line>Request Priority (e.g., rp:&lt;=2 for course requests that are of priority 1 or 2)</line>
+				<line>Online / Face-to-face / Has-Time / No-Time (e.g., face-to-face:&lt;2 for students with less than two face-to-face classes, or online:&gt;50% for students with more than half of their classes online)</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Examination Timetabling</title>
+		<item>
+			<name>Examination PDF Reports</name>
+			<description>
+				<line>Added new output format options: CSV, XLS, and PDF using a non-monospaced font.</line>
+			</description>
+		</item>
+	</category>
+		<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Solver: Stop</name>
+			<description>
+				<line>Added ability to stop the solver after it has finished, while running the when finished actions, including:
+					<line>solution save (all solvers),</line>
+					<line>student sectioning (course timetabling solver),</line>
+					<line>validation (student scheduling solver).</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Added Support for JDK 16+</name>
+			<description>
+				<line>Various dependencies updated to avoid illegal access exceptions.</line>
+				<line>MemoryCounter updated to avoid illegal access calls (using the Unsafe access instead).</line>
+				<line>Known issues:
+					<line>Spring LDAP is still not fully JDK 16+ compatible, JAVA_OPTS must include --add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED for the time being.</line>
+					<line>Due to this issue, LDAP authentication is disabled by default, to enable add the following line to catalina.properties:
+						<line>unitime.spring.context.security=securityContextLDAP.xml</line>
+					</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Added Support for Apache Tomcat 10</name>
+			<description>
+				<line>Due to the move from Java EE to Jakarta EE, the Tomcat 10 compatible version of UniTime is available under web-tomcat10 in the distribution.
+					<line>It is built using the Apache Tomcat migration tool for Jakarta EE.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Dependencies / Technology Update</name>
+			<description>
+				<line>GWT updated to version 2.9.0 (was 2.8.2).</line>
+				<line>Javassist updated to version 3.28.0 (was 3.18.2).</line>
+				<line>GWT updated to version 2.9.0 (was 2.8.2).</line>
+				<line>Spring core libraries updated to version 5.3.6 (was 4.3.40).</line>
+				<line>Spring security updated to 5.4.6 (was 4.2.20).</line>
+				<line>Spring integration updated to 5.4.6 (was 4.3.24).</line>
 			</description>
 		</item>
 	</category>

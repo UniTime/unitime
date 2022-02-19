@@ -171,6 +171,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowSnapshotLimit()) ret+=1;
     	if (isShowRoomRatio()) ret+=1;
     	if (isShowManager()) ret+=1;
+    	if (isShowFundingDepartment()) ret+=1;
     	if (isShowDatePattern()) ret+=1;
     	if (isShowMinPerWk()) ret+=1;
     	if (isShowTimePattern()) ret+=1;
@@ -202,6 +203,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowSnapshotLimit()) width[idx++] = 50f;
     	if (isShowRoomRatio()) width[idx++] = 50f;
     	if (isShowManager()) width[idx++] = 75f;
+    	if (isShowFundingDepartment()) width[idx++] = 75f;
     	if (isShowDatePattern()) width[idx++] = 100f;
     	if (isShowMinPerWk()) width[idx++] = 60f;
     	if (isShowTimePattern()) width[idx++] = 80f;
@@ -292,6 +294,11 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowManager()){
     		PdfPCell c = createCell();
     		addText(c, MSG.columnManager(), true, Element.ALIGN_LEFT);
+    		iPdfTable.addCell(c);
+    	}
+    	if (isShowFundingDepartment()){
+    		PdfPCell c = createCell();
+    		addText(c, MSG.columnFundingDepartment(), true, Element.ALIGN_LEFT);
     		iPdfTable.addCell(c);
     	}
     	if (isShowDatePattern()){
@@ -406,6 +413,11 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		iPdfTable.addCell(c);
     	}
     	if (isShowManager()){
+    		PdfPCell c = createCell();
+    		c.setBorderWidthBottom(1);
+    		iPdfTable.addCell(c);
+    	}
+    	if (isShowFundingDepartment()){
     		PdfPCell c = createCell();
     		c.setBorderWidthBottom(1);
     		iPdfTable.addCell(c);
@@ -970,6 +982,21 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         return cell;
     }
 
+    private PdfPCell pdfBuildFundingDepartment(PreferenceGroup prefGroup, boolean isEditable){
+    	Color color = (isEditable?sEnableColor:sDisableColor);
+    	PdfPCell cell = createCell();
+
+    	Department managingDept = null;
+    	if (prefGroup instanceof Class_) {
+    		managingDept = ((Class_)prefGroup).getEffectiveFundingDept();
+    	} 
+    	if (managingDept!=null) {
+    		addText(cell, managingDept.getShortLabel(), false, false, Element.ALIGN_LEFT, color, true);
+    	}
+
+        return cell;
+    }
+    
     private PdfPCell pdfBuildManager(PreferenceGroup prefGroup, boolean isEditable){
     	Color color = (isEditable?sEnableColor:sDisableColor);
     	PdfPCell cell = createCell();
@@ -1228,6 +1255,9 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowManager()){
     		iPdfTable.addCell(pdfBuildManager(prefGroup, isEditable));
      	} 
+    	if (isShowFundingDepartment()){
+    		iPdfTable.addCell(pdfBuildFundingDepartment(prefGroup, isEditable));
+     	} 
     	if (isShowDatePattern()){
     		iPdfTable.addCell(pdfBuildDatePatternCell(classAssignment, prefGroup, isEditable));
      	} 
@@ -1386,6 +1416,9 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         	    iPdfTable.addCell(createCell());
         	} 
         	if (isShowManager()){
+        	    iPdfTable.addCell(createCell());
+        	} 
+        	if (isShowFundingDepartment()){
         	    iPdfTable.addCell(createCell());
         	} 
         	if (isShowDatePattern()){
@@ -1548,6 +1581,9 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		emptyCels ++;
     	} 
     	if (isShowManager()){
+    		emptyCels ++;
+    	}
+    	if (isShowFundingDepartment()){
     		emptyCels ++;
     	}
     	if (isShowDatePattern()){
@@ -1828,7 +1864,12 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         			iDocument.open();
         		else
         			iDocument.newPage();
-   		    	iDocument.add(new Paragraph(MSG.labelOfferedCourses(subjectArea.getSubjectAreaAbbreviation()), PdfFont.getBigFont(true)));
+        		if (isFilterWaitlist())
+        			iDocument.add(new Paragraph(MSG.labelOfferedWaitListedCourses(subjectArea.getSubjectAreaAbbreviation()), PdfFont.getBigFont(true)));
+		    	else if (isFilterNonWaitlist())
+		    		iDocument.add(new Paragraph(MSG.labelOfferedNotWaitListedCourses(subjectArea.getSubjectAreaAbbreviation()), PdfFont.getBigFont(true)));
+		    	else
+		    		iDocument.add(new Paragraph(MSG.labelOfferedCourses(subjectArea.getSubjectAreaAbbreviation()), PdfFont.getBigFont(true)));
     		}
     		pdfBuildTableHeader(context.getUser().getCurrentAcademicSessionId());
                   

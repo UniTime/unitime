@@ -69,6 +69,11 @@ public class DatabaseServer extends AbstractLockingServer {
 	public DatabaseServer(AcademicSessionInfo session, boolean allowAsyncCalls) {
 		super(session, allowAsyncCalls);
 	}
+	
+	@Override
+	protected void loadOnMaster(OnlineSectioningServerContext context) throws SectioningException {
+		setReady(true);
+	}
 
 	@Override
 	public Collection<XCourseId> findCourses(String query, Integer limit, CourseMatcher matcher) {

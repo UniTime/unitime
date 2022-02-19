@@ -62,6 +62,7 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityChe
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
+import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
 import org.unitime.timetable.gwt.shared.UserAuthenticationProvider;
 
 import com.google.gwt.core.client.GWT;
@@ -96,6 +97,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -927,7 +929,7 @@ public class EnrollmentTable extends Composite {
 		}
 		
 		boolean hasPriority = false, hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasAlternative = false, hasReservation = false, hasRequestedDate = false, hasEnrolledDate = false, hasConflict = false, hasMessage = false;
-		boolean hasAdvisor = false, hasMinor = false, hasConc = false, hasDeg = false;
+		boolean hasAdvisor = false, hasMinor = false, hasConc = false, hasDeg = false, hasWaitlistedDate = false, hasWaitListedPosition = false, hasCritical = false;
 		Set<String> groupTypes = new HashSet<String>();
 		for (ClassAssignmentInterface.Enrollment e: enrollments) {
 			if (filter(f, e)) continue;
@@ -947,6 +949,9 @@ public class EnrollmentTable extends Composite {
 			if (e.getStudent().hasMinor()) hasMinor = true;
 			if (e.getStudent().hasConcentration()) hasConc = true;
 			if (e.getStudent().hasDegree()) hasDeg = true;
+			if (e.hasWaitListedDate()) hasWaitlistedDate = true;
+			if (e.hasWaitListedPosition()) hasWaitListedPosition = true;
+			if (e.isCritical() || e.isImportant()) hasCritical = true;
 		}
 
 		UniTimeTableHeader hPriority = null;
@@ -1101,18 +1106,39 @@ public class EnrollmentTable extends Composite {
 			addSortOperation(hSubpart, subpart);
 		}
 		
+		UniTimeTableHeader hCritical = null;
+		if (hasCritical) {
+			hCritical = new UniTimeTableHeader(MESSAGES.colCritical());
+			header.add(hCritical);
+			addSortOperation(hCritical, EnrollmentComparator.SortBy.CRITICAL, MESSAGES.colCritical());
+		}
+		
 		UniTimeTableHeader hRequestTS = null; 
 		if (hasRequestedDate) {
 			hRequestTS = new UniTimeTableHeader(MESSAGES.colRequestTimeStamp());
 			header.add(hRequestTS);
 			addSortOperation(hRequestTS, EnrollmentComparator.SortBy.REQUEST_TS, MESSAGES.colRequestTimeStamp());
 		}
-		
+				
 		UniTimeTableHeader hEnrollmentTS = null;
 		if (hasEnrolledDate) {
 			hEnrollmentTS = new UniTimeTableHeader(MESSAGES.colEnrollmentTimeStamp());
 			header.add(hEnrollmentTS);
 			addSortOperation(hEnrollmentTS, EnrollmentComparator.SortBy.ENROLLMENT_TS, MESSAGES.colEnrollmentTimeStamp());
+		}
+		
+		UniTimeTableHeader hWaitlistTS = null; 
+		if (hasWaitlistedDate) {
+			hWaitlistTS = new UniTimeTableHeader(MESSAGES.colWaitListedTimeStamp());
+			header.add(hWaitlistTS);
+			addSortOperation(hWaitlistTS, EnrollmentComparator.SortBy.WAITLIST_TS, MESSAGES.colWaitListedTimeStamp());
+		}
+		
+		UniTimeTableHeader hWaitlistPOS = null; 
+		if (hasWaitListedPosition) {
+			hWaitlistPOS = new UniTimeTableHeader(MESSAGES.colWaitListPosition());
+			header.add(hWaitlistPOS);
+			addSortOperation(hWaitlistPOS, EnrollmentComparator.SortBy.WAITLIST_POS, MESSAGES.colWaitListPosition());
 		}
 
 		UniTimeTableHeader hMessage = null;
@@ -1391,10 +1417,25 @@ public class EnrollmentTable extends Composite {
 					line.add(new HTML(enrollment.getClasses(subpart, ", ", suffix), false));
 				}
 			}
+			if (hasCritical) {
+				Image i;
+				if (enrollment.isCritical()) {
+					i = new Image(RESOURCES.requestsCritical()); i.setTitle(MESSAGES.descriptionRequestCritical()); i.setAltText(MESSAGES.descriptionRequestCritical());
+				} else if (enrollment.isImportant()) {
+					i = new Image(RESOURCES.requestsImportant()); i.setTitle(MESSAGES.descriptionRequestImportant()); i.setAltText(MESSAGES.descriptionRequestImportant());
+				} else {
+					i = new Image(RESOURCES.requestsNotCritical()); i.setTitle(MESSAGES.descriptionRequestNotCritical()); i.setAltText(MESSAGES.descriptionRequestNotCritical());
+				}
+				line.add(i);
+			}
 			if (hasRequestedDate)
 				line.add(new HTML(enrollment.getRequestedDate() == null ? "&nbsp;" : sDF.format(enrollment.getRequestedDate()), false));
 			if (hasEnrolledDate)
 				line.add(new HTML(enrollment.getEnrolledDate() == null ? "&nbsp;" : sDF.format(enrollment.getEnrolledDate()), false));
+			if (hasWaitlistedDate)
+				line.add(new HTML(enrollment.hasWaitListedDate() ? sTSF.format(enrollment.getWaitListedDate()) : "&nbsp;", false));
+			if (hasWaitListedPosition)
+				line.add(new HTML(enrollment.hasWaitListedPosition() ? enrollment.getWaitListedPosition() : "&nbsp;", false));
 			if (hasMessage)
 				line.add(new HTML(enrollment.hasEnrollmentMessage() ? enrollment.getEnrollmentMessage().replace("\n", "<br>") : "&nbsp;", true));
 			if (hasAdvisor)
@@ -1578,6 +1619,9 @@ public class EnrollmentTable extends Composite {
 			case MINOR: h = hMinor; break;
 			case ADVISOR: h = hAdvisor; break;
 			case DEGREE: h = hDegree; break;
+			case WAITLIST_TS: h = hWaitlistTS; break;
+			case WAITLIST_POS: h = hWaitlistPOS; break;
+			case CRITICAL: h = hCritical; break;
 			}
 			if (h != null)
 				iEnrollments.sort(h, new EnrollmentComparator(sort, group), asc);
@@ -1870,6 +1914,9 @@ public class EnrollmentTable extends Composite {
 			MINOR,
 			CONCENTRATION,
 			DEGREE,
+			WAITLIST_TS,
+			WAITLIST_POS,
+			CRITICAL,
 			;
 		}
 		
@@ -1963,11 +2010,17 @@ public class EnrollmentTable extends Composite {
 					if (cmp != 0) return cmp;
 					return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
 				case RESERVATION:
-					return (e1.getReservation() == null ? "" : e1.getReservation()).compareTo(e2.getReservation() == null ? "" : e2.getReservation());
+					if (!e1.hasReservation() || !e2.hasReservation())
+						return (e1.hasReservation() ? -1 : e2.hasReservation() ? 1 : 0);
+					return e1.getReservation().compareTo(e2.getReservation());
 				case REQUEST_TS:
-					return (e1.getRequestedDate() == null ? new Date(0) : e1.getRequestedDate()).compareTo(e2.getRequestedDate() == null ? new Date(0) : e2.getRequestedDate());
+					if (!e1.hasRequestedDate() || !e2.hasRequestedDate())
+						return (e1.hasRequestedDate() ? -1 : e2.hasRequestedDate() ? 1 : 0);
+					return e1.getRequestedDate().compareTo(e2.getRequestedDate());
 				case ENROLLMENT_TS:
-					return (e1.getEnrolledDate() == null ? new Date(0) : e1.getEnrolledDate()).compareTo(e2.getEnrolledDate() == null ? new Date(0) : e2.getEnrolledDate());
+					if (!e1.hasEnrolledDate() || !e2.hasEnrolledDate())
+						return (e1.hasEnrolledDate() ? -1 : e2.hasEnrolledDate() ? 1 : 0);
+					return e1.getEnrolledDate().compareTo(e2.getEnrolledDate());
 				case MESSAGE:
 					return (e1.getEnrollmentMessage() == null ? "" : e1.getEnrollmentMessage()).compareTo(e2.getEnrollmentMessage() == null ? "" : e2.getEnrollmentMessage());
 				case ADVISOR:
@@ -1976,6 +2029,7 @@ public class EnrollmentTable extends Composite {
 				case CONFLICT_NAME:
 				case CONFLICT_DATE:
 				case CONFLICT_TIME:
+				case CONFLICT_ROOM:
 					if (e1.hasConflict()) {
 						if (e2.hasConflict()) {
 							Iterator<Conflict> i1 = e1.getConflicts().iterator();
@@ -1998,7 +2052,21 @@ public class EnrollmentTable extends Composite {
 					}
 					return 0;
 				case APPROVED:
-					return new Long(e1.getApprovedDate() == null ? 0 : e1.getApprovedDate().getTime()).compareTo(e2.getApprovedDate() == null ? 0 : e2.getApprovedDate().getTime());
+					if (!e1.hasApprovedDate() || !e2.hasApprovedDate())
+						return (e1.hasApprovedDate() ? -1 : e2.hasApprovedDate() ? 1 : 0);
+					return e1.getApprovedDate().compareTo(e2.getApprovedDate());
+				case WAITLIST_TS:
+					if (!e1.hasWaitListedDate() || !e2.hasWaitListedDate())
+						return (e1.hasWaitListedDate() ? -1 : e2.hasWaitListedDate() ? 1 : 0);
+					return e1.getWaitListedDate().compareTo(e2.getWaitListedDate());
+				case WAITLIST_POS:
+					if (!e1.hasWaitListedPosition() || !e2.hasWaitListedPosition())
+						return (e1.hasWaitListedPosition() ? -1 : e2.hasWaitListedPosition() ? 1 : 0);
+					return NaturalOrderComparator.compare(e1.getWaitListedPosition(), e2.getWaitListedPosition());
+				case CRITICAL:
+					if (e1.isCritical()) return (e2.isCritical() ? 0 : -1);
+					if (e1.isImportant()) return (e2.isCritical() ? 1 : e2.isImportant() ? 0 : -1);
+					return (e2.isImportant() || e2.isCritical() ? 1 : 0);
 				}
 			}
 			return 0;

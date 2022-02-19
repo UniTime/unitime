@@ -59,6 +59,7 @@ import org.cpsolver.ifs.extension.ConflictStatistics;
 import org.cpsolver.ifs.extension.Extension;
 import org.cpsolver.ifs.model.Constraint;
 import org.cpsolver.ifs.solver.Solver;
+import org.cpsolver.ifs.termination.TerminationCondition;
 import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.Callback;
 import org.cpsolver.ifs.util.DataProperties;
@@ -274,7 +275,12 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     @Override
     protected void finishBeforeSave() {
 		if (getProperties().getPropertyBoolean("General.SwitchStudents",true)) {
-			((TimetableModel)currentSolution().getModel()).switchStudents(currentSolution().getAssignment(), null);
+			((TimetableModel)currentSolution().getModel()).switchStudents(currentSolution().getAssignment(), new TerminationCondition<Lecture, Placement>() {
+				@Override
+				public boolean canContinue(org.cpsolver.ifs.solution.Solution<Lecture, Placement> currentSolution) {
+					return !isStop();
+				}
+			});
 			currentSolution().saveBest();
 		}
     }

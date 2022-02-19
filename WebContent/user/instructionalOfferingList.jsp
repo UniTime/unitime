@@ -50,7 +50,7 @@
 				    		        frm, 
 				    		        frm.getSubjectAreaIds(), 
 				    		        true, 
-				    		        frm.getCourseNbr() == null || frm.getCourseNbr().isEmpty(),
+				    		        frm.areAllCoursesGiven(),
 				    		        out,
 				    		        request.getParameter("backType"),
 				    		        request.getParameter("backId"));

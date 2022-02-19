@@ -44,6 +44,8 @@ public enum Customization {
 	SpecialRegistrationDashboardUrlProvider(SpecialRegistrationDashboardUrlProvider.class, ApplicationProperty.CustomizationSpecialRegistrationDashboardUrl),
 	AdvisorCourseRequestsValidationProvider(AdvisorCourseRequestsValidationProvider.class, ApplicationProperty.CustomizationAdvisorsCourseRequestsValidation),
 	VariableTitleCourseProvider(VariableTitleCourseProvider.class, ApplicationProperty.CustomizationVariableTitleCourseProvider),
+	WaitListValidationProvider(WaitListValidationProvider.class, ApplicationProperty.CustomizationWaitListValidationProvider),
+	WaitListComparatorProvider(WaitListComparatorProvider.class, ApplicationProperty.CustomizationWaitListComparatorProvider)
 	;
 	
 	private Holder<?> iHolder;

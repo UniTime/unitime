@@ -54,12 +54,12 @@ import org.unitime.timetable.model.StudentEnrollmentMessage;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideIntent;
 import org.unitime.timetable.model.StudentSectioningStatus.Option;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.status.FindEnrollmentAction;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseLookup;
 import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbCourseRequestMatcher;
@@ -124,7 +124,7 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 			st.setExternalId(student.getExternalUniqueId());
 			st.setCanShowExternalId(iCanShowExtIds);
 			StudentSectioningStatus status = student.getEffectiveStatus();
-			if (CustomStudentEnrollmentHolder.isAllowWaitListing() && (status == null || status.hasOption(Option.waitlist))) {
+			if (status == null || status.hasOption(Option.waitlist)) {
 				st.setWaitListMode(WaitListMode.WaitList);
 			} else if (status != null && status.hasOption(Option.nosubs)) {
 				st.setWaitListMode(WaitListMode.NoSubs);
@@ -176,8 +176,10 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 			c.setCourseNbr(course.getCourseNbr());
 			c.setTitle(course.getTitle());
 			c.setHasCrossList(course.getInstructionalOffering().hasCrossList());
+			c.setCanWaitList(course.getInstructionalOffering().effectiveWaitList());
 			e.setCourse(c);
-			e.setWaitList(request.getCourseDemand().isWaitlist());
+			e.setWaitList(request.getCourseDemand().effectiveWaitList());
+			e.setNoSub(request.getCourseDemand().effectiveNoSub());
 			if (crm.enrollment().isEmpty()) {
 				if (request.getCourseDemand().getEnrollmentMessages() != null) {
 		        	StudentEnrollmentMessage message = null;
@@ -189,6 +191,30 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 		        	if (message != null)
 		        		e.setEnrollmentMessage(message.getMessage());
 				}
+				if (request.getOverrideStatus() != null) {
+					switch (request.getCourseRequestOverrideStatus()) {
+					case PENDING:
+						e.addEnrollmentMessage(MSG.overridePendingShort(course.getCourseName())); break;
+					case REJECTED:
+						e.addEnrollmentMessage(MSG.overrideRejectedWaitList(course.getCourseName())); break;
+					case CANCELLED:
+						e.addEnrollmentMessage(MSG.overrideCancelledWaitList(course.getCourseName())); break;
+					case NOT_CHECKED:
+						e.addEnrollmentMessage(MSG.overrideNotRequested()); break;
+					}
+				}
+				if (student.getOverrideStatus() != null && student.getMaxCreditOverrideIntent() == CourseRequestOverrideIntent.WAITLIST) {
+					switch (student.getMaxCreditOverrideStatus()) {
+					case PENDING:
+						e.addEnrollmentMessage(MSG.creditStatusPendingShort()); break;
+					case REJECTED:
+						e.addEnrollmentMessage(MSG.creditStatusDenied()); break;
+					case CANCELLED:
+						e.addEnrollmentMessage(MSG.creditStatusCancelledWaitList()); break;
+					case NOT_CHECKED:
+						e.addEnrollmentMessage(MSG.overrideNotRequested()); break;
+					}
+				}
 			}
 			CourseRequest alt = null;
 			for (CourseRequest r: request.getCourseDemand().getCourseRequests()) {
@@ -199,7 +225,7 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 			if (request.getCourseDemand().isAlternative()) {
 				alt = null;
 				demands: for (CourseDemand demand: student.getCourseDemands()) {
-					if (!demand.getCourseRequests().isEmpty() && !demand.isAlternative() && !demand.isWaitlist()) {
+					if (!demand.getCourseRequests().isEmpty() && !demand.isAlternative() && !demand.effectiveWaitList() && !demand.effectiveNoSub()) {
 						for (CourseRequest r: demand.getCourseRequests()) {
 							if (!r.getClassEnrollments().isEmpty()) continue demands;
 						}
@@ -214,6 +240,9 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 			}
 			if (request.getCourseDemand().getTimestamp() != null)
 				e.setRequestedDate(request.getCourseDemand().getTimestamp());
+			if (request.getCourseDemand().getWaitlistedTimeStamp() != null && crm.enrollment().isEmpty())
+				e.setWaitListedDate(request.getCourseDemand().getWaitlistedTimeStamp());
+			e.setCritical(request.getCourseDemand().getEffectiveCritical().ordinal());
 			if (!crm.enrollment().isEmpty()) {
 				if (crm.reservation() != null) {
 					if (crm.reservation() instanceof IndividualReservation)

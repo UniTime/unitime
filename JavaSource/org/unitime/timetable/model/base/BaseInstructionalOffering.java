@@ -54,6 +54,7 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	private String iNotes;
 	private Integer iSnapshotLimit;
 	private Date iSnapshotLimitDate;
+	private Boolean iWaitlist;
 
 	private Session iSession;
 	private Set<CourseOffering> iCourseOfferings;
@@ -74,6 +75,7 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	public static String PROP_NOTES = "notes";
 	public static String PROP_SNAPSHOT_LIMIT = "snapshotLimit";
 	public static String PROP_SNAPSHOT_LIMIT_DATE = "snapshotLimitDate";
+	public static String PROP_WAITLIST = "waitlist";
 
 	public BaseInstructionalOffering() {
 		initialize();
@@ -132,6 +134,10 @@ public abstract class BaseInstructionalOffering implements Serializable {
 
 	public Date getSnapshotLimitDate() { return iSnapshotLimitDate; }
 	public void setSnapshotLimitDate(Date snapshotLimitDate) { iSnapshotLimitDate = snapshotLimitDate; }
+
+	public Boolean isWaitlist() { return iWaitlist; }
+	public Boolean getWaitlist() { return iWaitlist; }
+	public void setWaitlist(Boolean waitlist) { iWaitlist = waitlist; }
 
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
@@ -201,6 +207,7 @@ public abstract class BaseInstructionalOffering implements Serializable {
 			"\n	SnapshotLimitDate: " + getSnapshotLimitDate() +
 			"\n	UniqueId: " + getUniqueId() +
 			"\n	UniqueIdRolledForwardFrom: " + getUniqueIdRolledForwardFrom() +
+			"\n	Waitlist: " + getWaitlist() +
 			"]";
 	}
 }

@@ -23,13 +23,17 @@ import java.io.Serializable;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.FilterInterface;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.ItypeDescDAO;
 import org.unitime.timetable.server.solver.TimetableGridHelper.DisplayMode;
 import org.unitime.timetable.server.solver.TimetableGridHelper.ResourceType;
 import org.unitime.timetable.util.Constants;
@@ -58,6 +62,7 @@ public class TimetableGridContext implements Serializable {
 	private String iLocale;
 	private String iInstructorNameFormat = NameFormat.SHORT.reference();
 	private int iWeekOffset = 0;
+	private Long iSessionId = null;
 	
 	public TimetableGridContext() {}
 	
@@ -139,6 +144,7 @@ public class TimetableGridContext implements Serializable {
         iShowConfigName = ApplicationProperty.SolverShowConfiguratioName.isTrue();
         iShowClassNameTwoLines = ApplicationProperty.TimeGridShowNameInTwoLines.isTrue();
         iShowCourseTitle = "1".equals(filter.getParameterValue("showTitles"));
+        iSessionId = session.getUniqueId();
 	}
 	
 	public String getFilter() { return iFilter; }
@@ -194,4 +200,56 @@ public class TimetableGridContext implements Serializable {
 	public void setInstructorNameFormat(String format) { iInstructorNameFormat = format; }
 	
 	public int getWeekOffset() { return iWeekOffset; }
+	
+	private HashMap<Integer, String> iInstructionalTypeColors = null;
+    public static String[] sBgColors = new String[] {
+            "rgb(102,140,217)",
+            "rgb(76,176,82)",
+        	"rgb(242,166,64)",
+        	"rgb(224,194,64)",
+        	"rgb(230,115,153)",
+        	"rgb(179,115,179)",
+        	"rgb(101,173,137)",
+        	"rgb(140,102,217)",
+        	"rgb(102,140,179)",
+        	"rgb(89,191,179)",
+        	"rgb(140,191,64)",
+        	"rgb(191,191,77)",
+        	"rgb(230,128,77)",
+        	"rgb(190,148,148)",
+        	"rgb(169,146,169)",
+        	"rgb(137,151,165)",
+        	"rgb(148,162,190)",
+        	"rgb(133,170,165)",
+        	"rgb(167,167,125)",
+        	"rgb(196,168,131)",
+        	"rgb(217,102,102)"};
+    public String getInstructionalTypeColor(Integer id) {
+		if (id == null) return null;
+    	if (iInstructionalTypeColors == null) {
+    		iInstructionalTypeColors = new HashMap<Integer, String>();
+    		List<ItypeDesc> itypes = (List<ItypeDesc>)ItypeDescDAO.getInstance().getSession().createQuery(
+    				"from ItypeDesc where " +
+    				"itype in (select s.itype.itype from SchedulingSubpart s where s.instrOfferingConfig.instructionalOffering.session = :sessionId) " +
+    				"order by itype"
+    				).setLong("sessionId", iSessionId).list();
+    		for (ItypeDesc it: itypes) {
+    			if (it.getParent() == null) {
+    				String color = sBgColors[iInstructionalTypeColors.size() % sBgColors.length];
+    				iInstructionalTypeColors.put(it.getItype(), color);
+    			}
+    		}
+    		for (ItypeDesc it: itypes) {
+    			if (it.getParent() != null)
+    				iInstructionalTypeColors.put(it.getItype(), getInstructionalTypeColor(it.getParent().getItype()));
+    		}
+    	}
+		String color = iInstructionalTypeColors.get(id);
+		if (color == null) {
+			color = sBgColors[iInstructionalTypeColors.size() % sBgColors.length];
+			iInstructionalTypeColors.put(id, color);
+		}
+		return color;
+	}
+
 }

@@ -21,6 +21,7 @@ package org.unitime.timetable.dataexchange;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -50,6 +51,7 @@ import org.unitime.timetable.util.Formats;
 
 public class StudentSectioningExport extends BaseExport {
 	protected static Formats.Format<Number> sTwoNumbersDF = Formats.getNumberFormat("00");
+	protected static Formats.Format<Date> sDateFormat = Formats.getDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 	protected DecimalFormat iCreditDF = new DecimalFormat("0.0", new DecimalFormatSymbols(Locale.US));
 	
 	@Override
@@ -133,6 +135,8 @@ public class StudentSectioningExport extends BaseExport {
 	        				courseOfferingEl.addAttribute("courseNumber", cr.getCourseOffering().getCourseNbr());
 	        				if (first && cd.isWaitlist())
 	        					courseOfferingEl.addAttribute("waitlist", "true");
+	        				if (first && cd.getNoSub() != null && cd.getNoSub().booleanValue())
+	        					courseOfferingEl.addAttribute("nosub", "true");
 	        				if (first && cd.isAlternative())
 	        					courseOfferingEl.addAttribute("alternative", "true");
 	        				if (first && cd.getCritical() != null)
@@ -141,6 +145,10 @@ public class StudentSectioningExport extends BaseExport {
 	        					courseOfferingEl.addAttribute("criticalOverride", CourseDemand.Critical.values()[cd.getCriticalOverride()].name().toLowerCase());
 	        				if (cr.getCredit() != null && cr.getCredit() != 0)
 	        					courseOfferingEl.addAttribute("credit", String.valueOf(cr.getCredit()));
+	        				if (first && cd.getWaitlistedTimeStamp() != null)
+        						courseOfferingEl.addAttribute("waitlisted", sDateFormat.format(cd.getWaitlistedTimeStamp()));
+	        				if (first && cd.getTimestamp() != null)
+	        					courseOfferingEl.addAttribute("requested", sDateFormat.format(cd.getTimestamp()));
 	        				for (StudentClassEnrollment enrollment: cr.getClassEnrollments()) {
 	        	        		Element classEl = courseOfferingEl.addElement("class");
 	        	        		Class_ clazz = enrollment.getClazz();
@@ -149,6 +157,8 @@ public class StudentSectioningExport extends BaseExport {
 	        	        			classEl.addAttribute("externalId", extId);
 	        	        		classEl.addAttribute("type", clazz.getSchedulingSubpart().getItypeDesc().trim());
 	        	        		classEl.addAttribute("suffix", getClassSuffix(clazz));
+	        	        		if (enrollment.getTimestamp() != null)
+	        	        			classEl.addAttribute("enrolled", sDateFormat.format(enrollment.getTimestamp()));
 	        				}
 	        				if (cr.getPreferences() != null && !cr.getPreferences().isEmpty()) {
 	        					Element prefEl = courseOfferingEl.addElement("preferences");
@@ -184,6 +194,8 @@ public class StudentSectioningExport extends BaseExport {
 	        		if (acr.getPriority() == -1) {
 	        			if (acr.getNotes() != null)
 	        				recommendationsEl.addAttribute("notes",  acr.getNotes());
+	        			if (acr.getTimestamp() != null)
+	        				recommendationsEl.addAttribute("recommended", sDateFormat.format(acr.getTimestamp()));
 	        			continue;
 	        		} else if (acr.getAlternative() == 0) {
 	        			recEl = recommendationsEl.addElement("recommendation");
@@ -195,6 +207,7 @@ public class StudentSectioningExport extends BaseExport {
 	        		}
 	        		if (acr.getCredit() != null) acrEl.addAttribute("credit", acr.getCredit());
 	        		if (acr.getWaitlist() != null) acrEl.addAttribute("waitlist", acr.getWaitlist() ? "true" : "false");
+	        		if (acr.getNoSub() != null) acrEl.addAttribute("nosub", acr.getNoSub() ? "true" : "false");
 	        		if (acr.getNotes() != null) acrEl.addAttribute("notes", acr.getNotes());
 	        		if (acr.getCourse() != null) acrEl.addAttribute("course", acr.getCourse());
 	        		if (acr.getFreeTime() != null) {
@@ -210,6 +223,8 @@ public class StudentSectioningExport extends BaseExport {
 	        	        freeTimeEl.addAttribute("endTime", startSlot2startTime(acr.getFreeTime().getStartSlot() + acr.getFreeTime().getLength()));
 	        	        freeTimeEl.addAttribute("length", String.valueOf(Constants.SLOT_LENGTH_MIN * acr.getFreeTime().getLength()));
 	        		}
+        			if (acr.getTimestamp() != null)
+        				acrEl.addAttribute("recommended", sDateFormat.format(acr.getTimestamp()));
 	        		if (acr.getCourseOffering() != null) {
 	        			acrEl.addAttribute("subjectArea", acr.getCourseOffering().getSubjectAreaAbbv());
 	        			acrEl.addAttribute("courseNumber", acr.getCourseOffering().getCourseNbr());

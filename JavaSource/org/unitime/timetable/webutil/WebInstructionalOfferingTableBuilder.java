@@ -138,6 +138,7 @@ public class WebInstructionalOfferingTableBuilder {
     										MSG.columnSchedulePrintNote(),
     										MSG.columnNote(),
     										MSG.columnExam(),
+    										MSG.columnFundingDepartment(),
     										MSG.columnLms()};
     
     @Deprecated
@@ -154,6 +155,7 @@ public class WebInstructionalOfferingTableBuilder {
     private boolean showLimit;
     private boolean showSnapshotLimit;
     private boolean showRoomRatio;
+    private boolean showFundingDepartment;
     private boolean showManager;
     private boolean showDatePattern;
     private boolean showTimePattern;
@@ -168,9 +170,10 @@ public class WebInstructionalOfferingTableBuilder {
     private boolean showConsent;
     private boolean showExam;
     private boolean showExamName=true;
-    private boolean showExamTimetable;
+    private boolean showExamTimetable;  
     private boolean showInstructorAssignment;
     private boolean showLms;
+    private String filterWaitlist;
     
 	private boolean iDisplayDistributionPrefs = true;
     private boolean iDisplayTimetable = true;
@@ -287,7 +290,7 @@ public class WebInstructionalOfferingTableBuilder {
     public void setShowConsent(boolean showConsent) {
         this.showConsent = showConsent;
     }
-    
+        
     public boolean isShowTitle() {
         return showTitle;
     }
@@ -301,7 +304,7 @@ public class WebInstructionalOfferingTableBuilder {
     public void setShowExam(boolean showExam) {
         this.showExam = showExam;
     }
-    
+
     public boolean isShowExamName() {
         return showExamName;
     }
@@ -317,6 +320,10 @@ public class WebInstructionalOfferingTableBuilder {
     
     public boolean isShowInstructorAssignment() { return showInstructorAssignment; }
     public void setShowInstructorAssignment(boolean showInstructorAssignment) { this.showInstructorAssignment = showInstructorAssignment; }
+    
+    public boolean isFilterWaitlist() { return "W".equals(filterWaitlist); }
+    public boolean isFilterNonWaitlist() { return "N".equals(filterWaitlist); }
+    public void setFilterWaitlist(String filterWaitlist) { this.filterWaitlist = filterWaitlist; }
 
     public boolean isShowLms() {
 		return showLms;
@@ -459,6 +466,10 @@ public class WebInstructionalOfferingTableBuilder {
     		cell = this.headerCell(MSG.columnManager(), 2, 1);
     		row.addContent(cell);
     	}
+    	if (isShowFundingDepartment()){
+    		cell = this.headerCell(MSG.columnFundingDepartment(), 2, 1);
+    		row.addContent(cell);
+    	}
     	if (isShowDatePattern()){
     		cell = this.headerCell(MSG.columnDatePattern(), 2, 1);
     		row.addContent(cell);
@@ -513,7 +524,7 @@ public class WebInstructionalOfferingTableBuilder {
     	}
     	if (isShowInstructor()){
     		cell = this.headerCell(MSG.columnInstructor(), 2, 1);
-    		row.addContent(cell);    		
+    		row.addContent(cell);
     	}
     	if (getDisplayTimetable() && isShowTimetable()){
 	    	cell = headerCell("--------" + MSG.columnTimetable() + "--------", 1, 3);
@@ -533,6 +544,7 @@ public class WebInstructionalOfferingTableBuilder {
     		cell.setStyleClass("WebTableHeaderSecondRow");
     		row2.addContent(cell);
     	}
+
     	if (isShowTitle()){
     		cell = this.headerCell(MSG.columnTitle(), 2, 1);
     		row.addContent(cell);    		
@@ -1198,6 +1210,18 @@ public class WebInstructionalOfferingTableBuilder {
         return(cell);
     }
 
+    protected TableCell buildFundingDepartment(PreferenceGroup prefGroup, boolean isEditable){
+    	TableCell cell = null;
+    	Department fundingDepartment = null;
+    	if (prefGroup instanceof Class_) {
+    		fundingDepartment = ((Class_)prefGroup).getEffectiveFundingDept();
+    	} /*else if (prefGroup instanceof SchedulingSubpart) {
+    		fundingDepartment = ((SchedulingSubpart)prefGroup).getFundingDepartment();
+    	} */
+    	cell = initNormalCell(fundingDepartment==null?"&nbsp;":fundingDepartment.getManagingDeptAbbv(), isEditable);
+        return(cell);
+    }
+    
     protected TableCell buildMinPerWeek(PreferenceGroup prefGroup, boolean isEditable){
     	TableCell cell = null;
     	if (prefGroup instanceof Class_) {
@@ -1426,6 +1450,9 @@ public class WebInstructionalOfferingTableBuilder {
     	if (isShowManager()){
     		row.addContent(this.buildManager(prefGroup, isEditable));
      	} 
+     	if (isShowFundingDepartment()){
+    		row.addContent(this.buildFundingDepartment(prefGroup, isEditable));
+       	} 
     	if (isShowDatePattern()){
     		row.addContent(this.buildDatePatternCell(classAssignment,prefGroup, isEditable));
      	} 
@@ -1705,6 +1732,9 @@ public class WebInstructionalOfferingTableBuilder {
         	if (isShowManager()){
                 row.addContent(initNormalCell("", isEditable));
         	} 
+        	if (isShowFundingDepartment()){
+                row.addContent(initNormalCell("", isEditable));
+        	} 
         	if (isShowDatePattern()){
                 row.addContent(initNormalCell("", isEditable));
 	       	} 
@@ -1886,6 +1916,9 @@ public class WebInstructionalOfferingTableBuilder {
     	if (isShowManager()){
     		emptyCells ++;
     	}
+    	if (isShowFundingDepartment()){
+    		emptyCells ++;
+    	} 
     	if (isShowDatePattern()){
     		emptyCells ++;
        	}
@@ -2211,7 +2244,12 @@ public class WebInstructionalOfferingTableBuilder {
     		    try {
     		    	if (allCoursesAreGiven)
     		    		outputStream.print("<DIV align=\"right\"><A class=\"l7\" href=\"#notOffered" + subjectAreaId + "\">" + MSG.labelNotOfferedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</A></DIV>");
-    			    outputStream.print("<DIV class=\"WelcomeRowHead\"><A name=\"offered" + subjectAreaId + "\"></A>" + MSG.labelOfferedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</DIV>");
+    		    	if (isFilterWaitlist())
+    		    		outputStream.print("<DIV class=\"WelcomeRowHead\"><A name=\"offered" + subjectAreaId + "\"></A>" + MSG.labelOfferedWaitListedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</DIV>");
+    		    	else if (isFilterNonWaitlist())
+    		    		outputStream.print("<DIV class=\"WelcomeRowHead\"><A name=\"offered" + subjectAreaId + "\"></A>" + MSG.labelOfferedNotWaitListedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</DIV>");
+    		    	else
+    		    		outputStream.print("<DIV class=\"WelcomeRowHead\"><A name=\"offered" + subjectAreaId + "\"></A>" + MSG.labelOfferedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</DIV>");
     			} catch (IOException e) {
     				e.printStackTrace();
     			}
@@ -2284,6 +2322,7 @@ public class WebInstructionalOfferingTableBuilder {
 		setShowLimit(form.getLimit().booleanValue());
 		setShowSnapshotLimit(form.getSnapshotLimit().booleanValue());
 		setShowRoomRatio(form.getRoomLimit().booleanValue());
+		setShowFundingDepartment(form.getFundingDepartment().booleanValue());
 		setShowManager(form.getManager().booleanValue());
 		setShowDatePattern(form.getDatePattern().booleanValue());
 		setShowTimePattern(form.getTimePattern().booleanValue());
@@ -2304,6 +2343,7 @@ public class WebInstructionalOfferingTableBuilder {
 		} else {
 		    setShowExam(false);
 		}
+		
 		if (form.getInstructorAssignment() != null) {
 			setShowInstructorAssignment(form.getInstructorAssignment());
 		} else {
@@ -2313,6 +2353,11 @@ public class WebInstructionalOfferingTableBuilder {
 			setShowLms(form.getLms());
 		} else {
 			setShowLms(false);
+		}
+		if (form.getWaitlist() != null) {
+			setFilterWaitlist(form.getWaitlist());
+		} else {
+			setFilterWaitlist(null);
 		}
 	}
 	
@@ -2326,6 +2371,7 @@ public class WebInstructionalOfferingTableBuilder {
 		setShowLimit(columns.contains(MSG.columnLimit()));
 		setShowSnapshotLimit(columns.contains(MSG.columnSnapshotLimit()));
 		setShowRoomRatio(columns.contains(MSG.columnRoomRatio()));
+		setShowFundingDepartment(columns.contains(MSG.columnFundingDepartment()));
 		setShowManager(columns.contains(MSG.columnManager()));
 		setShowDatePattern(columns.contains(MSG.columnDatePattern()));
 		setShowTimePattern(columns.contains(MSG.columnTimePattern()));
@@ -2399,6 +2445,12 @@ public class WebInstructionalOfferingTableBuilder {
 	}
 	public void setShowManager(boolean showManager) {
 		this.showManager = showManager;
+	}
+	public boolean isShowFundingDepartment() {
+		return showFundingDepartment;
+	}
+	public void setShowFundingDepartment(boolean showFundingDepartment) {
+		this.showFundingDepartment = showFundingDepartment;
 	}
 	public boolean isShowMinPerWk() {
 		return showMinPerWk;
@@ -2481,6 +2533,4 @@ public class WebInstructionalOfferingTableBuilder {
 	public void setShowSubpartCredit(boolean showSubpartCredit) {
 		this.showSubpartCredit = showSubpartCredit;
 	}
-	
-
 }

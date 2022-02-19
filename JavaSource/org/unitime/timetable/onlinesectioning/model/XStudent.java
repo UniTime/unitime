@@ -45,7 +45,9 @@ import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Request;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.CourseDemand;
@@ -58,8 +60,12 @@ import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupType;
 import org.unitime.timetable.model.StudentNote;
+import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.StudentSectioningStatus.Option;
+import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 
 /**
  * @author Tomas Muller
@@ -85,6 +91,7 @@ public class XStudent extends XStudentId implements Externalizable {
     private List<XAdvisorRequest> iAdvisorRequests = null;
     private String iPin;
     private boolean iPinReleased = false;
+    private Map<Long, Long> iFailedWaitLists = new HashMap<Long, Long>();
 
     public XStudent() {
     	super();
@@ -428,6 +435,16 @@ public class XStudent extends XStudentId implements Externalizable {
      * Get student status (online sectioning only)
      */
     public String getStatus() { return iStatus; }
+    
+    public WaitListMode getWaitListMode(OnlineSectioningHelper helper) {
+    	Student student = StudentDAO.getInstance().get(getStudentId(), helper.getHibSession());
+    	if (student == null) return WaitListMode.None;
+    	StudentSectioningStatus status = student.getEffectiveStatus();
+    	if (status == null) return WaitListMode.WaitList;
+    	if (status.hasOption(Option.waitlist)) return WaitListMode.WaitList;
+    	if (status.hasOption(Option.nosubs)) return WaitListMode.NoSubs;
+    	return WaitListMode.None;
+    }
     /**
      * Set student status
      */
@@ -455,16 +472,18 @@ public class XStudent extends XStudentId implements Externalizable {
      * number of requests assigned (i.e., number of non-alternative course
      * requests).
      **/
-    public boolean canAssign(XCourseRequest request) {
+    public boolean canAssign(XCourseRequest request, WaitListMode mode) {
         if (request.getEnrollment() != null)
             return true;
+        if (!request.isAlternative() && request.isWaitlist() && mode == WaitListMode.WaitList)
+        	return true;
         int alt = 0;
         boolean found = false;
         for (XRequest r : iRequests) {
             if (r.equals(request)) found = true;
             boolean course = (r instanceof XCourseRequest);
             boolean assigned = (!course || ((XCourseRequest)r).getEnrollment() != null || r.equals(request));
-            boolean waitlist = (course && ((XCourseRequest)r).isWaitlist());
+            boolean waitlist = (course && ((XCourseRequest)r).isWaitListOrNoSub(mode));
             if (r.isAlternative()) {
                 if (assigned || (!found && waitlist))
                     alt--;
@@ -488,6 +507,28 @@ public class XStudent extends XStudentId implements Externalizable {
     				courseIds.add(request.getCourseId().getCourseId());
     	return courseIds;
     }
+    
+    public Set<Long> getAdvisorWaitListedCourseIds(boolean useWaitList, boolean useNoSubs) {
+    	if (!useWaitList && !useNoSubs) return null;
+    	if (!hasAdvisorRequests()) return null;
+    	Set<Long> courseIds = new HashSet<Long>();
+    	for (XAdvisorRequest request: getAdvisorRequests()) {
+    			if (useWaitList && request.hasCourseId() && request.isWaitList() && !request.isSubstitute())
+    				courseIds.add(request.getCourseId().getCourseId());
+    			if (useNoSubs && request.hasCourseId() && request.isNoSub() && !request.isSubstitute())
+    				courseIds.add(request.getCourseId().getCourseId());
+    	}
+    	return courseIds;
+    }
+    
+    public Set<Long> getAdvisorWaitListedCourseIds(OnlineSectioningServer server) {
+    	return getAdvisorWaitListedCourseIds(
+    			server.getConfig().getPropertyBoolean("Load.UseAdvisorWaitLists", false),
+    			server.getConfig().getPropertyBoolean("Load.UseAdvisorNoSubs", false)
+    			);
+    }
+    
+    
     
     @Override
     public String toString() {
@@ -767,5 +808,20 @@ public class XStudent extends XStudentId implements Externalizable {
 		public XAdvisor readObject(ObjectInput input) throws IOException, ClassNotFoundException {
 			return new XAdvisor(input);
 		}
+	}
+	
+	public void markFailedWaitList(XCourseId courseId) {
+		if (courseId != null)
+			iFailedWaitLists.put(courseId.getCourseId(), System.currentTimeMillis());
+	}
+	
+	public boolean isFailedWaitlist(XCourseId courseId) {
+		return isFailedWaitlist(courseId, ApplicationProperty.FailedWaitListDelayInSeconds.intValue());
+	}
+	
+	public boolean isFailedWaitlist(XCourseId courseId, Integer delayInSeconds) {
+		if (courseId == null || delayInSeconds == null || delayInSeconds <= 0) return false;
+		Long last = iFailedWaitLists.get(courseId.getCourseId());
+		return last != null && System.currentTimeMillis() - last < 1000l * delayInSeconds;
 	}
 }

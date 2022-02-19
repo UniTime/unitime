@@ -99,7 +99,8 @@ public class OnlineSectioningLogger extends Thread {
 	public void record(OnlineSectioningLog.Log log) {
 		if (log == null || !isEnabled() || !isActive()) return;
 		for (OnlineSectioningLog.Action action: log.getActionList()) {
-			if (action.hasStartTime() && action.hasStudent() && action.hasOperation() && action.hasSession() && ApplicationProperty.OnlineSchedulingLogOperation.isTrue(action.getOperation())) {
+			if (action.hasStartTime() && action.hasStudent() && action.hasOperation() && action.hasSession() && ApplicationProperty.OnlineSchedulingLogOperation.isTrue(action.getOperation())
+				&& ApplicationProperty.OnlineSchedulingLogOperation.isTrue(action.getOperation() + "." + (action.hasResult() ? action.getResult().name() : "NULL"))) {
 				synchronized (iActions) {
 					if (iLogLimit <= 0 || iActions.size() < iLogLimit)
 						iActions.add(action);
@@ -117,7 +118,7 @@ public class OnlineSectioningLogger extends Thread {
 	protected static String getRequestMessage(OnlineSectioningLog.Action action) {
 		String request = "";
 		int notAlt = 0, lastFT = -1;
-		for (OnlineSectioningLog.Request r: action.getRequestList()) {
+		for (OnlineSectioningLog.Request r: (action.getRequestCount() > 0 ? action.getRequestList() : action.getRecommendationList())) {
 			if (!r.getAlternative()) notAlt = r.getPriority() + 1;
 			int idx = 0;
 			for (OnlineSectioningLog.Time f: r.getFreeTimeList()) {
@@ -130,7 +131,7 @@ public class OnlineSectioningLogger extends Thread {
 				request += DayCode.toString(f.getDays()) + " "  + time(f.getStart()) + " - " + time(f.getStart() + f.getLength());
 				lastFT = r.getPriority();
 			}
-			if (r.getFreeTimeList().isEmpty())
+			if (r.getFreeTimeList().isEmpty()) {
 				for (OnlineSectioningLog.Entity e: r.getCourseList()) {
 					if (idx == 0) {
 						request += (request.isEmpty() ? "" : "\n") + (r.getAlternative() ? "A" + (1 + r.getPriority() - notAlt) : String.valueOf(1 + r.getPriority())) + ". ";
@@ -140,6 +141,9 @@ public class OnlineSectioningLogger extends Thread {
 					idx++;
 					request += e.getName();
 				}
+				if (r.getWaitList()) request += " (w)";
+				else if (r.getNoSubs()) request += " (s)";
+			}
 		}
 		return request;
 	}
@@ -172,6 +176,8 @@ public class OnlineSectioningLogger extends Thread {
 		OnlineSectioningLog.Enrollment enrl = null;
 		for (OnlineSectioningLog.Enrollment e: action.getEnrollmentList()) {
 			enrl = e;
+			if ("check-offering".equals(action.getOperation()) && e.getType() == OnlineSectioningLog.Enrollment.EnrollmentType.COMPUTED) break;
+			if ("reload-offering".equals(action.getOperation()) && e.getType() == OnlineSectioningLog.Enrollment.EnrollmentType.COMPUTED) break;
 			if (e.getType() == OnlineSectioningLog.Enrollment.EnrollmentType.REQUESTED) break;
 		}
 		String enrollment = "";
@@ -214,9 +220,13 @@ public class OnlineSectioningLogger extends Thread {
 		} else if ("suggestions".equals(action.getOperation())) {
 			String selected = getSelectedMessage(action);
 			return (selected.isEmpty() ? message : selected);
-		} if ("section".equals(action.getOperation())) {
+		} else if ("section".equals(action.getOperation())) {
 			String request = getRequestMessage(action);
 			return (request.isEmpty() ? message : request);
+		} else if ("check-offering".equals(action.getOperation()) && action.hasResult() && !OnlineSectioningLog.Action.ResultType.SUCCESS.equals(action.getResult()) && !message.isEmpty()) {
+			return message;
+		} else if ("reload-offering".equals(action.getOperation()) && action.hasResult() && !OnlineSectioningLog.Action.ResultType.SUCCESS.equals(action.getResult()) && !message.isEmpty()) {
+			return message;
 		} else {
 			String enrollment = getEnrollmentMessage(action);
 			if (!enrollment.isEmpty()) return enrollment;

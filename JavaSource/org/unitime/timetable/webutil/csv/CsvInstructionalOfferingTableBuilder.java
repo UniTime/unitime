@@ -135,6 +135,7 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowSnapshotLimit()) ret+=1;
     	if (isShowRoomRatio()) ret+=1;
     	if (isShowManager()) ret+=1;
+    	if (isShowFundingDepartment()) ret+=1;
     	if (isShowDatePattern()) ret+=1;
     	if (isShowMinPerWk()) ret+=1;
     	if (isShowTimePattern()) ret+=1;
@@ -186,6 +187,9 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	}
     	if (isShowManager()) {
     		line.add(createCell(MSG.columnManager()));
+    	}
+    	if (isShowFundingDepartment()) {
+    		line.add(createCell(MSG.columnFundingDepartment()));
     	}
     	if (isShowDatePattern()) {
     		line.add(createCell(MSG.columnDatePattern()));
@@ -655,6 +659,20 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         return cell;
     }
 
+    private CSVField csvBuildFundingDepartment(PreferenceGroup prefGroup, boolean isEditable){
+    	CSVField cell = createCell();
+
+    	Department managingDept = null;
+    	if (prefGroup instanceof Class_) {
+    		managingDept = ((Class_)prefGroup).getEffectiveFundingDept();
+    	} 
+    	if (managingDept!=null) {
+    		addText(cell, managingDept.getShortLabel(), true);
+    	}
+
+        return cell;
+    }
+    
     private CSVField csvBuildManager(PreferenceGroup prefGroup, boolean isEditable){
     	CSVField cell = createCell();
 
@@ -903,6 +921,9 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowManager()){
     		line.add(csvBuildManager(prefGroup, isEditable));
      	} 
+    	if (isShowFundingDepartment()){
+    		line.add(csvBuildFundingDepartment(prefGroup, isEditable));
+     	}  	
     	if (isShowDatePattern()){
     		line.add(csvBuildDatePatternCell(classAssignment, prefGroup, isEditable));
      	} 
@@ -1057,6 +1078,9 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         	    line.add(createCell());
         	} 
         	if (isShowManager()){
+        	    line.add(createCell());
+        	} 
+        	if (isShowFundingDepartment()){
         	    line.add(createCell());
         	} 
         	if (isShowDatePattern()){
@@ -1217,6 +1241,9 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		emptyCels ++;
     	} 
     	if (isShowManager()){
+    		emptyCels ++;
+    	}
+    	if (isShowFundingDepartment()){
     		emptyCels ++;
     	}
     	if (isShowDatePattern()){
@@ -1459,7 +1486,12 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         iFile = new CSVFile();
         if (hasOfferedCourses || allCoursesAreGiven) {
         	if (displayHeader)
-        		iFile.addLine(MSG.labelOfferedCourses(subjectArea.getSubjectAreaAbbreviation()));
+        		if (isFilterWaitlist())
+        			iFile.addLine(MSG.labelOfferedWaitListedCourses(subjectArea.getSubjectAreaAbbreviation()));
+		    	else if (isFilterNonWaitlist())
+		    		iFile.addLine(MSG.labelOfferedNotWaitListedCourses(subjectArea.getSubjectAreaAbbreviation()));
+		    	else
+		    		iFile.addLine(MSG.labelOfferedCourses(subjectArea.getSubjectAreaAbbreviation()));
     		csvBuildTableHeader(context.getUser().getCurrentAcademicSessionId());
                   
             if (hasOfferedCourses){
