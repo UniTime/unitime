@@ -694,7 +694,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     public boolean hasCrossList() {
     	return getCourseOfferings().size() > 1;
     }
-    
+
     public boolean effectiveWaitList() {
     	if (isWaitlist() != null)
     		return isWaitlist().booleanValue();
