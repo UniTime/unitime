@@ -98,6 +98,13 @@ public class EventImport extends EventRelatedImports {
 	        }
 	        
 	        beginTransaction();
+	        
+            String year   = rootElement.attributeValue("year");
+            String term   = rootElement.attributeValue("term");
+            String campus   = rootElement.attributeValue("campus", academicInitiative);
+            if (campus != null && year != null && term != null) {
+            	session = Session.getSessionUsingInitiativeYearTerm(campus, year, term);
+            }
 	
 	        if (session == null){
 	        	// Use the session for the academicInitiative that is effective for events now as the session to use for logging changes
@@ -334,8 +341,8 @@ public class EventImport extends EventRelatedImports {
 
 		String relatedExternalIdStr = getRequiredStringAttribute(courseElement, "relatedExternalId", courseElementName);
 		String relationshipType = getRequiredStringAttribute(courseElement, "relationshipType", courseElementName);
-		String term = getRequiredStringAttribute(courseElement, "term", courseElementName);
-		String year = getRequiredStringAttribute(courseElement, "year", courseElementName);
+		String term = courseElement.attributeValue("term", session.getAcademicTerm());
+		String year = courseElement.attributeValue("year", session.getAcademicYear());
 		
 		String courseExternalIdStr = getOptionalStringAttribute(courseElement, "courseExternalId");
 		
@@ -539,7 +546,19 @@ public class EventImport extends EventRelatedImports {
 	}
 
 	private Room findRoom(String buildingAbbv, String roomNumber){
+		if (buildingAbbv == null || roomNumber == null) return null;
 		Room room = null;
+		if (session != null) {
+			room = (Room) getHibSession().createQuery(
+					"from Room r where r.roomNumber=:roomNbr and r.building.abbreviation = :building and r.session = :sessionId")
+					.setLong("sessionId", session.getUniqueId())
+					.setString("building", buildingAbbv)
+					.setString("roomNbr", roomNumber)
+					.setCacheable(true)
+					.setMaxResults(1)
+					.setCacheable(true)
+					.uniqueResult();
+		}
 		if (room == null) {
 			List rooms =  this.
 			getHibSession().

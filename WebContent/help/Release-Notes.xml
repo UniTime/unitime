@@ -36,6 +36,15 @@
 			</description>
 		</item>
 		<item>
+			<name>Data Exchange: Event XML Load</name>
+			<description>
+				<line>Added an ability to specify the current academic session on the root element (year and term attributes).
+					<line>Course elements for course-related events do not need year and term specified separately in this case.</line>
+				</line>
+				<line>Lookup for the rooms in the current/default academic session first, only look for the rooms in all sessions when no matching room is found in the current/default session.</line>
+			</description>
+		</item>
+		<item>
 			<name>People Lookup: Source Mapping</name>
 			<description>
 				<line>Corrected source mapping when unitime.lookup.source.defaults property is used.</line>
