@@ -28,6 +28,25 @@
 	<version>4.6.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Administration</title>
+		<item>
+			<name>Data Exchange: Course Offering XML Import</name>
+			<description>
+				<line>Fixed parsing of boolean values in some of the imports (including Course Offering XML import).</line>
+			</description>
+		</item>
+		<item>
+			<name>People Lookup: Source Mapping</name>
+			<description>
+				<line>Corrected source mapping when unitime.lookup.source.defaults property is used.</line>
+			</description>
+		</item>
+	</category>
+</release>
+<release>
+	<version>4.6.77</version>
+	<release-date>Wed, 29 Jan 2022</release-date>
+	<category>
 		<title>Online Student Scheduling: Wait-Listing</title>
 		<item>
 			<name>Configuration</name>

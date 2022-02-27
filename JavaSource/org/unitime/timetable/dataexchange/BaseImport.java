@@ -122,13 +122,13 @@ public abstract class BaseImport extends DataExchangeHelper {
 
 	protected Boolean getRequiredBooleanAttribute(Element element, String attributeName, String elementName) throws Exception {
 		String attributeStr = getRequiredStringAttribute(element, attributeName, elementName);
-		return(Boolean.getBoolean(attributeStr));
+		return(Boolean.parseBoolean(attributeStr));
 	}
 	
 	protected Boolean getOptionalBooleanAttribute(Element element, String attributeName) {
 		String attributeStr = getOptionalStringAttribute(element, attributeName);
 		if (attributeStr != null) {
-			return(Boolean.getBoolean(attributeStr));
+			return(Boolean.parseBoolean(attributeStr));
 		} else {
 			return(null);
 		}
