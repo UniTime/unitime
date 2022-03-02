@@ -154,7 +154,11 @@ public class SectioningRequest implements LastSectionProvider {
 		if (iLastEnrollment != null) return null; // re-sectioning ->> no drop
 		if (iDropCourseId == null) return null;
 		XCourseRequest request = getOldStudent().getRequestForCourse(iDropCourseId.getCourseId());
-		return (request == null ? null : request.getEnrollment());
+		if (request == null) return null;
+		XEnrollment enrollment = request.getEnrollment();
+		// different course enrolled ->> no drop
+		if (enrollment != null && !enrollment.getCourseId().equals(iDropCourseId.getCourseId())) return null;
+		return enrollment;
 	}
 	public XCourseRequest getDropRequest() {
 		if (iLastEnrollment != null) return null; // re-sectioning ->> no drop

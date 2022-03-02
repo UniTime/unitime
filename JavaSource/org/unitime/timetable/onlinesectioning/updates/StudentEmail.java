@@ -109,6 +109,7 @@ import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.model.XTime;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest.XPreference;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 import org.unitime.timetable.util.Constants;
@@ -147,6 +148,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	private XOffering iFailedOffering;
 	private XCourseId iFailedCourseId;
 	private XEnrollment iFailedEnrollment;
+	private XEnrollment iDropEnrollment;
 	private SectioningException iFailure;
 	private XStudent iStudent;
 	private CourseUrlProvider iCourseUrlProvider = null;
@@ -188,6 +190,12 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		return this;
 	}
 	
+	public StudentEmail dropEnrollment(XEnrollment dropEnrollment) {
+		iDropEnrollment = dropEnrollment;
+		return this;
+	}
+
+	
 	public StudentEmail overridePermissions(boolean courseRequests, boolean classSchedule, boolean advisorRequests) {
 		iPermisionCheck = false;
 		iIncludeCourseRequests = courseRequests;
@@ -227,6 +235,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	public XOffering getFailedOffering() { return iFailedOffering; }
 	public XCourse getFailedCourse() { return (iFailedOffering == null || iFailedCourseId == null ? null : iFailedOffering.getCourse(iFailedCourseId)); }
 	
+	public XEnrollment getDropEnrollment() { return iDropEnrollment; }
+	
 	public XStudent getStudent() { return iStudent; }
 	public void setStudent(XStudent student) { iStudent = student; }
 
@@ -249,6 +259,12 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
 				for (XSection section: getOldOffering().getSections(getOldEnrollment()))
 					enrollment.addSection(OnlineSectioningHelper.toProto(section, getOldEnrollment()));
+				if (getDropEnrollment() != null && !getDropEnrollment().getCourseId().equals(getOldCourse() == null ? null : getOldCourse().getCourseId())) {
+					XOffering dropOffering = server.getOffering(getDropEnrollment().getOfferingId());
+					if (dropOffering != null)
+						for (XSection section: dropOffering.getSections(getDropEnrollment()))
+							enrollment.addSection(OnlineSectioningHelper.toProto(section, getDropEnrollment()));
+				}
 				action.addEnrollment(enrollment);
 			} else if (getOldStudent() != null) {
 				OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
@@ -269,7 +285,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					enrollment.addSection(OnlineSectioningHelper.toProto(section, getFailedEnrollment()));
 				action.addEnrollment(enrollment);
 			}
-			
+						
 			final XStudent student = server.getStudent(getStudentId());
 			if (student == null) return false;
 			setStudent(student);
@@ -829,6 +845,22 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			if (newRequest != null && newRequest.isWaitlist())
 				setSubject(MSG.emailEnrollmentFailedWaitListed(course.getSubjectArea(), course.getCourseNumber()));
 			
+			if (getDropEnrollment() != null && !getDropEnrollment().getCourseId().equals(getFailedCourse().getCourseId())) {
+				XOffering dropOffering = server.getOffering(getDropEnrollment().getOfferingId());
+				if (dropOffering != null) {
+					XCourse dropCourse = dropOffering.getCourse(getDropEnrollment().getCourseId());
+					XCourseRequest dropRequest = getStudent().getRequestForCourse(dropCourse.getCourseId());
+					for (XSection old: dropOffering.getSections(getDropEnrollment())) {
+						XSubpart subpart = dropOffering.getSubpart(old.getSubpartId());
+						XSection parent = (old.getParentId() == null ? null : dropOffering.getSection(old.getParentId()));
+						String requires = null;
+						if (parent != null)
+							requires = parent.getName(dropCourse.getCourseId());
+						listOfChanges.add(new TableSectionDeletedLine(dropRequest, dropCourse, subpart, old, requires, getCourseUrl(session, dropCourse)));
+					}
+				}
+			}
+			
 			if (getFailedEnrollment() != null && (newRequest == null || newRequest.getEnrollment() == null)) {
 				for (XSection section: getFailedOffering().getSections(getFailedEnrollment())) {
 					XSection parent = (section.getParentId() == null ? null : getFailedOffering().getSection(section.getParentId()));
@@ -923,6 +955,22 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				}
 			}
 			input.put("changedCourse", course);
+			
+			if (getDropEnrollment() != null && !getDropEnrollment().getCourseId().equals(getOldCourse().getCourseId())) {
+				XOffering dropOffering = server.getOffering(getDropEnrollment().getOfferingId());
+				if (dropOffering != null) {
+					XCourse dropCourse = dropOffering.getCourse(getDropEnrollment().getCourseId());
+					XCourseRequest dropRequest = getStudent().getRequestForCourse(dropCourse.getCourseId());
+					for (XSection old: dropOffering.getSections(getDropEnrollment())) {
+						XSubpart subpart = dropOffering.getSubpart(old.getSubpartId());
+						XSection parent = (old.getParentId() == null ? null : dropOffering.getSection(old.getParentId()));
+						String requires = null;
+						if (parent != null)
+							requires = parent.getName(dropCourse.getCourseId());
+						listOfChanges.add(new TableSectionDeletedLine(dropRequest, dropCourse, subpart, old, requires, getCourseUrl(session, dropCourse)));
+					}
+				}
+			}
 
 			if (getOldEnrollment() == null && newRequest != null && newRequest.getEnrollment() != null) {
 				setSubject(MSG.emailEnrollmentNew(course.getSubjectArea(), course.getCourseNumber()));
@@ -1703,7 +1751,13 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					if (!getStudent().canAssign(cr, wlMode)) continue;
 					if (!cr.isWaitlist(wlMode)) continue;
 					XCourse course = server.getCourse(cr.getCourseIds().get(0).getCourseId());
-					listOfClasses.add(new TableCourseLine(cr, course, getCourseUrl(session, course), wlMode == WaitListMode.WaitList));
+					XCourse swapCourse = null;
+					if (cr.getWaitListSwapWithCourseOffering() != null && wlMode == WaitListMode.WaitList && cr.isWaitlist(wlMode)) {
+						XCourseRequest swap = getStudent().getRequestForCourse(cr.getWaitListSwapWithCourseOffering().getCourseId());
+						if (swap != null && swap.getEnrollment() != null && swap.getEnrollment().getCourseId().equals(cr.getWaitListSwapWithCourseOffering().getCourseId()))
+							swapCourse = server.getCourse(swap.getEnrollment().getCourseId());
+					}
+					listOfClasses.add(new TableCourseLine(cr, course, getCourseUrl(session, course), wlMode == WaitListMode.WaitList, swapCourse));
 				} else {
 					XOffering offering = server.getOffering(enrollment.getOfferingId());
 					XCourse course = offering.getCourse(enrollment.getCourseId());
@@ -2153,16 +2207,18 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		protected Table iTable;
 		protected String iUrl;
 		protected boolean iWaitListEnabled;
+		protected XCourse iSwapCourse;
 		
-		public TableCourseLine(XCourseRequest request, XCourse course, URL url, boolean waitlistEnabled) {
+		public TableCourseLine(XCourseRequest request, XCourse course, URL url, boolean waitlistEnabled, XCourse swapCourse) {
 			iRequest = request;
 			iCourse = course;
 			iUrl = (url == null ? null : url.toString());
 			iWaitListEnabled = waitlistEnabled;
+			iSwapCourse = swapCourse;
 		}
 		
 		public TableCourseLine(XCourseRequest request, XCourse course, URL url) {
-			this(request, course, url, false);
+			this(request, course, url, false, null);
 		}
 
 		public XRequest getRequest() { return iRequest; }
@@ -2196,6 +2252,18 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		public String getNote() {
 			if (iRequest.isWaitlist() && iWaitListEnabled && iRequest.getWaitListedTimeStamp() != null) {
 				String note = MSG.conflictWaitListed(sTimeStampFormat.format(iRequest.getWaitListedTimeStamp()));
+				if (iSwapCourse != null)
+					note += " " + MSG.conflictWaitListSwapWithNoCourseOffering(iSwapCourse.getCourseName());
+				List<XPreference> pref = iRequest.getPreferences(iCourse);
+				if (pref != null) {
+					Set<String> prefs = new TreeSet<String>();
+					for (XPreference p: pref) {
+						if (p.isRequired())
+							prefs.add(p.getLabel());
+					}
+					if (!prefs.isEmpty())
+						note += " " + MSG.conflictRequiredPreferences(StudentEmail.toString(prefs));
+				}
 				Integer status = iRequest.getOverrideStatus(getCourse());
 				if (status == null) {
 				} else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.APPROVED.ordinal()) {

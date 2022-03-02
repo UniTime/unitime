@@ -328,7 +328,8 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 						if (ApplicationProperty.OnlineSchedulingEmailConfirmationWhenFailed.isTrue())
 							server.execute(server.createAction(NotifyStudentAction.class)
 									.forStudent(r.getRequest().getStudentId()).fromAction(name())
-									.failedEnrollment(offering, r.getCourseId(), enrollment, e),
+									.failedEnrollment(offering, r.getCourseId(), enrollment, e)
+									.dropEnrollment(r.getDropEnrollment()),
 									helper.getUser());
 						continue;
 					}
@@ -452,7 +453,11 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 							offering);
 					server.persistExpectedSpaces(offering.getOfferingId());
 
-					server.execute(server.createAction(NotifyStudentAction.class).forStudent(r.getRequest().getStudentId()).fromAction(name()).oldEnrollment(offering, r.getCourseId(), r.getLastEnrollment()), helper.getUser());
+					server.execute(server.createAction(NotifyStudentAction.class)
+							.forStudent(r.getRequest().getStudentId())
+							.fromAction(name())
+							.oldEnrollment(offering, r.getCourseId(), r.getLastEnrollment())
+							.dropEnrollment(r.getDropEnrollment()), helper.getUser());
 					
 					if (tx) helper.commitTransaction();
 					r.getAction().setResult(enrollment == null ? OnlineSectioningLog.Action.ResultType.NULL : OnlineSectioningLog.Action.ResultType.SUCCESS);

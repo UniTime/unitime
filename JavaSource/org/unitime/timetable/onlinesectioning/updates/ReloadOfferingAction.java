@@ -497,7 +497,8 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 						if (ApplicationProperty.OnlineSchedulingEmailConfirmationWhenFailed.isTrue())
 							server.execute(server.createAction(NotifyStudentAction.class)
 									.forStudent(r.getRequest().getStudentId()).fromAction(name())
-									.failedEnrollment(newOffering, r.getCourseId(), e, ex),
+									.failedEnrollment(newOffering, r.getCourseId(), e, ex)
+									.dropEnrollment(r.getDropEnrollment()),
 									helper.getUser());
 						continue;
 					}
@@ -611,7 +612,12 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 						newOffering, oldOffering);
 				server.persistExpectedSpaces(offeringId);
 
-				server.execute(server.createAction(NotifyStudentAction.class).forStudent(r.getRequest().getStudentId()).fromAction(name()).oldEnrollment(oldOffering, r.getCourseId(), r.getLastEnrollment()), helper.getUser());
+				server.execute(server.createAction(NotifyStudentAction.class)
+						.forStudent(r.getRequest().getStudentId())
+						.fromAction(name())
+						.oldEnrollment(oldOffering, r.getCourseId(), r.getLastEnrollment())
+						.dropEnrollment(r.getDropEnrollment()),
+						helper.getUser());
 				
 				
 				r.getAction().setResult(e == null ? OnlineSectioningLog.Action.ResultType.NULL : OnlineSectioningLog.Action.ResultType.SUCCESS);
