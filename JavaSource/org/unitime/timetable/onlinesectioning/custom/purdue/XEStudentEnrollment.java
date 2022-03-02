@@ -51,7 +51,6 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeModes;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 import org.unitime.timetable.gwt.shared.SectioningException;
-import org.unitime.timetable.model.Student;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;

@@ -336,7 +336,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 				
 				XCourseRequest prev = r.getRequest();
 				Long studentId = prev.getStudentId();
-				if (dropEnrollment != null)
+				if (dropEnrollment != null && enrollment != null)
 					server.assign(r.getDropRequest(), null);
 				if (enrollment != null) {
 					r.setRequest(server.assign(r.getRequest(), enrollment));
