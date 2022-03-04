@@ -164,9 +164,11 @@ public class WaitListsPanel extends P {
 				if (request.isWaitList() && request.hasRequestedCourse()) {
 					boolean firstLine = true;
 					for (RequestedCourse rc: request.getRequestedCourse())
-						if (rc.getStatus() == RequestedCourseStatus.ENROLLED) continue request;
+						if (rc.getStatus() == RequestedCourseStatus.ENROLLED &&
+							(request.getWaitListSwapWithCourseOfferingId() == null || !request.getWaitListSwapWithCourseOfferingId().equals(rc.getCourseId())))
+							continue request;
 					for (final RequestedCourse rc: request.getRequestedCourse()) {
-						if (rc.hasCourseId() && rc.isCanWaitList() && rc.getStatus() != RequestedCourseStatus.ENROLLED) {
+						if (rc.hasCourseId() && rc.isCanWaitList()) {
 							P p = new P("icons");
 							String style = "pending";
 							if (rc.getStatus() != null) {
@@ -192,7 +194,12 @@ public class WaitListsPanel extends P {
 									p.add(new Icon(RESOURCES.requestNeeded(), MESSAGES.reqStatusNeeded()));
 									style = "needed";
 									break;
+								case WAITLIST_INACTIVE:
+									p.add(new Icon(RESOURCES.waitListNotActive(), MESSAGES.waitListInactive(rc.getCourseName())));
+									style = "cancelled";
+									break;
 								case SAVED:
+								case ENROLLED:
 									p.add(new Icon(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed()));
 									style = "saved";
 									break;

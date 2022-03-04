@@ -1287,7 +1287,9 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 			request: for (Request request: iAssignment.getRequest().getCourses()) {
 				if (request.isWaitList() && request.hasRequestedCourse()) {
 					for (RequestedCourse rc: request.getRequestedCourse())
-						if (rc.getStatus() == RequestedCourseStatus.ENROLLED) continue request;
+						if (rc.getStatus() == RequestedCourseStatus.ENROLLED &&
+							(request.getWaitListSwapWithCourseOfferingId() == null || !request.getWaitListSwapWithCourseOfferingId().equals(rc.getCourseId())))
+							continue request;
 					boolean firstLine = true;
 					for (RequestedCourse rc: request.getRequestedCourse()) {
 						if (rc.hasCourseId() && rc.isCanWaitList() && rc.getStatus() != RequestedCourseStatus.ENROLLED) {
@@ -1316,7 +1318,12 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									p.add(new Icon(RESOURCES.requestNeeded(), MESSAGES.reqStatusNeeded()));
 									style = "needed";
 									break;
+								case WAITLIST_INACTIVE:
+									p.add(new Icon(RESOURCES.waitListNotActive(), MESSAGES.waitListInactive(rc.getCourseName())));
+									style = "cancelled";
+									break;
 								case SAVED:
+								case ENROLLED:
 									p.add(new Icon(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed()));
 									style = "saved";
 									break;

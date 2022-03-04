@@ -116,6 +116,21 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		return false;
 	}
 	
+	public boolean canWaitList(Long courseId) {
+		if (courseId == null) return false;
+		for (Request r: getCourses()) {
+			if (r.hasRequestedCourse())
+				for (RequestedCourse rc: r.getRequestedCourse())
+					if (courseId.equals(rc.getCourseId())) return r.isCanWaitList();
+		}
+		for (Request r: getAlternatives()) {
+			if (r.hasRequestedCourse())
+				for (RequestedCourse rc: r.getRequestedCourse())
+					if (courseId.equals(rc.getCourseId())) return r.isCanWaitList();
+		}
+		return false;
+	}
+	
 	public boolean isWaitListed(Long courseId) {
 		if (courseId == null) return false;
 		for (Request r: getCourses()) {
@@ -514,6 +529,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		OVERRIDE_REJECTED,
 		CREDIT_LOW, CREDIT_HIGH,
 		OVERRIDE_NOT_NEEDED,
+		WAITLIST_INACTIVE,
 	}
 	
 	public static class Preference implements IsSerializable, Serializable, Comparable<Preference> {
@@ -1869,6 +1885,27 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			if (r.hasRequestedCourse())
 				for (RequestedCourse rc: r.getRequestedCourse())
 					if (courseName.equals(rc.getCourseName()) && !rc.isInactive()) return rc.getStatus();
+		return null;
+	}
+	
+	public RequestedCourseStatus getStatus(Long courseId) {
+		if (courseId == null) return null;
+		RequestedCourseStatus status = null;
+		if (hasConfirmations())
+			for (CourseMessage m: getConfirmations()) {
+				if (m.getStatus() != null && m.hasCourse() && courseId.equals(m.getCourseId())) {
+					if (status == null || m.getStatus().ordinal() > status.ordinal()) status = m.getStatus();
+				}
+			}
+		if (status != null) return status;
+		for (Request r: getCourses())
+			if (r.hasRequestedCourse())
+				for (RequestedCourse rc: r.getRequestedCourse())
+					if (courseId.equals(rc.getCourseId()) && !rc.isInactive()) return rc.getStatus();
+		for (Request r: getAlternatives())
+			if (r.hasRequestedCourse())
+				for (RequestedCourse rc: r.getRequestedCourse())
+					if (courseId.equals(rc.getCourseId()) && !rc.isInactive()) return rc.getStatus();
 		return null;
 	}
 }

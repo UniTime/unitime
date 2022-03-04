@@ -84,6 +84,7 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestPriority;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -106,7 +107,6 @@ import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
 import org.unitime.timetable.onlinesectioning.model.XDistribution;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
-import org.unitime.timetable.onlinesectioning.model.XOverride;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XReservation;
 import org.unitime.timetable.onlinesectioning.model.XReservationType;
@@ -964,6 +964,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							Hashtable<CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<CourseRequest, TreeSet<Section>>();
 							Collection<Enrollment> enrls = r.getEnrollmentsSkipSameTime(assignment);
 							Enrollment noConfEnrl = null;
+							RequestPriority rp = (iRequest == null ? null : iRequest.getRequestPriority(new RequestedCourse(course.getId(), course.getName())));
+							Long swapCourseId = (rp == null ? null : rp.getRequest().getWaitListSwapWithCourseOfferingId());
 							int nbrEnrl = 0;
 							for (Iterator<Enrollment> e = enrls.iterator(); e.hasNext();) {
 								Enrollment enrl = e.next();
@@ -974,6 +976,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 									if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
 									if (x == enrollment) continue;
 									if (x.getRequest() instanceof FreeTimeRequest && x.getRequest().getPriority() > r.getPriority()) continue;
+									if (swapCourseId != null && x.getCourse() != null && swapCourseId.equals(x.getCourse().getId())) continue;
+
 							        for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
 							        	SctAssignment a = i.next();
 										if (a.isOverlapping(enrl.getAssignments())) {
@@ -1136,19 +1140,9 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							}
 						}
 					}
-					if (r.isWaitlist() && r.getStudent().getId() >= 0 && !(server instanceof StudentSolver)) {
-						XStudent original = server.getStudent(r.getStudent().getId());
-						for (XRequest or: original.getRequests()) {
-							if (or instanceof XCourseRequest) {
-								XCourseRequest ocr = (XCourseRequest)or;
-								if (ocr.isWaitlist() && !ocr.getCourseIds().isEmpty() && ocr.getCourseIds().get(0).getCourseId().equals(course.getId())) {
-									XOverride ov = ocr.getOverride(ocr.getCourseIds().get(0));
-									if (ov == null || !ov.isNoChecked())
-										ca.setWaitListedDate(ocr.getWaitListedTimeStamp());
-									break;
-								}
-							}
-						}
+					if (r.isWaitlist()) {
+						RequestPriority rp = (iRequest == null ? null : iRequest.getRequestPriority(new RequestedCourse(course.getId(), course.getName())));
+						ca.setWaitListedDate(rp == null ? null : rp.getRequest().getWaitListedTimeStamp());
 					}
 					ret.add(ca);
 				} else {
@@ -1329,6 +1323,16 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								if (b.hasInfo()) a.setInfo(b.getInfo());
 							}
 				}
+				if (r.isWaitlist()) {
+					RequestPriority rp = (iRequest == null ? null : iRequest.getRequestPriority(new RequestedCourse(course.getId(), course.getName())));
+					ca.setWaitListedDate(rp == null ? null : rp.getRequest().getWaitListedTimeStamp());
+					/*
+					if (rp != null && rp.getRequest().getWaitListSwapWithCourseOfferingId() != null && rp.getRequest().getWaitListSwapWithCourseOfferingId().equals(enrollment.getCourse().getId())) {
+						if (isRequired(enrollment, rp.getRequest()))
+							ca.setEnrollmentMessage(MSG.waitListRequirementsMet());
+					}
+					*/
+				}
 				ret.add(ca);
 			} else {
 				FreeTimeRequest r = (FreeTimeRequest)enrollment.getRequest();
@@ -1431,4 +1435,53 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			return iId1.equals(((IdPair)o).iId1) && iId2.equals(((IdPair)o).iId2);
 		}
 	}
+	
+	public boolean isRequired(Enrollment enrollment, CourseRequestInterface.Request request) {
+		RequestedCourse rc = request.getRequestedCourse(enrollment.getCourse().getId());
+    	if (rc == null || (!rc.hasSelectedClasses() && !rc.hasSelectedIntructionalMethods())) return true;
+        // check all sections
+        for (Section section: enrollment.getSections()) {
+            boolean hasConfig = false, hasMatchingConfig = false;
+            boolean hasSubpart = false, hasMatchingSection = false;
+            boolean hasSectionReq = false;
+            
+            if (rc.hasSelectedIntructionalMethods()) {
+            	for (CourseRequestInterface.Preference choice: rc.getSelectedIntructionalMethods()) {
+                	// only check required choices
+            		if (!choice.isRequired()) continue;
+                    // has config -> check config
+            		hasConfig = true;
+            		if (choice.getId().equals(section.getSubpart().getConfig().getInstructionalMethodId()))
+            			hasMatchingConfig = true;
+            	}
+            }
+            
+            if (rc.hasSelectedClasses()) {
+            	for (CourseRequestInterface.Preference choice: rc.getSelectedClasses()) {
+                	// only check required choices
+            		if (!choice.isRequired()) continue;
+            		Section reqSection = section.getSubpart().getConfig().getOffering().getSection(choice.getId());
+                    hasSectionReq = true;
+                    // has section of the matching subpart -> check section
+                    if (reqSection.getSubpart().equals(section.getSubpart())) {
+                        hasSubpart = true;
+                        if (reqSection.equals(section)) hasMatchingSection = true;
+                    } else if (!hasMatchingConfig) {
+                        for (Subpart subpart: section.getSubpart().getConfig().getSubparts()) {
+                            if (reqSection.getSubpart().equals(subpart)) {
+                                hasMatchingConfig = true;
+                                break;
+                            }
+                        }
+                    }
+            	}
+            }
+            
+            if (hasConfig && !hasMatchingConfig) return false;
+            if (hasSubpart && !hasMatchingSection) return false;
+            // no match, but there are section requirements for a different config -> not satisfied 
+            if (!hasMatchingConfig && !hasMatchingSection && hasSectionReq) return false;
+        }
+        return true;
+    }
 }

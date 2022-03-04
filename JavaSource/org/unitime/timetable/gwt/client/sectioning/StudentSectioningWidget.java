@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaTabBar;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.sectioning.StudentSectioningPage.Mode;
 import org.unitime.timetable.gwt.client.sectioning.TimeGrid.Meeting;
 import org.unitime.timetable.gwt.client.widgets.CourseFinder;
@@ -1502,7 +1503,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	
 	public void openSuggestionsBox(int rowIndex) {
 		ClassAssignmentInterface.ClassAssignment row = iLastResult.get(rowIndex);
-		if (row != null && row.getCourseId() != null && iCourseRequests.isWaitListed(row.getCourseId())) {
+		if (row != null && row.getCourseId() != null && iCourseRequests.isWaitListed(row.getCourseId()) && !row.isAssigned()) {
 			iAssignments.setSelectedRow(rowIndex);
 			clearMessage();
 			getWaitListedRequestPreferences().setSchedule(iLastAssignment);
@@ -1552,10 +1553,22 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					});
 				}
 			});
+			
+			iSuggestionsBox.addWaitListHandler(new SuggestionsBox.WaitListHandler() {
+				@Override
+				public void onWaitList(final SuggestionsBox.WaitListEvent event) {
+					getWaitListedRequestPreferences().setSchedule(iLastAssignment);
+					CourseRequestLine line = iCourseRequests.getWaitListedLine(event.getAssignment().getCourseId());
+					getWaitListedRequestPreferences().showWaitListAssigned(line, event.getAssignment().getCourseId());
+				}
+			});
 		}
 		iAssignments.setSelectedRow(rowIndex);
 		clearMessage();
-		iSuggestionsBox.open(iCourseRequests.getRequest(), iLastResult, rowIndex, iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.ALTERNATIVES_DROP), useDefaultConfirmDialog());
+		iSuggestionsBox.open(iCourseRequests.getRequest(), iLastResult, rowIndex,
+				iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.ALTERNATIVES_DROP),
+				iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST),
+				useDefaultConfirmDialog());
 	}
 	
 	private void fillIn(ClassAssignmentInterface result) {
@@ -1576,6 +1589,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iAssignmentGrid.clear(true);
 			for (final ClassAssignmentInterface.CourseAssignment course: result.getCourseAssignments()) {
 				boolean firstClazz = true;
+				boolean selfWaitListed = false;
 				if (course.isAssigned()) {
 					if (course.getCourseId() != null)
 						iCourseRequests.activate(course);
@@ -1762,8 +1776,23 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							cell.setStyleName(style);
 						firstClazz = false;
 					}
-				} else if (!iSpecialRegistrationsPanel.isDrop(course.getCourseId()) && iCourseRequests.isActive(course)) {
-					String style = "text-red" + (!rows.isEmpty() ? " top-border-dashed": "");
+					
+					if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST)) {
+						CourseRequestLine line = iCourseRequests.getWaitListedLine(course.getCourseId());
+						if (line.getWaitList() && course.getCourseId().equals(line.getValue().getWaitListSwapWithCourseOfferingId())) {
+							selfWaitListed = true;
+							for (ClassAssignmentInterface.ClassAssignment x: course.getClassAssignments())
+								if (!x.isSaved()) {
+									// different assignment proposed -> cannot self wait-list
+									line.setWaitList(false);
+									selfWaitListed = false;
+									break;
+								}
+						}
+					}
+				}
+				if (!iSpecialRegistrationsPanel.isDrop(course.getCourseId()) && iCourseRequests.isActive(course) && (!course.isAssigned() || selfWaitListed)) {
+					String style = "text-red" + (!rows.isEmpty() && !selfWaitListed ? " top-border-dashed": "");
 					WebTable.Row row = null;
 					String unassignedMessage = MESSAGES.courseNotAssigned();
 					if (course.hasEnrollmentMessage())
@@ -1802,40 +1831,48 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					WebTable.CheckboxCell waitList = null;
 					Boolean w = iCourseRequests.getWaitList(course.getCourseId());
 					if (w != null && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST) && course.isCanWaitList()) {
-						if (w.booleanValue() && iSavedRequest != null) {
-							if (course.getWaitListedDate() != null && iSavedRequest.getStatus(course.getCourseName()) != RequestedCourseStatus.OVERRIDE_NEEDED) {
-								style = (!rows.isEmpty() ? "top-border-dashed": "");
+						if (w.booleanValue()) {
+							if (course.getWaitListedDate() != null & iSavedRequest != null && iSavedRequest.getStatus(course.getCourseId()) != RequestedCourseStatus.OVERRIDE_NEEDED) {
+								style = (!rows.isEmpty() && !selfWaitListed ? "top-border-dashed": "");
 								unassignedMessage = MESSAGES.conflictWaitListed(sDF.format(course.getWaitListedDate()));
-								Request r = iCourseRequests.getWaitListedLine(course.getCourseId()).getValue();
-								if (r.getWaitListSwapWithCourseOfferingId() != null) {
-									for (CourseAssignment c: result.getCourseAssignments()) {
-										if (r.getWaitListSwapWithCourseOfferingId().equals(c.getCourseId()) && c.isAssigned() && !c.isTeachingAssignment())
-											unassignedMessage += " " + MESSAGES.conflictWaitListSwapWithNoCourseOffering(c.getCourseName());
-									}
+							} else {
+								UniTimeNotifications.info(
+										"wlDate:" + course.getWaitListedDate() + ", " +
+										"hasSaved: " + (iSavedRequest != null) + ", " +
+										"status:" + (iSavedRequest == null ? null : iSavedRequest.getStatus(course.getCourseId()))
+										);
+								style = "text-blue" + (!rows.isEmpty() && !selfWaitListed ? " top-border-dashed": "");
+								unassignedMessage = MESSAGES.courseToBeWaitListed();
+							}
+							Request r = iCourseRequests.getWaitListedLine(course.getCourseId()).getValue();
+							if (r.getWaitListSwapWithCourseOfferingId() != null && !selfWaitListed) {
+								for (CourseAssignment c: result.getCourseAssignments()) {
+									if (r.getWaitListSwapWithCourseOfferingId().equals(c.getCourseId()) && c.isAssigned() && !c.isTeachingAssignment())
+										unassignedMessage += " " + MESSAGES.conflictWaitListSwapWithNoCourseOffering(c.getCourseName());
 								}
-								RequestedCourse rc = r.getRequestedCourse(course.getCourseId());
-								if (rc != null && (rc.hasSelectedIntructionalMethods() || rc.hasSelectedClasses())) {
-									String pref = ToolBox.toString(rc.getRequiredPreferences());
-									if (pref != null && !pref.isEmpty())
-										unassignedMessage += "\n" + MESSAGES.conflictRequiredPreferences(pref);
+							}
+							RequestedCourse rc = r.getRequestedCourse(course.getCourseId());
+							if (rc != null && (rc.hasSelectedIntructionalMethods() || rc.hasSelectedClasses())) {
+								String pref = ToolBox.toString(rc.getRequiredPreferences());
+								if (pref != null && !pref.isEmpty())
+									unassignedMessage += "\n" + MESSAGES.conflictRequiredPreferences(pref);
+							}
+							if (course.getOverlaps()!=null && !course.getOverlaps().isEmpty()) {
+								unassignedMessage += "\n<span class='unitime-ErrorText'>";
+								boolean firstOverlap = true;
+								for (Iterator<String> i = course.getOverlaps().iterator(); i.hasNext();) {
+									String x = i.next();
+									if (firstOverlap)
+										unassignedMessage += MESSAGES.conflictWithFirst(x);
+									else if (!i.hasNext())
+										unassignedMessage += MESSAGES.conflictWithLast(x);
+									else
+										unassignedMessage += MESSAGES.conflictWithMiddle(x);
+									firstOverlap = false;
 								}
-								if (course.getOverlaps()!=null && !course.getOverlaps().isEmpty()) {
-									unassignedMessage += "\n<span class='unitime-ErrorText'>";
-									boolean firstOverlap = true;
-									for (Iterator<String> i = course.getOverlaps().iterator(); i.hasNext();) {
-										String x = i.next();
-										if (firstOverlap)
-											unassignedMessage += MESSAGES.conflictWithFirst(x);
-										else if (!i.hasNext())
-											unassignedMessage += MESSAGES.conflictWithLast(x);
-										else
-											unassignedMessage += MESSAGES.conflictWithMiddle(x);
-										firstOverlap = false;
-									}
-									if (course.getInstead() != null)
-										unassignedMessage += MESSAGES.conflictAssignedAlternative(course.getInstead());
-									unassignedMessage += ".</span>";
-								}
+								if (course.getInstead() != null)
+									unassignedMessage += MESSAGES.conflictAssignedAlternative(course.getInstead());
+								unassignedMessage += ".</span>";
 							}
 							if (course.hasEnrollmentMessage())
 								unassignedMessage += "\n" + course.getEnrollmentMessage();
@@ -1844,7 +1881,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 										MESSAGES.messageWaitListApprovalAlreadyRequested(course.getCourseName()) +
 										"</span>";
 							}
-							RequestedCourseStatus status = iSavedRequest.getStatus(course.getCourseName());
+							RequestedCourseStatus status = (iSavedRequest == null ? null : iSavedRequest.getStatus(course.getCourseId()));
 							if (status != null) {
 								switch (status) {
 								case OVERRIDE_NEEDED:
@@ -1856,6 +1893,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									break;
 								case OVERRIDE_CANCELLED:
 								case OVERRIDE_NOT_NEEDED:
+								case WAITLIST_INACTIVE:
 									unassignedMessage += "<span class='unitime-GrayText'>";
 									break;
 								case OVERRIDE_APPROVED:
@@ -1863,22 +1901,24 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									break;
 								}
 							}
-							for (CourseMessage cm: iSavedRequest.getConfirmations(course.getCourseName()))
-								if (!"WL-OVERLAP".equals(cm.getCode()))
-									unassignedMessage += "\n" + cm.getMessage();
+							if (iSavedRequest != null)
+								for (CourseMessage cm: iSavedRequest.getConfirmations(course.getCourseName()))
+									if (!"WL-OVERLAP".equals(cm.getCode()))
+										unassignedMessage += "\n" + cm.getMessage();
 							if (status != null) {
 								switch (status) {
 								case OVERRIDE_NEEDED:
 								case OVERRIDE_REJECTED:
 								case OVERRIDE_PENDING:
 								case OVERRIDE_CANCELLED:
+								case WAITLIST_INACTIVE:
 								case OVERRIDE_APPROVED:
 								case OVERRIDE_NOT_NEEDED:
 									unassignedMessage += "</span>";
 									break;
 								}
 							}
-							String msg = iSavedRequest.getConfirmation(course.getCourseName(), "\n");
+							String msg = (iSavedRequest == null ? null : iSavedRequest.getConfirmation(course.getCourseName(), "\n"));
 							if (status != null) {
 								switch (status) {
 								case OVERRIDE_NEEDED:
@@ -1889,6 +1929,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									break;
 								case OVERRIDE_PENDING:
 									icons.add(RESOURCES.requestPending(), (msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overridePending(course.getCourseName()));
+									break;
+								case WAITLIST_INACTIVE:
+									icons.add(RESOURCES.waitListNotActive(), (msg == null ? "" : msg + "\n") + MESSAGES.waitListInactive(course.getCourseName()));
 									break;
 								case OVERRIDE_CANCELLED:
 									icons.add(RESOURCES.requestCancelled(), (msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideCancelledWaitList(course.getCourseName()));
@@ -1903,7 +1946,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									icons.add(RESOURCES.requestSaved(), MESSAGES.courseWaitListed());
 									break;
 								default:
-									if (iSavedRequest.isError(course.getCourseName()))
+									if (iSavedRequest != null && iSavedRequest.isError(course.getCourseName()))
 										icons.add(RESOURCES.requestError(), msg);
 								}
 							}
@@ -1937,69 +1980,81 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							}
 						});
 					}
-
-					for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
-						if (clazz.isAssigned()) {
-							row = new WebTable.Row(
-									new WebTable.Cell(null),
-									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
-									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr(CONSTANTS.showCourseTitle())),
-									new WebTable.Cell(clazz.getSubpart()),
-									new WebTable.Cell(clazz.getSection()),
-									new WebTable.Cell(clazz.getLimitString()),
-									new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())).aria(clazz.getDaysString(CONSTANTS.longDays(), " ")),
-									new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())).aria(clazz.getStartStringAria(CONSTANTS.useAmPm())),
-									new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())).aria(clazz.getEndStringAria(CONSTANTS.useAmPm())),
-									new WebTable.Cell(clazz.getDatePattern()),
-									new WebTable.PreCell(unassignedMessage, 3),
-									new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
-									(waitList != null ? waitList : new WebTable.AbbvTextCell(clazz.getCredit())),
-									(clazz.getGradeMode() == null ? new WebTable.Cell("") : new WebTable.Cell(clazz.getGradeMode().getCode()).title(clazz.getGradeMode().getLabel()).aria(clazz.getGradeMode().getLabel())),
-									icons);
-							if (course.isFreeTime())
-								row.setAriaLabel(ARIA.freeTimeUnassignment(clazz.getTimeStringAria(CONSTANTS.longDays(), CONSTANTS.useAmPm(), ARIA.arrangeHours()), unassignedMessage));
-							else
-								row.setAriaLabel(ARIA.courseUnassginment(MESSAGES.course(course.getSubject(), course.getCourseNbr()), unassignedMessage));
-						} else if (clazz.getClassId() != null) {
-							row = new WebTable.Row(
-									new WebTable.Cell(null),
-									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
-									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr(CONSTANTS.showCourseTitle())),
-									new WebTable.Cell(clazz.getSubpart()),
-									new WebTable.Cell(clazz.getSection()),
-									new WebTable.Cell(clazz.getLimitString()),
-									new WebTable.Cell(MESSAGES.arrangeHours(), 3, null),
-									new WebTable.Cell(clazz.hasDatePattern() ? clazz.getDatePattern() : ""),
-									new WebTable.PreCell(unassignedMessage, 3),
-									new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
-									(waitList != null ? waitList : new WebTable.AbbvTextCell(clazz.getCredit())),
-									(clazz.getGradeMode() == null ? new WebTable.Cell("") : new WebTable.Cell(clazz.getGradeMode().getCode()).title(clazz.getGradeMode().getLabel()).aria(clazz.getGradeMode().getLabel())),
-									icons);
-							if (course.isFreeTime())
-								row.setAriaLabel(ARIA.freeTimeUnassignment("", unassignedMessage));
-							else
-								row.setAriaLabel(ARIA.courseUnassginment(MESSAGES.course(course.getSubject(), course.getCourseNbr()), unassignedMessage));
-						} else {
-							row = new WebTable.Row(
-									new WebTable.Cell(null),
-									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
-									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr(CONSTANTS.showCourseTitle())),
-									new WebTable.Cell(clazz.getSubpart()),
-									new WebTable.Cell(clazz.getSection()),
-									new WebTable.Cell(clazz.getLimitString()),
-									new WebTable.PreCell(unassignedMessage, 7),
-									new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
-									(waitList != null ? waitList : new WebTable.AbbvTextCell(clazz.getCredit())),
-									(clazz.getGradeMode() == null ? new WebTable.Cell("") : new WebTable.Cell(clazz.getGradeMode().getCode()).title(clazz.getGradeMode().getLabel()).aria(clazz.getGradeMode().getLabel())),
-									icons);
-							if (course.isFreeTime())
-								row.setAriaLabel(ARIA.freeTimeUnassignment("", unassignedMessage));
-							else
-								row.setAriaLabel(ARIA.courseUnassginment(MESSAGES.course(course.getSubject(), course.getCourseNbr()), unassignedMessage));
+					
+					if (selfWaitListed) {
+						row = new WebTable.Row(
+								new WebTable.Cell(null),
+								new WebTable.Cell(null),
+								new WebTable.Cell(null),
+								new WebTable.PreCell(unassignedMessage, 11),
+								waitList,
+								new WebTable.Cell(null),
+								icons);
+						iLastResult.add(new ClassAssignment(course));
+					} else {
+						for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
+							if (clazz.isAssigned()) {
+								row = new WebTable.Row(
+										new WebTable.Cell(null),
+										new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
+										new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr(CONSTANTS.showCourseTitle())),
+										new WebTable.Cell(clazz.getSubpart()),
+										new WebTable.Cell(clazz.getSection()),
+										new WebTable.Cell(clazz.getLimitString()),
+										new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())).aria(clazz.getDaysString(CONSTANTS.longDays(), " ")),
+										new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())).aria(clazz.getStartStringAria(CONSTANTS.useAmPm())),
+										new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())).aria(clazz.getEndStringAria(CONSTANTS.useAmPm())),
+										new WebTable.Cell(clazz.getDatePattern()),
+										new WebTable.PreCell(unassignedMessage, 3),
+										new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
+										(waitList != null ? waitList : new WebTable.AbbvTextCell(clazz.getCredit())),
+										(clazz.getGradeMode() == null ? new WebTable.Cell("") : new WebTable.Cell(clazz.getGradeMode().getCode()).title(clazz.getGradeMode().getLabel()).aria(clazz.getGradeMode().getLabel())),
+										icons);
+								if (course.isFreeTime())
+									row.setAriaLabel(ARIA.freeTimeUnassignment(clazz.getTimeStringAria(CONSTANTS.longDays(), CONSTANTS.useAmPm(), ARIA.arrangeHours()), unassignedMessage));
+								else
+									row.setAriaLabel(ARIA.courseUnassginment(MESSAGES.course(course.getSubject(), course.getCourseNbr()), unassignedMessage));
+							} else if (clazz.getClassId() != null) {
+								row = new WebTable.Row(
+										new WebTable.Cell(null),
+										new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
+										new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr(CONSTANTS.showCourseTitle())),
+										new WebTable.Cell(clazz.getSubpart()),
+										new WebTable.Cell(clazz.getSection()),
+										new WebTable.Cell(clazz.getLimitString()),
+										new WebTable.Cell(MESSAGES.arrangeHours(), 3, null),
+										new WebTable.Cell(clazz.hasDatePattern() ? clazz.getDatePattern() : ""),
+										new WebTable.PreCell(unassignedMessage, 3),
+										new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
+										(waitList != null ? waitList : new WebTable.AbbvTextCell(clazz.getCredit())),
+										(clazz.getGradeMode() == null ? new WebTable.Cell("") : new WebTable.Cell(clazz.getGradeMode().getCode()).title(clazz.getGradeMode().getLabel()).aria(clazz.getGradeMode().getLabel())),
+										icons);
+								if (course.isFreeTime())
+									row.setAriaLabel(ARIA.freeTimeUnassignment("", unassignedMessage));
+								else
+									row.setAriaLabel(ARIA.courseUnassginment(MESSAGES.course(course.getSubject(), course.getCourseNbr()), unassignedMessage));
+							} else {
+								row = new WebTable.Row(
+										new WebTable.Cell(null),
+										new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
+										new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr(CONSTANTS.showCourseTitle())),
+										new WebTable.Cell(clazz.getSubpart()),
+										new WebTable.Cell(clazz.getSection()),
+										new WebTable.Cell(clazz.getLimitString()),
+										new WebTable.PreCell(unassignedMessage, 7),
+										new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
+										(waitList != null ? waitList : new WebTable.AbbvTextCell(clazz.getCredit())),
+										(clazz.getGradeMode() == null ? new WebTable.Cell("") : new WebTable.Cell(clazz.getGradeMode().getCode()).title(clazz.getGradeMode().getLabel()).aria(clazz.getGradeMode().getLabel())),
+										icons);
+								if (course.isFreeTime())
+									row.setAriaLabel(ARIA.freeTimeUnassignment("", unassignedMessage));
+								else
+									row.setAriaLabel(ARIA.courseUnassginment(MESSAGES.course(course.getSubject(), course.getCourseNbr()), unassignedMessage));
+							}
+							row.setId(course.isFreeTime() ? CONSTANTS.freePrefix() + clazz.getDaysString(CONSTANTS.shortDays()) + " " +clazz.getStartString(CONSTANTS.useAmPm()) + " - " + clazz.getEndString(CONSTANTS.useAmPm()) : course.getCourseId() + ":" + clazz.getClassId());
+							iLastResult.add(clazz.isDummy() || clazz.isTeachingAssignment() ? null : clazz);
+							break;
 						}
-						row.setId(course.isFreeTime() ? CONSTANTS.freePrefix() + clazz.getDaysString(CONSTANTS.shortDays()) + " " +clazz.getStartString(CONSTANTS.useAmPm()) + " - " + clazz.getEndString(CONSTANTS.useAmPm()) : course.getCourseId() + ":" + clazz.getClassId());
-						iLastResult.add(clazz.isDummy() || clazz.isTeachingAssignment() ? null : clazz);
-						break;
 					}
 					if (row == null) {
 						if (waitList != null) {
@@ -2026,7 +2081,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					}
 					for (WebTable.Cell cell: row.getCells())
 						cell.setStyleName(style);
-					row.getCell(row.getNrCells() - 1).setStyleName("text-red-centered" + (!rows.isEmpty() ? " top-border-dashed": ""));
+					row.getCell(row.getNrCells() - 1).setStyleName("text-red-centered" + (!rows.isEmpty() && !selfWaitListed ? " top-border-dashed": ""));
 					rows.add(row);
 					firstClazz = false;
 				}

@@ -62,6 +62,7 @@ import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XFreeTimeRequest;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
@@ -288,7 +289,8 @@ public class GetRequest extends WaitlistedOnlineSectioningAction<CourseRequestIn
 					r.setNoSub(((XCourseRequest)cd).isNoSub());
 					r.setCritical(((XCourseRequest)cd).getCritical());
 					r.setTimeStamp(((XCourseRequest)cd).getTimeStamp());
-					r.setWaitListedTimeStamp(((XCourseRequest)cd).getWaitListedTimeStamp());
+					if (r.isWaitList())
+						r.setWaitListedTimeStamp(((XCourseRequest)cd).getWaitListedTimeStamp());
 					r.setWaitListSwapWithCourseOfferingId(((XCourseRequest)cd).getWaitListSwapWithCourseOffering() == null ? null : ((XCourseRequest)cd).getWaitListSwapWithCourseOffering().getCourseId());
 					if (r.hasRequestedCourse()) {
 						if (cd.isAlternative())
@@ -393,6 +395,24 @@ public class GetRequest extends WaitlistedOnlineSectioningAction<CourseRequestIn
 								}
 							}
 				
+						}
+					}
+					if (r.isWaitList() && r.getWaitListSwapWithCourseOfferingId() != null && r.hasRequestedCourse()) {
+						XEnrollment enrollment = ((XCourseRequest)cd).getEnrollment();
+						if (enrollment != null && enrollment.getCourseId().equals(r.getWaitListSwapWithCourseOfferingId())) {
+							boolean before = true;
+							for (RequestedCourse rc: r.getRequestedCourse()) {
+								if (r.getWaitListSwapWithCourseOfferingId().equals(rc.getCourseId())) {
+									if (((XCourseRequest)cd).isRequired(enrollment, server.getOffering(enrollment.getOfferingId()))) {
+										rc.setStatus(RequestedCourseStatus.WAITLIST_INACTIVE);
+										request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), "WL-INACTIVE", MSG.waitListRequirementsMet(), 0);
+									}
+									before = false;
+								} else if (!before) {
+									rc.setStatus(RequestedCourseStatus.WAITLIST_INACTIVE);
+									request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), "WL-INACTIVE", MSG.waitListLowPriority(), 0);
+								}
+							}
 						}
 					}
 					lastRequest = r;

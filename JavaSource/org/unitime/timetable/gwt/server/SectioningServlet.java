@@ -2463,7 +2463,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					else
 						r.setCritical(cd.getCritical());
 					r.setTimeStamp(cd.getTimestamp());
-					r.setWaitListedTimeStamp(cd.getWaitlistedTimeStamp());
+					if (r.isWaitList())
+						r.setWaitListedTimeStamp(cd.getWaitlistedTimeStamp());
 					r.setWaitListSwapWithCourseOfferingId(cd.getWaitListSwapWithCourseOffering() == null ? null : cd.getWaitListSwapWithCourseOffering().getUniqueId());
 					lastRequest = r;
 					lastRequestPriority = cd.getPriority();

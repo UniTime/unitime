@@ -247,6 +247,9 @@ public interface StudentSectioningResources extends ClientBundle {
 	
 	@Source("org/unitime/timetable/gwt/resources/icons/stop_gray.png")
 	ImageResource requestNotNeeded();
+
+	@Source("org/unitime/timetable/gwt/resources/icons/action_check_gray.png")
+	ImageResource waitListNotActive();
 	
 	@Source("org/unitime/timetable/gwt/resources/icons/stop.png")
 	ImageResource requestError();

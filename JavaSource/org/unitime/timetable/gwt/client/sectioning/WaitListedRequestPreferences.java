@@ -54,6 +54,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
 
 import com.google.gwt.core.client.GWT;
@@ -253,7 +254,32 @@ public class WaitListedRequestPreferences extends UniTimeDialogBox implements Ha
 		if (line == null) return;
 		iLine = line;
 		iSelectCourseId = courseId;
-		setValue(line.getValue());
+		Request r = line.getValue();
+		setValue(r);
+		iEnrolledCoursesList.setEnabled(true);
+		if (r != null && r.hasRequestedCourse())
+			for (RequestedCourse rc: r.getRequestedCourse()) {
+				if (rc.getStatus() == RequestedCourseStatus.ENROLLED) {
+					iEnrolledCoursesList.setEnabled(false);
+					break;
+				}
+			}
+		center();
+		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+			@Override
+			public void execute() {
+				iCoursesPanel.setFocus(true);
+			}
+		});
+	}
+	
+	public void showWaitListAssigned(CourseRequestLine line, Long courseId) {
+		if (line == null) return;
+		iLine = line;
+		iSelectCourseId = courseId;
+		Request req = line.getValue(); req.setWaitList(true); req.setWaitListSwapWithCourseOfferingId(courseId);
+		setValue(req);
+		iEnrolledCoursesList.setEnabled(false);
 		center();
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			@Override
@@ -268,6 +294,7 @@ public class WaitListedRequestPreferences extends UniTimeDialogBox implements Ha
 		iLine = line;
 		setValue(line.getValue());
 		iWaitListed.setValue(true);
+		iEnrolledCoursesList.setEnabled(true);
 		center();
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			@Override

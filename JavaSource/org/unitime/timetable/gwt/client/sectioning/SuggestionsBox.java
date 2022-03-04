@@ -98,6 +98,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 	private ArrayList<ClassAssignmentInterface> iResult = null;
 	private ArrayList<SuggestionSelectedHandler> iSuggestionSelectedHandlers = new ArrayList<SuggestionSelectedHandler>();
 	private ArrayList<QuickDropHandler> iQuickDropHandlers = new ArrayList<QuickDropHandler>();
+	private ArrayList<WaitListHandler> iWaitListHandlers = new ArrayList<WaitListHandler>();
 	
 	private WebTable iSuggestions;
 	private HTML iMessages;
@@ -109,6 +110,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 	private CourseRequestInterface iRequest;
 	private AriaButton iSearch;
 	private AriaButton iQuickDrop;
+	private AriaButton iWaitList;
 	private F iFilterPanel;
 	private CheckBox iAllChoices = null;
 	
@@ -176,6 +178,26 @@ public class SuggestionsBox extends UniTimeDialogBox {
 					h.onQuickDrop(e);
 			}
 		});
+		
+		iWaitList = new AriaButton();
+		buttons.add(iWaitList);
+		iWaitList.setVisible(false);
+		iWaitList.setEnabled(false);
+		iWaitList.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				hide();
+				if (iAssignment != null && !iAssignment.isFreeTime()) {
+					fireWaitListEvent();
+				}
+			}
+			protected void fireWaitListEvent() {
+				WaitListEvent e = new WaitListEvent(iAssignment);
+				for (WaitListHandler h: iWaitListHandlers)
+					h.onWaitList(e);
+			}
+		});
+		
 		iFilterPanel.add(buttons);
 		
 		P text = new P(DOM.createSpan(), "text"); text.add(iFilter);
@@ -751,7 +773,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		}
 	}
 	
-	public void open(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> rows, int index, boolean quickDrop, boolean useGwtConfirmations) {
+	public void open(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> rows, int index, boolean quickDrop, boolean waitList, boolean useGwtConfirmations) {
 		ClassAssignmentInterface.ClassAssignment row = rows.get(index);
 		if (iAllChoices != null) {
 			iAllChoices.setVisible(iSpecReg.isEnabled() && (iSpecReg.areTimeConflictsAllowed() || iSpecReg.areSpaceConflictsAllowed()));
@@ -792,6 +814,12 @@ public class SuggestionsBox extends UniTimeDialogBox {
 			iQuickDrop.setVisible(true); iQuickDrop.setEnabled(true);
 		} else {
 			iQuickDrop.setVisible(false); iQuickDrop.setEnabled(false);
+		}
+		if (waitList && !iWaitListHandlers.isEmpty() && !iAssignment.isFreeTime() && iAssignment.isAssigned() && iAssignment.isSaved() && iRequest.canWaitList(iAssignment.getCourseId())) {
+			iWaitList.setHTML(MESSAGES.buttonWaitList(MESSAGES.course(row.getSubject(), row.getCourseNbr())));
+			iWaitList.setVisible(true); iWaitList.setEnabled(true);
+		} else {
+			iWaitList.setVisible(false); iWaitList.setEnabled(false);
 		}
 		iCustomCallback = null;
 		iRequest.setTimeConflictsAllowed(iAllChoices != null && iAllChoices.getValue() && iSpecReg.isEnabled() && iSpecReg.areTimeConflictsAllowed());
@@ -1057,6 +1085,10 @@ public class SuggestionsBox extends UniTimeDialogBox {
 	public interface QuickDropHandler {
 		public void onQuickDrop(QuickDropEvent event);
 	}
+	
+	public interface WaitListHandler {
+		public void onWaitList(WaitListEvent event);
+	}
 
 	public class QuickDropEvent {
 		private ClassAssignmentInterface.ClassAssignment iAssignment;
@@ -1065,9 +1097,21 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		}
 		public ClassAssignmentInterface.ClassAssignment getAssignment() { return iAssignment; }
 	}
+	
+	public class WaitListEvent {
+		private ClassAssignmentInterface.ClassAssignment iAssignment;
+		private WaitListEvent(ClassAssignmentInterface.ClassAssignment assignment) {
+			iAssignment = assignment;
+		}
+		public ClassAssignmentInterface.ClassAssignment getAssignment() { return iAssignment; }
+	}
 
 	public void addQuickDropHandler(QuickDropHandler h) {
 		iQuickDropHandlers.add(h);
+	}
+	
+	public void addWaitListHandler(WaitListHandler h) {
+		iWaitListHandlers.add(h);
 	}
 	
 	public static class F extends P {
