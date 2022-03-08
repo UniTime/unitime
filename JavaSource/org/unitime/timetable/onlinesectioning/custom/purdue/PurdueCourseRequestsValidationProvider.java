@@ -1627,6 +1627,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			}
 		}
 		
+		
+		Set<String> fixedCourses = new HashSet<String>();
 		if (server instanceof DatabaseServer) {
 			Map<Class_, XCourseId> singleSections = new HashMap<Class_, XCourseId>();
 			for (XRequest r: original.getRequests()) {
@@ -1755,6 +1757,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					XCourseRequest cr = (XCourseRequest)r;
 					for (XCourseId course: cr.getCourseIds()) {
 						XOffering offering = server.getOffering(course.getOfferingId());
+						if (offering != null && (offering.hasIndividualReservation(original, course) || offering.hasGroupReservation(original, course)))
+							fixedCourses.add(course.getCourseName());
 						if (offering != null && offering.getConfigs().size() == 1) { // take only single config courses
 							for (XSubpart subpart: offering.getConfigs().get(0).getSubparts()) {
 								if (subpart.getSections().size() == 1) { // take only single section subparts
@@ -1963,8 +1967,9 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 								for (ChangeError er: ch.errors) {
 									if (ch.status == ChangeStatus.denied) {
 										request.addConfirmationError(rc.getCourseId(), rc.getCourseName(), er.code, "Denied " + er.message, status(ch.status), ORD_BANNER);
-										request.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.deniedOverrideError",
-												"One or more courses require registration overrides which have been denied.\nYou must remove or replace these courses in order to submit your registration request."));
+										if (!fixedCourses.contains(rc.getCourseName()))
+											request.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.deniedOverrideError",
+													"One or more courses require registration overrides which have been denied.\nYou must remove or replace these courses in order to submit your registration request."));
 									} else if (ch.status != ChangeStatus.approved && ch.status != ChangeStatus.cancelled) {
 										request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), er.code, er.message, status(ch.status), ORD_BANNER);
 									}
