@@ -61,8 +61,18 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
 	private Map<StudentPriority, Query> iPriorityStudentQuery = null;
 	
 	public boolean isWaitListed(XStudent student, XCourseRequest request, XOffering offering, OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		// Check wait-list toggle first or if already enrolled
-		if (student == null || request == null || !request.isWaitlist() || request.getEnrollment() != null) return false;
+		// Check wait-list toggle first
+		if (student == null || request == null || !request.isWaitlist()) return false;
+		
+		// If already enrolled
+		if (request.getEnrollment() != null) {
+			// Check if a section swap
+			if (!request.getEnrollment().equals(request.getWaitListSwapWithCourseOffering())) return false;
+			// Lower choice than the enrolled course
+			if (request.getIndex(offering) > request.getEnrolledCourseIndex()) return false;
+			// Requirements are already met
+			if (request.getEnrollment().getOfferingId().equals(offering.getOfferingId()) && request.isRequired(request.getEnrollment(), offering)) return false;
+		}
 		
 		// Check if student can assign
 		if (!student.canAssign(request, WaitListMode.WaitList)) return false;
@@ -88,7 +98,10 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
 				credit = 0f;
 				for (XRequest r: student.getRequests()) {
 					if (r instanceof XCourseRequest && ((XCourseRequest)r).getEnrollment() != null) {
-						credit += ((XCourseRequest)r).getEnrollment().getCredit(server);
+						XCourseRequest cr = (XCourseRequest)r;
+						// skip drop/swap course
+						if (request.getWaitListSwapWithCourseOffering() == null || !request.getWaitListSwapWithCourseOffering().getCourseId().equals(cr.getEnrollment().getCourseId()))
+							credit += cr.getEnrollment().getCredit(server);
 					}
 				}
 			}
@@ -130,14 +143,21 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
 		// Check wait-list toggle first
 		if (request == null || !request.isWaitlist()) return false;
 		
-		// Ignore enrolled requests
-		if (request.getEnrollment() != null) return false;
-		
 		// Check that the offering can be wait-listed
 		if (!offering.isWaitList()) return false;
 		
 		// No matching course
 		if (courseId == null) return false;
+		
+		// If already enrolled
+		if (request.getEnrollment() != null) {
+			// Check if a section swap
+			if (!request.getEnrollment().equals(request.getWaitListSwapWithCourseOffering())) return false;
+			// Lower choice than the enrolled course
+			if (request.getIndex(offering) > request.getEnrolledCourseIndex()) return false;
+			// Requirements are already met
+			if (request.getEnrollment().getOfferingId().equals(offering.getOfferingId()) && request.isRequired(request.getEnrollment(), offering)) return false;
+		}		
 		
 		// Check student status
 		String status = student.getStatus();
@@ -195,16 +215,24 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
 		WaitListComparatorProvider cmpProvider = Customization.WaitListComparatorProvider.getProvider();
 		Comparator<SectioningRequest> cmp = (cmpProvider == null ? new SectioningRequestComparator() : cmpProvider.getComparator(server, helper));
 		
-		SectioningRequest sr = new SectioningRequest(offering, request, courseId, student, getStudentPriority(student, server, helper), null);
+		SectioningRequest sr = new SectioningRequest(offering, request, courseId, student, false, getStudentPriority(student, server, helper), null);
 		int before = 0, total = 0;
 		for (XCourseRequest cr: enrl.getRequests()) {
-			if (!cr.isWaitlist() || cr.getEnrollment() != null) continue; // skip enrolled or not wait-listed
+			if (!cr.isWaitlist()) continue; // skip not wait-listed
+			if (cr.getEnrollment() != null) { // skip enrolled
+				// Check if a section swap
+				if (!cr.getEnrollment().equals(cr.getWaitListSwapWithCourseOffering())) continue;
+				// Lower choice than the enrolled course
+				if (cr.getIndex(offering) > cr.getEnrolledCourseIndex()) continue;
+				// Requirements are already met
+				if (cr.getEnrollment().getOfferingId().equals(offering.getOfferingId()) && request.isRequired(cr.getEnrollment(), offering)) continue;
+			}
 			XStudent s = server.getStudent(cr.getStudentId());
 			XCourseId c = cr.getCourseIdByOfferingId(offering.getOfferingId());
 			if (!isWaitListedAssumeApproved(s, request, offering, c, server, helper)) continue; // skip not wait-listed
 			total ++;
 			if (!cr.equals(request)) {
-				SectioningRequest other = new SectioningRequest(offering, cr, c, s, getStudentPriority(s, server, helper), null);
+				SectioningRequest other = new SectioningRequest(offering, cr, c, s, false, getStudentPriority(s, server, helper), null);
 				if (cmp.compare(other, sr) < 0) before ++;
 			}
 		}
