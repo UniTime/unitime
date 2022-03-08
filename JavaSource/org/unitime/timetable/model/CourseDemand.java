@@ -196,6 +196,15 @@ public class CourseDemand extends BaseCourseDemand implements Comparable {
     	return false;
     }
     
+    public boolean isEnrolledExceptForWaitListSwap() {
+    	for (CourseRequest cr: getCourseRequests()) {
+    		if (cr.getCourseOffering().equals(getWaitListSwapWithCourseOffering())) continue;
+        	for (StudentClassEnrollment e: getStudent().getClassEnrollments())
+    			if (cr.getCourseOffering().equals(e.getCourseOffering())) return true;
+    	}
+    	return false;
+    }
+    
     public boolean isWaitListOrNoSub(WaitListMode wlMode) {
     	if (wlMode == WaitListMode.WaitList) {
     		return getWaitlist() != null && getWaitlist().booleanValue();

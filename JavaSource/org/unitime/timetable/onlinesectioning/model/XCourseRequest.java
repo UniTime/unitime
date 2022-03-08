@@ -307,6 +307,12 @@ public class XCourseRequest extends XRequest {
         return iCourseIds;
     }
     
+    public int getIndex(XOffering offering) {
+    	for (int i = 0; i < iCourseIds.size(); i++)
+    		if (iCourseIds.get(i).getOfferingId().equals(offering.getOfferingId())) return i;
+    	return -1;
+    }
+    
     public XCourseId getWaitListSwapWithCourseOffering() {
     	return iWaitListSwapWithCourseOffering;
     }

@@ -1148,7 +1148,7 @@ public class SectioningStatusPage extends Composite {
 		line.add(new NumberCell(null, e.getProjection()));
 		if (iCourseInfoVisibleColums.hasSnapshot)
 			line.add(new NumberCell(null, e.getSnapshot()));
-		line.add(new NumberCell(e.getEnrollment(), e.getTotalEnrollment()));
+		line.add(new EnrollmentCell(e));
 		line.add(new WaitListCell(e));
 		line.add(new NumberCell(e.getUnassignedAlternative(), e.getTotalUnassignedAlternative()));
 		line.add(new NumberCell(e.getReservation(), e.getTotalReservation()));
@@ -2418,7 +2418,7 @@ public class SectioningStatusPage extends Composite {
 			line.add(new HTML("&nbsp;", false));
 		}
 		if (iStudentInfoVisibleColumns.hasEnrollment)
-			line.add(new NumberCell(info.getEnrollment(), info.getTotalEnrollment()));
+			line.add(new EnrollmentCell(info));
 		if (iStudentInfoVisibleColumns.hasWaitList)
 			line.add(new WaitListCell(info));
 		if (iStudentInfoVisibleColumns.hasReservation)
@@ -3108,6 +3108,46 @@ public class SectioningStatusPage extends Composite {
 		}
 	}
 	
+	public static class EnrollmentCell extends HTML implements HasCellAlignment {
+		public EnrollmentCell(int enrl, int tEnrl, int swap, int tSwap) {
+			super();
+			if (tSwap == 0 || tSwap == tEnrl) {
+				// no wait-list or all wait-listed
+				if (enrl == tEnrl) {
+					setHTML(enrl == 0 ? "-" : String.valueOf(enrl));
+				} else {
+					setHTML(enrl + " / " + tEnrl);
+				}
+				if (tSwap > 0)
+					setHTML(getHTML() + MESSAGES.htmlWaitListSign());
+			} else if (swap == tSwap && enrl == tEnrl) {
+				setHTML(swap == 0 ? String.valueOf(enrl) : swap == enrl ? swap + MESSAGES.htmlWaitListSign() : (enrl - swap) + " + " + swap + MESSAGES.htmlWaitListSign());
+			} else {
+				setHTML((swap == 0 ? String.valueOf(enrl) : swap == enrl ? swap + MESSAGES.htmlWaitListSign() : (enrl - swap) + " + " + swap + MESSAGES.htmlWaitListSign())
+						+ " / " + tEnrl);
+			}
+		}
+			
+		public EnrollmentCell(StudentInfo e) {
+			this(e.hasEnrollment() ? e.getEnrollment() : 0,
+				e.hasTotalEnrollment() ? e.getTotalEnrollment() : 0,
+				e.hasSwap() ? e.getSwap() : 0,
+				e.hasTotalSwap() ? e.getTotalSwap() : 0);
+		}
+		
+		public EnrollmentCell(EnrollmentInfo e) {
+			this(e.hasEnrollment() ? e.getEnrollment() : 0,
+				e.hasTotalEnrollment() ? e.getTotalEnrollment() : 0,
+				e.hasSwap() ? e.getSwap() : 0,
+				e.hasTotalSwap() ? e.getTotalSwap() : 0);
+		}
+
+		@Override
+		public HorizontalAlignmentConstant getCellAlignment() {
+			return HasHorizontalAlignment.ALIGN_RIGHT;
+		}
+	}
+	
 	public static class EnrollmentComparator implements Comparator<EnrollmentInfo> {
 		public enum SortBy {
 			SUBJECT,
@@ -3195,6 +3235,8 @@ public class SectioningStatusPage extends Composite {
 				cmp = (e1.getEnrollment() == null ? Integer.valueOf(0) : e1.getEnrollment()).compareTo(e2.getEnrollment() == null ? 0 : e2.getEnrollment());
 				if (cmp != 0) return - cmp;
 				cmp = (e1.getTotalEnrollment() == null ? Integer.valueOf(0) : e1.getTotalEnrollment()).compareTo(e2.getTotalEnrollment() == null ? 0 : e2.getTotalEnrollment());
+				if (cmp != 0) return - cmp;
+				cmp = (e1.getTotalSwap() == null ? Integer.valueOf(0) : e1.getTotalSwap()).compareTo(e2.getTotalSwap() == null ? 0 : e2.getTotalSwap());
 				if (cmp != 0) return - cmp;
 				break;
 			case WAITLIST:

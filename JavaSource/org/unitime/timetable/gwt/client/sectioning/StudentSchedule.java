@@ -1292,7 +1292,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							continue request;
 					boolean firstLine = true;
 					for (RequestedCourse rc: request.getRequestedCourse()) {
-						if (rc.hasCourseId() && rc.isCanWaitList() && rc.getStatus() != RequestedCourseStatus.ENROLLED) {
+						if (rc.hasCourseId() && rc.isCanWaitList()) {
 							P p = new P("icons");
 							String style = "pending";
 							if (rc.getStatus() != null) {

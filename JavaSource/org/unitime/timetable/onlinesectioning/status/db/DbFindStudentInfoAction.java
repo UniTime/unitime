@@ -92,8 +92,8 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		
 		Map<Long, StudentInfo> students = new HashMap<Long, StudentInfo>();
 		
-		int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0, gNoSub = 0;
-		int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0, gtNoSub = 0;
+		int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0, gNoSub = 0, gSwap = 0;
+		int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0, gtNoSub = 0, gtSwap = 0;
 		int gConNeed = 0, gtConNeed = 0, gOvrNeed = 0, gtOvrNeed = 0;
 		int gDist = 0, gtDist = 0, gNrDC = 0, gtNrDC = 0, gShr = 0, gtShr = 0; 
 		int gFre = 0, gtFre = 0, gPIM = 0, gtPIM = 0, gPSec = 0, gtPSec = 0;
@@ -187,7 +187,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 	    					st.addAdvisor(helper.getInstructorNameFormat().format(a));
 	    			}
 
-					int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0, tUnasg = 0, tOvrNeed = 0, ovrNeed = 0, tNoSub = 0;
+					int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0, tUnasg = 0, tOvrNeed = 0, ovrNeed = 0, tNoSub = 0, tSwap = 0;
 					float tCred = 0f;
 					int nrDisCnf = 0, maxDist = 0, share = 0; 
 					int ftShare = 0;
@@ -280,6 +280,9 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 								if (assigned.getCourseOffering().getConsentType() != null && crm.approval() == null) {
 									tConNeed ++; gtConNeed ++;
 								}
+								if (crm.request().getCourseDemand().effectiveWaitList() && !crm.request().getCourseDemand().isEnrolledExceptForWaitListSwap()) {
+									tSwap ++; gtSwap ++;
+								}
 								if (assigned.getCourseOffering().getCredit() != null) {
 									tCred += assigned.getCourseOffering().getCredit().getMinCredit();
 									for (StudentClassEnrollment e: enrollment) {
@@ -356,6 +359,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					s.setTotalReservation(tRes);
 					s.setTotalWaitlist(tWait);
 					s.setTotalNoSub(tNoSub);
+					s.setTotalSwap(tSwap);
 					s.setTotalUnassigned(tUnasg);
 					s.setTotalConsentNeeded(tConNeed);
 					s.setTotalOverrideNeeded(tOvrNeed);
@@ -363,6 +367,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					s.setReservation(0);
 					s.setWaitlist(0);
 					s.setNoSub(0);
+					s.setSwap(0);
 					s.setUnassigned(0);
 					s.setConsentNeeded(0);
 					s.setOverrideNeeded(ovrNeed);
@@ -398,6 +403,9 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 						if (crm.reservation() != null) { s.setReservation(s.getReservation() + 1); gRes ++; }
 						if (course.getConsentType() != null && crm.approval() == null) {
 							s.setConsentNeeded(s.getConsentNeeded() + 1); gConNeed ++;
+						}
+						if (crm.request().getCourseDemand().effectiveWaitList() && !crm.request().getCourseDemand().isEnrolledExceptForWaitListSwap()) {
+							s.setSwap(s.getSwap() + 1); gSwap ++;
 						}
 						for (StudentClassEnrollment e: crm.enrollment()) {
 							if (e.getTimestamp() != null) {
@@ -653,12 +661,14 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		t.setReservation(gRes);
 		t.setWaitlist(gWait);
 		t.setNoSub(gNoSub);
+		t.setSwap(gSwap);
 		t.setUnassigned(gUnasg);
 		
 		t.setTotalEnrollment(gtEnrl);
 		t.setTotalReservation(gtRes);
 		t.setTotalWaitlist(gtWait);
 		t.setTotalNoSub(gtNoSub);
+		t.setTotalSwap(gtSwap);
 		t.setTotalUnassigned(gtUnasg);
 		
 		t.setConsentNeeded(gConNeed);

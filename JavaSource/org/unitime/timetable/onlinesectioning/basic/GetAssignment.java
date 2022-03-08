@@ -906,7 +906,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 						rc.setOverrideTimeStamp(((XCourseRequest)cd).getOverrideTimeStamp(courseId));
 						((XCourseRequest)cd).fillPreferencesIn(rc, courseId);
 						r.addRequestedCourse(rc);
-						if (showWaitListPosition && rc.isCanWaitList() && ((XCourseRequest)cd).getEnrollment() == null && ((XCourseRequest)cd).isWaitlist()) {
+						if (showWaitListPosition && rc.isCanWaitList() && ((XCourseRequest)cd).isWaitlist()) {
 							rc.setWaitListPosition(getWaitListPosition(offering, student, (XCourseRequest)cd, courseId, server, helper));
 						}
 					}

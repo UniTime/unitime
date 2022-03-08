@@ -1012,6 +1012,12 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 				if (courseId.equals(rc.getCourseId())) return rc;
 			return null;
 		}
+		public int getIndex(Long courseId) {
+			if (iRequestedCourse == null) return -1;
+			for (int i = 0; i < iRequestedCourse.size(); i++)
+				if (courseId.equals(iRequestedCourse.get(i).getCourseId())) return i;
+			return -1;
+		}
 		public boolean hasRequestedCourse() { return iRequestedCourse != null && !iRequestedCourse.isEmpty(); } //&& !hasRequestedFreeTime(); }
 		public void addRequestedCourse(RequestedCourse requestedCourse) {
 			if (iRequestedCourse == null)

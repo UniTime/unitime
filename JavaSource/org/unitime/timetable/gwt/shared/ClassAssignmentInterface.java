@@ -1353,6 +1353,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Long iCourseId, iOfferingId, iSubjectId, iConfigId, iSubpartId, iClazzId;
 		private Integer iLimit, iOther, iProjection, iEnrollment, iWaitlist, iReservation, iAvailable, iUnassigned, iUnassignedPrimary, iSnapshot, iNoSub;
 		private Integer iTotalEnrollment, iTotalWaitlist, iTotalReservation, iTotalUnassigned, iTotalUnassignedPrimary, iTotalNoSub;
+		private Integer iSwap, iTotalSwap;
 		private Integer iConsentNeeded, iTotalConsentNeeded;
 		private Integer iOverrideNeeded, iTotalOverrideNeeded;
 		private ClassAssignment iAssignment;
@@ -1436,6 +1437,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public void setWaitlist(Integer waitlist) { iWaitlist = waitlist; }
 		public boolean hasWaitlist() { return iWaitlist != null; }
 		
+		public Integer getSwap() { return iSwap; }
+		public void setSwap(Integer swap) { iSwap = swap; }
+		public boolean hasSwap() { return iSwap != null; }
+		
 		public Integer getNoSub() { return iNoSub; }
 		public void setNoSub(Integer noSub) { iNoSub = noSub; }
 		public boolean hasNoSub() { return iNoSub != null; }
@@ -1465,6 +1470,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public void setTotalWaitlist(Integer waitlist) { iTotalWaitlist = waitlist; }
 		public boolean hasTotalWaitlist() { return iTotalWaitlist != null; }
 		
+		public Integer getTotalSwap() { return iTotalSwap; }
+		public void setTotalSwap(Integer swap) { iTotalSwap = swap; }
+		public boolean hasTotalSwap() { return iTotalSwap != null; }
+
 		public Integer getTotalNoSub() { return iTotalNoSub; }
 		public void setTotalNoSub(Integer noSub) { iTotalNoSub = noSub; }
 		public boolean hasTotalNoSub() { return iTotalNoSub != null; }
@@ -1540,8 +1549,8 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	public static class StudentInfo implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private Student iStudent;
-		private Integer iEnrollment, iWaitlist, iReservation, iRequested, iUnassigned, iNoSub;
-		private Integer iTotalEnrollment, iTotalWaitlist, iTotalReservation, iTotalUnassigned, iTotalNoSub;
+		private Integer iEnrollment, iWaitlist, iReservation, iRequested, iUnassigned, iNoSub, iSwap;
+		private Integer iTotalEnrollment, iTotalWaitlist, iTotalReservation, iTotalUnassigned, iTotalNoSub, iTotalSwap;
 		private Integer iConsentNeeded, iTotalConsentNeeded;
 		private Integer iTopWaitingPriority;
 		private Date iRequestedDate = null, iEnrolledDate = null, iApprovedDate = null, iEmailDate = null, iWaitListedDate = null;
@@ -1579,6 +1588,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public void setNoSub(Integer noSub) { iNoSub = noSub; }
 		public boolean hasNoSub() { return iNoSub != null; }
 		
+		public Integer getSwap() { return iSwap; }
+		public void setSwap(Integer swap) { iSwap = swap; }
+		public boolean hasSwap() { return iSwap != null; }
+		
 		public Integer getUnassigned() { return iUnassigned; }
 		public void setUnassigned(Integer unassigned) { iUnassigned = unassigned; }
 		public boolean hasUnassigned() { return iUnassigned != null; }
@@ -1598,6 +1611,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public Integer getTotalNoSub() { return iTotalNoSub; }
 		public void setTotalNoSub(Integer noSub) { iTotalNoSub = noSub; }
 		public boolean hasTotalNoSub() { return iTotalNoSub != null; }
+		
+		public Integer getTotalSwap() { return iTotalSwap; }
+		public void setTotalSwap(Integer swap) { iTotalSwap = swap; }
+		public boolean hasTotalSwap() { return iTotalSwap != null; }
 		
 		public Integer getTotalUnassigned() { return iTotalUnassigned; }
 		public void setTotalUnassigned(Integer unassigned) { iTotalUnassigned = unassigned; }

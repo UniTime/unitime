@@ -32,7 +32,6 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaTabBar;
-import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.sectioning.StudentSectioningPage.Mode;
 import org.unitime.timetable.gwt.client.sectioning.TimeGrid.Meeting;
 import org.unitime.timetable.gwt.client.widgets.CourseFinder;
@@ -1836,11 +1835,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								style = (!rows.isEmpty() && !selfWaitListed ? "top-border-dashed": "");
 								unassignedMessage = MESSAGES.conflictWaitListed(sDF.format(course.getWaitListedDate()));
 							} else {
-								UniTimeNotifications.info(
-										"wlDate:" + course.getWaitListedDate() + ", " +
-										"hasSaved: " + (iSavedRequest != null) + ", " +
-										"status:" + (iSavedRequest == null ? null : iSavedRequest.getStatus(course.getCourseId()))
-										);
 								style = "text-blue" + (!rows.isEmpty() && !selfWaitListed ? " top-border-dashed": "");
 								unassignedMessage = MESSAGES.courseToBeWaitListed();
 							}

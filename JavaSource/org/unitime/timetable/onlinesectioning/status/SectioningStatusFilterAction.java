@@ -1143,7 +1143,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		if (request.hasOption("assignment") && "Wait-Listed".equalsIgnoreCase(request.getOption("assignment"))) {
 			query.addFrom("assignment", "CourseRequest wcr");
 			if (ApplicationProperty.OfferingWaitListDefault.isTrue()) {
-				query.addWhere("assignment", "wcr.courseDemand.waitlist = true and wcr.courseDemand.student = s and not wcr.courseOffering.instructionalOffering.waitlist = false");
+				query.addWhere("assignment", "wcr.courseDemand.waitlist = true and wcr.courseDemand.student = s and (wcr.courseOffering.instructionalOffering.waitlist is null or wcr.courseOffering.instructionalOffering.waitlist = true)");
 			} else {
 				query.addWhere("assignment", "wcr.courseDemand.waitlist = true and wcr.courseDemand.student = s and wcr.courseOffering.instructionalOffering.waitlist = true");
 			}
@@ -1302,6 +1302,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			}
 			
 			public org.hibernate.Query query(org.hibernate.Session hibSession) {
+				System.out.println("Q: " + query());
 				org.hibernate.Query query = setParams(hibSession.createQuery(query()), iExclude).setLong("sessionId", iSessionId).setCacheable(true);
 				for (Map.Entry<String, Object> param: iParams.entrySet()) {
 					if (param.getValue() instanceof Integer) {
@@ -1415,7 +1416,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		if (request.hasOption("assignment") && "Wait-Listed".equalsIgnoreCase(request.getOption("assignment"))) {
 			query.addFrom("assignment", null);
 			if (ApplicationProperty.OfferingWaitListDefault.isTrue()) {
-				query.addWhere("assignment", "not co.instructionalOffering.waitlist = false and cd.waitlist = true");
+				query.addWhere("assignment", "(co.instructionalOffering.waitlist is null or co.instructionalOffering.waitlist = true) and cd.waitlist = true");
 			} else {
 				query.addWhere("assignment", "co.instructionalOffering.waitlist = true and cd.waitlist = true");
 			}

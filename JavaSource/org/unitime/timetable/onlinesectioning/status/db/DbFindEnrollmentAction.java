@@ -245,7 +245,7 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 			}
 			if (request.getCourseDemand().getTimestamp() != null)
 				e.setRequestedDate(request.getCourseDemand().getTimestamp());
-			if (request.getCourseDemand().getWaitlistedTimeStamp() != null && crm.enrollment().isEmpty())
+			if (request.getCourseDemand().getWaitlistedTimeStamp() != null && e.isWaitList())
 				e.setWaitListedDate(request.getCourseDemand().getWaitlistedTimeStamp());
 			e.setCritical(request.getCourseDemand().getEffectiveCritical().ordinal());
 			if (!crm.enrollment().isEmpty()) {

@@ -829,6 +829,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				} else if (eq("Not Assigned", term)) {
 					return !isAssigned() && !request().isAlternative();
 				} else if (eq("Wait-Listed", term)) {
+					if (isAssigned() && request().isWaitlist(iWaitListMode) && enrollment().equals(request().getWaitListSwapWithCourseOffering())) return true;
 					return !isAssigned() && request().isWaitlist(iWaitListMode);
 				} else if (eq("Critical", term)) {
 					return request().getCritical() == CourseDemand.Critical.CRITICAL.ordinal();

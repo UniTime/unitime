@@ -33,6 +33,7 @@ import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.Section;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
@@ -148,6 +149,56 @@ public class XEnrollment extends XCourseId implements Serializable {
 			return course.getMinCredit();
 		return 0f;
 	}
+	
+	public boolean isRequired(CourseRequestInterface.RequestedCourse request, XOffering offering) {
+		if (!request.hasSelectedClasses() && !request.hasSelectedIntructionalMethods()) return true;
+		if (!getOfferingId().equals(offering.getOfferingId())) return true;
+        XConfig config = offering.getConfig(getConfigId());
+        // check all sections
+        for (XSection section: offering.getSections(this)) {
+            boolean hasConfig = false, hasMatchingConfig = false;
+            boolean hasSubpart = false, hasMatchingSection = false;
+            boolean hasSectionReq = false;
+            
+            if (request.hasSelectedIntructionalMethods()) {
+            	for (CourseRequestInterface.Preference choice: request.getSelectedIntructionalMethods()) {
+                	// only check required choices
+            		if (!choice.isRequired()) continue;
+                    // has config -> check config
+            		hasConfig = true;
+            		if (config.getInstructionalMethod() != null && choice.getId().equals(config.getInstructionalMethod().getUniqueId()))
+            			hasMatchingConfig = true;
+            	}
+            }
+            
+            if (request.hasSelectedClasses()) {
+            	for (CourseRequestInterface.Preference choice: request.getSelectedClasses()) {
+                	// only check required choices
+            		if (!choice.isRequired()) continue;
+            		XSection reqSection = offering.getSection(choice.getId());
+                    hasSectionReq = true;
+                    // has section of the matching subpart -> check section
+                    if (reqSection.getSubpartId().equals(section.getSubpartId())) {
+                        hasSubpart = true;
+                        if (reqSection.equals(section)) hasMatchingSection = true;
+                    } else if (!hasMatchingConfig) {
+                        for (XSubpart subpart: config.getSubparts()) {
+                            if (reqSection.getSubpartId().equals(subpart.getSubpartId())) {
+                                hasMatchingConfig = true;
+                                break;
+                            }
+                        }
+                    }
+            	}
+            }
+
+            if (hasConfig && !hasMatchingConfig) return false;
+            if (hasSubpart && !hasMatchingSection) return false;
+            // no match, but there are section requirements for a different config -> not satisfied 
+            if (!hasMatchingConfig && !hasMatchingSection && hasSectionReq) return false;
+        }
+        return true;
+    }
 
 	@Override
 	public int compareTo(XCourseId courseId) {
