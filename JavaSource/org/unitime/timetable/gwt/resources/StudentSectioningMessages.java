@@ -2263,6 +2263,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Overrride Not Needed")
 	String reqStatusNotNeeded();
 
+	@DefaultMessage("Wait-Listed")
+	String reqStatusWaitListed();
+	
 	@DefaultMessage("You are already enrolled in {0}.\nThis course request cannot be modified or deleted.")
 	String enrolled(String course);
 	
