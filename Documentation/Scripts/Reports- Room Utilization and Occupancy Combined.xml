@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE scripts PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/Script.dtd">
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<scripts created="Tue Mar 8 16:55 EDT 2022">
+<script name="Reports:  Room Utilization and Occupancy Combined" permission="Events" engine="python" created="Tue Mar 08 15:23:18 EST 2022">
+  <description><![CDATA[<h3>Export room utilization and room occupancy in a combined report and include station occupancy rate.</h3>
+]]></description>
+  <parameter name="includeDept" label="2) Break Data Down By Department" type="boolean" default="false"/>
+  <parameter name="includeSubjectArea" label="1) Break Data Down By Subject Area" type="boolean" default="false"/>
+  <body><![CDATA[import csv
+from java.util import ArrayList
+from org.unitime.timetable.util import RoomUtilizationHelper, RoomUsageAndOccupancyData
+
+def outputData(writer, list):
+    for row in list:
+	writer.writerow(row)
+
+def execute():
+
+    file = open(log.createOutput('utilization','csv').getAbsolutePath(), 'wb')
+    writer = csv.writer(file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    ruh = RoomUtilizationHelper()
+    headerRow = ArrayList()
+    ruaod = RoomUsageAndOccupancyData()
+    list = ruh.getUtilQueryResultsForQuery(ruaod.getRoomUsageAndOccupancyQuery(session, includeSubjectArea, includeDept, headerRow), headerRow)
+    outputData(writer, list)
+    file.flush()
+    file.close()
+
+execute()]]></body>
+</script>
+</scripts>
+

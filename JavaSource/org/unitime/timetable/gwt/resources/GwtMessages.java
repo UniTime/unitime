@@ -6613,4 +6613,110 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Email failed: {0}")
 	String failureSendingEmail(String message);
+	
+	@DefaultMessage("Campus")
+	String utilSqlAcademicInitiative();
+
+	@DefaultMessage("Term")
+	String utilSqlAcademicTerm();
+
+	@DefaultMessage("Year")
+	String utilSqlAcademicYear();
+	
+	@DefaultMessage("Building")
+	String utilSqlBuilding();
+	
+	@DefaultMessage("Room")
+	String utilSqlRoom();
+	
+	@DefaultMessage("Room_Type")
+	String utilSqlRoomType();
+	
+	@DefaultMessage("Capacity")
+	String utilSqlRoomSize();
+	
+	@DefaultMessage("Campus_region")
+	String utilSqlCampusRegion();
+	
+	@DefaultMessage("Part_of_LLR_or_LALR_Pool")
+	String utilSqlLlrLalrPool();
+	
+	@DefaultMessage("Classroom_Subtype")
+	String utilSqlClassroomSubtype();
+
+	@DefaultMessage("Event_Type")
+	String utilSqlEventType();
+
+	@DefaultMessage("Event_Type_Description")
+	String utilSqlEventTypeDescription();
+
+	@DefaultMessage("Utilization_Type")
+	String utilSqlUtilizationType();
+
+	@DefaultMessage("Department")
+	String utilSqlDepartment();
+
+	@DefaultMessage("Subject")
+	String utilSqlSubject();
+
+	@DefaultMessage("Size_Group")
+	String utilSqlRangeOfSizes();
+
+	@DefaultMessage("Day_Time")
+	String utilSqlDayTime();
+
+	@DefaultMessage("_Standard_Weekday_Hours")
+	String utilSqlTotalStandardWeekdayHoursSuffix();
+
+	@DefaultMessage("_Standard_Hours")
+	String utilSqlTotalStandardHoursSuffix();
+
+	@DefaultMessage("_All_Hours")
+	String utilSqlTotalAllHoursSuffix();
+
+	@DefaultMessage("Occupied_Stations")
+	String utilSqlStationsUsed();
+
+	@DefaultMessage("Requested_Stations")
+	String utilSqlStationsRequested();
+
+	@DefaultMessage("Room_Usage")
+	String utilSqlUsage();
+
+	@DefaultMessage("Station_Usage")
+	String utilSqlUsageSeatHours();
+
+	@DefaultMessage("Station_Occupancy_Rate")
+	String utilSqlStationOccupancyRate();
+	
+	@DefaultMessage("Requested_Station_Occupancy_Rate")
+	String utilSqlRequestedStationOccupancyRate();
+
+	@DefaultMessage("Class")
+	String utilSqlEventTypeClass();
+
+	@DefaultMessage("Final Exam")
+	String utilSqlEventTypeFinalExam();
+
+	@DefaultMessage("Midterm Exam")
+	String utilSqlEventTypeMidtermExam();
+
+	@DefaultMessage("Course Related")
+	String utilSqlEventTypeCourseRelated();
+
+	@DefaultMessage("Special Event")
+	String utilSqlEventTypeSpecialEvent();
+
+	@DefaultMessage("Room Not Available")
+	String utilSqlEventTypeRoomNotAvailable();
+
+	@DefaultMessage("Traditional Utilization")
+	String utilSqlUtilizationTypeTraditional();
+
+	@DefaultMessage("Final Exams Week")
+	String utilSqlUtilizationTypeFinalExamsWeek();
+
+	@DefaultMessage("Special Event")
+	String utilSqlUtilizationTypeSpecialEvent();
+	
 }

@@ -888,6 +888,12 @@ public enum ApplicationProperty {
 	@Description("ExternalVariableTitleDataLookup interface called when a view exists to the external system that provides additional information about variable title courses.")
 	ExternalVariableTitleDataLookup("unitime.external.variable_title_data_lookup.class"),
 	
+	@Type(String.class)
+	@DefaultValue("select crs_dpt.dept_code from %SCHEMA%.department crs_dpt where crs_dpt.uniqueid = sa.department_uniqueid")
+	@Description("Query to determine the department code for a course based on data from an external database. Use 'sess' to reference the UniTime Academic Session data,  'sa' to reference the UniTime Subject Area data and 'co' to reference the UniTime CourseOffering data")
+	ExternalCourseDepartmentCodeLookupSQL("unitime.external.course.department_code_lookup_sql"),
+
+	
 	/**
 	 * Use {@link SpringLdapExternalUidTranslation} when LDAP authentication is enabled.
 	 * See http://help.unitime.org/LDAP for more details.
