@@ -20,6 +20,8 @@
 package org.unitime.timetable.gwt.client.sectioning;
 
 import org.unitime.timetable.gwt.client.GwtHint;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
+import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
@@ -29,6 +31,8 @@ import org.unitime.timetable.gwt.resources.GwtResources;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.MouseOutEvent;
 import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.event.dom.client.MouseOverEvent;
@@ -148,6 +152,55 @@ public class CourseDetailsWidget extends Composite {
 				final Hidden subjectId = Hidden.wrap(subjectElement);
 				final Hidden courseNumber = Hidden.wrap(courseElement);
 				reload(new CourseDetailsRpcRequest(Long.valueOf(subjectId.getValue()), courseNumber.getValue()));
+			}
+		}
+	}
+	
+	public void populate(UniTimeWidget<ListBox> iSubjectArea, UniTimeWidget<UniTimeTextBox> iCourseNumber, Long subjectAreaId) {
+		if (iSubjectArea != null) {
+			final ListBox subjectId = iSubjectArea.getWidget();
+			final TextBox courseNumber = iCourseNumber.getWidget();
+			courseNumber.addValueChangeHandler(new ValueChangeHandler<String>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<String> event) {
+					if (subjectId.getSelectedIndex() >= 0 && !courseNumber.getValue().isEmpty()) {
+						try {
+							reload(new CourseDetailsRpcRequest(Long.valueOf(subjectId.getValue(subjectId.getSelectedIndex())), courseNumber.getValue()));
+						} catch (NumberFormatException e) {}
+					}
+				}
+			});
+			iSubjectArea.getWidget().addChangeHandler(new ChangeHandler() {
+				@Override
+				public void onChange(ChangeEvent event) {
+					if (subjectId.getSelectedIndex() >= 0 && !courseNumber.getValue().isEmpty()) {
+						try {
+							reload(new CourseDetailsRpcRequest(Long.valueOf(subjectId.getValue(subjectId.getSelectedIndex())), courseNumber.getValue()));
+						} catch (NumberFormatException e) {}
+					}
+				}
+			});
+			if (subjectId.getSelectedIndex() >= 0 && !courseNumber.getValue().isEmpty()) {
+				try {
+					reload(new CourseDetailsRpcRequest(Long.valueOf(subjectId.getValue(subjectId.getSelectedIndex())), courseNumber.getValue()));
+				} catch (NumberFormatException f) {}
+			}
+		} else if (iCourseNumber != null) {
+			final TextBox courseNumber = iCourseNumber.getWidget();
+			courseNumber.addValueChangeHandler(new ValueChangeHandler<String>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<String> event) {
+					if (!courseNumber.getValue().isEmpty()) {
+						try {
+							reload(new CourseDetailsRpcRequest(Long.valueOf(subjectAreaId), courseNumber.getValue()));
+						} catch (NumberFormatException e) {}
+					}
+				}
+			});
+			if (!courseNumber.getValue().isEmpty()) {
+				try {
+					reload(new CourseDetailsRpcRequest(Long.valueOf(subjectAreaId), courseNumber.getValue()));
+				} catch (NumberFormatException f) {}
 			}
 		}
 	}

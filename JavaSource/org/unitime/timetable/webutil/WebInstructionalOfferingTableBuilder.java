@@ -138,8 +138,8 @@ public class WebInstructionalOfferingTableBuilder {
     										MSG.columnSchedulePrintNote(),
     										MSG.columnNote(),
     										MSG.columnExam(),
-    										MSG.columnFundingDepartment(),
-    										MSG.columnLms()};
+    										MSG.columnLms(),
+    										MSG.columnFundingDepartment()};
     
     @Deprecated
     protected String[] TIMETABLE_COLUMN_ORDER = {
@@ -316,6 +316,17 @@ public class WebInstructionalOfferingTableBuilder {
     }
     public void setShowExamTimetable(boolean showExamTimetable) {
         this.showExamTimetable = showExamTimetable;
+    }
+    
+    public boolean isShowFundingDepartment() {
+    	if (ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue()) {
+    		return showFundingDepartment;
+    	} else {
+    		return false;
+    	}
+    }
+    public void setShowFundingDepartment(boolean showFundingDepartment) {
+        this.showFundingDepartment = showFundingDepartment;
     }
     
     public boolean isShowInstructorAssignment() { return showInstructorAssignment; }
@@ -1420,7 +1431,6 @@ public class WebInstructionalOfferingTableBuilder {
         return(cell);
     }
 
-    
     //MSG.columnNote(): if changing column order column order must be changed in
     //		buildTableHeader, addInstrOffrRowsToTable, buildClassOrSubpartRow, and buildConfigRow
     protected void buildClassOrSubpartRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TableRow row, CourseOffering co, PreferenceGroup prefGroup, int indentSpaces, boolean isEditable, String prevLabel, String icon, SessionContext context){
@@ -1798,9 +1808,12 @@ public class WebInstructionalOfferingTableBuilder {
                     row.addContent(this.buildExamRoom(examAssignment, exams, isEditable));
                 }
             }
-	    		if (isShowLms()) {
-	                row.addContent(initNormalCell("", isEditable));			
-	    		}
+    		if (isShowLms()) {
+                row.addContent(initNormalCell("", isEditable));			
+    		}
+    		if (isShowFundingDepartment()) {
+                row.addContent(initNormalCell("", isEditable));			
+    		}
 	    
 	        table.addContent(row);
 	        hasConfig = true;
@@ -2359,6 +2372,7 @@ public class WebInstructionalOfferingTableBuilder {
 		} else {
 			setFilterWaitlist(null);
 		}
+		setShowFundingDepartment(form.getFundingDepartment());
 	}
 	
 	protected void setVisibleColumns(ArrayList<String> columns){
@@ -2445,12 +2459,6 @@ public class WebInstructionalOfferingTableBuilder {
 	}
 	public void setShowManager(boolean showManager) {
 		this.showManager = showManager;
-	}
-	public boolean isShowFundingDepartment() {
-		return showFundingDepartment;
-	}
-	public void setShowFundingDepartment(boolean showFundingDepartment) {
-		this.showFundingDepartment = showFundingDepartment;
 	}
 	public boolean isShowMinPerWk() {
 		return showMinPerWk;
