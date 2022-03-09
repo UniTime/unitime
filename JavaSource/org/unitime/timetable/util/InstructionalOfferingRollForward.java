@@ -287,6 +287,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 	
 	private Class_ rollForwardClass(Class_ fromClass,SchedulingSubpart toSubpart, Session toSession, org.hibernate.Session hibSession) throws Exception{
 		Class_ toClass = new Class_();
+
 		toClass.setEnabledForStudentScheduling(fromClass.isEnabledForStudentScheduling());
 		toClass.setDisplayInstructor(fromClass.isDisplayInstructor());
 		toClass.setExpectedCapacity(fromClass.getExpectedCapacity());
@@ -297,6 +298,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		toClass.setSchedulePrintNote(fromClass.getSchedulePrintNote());
 		toClass.setSchedulingSubpart(toSubpart);
 		toClass.setUniqueIdRolledForwardFrom(fromClass.getUniqueId());
+		toClass.setFundingDept(fromClass.getFundingDept());
 		if (fromClass.getLmsInfo() != null) {
 			LearningManagementSystemInfo lms = LearningManagementSystemInfo.findBySessionIdAndReference(toSession.getUniqueId(), fromClass.getLmsInfo().getReference());
 			toClass.setLms(lms);
@@ -472,6 +474,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			toCourseOffering.setReservation(fromCourseOffering.getReservation());
 			toCourseOffering.setConsentType(fromCourseOffering.getConsentType());
 			toCourseOffering.setCourseType(fromCourseOffering.getCourseType());
+			toCourseOffering.setFundingDept(fromCourseOffering.getFundingDept());//TODO
 			toInstructionalOffering.addTocourseOfferings(toCourseOffering);
 			if(fromCourseOffering.getCreditConfigs() != null && !fromCourseOffering.getCreditConfigs().isEmpty()){
 				CourseCreditUnitConfig ccuc = null;

@@ -1219,6 +1219,7 @@ public class Class_ extends BaseClass_ {
 		newClass.setSchedulingSubpart(getSchedulingSubpart());
 		newClass.setCancelled(isCancelled());
 		newClass.setLms(getLms());
+		newClass.setFundingDept(getFundingDept()); //TODO Effective?
 		return(newClass);
 	}
 	

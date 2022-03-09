@@ -185,6 +185,7 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 		exams = new Boolean(false);		
 		instructorAssignment = new Boolean(false);
 		lms = new Boolean(false);
+		fundingDepartment = new Boolean(false);
 		includeCancelledClasses = false;
 		filterNeedInstructor = false;
 		
@@ -576,12 +577,9 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
     public void setIncludeCancelledClasses(boolean includeCancelledClasses) {
     	this.includeCancelledClasses = includeCancelledClasses;
     }	
-
-
     public void setFundingDepartment(Boolean fundingDepartment) {
         this.fundingDepartment = fundingDepartment;
     }
-    
     public Boolean getInstructorAssignment() {
     	return instructorAssignment;
     }

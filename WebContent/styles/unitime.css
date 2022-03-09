@@ -7126,5 +7126,25 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-CheckBoxColumn {
-	width: 10px;	
+	width: 10px;
+}
+
+.unitime-CourseOfferingEdit .deadline .number {
+	float: left;
+}
+
+.unitime-CourseOfferingEdit .deadline .note {
+	float: left;
+	margin: 3px 0px 0px 5px;
+	font-style: italic;
+}
+
+.unitime-CourseOfferingEdit .note {
+	float: left;
+	margin: 0px 0px 0px 0px;
+	font-style: italic;
+}
+
+.myTestForMe {
+	padding: 0;
 }

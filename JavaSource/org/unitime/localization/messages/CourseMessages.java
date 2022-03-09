@@ -109,6 +109,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Requests / Notes:")
 	String propertyRequestsNotes();
 	
+	@DefaultMessage("Funding Department:")
+	String propertyFundingDepartment();
+	
 	@DefaultMessage("Instructors:")
 	String propertyInstructors();
 	
@@ -447,7 +450,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Examinations")
 	String columnExams();
-
+	
 	@DefaultMessage("Funding Department")
 	String columnFundingDepartment();
 	
@@ -1795,6 +1798,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Edit Course Offering")
 	String titleEditCourseOffering();
+	
+	@DefaultMessage("Add Course Offering")
+	String titleAddCourseOffering();
 	
 	@DefaultMessage("Unlimited Enrollment")
 	String titleUnlimitedEnrollment();
