@@ -79,6 +79,15 @@
 
 			return true;
 		}
+		
+		
+		function courseOfferingRedirect(elm) {
+			var courseOfferingElement = elm.getAttribute('data-courseOffering');
+      
+			if (courseOfferingElement != undefined && courseOfferingElement != null) {
+				window.location = 'gwt.jsp?page=courseOffering&offering=' + courseOfferingElement + '&op=editCourseOffering';
+			}
+		}
 
 	// -->
 </SCRIPT>
@@ -351,6 +360,11 @@
 								</html:form>
 							</sec:authorize>
 						</TD>
+						<TD class="BottomBorderGray">
+							<sec:authorize access="hasPermission(#co, 'EditCourseOffering') or hasPermission(#co, 'EditCourseOfferingNote') or hasPermission(#co, 'EditCourseOfferingCoordinators')">
+								<input type="button" name="theButton" value="Edit Course Offering New" class="btn" id="myButton" onclick="javascript:courseOfferingRedirect(this)" data-courseOffering="<%= ((CourseOffering)co).getUniqueId().toString() %>" />
+							</sec:authorize>
+						</TD>
 					</TR>
 				</logic:iterate>
 				</TABLE>
@@ -538,6 +552,17 @@
 				</TD>
 			</TR>
 		</logic:notEmpty>
+		<tt:propertyEquals name="unitime.courses.funding_departments_enabled" value="true">
+			<logic:notEmpty name="instructionalOfferingDetailForm" property="fundingDepartment">
+				<TR>
+					<TD valign="top"><loc:message name="propertyFundingDepartment"/></TD>
+					<TD>
+						<bean:write name="instructionalOfferingDetailForm" property="fundingDepartment" />
+					</TD>
+				</TR>
+				<TR>
+			</logic:notEmpty>
+		</tt:propertyEquals>
 		
 		<sec:authorize access="hasPermission(null, 'Session', 'CurriculumView')">
 		<TR>

@@ -23,6 +23,7 @@ import org.unitime.timetable.gwt.client.admin.PasswordPage;
 import org.unitime.timetable.gwt.client.admin.ScriptPage;
 import org.unitime.timetable.gwt.client.admin.SimpleEditPage;
 import org.unitime.timetable.gwt.client.admin.TasksPage;
+import org.unitime.timetable.gwt.client.courseofferings.CourseOfferingEdit;
 import org.unitime.timetable.gwt.client.curricula.CurriculaPage;
 import org.unitime.timetable.gwt.client.curricula.CurriculumProjectionRulesPage;
 import org.unitime.timetable.gwt.client.departments.DepartmentsPage;
@@ -108,6 +109,10 @@ public enum Pages {
 	reservation(new PageFactory() {
 		public Widget create() { return new ReservationEdit(true); }
 		public String name(GwtMessages messages) { return messages.pageEditReservation(); }
+		}),
+	courseOffering(new PageFactory() {
+		public Widget create() { return new CourseOfferingEdit(); }
+		public String name(GwtMessages messages) { return messages.pageEditCourseOffering(); }
 		}),
 	reservations(new PageFactory() {
 		public Widget create() { return new ReservationsPage(); }

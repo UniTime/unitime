@@ -155,6 +155,7 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 		    	sessionContext.getUser().setProperty("InstructionalOfferingList.waitlist", (frm.getWaitlist() == null ? null : frm.getWaitlist()));
 		    	sessionContext.getUser().setProperty("InstructionalOfferingList.consent", frm.getConsent() ? "1" : "0");
 		    	sessionContext.getUser().setProperty("InstructionalOfferingList.sortBy", frm.getSortBy());
+		    	sessionContext.getUser().setProperty("InstructionalOfferingList.fundingDepartment", (frm.getFundingDepartment() == null ? "0" : frm.getFundingDepartment() ? "1" : "0"));
 		    }
 		    
 		    if (!sessionContext.hasPermission(Right.Examinations))
@@ -290,6 +291,7 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 			frm.setWaitlist(sessionContext.getUser().getProperty("InstructionalOfferingList.waitlist", "A"));
 		else
 			frm.setWaitlist(null);
+		frm.setFundingDepartment("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.fundingDepartment", "0")));
 	}
 	
 	

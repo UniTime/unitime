@@ -86,6 +86,7 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     private boolean hasConflict;
     private String notes;
     private boolean teachingRequests;
+    private String fundingDepartment;
 
 
     // --------------------------------------------------------- Classes
@@ -148,6 +149,7 @@ public class InstructionalOfferingDetailForm extends ActionForm {
         hasConflict = false;
         notes = null;
         teachingRequests = false;
+        fundingDepartment = null;
     }
     
     public List getCourseOfferings() {
@@ -418,4 +420,6 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     public void setNotes(String notes) { this.notes = notes; }
     public boolean getTeachingRequests() { return teachingRequests; }
     public void setTeachingRequests(boolean teachingRequests) { this.teachingRequests = teachingRequests; }
+    public String getFundingDepartment() { return fundingDepartment; }
+    public void setFundingDepartment(String fundingDepartment) { this.fundingDepartment = fundingDepartment; }
 }
