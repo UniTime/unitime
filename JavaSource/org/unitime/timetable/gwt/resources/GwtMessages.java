@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.gwt.resources;
 
+import com.google.gwt.i18n.client.Messages.DefaultMessage;
+
 /**
  * @author Tomas Muller
  */
@@ -969,6 +971,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Share")
 	String colPercentShare();
 	
+	@DefaultMessage("% Share")
+	String colPercentShareInstructor();
+	
+	@DefaultMessage("Responsibility")
+	String colTeachingResponsibility();
+	
 	@DefaultMessage("Lead")
 	String colInstructorLead();
 	
@@ -1695,6 +1703,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<u>S</u>earch")
 	String buttonSearch();
 	
+	@DefaultMessage("Add Coordinator")
+	String buttonAddCoordinator();
+	
 	@DefaultMessage("<u>C</u>lear")
 	String buttonClear();
 	
@@ -1799,6 +1810,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Add&nbsp;<u>R</u>eservation")
 	String buttonAddReservation();
+	
+	@DefaultMessage("Edit Course Offering New")
+	String buttonEditCourseOffering();
 	
 	@DefaultMessage("Show")
 	String buttonShow();
@@ -2811,6 +2825,15 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<b>{0}</b> is required")
 	String errorRequired(String name);
 	
+	@DefaultMessage("Title is required.")
+	String errorTitleIsEmpty();
+	
+	@DefaultMessage("Course Number is required.")
+	String errorCourseNumberIsEmpty();
+	
+	@DefaultMessage("Course Number cannot be matched to regular expression: {0} . Reason: {1}")
+	String errorCourseNumberCannotBeMatched(String regularExpression, String reason);
+	
 	@DefaultMessage("Abbreviation is required.")
 	String errorAbbreviationIsEmpty();
 	
@@ -3446,6 +3469,14 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Edit Reservation")
 	@DoNotTranslate
 	String pageEditReservation();
+	
+	@DefaultMessage("Edit Course Offering")
+	@DoNotTranslate
+	String pageEditCourseOffering();
+	
+	@DefaultMessage("Add Course Offering")
+	@DoNotTranslate
+	String pageAddCourseOffering();
 	
 	@DefaultMessage("Curriculum Projection Rules")
 	@DoNotTranslate
@@ -4133,6 +4164,15 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Select...")
 	String itemSelect();
 	
+	@DefaultMessage("None Required")
+	String consentNone();
+	
+	@DefaultMessage("Consent of Department")
+	String consentDepartment();
+	
+	@DefaultMessage("Consent of Instructor")
+	String consentInstructor();
+	
 	@DefaultMessage("This academic session only")
 	String itemThisSessionOnly();
 
@@ -4296,6 +4336,84 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Reserved Space:")
 	String propReservedSpace();
+	
+	@DefaultMessage("Course Number:")
+	String propCourseNumber();
+	
+	@DefaultMessage("By Reservation Only:")
+	String propByReservationOnly();
+	
+	@DefaultMessage("New Enrollment Deadline:")
+	String propNewEnrollmentDeadline();
+	
+	@DefaultMessage("Class Changes Deadline:")
+	String propClassChangesDeadline();
+	
+	@DefaultMessage("Course Drop Deadline:")
+	String propCourseDropDeadline();
+	
+	@DefaultMessage("Schedule of Classes Note:")
+	String propScheduleNote();
+	
+	@DefaultMessage("Requests/Notes:")
+	String propRequestsNotes();
+	
+	@DefaultMessage("Consent:")
+	String propConsent();
+	
+	@DefaultMessage("Credit:")
+	String propCredit();
+	
+	@DefaultMessage("Credit Type:")
+	String propCreditType();
+	
+	@DefaultMessage("Credit Unit Type:")
+	String propCreditUnitType();
+	
+	@DefaultMessage("Units:")
+	String propUnits();
+	
+	@DefaultMessage("Max Units:")
+	String propMaxUnits();
+	
+	@DefaultMessage("Fractional Increments Allowed:")
+	String propFractional();
+	
+	@DefaultMessage("Take Course Demands from Offering:")
+	String propCourseDemands();
+	
+	@DefaultMessage("Default Alternative Course Offering:")
+	String propAlternativeCourseOffering();
+	
+	@DefaultMessage("Coordinators:")
+	String propCoordinators();
+	
+	@DefaultMessage("Funding Department:")
+	String propFundingDepartment();
+	
+	@DefaultMessage("Wait-Listing:")
+	String propWaitListing();
+
+	@DefaultMessage("Course Catalog:")
+	String propertyCourseCatalog();
+	
+	@DefaultMessage("Subject:")
+	String propSubject();
+	
+	@DefaultMessage("Subject is required.")
+	String errorSubjectRequired();
+	
+	@DefaultMessage("Course Number is required.")
+	String errorCourseNumberRequired();
+	
+	@DefaultMessage("The course cannot be created. A course with the same course number already exists.")
+	String errorCourseCannotBeCreated();
+	
+	@DefaultMessage("The course cannot be renamed. A course with the same course number already exists.")
+	String errorCourseCannotBeRenamed();
+	
+	@DefaultMessage("Duplicate coordinator for a course.")
+	String errorDuplicateCoordinator();
 	
 	@DefaultMessage("Expiration Date:")
 	String propExpirationDate();
@@ -6550,6 +6668,36 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Override Properties:")
 	String propOverrideProperties();
 	
+	@DefaultMessage("Number of weeks during which students are allowed to enroll to this course, defaults to {0} when left blank.")
+	String hintNewEnrollmentDeadline(String wkEnrollmentDefault);
+	
+	@DefaultMessage("Number of weeks during which students are allowed to change existing enrollments, defaults to {0} when left blank.")
+	String hintClassChangesDeadline(String wkChangeDefault);
+	
+	@DefaultMessage("Number of weeks during which students are allowed to drop from this course, defaults to {0} when left blank.")
+	String hintCourseDropDeadline(String wkDropDefault);
+	
+	@DefaultMessage("Weeks start on the day of session start date, number of weeks is relative to class start ({0}).")
+	String descriptionEnrollmentDeadlines(String weekStartDayOfWeek);
+	
+	@DefaultMessage("If checked, only students meeting reservations will be allowed to enroll into the offering.")
+	String checkByReservationOnly();
+	
+	@DefaultMessage("Only students meeting reservations are allowed to enroll into this offering.")
+	String descriptionByReservationOnly2();
+	
+	@DefaultMessage("Students are allowed to enroll in this course up to {0} week of classes.")
+	String textLastWeekEnrollment(String wkEnrollment);
+	
+	@DefaultMessage("Students are allowed to change existing enrollments up to {0} week of classes.")
+	String textLastWeekChange(String wkChange);
+	
+	@DefaultMessage("Students are allowed to drop from this course up to {0} week of classes.")
+	String textLastWeekDrop(String wkDrop);
+	
+	@DefaultMessage("Prohibited Overrides:")
+	String propertyDisabledOverrides();
+	
 	@DefaultMessage("Allow Time Conflict")
 	String checkCanOverlap();
 	
@@ -6624,6 +6772,9 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Update data has failed: {0}")
 	String failedDepartmentUpdateData(String reason);
+	
+	@DefaultMessage("course offering")
+	String objectCourseOffering();
 	
 	@DefaultMessage("Update data has failed: {0}")
 	String failedBuildingUpdateData(String reason);
@@ -6793,9 +6944,6 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("CheckConflicts")
 	String colCheckConflicts();
 
-	@DefaultMessage("Responsibility")
-	String colTeachingResponsibility();
-
 	@DefaultMessage("Display")
 	String colDisplayInstructors();
 
@@ -6864,5 +7012,23 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Failed to Send Update to External System:  {0} = {1}")
 	String exceptionExternalSystemUpdateFailure(String exceptionType, String failedClassName);
+	
+	@DefaultMessage("Default (Enabled)")
+	String waitListDefaultEnabled();
+	
+	@DefaultMessage("Default (Disabled)")
+	String waitListDefaultDisabled();
+	
+	@DefaultMessage("Enabled")
+	String waitListEnabled();
+	
+	@DefaultMessage("Disabled")
+	String waitListDisabled();
+	
+	@DefaultMessage("Wait-listing is enabled for this offering.")
+	String descWaitListEnabled();
+	
+	@DefaultMessage("Wait-listing is not enabled for this offering.")
+	String descWaitListDisabled();
 	
 }

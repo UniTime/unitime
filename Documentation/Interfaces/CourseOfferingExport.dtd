@@ -26,6 +26,7 @@
 <!ATTLIST class id CDATA #IMPLIED >
 <!ATTLIST class limit NMTOKEN #IMPLIED >
 <!ATTLIST class scheduleNote CDATA #IMPLIED >
+<!ATTLIST class fundingDepartment CDATA #IMPLIED >
 <!ATTLIST class suffix CDATA #REQUIRED >
 <!ATTLIST class type CDATA #REQUIRED >
 <!-- cancelled was introduced in UniTime 4.1 -->
@@ -49,6 +50,7 @@
 <!ATTLIST course controlling ( false | true ) #IMPLIED >
 <!ATTLIST course courseNbr NMTOKEN #REQUIRED >
 <!ATTLIST course scheduleBookNote CDATA #IMPLIED >
+<!ATTLIST course fundingDepartment CDATA #IMPLIED >
 <!ATTLIST course subject CDATA #REQUIRED >
 <!ATTLIST course title CDATA #IMPLIED > 
 <!ATTLIST course reserved NMTOKEN #IMPLIED >

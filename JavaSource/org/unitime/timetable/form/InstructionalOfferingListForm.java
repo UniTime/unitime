@@ -114,6 +114,8 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	
 	private Boolean exams;
 	
+	private Boolean fundingDepartment;
+	
 	private String sortBy;
 	
 	private Boolean instructorAssignment;
@@ -246,6 +248,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 		title = new Boolean(false);
 		consent = new Boolean(false);
 		exams = new Boolean(false);
+		fundingDepartment = new Boolean(false);
 		instructorAssignment = new Boolean(false);
 		lms = new Boolean(false);
 		waitlist = null;
@@ -474,6 +477,9 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
     public void setExams(Boolean exams) {
         this.exams = exams;
     }
+    public void setFundingDepartment(Boolean fundingDepartment) {
+        this.fundingDepartment = fundingDepartment;
+    }
     
     public Boolean getInstructorAssignment() {
     	return instructorAssignment;
@@ -521,6 +527,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
         note=null;
         title=null;
         consent=null;
+        fundingDepartment=null;
         instructorAssignment = null;
         lms = null;
         waitlist = null;
@@ -565,8 +572,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 		return (getCourseNbr()==null || getCourseNbr().isEmpty()) && !"W".equals(getWaitlist()) && !"N".equals(getWaitlist());
 	}
 
-	@Override
 	public Boolean getFundingDepartment() {
-		return false;
+		return fundingDepartment;
 	}
 }

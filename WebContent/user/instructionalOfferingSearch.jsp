@@ -22,6 +22,8 @@
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.webutil.WebInstructionalOfferingTableBuilder" %>
+<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
+<%@page import="org.unitime.timetable.defaults.ApplicationProperty"%>
 <%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
 <%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
 <%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
@@ -36,6 +38,25 @@
 	InstructionalOfferingListForm frm = (InstructionalOfferingListForm) request.getAttribute(frmName);
 %>	
 <tiles:importAttribute />
+
+<SCRIPT language="javascript">
+	<!--
+		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
+
+		function courseOfferingRedirect() {
+			var subjectAreaId = document.getElementById('subjectAreaIds').value;
+			var courseNbr = document.getElementsByName('courseNbr')[0].value;
+
+			if (subjectAreaId != undefined && subjectAreaId != null) {
+				if (courseNbr != undefined && courseNbr != null) {
+					window.location = 'gwt.jsp?page=courseOffering&subjArea=' + subjectAreaId + '&courseNbr=' + courseNbr + '&op=addCourseOffering';
+				}
+			}
+		}
+
+	// -->
+</SCRIPT>
+
 <html:form action="/instructionalOfferingSearch">
 <loc:bundle name="CourseMessages">
 	<html:hidden property="doit" value="Search"/>
@@ -244,6 +265,15 @@
 							</TD>
 						</TR>
 					</sec:authorize>
+					<% if (ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue()) { %>
+						<TR>
+							<TD></TD>
+							<TD colspan="2">
+								<html:checkbox property="fundingDepartment" />
+								<loc:message name="columnFundingDepartment"/>
+							</TD>
+						</TR>
+					<% } %>
 					<TR>
 						<TD>
 							<B><loc:message name="filterSortBy"/></B>
@@ -323,6 +353,7 @@
 					onclick="doit.value=this.value;">
 					<loc:message name="actionAddNewInstructionalOffering"/>
 				</html:submit>
+				<input type="button" name="theButton" value="Add New 2.0" class="btn" id="myButton" onclick="javascript:courseOfferingRedirect()" />
 				</sec:authorize>
 				
 			</TD>
