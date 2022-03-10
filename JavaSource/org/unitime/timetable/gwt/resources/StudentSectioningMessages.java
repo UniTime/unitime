@@ -205,7 +205,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Position")
 	String colWaitListPosition();
 	
-	@DefaultMessage("WL/Ovrd")
+	@DefaultMessage("WL/Override")
 	String colWaitListAndAllowedOverrides();
 	
 	/* Academic Session Selector messages
