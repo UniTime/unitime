@@ -738,7 +738,9 @@ public abstract class RoomSummaryReportsHelper {
 	    newline(sb, 8);
 	    sb.append("then");
 	    newline(sb, 12);
-	    sb.append("(select c.expected_capacity from class_ c where c.uniqueid = e.class_id)");
+	    sb.append("(select c.expected_capacity from ")
+	      .append(getSchema())
+	      .append(".class_ c where c.uniqueid = e.class_id)");
 	    newline(sb, 8);
 	    sb.append("when e.event_type in (1, 2)");
 	    newline(sb, 8);
@@ -765,19 +767,35 @@ public abstract class RoomSummaryReportsHelper {
 	    newline(sb, 12);
 	    sb.append("(select count (distinct s.uniqueid)");
 	    newline(sb, 12);
-	    sb.append("from related_course_info rci, student s ");
+	    sb.append("from ")
+	      .append(getSchema())
+	      .append(".related_course_info rci, ")
+	      .append(getSchema())
+	      .append(".student s ");
 	    newline(sb, 12);
-	    sb.append("inner join student_class_enrl sce on sce.student_id = s.uniqueid");
+	    sb.append("inner join ")
+	      .append(getSchema())
+	      .append(".student_class_enrl sce on sce.student_id = s.uniqueid");
 	    newline(sb, 12);
-	    sb.append("inner join class_ c on c.uniqueid = sce.class_id");
+	    sb.append("inner join ")
+	      .append(getSchema())
+	      .append(".class_ c on c.uniqueid = sce.class_id");
 	    newline(sb, 12);
-	    sb.append("inner join scheduling_subpart ss on ss.uniqueid = c.subpart_id");
+	    sb.append("inner join ")
+	      .append(getSchema())
+	      .append(".scheduling_subpart ss on ss.uniqueid = c.subpart_id");
 	    newline(sb, 12);
-	    sb.append("inner join instr_offering_config ioc on ioc.uniqueid = ss.config_id");
+	    sb.append("inner join ")
+	      .append(getSchema())
+	      .append(".instr_offering_config ioc on ioc.uniqueid = ss.config_id");
 	    newline(sb, 12);
-	    sb.append("inner join course_offering co on co.uniqueid = sce.course_offering_id");
+	    sb.append("inner join ")
+	      .append(getSchema())
+	      .append(".course_offering co on co.uniqueid = sce.course_offering_id");
 	    newline(sb, 12);
-	    sb.append("inner join instructional_offering io on io.uniqueid = co.instr_offr_id");
+	    sb.append("inner join ")
+	      .append(getSchema())
+	      .append(".instructional_offering io on io.uniqueid = co.instr_offr_id");
 	    newline(sb, 12);
 	    sb.append("where rci.event_id = e.uniqueid");
 	    newline(sb, 16);
@@ -817,23 +835,40 @@ public abstract class RoomSummaryReportsHelper {
 	protected void appendExamsSeatsUsedQuery(StringBuffer sb) {
 	    sb.append("(select count (distinct s.uniqueid)");
 	    newline(sb, 12);
-	    sb.append("from exam ex");
+	    sb.append("from ")
+	      .append(getSchema())
+	      .append(".exam ex");
 	    newline(sb, 12);
-	    sb.append("inner join exam_owner eo on eo.exam_id = ex.uniqueid, ");
+	    sb.append("inner join ")
+	      .append(getSchema())
+	      .append(".exam_owner eo on eo.exam_id = ex.uniqueid, ");
 	    newline(sb, 12);
-	    sb.append("student s ");
+	    sb.append(getSchema())
+	      .append(".student s ");
 	    newline(sb, 12);
-	    sb.append("inner join student_class_enrl sce on sce.student_id = s.uniqueid");
+	    sb.append("inner join ")
+	      .append(getSchema())
+	      .append(".student_class_enrl sce on sce.student_id = s.uniqueid");
 	    newline(sb, 12);
-	    sb.append("inner join class_ c on c.uniqueid = sce.class_id");
+	    sb.append("inner join ")
+	      .append(getSchema())
+	      .append(".class_ c on c.uniqueid = sce.class_id");
 	    newline(sb, 12);
-	    sb.append("inner join scheduling_subpart ss on ss.uniqueid = c.subpart_id");
+	    sb.append("inner join ")
+	      .append(getSchema())
+	      .append(".scheduling_subpart ss on ss.uniqueid = c.subpart_id");
 	    newline(sb, 12);
-	    sb.append("inner join instr_offering_config ioc on ioc.uniqueid = ss.config_id");
+	    sb.append("inner join ")
+	      .append(getSchema())
+	      .append(".instr_offering_config ioc on ioc.uniqueid = ss.config_id");
 	    newline(sb, 12);
-	    sb.append("inner join course_offering co on co.uniqueid = sce.course_offering_id");
+	    sb.append("inner join ")
+	      .append(getSchema())
+	      .append(".course_offering co on co.uniqueid = sce.course_offering_id");
 	    newline(sb, 12);
-	    sb.append("inner join instructional_offering io on io.uniqueid = co.instr_offr_id");
+	    sb.append("inner join ")
+	      .append(getSchema())
+	      .append(".instructional_offering io on io.uniqueid = co.instr_offr_id");
 	    newline(sb, 12);
 	    sb.append("where ex.uniqueid = e.exam_id");
 	    newline(sb, 16);
@@ -859,7 +894,11 @@ public abstract class RoomSummaryReportsHelper {
 	    newline(sb, 8);
 	    sb.append("then");
 	    newline(sb, 12);
-	    sb.append("(select count (distinct stu.uniqueid) from student stu inner join student_class_enrl stu_enrl on stu_enrl.student_id = stu.uniqueid and stu_enrl.class_id = e.class_id)");
+	    sb.append("(select count (distinct stu.uniqueid) from ")
+	      .append(getSchema())
+	      .append(".student stu inner join ")
+	      .append(getSchema())
+	      .append(".student_class_enrl stu_enrl on stu_enrl.student_id = stu.uniqueid and stu_enrl.class_id = e.class_id)");
 	    newline(sb, 8);
 	    sb.append("when e.event_type in (1, 2)");
 	    newline(sb, 8);
@@ -873,19 +912,35 @@ public abstract class RoomSummaryReportsHelper {
 	    newline(sb, 12);
 	    sb.append("(select count (distinct s.uniqueid)");
 	    newline(sb, 12);
-	    sb.append("from related_course_info rci, student s ");
+	    sb.append("from ")
+	      .append(getSchema())
+	      .append(".related_course_info rci, ")
+	      .append(getSchema())
+	      .append(".student s ");
 	    newline(sb, 12);
-	    sb.append("inner join student_class_enrl sce on sce.student_id = s.uniqueid");
+	    sb.append("inner join ")
+	      .append(getSchema())
+	      .append(".student_class_enrl sce on sce.student_id = s.uniqueid");
 	    newline(sb, 12);
-	    sb.append("inner join class_ c on c.uniqueid = sce.class_id");
+	    sb.append("inner join ")
+	      .append(getSchema())
+	      .append(".class_ c on c.uniqueid = sce.class_id");
 	    newline(sb, 12);
-	    sb.append("inner join scheduling_subpart ss on ss.uniqueid = c.subpart_id");
+	    sb.append("inner join ")
+	      .append(getSchema())
+	      .append(".scheduling_subpart ss on ss.uniqueid = c.subpart_id");
 	    newline(sb, 12);
-	    sb.append("inner join instr_offering_config ioc on ioc.uniqueid = ss.config_id");
+	    sb.append("inner join ")
+	      .append(getSchema())
+	      .append(".instr_offering_config ioc on ioc.uniqueid = ss.config_id");
 	    newline(sb, 12);
-	    sb.append("inner join course_offering co on co.uniqueid = sce.course_offering_id");
+	    sb.append("inner join ")
+	      .append(getSchema())
+	      .append(".course_offering co on co.uniqueid = sce.course_offering_id");
 	    newline(sb, 12);
-	    sb.append("inner join instructional_offering io on io.uniqueid = co.instr_offr_id");
+	    sb.append("inner join ")
+	      .append(getSchema())
+	      .append(".instructional_offering io on io.uniqueid = co.instr_offr_id");
 	    newline(sb, 12);
 	    sb.append("where rci.event_id = e.uniqueid");
 	    newline(sb, 16);
@@ -925,9 +980,13 @@ public abstract class RoomSummaryReportsHelper {
 		StringBuffer sb = new StringBuffer();
 		sb.append("(select count(distinct r.uniqueid)");
 	    newline(sb, 8);
-		sb.append("from timetable.meeting om");
+		sb.append("from ")
+	      .append(getSchema())
+		  .append(".meeting om");
 	    newline(sb, 8);
-		sb.append("inner join timetable.room oth_r on oth_r.session_id = sess.uniqueid"); 
+		sb.append("inner join ")
+	      .append(getSchema())
+		  .append(".room oth_r on oth_r.session_id = sess.uniqueid"); 
 	    newline(sb, 8);
 		sb.append("     and oth_r.permanent_id = om.location_perm_id");
 	    newline(sb, 8);
@@ -1104,7 +1163,9 @@ public abstract class RoomSummaryReportsHelper {
 	    newline(sb, 2);
 	    sb.append("and r.permanent_id = m.location_perm_id");
 	    newline(sb, 2);
-	    sb.append(" and (c.uniqueId is null or (c.expected_capacity > 0 or 0 < (select count(cstu_enrl.uniqueid) from student_class_enrl cstu_enrl where cstu_enrl.class_id = c.uniqueid)))");
+	    sb.append(" and (c.uniqueId is null or (c.expected_capacity > 0 or 0 < (select count(cstu_enrl.uniqueid) from ")
+	      .append(getSchema())
+	      .append(".student_class_enrl cstu_enrl where cstu_enrl.class_id = c.uniqueid)))");
 	    newline(sb, 2);
 	    sb.append("and (c.uniqueId is null or c.nbr_rooms is not null)");
 	    newline(sb, 2);

@@ -66,9 +66,13 @@ public class OccupancyHelper extends RoomSummaryReportsHelper {
 		newline(sb, 12);
 		sb.append("(select (r.capacity / sum(oth_r.capacity)) ");
 		newline(sb, 12);
-		sb.append("from timetable.meeting om");
+		sb.append("from ")
+	      .append(getSchema())
+		  .append(".meeting om");
 		newline(sb, 12);
-		sb.append("inner join timetable.room oth_r on oth_r.session_id = sess.uniqueid ");
+		sb.append("inner join ")
+	      .append(getSchema())
+		  .append(".room oth_r on oth_r.session_id = sess.uniqueid ");
 		newline(sb, 16);
 		sb.append("and oth_r.permanent_id = om.location_perm_id  ");  
 		newline(sb, 12);
