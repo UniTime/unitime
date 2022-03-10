@@ -407,7 +407,7 @@ public class InstructionalOfferingDetailAction extends Action {
         frm.setWkEnroll(io.getLastWeekToEnroll() == null ? "" : io.getLastWeekToEnroll().toString());
         frm.setWkChange(io.getLastWeekToChange() == null ? "" : io.getLastWeekToChange().toString());
         frm.setWkDrop(io.getLastWeekToDrop() == null ? "" : io.getLastWeekToDrop().toString());
-        if (io.effectiveWaitList() != ApplicationProperty.OfferingWaitListDefault.isTrue()) frm.setWaitList(io.effectiveWaitList() ? "true" : "false");
+        if (io.effectiveWaitList() || ApplicationProperty.OfferingWaitListDefault.isTrue()) frm.setWaitList(io.effectiveWaitList() ? "true" : "false");
         frm.setWeekStartDayOfWeek(Localization.getDateFormat("EEEE").format(io.getSession().getSessionBeginDateTime()));
         frm.setHasConflict(hasConflicts(request, io));
         if (io.effectiveWaitList()) {
