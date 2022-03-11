@@ -415,6 +415,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 					} else if (!r.getRequest().isAlternative()) { // wait-list
 						if (cd != null && !cd.isWaitlist()) {
 							cd.setWaitlist(true);
+							cd.setWaitlistedTimeStamp(ts);
 							helper.getHibSession().saveOrUpdate(cd);
 							student.addWaitList(
 									CourseOfferingDAO.getInstance().get(r.getCourseId().getCourseId(), helper.getHibSession()),

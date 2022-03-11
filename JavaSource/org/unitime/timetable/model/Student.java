@@ -429,6 +429,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     		wl.setTimestamp(timeStamp);
     		wl.setWaitListType(type);
     		wl.setWaitListed(waitListed);
+    		wl.setWaitListedTimeStamp(cr == null ? null : cr.getCourseDemand().getWaitlistedTimeStamp());
     		wl.setStudent(this);
     		wl.setCourseDemand(cr == null ? null : cr.getCourseDemand());
     		wl.fillInNotes();
