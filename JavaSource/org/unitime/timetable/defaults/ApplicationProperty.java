@@ -2787,6 +2787,11 @@ public enum ApplicationProperty {
 	ListCourseOfferingsSelectionLimit("unitime.enrollment.listOfferings.limit"),
 	
 	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Course Finder: when subject area starts with the student's campus code, move courses that match student's primary campus to the top of the list")
+	ListCourseOfferingsMatchingCampusFirst("unitime.enrollment.listOfferings.campusFirst"),
+	
+	@Type(Boolean.class)
 	@DefaultValue("true")
 	@Description("Student Status: include effective period message in the status")
 	StudentStatusEffectivePeriodMessage("unitime.enrollment.studentStatus.timeWindowMessage"),

@@ -43,6 +43,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseLookupHolder;
 import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
+import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -119,6 +120,21 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 							if (!co.getDisabledOverrides().contains(override))
 								table.get(co.getUniqueId()).addOverride(override.getReference(), override.getLabel());
 					}
+				}
+			}
+			if (ApplicationProperty.ListCourseOfferingsMatchingCampusFirst.isTrue() &&  iStudent != null && courses != null && !courses.isEmpty()) {
+				XAreaClassificationMajor primary = iStudent.getPrimaryMajor();
+				final String campus = (primary == null ? null : primary.getCampus());
+				if (campus != null && !campus.equals(server.getAcademicSession().getCampus())) {
+					List<CourseAssignment> ret = new ArrayList<CourseAssignment>(courses.size());
+					for (CourseAssignment ca: courses) {
+						if (ca.getSubject().startsWith(campus + " - ")) ret.add(ca);
+					}
+					if (ret.isEmpty()) return courses;
+					for (CourseAssignment ca: courses) {
+						if (!ca.getSubject().startsWith(campus + " - ")) ret.add(ca);
+					}
+					return ret;
 				}
 			}
 			return courses;

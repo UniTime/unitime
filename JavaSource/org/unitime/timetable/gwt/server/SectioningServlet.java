@@ -446,6 +446,24 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			if (results.isEmpty()) {
 				throw new SectioningException(MSG.exceptionCourseDoesNotExist(query));
 			}
+			if (ApplicationProperty.ListCourseOfferingsMatchingCampusFirst.isTrue() && cx.getStudentId() != null) {
+				Student student = StudentDAO.getInstance().get(cx.getStudentId());
+				if (student != null) {
+					StudentAreaClassificationMajor primary = student.getPrimaryAreaClasfMajor();
+					String campus = (primary == null || primary.getCampus() == null ? null : primary.getCampus().getReference());
+					if (campus != null && !campus.equals(student.getSession().getAcademicInitiative())) {
+						List<CourseAssignment> ret = new ArrayList<CourseAssignment>(results.size());
+						for (CourseAssignment ca: results) {
+							if (ca.getSubject().startsWith(campus + " - ")) ret.add(ca);
+						}
+						if (ret.isEmpty()) return results;
+						for (CourseAssignment ca: results) {
+							if (!ca.getSubject().startsWith(campus + " - ")) ret.add(ca);
+						}
+						return ret;
+					}
+				}
+			}
 			return results;
 		} else {
 			Collection<ClassAssignmentInterface.CourseAssignment> results = null;
