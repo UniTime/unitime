@@ -506,7 +506,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 							server.execute(server.createAction(NotifyStudentAction.class)
 									.forStudent(r.getRequest().getStudentId()).fromAction(name())
 									.failedEnrollment(newOffering, r.getCourseId(), e, ex)
-									.dropEnrollment(r.getDropEnrollment()),
+									.dropEnrollment(dropEnrollment),
 									helper.getUser());
 						continue;
 					}
@@ -624,7 +624,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 						.forStudent(r.getRequest().getStudentId())
 						.fromAction(name())
 						.oldEnrollment(oldOffering, r.getCourseId(), r.getLastEnrollment())
-						.dropEnrollment(r.getDropEnrollment()),
+						.dropEnrollment(dropEnrollment),
 						helper.getUser());
 				
 				

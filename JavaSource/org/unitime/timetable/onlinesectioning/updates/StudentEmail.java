@@ -276,6 +276,14 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 							enrollment.addSection(OnlineSectioningHelper.toProto(section, e));
 				}
 				action.addEnrollment(enrollment);
+			} else if (getDropEnrollment() != null) {
+				OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
+				enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
+				XOffering dropOffering = server.getOffering(getDropEnrollment().getOfferingId());
+				if (dropOffering != null)
+					for (XSection section: dropOffering.getSections(getDropEnrollment()))
+						enrollment.addSection(OnlineSectioningHelper.toProto(section, getDropEnrollment()));
+				action.addEnrollment(enrollment);
 			}
 			
 			if (getFailedEnrollment() != null) {
@@ -942,21 +950,25 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			XCourseRequest newRequest = null;
 			XOffering newOffering = null;
 			XCourse course = (getOldEnrollment() != null ? getOldOffering().getCourse(getOldEnrollment().getCourseId()) : getOldCourse());
+			XCourse oldCourse = course;
 			for (XRequest r: getStudent().getRequests()) {
 				if (r instanceof XCourseRequest && (
 						(getOldCourse() == null && ((XCourseRequest)r).getCourseIdByOfferingId(getOldOffering().getOfferingId()) != null) ||
 						(getOldCourse() != null && ((XCourseRequest)r).hasCourse(getOldCourse().getCourseId()))
 						)) {
 					newRequest = (XCourseRequest)r;
-					newOffering = server.getOffering(getOldOffering().getOfferingId());
-					if (newRequest.getEnrollment() != null)
+					if (newRequest.getEnrollment() != null) {
+						newOffering = server.getOffering(newRequest.getEnrollment().getOfferingId());
 						course = newOffering.getCourse(newRequest.getEnrollment().getCourseId());
+					} else {
+						newOffering = server.getOffering(getOldOffering().getOfferingId());
+					}
 					break;
 				}
 			}
 			input.put("changedCourse", course);
 			
-			if (getDropEnrollment() != null && !getDropEnrollment().getCourseId().equals(getOldCourse().getCourseId())) {
+			if (getDropEnrollment() != null) {
 				XOffering dropOffering = server.getOffering(getDropEnrollment().getOfferingId());
 				if (dropOffering != null) {
 					XCourse dropCourse = dropOffering.getCourse(getDropEnrollment().getCourseId());
@@ -989,7 +1001,11 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				}
 				input.put("changes", listOfChanges);
 			} else if (getOldEnrollment() != null && newRequest != null && newRequest.getEnrollment() != null) {
-				setSubject(MSG.emailEnrollmentChanged(course.getSubjectArea(), course.getCourseNumber()));
+				if (oldCourse.equals(course)) {
+					setSubject(MSG.emailEnrollmentChanged(course.getSubjectArea(), course.getCourseNumber()));
+				} else { 
+					setSubject(MSG.emailEnrollmentNew(course.getSubjectArea(), course.getCourseNumber()));
+				}
 
 				String consent = consent(server, newRequest.getEnrollment());
 				sections: for (XSection section: newOffering.getSections(newRequest.getEnrollment())) {
@@ -1035,8 +1051,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					XSection parent = (old.getParentId() == null ? null : getOldOffering().getSection(old.getParentId()));
 					String requires = null;
 					if (parent != null)
-						requires = parent.getName(course.getCourseId());
-					listOfChanges.add(new TableSectionDeletedLine(newRequest, course, subpart, old, requires, getCourseUrl(session, course)));
+						requires = parent.getName(oldCourse.getCourseId());
+					listOfChanges.add(new TableSectionDeletedLine(newRequest, oldCourse, subpart, old, requires, getCourseUrl(session, course)));
 				}
 
 				input.put("changes", listOfChanges);
