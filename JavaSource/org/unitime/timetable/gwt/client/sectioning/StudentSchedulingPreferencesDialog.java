@@ -28,19 +28,22 @@ import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
+import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
+import org.unitime.timetable.gwt.shared.StudentSchedulingPreferencesInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.ListBox;
 
 /**
  * @author Tomas Muller
  */
-public class StudentSchedulingPreferencesDialog extends UniTimeDialogBox {
+public class StudentSchedulingPreferencesDialog extends UniTimeDialogBox implements TakesValue<StudentSchedulingPreferencesInterface> {
 	protected static StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	protected static StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	protected static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
@@ -48,10 +51,12 @@ public class StudentSchedulingPreferencesDialog extends UniTimeDialogBox {
 	private SimpleForm iForm;
 	private UniTimeHeaderPanel iFooter;
 	private SingleDateSelector iDateFrom, iDateTo;
+	private int iDatesLine;
 	private ListBox iModality, iBackToBack;
 	private P iModalityDesc, iBackToBackDesc;
+	private StudentSchedulingPreferencesInterface iPreferences;
 
-	public StudentSchedulingPreferencesDialog() {
+	public StudentSchedulingPreferencesDialog(AcademicSessionProvider sessionProvider) {
 		super(true, false);
 		setEscapeToHide(true);
 		addStyleName("unitime-StudentSchedulingPreferencesDialog");
@@ -59,10 +64,10 @@ public class StudentSchedulingPreferencesDialog extends UniTimeDialogBox {
 		iForm = new SimpleForm();
 		
 		iModality = new ListBox();
-		iModality.addItem(MESSAGES.itemSchedulingModalityPreferFaceToFace(), "f2f");
-		iModality.addItem(MESSAGES.itemSchedulingModalityPreferOnline(), "online");
-		iModality.addItem(MESSAGES.itemSchedulingModalityRequireOnline(), "req-online");
-		iModality.addItem(MESSAGES.itemSchedulingModalityNoPreference(), "no-pref");
+		iModality.addItem(MESSAGES.itemSchedulingModalityPreferFaceToFace(), "DiscouragedOnline");
+		iModality.addItem(MESSAGES.itemSchedulingModalityPreferOnline(), "PreferredOnline");
+		iModality.addItem(MESSAGES.itemSchedulingModalityRequireOnline(), "RequiredOnline");
+		iModality.addItem(MESSAGES.itemSchedulingModalityNoPreference(), "NoPreference");
 		iModality.addStyleName("selection");
 		AbsolutePanel p = new AbsolutePanel(); p.setStyleName("modality");
 		p.add(iModality);
@@ -72,23 +77,15 @@ public class StudentSchedulingPreferencesDialog extends UniTimeDialogBox {
 		iModality.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
-				if ("f2f".equals(iModality.getSelectedValue())) {
-					iModalityDesc.setText(MESSAGES.descSchedulingModalityPreferFaceToFace());
-				} else if ("online".equals(iModality.getSelectedValue())) {
-					iModalityDesc.setText(MESSAGES.descSchedulingModalityPreferOnline());
-				} else if ("req-online".equals(iModality.getSelectedValue())) {
-					iModalityDesc.setText(MESSAGES.descSchedulingModalityRequireOnline());
-				} else if ("no-pref".equals(iModality.getSelectedValue())) {
-					iModalityDesc.setText(MESSAGES.descSchedulingModalityNoPreference());
-				}
+				modalityChanged();
 			}
 		});
 		iForm.addRow(MESSAGES.propSchedulingPrefModality(), p);
 		
 		iBackToBack = new ListBox();
-		iBackToBack.addItem(MESSAGES.itemSchedulingBackToBackNoPreference(), "no-ref");
-		iBackToBack.addItem(MESSAGES.itemSchedulingBackToBackPrefer(), "prefer");
-		iBackToBack.addItem(MESSAGES.itemSchedulingBackToBackDiscourage(), "discourage");
+		iBackToBack.addItem(MESSAGES.itemSchedulingBackToBackNoPreference(), "NoPreference");
+		iBackToBack.addItem(MESSAGES.itemSchedulingBackToBackPrefer(), "PreferBackToBack");
+		iBackToBack.addItem(MESSAGES.itemSchedulingBackToBackDiscourage(), "DiscourageBackToBack");
 		iBackToBack.addStyleName("selection");
 		AbsolutePanel q = new AbsolutePanel(); q.setStyleName("back-to-back");
 		q.add(iBackToBack);
@@ -98,13 +95,7 @@ public class StudentSchedulingPreferencesDialog extends UniTimeDialogBox {
 		iBackToBack.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
-				if ("prefer".equals(iBackToBack.getSelectedValue())) {
-					iBackToBackDesc.setText(MESSAGES.descSchedulingBackToBackPrefer());
-				} else if ("discourage".equals(iBackToBack.getSelectedValue())) {
-					iBackToBackDesc.setText(MESSAGES.descSchedulingBackToBackDiscourage());
-				} else if ("no-pref".equals(iBackToBack.getSelectedValue())) {
-					iBackToBackDesc.setText(MESSAGES.descSchedulingBackToBackNoPreference());
-				}
+				backToBackChanged();
 			}
 		});
 		iForm.addRow(MESSAGES.propSchedulingPrefBackToBack(), q);
@@ -112,13 +103,13 @@ public class StudentSchedulingPreferencesDialog extends UniTimeDialogBox {
 		AbsolutePanel m = new AbsolutePanel();
 		m.setStyleName("dates");
 		P from = new P("from"); from.setText(MESSAGES.propSchedulingPrefDatesFrom()); m.add(from);
-		iDateFrom = new SingleDateSelector();
+		iDateFrom = new SingleDateSelector(sessionProvider);
 		m.add(iDateFrom);
 		P to = new P("to"); to.setText(MESSAGES.propSchedulingPrefDatesTo()); m.add(to);
-		iDateTo = new SingleDateSelector();
+		iDateTo = new SingleDateSelector(sessionProvider);
 		m.add(iDateTo);
 		P desc = new P("description"); desc.setText(MESSAGES.propSchedulingPrefDatesDescription()); m.add(desc);
-		iForm.addRow(MESSAGES.propSchedulingPrefDates(), m);
+		iDatesLine = iForm.addRow(MESSAGES.propSchedulingPrefDates(), m);
 		
 		iFooter = new UniTimeHeaderPanel();
 		iFooter.addButton("apply", MESSAGES.buttonSchedulingPrefApply(), new ClickHandler() {
@@ -140,6 +131,28 @@ public class StudentSchedulingPreferencesDialog extends UniTimeDialogBox {
 		
 	}
 	
+	protected void modalityChanged() {
+		if ("DiscouragedOnline".equals(iModality.getSelectedValue())) {
+			iModalityDesc.setText(MESSAGES.descSchedulingModalityPreferFaceToFace());
+		} else if ("PreferredOnline".equals(iModality.getSelectedValue())) {
+			iModalityDesc.setText(MESSAGES.descSchedulingModalityPreferOnline());
+		} else if ("RequiredOnline".equals(iModality.getSelectedValue())) {
+			iModalityDesc.setText(MESSAGES.descSchedulingModalityRequireOnline());
+		} else if ("NoPreference".equals(iModality.getSelectedValue())) {
+			iModalityDesc.setText(MESSAGES.descSchedulingModalityNoPreference());
+		}
+	}
+	
+	protected void backToBackChanged() {
+		if ("PreferBackToBack".equals(iBackToBack.getSelectedValue())) {
+			iBackToBackDesc.setText(MESSAGES.descSchedulingBackToBackPrefer());
+		} else if ("DiscourageBackToBack".equals(iBackToBack.getSelectedValue())) {
+			iBackToBackDesc.setText(MESSAGES.descSchedulingBackToBackDiscourage());
+		} else if ("NoPreference".equals(iBackToBack.getSelectedValue())) {
+			iBackToBackDesc.setText(MESSAGES.descSchedulingBackToBackNoPreference());
+		}
+	}
+	
 	@Override
 	public void center() {
 		super.center();
@@ -150,4 +163,41 @@ public class StudentSchedulingPreferencesDialog extends UniTimeDialogBox {
 		hide();
 	}
 
+	@Override
+	public StudentSchedulingPreferencesInterface getValue() {
+		iPreferences.setClassModality(StudentSchedulingPreferencesInterface.ClassModality.valueOf(iModality.getSelectedValue()));
+		iPreferences.setScheduleGaps(StudentSchedulingPreferencesInterface.ScheduleGaps.valueOf(iBackToBack.getSelectedValue()));
+		iPreferences.setClassDateFrom(iPreferences.isAllowClassDates() ? iDateFrom.getValueInServerTimeZone() : null);
+		iPreferences.setClassDateTo(iPreferences.isAllowClassDates() ? iDateTo.getValueInServerTimeZone() : null);
+		return new StudentSchedulingPreferencesInterface(iPreferences);
+	}
+
+	@Override
+	public void setValue(StudentSchedulingPreferencesInterface value) {
+		iPreferences = value;
+		iForm.getRowFormatter().setVisible(iDatesLine, iPreferences.isAllowClassDates());
+		iModality.clear();
+		iModality.addItem(MESSAGES.itemSchedulingModalityPreferFaceToFace(), "DiscouragedOnline");
+		iModality.addItem(MESSAGES.itemSchedulingModalityPreferOnline(), "PreferredOnline");
+		if (iPreferences.isAllowRequireOnline())
+			iModality.addItem(MESSAGES.itemSchedulingModalityRequireOnline(), "RequiredOnline");
+		iModality.addItem(MESSAGES.itemSchedulingModalityNoPreference(), "NoPreference");
+		if (iPreferences.getClassModality() != null)
+			for (int i = 0; i < iModality.getItemCount(); i++)
+				if (iPreferences.getClassModality().name().equals(iModality.getValue(i))) {
+					iModality.setSelectedIndex(i);
+					modalityChanged();
+					break;
+				}
+		if (iPreferences.getScheduleGaps() != null) {
+			for (int i = 0; i < iBackToBack.getItemCount(); i++)
+				if (iPreferences.getScheduleGaps().name().equals(iBackToBack.getValue(i))) {
+					iBackToBack.setSelectedIndex(i);
+					backToBackChanged();
+					break;
+				}
+		}
+		iDateFrom.setValueInServerTimeZone(iPreferences.isAllowRequireOnline() ? iPreferences.getClassDateFrom() : null);
+		iDateTo.setValueInServerTimeZone(iPreferences.isAllowRequireOnline() ? iPreferences.getClassDateTo() : null);
+	}
 }

@@ -104,6 +104,7 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpeci
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseInfo;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseResponse;
+import org.unitime.timetable.gwt.shared.StudentSchedulingPreferencesInterface;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpart;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.model.Advisor;
@@ -3064,7 +3065,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			check.setFlag(EligibilityFlag.GWT_CONFIRMATIONS, ApplicationProperty.OnlineSchedulingGWTConfirmations.isTrue());
 			check.setFlag(EligibilityFlag.DEGREE_PLANS, CustomDegreePlansHolder.hasProvider());
 			check.setFlag(EligibilityFlag.NO_REQUEST_ARROWS, ApplicationProperty.OnlineSchedulingNoRequestArrows.isTrue());
-			check.setFlag(EligibilityFlag.SHOW_SCHEDULING_PREFS, true);
+			check.setFlag(EligibilityFlag.SHOW_SCHEDULING_PREFS, ApplicationProperty.OnlineSchedulingStudentPreferencesEnabled.isTrue());
 			check.setSessionId(cx.getSessionId());
 			check.setStudentId(cx.getStudentId());
 			
@@ -4123,5 +4124,38 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			}
 			return results;
 		}
+	}
+
+	@Override
+	public StudentSchedulingPreferencesInterface getStudentSchedulingPreferences(StudentSectioningContext cx) throws SectioningException, PageAccessException {
+		checkContext(cx);
+		if (cx.getStudentId() == null) throw new SectioningException(MSG.exceptionNoStudent());
+		StudentSchedulingPreferencesInterface ret = new StudentSchedulingPreferencesInterface();
+		ApplicationProperties.setSessionId(cx.getSessionId());
+		ret.setAllowClassDates(ApplicationProperty.OnlineSchedulingStudentPreferencesDatesAllowed.isTrue());
+		ret.setAllowRequireOnline(ApplicationProperty.OnlineSchedulingStudentPreferencesReqOnlineAllowed.isTrue());
+		Student student = StudentDAO.getInstance().get(cx.getStudentId());
+		if (student != null) {
+			ret.setClassModality(student.getPreferredClassModality());
+			ret.setScheduleGaps(student.getPreferredScheduleGaps());
+			ret.setClassDateFrom(student.getClassStartDate());
+			ret.setClassDateTo(student.getClassEndDate());
+		}
+		return ret;
+	}
+
+	@Override
+	public Boolean setStudentSchedulingPreferences(StudentSectioningContext cx, StudentSchedulingPreferencesInterface preferences) throws SectioningException, PageAccessException {
+		checkContext(cx);
+		if (cx.getStudentId() == null) throw new SectioningException(MSG.exceptionNoStudent());
+		Student student = StudentDAO.getInstance().get(cx.getStudentId());
+		if (student != null) {
+			student.setPreferredClassModality(preferences.getClassModality());
+			student.setPreferredScheduleGaps(preferences.getScheduleGaps());
+			student.setClassStartDate(preferences.getClassDateFrom());
+			student.setClassEndDate(preferences.getClassDateTo());
+			StudentDAO.getInstance().update(student);
+		}
+		return false;
 	}
 }

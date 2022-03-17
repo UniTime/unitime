@@ -14459,4 +14459,12 @@
 			references %SCHEMA%.course_offering (uniqueid) on delete set null
 		</sql>
 	</update>
+	<update version="250" date="16-Mar-2022" comment="Student Scheduling Preferences">
+		<plsql>alter table %SCHEMA%.student add class_start date</plsql>
+		<plsql>alter table %SCHEMA%.student add class_end date</plsql>
+		<mysql>alter table %SCHEMA%.student add class_start date null</mysql>
+		<mysql>alter table %SCHEMA%.student add class_end date null</mysql>
+		<pgsql>alter table %SCHEMA%.student add class_start date</pgsql>
+		<pgsql>alter table %SCHEMA%.student add class_end date</pgsql>
+	</update>
 </dbupdate>

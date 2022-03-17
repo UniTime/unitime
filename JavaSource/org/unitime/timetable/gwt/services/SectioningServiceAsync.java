@@ -60,6 +60,7 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.UpdateSpeci
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseInfo;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseResponse;
+import org.unitime.timetable.gwt.shared.StudentSchedulingPreferencesInterface;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -137,5 +138,8 @@ public interface SectioningServiceAsync {
 	void listVariableTitleCourses(StudentSectioningContext cx, String query, int limit, AsyncCallback<Collection<VariableTitleCourseInfo>> callback) throws SectioningException, PageAccessException;
 	void getVariableTitleCourse(StudentSectioningContext cx, String course, AsyncCallback<VariableTitleCourseInfo> callback) throws SectioningException, PageAccessException;
 	void requestVariableTitleCourse(VariableTitleCourseRequest request, AsyncCallback<VariableTitleCourseResponse> callback) throws SectioningException, PageAccessException;
-	void getCoursesFromRequest(StudentSectioningContext cx, CourseRequestInterface.Request query, AsyncCallback<Collection<ClassAssignmentInterface.CourseAssignment>> callback) throws SectioningException, PageAccessException;	
+	void getCoursesFromRequest(StudentSectioningContext cx, CourseRequestInterface.Request query, AsyncCallback<Collection<ClassAssignmentInterface.CourseAssignment>> callback) throws SectioningException, PageAccessException;
+	
+	void getStudentSchedulingPreferences(StudentSectioningContext cx, AsyncCallback<StudentSchedulingPreferencesInterface> callback) throws SectioningException, PageAccessException;
+	void setStudentSchedulingPreferences(StudentSectioningContext cx, StudentSchedulingPreferencesInterface preferences, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 }

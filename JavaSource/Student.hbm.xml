@@ -138,6 +138,18 @@
             column="pin_released"
             type="java.lang.Boolean"
             not-null="false"/>
+            
+		<property
+            name="classStartDate"
+            column="class_start"
+            type="java.util.Date"
+            not-null="false"/>
+
+		<property
+            name="classEndDate"
+            column="class_end"
+            type="java.util.Date"
+            not-null="false"/>
         
         <many-to-one
             name="session"

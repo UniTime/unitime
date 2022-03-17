@@ -2528,6 +2528,24 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("true")
+	@Description("Online Student Scheduling: enable student scheduling preferences")
+	@Since(4.6)
+	OnlineSchedulingStudentPreferencesEnabled("unitime.enrollment.studentPrefs.enabled"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Online Student Scheduling Preferences: allow selection of start and end dates (typically only enabled for Summer term)")
+	@Since(4.6)
+	OnlineSchedulingStudentPreferencesDatesAllowed("unitime.enrollment.studentPrefs.datesAllowed"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Online Student Scheduling Preferences: allow require online (typically only enabled for Summer term)")
+	@Since(4.6)
+	OnlineSchedulingStudentPreferencesReqOnlineAllowed("unitime.enrollment.studentPrefs.reqOnlineAllowed"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
 	@Description("Student Solver Dashboard: allow Rearrange Schedule button)")
 	@Since(4.4)
 	SolverDashboardAllowScheduleReset("unitime.solverDashboard.allowScheduleReset"),

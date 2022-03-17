@@ -32,6 +32,8 @@ import java.util.Set;
 import org.hibernate.Query;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
+import org.unitime.timetable.gwt.shared.StudentSchedulingPreferencesInterface.ClassModality;
+import org.unitime.timetable.gwt.shared.StudentSchedulingPreferencesInterface.ScheduleGaps;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideIntent;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.StudentSectioningStatus.Option;
@@ -514,5 +516,27 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
 				if (hibSession != null) hibSession.save(wl);
 			}
 		}
+    }
+    
+    public ClassModality getPreferredClassModality() {
+    	if (getSchedulePreference() == null) return ClassModality.DiscouragedOnline;
+    	return ClassModality.values()[getSchedulePreference()];
+    }
+    public void setPreferredClassModality(ClassModality modality) {
+    	if (modality == null)
+    		setSchedulePreference(null);
+    	else
+    		setSchedulePreference(modality.ordinal());
+    }
+    
+    public ScheduleGaps getPreferredScheduleGaps() {
+    	if (getFreeTimeCategory() == null) return ScheduleGaps.NoPreference;
+    	return ScheduleGaps.values()[getFreeTimeCategory()];
+    }
+    public void setPreferredScheduleGaps(ScheduleGaps gaps) {
+    	if (gaps == null)
+    		setFreeTimeCategory(null);
+    	else
+    		setFreeTimeCategory(gaps.ordinal());
     }
 }

@@ -61,6 +61,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface;
+import org.unitime.timetable.gwt.shared.StudentSchedulingPreferencesInterface;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.ChangeGradeModesResponse;
@@ -478,9 +479,34 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iPreferences.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				if (iSchedulingPreferencesDialog == null)
-					iSchedulingPreferencesDialog = new StudentSchedulingPreferencesDialog();
-				iSchedulingPreferencesDialog.center();
+				if (iSchedulingPreferencesDialog == null) {
+					iSchedulingPreferencesDialog = new StudentSchedulingPreferencesDialog(iSessionSelector) {
+						protected void doApply() {
+							super.doApply();
+							iSectioningService.setStudentSchedulingPreferences(iContext, getValue(), new AsyncCallback<Boolean>() {
+								@Override
+								public void onSuccess(Boolean result) {}
+								@Override
+								public void onFailure(Throwable caught) {
+									iStatus.error(MESSAGES.failedToUpdatePreferences(caught.getMessage()), caught);
+								}
+							});
+						}
+					};
+				}
+				iSectioningService.getStudentSchedulingPreferences(iContext, new AsyncCallback<StudentSchedulingPreferencesInterface>() {
+					@Override
+					public void onSuccess(StudentSchedulingPreferencesInterface result) {
+						if (result != null) {
+							iSchedulingPreferencesDialog.setValue(result);
+							iSchedulingPreferencesDialog.center();
+						}
+					}
+					@Override
+					public void onFailure(Throwable caught) {
+						iStatus.error(MESSAGES.failedToLoadPreferences(caught.getMessage()), caught);
+					}
+				});
 			}
 		});
 		

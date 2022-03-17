@@ -3298,9 +3298,15 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("When possible, UniTime tries to avoid back-to-back classes (sparse schedule).")
 	String descSchedulingBackToBackDiscourage();
 
-	@DefaultMessage("<u>A</u>pply")
+	@DefaultMessage("<u>S</u>ave")
 	String buttonSchedulingPrefApply();
 	
 	@DefaultMessage("<u>C</u>lose")
 	String buttonSchedulingPrefClose();
+	
+	@DefaultMessage("Failed to update preferences: {0}")
+	String failedToUpdatePreferences(String reason);
+	
+	@DefaultMessage("Failed to load preferences: {0}")
+	String failedToLoadPreferences(String reason);
 }
