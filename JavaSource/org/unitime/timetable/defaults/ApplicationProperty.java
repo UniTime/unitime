@@ -2993,6 +2993,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Course Assign Instructors: switch the user interface back to the old (Struts-based) assign instructor page")
 	LegacyCourseAssignInstructors("unitime.legacy.course.assign_instructors"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Edit Course Offering: switch the user interface back to the old (Struts-based) edit course offering page")
+	LegacyCourseEdit("unitime.legacy.course_edit"),
 
 	;
 

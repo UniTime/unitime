@@ -298,7 +298,12 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		toClass.setSchedulePrintNote(fromClass.getSchedulePrintNote());
 		toClass.setSchedulingSubpart(toSubpart);
 		toClass.setUniqueIdRolledForwardFrom(fromClass.getUniqueId());
-		toClass.setFundingDept(fromClass.getFundingDept());
+		if (fromClass.getFundingDept() != null) {
+			Department toFundingDept = fromClass.getFundingDept().findSameDepartmentInSession(toSession);
+			if (toFundingDept != null) {
+				toClass.setFundingDept(toFundingDept);
+			}
+		}
 		if (fromClass.getLmsInfo() != null) {
 			LearningManagementSystemInfo lms = LearningManagementSystemInfo.findBySessionIdAndReference(toSession.getUniqueId(), fromClass.getLmsInfo().getReference());
 			toClass.setLms(lms);
@@ -474,7 +479,12 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			toCourseOffering.setReservation(fromCourseOffering.getReservation());
 			toCourseOffering.setConsentType(fromCourseOffering.getConsentType());
 			toCourseOffering.setCourseType(fromCourseOffering.getCourseType());
-			toCourseOffering.setFundingDept(fromCourseOffering.getFundingDept());//TODO
+			if (fromCourseOffering.getFundingDept() != null) {
+				Department toFundingDept = fromCourseOffering.getFundingDept().findSameDepartmentInSession(toSession);
+				if (toFundingDept != null) {
+					toCourseOffering.setFundingDept(toFundingDept);
+				}
+			}
 			toInstructionalOffering.addTocourseOfferings(toCourseOffering);
 			if(fromCourseOffering.getCreditConfigs() != null && !fromCourseOffering.getCreditConfigs().isEmpty()){
 				CourseCreditUnitConfig ccuc = null;

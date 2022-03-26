@@ -79,15 +79,6 @@
 
 			return true;
 		}
-		
-		
-		function courseOfferingRedirect(elm) {
-			var courseOfferingElement = elm.getAttribute('data-courseOffering');
-      
-			if (courseOfferingElement != undefined && courseOfferingElement != null) {
-				window.location = 'gwt.jsp?page=courseOffering&offering=' + courseOfferingElement + '&op=editCourseOffering';
-			}
-		}
 
 	// -->
 </SCRIPT>
@@ -358,11 +349,6 @@
 										<loc:message name="actionEditCourseOffering" />
 									</html:submit>
 								</html:form>
-							</sec:authorize>
-						</TD>
-						<TD class="BottomBorderGray">
-							<sec:authorize access="hasPermission(#co, 'EditCourseOffering') or hasPermission(#co, 'EditCourseOfferingNote') or hasPermission(#co, 'EditCourseOfferingCoordinators')">
-								<input type="button" name="theButton" value="Edit Course Offering New" class="btn" id="myButton" onclick="javascript:courseOfferingRedirect(this)" data-courseOffering="<%= ((CourseOffering)co).getUniqueId().toString() %>" />
 							</sec:authorize>
 						</TD>
 					</TR>

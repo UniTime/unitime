@@ -1,3 +1,22 @@
+/*
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+*/
 package org.unitime.timetable.gwt.shared;
 
 import java.io.Serializable;
@@ -15,7 +34,6 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 	private Long iId;
 	private String iAbbreviation;
 	private String iName;
-	//private Double iX, iY;
 	private String iExternalId;
 	private Boolean iCanEdit;
 
@@ -33,9 +51,6 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 	private String iTitle;
 	private String iScheduleBookNote;
 	private String iExternalUniqueId;
-	//private Long iUniqueIdRolledForwardFrom;
-	//private Integer iSnapshotProjectedDemand;
-	//private Date iSnapshotProjectedDemandDate;
 	private String iLabel;
 	private Integer iLastWeekToEnroll;
 	private Integer iLastWeekToChange;
@@ -62,20 +77,22 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 	private Set<String> iOverrides;
 	private String iCatalogLinkLocation;
 	private String iCatalogLinkLabel;
+	private String iErrorMessage;
 
 	private List<CoordinatorInterface> iSendCoordinators = new ArrayList<CoordinatorInterface>();
 	public void addSendCoordinator(CoordinatorInterface coordinator) { iSendCoordinators.add(coordinator); }
 	public List<CoordinatorInterface> getSendCoordinators() { return iSendCoordinators; }
+	public void clearInstructors() { iSendCoordinators = new ArrayList<CoordinatorInterface>(); }
 	
 	public void addCoordinator(CoordinatorInterface coordinator) { iCoordinators.add(coordinator); }
 	public List<CoordinatorInterface> getCoordinators() { return iCoordinators; }
-	
-	
+
 	public void addCourseOverride(String override) { iOverrides.add(override); }
-    public String getCourseOverride(String id) { return String.valueOf(iOverrides.contains(id)); }
-    public void setCourseOverride(String id, String value) { iOverrides.add(id); }
     public Set<String> getCourseOverrides() { return iOverrides; }
     public void clearCourseOverrides() { iOverrides = new HashSet<String>(); }
+
+	public String getErrorMessage() { return iErrorMessage; }
+	public void setErrorMessage(String errorMessage) { iErrorMessage = errorMessage; }
 	
     public String getCatalogLinkLabel() {
 		return iCatalogLinkLabel;
@@ -165,8 +182,7 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 	
 	public Boolean getWaitList() { return iWaitList; }
 	public void setWaitList(Boolean waitList) { iWaitList = waitList; }
-	
-	//Remove this? TODO
+
 	private Long iSubjectAreaId;
 	public void setSubjectAreaId(Long iSubjectAreaId) {
 		this.iSubjectAreaId = iSubjectAreaId;
@@ -329,35 +345,7 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 		this.iExternalUniqueId = iExternalUniqueId;
 	}
 
-//	public Long getUniqueIdRolledForwardFrom() {
-//		return iUniqueIdRolledForwardFrom;
-//	}
-//
-//	public void setUniqueIdRolledForwardFrom(Long iUniqueIdRolledForwardFrom) {
-//		this.iUniqueIdRolledForwardFrom = iUniqueIdRolledForwardFrom;
-//	}
-//
-//	public Integer getSnapshotProjectedDemand() {
-//		return iSnapshotProjectedDemand;
-//	}
-
-//	public void setSnapshotProjectedDemand(Integer iSnapshotProjectedDemand) {
-//		this.iSnapshotProjectedDemand = iSnapshotProjectedDemand;
-//	}
-//
-//	public Date getSnapshotProjectedDemandDate() {
-//		return iSnapshotProjectedDemandDate;
-//	}
-//
-//	public void setSnapshotProjectedDemandDate(Date iSnapshotProjectedDemandDate) {
-//		this.iSnapshotProjectedDemandDate = iSnapshotProjectedDemandDate;
-//	}
-
 	public CourseOfferingInterface() {}
-	
-	public CourseOfferingInterface(Long id, String abbreviation, String name) {
-		iId = id; iAbbreviation = abbreviation; iName = name;
-	}
 
 	public Boolean getIoNotOffered() {
 		return iIoNotOffered;
@@ -375,37 +363,13 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 	public String getCourseName() { return iName; }
 	public void setCourseName(String name) { iName = name; }
 	
-//	public boolean hasCoordinates() { return iX != null && iY != null; }
-//	public Double getX() { return iX; }
-//	public void setX(Double x) { iX = x; }
-//	
-//	public Double getY() { return iY; }
-//	public void setY(Double y) { iY = y; }
-	
 	public boolean hasExternalId() { return iExternalId != null && !iExternalId.isEmpty(); }
 	public String getExternalId() { return iExternalId; }
 	public void setExternalId(String externalId) { iExternalId = externalId; }
 	
 	public void setCanEdit(boolean canEdit) { iCanEdit = canEdit; }
 	public boolean isCanEdit() { return iCanEdit != null && iCanEdit.booleanValue(); }
-	
-//	@Override
-//	public int hashCode() { return getId().hashCode(); }
-	
-//	@Override
-//	public boolean equals(Object object) {
-//		//if (object == null || !(object instanceof BuildingInterface)) return false;
-//		//return getId().equals(((BuildingInterface)object).getId());
-//		return true;
-//	}
 
-//	private Integer iLimit = null;
-//	private Long iParentId = null;
-//	public Integer getLimit() { return iLimit; }
-//	public void setLimit(Integer limit) { iLimit = limit; }
-//	public Long getParentId() { return iParentId; }
-//	public void setParentId(Long id) { iParentId = id; }
-	
 	public String toString() { return ((iAbbreviation == null || iAbbreviation.isEmpty() ? "" : iAbbreviation) + (iName == null || iName.isEmpty() ? "" : " " + iName)).trim(); }
 
 	public static class CoordinatorInterface  implements IsSerializable {
@@ -471,7 +435,7 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 		private Boolean iIsEdit = null;
 		private Long iSubjAreaId = null;
 		private Long iCourseOfferingId = null;
-		private Long iCourseNumber = null;
+		private String iCourseNumber = null;
 		
 		public CourseOfferingPropertiesRequest() {}
 		
@@ -480,15 +444,14 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 			iSubjAreaId = subjAreaId;
 		}
 		
-		public CourseOfferingPropertiesRequest(Boolean isEdit, Long subjAreaId, Long courseOfferingId) {
+		public CourseOfferingPropertiesRequest(Boolean isEdit, Long subjAreaId, String courseOfferingId) {
 			if (!isEdit) {
 				iCourseNumber = courseOfferingId;
 			} else {
-				iCourseOfferingId = courseOfferingId;
+				iCourseOfferingId = Long.valueOf(courseOfferingId);
 			}
 			iIsEdit = isEdit;
 			iSubjAreaId = subjAreaId;
-			//iCourseOfferingId = courseOfferingId;
 		}
 		
 		public boolean hasSessionId() { return iSessionId != null; }
@@ -501,8 +464,8 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 		public Long getCourseOfferingId() { return iCourseOfferingId; }
 		public void setCourseOfferingId(Long courseOfferingId) { iCourseOfferingId = courseOfferingId; }
 		
-		public Long getCourseNumber() { return iCourseNumber; }
-		public void setCourseNumber(Long courseNumber) { iCourseNumber = courseNumber; }
+		public String getCourseNumber() { return iCourseNumber; }
+		public void setCourseNumber(String courseNumber) { iCourseNumber = courseNumber; }
 		
 		public Boolean getIsEdit() { return iIsEdit; }
 		public void setIsEdit(Boolean isEdit) { iIsEdit = isEdit; }
@@ -517,17 +480,6 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 		private Long iCourseOfferingId = null;
 		
 		public CourseOfferingConstantsRequest() {}
-		
-		public CourseOfferingConstantsRequest(Boolean isEdit, Long subjAreaId) {
-			iIsEdit = isEdit;
-			iSubjAreaId = subjAreaId;
-		}
-		
-		public CourseOfferingConstantsRequest(Boolean isEdit, Long subjAreaId, Long courseOfferingId) {
-			iIsEdit = isEdit;
-			iSubjAreaId = subjAreaId;
-			iCourseOfferingId = courseOfferingId;
-		}
 		
 		public Long getSubjAreaId() { return iSubjAreaId; }
 		public void setSubjAreaId(Long subjAreaId) { iSubjAreaId = subjAreaId; }
@@ -569,6 +521,7 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 		private Integer prefRowsAdded;
 		private String iCourseUrlProvider;
 		private String iInstructionalOfferingId;
+		private String iDefaultTeachingResponsibilityId;
 
 		private List<InstructorInterface> iInstructors = new ArrayList<InstructorInterface>();
 		
@@ -582,11 +535,6 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 		public void addSubjectArea(SubjectAreaInterface subjectArea) { iSubjectAreas.add(subjectArea); }
 		public List<SubjectAreaInterface> getSubjectAreas() { return iSubjectAreas; }
 		public void setSubjectAreas(List<SubjectAreaInterface> subjectAreas) { iSubjectAreas = subjectAreas; }
-		public SubjectAreaInterface getRoomType(Long id) {
-			for (SubjectAreaInterface subjectArea: iSubjectAreas)
-				if (id.equals(subjectArea.getId())) return subjectArea;
-			return null;
-		}
 		
 		public void setCoursesFundingDepartmentsEnabled(Boolean coursesFundingDepartmentsEnabled) { iCoursesFundingDepartmentsEnabled = coursesFundingDepartmentsEnabled; }
 		public Boolean getCoursesFundingDepartmentsEnabled() { return iCoursesFundingDepartmentsEnabled; }
@@ -670,7 +618,9 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 	    
 	    public String getInstructionalOfferingId() { return iInstructionalOfferingId; }
 	    public void setInstructionalOfferingId(String instructionalOfferingId) { iInstructionalOfferingId = instructionalOfferingId; }
-		
+	    
+	    public String getDefaultTeachingResponsibilityId() { return iDefaultTeachingResponsibilityId; }
+	    public void setDefaultTeachingResponsibilityId(String defaultTeachingResponsibilityId) { iDefaultTeachingResponsibilityId = defaultTeachingResponsibilityId; }
 	}
 	
 	public static class CourseOfferingConstantsInterface implements GwtRpcResponse {
@@ -896,7 +846,7 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 	
 
 	public static enum UpdateCourseOfferingAction implements IsSerializable {
-		CREATE, UPDATE; //, DELETE, UPDATE_DATA;
+		CREATE, UPDATE;
 	}
 	
 	public static class UpdateCourseOfferingRequest implements GwtRpcRequest<CourseOfferingInterface> {
@@ -984,11 +934,6 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 		private Long iCourseOfferingId;
 		
 		public CourseOfferingCheckExists() {}
-		public CourseOfferingCheckExists(Long subjectAreaId, String courseNumber, Boolean isEdit) {
-			iSubjectAreaId = subjectAreaId;
-			iCourseNumber = courseNumber;
-			iIsEdit = isEdit;
-		}
 		
 		public Long getSubjectAreaId() { return iSubjectAreaId; }
 		public void setSubjectAreaId(Long subjectAreaId) { iSubjectAreaId = subjectAreaId; }
@@ -1010,7 +955,6 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 		}
 		
 		public String getResponseText() { return iResponseText; }
-		public void setResponseText(String responseText) { iResponseText = responseText; }
-		
+		public void setResponseText(String responseText) { iResponseText = responseText; }		
 	}
 }

@@ -144,24 +144,29 @@ public class CourseOfferingEditAction extends Action {
 		Debug.debug ("Op: " + op);
 
 		if(op.equals(MSG.actionEditCourseOffering()) ) {
+			
+			String courseOfferingId = (request.getParameter("courseOfferingId")==null)
+					? (request.getAttribute("courseOfferingId")==null)
+					        ? null
+					        : request.getAttribute("courseOfferingId").toString()
+					: request.getParameter("courseOfferingId");
 
-		    String courseOfferingId = (request.getParameter("courseOfferingId")==null)
-		    							? (request.getAttribute("courseOfferingId")==null)
-		    							        ? null
-		    							        : request.getAttribute("courseOfferingId").toString()
-		    							: request.getParameter("courseOfferingId");
-
-		    if (courseOfferingId==null && frm.getCourseOfferingId()!=null) {
-		        courseOfferingId=frm.getCourseOfferingId().toString();
-		    }
-
+			if (courseOfferingId==null && frm.getCourseOfferingId()!=null) {
+				courseOfferingId=frm.getCourseOfferingId().toString();
+			}
+			
 			if (courseOfferingId==null || courseOfferingId.trim().isEmpty()) {
 				throw new Exception (MSG.errorCourseDataNotCorrect() + courseOfferingId);
 			} else  {
-			    doLoad(request, frm, courseOfferingId);
-			}
+				if (ApplicationProperty.LegacyCourseEdit.isTrue()) {
+					doLoad(request, frm, courseOfferingId);
 
-			return mapping.findForward("edit");
+					return mapping.findForward("edit");
+			    } else {
+			    	response.sendRedirect("gwt.jsp?page=courseOffering&offering=" + (courseOfferingId == null ? "" : courseOfferingId) + "&op=editCourseOffering");
+			    	return null;
+			    }
+			}
 		}
 		
 		if (op.equals(MSG.actionAddCourseOffering())) {

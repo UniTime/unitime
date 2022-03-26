@@ -1,16 +1,36 @@
+/*
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+*/
 package org.unitime.timetable.server.courses;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.hibernate.Transaction;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.commons.hibernate.util.HibernateUtil;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
@@ -58,6 +78,8 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
 	
 	@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
 	
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
 	Logger logger = java.util.logging.Logger.getLogger("UpdateCourseOfferingBackend");
 	
 	boolean limitedEdit = false, updateNote = false, updateCoordinators = false; 
@@ -65,9 +87,16 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
 	@Override
 	public CourseOfferingInterface execute(UpdateCourseOfferingRequest request, SessionContext context) {
 		CourseOffering courseOffering;
+		Boolean hasErrors = false;
+		OverrideType prohibitedOverride = OverrideType.findByReference(ApplicationProperty.OfferingWaitListProhibitedOverride.value());
+		hasErrors = isWaitlistingProhibited(request.getCourseOffering(), prohibitedOverride);
+		if (hasErrors) {
+			request.getCourseOffering().setErrorMessage(MSG.errorWaitListingOverrideMustBeProhibited(prohibitedOverride.getLabel()));
+			return request.getCourseOffering();
+		}
 		switch (request.getAction()) {
 		case CREATE:
-			context.checkPermission(request.getCourseOffering().getSubjectAreaId(), "SubjectArea", Right.AddCourseOffering); //Will this actually reject?
+			context.checkPermission(request.getCourseOffering().getSubjectAreaId(), "SubjectArea", Right.AddCourseOffering);
 			courseOffering = save(request.getCourseOffering(), context);
 			request.getCourseOffering().setInstrOfferingId(courseOffering.getInstructionalOffering().getUniqueId());
 			break;
@@ -90,12 +119,19 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
 		return request.getCourseOffering();
 	}
 	
+	private Boolean isWaitlistingProhibited(CourseOfferingInterface courseOfferingInterface, OverrideType prohibitedOverride) {
+		if (prohibitedOverride != null && (courseOfferingInterface.getWaitList() == null ? ApplicationProperty.OfferingWaitListDefault.isTrue() : courseOfferingInterface.getWaitList() == true) && !courseOfferingInterface.getCourseOverrides().contains(prohibitedOverride.getUniqueId().toString())) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
 	protected CourseOffering update(CourseOfferingInterface courseOfferingInterface, SessionContext context) throws GwtRpcException {
 		Transaction tx = null;
 
 		String title = courseOfferingInterface.getTitle();
         String note = courseOfferingInterface.getScheduleBookNote();
-        //Long crsId = courseOfferingInterface.getId();
         String crsNbr = courseOfferingInterface.getCourseNbr();
 		
         try {
@@ -131,12 +167,8 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
     			boolean assignTeachingRequest = Department.isInstructorSchedulingCommitted(courseOffering.getDepartment().getUniqueId());
     			if (io.getOfferingCoordinators() == null) io.setOfferingCoordinators(new HashSet<OfferingCoordinator>());
     			List<OfferingCoordinator> coordinators = new ArrayList<OfferingCoordinator>(io.getOfferingCoordinators());
-    			int idx = 0;
     			
             	for (int i = 0; i < courseOfferingInterface.getSendCoordinators().size(); i++) {
-        		
-	        		logger.log(Level.SEVERE, "i " + i);
-	        		
 	        		CoordinatorInterface coordinatorObject = courseOfferingInterface.getSendCoordinators().get(i);
 	        		String instructorId = coordinatorObject.getInstructorId();
 	        		String responsibilityId = coordinatorObject.getResponsibilityId();
@@ -151,7 +183,6 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
 	    					if (instructor.equals(c.getInstructor())) { coordinator = c; j.remove(); break; } 
 	    				}
 	    				if (coordinator == null) {
-	    					logger.log(Level.SEVERE, "coordinator is null");
 	    					coordinator = new OfferingCoordinator();
 	    					coordinator.setInstructor(instructor);
 	    					coordinator.setOffering(io);
@@ -182,19 +213,18 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
     				hibSession.delete(coordinator);
     			}
     			
-    			Boolean coursesFundingDepartmentsEnabled = ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue(); //true;
+    			Boolean coursesFundingDepartmentsEnabled = ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue();
                 
                 if (coursesFundingDepartmentsEnabled) {
                 	if (courseOfferingInterface.getFundingDepartmentId()==null) {
                     	courseOffering.setFundingDept(null);
         			} else {
         				Department dept = DepartmentDAO.getInstance().get(courseOfferingInterface.getFundingDepartmentId(), hibSession);
-        				if (dept == courseOffering.getEffectiveFundingDept()) {
+        				if (dept.equals(courseOffering.getEffectiveFundingDept())) {
         					courseOffering.setFundingDept(null);
         				} else {
         					courseOffering.setFundingDept(dept==null?null:dept);
         				}
-        				courseOffering.setFundingDept(dept==null?null:dept);
         			}
                 }
     			
@@ -313,6 +343,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
 
     			if (courseOffering.isIsControl()) {
     				io.setByReservationOnly(courseOfferingInterface.getByReservationOnly());
+
     				try {
     					io.setLastWeekToEnroll(courseOfferingInterface.getLastWeekToEnroll());
     				} catch (Exception e) {
@@ -356,9 +387,9 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
             hibSession.flush();
             tx.commit();
 
-            hibSession.refresh(courseOffering); //Necessary?
+            hibSession.refresh(courseOffering);
 
-            hibSession.refresh(io); //Necessary?
+            hibSession.refresh(io);
             
             String className = ApplicationProperty.ExternalActionCourseOfferingEdit.value();
         	if (className != null && className.trim().length() > 0){
@@ -383,8 +414,8 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
 	
 	protected CourseOffering save(CourseOfferingInterface courseOfferingInterface, SessionContext context) throws GwtRpcException {
 		Transaction tx = null;
-		InstructionalOffering io = new InstructionalOffering(); //Is this fine?
-		
+		InstructionalOffering io = new InstructionalOffering();
+
         try {
         	org.hibernate.Session hibSession = CourseOfferingDAO.getInstance().getSession();
         	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
@@ -399,10 +430,10 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
         	SubjectArea subjArea = SubjectAreaDAO.getInstance().get(courseOfferingInterface.getSubjectAreaId(), hibSession);
             courseOffering.setSubjectArea(subjArea);
             courseOffering.setSubjectAreaAbbv(subjArea.getSubjectAreaAbbreviation());
-            courseOffering.setProjectedDemand(new Integer(0)); //???
+            courseOffering.setProjectedDemand(new Integer(0));
             courseOffering.setDemand(new Integer(0));
-            courseOffering.setNbrExpectedStudents(new Integer(0)); //Hard-coded always?
-            courseOffering.setIsControl(new Boolean(true)); //Never changed by our code?
+            courseOffering.setNbrExpectedStudents(new Integer(0));
+            courseOffering.setIsControl(new Boolean(true));
             courseOffering.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)new CourseOfferingDAO().getSession(), courseOffering).toString());
             subjArea.getCourseOfferings().add(courseOffering);
 
@@ -464,7 +495,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
 				courseOffering.setDemandOffering(dco==null?null:dco);
 			}
             
-            Boolean allowAlternativeCourseOfferings = ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue(); //true;
+            Boolean allowAlternativeCourseOfferings = ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue();
             
             if (allowAlternativeCourseOfferings) {
             	if (courseOfferingInterface.getAlternativeCourseOfferingId()==null) {
@@ -475,14 +506,14 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
     			}
             }
             
-            Boolean coursesFundingDepartmentsEnabled = ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue(); //true;
+            Boolean coursesFundingDepartmentsEnabled = ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue();
             
             if (coursesFundingDepartmentsEnabled) {
             	if (courseOfferingInterface.getFundingDepartmentId()==null) {
                 	courseOffering.setFundingDept(null);
     			} else {
     				Department dept = DepartmentDAO.getInstance().get(courseOfferingInterface.getFundingDepartmentId(), hibSession);
-    				if (dept == courseOffering.getEffectiveFundingDept()) {
+    				if (dept.equals(courseOffering.getEffectiveFundingDept())) {
     					courseOffering.setFundingDept(null);
     				} else {
     					courseOffering.setFundingDept(dept==null?null:dept);
@@ -518,7 +549,6 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
     		    }
             	courseOfferingInterface.setId((Long)hibSession.save(courseOffering));
             	
-            	//Should this go here?
             	courseOffering.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseOfferingInterface.getCreditFormat(), courseOfferingInterface.getCreditType(), courseOfferingInterface.getCreditUnitType(), courseOfferingInterface.getUnits(), courseOfferingInterface.getMaxUnits(), courseOfferingInterface.getFractionalIncrementsAllowed(), new Boolean(true)));
             	if (courseOffering.getCredit() != null) {
             		courseOffering.getCredit().setOwner(courseOffering);
@@ -545,7 +575,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
             
             hibSession.flush();
 			tx.commit();
-			HibernateUtil.clearCache(); //Is this needed?
+			HibernateUtil.clearCache();
 			
 
 			if (context.hasPermission(io, Right.OfferingCanLock)) {

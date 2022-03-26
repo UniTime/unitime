@@ -1,12 +1,28 @@
+/*
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+*/
 package org.unitime.timetable.gwt.client.courseofferings;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.struts.action.ActionMessage;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
@@ -17,24 +33,14 @@ import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
-import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
-import org.unitime.timetable.gwt.command.client.GwtRpcResponseBoolean;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.CourseOfferingInterface;
-import org.unitime.timetable.gwt.shared.CourseOfferingInterface.GetCourseOfferingResponse;
-import org.unitime.timetable.gwt.shared.CourseOfferingInterface.OfferingConsentTypeInterface;
-import org.unitime.timetable.gwt.shared.CourseOfferingInterface.OverrideTypeInterface;
-import org.unitime.timetable.gwt.shared.CourseOfferingInterface.ResponsibilityInterface;
-import org.unitime.timetable.gwt.shared.CourseOfferingInterface.SubjectAreaInterface;
-import org.unitime.timetable.gwt.shared.CourseOfferingInterface.UpdateCourseOfferingAction;
-import org.unitime.timetable.gwt.shared.CourseOfferingInterface.UpdateCourseOfferingRequest;
-import org.unitime.timetable.gwt.shared.CourseOfferingInterface.WaitListInterface;
 import org.unitime.timetable.gwt.shared.CourseOfferingInterface.CoordinatorInterface;
 import org.unitime.timetable.gwt.shared.CourseOfferingInterface.CourseCreditFormatInterface;
 import org.unitime.timetable.gwt.shared.CourseOfferingInterface.CourseCreditTypeInterface;
@@ -50,7 +56,15 @@ import org.unitime.timetable.gwt.shared.CourseOfferingInterface.CourseOfferingPr
 import org.unitime.timetable.gwt.shared.CourseOfferingInterface.CourseTypeInterface;
 import org.unitime.timetable.gwt.shared.CourseOfferingInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.CourseOfferingInterface.GetCourseOfferingRequest;
+import org.unitime.timetable.gwt.shared.CourseOfferingInterface.GetCourseOfferingResponse;
 import org.unitime.timetable.gwt.shared.CourseOfferingInterface.InstructorInterface;
+import org.unitime.timetable.gwt.shared.CourseOfferingInterface.OfferingConsentTypeInterface;
+import org.unitime.timetable.gwt.shared.CourseOfferingInterface.OverrideTypeInterface;
+import org.unitime.timetable.gwt.shared.CourseOfferingInterface.ResponsibilityInterface;
+import org.unitime.timetable.gwt.shared.CourseOfferingInterface.SubjectAreaInterface;
+import org.unitime.timetable.gwt.shared.CourseOfferingInterface.UpdateCourseOfferingAction;
+import org.unitime.timetable.gwt.shared.CourseOfferingInterface.UpdateCourseOfferingRequest;
+import org.unitime.timetable.gwt.shared.CourseOfferingInterface.WaitListInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -95,6 +109,7 @@ public class CourseOfferingEdit extends Composite {
 	private Button iAddCoordinatorButton;
 	private String iCourseNbrRegex;
 	private String iCourseNbrInfo;
+	private String iDefaultTeachingResponsibilityId;
 	private Boolean iCourseOfferingNumberMustBeUnique;
 	private Boolean iCourseOfferingNumberUpperCase;
 	private Boolean iAllowAlternativeCourseOfferings;
@@ -136,7 +151,7 @@ public class CourseOfferingEdit extends Composite {
 	private Long iCourseOfferingId;
 	private Long iSubjAreaId;
 	private Long iInstructionalOfferingId;
-	private Long iCourseNbr;
+	private String iCourseNbr;
 	
 	public CourseOfferingEdit() {
 		iPanel = new SimpleForm();
@@ -147,12 +162,11 @@ public class CourseOfferingEdit extends Composite {
 		String op = null;
 		Long subjAreaId = null;
 		Long courseOfferingId = null;
-		Long courseNbr = null;
 		
 		if (Window.Location.getParameter("op") != null)
 			op = Window.Location.getParameter("op");
 
-		if (op == "editCourseOffering") {
+		if ("editCourseOffering".equals(op)) {
 			if (Window.Location.getParameter("offering") != null) {
 				offeringId =  Long.valueOf(Window.Location.getParameter("offering"));
 				iIsEdit = true;
@@ -161,21 +175,20 @@ public class CourseOfferingEdit extends Composite {
 				courseOfferingId = new Long(offeringId);
 				iCourseOfferingId = courseOfferingId;
 			}
-		} else if (op == "addCourseOffering") {
+		} else if ("addCourseOffering".equals(op)) {
 			iIsAdd = true;
 			iIsEdit = false;
 			iIsReload = false;
-			if (Window.Location.getParameter("subjArea") != null && Window.Location.getParameter("subjArea") != "") {
+			if (Window.Location.getParameter("subjArea") != null && !Window.Location.getParameter("subjArea").isEmpty()) {
 				subjAreaId = Long.valueOf(Window.Location.getParameter("subjArea"));
 				iSubjAreaId = subjAreaId;
 			} else {
 				iSubjAreaId = subjAreaId;
 			}
-			if (Window.Location.getParameter("courseNbr") != null && Window.Location.getParameter("courseNbr") != "") {
-				courseNbr = Long.valueOf(Window.Location.getParameter("courseNbr"));
-				iCourseNbr = courseNbr;
+			if (Window.Location.getParameter("courseNbr") != null && !Window.Location.getParameter("courseNbr").isEmpty()) {
+				iCourseNbr = Window.Location.getParameter("courseNbr");;
 			} else {
-				iCourseNbr = courseNbr;
+				iCourseNbr = null;
 			}
 		}
 
@@ -203,7 +216,7 @@ public class CourseOfferingEdit extends Composite {
 					RPC.execute(existRequest, new AsyncCallback<CourseOfferingCheckExistsInterface>() {
 						@Override
 						public void onFailure(Throwable caught) {
-							loadingFailed(caught);
+							handleError(caught);
 						}
 						@Override
 						public void onSuccess(CourseOfferingCheckExistsInterface result) {
@@ -211,13 +224,19 @@ public class CourseOfferingEdit extends Composite {
 								RPC.execute(request, new AsyncCallback<CourseOfferingInterface>() {
 									@Override
 									public void onFailure(Throwable caught) {
-										loadingFailed(caught);
+										handleError(caught);
 									}
 									@Override
 									public void onSuccess(CourseOfferingInterface result) {
-										LoadingWidget.getInstance().hide();
-										iInstructionalOfferingId = result.getInstrOfferingId();
-										afterSaveOrUpdate(true, iInstructionalOfferingId);
+										if (result.getErrorMessage() == null || result.getErrorMessage().isEmpty()) {
+											LoadingWidget.getInstance().hide();
+											iInstructionalOfferingId = result.getInstrOfferingId();
+											afterSaveOrUpdate(iInstructionalOfferingId);
+										} else {
+											LoadingWidget.getInstance().hide();
+											iTitleAndButtons.setErrorMessage(result.getErrorMessage());
+											return;
+										}
 									}
 								});
 							} else {
@@ -231,13 +250,19 @@ public class CourseOfferingEdit extends Composite {
 					RPC.execute(request, new AsyncCallback<CourseOfferingInterface>() {
 						@Override
 						public void onFailure(Throwable caught) {
-							loadingFailed(caught);
+							handleError(caught);
 						}
 						@Override
 						public void onSuccess(CourseOfferingInterface result) {
-							LoadingWidget.getInstance().hide();
-							iInstructionalOfferingId = result.getInstrOfferingId();
-							afterSaveOrUpdate(true, iInstructionalOfferingId);
+							if (result.getErrorMessage() == null || result.getErrorMessage().isEmpty()) {
+								LoadingWidget.getInstance().hide();
+								iInstructionalOfferingId = result.getInstrOfferingId();
+								afterSaveOrUpdate(iInstructionalOfferingId);
+							} else {
+								LoadingWidget.getInstance().hide();
+								iTitleAndButtons.setErrorMessage(result.getErrorMessage());
+								return;
+							}
 						}
 					});	
 				}
@@ -265,7 +290,7 @@ public class CourseOfferingEdit extends Composite {
 					RPC.execute(existRequest, new AsyncCallback<CourseOfferingCheckExistsInterface>() {
 						@Override
 						public void onFailure(Throwable caught) {
-							loadingFailed(caught);
+							handleError(caught);
 						}
 						@Override
 						public void onSuccess(CourseOfferingCheckExistsInterface result) {
@@ -274,13 +299,19 @@ public class CourseOfferingEdit extends Composite {
 								RPC.execute(request, new AsyncCallback<CourseOfferingInterface>() {
 									@Override
 									public void onFailure(Throwable caught) {
-										loadingFailed(caught);
+										handleError(caught);
 									}
 									@Override
 									public void onSuccess(CourseOfferingInterface result) {
-										LoadingWidget.getInstance().hide();
-										iInstructionalOfferingId = result.getInstrOfferingId();
-										afterSaveOrUpdate(false, iInstructionalOfferingId);
+										if (result.getErrorMessage() == null || result.getErrorMessage().isEmpty()) {
+											LoadingWidget.getInstance().hide();
+											iInstructionalOfferingId = result.getInstrOfferingId();
+											afterSaveOrUpdate(iInstructionalOfferingId);
+										} else {
+											LoadingWidget.getInstance().hide();
+											iTitleAndButtons.setErrorMessage(result.getErrorMessage());
+											return;
+										}
 									}
 								});
 							} else {
@@ -291,17 +322,22 @@ public class CourseOfferingEdit extends Composite {
 						}
 					});
 				} else {
-					
 					RPC.execute(request, new AsyncCallback<CourseOfferingInterface>() {
 						@Override
 						public void onFailure(Throwable caught) {
-							loadingFailed(caught);
+							handleError(caught);
 						}
 						@Override
 						public void onSuccess(CourseOfferingInterface result) {
-							LoadingWidget.getInstance().hide();
-							iInstructionalOfferingId = result.getInstrOfferingId();
-							afterSaveOrUpdate(false, iInstructionalOfferingId);
+							if (result.getErrorMessage() == null || result.getErrorMessage().isEmpty()) {
+								LoadingWidget.getInstance().hide();
+								iInstructionalOfferingId = result.getInstrOfferingId();
+								afterSaveOrUpdate(iInstructionalOfferingId);
+							} else {
+								LoadingWidget.getInstance().hide();
+								iTitleAndButtons.setErrorMessage(result.getErrorMessage());
+								return;
+							}
 						}
 					});
 				}
@@ -331,9 +367,7 @@ public class CourseOfferingEdit extends Composite {
 			
 			iSubjectArea = new UniTimeWidget<ListBox>(new ListBox());
 			iSubjectArea.getWidget().setStyleName("unitime-TextBox");
-			if (subjAreaId != null) {
-				//iSubjectArea.getWidget().set
-			} else {
+			if (subjAreaId == null) {
 				iSubjectArea.getWidget().setSelectedIndex(0);
 			}
 			
@@ -346,7 +380,7 @@ public class CourseOfferingEdit extends Composite {
 					RPC.execute(new CourseOfferingCheckPermissions(null, subjectAreaId), new AsyncCallback<CourseOfferingPermissionsInterface>() {
 						@Override
 						public void onFailure(Throwable caught) {
-							loadingFailed(caught);
+							handleError(caught);
 						}
 						@Override
 						public void onSuccess(CourseOfferingPermissionsInterface result) {
@@ -355,7 +389,6 @@ public class CourseOfferingEdit extends Composite {
 							iCanEditCourseOfferingNote = result.getCanEditCourseOfferingNote();
 							iCanEditCourseOfferingCoordinators = result.getCanEditCourseOfferingCoordinators();
 
-							logger.log(Level.SEVERE, "Change Subject Area" + subjectAreaId);
 							iIsReload = true;
 							iIsAdd = false;
 							iSubjAreaId = subjectAreaId;
@@ -371,7 +404,7 @@ public class CourseOfferingEdit extends Composite {
 		iCourseNumber.getWidget().setMaxLength(40);
 		iCourseNumber.getWidget().setVisibleLength(40);
 		if (iIsAdd && iCourseNbr != null) {
-			iCourseNumber.getWidget().setValue(iCourseNbr.toString());
+			iCourseNumber.getWidget().setValue(iCourseNbr);
 		}
 		iCourseNumber.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
@@ -388,7 +421,7 @@ public class CourseOfferingEdit extends Composite {
 		iTitleLine = iPanel.addRow(MESSAGES.propTitle(), iTitle);
 		
 		iTitleText = new Label("Override");
-		iTitleTextLine = iPanel.addRow(MESSAGES.propTitle(), iTitleText, 1); //TODO
+		iTitleTextLine = iPanel.addRow(MESSAGES.propTitle(), iTitleText, 1);
 		iPanel.getRowFormatter().setVisible(iTitleTextLine, false);
 		
 		iExternalId = new UniTimeWidget<UniTimeTextBox>(new UniTimeTextBox(30, ValueBoxBase.TextAlignment.LEFT));
@@ -417,7 +450,7 @@ public class CourseOfferingEdit extends Composite {
 		iScheduleNoteLine = iPanel.addRow(MESSAGES.propScheduleNote(), iScheduleNote);
 		
 		iScheduleNoteText = new Label("Override");
-		iScheduleNoteTextLine = iPanel.addRow(MESSAGES.propScheduleNote(), iScheduleNoteText, 1); //TODO
+		iScheduleNoteTextLine = iPanel.addRow(MESSAGES.propScheduleNote(), iScheduleNoteText, 1);
 		iPanel.getRowFormatter().setVisible(iScheduleNoteTextLine, false);
 
 		//Consent Dropdown
@@ -433,13 +466,13 @@ public class CourseOfferingEdit extends Composite {
 		iConsentLine = iPanel.addRow(MESSAGES.propConsent(), iConsent);
 		
 		iConsentText = new Label("Override");
-		iConsentTextLine = iPanel.addRow(MESSAGES.propConsent(), iConsentText, 1); //TODO
+		iConsentTextLine = iPanel.addRow(MESSAGES.propConsent(), iConsentText, 1);
 		iPanel.getRowFormatter().setVisible(iConsentTextLine, false);
 
 		//Begin Credit section
 		
 		iCreditText = new Label("Override");
-		iCreditTextLine = iPanel.addRow(MESSAGES.propCredit(), iCreditText, 1); //TODO
+		iCreditTextLine = iPanel.addRow(MESSAGES.propCredit(), iCreditText, 1);
 
 		SimpleForm indentedForm = new SimpleForm();
 		
@@ -499,7 +532,7 @@ public class CourseOfferingEdit extends Composite {
 		
 		iCreditSectionLine = iPanel.addRow(MESSAGES.propCredit(), indentedForm);
 		
-		indentedForm.getElement().getParentElement().setAttribute("class", "myTestForMe");
+		indentedForm.getElement().getParentElement().setAttribute("class", "courseOfferingEditPadding");
 		
 		//End Credit section
 		
@@ -517,7 +550,7 @@ public class CourseOfferingEdit extends Composite {
 		iCourseDemandsLine = iPanel.addRow(MESSAGES.propCourseDemands(), iCourseDemands);
 		
 		iCourseDemandsText = new Label("Override");
-		iCourseDemandsTextLine = iPanel.addRow(MESSAGES.propCourseDemands(), iCourseDemandsText, 1); //TODO
+		iCourseDemandsTextLine = iPanel.addRow(MESSAGES.propCourseDemands(), iCourseDemandsText, 1);
 		iPanel.getRowFormatter().setVisible(iCourseDemandsTextLine, false);
 
 		//End Take course demands from offering section
@@ -540,17 +573,16 @@ public class CourseOfferingEdit extends Composite {
 		
 		//Catalog Link Label
 		iCatalogLinkLabel = new Anchor();
-		//iCatalogLinkLabel.setStyleName("unitime-SimpleLink");
 		iCatalogLinkLabelLine = iPanel.addRow(MESSAGES.propertyCourseCatalog(), iCatalogLinkLabel);
 		iPanel.getRowFormatter().setVisible(iCatalogLinkLabelLine, false);
 
 		//CourseURLProvider
 		iCourseUrlProvider = new CourseDetailsWidget(true);
-		iCourseUrlProvider.setVisible(true); // TODO ?
+		iCourseUrlProvider.setVisible(true);
 		iCourseUrlProviderLine = iPanel.addRow(MESSAGES.propertyCourseCatalog(), iCourseUrlProvider);
-		iPanel.getRowFormatter().setVisible(iCourseUrlProviderLine, true); //TODO
+		iPanel.getRowFormatter().setVisible(iCourseUrlProviderLine, true);
 
-		//Begin Coordinators section TODO
+		//Begin Coordinators section
 		
 		ClickHandler deleteCoordinator = new ClickHandler() {
 			@Override
@@ -558,20 +590,16 @@ public class CourseOfferingEdit extends Composite {
 				AriaButton clickedDeleteButton = (AriaButton) event.getSource();
 				String clickedButtonId = clickedDeleteButton.getElement().getId();
 				Integer clickedButtonIdInteger = Integer.valueOf(clickedButtonId);
-				
-				
-				
+
 				int rowCount = iInstructorsTable.getRowCount();
 				for (int i = 1; i < rowCount; i++) {
 					AriaButton deleteButton = (AriaButton) iInstructorsTable.getWidget(i, 3);
 					String buttonId = deleteButton.getElement().getId();
 					Integer buttonIdInteger = Integer.valueOf(buttonId);
-					if (buttonIdInteger == clickedButtonIdInteger) {
-						//remove row
+					if (buttonIdInteger.equals(clickedButtonIdInteger)) {
 						iInstructorsTable.removeRow(i);
 						break;
 					}
-					
 				}
 			}
 		};
@@ -579,11 +607,10 @@ public class CourseOfferingEdit extends Composite {
 		ClickHandler clickAddCoordinator = new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-
 				RPC.execute(new CourseOfferingConstantsRequest(), new AsyncCallback<CourseOfferingConstantsInterface>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						loadingFailed(caught);
+						handleError(caught);
 					}
 
 					@Override
@@ -596,7 +623,6 @@ public class CourseOfferingEdit extends Composite {
 							maxId++;
 							List<Widget> widgets = new ArrayList<Widget>();
 							UniTimeWidget<ListBox> instructorDropdown = new UniTimeWidget<ListBox>(new ListBox());
-							//instructorDropdown.setWidth(200);
 							UniTimeWidget<UniTimeTextBox> shareTextBox = new UniTimeWidget<UniTimeTextBox>(new UniTimeTextBox(4, ValueBoxBase.TextAlignment.LEFT));
 							UniTimeWidget<ListBox> responsibilitiesDropdown = new UniTimeWidget<ListBox>(new ListBox());
 							Button deleteButton = new AriaButton(MESSAGES.opGroupDelete());
@@ -651,6 +677,8 @@ public class CourseOfferingEdit extends Composite {
 		iInstructorPanel.addRow(iInstructorsTable);
 		iInstructorPanel.addRow(iAddCoordinatorButton);
 		iInstructorPanelLine = iPanel.addRow(MESSAGES.propCoordinators(), iInstructorPanel);
+		
+		iInstructorPanel.getElement().getParentElement().setAttribute("class", "courseOfferingEditPadding");
 
 		//End Coordinators section
 
@@ -670,7 +698,7 @@ public class CourseOfferingEdit extends Composite {
 		iPanel.getRowFormatter().setVisible(iReservationOnlyTextLine, false);
 		
 
-		iNewEnrollmentDeadline = new UniTimeTextBox(4, ValueBoxBase.TextAlignment.LEFT);//new UniTimeWidget<UniTimeTextBox>(new UniTimeTextBox(4, ValueBoxBase.TextAlignment.LEFT));
+		iNewEnrollmentDeadline = new UniTimeTextBox(4, ValueBoxBase.TextAlignment.LEFT);
 		iNewEnrollmentDeadline.addStyleName("number");
 		iNewEnrollmentDeadlinePanel = new P("deadline");
 		iNewEnrollmentDeadlinePanel.add(iNewEnrollmentDeadline);
@@ -722,7 +750,7 @@ public class CourseOfferingEdit extends Composite {
 		iRequestsNotesLine = iPanel.addRow(MESSAGES.propRequestsNotes(), iRequestsNotes);
 		
 		iRequestNotesText = new Label("Override");
-		iRequestNotesTextLine = iPanel.addRow(MESSAGES.propRequestsNotes(), iRequestNotesText, 1); //TODO
+		iRequestNotesTextLine = iPanel.addRow(MESSAGES.propRequestsNotes(), iRequestNotesText, 1);
 		iPanel.getRowFormatter().setVisible(iRequestNotesTextLine, false);
 
 		iFundingDepartment = new UniTimeWidget<ListBox>(new ListBox());
@@ -772,12 +800,12 @@ public class CourseOfferingEdit extends Composite {
 		RPC.execute(new CourseOfferingCheckPermissions(courseOfferingId, subjAreaId), new AsyncCallback<CourseOfferingPermissionsInterface>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				loadingFailed(caught);
+				handleError(caught);
 			}
 			@Override
 			public void onSuccess(CourseOfferingPermissionsInterface result) {
 				iCanAddCourseOffering = result.getCanAddCourseOffering();
-				iCanEditCourseOffering = result.getCanEditCourseOffering(); //TODO
+				iCanEditCourseOffering = result.getCanEditCourseOffering();
 				iCanEditCourseOfferingNote = result.getCanEditCourseOfferingNote();
 				iCanEditCourseOfferingCoordinators = result.getCanEditCourseOfferingCoordinators();
 
@@ -785,7 +813,7 @@ public class CourseOfferingEdit extends Composite {
 					RPC.execute(new GetCourseOfferingRequest(iCourseOfferingId), new AsyncCallback<GetCourseOfferingResponse>() {
 						@Override
 						public void onFailure(Throwable caught) {
-							loadingFailed(caught);
+							handleError(caught);
 						}
 
 						@Override
@@ -805,7 +833,6 @@ public class CourseOfferingEdit extends Composite {
 	}
 	
 	private int getMaxId(UniTimeTable instructorTable) {
-		ArrayList<Integer> idList = new ArrayList<Integer>();
 		Integer maxId = 0;
 		int rowCount = instructorTable.getRowCount();
 		for (int i = 1; i < rowCount; i++) {
@@ -881,7 +908,7 @@ public class CourseOfferingEdit extends Composite {
 		}
 	}
 	
-	protected void afterSaveOrUpdate(boolean iIsEdit, Long instructionalOfferingId) {
+	protected void afterSaveOrUpdate(Long instructionalOfferingId) {
 		ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.do?op=view&io=" + instructionalOfferingId);
 	}
 	
@@ -898,7 +925,7 @@ public class CourseOfferingEdit extends Composite {
 					AriaButton deleteButton = (AriaButton) iInstructorsTable.getWidget(i, 3);
 					String buttonId = deleteButton.getElement().getId();
 					Integer buttonIdInteger = Integer.valueOf(buttonId);
-					if (buttonIdInteger == clickedButtonIdInteger) {
+					if (buttonIdInteger.equals(clickedButtonIdInteger)) {
 						//remove row
 						iInstructorsTable.removeRow(i);
 						break;
@@ -911,7 +938,6 @@ public class CourseOfferingEdit extends Composite {
 		while (i < iPrefRowsAdded) {
 			List<Widget> widgets = new ArrayList<Widget>();
 			UniTimeWidget<ListBox> instructorDropdown = new UniTimeWidget<ListBox>(new ListBox());
-			//instructorDropdown.getWidget().setWidth("200px");
 			UniTimeWidget<UniTimeTextBox> shareTextBox = new UniTimeWidget<UniTimeTextBox>(new UniTimeTextBox(4, ValueBoxBase.TextAlignment.LEFT));
 			UniTimeWidget<ListBox> responsibilitiesDropdown = new UniTimeWidget<ListBox>(new ListBox());
 			Button deleteButton = new AriaButton(MESSAGES.opGroupDelete());
@@ -934,10 +960,12 @@ public class CourseOfferingEdit extends Composite {
 		RPC.execute(new CourseOfferingPropertiesRequest(false, iSubjAreaId), new AsyncCallback<CourseOfferingPropertiesInterface>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				loadingFailed(caught);
+				handleError(caught);
 			}
 			@Override
 			public void onSuccess(CourseOfferingPropertiesInterface result) {
+				iDefaultTeachingResponsibilityId = result.getDefaultTeachingResponsibilityId();
+
 				for (int i = 1; i < iInstructorsTable.getRowCount(); i++) { //Skip the first row
 					UniTimeWidget<ListBox> instructorDropdown = (UniTimeWidget<ListBox>) iInstructorsTable.getWidget(i, 0);
 					UniTimeWidget<ListBox> responsibilityDropdown = (UniTimeWidget<ListBox>) iInstructorsTable.getWidget(i, 2);
@@ -958,20 +986,34 @@ public class CourseOfferingEdit extends Composite {
 							instructorDropdown.getWidget().addItem(instructorObject.getLabel(), instructorObject.getId().toString());
 						}
 					}
-					if (responsibilityDropdown.getWidget().getSelectedIndex() == 0) {
-			            while (responsibilityDropdown.getWidget().getItemCount() != 0) {
-			            	responsibilityDropdown.getWidget().removeItem(0);
-			            }
-						
-			            responsibilityDropdown.getWidget().addItem("-", "");
-						for (ResponsibilityInterface responsibilityObject: result.getResponsibilities()) {
-							responsibilityDropdown.getWidget().addItem(responsibilityObject.getLabel(), responsibilityObject.getId().toString());
+					
+					if (iDefaultTeachingResponsibilityId != null && !iDefaultTeachingResponsibilityId.isEmpty()) {
+						if (responsibilityDropdown.getWidget().getItemCount() == 0) {
+							for (ResponsibilityInterface responsibilityObject: result.getResponsibilities()) {
+								responsibilityDropdown.getWidget().addItem(responsibilityObject.getLabel(), responsibilityObject.getId().toString());
+							}
+							
+							int responsibilitiesDropdownIndex = 0;
+							for (int j = 1; j < responsibilityDropdown.getWidget().getItemCount(); j++) {
+								if (responsibilityDropdown.getWidget().getValue(j).equals(iDefaultTeachingResponsibilityId)) {
+									responsibilitiesDropdownIndex = j;
+									break;
+								}
+							}
+								
+							responsibilityDropdown.getWidget().setSelectedIndex(responsibilitiesDropdownIndex);
+							
 						}
-					}
-					if (responsibilityDropdown.getWidget().getItemCount() == 0) {
-						responsibilityDropdown.getWidget().addItem("-", "");
-						for (ResponsibilityInterface responsibilityObject: result.getResponsibilities()) {
-							responsibilityDropdown.getWidget().addItem(responsibilityObject.getLabel(), responsibilityObject.getId().toString());
+					} else {
+						if (responsibilityDropdown.getWidget().getSelectedIndex() == 0 || responsibilityDropdown.getWidget().getItemCount() == 0) {
+				            while (responsibilityDropdown.getWidget().getItemCount() != 0) {
+				            	responsibilityDropdown.getWidget().removeItem(0);
+				            }
+							
+				            responsibilityDropdown.getWidget().addItem("-", "");
+							for (ResponsibilityInterface responsibilityObject: result.getResponsibilities()) {
+								responsibilityDropdown.getWidget().addItem(responsibilityObject.getLabel(), responsibilityObject.getId().toString());
+							}
 						}
 					}
 		        }
@@ -992,19 +1034,19 @@ public class CourseOfferingEdit extends Composite {
 			iScheduleNote.getWidget().setReadOnly(true);
 			iPanel.getRowFormatter().setVisible(iConsentLine, false);
 			
-			//Hide the instructors section - if its not empty?? Is that even possible? TODO
+			//Hide the instructors section
 			iPanel.getRowFormatter().setVisible(iInstructorPanelLine, false);
 			
-			//Hide byReservationOnly and wk fields if empty? Can they be defaulted so that they are not empty when adding?
+			//Hide byReservationOnly and wk fields
 			iPanel.getRowFormatter().setVisible(iReservationOnlyLine, false);
 			
-			//Hide wk rows?
+			//Hide wk rows
 			iPanel.getRowFormatter().setVisible(iNewEnrollmentDeadlineLine, false);
 			iPanel.getRowFormatter().setVisible(iClassChangesDeadlineLine, false);
 			iPanel.getRowFormatter().setVisible(iCourseDropDeadlineLine, false);
 			iPanel.getRowFormatter().setVisible(iDescEnrollmentDeadlinesLine, false);
 			
-			//Hide notes?
+			//Hide notes
 			iPanel.getRowFormatter().setVisible(iRequestsNotesLine, false);
 		}
 
@@ -1013,7 +1055,7 @@ public class CourseOfferingEdit extends Composite {
 		RPC.execute(new CourseOfferingPropertiesRequest(false, iSubjAreaId), new AsyncCallback<CourseOfferingPropertiesInterface>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				loadingFailed(caught);
+				handleError(caught);
 			}
 			@Override
 			public void onSuccess(CourseOfferingPropertiesInterface result) {
@@ -1024,7 +1066,7 @@ public class CourseOfferingEdit extends Composite {
 					int indexToFind = -1;
 					for (int i = 0; i < iSubjectArea.getWidget().getItemCount(); i++) {
 						//Match by Value
-						if (iSubjectArea.getWidget().getValue(i) == subjAreaId.toString()) {
+						if (iSubjectArea.getWidget().getValue(i).equals(subjAreaId.toString())) {
 							indexToFind = i;
 							break;
 						}
@@ -1032,10 +1074,12 @@ public class CourseOfferingEdit extends Composite {
 					iSubjectArea.getWidget().setSelectedIndex(indexToFind);
 				}
 				
-				iPrefRowsAdded = 0;//result.getPrefRowsAdded();
+				iPrefRowsAdded = 0;
 				constructInstructorsTable();
 
-				for (int i = 1; i < iInstructorsTable.getRowCount(); i++) { //Skip the first row
+				iDefaultTeachingResponsibilityId = result.getDefaultTeachingResponsibilityId();
+
+				for (int i = 1; i < iInstructorsTable.getRowCount(); i++) {
 					UniTimeWidget<ListBox> instructorDropdown = (UniTimeWidget<ListBox>) iInstructorsTable.getWidget(i, 0);
 					UniTimeWidget<ListBox> responsibilitiesDropdown = (UniTimeWidget<ListBox>) iInstructorsTable.getWidget(i, 2);
 					
@@ -1060,19 +1104,29 @@ public class CourseOfferingEdit extends Composite {
 					String selectedResponsibility = responsibilitiesDropdown.getWidget().getSelectedValue();
 					
 					responsibilitiesDropdown.getWidget().clear();
-					responsibilitiesDropdown.getWidget().addItem("-", "");
+					if (iDefaultTeachingResponsibilityId == null || iDefaultTeachingResponsibilityId.isEmpty()) {
+						responsibilitiesDropdown.getWidget().addItem("-", "");
+					}
 					for (ResponsibilityInterface responsibilityObject: result.getResponsibilities()) {
 						responsibilitiesDropdown.getWidget().addItem(responsibilityObject.getLabel(), responsibilityObject.getId().toString());
 					}
 					
 					int responsibilitiesDropdownIndex = 0;
 					for (int j = 1; j < responsibilitiesDropdown.getWidget().getItemCount(); j++) {
-						if (responsibilitiesDropdown.getWidget().getValue(j).equals(selectedResponsibility)) {
-							responsibilitiesDropdownIndex = j;
-							break;
+						if (selectedResponsibility != null && !selectedResponsibility.isEmpty()) {
+							if (responsibilitiesDropdown.getWidget().getValue(j).equals(selectedResponsibility)) {
+								responsibilitiesDropdownIndex = j;
+								break;
+							}
+						} else {
+							if (iDefaultTeachingResponsibilityId != null && !iDefaultTeachingResponsibilityId.isEmpty()) {
+								if (responsibilitiesDropdown.getWidget().getValue(j).equals(iDefaultTeachingResponsibilityId)) {
+									responsibilitiesDropdownIndex = j;
+									break;
+								}
+							}
 						}
 					}
-					
 					responsibilitiesDropdown.getWidget().setSelectedIndex(responsibilitiesDropdownIndex);
 		        }
 				
@@ -1130,19 +1184,19 @@ public class CourseOfferingEdit extends Composite {
 				iScheduleNote.getWidget().setReadOnly(true);
 				iPanel.getRowFormatter().setVisible(iConsentLine, false);
 				
-				//Hide the instructors section - if its not empty?? Is that even possible? TODO
+				//Hide the instructors section
 				iPanel.getRowFormatter().setVisible(iInstructorPanelLine, false);
 				
-				//Hide byReservationOnly and wk fields if empty? Can they be defaulted so that they are not empty when adding?
+				//Hide byReservationOnly and wk fields
 				iPanel.getRowFormatter().setVisible(iReservationOnlyLine, false);
 				
-				//Hide wk rows?
+				//Hide wk rows
 				iPanel.getRowFormatter().setVisible(iNewEnrollmentDeadlineLine, false);
 				iPanel.getRowFormatter().setVisible(iClassChangesDeadlineLine, false);
 				iPanel.getRowFormatter().setVisible(iCourseDropDeadlineLine, false);
 				iPanel.getRowFormatter().setVisible(iDescEnrollmentDeadlinesLine, false);
 				
-				//Hide notes?
+				//Hide notes
 				iPanel.getRowFormatter().setVisible(iRequestsNotesLine, false);
 			}
 
@@ -1151,7 +1205,7 @@ public class CourseOfferingEdit extends Composite {
 			RPC.execute(new CourseOfferingPropertiesRequest(false, iSubjAreaId, iCourseNbr), new AsyncCallback<CourseOfferingPropertiesInterface>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					loadingFailed(caught);
+					handleError(caught);
 				}
 				@Override
 				public void onSuccess(CourseOfferingPropertiesInterface result) {
@@ -1162,7 +1216,7 @@ public class CourseOfferingEdit extends Composite {
 						int indexToFind = -1;
 						for (int i = 0; i < iSubjectArea.getWidget().getItemCount(); i++) {
 							//Match by Value
-							if (iSubjectArea.getWidget().getValue(i) == subjAreaId.toString()) {
+							if (iSubjectArea.getWidget().getValue(i).equals(subjAreaId.toString())) {
 								indexToFind = i;
 								break;
 							}
@@ -1223,8 +1277,10 @@ public class CourseOfferingEdit extends Composite {
 					for (OfferingConsentTypeInterface offeringConsentType: result.getOfferingConsentTypes()) {
 						iConsent.getWidget().addItem(offeringConsentType.getLabel(), offeringConsentType.getId().toString());
 					}
+					
+					iDefaultTeachingResponsibilityId = result.getDefaultTeachingResponsibilityId();
 
-					for (int i = 1; i < iInstructorsTable.getRowCount(); i++) { //Skip the first row
+					for (int i = 1; i < iInstructorsTable.getRowCount(); i++) {
 						UniTimeWidget<ListBox> instructorDropdown = (UniTimeWidget<ListBox>) iInstructorsTable.getWidget(i, 0);
 						UniTimeWidget<ListBox> responsibilitiesDropdown = (UniTimeWidget<ListBox>) iInstructorsTable.getWidget(i, 2);
 						
@@ -1233,9 +1289,23 @@ public class CourseOfferingEdit extends Composite {
 							instructorDropdown.getWidget().addItem(instructorObject.getLabel(), instructorObject.getId().toString());
 						}
 						
-						responsibilitiesDropdown.getWidget().addItem("-", "");
+						if (iDefaultTeachingResponsibilityId == null || iDefaultTeachingResponsibilityId.isEmpty()) {
+							responsibilitiesDropdown.getWidget().addItem("-", "");
+						}
 						for (ResponsibilityInterface responsibilityObject: result.getResponsibilities()) {
 							responsibilitiesDropdown.getWidget().addItem(responsibilityObject.getLabel(), responsibilityObject.getId().toString());
+						}
+						
+						if (iDefaultTeachingResponsibilityId != null && !iDefaultTeachingResponsibilityId.isEmpty()) {
+							int responsibilitiesDropdownIndex = 0;
+							for (int j = 1; j < responsibilitiesDropdown.getWidget().getItemCount(); j++) {
+								if (responsibilitiesDropdown.getWidget().getValue(j).equals(iDefaultTeachingResponsibilityId)) {
+									responsibilitiesDropdownIndex = j;
+									break;
+								}
+							}
+							
+							responsibilitiesDropdown.getWidget().setSelectedIndex(responsibilitiesDropdownIndex);
 						}
 			        }
 					
@@ -1251,7 +1321,7 @@ public class CourseOfferingEdit extends Composite {
 					
 					iCourseOfferingNumberUpperCase = result.getCourseOfferingNumberUpperCase();
 					
-					if (result.getCourseUrlProvider() != null && result.getCourseUrlProvider() != "") {
+					if (result.getCourseUrlProvider() != null && !result.getCourseUrlProvider().isEmpty()) {
 						iPanel.getRowFormatter().setVisible(iCourseUrlProviderLine, true);
 					} else {
 						iPanel.getRowFormatter().setVisible(iCourseUrlProviderLine, false);
@@ -1337,7 +1407,6 @@ public class CourseOfferingEdit extends Composite {
 
 			if (!iCanEditCourseOffering) {
 				iPanel.getRowFormatter().setVisible(iCourseNumberLine, false);
-				//iPanel.getRowFormatter().setVisible(iScheduleNoteLine, false);
 				iPanel.getRowFormatter().setVisible(iConsentTextLine, false);
 				iPanel.getRowFormatter().setVisible(iConsentLine, false);
 				iPanel.getRowFormatter().setVisible(iCourseDemandsLine, false);
@@ -1400,7 +1469,7 @@ public class CourseOfferingEdit extends Composite {
 					iPanel.getRowFormatter().setVisible(iInstructorPanelLine, false);
 					
 					if (courseOffering.getCoordinators().size() > 0) {
-						for (int i = 1; i < iInstructorsTable.getRowCount(); i++) { //Skip the first row
+						for (int i = 1; i < iInstructorsTable.getRowCount(); i++) {
 							UniTimeWidget<ListBox> instructorDropdown = (UniTimeWidget<ListBox>) iInstructorsTable.getWidget(i, 0);
 							UniTimeWidget<UniTimeTextBox> shareTextBox = (UniTimeWidget<UniTimeTextBox>) iInstructorsTable.getWidget(i, 1);
 							UniTimeWidget<ListBox> responsibilitiesDropdown = (UniTimeWidget<ListBox>) iInstructorsTable.getWidget(i, 2);
@@ -1419,10 +1488,7 @@ public class CourseOfferingEdit extends Composite {
 					}
 				}
 				
-				if (!iCanEditCourseOffering) {
-					//Make byReservationOnly and wk stuff not editable TODO
-					//And hide the notes section??? TODO
-					
+				if (!iCanEditCourseOffering) {					
 					iPanel.getRowFormatter().setVisible(iReservationOnlyLine, false);
 					iPanel.getRowFormatter().setVisible(iReservationOnlyTextLine, false);
 					iPanel.getRowFormatter().setVisible(iNewEnrollmentDeadlineLine, false);
@@ -1457,7 +1523,7 @@ public class CourseOfferingEdit extends Composite {
 					iPanel.getRowFormatter().setVisible(iRequestsNotesLine, false);
 					iRequestsNotes.getWidget().setEnabled(false);
 					
-					if (courseOffering.getNotes() != null && courseOffering.getNotes() != "") {
+					if (courseOffering.getNotes() != null && !courseOffering.getNotes().isEmpty()) {
 						iPanel.getRowFormatter().setVisible(iRequestNotesTextLine, true);
 					} else {
 						//Hide notes
@@ -1465,19 +1531,15 @@ public class CourseOfferingEdit extends Composite {
 					}
 				}
 			} else {
-				//Hide instructors?
 				iPanel.getRowFormatter().setVisible(iInstructorPanelLine, false);
-				
-				//Hide byReservationOnly?
+
 				iPanel.getRowFormatter().setVisible(iReservationOnlyLine, false);
-				
-				//Hide wk rows?
+
 				iPanel.getRowFormatter().setVisible(iNewEnrollmentDeadlineLine, false);
 				iPanel.getRowFormatter().setVisible(iClassChangesDeadlineLine, false);
 				iPanel.getRowFormatter().setVisible(iCourseDropDeadlineLine, false);
 				iPanel.getRowFormatter().setVisible(iDescEnrollmentDeadlinesLine, false);
-				
-				//Hide notes?
+
 				iPanel.getRowFormatter().setVisible(iRequestsNotesLine, false);
 				
 				//Change Waitlisting display
@@ -1524,8 +1586,7 @@ public class CourseOfferingEdit extends Composite {
 						AriaButton deleteButton = (AriaButton) iInstructorsTable.getWidget(i, 3);
 						String buttonId = deleteButton.getElement().getId();
 						Integer buttonIdInteger = Integer.valueOf(buttonId);
-						if (buttonIdInteger == clickedButtonIdInteger) {
-							//remove row
+						if (buttonIdInteger.equals(clickedButtonIdInteger)) {
 							iInstructorsTable.removeRow(i);
 							break;
 						}
@@ -1555,10 +1616,10 @@ public class CourseOfferingEdit extends Composite {
 				iPanel.getRowFormatter().setVisible(iCatalogLinkLabelLine, true);
 			}
 
-			RPC.execute(new CourseOfferingPropertiesRequest(true, courseOffering.getSubjectAreaId(), courseOffering.getId()), new AsyncCallback<CourseOfferingPropertiesInterface>() {
+			RPC.execute(new CourseOfferingPropertiesRequest(true, courseOffering.getSubjectAreaId(), courseOffering.getId().toString()), new AsyncCallback<CourseOfferingPropertiesInterface>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					loadingFailed(caught);
+					handleError(caught);
 				}
 				@Override
 				public void onSuccess(CourseOfferingPropertiesInterface result) {
@@ -1589,8 +1650,6 @@ public class CourseOfferingEdit extends Composite {
 						} else {
 							iPanel.getRowFormatter().setVisible(iCourseTypeLine, false);
 						}
-					} else {
-						//TODO ?
 					}
 					
 					if (courseOffering.getWaitList() == null) {
@@ -1726,7 +1785,9 @@ public class CourseOfferingEdit extends Composite {
 						}
 					}
 					
-					for (int i = 1; i < iInstructorsTable.getRowCount(); i++) { //Skip the first row
+					iDefaultTeachingResponsibilityId = result.getDefaultTeachingResponsibilityId();
+
+					for (int i = 1; i < iInstructorsTable.getRowCount(); i++) {
 						UniTimeWidget<ListBox> instructorDropdown = (UniTimeWidget<ListBox>) iInstructorsTable.getWidget(i, 0);
 						UniTimeWidget<ListBox> responsibilitiesDropdown = (UniTimeWidget<ListBox>) iInstructorsTable.getWidget(i, 2);
 						
@@ -1735,50 +1796,64 @@ public class CourseOfferingEdit extends Composite {
 							instructorDropdown.getWidget().addItem(instructorObject.getLabel(), instructorObject.getId().toString());
 						}
 						
-						responsibilitiesDropdown.getWidget().addItem("-", "");
+						CoordinatorInterface coordinator = null;
+						
+						if (courseOffering.getCoordinators().size() >= i) {
+							coordinator = courseOffering.getCoordinators().get(i-1);
+						}
+						
+						if (iDefaultTeachingResponsibilityId == null || iDefaultTeachingResponsibilityId.isEmpty() || (coordinator != null && (coordinator.getResponsibilityId() == null || coordinator.getResponsibilityId().isEmpty()))) {
+							responsibilitiesDropdown.getWidget().addItem("-", "");
+						}
 						for (ResponsibilityInterface responsibilityObject: result.getResponsibilities()) {
 							responsibilitiesDropdown.getWidget().addItem(responsibilityObject.getLabel(), responsibilityObject.getId().toString());
 						}
 			        }
 					
 					//Set instructors if necessary
-					for (int i = 1; i < iInstructorsTable.getRowCount(); i++) { //Skip the first row
+					for (int i = 1; i < iInstructorsTable.getRowCount(); i++) {
 						UniTimeWidget<ListBox> instructorDropdown = (UniTimeWidget<ListBox>) iInstructorsTable.getWidget(i, 0);
 						UniTimeWidget<UniTimeTextBox> shareTextBox = (UniTimeWidget<UniTimeTextBox>) iInstructorsTable.getWidget(i, 1);
 						UniTimeWidget<ListBox> responsibilitiesDropdown = (UniTimeWidget<ListBox>) iInstructorsTable.getWidget(i, 2);
-						
-//						if (courseOffering.getCoordinators().size() > i) {
-//							//Expand the Instructor table?
-//							//TODO? Remove this?
-//						}
-						
-						if (courseOffering.getCoordinators().size() < i) {
+
+						if (courseOffering.getCoordinators().size() < i && (iDefaultTeachingResponsibilityId == null || iDefaultTeachingResponsibilityId.isEmpty())) {
 							break;
 						}
 						
-						CoordinatorInterface coordinator = courseOffering.getCoordinators().get(i-1);
+						if (courseOffering.getCoordinators().size() >= i) {
+							CoordinatorInterface coordinator = courseOffering.getCoordinators().get(i-1);
 
-						int instructorDropdownIndex = -1;
-						for (int j = 1; j < instructorDropdown.getWidget().getItemCount(); j++) {
-							if (instructorDropdown.getWidget().getValue(j).equals(coordinator.getInstructorId())) {
-								instructorDropdownIndex = j;
-								break;
+							int instructorDropdownIndex = -1;
+							for (int j = 1; j < instructorDropdown.getWidget().getItemCount(); j++) {
+								if (instructorDropdown.getWidget().getValue(j).equals(coordinator.getInstructorId())) {
+									instructorDropdownIndex = j;
+									break;
+								}
 							}
-						}
-						
-						instructorDropdown.getWidget().setSelectedIndex(instructorDropdownIndex);
-						
-						shareTextBox.getWidget().setValue(coordinator.getPercShare());
+							
+							instructorDropdown.getWidget().setSelectedIndex(instructorDropdownIndex);
+							
+							shareTextBox.getWidget().setValue(coordinator.getPercShare());
 
-						int responsibilitiesDropdownIndex = 0;
-						for (int j = 1; j < responsibilitiesDropdown.getWidget().getItemCount(); j++) {
-							if (responsibilitiesDropdown.getWidget().getValue(j).equals(coordinator.getResponsibilityId())) {
-								responsibilitiesDropdownIndex = j;
-								break;
+							int responsibilitiesDropdownIndex = 0;
+							for (int j = 1; j < responsibilitiesDropdown.getWidget().getItemCount(); j++) {
+								if (responsibilitiesDropdown.getWidget().getValue(j).equals(coordinator.getResponsibilityId())) {
+									responsibilitiesDropdownIndex = j;
+									break;
+								}
 							}
+							
+							responsibilitiesDropdown.getWidget().setSelectedIndex(responsibilitiesDropdownIndex);
+						} else if (iDefaultTeachingResponsibilityId != null && !iDefaultTeachingResponsibilityId.isEmpty()) {
+							int responsibilitiesDropdownIndex = 0;
+							for (int j = 1; j < responsibilitiesDropdown.getWidget().getItemCount(); j++) {
+								if (responsibilitiesDropdown.getWidget().getValue(j).equals(iDefaultTeachingResponsibilityId)) {
+									responsibilitiesDropdownIndex = j;
+									break;
+								}
+							}
+							responsibilitiesDropdown.getWidget().setSelectedIndex(responsibilitiesDropdownIndex);
 						}
-						
-						responsibilitiesDropdown.getWidget().setSelectedIndex(responsibilitiesDropdownIndex);
 			        }
 					
 					if (result.getResponsibilities() == null || result.getResponsibilities().isEmpty()) {
@@ -1790,7 +1865,7 @@ public class CourseOfferingEdit extends Composite {
 					if (courseOffering.getIsControl() == true) {
 						if (!iCanEditCourseOffering && !iCanEditCourseOfferingCoordinators) {
 							if (courseOffering.getCoordinators().size() > 0) {
-								for (int i = 1; i < iInstructorsTable.getRowCount(); i++) { //Skip the first row
+								for (int i = 1; i < iInstructorsTable.getRowCount(); i++) {
 									UniTimeWidget<ListBox> instructorDropdown = (UniTimeWidget<ListBox>) iInstructorsTable.getWidget(i, 0);
 									UniTimeWidget<UniTimeTextBox> shareTextBox = (UniTimeWidget<UniTimeTextBox>) iInstructorsTable.getWidget(i, 1);
 									UniTimeWidget<ListBox> responsibilitiesDropdown = (UniTimeWidget<ListBox>) iInstructorsTable.getWidget(i, 2);
@@ -1872,7 +1947,7 @@ public class CourseOfferingEdit extends Composite {
 						}
 					}
 					
-					if (result.getCourseUrlProvider() != null && result.getCourseUrlProvider() != "") {
+					if (result.getCourseUrlProvider() != null && !result.getCourseUrlProvider().isEmpty()) {
 						iPanel.getRowFormatter().setVisible(iCourseUrlProviderLine, true);
 					} else {
 						iPanel.getRowFormatter().setVisible(iCourseUrlProviderLine, false);
@@ -1886,7 +1961,6 @@ public class CourseOfferingEdit extends Composite {
 							iFundingDepartment.getWidget().addItem(fundingDepartment.getLabel(), fundingDepartment.getId().toString());
 						}
 						
-						//TODO ?
 						if (courseOffering.getFundingDepartmentId() != null) {
 							int altIndex = 0;
 							for (int i = 0; i < iFundingDepartment.getWidget().getItemCount(); i++) {
@@ -1956,7 +2030,7 @@ public class CourseOfferingEdit extends Composite {
 		}
 	}
 	
-	private void loadingFailed(Throwable caught) {
+	private void handleError(Throwable caught) {
 		LoadingWidget.getInstance().hide();
 		iTitleAndButtons.setErrorMessage(MESSAGES.failedCreate(MESSAGES.objectCourseOffering(), caught.getMessage()));
 		UniTimeNotifications.error(MESSAGES.failedCreate(MESSAGES.objectCourseOffering(), caught.getMessage()), caught);
@@ -1974,38 +2048,32 @@ public class CourseOfferingEdit extends Composite {
 		}
 		
 		iCourseOffering.setByReservationOnly(iByReservationOnly.getValue());
-		
-		if (iNewEnrollmentDeadline.getValue() != null && !iNewEnrollmentDeadline.getValue().isEmpty()) {
-			try {
-				iCourseOffering.setLastWeekToEnroll(Integer.parseInt(iNewEnrollmentDeadline.getValue()));
-			} catch (Exception e) {
-				iCourseOffering.setLastWeekToEnroll(null);
-			}
+
+		try {
+			iCourseOffering.setLastWeekToEnroll(Integer.parseInt(iNewEnrollmentDeadline.getValue()));
+		} catch (Exception e) {
+			iCourseOffering.setLastWeekToEnroll(null);
 		}
-		
-		if (iClassChangesDeadline.getValue() != null && !iClassChangesDeadline.getValue().isEmpty()) {
-			try {
-				iCourseOffering.setLastWeekToChange(Integer.parseInt(iClassChangesDeadline.getValue()));
-			} catch (Exception e) {
-				iCourseOffering.setLastWeekToChange(null);
-			}
+
+		try {
+			iCourseOffering.setLastWeekToChange(Integer.parseInt(iClassChangesDeadline.getValue()));
+		} catch (Exception e) {
+			iCourseOffering.setLastWeekToChange(null);
 		}
-		
-		if (iCourseDropDeadline.getValue() != null && !iCourseDropDeadline.getValue().isEmpty()) {
-			try {
-				iCourseOffering.setLastWeekToDrop(Integer.parseInt(iCourseDropDeadline.getValue()));
-			} catch (Exception e) {
-				iCourseOffering.setLastWeekToDrop(null);
-			}
+
+		try {
+			iCourseOffering.setLastWeekToDrop(Integer.parseInt(iCourseDropDeadline.getValue()));
+		} catch (Exception e) {
+			iCourseOffering.setLastWeekToDrop(null);
 		}
 		
 		iCourseOffering.setNotes(iRequestsNotes.getWidget().getValue());
 		
-		if (iConsent.getWidget().getSelectedValue() != null && iConsent.getWidget().getSelectedValue() != "none") {
+		if (iConsent.getWidget().getSelectedValue() != null && !iConsent.getWidget().getSelectedValue().equals("none")) {
 			iCourseOffering.setConsent(new Long(iConsent.getWidget().getSelectedValue()));
 		}
 		
-		if (iCredit.getWidget().getSelectedValue() != null && iCredit.getWidget().getSelectedValue() != "select") {
+		if (iCredit.getWidget().getSelectedValue() != null && !iCredit.getWidget().getSelectedValue().equals("select")) {
 			iCourseOffering.setCreditFormat(iCredit.getWidget().getSelectedValue());
 			iCourseOffering.setCreditType(new Long(iCreditType.getWidget().getSelectedValue()));
 			iCourseOffering.setCreditUnitType(new Long(iCreditUnitType.getWidget().getSelectedValue()));
@@ -2020,8 +2088,11 @@ public class CourseOfferingEdit extends Composite {
 				iCourseOffering.setMaxUnits((float) 0);
 			}
 			iCourseOffering.setFractionalIncrementsAllowed(iFractional.getValue());
+        } else {
+        	iCourseOffering.setCreditFormat(null);
         }
 		
+		iCourseOffering.clearInstructors();
 		Integer rowCount = iInstructorsTable.getRowCount();
 
 		for (int i = 1; i < rowCount; i++) {
@@ -2032,7 +2103,7 @@ public class CourseOfferingEdit extends Composite {
 			String responsibilityId = responsibilityDropdown.getWidget().getSelectedValue();
 			String percShare = shareTextBox.getWidget().getValue();
 
-			if (instructorId != "-") {
+			if (!"-".equals(instructorId)) {
 				CoordinatorInterface coordinator = new CoordinatorInterface();
 				coordinator.setInstructorId(instructorId);
 				coordinator.setPercShare(percShare);
@@ -2041,25 +2112,31 @@ public class CourseOfferingEdit extends Composite {
 			}
 		}
 		
-		if (iCourseDemands.getWidget().getSelectedValue() == "none") {
-			iCourseOffering.setDemandOfferingId(null);
-		} else {
-			iCourseOffering.setDemandOfferingId(new Long (iCourseDemands.getWidget().getSelectedValue()));
-		}
-		
-		if (iAllowAlternativeCourseOfferings) {
-			if (iAlternativeCourseOfferings.getWidget().getSelectedValue() == "none") {
-				iCourseOffering.setAlternativeCourseOfferingId(null);
+		if (iCourseDemands.getWidget().getSelectedValue() != null) {
+			if ("none".equals(iCourseDemands.getWidget().getSelectedValue())) {
+				iCourseOffering.setDemandOfferingId(null);
 			} else {
-				iCourseOffering.setAlternativeCourseOfferingId(new Long (iAlternativeCourseOfferings.getWidget().getSelectedValue()));
+				iCourseOffering.setDemandOfferingId(new Long (iCourseDemands.getWidget().getSelectedValue()));
+			}
+		}
+
+		if (iAllowAlternativeCourseOfferings) {
+			if (iAlternativeCourseOfferings.getWidget().getSelectedValue() != null) {
+				if ("none".equals(iAlternativeCourseOfferings.getWidget().getSelectedValue())) {
+					iCourseOffering.setAlternativeCourseOfferingId(null);
+				} else {
+					iCourseOffering.setAlternativeCourseOfferingId(new Long (iAlternativeCourseOfferings.getWidget().getSelectedValue()));
+				}
 			}
 		}
 		
 		if (iCoursesFundingDepartmentsEnabled) {
-			if (iFundingDepartment.getWidget().getSelectedValue() == "none") {
-				iCourseOffering.setFundingDepartmentId(null);
-			} else {
-				iCourseOffering.setFundingDepartmentId(new Long (iFundingDepartment.getWidget().getSelectedValue()));
+			if (iFundingDepartment.getWidget().getSelectedValue() != null) {
+				if ("none".equals(iFundingDepartment.getWidget().getSelectedValue())) {
+					iCourseOffering.setFundingDepartmentId(null);
+				} else {
+					iCourseOffering.setFundingDepartmentId(new Long (iFundingDepartment.getWidget().getSelectedValue()));
+				}
 			}
 		}
 		
@@ -2068,7 +2145,7 @@ public class CourseOfferingEdit extends Composite {
 		}
 		
 		if (iWaitListing.getWidget().getSelectedValue() != null) {
-			if (iWaitListing.getWidget().getSelectedValue() == "") {
+			if (iWaitListing.getWidget().getSelectedValue().isEmpty()) {
 				iCourseOffering.setWaitList(null);
 			} else {
 				iCourseOffering.setWaitList("true".equalsIgnoreCase(iWaitListing.getWidget().getSelectedValue()));
@@ -2078,7 +2155,7 @@ public class CourseOfferingEdit extends Composite {
 		}
 		
 		if (iCourseType.getWidget().getSelectedValue() != null) {
-			if (iCourseType.getWidget().getSelectedValue() == "") {
+			if (iCourseType.getWidget().getSelectedValue().isEmpty()) {
 				iCourseOffering.setCourseTypeId(null);
 			} else {
 				iCourseOffering.setCourseTypeId(new Long (iCourseType.getWidget().getSelectedValue()));
@@ -2114,7 +2191,7 @@ public class CourseOfferingEdit extends Composite {
 			//Subject Area Check
 			String subjectAreaId = iSubjectArea.getWidget().getSelectedValue();
 			
-			if (subjectAreaId == null || subjectAreaId == "0") {
+			if (subjectAreaId == null || subjectAreaId.equals("0")) {
 				iSubjectArea.setErrorHint(MESSAGES.errorSubjectRequired());
 				iTitleAndButtons.setErrorMessage(MESSAGES.errorSubjectRequired());
 				ok = false;
@@ -2123,7 +2200,7 @@ public class CourseOfferingEdit extends Composite {
 		
 		if (courseNumber == null || courseNumber.trim().length() == 0) {
 			iCourseNumber.setErrorHint(MESSAGES.errorCourseNumberIsEmpty());
-			if (ok) { //Why this??
+			if (ok) {
 				iTitleAndButtons.setErrorMessage(MESSAGES.errorCourseNumberIsEmpty());
 			}
 			ok = false;
@@ -2151,25 +2228,21 @@ public class CourseOfferingEdit extends Composite {
 
 		for (int i = 1; i < rowCount; i++) {
 			UniTimeWidget<ListBox> instructorDropdown = (UniTimeWidget<ListBox>) iInstructorsTable.getWidget(i, 0);
-			UniTimeWidget<UniTimeTextBox> shareTextBox = (UniTimeWidget<UniTimeTextBox>) iInstructorsTable.getWidget(i, 1);
 			UniTimeWidget<ListBox> responsibilitiesDropdown = (UniTimeWidget<ListBox>) iInstructorsTable.getWidget(i, 2);
 			
 			String instructorId = instructorDropdown.getWidget().getSelectedValue();
 			String responsibilityId = responsibilitiesDropdown.getWidget().getSelectedValue();
-			String percShare = shareTextBox.getWidget().getValue();
 			
-			if (instructorId == "-") {
+			if (instructorId.equals("-")) {
 				continue;
 			}
 
 			for (int j = i + 1; j < rowCount; j++) {
 				UniTimeWidget<ListBox> instructorDropdown2 = (UniTimeWidget<ListBox>) iInstructorsTable.getWidget(j, 0);
-				UniTimeWidget<UniTimeTextBox> shareTextBox2 = (UniTimeWidget<UniTimeTextBox>) iInstructorsTable.getWidget(j, 1);
 				UniTimeWidget<ListBox> responsibilitiesDropdown2 = (UniTimeWidget<ListBox>) iInstructorsTable.getWidget(j, 2);
 				
 				String instructorId2 = instructorDropdown2.getWidget().getSelectedValue();
 				String responsibilityId2 = responsibilitiesDropdown2.getWidget().getSelectedValue();
-				String percShare2 = shareTextBox2.getWidget().getValue();
 
 				if (instructorId.equals(instructorId2) && responsibilityId.equals(responsibilityId2)) {
 					iTitleAndButtons.setErrorMessage(MESSAGES.errorDuplicateCoordinator());
