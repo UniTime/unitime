@@ -1811,9 +1811,6 @@ public class WebInstructionalOfferingTableBuilder {
     		if (isShowLms()) {
                 row.addContent(initNormalCell("", isEditable));			
     		}
-    		if (isShowFundingDepartment()) {
-                row.addContent(initNormalCell("", isEditable));			
-    		}
 	    
 	        table.addContent(row);
 	        hasConfig = true;
@@ -2372,7 +2369,6 @@ public class WebInstructionalOfferingTableBuilder {
 		} else {
 			setFilterWaitlist(null);
 		}
-		setShowFundingDepartment(form.getFundingDepartment());
 	}
 	
 	protected void setVisibleColumns(ArrayList<String> columns){

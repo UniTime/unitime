@@ -399,13 +399,18 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 			    }
 	    	}
 	    }
-
-	    ActionRedirect redirect = new ActionRedirect(mapping.findForward("showCourseOfferingEdit"));
-        redirect.addParameter("op", MSG.actionAddCourseOffering());
-        if (subjAreaId != null)
-        	redirect.addParameter("subjAreaId", subjAreaId.toString());
-        redirect.addParameter("courseNbr", courseNbr);
-        return redirect;
+	    
+	    if (ApplicationProperty.LegacyCourseEdit.isTrue()) {
+	    	ActionRedirect redirect = new ActionRedirect(mapping.findForward("showCourseOfferingEdit"));
+	        redirect.addParameter("op", MSG.actionAddCourseOffering());
+	        if (subjAreaId != null)
+	        	redirect.addParameter("subjAreaId", subjAreaId.toString());
+	        redirect.addParameter("courseNbr", courseNbr);
+	        return redirect;
+	    } else {
+	    	response.sendRedirect("gwt.jsp?page=courseOffering&subjArea=" + (subjAreaId == null ? "" : subjAreaId) + "&courseNbr=" + courseNbr + "&op=addCourseOffering");
+	    	return null;
+	    }
 	}
 	
 	public static void setLastInstructionalOffering(SessionContext sessionContext, InstructionalOffering offering) {

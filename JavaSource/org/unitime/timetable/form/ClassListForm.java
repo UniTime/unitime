@@ -185,7 +185,6 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 		exams = new Boolean(false);		
 		instructorAssignment = new Boolean(false);
 		lms = new Boolean(false);
-		fundingDepartment = new Boolean(false);
 		includeCancelledClasses = false;
 		filterNeedInstructor = false;
 		
