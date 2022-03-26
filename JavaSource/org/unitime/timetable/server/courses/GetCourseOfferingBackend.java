@@ -1,3 +1,22 @@
+/*
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+*/
 package org.unitime.timetable.server.courses;
 
 import java.util.Map;
@@ -34,18 +53,6 @@ public class GetCourseOfferingBackend implements GwtRpcImplementation<GetCourseO
 			context.checkPermission(request.getCourseOfferingId(), "CourseOffering", Right.EditCourseOffering);
 		}
 
-//		if (context.hasPermission(request.getCourseOfferingId(), "CourseOffering", Right.EditCourseOfferingNote)) {
-//    		updateNote = true;
-//    	}
-//    	if (context.hasPermission(request.getCourseOfferingId(), "CourseOffering", Right.EditCourseOfferingCoordinators)) {
-//    		updateCoordinators = true;
-//    	}
-//    	if (updateNote || updateCoordinators) {
-//    		limitedEdit = !context.hasPermission(request.getCourseOfferingId(), "CourseOffering", Right.EditCourseOffering);
-//    	} else {
-//    		context.checkPermission(request.getCourseOfferingId(), "CourseOffering", Right.EditCourseOffering);
-//    	}
-		
 		GetCourseOfferingResponse response = new GetCourseOfferingResponse();
 	
 		CourseOffering courseOffering = CourseOffering.findByUniqueId(request.getCourseOfferingId());
@@ -67,7 +74,7 @@ public class GetCourseOfferingBackend implements GwtRpcImplementation<GetCourseO
 			cof.setConsent(new Long(-1));
 			cof.setConsentText("");
 		}
-		//Set Credit
+
 		if (courseOffering.getCredit() != null) {
 			CourseCreditUnitConfig credit = courseOffering.getCredit();
 			cof.setCreditText(credit.creditText());
@@ -91,8 +98,6 @@ public class GetCourseOfferingBackend implements GwtRpcImplementation<GetCourseO
 		response.setWkChangeDefault(instructionalOffering.getSession().getLastWeekToChange());
 		response.setWkDropDefault(instructionalOffering.getSession().getLastWeekToDrop());
 		response.setWeekStartDayOfWeek(Localization.getDateFormat("EEEE").format(instructionalOffering.getSession().getSessionBeginDateTime()));
-
-		//Demands?
 		
 		if (courseOffering.getDemandOffering() != null) {
 			cof.setDemandOfferingId(courseOffering.getDemandOffering().getUniqueId());
@@ -103,7 +108,6 @@ public class GetCourseOfferingBackend implements GwtRpcImplementation<GetCourseO
 			cof.setAlternativeCourseOfferingId(courseOffering.getAlternativeOffering().getUniqueId());
 		}
 		
-		//Funding Dept
 		if (courseOffering.getFundingDept() != null) {
 			cof.setFundingDepartmentId(courseOffering.getFundingDept().getUniqueId());
 		}
@@ -116,10 +120,7 @@ public class GetCourseOfferingBackend implements GwtRpcImplementation<GetCourseO
 		if (courseOffering.getCourseType() != null) {
 			cof.setCourseTypeId(courseOffering.getCourseType().getUniqueId());
 		}
-		
-		
-		//Coordinators
-		
+
 		for (OfferingCoordinator coordinator: new TreeSet<OfferingCoordinator>(instructionalOffering.getOfferingCoordinators())) {
 			CoordinatorInterface coordinatorObject = new CoordinatorInterface();
 			coordinatorObject.setInstructorId(coordinator.getInstructor().getUniqueId().toString());
@@ -155,8 +156,7 @@ public class GetCourseOfferingBackend implements GwtRpcImplementation<GetCourseO
 		} catch (Exception e) {}
 
 		cof.setIoNotOffered(instructionalOffering.getNotOffered());
-		
-		//Overrides?
+
 		cof.clearCourseOverrides();
 		for (OverrideType override: courseOffering.getDisabledOverrides()) {
 			cof.addCourseOverride(override.getUniqueId().toString());

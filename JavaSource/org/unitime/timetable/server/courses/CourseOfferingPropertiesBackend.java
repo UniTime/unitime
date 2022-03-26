@@ -1,3 +1,22 @@
+/*
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+*/
 package org.unitime.timetable.server.courses;
 
 import java.util.ArrayList;
@@ -13,8 +32,8 @@ import java.util.logging.Logger;
 import org.hibernate.Query;
 import org.hibernate.criterion.Order;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.events.EventAction.EventContext;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
@@ -92,11 +111,9 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 			response.setWeekStartDayOfWeek(Localization.getDateFormat("EEEE").format(session.getSessionBeginDateTime()));
 		}
 		
-		List<CourseOffering> list = new ArrayList<CourseOffering>();
 		int j = 0;
 		Long tempSubjId = new Long(0);
 		
-		//Does this still work?
 		for (SubjectArea subject: SubjectArea.getUserSubjectAreas(context.getUser())) {
 			if (context.hasPermission(subject, Right.AddCourseOffering)) {
 				SubjectAreaInterface subjectArea = new SubjectAreaInterface();
@@ -109,7 +126,6 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 				}
 				
 				j++;
-
 			}
 		}
 
@@ -150,7 +166,14 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 			responsibility.setLabel(teachingResponsibility.getLabel());
 			response.addResponsibility(responsibility);
 		}
-
+		
+		TeachingResponsibility tr = TeachingResponsibility.getDefaultCoordinatorTeachingResponsibility();
+        if (tr != null) {
+        	response.setDefaultTeachingResponsibilityId(tr.getUniqueId().toString());
+        } else {
+        	response.setDefaultTeachingResponsibilityId("");
+        }
+        	
 		if (request.getSubjAreaId() == null) {
 			request.setSubjAreaId(tempSubjId);
 		}
@@ -192,8 +215,6 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 				response.addInstructor(instructorObject);
 			}
 
-		    //Funding department stuff
-		    
 		    HashMap<Long, String> fundingDeptMap = new HashMap<>();
 
 		    Department subjectFundingDepartment = subjectArea.getFundingDept();
@@ -201,7 +222,7 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 		    if (subjectFundingDepartment != null) {		    	
 		    	fundingDeptMap.put(subjectFundingDepartment.getUniqueId(), subjectFundingDepartment.getName());
 
-		    	if (subjectFundingDepartment.getUniqueId() != subjectDepartment.getUniqueId()) {
+		    	if (!subjectFundingDepartment.getUniqueId().equals(subjectDepartment.getUniqueId())) {
 			    	fundingDeptMap.put(subjectDepartment.getUniqueId(), subjectDepartment.getName());
 		    	}
 		    	
@@ -218,7 +239,7 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 		    	Iterator iterator = courseOfferings.iterator();
 		    	while (iterator.hasNext()) {
 		    		CourseOffering childCourseOffering = (CourseOffering) iterator.next();
-		    		Department fundingDept = childCourseOffering.getSubjectArea().getFundingDept(); //TODO do we need to get effective if this is null?
+		    		Department fundingDept = childCourseOffering.getSubjectArea().getFundingDept();
 		    		if (fundingDept != null) {
 				    	fundingDeptMap.put(fundingDept.getUniqueId(), fundingDept.getName());
 		    		}
@@ -274,7 +295,7 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 		if (ApplicationProperty.CourseOfferingNumberMustBeUnique.isTrue()){
 			courseOfferingNumberMustBeUnique = true;
 			if (request.getCourseNumber() != null && request.getSubjAreaId() != null) {
-				CourseOffering course = CourseOffering.findBySessionSubjAreaIdCourseNbr(response.getAcademicSession().getId(), request.getSubjAreaId(), request.getCourseNumber().toString());
+				CourseOffering course = CourseOffering.findBySessionSubjAreaIdCourseNbr(response.getAcademicSession().getId(), request.getSubjAreaId(), request.getCourseNumber());
 				if (course != null) {
 					response.setInstructionalOfferingId(course.getInstructionalOffering().getUniqueId().toString());
 				} else {
@@ -291,7 +312,7 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 		response.setCourseOfferingNumberUpperCase(courseOfferingNumberUpperCase);
 		response.setCoursesFundingDepartmentsEnabled(ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue());
 
-		Boolean allowAlternativeCourseOfferings = ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue(); //true;
+		Boolean allowAlternativeCourseOfferings = ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue();
 		response.setAllowAlternativeCourseOfferings(allowAlternativeCourseOfferings);
 		
 		String courseUrlProvider = ApplicationProperty.CustomizationCourseLink.value();
@@ -307,7 +328,7 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 			}
 		});
 
-		for (CourseOffering co: courseOfferingsDemand) { //TODO
+		for (CourseOffering co: courseOfferingsDemand) {
 			CourseOfferingInterface courseOffering = new CourseOfferingInterface();
 			courseOffering.setId(co.getUniqueId());
 			courseOffering.setLabel(co.getCourseNameWithTitle());
@@ -318,14 +339,13 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 			List<CourseOffering> altCourseOfferings = setupCourseOfferings(context, new CourseFilter() {
 				@Override
 				public boolean accept(CourseOffering course) {
-					return !course.getInstructionalOffering().isNotOffered(); //&& !course.equals(co); TODO
+					return !course.getInstructionalOffering().isNotOffered();
 				}
 			});
 
-			for (CourseOffering co: altCourseOfferings) { //TODO
+			for (CourseOffering co: altCourseOfferings) {
 				CourseOfferingInterface courseOffering = new CourseOfferingInterface();
 				courseOffering.setId(co.getUniqueId());
-				//courseOffering.setAbbreviation(co.get);
 				courseOffering.setLabel(co.getCourseNameWithTitle());
 				response.addAltCourseOffering(courseOffering);
 			}
@@ -337,8 +357,7 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 			courseTypeObject.setLabel(courseType.getLabel());
 			response.addCourseType(courseTypeObject);
 		}
-		
-		//Override Types
+
 		for (OverrideType overrideType: OverrideTypeDAO.getInstance().findAll()) {
 			OverrideTypeInterface overrideTypeObject = new OverrideTypeInterface();
 			overrideTypeObject.setId(overrideType.getUniqueId());

@@ -768,7 +768,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					if (fundingDepartment == null) {
 						throw new Exception("No department found for " + fundingDepartmentCode);
 					}
-					if (newCourseOffering.getSubjectArea().getFundingDept().getUniqueId() != fundingDepartment.getUniqueId()) {
+					if (newCourseOffering.getSubjectArea().getFundingDept() == null || (newCourseOffering.getSubjectArea().getFundingDept().getUniqueId().equals(fundingDepartment.getUniqueId()))) {
 						newCourseOffering.setFundingDept(fundingDepartment);
 					} else {
 						newCourseOffering.setFundingDept(null);
@@ -1417,11 +1417,9 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 							addNote("\tadded funding department: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
 							changed = true;
 						} else if (oco.getFundingDept() != null && nco.getFundingDept() == null){
-							if (!incremental) {
-								oco.setFundingDept(null);
-								addNote("\tremoved funding department: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
-								changed = true;
-							}
+							oco.setFundingDept(null);
+							addNote("\tremoved funding department: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
+							changed = true;
 						} else if (oco.getFundingDept() != null && nco.getFundingDept() != null && !oco.getFundingDept().equals(nco.getFundingDept())){
 							oco.setFundingDept(nco.getFundingDept());
 							addNote("\tchanged funding department: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
@@ -1786,8 +1784,6 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						changed = true;
 					}
 					
-					//TODO
-					
 					if ((clazz.getSchedulePrintNote() != null && !clazz.getSchedulePrintNote().equals(scheduleNote))
 							 || (clazz.getSchedulePrintNote() == null && scheduleNote != null)){
 						clazz.setSchedulePrintNote(scheduleNote);
@@ -1796,7 +1792,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					}
 					if ((clazz.getFundingDept() != null && !clazz.getFundingDept().equals(newFundingDepartment))
 							 || (clazz.getFundingDept() == null && newFundingDepartment != null)){
-						if (clazz.getEffectiveFundingDept() != newFundingDepartment) {
+						if (!clazz.getEffectiveFundingDept().equals(newFundingDepartment)) {
 							clazz.setFundingDept(newFundingDepartment);
 							addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' funding department changed");
 							changed = true;
