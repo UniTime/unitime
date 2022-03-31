@@ -3313,6 +3313,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Failed to load preferences: {0}")
 	String failedToLoadPreferences(String reason);
 	
+	@DefaultMessage("Student scheduling preferences have been updated.")
+	String infoSchedulingPreferencesUpdated();
+	
 	@DefaultMessage("From {0}")
 	String schedulingPrefClassesFrom(String date);
 	

@@ -7250,3 +7250,9 @@ unitime-RoomSharingWidget .legend .blank {
 	padding-right: 5px;
 	padding-bottom: 2px;
 }
+
+.unitime-StudentSchedulingPreferencesDialog .custom-note {
+	text-align: justify;
+	padding-left: 5px;
+	padding-right: 5px;
+}

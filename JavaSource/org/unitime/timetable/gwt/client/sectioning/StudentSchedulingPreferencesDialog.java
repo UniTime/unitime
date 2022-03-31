@@ -38,6 +38,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.ui.AbsolutePanel;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.ListBox;
 
 /**
@@ -55,6 +56,7 @@ public class StudentSchedulingPreferencesDialog extends UniTimeDialogBox impleme
 	private ListBox iModality, iBackToBack;
 	private P iModalityDesc, iBackToBackDesc;
 	private StudentSchedulingPreferencesInterface iPreferences;
+	private HTML iCustomNote;
 
 	public StudentSchedulingPreferencesDialog(AcademicSessionProvider sessionProvider) {
 		super(true, false);
@@ -110,6 +112,9 @@ public class StudentSchedulingPreferencesDialog extends UniTimeDialogBox impleme
 		m.add(iDateTo);
 		P desc = new P("description"); desc.setText(MESSAGES.propSchedulingPrefDatesDescription()); m.add(desc);
 		iDatesLine = iForm.addRow(MESSAGES.propSchedulingPrefDates(), m);
+		
+		iCustomNote = new HTML(); iCustomNote.addStyleName("custom-note"); iCustomNote.setText(""); iCustomNote.setVisible(false);
+		iForm.addRow(iCustomNote);
 		
 		iFooter = new UniTimeHeaderPanel();
 		iFooter.addButton("apply", MESSAGES.buttonSchedulingPrefApply(), new ClickHandler() {
@@ -177,11 +182,11 @@ public class StudentSchedulingPreferencesDialog extends UniTimeDialogBox impleme
 		iPreferences = value;
 		iForm.getRowFormatter().setVisible(iDatesLine, iPreferences.isAllowClassDates());
 		iModality.clear();
+		iModality.addItem(MESSAGES.itemSchedulingModalityNoPreference(), "NoPreference");
 		iModality.addItem(MESSAGES.itemSchedulingModalityPreferFaceToFace(), "DiscouragedOnline");
 		iModality.addItem(MESSAGES.itemSchedulingModalityPreferOnline(), "PreferredOnline");
 		if (iPreferences.isAllowRequireOnline())
 			iModality.addItem(MESSAGES.itemSchedulingModalityRequireOnline(), "RequiredOnline");
-		iModality.addItem(MESSAGES.itemSchedulingModalityNoPreference(), "NoPreference");
 		if (iPreferences.getClassModality() != null)
 			for (int i = 0; i < iModality.getItemCount(); i++)
 				if (iPreferences.getClassModality().name().equals(iModality.getValue(i))) {
@@ -199,5 +204,12 @@ public class StudentSchedulingPreferencesDialog extends UniTimeDialogBox impleme
 		}
 		iDateFrom.setValueInServerTimeZone(iPreferences.isAllowRequireOnline() ? iPreferences.getClassDateFrom() : null);
 		iDateTo.setValueInServerTimeZone(iPreferences.isAllowRequireOnline() ? iPreferences.getClassDateTo() : null);
+		if (iPreferences.hasCustomNote()) {
+			iCustomNote.setHTML(iPreferences.getCustomNote());
+			iCustomNote.setVisible(true);
+		} else {
+			iCustomNote.setHTML("");
+			iCustomNote.setVisible(false);
+		}
 	}
 }

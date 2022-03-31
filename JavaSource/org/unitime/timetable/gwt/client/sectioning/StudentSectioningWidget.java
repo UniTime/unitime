@@ -485,7 +485,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							super.doApply();
 							iSectioningService.setStudentSchedulingPreferences(iContext, getValue(), new AsyncCallback<Boolean>() {
 								@Override
-								public void onSuccess(Boolean result) {}
+								public void onSuccess(Boolean result) {
+									iStatus.info(MESSAGES.infoSchedulingPreferencesUpdated());
+								}
 								@Override
 								public void onFailure(Throwable caught) {
 									iStatus.error(MESSAGES.failedToUpdatePreferences(caught.getMessage()), caught);

@@ -2539,6 +2539,11 @@ public enum ApplicationProperty {
 	OnlineSchedulingStudentPreferencesDatesAllowed("unitime.enrollment.studentPrefs.datesAllowed"),
 	
 	@Type(Boolean.class)
+	@Description("Online Student Scheduling Preferences: custom note to be shown on the dialog (may contain HTML elements)")
+	@Since(4.6)
+	OnlineSchedulingStudentPreferencesNote("unitime.enrollment.studentPrefs.customNote"),
+	
+	@Type(Boolean.class)
 	@DefaultValue("false")
 	@Description("Online Student Scheduling Preferences: allow require online (typically only enabled for Summer term)")
 	@Since(4.6)

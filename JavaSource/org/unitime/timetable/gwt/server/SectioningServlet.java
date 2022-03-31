@@ -4135,6 +4135,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		ApplicationProperties.setSessionId(cx.getSessionId());
 		ret.setAllowClassDates(ApplicationProperty.OnlineSchedulingStudentPreferencesDatesAllowed.isTrue());
 		ret.setAllowRequireOnline(ApplicationProperty.OnlineSchedulingStudentPreferencesReqOnlineAllowed.isTrue());
+		ret.setCustomNote(ApplicationProperty.OnlineSchedulingStudentPreferencesNote.value());
 		Student student = StudentDAO.getInstance().get(cx.getStudentId());
 		if (student != null) {
 			ret.setClassModality(student.getPreferredClassModality());

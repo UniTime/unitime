@@ -34,6 +34,7 @@ public class StudentSchedulingPreferencesInterface implements IsSerializable, Se
 	private boolean iAllowClassDates = true;
 	private boolean iAllowRequireOnline = true;
 	private Date iClassDateFrom, iClassDateTo;
+	private String iCustomNote = null;
 	
 	public StudentSchedulingPreferencesInterface() {}
 	public StudentSchedulingPreferencesInterface(StudentSchedulingPreferencesInterface pref) {
@@ -43,6 +44,7 @@ public class StudentSchedulingPreferencesInterface implements IsSerializable, Se
 		iAllowRequireOnline = pref.iAllowRequireOnline;
 		iClassDateFrom = pref.iClassDateFrom;
 		iClassDateTo = pref.iClassDateTo;
+		iCustomNote = pref.iCustomNote;
 	}
 	
 	public ClassModality getClassModality() { return iClassModality; }
@@ -61,6 +63,10 @@ public class StudentSchedulingPreferencesInterface implements IsSerializable, Se
 	
 	public Date getClassDateTo() { return iClassDateTo; }
 	public void setClassDateTo(Date toDate) { iClassDateTo = toDate; }
+	
+	public boolean hasCustomNote() { return iCustomNote != null && !iCustomNote.isEmpty(); }
+	public String getCustomNote() { return iCustomNote; }
+	public void setCustomNote(String note) { iCustomNote = note; }
 	
 	public static enum ClassModality implements IsSerializable, Serializable {
 		NoPreference, DiscouragedOnline, PreferredOnline, RequiredOnline,
