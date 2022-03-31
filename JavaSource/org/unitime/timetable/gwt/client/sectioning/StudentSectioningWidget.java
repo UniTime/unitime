@@ -229,7 +229,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				if (iTotalCreditRequests != null) {
 					iTotalCreditRequestsStatus.setVisible(false);
 					if (!isChanged() && iSavedRequest != null && iSavedRequest.getMaxCreditOverrideStatus() != null) {
-						String cw = (iSavedRequest.hasCreditWarning() ? iSavedRequest.getCreditWarning() : MESSAGES.creditWarning(iSavedRequest.getMaxCredit()));
+						String cw = (iSavedRequest.hasCreditWarning() ? iSavedRequest.getCreditWarning() : iSavedRequest.hasMaxCredit() ? MESSAGES.creditWarning(iSavedRequest.getMaxCredit()) : null);
 						String note = "";
 						if (iSavedRequest.hasRequestorNote())
 							note += "\n" + MESSAGES.requestNote(iSavedRequest.getRequestorNote());

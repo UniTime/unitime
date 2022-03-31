@@ -210,7 +210,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
     }
     
     public static XStudent loadStudent(org.unitime.timetable.model.Student s, Map<Long, List<XCourseRequest>> requestMap, OnlineSectioningServer server, OnlineSectioningHelper helper, WaitList.WaitListType resetWaitListType) {
-    	XStudent student = new XStudent(s, helper, server.getAcademicSession().getFreeTimePattern());
+    	XStudent student = new XStudent(s, helper, server.getAcademicSession().getFreeTimePattern(), server.getAcademicSession().getDatePatternFirstDate());
     	
     	for (Iterator<XRequest> i = student.getRequests().iterator(); i.hasNext(); ) {
     		XRequest request = i.next();
@@ -287,7 +287,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
     }
     
     public static XStudent loadStudentNoCheck(org.unitime.timetable.model.Student s, OnlineSectioningServer server, OnlineSectioningHelper helper) {
-    	XStudent student = new XStudent(s, helper, server.getAcademicSession().getFreeTimePattern());
+    	XStudent student = new XStudent(s, helper, server.getAcademicSession().getFreeTimePattern(), server.getAcademicSession().getDatePatternFirstDate());
     	
     	for (Iterator<XRequest> i = student.getRequests().iterator(); i.hasNext(); ) {
     		XRequest request = i.next();

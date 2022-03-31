@@ -132,7 +132,7 @@ public class DatabaseServer extends AbstractLockingServer {
 				"where s.session.uniqueId = :sessionId")
 				.setLong("sessionId", getAcademicSession().getUniqueId())
 				.setCacheable(true).list()) {
-			XStudent student = new XStudent(s, getCurrentHelper(), getAcademicSession().getFreeTimePattern());
+			XStudent student = new XStudent(s, getCurrentHelper(), getAcademicSession().getFreeTimePattern(), getAcademicSession().getDatePatternFirstDate());
 			if (matcher == null || matcher.match(student))
 				ret.add(student);
 		}
@@ -163,7 +163,7 @@ public class DatabaseServer extends AbstractLockingServer {
                 "left join fetch cr.classWaitLists as cwl " + 
                 "left join fetch s.classEnrollments as e " +
 				"where s.uniqueId = :studentId").setLong("studentId", studentId).setCacheable(true).uniqueResult();
-		return s == null ? null : new XStudent(s, getCurrentHelper(), getAcademicSession().getFreeTimePattern());
+		return s == null ? null : new XStudent(s, getCurrentHelper(), getAcademicSession().getFreeTimePattern(), getAcademicSession().getDatePatternFirstDate());
 	}
 
 	@Override

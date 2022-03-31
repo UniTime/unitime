@@ -227,6 +227,7 @@ import org.unitime.timetable.onlinesectioning.status.db.DbFindOnlineSectioningLo
 import org.unitime.timetable.onlinesectioning.status.db.DbFindStudentInfoAction;
 import org.unitime.timetable.onlinesectioning.updates.ApproveEnrollmentsAction;
 import org.unitime.timetable.onlinesectioning.updates.ChangeStudentGroup;
+import org.unitime.timetable.onlinesectioning.updates.ChangeStudentPreferences;
 import org.unitime.timetable.onlinesectioning.updates.ChangeStudentStatus;
 import org.unitime.timetable.onlinesectioning.updates.EnrollStudent;
 import org.unitime.timetable.onlinesectioning.updates.MassCancelAction;
@@ -1789,7 +1790,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								SpecialRegistrationProvider sp = Customization.SpecialRegistrationProvider.getProvider();
 								OnlineSectioningHelper helper = new OnlineSectioningHelper(hibSession, currentUser());
 								server = getServerInstance(student.getSession().getUniqueId(), true);
-								ret.setSpecialRegistrations(sp.retrieveAllRegistrations(server, helper, new XStudent(student, helper, server.getAcademicSession().getFreeTimePattern())));
+								ret.setSpecialRegistrations(sp.retrieveAllRegistrations(server, helper, new XStudent(student, helper, server.getAcademicSession().getFreeTimePattern(), server.getAcademicSession().getDatePatternFirstDate())));
 							} catch (Exception e) {}
 						}
 						
@@ -4148,13 +4149,18 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	public Boolean setStudentSchedulingPreferences(StudentSectioningContext cx, StudentSchedulingPreferencesInterface preferences) throws SectioningException, PageAccessException {
 		checkContext(cx);
 		if (cx.getStudentId() == null) throw new SectioningException(MSG.exceptionNoStudent());
-		Student student = StudentDAO.getInstance().get(cx.getStudentId());
-		if (student != null) {
-			student.setPreferredClassModality(preferences.getClassModality());
-			student.setPreferredScheduleGaps(preferences.getScheduleGaps());
-			student.setClassStartDate(preferences.getClassDateFrom());
-			student.setClassEndDate(preferences.getClassDateTo());
-			StudentDAO.getInstance().update(student);
+		OnlineSectioningServer server = getServerInstance(cx.getSessionId(), true);
+		if (server != null) {
+			server.execute(server.createAction(ChangeStudentPreferences.class).forStudent(cx.getStudentId()).withPreferences(preferences), currentUser(cx));
+		} else { 
+			Student student = StudentDAO.getInstance().get(cx.getStudentId());
+			if (student != null) {
+				student.setPreferredClassModality(preferences.getClassModality());
+				student.setPreferredScheduleGaps(preferences.getScheduleGaps());
+				student.setClassStartDate(preferences.getClassDateFrom());
+				student.setClassEndDate(preferences.getClassDateTo());
+				StudentDAO.getInstance().update(student);
+			}
 		}
 		return false;
 	}

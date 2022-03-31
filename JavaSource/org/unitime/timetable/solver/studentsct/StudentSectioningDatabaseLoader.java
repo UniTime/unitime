@@ -241,6 +241,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private float iMinDefaultCredit = -1f;
     private Date iClassesFixedDate = null;
     private int iClassesFixedDateIndex = 0;
+    private Date iFirstDay = null;
     private int iDayOfWeekOffset = 0;
     private Query iOnlineOnlyStudentQuery = null;
     private String iOnlineOnlyCourseNameRegExp;
@@ -456,16 +457,16 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             if (session==null) throw new Exception("Session "+iInitiative+" "+iTerm+iYear+" not found!");
         	ApplicationProperties.setSessionId(session.getUniqueId());
         	
+        	iFirstDay = DateUtils.getDate(1, session.getPatternStartMonth(), session.getSessionStartYear());
+    		iDayOfWeekOffset = Constants.getDayOfWeek(iFirstDay);
+    		getModel().setDayOfWeekOffset(iDayOfWeekOffset);
+    				
         	if (iClassesFixedDate != null) {
-        		Date firstDay = DateUtils.getDate(1, session.getPatternStartMonth(), session.getSessionStartYear());
-        		iClassesFixedDateIndex = Days.daysBetween(new LocalDate(firstDay), new LocalDate(iClassesFixedDate)).getDays();
-        		iDayOfWeekOffset = Constants.getDayOfWeek(firstDay);
+        		iClassesFixedDateIndex = Days.daysBetween(new LocalDate(iFirstDay), new LocalDate(iClassesFixedDate)).getDays();
         		iProgress.info("Classes Fixed Date: " + iClassesFixedDate + " (date pattern index: " + iClassesFixedDateIndex + ")");
         	}
         	if (iClassesPastDate != null) {
-        		Date firstDay = DateUtils.getDate(1, session.getPatternStartMonth(), session.getSessionStartYear());
-        		iClassesPastDateIndex = Days.daysBetween(new LocalDate(firstDay), new LocalDate(iClassesPastDate)).getDays();
-        		iDayOfWeekOffset = Constants.getDayOfWeek(firstDay);
+        		iClassesPastDateIndex = Days.daysBetween(new LocalDate(iFirstDay), new LocalDate(iClassesPastDate)).getDays();
         		iProgress.info("Classes Past Date: " + iClassesPastDate + " (date pattern index: " + iClassesPastDateIndex + ")");
         	}
 
@@ -1422,6 +1423,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             	}
         	}
         }
+        if (s.getClassStartDate() != null)
+        	student.setClassFirstDate(Days.daysBetween(new LocalDate(iFirstDay), new LocalDate(s.getClassStartDate())).getDays());
+        if (s.getClassEndDate() != null)
+        	student.setClassLastDate(Days.daysBetween(new LocalDate(iFirstDay), new LocalDate(s.getClassEndDate())).getDays());
+        student.setBackToBackPreference(s.getBackToBackPreference());
+        student.setModalityPreference(s.getModalityPreference());
         if (iLoadStudentInfo) loadStudentInfo(student,s);
         if (iShortDistanceAccomodationReference != null)
         	for (StudentAccomodation ac: s.getAccomodations())
@@ -1837,7 +1844,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     						hasLimit = true;
     					}
 	           		}
-	           		if (!section.isEnabled()) hasDisabled = true;
+	           		if (!section.isEnabled(student)) hasDisabled = true;
 	           	}
 	           	if (enrl.getConfig().getLimit() >= 0 && enrl.getConfig().getLimit() < 1 + enrl.getConfig().getEnrollments(getAssignment()).size()) {
            			if (iTweakLimits) {
@@ -3167,7 +3174,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 				.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
 		long c0 = OnlineSectioningHelper.getCpuTime();
 		try {
-			CriticalCourses critical = iCriticalCoursesProvider.getCriticalCourses(iValidator, helper, new XStudent(s, helper, iFreeTimePattern));
+			CriticalCourses critical = iCriticalCoursesProvider.getCriticalCourses(iValidator, helper, new XStudent(s, helper, iFreeTimePattern, iDatePatternFirstDate));
 			boolean changed = false;
 			for (CourseDemand cd: s.getCourseDemands()) {
 				int crit = isCritical(cd, critical);

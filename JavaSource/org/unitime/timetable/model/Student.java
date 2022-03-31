@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.cpsolver.studentsct.model.Student.BackToBackPreference;
+import org.cpsolver.studentsct.model.Student.ModalityPreference;
 import org.hibernate.Query;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
@@ -519,7 +521,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     }
     
     public ClassModality getPreferredClassModality() {
-    	if (getSchedulePreference() == null) return ClassModality.DiscouragedOnline;
+    	if (getSchedulePreference() == null) return ClassModality.NoPreference;
     	return ClassModality.values()[getSchedulePreference()];
     }
     public void setPreferredClassModality(ClassModality modality) {
@@ -527,6 +529,14 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     		setSchedulePreference(null);
     	else
     		setSchedulePreference(modality.ordinal());
+    }
+    public ModalityPreference getModalityPreference() {
+    	switch(getPreferredClassModality()) {
+    	case DiscouragedOnline: return ModalityPreference.ONILNE_DISCOURAGED;
+    	case PreferredOnline: return ModalityPreference.ONLINE_PREFERRED;
+    	case RequiredOnline: return ModalityPreference.ONLINE_REQUIRED;
+    	default: return ModalityPreference.NO_PREFERENCE;
+    	}
     }
     
     public ScheduleGaps getPreferredScheduleGaps() {
@@ -538,5 +548,12 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     		setFreeTimeCategory(null);
     	else
     		setFreeTimeCategory(gaps.ordinal());
+    }
+    public BackToBackPreference getBackToBackPreference() {
+    	switch (getPreferredScheduleGaps()) {
+    	case DiscourageBackToBack: return BackToBackPreference.BTB_DISCOURAGED;
+    	case PreferBackToBack: return BackToBackPreference.BTB_PREFERRED;
+    	default: return BackToBackPreference.NO_PREFERENCE;
+    	}
     }
 }

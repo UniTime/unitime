@@ -253,7 +253,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
 				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasReqCredit = false, hasCredit = false, hasDistances = false, hasOverlaps = false,
 				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false, hasOverride = false, hasAdvisor = false,
-				hasAdvisedInfo = false, hasMinor = false, hasConc = false, hasDeg = false, hasProg = false, hasCamp = false;
+				hasAdvisedInfo = false, hasMinor = false, hasConc = false, hasDeg = false, hasProg = false, hasCamp = false, hasPref = false;
 		Set<String> groupTypes = new TreeSet<String>();
 		if (students != null)
 			for (ClassAssignmentInterface.StudentInfo e: students) {
@@ -287,6 +287,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 				if (e.getStudent().hasDegree()) hasDeg = true;
 				if (e.getStudent().hasProgram()) hasProg = true;
 				if (e.getStudent().hasCampus()) hasCamp = true;
+				if (e.hasPreference()) hasPref = true;
 			}
 		
 		List<String> header = new ArrayList<String>();
@@ -385,6 +386,9 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		
 		if (hasEmailed)
 			header.add(MESSAGES.colEmailTimeStamp());
+		
+		if (hasPref)
+			header.add(MESSAGES.colSchedulingPreference());
 		
 		out.printHeader(header.toArray(new String[header.size()]));
 		out.flush();
@@ -559,6 +563,8 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 					if (hasEmailed)
 						line.add("");
 				}
+				if (hasPref)
+					line.add(info.hasPreference() ? info.getPreference() : "");
 				out.printLine(line.toArray(new String[line.size()]));				
 			}
 		

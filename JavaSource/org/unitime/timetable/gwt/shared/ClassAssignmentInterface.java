@@ -1566,6 +1566,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Integer iOverrideNeeded, iTotalOverrideNeeded;
 		private Boolean iMyStudent;
 		private AdvisedInfoInterface iAdvised;
+		private String iPreference;
 		
 		public StudentInfo() {}
 		
@@ -1792,6 +1793,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public boolean isAdvised() { return iAdvised != null; }
 		public AdvisedInfoInterface getAdvisedInfo() { return iAdvised; }
 		public void setAdvisedInfo(AdvisedInfoInterface advised) { iAdvised = advised; }
+		
+		public boolean hasPreference() { return iPreference != null && !iPreference.isEmpty(); }
+		public void setPreference(String pref) { iPreference = pref; }
+		public String getPreference() { return iPreference; }
 	}
 
 	public static class SectioningAction implements IsSerializable, Serializable, Comparable<SectioningAction> {

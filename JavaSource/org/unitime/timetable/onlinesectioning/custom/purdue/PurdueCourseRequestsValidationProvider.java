@@ -373,6 +373,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		Integer CONF_BANNER = Integer.valueOf(1);
 		
 		OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig(), server.getOverExpectedCriterion());
+		model.setDayOfWeekOffset(server.getAcademicSession().getDayOfWeekOffset());
 		boolean linkedClassesMustBeUsed = server.getConfig().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
 		Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 		
@@ -381,6 +382,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		student.setName(original.getName());
 		student.setNeedShortDistances(original.hasAccomodation(server.getDistanceMetric().getShortDistanceAccommodationReference()));
 		student.setAllowDisabled(original.isAllowDisabled());
+		student.setClassFirstDate(original.getClassStartDate());
+		student.setClassLastDate(original.getClassEndDate());
+		student.setBackToBackPreference(original.getBackToBackPreference());
+		student.setModalityPreference(original.getModalityPreference());
 		Map<Long, Section> classTable = new HashMap<Long, Section>();
 		Set<XDistribution> distributions = new HashSet<XDistribution>();
 		Hashtable<CourseRequest, Set<Section>> preferredSections = new Hashtable<CourseRequest, Set<Section>>();
@@ -2238,11 +2243,12 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		if (!hasNotApprovedCourseRequestOverride(student) && !"true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.forceRevalidation", "false"))) return false;
 		
 		OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig(), server.getOverExpectedCriterion());
+		model.setDayOfWeekOffset(server.getAcademicSession().getDayOfWeekOffset());
 		boolean linkedClassesMustBeUsed = server.getConfig().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
 		Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 		
 		XStudent original = server.getStudent(student.getUniqueId());
-		if (original == null) original = new XStudent(student, helper, server.getAcademicSession().getFreeTimePattern());
+		if (original == null) original = new XStudent(student, helper, server.getAcademicSession().getFreeTimePattern(), server.getAcademicSession().getDatePatternFirstDate());
 		WaitListMode wlMode = student.getWaitListMode();
 		
 		Student s = new Student(student.getUniqueId());
@@ -2250,6 +2256,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		s.setName(original.getName());
 		s.setNeedShortDistances(original.hasAccomodation(server.getDistanceMetric().getShortDistanceAccommodationReference()));
 		s.setAllowDisabled(original.isAllowDisabled());
+		s.setClassFirstDate(original.getClassStartDate());
+		s.setClassLastDate(original.getClassEndDate());
+		s.setBackToBackPreference(original.getBackToBackPreference());
+		s.setModalityPreference(original.getModalityPreference());
 		Set<XDistribution> distributions = new HashSet<XDistribution>();
 		Hashtable<CourseRequest, Set<Section>> preferredSections = new Hashtable<CourseRequest, Set<Section>>();
 		Set<XCourseId> lcCourses = new HashSet<XCourseId>();
@@ -3040,6 +3050,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		Integer CONF_BANNER = Integer.valueOf(1);
 		
 		OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig(), server.getOverExpectedCriterion());
+		model.setDayOfWeekOffset(server.getAcademicSession().getDayOfWeekOffset());
 		boolean linkedClassesMustBeUsed = server.getConfig().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
 		Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 		
@@ -3048,6 +3059,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		student.setName(original.getName());
 		student.setNeedShortDistances(original.hasAccomodation(server.getDistanceMetric().getShortDistanceAccommodationReference()));
 		student.setAllowDisabled(original.isAllowDisabled());
+		student.setClassFirstDate(original.getClassStartDate());
+		student.setClassLastDate(original.getClassEndDate());
+		student.setBackToBackPreference(original.getBackToBackPreference());
+		student.setModalityPreference(original.getModalityPreference());
 		Map<Long, Section> classTable = new HashMap<Long, Section>();
 		Set<XDistribution> distributions = new HashSet<XDistribution>();
 		Hashtable<CourseRequest, Set<Section>> preferredSections = new Hashtable<CourseRequest, Set<Section>>();

@@ -33,6 +33,8 @@ import org.cpsolver.coursett.Constants;
 import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.util.DistanceMetric;
+import org.cpsolver.studentsct.model.Student.BackToBackPreference;
+import org.cpsolver.studentsct.model.Student.ModalityPreference;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.AdvisedInfoInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.StudentInfo;
@@ -65,6 +67,7 @@ import org.unitime.timetable.onlinesectioning.status.SectioningStatusFilterActio
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseLookup;
 import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbCourseRequestMatcher;
 import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbFindStudentInfoMatcher;
+import org.unitime.timetable.util.Formats;
 
 /**
  * @author Tomas Muller
@@ -395,6 +398,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					if (note != null) s.setNote(note.getTextNote());
 					s.setMyStudent(isMyStudent(student));
 					s.setAdvisedInfo(getAdvisedInfo(student, server, helper));
+					s.setPreference(getStudentSchedulingPreference(student, server, helper));
 				}
 				DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(student), helper.getStudentNameFormat(), lookup);
 				if (!crm.enrollment().isEmpty()) {
@@ -631,6 +635,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 				if (note != null) s.setNote(note.getTextNote());
 				s.setMyStudent(isMyStudent(student));
 				s.setAdvisedInfo(getAdvisedInfo(student, server, helper));
+				s.setPreference(getStudentSchedulingPreference(student, server, helper));
 				
 				ret.add(s);
 			}
@@ -749,6 +754,49 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 	
 	public boolean isConsentToDoCourse(CourseOffering course) {
 		return iCoursesIcanApprove != null && course.getConsentType() != null && iCoursesIcanApprove.contains(course.getUniqueId());
+	}
+	
+	public static String getStudentSchedulingPreference(Student student, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		String pref = null;
+		if (student.getModalityPreference() != null && student.getModalityPreference() != ModalityPreference.NO_PREFERENCE) {
+			switch(student.getModalityPreference()) {
+			case ONILNE_DISCOURAGED:
+				pref = (pref == null ? "" : pref + "\n") + MSG.itemSchedulingModalityPreferFaceToFace();
+				break;
+			case ONLINE_PREFERRED:
+				pref = (pref == null ? "" : pref + "\n") + MSG.itemSchedulingModalityPreferOnline();
+				break;
+			case ONLINE_REQUIRED:
+				pref = (pref == null ? "" : pref + "\n") + MSG.itemSchedulingModalityRequireOnline();
+				break;
+			}
+		}
+		if (student.getBackToBackPreference() != null && student.getBackToBackPreference() != BackToBackPreference.NO_PREFERENCE) {
+			switch(student.getBackToBackPreference()) {
+			case BTB_DISCOURAGED:
+				pref = (pref == null ? "" : pref + "\n") + MSG.itemSchedulingBackToBackDiscourage();
+				break;
+			case BTB_PREFERRED:
+				pref = (pref == null ? "" : pref + "\n") + MSG.itemSchedulingBackToBackPrefer();
+				break;
+			}
+		}
+		if (student.getClassStartDate() != null || student.getClassEndDate() != null) {
+			if (student.getClassStartDate() == null) {
+				pref = (pref == null ? "" : pref + "\n") + 
+						MSG.schedulingPrefClassesTo(Formats.getDateFormat(CONST.patternDateFormat()).format(student.getClassEndDate()));
+			} else if (student.getClassEndDate() == null) {
+				pref = (pref == null ? "" : pref + "\n") + 
+						MSG.schedulingPrefClassesFrom(Formats.getDateFormat(CONST.patternDateFormat()).format(student.getClassStartDate()));
+			} else {
+				pref = (pref == null ? "" : pref + "\n") + 
+						MSG.schedulingPrefClassesBetween(
+						Formats.getDateFormat(CONST.patternDateFormat()).format(student.getClassStartDate()),
+						Formats.getDateFormat(CONST.patternDateFormat()).format(student.getClassEndDate())
+						);
+			}
+		}
+		return pref;
 	}
 	
 	public static AdvisedInfoInterface getAdvisedInfo(Student student, OnlineSectioningServer server, OnlineSectioningHelper helper) {

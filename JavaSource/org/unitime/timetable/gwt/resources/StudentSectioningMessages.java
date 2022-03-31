@@ -208,6 +208,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("WL/Override")
 	String colWaitListAndAllowedOverrides();
 	
+	@DefaultMessage("Preference")
+	String colSchedulingPreference();
+	
 	/* Academic Session Selector messages
 	 */
 	@DefaultMessage("No academic session is selected.")
@@ -3309,4 +3312,13 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Failed to load preferences: {0}")
 	String failedToLoadPreferences(String reason);
+	
+	@DefaultMessage("From {0}")
+	String schedulingPrefClassesFrom(String date);
+	
+	@DefaultMessage("To {0}")
+	String schedulingPrefClassesTo(String date);
+	
+	@DefaultMessage("Between {0} and {1}")
+	String schedulingPrefClassesBetween(String fromDate, String toDate);
 }

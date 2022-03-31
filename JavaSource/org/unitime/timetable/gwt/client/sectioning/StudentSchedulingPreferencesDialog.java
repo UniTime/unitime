@@ -64,10 +64,10 @@ public class StudentSchedulingPreferencesDialog extends UniTimeDialogBox impleme
 		iForm = new SimpleForm();
 		
 		iModality = new ListBox();
+		iModality.addItem(MESSAGES.itemSchedulingModalityNoPreference(), "NoPreference");
 		iModality.addItem(MESSAGES.itemSchedulingModalityPreferFaceToFace(), "DiscouragedOnline");
 		iModality.addItem(MESSAGES.itemSchedulingModalityPreferOnline(), "PreferredOnline");
 		iModality.addItem(MESSAGES.itemSchedulingModalityRequireOnline(), "RequiredOnline");
-		iModality.addItem(MESSAGES.itemSchedulingModalityNoPreference(), "NoPreference");
 		iModality.addStyleName("selection");
 		AbsolutePanel p = new AbsolutePanel(); p.setStyleName("modality");
 		p.add(iModality);

@@ -63,7 +63,7 @@ public class StudentSchedulingPreferencesInterface implements IsSerializable, Se
 	public void setClassDateTo(Date toDate) { iClassDateTo = toDate; }
 	
 	public static enum ClassModality implements IsSerializable, Serializable {
-		DiscouragedOnline, PreferredOnline, RequiredOnline, NoPreference,
+		NoPreference, DiscouragedOnline, PreferredOnline, RequiredOnline,
 		;
 	}
 	

@@ -164,6 +164,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			overExpected = new MinimizeConflicts(server.getConfig(), overExpected);
 		}
 		OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig(), overExpected);
+		model.setDayOfWeekOffset(server.getAcademicSession().getDayOfWeekOffset());
 		boolean linkedClassesMustBeUsed = server.getConfig().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
 		Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 		
@@ -200,6 +201,10 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				student.setAllowDisabled(original.isAllowDisabled());
 				if (server instanceof StudentSolver)
 					student.setMaxCredit(original.getMaxCredit());
+				student.setClassFirstDate(original.getClassStartDate());
+				student.setClassLastDate(original.getClassEndDate());
+				student.setBackToBackPreference(original.getBackToBackPreference());
+				student.setModalityPreference(original.getModalityPreference());
 				action.getStudentBuilder().setUniqueId(original.getStudentId()).setExternalId(original.getExternalId()).setName(original.getName());
 				enrolled = new HashSet<IdPair>();
 				for (XRequest r: original.getRequests()) {
@@ -657,7 +662,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
                     List<RoomLocation> rooms = new ArrayList<RoomLocation>();
                     for (XRoom r: section.getRooms())
                     	rooms.add(new RoomLocation(r.getUniqueId(), r.getName(), null, 0, 0, r.getX(), r.getY(), r.getIgnoreTooFar(), null));
-                    Placement placement = section.getTime() == null || section.getTime().getDays() == 0 ? null : new Placement(
+                    Placement placement = section.getTime() == null ? null : new Placement(
                     		new Lecture(section.getSectionId(), null, section.getSubpartId(), section.getName(), new ArrayList<TimeLocation>(), new ArrayList<RoomLocation>(), section.getNrRooms(), null, section.getLimit(), section.getLimit(), 1.0),
                     		new TimeLocation(section.getTime().getDays(), section.getTime().getSlot(), section.getTime().getLength(), 0, 0.0,
                     				section.getTime().getDatePatternId(), section.getTime().getDatePatternName(), section.getTime().getWeeks(),
@@ -671,7 +676,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					clonedSection.setSpaceExpected(expectations.getExpectedSpace(section.getSectionId()));
 					clonedSection.setEnrollment(enrl);
 					clonedSection.setCancelled(section.isCancelled());
-					clonedSection.setEnabled(student || section.isEnabledForScheduling());
+					clonedSection.setEnabled(section.isEnabledForScheduling());
+					clonedSection.setAlwaysEnabled(student);
 					clonedSection.setOnline(section.isOnline());
 					clonedSection.setPast(section.isPast());
 					if (deadline != null && !deadline.checkDeadline(section.getTime(), courseEnrolled ? OnlineSectioningServer.Deadline.CHANGE : OnlineSectioningServer.Deadline.NEW))

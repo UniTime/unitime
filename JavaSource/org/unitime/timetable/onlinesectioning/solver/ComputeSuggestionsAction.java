@@ -132,6 +132,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 			overExpected = new MinimizeConflicts(server.getConfig(), overExpected);
 		}
 		OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig(), overExpected);
+		model.setDayOfWeekOffset(server.getAcademicSession().getDayOfWeekOffset());
 		Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 		boolean linkedClassesMustBeUsed = server.getConfig().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
 
@@ -169,6 +170,10 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 				student.setAllowDisabled(original.isAllowDisabled());
 				if (server instanceof StudentSolver)
 					student.setMaxCredit(original.getMaxCredit());
+				student.setClassFirstDate(original.getClassStartDate());
+				student.setClassLastDate(original.getClassEndDate());
+				student.setBackToBackPreference(original.getBackToBackPreference());
+				student.setModalityPreference(original.getModalityPreference());
 				action.getStudentBuilder().setUniqueId(original.getStudentId()).setExternalId(original.getExternalId()).setName(original.getName());
 				enrolled = new HashSet<IdPair>();
 				for (XRequest r: original.getRequests()) {

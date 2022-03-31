@@ -768,7 +768,8 @@ public class XOffering implements Serializable, Externalizable {
 					clonedSection.setSpaceExpected(expectations == null ? 0.0 : expectations.getExpectedSpace(section.getSectionId()));
 					clonedSection.setEnrollment(enrl);
 					clonedSection.setCancelled(section.isCancelled());
-					clonedSection.setEnabled(std || section.isEnabledForScheduling());
+					clonedSection.setEnabled(section.isEnabledForScheduling());
+					clonedSection.setAlwaysEnabled(std);
 					clonedSection.setOnline(section.isOnline());
 					clonedSection.setPast(section.isPast());
 					clonedSection.setDayOfWeekOffset(dayOfWeekOffset);

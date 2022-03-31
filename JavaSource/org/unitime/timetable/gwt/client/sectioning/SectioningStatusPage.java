@@ -2236,6 +2236,13 @@ public class SectioningStatusPage extends Composite {
 			addSortOperation(hEmailTS, StudentComparator.SortBy.EMAIL_TS, MESSAGES.colEmailTimeStamp());
 		}
 		
+		UniTimeTableHeader hPref = null;
+		if (iStudentInfoVisibleColumns.hasPref) {
+			hPref = new UniTimeTableHeader(MESSAGES.colSchedulingPreference());
+			header.add(hPref);
+			addSortOperation(hPref, StudentComparator.SortBy.PREF, MESSAGES.colSchedulingPreference());
+		}
+		
 		iStudentTable.addRow(null, header);
 		
 		if (SectioningStatusCookie.getInstance().getSortBy(iOnline, 1) != 0) {
@@ -2283,6 +2290,7 @@ public class SectioningStatusPage extends Composite {
 			case DEGREE: h = hDegree; break;
 			case PROGRAM: h = hProgram; break;
 			case CAMPUS: h = hCampus; break;
+			case PREF: h = hPref; break;
 			}
 			if (h != null) {
 				Collections.sort(result, new StudentComparator(sort, asc, g));
@@ -2478,6 +2486,11 @@ public class SectioningStatusPage extends Composite {
 				line.add(new HTML("&nbsp;", false));
 			if (iOnline && iStudentInfoVisibleColumns.hasEmailed)
 				line.add(new HTML("&nbsp;", false));
+		}
+		if (iStudentInfoVisibleColumns.hasPref) {
+			HTML html = new HTML(info.hasPreference() ? info.getPreference() : "", false);
+			if (info.hasPreference()) html.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE);
+			line.add(html);
 		}
 		iStudentTable.addRow(info, line);
 	}
@@ -3327,6 +3340,7 @@ public class SectioningStatusPage extends Composite {
 			DEGREE,
 			PROGRAM,
 			CAMPUS,
+			PREF,
 			;
 		}
 		
@@ -3476,6 +3490,8 @@ public class SectioningStatusPage extends Composite {
 				cmp = Integer.compare(e1.getAdvisedInfo() == null ? 0 : e1.getAdvisedInfo().getNotAssignedCritical(), e2.getAdvisedInfo() == null ? 0 : e2.getAdvisedInfo().getNotAssignedCritical());
 				if (cmp != 0) return cmp;
 				return Integer.compare(e1.getAdvisedInfo() == null ? 0 : e1.getAdvisedInfo().getNotAssignedPrimary(), e2.getAdvisedInfo() == null ? 0 : e2.getAdvisedInfo().getNotAssignedPrimary());
+			case PREF:
+				return (e1.hasPreference() ? e1.getPreference() : "").compareTo(e2.hasPreference() ? e2.getPreference() : "");
 			default:
 				return 0;
 			}
@@ -3727,7 +3743,7 @@ public class SectioningStatusPage extends Composite {
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
 				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false, hasReqCred = false, hasDistances = false, hasOverlaps = false,
 				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false, hasOverride = false, hasExtId = false,
-				hasAdvisor = false, hasAdvisedInfo = false, hasMinor = false, hasConc = false, hasDeg = false, hasProg = false, hasCamp = false;
+				hasAdvisor = false, hasAdvisedInfo = false, hasMinor = false, hasConc = false, hasDeg = false, hasProg = false, hasCamp = false, hasPref = false;
 		int selectableStudents = 0;
 		Set<String> groupTypes = new TreeSet<String>();
 		
@@ -3766,6 +3782,7 @@ public class SectioningStatusPage extends Composite {
 				if (e.getStudent().hasDegree()) hasDeg = true;
 				if (e.getStudent().hasProgram()) hasProg = true;
 				if (e.getStudent().hasCampus()) hasCamp = true;
+				if (e.hasPreference()) hasPref = true;
 			}
 		}
 	}

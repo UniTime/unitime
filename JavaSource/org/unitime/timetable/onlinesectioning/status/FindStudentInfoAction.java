@@ -32,8 +32,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.cpsolver.ifs.util.DistanceMetric;
+import org.cpsolver.studentsct.model.Student.BackToBackPreference;
+import org.cpsolver.studentsct.model.Student.ModalityPreference;
+import org.joda.time.LocalDate;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
+import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
@@ -72,6 +76,7 @@ import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseRequestMatcher;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
 import org.unitime.timetable.solver.studentsct.StudentSolver;
+import org.unitime.timetable.util.Formats;
 
 /**
  * @author Tomas Muller
@@ -79,6 +84,7 @@ import org.unitime.timetable.solver.studentsct.StudentSolver;
 public class FindStudentInfoAction implements OnlineSectioningAction<List<StudentInfo>> {
 	private static final long serialVersionUID = 1L;
 	protected static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
+	protected static StudentSectioningConstants CONST = Localization.create(StudentSectioningConstants.class);
 	protected Query iQuery;
 	protected Integer iLimit = null;
 	protected Set<Long> iCoursesIcoordinate, iCoursesIcanApprove, iMyStudents;
@@ -424,6 +430,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						s.setTotalPrefSectionConflict(0);
 						s.setMyStudent(isMyStudent(student));
 		    			s.setAdvisedInfo(getAdvisedInfo(student, server, helper));
+		    			s.setPreference(getStudentSchedulingPreference(student, server, helper));
 					}
 					if (m.enrollment() != null) {
 						if (assigned.add(m.request().getRequestId())) {
@@ -647,6 +654,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 					s.setNote(student.hasLastNote() ? student.getLastNote().getNote() : null);
 					s.setMyStudent(isMyStudent(student));
 					s.setAdvisedInfo(getAdvisedInfo(student, server, helper));
+					s.setPreference(getStudentSchedulingPreference(student, server, helper));
 					ret.add(s);
 				}
 			} else {
@@ -699,6 +707,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 					s.setNote(student.hasLastNote() ? student.getLastNote().getNote() : null);
 					s.setMyStudent(isMyStudent(student));
 					s.setAdvisedInfo(getAdvisedInfo(student, server, helper));
+					s.setPreference(getStudentSchedulingPreference(student, server, helper));
 					ret.add(s);
 				}
 			}
@@ -800,6 +809,53 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 			XStudent student = (id instanceof XStudent ? (XStudent)id : getServer().getStudent(id.getStudentId()));
 			return student != null && iQuery.match(new StudentMatcher(student, iDefaultSectioningStatus, getServer(), isMyStudent(student)));
 		}
+	}
+	
+	public static String getStudentSchedulingPreference(XStudent student, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		String pref = null;
+		if (student.getModalityPreference() != null && student.getModalityPreference() != ModalityPreference.NO_PREFERENCE) {
+			switch(student.getModalityPreference()) {
+			case ONILNE_DISCOURAGED:
+				pref = (pref == null ? "" : pref + "\n") + MSG.itemSchedulingModalityPreferFaceToFace();
+				break;
+			case ONLINE_PREFERRED:
+				pref = (pref == null ? "" : pref + "\n") + MSG.itemSchedulingModalityPreferOnline();
+				break;
+			case ONLINE_REQUIRED:
+				pref = (pref == null ? "" : pref + "\n") + MSG.itemSchedulingModalityRequireOnline();
+				break;
+			}
+		}
+		if (student.getBackToBackPreference() != null && student.getBackToBackPreference() != BackToBackPreference.NO_PREFERENCE) {
+			switch(student.getBackToBackPreference()) {
+			case BTB_DISCOURAGED:
+				pref = (pref == null ? "" : pref + "\n") + MSG.itemSchedulingBackToBackDiscourage();
+				break;
+			case BTB_PREFERRED:
+				pref = (pref == null ? "" : pref + "\n") + MSG.itemSchedulingBackToBackPrefer();
+				break;
+			}
+		}
+		if (student.getClassStartDate() != null || student.getClassEndDate() != null) {
+			if (student.getClassStartDate() == null) {
+				pref = (pref == null ? "" : pref + "\n") + 
+						MSG.schedulingPrefClassesTo(Formats.getDateFormat(CONST.patternDateFormat()).format(
+						new LocalDate(server.getAcademicSession().getDatePatternFirstDate()).plusDays(student.getClassEndDate()).toDate()
+						));
+			} else if (student.getClassEndDate() == null) {
+				pref = (pref == null ? "" : pref + "\n") + 
+						MSG.schedulingPrefClassesFrom(Formats.getDateFormat(CONST.patternDateFormat()).format(
+						new LocalDate(server.getAcademicSession().getDatePatternFirstDate()).plusDays(student.getClassStartDate()).toDate()
+						));
+			} else {
+				pref = (pref == null ? "" : pref + "\n") + 
+						MSG.schedulingPrefClassesBetween(
+						Formats.getDateFormat(CONST.patternDateFormat()).format(new LocalDate(server.getAcademicSession().getDatePatternFirstDate()).plusDays(student.getClassStartDate()).toDate()),
+						Formats.getDateFormat(CONST.patternDateFormat()).format(new LocalDate(server.getAcademicSession().getDatePatternFirstDate()).plusDays(student.getClassEndDate()).toDate())
+						);
+			}
+		}
+		return pref;
 	}
 	
 	public static AdvisedInfoInterface getAdvisedInfo(XStudent student, OnlineSectioningServer server, OnlineSectioningHelper helper) {

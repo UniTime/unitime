@@ -408,6 +408,10 @@ public class SectioningRequest implements LastSectionProvider {
 		clonnedStudent.setName(student.getName());
 		clonnedStudent.setNeedShortDistances(student.hasAccomodation(server.getDistanceMetric().getShortDistanceAccommodationReference()));
 		clonnedStudent.setAllowDisabled(student.isAllowDisabled());
+		clonnedStudent.setClassFirstDate(student.getClassStartDate());
+		clonnedStudent.setClassLastDate(student.getClassEndDate());
+		clonnedStudent.setBackToBackPreference(student.getBackToBackPreference());
+		clonnedStudent.setModalityPreference(student.getModalityPreference());
 		CourseRequest ret = null;
 		for (XRequest r: student.getRequests()) {
 			if (r instanceof XFreeTimeRequest) {

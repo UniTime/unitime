@@ -293,6 +293,10 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 				}
 				clonnedStudent.setNeedShortDistances(student.hasAccomodation(dm.getShortDistanceAccommodationReference()));
 				clonnedStudent.setAllowDisabled(student.isAllowDisabled());
+				clonnedStudent.setClassFirstDate(student.getClassStartDate());
+				clonnedStudent.setClassLastDate(student.getClassEndDate());
+				clonnedStudent.setBackToBackPreference(student.getBackToBackPreference());
+				clonnedStudent.setModalityPreference(student.getModalityPreference());
 				for (XRequest r: student.getRequests()) {
 					if (r instanceof XFreeTimeRequest) {
 						XFreeTimeRequest ft = (XFreeTimeRequest)r;
