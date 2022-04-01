@@ -135,6 +135,10 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 					Flag respFlag = null;
 					if (responsibilities.isEmpty()) {
 						respFlag = Flag.HIDDEN;
+					} else {
+						if (getDefaultTeachingResponsibilityId().equals("")){
+							responsibilities.add(0, new ListItem("", ""));
+						}
 					}
 					return new Field(MESSAGES.fieldResponsibility(), FieldType.list, 100, responsibilities, respFlag);
 			case DISPLAY : return new Field(MESSAGES.fieldDisplay("&otimes;"), FieldType.toggle, 120);
@@ -297,7 +301,7 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 				rec.setField(DataColumn.INSTR_NAME.ordinal(), instructor.getInstructor().getUniqueId().toString(), isEditable, true);
 				rec.setField(DataColumn.PCT_SHARE.ordinal(), instructor.getPercentShare().toString(), isEditable, true);
 				rec.setField(DataColumn.CHECK_CONFICTS.ordinal(), instructor.isLead().toString(), isEditable, true);
-				rec.setField(DataColumn.RESPONSIBILITY.ordinal(), instructor.getResponsibility() == null ? "" : instructor.getResponsibility().getUniqueId().toString(), isEditable, true);
+				rec.setField(DataColumn.RESPONSIBILITY.ordinal(), instructor.getResponsibility() == null ? getDefaultTeachingResponsibilityId() : instructor.getResponsibility().getUniqueId().toString(), isEditable, true);
 			}
 			else {
 				rec.setField(DataColumn.INSTR_NAME.ordinal(), "", isEditable, true);
@@ -436,8 +440,9 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 							ci.setPercentShare(Integer.parseInt(r.getField(DataColumn.PCT_SHARE.ordinal())));
 							changed = true;
 						}
-						if (!r.getField(DataColumn.RESPONSIBILITY.ordinal()).equals(ci.getResponsibility().getUniqueId().toString())) {
-							if (r.getField(DataColumn.RESPONSIBILITY.ordinal()).equals("")) {
+						if ((ci.getResponsibility() != null && (r.getField(DataColumn.RESPONSIBILITY.ordinal()) == null || !r.getField(DataColumn.RESPONSIBILITY.ordinal()).equals(ci.getResponsibility().getUniqueId().toString())))
+								|| (ci.getResponsibility() == null && !r.getField(DataColumn.RESPONSIBILITY.ordinal()).equals(""))) {
+							if (r.getField(DataColumn.RESPONSIBILITY.ordinal()) == null || r.getField(DataColumn.RESPONSIBILITY.ordinal()).equals("")) {
 								if (TeachingResponsibility.getDefaultInstructorTeachingResponsibility() != null) {
 									ci.setResponsibility(TeachingResponsibility.getDefaultInstructorTeachingResponsibility());
 								} else {
