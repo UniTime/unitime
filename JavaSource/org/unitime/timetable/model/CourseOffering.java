@@ -263,6 +263,22 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 		return (dept);
 	}
 	
+	public Department getManagingDept() {
+		Department dept = null;
+		for (InstrOfferingConfig config: getInstructionalOffering().getInstrOfferingConfigs())
+			for (SchedulingSubpart subpart: config.getSchedulingSubparts()) {
+				Department mgr = subpart.getManagingDept();
+				if (mgr == null) {
+					continue;
+				} else if (dept == null) {
+					dept = mgr;
+				} else if (!dept.equals(mgr)) {
+					return getDepartment();
+				}
+			}
+		return (dept == null ? getDepartment() : dept);
+	}
+	
     public List getCourseOfferingDemands() {
         if (getPermId()!=null)
             return (new CourseOfferingDAO()).

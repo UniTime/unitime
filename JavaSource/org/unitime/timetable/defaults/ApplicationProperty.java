@@ -2999,6 +2999,12 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Wait-Listing: log wait-list changes into the WaitList table.")
 	WaitListLogging("unitime.enrollment.waitList.logging"),
+	
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Edit Course Offering: external managers can edit course offerings.")
+	PermissionCourseOfferingAllowsExternalEdit("unitime.permissions.courseOfferingAllowExternalEdits"),
 
 	;
 

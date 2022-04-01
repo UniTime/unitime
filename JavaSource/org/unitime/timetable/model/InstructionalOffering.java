@@ -144,6 +144,11 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 		CourseOffering course = getControllingCourseOffering();
 		return (course == null ? null : course.getDepartment());
 	}
+	
+	public Department getManagingDept() {
+		CourseOffering course = getControllingCourseOffering();
+		return (course == null ? null : course.getManagingDept());
+	}
 
 	/**
 	 * @return Returns the controllingCourseOffering.
