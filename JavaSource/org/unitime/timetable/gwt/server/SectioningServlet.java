@@ -173,6 +173,7 @@ import org.unitime.timetable.onlinesectioning.basic.CourseRequestEligibility;
 import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
 import org.unitime.timetable.onlinesectioning.basic.GetDegreePlans;
 import org.unitime.timetable.onlinesectioning.basic.GetRequest;
+import org.unitime.timetable.onlinesectioning.basic.GetStudentPreferences;
 import org.unitime.timetable.onlinesectioning.basic.ListClasses;
 import org.unitime.timetable.onlinesectioning.basic.ListCourseOfferings;
 import org.unitime.timetable.onlinesectioning.basic.ListEnrollments;
@@ -4130,20 +4131,24 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	@Override
 	public StudentSchedulingPreferencesInterface getStudentSchedulingPreferences(StudentSectioningContext cx) throws SectioningException, PageAccessException {
 		checkContext(cx);
-		if (cx.getStudentId() == null) throw new SectioningException(MSG.exceptionNoStudent());
-		StudentSchedulingPreferencesInterface ret = new StudentSchedulingPreferencesInterface();
-		ApplicationProperties.setSessionId(cx.getSessionId());
-		ret.setAllowClassDates(ApplicationProperty.OnlineSchedulingStudentPreferencesDatesAllowed.isTrue());
-		ret.setAllowRequireOnline(ApplicationProperty.OnlineSchedulingStudentPreferencesReqOnlineAllowed.isTrue());
-		ret.setCustomNote(ApplicationProperty.OnlineSchedulingStudentPreferencesNote.value());
-		Student student = StudentDAO.getInstance().get(cx.getStudentId());
-		if (student != null) {
-			ret.setClassModality(student.getPreferredClassModality());
-			ret.setScheduleGaps(student.getPreferredScheduleGaps());
-			ret.setClassDateFrom(student.getClassStartDate());
-			ret.setClassDateTo(student.getClassEndDate());
+		OnlineSectioningServer server = getServerInstance(cx.getSessionId(), false);
+		if (server != null) {
+			return server.execute(server.createAction(GetStudentPreferences.class).forStudent(cx.getStudentId()), currentUser(cx));
+		} else {
+			StudentSchedulingPreferencesInterface ret = new StudentSchedulingPreferencesInterface();
+			ApplicationProperties.setSessionId(cx.getSessionId());
+			ret.setAllowClassDates(ApplicationProperty.OnlineSchedulingStudentPreferencesDatesAllowed.isTrue());
+			ret.setAllowRequireOnline(ApplicationProperty.OnlineSchedulingStudentPreferencesReqOnlineAllowed.isTrue());
+			ret.setCustomNote(ApplicationProperty.OnlineSchedulingStudentPreferencesNote.value());
+			Student student = (cx.getStudentId() == null ? null : StudentDAO.getInstance().get(cx.getStudentId()));
+			if (student != null) {
+				ret.setClassModality(student.getPreferredClassModality());
+				ret.setScheduleGaps(student.getPreferredScheduleGaps());
+				ret.setClassDateFrom(student.getClassStartDate());
+				ret.setClassDateTo(student.getClassEndDate());
+			}
+			return ret;
 		}
-		return ret;
 	}
 
 	@Override
@@ -4163,6 +4168,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				StudentDAO.getInstance().update(student);
 			}
 		}
+		try {
+	        SessionFactory hibSessionFactory = SessionDAO.getInstance().getSession().getSessionFactory();
+	        hibSessionFactory.getCache().evictEntity(Student.class, cx.getStudentId());
+        } catch (Exception e) {
+        	sLog.warn("Failed to evict cache: " + e.getMessage());
+        }
 		return false;
 	}
 }

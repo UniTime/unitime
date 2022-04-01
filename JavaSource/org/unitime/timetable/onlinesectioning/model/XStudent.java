@@ -52,6 +52,8 @@ import org.joda.time.LocalDate;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
+import org.unitime.timetable.gwt.shared.StudentSchedulingPreferencesInterface.ClassModality;
+import org.unitime.timetable.gwt.shared.StudentSchedulingPreferencesInterface.ScheduleGaps;
 import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.CourseDemand;
@@ -427,6 +429,31 @@ public class XStudent extends XStudentId implements Externalizable {
     public Integer getClassEndDate() { return iClassEndDate; }
     public ModalityPreference getModalityPreference() { return iModalityPreference; }
     public BackToBackPreference getBackToBackPreference() { return iBackToBackPreference; }
+    public ClassModality getPreferredClassModality() {
+    	if (iModalityPreference == null) return ClassModality.NoPreference;
+    	switch (iModalityPreference) {
+    	case ONILNE_DISCOURAGED: return ClassModality.DiscouragedOnline;
+    	case ONLINE_PREFERRED: return ClassModality.PreferredOnline;
+    	case ONLINE_REQUIRED: return ClassModality.RequiredOnline;
+    	default: return ClassModality.NoPreference;
+    	}
+    }
+    public ScheduleGaps getPreferredScheduleGaps() {
+    	if (iBackToBackPreference == null) return ScheduleGaps.NoPreference;
+    	switch (iBackToBackPreference) {
+    	case BTB_DISCOURAGED: return ScheduleGaps.DiscourageBackToBack;
+    	case BTB_PREFERRED: return ScheduleGaps.PreferBackToBack;
+    	default: return ScheduleGaps.NoPreference;
+    	}
+    }
+    public Date getClassStartDate(Date datePatternFirstDate) {
+    	if (iClassStartDate == null) return null;
+    	return new LocalDate(datePatternFirstDate).plusDays(iClassStartDate).toDate();
+    }
+    public Date getClassEndDate(Date datePatternFirstDate) {
+    	if (iClassEndDate == null) return null;
+    	return new LocalDate(datePatternFirstDate).plusDays(iClassEndDate).toDate();
+    }
 
     /**
      * List of academic area, classification, and major codes ({@link XAreaClassificationMajor}) for the given student
