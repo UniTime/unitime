@@ -677,7 +677,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 				if (noSub == tNoSub && unasg == tUnasg) {
 					return (noSub == 0 ? String.valueOf(unasg) : noSub == unasg ? noSub + MESSAGES.csvNoSubSign() : (unasg - noSub) + " + " + noSub + MESSAGES.csvNoSubSign());
 				} else {
-					return ((noSub == 0 ? String.valueOf(unasg) : noSub == unasg ? noSub + MESSAGES.csvNoSubSign() : (unasg - noSub) + " + " + wait + MESSAGES.csvNoSubSign()) + " / " + tUnasg);
+					return ((noSub == 0 ? String.valueOf(unasg) : noSub == unasg ? noSub + MESSAGES.csvNoSubSign() : (unasg - noSub) + " + " + noSub + MESSAGES.csvNoSubSign()) + " / " + tUnasg);
 				}
 			}
 		} else {

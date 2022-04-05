@@ -3062,7 +3062,7 @@ public class SectioningStatusPage extends Composite {
 					if (noSub == tNoSub && unasg == tUnasg) {
 						setHTML((noSub == 0 ? String.valueOf(unasg) : noSub == unasg ? noSub + MESSAGES.htmlNoSubSign() : (unasg - noSub) + " + " + noSub + MESSAGES.htmlNoSubSign()));
 					} else {
-						setHTML(((noSub == 0 ? String.valueOf(unasg) : noSub == unasg ? noSub + MESSAGES.htmlNoSubSign() : (unasg - noSub) + " + " + wait + MESSAGES.htmlNoSubSign()) + " / " + tUnasg));
+						setHTML(((noSub == 0 ? String.valueOf(unasg) : noSub == unasg ? noSub + MESSAGES.htmlNoSubSign() : (unasg - noSub) + " + " + noSub + MESSAGES.htmlNoSubSign()) + " / " + tUnasg));
 					}
 				}
 			} else {
