@@ -33,6 +33,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.cpsolver.studentsct.model.Student.BackToBackPreference;
+import org.cpsolver.studentsct.model.Student.ModalityPreference;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
@@ -1173,6 +1175,25 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				}
 			}
 			
+			if ("btb".equals(attr)) {
+				if ("prefer".equalsIgnoreCase(term) || "preferred".equalsIgnoreCase(term))
+					return student().getBackToBackPreference() == BackToBackPreference.BTB_PREFERRED;
+				else if ("disc".equalsIgnoreCase(term) || "discouraged".equalsIgnoreCase(term))
+					return student().getBackToBackPreference() == BackToBackPreference.BTB_DISCOURAGED;
+				else
+					return student().getBackToBackPreference() == BackToBackPreference.NO_PREFERENCE;
+			}
+			if ("online".equals(attr)) {
+				if ("prefer".equalsIgnoreCase(term) || "preferred".equalsIgnoreCase(term))
+					return student().getModalityPreference() == ModalityPreference.ONLINE_PREFERRED;
+				else if ("require".equalsIgnoreCase(term) || "required".equalsIgnoreCase(term))
+					return student().getModalityPreference() == ModalityPreference.ONLINE_REQUIRED;
+				else if ("disc".equalsIgnoreCase(term) || "discouraged".equalsIgnoreCase(term))
+					return student().getModalityPreference() == ModalityPreference.ONILNE_DISCOURAGED;
+				else if ("no".equalsIgnoreCase(term) || "no-preference".equalsIgnoreCase(term))
+					return student().getBackToBackPreference() == BackToBackPreference.NO_PREFERENCE;
+			}
+
 			if ("online".equals(attr) || "face-to-face".equals(attr) || "f2f".equals(attr) || "no-time".equals(attr) || "has-time".equals(attr)) {
 				int min = 0, max = Integer.MAX_VALUE;
 				Credit prefix = Credit.eq;
