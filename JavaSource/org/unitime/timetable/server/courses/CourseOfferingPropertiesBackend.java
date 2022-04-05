@@ -21,12 +21,11 @@ package org.unitime.timetable.server.courses;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import org.hibernate.Query;
@@ -74,7 +73,6 @@ import org.unitime.timetable.model.dao.OverrideTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.security.SessionContext;
-import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 
@@ -92,19 +90,22 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 		
 		if (request.hasSessionId())
 			context = new EventContext(context, request.getSessionId());
-
-		if (!context.hasPermission(Right.AddCourseOffering) && !context.hasPermission(Right.EditCourseOffering) && !context.hasPermission(Right.EditCourseOfferingCoordinators) && !context.hasPermission(Right.EditCourseOfferingNote)) {
-			//If they don't have any of the permissions, reject based on any of them.
-			context.checkPermission(Right.AddCourseOffering);
+		
+		if (request.getCourseOfferingId() != null) { // edit -- must have at least one edit permission
+		    if (!context.hasPermission(request.getCourseOfferingId(), Right.EditCourseOffering) &&
+		        !context.hasPermission(request.getCourseOfferingId(), Right.EditCourseOfferingCoordinators) &&
+		        !context.hasPermission(request.getCourseOfferingId(), Right.EditCourseOfferingNote)) {
+		        context.checkPermission(request.getCourseOfferingId(), Right.EditCourseOffering);
+		    }
+		} else { // check Add permission otherwise (the user has at least one subject area for which he/she can add a course)
+		    context.checkPermission(Right.AddCourseOffering);
 		}
 		
 		CourseOfferingPropertiesInterface response = new CourseOfferingPropertiesInterface();
-		UserAuthority authority = null;
 		
 		if (context.getUser() != null) {
 			Session session = SessionDAO.getInstance().get(request.hasSessionId() ? request.getSessionId() : context.getUser().getCurrentAcademicSessionId());
 			response.setAcademicSession(new AcademicSessionInterface(session.getUniqueId(), session.getAcademicTerm() + " " + session.getAcademicYear()));
-			authority = context.getUser().getCurrentAuthority();
 			response.setWkEnrollDefault(session.getLastWeekToEnroll());
 			response.setWkChangeDefault(session.getLastWeekToChange());
 			response.setWkDropDefault(session.getLastWeekToDrop());
@@ -180,6 +181,7 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 
 		if (request.getSubjAreaId() != null) {
 			SubjectArea subjectArea = SubjectAreaDAO.getInstance().get(request.getSubjAreaId());
+			response.setSubjectAreaEffectiveFundingDept(subjectArea.getEffectiveFundingDept().getUniqueId());
 
 			StringBuffer queryClause = new StringBuffer("");
 			
@@ -215,19 +217,19 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 				response.addInstructor(instructorObject);
 			}
 
-		    HashMap<Long, String> fundingDeptMap = new HashMap<>();
+		    TreeSet<Department> fundingDeptSet = new TreeSet<>();
 
 		    Department subjectFundingDepartment = subjectArea.getFundingDept();
 		    Department subjectDepartment = subjectArea.getDepartment();
 		    if (subjectFundingDepartment != null) {		    	
-		    	fundingDeptMap.put(subjectFundingDepartment.getUniqueId(), subjectFundingDepartment.getName());
+		    	fundingDeptSet.add(subjectFundingDepartment);
 
 		    	if (!subjectFundingDepartment.getUniqueId().equals(subjectDepartment.getUniqueId())) {
-			    	fundingDeptMap.put(subjectDepartment.getUniqueId(), subjectDepartment.getName());
+			    	fundingDeptSet.add(subjectDepartment);
 		    	}
 		    	
 		    } else {
-		    	fundingDeptMap.put(subjectDepartment.getUniqueId(), subjectDepartment.getName());
+		    	fundingDeptSet.add(subjectDepartment);
 		    }
 		    
 		    if (request.getIsEdit()) {
@@ -241,16 +243,15 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 		    		CourseOffering childCourseOffering = (CourseOffering) iterator.next();
 		    		Department fundingDept = childCourseOffering.getSubjectArea().getFundingDept();
 		    		if (fundingDept != null) {
-				    	fundingDeptMap.put(fundingDept.getUniqueId(), fundingDept.getName());
+				    	fundingDeptSet.add(fundingDept);
 		    		}
 		    	}
-		    	
 		    }
 		    
 		    //Get depts where funding dept flag is true
 		    StringBuffer queryClause2 = new StringBuffer("");
 
-			queryClause2.append(" and i.externalFundingDept = 'true'");
+			queryClause2.append(" and i.externalFundingDept = 1");
 
 		    StringBuffer query2 = new StringBuffer();
 		    query2.append("select distinct i from Department i ");
@@ -269,14 +270,14 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 	        Collections.sort(result2);
 		    for (Iterator i=result2.iterator();i.hasNext();) {
 	            Department dept = (Department)i.next();
-				fundingDeptMap.put(dept.getUniqueId(), dept.getName());
+				fundingDeptSet.add(dept);
 			}
 		    
-		    if (!fundingDeptMap.isEmpty()) {
-		    	for (Map.Entry<Long, String> entry : fundingDeptMap.entrySet()) {
-		    	    DepartmentInterface fundingDepartmentObject = new DepartmentInterface();
-			    	fundingDepartmentObject.setId(entry.getKey());
-			    	fundingDepartmentObject.setLabel(entry.getValue());
+		    if (!fundingDeptSet.isEmpty()) {
+		    	for (Department dept : fundingDeptSet) {
+		    		DepartmentInterface fundingDepartmentObject = new DepartmentInterface();
+			    	fundingDepartmentObject.setId(dept.getUniqueId());
+			    	fundingDepartmentObject.setLabel(dept.getLabel());
 			    	response.addFundingDepartment(fundingDepartmentObject);
 		    	}
 		    }

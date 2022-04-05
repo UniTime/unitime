@@ -1139,25 +1139,22 @@ public class CourseOfferingEdit extends Composite {
 				iCoursesFundingDepartmentsEnabled = result.getCoursesFundingDepartmentsEnabled();
 				
 				if (iCoursesFundingDepartmentsEnabled) {
-					
-					String selectedFundingDepartment = iFundingDepartment.getWidget().getSelectedValue();
-					
 					iFundingDepartment.getWidget().clear();
-					iFundingDepartment.getWidget().addItem("", "none");
 					for (DepartmentInterface fundingDepartment: result.getFundingDepartments()) {
 						iFundingDepartment.getWidget().addItem(fundingDepartment.getLabel(), fundingDepartment.getId().toString());
 					}
 					iPanel.getRowFormatter().setVisible(iFundingDeptLine, true);
 					
-					int fundingDeptDropdownIndex = 0;
-					for (int j = 1; j < iFundingDepartment.getWidget().getItemCount(); j++) {
-						if (iFundingDepartment.getWidget().getValue(j).equals(selectedFundingDepartment)) {
-							fundingDeptDropdownIndex = j;
-							break;
+					if (result.getSubjectAreaEffectiveFundingDept() != null) {
+						int fundingDeptDropdownIndex = 0;
+						for (int i = 0; i < iFundingDepartment.getWidget().getItemCount(); i++) {
+							if (iFundingDepartment.getWidget().getValue(i).equals(result.getSubjectAreaEffectiveFundingDept().toString())) {
+								fundingDeptDropdownIndex = i;
+								break;
+							}
 						}
+						iFundingDepartment.getWidget().setSelectedIndex(fundingDeptDropdownIndex);
 					}
-					
-					iFundingDepartment.getWidget().setSelectedIndex(fundingDeptDropdownIndex);
 				}
 			}
 		});
@@ -1349,10 +1346,21 @@ public class CourseOfferingEdit extends Composite {
 					iCoursesFundingDepartmentsEnabled = result.getCoursesFundingDepartmentsEnabled();
 					
 					if (iCoursesFundingDepartmentsEnabled) {
-						iFundingDepartment.getWidget().addItem("", "none");
 						for (DepartmentInterface fundingDepartment: result.getFundingDepartments()) {
 							iFundingDepartment.getWidget().addItem(fundingDepartment.getLabel(), fundingDepartment.getId().toString());
 						}
+						
+						if (result.getSubjectAreaEffectiveFundingDept() != null) {
+							int altIndex = 0;
+							for (int i = 0; i < iFundingDepartment.getWidget().getItemCount(); i++) {
+								if (iFundingDepartment.getWidget().getValue(i).equals(result.getSubjectAreaEffectiveFundingDept().toString())) {
+									altIndex = i;
+									break;
+								}
+							}
+							iFundingDepartment.getWidget().setSelectedIndex(altIndex);
+						}
+
 						iPanel.getRowFormatter().setVisible(iFundingDeptLine, true);
 					}
 					
@@ -1956,7 +1964,6 @@ public class CourseOfferingEdit extends Composite {
 					iCoursesFundingDepartmentsEnabled = result.getCoursesFundingDepartmentsEnabled();
 					
 					if (iCoursesFundingDepartmentsEnabled) {
-						iFundingDepartment.getWidget().addItem("", "none");
 						for (DepartmentInterface fundingDepartment: result.getFundingDepartments()) {
 							iFundingDepartment.getWidget().addItem(fundingDepartment.getLabel(), fundingDepartment.getId().toString());
 						}
@@ -2071,6 +2078,8 @@ public class CourseOfferingEdit extends Composite {
 		
 		if (iConsent.getWidget().getSelectedValue() != null && !iConsent.getWidget().getSelectedValue().equals("none")) {
 			iCourseOffering.setConsent(new Long(iConsent.getWidget().getSelectedValue()));
+		} else {
+			iCourseOffering.setConsent(null);
 		}
 		
 		if (iCredit.getWidget().getSelectedValue() != null && !iCredit.getWidget().getSelectedValue().equals("select")) {

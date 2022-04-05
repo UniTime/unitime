@@ -522,6 +522,7 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 		private String iCourseUrlProvider;
 		private String iInstructionalOfferingId;
 		private String iDefaultTeachingResponsibilityId;
+		private Long iSubjectAreaEffectiveFundingDept;
 
 		private List<InstructorInterface> iInstructors = new ArrayList<InstructorInterface>();
 		
@@ -621,6 +622,11 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 	    
 	    public String getDefaultTeachingResponsibilityId() { return iDefaultTeachingResponsibilityId; }
 	    public void setDefaultTeachingResponsibilityId(String defaultTeachingResponsibilityId) { iDefaultTeachingResponsibilityId = defaultTeachingResponsibilityId; }
+	    
+	    public Long getSubjectAreaEffectiveFundingDept() { return iSubjectAreaEffectiveFundingDept; }
+	    public void setSubjectAreaEffectiveFundingDept(Long subjectAreaEffectiveFundingDept) { iSubjectAreaEffectiveFundingDept = subjectAreaEffectiveFundingDept; }
+	    
+	    
 	}
 	
 	public static class CourseOfferingConstantsInterface implements GwtRpcResponse {

@@ -277,6 +277,8 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
 
                 if (courseOfferingInterface.getConsent() != null) {
         			courseOffering.setConsentType(OfferingConsentTypeDAO.getInstance().get(courseOfferingInterface.getConsent()));
+        		} else {
+        			courseOffering.setConsentType(null);
         		}
 
                 // Update credit
