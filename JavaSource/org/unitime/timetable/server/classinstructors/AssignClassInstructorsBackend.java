@@ -21,7 +21,8 @@ package org.unitime.timetable.server.classinstructors;
 
 import java.util.Iterator;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -41,7 +42,7 @@ import org.unitime.timetable.security.SessionContext;
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
 public class AssignClassInstructorsBackend {
-	private static Logger sLog = Logger.getLogger(AssignClassInstructorsBackend.class);
+	private static Log sLog = LogFactory.getLog(AssignClassInstructorsBackend.class);
 
 	@GwtRpcImplements(AssignClassInstructorsInterface.GetPageNameRpcRequest.class)
 	public static class PageNameBackend implements GwtRpcImplementation<AssignClassInstructorsInterface.GetPageNameRpcRequest, AssignClassInstructorsInterface.PageName> {
