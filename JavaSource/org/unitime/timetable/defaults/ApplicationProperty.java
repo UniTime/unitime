@@ -3020,6 +3020,16 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Edit Course Offering: switch the user interface back to the old (Struts-based) edit course offering page")
 	LegacyCourseEdit("unitime.legacy.course_edit"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Departments: switch the user interface back to the old (Struts-based) departments pages")
+	LegacyDepartments("unitime.legacy.admin.departments"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Departments: switch the user interface back to the old (Struts-based) subject areas pages")
+	LegacySubjectAreas("unitime.legacy.admin.subjectAreas"),
 
 	;
 
