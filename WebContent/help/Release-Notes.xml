@@ -28,6 +28,56 @@
 	<version>4.6.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Instructional Offering Detail: Wait-Listing</name>
+			<description>
+				<line>Always show that the offering is wait-listed when
+					<line>wait-listing is set differently on the offering from what is set by default (unitime.offering.waitListDefault is true)</line>
+					<line>or the offering allows for wait-listing.</line>
+				</line>
+				<line>So, when the default is true and it is not changed on the offering, show that the offering is being wait-listed.
+					<line>This allows to always check and show wait-listing problems (e.g., course is wait-listed and allows for closed section overrides at the same time).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Finder: Courses with matching campus first</name>
+			<description>
+				<line>When subject area starts with the student's campus code, move courses that match student's primary campus to the top of the list.</line>
+				<line>This is disabled by default, enable by setting unitime.enrollment.listOfferings.campusFirst to true.</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling Dashboards: Enrollments</name>
+			<description>
+				<line>Corrected display of the number of not-assigned no-sub course requests.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Edit Course Offering: Permissions for External Managers</name>
+			<description>
+				<line>It is now possible to give external managers some control over the offering.</line>
+				<line>When unitime.permissions.courseOfferingAllowExternalEdits is true (defaults to false):
+					<line>EditCourseOfferingCoordinators: passes when the external manager can edit at least one of the classes (ManagerLimitedEdit)</line>
+					<line>EditCourseOfferingNote: passes when the external manager can edit at least one of the classes (ManagerLimitedEdit)</line>
+					<line>EditCourseOffering: passes for the controlling course when the external manager can edit all the classes (ManagerEdit)</line>
+				</line>
+				<line>It now also possible for the external managers to edit reservations if all the classes are in their control (ReservationOffering permission).</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructor Availability</name>
+			<description>
+				<line>Corrected combination of unavailable dates and blocking events (when unitime.events.instructorUnavailability is set to true).</line>
+				<line>This fixes an issue where unavailable dates were ignored when instructor unavailability events were enabled.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Reporting: Room Utilization Report Helpers</name>
