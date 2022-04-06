@@ -494,7 +494,16 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
         TimeFrame time = new TimeFrame(startTime, endTime);
         synchronized(iCache) {
             CacheElement cache = get(time, excludeType);
-            if (cache!=null) return cache.get(instructor.getExternalUniqueId(), excludeType);
+            if (cache!=null) {
+            	Collection<TimeBlock> cached = cache.get(instructor.getExternalUniqueId(), excludeType);
+            	if (instructor.hasUnavailabilities()) {
+            		Collection<TimeBlock> ret = instructor.listUnavailableDays();
+            		if (cached != null) ret.addAll(cached);
+            		return ret;
+            	} else {
+            		return cached;
+            	}
+            }
             TreeSet<TimeBlock> ret = new TreeSet<TimeBlock>();
             Class<? extends Event> exclude = null;
             ExamType examType = null;
