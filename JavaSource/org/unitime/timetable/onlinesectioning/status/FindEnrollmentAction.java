@@ -279,6 +279,8 @@ public class FindEnrollmentAction extends WaitlistedOnlineSectioningAction<List<
 							e.addEnrollmentMessage(MSG.overrideCancelledWaitList(course.getCourseName())); break;
 						case NOT_CHECKED:
 							e.addEnrollmentMessage(MSG.overrideNotRequested()); break;
+						case NOT_NEEDED:
+							e.addEnrollmentMessage(MSG.overrideNotNeeded(course.getCourseName())); break;
 						}
 					}
 				}

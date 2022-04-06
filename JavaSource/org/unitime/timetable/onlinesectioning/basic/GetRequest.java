@@ -171,6 +171,8 @@ public class GetRequest extends WaitlistedOnlineSectioningAction<CourseRequestIn
 					request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_CANCELLED);
 				else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.NOT_CHECKED.ordinal())
 					request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_NEEDED);
+				else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.NOT_NEEDED.ordinal())
+					request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_NOT_NEEDED);
 				else
 					request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_PENDING);
 			}
@@ -269,8 +271,8 @@ public class GetRequest extends WaitlistedOnlineSectioningAction<CourseRequestIn
 								rc.setStatus(RequestedCourseStatus.OVERRIDE_CANCELLED);
 							else if (status == CourseRequest.CourseRequestOverrideStatus.NOT_CHECKED.ordinal())
 								rc.setStatus(RequestedCourseStatus.OVERRIDE_NEEDED);
-							else if (status == CourseRequest.CourseRequestOverrideStatus.NOT_CHECKED.ordinal())
-								rc.setStatus(RequestedCourseStatus.OVERRIDE_NEEDED);
+							else if (status == CourseRequest.CourseRequestOverrideStatus.NOT_NEEDED.ordinal())
+								rc.setStatus(RequestedCourseStatus.OVERRIDE_NOT_NEEDED);
 							else
 								rc.setStatus(RequestedCourseStatus.OVERRIDE_PENDING);
 						}

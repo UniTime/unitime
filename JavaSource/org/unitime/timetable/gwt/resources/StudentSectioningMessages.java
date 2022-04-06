@@ -2254,6 +2254,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Not Requested")
 	String reqStatusNeeded();
 	
+	@DefaultMessage("Overrride Not Needed")
+	String reqStatusNotNeeded();
+
 	@DefaultMessage("You are already enrolled in {0}.\nThis course request cannot be modified or deleted.")
 	String enrolled(String course);
 	
@@ -2289,6 +2292,9 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Requested override for {0} has been approved.")
 	String overrideApproved(String course);
+	
+	@DefaultMessage("Requested override for {0} is not needed.")
+	String overrideNotNeeded(String course);
 	
 	@DefaultMessage("An override for the following registration issues has been requested:\n{0}")
 	String requestedWarnings(String errors);

@@ -508,6 +508,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		OVERRIDE_NEEDED,
 		OVERRIDE_REJECTED,
 		CREDIT_LOW, CREDIT_HIGH,
+		OVERRIDE_NOT_NEEDED,
 	}
 	
 	public static class Preference implements IsSerializable, Serializable, Comparable<Preference> {

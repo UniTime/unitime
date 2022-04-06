@@ -1233,6 +1233,10 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 							icon = "action_check.png";
 							iconText = ((msg == null ? "" : MSG.requestWarnings(msg) + "\n\n") + MSG.overrideApproved(rc.getCourseName()));
 							break;
+						case OVERRIDE_NOT_NEEDED:
+							icon = "action_check_gray.png";
+							iconText = ((msg == null ? "" : MSG.requestWarnings(msg) + "\n\n") + MSG.overrideNotNeeded(rc.getCourseName()));
+							break;
 						default:
 							if (check.isError(rc.getCourseName()))
 								icon = "stop.png";
@@ -1260,6 +1264,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						case OVERRIDE_CANCELLED: status = MSG.reqStatusCancelled(); break;
 						case OVERRIDE_PENDING: status = MSG.reqStatusPending(); break;
 						case OVERRIDE_REJECTED: status = MSG.reqStatusRejected(); break;
+						case OVERRIDE_NOT_NEEDED: status = MSG.reqStatusNotNeeded(); break;
 						}
 					}
 					if (status.isEmpty()) status = MSG.reqStatusRegistered();
@@ -1352,6 +1357,10 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 							icon = "action_check.png";
 							iconText = ((msg == null ? "" : MSG.requestWarnings(msg) + "\n\n") + MSG.overrideApproved(rc.getCourseName()));
 							break;
+						case OVERRIDE_NOT_NEEDED:
+							icon = "action_check_gray.png";
+							iconText = ((msg == null ? "" : MSG.requestWarnings(msg) + "\n\n") + MSG.overrideNotNeeded(rc.getCourseName()));
+							break;
 						default:
 							if (check.isError(rc.getCourseName()))
 								icon = "stop.png";
@@ -1379,6 +1388,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						case OVERRIDE_CANCELLED: status = MSG.reqStatusCancelled(); break;
 						case OVERRIDE_PENDING: status = MSG.reqStatusPending(); break;
 						case OVERRIDE_REJECTED: status = MSG.reqStatusRejected(); break;
+						case OVERRIDE_NOT_NEEDED: status = MSG.reqStatusNotNeeded(); break;
 						}
 					}
 					if (status.isEmpty()) status = MSG.reqStatusRegistered();
@@ -2198,6 +2208,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					note += " " + MSG.overrideNotRequested();
 				} else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.PENDING.ordinal()) {
 					note += " " + MSG.overridePending(iCourse.getCourseName());
+				} else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.NOT_NEEDED.ordinal()) {
+					note += " " + MSG.overrideNotNeeded(iCourse.getCourseName());
 				}
 				return note;
 			}

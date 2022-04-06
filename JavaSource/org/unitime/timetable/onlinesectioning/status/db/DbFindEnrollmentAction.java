@@ -204,6 +204,8 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 						e.addEnrollmentMessage(MSG.overrideCancelledWaitList(course.getCourseName())); break;
 					case NOT_CHECKED:
 						e.addEnrollmentMessage(MSG.overrideNotRequested()); break;
+					case NOT_NEEDED:
+						e.addEnrollmentMessage(MSG.overrideNotNeeded(course.getCourseName())); break;
 					}
 				}
 				if (student.getOverrideStatus() != null && student.getMaxCreditOverrideIntent() == CourseRequestOverrideIntent.WAITLIST) {

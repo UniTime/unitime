@@ -304,7 +304,8 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 						RequestedCourseStatus.OVERRIDE_APPROVED == rc.getStatus() ? CourseRequestOverrideStatus.APPROVED :
 						RequestedCourseStatus.OVERRIDE_PENDING == rc.getStatus() ? CourseRequestOverrideStatus.PENDING :
 						RequestedCourseStatus.OVERRIDE_CANCELLED == rc.getStatus() ? CourseRequestOverrideStatus.CANCELLED :
-						RequestedCourseStatus.OVERRIDE_REJECTED == rc.getStatus() ? CourseRequestOverrideStatus.REJECTED : null);
+						RequestedCourseStatus.OVERRIDE_REJECTED == rc.getStatus() ? CourseRequestOverrideStatus.REJECTED :
+						RequestedCourseStatus.OVERRIDE_NOT_NEEDED == rc.getStatus() ? CourseRequestOverrideStatus.NOT_NEEDED : null);
 					cr.setCourseRequestOverrideIntent(rc == null ? null : CourseRequestOverrideIntent.REGISTER);
 					if (rc.getStatus() == null || rc.getStatus() == RequestedCourseStatus.NEW_REQUEST)
 						rc.setStatus(RequestedCourseStatus.SAVED);
@@ -426,7 +427,8 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 						RequestedCourseStatus.OVERRIDE_APPROVED == rc.getStatus() ? CourseRequestOverrideStatus.APPROVED :
 						RequestedCourseStatus.OVERRIDE_PENDING == rc.getStatus() ? CourseRequestOverrideStatus.PENDING :
 						RequestedCourseStatus.OVERRIDE_CANCELLED == rc.getStatus() ? CourseRequestOverrideStatus.CANCELLED :
-						RequestedCourseStatus.OVERRIDE_REJECTED == rc.getStatus() ? CourseRequestOverrideStatus.REJECTED : null);
+						RequestedCourseStatus.OVERRIDE_REJECTED == rc.getStatus() ? CourseRequestOverrideStatus.REJECTED :
+						RequestedCourseStatus.OVERRIDE_NOT_NEEDED == rc.getStatus() ? CourseRequestOverrideStatus.NOT_NEEDED : null);
 					cr.setCourseRequestOverrideIntent(rc == null ? null : CourseRequestOverrideIntent.REGISTER);
 					if (rc.getStatus() == null || rc.getStatus() == RequestedCourseStatus.NEW_REQUEST)
 						rc.setStatus(RequestedCourseStatus.SAVED);

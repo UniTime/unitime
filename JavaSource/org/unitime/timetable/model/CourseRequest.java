@@ -40,7 +40,7 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
 	private static final long serialVersionUID = 1L;
 	
 	public static enum CourseRequestOverrideStatus {
-		PENDING, APPROVED, REJECTED, CANCELLED, NOT_CHECKED,
+		PENDING, APPROVED, REJECTED, CANCELLED, NOT_CHECKED, NOT_NEEDED,
 	}
 	
 	public static enum CourseRequestOverrideIntent {
@@ -167,6 +167,10 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
     
     public boolean isRequestNeeded() {
     	return getOverrideStatus() != null && getOverrideStatus().intValue() == CourseRequestOverrideStatus.NOT_CHECKED.ordinal();
+    }
+    
+    public boolean isRequestNotNeeded() {
+    	return getOverrideStatus() != null && getOverrideStatus().intValue() == CourseRequestOverrideStatus.NOT_NEEDED.ordinal();
     }
     
     public boolean isRequestRejected() {

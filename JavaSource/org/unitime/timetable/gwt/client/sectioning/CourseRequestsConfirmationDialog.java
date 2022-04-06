@@ -116,6 +116,7 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 				});
 				if (cm.hasSuggestions()) {
 					AriaSuggestArea suggest = new AriaSuggestArea(iNote, cm.getSuggestions());
+					suggest.addStyleName("request-note");
 					suggest.addSelectionHandler(new SelectionHandler<Suggestion>() {
 						@Override
 						public void onSelection(SelectionEvent<Suggestion> event) {

@@ -979,6 +979,9 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 				case OVERRIDE_APPROVED:
 					setStatus(RESOURCES.requestSaved(), MESSAGES.overrideApproved(rc.getCourseName()));
 					break;
+				case OVERRIDE_NOT_NEEDED:
+					setStatus(RESOURCES.requestNotNeeded(), MESSAGES.overrideNotNeeded(rc.getCourseName()));
+					break;
 				case NEW_REQUEST:
 					clearStatus();
 					break;

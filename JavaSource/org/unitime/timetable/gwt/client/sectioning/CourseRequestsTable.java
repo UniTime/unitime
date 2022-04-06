@@ -476,6 +476,9 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 				case OVERRIDE_APPROVED:
 					box.setStatus(RESOURCES.requestSaved(), (itemized == null ? "" : MESSAGES.requestWarnings(itemized) + "\n\n") + MESSAGES.overrideApproved(box.getText()) + note);
 					break;
+				case OVERRIDE_NOT_NEEDED:
+					box.setStatus(RESOURCES.requestNotNeeded(), (itemized == null ? "" : MESSAGES.requestWarnings(itemized) + "\n\n") + MESSAGES.overrideNotNeeded(box.getText()) + note);
+					break;
 				default:
 					if (messages.isError(box.getText()))
 						box.setStatus(RESOURCES.requestError(), (itemized == null ? "" : itemized) + note);

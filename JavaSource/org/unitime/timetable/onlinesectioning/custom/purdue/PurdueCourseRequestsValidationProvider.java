@@ -110,6 +110,7 @@ import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ApiMode;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Change;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ChangeError;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ChangeNote;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ChangeOperation;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ChangeStatus;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CheckEligibilityResponse;
@@ -243,6 +244,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 	
 	protected boolean isAdvisedNoAlts() {
 		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.advisedNoAlts", "true"));
+	}
+	
+	protected String getOverrideNotNeededReasonRegExp() {
+		return ApplicationProperties.getProperty("purdue.specreg.overrideNotNeededRegExp", "Denying as override is not required\\.");
 	}
 	
 	protected String getBannerId(XStudent student) {
@@ -706,11 +711,11 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							if (ch.errors != null)
 								for (ChangeError err: ch.errors) {
 									if (err.code != null)
-										problems.put(err.code, status(ch.status));
+										problems.put(err.code, status(ch));
 								}
 						} else if (r.maxCredit != null && (maxCreditOverride == null || maxCreditOverride < r.maxCredit)) {
 							maxCreditOverride = r.maxCredit;
-							maxCreditOverrideStatus = status(ch.status);
+							maxCreditOverrideStatus = status(ch);
 						}
 					}
 				}
@@ -759,6 +764,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			}
 			
 			Map<String, Set<String>> deniedOverrides = new HashMap<String, Set<String>>();
+			Set<String> notNeededOverrides = new HashSet<String>();
 			if (resp.deniedRequests != null)
 				for (DeniedRequest r: resp.deniedRequests) {
 					if (r.mode != req.mode) continue;
@@ -769,6 +775,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						deniedOverrides.put(course, problems);
 					}
 					problems.add(r.code);
+					if (isOverrideNotNeed(r)) notNeededOverrides.add(course);
 				}
 			
 			if (resp.outJson != null && resp.outJson.message != null && resp.outJson.status != null && resp.outJson.status != ResponseStatus.success) {
@@ -797,7 +804,9 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					Map<String, RequestedCourseStatus> problems = (bc == null ? null : overrides.get(bc));
 					Set<String> denied = (bc == null ? null : deniedOverrides.get(bc));
 					if (denied != null && denied.contains(problem.code)) {
-						if (fixedCourses.contains(course)) {
+						if (notNeededOverrides.contains(bc)) {
+							response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, "Not Needed " + problem.message, CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_NOT_NEEDED);
+						} else if (fixedCourses.contains(course)) {
 							response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message, CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
 						} else {
 							response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
@@ -840,7 +849,9 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					Map<String, RequestedCourseStatus> problems = (bc == null ? null : overrides.get(bc));
 					Set<String> denied = (bc == null ? null : deniedOverrides.get(bc));
 					if (denied != null && denied.contains(problem.code)) {
-						if (fixedCourses.contains(course)) {
+						if (notNeededOverrides.contains(course)) {
+							response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, "Not Needed " + problem.message, CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_NOT_NEEDED);
+						} else if (fixedCourses.contains(course)) {
 							response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message, CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
 						} else {
 							response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
@@ -1140,7 +1151,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				for (SpecialRegistration r: status.data.requests) {
 					if (r.changes != null)
 						for (Change ch: r.changes) {
-							if (status(ch.status) == RequestedCourseStatus.OVERRIDE_PENDING && ch.subject != null && ch.courseNbr != null) { 
+							if (status(ch) == RequestedCourseStatus.OVERRIDE_PENDING && ch.subject != null && ch.courseNbr != null) { 
 								String course = ch.subject + " " + ch.courseNbr;
 								Set<String> problems = overrides.get(course);
 								if (problems == null) {
@@ -1450,9 +1461,27 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		
 	}
 	
-	protected RequestedCourseStatus status(ChangeStatus status) {
-		if (status == null) return RequestedCourseStatus.OVERRIDE_PENDING;
-		switch (status) {
+	protected boolean isOverrideNotNeed(Change change) {
+		if (change.status != ChangeStatus.denied) return false;
+		String notNeededRegExp = getOverrideNotNeededReasonRegExp();
+		if (notNeededRegExp == null || notNeededRegExp.isEmpty()) return false;
+		if (change.notes != null)
+			for (ChangeNote note: change.notes)
+				if (note.notes != null && note.notes.matches(notNeededRegExp)) return true;
+		return false;
+	}
+	
+	protected boolean isOverrideNotNeed(DeniedRequest denied) {
+		String notNeededRegExp = getOverrideNotNeededReasonRegExp();
+		if (notNeededRegExp == null || notNeededRegExp.isEmpty()) return false;
+		if (denied.notes != null && denied.notes.matches(notNeededRegExp)) return true;
+		return false;
+	}
+	
+	protected RequestedCourseStatus status(Change change) {
+		if (change.status == null) return RequestedCourseStatus.OVERRIDE_PENDING;
+		if (isOverrideNotNeed(change)) return RequestedCourseStatus.OVERRIDE_NOT_NEEDED;
+		switch (change.status) {
 		case denied:
 			return RequestedCourseStatus.OVERRIDE_REJECTED;
 		case approved:
@@ -1468,6 +1497,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		if (s1 == null) return s2;
 		if (s2 == null) return s1;
 		if (s1 == s2) return s1;
+		if (s1 == RequestedCourseStatus.OVERRIDE_NOT_NEEDED) return s2;
+		if (s2 == RequestedCourseStatus.OVERRIDE_NOT_NEEDED) return s1;
 		if (s1 == RequestedCourseStatus.OVERRIDE_REJECTED || s2 == RequestedCourseStatus.OVERRIDE_REJECTED) return RequestedCourseStatus.OVERRIDE_REJECTED;
 		if (s1 == RequestedCourseStatus.OVERRIDE_PENDING || s2 == RequestedCourseStatus.OVERRIDE_PENDING) return RequestedCourseStatus.OVERRIDE_PENDING;
 		if (s1 == RequestedCourseStatus.OVERRIDE_APPROVED || s2 == RequestedCourseStatus.OVERRIDE_APPROVED) return RequestedCourseStatus.OVERRIDE_APPROVED;
@@ -1481,9 +1512,9 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			for (Change ch: request.changes) {
 				if (ch.status == null) continue;
 				if (credit && ch.subject == null && ch.courseNbr == null)
-					ret = combine(ret, status(ch.status));
+					ret = combine(ret, status(ch));
 				if (!credit && ch.subject != null && ch.courseNbr != null)
-					ret = combine(ret, status(ch.status));
+					ret = combine(ret, status(ch));
 			}
 		if (ret != null) return ret;
 		if (request.completionStatus != null)
@@ -1965,13 +1996,15 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						for (Change ch: r.changes)
 							if (ch.errors != null && ch.courseNbr != null && ch.subject != null && ch.status != null)
 								for (ChangeError er: ch.errors) {
-									if (ch.status == ChangeStatus.denied) {
-										request.addConfirmationError(rc.getCourseId(), rc.getCourseName(), er.code, "Denied " + er.message, status(ch.status), ORD_BANNER);
+									if (isOverrideNotNeed(ch)) {
+										request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), er.code, "Not Needed " + er.message, status(ch), ORD_BANNER);
+									} else if (ch.status == ChangeStatus.denied && !isOverrideNotNeed(ch)) {
+										request.addConfirmationError(rc.getCourseId(), rc.getCourseName(), er.code, "Denied " + er.message, status(ch), ORD_BANNER);
 										if (!fixedCourses.contains(rc.getCourseName()))
 											request.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.deniedOverrideError",
 													"One or more courses require registration overrides which have been denied.\nYou must remove or replace these courses in order to submit your registration request."));
 									} else if (ch.status != ChangeStatus.approved && ch.status != ChangeStatus.cancelled) {
-										request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), er.code, er.message, status(ch.status), ORD_BANNER);
+										request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), er.code, er.message, status(ch), ORD_BANNER);
 									}
 								}
 					rc.setStatusNote(SpecialRegistrationHelper.note(r, false));
@@ -2110,6 +2143,9 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 								break;
 							case OVERRIDE_PENDING:
 								cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.PENDING);
+								break;
+							case OVERRIDE_NOT_NEEDED:
+								cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.NOT_NEEDED);
 								break;
 							}
 							if (oldStatus == null || !oldStatus.equals(cr.getOverrideStatus())) {
@@ -2630,6 +2666,9 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 									case OVERRIDE_PENDING:
 										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.PENDING);
 										break;
+									case OVERRIDE_NOT_NEEDED:
+										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.NOT_NEEDED);
+										break;
 									}
 									if (oldStatus == null || !oldStatus.equals(cr.getOverrideStatus()))
 										changed = true;
@@ -2885,6 +2924,9 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 										break;
 									case OVERRIDE_PENDING:
 										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.PENDING);
+										break;
+									case OVERRIDE_NOT_NEEDED:
+										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.NOT_NEEDED);
 										break;
 									}
 									if (oldStatus == null || !oldStatus.equals(cr.getOverrideStatus())) {
@@ -3317,11 +3359,11 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							if (ch.errors != null)
 								for (ChangeError err: ch.errors) {
 									if (err.code != null)
-										problems.put(err.code, status(ch.status));
+										problems.put(err.code, status(ch));
 								}
 						} else if (r.maxCredit != null && (maxCreditOverride == null || maxCreditOverride < r.maxCredit)) {
 							maxCreditOverride = r.maxCredit;
-							maxCreditOverrideStatus = status(ch.status);
+							maxCreditOverrideStatus = status(ch);
 						}
 					}
 				}

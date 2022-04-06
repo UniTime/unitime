@@ -686,6 +686,9 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							case OVERRIDE_APPROVED:
 								icon = RESOURCES.requestSaved(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideApproved(rc.getCourseName()));
 								break;
+							case OVERRIDE_NOT_NEEDED:
+								icon = RESOURCES.requestNotNeeded(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideNotNeeded(rc.getCourseName()));
+								break;
 							default:
 								if (check.isError(rc.getCourseName()))
 									icon = RESOURCES.requestError(); iconText = (msg);
@@ -714,6 +717,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); break;
 							case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); break;
 							case OVERRIDE_NEEDED: status = MESSAGES.reqStatusNeeded(); break;
+							case OVERRIDE_NOT_NEEDED: status = MESSAGES.reqStatusNotNeeded(); break;
 							}
 						}
 						if (status.isEmpty()) status = MESSAGES.reqStatusRegistered();
@@ -805,6 +809,9 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							case OVERRIDE_APPROVED:
 								icon = RESOURCES.requestSaved(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideApproved(rc.getCourseName()));
 								break;
+							case OVERRIDE_NOT_NEEDED:
+								icon = RESOURCES.requestNotNeeded(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideNotNeeded(rc.getCourseName()));
+								break;
 							default:
 								if (check.isError(rc.getCourseName()))
 									icon = RESOURCES.requestError(); iconText = (msg);
@@ -834,6 +841,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); break;
 							case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); break;
 							case OVERRIDE_NEEDED: status = MESSAGES.reqStatusNeeded(); break;
+							case OVERRIDE_NOT_NEEDED: status = MESSAGES.reqStatusNotNeeded(); break;
 							}
 						}
 						if (status.isEmpty()) status = MESSAGES.reqStatusRegistered();

@@ -499,6 +499,8 @@ public class SpecialRegistrationInterface {
 		public String errorMessage;
 		/** Special Registration API mode (REG or PREREG) */
 		public ApiMode mode;
+		/** Denied note */
+		public String notes;
 	}
 	
 	/** Max credit override that have been denied for the student */

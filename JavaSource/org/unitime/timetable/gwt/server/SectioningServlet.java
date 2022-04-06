@@ -2342,6 +2342,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_CANCELLED);
 			else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.NOT_CHECKED.ordinal())
 				request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_NEEDED);
+			else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.NOT_NEEDED.ordinal())
+				request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_NOT_NEEDED);
 			else
 				request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_PENDING);
 		}
@@ -2412,6 +2414,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 									course.isRequestRejected() ? RequestedCourseStatus.OVERRIDE_REJECTED :
 									course.isRequestCancelled() ? RequestedCourseStatus.OVERRIDE_CANCELLED :
 									course.isRequestNeeded() ? RequestedCourseStatus.OVERRIDE_NEEDED :
+									course.isRequestNotNeeded() ? RequestedCourseStatus.OVERRIDE_NOT_NEEDED :
 									RequestedCourseStatus.OVERRIDE_PENDING);
 						else
 							rc.setStatus(RequestedCourseStatus.SAVED);

@@ -1816,6 +1816,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									unassignedMessage += "<span class='unitime-WarningText'>";
 									break;
 								case OVERRIDE_CANCELLED:
+								case OVERRIDE_NOT_NEEDED:
 									unassignedMessage += "<span class='unitime-GrayText'>";
 									break;
 								case OVERRIDE_APPROVED:
@@ -1833,6 +1834,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								case OVERRIDE_PENDING:
 								case OVERRIDE_CANCELLED:
 								case OVERRIDE_APPROVED:
+								case OVERRIDE_NOT_NEEDED:
 									unassignedMessage += "</span>";
 									break;
 								}
@@ -1854,6 +1856,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									break;
 								case OVERRIDE_APPROVED:
 									icons.add(RESOURCES.requestSaved(), (msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideApproved(course.getCourseName()));
+									break;
+								case OVERRIDE_NOT_NEEDED:
+									icons.add(RESOURCES.requestNotNeeded(), (msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideNotNeeded(course.getCourseName()));
 									break;
 								case SAVED:
 									icons.add(RESOURCES.requestSaved(), MESSAGES.courseWaitListed());
@@ -3511,6 +3516,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						case OVERRIDE_APPROVED:
 							icon = RESOURCES.requestSaved(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideApproved(rc.getCourseName()));
 							break;
+						case OVERRIDE_NOT_NEEDED:
+							icon = RESOURCES.requestNotNeeded(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideNotNeeded(rc.getCourseName()));
+							break;
 						default:
 							if (check.isError(rc.getCourseName()))
 								icon = RESOURCES.requestError(); iconText = (msg);
@@ -3538,6 +3546,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); break;
 						case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); break;
 						case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); break;
+						case OVERRIDE_NOT_NEEDED: status = MESSAGES.reqStatusNotNeeded(); break;
 						}
 					}
 					if (status.isEmpty()) status = MESSAGES.reqStatusRegistered();
@@ -3621,6 +3630,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						case OVERRIDE_APPROVED:
 							icon = RESOURCES.requestSaved(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideApproved(rc.getCourseName()));
 							break;
+						case OVERRIDE_NOT_NEEDED:
+							icon = RESOURCES.requestNotNeeded(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideNotNeeded(rc.getCourseName()));
+							break;
 						default:
 							if (check.isError(rc.getCourseName()))
 								icon = RESOURCES.requestError(); iconText = (msg);
@@ -3649,6 +3661,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); break;
 						case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); break;
 						case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); break;
+						case OVERRIDE_NOT_NEEDED: status = MESSAGES.reqStatusNotNeeded(); break;
 						}
 					}
 					if (status.isEmpty()) status = MESSAGES.reqStatusRegistered();
