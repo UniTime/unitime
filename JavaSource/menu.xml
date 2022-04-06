@@ -845,20 +845,34 @@
 					<hasPermission name="TimetableManagers"/>
 				</condition>
 			</item>
+			<item name="Departments" page="departmentList.do">
+				<condition>
+					<hasPermission name="Departments"/>
+					<propertyEquals name="unitime.legacy.admin.departments" value="true" defaultValue="false"/>
+				</condition>
+			</item>
 			<item name="Departments" page="departments" type="gwt">
 				<condition>
 					<hasPermission name="Departments"/>
+					<propertyEquals name="unitime.legacy.admin.departments" value="false" defaultValue="false"/>
 				</condition>
-			</item>			
+			</item>
 			<item name="Solver Groups" page="solverGroupEdit.do">
 				<condition>
 					<hasPermission name="SolverGroups"/>
+				</condition>
+			</item>
+			<item name="Subject Areas" page="subjectList.do">
+				<condition>
+					<hasPermission name="SubjectAreas"/>
+					<propertyEquals name="unitime.legacy.admin.subjectAreas" value="true" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Subject Areas" page="admin" type="gwt">
 				<parameter name="type">subjectArea</parameter>
 				<condition>
 					<hasPermission name="SubjectAreas"/>
+					<propertyEquals name="unitime.legacy.admin.subjectAreas" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Buildings" page="buildings" type="gwt">
