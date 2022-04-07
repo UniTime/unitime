@@ -842,6 +842,7 @@
 			<name>Public online Restlet repository</name>
 			<url>https://maven.restlet.org</url>
 		</repository>
+		<!--
 		<repository>
 			<id>snapshot-repo</id>
 			<name>Sonatype's SNAPSHOT repository</name>
@@ -849,5 +850,6 @@
 			<releases><enabled>false</enabled></releases>
 			<snapshots><enabled>true</enabled></snapshots>
 		</repository>
+		-->
 	</repositories>
 </project>
