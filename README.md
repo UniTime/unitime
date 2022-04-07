@@ -52,7 +52,7 @@ a sponsored project of the [Apereo Foundation][apereo] in March 2015.
 - [Localization][localization]
 
 ### Links
-- [UniTime 4.3 documentation][docs]
+- [UniTime 4.6 documentation][docs]
 - [Online Documentation][help]
 - [Online Demo][demo]
 - [Downloads][downloads]
@@ -64,16 +64,16 @@ a sponsored project of the [Apereo Foundation][apereo] in March 2015.
 [exams]: https://www.unitime.org/uct_exams.php
 [events]: https://www.unitime.org/uct_events.php
 [students]: https://www.unitime.org/uct_students.php
-[help]: http://help.unitime.org
+[help]: https://help.unitime.org
 [install]: https://help.unitime.org/installation
 [demo]: https://demo.unitime.org
 [builds]: https://builds.unitime.org
 [xml]: https://www.unitime.org/uct_interfaces.php
 [publications]: https://www.unitime.org/publications.php
 [downloads]: https://sourceforge.net/projects/unitime/files
-[build]:https://help.unitime.org/building-unitime
-[eclipse]: http://help.unitime.org/eclipse
-[docs]: http://bit.ly/unitime43docs
+[build]: https://help.unitime.org/building-unitime
+[eclipse]: https://help.unitime.org/eclipse
+[docs]: https://bit.ly/unitime46docs
 [apereo]: https://www.apereo.org
 [customization]: https://help.unitime.org/customizations
 [localization]: https://help.unitime.org/localization
