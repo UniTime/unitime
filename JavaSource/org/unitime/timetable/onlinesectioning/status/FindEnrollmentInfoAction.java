@@ -252,7 +252,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					if (request.getEnrollment() != null && !request.getEnrollment().getCourseId().equals(info.getCourseId())) continue;
 					if (checkOverrides && request.getEnrollment() == null) {
 						XOverride override = request.getOverride(info);
-						if (override != null && !override.isApproved()) continue;
+						if (override != null && !override.isApproved() && !override.isNotNeeded()) continue;
 					}
 					
 					if (studentIds != null && !studentIds.contains(request.getStudentId())) {
@@ -578,7 +578,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				if (student == null || !student.canAssign(request, wl)) continue;
 				if (checkOverrides && request.getEnrollment() == null) {
 					XOverride override = request.getOverride(info);
-					if (override != null && !override.isApproved()) continue;
+					if (override != null && !override.isApproved() && !override.isNotNeeded()) continue;
 				}
 				Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 				CourseRequest r = SectioningRequest.convert(assignment, request, server, wl);
@@ -627,7 +627,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 						if (request.getEnrollment() != null && !request.getEnrollment().getCourseId().equals(other.getCourseId())) continue;
 						if (checkOverrides && request.getEnrollment() == null) {
 							XOverride override = request.getOverride(other);
-							if (override != null && !override.isApproved()) continue;
+							if (override != null && !override.isApproved() && !override.isNotNeeded()) continue;
 						}
 						if (studentIds != null && !studentIds.contains(request.getStudentId())) {
 							if (request.getEnrollment() != null) {
@@ -871,7 +871,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 						if (student == null || !student.canAssign(request, wl)) continue;
 						if (checkOverrides && request.getEnrollment() == null) {
 							XOverride override = request.getOverride(info);
-							if (override != null && !override.isApproved()) continue;
+							if (override != null && !override.isApproved() && !override.isNotNeeded()) continue;
 						}
 						CourseRequestMatcher m = new CourseRequestMatcher(session, info, student, offering, request, isConsentToDoCourse, isMyStudent(student), lookup, server, wl);
 						

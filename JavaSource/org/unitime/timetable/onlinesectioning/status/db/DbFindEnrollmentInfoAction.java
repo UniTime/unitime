@@ -181,7 +181,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 						"from CourseRequest where courseOffering.uniqueId = :courseId"
 						).setLong("courseId", course.getUniqueId()).setCacheable(true).list()) {
 					
-					if (checkOverrides && !request.isRequestApproved() && request.getClassEnrollments().isEmpty()) continue;
+					if (checkOverrides && !request.isRequestApproved() && !request.isRequestNotNeeded() && request.getClassEnrollments().isEmpty()) continue;
 					
 					if (request.getClassEnrollments().isEmpty()) { // skip course requests where course demand is enrolled to some other course
 						for (CourseRequest x: request.getCourseDemand().getCourseRequests())
@@ -210,7 +210,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 
 				Set<Long> addedStudents = new HashSet<Long>();
 				for (CourseRequest request: entry.getValue()) {
-					if (checkOverrides && !request.isRequestApproved() && request.getClassEnrollments().isEmpty()) continue;
+					if (checkOverrides && !request.isRequestApproved() && !request.isRequestNotNeeded() && request.getClassEnrollments().isEmpty()) continue;
 					
 					Student student = request.getCourseDemand().getStudent();
 					
@@ -412,7 +412,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					
 					for (CourseRequest request: requests) {
 						if (!request.getCourseOffering().equals(other)) continue;
-						if (checkOverrides && !request.isRequestApproved() && request.getClassEnrollments().isEmpty()) continue;
+						if (checkOverrides && !request.isRequestApproved() && !request.isRequestNotNeeded() && request.getClassEnrollments().isEmpty()) continue;
 						
 						DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(request.getCourseDemand().getStudent()), helper.getStudentNameFormat(), lookup);
 						if (query().match(crm)) {
@@ -654,7 +654,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					DbCourseRequestMatcher m = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(request.getCourseDemand().getStudent()), helper.getStudentNameFormat(), lookup, section);
 					if (!m.enrollment().isEmpty() || !request.getCourseOffering().equals(course)) continue;
 					if (!m.canAssign()) continue;
-					if (checkOverrides && !request.isRequestApproved()) continue;
+					if (checkOverrides && !request.isRequestApproved() && !request.isRequestNotNeeded()) continue;
 					
 					if (query().match(m)) {
 						match++;
