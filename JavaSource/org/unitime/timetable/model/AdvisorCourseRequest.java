@@ -30,6 +30,7 @@ import org.unitime.timetable.model.CourseDemand.Critical;
 import org.unitime.timetable.model.base.BaseAdvisorCourseRequest;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.InstructionalMethodDAO;
+import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.AdvisorCriticalCourses;
 import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.CriticalCourses;
 
 public class AdvisorCourseRequest extends BaseAdvisorCourseRequest implements Comparable<AdvisorCourseRequest> {
@@ -111,6 +112,9 @@ public class AdvisorCourseRequest extends BaseAdvisorCourseRequest implements Co
 	
 	public int isCritical(CriticalCourses cc) {
 		if (cc == null) return 0;
+		if (cc instanceof AdvisorCriticalCourses) {
+			return ((AdvisorCriticalCourses)cc).isCritical(this);
+		}
 		if (getCourseOffering() == null || isSubstitute()) return 0;
 		return cc.isCritical(getCourseOffering());
 	}
