@@ -252,4 +252,8 @@ public interface StudentSectioningConstants extends Constants {
 	@DefaultIntValue(10)
 	@DoNotTranslate
 	int degreePlanMaxAlternatives();
+	
+	@DefaultBooleanValue(true)
+	@DoNotTranslate
+	boolean advisorCourseRequestsShowCritical();
 }

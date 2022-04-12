@@ -25,6 +25,7 @@ import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
+import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
@@ -42,6 +43,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
  */
 public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<CourseRequestInterface> {
 	protected static StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
+	protected static StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	private CourseRequestInterface iAdvisorRequests;
 	private WaitListMode iMode;
 	
@@ -299,7 +301,7 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 		
 		setData(rowArray);
 		setColumnVisible(4, hasPref);
-		setColumnVisible(5, hasCrit);
+		setColumnVisible(5, hasCrit && CONSTANTS.advisorCourseRequestsShowCritical());
 		setColumnVisible(6, hasWL && (iMode == null || iMode != WaitListMode.None));
 	}
 

@@ -635,7 +635,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		
 		iAdvReqs.setData(rowArray);
 		iAdvReqs.setColumnVisible(4, hasPref);
-		iAdvReqs.setColumnVisible(5, hasCrit);
+		iAdvReqs.setColumnVisible(5, hasCrit && CONSTANTS.advisorCourseRequestsShowCritical());
 		iAdvReqs.setColumnVisible(6, hasWL);
 		iAdvReqs.setColumnVisible(8, hasChanges);
 	}
