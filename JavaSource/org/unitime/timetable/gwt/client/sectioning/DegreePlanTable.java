@@ -43,6 +43,7 @@ import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreeCourseInterfac
 import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreeGroupInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreeMultiSelectionInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreePlaceHolderInterface;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -732,7 +733,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		return false;
 	}
 	
-	public CourseRequestInterface createRequests() {
+	public CourseRequestInterface createRequests(WaitListMode wl) {
 		CourseRequestInterface requests = iRequests.getValue();
 		// 1. delete all requests that are not assigned
 		for (Iterator<CourseRequestInterface.Request> i = requests.getCourses().iterator(); i.hasNext(); ) {
@@ -788,6 +789,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 				
 				CourseRequestInterface.Request r = new CourseRequestInterface.Request();
 				r.addRequestedCourse(rc);
+				if (wl == WaitListMode.NoSubs && iPlan.isCourseCritical(rc)) r.setNoSub(true);
 				if (p != null) {
 					r = p.getRequest();
 					if (r.isReadOnly()) continue;

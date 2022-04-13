@@ -702,6 +702,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 									}
 								};
 							}
+							iDegreePlanDialog.setWaitListMode(iDetails == null ? null : iDetails.getWaitListMode());
 							if (result.size() == 1)
 								iDegreePlanDialog.open(result.get(0), false);
 							else

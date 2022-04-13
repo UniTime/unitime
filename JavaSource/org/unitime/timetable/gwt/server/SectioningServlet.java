@@ -3015,7 +3015,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (cx.getStudentId() == null)
 			sLog.debug("ContextCheck: no student id (assuming guess access)");
 		if (cx.getStudentId() != null && !cx.getStudentId().equals(getStudentId(cx.getSessionId()))) {
-			sLog.info("ContextCheck: different student id, permission check: " + getSessionContext().hasPermissionAnySession(cx.getSessionId(), Right.StudentSchedulingAdvisor));
+			boolean check = getSessionContext().hasPermissionAnySession(cx.getSessionId(), Right.StudentSchedulingAdvisor);
+			if (check)
+				sLog.debug("ContextCheck: different student id, permission check: " + check);
+			else
+				sLog.warn("ContextCheck: different student id, permission check: " + check);
 		}
 	}
 	
