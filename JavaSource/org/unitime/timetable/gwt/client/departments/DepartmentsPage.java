@@ -28,6 +28,8 @@ import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.shared.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.DepartmentInterface.GetDepartmentsRequest;
+import org.unitime.timetable.gwt.shared.DepartmentInterface.DepartmentPropertiesInterface;
+import org.unitime.timetable.gwt.shared.DepartmentInterface.DepartmentPropertiesRequest;
 import org.unitime.timetable.gwt.shared.DepartmentInterface.DepartmentsDataResponse;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -102,7 +104,7 @@ public class DepartmentsPage extends Composite {
 		iShowAllDept = new CheckBox(MESSAGES.checkShowAllDepartments());
 		iListDepartmentsFooter.insertLeft(iShowAllDept, true);
 		iListDepartmentsForm.addBottomRow(iListDepartmentsFooter);
-		iShowAllDept.setValue(AdminCookie.getInstance().getShowAllDepartments() == 1?true:false);
+		iShowAllDept.setValue(AdminCookie.getInstance().getShowAllDepartments() == 1);
 		
 		// Hook up a handler to find out when it's clicked.
 		iShowAllDept.addClickHandler(new ClickHandler() {
@@ -111,7 +113,7 @@ public class DepartmentsPage extends Composite {
 				// load
 				LoadingWidget.getInstance().show(MESSAGES.waitLoadingData());
 				
-				AdminCookie.getInstance().setShowAllDepartments(iShowAllDept.getValue() == true?1:0);
+				AdminCookie.getInstance().setShowAllDepartments(iShowAllDept.getValue() ? 1 : 0);
 				// Get all departments
 				listDepartments();
 			}
@@ -141,7 +143,7 @@ public class DepartmentsPage extends Composite {
 									iListDepartmentsHeader.setEnabled("export",result.isCanExportPdf());
 									//department list
 									iDepartmentsTable.setHeaderData(result.isFundingDeptEnabled());
-									iDepartmentsTable.setData(result.getDepartments(),iShowAllDept.getValue());
+									iDepartmentsTable.setData(result.getDepartments(),iShowAllDept.getValue(), result.isFundingDeptEnabled());
 																		
 									LoadingWidget.getInstance().hide();
 									if (DepartmentId != null)
@@ -223,21 +225,49 @@ public class DepartmentsPage extends Composite {
 	}
 
 	protected void addDepartment() {
-		iDepartmentsEdit.setValue(null);
-		iPanel.setWidget(iDepartmentsEdit);
-		iDepartmentsEdit.show();
-		UniTimePageLabel.getInstance().setPageName(MESSAGES.pageAddDepartment());
-		iDepartmentsTable.clearHover();
+		RPC.execute(new DepartmentPropertiesRequest(null),new AsyncCallback<DepartmentPropertiesInterface>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				LoadingWidget.getInstance().hide();
+				iListDepartmentsHeader.setErrorMessage(MESSAGES.failedCreate(MESSAGES.objectDepartment(), caught.getMessage()));
+				UniTimeNotifications.error(MESSAGES.failedCreate(MESSAGES.objectDepartment(), caught.getMessage()), caught);
+			}
+			@Override
+			public void onSuccess(DepartmentPropertiesInterface result) {
+				if (result.getCanEdit()) {
+					iDepartmentsEdit.setProperties(result);
+					iDepartmentsEdit.setValue(null);
+					iPanel.setWidget(iDepartmentsEdit);
+					iDepartmentsEdit.show();
+					UniTimePageLabel.getInstance().setPageName(MESSAGES.pageAddDepartment());
+					iDepartmentsTable.clearHover();
+				}						
+			}
+		});
 
 	}
 
 	protected void editDepartment(DepartmentInterface department) {
-		iDepartmentsEdit.setValue(department);
-		iPanel.setWidget(iDepartmentsEdit);
-		iDepartmentsEdit.show();
-		UniTimePageLabel.getInstance().setPageName(
-				MESSAGES.pageEditDepartment());
-		iDepartmentsTable.clearHover();
+		RPC.execute(new DepartmentPropertiesRequest(department.getUniqueId()),new AsyncCallback<DepartmentPropertiesInterface>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				LoadingWidget.getInstance().hide();
+				iListDepartmentsHeader.setErrorMessage(MESSAGES.failedCreate(MESSAGES.objectDepartment(), caught.getMessage()));
+				UniTimeNotifications.error(MESSAGES.failedUpdate(MESSAGES.objectDepartment(), caught.getMessage()), caught);
+			}
+			@Override
+			public void onSuccess(DepartmentPropertiesInterface result) {
+				if (result.getCanEdit()) {
+					iDepartmentsEdit.setProperties(result);
+					iDepartmentsEdit.setValue(department);
+					iPanel.setWidget(iDepartmentsEdit);
+					iDepartmentsEdit.show();
+					UniTimePageLabel.getInstance().setPageName(
+							MESSAGES.pageEditDepartment());
+					iDepartmentsTable.clearHover();
+				}
+			}
+		});
 	}
 
 	protected void listDepartments() {
@@ -255,7 +285,7 @@ public class DepartmentsPage extends Composite {
 						iDepartmentsTable.setAllowMultiSelect(false);
 						
 						// list departments
-						iDepartmentsTable.setData(result.getDepartments(),iShowAllDept.getValue());
+						iDepartmentsTable.setData(result.getDepartments(),iShowAllDept.getValue(), result.isFundingDeptEnabled());
 						
 						LoadingWidget.getInstance().hide();
 
@@ -265,8 +295,7 @@ public class DepartmentsPage extends Composite {
 									@Override
 									public void onMouseClick(
 											TableEvent<DepartmentInterface> event) {
-										if (event.getData() != null
-												&& event.getData().isCanEdit()) {
+										if (event.getData() != null) {
 											iDepartmentsTable.setSelected(
 													event.getRow(), true);
 											editDepartment(event.getData());

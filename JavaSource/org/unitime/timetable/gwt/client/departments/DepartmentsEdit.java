@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.client.departments;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
+
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -33,9 +34,9 @@ import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.DepartmentInterface;
-import org.unitime.timetable.gwt.shared.DepartmentInterface.UpdateDepartmentAction;
 import org.unitime.timetable.gwt.shared.DepartmentInterface.DepartmentPropertiesInterface;
-import org.unitime.timetable.gwt.shared.DepartmentInterface.DepartmentPropertiesRequest;
+import org.unitime.timetable.gwt.shared.DepartmentInterface.UpdateDepartmentAction;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -52,9 +53,9 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class DepartmentsEdit extends Composite implements TakesValue<DepartmentInterface>{
@@ -88,7 +89,8 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 	private VerticalPanel iControlDeptMainPanel ;
 	private FlexTable iControlDeptFlexTable;	  
 	private DepartmentInterface iDepartment = null;
-	private int iExtManagerAbbvLine =0;
+	private int iExtManagerAbbvLine = 0;
+	private DepartmentPropertiesInterface iDepartmentProperties;
 	
 	public DepartmentsEdit() {
 		/*create the UI */
@@ -448,42 +450,31 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 			iHeader.setEnabled("delete", false);
 			iHeader.setEnabled("back", true);
 			iDepartment = new DepartmentInterface();
-			RPC.execute(new DepartmentPropertiesRequest(),new AsyncCallback<DepartmentPropertiesInterface>() {
-				@Override
-				public void onFailure(Throwable caught) {
-					LoadingWidget.getInstance().hide();
-					iHeader.setErrorMessage(MESSAGES.failedCreate(MESSAGES.objectDepartment(), caught.getMessage()));
-					UniTimeNotifications.error(MESSAGES.failedCreate(MESSAGES.objectDepartment(), caught.getMessage()), caught);
-				}
-				@Override
-				public void onSuccess(DepartmentPropertiesInterface result) {
-					iStatusType.getWidget().addItem(MESSAGES.propDepartmentStatusDefault(),"-1");
-					for (Entry<String, String> entry : result.getSatusOptions().entrySet()) {    
-						iStatusType.getWidget().addItem(entry.getValue().toString() , entry.getKey().toString());
-					}
-					iAcademicSession.getWidget().setText((result.getAcademicSessionName() == null ? "" : result.getAcademicSessionName()));
+			
+			iStatusType.getWidget().addItem(MESSAGES.propDepartmentStatusDefault(),"-1");
+			for (Entry<String, String> entry : iDepartmentProperties.getStatusOptions().entrySet()) {    
+				iStatusType.getWidget().addItem(entry.getValue().toString() , entry.getKey().toString());
+			}
+			iAcademicSession.getWidget().setText((iDepartmentProperties.getAcademicSessionName() == null ? "" : iDepartmentProperties.getAcademicSessionName()));
+			
+			//Remove external funding row when switch in config turned off
+			if (!iDepartmentProperties.isCoursesFundingDepartmentsEnabled()) {
+				int rowNum = iForm.getRow(MESSAGES.propExternalFundingDept().replace("<br>", ""));
+				iForm.getRowFormatter().setVisible(rowNum, false);
+			}
+
 					
-					//Remove external funding row when switch in config turned off
-					if (result.isCoursesFundingDepartmentsEnabled() == false) {
-						int rowNum = iForm.getRow(MESSAGES.propExternalFundingDept().replace("<br>", ""));
-						iForm.getRowFormatter().setVisible(rowNum, false);
-					}
-						
-				
-				}
-			});
-		
 		} else {
 			iControlDeptFlexTable.setText(0, 1, MESSAGES.propStatusManagedBy( ((department.getDeptCode() == null) ? "" : department.getDeptCode()) + " - " + ((department.getName() == null) ? "" : department.getName())));
 			iHeader.setHeaderTitle(MESSAGES.sectEditDepartment());
 			iHeader.setEnabled("save", false);
-			iHeader.setEnabled("update", department.getCanEdit());
-			iHeader.setEnabled("delete", department.getCanDelete());
+			iHeader.setEnabled("update", iDepartmentProperties.getCanEdit());
+			iHeader.setEnabled("delete", iDepartmentProperties.getCanDelete());
 			iHeader.setEnabled("back", true); 
 			iDeptCode.getWidget().setText(department.getDeptCode() == null ? "" : department.getDeptCode());
 			iAbbreviation.getWidget().setText(department.getAbbreviation() == null ? "" : department.getAbbreviation());
 			iName.getWidget().setText(department.getName() == null ? "" : department.getName());
-			iExternalManager.getWidget().setEnabled(department.isCanChangeExtManager());	
+			iExternalManager.getWidget().setEnabled(iDepartmentProperties.isCanChangeExtManager());	
 											
 			iAcademicSession.getWidget().setText((department.getAcademicSessionName() == null ? "" : department.getAcademicSessionName()));
 			iExternalId.setText(department.getExternalId() == null ? "" : department.getExternalId());
@@ -498,7 +489,7 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 			
 			iStatusType.getWidget().clear();
 			iStatusType.getWidget().addItem(MESSAGES.propDepartmentStatusDefault(),"-1");
-			for (Entry<String, String> entry : department.getSatusOptions().entrySet()) {    
+			for (Entry<String, String> entry : iDepartmentProperties.getStatusOptions().entrySet()) {    
 				iStatusType.getWidget().addItem(entry.getValue().toString() , entry.getKey().toString());
 			}
 		    if(department.getStatusTypeCode() != null){
@@ -512,7 +503,7 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 			iAllowEvents.getWidget().setValue(department.getAllowEvents());		
 			iAllowStudentScheduling.getWidget().setValue(department.getAllowStudentScheduling());
 					
-			if(department.isExternalManager ()== false){				
+			if(!department.isExternalManager()){				
 				controlDeptHeaderPanel.setVisible(false);
 				iControlDeptMainPanel.setVisible(false);
 				
@@ -524,7 +515,7 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 			
 			iExternalFundingDept.getWidget().setValue(department.getExternalFundingDept());
 			//Remove external funding row when switch in config turned off
-			if (department.isCoursesFundingDepartmentsEnabled() == false) {
+			if (!iDepartmentProperties.isCoursesFundingDepartmentsEnabled()) {
 				int rowNum = iForm.getRow(MESSAGES.propExternalFundingDept().replace("<br>", ""));
 				iForm.getRowFormatter().setVisible(rowNum, false);
 			}
@@ -607,8 +598,8 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		
 
 		
-		List dependentDepartmentIds  = new ArrayList();
-		List dependentStatuses = new ArrayList();
+		ArrayList<String> dependentDepartmentIds  = new ArrayList<String>();
+		ArrayList<String> dependentStatuses = new ArrayList<String>();
 
 	    int rows = iControlDeptFlexTable.getRowCount();
 	    for (int row = 1; row < rows; row++) { //first row is header
@@ -658,30 +649,29 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 			ok = false;
 		}
 
-        if (iExternalManager.getWidget().getValue() == true && (iExternalManagerName.getWidget().getText().isEmpty()|| iExternalManagerName.getWidget().getText().length() ==0)) {
+        if (iExternalManager.getWidget().getValue() && (iExternalManagerName.getWidget().getText().isEmpty()|| iExternalManagerName.getWidget().getText().length() ==0)) {
         	iExternalManagerName.setErrorHint(MESSAGES.errorRequired(MESSAGES.propExternalManagerName()));
 			if (ok) iHeader.setErrorMessage(MESSAGES.errorRequired(MESSAGES.propExternalManagerName()));
 			ok = false;
         }
  
-        if (iExternalManager.getWidget().getValue() == false && (!iExternalManagerName.getWidget().getText().isEmpty()|| iExternalManagerName.getWidget().getText().trim().length() >0)) {
+        if (!iExternalManager.getWidget().getValue() && (!iExternalManagerName.getWidget().getText().isEmpty()|| iExternalManagerName.getWidget().getText().trim().length() >0)) {
         	iExternalManagerName.setErrorHint(MESSAGES.errorGeneric(MESSAGES.errorExternalManagerNameUse()));
 			if (ok) iHeader.setErrorMessage(MESSAGES.errorGeneric(MESSAGES.errorExternalManagerNameUse()));
 			ok = false;
         }
  
-        if (iExternalManager.getWidget().getValue() == true && (iExternalManagerAbbreviation.getWidget().getText().isEmpty()|| iExternalManagerAbbreviation.getWidget().getText().length() ==0)) {
+        if (iExternalManager.getWidget().getValue() && (iExternalManagerAbbreviation.getWidget().getText().isEmpty()|| iExternalManagerAbbreviation.getWidget().getText().length() ==0)) {
         	iExternalManagerAbbreviation.setErrorHint(MESSAGES.errorRequired(MESSAGES.propExternalManagerAbbreviation()));
 			if (ok) iHeader.setErrorMessage(MESSAGES.errorRequired(MESSAGES.propExternalManagerAbbreviation()));
 			ok = false;
         }
-        if (iExternalManager.getWidget().getValue() == false && (!iExternalManagerAbbreviation.getWidget().getText().isEmpty() || iExternalManagerAbbreviation.getWidget().getText().trim().length() >0)) {
+        if (!iExternalManager.getWidget().getValue() && (!iExternalManagerAbbreviation.getWidget().getText().isEmpty() || iExternalManagerAbbreviation.getWidget().getText().trim().length() >0)) {
         	iExternalManagerAbbreviation.setErrorHint(MESSAGES.errorGeneric(MESSAGES.errorExternalManagerAbbreviationUse()));
 			if (ok) iHeader.setErrorMessage(MESSAGES.errorGeneric(MESSAGES.errorExternalManagerAbbreviationUse()));
 			ok = false;
         }
- 
-        
+         
 		return ok;
 	}
 
@@ -723,7 +713,7 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		statusTypeOptions.setVisibleItemCount(1);		
 		statusTypeOptions.addItem(MESSAGES.propDefaultDependentStatus(), "");
 
-	for (Entry<String, String> entry : department.getSatusOptions().entrySet()) {    
+	for (Entry<String, String> entry : iDepartmentProperties.getStatusOptions().entrySet()) {    
 			statusTypeOptions.addItem(entry.getValue().toString() , entry.getKey().toString());
 		}	
 		return statusTypeOptions;
@@ -751,7 +741,7 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		departmentOptions.setStyleName("unitime-TextBox");
 		departmentOptions.setVisibleItemCount(1);
 		departmentOptions.addItem(MESSAGES.propDefaultDependentDepartment(), "");
-		for (Entry<Long, String> entry : department.getExtDepartmentOptions().entrySet()) {
+		for (Entry<Long, String> entry : iDepartmentProperties.getExtDepartmentOptions().entrySet()) {
 			departmentOptions.addItem(entry.getValue().toString() , entry.getKey().toString());
 		}	
 		return departmentOptions;
@@ -789,5 +779,9 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 	public void deleteAllDependentDepartments() {
 		while (iControlDeptFlexTable.getRowCount() > 1)
 			iControlDeptFlexTable.removeRow(1);
+	}
+	
+	public void setProperties(DepartmentPropertiesInterface departmentProperties) {
+		iDepartmentProperties = departmentProperties;
 	}
 }

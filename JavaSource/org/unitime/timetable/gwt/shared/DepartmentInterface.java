@@ -54,22 +54,15 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 	private  Boolean iAllowReqRoom = false;
 	private  Boolean iAllowReqDistribution = false;
 	private  Boolean iExternalFundingDept= false;
-	private  Boolean iCoursesFundingDepartmentsEnabled = false;
 	private  String iExternalStatusTypesStr;
-	private  List<String> iDependentStatusesStr;
+	private  ArrayList<String> iDependentStatusesStr;
 
-	private  Integer iSubjectAreaCount;
-	private  Integer iRoomDeptsCount;
-	private Boolean iCanEdit = false;
-	private Boolean iCanDelete = false;
-	private Boolean iCanChangeExtManager = true;
+	private Integer iSubjectAreaCount;
+	private Integer iRoomDeptsCount;
 	
-	private  HashMap<String, String> iStatuses;	
-	private  HashMap<Long, String>  iExtDepartments;
-
 	//used by UpdateDepartmentBackend
-	public  List<String> iDependentStatuses;
-	public  List<String> iDependentDepartments;	
+	public  ArrayList<String> iDependentStatuses;
+	public  ArrayList<String> iDependentDepartments;	
 	
 	public DepartmentInterface() {}
 	
@@ -107,11 +100,7 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 
 	public String getAcademicSessionName() { return iAcademicSessionName; }
 	public void setAcademicSessionName(String academicSessionName) { iAcademicSessionName = academicSessionName; }
-	
-	public boolean isCoursesFundingDepartmentsEnabled(){ return iCoursesFundingDepartmentsEnabled; }
-	public void setCoursesFundingDepartmentsEnabled(boolean coursesFundingDepartmentsEnabled) { iCoursesFundingDepartmentsEnabled = coursesFundingDepartmentsEnabled; }
-
-	
+		
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
@@ -132,16 +121,7 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 	
 	public Integer getDistributionPrefPriority() { return iDistributionPrefPriority; }
 	public void setDistributionPrefPriority(Integer distributionPrefPriority) { iDistributionPrefPriority = distributionPrefPriority; }
-	
-	public boolean getCanEdit() { return iCanEdit; }
-	public void setCanEdit (boolean canEdit) { iCanEdit = canEdit; }
-
-	public boolean getCanDelete() { return iCanDelete; }
-	public void setCanDelete(boolean canDelete) { iCanDelete = canDelete; }
-
-	public boolean isCanChangeExtManager() { return iCanChangeExtManager; }
-	public void setCanChangeExtManager(boolean canChangeExtManager) { iCanChangeExtManager = canChangeExtManager; }	
-	
+		
 	public String effectiveStatusType() {
 		String t = getStatusTypeStr();
 		if (t!=null) 
@@ -168,10 +148,10 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 	public String getExternalStatusTypes() { return iExternalStatusTypesStr; }
 	public void setExternalStatusTypes(String externalStatusTypes) { iExternalStatusTypesStr = externalStatusTypes; }
 	
-	public List <String>  getDependentStatuses() { return iDependentStatuses; }
-	public void setDependentStatuses(List dependentStatuses) { iDependentStatuses = dependentStatuses; }
-	public List <String>  getDependentDepartments() { return iDependentDepartments; }
-	public void setDependentDepartments(List   dependentDepartmentIds) { iDependentDepartments = dependentDepartmentIds; }
+	public ArrayList <String>  getDependentStatuses() { return iDependentStatuses; }
+	public void setDependentStatuses(ArrayList<String> dependentStatuses) { iDependentStatuses = dependentStatuses; }
+	public ArrayList <String>  getDependentDepartments() { return iDependentDepartments; }
+	public void setDependentDepartments(ArrayList<String>   dependentDepartmentIds) { iDependentDepartments = dependentDepartmentIds; }
 
 	public Boolean isAllowEvents() { return iAllowEvents; }
 	public Boolean getAllowEvents() { return iAllowEvents; }
@@ -201,29 +181,22 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 	public Boolean getExternalFundingDept() { return iExternalFundingDept; }
 	public void setExternalFundingDept(Boolean externalFundingDept) { iExternalFundingDept = externalFundingDept; }
 	
-	public List<String> getDependentStatusesStr() { return iDependentStatusesStr; }
-	public void setDependentStatusesStr(List<String> dependentStatuses) { iDependentStatusesStr = dependentStatuses; }
+	public ArrayList<String> getDependentStatusesStr() { return iDependentStatusesStr; }
+	public void setDependentStatusesStr(ArrayList<String> dependentStatuses) { iDependentStatusesStr = dependentStatuses; }
 
 
 	public Integer getSubjectAreaCount() { return iSubjectAreaCount; }
 	public void setSubjectAreaCount(Integer subjectAreas) { iSubjectAreaCount = subjectAreas; }
 
 	public Integer getRoomDeptCount() { return iRoomDeptsCount; }
-	public void setRoomDeptCount(Integer roomDepts) { iRoomDeptsCount = roomDepts; }
-	
-	public void setSatusOptions( HashMap<String, String>  hashMap){  iStatuses = hashMap; }
-	public HashMap<String,String>  getSatusOptions(){ return iStatuses; }	
-
-	public HashMap<Long, String> getExtDepartmentOptions() { return iExtDepartments; }
-	public void setExtDepartmentOptions(HashMap<Long, String> hashMap) { iExtDepartments = hashMap; }
-	
+	public void setRoomDeptCount(Integer roomDepts) { iRoomDeptsCount = roomDepts; }	
 	
 	@Override
 	public int hashCode() { return getId().hashCode(); }
 
 	@Override
 	public int compareTo(DepartmentInterface d) {
-		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(d.getUniqueId() == null ? -1 : d.getUniqueId()); 
+		return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(d.getUniqueId() == null ? -1 : d.getUniqueId()); 
 	}
 	
 	@Override
@@ -237,48 +210,66 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 
 	}	
 	public static enum UpdateDepartmentAction {
-		CREATE, UPDATE, DELETE, UPDATE_DATA,
+		CREATE, UPDATE, DELETE,
 	}
 	
 	/*
 	 * Look Up properties for Department
 	 */
 	public static class DepartmentPropertiesRequest implements GwtRpcRequest<DepartmentPropertiesInterface> {
+		private Long iDepartmentId;
+
+		protected DepartmentPropertiesRequest() {
+		}
+
+		public DepartmentPropertiesRequest(Long departmentId) {
+			setDepartmentId(departmentId);
+		}
+
+		public Long getDepartmentId() { return iDepartmentId; }
+		public void setDepartmentId(Long departmentId) { this.iDepartmentId = departmentId; }
+		
+		
 	}//end DepartmentPropertiesRequest
 	
 	public static class DepartmentPropertiesInterface  implements GwtRpcResponse {
 		
-		private boolean iCanAdd , iCanUpdateData;
 		private boolean iCanExportPdf = true;
 		private boolean iCoursesFundingDepartmentsEnabled = false;
 		private String iAcademicSessionName = null;
 		private HashMap<String, String> iStatuses;
 		private HashMap<Long, String> iExtDepartments;
+
+		private Boolean iCanEdit = false;
+		private Boolean iCanDelete = false;
+		private Boolean iCanChangeExtManager = true;
 			
 		public DepartmentPropertiesInterface() {}
 
 		public boolean isCanExportPdf() { return iCanExportPdf; }
 		public void setCanExportPdf(boolean canExportPdf) { iCanExportPdf = canExportPdf; }
-		
-		
+				
 		public boolean isCoursesFundingDepartmentsEnabled(){ return iCoursesFundingDepartmentsEnabled; }
 		public void setCoursesFundingDepartmentsEnabled(boolean coursesFundingDepartmentsEnabled) { iCoursesFundingDepartmentsEnabled = coursesFundingDepartmentsEnabled; }
-		
-		public boolean isCanAdd() { return iCanAdd; }
-		public void setCanAdd(boolean canAdd) { iCanAdd = canAdd; }
-
-		public boolean isCanUpdate() { return iCanUpdateData; }
-		public void setCanUpdate(boolean canUpdate) { iCanUpdateData = canUpdate; }
-		
+				
 		public String getAcademicSessionName() { return iAcademicSessionName; }
 		public void setAcademicSessionName(String academicSessionName) { iAcademicSessionName = academicSessionName; }
 		
-		public HashMap<String,String>  getSatusOptions(){ return iStatuses; }
-		public void setSatusOptions(HashMap<String,String> statuses){  iStatuses =statuses; }
+		public HashMap<String,String>  getStatusOptions(){ return iStatuses; }
+		public void setStatusOptions(HashMap<String,String> statuses){  iStatuses =statuses; }
 		
 		public HashMap<Long, String> getExtDepartmentOptions() { return iExtDepartments; }
 		public void setExtDepartmentOptions(HashMap<Long, String> hashMap) { iExtDepartments = hashMap; }
 		
+		public boolean getCanEdit() { return iCanEdit; }
+		public void setCanEdit (boolean canEdit) { iCanEdit = canEdit; }
+
+		public boolean getCanDelete() { return iCanDelete; }
+		public void setCanDelete(boolean canDelete) { iCanDelete = canDelete; }
+
+		public boolean isCanChangeExtManager() { return iCanChangeExtManager; }
+		public void setCanChangeExtManager(boolean canChangeExtManager) { iCanChangeExtManager = canChangeExtManager; }	
+
 	} //end DepartmentPropertiesInterface
 	
 
@@ -291,13 +282,14 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 	
 	public static class DepartmentsDataResponse implements GwtRpcResponse {
 		private List<DepartmentInterface> iDepartments;
-		private boolean iCanAdd , iDepartmentsEnabled;
-		private boolean iCanExportPdf = true;	
+		private boolean iCanAdd , iFundingDeptEnabled;
+		private boolean iCanExportPdf = true;
+
 		public boolean isCanAdd() { return iCanAdd; }
 		public void setCanAdd(boolean canAdd) { iCanAdd = canAdd; }
 
-		public boolean isFundingDeptEnabled(){ return iDepartmentsEnabled; }
-		public void setFundingDeptEnabled(boolean fundingDepartmentsEnabled) { iDepartmentsEnabled = fundingDepartmentsEnabled; }		
+		public boolean isFundingDeptEnabled(){ return iFundingDeptEnabled; }
+		public void setFundingDeptEnabled(boolean fundingDepartmentsEnabled) { iFundingDeptEnabled = fundingDepartmentsEnabled; }		
 		
 		public void addDepartment(DepartmentInterface department) {
 			if (iDepartments == null) iDepartments = new ArrayList<DepartmentInterface>();
@@ -319,12 +311,4 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 		
 	}
 	
-
-	/* 
-	 * Can Edit, checked in DepartmentsPage
-	 */
-	public boolean isCanEdit() { 
-		return iCanEdit != null && iCanEdit.booleanValue(); }
-	
-
 }

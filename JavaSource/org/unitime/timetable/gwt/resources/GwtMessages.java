@@ -7024,10 +7024,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Allow Student Scheduling:")
 	String propAllowStudentScheduling();
 
-	@DefaultMessage("External Funding Deptartment:")
+	@DefaultMessage("External Funding Department:")
 	String propExternalFundingDept();
 
-	@DefaultMessage("External <br> Funding Deptartment")
+	@DefaultMessage("External <br> Funding Department")
 	String colExternalFundingDept();
 	
 	@DefaultMessage("Event Management:")
