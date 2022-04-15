@@ -19,26 +19,20 @@
 */
 package org.unitime.timetable.form;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.Debug;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.dao.ItypeDescDAO;
 
-/** 
- * 
+/**
  * @author Tomas Muller
- * 
  */
-public class ItypeDescEditForm extends ActionForm {
-	private static final long serialVersionUID = -238147307633027599L;
+public class ItypeDescEditForm implements UniTimeForm {
+	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
 	private Integer iUniqueId = null;
     private String iId = null;
-	private String iOp = null;
     private String iReference = null;
     private String iName = null;
     private String iAbbreviation = null;
@@ -46,56 +40,52 @@ public class ItypeDescEditForm extends ActionForm {
     private boolean iOrganized = false;
     private Integer iParent = null;
 
-	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-        ActionErrors errors = new ActionErrors();
-        
+    @Override
+	public void validate(UniTimeAction action) {
         try {
             if (iAbbreviation==null || iAbbreviation.trim().length()==0)
-                errors.add("abbreviation", new ActionMessage("errors.required", ""));
+            	action.addFieldError("form.abbreviation", MSG.errorRequiredField(MSG.fieldAbbreviation()));
             
             if (iName==null || iName.trim().length()==0)
-                errors.add("name", new ActionMessage("errors.required", ""));
+                action.addFieldError("form.name", MSG.errorRequiredField(MSG.fieldName()));
             
             try {
                 if (iId==null || iId.trim().length()==0) {
-                    errors.add("id", new ActionMessage("errors.required", ""));
+                    action.addFieldError("form.id", MSG.errorRequiredField(MSG.fieldIType()));
                 } else {
                     Integer id = Integer.valueOf(iId);
                     ItypeDesc itype = new ItypeDescDAO().get(id);
                     if (itype!=null && (iUniqueId==null || iUniqueId<0 || itype.equals(iUniqueId)))
-                        errors.add("id", new ActionMessage("errors.exists", iId));
+                        action.addFieldError("form.id", MSG.errorAlreadyExists(iId));
                     
                     itype = (ItypeDesc)ItypeDescDAO.getInstance().getSession().createQuery(
                     		"from ItypeDesc x where x.abbv = :abbv and x.id != :id")
                     		.setString("abbv", iAbbreviation).setInteger("id", id).setMaxResults(1).uniqueResult();
                     if (itype != null)
-                    	errors.add("abbreviation", new ActionMessage("errors.exists", iAbbreviation));
+                    	action.addFieldError("abbreviation", MSG.errorAlreadyExists(iAbbreviation));
                     		
                     itype = (ItypeDesc)ItypeDescDAO.getInstance().getSession().createQuery(
                     		"from ItypeDesc x where x.desc = :name and x.id != :id")
                     		.setString("name", iName).setInteger("id", id).setMaxResults(1).uniqueResult();
                     if (itype != null)
-                    	errors.add("name", new ActionMessage("errors.exists", iName));
+                    	action.addFieldError("form.name", MSG.errorAlreadyExists(iName));
                 }
             } catch (NumberFormatException e) {
-                errors.add("id", new ActionMessage("errors.numeric", iId));
+                action.addFieldError("form.id", MSG.errorNotNumber(iId));
             }
         } catch (Exception e) {
             Debug.error(e);
-            errors.add("id", new ActionMessage("errors.generic", e.getMessage()));
+            action.addFieldError("form.id", e.getMessage());
         }
-        
-        return errors;
     }
 
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
-        iId = null; iOp = null; iUniqueId = -1;
+    @Override
+	public void reset() {
+        iId = null; iUniqueId = -1;
         iAbbreviation = null; iReference = null; iName = null;
         iType = 1; iOrganized = false;
 	}
 	
-	public String getOp() { return iOp; }
-	public void setOp(String op) { iOp = op; }
     public Integer getUniqueId() { return iUniqueId; }
     public void setUniqueId(Integer uniqueId) { iUniqueId = uniqueId; }
     public String getId() { return iId; }
@@ -120,7 +110,6 @@ public class ItypeDescEditForm extends ActionForm {
     public void setParent(Integer parent) { iParent = parent; }
     
     public void load(ItypeDesc itype) {
-        setOp("Update");
         setId(itype.getItype().toString());
         setUniqueId(itype.getItype());
         setAbbreviation(itype.getAbbv());
@@ -150,4 +139,3 @@ public class ItypeDescEditForm extends ActionForm {
         if (itype!=null) hibSession.delete(itype);
     }
 }
-

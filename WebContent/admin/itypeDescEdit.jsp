@@ -17,110 +17,92 @@
  * limitations under the License.
  * 
  --%>
-<%@ page language="java" autoFlush="true"%>
-<%@ page import="org.unitime.timetable.model.ItypeDesc"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
-
-<tiles:importAttribute />
-
-<html:form action="/itypeDescEdit">
-	<html:hidden property="uniqueId"/>
-
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/> 
+<s:form action="itypeDescEdit">
+	<s:hidden name="form.uniqueId"/>
+	<TABLE style="width:100%;">
 		<TR>
 			<TD colspan="2">
 				<tt:section-header>
 					<tt:section-title>
-						<logic:equal name="itypeDescEditForm" property="op" value="Save">
-							Add
-						</logic:equal>
-						<logic:equal name="itypeDescEditForm" property="op" value="Update">
-							Edit
-						</logic:equal>
-						Instructional Type
+						<s:if test="op == #msg.actionSaveIType()"><loc:message name="sectionAddInstructionalTypes"/></s:if>
+						<s:else><loc:message name="sectionEditInstructionalTypes"/></s:else>
 					</tt:section-title>
-					<logic:equal name="itypeDescEditForm" property="op" value="Save">
-						<html:submit property="op" value="Save" title="Save (Alt+S)" accesskey="S"/> 
-					</logic:equal>
-					<logic:equal name="itypeDescEditForm" property="op" value="Update">
-						<html:submit property="op" value="Update" title="Update (Alt+U)" accesskey="U"/>
-						<sec:authorize access="hasPermission(#itypeDescEditForm.uniqueId, 'ItypeDesc', 'InstructionalTypeDelete')"> 
-							<html:submit property="op" value="Delete" title="Delete (Alt+D)" accesskey="D"/>
+					<s:if test="op == #msg.actionSaveIType()">
+						<s:submit accesskey='%{#msg.accessSaveIType()}' name='op' value='%{#msg.actionSaveIType()}' title='%{#msg.titleSaveIType(#msg.accessSaveIType())}'/>
+					</s:if>
+					<s:else>
+						<s:submit accesskey='%{#msg.accessUpdateIType()}' name='op' value='%{#msg.actionUpdateIType()}' title='%{#msg.titleUpdateIType(#msg.accessUpdateIType())}'/>
+						<sec:authorize access="hasPermission(#form.uniqueId, 'ItypeDesc', 'InstructionalTypeDelete')">
+							<s:submit accesskey='%{#msg.accessDeleteIType()}' name='op' value='%{#msg.actionDeleteIType()}' title='%{#msg.titleDeleteIType(#msg.accessDeleteIType())}'/>
 						</sec:authorize>
-					</logic:equal>
-					<html:submit property="op" value="Back" title="Back (Alt+B)" accesskey="B"/> 
+					</s:else>
+					<s:submit accesskey='%{#msg.accessBackITypes()}' name='op' value='%{#msg.actionBackITypes()}' title='%{#msg.titleBackITypes(#msg.accessBackITypes())}'/>
 				</tt:section-header>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>IType:</TD>
+			<TD><loc:message name="fieldIType"/>:</TD>
 			<TD>
-				<logic:equal name="itypeDescEditForm" property="op" value="Save">
-					<html:text property="id" size="2" maxlength="2"/>
-					&nbsp;<html:errors property="id"/>
-				</logic:equal>
-				<logic:equal name="itypeDescEditForm" property="op" value="Update">
-					<html:hidden property="id"/>
-					<bean:write name="itypeDescEditForm" property="id"/>
-				</logic:equal>
+				<s:if test="op == #msg.actionSaveIType()">
+					<s:textfield name='form.id' maxlength="2" size="2"/>
+					&nbsp;<s:fielderror fieldName="form.id"/>
+				</s:if>
+				<s:else>
+					<s:hidden name="form.id"/><s:property value="form.id"/>
+				</s:else>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Abbreviation:</TD>
+			<TD><loc:message name="fieldAbbreviation"/>:</TD>
 			<TD>
-				<html:text property="abbreviation" size="7" maxlength="7"/>
-				&nbsp;<html:errors property="abbreviation"/>
+				<s:textfield name='form.abbreviation' size="7" maxlength="7"/>
+				&nbsp;<s:fielderror fieldName="form.abbreviation"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Name:</TD>
+			<TD><loc:message name="fieldName"/>:</TD>
 			<TD>
-				<html:text property="name" size="50" maxlength="50"/>
-				&nbsp;<html:errors property="name"/>
+				<s:textfield name="form.name" size="50" maxlength="50"/>
+				&nbsp;<s:fielderror fieldName="form.name"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Reference:</TD>
+			<TD><loc:message name="fieldReference"/>:</TD>
 			<TD>
-				<html:text property="reference" size="20" maxlength="20"/>
-				&nbsp;<html:errors property="reference"/>
+				<s:textfield name="form.reference" size="20" maxlength="20"/>
+				&nbsp;<s:fielderror fieldName="form.reference"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Type:</TD>
+			<TD><loc:message name="fieldType"/>:</TD>
 			<TD>
-				<html:select property="type">
-					<html:options name="itypeDescEditForm" property="types"/>
-				</html:select>
-				&nbsp;<html:errors property="type"/>
+				<s:select name="form.type" list="form.types"/>
+				&nbsp;<s:fielderror fieldName="form.type"/>
 			</TD>
 		</TR>
 		
 		<TR>
-			<TD>Parent:</TD>
+			<TD><loc:message name="fieldParent"/>:</TD>
 			<TD>
-				<html:select property="parent">
-					<html:option value=""></html:option>
-					<html:options collection="<%=ItypeDesc.ITYPE_ATTR_NAME%>" property="itype" labelProperty="desc" />
-				</html:select>
-				&nbsp;<html:errors property="parent"/>
+				<s:select name="form.parent" list="%{#request.itypesList}" listKey="itype" listValue="desc" headerKey="" headerValue="-"/>
+				&nbsp;<s:fielderror fieldName="form.parent"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Organized:</TD>
+			<TD><loc:message name="fieldOrganized"/>:</TD>
 			<TD>
-				<html:checkbox property="organized"/>
+				<s:checkbox name="form.organized"/>
 			</TD>
 		</TR>
 
@@ -132,18 +114,18 @@
 
 		<TR>
 			<TD align="right" colspan="2">
-				<logic:equal name="itypeDescEditForm" property="op" value="Save">
-					<html:submit property="op" value="Save" title="Save (Alt+S)" accesskey="S"/> 
-				</logic:equal>
-				<logic:equal name="itypeDescEditForm" property="op" value="Update">
-					<html:submit property="op" value="Update" title="Update (Alt+U)" accesskey="U"/>
-					<sec:authorize access="hasPermission(#itypeDescEditForm.uniqueId, 'ItypeDesc', 'InstructionalTypeDelete')"> 
-						<html:submit property="op" value="Delete" title="Delete (Alt+D)" accesskey="D"/>
+				<s:if test="op == #msg.actionSaveIType()">
+					<s:submit accesskey='%{#msg.accessSaveIType()}' name='op' value='%{#msg.actionSaveIType()}' title='%{#msg.titleSaveIType(#msg.accessSaveIType())}'/>
+				</s:if>
+				<s:else>
+					<s:submit accesskey='%{#msg.accessUpdateIType()}' name='op' value='%{#msg.actionUpdateIType()}' title='%{#msg.titleUpdateIType(#msg.accessUpdateIType())}'/>
+					<sec:authorize access="hasPermission(#form.uniqueId, 'ItypeDesc', 'InstructionalTypeDelete')">
+						<s:submit accesskey='%{#msg.accessDeleteIType()}' name='op' value='%{#msg.actionDeleteIType()}' title='%{#msg.titleDeleteIType(#msg.accessDeleteIType())}'/>
 					</sec:authorize>
-				</logic:equal>
-				<html:submit property="op" value="Back" title="Back (Alt+B)" accesskey="B"/> 
+				</s:else>
+				<s:submit accesskey='%{#msg.accessBackITypes()}' name='op' value='%{#msg.actionBackITypes()}' title='%{#msg.titleBackITypes(#msg.accessBackITypes())}'/>
 			</TD>
 		</TR>
 	</TABLE>
-
-</html:form>
+</s:form>
+</loc:bundle>

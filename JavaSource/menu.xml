@@ -1070,7 +1070,7 @@
 			</item>
 		</menu>
 		<menu name="Other">
-			<item name="Instructional Types" page="itypeDescList.do">
+			<item name="Instructional Types" page="itypeDescList.action">
 				<condition>
 					<hasPermission name="InstructionalTypes"/>
 				</condition>

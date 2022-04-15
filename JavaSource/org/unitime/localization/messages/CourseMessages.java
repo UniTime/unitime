@@ -3065,4 +3065,88 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Not Wait-Listed Courses")
 	String itemWaitListNotWaitListed();
+	
+	@DefaultMessage("{0} is required.")
+	String errorRequiredField(String fieldName);
+	
+	@DefaultMessage("Abbreviation")
+	String fieldAbbreviation();
+	
+	@DefaultMessage("Name")
+	String fieldName();
+	
+	@DefaultMessage("Reference")
+	String fieldReference();
+	
+	@DefaultMessage("Type")
+	String fieldType();
+	
+	@DefaultMessage("Organized")
+	String fieldOrganized();
+	
+	@DefaultMessage("Parent")
+	String fieldParent();
+	
+	@DefaultMessage("IType")
+	String fieldIType();
+	
+	@DefaultMessage("{0} already exists.")
+	String errorAlreadyExists(String value);
+	
+	@DefaultMessage("{0} must be numeric.")
+	String errorNotNumber(String value);
+	
+	@DefaultMessage("Instructional Types")
+	String sectionInstructionalTypes();
+	
+	@DefaultMessage("Add Instructional Type")
+	String sectionAddInstructionalTypes();
+	
+	@DefaultMessage("Edit Instructional Type")
+	String sectionEditInstructionalTypes();
+	
+	@DefaultMessage("Add IType")
+	String actionAddIType();
+	
+	@DefaultMessage("A")
+	String accessAddIType();
+	
+	@DefaultMessage("Add IType (Alt+{0})")
+	String titleAddIType(String access);
+	
+	@DefaultMessage("Back")
+	String actionBackITypes();
+	
+	@DefaultMessage("Update")
+	String actionUpdateIType();
+	
+	@DefaultMessage("Save")
+	String actionSaveIType();
+	
+	@DefaultMessage("Delete")
+	String actionDeleteIType();
+	
+	@DefaultMessage("B")
+	String accessBackITypes();
+	
+	@DefaultMessage("U")
+	String accessUpdateIType();
+	
+	@DefaultMessage("S")
+	String accessSaveIType();
+	
+	@DefaultMessage("D")
+	String accessDeleteIType();
+	
+	@DefaultMessage("Back (Alt+{0})")
+	String titleBackITypes(String access);
+	
+	@DefaultMessage("Update (Alt+{0})")
+	String titleUpdateIType(String access);
+	
+	@DefaultMessage("Save (Alt+{0})")
+	String titleSaveIType(String access);
+	
+	@DefaultMessage("Delete (Alt+{0})")
+	String titleDeleteIType(String access);
 }

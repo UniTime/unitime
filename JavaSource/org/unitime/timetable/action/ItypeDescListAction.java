@@ -21,104 +21,88 @@ package org.unitime.timetable.action;
 
 import java.util.Iterator;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesDefinitions;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
+import org.unitime.commons.web.WebTable.WebTableLine;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.form.BlankForm;
 import org.unitime.timetable.model.ItypeDesc;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.webutil.PdfWebTable;
 
-
-/** 
- * MyEclipse Struts
- * Creation date: 10-03-2005
- * 
- * XDoclet definition:
- * @struts:action validate="true"
- *
+/**
  * @author Tomas Muller
  */
-@Service("/itypeDescList")
-public class ItypeDescListAction extends Action {
+@Action(value="itypeDescList", results = {
+		@Result(name="success", type = "tiles", location="itypeDescList.tiles"),
+	})
+@TilesDefinitions(value = {
+		@TilesDefinition(name = "itypeDescList.tiles", extend = "baseLayout", putAttributes = {
+			@TilesPutAttribute(name = "title", value = "Instructional Types"),
+			@TilesPutAttribute(name = "body", value = "/admin/itypeDescList.jsp"),
+			@TilesPutAttribute(name = "showNavigation", value = "false", cascade = true)
+		})
+	})
+public class ItypeDescListAction extends UniTimeAction<BlankForm> {
+	private static final long serialVersionUID = 1462237807775084625L;
+	protected CourseMessages MSG = Localization.create(CourseMessages.class);
 	
-	@Autowired SessionContext sessionContext;
+	protected String ord;
+	public String getOrd() { return ord; }
+	public void setOrd(String ord) { this.ord = ord; }
+	
+	protected Integer id;
+	public Integer getId() { return id; }
+	public void setId(Integer id) { this.id = id; }
 
-	// --------------------------------------------------------- Instance Variables
+	@Override
+	public String execute() throws Exception {
+		// Check if user is logged in
+		sessionContext.checkPermission(Right.InstructionalTypes);
 
-	// --------------------------------------------------------- Methods
+		// Create new table
+		PdfWebTable webTable = new PdfWebTable(6, null, "itypeDescList.action?ord=%%",
+				new String[] { MSG.fieldIType(), MSG.fieldAbbreviation(), MSG.fieldName(), MSG.fieldReference(), MSG.fieldType(), MSG.fieldParent(), MSG.fieldOrganized() },
+				new String[] { "left", "left", "left", "left", "left", "left", "center" },
+				new boolean[] { true, true, true, true, false, true, true });
 
-	/** 
-	 * Method execute
-	 * @param mapping
-	 * @param form
-	 * @param request
-	 * @param response
-	 * @return ActionForward
-	 */
-	public ActionForward execute(
-		ActionMapping mapping,
-		ActionForm form,
-		HttpServletRequest request,
-		HttpServletResponse response) throws Exception {
-		
-	       String errM = "";
-	        
-	        // Check if user is logged in
-	       sessionContext.checkPermission(Right.InstructionalTypes);
+		PdfWebTable.setOrder(sessionContext, "itypeDescList.ord", ord, 1);
 
-			// Create new table
-		    PdfWebTable webTable = new PdfWebTable( 6,
-		    	    null,
-                    "itypeDescList.do?ord=%%",
-		    	    new String[] {"IType", "Abbreviation", "Name", "Reference", "Type", "Parent", "Organized"},
-		    	    new String[] {"left", "left","left","left", "left", "left", "center"},
-		    	    new boolean[] {true, true, true, true, false, true, true} );
-		    
-	        PdfWebTable.setOrder(sessionContext,"itypeDescList.ord",request.getParameter("ord"),1);
+		for (Iterator i = ItypeDesc.findAll(false).iterator(); i.hasNext();) {
+			ItypeDesc itypeDesc = (ItypeDesc) i.next();
 
-	        for (Iterator i=ItypeDesc.findAll(false).iterator();i.hasNext();) {
-	            ItypeDesc itypeDesc = (ItypeDesc)i.next();
-	            
-	            // Add to web table
-				webTable.addLine(
-						sessionContext.hasPermission(itypeDesc, Right.InstructionalTypeEdit) ?  "onclick=\"document.location='itypeDescEdit.do?op=Edit&id="+itypeDesc.getItype()+"';\"" : null,
-			        	new String[] {itypeDesc.getItype().toString(),
-			        					itypeDesc.getAbbv(), 
-			        					itypeDesc.getDesc(),
-			        					(itypeDesc.getSis_ref()==null?"":itypeDesc.getSis_ref()),
-			        					itypeDesc.getBasicType(),
-			        					(itypeDesc.getParent()==null?"":itypeDesc.getParent().getDesc()),
-			        					(itypeDesc.isOrganized()?"yes":"no")},
-			        	new Comparable[] {itypeDesc.getItype(),
-				                        itypeDesc.getAbbv(),
-				                        itypeDesc.getDesc(),
-				                        (itypeDesc.getSis_ref()==null?"":itypeDesc.getSis_ref()),
-				                        itypeDesc.getBasic(),
-				                        (itypeDesc.getParent()==null?Integer.valueOf(-1):itypeDesc.getParent().getItype()),
-				                        (itypeDesc.isOrganized()?0:1)});
-	        }
-	        
-	        if ("Export PDF".equals(request.getParameter("op"))) {
-	        	ExportUtils.exportPDF(
-	        			webTable,
-	        			PdfWebTable.getOrder(sessionContext,"itypeDescList.ord"),
-	        			response, "itypes");
-	        	return null;
-	        }
+			// Add to web table
+			WebTableLine line = webTable.addLine(
+					sessionContext.hasPermission(itypeDesc, Right.InstructionalTypeEdit)
+							? "onclick=\"document.location='itypeDescEdit.action?id=" + itypeDesc.getItype()
+									+ "';\""
+							: null,
+					new String[] { itypeDesc.getItype().toString(), itypeDesc.getAbbv(), itypeDesc.getDesc(),
+							(itypeDesc.getSis_ref() == null ? "" : itypeDesc.getSis_ref()), itypeDesc.getBasicType(),
+							(itypeDesc.getParent() == null ? "" : itypeDesc.getParent().getDesc()),
+							(itypeDesc.isOrganized() ? MSG.yes() : MSG.no()) },
+					new Comparable[] { itypeDesc.getItype(), itypeDesc.getAbbv(), itypeDesc.getDesc(),
+							(itypeDesc.getSis_ref() == null ? "" : itypeDesc.getSis_ref()), itypeDesc.getBasic(),
+							(itypeDesc.getParent() == null ? Integer.valueOf(-1) : itypeDesc.getParent().getItype()),
+							(itypeDesc.isOrganized() ? 0 : 1) });
+			
+			if (itypeDesc.getItype().equals(id))
+				line.setBgColor("rgb(168,187,225)");
+		}
 
-	        String tblData = webTable.printTable(PdfWebTable.getOrder(sessionContext,"itypeDescList.ord"));
-	        request.setAttribute("itypeDescList", errM + tblData);
-	        return mapping.findForward("success");
+		if (MSG.actionExportPdf().equals(op)) {
+			ExportUtils.exportPDF(webTable, PdfWebTable.getOrder(sessionContext, "itypeDescList.ord"), response,
+					"itypes");
+			return null;
+		}
 
+		String tblData = webTable.printTable(PdfWebTable.getOrder(sessionContext, "itypeDescList.ord"));
+		request.setAttribute("itypeDescList", tblData);
+		return "success";
 	}
-
 }
-

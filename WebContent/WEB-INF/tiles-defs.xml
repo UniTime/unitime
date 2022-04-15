@@ -360,12 +360,6 @@
 		<put name="showSolverWarnings" value="assignment" />
   	</definition>
   	
-  	<definition	name="itypeDescListTile" extends="pageLayoutDef">
-	<put name="title" type="string" value="Instructional Types"/>
-	<put name="body" value="/admin/itypeDescList.jsp" />
-  	</definition>
-	
-  
 	<definition	name="managerSettingsTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Manager Settings"/>
 		<put name="body" value="/user/managerSettings.jsp" />
@@ -728,15 +722,6 @@
 
    	<definition	name="buildingAddTile" extends="buildingEditTile">
 		<put name="title" type="string" value="Add Building"/>
-  	</definition>
-
-   	<definition	name="itypeDescEditTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Edit Instructional Type"/>
-		<put name="body" value="/admin/itypeDescEdit.jsp" />
-  	</definition>
-
-   	<definition	name="itypeDescAddTile" extends="itypeDescEditTile">
-		<put name="title" type="string" value="Add Instructional Type"/>
   	</definition>
 
   	<definition name="examPeriodsTile" extends="pageLayoutDef">

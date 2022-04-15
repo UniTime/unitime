@@ -100,7 +100,6 @@
       <form-bean name="userEditForm" type="org.unitime.timetable.form.UserEditForm" />
       <form-bean name="subjectAreaEditForm" type="org.unitime.timetable.form.SubjectAreaEditForm" />
       <form-bean name="buildingEditForm" type="org.unitime.timetable.form.BuildingEditForm" />
-      <form-bean name="itypeDescEditForm" type="org.unitime.timetable.form.ItypeDescEditForm" />
       <form-bean name="examPeriodEditForm" type="org.unitime.timetable.form.ExamPeriodEditForm" />
       <form-bean name="examListForm" type="org.unitime.timetable.form.ExamListForm" />
       <form-bean name="examEditForm" type="org.unitime.timetable.form.ExamEditForm" />
@@ -490,19 +489,6 @@
         	/>
       </action>
       
-      <action 
-      	path="/itypeDescList" 
-      	type="org.springframework.web.struts.DelegatingActionProxy" 
-      	validate="false">
-        <forward
-            name="success"
-            path="itypeDescListTile"
-            redirect="true" />
-        <forward
-            name="fail"
-            path="/error.jsp"
-            redirect="true" />
-      </action>
       <action
          attribute="instructorSearchForm"
          input="/user/instructorSearch.jsp"
@@ -1589,25 +1575,6 @@
        <forward 
        		name="back" 
        		path="/buildingList.do" />
-    </action>
-
-    <action
-       path="/itypeDescEdit"
-       type="org.springframework.web.struts.DelegatingActionProxy"
-       attribute="itypeDescEditForm"
-       input="itypeDescEditTile"
-       name="itypeDescEditForm"
-       scope="request"
-       validate="false" >
-       <forward 
-       		name="edit" 
-       		path="itypeDescEditTile" />
-       <forward 
-       		name="add" 
-       		path="itypeDescAddTile" />
-       <forward 
-       		name="back" 
-       		path="/itypeDescList.do" />
     </action>
 
 	  <action
