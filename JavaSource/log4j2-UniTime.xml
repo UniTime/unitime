@@ -31,5 +31,6 @@
 		<Logger name="org.infinispan.jmx" level="WARN"/>
 		<Logger name="org.apache.struts.action.ActionMapping" level="ERROR"/>
 		<Logger name="org.unitime.commons.hibernate.connection.DBCPConnectionProvider" level="INFO"/>
+		<Logger name="com.opensymphony.xwork2.ognl.SecurityMemberAccess" level="ERROR"/>
 	</Loggers>
 </Configuration>

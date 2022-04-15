@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<%--
+<%-- 
  * Licensed to The Apereo Foundation under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
  * additional information regarding copyright ownership.
@@ -17,51 +17,71 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
---%>
-<%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" isErrorPage="true"%>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ page import="org.unitime.commons.web.WebOutputStream"%>
-<%@ page import="java.io.PrintWriter"%>
-<%@ page import="org.springframework.security.access.AccessDeniedException"%>
+ --%>
+<%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
 <%@ page import="org.unitime.timetable.util.Constants"%>
+<%@ page import="org.unitime.localization.impl.Localization"%>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tiles" uri="http://tiles.apache.org/tags-tiles" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization"%>
 
-<%
-	try {
-		if (exception==null && session.getAttribute("exception")!=null) {
-			exception = (Exception)session.getAttribute("exception");
-			session.removeAttribute("exception");
- 		}
- 	} catch (IllegalStateException e) {}
- 	if (exception instanceof AccessDeniedException || "Access Denied.".equals(exception.getMessage())) {
-%>
-		<jsp:forward page="/loginRequired.do">
-			<jsp:param name="message" value="<%=exception.getMessage()%>"/>
-		</jsp:forward>
-<%
- 	}
- %>
- <% if (exception != null) request.setAttribute("__exception", exception); %>
-<HTML>
-<HEAD>
-	<META http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<tiles:importAttribute name="showMenu" scope="request"/>
+<tiles:importAttribute name="checkLogin" scope="request"/>
+<s:if test="#request.checkLogin">
+	<%@ include file="/checkLogin.jspf"%>
+</s:if>
+<tiles:importAttribute name="checkRole" scope="request"/>
+<s:if test="#request.checkRole">
+	<%@ include file="/checkRole.jspf"%>
+</s:if>
+<tiles:importAttribute name="checkAdmin" scope="request"/>
+<s:if test="#request.checkAdmin">
+	<%@ include file="/checkAdmin.jspf"%>
+</s:if>
+
+<html>
+<head>
+	<meta http-equiv="pragma" content="no-cache">
+	<meta http-equiv="cache-control" content="no-cache">
+	<meta http-equiv="expires" content="0">
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="gwt:property" content="locale=<%=Localization.getFirstLocale()%>">
     <meta charset="UTF-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-	<TITLE>UniTime <%=Constants.VERSION%>| Error</TITLE>
 	<link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
     <link type="text/css" rel="stylesheet" href="styles/unitime.css">
     <link type="text/css" rel="stylesheet" href="styles/unitime-mobile.css">
-	<LINK rel="stylesheet" type="text/css" href="styles/timetabling.css" />
+    <!--[if IE]>
+	    <link type="text/css" rel="stylesheet" href="styles/unitime-ie.css">
+    <![endif]-->
+    <loc:rtl><link type="text/css" rel="stylesheet" href="styles/unitime-rtl.css"></loc:rtl>
+	<link rel="stylesheet" type="text/css" href="styles/timetabling.css">
     <tt:hasProperty name="tmtbl.custom.css">
-		<link rel="stylesheet" type="text/css" href="%tmtbl.custom.css%" />
+    	<link rel="stylesheet" type="text/css" href="%tmtbl.custom.css%" />
     </tt:hasProperty>
-    <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
-</HEAD>
-<BODY class="bodyMain">
+    <link rel="shortcut icon" href="images/timetabling.ico" />
+	<title>UniTime <%=Constants.VERSION%>| <tiles:getAsString name="title" /></title>
+    <script type="text/javascript" src="scripts/loading.js"></script>
+	<script type="text/javascript" src="scripts/rtt.js"></script>
+	<script type="text/javascript" src="unitime/unitime.nocache.js"></script>
+</head>
+<body class="unitime-Body" <tiles:getAsString name="onLoadFunction" />>
+	<loc:bundle name="org.unitime.timetable.gwt.resources.GwtMessages" id="GWTMSG">
+	<script type="text/javascript">
+		if (!String.prototype.trim) {
+			String.prototype.trim = function() {
+				return this.replace(/^\s+|\s+$/g,"");
+			};
+		}
+		setPageLoadingMessage("<%=GWTMSG.waitLoadingPage().replace("\"", "\"\"")%>");
+	</script>
+	</loc:bundle>
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     <iframe src="javascript:''" id="__printingFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
-
-	<span class='top-menu'>
+    
+    <span class='top-menu'>
+    <s:if test="#request.showMenu"> 
     	<tt:notHasProperty name="unitime.menu.style" user="true">
 	    	<span id='UniTimeGWT:DynamicTopMenu' style="display: block; height: 23px;"></span>
     	</tt:notHasProperty>
@@ -71,6 +91,7 @@
     	<tt:propertyEquals name="unitime.menu.style" user="true" value="Static On Top">
     		<span id='UniTimeGWT:TopMenu' style="display: block; height: 23px;"></span>
     	</tt:propertyEquals>
+    </s:if>
     </span>
     
     <tt:hasProperty name="tmtbl.global.info">
@@ -82,13 +103,24 @@
 	<tt:hasProperty name="tmtbl.global.error">
     	<div class='unitime-PageError'><tt:property name="tmtbl.global.error"/></div>
 	</tt:hasProperty>
-	<tt:page-warning prefix="tmtbl.page.warn." style="unitime-PageWarn" page="error"/>
-	<tt:page-warning prefix="tmtbl.page.info." style="unitime-PageMessage" page="error"/>
-	<tt:page-warning prefix="tmtbl.page.error." style="unitime-PageError" page="error"/>
-	<tt:offering-locks/>
-	
+	<tt:page-warning prefix="tmtbl.page.warn." style="unitime-PageWarn"/>
+	<tt:page-warning prefix="tmtbl.page.info." style="unitime-PageMessage"/>
+	<tt:page-warning prefix="tmtbl.page.error." style="unitime-PageError"/>
+	<tt:page-file/>
+	<s:if test="#request.RqWarn != null">
+		<div class='unitime-PageWarn'><s:property value="#request.RqWarn"/></div>
+	</s:if>
+	<s:if test="#request.RqMsg != null">
+		<div class='unitime-PageMessage'><s:property value="#request.RqMsg"/></div>
+	</s:if>
+	<tiles:importAttribute name="showSolverWarnings" scope="request"/>
+	<s:if test="#request.showSolverWarnings != 'none'">
+		<tt:solver-warnings><s:property value="#request.showSolverWarnings"/></tt:solver-warnings>
+	</s:if>
+		
 	<span class="unitime-Page"><span class='row'>
 	<span class='sidebar' id="unitime-SideMenu">
+    	<s:if test="#request.showMenu">
     		<tt:propertyEquals name="unitime.menu.style" user="true" value="Stack On Side">
     			<span id='UniTimeGWT:SideStackMenu' style="display: block;" ></span>
 	    	</tt:propertyEquals>
@@ -107,7 +139,8 @@
     		<tt:propertyEquals name="unitime.menu.style" user="true" value="Dynamic Tree On Side">
     			<span id='UniTimeGWT:SideTreeMenu' style="display: block;" ></span>
 		    </tt:propertyEquals>
-    <script language="JavaScript" type="text/javascript">
+	    </s:if>
+    <script type="text/javascript">
     	var sideMenu = document.getElementById("unitime-SideMenu").getElementsByTagName("span");
     	if (sideMenu.length > 0) {
     		var c = unescape(document.cookie);
@@ -131,45 +164,26 @@
     			<span class="mobile-menu-button" id='UniTimeGWT:MobileMenuButton'></span>
     			<a href='main.jsp' tabIndex="-1" class="logo"></a>
     			<span class="content">
-					<span id='UniTimeGWT:Title' class="title">Runtime Error</span>
-					<span class='unitime-Header'><span id='UniTimeGWT:Header' class="unitime-InfoPanel"></span></span>
-					<span id='UniTimeGWT:TitlePanel' class='navigation'></span>
+					<span id='UniTimeGWT:Title' class="title"><tiles:getAsString name="title" /></span>
+					<s:if test="#request.showMenu">
+						<span class='unitime-Header'><span id='UniTimeGWT:Header' class="unitime-InfoPanel"></span></span>
+					</s:if>
+	    			<span id='UniTimeGWT:TitlePanel' class='navigation'>
+	    				<tiles:insertAttribute name="header"/>
+					</span>
 				</span>
 			</span>
 		</span>
 		<span class="mobile-menu" id='UniTimeGWT:MobileMenuPanel'></span>
-	<% if (exception!=null) { %>
-		<TABLE width="100%" border="0">
-			<TR>
-				<TD colspan="2">
-					<DIV class="WelcomeRowHead">
-						<FONT color="898989">Error: </FONT>
-						<FONT color="#FF0000"><%= 
-						(exception.getMessage() != null
-	                        && exception.getMessage().indexOf("$jsp:") >= 0 
-	                    ? exception.getMessage()
-	                               .substring( exception.getMessage().indexOf(':') + 2 )
-	                    : exception.getMessage())%></FONT>
-	                </DIV>
-				</TD>
-			</TR>
-		<% 
-		    WebOutputStream wos = new WebOutputStream();
-	        PrintWriter pw = new PrintWriter(wos);
-	        exception.printStackTrace(pw);
-	        pw.close();
-			String stackTrace = wos.toString();
-		%>
-			<TR align="left" valign="top">
-				<TD><FONT color="898989">Trace: </FONT></TD>
-				<TD> <FONT color="898989"> <%
-					       out.print(stackTrace);
-				    %></FONT>
-				</TD>
-			</TR>
-		</TABLE>
-	<% } %>
-	    </span><span class='footer' id="unitime-Footer">
+		<span class='content unitime-Struts2'>
+        	<span id='UniTimeGWT:Content'>
+	    		<tiles:insertAttribute name="body">
+					<tiles:putAttribute name="body2" value="${body2}"/>
+					<tiles:putAttribute name="action2" value="${action2}"/>
+				</tiles:insertAttribute>
+        	</span>
+        </span>
+    </span><span class='footer' id="unitime-Footer">
 		<span class="unitime-Footer">
 			<span class="row">
 				<span class="cell left">
@@ -184,9 +198,8 @@
 		<tt:hasProperty name="tmtbl.page.disclaimer">
 			<span class='unitime-Disclaimer'><tt:property name="tmtbl.page.disclaimer"/></span>
 		</tt:hasProperty>
-		<span class="unitime-VisibleAriaStatus" id='UniTimeGWT:AriaStatus'></span>
 	</span>
 </span></span></span>
-
-  </body>
-</HTML>
+	
+</body>
+</html>

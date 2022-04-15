@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions PUBLIC
+        "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+        "http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<tiles-definitions>
+	<definition name="baseLayout" template="/layouts/layout-struts2.jsp">
+		<put-attribute name="onLoadFunction" type="string" value="" />
+		<put-attribute name="title" value="University Timetabling Application" />
+		<put-attribute name="header" value="/header-struts2.jsp" />
+		<put-attribute name="body" value="" />
+ 		<put-attribute name="body2" value="" />
+ 		<put-attribute name="showNavigation" value="false" cascade="true"/>
+		<put-attribute name="showSolverWarnings" value="none" />
+ 		<put-attribute name="checkLogin" value="true" />
+ 		<put-attribute name="checkRole" value="true" />
+ 		<put-attribute name="checkAdmin" value="false" />
+ 		<put-attribute name="showMenu" value="true" />
+  	</definition>
+</tiles-definitions>

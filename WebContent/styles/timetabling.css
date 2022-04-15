@@ -1468,3 +1468,9 @@ div.suggestionList_element_on {
 }
 
 /* End: Trail Crumbs */
+
+.unitime-Struts2 .errorMessage {
+	display: inline-block;
+	padding: 0px 0px 0px 10px;
+	margin: 0px;
+}
