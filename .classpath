@@ -77,7 +77,6 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-tx-5.3.20.jar" sourcepath="3rd_party/sources/spring-tx-5.3.20-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-web-5.3.20.jar" sourcepath="3rd_party/sources/spring-web-5.3.20-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-webmvc-3.2.18.RELEASE.jar" sourcepath="3rd_party/sources/spring-webmvc-3.2.18.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/asm-9.2.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/cglib-3.1.jar" sourcepath="3rd_party/sources/cglib-3.1-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/ehcache-jgroupsreplication-1.7.jar" sourcepath="3rd_party/sources/ehcache-jgroupsreplication-1.7-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/joda-time-2.8.2.jar" sourcepath="3rd_party/sources/joda-time-2.8.2-sources.jar"/>
