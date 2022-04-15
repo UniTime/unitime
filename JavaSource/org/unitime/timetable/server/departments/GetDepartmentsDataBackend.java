@@ -21,9 +21,9 @@ package org.unitime.timetable.server.departments;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
+
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
@@ -52,12 +52,12 @@ public class GetDepartmentsDataBackend implements GwtRpcImplementation<GetDepart
 		response.setCanAdd(context.hasPermission(Right.DepartmentAdd));
 		response.setCanExportPdf(context.hasPermission(Right.Departments));
 		response.setFundingDeptEnabled(ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue());
-		
+ 		
 		/*department list */
 		for (Department dept: Department.findAll(context.getUser().getCurrentAcademicSessionId())) {
 			DepartmentInterface d = new DepartmentInterface();
+			DependentDepartmentData dependentDeptData = new DependentDepartmentData(dept);
 			d.setSessionId( dept.getSessionId());
-			d.setCoursesFundingDepartmentsEnabled(ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue()); 
 			d.setAcademicSessionName(context.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel());
 			d.setDeptCode(dept.getDeptCode());
 			d.setUniqueId(dept.getUniqueId());
@@ -66,9 +66,9 @@ public class GetDepartmentsDataBackend implements GwtRpcImplementation<GetDepart
 			d.setExternalManager(dept.isExternalManager().booleanValue());
 			d.setExternalMgrAbbv(dept.getExternalMgrAbbv());
 			d.setExternalMgrLabel(dept.getExternalMgrLabel());
-			d.setTimetableManagersCount(!dept.getTimetableManagers().isEmpty()?dept.getTimetableManagers().size():0);
-			d.setSubjectAreaCount(!dept.getSubjectAreas().isEmpty()?dept.getSubjectAreas().size():0);
-			d.setRoomDeptCount(!dept.getRoomDepts().isEmpty()?dept.getRoomDepts().size():0);
+			d.setTimetableManagersCount(dept.getTimetableManagers().size());
+			d.setSubjectAreaCount(dept.getSubjectAreas().size());
+			d.setRoomDeptCount(dept.getRoomDepts().size());
 			d.setDistributionPrefPriority(dept.getDistributionPrefPriority().intValue());
 			d.setStatusTypeStr(dept.effectiveStatusType().getLabel());
 			d.setStatusTypeCode(dept.effectiveStatusType().getReference());
@@ -76,114 +76,86 @@ public class GetDepartmentsDataBackend implements GwtRpcImplementation<GetDepart
 			d.setAllowReqRoom(dept.getAllowReqRoom());
 			d.setAllowReqDistribution(dept.getAllowReqDistribution());
 			d.setExternalFundingDept(dept.getExternalFundingDept());
-			d.setCanEdit(context.hasPermission(dept, Right.DepartmentEdit));
-			d.setCanDelete(context.hasPermission(dept, Right.DepartmentDelete));
-			d.setCanChangeExtManager(context.hasPermission(dept, Right.DepartmentEditChangeExternalManager));
-			ArrayList<String> dependentStatuses = dependentStatuses(dept);			
-			d.setDependentStatusesStr(dependentStatusesAsStr(dept));
+			d.setDependentStatusesStr(dependentDeptData.getDependentDepartmentStatusStr());
 			d.setInheritInstructorPreferences(dept.isInheritInstructorPreferences()) ;
 			d.setAllowEvents(dept.isAllowEvents()) ;
 			d.setAllowStudentScheduling(dept.isAllowStudentScheduling());
 			d.setLastChangeStr(lastChangeStr(dept, context));
-			d.setDependentDepartments(dependentDepartments(dept));
-			d.setDependentStatuses(dependentStatuses);	
-			d.setSatusOptions(getStatusOptions());
-			d.setExtDepartmentOptions(getAllDependentDepartmentOptions(context));
+			d.setDependentDepartments(dependentDeptData.getDependentDepartments());
+			d.setDependentStatuses(dependentDeptData.getDependentStatuses());	
 			d.setExternalId(dept.getExternalUniqueId());
-			d.setCanEdit(context.hasPermission(dept, Right.DepartmentEdit));
 			response.addDepartment(d);
 		}
-		
+
 		return response;
 	}
-	public ArrayList<String> dependentStatuses(Department dept){
-		ArrayList<String> dependentStatuses = new ArrayList<String>();
-        if (dept.isExternalManager() && dept.getExternalStatusTypes() != null && !dept.getExternalStatusTypes().isEmpty()) {
-        	TreeSet<ExternalDepartmentStatusType> set = new TreeSet<ExternalDepartmentStatusType>(new Comparator<ExternalDepartmentStatusType>() {
-				@Override
-				public int compare(ExternalDepartmentStatusType e1, ExternalDepartmentStatusType e2) {
-					return e1.getDepartment().compareTo(e2.getDepartment());
-				}
-			});
-        	set.addAll(dept.getExternalStatusTypes());
-        	for (ExternalDepartmentStatusType t: set) {  
-       		dependentStatuses.add(t.getStatusType().getReference());
-        	}
-        }
-        return dependentStatuses;
-	}
-
-	/*
-	 * for display in UI
-	 */
-	public List <String> dependentStatusesAsStr(Department dept){
-        List dependentStatuses =  new ArrayList<String>();;
-        if (dept.isExternalManager() && dept.getExternalStatusTypes() != null && !dept.getExternalStatusTypes().isEmpty()) {
-        	TreeSet<ExternalDepartmentStatusType> set = new TreeSet<ExternalDepartmentStatusType>(new Comparator<ExternalDepartmentStatusType>() {
-				@Override
-				public int compare(ExternalDepartmentStatusType e1, ExternalDepartmentStatusType e2) {
-					return e1.getDepartment().compareTo(e2.getDepartment());
-				}
-			});
-        	set.addAll(dept.getExternalStatusTypes());
-        	for (ExternalDepartmentStatusType t: set) {   
-        		dependentStatuses.add(t.getDepartment().getDeptCode() + ": " +t.getStatusType().getLabel());
-        	}
-        }
-        return dependentStatuses;
-	}
-		
-	public ArrayList<String> dependentDepartments(Department dept){
-		ArrayList<String> dependentDepartments = new ArrayList<String>();
-        if (dept.isExternalManager() && dept.getExternalStatusTypes() != null && !dept.getExternalStatusTypes().isEmpty()) {
-        	TreeSet<ExternalDepartmentStatusType> set = new TreeSet<ExternalDepartmentStatusType>(new Comparator<ExternalDepartmentStatusType>() {
-				@Override
-				public int compare(ExternalDepartmentStatusType e1, ExternalDepartmentStatusType e2) {
-					return e1.getDepartment().compareTo(e2.getDepartment());
-				}
-			});
-        	set.addAll(dept.getExternalStatusTypes());
-        	for (ExternalDepartmentStatusType t: set) {
-        		dependentDepartments.add(t.getDepartment().getUniqueId().toString());     		
-        	}
-        }
-        return dependentDepartments;
-	}
-	
-
 	
 	public String lastChangeStr(Department dept, SessionContext context){
         String lastChangeStr = null;
     	if (context.hasPermission(Right.HasRole) && CommonValues.Yes.eq(context.getUser().getProperty(UserProperty.DisplayLastChanges))) {
-            List changes = ChangeLog.findLastNChanges(dept.getSession().getUniqueId(), null, null, dept.getUniqueId(), 1);
+            List<ChangeLog> changes = ChangeLog.findLastNChanges(dept.getSession().getUniqueId(), null, null, dept.getUniqueId(), 1);
             ChangeLog lastChange = (changes==null || changes.isEmpty() ? null : (ChangeLog) changes.get(0));
             lastChangeStr = (lastChange==null?"":ChangeLog.sDFdate.format(lastChange.getTimeStamp())+" by "+lastChange.getManager().getShortName());
-   	}
+    	}
         return lastChangeStr;
 	}
 	
-
 	
 	public HashMap<String, String>  getStatusOptions() { 
 		ReferenceList ref = new ReferenceList();
 		ref.addAll(DepartmentStatusType.findAllForDepartment());
 		HashMap<String,String> map = new HashMap<String,String>();
-		for (Iterator it = ref.iterator(); it.hasNext();) {
-			RefTableEntry r = (RefTableEntry) it.next();
+		for (RefTableEntry r : ref) {
 			 map.put(r.getReference(),r.getLabel());
 		}
 		return map;
 	}
 
 	public HashMap<Long, String> getAllDependentDepartmentOptions( SessionContext context) { 
-		 TreeSet<Department> departments =  Department.findAllNonExternal(context.getUser().getCurrentAcademicSessionId());
-		 HashMap<Long, String> map = new HashMap<Long,String>();
+		TreeSet<Department> departments =  Department.findAllNonExternal(context.getUser().getCurrentAcademicSessionId());
+		HashMap<Long, String> map = new HashMap<Long,String>();
 		for (Department d: departments){
 			  String deptCode = d.getDepartment().getDeptCode();
 			  String deptName = d.getDepartment().getName();
 			  String displayName = deptCode + " : " +deptName;
 			  map.put(d.getDepartment().getUniqueId(),displayName);
 		}
-		  return map;   
+		return map;   
 	}	
+	protected class DependentDepartmentData {
+        private ArrayList<String> dependentStatuses;
+		private ArrayList<String> dependentDepartments;
+        private ArrayList<String> dependentDepartmentStatusStr;
+		protected DependentDepartmentData(Department dept) {
+			dependentStatuses = new ArrayList<String>();
+			dependentDepartments = new ArrayList<String>();
+			dependentDepartmentStatusStr = new ArrayList<String>();
+			
+	        if (dept.isExternalManager() && dept.getExternalStatusTypes() != null && !dept.getExternalStatusTypes().isEmpty()) {
+	        	TreeSet<ExternalDepartmentStatusType> set = new TreeSet<ExternalDepartmentStatusType>(new Comparator<ExternalDepartmentStatusType>() {
+					@Override
+					public int compare(ExternalDepartmentStatusType e1, ExternalDepartmentStatusType e2) {
+						return e1.getDepartment().compareTo(e2.getDepartment());
+					}
+				});
+	        	set.addAll(dept.getExternalStatusTypes());
+	        	for (ExternalDepartmentStatusType t: set) {  
+	        		dependentStatuses.add(t.getStatusType().getReference());
+	        		dependentDepartmentStatusStr.add(t.getDepartment().getDeptCode() + ": " +t.getStatusType().getLabel());
+	        		dependentDepartments.add(t.getDepartment().getUniqueId().toString());     		
+	        	}
+	        }
+		}
+		protected ArrayList<String> getDependentStatuses() {
+			return dependentStatuses;
+		}
+		
+		protected ArrayList<String> getDependentDepartments() {
+			return dependentDepartments;
+		}
+
+		protected ArrayList<String> getDependentDepartmentStatusStr() {
+			return dependentDepartmentStatusStr;
+		}
+	}
 }

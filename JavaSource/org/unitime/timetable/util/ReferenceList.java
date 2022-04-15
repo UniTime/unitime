@@ -20,7 +20,6 @@
 package org.unitime.timetable.util;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import org.unitime.timetable.model.RefTableEntry;
 
@@ -29,15 +28,14 @@ import org.unitime.timetable.model.RefTableEntry;
  * @author Dagmar Murray, Tomas Muller
  *
  */
-public class ReferenceList extends ArrayList {
+public class ReferenceList extends ArrayList<RefTableEntry> {
 	/**
 	 * Comment for <code>serialVersionUID</code>
 	 */
 	private static final long serialVersionUID = 3760561970914801209L;
 
 	public String labelForReference(String ref) {
-		for (Iterator it = this.iterator(); it.hasNext();) {
-			RefTableEntry r = (RefTableEntry) it.next();
+		for (RefTableEntry r : this) {
 			if (r.getReference().equals(ref)) 
 				return r.getLabel();
 		}

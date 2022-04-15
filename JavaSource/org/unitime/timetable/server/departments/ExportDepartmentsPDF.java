@@ -64,7 +64,7 @@ public class ExportDepartmentsPDF implements Exporter {
         DecimalFormat df5 = new DecimalFormat("####0.######");
         out.printHeader( MESSAGES.propDepartmentlist(context.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel()));
   			
-        List<Department> departments = new ArrayList(Department.findAll(helper.getAcademicSessionId()));
+        List<Department> departments = new ArrayList<Department>(Department.findAll(helper.getAcademicSessionId()));
 		String sort = helper.getParameter("sort");
 		String showAllDept = helper.getParameter("showAllDept");
 
@@ -90,7 +90,7 @@ public class ExportDepartmentsPDF implements Exporter {
             	/*
             	 * Header
             	 */
-            	if (printHeaderText == false) {
+            	if (!printHeaderText) {
                 	ArrayList<String> headerText = new ArrayList<String>(); 
                 	headerText.add(MESSAGES.colNumber());
                 	headerText.add(MESSAGES.colAbbv());
@@ -124,7 +124,7 @@ public class ExportDepartmentsPDF implements Exporter {
                     String lastChangeStr = null;
                     
                     if (dispLastChanges) {
-                            List changes = ChangeLog.findLastNChanges(d.getSession().getUniqueId(), null, null, d.getUniqueId(), 1);
+                            List<ChangeLog> changes = ChangeLog.findLastNChanges(d.getSession().getUniqueId(), null, null, d.getUniqueId(), 1);
                             ChangeLog lastChange = (changes==null || changes.isEmpty() ? null : (ChangeLog) changes.get(0));
                             lastChangeStr = (lastChange==null?"":MESSAGES.lastChange(
                             	    ChangeLog.sDFdate.format(lastChange.getTimeStamp()),

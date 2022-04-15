@@ -22,10 +22,11 @@ package org.unitime.timetable.gwt.client.departments;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+
 import org.unitime.timetable.gwt.client.admin.AdminCookie;
-import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.rooms.RoomsTable.IntegerCell;
+import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.HasColumnName;
@@ -33,6 +34,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.DepartmentInterface.DepartmentsColumn;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
@@ -44,7 +46,8 @@ public class DepartmentsTable extends UniTimeTable<DepartmentInterface>{
 	private DepartmentsColumn iSortBy = null;
 	private boolean iAsc = true;	
 	private boolean iSelectable = true;
-	
+	private boolean iFundingDeptEnabled;
+
 	public DepartmentsTable() {
 		setHeaderData(false);
 		addStyleName("unitime-Departments");
@@ -55,6 +58,10 @@ public class DepartmentsTable extends UniTimeTable<DepartmentInterface>{
 		if (w != null && w instanceof CheckBox) {
 			((CheckBox)w).setValue(value);
 		}
+	}
+	
+	public void setProperties(boolean fundingDeptEnabled) {
+		iFundingDeptEnabled = fundingDeptEnabled;
 	}
 	
 	public String getColumnName(DepartmentsColumn column) {
@@ -131,8 +138,8 @@ public class DepartmentsTable extends UniTimeTable<DepartmentInterface>{
 			return allowStudentSchedulingWidget;
 		case EXT_FUNDING_DEPT:
 			P extFundingDeptWidget = new P("extFundingDeptWidget");
-			if (department.isCoursesFundingDepartmentsEnabled() == true) {
-				if(department.isExternalFundingDept() != null && department.isExternalFundingDept() == true )
+			if (iFundingDeptEnabled) {
+				if(department.isExternalFundingDept() != null && department.isExternalFundingDept() )
 				extFundingDeptWidget.addStyleName("department-accept");						
 				return extFundingDeptWidget;		
 			}else
@@ -160,7 +167,7 @@ public class DepartmentsTable extends UniTimeTable<DepartmentInterface>{
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		for (final DepartmentsColumn col: DepartmentsColumn.values()) {
 						
-			if (DepartmentComparator.isApplicable(col) &&(col != DepartmentsColumn.EXT_FUNDING_DEPT || (col == DepartmentsColumn.EXT_FUNDING_DEPT  && fundingDepartmentsEnabled == true))){
+			if (DepartmentComparator.isApplicable(col) &&(col != DepartmentsColumn.EXT_FUNDING_DEPT || (col == DepartmentsColumn.EXT_FUNDING_DEPT  && fundingDepartmentsEnabled))){
 				final UniTimeTableHeader h = new UniTimeTableHeader(getColumnName(col));
 				Operation op = new SortOperation() {
 					@Override
@@ -199,8 +206,9 @@ public class DepartmentsTable extends UniTimeTable<DepartmentInterface>{
 		setSortBy(AdminCookie.getInstance().getSortDepartmentsBy());
 	}
 	
-	public void setData(List<DepartmentInterface> departments, boolean showAlldept) {
+	public void setData(List<DepartmentInterface> departments, boolean showAlldept, boolean fundingDeptVisible) {
 		clearTable(1);
+		iFundingDeptEnabled = fundingDeptVisible;
 		boolean hasLastChange = false;
 		if (departments != null)
 			for (DepartmentInterface department: departments)

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+
 import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.gwt.client.departments.DepartmentsEdit.UpdateDepartmentRequest;
@@ -31,16 +32,17 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.PageAccessException;
-import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ChangeLog;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.ExternalDepartmentStatusType;
+import org.unitime.timetable.model.Preference;
+import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.model.Class_;
-import org.unitime.timetable.model.TimePref;
 
 
 
@@ -187,12 +189,13 @@ public class UpdateDepartmentBackend implements GwtRpcImplementation<UpdateDepar
         	Department department = new DepartmentDAO().get(DepartmentInterface.getId(), hibSession);
         	
         	 if (department.isExternalManager().booleanValue()) {
-                 for (Iterator i=hibSession.createQuery("select c from Class_ c where c.managingDept.uniqueId=:deptId").setLong("deptId", department.getUniqueId()).iterate(); i.hasNext();) {
+                 for (@SuppressWarnings("unchecked")
+				Iterator<Class_> i=hibSession.createQuery("select c from Class_ c where c.managingDept.uniqueId=:deptId").setLong("deptId", department.getUniqueId()).iterate(); i.hasNext();) {
                      Class_ clazz = (Class_)i.next();
                      if (clazz.getSchedulingSubpart().getManagingDept().equals(department)) {
                          // Clear all room preferences from the subpart
-                         for (Iterator j = clazz.getSchedulingSubpart().getPreferences().iterator(); j.hasNext(); ) {
-                             Object pref = j.next();
+                         for (Iterator<Preference> j = clazz.getSchedulingSubpart().getPreferences().iterator(); j.hasNext(); ) {
+                        	 Preference pref = j.next();
                              if (!(pref instanceof TimePref)) j.remove();
                          }
                          clazz.getSchedulingSubpart().deleteAllDistributionPreferences(hibSession);
@@ -200,8 +203,8 @@ public class UpdateDepartmentBackend implements GwtRpcImplementation<UpdateDepar
                      }
                      clazz.setManagingDept(clazz.getControllingDept(), context.getUser(), hibSession);
                      // Clear all room preferences from the class
-                     for (Iterator j = clazz.getPreferences().iterator(); j.hasNext(); ) {
-                         Object pref = j.next();
+                     for (Iterator<Preference> j = clazz.getPreferences().iterator(); j.hasNext(); ) {
+                    	 Preference pref = j.next();
                          if (!(pref instanceof TimePref)) j.remove();
                      }
                      clazz.deleteAllDistributionPreferences(hibSession);
