@@ -48,5 +48,20 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Funding Department</name>
+			<description>
+				<line>An optional funding department has been added to classes. It can be used to group the class data differently for funding reporting than it is done for course timetabling.</line>
+				<line>The visibility of the funding department functionality is controlled by a property (unitime.courses.funding_departments_enabled) so it is not visible for institutions that do not use it.</line>
+				<line>Finding department can be defined on multiple levels: on the subject area (for courses controlled by a course of this subject), on a course, or on an individual class.</line>
+				<line>Similar to external managers, the funding department defaults to the controlling department of the class, and only departments marked as possible funding departments can be selected as additional options.</line>
+				<line>A number of pages have been rewritten to GWT as part of this effort, but it is possible to switch the user interface back to the original Struts based page. See unitime.legacy.xxx properties in the Application Configuration.
+					<line>These include Departments, Subject Areas, Instructor Assignment, and Add/Edit Course Offering pages.</line>
+				</line>
+			</description>
+		</item>
+	</category>
 </release>
 </release-history>
