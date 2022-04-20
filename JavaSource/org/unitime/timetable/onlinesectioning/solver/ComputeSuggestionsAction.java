@@ -145,18 +145,19 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		Student student = new Student(getRequest().getStudentId() == null ? -1l : getRequest().getStudentId());
 		Set<IdPair> enrolled = null;
 
-		Lock readLock = server.readLock();
 		ClassAssignmentInterface unavailabilities = null;
-		boolean checkDeadlines = server.getConfig().getPropertyBoolean("FindAssignment.CheckDeadlines", false) && !getRequest().areDeadlineConflictsAllowed();
-		Integer currentDateIndex = null;
-		if (server.getConfig().getPropertyBoolean("FindAssignment.AvoidPastSections", true))
-			currentDateIndex = Days.daysBetween(new LocalDate(server.getAcademicSession().getDatePatternFirstDate()), new LocalDate()).getDays() + server.getConfig().getPropertyInt("FindAssignment.AvoidPastOffset", 0);
-		boolean onlineOnlyFilter = true;
-		if (helper.hasAdminPermission() && server.getConfig().getPropertyBoolean("Load.OnlineOnlyAdminOverride", false))
-			onlineOnlyFilter = false;
-		else if (helper.hasAvisorPermission() && server.getConfig().getPropertyBoolean("Load.OnlineOnlyAdvisorOverride", false))
-			onlineOnlyFilter = false;
+		Lock readLock = server.readLock();
 		try {
+			boolean checkDeadlines = server.getConfig().getPropertyBoolean("FindAssignment.CheckDeadlines", false) && !getRequest().areDeadlineConflictsAllowed();
+			Integer currentDateIndex = null;
+			if (server.getConfig().getPropertyBoolean("FindAssignment.AvoidPastSections", true))
+				currentDateIndex = Days.daysBetween(new LocalDate(server.getAcademicSession().getDatePatternFirstDate()), new LocalDate()).getDays() + server.getConfig().getPropertyInt("FindAssignment.AvoidPastOffset", 0);
+			boolean onlineOnlyFilter = true;
+			if (helper.hasAdminPermission() && server.getConfig().getPropertyBoolean("Load.OnlineOnlyAdminOverride", false))
+				onlineOnlyFilter = false;
+			else if (helper.hasAvisorPermission() && server.getConfig().getPropertyBoolean("Load.OnlineOnlyAdvisorOverride", false))
+				onlineOnlyFilter = false;
+
 			XStudent original = (getRequest().getStudentId() == null ? null : server.getStudent(getRequest().getStudentId()));
 			if (original != null) {
 				unavailabilities = new ClassAssignmentInterface();
