@@ -147,6 +147,7 @@ public class OnlineSectioningHelper {
     }
     
     public boolean hasAdminPermission() {
+    	if (getUser() == null) return false;
     	if (getUser().getParameterCount() > 0)
 			for (OnlineSectioningLog.Property p: getUser().getParameterList())
 				if ("admin".equals(p.getKey())) return "true".equals(p.getValue());
@@ -154,6 +155,7 @@ public class OnlineSectioningHelper {
     }
     
     public boolean hasAvisorPermission() {
+    	if (getUser() == null) return false;
     	if (getUser().getParameterCount() > 0)
 			for (OnlineSectioningLog.Property p: getUser().getParameterList())
 				if ("advisor".equals(p.getKey())) return "true".equals(p.getValue());
