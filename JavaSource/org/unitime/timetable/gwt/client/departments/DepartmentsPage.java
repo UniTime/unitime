@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.client.departments;
 import java.util.List;
 //import java.util.logging.Logger;
 
+import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.admin.AdminCookie;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
@@ -131,8 +132,8 @@ public class DepartmentsPage extends Composite {
 			@Override
 			protected void onBack(boolean refresh, final Long DepartmentId) {
 				iPanel.setWidget(iListDepartmentsForm);
-				UniTimePageLabel.getInstance().setPageName(
-						MESSAGES.pageDepartments());
+				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageDepartments());
+				Client.fireGwtPageChanged(new Client.GwtPageChangeEvent());
 				if (refresh) {
 					LoadingWidget.getInstance().show(MESSAGES.waitLoadingData());
 					RPC.execute(new GetDepartmentsRequest(),new AsyncCallback<DepartmentsDataResponse>() {
@@ -241,6 +242,7 @@ public class DepartmentsPage extends Composite {
 					iDepartmentsEdit.show();
 					UniTimePageLabel.getInstance().setPageName(MESSAGES.pageAddDepartment());
 					iDepartmentsTable.clearHover();
+					Client.fireGwtPageChanged(new Client.GwtPageChangeEvent());
 				}						
 			}
 		});
@@ -262,9 +264,9 @@ public class DepartmentsPage extends Composite {
 					iDepartmentsEdit.setValue(department);
 					iPanel.setWidget(iDepartmentsEdit);
 					iDepartmentsEdit.show();
-					UniTimePageLabel.getInstance().setPageName(
-							MESSAGES.pageEditDepartment());
+					UniTimePageLabel.getInstance().setPageName(MESSAGES.pageEditDepartment());
 					iDepartmentsTable.clearHover();
+					Client.fireGwtPageChanged(new Client.GwtPageChangeEvent());
 				}
 			}
 		});

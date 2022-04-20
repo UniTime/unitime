@@ -92,6 +92,7 @@ public class UpdateDepartmentBackend implements GwtRpcImplementation<UpdateDepar
 			delete(request.getDepartment(), context);
 			break;
 		}
+		hibSession.flush();
 		return request.getDepartment();
 	}
 	//Edit or create a department

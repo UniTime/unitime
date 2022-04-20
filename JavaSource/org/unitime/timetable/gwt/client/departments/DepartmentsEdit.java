@@ -47,6 +47,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.TakesValue;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -684,8 +685,7 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 	}
 
 	public void show() {
-		// TODO Auto-generated method stub
-		
+		Window.scrollTo(0, 0);
 	}
 
 	/*

@@ -282,7 +282,7 @@ public class ExportDepartmentsPDF implements Exporter {
 		}
 		
 		protected int compare(Boolean b1, Boolean b2) {
-			return (b1 == null ? b2 == null ? 0 : -1 : b2 == null ? 1 : Boolean.compare(b1.booleanValue(), b2.booleanValue())); 
+			return - Boolean.compare(b1 != null && b1.booleanValue(), b2 != null && b2.booleanValue()); 
 		}
 	
 		public int compare(Department r1, Department r2) {
