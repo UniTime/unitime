@@ -1436,7 +1436,7 @@ public class CourseOfferingEdit extends Composite {
 				iCourseDemands.getWidget().setEnabled(false);
 				iPanel.getRowFormatter().setVisible(iCreditSectionLine, false);
 				
-				if (courseOffering.getIsControl() == true) {
+				if (courseOffering.getIsControl()) {
 					if (courseOffering.getCreditText() != null && !courseOffering.getCreditText().isEmpty()) {
 						iPanel.getRowFormatter().setVisible(iCreditTextLine, true);
 					}
@@ -1471,7 +1471,7 @@ public class CourseOfferingEdit extends Composite {
 			iCreditText.setText(courseOffering.getCreditText());
 			iScheduleNoteText.setText(courseOffering.getScheduleBookNote());
 
-			if (courseOffering.getIsControl() == true) {
+			if (courseOffering.getIsControl()) {
 				if (!iCanEditCourseOffering && !iCanEditCourseOfferingCoordinators) {
 					//We should hide this if there are no instructors saved
 					iPanel.getRowFormatter().setVisible(iInstructorPanelLine, false);
@@ -1510,7 +1510,7 @@ public class CourseOfferingEdit extends Composite {
 					iClassChangesDeadline.setEnabled(false);
 					iCourseDropDeadline.setEnabled(false);
 					
-					if (courseOffering.getByReservationOnly() == true) {
+					if (courseOffering.getByReservationOnly()) {
 						iPanel.getRowFormatter().setVisible(iReservationOnlyTextLine, true);
 					}
 					
@@ -1870,7 +1870,7 @@ public class CourseOfferingEdit extends Composite {
 						iInstructorsTable.setColumnVisible(2, true);
 					}
 
-					if (courseOffering.getIsControl() == true) {
+					if (courseOffering.getIsControl()) {
 						if (!iCanEditCourseOffering && !iCanEditCourseOfferingCoordinators) {
 							if (courseOffering.getCoordinators().size() > 0) {
 								for (int i = 1; i < iInstructorsTable.getRowCount(); i++) {
@@ -2178,7 +2178,7 @@ public class CourseOfferingEdit extends Composite {
 
 		for (int i = 0; i < overrideRowCount; i++) {			
 			CheckBox overrideCheckBox = (CheckBox) overrideTypesForm.getWidget(i, 0);
-			if (overrideCheckBox.getValue() == true) {
+			if (overrideCheckBox.getValue()) {
 				String overrideTypeId = overrideCheckBox.getFormValue();
 				iCourseOffering.addCourseOverride(overrideTypeId);
 			}
@@ -2242,7 +2242,7 @@ public class CourseOfferingEdit extends Composite {
 			String instructorId = instructorDropdown.getWidget().getSelectedValue();
 			String responsibilityId = responsibilitiesDropdown.getWidget().getSelectedValue();
 			
-			if (instructorId.equals("-")) {
+			if (instructorId == null || instructorId.length() == 0 || instructorId.equals("-")) {
 				continue;
 			}
 

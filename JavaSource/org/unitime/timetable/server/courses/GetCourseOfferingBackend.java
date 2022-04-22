@@ -71,7 +71,7 @@ public class GetCourseOfferingBackend implements GwtRpcImplementation<GetCourseO
 			cof.setConsent(courseOffering.getConsentType().getUniqueId());
 			cof.setConsentText(courseOffering.getConsentType().getLabel());
 		} else {
-			cof.setConsent(new Long(-1));
+			cof.setConsent(Long.valueOf(-1));
 			cof.setConsentText("");
 		}
 
@@ -139,11 +139,11 @@ public class GetCourseOfferingBackend implements GwtRpcImplementation<GetCourseO
 		cof.setIsControl(courseOffering.getIsControl());
 		
 		try {
-			if (cof.getIsControl() == true) {
+			if (cof.getIsControl()) {
 				@SuppressWarnings("deprecation")
 				String linkLookupClass = ApplicationProperty.CourseCatalogLinkProvider.value();
 	            if (linkLookupClass!=null && linkLookupClass.trim().length()>0) {
-	            	ExternalLinkLookup lookup = (ExternalLinkLookup) (Class.forName(linkLookupClass).newInstance());
+	            	ExternalLinkLookup lookup = (ExternalLinkLookup) (Class.forName(linkLookupClass).getDeclaredConstructor().newInstance());
 	           		Map results = lookup.getLink(instructionalOffering);
 	                if (results==null) {
 	                    throw new Exception (lookup.getErrorMessage());

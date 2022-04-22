@@ -120,7 +120,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
 	}
 	
 	private Boolean isWaitlistingProhibited(CourseOfferingInterface courseOfferingInterface, OverrideType prohibitedOverride) {
-		if (prohibitedOverride != null && (courseOfferingInterface.getWaitList() == null ? ApplicationProperty.OfferingWaitListDefault.isTrue() : courseOfferingInterface.getWaitList() == true) && !courseOfferingInterface.getCourseOverrides().contains(prohibitedOverride.getUniqueId().toString())) {
+		if (prohibitedOverride != null && (courseOfferingInterface.getWaitList() == null ? ApplicationProperty.OfferingWaitListDefault.isTrue() : courseOfferingInterface.getWaitList()) && !courseOfferingInterface.getCourseOverrides().contains(prohibitedOverride.getUniqueId().toString())) {
 			return true;
 		} else {
 			return false;
@@ -323,18 +323,18 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
     							CourseCreditUnitConfig origConfig = courseOffering.getCredit();
     							courseOffering.setCredit(null);
     							hibSession.delete(origConfig);
-    							courseOffering.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseOfferingInterface.getCreditFormat(), courseOfferingInterface.getCreditType(), courseOfferingInterface.getCreditUnitType(), courseOfferingInterface.getUnits(), courseOfferingInterface.getMaxUnits(), courseOfferingInterface.getFractionalIncrementsAllowed(), new Boolean(true)));
+    							courseOffering.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseOfferingInterface.getCreditFormat(), courseOfferingInterface.getCreditType(), courseOfferingInterface.getCreditUnitType(), courseOfferingInterface.getUnits(), courseOfferingInterface.getMaxUnits(), courseOfferingInterface.getFractionalIncrementsAllowed(), Boolean.valueOf(true)));
     							courseOffering.getCredit().setOwner(courseOffering);
     						}
     					} else {
     						CourseCreditUnitConfig origConfig = courseOffering.getCredit();
     						courseOffering.setCredit(null);
     						hibSession.delete(origConfig);
-    						courseOffering.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseOfferingInterface.getCreditFormat(), courseOfferingInterface.getCreditType(), courseOfferingInterface.getCreditUnitType(), courseOfferingInterface.getUnits(), courseOfferingInterface.getMaxUnits(), courseOfferingInterface.getFractionalIncrementsAllowed(), new Boolean(true)));
+    						courseOffering.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseOfferingInterface.getCreditFormat(), courseOfferingInterface.getCreditType(), courseOfferingInterface.getCreditUnitType(), courseOfferingInterface.getUnits(), courseOfferingInterface.getMaxUnits(), courseOfferingInterface.getFractionalIncrementsAllowed(), Boolean.valueOf(true)));
     						courseOffering.getCredit().setOwner(courseOffering);
     					}
     				} else {
-    					courseOffering.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseOfferingInterface.getCreditFormat(), courseOfferingInterface.getCreditType(), courseOfferingInterface.getCreditUnitType(), courseOfferingInterface.getUnits(), courseOfferingInterface.getMaxUnits(), courseOfferingInterface.getFractionalIncrementsAllowed(), new Boolean(true)));
+    					courseOffering.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseOfferingInterface.getCreditFormat(), courseOfferingInterface.getCreditType(), courseOfferingInterface.getCreditUnitType(), courseOfferingInterface.getUnits(), courseOfferingInterface.getMaxUnits(), courseOfferingInterface.getFractionalIncrementsAllowed(), Boolean.valueOf(true)));
     					courseOffering.getCredit().setOwner(courseOffering);
     				}
 
@@ -398,7 +398,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
         		if (io == null){
         			io = courseOffering.getInstructionalOffering();
         		}
-	        	ExternalCourseOfferingEditAction editAction = (ExternalCourseOfferingEditAction) (Class.forName(className).newInstance());
+	        	ExternalCourseOfferingEditAction editAction = (ExternalCourseOfferingEditAction) (Class.forName(className).getDeclaredConstructor().newInstance());
 	       		editAction.performExternalCourseOfferingEditAction(io, hibSession);
         	}
             
@@ -432,17 +432,17 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
         	SubjectArea subjArea = SubjectAreaDAO.getInstance().get(courseOfferingInterface.getSubjectAreaId(), hibSession);
             courseOffering.setSubjectArea(subjArea);
             courseOffering.setSubjectAreaAbbv(subjArea.getSubjectAreaAbbreviation());
-            courseOffering.setProjectedDemand(new Integer(0));
-            courseOffering.setDemand(new Integer(0));
-            courseOffering.setNbrExpectedStudents(new Integer(0));
-            courseOffering.setIsControl(new Boolean(true));
+            courseOffering.setProjectedDemand(Integer.valueOf(0));
+            courseOffering.setDemand(Integer.valueOf(0));
+            courseOffering.setNbrExpectedStudents(Integer.valueOf(0));
+            courseOffering.setIsControl(Boolean.valueOf(true));
             courseOffering.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)new CourseOfferingDAO().getSession(), courseOffering).toString());
             subjArea.getCourseOfferings().add(courseOffering);
 
-		    io.setNotOffered(new Boolean(false));
+		    io.setNotOffered(Boolean.valueOf(false));
 		    io.setSession(subjArea.getSession());
 		    io.generateInstrOfferingPermId();
-		    io.setLimit(new Integer(0));
+		    io.setLimit(Integer.valueOf(0));
 		    io.setWaitlist(courseOfferingInterface.getWaitList());
 
 		    courseOffering.setInstructionalOffering(io);
@@ -551,7 +551,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
     		    }
             	courseOfferingInterface.setId((Long)hibSession.save(courseOffering));
             	
-            	courseOffering.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseOfferingInterface.getCreditFormat(), courseOfferingInterface.getCreditType(), courseOfferingInterface.getCreditUnitType(), courseOfferingInterface.getUnits(), courseOfferingInterface.getMaxUnits(), courseOfferingInterface.getFractionalIncrementsAllowed(), new Boolean(true)));
+            	courseOffering.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseOfferingInterface.getCreditFormat(), courseOfferingInterface.getCreditType(), courseOfferingInterface.getCreditUnitType(), courseOfferingInterface.getUnits(), courseOfferingInterface.getMaxUnits(), courseOfferingInterface.getFractionalIncrementsAllowed(), Boolean.valueOf(true)));
             	if (courseOffering.getCredit() != null) {
             		courseOffering.getCredit().setOwner(courseOffering);
             		hibSession.saveOrUpdate(courseOffering.getCredit());
@@ -590,13 +590,13 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
         		 
 			String className1 = ApplicationProperty.ExternalActionInstructionalOfferingAdd.value();
         	if (className1 != null && className1.trim().length() > 0){
-	        	ExternalInstructionalOfferingAddAction addAction = (ExternalInstructionalOfferingAddAction) (Class.forName(className1).newInstance());
+	        	ExternalInstructionalOfferingAddAction addAction = (ExternalInstructionalOfferingAddAction) (Class.forName(className1).getDeclaredConstructor().newInstance());
 	       		addAction.performExternalInstructionalOfferingAddAction(io, hibSession);
         	}
         	
         	String className2 = ApplicationProperty.ExternalActionCourseOfferingEdit.value();
 			if (className2 != null && className2.trim().length() > 0){
-				ExternalCourseOfferingEditAction editAction = (ExternalCourseOfferingEditAction) (Class.forName(className2).newInstance());
+				ExternalCourseOfferingEditAction editAction = (ExternalCourseOfferingEditAction) (Class.forName(className2).getDeclaredConstructor().newInstance());
 				editAction.performExternalCourseOfferingEditAction(io, hibSession);
 			}
 
