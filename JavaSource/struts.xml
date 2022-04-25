@@ -27,9 +27,18 @@
     <constant name="struts.convention.package.locators" value="action" />
     <constant name="struts.convention.default.parent.package" value="unitime"/>
     <constant name="struts.objectFactory.spring.autoWire.alwaysRespect" value="true" />
+    <constant name="struts.multipart.enabled" value="true"/>
+    <constant name="struts.multipart.saveDir" value="${catalina.home}/data/unitime/uploads"/>
+    <constant name="struts.multipart.maxSize" value="10737418240"/>
     <package name="unitime" extends="convention-default">
     	<result-types>
 	        <result-type name="tiles" class="org.apache.struts2.views.tiles.TilesResult" />
         </result-types> 
-	</package>
+    	<global-results>
+    		<result name="exception">/error.jsp</result>
+    	</global-results>
+    	<global-exception-mappings>
+    		<exception-mapping exception="java.lang.Exception" result="exception"/>
+    	</global-exception-mappings>
+    </package>
 </struts>
