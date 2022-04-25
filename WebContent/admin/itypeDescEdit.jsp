@@ -51,7 +51,7 @@
 			<TD>
 				<s:if test="op == #msg.actionSaveIType()">
 					<s:textfield name='form.id' maxlength="2" size="2"/>
-					&nbsp;<s:fielderror fieldName="form.id"/>
+					<s:fielderror fieldName="form.id"/>
 				</s:if>
 				<s:else>
 					<s:hidden name="form.id"/><s:property value="form.id"/>
@@ -63,7 +63,7 @@
 			<TD><loc:message name="fieldAbbreviation"/>:</TD>
 			<TD>
 				<s:textfield name='form.abbreviation' size="7" maxlength="7"/>
-				&nbsp;<s:fielderror fieldName="form.abbreviation"/>
+				<s:fielderror fieldName="form.abbreviation"/>
 			</TD>
 		</TR>
 
@@ -71,7 +71,7 @@
 			<TD><loc:message name="fieldName"/>:</TD>
 			<TD>
 				<s:textfield name="form.name" size="50" maxlength="50"/>
-				&nbsp;<s:fielderror fieldName="form.name"/>
+				<s:fielderror fieldName="form.name"/>
 			</TD>
 		</TR>
 
@@ -79,7 +79,7 @@
 			<TD><loc:message name="fieldReference"/>:</TD>
 			<TD>
 				<s:textfield name="form.reference" size="20" maxlength="20"/>
-				&nbsp;<s:fielderror fieldName="form.reference"/>
+				<s:fielderror fieldName="form.reference"/>
 			</TD>
 		</TR>
 
@@ -87,7 +87,7 @@
 			<TD><loc:message name="fieldType"/>:</TD>
 			<TD>
 				<s:select name="form.type" list="form.types"/>
-				&nbsp;<s:fielderror fieldName="form.type"/>
+				<s:fielderror fieldName="form.type"/>
 			</TD>
 		</TR>
 		
@@ -95,7 +95,7 @@
 			<TD><loc:message name="fieldParent"/>:</TD>
 			<TD>
 				<s:select name="form.parent" list="%{#request.itypesList}" listKey="itype" listValue="desc" headerKey="" headerValue="-"/>
-				&nbsp;<s:fielderror fieldName="form.parent"/>
+				<s:fielderror fieldName="form.parent"/>
 			</TD>
 		</TR>
 
