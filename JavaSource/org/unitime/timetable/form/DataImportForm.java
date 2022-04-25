@@ -19,30 +19,25 @@
 */
 package org.unitime.timetable.form;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.upload.FormFile;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 
 /** 
- * MyEclipse Struts
- * Creation date: 01-24-2007
- * 
- * XDoclet definition:
- * @struts.form name="dataImportForm"
- *
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
-public class DataImportForm extends ActionForm {
+public class DataImportForm implements UniTimeForm {
 	private static final long serialVersionUID = 7165669008085313647L;
-	private transient FormFile iFile;
+	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	private transient File iFile;  
+    private String iFileContentType;  
+    private String iFileFileName;
 	private String iOp;
 	private String iExport;
     private boolean iEmail = false;
@@ -100,29 +95,30 @@ public class DataImportForm extends ActionForm {
     	}
     }
 	
-	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-		ActionErrors errors = new ActionErrors();
-		
-        if ("Import".equals(iOp) && (iFile == null || iFile.getFileSize()<=0)) {
-        	errors.add("name", new ActionMessage("errors.required", "File") );
+    public void validate(UniTimeAction action) {
+        if ("Import".equals(iOp) && (iFile == null || !iFile.exists())) {
+        	action.addFieldError("form.file", MSG.errorRequiredField(MSG.fieldFile()));
         }
         
         if ("Export".equals(iOp) && getExportType() == null) {
-        	errors.add("export", new ActionMessage("errors.generic", "Nothing to export") );
+        	action.addFieldError("form.export", MSG.errorNothingToExport());
         }
-        
-        return errors;
 	}
 
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		iFile = null;
+	public void reset() {
+		iFile = null; iFileContentType = null; iFileFileName = null;
 		iExport = null;
 		iEmail = false;
 		iAddress = null;
 	}
 
-	public FormFile getFile() { return iFile; }
-	public void setFile(FormFile file) { iFile = file; }
+	public File getFile() { return iFile; }
+	public void setFile(File file) { iFile = file; }
+	public String getFileContentType() { return iFileContentType; }
+	public void setFileContentType(String contentType) { iFileContentType = contentType; }
+	public String getFileFileName() { return iFileFileName; }
+	public void setFileFileName(String fileName) { iFileFileName = fileName; }
+	
 	public String getOp() { return iOp; }
 	public void setOp(String op) { iOp = op; }
 	
@@ -138,6 +134,8 @@ public class DataImportForm extends ActionForm {
     public Object clone() {
     	DataImportForm form = new DataImportForm();
     	form.iFile = iFile;
+    	form.iFileContentType = iFileContentType;
+    	form.iFileFileName = iFileFileName;
     	form.iOp = iOp;
     	form.iExport = iExport;
         form.iEmail = iEmail;
@@ -147,6 +145,7 @@ public class DataImportForm extends ActionForm {
     
     public List<ListItem> getExportTypes() {
     	ArrayList<ListItem> items = new ArrayList<ListItem>();
+    	items.add(new ListItem("", MSG.itemSelect()));
     	for (ExportType t: ExportType.values())
     		items.add(new ListItem(t.name(), t.getLabel()));
     	return items;

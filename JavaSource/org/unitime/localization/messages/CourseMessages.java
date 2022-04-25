@@ -3149,4 +3149,85 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Delete (Alt+{0})")
 	String titleDeleteIType(String access);
+	
+	@DefaultMessage("File")
+	String fieldFile();
+	
+	@DefaultMessage("Nothing to export.")
+	String errorNothingToExport();
+	
+	@DefaultMessage("Import")
+	String actionImport();
+	
+	@DefaultMessage("Export")
+	String actionExport();
+	
+	@DefaultMessage("R")
+	String accessRefreshLog();
+	
+	@DefaultMessage("Refresh")
+	String actionRefreshLog();
+	
+	@DefaultMessage("Refresh Log (Alt + {0})")
+	String titleRefreshLog(String access);
+	
+	@DefaultMessage("Data Exchange")
+	String sectionDataExcahngeQueue();
+	
+	@DefaultMessage("Name")
+	String fieldQueueName();
+	
+	@DefaultMessage("Status")
+	String fieldQueueStatus();
+	
+	@DefaultMessage("Progress")
+	String fieldQueueProgress();
+	
+	@DefaultMessage("Owner")
+	String fieldQueueOwner();
+	
+	@DefaultMessage("Session")
+	String fieldQueueSession();
+	
+	@DefaultMessage("Created")
+	String fieldQueueCreated();
+	
+	@DefaultMessage("Started")
+	String fieldQueueStarted();
+	
+	@DefaultMessage("Finished")
+	String fieldQueueFinished();
+	
+	@DefaultMessage("Output")
+	String fieldQueueOutput();
+	
+	@DefaultMessage("Import File")
+	String fieldImportFile();
+	
+	@DefaultMessage("Export Type")
+	String fieldExportType();
+	
+	@DefaultMessage("Do you really want to remove this data exchange?")
+	String questionDeleteDataExchangeItem();
+	
+	@DefaultMessage("Data Export")
+	String sectioDateExport();
+	
+	@DefaultMessage("Data Import")
+	String sectioDateImport();
+	
+	@DefaultMessage("Options")
+	String sectionDataExchangeOptions();
+	
+	@DefaultMessage("Email (Log, Export XML)")
+	String fieldDataExchangeEmail();
+	
+	@DefaultMessage("Select...")
+	String itemSelect();
+	
+	@DefaultMessage("Log of {0}")
+	String sectionDataExchangeLog(String name);
+	
+	@DefaultMessage("Data exchange in progress")
+	String sectionDataExchangeQueue();
 }

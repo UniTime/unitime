@@ -27,6 +27,8 @@ import org.apache.struts2.interceptor.ServletResponseAware;
 import org.unitime.timetable.form.UniTimeForm;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.context.HttpSessionContext;
+import org.unitime.timetable.solver.service.SolverServerService;
+import org.unitime.timetable.spring.SpringApplicationContextHolder;
 
 import com.opensymphony.xwork2.ActionSupport;
 
@@ -55,5 +57,9 @@ public abstract class UniTimeAction<T extends UniTimeForm> extends ActionSupport
 	
 	public void setServletResponse(HttpServletResponse response) {
 		this.response = response;
+	}
+	
+	protected SolverServerService getSolverServerService() {
+		return (SolverServerService)SpringApplicationContextHolder.getBean("solverServerService");
 	}
 }

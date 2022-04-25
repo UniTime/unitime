@@ -17,139 +17,71 @@
  * limitations under the License.
  * 
  --%>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean"%> 
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html"%>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic"%>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<html:form action="/dataImport" focus="file" enctype="multipart/form-data">
-
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-
-	<logic:messagesPresent>
-		<TR>
-			<TD colspan='2'>
-				<tt:section-title><font color='red'>Errors</font></tt:section-title>
-			</TD>
-		</TR>
-		<TR>
-			<TD colspan="2" align="left" class="errorCell">
-				<BLOCKQUOTE>
-				<UL>
-					<html:messages id="error">
-				      <LI>
-						${error}
-				      </LI>
-				    </html:messages>
-			    </UL>
-			    </BLOCKQUOTE>
-			</TD>
-		</TR>
-		<TR><TD>&nbsp;</TD></TR>
-	</logic:messagesPresent>
-	<logic:notEmpty name="table" scope="request">
-		<TR><TD colspan="2">
-			<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-				<bean:write name="table" scope="request" filter="false"/>
-			</TABLE>
-		</TD></TR>
-		<TR><TD colspan='2'>&nbsp;</TD></TR>
-	</logic:notEmpty>
-	<logic:notEmpty name="log" scope="request">
-		<TR>
-			<TD colspan='2'>
-				<tt:section-header>
-					<tt:section-title>
-						Log of <bean:write name="logname" scope="request" filter="false"/>
-					</tt:section-title>
-					<bean:define id="logid" name="logid" scope="request"/>
-					<input type="hidden" name="log" value="<%=logid%>">
-					<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh" title="Refresh Log (Alt+R)"/>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/> 
+<s:form action="dataImport" enctype="multipart/form-data" method="POST">
+	<table style="width:100%;">
+		<s:if test="#request.table != null">
+			<tr><td colspan='2'>
+				<s:property value="%{#request.table}" escapeHtml="false"/>
+			</td></tr>
+		</s:if>
+		<s:if test="#request.log != null && #request.log != ''">
+			<tr><td colspan='2'>
+			<tt:section-header>
+				<tt:section-title><loc:message name="sectionDataExchangeLog"><s:property value="%{#request.logname}" escapeHtml="false"/></loc:message></tt:section-title>
+				<s:hidden name="log" value="%{#request.logid}"/>
+				<s:submit accesskey='%{#msg.accessRefreshLog()}' name='form.op' value='%{#msg.actionRefreshLog()}' title='%{#msg.titleRefreshLog(#msg.accessRefreshLog())}'/>
 				</tt:section-header>
-			</TD>
-		</TR>
-		<TR>
-  			<TD colspan='2'>
-  				<blockquote>
-	  				<bean:write name="log" scope="request" filter="false"/>
-  				</blockquote>
-  			</TD>
-		</TR>
-	</logic:notEmpty>	
-
-		<TR>
-			<TD colspan="2">
-				<tt:section-header>
-					<tt:section-title>Data Import</tt:section-title>
-					<html:submit property="op" onclick="displayLoading()">Import</html:submit>
-				</tt:section-header>
-			</TD>
-		</TR>
-		
-		<TR>
-			<TD nowrap>File:</TD>
-			<TD>
-				<html:file name="dataImportForm" property="file" size="100" maxlength="255"/>
-			</TD>
-		</TR>
-		
-		<TR>
-			<TD colspan="2">
-				&nbsp;
-			</TD>
-		</TR>
-		
-		<TR>
-			<TD colspan="2">
-				<tt:section-header>
-					<tt:section-title>Data Export</tt:section-title>
-					<html:submit property="op" onclick="displayLoading()">Export</html:submit>
-				</tt:section-header>
-			</TD>
-		</TR>
-	
-		<TR>
-			<TD nowrap>Type:</TD>
-			<TD>
-				<html:select property="export">
-					<html:option value="">Select...</html:option>
-					<html:optionsCollection name="dataImportForm" property="exportTypes" value="value" label="label"/>
-				</html:select>
-			</TD>
-		</TR>
-
-		<TR>
-			<TD colspan="2">
-				&nbsp;
-			</TD>
-		</TR>
-
-		<TR>
-			<TD colspan="2">
-				<tt:section-title>Options</tt:section-title>
-			</TD>
-		</TR>
-		
-		<TR>
-			<TD nowrap>Email (Log, Export XML):</TD>
-			<TD>
-				<html:checkbox property="email" onclick="document.getElementById('eml').style.display=(this.checked?'inline':'none');" styleId="emlChk"/>
-				<html:text property="address" size="70" styleId="eml" style="display:none;"/>
+			</td></tr>
+			<tr><td colspan='2'>
+				<s:property value="%{#request.log}" escapeHtml="false"/>
+			</td></tr>
+		</s:if>
+		<tr><td colspan='2'>
+			<tt:section-header>
+				<tt:section-title><loc:message name="sectioDateImport"/></tt:section-title>
+				<s:submit name='form.op' value='%{#msg.actionImport()}'/>
+			</tt:section-header>
+		</td></tr>
+		<tr>
+			<td nowrap><loc:message name="fieldImportFile"/>:</td>
+			<td><s:file name="form.file"/><s:fielderror fieldName="form.file"/></td>
+		</tr>
+		<tr><td colspan='2'>&nbsp;</td></tr>
+		<tr><td colspan='2'>
+			<tt:section-header>
+				<tt:section-title><loc:message name="sectioDateExport"/></tt:section-title>
+				<s:submit name='form.op' value='%{#msg.actionExport()}'/>
+			</tt:section-header>
+		</td></tr>
+		<tr>
+			<td nowrap><loc:message name="fieldExportType"/>:</td>
+			<td>
+				<s:select name="form.export" list="form.exportTypes" listKey="value" listValue="label"/>
+				<s:fielderror fieldName="form.export"/>
+			</td>
+		</tr>
+		<tr><td colspan='2'>&nbsp;</td></tr>
+		<tr><td colspan='2'><tt:section-title><loc:message name="sectionDataExchangeOptions"/></tt:section-title></td></tr>
+		<tr>
+			<td nowrap><loc:message name="fieldDataExchangeEmail"/>:</td>
+			<td>
+				<s:checkbox name="form.email" onclick="document.getElementById('eml').style.display=(this.checked?'inline':'none');" id="emlChk"/>
+				<s:textfield name="form.address" size="70" cssClass="eml" style="display:none;" id="eml"/>
 				<script type="text/javascript">document.getElementById('eml').style.display=(document.getElementById('emlChk').checked?'inline':'none');</script>
-			</TD>
-		</TR>
-		
-		<TR>
-			<TD colspan="2">
-				<tt:section-title/>
-			</TD>
-		</TR>
-
-		<TR>
-			<TD align="right" colspan='2'>
-				<html:submit property="op" onclick="displayLoading()">Import</html:submit>
-				<html:submit property="op" onclick="displayLoading()">Export</html:submit>
-			</TD>
-		</TR>
-		
-	</TABLE>
-</html:form>
+			</td>
+		</tr>
+		<tr><td colspan='2'><tt:section-title/></td></tr>
+		<tr>
+			<td align="right" colspan='2'>
+				<s:submit name='form.op' value='%{#msg.actionImport()}'/>
+				<s:submit name='form.op' value='%{#msg.actionExport()}'/>
+			</td>
+		</tr>
+	</table>
+</s:form>
+</loc:bundle>

@@ -1001,7 +1001,7 @@
 				</condition>
 			</item>
 			<separator/>
-			<item name="Data Exchange" page="dataImport.do">
+			<item name="Data Exchange" page="dataImport.action">
 				<condition>
 					<hasPermission name="DataExchange"/>
 				</condition>

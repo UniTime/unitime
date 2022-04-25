@@ -670,11 +670,6 @@
 		<put name="checkRole" value="false" />
   	</definition>
   	
-   	<definition	name="dataImportTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Data Exchange"/>
-		<put name="body" value="/admin/dataImport.jsp" />
-  	</definition>
-  	
    	<definition	name="exactTimeEditTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Exact Time Pattern"/>
 		<put name="body" value="/admin/exactTimeEdit.jsp" />

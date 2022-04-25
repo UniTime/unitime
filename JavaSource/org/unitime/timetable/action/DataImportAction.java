@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.action;
 
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,24 +32,23 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessages;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.InterceptorRef;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.cpsolver.ifs.util.Progress;
 import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.Email;
 import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.backup.BackupProgress;
 import org.unitime.timetable.backup.SessionBackupInterface;
 import org.unitime.timetable.backup.SessionRestoreInterface;
@@ -59,95 +59,87 @@ import org.unitime.timetable.form.DataImportForm;
 import org.unitime.timetable.form.DataImportForm.ExportType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.queue.QueueItem;
 
 
 /** 
- * MyEclipse Struts
- * Creation date: 01-24-2007
- * 
- * XDoclet definition:
- * @struts.action path="/dataImport" name="dataImportForm" input="/form/dataImport.jsp" scope="request" validate="true"
- *
  * @author Tomas Muller
  */
-@Service("/dataImport")
-public class DataImportAction extends Action {
+@Action(value="dataImport", results = {
+		@Result(name="display", type = "tiles", location="dataImport.tiles"),
+		@Result(name="input", type = "tiles", location="dataImport.tiles"),
+	}, interceptorRefs = {
+		@InterceptorRef(value = "fileUpload"),
+		@InterceptorRef(value = "defaultStack")
+	})
+@TilesDefinition(name = "dataImport.tiles", extend = "baseLayout", putAttributes = {
+		@TilesPutAttribute(name = "title", value = "Data Exchange"),
+		@TilesPutAttribute(name = "body", value = "/admin/dataImport.jsp")
+	})
+public class DataImportAction extends UniTimeAction<DataImportForm> {
+	private static final long serialVersionUID = 3163553928537551939L;
+	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
+	private String log;
+	private String remove;
+	private String ord;
 	
-	@Autowired SessionContext sessionContext;
+	public String getLog() { return log; }
+	public void setLog(String log) { this.log = log; }
 	
-	@Autowired SolverServerService solverServerService;
-
-	// --------------------------------------------------------- Instance Variables
-
-	// --------------------------------------------------------- Methods
-
-	/** 
-	 * Method execute
-	 * @param mapping
-	 * @param form
-	 * @param request
-	 * @param response
-	 * @return ActionForward
-	 */
-	public ActionForward execute(ActionMapping mapping,	ActionForm form, HttpServletRequest request, HttpServletResponse response) {
-		final DataImportForm myForm = (DataImportForm) form;
-
-		// Read operation to be performed
-		String op = (myForm.getOp() != null ? myForm.getOp() : request.getParameter("op"));
+	public String getRemove() { return remove; }
+	public void setRemove(String remove) { this.remove = remove; }
+	
+	public String getOrd() { return ord; }
+	public void setOrd(String ord) { this.ord = ord; }
+	
+	public String execute() throws Exception {
+		if (form == null) {
+			form = new DataImportForm();
+			form.setAddress(sessionContext.getUser().getEmail());
+		}
 		
 		sessionContext.checkPermission(Right.DataExchange);
 		
-		if (op == null)
-			myForm.setAddress(sessionContext.getUser().getEmail());
-		
 		Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
 		
-		if ("Import".equals(op)) {
-            // Validate input
-            ActionMessages errors = myForm.validate(mapping, request);
-            if(errors.size() > 0) {
-                saveErrors(request, errors);
-                return mapping.findForward("display");
-            }
-            solverServerService.getQueueProcessor().add(new ImportQueItem(session, sessionContext.getUser(), myForm, request));
+		if (MSG.actionImport().equals(form.getOp())) {
+			form.validate(this);
+			if (!hasFieldErrors())
+				getSolverServerService().getQueueProcessor().add(new ImportQueItem(session, sessionContext.getUser(), form, request));
         }
         
-        if ("Export".equals(op)) {
-            ActionMessages errors = myForm.validate(mapping, request);
-            if(errors.size() > 0) {
-                saveErrors(request, errors);
-                return mapping.findForward("display");
-            }
-            solverServerService.getQueueProcessor().add(new ExportQueItem(session, sessionContext.getUser(), myForm, request));
+        if (MSG.actionExport().equals(form.getOp())) {
+        	form.validate(this);
+			if (!hasFieldErrors())
+				getSolverServerService().getQueueProcessor().add(new ExportQueItem(session, sessionContext.getUser(), form, request));
         }
         
-        if (request.getParameter("remove") != null) {
-        	solverServerService.getQueueProcessor().remove(request.getParameter("remove"));
+        if (getRemove() != null) {
+        	getSolverServerService().getQueueProcessor().remove(getRemove());
         }
         
         WebTable table = getQueueTable(request);
         if (table != null) {
         	request.setAttribute("table", table.printTable(WebTable.getOrder(sessionContext,"dataImport.ord")));
         }
-
-		return mapping.findForward("display");
+		
+		return "display";
 	}
 	
 	private WebTable getQueueTable(HttpServletRequest request) {
-        WebTable.setOrder(sessionContext,"dataImport.ord",request.getParameter("ord"),1);
+        WebTable.setOrder(sessionContext, "dataImport.ord", getOrd(), 1);
 		String log = request.getParameter("log");
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.TIME_SHORT);
-		List<QueueItem> queue = solverServerService.getQueueProcessor().getItems(null, null, "Data Exchange");
+		List<QueueItem> queue = getSolverServerService().getQueueProcessor().getItems(null, null, MSG.sectionDataExcahngeQueue());
 		if (queue.isEmpty()) return null;
-		WebTable table = new WebTable(9, "Data exchange in progress", "dataImport.do?ord=%%",
-				new String[] { "Name", "Status", "Progress", "Owner", "Session", "Created", "Started", "Finished", "Output"},
+		WebTable table = new WebTable(9, MSG.sectionDataExchangeQueue(), "dataImport.action?ord=%%",
+				new String[] { MSG.fieldQueueName(), MSG.fieldQueueStatus(), MSG.fieldQueueProgress(), MSG.fieldQueueOwner(),
+						MSG.fieldQueueSession(), MSG.fieldQueueCreated(), MSG.fieldQueueStarted(), MSG.fieldQueueFinished(),
+						MSG.fieldQueueOutput()},
 				new String[] { "left", "left", "right", "left", "left", "left", "left", "left", "center"},
 				new boolean[] { true, true, true, true, true, true, true, true, true});
 		Date now = new Date();
@@ -159,9 +151,9 @@ public class DataImportAction extends Action {
 			if (name.length() > 60) name = name.substring(0, 57) + "...";
 			String delete = null;
 			if (sessionContext.getUser().getExternalUserId().equals(item.getOwnerId()) && (item.started() == null || item.finished() != null)) {
-				delete = "<img src='images/action_delete.png' border='0' onClick=\"if (confirm('Do you really want to remove this data exchange?')) document.location='dataImport.do?remove="+item.getId()+"'; event.cancelBubble=true;\">";
+				delete = "<img src='images/action_delete.png' border='0' onClick=\"if (confirm('" + MSG.questionDeleteDataExchangeItem() + "')) document.location='dataImport.action?remove="+item.getId()+"'; event.cancelBubble=true;\">";
 			}
-			WebTableLine line = table.addLine("onClick=\"document.location='dataImport.do?log=" + item.getId() + "';\"",
+			WebTableLine line = table.addLine("onClick=\"document.location='dataImport.action?log=" + item.getId() + "';\"",
 					new String[] {
 						name + (delete == null ? "": " " + delete),
 						item.status(),
@@ -214,7 +206,7 @@ public class DataImportAction extends Action {
 			iUrl = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath();
 			iImport = isImport;
 			iSessionName = session.getAcademicTerm() + session.getAcademicYear() + session.getAcademicInitiative();
-			if (iForm.getFile() != null) iFileName = iForm.getFile().getFileName();
+			if (iForm.getFile() != null) iFileName = iForm.getFileFileName();
 		}
 				
 		@Override
@@ -224,7 +216,7 @@ public class DataImportAction extends Action {
 		
 		@Override
 		public String name() {
-			return (iImport ? "Import of " + iFileName : "Export of " + iForm.getExportType().getLabel());
+			return (iImport ? MSG.itemImportActionName(iFileName) : MSG.itemExportActionName(iForm.getExportType().getLabel()));
 		}
 		
 		public void println(String message) {
@@ -256,13 +248,13 @@ public class DataImportAction extends Action {
 		@Override
 		protected void execute() throws Exception {
             try {
-                log(iImport ? "Importing "+iForm.getFile().getFileName()+" ("+iForm.getFile().getFileSize()+" bytes)..." : "Exporting " + iForm.getExportType().getType() + "...");
+                log(iImport ? "Importing "+iForm.getFileFileName()+" ("+iForm.getFile().length()+" bytes)..." : "Exporting " + iForm.getExportType().getType() + "...");
             	Long start = System.currentTimeMillis() ;
             	executeDataExchange();
                 Long stop = System.currentTimeMillis() ;
                 log((iImport ? "Import" : "Export") + " finished in "+new DecimalFormat("0.00").format((stop-start)/1000.0)+" seconds.");
             } catch (Exception e) {
-                error("Unable to " + (iImport ? "import " + iForm.getFile().getFileName() : "export") + ": " + e.getMessage());
+                error("Unable to " + (iImport ? "import " + iForm.getFileFileName() : "export") + ": " + e.getMessage());
                 Debug.error(e);
                 setError(e);
             } finally {
@@ -306,20 +298,22 @@ public class DataImportAction extends Action {
 
 		@Override
 		protected void executeDataExchange() throws Exception {
-			if (iForm.getFile().getFileName().toLowerCase().endsWith(".dat")) {
+			FileInputStream fis = new FileInputStream(iForm.getFile());
+			try {
+			if (iForm.getFileFileName().toLowerCase().endsWith(".dat")) {
 				SessionRestoreInterface restore = (SessionRestoreInterface)Class.forName(ApplicationProperty.SessionRestoreInterface.value()).getConstructor().newInstance();
-				restore.restore(iForm.getFile().getInputStream(), this);
-			} else if (iForm.getFile().getFileName().toLowerCase().endsWith(".dat.gz") || iForm.getFile().getFileName().toLowerCase().endsWith(".zdat")) {
+				restore.restore(fis, this);
+			} else if (iForm.getFileFileName().toLowerCase().endsWith(".dat.gz") || iForm.getFileFileName().toLowerCase().endsWith(".zdat")) {
 				SessionRestoreInterface restore = (SessionRestoreInterface)Class.forName(ApplicationProperty.SessionRestoreInterface.value()).getConstructor().newInstance();
-				GZIPInputStream gzipInput = new GZIPInputStream(iForm.getFile().getInputStream());
+				GZIPInputStream gzipInput = new GZIPInputStream(fis);
 				restore.restore(gzipInput, this);
 				gzipInput.close();
-			} else if (iForm.getFile().getFileName().toLowerCase().endsWith(".xml.gz") || iForm.getFile().getFileName().toLowerCase().endsWith(".zxml")) {
-				GZIPInputStream gzipInput = new GZIPInputStream(iForm.getFile().getInputStream());
+			} else if (iForm.getFileFileName().toLowerCase().endsWith(".xml.gz") || iForm.getFileFileName().toLowerCase().endsWith(".zxml")) {
+				GZIPInputStream gzipInput = new GZIPInputStream(fis);
 				DataExchangeHelper.importDocument((new SAXReader()).read(gzipInput), getOwnerId(), this);
 				gzipInput.close();
-			} else if (iForm.getFile().getFileName().toLowerCase().endsWith(".zip")) {
-				ZipInputStream zipInput = new ZipInputStream(iForm.getFile().getInputStream());
+			} else if (iForm.getFileFileName().toLowerCase().endsWith(".zip")) {
+				ZipInputStream zipInput = new ZipInputStream(fis);
 				ZipEntry ze = null;
 				while ((ze = zipInput.getNextEntry()) != null) {
 					if (ze.isDirectory()) continue;
@@ -333,7 +327,10 @@ public class DataImportAction extends Action {
 				}
 				zipInput.close();
 			} else {
-				DataExchangeHelper.importDocument((new SAXReader()).read(iForm.getFile().getInputStream()), getOwnerId(), this);
+				DataExchangeHelper.importDocument((new SAXReader()).read(fis), getOwnerId(), this);
+			}
+			} finally {
+				fis.close();
 			}
 		}
 

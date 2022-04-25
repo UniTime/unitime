@@ -7178,4 +7178,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Campus")
 	String labelCampus();
 	
+	@DefaultMessage("Import of {0}")
+	String itemImportActionName(String type);
+	
+	@DefaultMessage("Export of {0}")
+	String itemExportActionName(String type);
 }

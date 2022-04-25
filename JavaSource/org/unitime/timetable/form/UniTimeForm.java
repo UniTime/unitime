@@ -19,13 +19,15 @@
 */
 package org.unitime.timetable.form;
 
+import java.io.Serializable;
+
 import org.unitime.timetable.action.UniTimeAction;
 
 /**
  * Base form for Struts2 forms
  * @author Tomas Muller
  */
-public interface UniTimeForm {
+public interface UniTimeForm extends Serializable {
 	
 	public void validate(UniTimeAction action);
 	

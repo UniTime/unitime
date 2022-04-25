@@ -92,7 +92,6 @@
       <form-bean name="classInstructorAssignmentForm" type="org.unitime.timetable.form.ClassInstructorAssignmentForm" />
       <form-bean name="chameleonForm" type="org.unitime.timetable.form.ChameleonForm" />
       <form-bean name="inquiryForm" type="org.unitime.timetable.form.InquiryForm" />
-      <form-bean name="dataImportForm" type="org.unitime.timetable.form.DataImportForm" />
       <form-bean name="exactTimeEditForm" type="org.unitime.timetable.form.ExactTimeEditForm" />
       <form-bean name="lastChangesForm" type="org.unitime.timetable.form.LastChangesForm" />
       <form-bean name="rollForwardSessionForm" type="org.unitime.timetable.form.RollForwardSessionForm" />
@@ -1492,19 +1491,6 @@
       path="/login"
       type="org.springframework.web.struts.DelegatingActionProxy"
       validate="false"/> 
-
-    <action
-      attribute="dataImportForm"
-      input="dataImportTile"
-      name="dataImportForm"
-      path="/dataImport"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false" >
-       <forward 
-       		name="display" 
-       		path="dataImportTile" />
-   </action>
 
     <action
        path="/exactTimeEdit"
