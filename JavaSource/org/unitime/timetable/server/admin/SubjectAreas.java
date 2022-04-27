@@ -22,6 +22,7 @@ package org.unitime.timetable.server.admin;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -55,9 +56,6 @@ import org.unitime.timetable.model.ChangeLog.Source;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.dao.DepartmentDAO;
-import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -76,6 +74,9 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.dao.DepartmentDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 
@@ -112,13 +113,15 @@ public class SubjectAreas implements AdminTable {
 			}
 		}
 		boolean dispLastChange = CommonValues.Yes.eq(UserProperty.DisplayLastChanges.get(context.getUser()));
-		String instrNameFormat = UserProperty.NameFormat.get(context.getUser());
+		HashMap<Long, String> subjToChanges = new HashMap<Long, String>();
 		Field lastChangeField = null;
 		if (dispLastChange) {
 			lastChangeField = new Field(MESSAGES.fieldLastChange(), FieldType.text, 50, Flag.READ_ONLY, Flag.NO_DETAIL);
+			subjToChanges = lastChangeForAllSubjects(context, hibSession);
 		} else {
 			lastChangeField = new Field(MESSAGES.fieldLastChange(), FieldType.text, 50, Flag.READ_ONLY, Flag.HIDDEN);
 		}
+		HashMap<Long, String> deptToManagers = managersForAllDepts(context, hibSession);
 		SimpleEditInterface data = new SimpleEditInterface(
 				new Field(MESSAGES.fieldAbbv(), FieldType.text, 100, 40, Flag.UNIQUE),
 				new Field(MESSAGES.fieldTitle(), FieldType.text, 120, 40, Flag.UNIQUE),
@@ -140,20 +143,61 @@ public class SubjectAreas implements AdminTable {
 			  r.setField(4, area.getFundingDept() == null?"-1":area.getFundingDept().getUniqueId().toString(), canEdit);
 			}
 			r.setDeletable(context.hasPermission(area, Right.SubjectAreaDelete));
-			String managers = "";
-			for (TimetableManager mgr: area.getManagers())
-				managers += (managers.isEmpty() ? "" : "\n") + mgr.getName(instrNameFormat);
+			String managers = deptToManagers.get(area.getDepartment().getUniqueId());
+			if (managers == null) {
+				managers = "";
+			}
             r.setField(5, managers);
             if (dispLastChange) {
-            	List<ChangeLog> changes = ChangeLog.findLastNChanges(area.getDepartment().getSession().getUniqueId(), null, area.getUniqueId(), null, 1);
+            	String changes = subjToChanges.get(area.getUniqueId());
             	if (changes != null && !changes.isEmpty()) {
-            		r.setField(6, MESSAGES.lastChange(ChangeLog.sDFdate.format(changes.get(0).getTimeStamp()), changes.get(0).getManager().getShortName()));
+            		r.setField(6, changes);
             	}
             }
 		}
 		data.setAddable(context.hasPermission(Right.SubjectAreaAdd));
 		data.setEditable(context.hasPermission(Right.SubjectAreaEdit) || context.hasPermission(Right.SubjectAreaAdd));
 		return data;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private HashMap<Long, String> managersForAllDepts(SessionContext context, Session hibSession){
+		HashMap<Long, String> subjToManagers = new HashMap<Long, String>();
+		String instrNameFormat = UserProperty.NameFormat.get(context.getUser());
+		
+		String query = "select d.uniqueId, tm from Department d inner join d.timetableManagers as tm where d.session.uniqueId = :sessionId";
+		for(Object[] result : (List<Object[]>)hibSession.createQuery(query).setLong("sessionId", context.getUser().getCurrentAcademicSessionId()).list()) {
+			long deptId = (long)result[0];
+			TimetableManager tm = (TimetableManager)result[1];
+			String tmName = subjToManagers.get(deptId);
+			if (tmName == null) {
+				tmName = tm.getName(instrNameFormat);
+			} else {
+				tmName += "\n" + tm.getName(instrNameFormat);
+			}
+			subjToManagers.put(deptId, tmName);
+		}
+		
+		return subjToManagers;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private HashMap<Long, String> lastChangeForAllSubjects(SessionContext context, Session hibSession) {
+		HashMap<Long, String> subjToChanges = new HashMap<Long, String>();
+		String query = "select cl from ChangeLog cl where cl.uniqueId in (select max(cl2.uniqueId) from ChangeLog cl2 where cl2.session.uniqueId = :sessionId and cl2.subjectArea.session.uniqueId = :sessionId group by cl2.subjectArea.uniqueId)";
+		for (ChangeLog cl : (List<ChangeLog>)hibSession.createQuery(query).setLong("sessionId", context.getUser().getCurrentAcademicSessionId()).list()) {
+			if (cl.getSubjectArea() == null) {
+				continue;
+			}
+			String changes = subjToChanges.get(cl.getSubjectArea().getUniqueId());
+			if (changes == null) {
+				changes = MESSAGES.lastChange(ChangeLog.sDFdate.format(cl.getTimeStamp()), cl.getManager().getShortName());
+				subjToChanges.put(cl.getSubjectArea().getUniqueId(), changes);
+			} else {
+				changes += "\n" + MESSAGES.lastChange(ChangeLog.sDFdate.format(cl.getTimeStamp()), cl.getManager().getShortName());
+			}
+		}
+		return subjToChanges;
 	}
 
 	@Override
@@ -354,7 +398,7 @@ public class SubjectAreas implements AdminTable {
 				String className = ApplicationProperty.ExternalActionClassEdit.value();
 				if (className != null && !className.isEmpty()) {
 					try {
-						ExternalClassEditAction editAction = (ExternalClassEditAction)Class.forName(className).newInstance();
+						ExternalClassEditAction editAction = (ExternalClassEditAction)Class.forName(className).getDeclaredConstructor().newInstance();
 		            	for(Class_ c : updatedClasses) {
 		            		editAction.performExternalClassEditAction(c, hibSession);
 		            	}
@@ -379,7 +423,7 @@ public class SubjectAreas implements AdminTable {
 		String className = ApplicationProperty.ExternalActionCourseOfferingRemove.value();
 		if (className != null && !className.isEmpty()){
 			try {
-				ExternalCourseOfferingRemoveAction removeAction = (ExternalCourseOfferingRemoveAction)Class.forName(className).newInstance();
+				ExternalCourseOfferingRemoveAction removeAction = (ExternalCourseOfferingRemoveAction)Class.forName(className).getDeclaredConstructor().newInstance();
 				for (CourseOffering co: area.getCourseOfferings()) {
 					removeAction.performExternalCourseOfferingRemoveAction(co, hibSession);
 				}
