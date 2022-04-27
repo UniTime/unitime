@@ -105,5 +105,12 @@
             column="demand_id"
             not-null="false"
             foreign-key="fk_waitlist_course_demand"/>
+            
+        <many-to-one
+            name="swapCourseOffering"
+            class="CourseOffering"
+            column="swap_course_id"
+            not-null="false"
+            foreign-key="fk_waitlist_swap_course"/>
     </class>
 </hibernate-mapping>

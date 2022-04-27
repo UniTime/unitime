@@ -14467,4 +14467,13 @@
 		<pgsql>alter table %SCHEMA%.student add class_start date</pgsql>
 		<pgsql>alter table %SCHEMA%.student add class_end date</pgsql>
 	</update>
+	<update version="251" date="26-Apr-2022" comment="Waitlist log course swap">
+		<plsql>alter table %SCHEMA%.waitlist add swap_course_id number(20,0)</plsql>
+	    <mysql>alter table %SCHEMA%.waitlist add swap_course_id decimal(20,0)</mysql>
+	    <pgsql>alter table %SCHEMA%.waitlist add swap_course_id bigint</pgsql>
+	    <sql>
+			alter table %SCHEMA%.waitlist add constraint fk_waitlist_swap_course foreign key (swap_course_id)
+			references %SCHEMA%.course_offering (uniqueid) on delete set null
+		</sql>
+	</update>
 </dbupdate>

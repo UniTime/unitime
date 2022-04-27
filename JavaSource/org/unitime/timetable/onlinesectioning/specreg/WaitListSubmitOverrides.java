@@ -93,7 +93,7 @@ public class WaitListSubmitOverrides implements OnlineSectioningAction<CourseReq
 				provider.submit(server, helper, iRequest, iNeededCredit);
 				
 				for (CourseDemand cd: student.getCourseDemands()) {
-					if (!Boolean.TRUE.equals(cd.getWaitlist()) || Boolean.TRUE.equals(cd.isAlternative()) || cd.isEnrolled()) {
+					if (!Boolean.TRUE.equals(cd.getWaitlist()) || Boolean.TRUE.equals(cd.isAlternative()) || cd.isEnrolled(true)) {
 						for (CourseRequest cr: cd.getCourseRequests())
 							if (cr.getCourseRequestOverrideIntent() == CourseRequestOverrideIntent.WAITLIST) {
 								cr.setOverrideExternalId(null);

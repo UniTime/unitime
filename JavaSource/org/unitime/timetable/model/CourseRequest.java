@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
@@ -30,8 +31,6 @@ import org.unitime.timetable.model.base.BaseCourseRequest;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.InstructionalMethodDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
-
-
 
 /**
  * @author Tomas Muller
@@ -245,5 +244,56 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
     		}
     	}
     	return changed;
+    }
+    
+    public boolean isRequired() {
+    	Set<StudentSectioningPref> prefs = getPreferences(); 
+    	if (prefs == null || prefs.isEmpty()) return true;
+    	for (StudentClassEnrollment e: getCourseDemand().getStudent().getClassEnrollments()) {
+    		if (!e.getCourseOffering().equals(getCourseOffering())) continue;
+    		
+    		Class_ section = e.getClazz();
+    		InstrOfferingConfig config = section.getSchedulingSubpart().getInstrOfferingConfig();
+    		
+            boolean hasConfig = false, hasMatchingConfig = false;
+            boolean hasSubpart = false, hasMatchingSection = false;
+            boolean hasSectionReq = false;
+            for (StudentSectioningPref choice: prefs) {
+            	// only check required choices
+            	if (!choice.isRequired()) continue;
+
+                // has config -> check config
+            	if (choice instanceof StudentInstrMthPref) {
+            		StudentInstrMthPref imp = (StudentInstrMthPref) choice;
+            		hasConfig = true;
+            		if (imp.getInstructionalMethod().equals(config.getEffectiveInstructionalMethod()))
+            			hasMatchingConfig = true;
+            	}
+
+            	// has section of the matching subpart -> check section
+            	if (choice instanceof StudentClassPref) {
+            		StudentClassPref cp = (StudentClassPref)choice;
+            		Class_ reqSection = cp.getClazz();
+                    hasSectionReq = true;
+                    if (reqSection.getSchedulingSubpart().equals(section.getSchedulingSubpart())) {
+                        hasSubpart = true;
+                        if (reqSection.equals(section)) hasMatchingSection = true;
+                    } else if (!hasMatchingConfig) {
+                        for (SchedulingSubpart subpart: config.getSchedulingSubparts()) {
+                            if (reqSection.getSchedulingSubpart().equals(subpart)) {
+                                hasMatchingConfig = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (hasConfig && !hasMatchingConfig) return false;
+            if (hasSubpart && !hasMatchingSection) return false;
+            // no match, but there are section requirements for a different config -> not satisfied 
+            if (!hasMatchingConfig && !hasMatchingSection && hasSectionReq) return false;
+        }
+        return true;
     }
 }

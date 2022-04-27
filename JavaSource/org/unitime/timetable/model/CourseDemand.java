@@ -189,11 +189,22 @@ public class CourseDemand extends BaseCourseDemand implements Comparable {
     	return false;
     }
     
-    public boolean isEnrolled() {
+    public boolean isEnrolled(boolean checkSectionSwap) {
     	for (CourseRequest cr: getCourseRequests())
         	for (StudentClassEnrollment e: getStudent().getClassEnrollments())
-    			if (cr.getCourseOffering().equals(e.getCourseOffering())) return true;
+    			if (cr.getCourseOffering().equals(e.getCourseOffering())) {
+    				if (checkSectionSwap && e.getCourseOffering().equals(cr.getCourseDemand().getWaitListSwapWithCourseOffering()) && !cr.isRequired())
+    					return false; // section swap which requirements have not been met -> considered not wait-listed
+    				return true;
+    			}
     	return false;
+    }
+    
+    public CourseOffering getEnrolledCourse() {
+    	for (CourseRequest cr: getCourseRequests())
+        	for (StudentClassEnrollment e: getStudent().getClassEnrollments())
+    			if (cr.getCourseOffering().equals(e.getCourseOffering())) return cr.getCourseOffering();
+    	return null;
     }
     
     public boolean isEnrolledExceptForWaitListSwap() {

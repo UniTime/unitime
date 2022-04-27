@@ -411,6 +411,12 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     	return null;
     }
     
+    public boolean isEnrolled(CourseOffering co) {
+    	for (StudentClassEnrollment e: getClassEnrollments())
+    		if (e.getCourseOffering().equals(co)) return true;
+    	return false;
+    }
+    
     public WaitList addWaitList(CourseOffering co, WaitList.WaitListType type, boolean waitListed, String changedBy, Date timeStamp, org.hibernate.Session hibSession) {
     	if (ApplicationProperty.WaitListLogging.isFalse()) return null;
     	if (co == null) return null;
@@ -423,19 +429,24 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     		}
     	}
     	boolean lastWaitListed = (last == null ? false : last.isWaitListed());
-    	boolean lastEnrolled = (last == null ? false : last.getEnrolledCourse() != null);
-    	boolean enrolled = (cr == null ? null : cr.getCourseDemand().isEnrolled());
-    	if (lastWaitListed != waitListed || lastEnrolled != enrolled) {
+    	CourseOffering lastEnrolled = (last == null ? null : last.getEnrolledCourse());
+    	CourseOffering enrolled = (cr == null ? null : cr.getCourseDemand().getEnrolledCourse());
+    	if (enrolled != null && cr != null && enrolled.equals(cr.getCourseDemand().getWaitListSwapWithCourseOffering()) && !cr.isRequired()) 
+    		enrolled = null; // if section swap and the enrollment does not meet requirements -> not enrolled
+    	CourseOffering lastSwap = (last == null ? null : last.getSwapCourseOffering());
+    	CourseOffering swap = (cr == null ? null : cr.getCourseDemand().getWaitListSwapWithCourseOffering());
+    	if (lastWaitListed != waitListed || !(lastEnrolled == null ? enrolled == null : lastEnrolled.equals(enrolled)) || !(lastSwap == null ? swap == null : lastSwap.equals(swap))) {
     		WaitList wl = new WaitList();
     		wl.setChangedBy(changedBy);
     		wl.setCourseOffering(cr == null ? co : cr.getCourseDemand().getFirstChoiceCourseOffering());
-    		wl.setEnrolledCourse(enrolled ? co : null);
+    		wl.setEnrolledCourse(enrolled);
     		wl.setTimestamp(timeStamp);
     		wl.setWaitListType(type);
     		wl.setWaitListed(waitListed);
     		wl.setWaitListedTimeStamp(cr == null ? null : cr.getCourseDemand().getWaitlistedTimeStamp());
     		wl.setStudent(this);
     		wl.setCourseDemand(cr == null ? null : cr.getCourseDemand());
+    		wl.setSwapCourseOffering(cr == null ? null : cr.getCourseDemand().getWaitListSwapWithCourseOffering());
     		wl.fillInNotes();
     		addTowaitlists(wl);
     		if (hibSession != null) hibSession.save(wl);
@@ -459,6 +470,14 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
 			WaitList wl = waitlists.remove(e.getCourseOffering());
 			if (wl != null && wl.isWaitListed()) {
 				// wait-list enrolled
+				if (e.getCourseOffering().equals(wl.getSwapCourseOffering())) { // is section swap
+					CourseRequest cr = getCourseRequest(e.getCourseOffering());
+					if (cr != null && !cr.isRequired()) {
+						// requirements not met -> put back (it is considered not enrolled)
+						waitlists.put(e.getCourseOffering(), wl);
+						continue;
+					}
+				}
 				wl = new WaitList();
 				wl.setChangedBy(changedBy);
 				wl.setTimestamp(timeStamp);
@@ -470,17 +489,19 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
 				wl.setWaitListed(false);
 				wl.setStudent(this);
 				wl.setWaitListedTimeStamp(cr == null ? null : cr.getCourseDemand().getWaitlistedTimeStamp());
+				wl.setSwapCourseOffering(cr == null ? null : cr.getCourseDemand().getWaitListSwapWithCourseOffering());
 				wl.fillInNotes();
 				addTowaitlists(wl);
 				if (hibSession != null) hibSession.save(wl);
 			}
 		}
 		for (CourseDemand cd: getCourseDemands()) {
-			if (cd.isWaitlist() && !cd.isEnrolled()) {
+			if (cd.isWaitlist() && !cd.isEnrolled(true)) {
 				CourseOffering co = cd.getFirstChoiceCourseOffering();
 				if (co != null) {
 					WaitList old = waitlists.remove(co);
-					if (old == null || !old.isWaitListed() || !WaitList.computeRequest(cd).equals(old.getRequest())) {
+					if (old == null || !old.isWaitListed() || !WaitList.computeRequest(cd).equals(old.getRequest()) || 
+							!(old.getSwapCourseOffering() == null ? cd.getWaitListSwapWithCourseOffering() == null : old.getSwapCourseOffering().equals(cd.getWaitListSwapWithCourseOffering()))) {
 						// new wait-lists
 						WaitList wl = new WaitList();
 						wl.setChangedBy(changedBy);
@@ -491,6 +512,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
 						wl.setWaitListed(true);
 						wl.setStudent(this);
 						wl.setWaitListedTimeStamp(cd.getWaitlistedTimeStamp());
+						wl.setSwapCourseOffering(cd.getWaitListSwapWithCourseOffering());
 						wl.fillInNotes();
 						addTowaitlists(wl);
 						if (hibSession != null) hibSession.save(wl);
@@ -513,6 +535,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
 				wl.setWaitListed(false);
 				wl.setStudent(this);
 				wl.setWaitListedTimeStamp(old.getWaitListedTimeStamp());
+				wl.setSwapCourseOffering(old.getSwapCourseOffering());
 				wl.fillInNotes();
 				addTowaitlists(wl);
 				if (hibSession != null) hibSession.save(wl);
