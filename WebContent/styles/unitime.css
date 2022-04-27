@@ -4324,7 +4324,7 @@ unitime-RoomSharingWidget .legend .blank {
 	font-weight: bold;
 	font-size: small;
 	padding: 3px;
-	max-width: 550px;
+	max-width: 565px;
 }
 
 .unitime-ConfirmationPanel .message-panel .message {
@@ -7162,4 +7162,12 @@ unitime-RoomSharingWidget .legend .blank {
 
 .courseOfferingEditPadding {
 	padding: 0;
+}
+
+.unitime-HQLTable {
+	white-space: pre-wrap;
+}
+
+.unitime-HQLTable td {
+	vertical-align: top;
 }

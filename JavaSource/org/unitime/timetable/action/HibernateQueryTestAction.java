@@ -349,7 +349,7 @@ public class HibernateQueryTestAction extends Action {
     }
     
     public void printHeader(StringBuffer s, Object o, String[] alias) {
-        s.append("<table width='100%' border='0' cellspacing='0' cellpadding='3'>");
+        s.append("<table width='100%' border='0' cellspacing='0' cellpadding='3' class='unitime-HQLTable'>");
         s.append("<tr align='left'>");
         SessionFactory hibSessionFactory = new _RootDAO().getSession().getSessionFactory();
         boolean hasLink = false;

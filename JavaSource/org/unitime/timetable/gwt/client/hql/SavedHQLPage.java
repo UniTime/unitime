@@ -586,6 +586,7 @@ public class SavedHQLPage extends Composite {
 				iTableHeader.setEnabled("previous", false);
 				iTableHeader.setEnabled("next", false);
 				iParametersRow = iForm.addHeaderRow(iTableHeader);
+				iTable.addStyleName("unitime-HQLTable");
 				iForm.addRow(iTable);
 				iTableFooter = iTableHeader.clonePanel("");
 				iTableFooter.setVisible(false);
