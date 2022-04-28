@@ -608,8 +608,11 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 								CourseOfferingDAO.getInstance().get(r.getCourseId().getCourseId(), helper.getHibSession()),
 								WaitList.WaitListType.WAIT_LIST_PORCESSING, true, helper.getUser().getExternalId(), ts, helper.getHibSession());
 					}
-					if (!r.getRequest().isWaitlist())
+					if (!r.getRequest().isWaitlist()) {
+						r.getRequest().setWaitListedTimeStamp(ts);
+						r.getRequest().setWaitListSwapWithCourseOffering(null);
 						r.setRequest(server.waitlist(r.getRequest(), true));
+					}
 				}
 				
 				helper.getHibSession().save(student);

@@ -316,6 +316,9 @@ public class XCourseRequest extends XRequest {
     public XCourseId getWaitListSwapWithCourseOffering() {
     	return iWaitListSwapWithCourseOffering;
     }
+    public void setWaitListSwapWithCourseOffering(XCourseId courseId) {
+    	iWaitListSwapWithCourseOffering = courseId;
+    }
     
     /**
      * If the course request contains two or more courses that are cross-listed with each other,
@@ -433,6 +436,9 @@ public class XCourseRequest extends XRequest {
     
     public Date getWaitListedTimeStamp() {
     	return iWaitListedTimeStamp;
+    }
+    public void setWaitListedTimeStamp(Date ts) {
+    	iWaitListedTimeStamp = ts;
     }
     
     /** Return enrollment, if enrolled */
