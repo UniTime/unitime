@@ -748,9 +748,22 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				
 				// Reload student
 				XStudent newStudent = new XStudent(oldStudent, student.getCourseDemands(), helper, server.getAcademicSession().getFreeTimePattern());
-		    	for (XRequest request: newStudent.getRequests()) {
+		    	for (Iterator<XRequest> i = newStudent.getRequests().iterator(); i.hasNext(); ) {
+		    		XRequest request = i.next();
 		    		if (request instanceof XCourseRequest) {
 		    			XCourseRequest courseRequest = (XCourseRequest)request;
+		    			for (Iterator<XCourseId> j = courseRequest.getCourseIds().iterator(); j.hasNext(); ) {
+		    				XCourseId course = j.next();
+		    				XOffering offering = server.getOffering(course.getOfferingId());
+		                    if (offering == null) {
+		                    	helper.warn("Student " + helper.getStudentNameFormat().format(student) + " (" + student.getExternalUniqueId() + ") requests course " + course.getCourseName() + " that is not loaded.");
+		                    	j.remove();
+		                    }
+		    			}
+		    			if (courseRequest.getCourseIds().isEmpty()) {
+		    				i.remove();
+		    				continue;
+		    			}
 		    			XEnrollment enrollment = courseRequest.getEnrollment();
 		    			if (enrollment != null && enrollment.getReservation() == null) {
 		    				XOffering offering = server.getOffering(enrollment.getOfferingId());

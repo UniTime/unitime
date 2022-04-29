@@ -289,9 +289,22 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
     public static XStudent loadStudentNoCheck(org.unitime.timetable.model.Student s, OnlineSectioningServer server, OnlineSectioningHelper helper) {
     	XStudent student = new XStudent(s, helper, server.getAcademicSession().getFreeTimePattern());
     	
-    	for (XRequest request: student.getRequests()) {
+    	for (Iterator<XRequest> i = student.getRequests().iterator(); i.hasNext(); ) {
+    		XRequest request = i.next();
     		if (request instanceof XCourseRequest) {
     			XCourseRequest courseRequest = (XCourseRequest)request;
+    			for (Iterator<XCourseId> j = courseRequest.getCourseIds().iterator(); j.hasNext(); ) {
+    				XCourseId course = j.next();
+    				XOffering offering = server.getOffering(course.getOfferingId());
+                    if (offering == null) {
+                    	helper.warn("Student " + helper.getStudentNameFormat().format(s) + " (" + s.getExternalUniqueId() + ") requests course " + course.getCourseName() + " that is not loaded.");
+                    	j.remove();
+                    }
+    			}
+    			if (courseRequest.getCourseIds().isEmpty()) {
+    				i.remove();
+    				continue;
+    			}
     			XEnrollment enrollment = courseRequest.getEnrollment();
     			if (enrollment != null) {
     				XOffering offering = server.getOffering(enrollment.getOfferingId());
