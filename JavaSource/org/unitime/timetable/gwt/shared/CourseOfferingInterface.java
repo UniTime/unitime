@@ -637,7 +637,6 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 	}
 	
 	public static class SubjectAreaInterface implements GwtRpcResponse {
-		private static final long serialVersionUID = 1L;
 		private Long iId;
 		private String iAbbv;
 		private String iLabel;
@@ -672,7 +671,6 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 	}
 
 	public static class DepartmentInterface implements GwtRpcResponse {
-		private static final long serialVersionUID = 1L;
 		private Long iId;
 		private String iAbbv;
 		private String iLabel;
@@ -707,7 +705,6 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 	}
 
 	public static class CourseCreditFormatInterface implements GwtRpcResponse {
-		private static final long serialVersionUID = 1L;
 		private Long iId;
 		private String iLabel;
 		private String iReference;

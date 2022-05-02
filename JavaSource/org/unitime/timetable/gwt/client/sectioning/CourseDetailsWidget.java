@@ -20,8 +20,6 @@
 package org.unitime.timetable.gwt.client.sectioning;
 
 import org.unitime.timetable.gwt.client.GwtHint;
-import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
-import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
@@ -156,53 +154,54 @@ public class CourseDetailsWidget extends Composite {
 		}
 	}
 	
-	public void populate(UniTimeWidget<ListBox> iSubjectArea, UniTimeWidget<UniTimeTextBox> iCourseNumber, Long subjectAreaId) {
-		if (iSubjectArea != null) {
-			final ListBox subjectId = iSubjectArea.getWidget();
-			final TextBox courseNumber = iCourseNumber.getWidget();
-			courseNumber.addValueChangeHandler(new ValueChangeHandler<String>() {
-				@Override
-				public void onValueChange(ValueChangeEvent<String> event) {
-					if (subjectId.getSelectedIndex() >= 0 && !courseNumber.getValue().isEmpty()) {
-						try {
-							reload(new CourseDetailsRpcRequest(Long.valueOf(subjectId.getValue(subjectId.getSelectedIndex())), courseNumber.getValue()));
-						} catch (NumberFormatException e) {}
-					}
+	public void populate(final ListBox subjectId, final TextBox courseNumber) {
+		courseNumber.addValueChangeHandler(new ValueChangeHandler<String>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<String> event) {
+				if (subjectId.getSelectedIndex() >= 0 && !courseNumber.getValue().isEmpty()) {
+					try {
+						reload(new CourseDetailsRpcRequest(Long.valueOf(subjectId.getValue(subjectId.getSelectedIndex())), courseNumber.getValue()));
+					} catch (NumberFormatException e) {}
 				}
-			});
-			iSubjectArea.getWidget().addChangeHandler(new ChangeHandler() {
-				@Override
-				public void onChange(ChangeEvent event) {
-					if (subjectId.getSelectedIndex() >= 0 && !courseNumber.getValue().isEmpty()) {
-						try {
-							reload(new CourseDetailsRpcRequest(Long.valueOf(subjectId.getValue(subjectId.getSelectedIndex())), courseNumber.getValue()));
-						} catch (NumberFormatException e) {}
-					}
-				}
-			});
-			if (subjectId.getSelectedIndex() >= 0 && !courseNumber.getValue().isEmpty()) {
-				try {
-					reload(new CourseDetailsRpcRequest(Long.valueOf(subjectId.getValue(subjectId.getSelectedIndex())), courseNumber.getValue()));
-				} catch (NumberFormatException f) {}
 			}
-		} else if (iCourseNumber != null) {
-			final TextBox courseNumber = iCourseNumber.getWidget();
-			courseNumber.addValueChangeHandler(new ValueChangeHandler<String>() {
-				@Override
-				public void onValueChange(ValueChangeEvent<String> event) {
-					if (!courseNumber.getValue().isEmpty()) {
-						try {
-							reload(new CourseDetailsRpcRequest(Long.valueOf(subjectAreaId), courseNumber.getValue()));
-						} catch (NumberFormatException e) {}
-					}
+		});
+		subjectId.addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				if (subjectId.getSelectedIndex() >= 0 && !courseNumber.getValue().isEmpty()) {
+					try {
+						reload(new CourseDetailsRpcRequest(Long.valueOf(subjectId.getValue(subjectId.getSelectedIndex())), courseNumber.getValue()));
+					} catch (NumberFormatException e) {}
 				}
-			});
-			if (!courseNumber.getValue().isEmpty()) {
-				try {
-					reload(new CourseDetailsRpcRequest(Long.valueOf(subjectAreaId), courseNumber.getValue()));
-				} catch (NumberFormatException f) {}
 			}
+		});
+		if (subjectId.getSelectedIndex() >= 0 && !courseNumber.getValue().isEmpty()) {
+			try {
+				reload(new CourseDetailsRpcRequest(Long.valueOf(subjectId.getValue(subjectId.getSelectedIndex())), courseNumber.getValue()));
+			} catch (NumberFormatException f) {}
 		}
+	}
+	
+	public void populate(final Long subjectId, final TextBox courseNumber) {
+		courseNumber.addValueChangeHandler(new ValueChangeHandler<String>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<String> event) {
+				if (!courseNumber.getValue().isEmpty()) {
+					try {
+						reload(new CourseDetailsRpcRequest(subjectId, courseNumber.getValue()));
+					} catch (NumberFormatException e) {}
+				}
+			}
+		});
+		if (!courseNumber.getValue().isEmpty()) {
+			try {
+				reload(new CourseDetailsRpcRequest(subjectId, courseNumber.getValue()));
+			} catch (NumberFormatException f) {}
+		}
+	}
+	
+	public void reload(Long subjectId, String courseNumber) {
+		reload(new CourseDetailsRpcRequest(subjectId, courseNumber));
 	}
 	
 	private void reload(CourseDetailsRpcRequest request) {

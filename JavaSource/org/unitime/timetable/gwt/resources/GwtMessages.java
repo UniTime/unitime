@@ -7153,4 +7153,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Wait-listing is not enabled for this offering.")
 	String descWaitListDisabled();
+	
+	@DefaultMessage("Course Offering")
+	String sectCourseOffering();
 }

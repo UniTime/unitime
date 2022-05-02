@@ -7160,8 +7160,8 @@ unitime-RoomSharingWidget .legend .blank {
 	font-style: italic;
 }
 
-.courseOfferingEditPadding {
-	padding: 0;
+.unitime-CourseOfferingEdit .courseOfferingEditPadding {
+	padding: 0px;
 }
 
 .unitime-HQLTable {

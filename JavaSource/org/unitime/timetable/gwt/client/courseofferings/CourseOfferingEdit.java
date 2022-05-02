@@ -141,64 +141,48 @@ public class CourseOfferingEdit extends Composite {
 	
 	private Boolean iIsAdd = false;
 	private Boolean iIsEdit = false;
-	private Boolean iIsReload = false;
 	private Boolean iCanAddCourseOffering = false;
 	private Boolean iCanEditCourseOffering = false;
 	private Boolean iCanEditCourseOfferingNote = false;
 	private Boolean iCanEditCourseOfferingCoordinators = false;
-	private Boolean iIsControl = false;
 	
 	private Long iCourseOfferingId;
 	private Long iSubjAreaId;
 	private Long iInstructionalOfferingId;
-	private String iCourseNbr;
+	private String iCourseNbr = null;
 	
 	public CourseOfferingEdit() {
 		iPanel = new SimpleForm();
 		initWidget(iPanel);
 		iPanel.addStyleName("unitime-CourseOfferingEdit");
 		
-		Long offeringId = null;
 		String op = null;
-		Long subjAreaId = null;
-		Long courseOfferingId = null;
-		
 		if (Window.Location.getParameter("op") != null)
 			op = Window.Location.getParameter("op");
 
 		if ("editCourseOffering".equals(op)) {
 			if (Window.Location.getParameter("offering") != null) {
-				offeringId =  Long.valueOf(Window.Location.getParameter("offering"));
+				iCourseOfferingId = Long.valueOf(Window.Location.getParameter("offering"));
 				iIsEdit = true;
 				iIsAdd = false;
-				iIsReload = false;
-				courseOfferingId = new Long(offeringId);
-				iCourseOfferingId = courseOfferingId;
 			}
 		} else if ("addCourseOffering".equals(op)) {
 			iIsAdd = true;
 			iIsEdit = false;
-			iIsReload = false;
 			if (Window.Location.getParameter("subjArea") != null && !Window.Location.getParameter("subjArea").isEmpty()) {
-				subjAreaId = Long.valueOf(Window.Location.getParameter("subjArea"));
-				iSubjAreaId = subjAreaId;
-			} else {
-				iSubjAreaId = subjAreaId;
+				iSubjAreaId = Long.valueOf(Window.Location.getParameter("subjArea"));
 			}
 			if (Window.Location.getParameter("courseNbr") != null && !Window.Location.getParameter("courseNbr").isEmpty()) {
 				iCourseNbr = Window.Location.getParameter("courseNbr");;
-			} else {
-				iCourseNbr = null;
 			}
 		}
 
-		iTitleAndButtons = new UniTimeHeaderPanel("Course Offering");
+		iTitleAndButtons = new UniTimeHeaderPanel(MESSAGES.sectCourseOffering());
 		iTitleAndButtons.addButton("update", MESSAGES.buttonUpdate(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				iIsEdit = true;
 				iIsAdd = false;
-				iIsReload = false;
 				if (!validate(iIsEdit)) return;
 				iTitleAndButtons.clearMessage();
 				UpdateCourseOfferingRequest request = new UpdateCourseOfferingRequest();
@@ -273,7 +257,6 @@ public class CourseOfferingEdit extends Composite {
 			public void onClick(ClickEvent event) {
 				iIsAdd = true;
 				iIsEdit = false;
-				iIsReload = false;
 				if (!validate(iIsEdit)) return;
 				iTitleAndButtons.clearMessage();
 				UpdateCourseOfferingRequest request = new UpdateCourseOfferingRequest();
@@ -364,12 +347,8 @@ public class CourseOfferingEdit extends Composite {
 		
 		if (iIsAdd) {
 			//Subject Area Dropdown
-			
 			iSubjectArea = new UniTimeWidget<ListBox>(new ListBox());
 			iSubjectArea.getWidget().setStyleName("unitime-TextBox");
-			if (subjAreaId == null) {
-				iSubjectArea.getWidget().setSelectedIndex(0);
-			}
 			
 			iSubjectArea.getWidget().addChangeHandler(new ChangeHandler() {
 				@Override
@@ -389,7 +368,6 @@ public class CourseOfferingEdit extends Composite {
 							iCanEditCourseOfferingNote = result.getCanEditCourseOfferingNote();
 							iCanEditCourseOfferingCoordinators = result.getCanEditCourseOfferingCoordinators();
 
-							iIsReload = true;
 							iIsAdd = false;
 							iSubjAreaId = subjectAreaId;
 							reload(iSubjAreaId);
@@ -797,7 +775,7 @@ public class CourseOfferingEdit extends Composite {
 		overrideTypesForm.removeStyleName("unitime-NotPrintableBottomLine");
 		iPanel.getRowFormatter().setVisible(iOverrideTypeLine, false);
 
-		RPC.execute(new CourseOfferingCheckPermissions(courseOfferingId, subjAreaId), new AsyncCallback<CourseOfferingPermissionsInterface>() {
+		RPC.execute(new CourseOfferingCheckPermissions(iCourseOfferingId, iSubjAreaId), new AsyncCallback<CourseOfferingPermissionsInterface>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				handleError(caught);
@@ -820,11 +798,16 @@ public class CourseOfferingEdit extends Composite {
 						public void onSuccess(GetCourseOfferingResponse result) {
 							iCourseOffering = result.getCourseOffering();
 							setValue(iCourseOffering, null);
+							if (iCourseOffering != null)
+								iCourseUrlProvider.populate(iCourseOffering.getSubjectAreaId(), iCourseNumber.getWidget());
 							LoadingWidget.getInstance().hide();
 						}
 					});
 				} else if (iIsAdd) {
 					setValue(null, iSubjAreaId);
+					iCourseUrlProvider.populate(iSubjectArea.getWidget(), iCourseNumber.getWidget());
+					if (iSubjAreaId != null && iCourseNbr != null && !iCourseNbr.isEmpty())
+						iCourseUrlProvider.reload(iSubjAreaId, iCourseNbr);
 				}
 			}
 		});
@@ -1022,10 +1005,7 @@ public class CourseOfferingEdit extends Composite {
 	}
 	
 	public void reload(Long subjAreaId) {
-		iIsControl = true;
 		iAllowDemandCourseOfferings = true;
-		iCourseUrlProvider.populate(iSubjectArea, iCourseNumber, null);
-		iCourseUrlProvider.setVisible(true);
 		
 		if (!iCanAddCourseOffering) {
 			iPanel.getRowFormatter().setVisible(iCourseNumberLine, false);
@@ -1059,8 +1039,9 @@ public class CourseOfferingEdit extends Composite {
 			}
 			@Override
 			public void onSuccess(CourseOfferingPropertiesInterface result) {
+				iSubjectArea.getWidget().clear();
 				for (SubjectAreaInterface subjectAreaItem: result.getSubjectAreas()) {
-					iSubjectArea.getWidget().addItem(subjectAreaItem.getLabel(), subjectAreaItem.getId().toString());
+					iSubjectArea.getWidget().addItem(subjectAreaItem.getAbbreviation(), subjectAreaItem.getId().toString());
 				}
 				if (subjAreaId != null) {
 					int indexToFind = -1;
@@ -1168,12 +1149,8 @@ public class CourseOfferingEdit extends Composite {
 			iTitleAndButtons.setEnabled("update", false);
 			iTitleAndButtons.setHeaderTitle("");
 			
-			iIsControl = true;
 			iAllowDemandCourseOfferings = true;
 			iPanel.getRowFormatter().setVisible(iCreditTextLine, false);
-			iCourseUrlProvider.populate(iSubjectArea, iCourseNumber, null);
-			iCourseUrlProvider.setVisible(true);
-			
 			if (!iCanAddCourseOffering) {
 				iPanel.getRowFormatter().setVisible(iCourseNumberLine, false);
 				iTitle.getWidget().setReadOnly(true);
@@ -1220,6 +1197,8 @@ public class CourseOfferingEdit extends Composite {
 						}
 						iSubjectArea.getWidget().setSelectedIndex(indexToFind);
 					}
+					if (iSubjAreaId == null && iCourseNbr != null && !iCourseNbr.isEmpty() && iSubjectArea.getWidget().getSelectedIndex() >= 0)
+						iCourseUrlProvider.reload(Long.valueOf(iSubjectArea.getWidget().getSelectedValue()), iCourseNbr); 
 					
 					if (result.getCourseOfferingMustBeUnique()) {
 						if (result.getInstructionalOfferingId() != null) {
@@ -1576,9 +1555,6 @@ public class CourseOfferingEdit extends Composite {
 				iMaxUnits.getWidget().setValue(courseOffering.getMaxUnits().toString());
 			}
 			iFractional.setValue(courseOffering.getFractionalIncrementsAllowed());
-			
-			iCourseUrlProvider.populate(iSubjectArea, iCourseNumber, courseOffering.getSubjectAreaId());
-			iCourseUrlProvider.setVisible(true);
 			
 			//Coordinators
 			
