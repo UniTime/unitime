@@ -853,13 +853,13 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 					if (course == null) continue;
 					if (cc == null) {
 						cc = new CourseCredit();
-						cc.setCourse(course.getSubjectArea(), course.getSubjectArea(), iExternalTermProvider, server.getAcademicSession());
+						cc.setCourse(course.getSubjectArea(), course.getCourseNumber(), iExternalTermProvider, server.getAcademicSession());
 						cc.title = course.getTitle();
 						cc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
 					} else {
 						if (cc.alternatives == null) cc.alternatives = new ArrayList<CourseCredit>();
 						CourseCredit acc = new CourseCredit();
-						acc.setCourse(course.getSubjectArea(), course.getSubjectArea(), iExternalTermProvider, server.getAcademicSession());
+						acc.setCourse(course.getSubjectArea(), course.getCourseNumber(), iExternalTermProvider, server.getAcademicSession());
 						acc.title = course.getTitle();
 						acc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
 						cc.alternatives.add(acc);
@@ -870,22 +870,8 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 				if (credit != null && (wlCredit == null || wlCredit < credit)) wlCredit = credit;
 			}
 		}
-		if (neededCredit != null) {
-			if (maxCredit < neededCredit) {
-				req.maxCredit = neededCredit;
-			}
-		} else if (wlCredit != null && wlCredit.floatValue() > 0f) {
-			float total = wlCredit;
-			for (XRequest r: original.getRequests()) {
-				if (r instanceof XCourseRequest) {
-					XCourseRequest cr = (XCourseRequest)r;
-					if (cr.getEnrollment() != null)
-						total += cr.getEnrollment().getCredit(server);
-				}
-			}
-			if (maxCredit < total) {
-				req.maxCredit = total;
-			}
+		if (neededCredit != null && maxCredit < neededCredit) {
+			req.maxCredit = neededCredit;
 		}
 		
 		if (!req.changes.isEmpty() || !overrides.isEmpty() || req.maxCredit != null || oldCredit != null) {
@@ -1663,13 +1649,13 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 					if (course == null) continue;
 					if (cc == null) {
 						cc = new CourseCredit();
-						cc.setCourse(course.getSubjectArea(), course.getSubjectArea(), iExternalTermProvider, server.getAcademicSession());
+						cc.setCourse(course.getSubjectArea(), course.getCourseNumber(), iExternalTermProvider, server.getAcademicSession());
 						cc.title = course.getTitle();
 						cc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
 					} else {
 						if (cc.alternatives == null) cc.alternatives = new ArrayList<CourseCredit>();
 						CourseCredit acc = new CourseCredit();
-						acc.setCourse(course.getSubjectArea(), course.getSubjectArea(), iExternalTermProvider, server.getAcademicSession());
+						acc.setCourse(course.getSubjectArea(), course.getCourseNumber(), iExternalTermProvider, server.getAcademicSession());
 						acc.title = course.getTitle();
 						acc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
 						cc.alternatives.add(acc);
