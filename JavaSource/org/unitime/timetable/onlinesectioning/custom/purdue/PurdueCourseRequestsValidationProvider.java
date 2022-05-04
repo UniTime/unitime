@@ -849,7 +849,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					Map<String, RequestedCourseStatus> problems = (bc == null ? null : overrides.get(bc));
 					Set<String> denied = (bc == null ? null : deniedOverrides.get(bc));
 					if (denied != null && denied.contains(problem.code)) {
-						if (notNeededOverrides.contains(course)) {
+						if (notNeededOverrides.contains(bc)) {
 							response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, "Not Needed " + problem.message, CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_NOT_NEEDED);
 						} else if (fixedCourses.contains(course)) {
 							response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message, CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
@@ -1291,13 +1291,13 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					if (course == null) continue;
 					if (cc == null) {
 						cc = new CourseCredit();
-						cc.setCourse(course.getSubjectArea(), course.getSubjectArea(), iExternalTermProvider, server.getAcademicSession());
+						cc.setCourse(course.getSubjectArea(), course.getCourseNumber(), iExternalTermProvider, server.getAcademicSession());
 						cc.title = course.getTitle();
 						cc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
 					} else {
 						if (cc.alternatives == null) cc.alternatives = new ArrayList<CourseCredit>();
 						CourseCredit acc = new CourseCredit();
-						acc.setCourse(course.getSubjectArea(), course.getSubjectArea(), iExternalTermProvider, server.getAcademicSession());
+						acc.setCourse(course.getSubjectArea(), course.getCourseNumber(), iExternalTermProvider, server.getAcademicSession());
 						acc.title = course.getTitle();
 						acc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
 						cc.alternatives.add(acc);
@@ -2564,13 +2564,13 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					if (course == null) continue;
 					if (cc == null) {
 						cc = new CourseCredit();
-						cc.setCourse(course.getSubjectArea(), course.getSubjectArea(), iExternalTermProvider, server.getAcademicSession());
+						cc.setCourse(course.getSubjectArea(), course.getCourseNumber(), iExternalTermProvider, server.getAcademicSession());
 						cc.title = course.getTitle();
 						cc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
 					} else {
 						if (cc.alternatives == null) cc.alternatives = new ArrayList<CourseCredit>();
 						CourseCredit acc = new CourseCredit();
-						acc.setCourse(course.getSubjectArea(), course.getSubjectArea(), iExternalTermProvider, server.getAcademicSession());
+						acc.setCourse(course.getSubjectArea(), course.getCourseNumber(), iExternalTermProvider, server.getAcademicSession());
 						acc.title = course.getTitle();
 						acc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
 						cc.alternatives.add(acc);
