@@ -1,5 +1,5 @@
 /*
- * Licensed to The Apereo Foundation under one or more contributor license
+urse * Licensed to The Apereo Foundation under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
  * additional information regarding copyright ownership.
  *
@@ -425,11 +425,11 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						if (offering == null || !offering.isWaitList()) continue;
 						
 						// when enrolled, skip the enrolled course if the enrollment matches the requirements
-						if (enrolled != null && enrolled.isRequired(rc, offering)) continue;
+						if (enrolled != null && enrolled.getCourseId().equals(rc.getCourseId()) && enrolled.isRequired(rc, offering)) continue;
 						
 						// get possible enrollments into the course
 						Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
-						CourseRequest courseRequest = SectioningRequest.convert(assignment, new XCourseRequest(original, xcourse), dropCourse, server, WaitListMode.WaitList);
+						CourseRequest courseRequest = SectioningRequest.convert(assignment, new XCourseRequest(original, xcourse, rc), dropCourse, server, WaitListMode.WaitList);
 						Collection<Enrollment> enrls = courseRequest.getEnrollmentsSkipSameTime(assignment);
 						
 						// get a test enrollment (preferably a non-conflicting one)
@@ -1481,15 +1481,17 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 					// when enrolled (section swap), check if active
 					if (enrolledCourse != null) {
 						if (cr.getOrder() > enrolledOrder) continue;
-						XCourseRequest rq = original.getRequestForCourse(enrolledCourse.getCourseId());
-						XOffering offering = server.getOffering(enrolledCourse.getOfferingId());
-						// when enrolled, skip the enrolled course if the enrollment matches the requirements
-						if (rq != null && rq.getEnrollment() != null && offering != null && rq.isRequired(rq.getEnrollment(), offering)) continue;
+						if (cr.getOrder() == enrolledOrder) {
+							XCourseRequest rq = original.getRequestForCourse(enrolledCourse.getCourseId());
+							XOffering offering = server.getOffering(enrolledCourse.getOfferingId());
+							// when enrolled, skip the enrolled course if the enrollment matches the requirements
+							if (rq != null && rq.getEnrollment() != null && offering != null && rq.isRequired(rq.getEnrollment(), offering)) continue;
+						}
 					}
 					
 					// get possible enrollments into the course
 					Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
-					CourseRequest courseRequest = SectioningRequest.convert(assignment, new XCourseRequest(student, cr.getCourseOffering(), 0, helper, null), dropCourse, server, WaitListMode.WaitList);
+					CourseRequest courseRequest = SectioningRequest.convert(assignment, new XCourseRequest(cr, helper, null), dropCourse, server, WaitListMode.WaitList);
 					Collection<Enrollment> enrls = courseRequest.getEnrollmentsSkipSameTime(assignment);
 					
 					// get a test enrollment (preferably a non-conflicting one)

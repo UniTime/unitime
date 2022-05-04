@@ -43,6 +43,7 @@ import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Section;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.AdvisorClassPref;
@@ -197,6 +198,17 @@ public class XCourseRequest extends XRequest {
         	iTimeStamp = new Date();
     }
     
+    public XCourseRequest(CourseRequest cr, OnlineSectioningHelper helper, Collection<StudentClassEnrollment> classes) {
+    	this(cr.getCourseDemand().getStudent(), cr.getCourseOffering(), cr.getOrder(), helper, classes);
+    	if (cr.getPreferences() != null && !cr.getPreferences().isEmpty()) {
+    		List<XPreference> prefs = new ArrayList<XPreference>();
+    		for (StudentSectioningPref p: cr.getPreferences())
+    			prefs.add(new XPreference(cr, p));
+    		iPreferences = new HashMap<XCourseId, List<XPreference>>();
+    		iPreferences.put(new XCourseId(cr.getCourseOffering()), prefs);
+    	}
+    }
+    
     public XCourseRequest(Student student, XCourseId course, int priority, XEnrollment enrollment) {
     	super();
     	iStudentId = student.getUniqueId();
@@ -214,7 +226,7 @@ public class XCourseRequest extends XRequest {
         	iTimeStamp = new Date();
     }
     
-    public XCourseRequest(XStudent student, XCourseId course) {
+    public XCourseRequest(XStudent student, XCourseId course, RequestedCourse rc) {
     	super();
     	iStudentId = student.getStudentId();
     	iRequestId = -course.getCourseId();
@@ -225,6 +237,19 @@ public class XCourseRequest extends XRequest {
         iNoSub = false;
         iCritical = 0;
         iTimeStamp = new Date();
+        if (rc != null) {
+        	List<XPreference> prefs = new ArrayList<XPreference>();
+        	if (rc.hasSelectedClasses())
+        		for (Preference p: rc.getSelectedClasses())
+        			prefs.add(new XPreference(p, XPreferenceType.SECTION));
+        	if (rc.hasSelectedIntructionalMethods())
+        		for (Preference p: rc.getSelectedIntructionalMethods())
+        			prefs.add(new XPreference(p, XPreferenceType.INSTR_METHOD));
+        	if (!prefs.isEmpty()) {
+        		iPreferences = new HashMap<XCourseId, List<XPreference>>();
+        		iPreferences.put(course, prefs);
+        	}
+        }
     }
     
     public XCourseRequest(XCourseRequest request, XEnrollment enrollment) {
@@ -872,6 +897,13 @@ public class XCourseRequest extends XRequest {
 			if (iLabel.length() <= 4)
 				iLabel = a.getSubpart().getName() + " " + iLabel;
 			iRequired = required;
+		}
+		
+		public XPreference(Preference p, XPreferenceType type) {
+			iType = type;
+			iId = p.getId();
+			iLabel = p.getText();
+			iRequired = p.isRequired();
 		}
 		
 		public XPreference(ObjectInput in) throws IOException, ClassNotFoundException {
