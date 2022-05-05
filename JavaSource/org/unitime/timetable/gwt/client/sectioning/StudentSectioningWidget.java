@@ -3353,6 +3353,28 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									});
 								}
 							});
+							iQuickAddSuggestions.addWaitListHandler(new SuggestionsBox.WaitListHandler() {
+								@Override
+								public void onWaitList(final SuggestionsBox.WaitListEvent event) {
+									final CourseRequestInterface undo = iCourseRequests.getRequest();
+									Request request = new Request(); request.setWaitList(true); request.addRequestedCourse(event.getCourse());
+									iCourseRequests.addRequest(request);
+									LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
+									CourseRequestInterface r = iCourseRequests.getRequest(); r.setNoChange(true);
+									iSectioningService.section(r, iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
+										public void onFailure(Throwable caught) {
+											LoadingWidget.getInstance().hide();
+											iStatus.error(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
+											iCourseRequests.setRequest(undo);
+										}
+										public void onSuccess(ClassAssignmentInterface result) {
+											fillIn(result);
+											addHistory();
+											iQuickAddFinder.setValue(null, true);
+										}
+									});
+								}
+							});
 						}
 						iQuickAddSuggestions.open(iCourseRequests.getRequest(), iLastResult, event.getSelectedItem(), useDefaultConfirmDialog(), new AsyncCallback<ClassAssignmentInterface>() {
 							@Override

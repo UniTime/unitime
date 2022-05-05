@@ -93,6 +93,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 	private ClassAssignmentInterface.ClassAssignment iAssignment;
 	private AsyncCallback<Collection<ClassAssignmentInterface>> iCallback = null;
 	private AsyncCallback<ClassAssignmentInterface> iCustomCallback = null;
+	private RequestedCourse iCourse;
 	
 	private ArrayList<ClassAssignmentInterface.ClassAssignment> iCurrent = null;
 	private ArrayList<ClassAssignmentInterface> iResult = null;
@@ -187,7 +188,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 			@Override
 			public void onClick(ClickEvent event) {
 				hide();
-				if (iAssignment != null && !iAssignment.isFreeTime()) {
+				if (iAssignment == null || !iAssignment.isFreeTime()) {
 					fireWaitListEvent();
 				}
 			}
@@ -831,7 +832,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 	
 	public void open(final CourseRequestInterface request, final ArrayList<ClassAssignmentInterface.ClassAssignment> rows, RequestedCourse course, boolean useGwtConfirmations, AsyncCallback<ClassAssignmentInterface> callback) {
 		LoadingWidget.getInstance().show(MESSAGES.suggestionsLoadingChoices());
-		iAssignment = null;
+		iAssignment = null; iCourse = course;
 		iCurrent = rows;
 		iRequest = request;
 		iIndex = -1;
@@ -846,6 +847,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		iMessages.setHTML("");
 		iFilter.setText("");
 		iQuickDrop.setVisible(false); iQuickDrop.setEnabled(false);
+		iWaitList.setVisible(false); iWaitList.setEnabled(false);
 		request.dropCourse(course);
 		request.addCourse(course);
 		iCustomCallback = callback;
@@ -887,6 +889,10 @@ public class SuggestionsBox extends UniTimeDialogBox {
 						hasNoDropChange = true;
 						break;
 					}
+				}
+				if (!hasNoDropChange && iCourse.isCanWaitList() && !iWaitListHandlers.isEmpty()) {
+					iWaitList.setHTML(MESSAGES.buttonWaitList(iCourse.getCourseName()));
+					iWaitList.setVisible(true); iWaitList.setEnabled(true);
 				}
 				if (hasNoDropChange) {
 					iCallback.onSuccess(result);
@@ -1104,6 +1110,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 			iAssignment = assignment;
 		}
 		public ClassAssignmentInterface.ClassAssignment getAssignment() { return iAssignment; }
+		public RequestedCourse getCourse() { return iCourse; }
 	}
 
 	public void addQuickDropHandler(QuickDropHandler h) {
