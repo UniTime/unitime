@@ -34,6 +34,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
@@ -152,6 +153,20 @@ public class StudentGroups implements AdminTable, HasLazyFields, HasFilter {
 	}
 
 	protected void save(Record record, SessionContext context, Session hibSession, Set<Long> studentIds) {
+		StudentGroup g1 = (StudentGroup)hibSession.createQuery(
+                "select a from StudentGroup a where a.session.uniqueId=:sessionId and a.groupAbbreviation=:abbv").
+				setLong("sessionId", context.getUser().getCurrentAcademicSessionId()).
+				setString("abbv", record.getField(1)).
+				setMaxResults(1).uniqueResult();
+		if (g1 != null)
+			throw new GwtRpcException(MESSAGES.errorMustBeUnique(MESSAGES.fieldCode()));
+		StudentGroup g2 = (StudentGroup)hibSession.createQuery(
+                "select a from StudentGroup a where a.session.uniqueId=:sessionId and a.groupName=:name").
+				setLong("sessionId", context.getUser().getCurrentAcademicSessionId()).
+				setString("name", record.getField(2)).
+				setMaxResults(1).uniqueResult();
+		if (g2 != null)
+			throw new GwtRpcException(MESSAGES.errorMustBeUnique(MESSAGES.fieldName()));
 		StudentGroup group = new StudentGroup();
 		group.setExternalUniqueId(record.getField(0));
 		group.setGroupAbbreviation(record.getField(1));
@@ -203,6 +218,22 @@ public class StudentGroups implements AdminTable, HasLazyFields, HasFilter {
 	
 	protected void update(StudentGroup group, Record record, SessionContext context, Session hibSession, Set<Long> studentIds) {
 		if (group == null) return;
+		StudentGroup g1 = (StudentGroup)hibSession.createQuery(
+                "select a from StudentGroup a where a.session.uniqueId=:sessionId and a.groupAbbreviation=:abbv and a.uniqueId!=:gid").
+				setLong("sessionId", context.getUser().getCurrentAcademicSessionId()).
+				setString("abbv", record.getField(1)).
+				setLong("gid", group.getUniqueId()).
+				setMaxResults(1).uniqueResult();
+		if (g1 != null)
+			throw new GwtRpcException(MESSAGES.errorMustBeUnique(MESSAGES.fieldCode()));
+		StudentGroup g2 = (StudentGroup)hibSession.createQuery(
+                "select a from StudentGroup a where a.session.uniqueId=:sessionId and a.groupName=:name and a.uniqueId!=:gid").
+				setLong("sessionId", context.getUser().getCurrentAcademicSessionId()).
+				setString("name", record.getField(2)).
+				setLong("gid", group.getUniqueId()).
+				setMaxResults(1).uniqueResult();
+		if (g2 != null)
+			throw new GwtRpcException(MESSAGES.errorMustBeUnique(MESSAGES.fieldName()));		
 		boolean changed = 
 				!ToolBox.equals(group.getExternalUniqueId(), record.getField(0)) ||
 				!ToolBox.equals(group.getGroupAbbreviation(), record.getField(1)) ||
