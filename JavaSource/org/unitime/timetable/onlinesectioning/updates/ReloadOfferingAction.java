@@ -306,6 +306,9 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 		if (newOffering == null && oldOffering == null)
 			return;
 		
+		if (newOffering != null && !newOffering.isWaitList())
+			return;
+		
 		WaitListComparatorProvider cmp = Customization.WaitListComparatorProvider.getProvider();
 		Set<SectioningRequest> queue = new TreeSet<SectioningRequest>(cmp == null ? new SectioningRequestComparator() : cmp.getComparator(server, helper));
 		
@@ -402,6 +405,10 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 							
 							if (!isVerySame(newEnrollment.getCourseId(), newOffering.getSections(newEnrollment), oldOffering.getSections(oldEnrollment)))
 								server.execute(server.createAction(NotifyStudentAction.class).forStudent(oldStudent == null ? newStudent.getStudentId() : oldStudent.getStudentId()).fromAction(name()).oldEnrollment(oldOffering, course, oldEnrollment), helper.getUser());
+							
+							if (newOffering != null && newEnrollment.equals(newRequest.getWaitListSwapWithCourseOffering()) && isWaitListed(newStudent, newRequest, newOffering, server, helper)) {
+								queue.add(new SectioningRequest(newOffering, newRequest, course, newStudent, false, getStudentPriority(newStudent, server, helper), action).setOldOffering(oldOffering).setOldRequest(oldRequest).setOldStudent(oldStudent).setLastEnrollment(oldEnrollment).setNewEnrollment(newEnrollment));
+							}
 							continue;
 						}
 					}
@@ -409,14 +416,15 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					queue.add(new SectioningRequest(newOffering, newRequest, course, newStudent, true, getStudentPriority(newStudent, server, helper), action).setOldOffering(oldOffering).setOldRequest(oldRequest).setOldStudent(oldStudent).setLastEnrollment(oldEnrollment).setNewEnrollment(newEnrollment));
 				}
 			}
-		} else if (newOffering != null && newOffering.isWaitList()) {
+		} else if (newOffering != null) {
 			// only wait-listing
 			for (XCourseId course: courseIds) {
 				for (XStudent[] student: students) {
 					XStudent oldStudent = student[0];
 					XStudent newStudent = student[1];
 					XCourseRequest newRequest = getRequest(newStudent, course);
-					if (newRequest != null && newStudent.canAssign(newRequest, WaitListMode.WaitList) && isWaitListed(student[1], newRequest, newOffering == null ? oldOffering : newOffering, server, helper) && newOffering.isWaitList()) {
+					XEnrollment newEnrollment = getEnrollment(newRequest, offeringId);
+					if (newRequest != null && newStudent.canAssign(newRequest, WaitListMode.WaitList) && isWaitListed(student[1], newRequest, newOffering, server, helper)) {
 						OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
 						action.setStudent(
 								OnlineSectioningLog.Entity.newBuilder()
@@ -425,7 +433,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 								.setName(student[0] == null ? student[1].getName() : student[0].getName()));
 						action.addOther(OnlineSectioningLog.Entity.newBuilder()
 								.setUniqueId(offeringId)
-								.setName(newOffering == null ? oldOffering.getName() : newOffering.getName())
+								.setName(newOffering.getName())
 								.setType(OnlineSectioningLog.Entity.EntityType.OFFERING));
 						action.addOther(OnlineSectioningLog.Entity.newBuilder()
 								.setUniqueId(course.getCourseId())
@@ -444,7 +452,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 
 						action.addRequest(OnlineSectioningHelper.toProto(newRequest));
 						
-						queue.add(new SectioningRequest(newOffering, newRequest, course, newStudent, false, getStudentPriority(newStudent, server, helper), action).setOldOffering(oldOffering).setOldRequest(oldRequest).setOldStudent(oldStudent));
+						queue.add(new SectioningRequest(newOffering, newRequest, course, newStudent, false, getStudentPriority(newStudent, server, helper), action).setOldOffering(oldOffering).setOldRequest(oldRequest).setOldStudent(oldStudent).setLastEnrollment(oldEnrollment).setNewEnrollment(newEnrollment));
 					}
 				}
 			}
