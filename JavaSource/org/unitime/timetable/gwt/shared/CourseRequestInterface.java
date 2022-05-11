@@ -123,22 +123,12 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 				for (RequestedCourse rc: r.getRequestedCourse())
 					if (courseId.equals(rc.getCourseId())) return r.isCanWaitList();
 		}
-		for (Request r: getAlternatives()) {
-			if (r.hasRequestedCourse())
-				for (RequestedCourse rc: r.getRequestedCourse())
-					if (courseId.equals(rc.getCourseId())) return r.isCanWaitList();
-		}
 		return false;
 	}
 	
 	public boolean isWaitListed(Long courseId) {
 		if (courseId == null) return false;
 		for (Request r: getCourses()) {
-			if (r.hasRequestedCourse() && r.isWaitList())
-				for (RequestedCourse rc: r.getRequestedCourse())
-					if (courseId.equals(rc.getCourseId())) return true;
-		}
-		for (Request r: getAlternatives()) {
 			if (r.hasRequestedCourse() && r.isWaitList())
 				for (RequestedCourse rc: r.getRequestedCourse())
 					if (courseId.equals(rc.getCourseId())) return true;
