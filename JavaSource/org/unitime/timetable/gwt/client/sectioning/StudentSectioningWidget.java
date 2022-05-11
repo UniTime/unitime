@@ -1823,7 +1823,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					
 					if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST)) {
 						CourseRequestLine line = iCourseRequests.getWaitListedLine(course.getCourseId());
-						if (line.getWaitList() && course.getCourseId().equals(line.getValue().getWaitListSwapWithCourseOfferingId())) {
+						if (line != null && line.getWaitList() && course.getCourseId().equals(line.getValue().getWaitListSwapWithCourseOfferingId())) {
 							selfWaitListed = true;
 							for (ClassAssignmentInterface.ClassAssignment x: course.getClassAssignments())
 								if (!x.isSaved()) {
