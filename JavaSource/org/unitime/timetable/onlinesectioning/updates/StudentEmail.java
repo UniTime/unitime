@@ -968,7 +968,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			}
 			input.put("changedCourse", course);
 			
-			if (getDropEnrollment() != null && !oldCourse.equals(course)) {
+			if (getDropEnrollment() != null && !course.equals(getDropEnrollment())) {
 				XOffering dropOffering = server.getOffering(getDropEnrollment().getOfferingId());
 				if (dropOffering != null) {
 					XCourse dropCourse = dropOffering.getCourse(getDropEnrollment().getCourseId());
