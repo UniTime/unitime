@@ -2452,6 +2452,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("The request to increase the maximum credit hours has been denied.\nYou may not be able to get a full schedule.")
 	String creditStatusDenied();
 	
+	@DefaultMessage("The request to increase the maximum credit hours has been denied.")
+	String creditStatusDeniedShort();
+	
 	@DefaultMessage("You may not be able to get a full schedule.")
 	String creditStatusTooHigh();
 	

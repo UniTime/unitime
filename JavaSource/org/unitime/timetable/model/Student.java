@@ -412,6 +412,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     }
     
     public boolean isEnrolled(CourseOffering co) {
+    	if (co == null) return false;
     	for (StudentClassEnrollment e: getClassEnrollments())
     		if (e.getCourseOffering().equals(co)) return true;
     	return false;

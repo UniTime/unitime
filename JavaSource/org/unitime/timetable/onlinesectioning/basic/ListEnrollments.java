@@ -232,6 +232,8 @@ public class ListEnrollments extends WaitlistedOnlineSectioningAction<List<Class
 					if (request.getWaitListedTimeStamp() != null && request.getEnrollment() == null)
 						e.setWaitListedDate(request.getWaitListedTimeStamp());
 					e.setWaitListedPosition(getWaitListPosition(offering, student, request, course, server, helper));
+					if (student.isEnrolled(request.getWaitListSwapWithCourseOffering()))
+						e.setWaitListedReplacement(request.getWaitListSwapWithCourseOffering().getCourseName());
 					if (enrollment == null) {
 						e.setEnrollmentMessage(request.getEnrollmentMessage());
 						if (request.hasOverrides()) {

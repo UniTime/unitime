@@ -604,6 +604,17 @@ public class XStudent extends XStudentId implements Externalizable {
     			);
     }
     
+    public boolean isEnrolled(XCourseId courseId) {
+    	if (courseId == null) return false;
+    	for (XRequest r: iRequests) {
+    		if (r instanceof XCourseRequest) {
+    			XCourseRequest cr = (XCourseRequest)r;
+    			if (courseId.equals(cr.getEnrollment())) return true;
+    		}
+    	}
+    	return false;
+    }
+    
     
     
     @Override

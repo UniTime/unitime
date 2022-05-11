@@ -342,7 +342,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 					switch (result.getMaxCreditOverrideStatus()) {
 					case CREDIT_HIGH:
 						iCreditStatusIcon.setResource(RESOURCES.requestNeeded());
-						warning += "\n" + MESSAGES.creditStatusTooHigh();
+						warning += "\n" + MESSAGES.creditStatusDeniedShort();
 						break;
 					case OVERRIDE_REJECTED:
 						iCreditStatusIcon.setResource(RESOURCES.requestError());

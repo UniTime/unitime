@@ -1516,6 +1516,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							e.setRequestedDate(request.getCourseDemand().getTimestamp());
 							e.setCritical(request.getCourseDemand().getEffectiveCritical().ordinal());
 							e.setWaitListedDate(request.getCourseDemand().getWaitlistedTimeStamp());
+							if (request.getCourseDemand().getStudent().isEnrolled(request.getCourseDemand().getWaitListSwapWithCourseOffering()))
+								e.setWaitListedReplacement(request.getCourseDemand().getWaitListSwapWithCourseOffering().getCourseName());
 						}
 					return new ArrayList<ClassAssignmentInterface.Enrollment>(student2enrollment.values());
 				} else {

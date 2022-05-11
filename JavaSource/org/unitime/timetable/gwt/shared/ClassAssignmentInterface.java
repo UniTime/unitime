@@ -1205,6 +1205,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Boolean iWaitList = null, iNoSub = null; 
 		private String iEnrollmentMessage = null;
 		private String iWaitListedPosition = null;
+		private String iWaitListReplacement = null;
 		private Integer iCritical = null;
 		
 		public Enrollment() {}
@@ -1255,6 +1256,12 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			return iWaitListedPosition != null && !iWaitListedPosition.isEmpty() && isWaitList() && getStudent().getWaitListMode() == WaitListMode.WaitList;
 		}
 		public void setWaitListedPosition(String pos) { iWaitListedPosition = pos; }
+		
+		public String getWaitListReplacement() { return iWaitListReplacement; }
+		public boolean hasWaitListedReplacement() {
+			return iWaitListReplacement != null && !iWaitListReplacement.isEmpty() && isWaitList() && getStudent().getWaitListMode() == WaitListMode.WaitList;
+		}
+		public void setWaitListedReplacement(String replacesCourse) { iWaitListReplacement = replacesCourse; }
 		
 		public String getClasses(String subpart, String delim, boolean showClassNumbers) {
 			if (getCourse() == null || getCourse().getClassAssignments().isEmpty()) return "";
