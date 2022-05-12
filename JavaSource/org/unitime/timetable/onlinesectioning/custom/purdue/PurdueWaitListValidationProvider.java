@@ -1269,6 +1269,8 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						return true;
 				}
 		}
+		if (student.getOverrideExternalId() != null && student.getMaxCreditOverrideIntent() == CourseRequestOverrideIntent.WAITLIST)
+			return true;
 		return false;
 	}
 
@@ -1412,6 +1414,8 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 				}
 			}
 		}
+		if (student.getOverrideExternalId() != null && student.getMaxCreditOverrideIntent() == CourseRequestOverrideIntent.WAITLIST && student.getMaxCreditOverrideStatus() != CourseRequestOverrideStatus.APPROVED)
+			return true;
 		return false;
 	}
 

@@ -263,6 +263,8 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 								hasWaitListedCourses = true;
 								break;
 							}
+					if (student.getOverrideExternalId() != null && student.getMaxCreditOverrideIntent() == CourseRequestOverrideIntent.WAITLIST && student.getMaxCreditOverrideStatus() == CourseRequestOverrideStatus.PENDING)
+						hasWaitList = true; // may need to cancel the pending max credit override
 				}
 				
 				if (CustomStudentEnrollmentHolder.hasProvider()) {
