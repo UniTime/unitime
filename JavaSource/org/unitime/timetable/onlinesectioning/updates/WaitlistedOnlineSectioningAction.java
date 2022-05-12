@@ -225,11 +225,11 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
 				// Lower choice than the enrolled course
 				if (cr.getIndex(offering) > cr.getEnrolledCourseIndex()) continue;
 				// Requirements are already met
-				if (cr.getEnrollment().getOfferingId().equals(offering.getOfferingId()) && request.isRequired(cr.getEnrollment(), offering)) continue;
+				if (cr.getEnrollment().getOfferingId().equals(offering.getOfferingId()) && cr.isRequired(cr.getEnrollment(), offering)) continue;
 			}
 			XStudent s = server.getStudent(cr.getStudentId());
 			XCourseId c = cr.getCourseIdByOfferingId(offering.getOfferingId());
-			if (!isWaitListedAssumeApproved(s, request, offering, c, server, helper)) continue; // skip not wait-listed
+			if (!isWaitListedAssumeApproved(s, cr, offering, c, server, helper)) continue; // skip not wait-listed
 			total ++;
 			if (!cr.equals(request)) {
 				SectioningRequest other = new SectioningRequest(offering, cr, c, s, false, getStudentPriority(s, server, helper), null);
