@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.onlinesectioning.updates;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -63,15 +65,20 @@ public class CheckAllOfferingsAction extends CheckOfferingAction{
 		}
 		
 		helper.info("Checking all offerings for " + server.getAcademicSession() + "...");
+		Set<Long> recheck = new HashSet<Long>();
 		Lock lock = server.lockAll();
 		try {
-			for (Long offeringId: offeringIds)
-				checkOffering(server, helper, server.getOffering(offeringId));
+			for (Long offeringId: offeringIds) {
+				checkOffering(server, helper, server.getOffering(offeringId), recheck);
+			}
 		} finally {
 			lock.release();
 		}
 		
-		helper.info("Updating enrollment counts...");
+		if (!recheck.isEmpty()) {
+			helper.info("Re-checking " + recheck.size() + " offerings...");
+			server.execute(server.createAction(CheckOfferingAction.class).forOfferings(recheck), helper.getUser());
+		}
 		
 		helper.info("Check done.");
 		return true;

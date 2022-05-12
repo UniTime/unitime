@@ -131,6 +131,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 		
 		boolean result = true;
 		
+		Set<Long> recheck = new HashSet<Long>();
 		for (Long offeringId: getOfferingIds()) {
 			try {
 				// offering is locked -> assuming that the offering will get checked when it is unlocked
@@ -149,7 +150,8 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 							.setUniqueId(offeringId)
 							.setName(offering.getName())
 							.setType(OnlineSectioningLog.Entity.EntityType.OFFERING));
-					checkOffering(server, helper, offering);
+					
+					checkOffering(server, helper, offering, recheck);
 
 					helper.commitTransaction();
 				} finally {
@@ -161,6 +163,11 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 				helper.fatal("Unable to check offering " + offeringId + ", reason: " + e.getMessage(), e);
 				result = false;
 			}
+		}
+		
+		if (result && !recheck.isEmpty()) {
+			helper.info("Re-checking " + recheck.size() + " offerings...");
+			result = server.execute(server.createAction(CheckOfferingAction.class).forOfferings(recheck).skipStudents(iSkipStudentIds).forStudents(iStudentIds), helper.getUser());
 		}
 		
 		return result;
@@ -238,8 +245,9 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 		return false;
 	}
 	
-	public void checkOffering(OnlineSectioningServer server, OnlineSectioningHelper helper, XOffering offering) {
+	public void checkOffering(OnlineSectioningServer server, OnlineSectioningHelper helper, XOffering offering, Set<Long> recheckOfferingIds) {
 		if (!server.getAcademicSession().isSectioningEnabled() || offering == null || !offering.isWaitList()) return;
+		if (recheckOfferingIds != null) recheckOfferingIds.remove(offering.getOfferingId());
 		
 		if (!CustomStudentEnrollmentHolder.isAllowWaitListing()) return;
 		
@@ -465,6 +473,10 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 					
 					if (tx) helper.commitTransaction();
 					r.getAction().setResult(enrollment == null ? OnlineSectioningLog.Action.ResultType.NULL : OnlineSectioningLog.Action.ResultType.SUCCESS);
+					
+					if (recheckOfferingIds != null && dropEnrollment != null && isCheckNeeded(server, helper, dropEnrollment,
+							enrollment != null && enrollment.getOfferingId().equals(dropEnrollment.getOfferingId()) ? enrollment : null)) 
+						recheckOfferingIds.add(dropEnrollment.getOfferingId());
 				} catch (Exception e) {
 					if (dropEnrollment != null)
 						server.assign(r.getDropRequest(), dropEnrollment);

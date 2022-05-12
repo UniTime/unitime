@@ -113,6 +113,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 			}
 		}
 
+		Set<Long> recheck = new HashSet<Long>();
 		for (Long offeringId: getOfferingIds()) {
 			helper.getAction().addOther(OnlineSectioningLog.Entity.newBuilder()
 					.setUniqueId(offeringId)
@@ -142,7 +143,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 			try {
 				helper.beginTransaction();
 				try {
-					reloadOffering(server, helper, offeringId);
+					reloadOffering(server, helper, offeringId, recheck);
 					
 					helper.commitTransaction();
 				} catch (Exception e) {
@@ -155,10 +156,15 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 				lock.release();
 			}
 		}
+		
+		if (!recheck.isEmpty())
+			server.execute(server.createAction(CheckOfferingAction.class).forOfferings(recheck), helper.getUser());
+		
 		return true;			
 	}
 		
-	public void reloadOffering(final OnlineSectioningServer server, OnlineSectioningHelper helper, Long offeringId) {
+	public void reloadOffering(final OnlineSectioningServer server, OnlineSectioningHelper helper, Long offeringId, Set<Long> recheckOfferingIds) {
+		if (recheckOfferingIds != null) recheckOfferingIds.remove(offeringId);
 		// Load new students
 		Map<Long, org.unitime.timetable.model.Student> newStudents = new HashMap<Long, org.unitime.timetable.model.Student>();
 		/*
@@ -638,6 +644,9 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 						.dropEnrollment(dropEnrollment),
 						helper.getUser());
 				
+				if (recheckOfferingIds != null && dropEnrollment != null && CheckOfferingAction.isCheckNeeded(server, helper, dropEnrollment,
+						e != null && e.getOfferingId().equals(dropEnrollment.getOfferingId()) ? e : null)) 
+					recheckOfferingIds.add(dropEnrollment.getOfferingId());
 				
 				r.getAction().setResult(e == null ? OnlineSectioningLog.Action.ResultType.NULL : OnlineSectioningLog.Action.ResultType.SUCCESS);
 				r.getAction().setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
