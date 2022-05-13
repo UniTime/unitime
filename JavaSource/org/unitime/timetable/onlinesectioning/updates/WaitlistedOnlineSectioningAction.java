@@ -60,6 +60,18 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
 	private Map<StudentPriority, String> iPriorityStudentGroupReference = null;
 	private Map<StudentPriority, Query> iPriorityStudentQuery = null;
 	
+	public boolean hasWaitListingStatus(XStudent student, OnlineSectioningServer server) {
+		// Check student status
+		String status = student.getStatus();
+		if (status == null) status = server.getAcademicSession().getDefaultSectioningStatus();
+		if (status != null) {
+			if (iWaitlistStatuses == null)
+				iWaitlistStatuses = StudentSectioningStatus.getMatchingStatuses(server.getAcademicSession().getUniqueId(), StudentSectioningStatus.Option.waitlist, StudentSectioningStatus.Option.enrollment);
+			if (!iWaitlistStatuses.contains(status)) return false;
+		}
+		return true;
+	}
+	
 	public boolean isWaitListed(XStudent student, XCourseRequest request, XOffering offering, OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		// Check wait-list toggle first
 		if (student == null || request == null || !request.isWaitlist()) return false;
@@ -78,13 +90,7 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
 		if (!student.canAssign(request, WaitListMode.WaitList)) return false;
 		
 		// Check student status
-		String status = student.getStatus();
-		if (status == null) status = server.getAcademicSession().getDefaultSectioningStatus();
-		if (status != null) {
-			if (iWaitlistStatuses == null)
-				iWaitlistStatuses = StudentSectioningStatus.getMatchingStatuses(server.getAcademicSession().getUniqueId(), StudentSectioningStatus.Option.waitlist, StudentSectioningStatus.Option.enrollment);
-			if (!iWaitlistStatuses.contains(status)) return false;
-		}
+		if (!hasWaitListingStatus(student, server)) return false;
 		
 		// Check recent failed wait-lists
 		if (student.isFailedWaitlist(request.getCourseIdByOfferingId(offering.getOfferingId())))
@@ -160,13 +166,7 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
 		}		
 		
 		// Check student status
-		String status = student.getStatus();
-		if (status == null) status = server.getAcademicSession().getDefaultSectioningStatus();
-		if (status != null) {
-			if (iWaitlistStatuses == null)
-				iWaitlistStatuses = StudentSectioningStatus.getMatchingStatuses(server.getAcademicSession().getUniqueId(), StudentSectioningStatus.Option.waitlist, StudentSectioningStatus.Option.enrollment);
-			if (!iWaitlistStatuses.contains(status)) return false;
-		}
+		if (!hasWaitListingStatus(student, server)) return false;
 		
 		return true;
 	}

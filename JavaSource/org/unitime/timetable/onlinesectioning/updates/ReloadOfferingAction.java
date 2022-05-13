@@ -335,6 +335,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					XCourseRequest newRequest = getRequest(newStudent, course); 
 					XEnrollment newEnrollment = getEnrollment(newRequest, offeringId);
 					if (oldRequest == null && newRequest == null) continue;
+					if (!hasWaitListingStatus(newStudent == null ? oldStudent : newStudent, server)) continue; // no changes for students that cannot be wait-listed
 					
 					OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
 					action.setStudent(
