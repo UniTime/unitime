@@ -688,7 +688,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 			response.addConfirmation(
 					ApplicationProperties.getProperty("purdue.specreg.messages.waitlist.requestOverrides",
 							"\nIf you have already discussed these courses with your advisor and were advised to request " +
-							"registration in them please select Request Overrides. If you aren’t sure, click Cancel Submit and " +
+							"registration in them please select Request Overrides. If you aren\u2019t sure, click Cancel Submit and " +
 							"consult with your advisor before wait-listing these courses."),
 					CONF_BANNER, idx++);
 		}

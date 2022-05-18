@@ -2566,12 +2566,12 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("It is possible to request approvals for all of the above registration errors.\n"+
 			"If you have already discussed these courses with your advisor and were advised to request registration in them, please select <b>Request Approvals</b>. "+
-			"If you aren’t sure, click <b>Close Dialog</b> and consult with your advisor before registering for these courses.")
+			"If you aren\u2019t sure, click <b>Close Dialog</b> and consult with your advisor before registering for these courses.")
 	String messageCanRequestOverridesAll();
 	
 	@DefaultMessage("It is possible to request approvals for some of the above registration errors.\n"+
 			"If you have already discussed these courses with your advisor and were advised to request registration in them, please select <b>Request Approvals</b>. "+
-			"If you aren’t sure, click <b>Close Dialog</b> and consult with your advisor before registering for these courses.")
+			"If you aren\u2019t sure, click <b>Close Dialog</b> and consult with your advisor before registering for these courses.")
 	String messageCanRequestOverridesSome();
 	
 	@DefaultMessage("Show all changes")
@@ -2806,7 +2806,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("There are unsaved changes on this page. Do you really want to discard these changes?")
 	String queryLeaveAdvisorsCourseRequestsNotSave();
 	
-	@DefaultMessage("Student’s Name:")
+	@DefaultMessage("Student\u2019s Name:")
 	String propStudentName();
 	
 	@DefaultMessage("Email:")
@@ -2863,10 +2863,10 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Exporting...")
 	String advisorCourseRequestsExporting();
 	
-	@DefaultMessage("Advisor’s Signature:     _____________________________________________")
+	@DefaultMessage("Advisor\u2019s Signature:     _____________________________________________")
 	String pdfAdvisorSignature();
 	
-	@DefaultMessage("Student’s Signature:     _____________________________________________")
+	@DefaultMessage("Student\u2019s Signature:     _____________________________________________")
 	String pdfStudentSignature();
 	
 	@DefaultMessage("Date:      _______________")

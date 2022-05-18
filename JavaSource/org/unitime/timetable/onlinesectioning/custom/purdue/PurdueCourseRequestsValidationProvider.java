@@ -1014,7 +1014,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			response.addConfirmation(
 					ApplicationProperties.getProperty("purdue.specreg.messages.requestOverrides",
 							"\nIf you have already discussed these courses with your advisor and were advised to request " +
-							"registration in them please select Request Overrides & Submit. If you aren’t sure, click Cancel Submit and " +
+							"registration in them please select Request Overrides & Submit. If you aren\u2019t sure, click Cancel Submit and " +
 							"consult with your advisor before coming back to your Course Request page."),
 					CONF_BANNER, idx++);
 		}
