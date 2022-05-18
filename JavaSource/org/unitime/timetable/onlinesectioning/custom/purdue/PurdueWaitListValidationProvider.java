@@ -903,7 +903,8 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 					for (CourseRequestInterface.Request c: request.getCourses())
 						if (c.hasRequestedCourse()) {
 							for (CourseRequestInterface.RequestedCourse rc: c.getRequestedCourse()) {
-								if (rc.getStatus() != null && rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED && rc.getStatus() != RequestedCourseStatus.WAITLIST_INACTIVE) {
+								if (rc.getStatus() != null && rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED && rc.getStatus() != RequestedCourseStatus.WAITLIST_INACTIVE
+										&& rc.getStatus() != RequestedCourseStatus.ENROLLED) {
 									rc.setStatus(null);
 									rc.setOverrideExternalId(null);
 									rc.setOverrideTimeStamp(null);
@@ -933,7 +934,8 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 					for (CourseRequestInterface.Request c: request.getAlternatives())
 						if (c.hasRequestedCourse()) {
 							for (CourseRequestInterface.RequestedCourse rc: c.getRequestedCourse()) {
-								if (rc.getStatus() != null && rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED && rc.getStatus() != RequestedCourseStatus.WAITLIST_INACTIVE) {
+								if (rc.getStatus() != null && rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED && rc.getStatus() != RequestedCourseStatus.WAITLIST_INACTIVE
+										&& rc.getStatus() != RequestedCourseStatus.ENROLLED) {
 									rc.setStatus(null);
 									rc.setOverrideExternalId(null);
 									rc.setOverrideTimeStamp(null);
@@ -1001,7 +1003,8 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 			for (CourseRequestInterface.Request c: request.getCourses())
 				if (c.hasRequestedCourse()) {
 					for (CourseRequestInterface.RequestedCourse rc: c.getRequestedCourse()) {
-						if (rc.getStatus() != null && rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED && rc.getStatus() != RequestedCourseStatus.WAITLIST_INACTIVE) {
+						if (rc.getStatus() != null && rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED && rc.getStatus() != RequestedCourseStatus.WAITLIST_INACTIVE
+								&& rc.getStatus() != RequestedCourseStatus.ENROLLED) {
 							rc.setStatus(null);
 							rc.setOverrideExternalId(null);
 							rc.setOverrideTimeStamp(null);
@@ -1011,7 +1014,8 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 			for (CourseRequestInterface.Request c: request.getAlternatives())
 				if (c.hasRequestedCourse()) {
 					for (CourseRequestInterface.RequestedCourse rc: c.getRequestedCourse()) {
-						if (rc.getStatus() != null && rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED && rc.getStatus() != RequestedCourseStatus.WAITLIST_INACTIVE) {
+						if (rc.getStatus() != null && rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED && rc.getStatus() != RequestedCourseStatus.WAITLIST_INACTIVE
+								&& rc.getStatus() != RequestedCourseStatus.ENROLLED) {
 							rc.setStatus(null);
 							rc.setOverrideExternalId(null);
 							rc.setOverrideTimeStamp(null);
