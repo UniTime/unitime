@@ -2038,6 +2038,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 			for (XRequest r: student.getRequests()) {
 				if (r instanceof XCourseRequest) {
 					XCourseRequest cr = (XCourseRequest)r;
+					if (!cr.hasOverrides()) continue;
 					for (Map.Entry<XCourseId, XOverride> e: cr.getOverrides().entrySet()) {
 						XCourseId course = e.getKey();
 						XOverride override = e.getValue();
