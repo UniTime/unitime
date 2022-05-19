@@ -1024,7 +1024,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							dbStudent.setOverrideMaxCredit(r.maxCredit);
 							dbStudent.setOverrideExternalId(r.regRequestId);
 							dbStudent.setOverrideTimeStamp(r.dateCreated == null ? new Date() : r.dateCreated.toDate());
-							dbStudent.setOverrideIntent(null);
+							dbStudent.setMaxCreditOverrideIntent(CourseRequestOverrideIntent.ADD);
 							helper.getHibSession().update(dbStudent);
 							student.setMaxCreditOverride(new XOverride(r.regRequestId, r.dateCreated == null ? new Date() : r.dateCreated.toDate(), maxiStatus != null ? toStatus(maxiStatus) : toStatus(r)));
 							studentChanged = true;

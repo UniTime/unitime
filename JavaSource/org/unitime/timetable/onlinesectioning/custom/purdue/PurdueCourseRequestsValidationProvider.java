@@ -2730,7 +2730,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						studentChanged = true;
 					student.setOverrideExternalId(r.regRequestId);
 					student.setOverrideTimeStamp(r.dateCreated == null ? null : r.dateCreated.toDate());
-					student.setOverrideIntent(null);
+					student.setMaxCreditOverrideIntent(CourseRequestOverrideIntent.REGISTER);
 					break;
 				}
 			}
