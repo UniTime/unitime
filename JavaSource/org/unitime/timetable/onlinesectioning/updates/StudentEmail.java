@@ -350,6 +350,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					}
 				}
 				
+				if (iSourceAction != null)
+					helper.logOption("source-action", iSourceAction);
+				
 				if (emailEnabled) {
 					final String html = generateMessage(dbStudent, server, helper);
 					if (html != null) {
