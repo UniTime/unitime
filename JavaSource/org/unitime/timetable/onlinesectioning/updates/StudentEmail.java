@@ -562,24 +562,26 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 							student.markFailedWaitList(iFailedCourseId);
 							if (failureMessage != null) {
 								XCourseRequest cr = student.getRequestForCourse(iFailedCourseId.getCourseId());
-								cr.setEnrollmentMessage(failureMessage);
-								CourseDemand cd = CourseDemandDAO.getInstance().get(cr.getRequestId());
-								if (cd != null) {
-									if (cd.getEnrollmentMessages() != null)
-										for (Iterator<StudentEnrollmentMessage> i = cd.getEnrollmentMessages().iterator(); i.hasNext(); ) {
-											StudentEnrollmentMessage message = i.next();
-											helper.getHibSession().delete(message);
-											i.remove();
-										}
-									StudentEnrollmentMessage m = new StudentEnrollmentMessage();
-									m.setCourseDemand(cd);
-									m.setLevel(0);
-									m.setType(0);
-									m.setTimestamp(ts);
-									m.setMessage(failureMessage);
-									m.setOrder(0);
-									cd.getEnrollmentMessages().add(m);
-									helper.getHibSession().save(m);
+								if (cr != null) {
+									cr.setEnrollmentMessage(failureMessage);
+									CourseDemand cd = CourseDemandDAO.getInstance().get(cr.getRequestId());
+									if (cd != null) {
+										if (cd.getEnrollmentMessages() != null)
+											for (Iterator<StudentEnrollmentMessage> i = cd.getEnrollmentMessages().iterator(); i.hasNext(); ) {
+												StudentEnrollmentMessage message = i.next();
+												helper.getHibSession().delete(message);
+												i.remove();
+											}
+										StudentEnrollmentMessage m = new StudentEnrollmentMessage();
+										m.setCourseDemand(cd);
+										m.setLevel(0);
+										m.setType(0);
+										m.setTimestamp(ts);
+										m.setMessage(failureMessage);
+										m.setOrder(0);
+										cd.getEnrollmentMessages().add(m);
+										helper.getHibSession().save(m);
+									}
 								}
 							}
 						}
@@ -839,6 +841,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			XCourseRequest newRequest = null;
 			XOffering newOffering = null;
 			XCourse course = (getFailedEnrollment() != null ? getFailedOffering().getCourse(getFailedEnrollment().getCourseId()) : getFailedCourse());
+			if (course == null)
+				course = (getFailedCourse() == null ? getFailedOffering().getControllingCourse() : getFailedCourse());
 			for (XRequest r: getStudent().getRequests()) {
 				if (r instanceof XCourseRequest && (
 						(getFailedCourse() == null && ((XCourseRequest)r).getCourseIdByOfferingId(getFailedOffering().getOfferingId()) != null) ||
