@@ -42,9 +42,9 @@ jackson-databind (jackson-databind-2.11.3.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://github.com/FasterXML/jackson
 
-Gson (gson-2.3.1.jar)
+Gson (gson-2.9.0.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://code.google.com/p/google-gson/
+	https://github.com/google/gson/gson
 
 gwt-servlet (gwt-servlet-2.9.0.jar)
 	under Apache Software License (ASL), Version 2.0
@@ -289,39 +289,39 @@ SLF4J API Module (slf4j-api-1.7.25.jar)
 	under MIT License
 	http://www.slf4j.org
 
-Spring AOP (spring-aop-5.3.18.jar)
+Spring AOP (spring-aop-5.3.20.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Beans (spring-beans-5.3.18.jar)
+Spring Beans (spring-beans-5.3.20.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Context (spring-context-5.3.18.jar)
+Spring Context (spring-context-5.3.20.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Context Support (spring-context-support-5.3.18.jar)
+Spring Context Support (spring-context-support-5.3.20.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Core (spring-core-5.3.18.jar)
+Spring Core (spring-core-5.3.20.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Expression Language (SpEL) (spring-expression-5.3.18.jar)
+Spring Expression Language (SpEL) (spring-expression-5.3.20.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Commons Logging Bridge (spring-jcl-5.3.18.jar)
+Spring Commons Logging Bridge (spring-jcl-5.3.20.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring JDBC (spring-jdbc-5.3.18.jar)
+Spring JDBC (spring-jdbc-5.3.20.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Messaging (spring-messaging-5.3.18.jar)
+Spring Messaging (spring-messaging-5.3.20.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
@@ -329,11 +329,11 @@ Spring Struts (spring-struts-3.2.18.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/SpringSource/spring-framework
 
-Spring Transaction (spring-tx-5.3.18.jar)
+Spring Transaction (spring-tx-5.3.20.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Web (spring-web-5.3.18.jar)
+Spring Web (spring-web-5.3.20.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
