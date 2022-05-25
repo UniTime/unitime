@@ -1913,7 +1913,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									unassignedMessage += MESSAGES.conflictAssignedAlternative(course.getInstead());
 								unassignedMessage += ".</span>";
 							}
-							if (course.hasEnrollmentMessage())
+							if (course.hasEnrollmentMessage() && (iSavedRequest == null || !iSavedRequest.hasConfirmations(course.getCourseName(), "WL-OVERLAP")))
 								unassignedMessage += "\n" + course.getEnrollmentMessage();
 							if (w.booleanValue() && !iSpecialRegistrationsPanel.canWaitList(course.getCourseId())) {
 								unassignedMessage += "\n<span class='unitime-ErrorText'>" +

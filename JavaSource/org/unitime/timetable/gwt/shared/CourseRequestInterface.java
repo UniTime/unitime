@@ -932,6 +932,26 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 				if (m.hasCourse() && courseName.equals(m.getCourse())) ret.add(m);
 		return ret;
 	}
+	public boolean hasConfirmations(String courseName, String... exclude) {
+		if (hasConfirmations())
+			m: for (CourseMessage m: getConfirmations())
+				if (m.hasCourse() && courseName.equals(m.getCourse())) {
+					for (String e: exclude)
+						if (e.equals(m.getCode())) continue m;
+					return true;
+				}
+		return false;
+	}
+	public boolean hasConfirmations(Long courseId, String... exclude) {
+		if (hasConfirmations())
+			m: for (CourseMessage m: getConfirmations())
+				if (m.hasCourseId() && courseId.equals(m.getCourseId())) {
+					for (String e: exclude)
+						if (e.equals(m.getCode())) continue m;
+					return true;
+				}
+		return false;
+	}
 	public String getConfirmation(String courseName, String delim, String... exclude) {
 		if (!hasConfirmations()) return null;
 		String ret = null;

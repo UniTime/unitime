@@ -1402,7 +1402,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								note = (note == null ? "" : note + "<br>") + "<span class='note'>" + rc.getStatusNote() + "</span>";
 							}
 							for (ClassAssignmentInterface.CourseAssignment course: iAssignment.getCourseAssignments()) {
-								if (!course.isAssigned() && rc.getCourseId().equals(course.getCourseId()) && course.hasEnrollmentMessage()) {
+								if (!course.isAssigned() && rc.getCourseId().equals(course.getCourseId()) && course.hasEnrollmentMessage() &&
+										!iAssignment.getRequest().hasConfirmations(rc.getCourseId(), "NO_ALT", "CREDIT")) {
 									note = (note == null ? "" : note + "<br>") + "<span class='error'>" + course.getEnrollmentMessage() + "</span>";		
 								}
 							}
