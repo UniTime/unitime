@@ -3073,7 +3073,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			check.setFlag(EligibilityFlag.GWT_CONFIRMATIONS, ApplicationProperty.OnlineSchedulingGWTConfirmations.isTrue());
 			check.setFlag(EligibilityFlag.DEGREE_PLANS, CustomDegreePlansHolder.hasProvider());
 			check.setFlag(EligibilityFlag.NO_REQUEST_ARROWS, ApplicationProperty.OnlineSchedulingNoRequestArrows.isTrue());
-			check.setFlag(EligibilityFlag.SHOW_SCHEDULING_PREFS, ApplicationProperty.OnlineSchedulingStudentPreferencesEnabled.isTrue());
+			check.setFlag(EligibilityFlag.SHOW_SCHEDULING_PREFS, ApplicationProperty.OnlineSchedulingStudentPreferencesEnabled.isTrue() && cx.getStudentId() != null);
 			check.setSessionId(cx.getSessionId());
 			check.setStudentId(cx.getStudentId());
 			
