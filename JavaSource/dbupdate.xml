@@ -14476,4 +14476,20 @@
 			references %SCHEMA%.course_offering (uniqueid) on delete set null
 		</sql>
 	</update>
+	<update version="252" date="26-May-2022" comment="Waitlist indexes">
+		<plsql onFail="next">create index %SCHEMA%.idx_course_demand_course_swap on %SCHEMA%.course_demand(wl_course_swap_id)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_sect_pref_im on %SCHEMA%.sect_pref(instr_mthd_id)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_sect_pref_class on %SCHEMA%.sect_pref(class_id)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_sect_pref_request on %SCHEMA%.sect_pref(request_id)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_waitlist_course_demand on %SCHEMA%.waitlist(demand_id)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_waitlist_enrolled_course on %SCHEMA%.waitlist(enrolled_course_id)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_waitlist_swap_course on %SCHEMA%.waitlist(swap_course_id)</plsql>
+		<pgsql onFail="next">create index idx_course_demand_course_swap ON %SCHEMA%.course_demand USING btree (wl_course_swap_id)</pgsql>
+		<pgsql onFail="next">create index idx_sect_pref_im ON %SCHEMA%.sect_pref USING btree (instr_mthd_id)</pgsql>
+		<pgsql onFail="next">create index idx_sect_pref_class ON %SCHEMA%.sect_pref USING btree (class_id)</pgsql>
+		<pgsql onFail="next">create index idx_sect_pref_request ON %SCHEMA%.sect_pref USING btree (request_id)</pgsql>
+		<pgsql onFail="next">create index idx_waitlist_course_demand ON %SCHEMA%.waitlist USING btree (demand_id)</pgsql>
+		<pgsql onFail="next">create index idx_waitlist_enrolled_course ON %SCHEMA%.waitlist USING btree (enrolled_course_id)</pgsql>
+		<pgsql onFail="next">create index idx_waitlist_swap_course ON %SCHEMA%.waitlist USING btree (swap_course_id)</pgsql>
+	</update>
 </dbupdate>
