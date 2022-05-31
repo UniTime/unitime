@@ -76,6 +76,20 @@
 				<line>This fixes an issue where unavailable dates were ignored when instructor unavailability events were enabled.</line>
 			</description>
 		</item>
+		<item>
+			<name>Distribution Type: Max N Consecutive Days</name>
+			<description>
+				<line>Added a distribution constraint that limits the number of consecutive days that can be taught each week.</line>
+				<line>Individual weeks are considered when FlexibleConstraint.CheckWeeks is set to true.</line>
+			</description>
+		</item>
+		<item>
+			<name>Distribution Type: Max N Days, Max N Half-Days</name>
+			<description>
+				<line>Added ability to evaluate the Max N Days and Max N Half-Days constraints separately for each week.</line>
+				<line>When FlexibleConstraint.CheckWeeks is set to true, defaults to false.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>
