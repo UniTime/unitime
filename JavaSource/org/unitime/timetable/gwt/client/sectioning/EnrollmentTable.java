@@ -1451,6 +1451,8 @@ public class EnrollmentTable extends Composite {
 					i = new Image(RESOURCES.requestsCritical()); i.setTitle(MESSAGES.descriptionRequestCritical()); i.setAltText(MESSAGES.descriptionRequestCritical());
 				} else if (enrollment.isImportant()) {
 					i = new Image(RESOURCES.requestsImportant()); i.setTitle(MESSAGES.descriptionRequestImportant()); i.setAltText(MESSAGES.descriptionRequestImportant());
+				} else if (enrollment.isVital()) {
+					i = new Image(RESOURCES.requestsVital()); i.setTitle(MESSAGES.descriptionRequestVital()); i.setAltText(MESSAGES.descriptionRequestVital());
 				} else {
 					i = new Image(RESOURCES.requestsNotCritical()); i.setTitle(MESSAGES.descriptionRequestNotCritical()); i.setAltText(MESSAGES.descriptionRequestNotCritical());
 				}

@@ -82,12 +82,14 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 		iAdvisorRequests = requests;
 		ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 		boolean hasPref = false;
-		boolean hasCrit = false;
+		boolean hasCrit = false, hasImp = false, hasVital = false;
 		boolean hasWL = false;
 		int priority = 1;
 		for (Request request: iAdvisorRequests.getCourses()) {
 			if (request.hasRequestedCourse()) {
-				if (request.isCritical() || request.isImportant()) hasCrit = true;
+				if (request.isCritical()) hasCrit = true;
+				if (request.isImportant()) hasImp = true;
+				if (request.isVital()) hasVital = true;
 				if (iMode == WaitListMode.WaitList) {
 					if (request.isWaitList()) hasWL = true;
 				} else {
@@ -122,7 +124,8 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 								credit,
 								new WebTable.Cell(ToolBox.toString(prefs), true),
 								request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
-								request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") : new WebTable.Cell(""),
+								request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") :
+								request.isVital() ? new WebTable.IconCell(RESOURCES.requestsVital(), MESSAGES.descriptionRequestVital(), "") : new WebTable.Cell(""),
 								(iMode == WaitListMode.WaitList
 								? (request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell(""))
 								: (request.isNoSub() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestNoSubs(), "") : new WebTable.Cell(""))),
@@ -200,7 +203,9 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 		priority = 1;
 		for (Request request: iAdvisorRequests.getAlternatives()) {
 			if (request.hasRequestedCourse()) {
-				if (request.isCritical() || request.isImportant()) hasCrit = true;
+				if (request.isCritical()) hasCrit = true;
+				if (request.isImportant()) hasImp = true;
+				if (request.isVital()) hasVital = true;
 				boolean first = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					WebTable.Row row = null;
@@ -231,7 +236,8 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 								new WebTable.Cell(ToolBox.toString(prefs), true),
 								new WebTable.Cell(""),
 								request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
-								request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") : new WebTable.Cell(""),
+								request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") :
+								request.isVital() ? new WebTable.IconCell(RESOURCES.requestsVital(), MESSAGES.descriptionRequestVital(), "") : new WebTable.Cell(""),
 								note
 								);
 						} else {
@@ -301,7 +307,15 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 		
 		setData(rowArray);
 		setColumnVisible(4, hasPref);
-		setColumnVisible(5, hasCrit && CONSTANTS.advisorCourseRequestsShowCritical());
+		setColumnVisible(5, (hasCrit || hasImp || hasVital) && CONSTANTS.advisorCourseRequestsShowCritical());
+		if (hasCrit && !hasImp && !hasVital)
+			getTable().setHTML(0, 5, MESSAGES.opSetCritical());
+		else if (!hasCrit && hasImp && !hasVital)
+			getTable().setHTML(0, 5, MESSAGES.opSetImportant());
+		else if (!hasCrit && !hasImp && hasVital)
+			getTable().setHTML(0, 5, MESSAGES.opSetVital());
+		else
+			getTable().setHTML(0, 5, MESSAGES.colCritical());
 		setColumnVisible(6, hasWL && (iMode == null || iMode != WaitListMode.None));
 	}
 

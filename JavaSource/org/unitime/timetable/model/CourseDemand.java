@@ -44,6 +44,7 @@ public class CourseDemand extends BaseCourseDemand implements Comparable {
 		NORMAL(RequestPriority.Normal),
 		CRITICAL(RequestPriority.Critical),
 		IMPORTANT(RequestPriority.Important),
+		VITAL(RequestPriority.Vital),
 		;
 		
 		RequestPriority iPriority;
@@ -157,6 +158,8 @@ public class CourseDemand extends BaseCourseDemand implements Comparable {
     	case CRITICAL:
     		return true;
     	case IMPORTANT:
+    		return true;
+    	case VITAL:
     		return true;
     	default:
     		return false;

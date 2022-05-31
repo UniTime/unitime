@@ -44,6 +44,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
 import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
@@ -342,35 +343,66 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		}
 		if (states.size() > 1)
 			response.add("status", states);
+
+		Map<Integer, Integer> crit2count = new HashMap<Integer, Integer>();
+		for (Object[] o: (List<Object[]>)courseQuery.select("cr.courseDemand.critical, count(distinct cr.courseDemand)").where("cr.courseDemand.critical is not null and cr.courseDemand.criticalOverride is null").order("cr.courseDemand.critical").group("cr.courseDemand.critical").exclude("assignment").query(helper.getHibSession()).list()) {
+			crit2count.put((Integer)o[0],((Number)o[1]).intValue());
+		}
+		for (Object[] o: (List<Object[]>)courseQuery.select("cr.courseDemand.criticalOverride, count(distinct cr.courseDemand)").where("cr.courseDemand.criticalOverride is not null").order("cr.courseDemand.criticalOverride").group("cr.courseDemand.criticalOverride").exclude("assignment").query(helper.getHibSession()).list()) {
+			Integer pref = crit2count.get((Integer)o[0]);
+			crit2count.put((Integer)o[0],((Number)o[1]).intValue() + (pref == null ? 0 : pref.intValue()));
+		}
+		System.out.println(crit2count);
 		
 		List<Entity> assignment = new ArrayList<Entity>();
 		assignment.add(new Entity(0l, "Assigned", CONSTANTS.assignmentType()[0], "translated-value", CONSTANTS.assignmentType()[0]));
 		assignment.add(new Entity(1l, "Reserved", CONSTANTS.assignmentType()[1], "translated-value", CONSTANTS.assignmentType()[1]));
 		assignment.add(new Entity(2l, "Not Assigned", CONSTANTS.assignmentType()[2], "translated-value", CONSTANTS.assignmentType()[2]));
-		if (CONSTANTS.assignmentType().length > 4)
-			assignment.add(new Entity(4l, "Critical", CONSTANTS.assignmentType()[4], "translated-value", CONSTANTS.assignmentType()[4]));
-		else
-			assignment.add(new Entity(4l, "Critical", "Critical"));
-		if (CONSTANTS.assignmentType().length > 5)
-			assignment.add(new Entity(5l, "Assigned Critical", CONSTANTS.assignmentType()[5], "translated-value", CONSTANTS.assignmentType()[5]));
-		else
-			assignment.add(new Entity(5l, "Assigned Critical", "Assigned Critical"));
-		if (CONSTANTS.assignmentType().length > 6)
-			assignment.add(new Entity(6l, "Not Assigned Critical", CONSTANTS.assignmentType()[6], "translated-value", CONSTANTS.assignmentType()[6]));
-		else
-			assignment.add(new Entity(6l, "Not Assigned Critical", "Not Assigned Critical"));
-		if (CONSTANTS.assignmentType().length > 7)
-			assignment.add(new Entity(7l, "Important", CONSTANTS.assignmentType()[7], "translated-value", CONSTANTS.assignmentType()[7]));
-		else
-			assignment.add(new Entity(7l, "Important", "Important"));
-		if (CONSTANTS.assignmentType().length > 8)
-			assignment.add(new Entity(8l, "Assigned Important", CONSTANTS.assignmentType()[8], "translated-value", CONSTANTS.assignmentType()[8]));
-		else
-			assignment.add(new Entity(8l, "Assigned Important", "Assigned Important"));
-		if (CONSTANTS.assignmentType().length > 9)
-			assignment.add(new Entity(9l, "Not Assigned Important", CONSTANTS.assignmentType()[9], "translated-value", CONSTANTS.assignmentType()[9]));
-		else
-			assignment.add(new Entity(9l, "Not Assigned Important", "Not Assigned Important"));
+		if (crit2count.containsKey(CourseDemand.Critical.CRITICAL.ordinal())) {
+			if (CONSTANTS.assignmentType().length > 4)
+				assignment.add(new Entity(4l, "Critical", CONSTANTS.assignmentType()[4], "translated-value", CONSTANTS.assignmentType()[4]));
+			else
+				assignment.add(new Entity(4l, "Critical", "Critical"));
+			assignment.get(assignment.size() - 1).setCount(crit2count.get(CourseDemand.Critical.CRITICAL.ordinal()));
+			if (CONSTANTS.assignmentType().length > 5)
+				assignment.add(new Entity(5l, "Assigned Critical", CONSTANTS.assignmentType()[5], "translated-value", CONSTANTS.assignmentType()[5]));
+			else
+				assignment.add(new Entity(5l, "Assigned Critical", "Assigned Critical"));
+			if (CONSTANTS.assignmentType().length > 6)
+				assignment.add(new Entity(6l, "Not Assigned Critical", CONSTANTS.assignmentType()[6], "translated-value", CONSTANTS.assignmentType()[6]));
+			else
+				assignment.add(new Entity(6l, "Not Assigned Critical", "Not Assigned Critical"));
+		}
+		if (crit2count.containsKey(CourseDemand.Critical.VITAL.ordinal())) {
+			if (CONSTANTS.assignmentType().length > 13)
+				assignment.add(new Entity(13l, "Vital", CONSTANTS.assignmentType()[13], "translated-value", CONSTANTS.assignmentType()[13]));
+			else
+				assignment.add(new Entity(13l, "Vital", "Vital"));
+			assignment.get(assignment.size() - 1).setCount(crit2count.get(CourseDemand.Critical.VITAL.ordinal()));
+			if (CONSTANTS.assignmentType().length > 14)
+				assignment.add(new Entity(14l, "Assigned Vital", CONSTANTS.assignmentType()[14], "translated-value", CONSTANTS.assignmentType()[14]));
+			else
+				assignment.add(new Entity(14l, "Assigned Vital", "Assigned Vital"));
+			if (CONSTANTS.assignmentType().length > 15)
+				assignment.add(new Entity(15l, "Not Assigned Vital", CONSTANTS.assignmentType()[15], "translated-value", CONSTANTS.assignmentType()[15]));
+			else
+				assignment.add(new Entity(15l, "Not Assigned Vital", "Not Assigned Vital"));
+		}
+		if (crit2count.containsKey(CourseDemand.Critical.IMPORTANT.ordinal())) {
+			if (CONSTANTS.assignmentType().length > 7)
+				assignment.add(new Entity(7l, "Important", CONSTANTS.assignmentType()[7], "translated-value", CONSTANTS.assignmentType()[7]));
+			else
+				assignment.add(new Entity(7l, "Important", "Important"));
+			assignment.get(assignment.size() - 1).setCount(crit2count.get(CourseDemand.Critical.IMPORTANT.ordinal()));
+			if (CONSTANTS.assignmentType().length > 8)
+				assignment.add(new Entity(8l, "Assigned Important", CONSTANTS.assignmentType()[8], "translated-value", CONSTANTS.assignmentType()[8]));
+			else
+				assignment.add(new Entity(8l, "Assigned Important", "Assigned Important"));
+			if (CONSTANTS.assignmentType().length > 9)
+				assignment.add(new Entity(9l, "Not Assigned Important", CONSTANTS.assignmentType()[9], "translated-value", CONSTANTS.assignmentType()[9]));
+			else
+				assignment.add(new Entity(9l, "Not Assigned Important", "Not Assigned Important"));
+		}
 		if (CONSTANTS.assignmentType().length > 10)
 			assignment.add(new Entity(10l, "No-Substitutes", CONSTANTS.assignmentType()[10], "translated-value", CONSTANTS.assignmentType()[10]));
 		else

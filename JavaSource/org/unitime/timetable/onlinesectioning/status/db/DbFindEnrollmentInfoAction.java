@@ -1148,6 +1148,18 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 						return true;
 					}
 					return false;
+				} else if (eq("Vital", term)) {
+					return request().getCourseDemand().getEffectiveCritical() == Critical.VITAL;
+				} else if (eq("Assigned Vital", term)) {
+					if (enrollment().isEmpty()) return false;
+					return request().getCourseDemand().getEffectiveCritical() == Critical.VITAL;
+				} else if (eq("Not Assigned Vital", term)) {
+					if (enrollment().isEmpty() && request().getCourseDemand().getEffectiveCritical() == Critical.VITAL && !request().getCourseDemand().isAlternative()) {
+						for (StudentClassEnrollment e: student().getClassEnrollments())
+							if (e.getCourseRequest() != null && e.getCourseRequest().getCourseDemand().equals(request().getCourseDemand())) return false;
+						return true;
+					}
+					return false;
 				} else if (eq("No-Subs", term) || eq("No-Substitutes", term)) {
 					return request().getCourseDemand().effectiveNoSub();
 				} else if (eq("Assigned No-Subs", term) || eq("Assigned  No-Substitutes", term)) {

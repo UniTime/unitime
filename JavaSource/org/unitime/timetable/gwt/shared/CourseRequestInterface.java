@@ -89,10 +89,10 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		return null;
 	}
 	public void addCourseCriticalFirst(Request request) {
-		if (request.isCritical() || request.isImportant()) {
+		if (request.isCritical() || request.isImportant() || request.isVital()) {
 			int lastCritical = -1;
 			for (int i = 0; i < getCourses().size(); i++)
-				if (getCourses().get(i).isCritical() || getCourses().get(i).isImportant()) lastCritical = i;
+				if (getCourses().get(i).isCritical() || getCourses().get(i).isImportant() || getCourses().get(i).isVital()) lastCritical = i;
 			getCourses().add(lastCritical + 1, request);
 		} else {
 			getCourses().add(request);
@@ -1157,6 +1157,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		public boolean hasCritical() { return iCritical != null; }
 		public boolean isCritical() { return iCritical != null && iCritical.intValue() == 1; }
 		public boolean isImportant() { return iCritical != null && iCritical.intValue() == 2; }
+		public boolean isVital() { return iCritical != null && iCritical.intValue() == 3; }
 		public Integer getCritical() { return iCritical; }
 		public void setCritical(Integer critical) { iCritical = critical; }
 

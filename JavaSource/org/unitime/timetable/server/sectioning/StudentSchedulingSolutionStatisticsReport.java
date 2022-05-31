@@ -499,6 +499,29 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                 return new String[] { sIntFormat.format(total), sPercentFormat.format(100.0 * assigned / total) + "%" };
             }
         }),
+        VITAL(new String[] {"Vital courses", "Assigned vital courses"},
+        		new String[] {
+        				"Number of course requests marked as vital (~ course/group/placeholder vital in degree plan)"
+        		},
+        		new Statistic() {
+            @Override
+            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+                int assigned = 0, total = 0;
+                for (Student student: model.getStudents()) {
+                    if (!group.matches(student)) continue;
+                    for (Request r : student.getRequests()) {
+                        if (!(r instanceof CourseRequest)) continue; // ignore free times
+                        CourseRequest cr = (CourseRequest)r;
+                        if (!cr.isAlternative() && cr.getRequestPriority() == RequestPriority.Vital) {
+                            total ++;
+                            if (cr.isAssigned(assignment)) assigned ++;
+                        }
+                    }
+                }
+                if (total == 0) return new String[] { "N/A", ""};
+                return new String[] { sIntFormat.format(total), sPercentFormat.format(100.0 * assigned / total) + "%" };
+            }
+        }),
         IMPORTANT(new String[] {"Important courses", "Assigned important courses"},
         		new String[] {
         				"Number of course requests marked as important (~ course/group/placeholder critical in the first choice major)"

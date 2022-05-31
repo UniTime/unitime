@@ -185,6 +185,9 @@ public interface StudentSectioningConstants extends Constants {
 		"No-Substitutes",
 		"Assigned No-Subs",
 		"Not Assigned No-Subs",
+		"Vital",
+		"Assigned Vital",
+		"Not Assigned Vital",
 	})
 	String[] assignmentType();
 	

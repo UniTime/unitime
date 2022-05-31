@@ -166,6 +166,8 @@ public class AdvisorCourseRequest extends BaseAdvisorCourseRequest implements Co
     		return true;
     	case IMPORTANT:
     		return true;
+    	case VITAL:
+    		return true;
     	default:
     		return false;
     	}

@@ -3102,7 +3102,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			for (ClassAssignmentInterface.CourseAssignment course: iSavedAssignment.getCourseAssignments()) {
 				if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
 				RequestPriority rp = iSavedRequest.getRequestPriority(course);
-				if (rp == null || rp.isAlternative() || (!rp.getRequest().isCritical() && !rp.getRequest().isImportant())) continue;
+				if (rp == null || rp.isAlternative() || (!rp.getRequest().isCritical() && !rp.getRequest().isImportant() && !rp.getRequest().isVital())) continue;
 				boolean hasCourse = false;
 				for (RequestedCourse alt: rp.getRequest().getRequestedCourse()) {
 					if (alt.getCourseId() == null) continue;
