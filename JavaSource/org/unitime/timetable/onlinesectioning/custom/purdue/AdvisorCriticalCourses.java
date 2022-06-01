@@ -149,7 +149,18 @@ public class AdvisorCriticalCourses implements CriticalCoursesProvider {
 		public boolean addImportant(XCourseId course) { return iImportantCourses.put(course.getCourseId(), course.getCourseName()) != null; }
 		
 		@Override
-		public boolean isEmpty() { return iCriticalCourses.isEmpty() && (iParent == null || iParent.isEmpty()); }
+		public boolean isEmpty() {
+			switch (iCritical) {
+			case VITAL:
+				return iVitalCourses.isEmpty() && (iParent == null || iParent.isEmpty());
+			case IMPORTANT:
+				return iImportantCourses.isEmpty() && (iParent == null || iParent.isEmpty());
+			case CRITICAL:
+				return iCriticalCourses.isEmpty() && (iParent == null || iParent.isEmpty());
+			default:
+				return iCriticalCourses.isEmpty() && iImportantCourses.isEmpty() && iVitalCourses.isEmpty() && (iParent == null || iParent.isEmpty());
+			}
+		}
 		
 		protected int combine(CourseDemand.Critical c1, CourseDemand.Critical c2) {
 			if (c1 == null && c2 == null) return CourseDemand.Critical.NORMAL.ordinal();
@@ -190,8 +201,21 @@ public class AdvisorCriticalCourses implements CriticalCoursesProvider {
 		
 		@Override
 		public String toString() {
-			Set<String> courses = new TreeSet<String>(iCriticalCourses.values());
-			return courses.toString();
+			Set<String> courses = null;
+			switch (iCritical) {
+			case IMPORTANT:
+				courses = new TreeSet<String>(iImportantCourses.values()); break;
+			case VITAL:
+				courses = new TreeSet<String>(iVitalCourses.values()); break; 
+			case CRITICAL:
+				courses = new TreeSet<String>(iCriticalCourses.values()); break;
+			default:
+				courses = new TreeSet<String>(iCriticalCourses.values());
+				courses.addAll(iVitalCourses.values());
+				courses.addAll(iImportantCourses.values());
+				break;
+			}
+			return (courses == null ? null : courses.toString());
 		}
 
 		@Override

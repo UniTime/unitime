@@ -1206,6 +1206,7 @@ public enum ApplicationProperty {
 	
 	@Type(Class.class)
 	@Implements(CriticalCoursesProvider.class)
+	@DefaultValue("org.unitime.timetable.onlinesectioning.custom.DefaultCriticalCourses")
 	@Description("Customization: student critical courses provider (interface CriticalCoursesProvider, used by Course Requests and/or batch scheduling solver to identify critical courses)")
 	CustomizationCriticalCourses("unitime.custom.CriticalCoursesProvider"),
 	
