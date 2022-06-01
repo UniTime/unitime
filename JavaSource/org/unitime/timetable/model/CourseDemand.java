@@ -59,6 +59,16 @@ public class CourseDemand extends BaseCourseDemand implements Comparable {
 				if (c.toRequestPriority() == rp) return c;
 			return Critical.NORMAL;
 		}
+		public static Critical fromText(String text) {
+			if ("Critical".equalsIgnoreCase(text))
+				return Critical.CRITICAL;
+			else if ("Important".equalsIgnoreCase(text))
+				return Critical.IMPORTANT;
+			else if ("Vital".equalsIgnoreCase(text))
+				return Critical.VITAL;
+			else
+				return Critical.NORMAL;
+		}
 	}
 
 /*[CONSTRUCTOR MARKER BEGIN]*/

@@ -1131,6 +1131,15 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			return false;
 		}
 		
+		public boolean hasCourseId() {
+			if (iRequestedCourse == null) return false;
+			for (RequestedCourse rc: iRequestedCourse) {
+				if (rc.hasCourseId()) return true;
+				break;
+			}
+			return false;
+		}
+		
 		public boolean hasNoSub() { return iNoSub != null; }
 		public boolean isNoSub() { return iNoSub != null && iNoSub.booleanValue(); }
 		public void setNoSub(Boolean noSub) { iNoSub = noSub; }
@@ -1138,7 +1147,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		public boolean isCanNoSub() {
 			if (iRequestedCourse == null) return false;
 			for (RequestedCourse rc: iRequestedCourse) {
-				if (rc.isCourse()) return true;
+				if (rc.hasCourseId()) return true;
 				break;
 			}
 			return false;
@@ -1924,5 +1933,9 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 				for (RequestedCourse rc: r.getRequestedCourse())
 					if (courseId.equals(rc.getCourseId()) && !rc.isInactive()) return rc.getStatus();
 		return null;
+	}
+	
+	public static enum CriticalLevel implements IsSerializable {
+		Critical, Important, Vital;
 	}
 }

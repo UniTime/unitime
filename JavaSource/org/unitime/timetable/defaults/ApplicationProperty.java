@@ -2885,6 +2885,18 @@ public enum ApplicationProperty {
 	@Since(4.5)
 	PopupMessageCourseRequestsPrepopulatedWithAdvisorRecommendations("unitime.acrf.showingRecommendationsPopup"),
 	
+	@Type(String.class)
+	@Description("Advisor Course Recommendations: show critical course check with the given course request preference level:\n"
+			+ "- Critical ... critical course check does show and have the Critical value\n"
+			+ "- Vital ... critical course check does show and have the Vital value\n"
+			+ "- Important ... critical course check does show and have the Important value\n"
+			+ "- None ... critical course check does not show / cannot be set by advisors"
+			)
+	@Since(4.7)
+	@DefaultValue("None")
+	@Values({"None, Critical, Vital, Important"})
+	AdvisorCourseRequestsAllowCritical("unitime.acrf.setCriticalCourses"),
+	
 	@DefaultValue("Preferences")
 	@Values({"Disabled", "Preferences", "Assignments", "Enabled"})
 	@Description("Instructors: alow editing unavailable dates, possible values:\n"

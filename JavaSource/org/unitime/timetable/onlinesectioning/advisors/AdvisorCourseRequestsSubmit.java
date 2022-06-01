@@ -222,7 +222,14 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 										} else {
 											acr.setCredit(null); acr.setNotes(null); acr.setWaitlist(null); acr.setNoSub(null);
 										}
-										acr.setCritical(acr.isCritical(critical));
+										if (iDetails.hasCriticalCheck()) {
+											if (alt == 0)
+												acr.setCritical(request.getCritical());
+											else
+												acr.setCritical(null);
+										} else {
+											acr.setCritical(acr.isCritical(critical));
+										}
 										acr.updatePreferences(rc, helper.getHibSession());
 										helper.getHibSession().saveOrUpdate(acr);
 										alt++;
@@ -299,7 +306,14 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 											helper.getHibSession().delete(acr.getFreeTime());
 											acr.setFreeTime(null);
 										}
-										acr.setCritical(acr.isCritical(critical));
+										if (iDetails.hasCriticalCheck()) {
+											if (alt == 0)
+												acr.setCritical(request.getCritical());
+											else
+												acr.setCritical(null);
+										} else {
+											acr.setCritical(acr.isCritical(critical));
+										}
 										acr.setWaitlist(null);
 										acr.setNoSub(null);
 										acr.updatePreferences(rc, helper.getHibSession());

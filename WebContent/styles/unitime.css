@@ -6776,6 +6776,11 @@ unitime-RoomSharingWidget .legend .blank {
 	padding-top: 4px;
 }
 
+.unitime-AdvisorCourseRequests .critical {
+	display: block;
+	padding-top: 4px;
+}
+
 .unitime-AdvisorCourseRequestLine {
 	white-space: nowrap;
 }
@@ -6891,6 +6896,16 @@ unitime-RoomSharingWidget .legend .blank {
 	margin-top: 2px;
 }
 
+.unitime-AdvisorCourseRequests .notes-with-critical {
+	width: 240px;
+	margin-top: 2px;
+}
+
+.unitime-AdvisorCourseRequests .notes-with-critical-and-waitlist {
+	width: 215px;
+	margin-top: 2px;
+}
+
 .unitime-AdvisorCourseRequests .requests-header .message {
 	margin-left: -80px;
 }
@@ -6901,6 +6916,15 @@ unitime-RoomSharingWidget .legend .blank {
 	font-weight: normal;
 	display: block;
 	width: 90px;
+	line-height: 25px;
+}
+
+.unitime-AdvisorCourseRequests .waitlist-header-with-critical {
+	font-size: small;
+	font-style: italic;
+	font-weight: normal;
+	display: block;
+	width: 120px;
 	line-height: 25px;
 }
 
@@ -6941,6 +6965,10 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-AdvisorCourseRequests .unitime-WebTable {
 	width: 100%;
+	max-width: 800px;
+}
+
+.unitime-AdvisorCourseRequests .student-course-requests {
 	max-width: 800px;
 }
 

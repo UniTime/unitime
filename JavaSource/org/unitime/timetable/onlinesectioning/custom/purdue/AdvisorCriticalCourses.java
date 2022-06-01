@@ -30,9 +30,11 @@ import javax.servlet.ServletException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.CourseDemand.Critical;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Action.Builder;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -67,16 +69,53 @@ public class AdvisorCriticalCourses implements CriticalCoursesProvider {
 		XStudent student = (studentId instanceof XStudent ? (XStudent)studentId: server.getStudent(studentId.getStudentId()));
 		if (student == null) return (iParent == null ? null : iParent.getCriticalCourses(server, helper, student, action));
 		
-		CriticalCoursesImpl cc = new CriticalCoursesImpl(iParent == null ? null : iParent.getCriticalCourses(server, helper, student, action));
+		CourseDemand.Critical critical = CourseDemand.Critical.fromText(ApplicationProperty.AdvisorCourseRequestsAllowCritical.valueOfSession(server.getAcademicSession().getUniqueId()));
+		
+		CriticalCoursesImpl cc = new CriticalCoursesImpl(critical, iParent == null ? null : iParent.getCriticalCourses(server, helper, student, action));
 		if (student.hasAdvisorRequests()) {
 			for (XAdvisorRequest ar: student.getAdvisorRequests()) {
-				if (ar.isNoSub() && !ar.isSubstitute() && ar.hasCourseId() && ar.getAlternative() == 0) {
-					cc.addVital(ar.getCourseId());
-					for (XAdvisorRequest alt: student.getAdvisorRequests()) {
-						if (alt.getPriority() == ar.getPriority() && alt.getAlternative() > 0 && !alt.isSubstitute()) {
-							cc.addVital(alt.getCourseId());
+				switch (critical) {
+				case NORMAL:
+					// use no-subs
+					if (ar.isNoSub() && !ar.isSubstitute() && ar.hasCourseId() && ar.getAlternative() == 0) {
+						cc.addVital(ar.getCourseId());
+						for (XAdvisorRequest alt: student.getAdvisorRequests()) {
+							if (alt.getPriority() == ar.getPriority() && alt.getAlternative() > 0 && !alt.isSubstitute()) {
+								cc.addVital(alt.getCourseId());
+							}
 						}
 					}
+					break;
+				case CRITICAL:
+					if (ar.isCritical() && !ar.isSubstitute() && ar.hasCourseId() && ar.getAlternative() == 0) {
+						cc.addCritical(ar.getCourseId());
+						for (XAdvisorRequest alt: student.getAdvisorRequests()) {
+							if (alt.getPriority() == ar.getPriority() && alt.getAlternative() > 0 && !alt.isSubstitute()) {
+								cc.addCritical(alt.getCourseId());
+							}
+						}
+					}
+					break;
+				case IMPORTANT:
+					if (ar.isCritical() && !ar.isSubstitute() && ar.hasCourseId() && ar.getAlternative() == 0) {
+						cc.addImportant(ar.getCourseId());
+						for (XAdvisorRequest alt: student.getAdvisorRequests()) {
+							if (alt.getPriority() == ar.getPriority() && alt.getAlternative() > 0 && !alt.isSubstitute()) {
+								cc.addImportant(alt.getCourseId());
+							}
+						}
+					}
+					break;
+				case VITAL:
+					if (ar.isCritical() && !ar.isSubstitute() && ar.hasCourseId() && ar.getAlternative() == 0) {
+						cc.addVital(ar.getCourseId());
+						for (XAdvisorRequest alt: student.getAdvisorRequests()) {
+							if (alt.getPriority() == ar.getPriority() && alt.getAlternative() > 0 && !alt.isSubstitute()) {
+								cc.addVital(alt.getCourseId());
+							}
+						}
+					}
+					break;
 				}
 			}
 		}
@@ -91,16 +130,18 @@ public class AdvisorCriticalCourses implements CriticalCoursesProvider {
 	}
 	
 	protected static class CriticalCoursesImpl implements CriticalCourses, CriticalCoursesProvider.AdvisorCriticalCourses {
+		private CourseDemand.Critical iCritical = null;
 		private CriticalCourses iParent = null;
 		private Map<Long, String> iCriticalCourses = new HashMap<Long, String>();
 		private Map<Long, String> iVitalCourses = new HashMap<Long, String>();
 		private Map<Long, String> iImportantCourses = new HashMap<Long, String>();
 		
-		CriticalCoursesImpl(CriticalCourses parent) {
+		CriticalCoursesImpl(CourseDemand.Critical critical, CriticalCourses parent) {
+			iCritical = critical;
 			iParent = parent;
 		}
 		CriticalCoursesImpl() {
-			this(null);
+			this(CourseDemand.Critical.NORMAL, null);
 		}
 		
 		public boolean addCritical(XCourseId course) { return iCriticalCourses.put(course.getCourseId(), course.getCourseName()) != null; }
@@ -157,10 +198,14 @@ public class AdvisorCriticalCourses implements CriticalCoursesProvider {
 		public int isCritical(AdvisorCourseRequest request) {
 			if (request.getCourseOffering() == null || request.isSubstitute()) return CourseDemand.Critical.NORMAL.ordinal();
 			CourseDemand.Critical parent = (iParent == null ? CourseDemand.Critical.NORMAL : CourseDemand.Critical.values()[iParent.isCritical(request.getCourseOffering())]);
-			if (Boolean.TRUE.equals(request.isNoSub()))
-				return combine(CourseDemand.Critical.VITAL, parent);
-			else
-				return parent.ordinal();
+			if (iCritical == Critical.NORMAL) {
+				if (Boolean.TRUE.equals(request.isNoSub()))
+					return combine(CourseDemand.Critical.VITAL, parent);
+				else
+					return parent.ordinal();
+			} else {
+				return combine(request.getEffectiveCritical(), parent);
+			}
 		}
 	}
 

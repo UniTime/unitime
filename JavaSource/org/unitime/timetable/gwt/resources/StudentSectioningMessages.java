@@ -2884,6 +2884,18 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("")
 	String pdfCourseNotWaitListed();
 	
+	@DefaultMessage("X")
+	String pdfCourseCritical();
+	
+	@DefaultMessage("X")
+	String pdfCourseVital();
+	
+	@DefaultMessage("X")
+	String pdfCourseImportant();
+
+	@DefaultMessage("")
+	String pdfCourseNotCritical();
+	
 	@DefaultMessage("A<u>d</u>visor Recommendations")
 	String buttonAdvisorCourseRequests();
 	

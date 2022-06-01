@@ -352,7 +352,6 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			Integer pref = crit2count.get((Integer)o[0]);
 			crit2count.put((Integer)o[0],((Number)o[1]).intValue() + (pref == null ? 0 : pref.intValue()));
 		}
-		System.out.println(crit2count);
 		
 		List<Entity> assignment = new ArrayList<Entity>();
 		assignment.add(new Entity(0l, "Assigned", CONSTANTS.assignmentType()[0], "translated-value", CONSTANTS.assignmentType()[0]));

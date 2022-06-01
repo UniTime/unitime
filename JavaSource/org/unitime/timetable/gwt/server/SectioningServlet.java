@@ -3718,6 +3718,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				ret.getRequest().setCreditNote(defaultNote);
 		}
 		
+		ret.setCriticalCheck(CourseDemand.Critical.fromText(ApplicationProperty.AdvisorCourseRequestsAllowCritical.valueOfSession(sessionId)).ordinal());
+		
 		return ret;
 	}
 	

@@ -549,6 +549,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private WaitListMode iMode = null;
 		private boolean iCanRequire = false;
 		private Set<Long> iAdvisorWaitListedCourseIds = null;
+		private Integer iCriticalCheck = null;
 		
 		public AdvisingStudentDetails() {}
 		public AdvisingStudentDetails(AdvisingStudentDetails clone) {
@@ -570,6 +571,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			iAvailableStatuses = clone.iAvailableStatuses; 
 			iStudentRequest = clone.iStudentRequest;
 			iAdvisorWaitListedCourseIds = clone.iAdvisorWaitListedCourseIds;
+			iCriticalCheck = clone.iCriticalCheck;
 		}
 		
 		public Long getStudentId() { return iStudentId; }
@@ -644,6 +646,13 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		
 		public Set<Long> getAdvisorWaitListedCourseIds() { return iAdvisorWaitListedCourseIds; }
 		public void setAdvisorWaitListedCourseIds(Set<Long> advisorWaitListedCourseIds) { iAdvisorWaitListedCourseIds = advisorWaitListedCourseIds; }
+		
+		public void setCriticalCheck(Integer check) { iCriticalCheck = check; }
+		public Integer getCriticalCheck() { return iCriticalCheck; }
+		public boolean hasCriticalCheck() { return iCriticalCheck != null && iCriticalCheck > 0; }
+		public boolean isCriticalCheckCritical() { return iCriticalCheck != null && iCriticalCheck.intValue() == 1; }
+		public boolean isCriticalCheckImportant() { return iCriticalCheck != null && iCriticalCheck.intValue() == 2; }
+		public boolean isCriticalCheckVital() { return iCriticalCheck != null && iCriticalCheck.intValue() == 3; }
 	}
 	
 	public static class AdvisorCourseRequestSubmission implements IsSerializable, Serializable {
