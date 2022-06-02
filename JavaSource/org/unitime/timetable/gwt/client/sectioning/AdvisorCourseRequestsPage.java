@@ -262,11 +262,11 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 							break;
 						}
 						if (result.isCriticalCheckCritical()) {
-							wlHeader = (wlHeader == null ? MESSAGES.opSetCritical() : MESSAGES.opSetCritical() + " / " + wlHeader);
+							wlHeader = (wlHeader == null ? MESSAGES.opSetCritical() : MESSAGES.opSetCritical() + "&nbsp;&nbsp;" + wlHeader);
 						} else if (result.isCriticalCheckImportant()) {
-							wlHeader = (wlHeader == null ? MESSAGES.opSetImportant() : MESSAGES.opSetImportant() + " / " + wlHeader);
+							wlHeader = (wlHeader == null ? MESSAGES.opSetImportant() : MESSAGES.opSetImportant() + "&nbsp;&nbsp;" + wlHeader);
 						} else if (result.isCriticalCheckVital()) {
-							wlHeader = (wlHeader == null ? MESSAGES.opSetVital() : MESSAGES.opSetVital() + " / " + wlHeader);
+							wlHeader = (wlHeader == null ? MESSAGES.opSetVital() : MESSAGES.opSetVital() + "&nbsp;&nbsp;" + wlHeader);
 						}
 						iWaitListHeader.setHTML(wlHeader == null ? "&nbsp;" : wlHeader);
 						if (result.hasCriticalCheck() && result.getWaitListMode() != WaitListMode.None) {
