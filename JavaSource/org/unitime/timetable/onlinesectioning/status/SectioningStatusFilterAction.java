@@ -345,10 +345,10 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			response.add("status", states);
 
 		Map<Integer, Integer> crit2count = new HashMap<Integer, Integer>();
-		for (Object[] o: (List<Object[]>)courseQuery.select("cr.courseDemand.critical, count(distinct cr.courseDemand)").where("cr.courseDemand.critical is not null and cr.courseDemand.criticalOverride is null").order("cr.courseDemand.critical").group("cr.courseDemand.critical").exclude("assignment").query(helper.getHibSession()).list()) {
+		for (Object[] o: (List<Object[]>)courseQuery.select("cd.critical, count(distinct cd)").where("cd.critical is not null and cd.criticalOverride is null").order("cd.critical").group("cd.critical").exclude("assignment").query(helper.getHibSession()).list()) {
 			crit2count.put((Integer)o[0],((Number)o[1]).intValue());
 		}
-		for (Object[] o: (List<Object[]>)courseQuery.select("cr.courseDemand.criticalOverride, count(distinct cr.courseDemand)").where("cr.courseDemand.criticalOverride is not null").order("cr.courseDemand.criticalOverride").group("cr.courseDemand.criticalOverride").exclude("assignment").query(helper.getHibSession()).list()) {
+		for (Object[] o: (List<Object[]>)courseQuery.select("cd.criticalOverride, count(distinct cd)").where("cd.criticalOverride is not null").order("cd.criticalOverride").group("cd.criticalOverride").exclude("assignment").query(helper.getHibSession()).list()) {
 			Integer pref = crit2count.get((Integer)o[0]);
 			crit2count.put((Integer)o[0],((Number)o[1]).intValue() + (pref == null ? 0 : pref.intValue()));
 		}
