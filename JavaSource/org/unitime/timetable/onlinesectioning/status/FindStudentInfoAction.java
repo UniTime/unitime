@@ -36,6 +36,7 @@ import org.cpsolver.studentsct.model.Student.BackToBackPreference;
 import org.cpsolver.studentsct.model.Student.ModalityPreference;
 import org.joda.time.LocalDate;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -45,8 +46,10 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.AdvisedInfoInte
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.StudentInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.AdvisorCourseRequest;
+import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.CourseDemand.Critical;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
@@ -865,6 +868,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		XCourseId advFirstChoice = null;
 		XCourseId firstEnrolled = null;
 		XCourseRequest firstChoice = null;
+		CourseDemand.Critical advCritical = CourseDemand.Critical.fromText(ApplicationProperty.AdvisorCourseRequestsAllowCritical.valueOfSession(server.getAcademicSession().getUniqueId()));
 		boolean firstChoiceCritical = false;
 		float minCred = 0f, maxCred = 0f, cm = 0f, cx = 0f;
 		int nrCourses = 0, nrCriticalCourses = 0, nrCoursesFound = 0, nrCriticalCoursesFound = 0, nrSubstMisMatch = 0, nrCoursesAssigned = 0;
@@ -880,9 +884,13 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 					if (firstChoiceCritical && nrCoursesFound == 0) {
 						missingCrit ++; missingPrim ++;
 						if (nrCourses > 1)
-							info.addMessage(MSG.advMessageMissingCriticalCourseWithAlts(advFirstChoice.getCourseName()));
+							info.addMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageMissingImportantCourseWithAlts(advFirstChoice.getCourseName()) :
+								advCritical == Critical.VITAL ? MSG.advMessageMissingVitalCourseWithAlts(advFirstChoice.getCourseName()) :
+								MSG.advMessageMissingCriticalCourseWithAlts(advFirstChoice.getCourseName()));
 						else
-							info.addMessage(MSG.advMessageMissingCriticalCourse(advFirstChoice.getCourseName()));
+							info.addMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageMissingImportantCourse(advFirstChoice.getCourseName()) :
+								advCritical == Critical.VITAL ? MSG.advMessageMissingVitalCourse(advFirstChoice.getCourseName()) :
+								MSG.advMessageMissingCriticalCourse(advFirstChoice.getCourseName()));
 					} else if (!last.isSubstitute() && nrCoursesFound - nrSubstMisMatch == 0) {
 						missingPrim ++;
 						if (nrCourses > 1)
@@ -895,7 +903,9 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						else
 							info.addMessage(MSG.advMessageMissingSubstituteCourse(advFirstChoice.getCourseName()));
 					} else if (firstChoice == null && firstChoiceCritical) {
-						info.addMessage(MSG.advMessageMissingCriticalCourseHasAlts(advFirstChoice.getCourseName()));
+						info.addMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageMissingImportantCourseHasAlts(advFirstChoice.getCourseName()):
+							advCritical == Critical.VITAL ? MSG.advMessageMissingVitalCourseHasAlts(advFirstChoice.getCourseName()) :
+							MSG.advMessageMissingCriticalCourseHasAlts(advFirstChoice.getCourseName()));
 					} else if (firstChoice == null) {
 						info.addMessage(MSG.advMessageMissingCourseHasAlts(advFirstChoice.getCourseName()));
 					} else if (nrCoursesFound < nrCourses) {
@@ -907,9 +917,13 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						if (firstChoiceCritical) {
 							notAssignedCrit ++;
 							if (nrCourses > 1)
-								info.addNotAssignedMessage(MSG.advMessageNotEnrolledCriticalCourseWithAlts(advFirstChoice.getCourseName()));
+								info.addNotAssignedMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageNotEnrolledImportantCourseWithAlts(advFirstChoice.getCourseName()) :
+									advCritical == Critical.VITAL ? MSG.advMessageNotEnrolledVitalCourseWithAlts(advFirstChoice.getCourseName()) :
+									MSG.advMessageNotEnrolledCriticalCourseWithAlts(advFirstChoice.getCourseName()));
 							else
-								info.addNotAssignedMessage(MSG.advMessageNotEnrolledCriticalCourse(advFirstChoice.getCourseName()));
+								info.addNotAssignedMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageNotEnrolledImportantCourse(advFirstChoice.getCourseName()) :
+									advCritical == Critical.VITAL ? MSG.advMessageNotEnrolledVitalCourse(advFirstChoice.getCourseName()) :
+									MSG.advMessageNotEnrolledCriticalCourse(advFirstChoice.getCourseName()));
 						} else {
 							if (nrCourses > 1)
 								info.addNotAssignedMessage(MSG.advMessageNotEnrolledCourseWithAlts(advFirstChoice.getCourseName()));
@@ -1012,9 +1026,13 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 			if (firstChoiceCritical && nrCoursesFound == 0) {
 				missingCrit ++; missingPrim ++;
 				if (nrCourses > 1)
-					info.addMessage(MSG.advMessageMissingCriticalCourseWithAlts(advFirstChoice.getCourseName()));
+					info.addMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageMissingImportantCourseWithAlts(advFirstChoice.getCourseName()) :
+						advCritical == Critical.VITAL ? MSG.advMessageMissingVitalCourseWithAlts(advFirstChoice.getCourseName()) :
+						MSG.advMessageMissingCriticalCourseWithAlts(advFirstChoice.getCourseName()));
 				else
-					info.addMessage(MSG.advMessageMissingCriticalCourse(advFirstChoice.getCourseName()));
+					info.addMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageMissingImportantCourse(advFirstChoice.getCourseName()) :
+						advCritical == Critical.VITAL ? MSG.advMessageMissingVitalCourse(advFirstChoice.getCourseName()) :
+						MSG.advMessageMissingCriticalCourse(advFirstChoice.getCourseName()));
 			} else if (!last.isSubstitute() && nrCoursesFound - nrSubstMisMatch == 0) {
 				missingPrim ++;
 				if (nrCourses > 1)
@@ -1027,7 +1045,9 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 				else
 					info.addMessage(MSG.advMessageMissingSubstituteCourse(advFirstChoice.getCourseName()));
 			} else if (firstChoice == null && firstChoiceCritical) {
-				info.addMessage(MSG.advMessageMissingCriticalCourseHasAlts(advFirstChoice.getCourseName()));
+				info.addMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageMissingImportantCourseHasAlts(advFirstChoice.getCourseName()) :
+					advCritical == Critical.VITAL ? MSG.advMessageMissingVitalCourseHasAlts(advFirstChoice.getCourseName()) :
+					MSG.advMessageMissingCriticalCourseHasAlts(advFirstChoice.getCourseName()));
 			} else if (firstChoice == null) {
 				info.addMessage(MSG.advMessageMissingCourseHasAlts(advFirstChoice.getCourseName()));
 			} else if (nrCoursesFound < nrCourses) {
@@ -1039,9 +1059,13 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 				if (firstChoiceCritical) {
 					notAssignedCrit ++;
 					if (nrCourses > 1)
-						info.addNotAssignedMessage(MSG.advMessageNotEnrolledCriticalCourseWithAlts(advFirstChoice.getCourseName()));
+						info.addNotAssignedMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageNotEnrolledImportantCourseWithAlts(advFirstChoice.getCourseName()) :
+							advCritical == Critical.VITAL ? MSG.advMessageNotEnrolledVitalCourseWithAlts(advFirstChoice.getCourseName()) :
+							MSG.advMessageNotEnrolledCriticalCourseWithAlts(advFirstChoice.getCourseName()));
 					else
-						info.addNotAssignedMessage(MSG.advMessageNotEnrolledCriticalCourse(advFirstChoice.getCourseName()));
+						info.addNotAssignedMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageNotEnrolledImportantCourse(advFirstChoice.getCourseName()) :
+							advCritical == Critical.VITAL ? MSG.advMessageNotEnrolledVitalCourse(advFirstChoice.getCourseName()) :
+							MSG.advMessageNotEnrolledCriticalCourse(advFirstChoice.getCourseName()));
 				} else {
 					if (nrCourses > 1)
 						info.addNotAssignedMessage(MSG.advMessageNotEnrolledCourseWithAlts(advFirstChoice.getCourseName()));
@@ -1095,6 +1119,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		info.setMissingPrimary(missingPrim);
 		info.setNotAssignedCritical(notAssignedCrit);
 		info.setNotAssignedPrimary(notAssignedPrim);
+		info.setAdvisorCritical(advCritical.ordinal());
 		
 		return info;
 	}

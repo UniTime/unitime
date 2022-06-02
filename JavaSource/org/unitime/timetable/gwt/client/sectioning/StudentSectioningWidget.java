@@ -3096,13 +3096,14 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		return false;
 	}
 	
-	public List<String> getCriticalCoursesToDrop() {
+	public String getCriticalCoursesToDrop() {
 		if (iLastAssignment != null && iSavedAssignment != null && iSavedRequest != null) {
+			boolean hasCrit = false, hasImp = false, hasVital = false;
 			List<String> ret = new ArrayList<String>();
 			for (ClassAssignmentInterface.CourseAssignment course: iSavedAssignment.getCourseAssignments()) {
 				if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
 				RequestPriority rp = iSavedRequest.getRequestPriority(course);
-				if (rp == null || rp.isAlternative() || (!rp.getRequest().isCritical() && !rp.getRequest().isImportant() && !rp.getRequest().isVital())) continue;
+				if (rp == null || rp.isAlternative() || !rp.getRequest().isImportantOrMore()) continue;
 				boolean hasCourse = false;
 				for (RequestedCourse alt: rp.getRequest().getRequestedCourse()) {
 					if (alt.getCourseId() == null) continue;
@@ -3111,10 +3112,20 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							hasCourse = true; break;
 						}
 				}
-				if (!hasCourse)
+				if (!hasCourse) {
+					if (rp.getRequest().isCritical()) hasCrit = true;
+					if (rp.getRequest().isImportant()) hasImp = true;
+					if (rp.getRequest().isVital()) hasVital = true;
 					ret.add(MESSAGES.course(course.getSubject(), course.getCourseNbr()));
+				}
 			}
-			return ret;
+			if (hasCrit)
+				return MESSAGES.confirmEnrollmentCriticalCourseDrop(ToolBox.toString(ret));
+			if (hasVital)
+				return MESSAGES.confirmEnrollmentVitalCourseDrop(ToolBox.toString(ret));
+			if (hasImp)
+				return MESSAGES.confirmEnrollmentImportantCourseDrop(ToolBox.toString(ret));
+			return null;
 		}
 		return null;
 	}
@@ -3186,12 +3197,12 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 
 	protected Command confirmEnrollmentDrop(final Command callback) {
 		if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CONFIRM_DROP)) {
-			final List<String> critical = getCriticalCoursesToDrop();
-			if (critical != null && !critical.isEmpty()) {
+			final String critical = getCriticalCoursesToDrop();
+			if (critical != null) {
 				return new Command() {
 					@Override
 					public void execute() {
-						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.confirmEnrollmentCriticalCourseDrop(ToolBox.toString(critical)), callback);
+						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), critical, callback);
 					}
 				};
 			}

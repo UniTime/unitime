@@ -35,6 +35,7 @@ import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.util.DistanceMetric;
 import org.cpsolver.studentsct.model.Student.BackToBackPreference;
 import org.cpsolver.studentsct.model.Student.ModalityPreference;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.AdvisedInfoInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.StudentInfo;
@@ -44,6 +45,7 @@ import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseDemand;
+import org.unitime.timetable.model.CourseDemand.Critical;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.InstructionalMethod;
@@ -810,6 +812,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		
 		AdvisedInfoInterface info = new AdvisedInfoInterface();
 		AdvisorCourseRequest last = null;
+		CourseDemand.Critical advCritical = CourseDemand.Critical.fromText(ApplicationProperty.AdvisorCourseRequestsAllowCritical.valueOfSession(server.getAcademicSession().getUniqueId()));
 		CourseOffering advFirstChoice = null;
 		CourseRequest firstChoice = null;
 		CourseOffering firstEnrolled = null;
@@ -828,9 +831,14 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					if (firstChoiceCritical && nrCoursesFound == 0) {
 						missingCrit ++; missingPrim ++;
 						if (nrCourses > 1)
-							info.addMessage(MSG.advMessageMissingCriticalCourseWithAlts(advFirstChoice.getCourseName()));
+							info.addMessage(
+									advCritical == Critical.IMPORTANT ? MSG.advMessageMissingImportantCourseWithAlts(advFirstChoice.getCourseName()) :
+									advCritical == Critical.VITAL ? MSG.advMessageMissingVitalCourseWithAlts(advFirstChoice.getCourseName()) :
+									MSG.advMessageMissingCriticalCourseWithAlts(advFirstChoice.getCourseName()));
 						else
-							info.addMessage(MSG.advMessageMissingCriticalCourse(advFirstChoice.getCourseName()));
+							info.addMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageMissingImportantCourse(advFirstChoice.getCourseName()) :
+								advCritical == Critical.VITAL ? MSG.advMessageMissingVitalCourse(advFirstChoice.getCourseName()) :
+								MSG.advMessageMissingCriticalCourse(advFirstChoice.getCourseName()));
 					} else if (!last.isSubstitute() && nrCoursesFound - nrSubstMisMatch == 0) {
 						missingPrim ++;
 						if (nrCourses > 1)
@@ -843,7 +851,9 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 						else
 							info.addMessage(MSG.advMessageMissingSubstituteCourse(advFirstChoice.getCourseName()));
 					} else if (firstChoice == null && firstChoiceCritical) {
-						info.addMessage(MSG.advMessageMissingCriticalCourseHasAlts(advFirstChoice.getCourseName()));
+						info.addMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageMissingImportantCourseHasAlts(advFirstChoice.getCourseName()) :
+							advCritical == Critical.VITAL ? MSG.advMessageMissingVitalCourseHasAlts(advFirstChoice.getCourseName()) :
+							MSG.advMessageMissingCriticalCourseHasAlts(advFirstChoice.getCourseName()));
 					} else if (firstChoice == null) {
 						info.addMessage(MSG.advMessageMissingCourseHasAlts(advFirstChoice.getCourseName()));
 					} else if (nrCoursesFound < nrCourses) {
@@ -855,9 +865,13 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 						if (firstChoiceCritical) {
 							notAssignedCrit ++;
 							if (nrCourses > 1)
-								info.addNotAssignedMessage(MSG.advMessageNotEnrolledCriticalCourseWithAlts(advFirstChoice.getCourseName()));
+								info.addNotAssignedMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageNotEnrolledImportantCourseWithAlts(advFirstChoice.getCourseName()) :
+									advCritical == Critical.VITAL ? MSG.advMessageNotEnrolledVitalCourseWithAlts(advFirstChoice.getCourseName()) :
+									MSG.advMessageNotEnrolledCriticalCourseWithAlts(advFirstChoice.getCourseName()));
 							else
-								info.addNotAssignedMessage(MSG.advMessageNotEnrolledCriticalCourse(advFirstChoice.getCourseName()));
+								info.addNotAssignedMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageNotEnrolledImportantCourse(advFirstChoice.getCourseName()) :
+									advCritical == Critical.VITAL ? MSG.advMessageNotEnrolledVitalCourse(advFirstChoice.getCourseName()) :
+									MSG.advMessageNotEnrolledCriticalCourse(advFirstChoice.getCourseName()));
 						} else {
 							if (nrCourses > 1)
 								info.addNotAssignedMessage(MSG.advMessageNotEnrolledCourseWithAlts(advFirstChoice.getCourseName()));
@@ -958,9 +972,13 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 			if (firstChoiceCritical && nrCoursesFound == 0) {
 				missingCrit ++; missingPrim ++;
 				if (nrCourses > 1)
-					info.addMessage(MSG.advMessageMissingCriticalCourseWithAlts(advFirstChoice.getCourseName()));
+					info.addMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageMissingImportantCourseWithAlts(advFirstChoice.getCourseName()) :
+						advCritical == Critical.VITAL ? MSG.advMessageMissingVitalCourseWithAlts(advFirstChoice.getCourseName()) :
+						MSG.advMessageMissingCriticalCourseWithAlts(advFirstChoice.getCourseName()));
 				else
-					info.addMessage(MSG.advMessageMissingCriticalCourse(advFirstChoice.getCourseName()));
+					info.addMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageMissingImportantCourse(advFirstChoice.getCourseName()) :
+						advCritical == Critical.VITAL ? MSG.advMessageMissingVitalCourse(advFirstChoice.getCourseName()) :
+						MSG.advMessageMissingCriticalCourse(advFirstChoice.getCourseName()));
 			} else if (!last.isSubstitute() && nrCoursesFound - nrSubstMisMatch == 0) {
 				missingPrim ++;
 				if (nrCourses > 1)
@@ -973,7 +991,9 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 				else
 					info.addMessage(MSG.advMessageMissingSubstituteCourse(advFirstChoice.getCourseName()));
 			} else if (firstChoice == null && firstChoiceCritical) {
-				info.addMessage(MSG.advMessageMissingCriticalCourseHasAlts(advFirstChoice.getCourseName()));
+				info.addMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageMissingImportantCourseHasAlts(advFirstChoice.getCourseName()) :
+					advCritical == Critical.VITAL ? MSG.advMessageMissingVitalCourseHasAlts(advFirstChoice.getCourseName()) :
+					MSG.advMessageMissingCriticalCourseHasAlts(advFirstChoice.getCourseName()));
 			} else if (firstChoice == null) {
 				info.addMessage(MSG.advMessageMissingCourseHasAlts(advFirstChoice.getCourseName()));
 			} else if (nrCoursesFound < nrCourses) {
@@ -985,9 +1005,13 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 				if (firstChoiceCritical) {
 					notAssignedCrit ++;
 					if (nrCourses > 1)
-						info.addNotAssignedMessage(MSG.advMessageNotEnrolledCriticalCourseWithAlts(advFirstChoice.getCourseName()));
+						info.addNotAssignedMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageNotEnrolledImportantCourseWithAlts(advFirstChoice.getCourseName()) :
+							advCritical == Critical.VITAL ? MSG.advMessageNotEnrolledVitalCourseWithAlts(advFirstChoice.getCourseName()) :
+							MSG.advMessageNotEnrolledCriticalCourseWithAlts(advFirstChoice.getCourseName()));
 					else
-						info.addNotAssignedMessage(MSG.advMessageNotEnrolledCriticalCourse(advFirstChoice.getCourseName()));
+						info.addNotAssignedMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageNotEnrolledImportantCourse(advFirstChoice.getCourseName()) :
+							advCritical == Critical.VITAL ? MSG.advMessageNotEnrolledVitalCourse(advFirstChoice.getCourseName()) : 
+							MSG.advMessageNotEnrolledCriticalCourse(advFirstChoice.getCourseName()));
 				} else {
 					if (nrCourses > 1)
 						info.addNotAssignedMessage(MSG.advMessageNotEnrolledCourseWithAlts(advFirstChoice.getCourseName()));
@@ -1038,6 +1062,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		info.setMissingPrimary(missingPrim);
 		info.setNotAssignedCritical(notAssignedCrit);
 		info.setNotAssignedPrimary(notAssignedPrim);
+		info.setAdvisorCritical(advCritical.ordinal());
 		
 		return info;
 	}

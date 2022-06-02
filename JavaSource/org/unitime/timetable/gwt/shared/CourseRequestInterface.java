@@ -1167,6 +1167,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		public boolean isCritical() { return iCritical != null && iCritical.intValue() == 1; }
 		public boolean isImportant() { return iCritical != null && iCritical.intValue() == 2; }
 		public boolean isVital() { return iCritical != null && iCritical.intValue() == 3; }
+		public boolean isImportantOrMore() { return iCritical != null && iCritical.intValue() > 0; }
 		public Integer getCritical() { return iCritical; }
 		public void setCritical(Integer critical) { iCritical = critical; }
 

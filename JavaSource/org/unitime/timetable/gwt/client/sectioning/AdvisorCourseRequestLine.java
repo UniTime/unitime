@@ -194,7 +194,9 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 			box.addCourseSelectionHandler(new CourseSelectionHandler() {
 				@Override
 				public void onCourseSelection(CourseSelectionEvent event) {
-					iCritical.setValue(event.getValue() != null && event.getValue().hasCourseId());
+					iCritical.setEnabled(event.getValue() != null && event.getValue().hasCourseId());
+					if (event.getValue() == null || !event.getValue().hasCourseId())
+						iCritical.setValue(false);
 				}
 			});
 		}

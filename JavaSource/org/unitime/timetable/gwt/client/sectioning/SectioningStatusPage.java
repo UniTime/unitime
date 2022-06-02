@@ -2852,12 +2852,30 @@ public class SectioningStatusPage extends Composite {
 			case MISSING_COURSES:
 				if (value != null && value.getMissingCritical() != null && value.getMissingPrimary() != null) {
 					if (value.getMissingCritical() > 0) {
-						if (value.getMissingPrimary() > value.getMissingCritical()) {
-							setHTML(MESSAGES.advisedMissingCriticalOther(value.getMissingCritical(), value.getMissingPrimary() - value.getMissingCritical()));
-							title = MESSAGES.hintAdvisedMissingCriticalOther(value.getMissingCritical(), value.getMissingPrimary() - value.getMissingCritical());
+						if (value.isAdvisorImportant()) {
+							if (value.getMissingPrimary() > value.getMissingCritical()) {
+								setHTML(MESSAGES.advisedMissingImportantOther(value.getMissingCritical(), value.getMissingPrimary() - value.getMissingCritical()));
+								title = MESSAGES.hintAdvisedMissingImportantOther(value.getMissingCritical(), value.getMissingPrimary() - value.getMissingCritical());
+							} else {
+								setHTML(MESSAGES.advisedMissingImportant(value.getMissingCritical()));
+								title = MESSAGES.hintAdvisedMissingImportant(value.getMissingCritical());
+							}
+						} else if (value.isAdvisorVital()) {
+							if (value.getMissingPrimary() > value.getMissingCritical()) {
+								setHTML(MESSAGES.advisedMissingVitalOther(value.getMissingCritical(), value.getMissingPrimary() - value.getMissingCritical()));
+								title = MESSAGES.hintAdvisedMissingVitalOther(value.getMissingCritical(), value.getMissingPrimary() - value.getMissingCritical());
+							} else {
+								setHTML(MESSAGES.advisedMissingVital(value.getMissingCritical()));
+								title = MESSAGES.hintAdvisedMissingVital(value.getMissingCritical());
+							}
 						} else {
-							setHTML(MESSAGES.advisedMissingCritical(value.getMissingCritical()));
-							title = MESSAGES.hintAdvisedMissingCritical(value.getMissingCritical());
+							if (value.getMissingPrimary() > value.getMissingCritical()) {
+								setHTML(MESSAGES.advisedMissingCriticalOther(value.getMissingCritical(), value.getMissingPrimary() - value.getMissingCritical()));
+								title = MESSAGES.hintAdvisedMissingCriticalOther(value.getMissingCritical(), value.getMissingPrimary() - value.getMissingCritical());
+							} else {
+								setHTML(MESSAGES.advisedMissingCritical(value.getMissingCritical()));
+								title = MESSAGES.hintAdvisedMissingCritical(value.getMissingCritical());
+							}
 						}
 					} else if (value.getMissingPrimary() > 0) {
 						setHTML(MESSAGES.advisedMissingPrimary(value.getMissingPrimary()));
@@ -2868,12 +2886,30 @@ public class SectioningStatusPage extends Composite {
 			case NOT_ENROLLED_COURSES:
 				if (value != null && value.getNotAssignedPrimary() != null && value.getNotAssignedCritical() != null) {
 					if (value.getNotAssignedCritical() > 0) {
-						if (value.getNotAssignedPrimary() > value.getNotAssignedCritical()) {
-							setHTML(MESSAGES.advisedNotAssignedCriticalOther(value.getNotAssignedCritical(), value.getNotAssignedPrimary() - value.getNotAssignedCritical()));
-							title = MESSAGES.hintAdvisedNotAssignedCriticalOther(value.getNotAssignedCritical(), value.getNotAssignedPrimary() - value.getNotAssignedCritical());
+						if (value.isAdvisorImportant()) {
+							if (value.getNotAssignedPrimary() > value.getNotAssignedCritical()) {
+								setHTML(MESSAGES.advisedNotAssignedImportantOther(value.getNotAssignedCritical(), value.getNotAssignedPrimary() - value.getNotAssignedCritical()));
+								title = MESSAGES.hintAdvisedNotAssignedImportantOther(value.getNotAssignedCritical(), value.getNotAssignedPrimary() - value.getNotAssignedCritical());
+							} else {
+								setHTML(MESSAGES.advisedNotAssignedImportant(value.getNotAssignedCritical()));
+								title = MESSAGES.hintAdvisedNotAssignedImportant(value.getNotAssignedCritical());
+							}
+						} else if (value.isAdvisorVital()) {
+							if (value.getNotAssignedPrimary() > value.getNotAssignedCritical()) {
+								setHTML(MESSAGES.advisedNotAssignedVitalOther(value.getNotAssignedCritical(), value.getNotAssignedPrimary() - value.getNotAssignedCritical()));
+								title = MESSAGES.hintAdvisedNotAssignedVitalOther(value.getNotAssignedCritical(), value.getNotAssignedPrimary() - value.getNotAssignedCritical());
+							} else {
+								setHTML(MESSAGES.advisedNotAssignedVital(value.getNotAssignedCritical()));
+								title = MESSAGES.hintAdvisedNotAssignedVital(value.getNotAssignedCritical());
+							}
 						} else {
-							setHTML(MESSAGES.advisedNotAssignedCritical(value.getNotAssignedCritical()));
-							title = MESSAGES.hintAdvisedNotAssignedCritical(value.getNotAssignedCritical());
+							if (value.getNotAssignedPrimary() > value.getNotAssignedCritical()) {
+								setHTML(MESSAGES.advisedNotAssignedCriticalOther(value.getNotAssignedCritical(), value.getNotAssignedPrimary() - value.getNotAssignedCritical()));
+								title = MESSAGES.hintAdvisedNotAssignedCriticalOther(value.getNotAssignedCritical(), value.getNotAssignedPrimary() - value.getNotAssignedCritical());
+							} else {
+								setHTML(MESSAGES.advisedNotAssignedCritical(value.getNotAssignedCritical()));
+								title = MESSAGES.hintAdvisedNotAssignedCritical(value.getNotAssignedCritical());
+							}
 						}
 					} else if (value.getNotAssignedPrimary() > 0) {
 						setHTML(MESSAGES.advisedNotAssignedPrimary(value.getNotAssignedPrimary()));

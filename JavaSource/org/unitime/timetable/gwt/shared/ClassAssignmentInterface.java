@@ -2008,6 +2008,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private String iMessage, iNotAssignedMessage;
 		private Integer iMissingCritical, iMissingPrimary;
 		private Integer iNotAssignedCritical, iNotAssignedPrimary;
+		private Integer iAdvisorCritical = null;
 		
 		public AdvisedInfoInterface() {}
 		
@@ -2052,6 +2053,11 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public void addNotAssignedMessage(String message) {
 			iNotAssignedMessage = (iNotAssignedMessage == null ? "" : iNotAssignedMessage + "\n") +  message;
 		}
+		
+		public void setAdvisorCritical(Integer advisorCritical) { iAdvisorCritical = advisorCritical; }
+		public boolean isAdvisorCritical() { return iAdvisorCritical != null && iAdvisorCritical.intValue() == 1; }
+		public boolean isAdvisorImportant() { return iAdvisorCritical != null && iAdvisorCritical.intValue() == 2; }
+		public boolean isAdvisorVital() { return iAdvisorCritical != null && iAdvisorCritical.intValue() == 3; }
 	}
 	
 	public boolean hasCurrentCredit() { return iCurrentCredit != null && iCurrentCredit > 0f; }

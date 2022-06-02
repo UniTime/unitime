@@ -3345,4 +3345,96 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Between {0} and {1}")
 	String schedulingPrefClassesBetween(String fromDate, String toDate);
+
+	@DefaultMessage("Together with other registration changes, the vital course {0} will be dropped. This may prohibit progress towards degree. Please consult with your academic advisor. Do you want to proceed?")
+	String confirmEnrollmentVitalCourseDrop(String course);
+	
+	@DefaultMessage("Together with other registration changes, the important course {0} will be dropped. This may prohibit progress towards degree. Please consult with your academic advisor. Do you want to proceed?")
+	String confirmEnrollmentImportantCourseDrop(String course);
+
+	@DefaultMessage("Missing vital course {0}.")
+	String advMessageMissingVitalCourse(String course);
+	
+	@DefaultMessage("Missing vital course {0} and its alternatives.")
+	String advMessageMissingVitalCourseWithAlts(String course);
+	
+	@DefaultMessage("Missing vital course {0}, but has alternative(s).")
+	String advMessageMissingVitalCourseHasAlts(String course);
+	
+	@DefaultMessage("Not-enrolled vital course {0} or its alternatives.")
+	String advMessageNotEnrolledVitalCourseWithAlts(String course);
+	
+	@DefaultMessage("Not-enrolled vital course {0}.")
+	String advMessageNotEnrolledVitalCourse(String course);
+
+	@DefaultMessage("Missing {0} vital course(s) and {1} other primary course(s).")
+	String hintAdvisedMissingVitalOther(int vital, int other);
+	
+	@DefaultMessage("Missing {0} vital course(s).")
+	String hintAdvisedMissingVital(int vital);
+
+	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> vt</sup></span> + {1}")
+	@DoNotTranslate
+	String advisedMissingVitalOther(int vital, int other);
+	
+	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> vital</sup></span>")
+	@DoNotTranslate
+	String advisedMissingVital(int vital);
+	
+	@DefaultMessage("Not enrolled {0} vital course(s) and {1} other primary course(s).")
+	String hintAdvisedNotAssignedVitalOther(int vital, int other);
+	
+	@DefaultMessage("Not enrolled {0} vital course(s).")
+	String hintAdvisedNotAssignedVital(int vital);
+	
+	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> vt</sup></span> + {1}")
+	@DoNotTranslate
+	String advisedNotAssignedVitalOther(int vital, int other);
+	
+	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> vital</sup></span>")
+	@DoNotTranslate
+	String advisedNotAssignedVital(int vital);
+	
+	@DefaultMessage("Missing important course {0}.")
+	String advMessageMissingImportantCourse(String course);
+	
+	@DefaultMessage("Missing important course {0} and its alternatives.")
+	String advMessageMissingImportantCourseWithAlts(String course);
+	
+	@DefaultMessage("Missing important course {0}, but has alternative(s).")
+	String advMessageMissingImportantCourseHasAlts(String course);
+	
+	@DefaultMessage("Not-enrolled important course {0} or its alternatives.")
+	String advMessageNotEnrolledImportantCourseWithAlts(String course);
+	
+	@DefaultMessage("Not-enrolled important course {0}.")
+	String advMessageNotEnrolledImportantCourse(String course);
+
+	@DefaultMessage("Missing {0} important course(s) and {1} other primary course(s).")
+	String hintAdvisedMissingImportantOther(int important, int other);
+	
+	@DefaultMessage("Missing {0} important course(s).")
+	String hintAdvisedMissingImportant(int important);
+
+	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> im</sup></span> + {1}")
+	@DoNotTranslate
+	String advisedMissingImportantOther(int important, int other);
+	
+	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> important</sup></span>")
+	@DoNotTranslate
+	String advisedMissingImportant(int important);
+	
+	@DefaultMessage("Not enrolled {0} important course(s) and {1} other primary course(s).")
+	String hintAdvisedNotAssignedImportantOther(int important, int other);
+	
+	@DefaultMessage("Not enrolled {0} important course(s).")
+	String hintAdvisedNotAssignedImportant(int important);
+	
+	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> im</sup></span> + {1}")
+	@DoNotTranslate
+	String advisedNotAssignedImportantOther(int important, int other);
+	
+	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> important</sup></span>")
+	@DoNotTranslate
+	String advisedNotAssignedImportant(int important);
 }
