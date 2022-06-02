@@ -55,12 +55,14 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisingStuden
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.CourseDemand.Critical;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -775,6 +777,7 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 		
 		// Check for critical course removals
 		boolean questionDropCritical = false;
+		boolean dropImportant = false, dropVital = false, dropCritical = false;
 		for (XRequest r: original.getRequests()) {
 			if (r instanceof XCourseRequest) {
 				XCourseRequest cr = (XCourseRequest)r;
@@ -787,9 +790,22 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 					}
 					if (!hasCourse) {
 						XCourseId course = cr.getCourseIds().get(0);
-						response.addMessage(course.getCourseId(), course.getCourseName(), "DROP_CRIT",
-								ApplicationProperties.getProperty("purdue.specreg.messages.courseDropCrit", "Critical course has been removed.").replace("{course}", course.getCourseName()),
-								CONF_UNITIME);
+						if (cr.getCritical() == 2) {
+							response.addMessage(course.getCourseId(), course.getCourseName(), "DROP_CRIT",
+									ApplicationProperties.getProperty("purdue.specreg.messages.courseDropCrit", "Important course has been removed.").replace("{course}", course.getCourseName()),
+									CONF_UNITIME);
+							dropImportant = true;
+						} else if (cr.getCritical() == 3) {
+							response.addMessage(course.getCourseId(), course.getCourseName(), "DROP_CRIT",
+									ApplicationProperties.getProperty("purdue.specreg.messages.courseDropCrit", "Vital course has been removed.").replace("{course}", course.getCourseName()),
+									CONF_UNITIME);
+							dropVital = true;
+						} else {
+							response.addMessage(course.getCourseId(), course.getCourseName(), "DROP_CRIT",
+									ApplicationProperties.getProperty("purdue.specreg.messages.courseDropCrit", "Critical course has been removed.").replace("{course}", course.getCourseName()),
+									CONF_UNITIME);
+							dropCritical = true;
+						}
 						questionDropCritical = true;
 					}
 				}
@@ -798,6 +814,8 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 		
 		// Check for missing critical courses that have been recommended by the advisor
 		boolean questionMissingAdvisorCritical = false;
+		boolean missCritical = false, missImportant = false, missVital = false;
+		CourseDemand.Critical advCritical = CourseDemand.Critical.fromText(ApplicationProperty.AdvisorCourseRequestsAllowCritical.valueOfSession(server.getAcademicSession().getUniqueId()));
 		if (original.hasAdvisorRequests()) {
 			for (XAdvisorRequest ar: original.getAdvisorRequests()) {
 				if (ar.getAlternative() == 0 && !ar.isSubstitute() && ar.isCritical() && ar.hasCourseId()) {
@@ -812,9 +830,22 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 							}
 						}
 						if (!hasAlt) {
-							response.addMessage(ar.getCourseId().getCourseId(), ar.getCourseId().getCourseName(), "DROP_CRIT",
-									ApplicationProperties.getProperty("purdue.specreg.messages.courseMissingAdvisedCritical", "Missing critical course that has been recommended by the advisor.").replace("{course}", ar.getCourseId().getCourseName()),
-									CONF_UNITIME);
+							if (advCritical == Critical.IMPORTANT || ar.getCritical() == 2) {
+								response.addMessage(ar.getCourseId().getCourseId(), ar.getCourseId().getCourseName(), "DROP_CRIT",
+										ApplicationProperties.getProperty("purdue.specreg.messages.courseMissingAdvisedCritical", "Missing important course that has been recommended by the advisor.").replace("{course}", ar.getCourseId().getCourseName()),
+										CONF_UNITIME);
+								missImportant = true;
+							} else if (advCritical == Critical.VITAL || ar.getCritical() == 3) {
+								response.addMessage(ar.getCourseId().getCourseId(), ar.getCourseId().getCourseName(), "DROP_CRIT",
+										ApplicationProperties.getProperty("purdue.specreg.messages.courseMissingAdvisedCritical", "Missing vital course that has been recommended by the advisor.").replace("{course}", ar.getCourseId().getCourseName()),
+										CONF_UNITIME);
+								missVital = true;
+							} else {
+								response.addMessage(ar.getCourseId().getCourseId(), ar.getCourseId().getCourseName(), "DROP_CRIT",
+										ApplicationProperties.getProperty("purdue.specreg.messages.courseMissingAdvisedCritical", "Missing critical course that has been recommended by the advisor.").replace("{course}", ar.getCourseId().getCourseName()),
+										CONF_UNITIME);
+								missCritical = true;
+							}
 							questionMissingAdvisorCritical = true;
 						}
 					}
@@ -1073,15 +1104,42 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 					"One or more of the newly requested courses have no alternatives provided. You may not be able to get a full schedule because you did not provide an alternative course."),
 					CONF_UNITIME, 3);
 		
-		if (questionDropCritical)
-			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.dropCritical", (creditError != null || questionNoAlt ? "\n" : "") +
-					"One or more courses that are marked as critical in your degree plan have been removed. This may prohibit progress towards degree. Please consult with your academic advisor."),
-					CONF_UNITIME, 4);
+		if (questionDropCritical) {
+			if (dropVital && !dropCritical && !dropImportant)
+				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.dropCritical", (creditError != null || questionNoAlt ? "\n" : "") +
+						"One or more vital courses have been removed. This may prohibit progress towards degree. Please consult with your academic advisor."),
+						CONF_UNITIME, 4);
+			else if (dropImportant && !dropVital && !dropCritical)
+				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.dropCritical", (creditError != null || questionNoAlt ? "\n" : "") +
+						"One or more important courses have been removed. This may prohibit progress towards degree. Please consult with your academic advisor."),
+						CONF_UNITIME, 4);
+			else if (advCritical != Critical.NORMAL)
+				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.dropCritical", (creditError != null || questionNoAlt ? "\n" : "") +
+						"One or more critical courses have been removed. This may prohibit progress towards degree. Please consult with your academic advisor."),
+						CONF_UNITIME, 4);
+			else
+				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.dropCritical", (creditError != null || questionNoAlt ? "\n" : "") +
+						"One or more courses that are marked as critical in your degree plan have been removed. This may prohibit progress towards degree. Please consult with your academic advisor."),
+						CONF_UNITIME, 4);
+		}
 		
 		if (questionMissingAdvisorCritical)
-			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.missingAdvisedCritical", (creditError != null || questionNoAlt || questionDropCritical ? "\n" : "") +
-					"One or more courses that are marked as critical in your degree plan and that have been listed by your advisor have not been requested. This may prohibit progress towards degree. Please see you advisor course requests and/or consult with your academic advisor."),
-					CONF_UNITIME, 5);
+			if (advCritical == Critical.IMPORTANT || (missImportant && !missCritical && !missVital))
+				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.missingAdvisedCritical", (creditError != null || questionNoAlt || questionDropCritical ? "\n" : "") +
+						"One or more courses that are marked by your advisor as important have not been requested. This may prohibit progress towards degree. Please see you advisor course requests and/or consult with your academic advisor."),
+						CONF_UNITIME, 5);
+			else if (advCritical == Critical.VITAL || (missVital && !missCritical && !missImportant))
+				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.missingAdvisedCritical", (creditError != null || questionNoAlt || questionDropCritical ? "\n" : "") +
+						"One or more courses that are marked by your advisor as vital have not been requested. This may prohibit progress towards degree. Please see you advisor course requests and/or consult with your academic advisor."),
+						CONF_UNITIME, 5);
+			else if (advCritical == Critical.CRITICAL)
+				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.missingAdvisedCritical", (creditError != null || questionNoAlt || questionDropCritical ? "\n" : "") +
+						"One or more courses that are marked by your advisor as critical have not been requested. This may prohibit progress towards degree. Please see you advisor course requests and/or consult with your academic advisor."),
+						CONF_UNITIME, 5);
+			else
+				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.missingAdvisedCritical", (creditError != null || questionNoAlt || questionDropCritical ? "\n" : "") +
+						"One or more courses that are marked as critical in your degree plan and that have been listed by your advisor have not been requested. This may prohibit progress towards degree. Please see you advisor course requests and/or consult with your academic advisor."),
+						CONF_UNITIME, 5);
 		
 		if (questionRestrictionsNotMet) {
 			if (onlineOnly)
