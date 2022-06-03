@@ -27,4 +27,5 @@ public interface NameInterface {
 	public String getMiddleName();
 	public String getLastName();
 	public String getAcademicTitle();
+	public String getExternalUniqueId();
 }
