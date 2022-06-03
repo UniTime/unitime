@@ -128,6 +128,75 @@ public enum NameFormat {
 					(name.getMiddleName() != null && !name.getMiddleName().isEmpty() ? " " + name.getMiddleName().substring(0, 1).toUpperCase() : "");
 		}
 	}),
+	EXTERNAL_LAST_FIRST_MIDDLE("ext-last-first-middle", new Formatter() {
+		@Override
+		public String format(NameInterface name) {
+			return (name.getExternalUniqueId() != null && !name.getExternalUniqueId().isEmpty() ? name.getExternalUniqueId() + " - " : "") +
+					Constants.toInitialCase(
+					(name.getLastName() != null && !name.getLastName().isEmpty() ? name.getLastName() : "") +
+					((name.getFirstName() != null && !name.getFirstName().isEmpty()) || (name.getMiddleName() != null && !name.getMiddleName().isEmpty()) ? "," : "") +
+					(name.getFirstName() != null && !name.getFirstName().isEmpty() ? " " + name.getFirstName() : "") +
+					(name.getMiddleName() != null && !name.getMiddleName().isEmpty() ? " " + name.getMiddleName() : "")
+					).trim();
+		}
+	}),
+	EXTERNAL_FIRST_MIDDLE_LAST("ext-first-middle-last", new Formatter() {
+		@Override
+		public String format(NameInterface name) {
+			return (name.getExternalUniqueId() != null && !name.getExternalUniqueId().isEmpty() ? name.getExternalUniqueId() + " - " : "") +
+					Constants.toInitialCase(
+					(name.getFirstName() != null && !name.getFirstName().isEmpty() ? name.getFirstName() : "") +
+					(name.getMiddleName() != null && !name.getMiddleName().isEmpty() ? " " + name.getMiddleName() : "") +
+					(name.getLastName() != null && !name.getLastName().isEmpty() ? " " + name.getLastName() : "")
+					).trim();
+		}
+	}),
+	EXTERNAL_LAST_FIRST_MIDDLE_TITLE("ext-last-first-middle-title", new Formatter() {
+		@Override
+		public String format(NameInterface name) {
+			return (name.getExternalUniqueId() != null && !name.getExternalUniqueId().isEmpty() ? name.getExternalUniqueId() + " - " : "") +
+					Constants.toInitialCase(
+					(name.getLastName() != null && !name.getLastName().isEmpty() ? name.getLastName() : "") +
+					((name.getFirstName() != null && !name.getFirstName().isEmpty()) || (name.getMiddleName() != null && !name.getMiddleName().isEmpty()) ? "," : "") +
+					(name.getFirstName() != null && !name.getFirstName().isEmpty() ? " " + name.getFirstName() : "") +
+					(name.getMiddleName() != null && !name.getMiddleName().isEmpty() ? " " + name.getMiddleName() : "")
+					).trim() + 
+					(name.getAcademicTitle() != null && !name.getAcademicTitle().isEmpty() ? " " + name.getAcademicTitle(): "");
+		}
+	}),
+	EXTERNAL_TITLE_FIRST_MIDDLE_LAST("ext-title-first-middle-last", new Formatter() {
+		@Override
+		public String format(NameInterface name) {
+			return (name.getExternalUniqueId() != null && !name.getExternalUniqueId().isEmpty() ? name.getExternalUniqueId() + " - " : "") +
+					(name.getAcademicTitle() != null && !name.getAcademicTitle().isEmpty() ? name.getAcademicTitle() + " ": "") +
+					Constants.toInitialCase(
+					(name.getFirstName() != null && !name.getFirstName().isEmpty() ? name.getFirstName() : "") +
+					(name.getMiddleName() != null && !name.getMiddleName().isEmpty() ? " " + name.getMiddleName() : "") +
+					(name.getLastName() != null && !name.getLastName().isEmpty() ? " " + name.getLastName() : "")
+					).trim();
+		}
+	}),
+	EXTERNAL_TITLE_INITIAL_LAST("ext-title-initial-last", new Formatter() {
+		@Override
+		public String format(NameInterface name) {
+			return (name.getExternalUniqueId() != null && !name.getExternalUniqueId().isEmpty() ? name.getExternalUniqueId() + " - " : "") +
+					(name.getAcademicTitle() != null && !name.getAcademicTitle().isEmpty() ? name.getAcademicTitle() + " ": "") +
+					((name.getFirstName() != null && !name.getFirstName().isEmpty() ? name.getFirstName().trim().substring(0, 1).toUpperCase() : "") +
+					(name.getMiddleName() != null && !name.getMiddleName().isEmpty() ? " " + name.getMiddleName().trim().substring(0, 1).toUpperCase() : "") +
+					(name.getLastName() != null && !name.getLastName().isEmpty() ? " " + Constants.toInitialCase(name.getLastName()) : "")).trim();
+		}
+	}),
+	EXTERNAL_TITLE_LAST_INITIAL("ext-title-last-initial", new Formatter() {
+		@Override
+		public String format(NameInterface name) {
+			return (name.getExternalUniqueId() != null && !name.getExternalUniqueId().isEmpty() ? name.getExternalUniqueId() + " - " : "") +
+					(name.getAcademicTitle() != null && !name.getAcademicTitle().isEmpty() ? name.getAcademicTitle() + " ": "") +
+					(name.getLastName() != null && !name.getLastName().isEmpty() ? Constants.toInitialCase(name.getLastName()) : "").trim() +
+					((name.getFirstName() != null && !name.getFirstName().isEmpty()) || (name.getMiddleName() != null && !name.getMiddleName().isEmpty()) ? "," : "") +
+					(name.getFirstName() != null && !name.getFirstName().isEmpty() ? " " + name.getFirstName().substring(0, 1).toUpperCase() : "") +
+					(name.getMiddleName() != null && !name.getMiddleName().isEmpty() ? " " + name.getMiddleName().substring(0, 1).toUpperCase() : "");
+		}
+	}),
 	
 	;
 		

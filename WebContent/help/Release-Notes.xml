@@ -104,6 +104,21 @@
 				<line>Example utilization reports are available in the Documentation/Scripts.</line>
 			</description>
 		</item>
+		<item>
+			<name>Name Format: Include External ID</name>
+			<description>
+				<line>Added ability to include external id in the name format.</line>
+				<line>The following options are not available:
+					<line>ext-last-first-middle</line>
+					<line>ext-first-middle-last</line>
+					<line>ext-last-first-middle-title</line>
+					<line>ext-title-first-middle-last</line>
+					<line>ext-title-initial-last</line>
+					<line>ext-title-last-initial</line>
+				</line>
+				<line>To make (some of) them available, added them as options in Administration &gt; Defaults &gt; User Settings, name parameter.</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>
