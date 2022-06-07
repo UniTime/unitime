@@ -43,7 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
-import org.unitime.timetable.form.ListSolutionsForm;
+import org.unitime.timetable.gwt.client.sectioning.PublishedSectioningSolutionsTable.InfoComparator;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -514,7 +514,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 		Map<String, String> translations = getInfoTranslations(request.getType());
 		if (info != null) {
 			SolutionInfo si = new SolutionInfo();
-			TreeSet<String> keys = new TreeSet<String>(new ListSolutionsForm.InfoComparator());
+			TreeSet<String> keys = new TreeSet<String>(new InfoComparator());
 			keys.addAll(info.keySet());
 			for (String key: keys) {
 				String translatedKey = (translations == null ? null : translations.get(key));
@@ -528,7 +528,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 		Map<String, String> best = (solver == null ? null : solver.bestSolutionInfo());
 		if (best != null) {
 			SolutionInfo si = new SolutionInfo();
-			TreeSet<String> keys = new TreeSet<String>(new ListSolutionsForm.InfoComparator());
+			TreeSet<String> keys = new TreeSet<String>(new InfoComparator());
 			keys.addAll(best.keySet());
 			for (String key: keys) {
 				String translatedKey = (translations == null ? null : translations.get(key));
@@ -584,7 +584,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 						}
 	 				PropertiesInfo propInfo = (PropertiesInfo)solution.getInfo("GlobalInfo");
 	 				if (propInfo != null) {
-	 					TreeSet<String> keys = new TreeSet<String>(new ListSolutionsForm.InfoComparator());
+	 					TreeSet<String> keys = new TreeSet<String>(new InfoComparator());
 	 					for (Object o: propInfo.keySet()) keys.add((String)o);
 	 					for (String key: keys)
 	 						si.addPair(key, propInfo.getProperty(key));
@@ -770,7 +770,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 				   }
 				}
 				if (names == null || names.isEmpty()) names.add(MESSAGES.notApplicable());
-				response.addPageMessage(new PageMessage(PageMessageType.INFO, MESSAGES.infoSolverShowingSolution(toString(names)), interactive ? "listSolutions.do" : "gwt.jsp?page=solver&type=course"));
+				response.addPageMessage(new PageMessage(PageMessageType.INFO, MESSAGES.infoSolverShowingSolution(toString(names)), interactive ? "gwt.jsp?page=listSolutions" : "gwt.jsp?page=solver&type=course"));
             	/*
             	String ts = solver.getProperties().getProperty("RoomAvailability.TimeStamp");
             	if (ts==null)
@@ -831,7 +831,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 					}
 					if (warn != null && !warn.isEmpty())
 						response.addPageMessage(new PageMessage(PageMessageType.WARNING, warn));
-					response.addPageMessage(new PageMessage(PageMessageType.INFO, (names.size() == 1 ? MESSAGES.infoSolverShowingSelectedSolution(names.get(0)) : MESSAGES.infoSolverShowingSelectedSolutions(toString(names))), "listSolutions.do"));
+					response.addPageMessage(new PageMessage(PageMessageType.INFO, (names.size() == 1 ? MESSAGES.infoSolverShowingSelectedSolution(names.get(0)) : MESSAGES.infoSolverShowingSelectedSolutions(toString(names))), "gwt.jsp?page=listSolutions"));
 				}
 			}
 			break;

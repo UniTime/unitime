@@ -55,7 +55,6 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.TimetableSolver.RecordedAssignment;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
-import org.unitime.timetable.solver.interactive.SuggestionsModel;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.webutil.BackTracker;
@@ -77,9 +76,6 @@ public class SolutionChangesBackend implements GwtRpcImplementation<SolutionChan
 		
 		context.getUser().setProperty("SuggestionsModel.simpleMode", request.getFilter().getParameterValue("simpleMode"));
 		boolean simple = "1".equals(request.getFilter().getParameterValue("simpleMode"));
-		SuggestionsModel model = (SuggestionsModel)context.getAttribute(SessionAttribute.SuggestionsModel);
-		if (model != null)
-			model.setSimpleMode(simple);
 		
 		context.getUser().setProperty("SolutionChanges.reference", request.getFilter().getParameterValue("reference"));
 		int reference = Integer.valueOf(request.getFilter().getParameterValue("reference"));

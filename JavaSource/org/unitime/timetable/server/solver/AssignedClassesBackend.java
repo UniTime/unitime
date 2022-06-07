@@ -58,7 +58,6 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
-import org.unitime.timetable.solver.interactive.SuggestionsModel;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails.TimeInfo;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
@@ -99,9 +98,6 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 		
 		context.getUser().setProperty("SuggestionsModel.simpleMode", request.getFilter().getParameterValue("simpleMode"));
 		boolean simple = "1".equals(request.getFilter().getParameterValue("simpleMode"));
-		SuggestionsModel model = (SuggestionsModel)context.getAttribute(SessionAttribute.SuggestionsModel);
-		if (model != null)
-			model.setSimpleMode(simple);
 		
 		SolverProxy solver = courseTimetablingSolverService.getSolver();
 		String subjects = request.getFilter().getParameterValue("subjectArea");

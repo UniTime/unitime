@@ -52,7 +52,7 @@ import org.unitime.commons.Email;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
-import org.unitime.timetable.form.ListSolutionsForm.InfoComparator;
+import org.unitime.timetable.gwt.client.sectioning.PublishedSectioningSolutionsTable.InfoComparator;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;

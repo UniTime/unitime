@@ -102,6 +102,7 @@ import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
+import org.unitime.timetable.solver.interactive.Hint;
 import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
@@ -1286,7 +1287,7 @@ public abstract class PreferencesAction extends Action {
 			if (sessionContext.hasPermission(Right.ClassAssignments)) {
 				ClassAssignmentDetails ca = ClassAssignmentDetails.createClassAssignmentDetails(sessionContext, courseTimetablingSolverService.getSolver(), pg.getUniqueId(), true);
 				if (ca!=null) {
-					String assignmentTable = SuggestionsAction.getAssignmentTable(sessionContext, courseTimetablingSolverService.getSolver(), ca,false, null, true);
+					String assignmentTable = getAssignmentTable(sessionContext, courseTimetablingSolverService.getSolver(), ca,false, null, true);
 					if (assignmentTable!=null)
 						request.setAttribute("Suggestions.assignmentInfo", assignmentTable);
 				} else {
@@ -1296,7 +1297,7 @@ public abstract class PreferencesAction extends Action {
 						if (assignment!=null && assignment.getUniqueId()!=null) {
 							ca = ClassAssignmentDetails.createClassAssignmentDetailsFromAssignment(sessionContext, assignment.getUniqueId(), true);
 							if (ca!=null) {
-								String assignmentTable = SuggestionsAction.getAssignmentTable(sessionContext, courseTimetablingSolverService.getSolver(), ca,false, null, true);
+								String assignmentTable = getAssignmentTable(sessionContext, courseTimetablingSolverService.getSolver(), ca,false, null, true);
 								if (assignmentTable!=null)
 									request.setAttribute("Suggestions.assignmentInfo", assignmentTable);
 							}
@@ -1550,5 +1551,89 @@ public abstract class PreferencesAction extends Action {
             HttpServletRequest request,
             PreferencesForm frm) {
         frm.clearPrefs();
+    }
+    
+    public static String getAssignmentTable(SessionContext context, SolverProxy solver, ClassAssignmentDetails ca, boolean dispLinks, Hint selection, boolean dispDate) {
+    	StringBuffer sb = new StringBuffer();
+		if (ca.getTime()==null) {
+			sb.append("<TR><TD colspan='2'><I>"+MSG.messageNotAssigned()+"</I></TD></TR>");
+		} else {
+			if (dispDate)
+				sb.append("<TR><TD>"+MSG.propertyDate()+"</TD><TD>"+ca.getAssignedTime().getDatePatternHtml()+"</TD></TR>");
+			sb.append("<TR><TD>"+MSG.propertyTime()+"</TD><TD>"+ca.getAssignedTime().toHtml(false,false,true,true)+"</TD></TR>");
+			if (ca.getAssignedRoom()!=null) {
+				sb.append("<TR><TD>"+MSG.propertyRoom()+"</TD><TD>");
+				for (int i=0;i<ca.getAssignedRoom().length;i++) {
+					if (i>0) sb.append(", ");
+					sb.append(ca.getAssignedRoom()[i].toHtml(false,false,true));
+				}
+				sb.append("</TD></TR>");
+			}
+		}
+		if (ca.getInstructor()!=null) {
+			sb.append("<TR><TD>"+MSG.propertyInstructor()+"</TD><TD>"+ca.getInstructorHtml()+"</TD></TR>");
+			if (!ca.getBtbInstructors().isEmpty()) {
+				sb.append("<TR><TD></TD><TD>");
+				for (Enumeration e=ca.getBtbInstructors().elements();e.hasMoreElements();) {
+					ClassAssignmentDetails.BtbInstructorInfo btb = (ClassAssignmentDetails.BtbInstructorInfo)e.nextElement();
+					sb.append(btb.toHtml(context, solver));
+					if (e.hasMoreElements()) sb.append("<br>");
+				}
+				sb.append("</TD></TR>");
+			}
+		}
+		if (ca.getInitialTime()!=null) {
+			sb.append("<TR><TD nowrap>"+MSG.propertyInitialAssignment()+"</TD><TD>");
+			if (ca.isInitial()) {
+				sb.append("<I>"+MSG.messageThisOne()+"</I>");
+			} else {
+				sb.append(ca.getInitialTime().toHtml(false,false,true,true)+" ");
+				for (int i=0;i<ca.getInitialRoom().length;i++) {
+					if (i>0) sb.append(", ");
+					sb.append(ca.getInitialRoom()[i].toHtml(false,false,true));
+				}
+				sb.append("</TD></TR>");
+			}
+			sb.append("</TD></TR>");
+		}
+		if (!ca.getStudentConflicts().isEmpty()) {
+			sb.append("<TR><TD nowrap>"+MSG.propertyStudentConflicts()+"</TD><TD>");
+			Collections.sort(ca.getStudentConflicts(), new ClassAssignmentDetails.StudentConflictInfoComparator(context, solver));
+			for (Enumeration e=ca.getStudentConflicts().elements();e.hasMoreElements();) {
+				ClassAssignmentDetails.StudentConflictInfo std = (ClassAssignmentDetails.StudentConflictInfo)e.nextElement();
+				sb.append(std.toHtml(context, solver, dispLinks));
+				if (e.hasMoreElements()) sb.append("<BR>");
+			}
+			sb.append("</TD></TR>");
+		}
+		if (ca.hasViolatedGroupConstraint()) {
+			sb.append("<TR><TD>"+MSG.propertyViolatedConstraints()+"</TD><TD>");
+			for (Enumeration e=ca.getGroupConstraints().elements();e.hasMoreElements();) {
+				ClassAssignmentDetails.DistributionInfo gc = (ClassAssignmentDetails.DistributionInfo)e.nextElement();
+				if (gc.getInfo().isSatisfied()) continue;
+				sb.append(gc.toHtml(context, solver, dispLinks));
+				if (e.hasMoreElements()) sb.append("<BR>");
+			}
+			sb.append("</TD></TR>");
+		}
+		if (dispLinks) {
+			if (!ca.getRooms().isEmpty()) {
+				sb.append("<TR><TD nowrap>"+MSG.propertyRoomLocations()+"</TD><TD>"+ca.getRooms().toHtml(true,true,selection)+"</TD></TR>");
+			} else {
+				sb.append("<input type='hidden' name='nrRooms' value='0'/>");
+				sb.append("<input type='hidden' name='roomState' value='0'/>");
+			}
+			if (!ca.getTimes().isEmpty()) {
+				sb.append("<TR><TD nowrap>"+MSG.propertyTimeLocations()+"</TD><TD>"+ca.getTimes().toHtml(true,true,selection)+"</TD></TR>");
+				sb.append("<TR"+(ca.getTimes().getNrDates() <= 1 ? " style='display:none;'" : "")+"><TD nowrap>"+MSG.propertyDatePatterns()+"</TD><TD>"+ca.getTimes().toDatesHtml(true,true,selection)+"</TD></TR>");
+			}
+		}
+		if (dispLinks && ca.getClazz()!=null && ca.getClazz().getRoomCapacity()>=0 && ca.getClazz().getRoomCapacity()<Integer.MAX_VALUE && ca.getClazz().nrRooms()>0) {
+			sb.append("<TR><TD>"+MSG.propertyMinimumRoomSize()+"</TD><TD>"+ca.getClazz().getRoomCapacity()+"</TD></TR>");
+		}
+		if (dispLinks && ca.getClazz()!=null && ca.getClazz().getNote()!=null) {
+			sb.append("<TR><TD>"+MSG.propertyNote()+"</TD><TD>"+ca.getClazz().getNote().replaceAll("\n","<BR>")+"</TD></TR>");
+		}
+    	return sb.toString();
     }
 }

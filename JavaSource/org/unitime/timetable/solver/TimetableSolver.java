@@ -110,8 +110,6 @@ import org.unitime.timetable.server.solver.TimetableGridSolverHelper;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 import org.unitime.timetable.solver.interactive.Hint;
 import org.unitime.timetable.solver.interactive.Suggestion;
-import org.unitime.timetable.solver.interactive.Suggestions;
-import org.unitime.timetable.solver.interactive.SuggestionsModel;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.solver.ui.ConflictStatisticsInfo;
 import org.unitime.timetable.solver.ui.DeptBalancingReport;
@@ -754,18 +752,6 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     				return new ClassAssignmentDetails(this,lecture,includeConstraints);
     		}
    			return null;
-    	} finally {
-    		lock.unlock();
-    	}
-    }
-    
-    @Override
-    public Suggestions getSuggestions(SuggestionsModel model) {
-    	if (iWorking) return null;
-    	Lock lock = currentSolution().getLock().writeLock();
-		lock.lock();
-		try {
-    		return new Suggestions(this,model);
     	} finally {
     		lock.unlock();
     	}

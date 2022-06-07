@@ -27,8 +27,7 @@ import org.cpsolver.ifs.util.DataProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.action.ManageSolversAction;
-import org.unitime.timetable.defaults.ApplicationProperty;
-import org.unitime.timetable.form.ListSolutionsForm;
+import org.unitime.timetable.gwt.client.sectioning.PublishedSectioningSolutionsTable.InfoComparator;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.command.server.GwtRpcLogging;
@@ -99,17 +98,17 @@ public class SolverInfoBackend implements GwtRpcImplementation<SolverInfoRpcRequ
 		switch (solver.getType()) {
 		case COURSE:
 			ret.setType(MESSAGES.solverCourse());
-			ret.setUrl(ApplicationProperty.LegacySolver.isTrue() ? "solver.do" : "gwt.jsp?page=solver&type=course");
+			ret.setUrl("gwt.jsp?page=solver&type=course");
 			translations = SOLVERMSG.courseInfoMessages();
 			break;
 		case EXAM:
 			ret.setType(MESSAGES.solverExamination());
-			ret.setUrl(ApplicationProperty.LegacySolver.isTrue() ? "examSolver.do" : "gwt.jsp?page=solver&type=exam");
+			ret.setUrl("gwt.jsp?page=solver&type=exam");
 			translations = SOLVERMSG.examInfoMessages();
 			break;
 		case STUDENT:
 			ret.setType(MESSAGES.solverStudent());
-			ret.setUrl(ApplicationProperty.LegacySolver.isTrue() ? "studentSolver.do" : "gwt.jsp?page=solver&type=student");
+			ret.setUrl("gwt.jsp?page=solver&type=student");
 			translations = SOLVERMSG.studentInfoMessages();
 			break;
 		case INSTRUCTOR:
@@ -136,7 +135,7 @@ public class SolverInfoBackend implements GwtRpcImplementation<SolverInfoRpcRequ
 			} catch (Exception e) {}
 			if (info != null && !info.isEmpty()) {
 				p.setSeparator(true);
-				TreeSet<String> keys = new TreeSet<String>(new ListSolutionsForm.InfoComparator());
+				TreeSet<String> keys = new TreeSet<String>(new InfoComparator());
 				keys.addAll(info.keySet());
 				for (String key: keys) {
 					String translatedKey = (translations == null ? null : translations.get(key));

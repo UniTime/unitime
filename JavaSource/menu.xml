@@ -123,127 +123,57 @@
 					<hasPermission name="Timetables"/>
 				</or>
 			</condition>
-			<item name="Saved Timetables" page="listSolutions.do">
-				<condition>
-					<hasPermission name="Timetables"/>
-					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
-				</condition>
-			</item>
 			<item name="Saved Timetables" page="listSolutions" type="gwt">
 				<condition>
 					<hasPermission name="Timetables"/>
-					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
-				</condition>
-			</item>
-			<item name="Solver" page="solver.do">
-				<condition>
-					<hasPermission name="Solver"/>
-					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Solver" page="solver" type="gwt">
 				<parameter name="type">course</parameter>
 				<condition>
 					<hasPermission name="Solver"/>
-					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
-				</condition>
-			</item>
-			<item name="Timetable Grid" page="timetable.do">
-				<condition>
-					<hasPermission name="TimetableGrid"/>
-					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Timetable Grid" page="timetableGrid" type="gwt">
 				<condition>
 					<hasPermission name="TimetableGrid"/>
-					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 			<separator/>
-			<item name="Assigned Classes" page="assignedClasses.do">
-				<condition>
-					<hasPermission name="AssignedClasses"/>
-					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
-				</condition>
-			</item>
 			<item name="Assigned Classes" page="assignedClasses" type="gwt">
 				<condition>
 					<hasPermission name="AssignedClasses"/>
-					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
-				</condition>
-			</item>
-			<item name="Not-assigned Classes" page="unassigned.do">
-				<condition>
-					<hasPermission name="NotAssignedClasses"/>
-					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Not-assigned Classes" page="notAssignedClasses" type="gwt">
 				<condition>
 					<hasPermission name="NotAssignedClasses"/>
-					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
-				</condition>
-			</item>
-			<item name="Changes" page="solutionChanges.do">
-				<condition>
-					<hasPermission name="SolutionChanges"/>
-					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Changes" page="solutionChanges" type="gwt">
 				<condition>
 					<hasPermission name="SolutionChanges"/>
-					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
-				</condition>
-			</item>
-			<item name="History" page="assignmentHistory.do">
-				<condition>
-					<hasPermission name="AssignmentHistory"/>
-					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="History" page="assignmentHistory" type="gwt">
 				<condition>
 					<hasPermission name="AssignmentHistory"/>
-					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
-				</condition>
-			</item>
-			<item name="Conflict Statistics" page="cbs.do">
-				<condition>
-					<hasPermission name="ConflictStatistics"/>
-					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Conflict Statistics" page="cbs" type="gwt">
 				<condition>
 					<hasPermission name="ConflictStatistics"/>
-					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
-				</condition>
-			</item>
-			<item name="Solver Log" page="solverLog.do">
-				<condition>
-					<hasPermission name="SolverLog"/>
-					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Solver Log" page="solverlog" type="gwt">
 				<parameter name="type">course</parameter>
 				<condition>
 					<hasPermission name="SolverLog"/>
-					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
-				</condition>
-			</item>
-			<item name="Reports" page="solutionReport.do">
-				<condition>
-					<hasPermission name="SolutionReports"/>
-					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Reports" page="solutionReports" type="gwt">
 				<condition>
 					<hasPermission name="SolutionReports"/>
-					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 		</menu>
@@ -251,54 +181,26 @@
 			<condition>
 				<hasPermission name="CourseTimetablingAudit"/>
 			</condition>
-			<item name="Solver" page="solver.do">
-				<condition>
-					<hasPermission name="Solver"/>
-					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
-				</condition>
-			</item>
 			<item name="Solver" page="solver" type="gwt">
 				<parameter name="type">course</parameter>
 				<condition>
 					<hasPermission name="Solver"/>
-					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
-				</condition>
-			</item>
-			<item name="Conflict Statistics" page="cbs.do">
-				<condition>
-					<hasPermission name="ConflictStatistics"/>
-					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Conflict Statistics" page="cbs" type="gwt">
 				<condition>
 					<hasPermission name="ConflictStatistics"/>
-					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
-				</condition>
-			</item>
-			<item name="Solver Log" page="solverLog.do">
-				<condition>
-					<hasPermission name="SolverLog"/>
-					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Solver Log" page="solverlog" type="gwt">
 				<parameter name="type">course</parameter>
 				<condition>
 					<hasPermission name="SolverLog"/>
-					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
-				</condition>
-			</item>
-			<item name="Reports" page="solutionReport.do">
-				<condition>
-					<hasPermission name="SolutionReports"/>
-					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Reports" page="solutionReports" type="gwt">
 				<condition>
 					<hasPermission name="SolutionReports"/>
-					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 		</menu>
@@ -371,32 +273,10 @@
 				<hasPermission name="HQLReportsStudents"/>
 			</or>
 		</condition>
-		<menu name="Batch Solver" page="studentSolver.do">
-			<condition>
-				<hasPermission name="StudentSectioningSolver"/>
-				<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
-			</condition>
-			<item name="Solver Log" page="studentSolverLog.do">
-				<condition>
-					<hasPermission name="StudentSectioningSolverLog"/>
-				</condition>
-			</item>
-			<item name="Solver Dashboard" page="batchsctdash" type="gwt">
-				<condition>
-					<hasPermission name="StudentSectioningSolverDashboard"/>
-				</condition>
-			</item>
-			<item name="Solver Reports" page="sctreport" type="gwt">
-				<condition>
-					<hasPermission name="StudentSectioningSolver"/>
-				</condition>
-			</item>
-		</menu>
 		<menu name="Batch Solver" page="solver" type="gwt">
 			<parameter name="type">student</parameter>
 			<condition>
 				<hasPermission name="StudentSectioningSolver"/>
-				<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
 			</condition>
 			<item name="Solver Log" page="solverlog" type="gwt">
 			<parameter name="type">student</parameter>
@@ -539,17 +419,10 @@
 			<condition>
 				<hasPermission name="ExaminationTimetabling"/>
 			</condition>
-			<item name="Examination Solver" page="examSolver.do">
-				<condition>
-					<hasPermission name="ExaminationSolver"/>
-					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
-				</condition>
-			</item>
 			<item name="Examination Solver" page="solver" type="gwt">
 				<parameter name="type">exam</parameter>
 				<condition>
 					<hasPermission name="ExaminationSolver"/>
-					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Timetable Grid" page="examGrid.do">
@@ -578,17 +451,10 @@
 					<hasPermission name="ExaminationConflictStatistics"/>
 				</condition>
 			</item>
-			<item name="Solver Log" page="examSolverLog.do">
-				<condition>
-					<hasPermission name="ExaminationSolverLog"/>
-					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
-				</condition>
-			</item>
 			<item name="Solver Log" page="solverlog" type="gwt">
 				<parameter name="type">exam</parameter>
 				<condition>
 					<hasPermission name="ExaminationSolverLog"/>
-					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 			<separator>

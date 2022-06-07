@@ -44,24 +44,13 @@
 	  <form-bean name="solverParamDefForm" type="org.unitime.timetable.form.SolverParamDefForm" />
 	  <form-bean name="solverSettingsForm" type="org.unitime.timetable.form.SolverSettingsForm" />
 	  <form-bean name="solverInfoDefForm" type="org.unitime.timetable.form.SolverInfoDefForm" />
-	  <form-bean name="listSolutionsForm" type="org.unitime.timetable.form.ListSolutionsForm" />
-	  <form-bean name="solverLogForm" type="org.unitime.timetable.form.SolverLogForm" />
-	  <form-bean name="solverForm" type="org.unitime.timetable.form.SolverForm" />
 	  <form-bean name="manageSolversForm" type="org.unitime.timetable.form.ManageSolversForm" />
-	  <form-bean name="cbsForm" type="org.unitime.timetable.form.CbsForm" />
-	  <form-bean name="timetableForm" type="org.unitime.timetable.form.TimetableForm" />
-	  <form-bean name="unassignedForm" type="org.unitime.timetable.form.UnassignedForm" />
-	  <form-bean name="suggestionsForm" type="org.unitime.timetable.form.SuggestionsForm" />
 	  <form-bean name="classListForm" type="org.unitime.timetable.form.ClassListForm" />
 	  <form-bean name="classEditForm" type="org.unitime.timetable.form.ClassEditForm" />
       <form-bean name="distributionPrefsForm" type="org.unitime.timetable.form.DistributionPrefsForm" />
       <form-bean name="hibernateQueryTestForm" type="org.unitime.timetable.form.HibernateQueryTestForm" />
       <form-bean name="classOwnerChangeForm" type="org.unitime.timetable.form.ClassOwnerChangeForm" />
 	  <form-bean name="classAssignmentsReportForm" type="org.unitime.timetable.form.ClassAssignmentsReportForm" />
-	  <form-bean name="assignmentHistoryForm" type="org.unitime.timetable.form.AssignmentHistoryForm" />
-   	  <form-bean name="solutionChangesForm" type="org.unitime.timetable.form.SolutionChangesForm" />
-	  <form-bean name="assignedClassesForm" type="org.unitime.timetable.form.AssignedClassesForm" />
-	  <form-bean name="solutionReportForm" type="org.unitime.timetable.form.SolutionReportForm" />
 	  <form-bean name="timePatternEditForm" type="org.unitime.timetable.form.TimePatternEditForm" />
       <form-bean name="instructionalOfferingDetailForm" type="org.unitime.timetable.form.InstructionalOfferingDetailForm" />
       <form-bean name="crossListsModifyForm" type="org.unitime.timetable.form.CrossListsModifyForm" />
@@ -90,8 +79,6 @@
       <form-bean name="examListForm" type="org.unitime.timetable.form.ExamListForm" />
       <form-bean name="examEditForm" type="org.unitime.timetable.form.ExamEditForm" />
       <form-bean name="examDistributionPrefsForm" type="org.unitime.timetable.form.ExamDistributionPrefsForm" />
-      <form-bean name="examSolverForm" type="org.unitime.timetable.form.ExamSolverForm" />
-	  <form-bean name="examSolverLogForm" type="org.unitime.timetable.form.ExamSolverLogForm" />
 	  <form-bean name="examReportForm" type="org.unitime.timetable.form.ExamReportForm" />
 	  <form-bean name="examPdfReportForm" type="org.unitime.timetable.form.ExamPdfReportForm" />
 	  <form-bean name="examGridForm" type="org.unitime.timetable.form.ExamGridForm" />
@@ -102,8 +89,6 @@
 	  <form-bean name="examsForm" type="org.unitime.timetable.form.ExamsForm" />
 	  <form-bean name="classesForm" type="org.unitime.timetable.form.ClassesForm" />
 	  <form-bean name="personalizedExamReportForm" type="org.unitime.timetable.form.PersonalizedExamReportForm" />
-      <form-bean name="studentSolverForm" type="org.unitime.timetable.form.StudentSolverForm" />
-	  <form-bean name="studentSolverLogForm" type="org.unitime.timetable.form.StudentSolverLogForm" />
   	  <form-bean name="sponsoringOrgListForm" type="org.unitime.timetable.form.SponsoringOrgListForm" />
   	  <form-bean name="sponsoringOrgEditForm" type="org.unitime.timetable.form.SponsoringOrgEditForm" />
       <form-bean name="roomTypeEditForm" type="org.unitime.timetable.form.RoomTypeEditForm" />
@@ -534,21 +519,6 @@
 	        redirect="true" />
 	    </action>
 	    
-	<action
-		path="/listSolutions"
-		type="org.springframework.web.struts.DelegatingActionProxy"
-		attribute="listSolutionsForm"
-		input="listSolutionsTile"
-		name="listSolutionsForm"
-		scope="request"
-		validate="false">
-      <forward
-        name="showSolutions"
-        path="listSolutionsTile"
-        redirect="true" />
-      
-    </action>
-    
     <action
     	path="/solverLog"
     	type="org.springframework.web.struts.DelegatingActionProxy"
@@ -587,70 +557,6 @@
         name="showSolvers"
         path="manageSolversTile"
         redirect="true" />
-      <forward
-        name="showSolver"
-        path="solverTile"
-        redirect="true" />
-      <forward
-        name="showExamSolver"
-        path="examSolverTile"
-        redirect="true" />
-      <forward
-        name="showStudentSolver"
-        path="studentSolverTile"
-        redirect="true" />
-    </action>
-    <action
-    	path="/cbs"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="cbsForm"
-    	input="cbsTile"
-    	name="cbsForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-	    	name="showCbs"
-	    	path="cbsTile"
-	    	redirect="true" />
-    </action>
-    <action
-    	path="/timetable"
-		type="org.springframework.web.struts.DelegatingActionProxy"
-		attribute="timetableForm"
-		input="timetableTile"
-		name="timetableForm"
-		scope="request"
-		validate="false">
-		<forward
-			name="showTimetable"
-	        path="timetableTile"
-    	    redirect="true" />
-    </action>
-    <action
-    	path="/unassigned"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="unassignedForm"
-    	input="unassignedTile"
-    	name="unassignedForm"
-    	scope="request"
-    	validate="false">
-		<forward
-			name="showUnassigned"
-			path="unassignedTile"
-			redirect="true" />
-    </action>
-    <action
-    	path="/suggestions"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="suggestionsForm"
-    	input="suggestionsTile"
-    	name="suggestionsForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-    		name="showSuggestions"
-    		path="suggestionsTile"
-    		redirect="true" />
     </action>
     
     <action 
@@ -844,56 +750,6 @@
 	    path="/logOut"
       	forward="/logout.jsp" />
       	
-      <action
-      	path="/assignmentHistory"
-      	attribute="assignmentHistoryForm"
-      	input="assignmentHistoryTile"
-      	name="assignmentHistoryForm"
-      	scope="request"
-      	type="org.springframework.web.struts.DelegatingActionProxy"
-      	validate="false">
-      	<forward
-      		name="showAssignmentHistory"
-      		path="assignmentHistoryTile" />
-      </action>
-      
-      <action
-      	path="/solutionChanges"
-      	attribute="solutionChangesForm"
-      	input="solutionChangesTile"
-      	name="solutionChangesForm"
-      	scope="request"
-      	type="org.springframework.web.struts.DelegatingActionProxy"
-      	validate="false">
-      	<forward 
-      		name="showSolutionChanges"
-      		path="solutionChangesTile" />
-       </action>
-    
-    	<action
-    	  path="/assignedClasses"
-    	  attribute="assignedClassesForm"
-    	  input="assignedClassesTile"
-    	  name="assignedClassesForm"
-    	  scope="request"
-    	  type="org.springframework.web.struts.DelegatingActionProxy"
-    	  validate="false">
-    	  <forward 
-    	  	name="showAssignedClasses" path="assignedClassesTile" />
-	    </action>
-	    
-	    <action
-	      path="/solutionReport"  
-	      attribute="solutionReportForm"
-	      input="solutionReportTile"
-	      name="solutionReportForm"
-	      scope="request"
-	      type="org.springframework.web.struts.DelegatingActionProxy" 
-	      validate="false">
-    	  <forward 
-    	  	name="showSolutionReport" path="solutionReportTile" />
-	    </action>
-	    
 	    <action
 	      path="/timePatternEdit"
 	      attribute="timePatternEditForm"
@@ -1344,34 +1200,6 @@
       </action>
 
     <action
-    	path="/examSolver"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="examSolverForm"
-    	input="examSolverTile"
-    	name="examSolverForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-    		name="showSolver"
-    		path="examSolverTile"
-	        redirect="true" />
-    </action>
-    
-    <action
-    	path="/examSolverLog"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="examSolverLogForm"
-    	input="examSolverLogTile"
-    	name="examSolverLogForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-    		name="showLog"
-    		path="examSolverLogTile"
-    		redirect="true" />
-    </action>
-   
-    <action
     	path="/assignedExams"
     	type="org.springframework.web.struts.DelegatingActionProxy"
     	attribute="examReportForm"
@@ -1543,34 +1371,6 @@
     		name="classes"
     		path="/classes.do"/>
     </action>    
-
-    <action
-    	path="/studentSolver"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="studentSolverForm"
-    	input="studentSolverTile"
-    	name="studentSolverForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-    		name="showSolver"
-    		path="studentSolverTile"
-	        redirect="true" />
-    </action>
-    
-    <action
-    	path="/studentSolverLog"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="studentSolverLogForm"
-    	input="studentSolverLogTile"
-    	name="studentSolverLogForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-    		name="showLog"
-    		path="studentSolverLogTile"
-    		redirect="true" />
-    </action>
 
     <action
     	path="/sponsoringOrgList"

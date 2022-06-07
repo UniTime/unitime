@@ -298,52 +298,9 @@
 		<put name="body" value="/admin/solverInfoDef.jsp" />
   	</definition>
   	
-	<definition	name="listSolutionsTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Timetables"/>
-		<put name="body" value="/tt/solutions.jsp" />
-		<put name="showSolverWarnings" value="solver" />
-  	</definition>
-
-	<definition	name="solverLogTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Solver Log"/>
-		<put name="body" value="/tt/log.jsp" />
-		<put name="showSolverWarnings" value="solver" />
-  	</definition>
-
-	<definition	name="solverTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Solver"/>
-		<put name="body" value="/tt/solver.jsp" />
-		<put name="showSolverWarnings" value="solver" />
-  	</definition>
-  	
 	<definition	name="manageSolversTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Manage Solvers"/>
 		<put name="body" value="/tt/manageSolvers.jsp" />
-  	</definition>
-
-	<definition	name="cbsTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Conflict-Based Statistics"/>
-		<put name="body" value="/tt/cbs.jsp" />
-		<put name="showSolverWarnings" value="solver" />
-  	</definition>
-
-	<definition	name="timetableTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Timetable"/>
-		<put name="body" value="/tt/timetable.jsp" />
-		<put name="showSolverWarnings" value="solver" />
-  	</definition>
-  	
-	<definition	name="unassignedTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Not-Assigned Classes"/>
-		<put name="body" value="/tt/unassigned.jsp" />
-		<put name="showSolverWarnings" value="solver" />
-  	</definition>
-
-	<definition	name="suggestionsTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Suggestions"/>
-		<put name="body" value="/tt/suggestions.jsp" />
-		<put name="showSolverWarnings" value="solver" />
-		<put name="showMenu" value="false" />
   	</definition>
 
 	<definition	name="hibrenateStatsTile" extends="pageLayoutDef">
@@ -411,30 +368,6 @@
   	<definition	name="classAssignmentsReportListTile" extends="classAssignmentsReportSearchTile">
 		<put name="body2" value="/user/classAssignmentsReportList.jsp" />
 		<put name="action2" value="classAssignmentsReportChange" />
-  	</definition>
-  	
-	<definition	name="assignmentHistoryTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Assignment History"/>
-		<put name="body" value="/tt/history.jsp" />
-		<put name="showSolverWarnings" value="solver" />
-  	</definition>
-  	
-  	<definition name="solutionChangesTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Changes"/>
-		<put name="body" value="/tt/changes.jsp" />
-		<put name="showSolverWarnings" value="solver" />
-  	</definition>
-
-  	<definition name="assignedClassesTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Assigned Classes"/>
-		<put name="body" value="/tt/assigned.jsp" />
-		<put name="showSolverWarnings" value="solver" />
-  	</definition>
-
-  	<definition name="solutionReportTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Solution Reports"/>
-		<put name="body" value="/tt/solutionReport.jsp" />
-		<put name="showSolverWarnings" value="solver" />
   	</definition>
   	
   	<definition name="timePatternsTile" extends="pageLayoutDef">
@@ -637,18 +570,6 @@
 		<put name="title" type="string" value="Edit Examination Distribution Preference"/>
   	</definition>
   	
-  	<definition	name="examSolverTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Examination Solver"/>
-		<put name="body" value="/exam/examSolver.jsp" />
-		<put name="showSolverWarnings" value="exams" />
-  	</definition>
-
-	<definition	name="examSolverLogTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Examination Solver Log"/>
-		<put name="body" value="/exam/examLog.jsp" />
-		<put name="showSolverWarnings" value="exams" />
-  	</definition>
-
 	<definition	name="assignedExamsTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Assigned Examinations"/>
 		<put name="body" value="/exam/assigned.jsp" />
@@ -718,16 +639,6 @@
 		<put name="checkRole" value="false" />
   	</definition> 	
 
-  	<definition	name="studentSolverTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Student Sectioning Solver"/>
-		<put name="body" value="/sct/studentSolver.jsp" />
-  	</definition>
-
-	<definition	name="studentSolverLogTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Student Sectioning Solver Log"/>
-		<put name="body" value="/sct/studentLog.jsp" />
-  	</definition>
-  	
  	<definition	name="sponsoringOrgListTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Sponsoring Organizations"/>
 		<put name="body" value="/admin/sponsoringOrgList.jsp" />

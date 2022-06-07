@@ -71,7 +71,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
-import org.unitime.timetable.form.ListSolutionsForm;
+import org.unitime.timetable.gwt.client.sectioning.PublishedSectioningSolutionsTable.InfoComparator;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -451,7 +451,7 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
 			PropertiesInfo propInfo = (PropertiesInfo)solution.getInfo("GlobalInfo");
 			if (propInfo != null) {
 				Map<String, String> translations = SOLVERMSG.courseInfoMessages();
-				TreeSet<String> keys = new TreeSet<String>(new ListSolutionsForm.InfoComparator());
+				TreeSet<String> keys = new TreeSet<String>(new InfoComparator());
 				for (Object o: propInfo.keySet()) keys.add((String)o);
 				for (String key: keys) {
 					String translatedKey = (translations == null ? null : translations.get(key));
@@ -559,7 +559,7 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
 			Date loaded = solver.getLoadedDate();
 			si.setCreated(loaded == null ? null : sTS.format(loaded)); 
 			si.setNote(solver.getNote());
-			TreeSet<String> keys = new TreeSet<String>(new ListSolutionsForm.InfoComparator());
+			TreeSet<String> keys = new TreeSet<String>(new InfoComparator());
 			keys.addAll(info.keySet());
 			for (String key: keys) {
 				String translatedKey = (translations == null ? null : translations.get(key));

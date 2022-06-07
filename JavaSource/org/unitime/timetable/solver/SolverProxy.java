@@ -36,8 +36,6 @@ import org.unitime.timetable.solver.TimetableSolver.AssignmentRecord;
 import org.unitime.timetable.solver.TimetableSolver.RecordedAssignment;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 import org.unitime.timetable.solver.interactive.Hint;
-import org.unitime.timetable.solver.interactive.Suggestions;
-import org.unitime.timetable.solver.interactive.SuggestionsModel;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.solver.ui.ConflictStatisticsInfo;
 import org.unitime.timetable.solver.ui.DeptBalancingReport;
@@ -67,7 +65,6 @@ public interface SolverProxy extends ClassAssignmentProxy, CommonSolverInterface
 	public Vector getTimetableGridTables(TimetableGridContext context);
 	public List<TimetableGridModel> getTimetableGridTables(org.unitime.timetable.server.solver.TimetableGridContext context);
 	public ClassAssignmentDetails getClassAssignmentDetails(Long classId, boolean includeConstraints);
-	public Suggestions getSuggestions(SuggestionsModel model);
 	public void assign(Collection hints);
 	public Hashtable conflictInfo(Collection hints);
 	public ConflictStatisticsInfo getCbsInfo();

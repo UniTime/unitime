@@ -2597,11 +2597,6 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
-	@Description("Solver: switch the user interface back to the old (Struts-based) solver pages")
-	LegacySolver("unitime.legacy.solver"),
-		
-	@Type(Boolean.class)
-	@DefaultValue("false")
 	@Description("Examinations: switch the user interface back to the old period preferences")
 	LegacyPeriodPreferences("unitime.legacy.periodPrefs"),
 

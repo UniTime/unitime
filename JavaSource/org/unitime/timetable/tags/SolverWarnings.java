@@ -29,7 +29,6 @@ import javax.servlet.jsp.tagext.BodyTagSupport;
 
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.model.Department;
@@ -145,7 +144,7 @@ public class SolverWarnings extends BodyTagSupport {
 				}
 				if (names == null || names.isEmpty()) names.add(MESSAGES.notApplicable());
 				return new String[] {
-						interactive ? "listSolutions.do" : ApplicationProperty.LegacySolver.isTrue() ? "solver.do" : "gwt.jsp?page=solver&type=course",
+						interactive ? "gwt.jsp?page=listSolutions" : "gwt.jsp?page=solver&type=course",
 						MESSAGES.infoSolverShowingSolution(SolverPageBackend.toString(names))
 					};
 			}
@@ -161,7 +160,7 @@ public class SolverWarnings extends BodyTagSupport {
 				names.add(solutionIds.length <= 3 ? solution.getOwner().getName() : solution.getOwner().getAbbv());
 			}
 			return new String[] {
-					"listSolutions.do",
+					"gwt.jsp?page=listSolutions",
 					names.isEmpty() ? null : names.size() == 1 ? MESSAGES.infoSolverShowingSelectedSolution(names.get(0)) : MESSAGES.infoSolverShowingSelectedSolutions(SolverPageBackend.toString(names))
 				};
 		}
@@ -183,7 +182,7 @@ public class SolverWarnings extends BodyTagSupport {
 						if (selectedExamTypeId != null && !selectedExamTypeId.equals(type.getUniqueId())) return null;
 					}
 					return new String[] {
-						ApplicationProperty.LegacySolver.isTrue() ? "examSolver.do" : "gwt.jsp?page=solver&type=exam",
+						"gwt.jsp?page=solver&type=exam",
 						MESSAGES.infoExamSolverShowingSolution(type.getLabel())
 					};
 				}
