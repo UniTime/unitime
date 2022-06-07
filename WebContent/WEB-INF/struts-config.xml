@@ -30,13 +30,9 @@
 	  <form-bean name="sessionListForm" type="org.unitime.timetable.form.SessionListForm" />
 	  <form-bean name="sessionEditForm" type="org.unitime.timetable.form.SessionEditForm" />
 	  <form-bean name="subjectListForm" type="org.unitime.timetable.form.SubjectListForm" />
-	  <form-bean name="buildingListForm" type="org.unitime.timetable.form.BuildingListForm" />
-	  <form-bean name="roomListForm" type="org.unitime.timetable.form.RoomListForm" />
 	  <form-bean name="departmentListForm" type="org.unitime.timetable.form.DepartmentListForm" />
 	  <form-bean name="roleListForm" type="org.unitime.timetable.form.RoleListForm" />
 	  <form-bean name="mgrForm" type="org.unitime.timetable.form.TimetableManagerForm" />
-	  <form-bean name="roomFeatureListForm" type="org.unitime.timetable.form.RoomFeatureListForm" />
-	  <form-bean name="roomFeatureEditForm" type="org.unitime.timetable.form.RoomFeatureEditForm" />
 	  <form-bean name="instructionalOfferingListForm" type="org.unitime.timetable.form.InstructionalOfferingListForm" />
 	  <form-bean name="instructionalOfferingConfigEditForm" type="org.unitime.timetable.form.InstructionalOfferingConfigEditForm" />
 	  <form-bean name="schedulingSubpartEditForm" type="org.unitime.timetable.form.SchedulingSubpartEditForm" />
@@ -71,14 +67,6 @@
       <form-bean name="crossListsModifyForm" type="org.unitime.timetable.form.CrossListsModifyForm" />
       <form-bean name="instructionalOfferingModifyForm" type="org.unitime.timetable.form.InstructionalOfferingModifyForm" />
       <form-bean name="datePatternEditForm" type="org.unitime.timetable.form.DatePatternEditForm" />
-	  <form-bean name="roomGroupListForm" type="org.unitime.timetable.form.RoomGroupListForm" />
-      <form-bean name="roomGroupEditForm" type="org.unitime.timetable.form.RoomGroupEditForm" />
-      <form-bean name="roomDeptListForm" type="org.unitime.timetable.form.RoomDeptListForm" />
-      <form-bean name="roomDeptEditForm" type="org.unitime.timetable.form.RoomDeptEditForm" />
-      <form-bean name="addNonUnivLocationForm" type="org.unitime.timetable.form.AddNonUnivLocationForm" />
-      <form-bean name="nonUnivLocationForm" type="org.unitime.timetable.form.NonUnivLocationForm" />
-      <form-bean name="specialUseRoomForm" type="org.unitime.timetable.form.SpecialUseRoomForm" />
-      <form-bean name="roomDetailForm" type="org.unitime.timetable.form.RoomDetailForm" />
       <form-bean name="editRoomPrefForm" type="org.unitime.timetable.form.EditRoomPrefForm" />
       <form-bean name="editRoomFeatureForm" type="org.unitime.timetable.form.EditRoomFeatureForm" />
       <form-bean name="editRoomGroupForm" type="org.unitime.timetable.form.EditRoomGroupForm" />
@@ -98,7 +86,6 @@
       <form-bean name="deptStatusTypeEditForm" type="org.unitime.timetable.form.DeptStatusTypeEditForm" />
       <form-bean name="userEditForm" type="org.unitime.timetable.form.UserEditForm" />
       <form-bean name="subjectAreaEditForm" type="org.unitime.timetable.form.SubjectAreaEditForm" />
-      <form-bean name="buildingEditForm" type="org.unitime.timetable.form.BuildingEditForm" />
       <form-bean name="examPeriodEditForm" type="org.unitime.timetable.form.ExamPeriodEditForm" />
       <form-bean name="examListForm" type="org.unitime.timetable.form.ExamListForm" />
       <form-bean name="examEditForm" type="org.unitime.timetable.form.ExamEditForm" />
@@ -115,7 +102,6 @@
 	  <form-bean name="examsForm" type="org.unitime.timetable.form.ExamsForm" />
 	  <form-bean name="classesForm" type="org.unitime.timetable.form.ClassesForm" />
 	  <form-bean name="personalizedExamReportForm" type="org.unitime.timetable.form.PersonalizedExamReportForm" />
-	  <form-bean name="roomAvailabilityForm" type="org.unitime.timetable.form.RoomAvailabilityForm" />
       <form-bean name="studentSolverForm" type="org.unitime.timetable.form.StudentSolverForm" />
 	  <form-bean name="studentSolverLogForm" type="org.unitime.timetable.form.StudentSolverLogForm" />
   	  <form-bean name="sponsoringOrgListForm" type="org.unitime.timetable.form.SponsoringOrgListForm" />
@@ -217,28 +203,6 @@
 	      	path="/subjectList.do" />
       </action>
       
-      <action
-         path="/buildingList"
-         attribute="buildingListForm"
-         input="buildingListTile"
-         name="buildingListForm"
-         scope="request"
-         type="org.springframework.web.struts.DelegatingActionProxy">
-         <forward name="showBuildingList" path="buildingListTile" />
-      </action>
-
-     <action
-         path="/roomList"
-         attribute="roomListForm"
-         input="roomListTile"
-         name="roomListForm"
-         scope="request"
-         validate="false"
-         type="org.springframework.web.struts.DelegatingActionProxy">
-         <forward name="showRoomList" path="roomListTile" />         
-         <forward name="showRoomSearch" path="roomSearchTile" />
-      </action>
-
 	 <action
          path="/departmentList"
          attribute="departmentListForm"
@@ -288,33 +252,6 @@
             path="loginRequiredTile" />
       </action>
       
-      <action
-         path="/roomFeatureList"
-         attribute="roomFeatureListForm"
-         input="roomFeatureListTile"
-         name="roomFeatureListForm"
-         parameter="doit"
-         scope="request"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         validate="false">
-         <forward name="showRoomFeatureList" path="roomFeatureListTile" />         
-         <forward name="showRoomFeatureSearch" path="roomFeatureSearchTile" />  
-         <forward name="showAdd" path="/roomFeatureEdit.do" />
-      </action>  
-
-	  <action
-         path="/roomFeatureEdit"
-         name="roomFeatureEditForm"
-         attribute="roomFeatureEditForm"
-         parameter="doit"
-         scope="request"
-         validate="false"
-         type="org.springframework.web.struts.DelegatingActionProxy">
-         <forward name="showEdit" path="roomFeatureEditTile" />
-         <forward name="showAdd" path="roomFeatureEditTile" />
-         <forward name="showRoomFeatureList" path="/roomFeatureList.do" />
-      </action>
-
       <action
          path="/timetableManagerEdit"
          type="org.springframework.web.struts.DelegatingActionProxy"
@@ -1066,263 +1003,17 @@
       <forward name="edit" path="editDatePatternTile" />
     </action>
 
-    <action
-      attribute="roomGroupListForm"
-      input="/admin/roomGroupList.jsp"
-      name="roomGroupListForm"
-      parameter="doit"
-      path="/roomGroupList"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false">
-      <forward name="showRoomGroupList" path="roomGroupListTile" />
-      <forward name="showRoomGroupSearch" path="roomGroupSearchTile" />
-      <forward name="showAdd" path="/roomGroupEdit.do" />
-    </action>
-
-    <action
-      attribute="roomGroupEditForm"
-      input="/admin/roomGroupEdit.jsp"
-      name="roomGroupEditForm"
-      parameter="doit"
-      path="/roomGroupEdit"
-      scope="request"
-      validate="false"
-      type="org.springframework.web.struts.DelegatingActionProxy">
-      <forward name="showRoomGroupList" path="/roomGroupList.do" />
-      <forward name="showEdit" path="roomGroupEditTile" />
-      <forward name="showAdd" path="roomGroupEditTile" />
-    </action>
-
-    <action
-      attribute="roomDeptListForm"
-      input="/admin/roomDeptList.jsp"
-      name="roomDeptListForm"
-      parameter="doit"
-      path="/roomDeptList"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy">
-      <forward name="showRoomDeptList" path="roomDeptListTile" />
-    </action>
-
-    <action
-      attribute="roomDeptEditForm"
-      input="/admin/roomDeptEdit.jsp"
-      name="roomDeptEditForm"
-      parameter="doit"
-      path="/roomDeptEdit"
-      scope="request"
-      validate="false"
-      type="org.springframework.web.struts.DelegatingActionProxy">
-      <forward name="show" path="roomDeptEditTile" />
-      <forward name="back" path="/roomList.do" />
-    </action>
-
-    <action
-      attribute="nonUnivLocationForm"
-      input="/admin/addNonUnivLocation.jsp"
-      name="nonUnivLocationForm"
-      path="/addNonUnivLocation"
-      scope="request"
-      validate="false"
-      type="org.springframework.web.struts.DelegatingActionProxy" >
-      <forward name="showAdd" path="nonUnivLocationAddTile" />
-      <forward name="showRoomList" path="/roomList.do" />
-     </action>
-
-    <action
-      attribute="specialUseRoomForm"
-      input="/admin/addSpecialUseRoom.jsp"
-      name="specialUseRoomForm"
-      path="/addSpecialUseRoom"
-      scope="request"
-      validate="false"
-      type="org.springframework.web.struts.DelegatingActionProxy" >
-      <forward name="showAdd" path="specialUseRoomAddTile" />      
-      <forward name="showRoomList" path="/roomList.do" />
-	</action>
-
-    <action
-      attribute="roomDetailForm"
-      input="/admin/roomDetail.jsp"
-      name="roomDetailForm"
-      path="/roomDetail"
-      scope="request"
-      parameter="doit"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false">
-      <forward name="showEditRoomFeature" path="/editRoomFeature.do" />
-      <forward name="showRoomList" path="/roomList.do" />
-      <forward name="showEditRoomGroup" path="/editRoomGroup.do" />
-      <forward name="showEditRoomPref" path="/editRoomPref.do" />
-      <forward name="showEditRoomDept" path="/editRoomDept.do" />
-      <forward name="showEditRoom" path="/editRoom.do" />
-      <forward name="showRoomDetail" path="roomDetailTile" />
-    </action>
-
-    <action
-      attribute="editRoomPrefForm"
-      input="/admin/setUpRoomPref.jsp"
-      name="editRoomPrefForm"
-      path="/editRoomPref"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false">
-      <forward name="showRoomDetail" path="/roomDetail.do" />
-      <forward name="showEditRoomPref" path="editRoomPrefTile" />
-    </action>
-
-    <action
-      attribute="editRoomFeatureForm"
-      input="/admin/editRoomFeature.jsp"
-      name="editRoomFeatureForm"
-      path="/editRoomFeature"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false">
-      <forward name="showRoomDetail" path="/roomDetail.do" />
-      <forward name="showEditRoomFeature" path="editRoomFeatureTile" />
-    </action>
-
-    <action
-      attribute="editRoomGroupForm"
-      input="/admin/editRoomGroup.jsp"
-      name="editRoomGroupForm"
-      path="/editRoomGroup"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false">
-      <forward name="showRoomDetail" path="/roomDetail.do" />
-      <forward name="showEditRoomGroup" path="editRoomGroupTile" />
-    </action>
-
-    <action
-      attribute="editRoomDeptForm"
-      input="/admin/editRoomDept.jsp"
-      name="editRoomDeptForm"
-      path="/editRoomDept"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false">
-      <forward name="showRoomDetail" path="/roomDetail.do" />
-      <forward name="showEditRoomDept" path="editRoomDeptTile" />
-    </action>
-    
     <action 
     	path="/back"
     	type="org.springframework.web.struts.DelegatingActionProxy"
 		scope="request"
 		validate="false" />
 
-    <action
-      attribute="roomListForm"
-      input="/admin/roomSearch.jsp"
-      name="roomListForm"
-      path="/roomSearch"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false">
-      <forward name="showRoomList" path="roomListTile" />
-      <forward name="roomList" path="/roomList.do" />
-      <forward name="showRoomSearch" path="roomSearchTile" />
-    </action>
-
-    <action
-      attribute="roomListForm"
-      input="/admin/roomList.jsp"
-      name="roomListForm"
-      path="/roomChange"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false">
-      <forward name="showRoomList" path="roomListTile" />
-      <forward name="showRoomSearch" path="roomSearchTile" />
-    </action>
-    <action
-      attribute="roomFeatureListForm"
-      input="/admin/roomFeatureList.jsp"
-      name="roomFeatureListForm"
-      path="/roomFeatureChange"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false">
-      <forward name="showRoomFeatureList" path="roomFeatureListTile" />
-      <forward name="showRoomFeatureSearch" path="roomFeatureSearchTile" />
-    </action>
-		
 	<action 
 		path="/activeSessions"
 		forward="activeSessionsTile"
 		scope="request" />
-    <action
-      attribute="roomFeatureListForm"
-      input="/admin/roomFeatureSearch.jsp"
-      name="roomFeatureListForm"
-      path="/roomFeatureSearch"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false">
-      <forward name="roomFeatureList" path="/roomFeatureList.do" />
-      <forward name="showRoomFeatureSearch" path="roomFeatureSearchTile" />
-      <forward name="showRoomFeatureList" path="roomFeatureListTile" />
-    </action>
-    <action
-      attribute="roomFeatureEditForm"
-      input="/admin/roomFeatureAdd.jsp"
-      name="roomFeatureEditForm"
-      path="/roomFeatureAdd"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false">
-      <forward name="showAdd" path="roomFeatureAddTile" />
-      <forward name="showRoomFeatureList" path="/roomFeatureList.do" />
-    </action>
-    <action
-      attribute="roomGroupListForm"
-      input="/admin/roomGroupSearch.jsp"
-      name="roomGroupListForm"
-      path="/roomGroupSearch"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false">
-      <forward name="showRoomGroupList" path="roomGroupListTile" />
-      <forward name="roomGroupList" path="/roomGroupList.do" />
-      <forward name="showRoomGroupSearch" path="roomGroupSearchTile" />
-    </action>
-    <action
-      attribute="roomGroupListForm"
-      input="/admin/roomGroupList.jsp"
-      name="roomGroupListForm"
-      path="/roomGroupChange"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false">
-      <forward name="showRoomGroupList" path="roomGroupListTile" />
-      <forward name="showRoomGroupSearch" path="roomGroupSearchTile" />
-    </action>
-    <action
-      attribute="roomGroupEditForm"
-      input="/admin/roomGroupAdd.jsp"
-      name="roomGroupEditForm"
-      path="/roomGroupAdd"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false">
-      <forward name="showRoomGroupList" path="/roomGroupList.do" />
-      <forward name="showAdd" path="roomGroupAddTile" />
-    </action>
-    <action
-      attribute="editRoomForm"
-      input="/admin/editRoom.jsp"
-      name="editRoomForm"
-      path="/editRoom"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false">
-      <forward name="showEditRoom" path="editRoomTile" />
-      <forward name="showAddRoom" path="addRoomTile" />
-      <forward name="showRoomDetail" path="roomDetailTile" />
-    </action>
+
     <action
       attribute="instructorListUpdateForm"
       input="/user/instructorListUpdate.jsp"
@@ -1544,38 +1235,12 @@
        <forward name="edit" path="userEditTile" />
     </action>
 
-    <action
-       path="/buildingEdit"
-       type="org.springframework.web.struts.DelegatingActionProxy"
-       attribute="buildingEditForm"
-       input="buildingEditTile"
-       name="buildingEditForm"
-       scope="request"
-       validate="false" >
-       <forward 
-       		name="edit" 
-       		path="buildingEditTile" />
-       <forward 
-       		name="add" 
-       		path="buildingAddTile" />
-       <forward 
-       		name="back" 
-       		path="/buildingList.do" />
-    </action>
-
 	  <action
          path="/distributionPrefsAjax"
          type="org.springframework.web.struts.DelegatingActionProxy"
          scope="request"
          validate="false" />
          
-      <action
-      	 path="/buildingCoordsAjax"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         scope="request"
-         validate="false" 
-      />
-		
       <action
       	 path="/itypesAjax"
          type="org.springframework.web.struts.DelegatingActionProxy"
@@ -1852,20 +1517,6 @@
          	name="personal"
             path="/personalSchedule.do"
             redirect="true"/>
-    </action>
-
-    <action
-    	path="/roomAvailability"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="roomAvailabilityForm"
-    	input="roomAvailabilityTile"
-    	name="roomAvailabilityForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-	    	name="showReport"
-	    	path="roomAvailabilityTile"
-	    	redirect="true" />
     </action>
 
     <action

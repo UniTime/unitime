@@ -114,11 +114,6 @@
 		<put name="body" value="/admin/sessionEdit.jsp" />
   	</definition>
   	
-	<definition	name="buildingListTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Buildings"/>
-		<put name="body" value="/admin/buildingList.jsp" />
-  	</definition>
-
 	<definition	name="subjectListTile" extends="pageLayoutDef">
 		<put name="onLoadFunction" type="string" value="onLoad='jumpToAnchor()'" />
 		<put name="title" type="string" value="Subject Areas"/>
@@ -141,56 +136,6 @@
 		<put name="body" value="/admin/departmentList.jsp" />
   	</definition>
 
-  	<definition	name="roomSearchTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Rooms"/>
-		<put name="body" value="/admin/roomSearch.jsp" />
-  	</definition>
-
-	<definition	name="roomListTile" extends="roomSearchTile">
-		<put name="body2" value="/admin/roomList.jsp"/>
-		<put name="action2" value="roomChange"/>
-  	</definition>
-  	
-  	<definition	name="roomDetailTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Room Detail"/>
-		<put name="body" value="/admin/roomDetail.jsp" />
-		<put name="showNavigation" value="true" />
-  	</definition>
-  	
-  	<definition	name="editRoomTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Edit Room"/>
-		<put name="body" value="/admin/editRoom.jsp" />
-		<put name="showNavigation" value="true" />
-  	</definition>
-
-  	<definition	name="addRoomTile" extends="editRoomTile">
-		<put name="title" type="string" value="Add Room"/>
-  	</definition>
-  	  	
-  	<definition	name="editRoomPrefTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Edit Room Preference"/>
-		<put name="body" value="/admin/setUpRoomPref.jsp" />
-		<put name="showNavigation" value="true" />
-  	</definition>
-  	
-  	<definition	name="editRoomFeatureTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Edit Room Features"/>
-		<put name="body" value="/admin/editRoomFeature.jsp" />
-		<put name="showNavigation" value="true" />
-  	</definition>
-  	
-  	<definition	name="editRoomDeptTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Edit Room Availability"/>
-		<put name="body" value="/admin/editRoomDept.jsp" />
-		<put name="showNavigation" value="true" />
-  	</definition>
-  	
-  	<definition	name="editRoomGroupTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Edit Room Groups"/>
-		<put name="body" value="/admin/editRoomGroup.jsp" />
-		<put name="showNavigation" value="true" />
-  	</definition>
-  	
  	<definition	name="instructorSearchTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Instructors"/>
 		<put name="body" value="/user/instructorSearch.jsp" />
@@ -240,79 +185,6 @@
 	<definition	name="instructorListUpdateTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Manage Instructor List"/>
 		<put name="body" value="/user/instructorListUpdate.jsp" />
-  	</definition>
-  	
-  	<definition	name="roomFeatureListTile" extends="roomFeatureSearchTile">
-		<put name="body2" value="/admin/roomFeatureList.jsp"/>
-		<put name="action2" value="roomFeatureChange" />
-  	</definition>
-  	
-  	<definition	name="roomFeatureSearchTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Room Features"/>
-		<put name="body" value="/admin/roomFeatureSearch.jsp" />
-  	</definition>
-
-  	<definition	name="roomFeatureEditTile" extends="pageLayoutDef">
-  		<put name="title" type="string" value="Edit Room Feature"/>
-		<put name="body" value="/admin/roomFeatureEdit.jsp" />
-  	</definition>
-  	
-  	<definition	name="roomFeatureAddTile" extends="pageLayoutDef">
-  		<put name="title" type="string" value="Add Room Feature"/>
-		<put name="body" value="/admin/roomFeatureAdd.jsp" />
-  	</definition>
-  	
-  	<definition	name="roomGroupSearchTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Room Groups"/>
-		<put name="body" value="/admin/roomGroupSearch.jsp" />
-  	</definition>
-  	
-  	<definition	name="roomGroupListTile" extends="roomGroupSearchTile">
-		<put name="body2" value="/admin/roomGroupList.jsp"/>
-		<put name="action2" value="roomGroupChange" />
-  	</definition>
-  	
-  	<definition	name="roomGroupAddTile" extends="pageLayoutDef">
-  		<put name="title" type="string" value="Add Room Group"/>
-		<put name="body" value="/admin/roomGroupAdd.jsp" />
-  	</definition>
-
-  	<definition	name="roomGroupEditTile" extends="pageLayoutDef">
-  		<put name="title" type="string" value="Edit Room Group"/>
-		<put name="body" value="/admin/roomGroupEdit.jsp" />
-  	</definition>
-
-  	<definition	name="globalRoomFeatureEditTile" extends="roomFeatureEditTile">
-		<put name="title" type="string" value="Global Room Feature"/>
-		<put name="body2" value="/admin/globalRoomFeatureEdit.jsp" />
-		<put name="action2" value="globalRoomFeatureEdit" />
-  	</definition>
-
-  	<definition	name="managerRoomFeatureEditTile" extends="roomFeatureEditTile">
-		<put name="title" type="string" value="Manager Room Feature"/>
-		<put name="body2" value="/admin/managerRoomFeatureEdit.jsp" />
-		<put name="action2" value="managerRoomFeatureEdit" />
-		
-  	</definition>
-  	  	<definition	name="roomDeptListTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Room Availability &amp; Sharing"/>
-		<put name="body" value="/admin/roomDeptList.jsp" />
-		<put name="showNavigation" value="true" />
-  	</definition>
-
-  	<definition	name="roomDeptEditTile" extends="pageLayoutDef">
-  		<put name="title" type="string" value="Edit Room Departments"/>
-		<put name="body" value="/admin/roomDeptEdit.jsp" />
-  	</definition>
-   	
-	<definition name="nonUnivLocationAddTile" extends="pageLayoutDef">
-  		<put name="title" type="string" value="Add Non-University Location"/>
-		<put name="body" value="/admin/addNonUnivLocation.jsp" />
-  	</definition>
-  	
-  	<definition name="specialUseRoomAddTile" extends="pageLayoutDef">
-  		<put name="title" type="string" value="Add Special Use Room"/>
-		<put name="body" value="/admin/addSpecialUseRoom.jsp" />
   	</definition>
 
   	<definition	name="instructionalOfferingSearchTile" extends="pageLayoutDef">
@@ -710,15 +582,6 @@
 		<put name="title" type="string" value="Edit User"/>
   	</definition>
 
-   	<definition	name="buildingEditTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Edit Building"/>
-		<put name="body" value="/admin/buildingEdit.jsp" />
-  	</definition>
-
-   	<definition	name="buildingAddTile" extends="buildingEditTile">
-		<put name="title" type="string" value="Add Building"/>
-  	</definition>
-
   	<definition name="examPeriodsTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Examination Periods"/>
 		<put name="body" value="/admin/examPeriods.jsp" />
@@ -835,11 +698,6 @@
 		<put name="showSolverWarnings" value="exams" />
   	</definition>
 
-  	<definition	name="roomAvailabilityTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Room Availability"/>
-		<put name="body" value="/exam/roomAvailability.jsp" />
-  	</definition>
-  	
  	<definition	name="personalizedExamReportTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Personal Schedule"/>
 		<put name="body" value="/exam/personalizedReport.jsp" />
