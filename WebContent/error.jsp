@@ -19,6 +19,7 @@
  * 
 --%>
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" isErrorPage="true"%>
+<%@ taglib uri="/struts-tags"  prefix="s" %>
 <%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
 <%@ page import="org.unitime.commons.web.WebOutputStream"%>
 <%@ page import="java.io.PrintWriter"%>
@@ -32,7 +33,7 @@
 			session.removeAttribute("exception");
  		}
  	} catch (IllegalStateException e) {}
- 	if (exception instanceof AccessDeniedException || "Access Denied.".equals(exception.getMessage())) {
+ 	if (exception != null && (exception instanceof AccessDeniedException || "Access Denied.".equals(exception.getMessage()))) {
 %>
 		<jsp:forward page="/loginRequired.do">
 			<jsp:param name="message" value="<%=exception.getMessage()%>"/>
@@ -142,9 +143,7 @@
 		<TABLE width="100%" border="0">
 			<TR>
 				<TD colspan="2">
-					<DIV class="WelcomeRowHead">
-						<FONT color="898989">Error: </FONT>
-						<FONT color="#FF0000"><%= 
+					<DIV class="WelcomeRowHead">Error: <FONT color="#FF0000"><%= 
 						(exception.getMessage() != null
 	                        && exception.getMessage().indexOf("$jsp:") >= 0 
 	                    ? exception.getMessage()
@@ -161,11 +160,17 @@
 			String stackTrace = wos.toString();
 		%>
 			<TR align="left" valign="top">
-				<TD><FONT color="898989">Trace: </FONT></TD>
-				<TD> <FONT color="898989"> <%
-					       out.print(stackTrace);
-				    %></FONT>
-				</TD>
+				<TD>Trace:</TD>
+				<TD><FONT color="898989"><% out.print(stackTrace); %></FONT></TD>
+			</TR>
+		</TABLE>
+	<% } else {%>
+		<TABLE width="100%" border="0">
+			<TR><TD colspan="2">
+				<DIV class="WelcomeRowHead">Error: <FONT color="#FF0000"><s:property value="exception"/></FONT></DIV>
+			</TD></TR>
+			<TR align="left" valign="top">
+				<td>Trace:</td><td style="white-space: pre; color: #898989;"><s:property value="exceptionStack" /></td>
 			</TR>
 		</TABLE>
 	<% } %>

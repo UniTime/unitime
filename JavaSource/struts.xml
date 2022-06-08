@@ -36,9 +36,11 @@
         </result-types> 
     	<global-results>
     		<result name="exception">/error.jsp</result>
+    		<result name="securityException">/loginRequired.do</result>
     	</global-results>
     	<global-exception-mappings>
     		<exception-mapping exception="java.lang.Exception" result="exception"/>
+    		<exception-mapping exception="org.springframework.security.access.AccessDeniedException" result="securityException"/>
     	</global-exception-mappings>
     </package>
 </struts>
