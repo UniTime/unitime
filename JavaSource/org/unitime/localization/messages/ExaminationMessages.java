@@ -35,5 +35,70 @@ public interface ExaminationMessages extends Messages {
 	
 	@DefaultMessage("Midterm")
 	String typeMidterm();
+	
+	@DefaultMessage("{0} Examinations")
+	String tableExaminations(String type);
+	
+	@DefaultMessage("Classes / Courses")
+	String colExamOwner();
+	
+	@DefaultMessage("Length")
+	String colExamLength();
+	
+	@DefaultMessage("Seating|Type")
+	String colExamSeatingType();
+	
+	@DefaultMessage("Size")
+	String colExamSize();
+	
+	@DefaultMessage("Max|Rooms")
+	String colExamMaxRooms();
+	
+	@DefaultMessage("Instructor")
+	String colExamInstructor();
+	
+	@DefaultMessage("Period|Preferences")
+	String colExamPeriodPrefs();
+	
+	@DefaultMessage("Room|Preferences")
+	String colExamRoomPrefs();
+	
+	@DefaultMessage("Distribution|Preferences")
+	String colExamDistributionPrefs();
+	
+	@DefaultMessage("Assigned|Period")
+	String colExamAssignedPeriod();
+	
+	@DefaultMessage("Assigned|Room")
+	String colExamAssignedRoom();
 
+	@DefaultMessage("No examination matching the above criteria was found.")
+	String errorNoMatchingExam();
+	
+	@DefaultMessage("Add Examination")
+	String buttonAddExamination();
+	
+	@DefaultMessage("Export PDF")
+	String buttonExportPDF();
+	
+	@DefaultMessage("Export CSV")
+	String buttonExportCSV();
+	
+	@DefaultMessage("Search")
+	String buttonSearch();
+	
+	@DefaultMessage("Course numbers can be specified using wildcard (*). E.g. 2*")
+	String titleCourseNumberSuggestBox();
+	
+	@DefaultMessage("{0} Exams ({1})")
+	String backExams(String type, String subjectOrCourse);
+	
+	@DefaultMessage("Type:")
+	String propExamType();
+	
+	@DefaultMessage("Subject:")
+	String propExamSubject();
+	
+	@DefaultMessage("Course Number:")
+	String propExamCourseNumber();
 }

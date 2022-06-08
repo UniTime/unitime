@@ -44,6 +44,10 @@ public class TilesRedirectAction extends Action {
             ActionForm form,
             HttpServletRequest request,
             HttpServletResponse response) {
+    	
+    	Throwable e = (Throwable)request.getAttribute("exception");
+    	if (e != null)
+    		request.setAttribute("message", e.getMessage());
 
         return mapping.findForward("success");
     }

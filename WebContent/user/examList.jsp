@@ -17,87 +17,62 @@
  * limitations under the License.
  * 
 --%>
-<%@ page language="java" autoFlush="true"%>
-<%@ page import="org.unitime.timetable.util.Constants" %>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean"%>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html"%>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic"%>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles"%>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
-
-<tiles:importAttribute />
-<html:form action="/examList">
-	<TABLE border='0'>
-		<TR>
-			<TH valign="middle">Type:</TH>
-			<TD valign="middle">
-				<html:select name="examListForm" property="examType">
-					<html:options collection="examTypes" property="uniqueId" labelProperty="label" />
-				</html:select>
-			</TD>
-			<TH valign="middle">Subject:</TH>
-			<TD valign="middle">
-				<html:select name="examListForm" property="subjectAreaId" styleId="subjectId" >
-					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
-					<sec:authorize access="hasPermission(null, null, 'DepartmentIndependent')">
-						<html:option value="<%=Constants.ALL_OPTION_VALUE%>"><%=Constants.ALL_OPTION_LABEL%></html:option>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="ExaminationMessages"><s:set var="msg" value="#attr.MSG"/> 
+<s:form action="examList">
+	<table class="unitime-MainTable">
+		<tr>
+			<th nowrap="nowrap"><loc:message name="propExamType"/></th><td>
+				<s:select name="form.examType" list="%{#request.examTypes}" listKey="uniqueId" listValue="label"/>
+			</td>
+			<th nowrap="nowrap" style="padding-left: 10px;"><loc:message name="propExamSubject"/></th><td>
+				<s:select name="form.subjectAreaId" id="subjectId" list="form.subjectAreas" listKey="id" listValue="value"/>
+			</td>
+			<th nowrap="nowrap" style="padding-left: 10px;"><loc:message name="propExamCourseNumber"/></th><td>
+				<span name='UniTimeGWT:CourseNumberSuggestBox' configuration="subjectId=\${subjectId};notOffered=exclude">
+					<s:textfield name="form.courseNbr" size="15" title="%{#msg.titleCourseNumberSuggestBox()}"/>
+				</span>
+			</td>
+			<td align="right" style="padding-left: 20px;" width="100%;">
+				<s:submit name='form.op' value="%{#msg.buttonSearch()}"/>
+				<s:submit name='form.op' value="%{#msg.buttonExportPDF()}"/>
+				<s:submit name='form.op' value="%{#msg.buttonExportCSV()}"/>
+				<sec:authorize access="hasPermission(null, 'Session', 'ExaminationAdd')">
+					<s:submit name='form.op' value="%{#msg.buttonAddExamination()}"/>
+				</sec:authorize>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="7" align="center">
+				<s:actionerror/>
+			</td>
+		</tr>
+	</table>
+	
+	<s:if test="#request.table != null">
+		<table class="unitime-MainTable" style="padding-top: 20px;">
+			<s:property value="%{#request.table}" escapeHtml="false"/>
+		</table>
+		<table class="unitime-MainTable">
+			<tr>
+				<td align="right" class="top-border-solid" style="padding-top: 3px;">
+					<s:submit name='form.op' value="%{#msg.buttonSearch()}"/>
+					<s:submit name='form.op' value="%{#msg.buttonExportPDF()}"/>
+					<s:submit name='form.op' value="%{#msg.buttonExportCSV()}"/>
+					<sec:authorize access="hasPermission(null, 'Session', 'ExaminationAdd')">
+						<s:submit name='form.op' value="%{#msg.buttonAddExamination()}"/>
 					</sec:authorize>
-					<html:optionsCollection property="subjectAreas"	label="subjectAreaAbbreviation" value="uniqueId" />
-				</html:select>
-			</TD>
-			<TH valign="middle">Course Number:</TH>
-			<TD valign="middle">
-				<tt:course-number property="courseNbr" configuration="subjectId=\${subjectId};notOffered=exclude" size="15"
-					title="Course numbers can be specified using wildcard (*). E.g. 2*"/>
-			</TD>
-			<TD valign="middle" nowrap>
-				&nbsp;&nbsp;&nbsp;
-				<html:submit
-					accesskey="S" styleClass="btn" titleKey="title.search" property="op"
-					onclick="displayLoading();">
-					<bean:message key="button.search" />
-				</html:submit> 
-			</TD>
-			<TD valign="middle">
-				<html:submit
-					accesskey="P" styleClass="btn" titleKey="title.exportPDF" property="op">
-					<bean:message key="button.exportPDF" />
-				</html:submit> 
-			</TD>
-			<TD valign="middle">
-				<html:submit
-					accesskey="C" styleClass="btn" titleKey="title.exportCSV" property="op">
-					<bean:message key="button.exportCSV" />
-				</html:submit> 
-			</TD>
-			<sec:authorize access="hasPermission(null, 'Session', 'ExaminationAdd')">
-			<TD valign="middle">
-				<html:submit
-					accesskey="A" styleClass="btn" titleKey="title.addExam" property="op"
-					onclick="displayLoading();">
-					<bean:message key="button.addExam" />
-				</html:submit> 
-			</TD>
-			</sec:authorize>
-		</TR>
-		<TR>
-			<TD colspan="5" align="center">
-				<html:errors />
-			</TD>
-		</TR>
-	</TABLE>
-
-	<logic:notEmpty scope="request" name="ExamList.table">
-		<BR><BR>
-		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-			<bean:write scope="request" name="ExamList.table" filter="false"/>
-		</TABLE>
-	</logic:notEmpty>
-
-	<logic:notEmpty scope="request" name="hash">
-		<SCRIPT type="text/javascript" language="javascript">
+				</td>
+			</tr>
+		</table>
+	</s:if>
+	
+	<s:if test="#request.hash != null">
+		<SCRIPT type="text/javascript">
 			location.hash = '<%=request.getAttribute("hash")%>';
 		</SCRIPT>
-	</logic:notEmpty>
-</html:form>
+	</s:if>
+</s:form></loc:bundle>

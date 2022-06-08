@@ -76,7 +76,6 @@
       <form-bean name="userEditForm" type="org.unitime.timetable.form.UserEditForm" />
       <form-bean name="subjectAreaEditForm" type="org.unitime.timetable.form.SubjectAreaEditForm" />
       <form-bean name="examPeriodEditForm" type="org.unitime.timetable.form.ExamPeriodEditForm" />
-      <form-bean name="examListForm" type="org.unitime.timetable.form.ExamListForm" />
       <form-bean name="examEditForm" type="org.unitime.timetable.form.ExamEditForm" />
       <form-bean name="examDistributionPrefsForm" type="org.unitime.timetable.form.ExamDistributionPrefsForm" />
 	  <form-bean name="examReportForm" type="org.unitime.timetable.form.ExamReportForm" />
@@ -1135,18 +1134,6 @@
     </action>
 
     <action
-      attribute="examListForm"
-      input="/user/examList.jsp"
-      name="examListForm"
-      path="/examList"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false">
-      <forward name="list" path="examListTile" />
-      <forward name="addExam" path="/examEdit.do" redirect="true"/>
-    </action>
-
-    <action
       attribute="examEditForm"
       input="/user/examDetail.jsp"
       name="examEditForm"
@@ -1156,7 +1143,7 @@
       validate="false">
       <forward name="showExamDetail" path="examDetailTile" />
       <forward name="addDistributionPrefs" path="/examDistributionPrefs.do" />
-      <forward name="showList" path="/examList.do" redirect="true" />
+      <forward name="showList" path="/examList.action" redirect="true" />
     </action>
 
     <action
@@ -1170,7 +1157,7 @@
       <forward name="showAdd" path="examAddTile" />
       <forward name="showEdit" path="examEditTile" />
       <forward name="showDetail" path="/examDetail.do" />
-      <forward name="showList" path="/examList.do" redirect="true" />
+      <forward name="showList" path="/examList.action" redirect="true" />
     </action>
 
 	  <action

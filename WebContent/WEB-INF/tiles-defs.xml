@@ -532,13 +532,6 @@
 		<put name="title" type="string" value="Setup Examination Periods"/>
   	</definition>
 
-  	<definition name="examListTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Examinations"/>
-		<put name="body" value="/user/examList.jsp" />
-		<put name="showNavigation" value="true" />
-		<put name="showSolverWarnings" value="exams" />
-  	</definition>
-
   	<definition name="examDetailTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Examination Detail"/>
 		<put name="body" value="/user/examDetail.jsp" />
