@@ -90,6 +90,14 @@
 				<line>When FlexibleConstraint.CheckWeeks is set to true, defaults to false.</line>
 			</description>
 		</item>
+		<item>
+			<name>Distribution Type: Same Days-Room-Start</name>
+			<description>
+				<line>Given classes must start at the same time of day, on the same days and in the same room.</line>
+				<line>It is the combination of Same Days, Same Start and Same Room distribution preferences.</line>
+				<line>When prohibited or (strongly) discouraged: Any pair of classes classes cannot be taught on the same days during the same time in the same room.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>
