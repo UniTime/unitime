@@ -1,0 +1,285 @@
+<%--
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+--%>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+
+<!-- Time Preferences -->
+<s:if test="form.timePatterns != null && !form.timePatterns.isEmpty()">
+	<TR>
+		<TD valign="top"><loc:message name="propertyTime"/></TD>
+		<TD>
+			<% int idx = 0; %>
+			<s:iterator value="form.timePatterns" var="timePattern" status="timePatternStat">
+				<s:set var="idx" value="#timePatternStat.index"/>
+				<INPUT type="hidden" name='timePatterns[${idx}]' value="#timePattern"/>
+				<table style="width:100%;">
+					<tr><td align='left'><%=request.getAttribute("timePatternGrid_" + idx)%>
+					</td></tr>
+				</table>
+				<% idx++; %>
+			</s:iterator>
+		</TD>
+	</TR>
+</s:if>
+<!-- Instructor Availability -->
+<s:if test="form.availability != null && !form.availability.isEmpty()">
+	<tr>
+		<td valign="top"><loc:message name="propertyTime"/></td>
+		<td>
+			<div id='UniTimeGWT:InstructorAvailability' style="display: none;"><s:property value="form.availability" escapeHtml="false"/></div>
+		</td>
+	</tr>
+</s:if>
+<!--  Period Preferences -->
+<s:if test="#request.ExamPeriodGrid != null">
+	<TR>
+		<TD valign="top"><loc:message name="propertyExaminationPeriods"/> </TD>
+		<TD>
+			<s:property value="#request.ExamPeriodGrid" escapeHtml="false"/>
+		</TD>
+	</TR>
+</s:if>
+<!-- Date Pattern Preferences -->
+<c:set var="datePatternPref" value="${param.datePatternPref}" scope="page"/>
+<s:if test="#attr.datePatternPref != 'false' && form.datePatternPrefs != null && !form.datePatternPrefs.isEmpty()">
+	<TR>
+		<TD valign="top"><loc:message name="propertyDatePatterns"/></TD>
+		<TD>
+			<s:iterator value="form.datePatternPrefs" var="datePatternPref" status="datePatternPrefStat">
+				<s:iterator value="#request.prefLevelsList" var="prLevel">
+					<s:if test="form.getDatePatternPrefLevels(#datePatternPrefStat.index) == #prLevel.uniqueId && #prLevel.prefProlog != 'P' && (!form.hasRequiredDatePatternPref() || #prLevel.prefProlog == 'R')">
+						<s:iterator value="#request.datePatternList" var="dp">
+							<s:if test="#datePatternPref == #dp.id">
+								<div style='color:${prLevel.prefcolorNeutralBlack()}; font-weight: bold; cursor:pointer;' title='${prLevel.getPrefName()}: ${dp.value}'
+									onclick="showGwtDialog('Preview of ${dp.value}', 'user/dispDatePattern.jsp?id=${dp.id}','840','520');"><s:property value="#dp.value"/></div>
+							</s:if>
+						</s:iterator>
+					</s:if>
+				</s:iterator>
+			</s:iterator>
+		</TD>
+	</TR>
+</s:if>
+<!-- Room Group -->
+<c:set var="roomGroupPref" value="${param.roomGroupPref}" scope="page"/>
+<s:if test="#attr.roomGroupPref != 'false' && form.roomGroups != null && !form.roomGroups.isEmpty()">
+	<TR>
+		<TD valign="top"><loc:message name="propertyRoomGroups"/></TD>
+		<TD>
+			<s:iterator value="form.roomGroups" var="roomGroup" status="roomGroupStat">
+				<s:iterator value="#request.prefLevelsList" var="prLevel">
+					<s:if test="form.getRoomGroupLevels(#roomGroupStat.index) == #prLevel.uniqueId">
+						<s:iterator value="#request.roomGroupsList" var="rg">
+							<s:if test="#roomGroup == #rg.uniqueId">
+								<div style='color:${prLevel.prefcolor()}; font-weight: bold;' title='${prLevel.getPrefName()}: ${rg.nameWithTitle}'><s:property value="#rg.nameWithTitle"/></div>
+							</s:if>
+						</s:iterator>
+					</s:if>
+				</s:iterator>
+			</s:iterator>
+		</TD>
+	</TR>
+</s:if>
+<!-- Room Preferences -->
+<c:set var="roomPref" value="${param.roomPref}" scope="page"/>
+<s:if test="#attr.roomPref != 'false' && form.roomPrefs != null && !form.roomPrefs.isEmpty()">
+	<TR>
+		<TD valign="top"><loc:message name="propertyRooms"/></TD>
+		<TD>
+			<s:iterator value="form.roomPrefs" var="roomPref" status="roomPrefStat">
+				<s:iterator value="#request.prefLevelsList" var="prLevel">
+					<s:if test="form.getRoomPrefLevels(#roomPrefStat.index) == #prLevel.uniqueId">
+						<s:iterator value="#request.roomsList" var="r">
+							<s:if test="#roomPref == #r.uniqueId">
+								<div style='color:${prLevel.prefcolor()}; font-weight: bold;' onmouseover="showGwtRoomHint(this, '${r.getUniqueId()}', '${preference.getPrefName()}');" onmouseout="hideGwtRoomHint();"><s:property value="#r.label"/></div>
+							</s:if>
+						</s:iterator>
+					</s:if>
+				</s:iterator>
+			</s:iterator>
+		</TD>
+	</TR>
+</s:if>
+<!-- Building Preferences -->
+<c:set var="bldgPref" value="${param.bldgPref}" scope="page"/>
+<s:if test="#attr.bldgPref != 'false' && form.bldgPrefs != null && !form.bldgPrefs.isEmpty()">
+	<TR>
+		<TD valign="top"><loc:message name="propertyBuildings"/></TD>
+		<TD>
+			<s:iterator value="form.bldgPrefs" var="bldgPref" status="bldgPrefStat">
+				<s:iterator value="#request.prefLevelsList" var="prLevel">
+					<s:if test="form.getBldgPrefLevels(#bldgPrefStat.index) == #prLevel.uniqueId">
+						<s:iterator value="#request.bldgsList" var="b">
+							<s:if test="#bldgPref == #b.uniqueId">
+								<div style='color:${prLevel.prefcolor()}; font-weight: bold;' title='${prLevel.getPrefName()}: ${b.abbrName}'><s:property value="#b.abbrName"/></div>
+							</s:if>
+						</s:iterator>
+					</s:if>
+				</s:iterator>
+			</s:iterator>
+		</TD>
+	</TR>
+</s:if>
+<!-- Room Feature Preferences -->
+<c:set var="roomFeaturePref" value="${param.roomFeaturePref}" scope="page"/>
+<s:if test="#attr.roomFeaturePref != 'false' && form.roomFeaturePrefs != null && !form.roomFeaturePrefs.isEmpty()">
+	<TR>
+		<TD valign="top"><loc:message name="propertyRoomFeatures"/></TD>
+		<TD>
+			<s:iterator value="form.roomFeaturePrefs" var="roomFeaturePref" status="roomFeaturePrefStat">
+				<s:iterator value="#request.prefLevelsList" var="prLevel">
+					<s:if test="form.getRoomFeaturePrefLevels(#roomFeaturePrefStat.index) == #prLevel.uniqueId">
+						<s:iterator value="#request.roomFeaturesList" var="rf">
+							<s:if test="#roomFeaturePref == #rf.uniqueId">
+								<div style='color:${prLevel.prefcolor()}; font-weight: bold;' title='${prLevel.getPrefName()}: ${rf.labelWithType}'><s:property value="#rf.labelWithType"/></div>
+							</s:if>
+						</s:iterator>
+					</s:if>
+				</s:iterator>
+			</s:iterator>
+		</TD>
+	</TR>
+</s:if>
+<!-- Distribution Preferences -->
+<c:set var="distPref" value="${param.distPref}" scope="page"/>
+<s:if test="#attr.distPref != 'false' && form.distPrefs != null && !form.distPrefs.isEmpty() && #request.distPrefs == null">
+	<TR>
+		<TD valign="top"><loc:message name="propertyDistribution"/></TD>
+		<TD>
+			<s:iterator value="form.distPrefs" var="distPref" status="distPrefStat">
+				<s:iterator value="#request.prefLevelsList" var="prLevel">
+					<s:if test="form.getDistPrefLevels(#distPrefStat.index) == #prLevel.uniqueId">
+						<s:iterator value="#request.distributionTypeList" var="dt">
+							<s:if test="#distPref == #dt.uniqueId">
+								<div style='color:${prLevel.prefcolor()}; font-weight: bold;' title='${prLevel.getPrefName()}: ${dt.label}'><s:property value="#dt.label"/></div>
+							</s:if>
+						</s:iterator>
+					</s:if>
+				</s:iterator>
+			</s:iterator>
+		</TD>
+	</TR>
+</s:if>
+<!-- Instructor Preferences -->
+<c:set var="attributePref" value="${param.attributePref}" scope="page"/>
+<s:if test="#attr.attributePref != 'false' && form.attributePrefs != null && !form.attributePrefs.isEmpty()">
+	<TR>
+		<TD valign="top"><loc:message name="propertyAttributePrefs"/></TD>
+		<TD>
+			<s:iterator value="form.attributePrefs" var="attributePref" status="attributePrefStat">
+				<s:iterator value="#request.prefLevelsList" var="prLevel">
+					<s:if test="form.getAttributePrefLevels(#attributePrefStat.index) == #prLevel.uniqueId">
+						<s:iterator value="#request.attributesList" var="a">
+							<s:if test="#attributePref == #a.uniqueId">
+								<div style='color:${prLevel.prefcolor()}; font-weight: bold;' title='${prLevel.getPrefName()}: ${a.nameWithType}'><s:property value="#a.nameWithType"/></div>
+							</s:if>a
+						</s:iterator>
+					</s:if>
+				</s:iterator>
+			</s:iterator>
+		</TD>
+	</TR>
+</s:if>
+<!-- Course Preferences -->
+<c:set var="coursePref" value="${param.coursePref}" scope="page"/>
+<s:if test="#attr.coursePref != 'false' && form.coursePrefs != null && !form.coursePrefs.isEmpty()">
+	<TR>
+		<TD valign="top"><loc:message name="propertyCoursePrefs"/></TD>
+		<TD>
+			<s:iterator value="form.coursePrefs" var="coursePref" status="coursePrefStat">
+				<s:iterator value="#request.prefLevelsList" var="prLevel">
+					<s:if test="form.getCoursePrefLevels(#coursePrefStat.index) == #prLevel.uniqueId">
+						<s:iterator value="#request.crsOfferingList" var="co">
+							<s:if test="#coursePref == #co.uniqueId">
+								<div style='color:${prLevel.prefcolor()}; font-weight: bold;' title='${prLevel.getPrefName()}: ${co.courseNameWithTitle}'
+									onclick="document.location='instructionalOfferingDetail.do?co=${coursePref}';"
+									onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"><s:property value="#co.courseName"/></div>
+							</s:if>a
+						</s:iterator>
+					</s:if>
+				</s:iterator>
+			</s:iterator>
+		</TD>
+	</TR>
+</s:if>
+<!-- Course Preferences (of a class or subpart) -->
+<c:set var="instructorPref" value="${param.instructorPref}" scope="page"/>
+<s:if test="#attr.instructorPref != 'false' && form.instructorPrefs != null && !form.instructorPrefs.isEmpty()">
+	<TR>
+		<TD valign="top"><loc:message name="propertyInstructorPrefs"/></TD>
+		<TD>
+			<s:iterator value="form.instructorPrefs" var="instructorPref" status="instructorPrefStat">
+				<s:iterator value="#request.prefLevelsList" var="prLevel">
+					<s:if test="form.getInstructorPrefLevels(#instructorPrefStat.index) == #prLevel.uniqueId">
+						<s:iterator value="#request.instructorsList" var="in">
+							<s:if test="#instructorPref == #in.id">
+								<div style='color:${prLevel.prefcolor()}; font-weight: bold;' title='${prLevel.getPrefName()}: ${in.label}'
+									onclick="document.location='instructorDetail.do?instructorId=${instructorPref}';"
+									onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"><s:property value="#in.label"/></div>
+							</s:if>
+						</s:iterator>
+					</s:if>
+				</s:iterator>
+			</s:iterator>
+		</TD>
+	</TR>
+</s:if>
+<s:if test="#request.availableLocations != null">
+	<TR>
+		<TD valign="top"><loc:message name="propertyAvailableRooms"/></TD>
+		<TD>
+			<s:property value="#request.availableLocations" escapeHtml="false"/>
+		</TD>
+	</TR>
+</s:if>
+<s:if test="#request.unavailableDaysPattern != null">
+	<TR>
+		<TD valign="top"><loc:message name="propertyUnavailableDates"/></TD>
+		<TD>
+			<s:property value="#request.unavailableDaysPattern" escapeHtml="false"/>
+		</TD>
+	</TR>
+</s:if>
+<TR>
+	<TD valign="middle" colspan='3' align='left'>
+		<s:if test="form.hasNotAvailable == true">
+			<tt:displayPrefLevelLegend notAvailable="true"/>
+		</s:if>
+		<s:else>
+			<tt:displayPrefLevelLegend/>
+		</s:else>
+	</TD>
+</TR>
+
+<!-- Distribution Preferences -->
+<s:if test="#attr.distPref != 'false' && #request.distPrefs != null && #request.distPrefs != 'No preferences found'">
+	<TR>
+		<TD colspan="2" align="right" style='padding-top: 20px;'>
+			<TABLE style="margin:0px; width:100%;">
+				<s:property value="#request.distPrefs" escapeHtml="false"/>
+			</TABLE>
+		</TD>
+	</TR>
+</s:if>	
+</loc:bundle>		

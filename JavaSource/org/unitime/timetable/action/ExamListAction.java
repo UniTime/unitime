@@ -364,7 +364,7 @@ public class ExamListAction extends UniTimeAction<ExamListForm> {
             }
             
             table.addLine(
-                    "onClick=\"document.location='examDetail.do?examId="+exam.getUniqueId()+"';\"",
+                    "onClick=\"document.location='examDetail.action?examId="+exam.getUniqueId()+"';\"",
                     new String[] {
                         (html?"<a name='"+exam.getUniqueId()+"'>":"")+objects+(html?"</a>":""),
                         exam.getLength().toString(),

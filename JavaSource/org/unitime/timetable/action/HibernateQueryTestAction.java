@@ -427,7 +427,7 @@ public class HibernateQueryTestAction extends Action {
 			else if ("__Instructor".equals(alias[0]))
 				link = "instructorDetail.do?instructorId=" + ((Object[])o)[0];
 			else if ("__Exam".equals(alias[0]))
-				link = "examDetail.do?examId=" + ((Object[])o)[0];
+				link = "examDetail.action?examId=" + ((Object[])o)[0];
 			else if ("__Event".equals(alias[0]))
 				link = "gwt.jsp?page=events#event=" + ((Object[])o)[0];
     	}

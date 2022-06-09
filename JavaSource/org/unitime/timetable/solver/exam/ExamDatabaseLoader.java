@@ -119,11 +119,11 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
     }
     
     private String getExamLabel(org.unitime.timetable.model.Exam exam) {
-        return "<A href='examDetail.do?examId="+exam.getUniqueId()+"'>"+exam.getLabel()+"</A>";
+        return "<A href='examDetail.action?examId="+exam.getUniqueId()+"'>"+exam.getLabel()+"</A>";
     }
 
     private String getExamLabel(Exam exam) {
-        return "<A href='examDetail.do?examId="+exam.getId()+"'>"+exam.getName()+"</A>";
+        return "<A href='examDetail.action?examId="+exam.getId()+"'>"+exam.getName()+"</A>";
     }
 
     public void load() throws Exception {

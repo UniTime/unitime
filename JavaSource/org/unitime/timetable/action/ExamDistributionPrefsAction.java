@@ -171,8 +171,8 @@ public class ExamDistributionPrefsAction extends Action {
 	            frm.setSubjectArea(0, course.getSubjectArea().getUniqueId());
 	            frm.setCourseNbr(0, course.getUniqueId());
 	        }
-	        if (request.getAttribute("examId")!=null) {
-	            Exam exam = new ExamDAO().get(Long.valueOf(request.getAttribute("examId").toString()));
+	        if (request.getParameter("examId")!=null) {
+	            Exam exam = new ExamDAO().get(Long.valueOf(request.getParameter("examId")));
 	            frm.setExam(0, exam.getUniqueId());
 	            frm.setSubjectArea(0, exam.firstSubjectArea().getUniqueId());
                 frm.setCourseNbr(0, exam.firstCourseOffering().getUniqueId());

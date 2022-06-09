@@ -1302,6 +1302,17 @@ A.sortHeader:link,A.sortHeader:visited,A.sortHeader,A.sortHeader:active,A.sortHe
 	
 }
 
+.errorTable {
+	background-color: #ffffff;
+	border: red 1px solid;
+	padding: 3px 5px 3px 5px;
+	color: #FF0000;
+}
+
+.errorHeader {
+	padding-bottom: 3px;
+}
+
 div.suggestionList {
 	border-style: solid;
 	border-width: 1px;

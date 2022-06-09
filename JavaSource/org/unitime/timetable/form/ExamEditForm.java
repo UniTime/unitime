@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentStatusType;
@@ -482,4 +483,73 @@ public class ExamEditForm extends PreferencesForm {
     
     public String getAccommodation() { return accommodation; }
     public void setAccommodation(String accommodation) { this.accommodation = accommodation; }
+    
+    @Override
+	public void reset() {
+    	examId = null;
+        name = null;
+        note = null;
+        maxNbrRooms = 1;
+        length = null;
+        size = null;
+        sizeNote = null;
+        printOffset = null;
+        avgPeriod = null;
+        seatingType = Exam.sSeatingTypes[Exam.sSeatingTypeExam];
+        instructors = DynamicList.getInstance(new ArrayList(), factory);
+        subjectArea = DynamicList.getInstance(new ArrayList(), idfactory);
+        courseNbr = DynamicList.getInstance(new ArrayList(), idfactory);
+        itype = DynamicList.getInstance(new ArrayList(), idfactory);
+        classNumber = DynamicList.getInstance(new ArrayList(), idfactory);
+        examType = null;
+        clone = false;
+        accommodation = null;
+        super.reset();
+    }
+	
+	@Override
+	public void validate(UniTimeAction action) {
+		super.validate(action);
+        
+        if (maxNbrRooms!=null && maxNbrRooms.intValue()<0)
+        	action.addFieldError("maxNbrRooms", "Maximal Number of Rooms cannot be negative.");
+        
+        if (length==null || length.intValue() < 0)
+        	action.addFieldError("length", "Length must be above zero.");
+        
+        if (size!=null && size.length()>0) {
+            try {
+                Integer.parseInt(size);
+            } catch (NumberFormatException e) {
+            	action.addFieldError("size", "Size must be a number.");
+            }
+        }
+        
+        if (printOffset!=null && printOffset.length()>0) {
+            try {
+                Integer.parseInt(printOffset);
+            } catch (NumberFormatException e) {
+            	action.addFieldError("printOffset", "Print Offset must be a number");
+            }
+        }
+
+        // Notes has 1000 character limit
+        if (note!=null && note.length()>999)
+        	action.addFieldError("note", "Note is too long.");
+        
+        // At least one instructor is selected
+        if (instructors.size()>0) {
+            // Check no duplicates or blank instructors
+            super.checkPrefs(instructors);
+        }
+        
+        boolean hasOwner = false;
+        for (int idx=0;idx<getSubjectAreaList().size();idx++) {
+            ExamOwner owner = getExamOwner(idx);
+            if (owner!=null) { hasOwner = true; break; }
+        }
+        if (!hasOwner) {
+        	action.addFieldError("owners", "At least one class/course has to be specified.");
+        }
+    }
 }

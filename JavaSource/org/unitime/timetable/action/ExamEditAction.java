@@ -252,7 +252,7 @@ public class ExamEditAction extends PreferencesAction {
                         return null;
                     }
                     
-                    //response.sendRedirect(response.encodeURL("examDetail.do?examId="+examId));
+                    //response.sendRedirect(response.encodeURL("examDetail.action?examId="+examId));
                     if (op.equals(rsc.getMessage("button.saveExam")) && BackTracker.hasBack(request, 2) && !frm.getClone()) {
                         request.setAttribute("backType", "PreferenceGroup");
                         request.setAttribute("backId", frm.getExamId());
@@ -305,7 +305,7 @@ public class ExamEditAction extends PreferencesAction {
             if (!frm.getClone() && exam!=null) {
                 BackTracker.markForBack(
                     request,
-                    "examDetail.do?examId="+frm.getExamId(),
+                    "examDetail.action?examId="+frm.getExamId(),
                     "Exam ("+ (frm.getName()==null || frm.getName().length()==0?frm.getLabel().trim():frm.getName().trim()) +")",
                     true, false);
             }

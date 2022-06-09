@@ -169,7 +169,10 @@
 						<span class='unitime-Header'><span id='UniTimeGWT:Header' class="unitime-InfoPanel"></span></span>
 					</s:if>
 	    			<span id='UniTimeGWT:TitlePanel' class='navigation'>
-	    				<tiles:insertAttribute name="header"/>
+	    				<tiles:importAttribute name="showNavigation" scope="request"/>	
+	    				<tiles:insertAttribute name="header">
+	    					<tiles:putAttribute name="showNavigation" value="#request.showNavigation"/>
+	    				</tiles:insertAttribute>
 					</span>
 				</span>
 			</span>

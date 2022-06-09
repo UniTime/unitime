@@ -271,6 +271,11 @@ public class PreferenceLevel extends BasePreferenceLevel {
         }
     }
     
+    public String prefcolorNeutralBlack() {
+    	if (sNeutral.equals(getPrefProlog())) return "black";
+    	else return prefcolor();
+    }
+    
     /** preference to color conversion */
     public Color awtPrefcolor() {
         if (getSAwtPref2color().containsKey(this.getPrefProlog()))

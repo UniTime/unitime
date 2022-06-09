@@ -141,7 +141,7 @@ public class ExaminationScheduleBackend implements GwtRpcImplementation<Examinat
     			related.setInstruction(MESSAGES.colOffering());
     		}
 			if (context != null && context.hasPermission(x, Right.ExaminationDetail))
-				related.setDetailPage("examDetail.do?examId=" + x.getUniqueId());
+				related.setDetailPage("examDetail.action?examId=" + x.getUniqueId());
     		for (DepartmentalInstructor i: x.getInstructors()) {
 				ContactInterface instructor = new ContactInterface();
 				instructor.setFirstName(i.getFirstName());

@@ -1808,6 +1808,17 @@ public class RoomInterface implements IsSerializable {
 			return false;
 		}
 		
+		public boolean hasNotAvailable() {
+			if (iModel != null)
+				for (Map<Integer, Long> values: iModel.values())
+					for (Long pref: values.values())
+						if (pref == 8l) return true;
+			for (Integer slot: getSlots())
+				for (Integer day: getDays())
+					if (getPeriod(day, slot) == null) return true;
+			return false;
+		}
+		
 		public boolean hasPreference() {
 			if (iModel == null) return false;
 			for (Map<Integer, Long> values: iModel.values())

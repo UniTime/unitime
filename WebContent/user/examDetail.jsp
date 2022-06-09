@@ -17,242 +17,193 @@
  * limitations under the License.
  * 
 --%>
-<%@ page language="java" autoFlush="true"%>
-<%@ page import="org.unitime.timetable.form.ExamEditForm" %>
-<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
-<%@ page import="org.unitime.timetable.model.DepartmentalInstructor" %>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
-<%
-	// Get Form 
-	String frmName = "examEditForm";	
-	ExamEditForm frm = (ExamEditForm) request.getAttribute(frmName);	
-%>	
-<tt:session-context/>
-<SCRIPT language="javascript">
-	<!--
-		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
-	// -->
-</SCRIPT>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <tt:confirm name="confirmDelete">The examination will be deleted. Continue?</tt:confirm>
-
-<html:form action="examDetail">
-	<html:hidden property="examId"/>
-	<html:hidden property="nextId"/>
-	<html:hidden property="previousId"/>
-	<html:hidden property="op2" value=""/>
-	<bean:define name='<%=frmName%>' property="examId" id="examId"/>
-	
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+<loc:bundle name="ExaminationMessages"><s:set var="msg" value="#attr.MSG"/> 
+<s:form action="examDetail">
+	<s:hidden name="form.examId"/>
+	<s:hidden name="form.nextId"/>
+	<s:hidden name="form.previousId"/>
+	<s:hidden name="op2" value=""/>
+	<table class="unitime-MainTable">
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title>
-						<bean:write name='<%=frmName%>' property='label'/>
+						<s:property value="#form.label"/>
 					</tt:section-title>
-				<sec:authorize access="hasPermission(#examId, 'Exam', 'ExaminationEdit')">
-					<html:submit property="op" 
-						styleClass="btn" accesskey="E" titleKey="title.editExam" >
-						<bean:message key="button.editExam" />
-					</html:submit>
+				<sec:authorize access="hasPermission(#form.examId, 'Exam', 'ExaminationEdit')">
+					<s:submit accesskey='%{#msg.accessExamEdit()}' name='op' value='%{#msg.actionExamEdit()}' title='%{#msg.titleExamEdit()}'/>
 				</sec:authorize>
-				<sec:authorize access="hasPermission(#examId, 'Exam', 'ExaminationClone')">
-					<html:submit property="op" 
-						styleClass="btn" accesskey="C" titleKey="title.cloneExam" >
-						<bean:message key="button.cloneExam" />
-					</html:submit> 
+				<sec:authorize access="hasPermission(#form.examId, 'Exam', 'ExaminationClone')">
+					<s:submit accesskey='%{#msg.accessExamClone()}' name='op' value='%{#msg.actionExamClone()}' title='%{#msg.titleExamClone()}'/>
 				</sec:authorize>
-				<sec:authorize access="hasPermission(#examId, 'Exam', 'DistributionPreferenceExam')">
-					<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addDistPref" >
-						<bean:message key="button.addDistPref" />
-					</html:submit>
+				<sec:authorize access="hasPermission(#form.examId, 'Exam', 'DistributionPreferenceExam')">
+					<s:submit accesskey='%{#msg.accessExamAddDistributionPref()}' name='op' value='%{#msg.actionExamAddDistributionPref()}' title='%{#msg.titleExamAddDistributionPref()}'/>
 				</sec:authorize>
-				<sec:authorize access="hasPermission(#examId, 'Exam', 'ExaminationAssignment')">
-					<input type="button" value="Assign" title="Open Examination Assignment Dialog (Alt+X)" class="btn" accesskey="X"
-							onClick="showGwtDialog('Examination Assignment', 'examInfo.do?examId=<%=String.valueOf(examId)%>','900','90%');"
+				<sec:authorize access="hasPermission(#form.examId, 'Exam', 'ExaminationAssignment')">
+					<input type="button" value="${MSG.actionExamAssign()}" title="${MSG.titleExamAssign()}" class="btn" accesskey="${MSG.accessExamAssign()}"
+							onClick="showGwtDialog('${MSG.dialogExamAssign()}', 'examInfo.do?examId=${examId}','900','90%');"
 					/>
 				</sec:authorize>
-				<sec:authorize access="hasPermission(#examId, 'Exam', 'ExaminationDelete')">
-					<html:submit property="op" styleClass="btn" accesskey="D" titleKey="title.deleteExam" onclick="return confirmDelete();">
-						<bean:message key="button.deleteExam" />
-					</html:submit>
+				<sec:authorize access="hasPermission(#form.examId, 'Exam', 'ExaminationDelete')">
+					<s:submit accesskey='%{#msg.accessExamDelete()}' name='op' value='%{#msg.actionExamDelete()}' title='%{#msg.titleExamDelete()}' onclick="return confirmDelete();"/>
 				</sec:authorize>
-				<logic:greaterEqual name="<%=frmName%>" property="previousId" value="0">
-					<html:submit property="op" 
-							styleClass="btn" accesskey="P" titleKey="title.previousExam">
-						<bean:message key="button.previousExam" />
-					</html:submit> 
-				</logic:greaterEqual>
-				<logic:greaterEqual name="<%=frmName%>" property="nextId" value="0">
-					<html:submit property="op" 
-						styleClass="btn" accesskey="N" titleKey="title.nextExam">
-						<bean:message key="button.nextExam" />
-					</html:submit> 
-				</logic:greaterEqual>
-				<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B" type="PreferenceGroup">
-					<bean:write name="<%=frmName%>" property="examId"/>
+				<s:if test="form.previousId > 0">
+					<s:submit accesskey='%{#msg.accessExamPrevious()}' name='op' value='%{#msg.actionExamPrevious()}' title='%{#msg.titleExamPrevious()}'/>
+				</s:if>
+				<s:if test="form.nextId > 0">
+					<s:submit accesskey='%{#msg.accessExamNext()}' name='op' value='%{#msg.actionExamNext()}' title='%{#msg.titleExamNext()}'/>
+				</s:if>
+				<tt:back styleClass="btn" name="${MSG.actionExamBack()}" title="${MSG.titleExamBack()}" accesskey="${MSG.accessExamBack()}" type="PreferenceGroup">
+					<s:property value="form.examId"/>
 				</tt:back>
 				</tt:section-header>
 			</TD>
 		</TR>
 		
-		<logic:messagesPresent>
+		<s:if test="!fieldErrors.isEmpty()">
 		<TR>
-			<TD colspan="2" align="left" class="errorCell">
-					<B><U>ERRORS</U></B><BR>
-				<BLOCKQUOTE>
-				<UL>
-				    <html:messages id="error">
-				      <LI>
-						${error}
-				      </LI>
-				    </html:messages>
-			    </UL>
-			    </BLOCKQUOTE>
+			<TD colspan="2" align="left" class="errorTable">
+				<div class='errorHeader'>There are the following errors:</div><s:fielderror/>
 			</TD>
 		</TR>
-		</logic:messagesPresent>
+		</s:if>
 		
 		<TR>
-			<TD>Name:</TD><TD>
-				<logic:notEmpty name="<%=frmName%>" property="name">
-					<bean:write name="<%=frmName%>" property="name" />
-				</logic:notEmpty> 
-				<logic:empty name="<%=frmName%>" property="name">
-					<i><bean:write name="<%=frmName%>" property="label" /></i>
-				</logic:empty> 
+			<TD><loc:message name="propExamName"/></TD><TD>
+				<s:if test="form.name != null && !form.name.isEmpty()">
+					<s:property value="form.name"/>
+				</s:if>
+				<s:else>
+					<i><s:property value="form.label"/></i>
+				</s:else>
 			</TD>
 		</TR>
 		<TR>
-			<TD>Type:</TD><TD>
-				<logic:iterate scope="request" name="examTypes" id="et">
-					<bean:define name="et" property="uniqueId" id="examType"/>
-					<logic:equal name="<%=frmName%>" property="examType" value="<%=examType.toString()%>">
-						<bean:write name="et" property="label"/>
-					</logic:equal>
-				</logic:iterate>
+			<TD><loc:message name="propExamType"/></TD><TD>
+				<s:iterator value="#request.examTypes" var="et">
+					<s:if test="#et.uniqueId == form.examType">
+						<s:property value="label"/>
+					</s:if>
+				</s:iterator>
 			 </TD>
 		</TR>
 		<TR>
-			<TD>Length:</TD><TD> <bean:write name="<%=frmName%>" property="length" /></TD>
+			<TD><loc:message name="propExamLength"/></TD><TD><s:property value="form.length"/></TD>
 		</TR>
 		<TR>
-			<TD>Seating Type:</TD><TD> <bean:write name="<%=frmName%>" property="seatingType" /></TD>
+			<TD><loc:message name="propExamSeatingType"/></TD><TD><s:property value="form.seatingType"/></TD>
 		</TR>
 		<TR>
-			<TD nowrap>Maximum Number of Rooms:</TD><TD> <bean:write name="<%=frmName%>" property="maxNbrRooms" /></TD>
+			<TD nowrap><loc:message name="propExamMaxRooms"/></TD><TD><s:property value="form.maxNbrRooms"/></TD>
 		</TR>
 		<TR>
-			<TD>Size:</TD><TD> <bean:write name="<%=frmName%>" property="size" /></TD>
+			<TD><loc:message name="propExamSize"/></TD><TD><s:property value="form.size"/></TD>
 		</TR>
-		<logic:notEmpty name="<%=frmName%>" property="printOffset">
+		<s:if test="form.printOffset != null">
 			<TR>
-				<TD>Print Offset:</TD><TD> <bean:write name="<%=frmName%>" property="printOffset" /> minutes</TD>
+				<TD><loc:message name="propExamPrintOffset"/></TD><TD><s:property value="form.printOffset"/> <loc:message name="offsetUnitMinutes"/></TD>
 			</TR>
-		</logic:notEmpty>
-		<logic:notEmpty name="<%=frmName%>" property="instructors">
+		</s:if>
+		<s:if test="form.instructors != null && !form.instructors.isEmpty()">
 			<TR>
-				<TD valign="top">Instructors:</TD>
+				<TD valign="top"><loc:message name="propExamInstructors"/></TD>
 				<TD>
-					<table border='0' cellspacing="0" cellpadding="3">
-					<!--  <tr><td><i>Name</i></td><td><i>Email</i></td></tr> -->
-					<logic:iterate name="<%=frmName%>" property="instructors" id="instructor" indexId="ctr">
-						<logic:iterate scope="request" name="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME%>" id="instr">
-							<logic:equal name="instr" property="value" value="<%=(String)instructor%>">
+					<table>
+					<s:iterator value="form.instructors" var="instructor">
+						<s:iterator value="#request.instructorsList" var="instr">
+							<s:if test="#instr.value == #instructor">
 								<tr onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';" 
 									onmouseout="this.style.backgroundColor='transparent';"
-									onClick="document.location='instructorDetail.do?instructorId=<%=instructor%>';"
+									onClick="document.location='instructorDetail.do?instructorId=${instructor}';"
 								>
 									<td style="padding-right: 20px;">
-										<bean:write name="instr" property="label"/>
+										<s:property value="#instr.label"/>
 									</td>
 									<td>
-										<bean:define name="<%=frmName%>" property='<%="email("+instructor+")"%>' id="email"/>
-										<logic:notEmpty name="email"><i>
-											<a href="mailto:<%=(String)email%>" onclick="event.cancelBubble=true;">
-											<bean:write name="email"/>
-											</a>
-										</i></logic:notEmpty>
+										<s:set var="email" value="form.getEmail(#instructor)"/>
+										<s:if test="#email != null">
+											<a href="mailto:${email}" onclick="event.cancelBubble=true;"><s:property value="email"/></a>
+										</s:if>
 									</td>
 								</tr>
-							</logic:equal>
-						</logic:iterate>
-	   				</logic:iterate>
+							</s:if>
+						</s:iterator>
+					</s:iterator>
 	   				</table>
 			   	</TD>
 		   	</TR>
-		</logic:notEmpty>
-		<logic:notEmpty name="<%=frmName%>" property="avgPeriod">
-			<TR>
-				<TD>Average Period:</TD><TD> <bean:write name="<%=frmName%>" property="avgPeriod" /></TD>
-			</TR>
-		</logic:notEmpty>
-		<tt:last-change type='Exam'>
-			<bean:write name="<%=frmName%>" property="examId"/>
-		</tt:last-change>		
+		</s:if>
 		
-		<logic:notEmpty name="<%=frmName%>" property="note">
-		<TR>
-			<TD colspan="2" valign="middle">
-				<br>
-				<tt:section-title>
-					Notes
-				</tt:section-title>
-			</TD>
-		</TR>
-		<TR>
-			<TD colspan='2'> <bean:write name="<%=frmName%>" property="note" filter="false"/></TD>
-		</TR>
-		</logic:notEmpty>
-		<logic:notEmpty name="<%=frmName%>" property="accommodation">
+		<s:if test="form.avgPeriod != null">
 			<TR>
-				<TD valign="top">Student Accommodations:</TD>
-				<TD>
-					<bean:write name="<%=frmName%>" property="accommodation" filter="false"/>
+				<TD><loc:message name="propExamAvgPeriod"/></TD><TD><s:property value="form.avgPeriod"/></TD>
+			</TR>
+		</s:if>
+		
+		<tt:last-change type='Exam'>
+			<s:property value="form.examId"/>
+		</tt:last-change>
+		
+		<s:if test="form.note != null && !form.note.isEmpty()">
+			<TR>
+				<TD colspan="2" valign="middle">
+					<br>
+					<tt:section-title>
+						<loc:message name="sectExamNotes"/>
+					</tt:section-title>
 				</TD>
 			</TR>
-		</logic:notEmpty>
-
+			<TR>
+				<TD colspan='2'><s:property value="form.note" escapeHtml="false"/></TD>
+			</TR>
+		</s:if>
+		
+		<s:if test="form.accommodation != null">
+			<TR>
+				<TD valign="top"><loc:message name="propExamStudentAccommodations"/></TD><TD><s:property value="form.accommodation" escapeHtml="false"/></TD>
+			</TR>
+		</s:if>
 		<TR>
 			<TD colspan="2" valign="middle">
 				<br>
 				<tt:section-title>
-					Classes / Courses
+					<loc:message name="sectExamOwners"/>
 				</tt:section-title>
 			</TD>
 		</TR>
 		<TR>
 			<TD colspan='2'>
-				<logic:empty scope="request" name="ExamDetail.table">
-					<i>No relation defined for this exam.</i>
-				</logic:empty>
-				<logic:notEmpty scope="request" name="ExamDetail.table">
-					<table border='0' cellspacing="0" cellpadding="3" width='100%'>
-					<bean:write scope="request" name="ExamDetail.table" filter="false"/>
+				<s:if test="#request.table == null">
+					<i><loc:message name="warnNoExamOwners"/></i>
+				</s:if>
+				<s:else>
+					<table style='width: 100%;'>
+						<s:property value="#request.table" escapeHtml="false"/>
 					</table>
-				</logic:notEmpty>
+				</s:else>
 			</TD>
 		</TR>
 		
-		<logic:notEmpty scope="request" name="ExamDetail.assignment">
+		<s:if test="#request.assignment != null">
 			<TR>
 				<TD colspan="2" valign="middle">
 					<br>
 					<tt:section-title>
-						Assignment
+						<loc:message name="sectExamAssignment"/>
 					</tt:section-title>
 				</TD>
 			</TR>
 			<TR>
 				<TD colspan='2'>
-					<bean:write scope="request" name="ExamDetail.assignment" filter="false"/>
+					<s:property value="#request.assignment" escapeHtml="false"/>
 				</TD>
 			</TR>
-		</logic:notEmpty>
+		</s:if>
 		
 
 <!-- Preferences -->		
@@ -260,20 +211,19 @@
 			<TD colspan="2" valign="middle">
 				<br>
 				<tt:section-title>
-					Preferences
+					<loc:message name="sectExamPreferences"/>
 				</tt:section-title>
 			</TD>
 		</TR>
-		
-		<jsp:include page="preferencesDetail.jspf">
-			<jsp:param name="frmName" value="<%=frmName%>"/>
-			<jsp:param name="timePref" value="false"/>
-			<jsp:param name="examSeating" value="<%=frm.getSeatingTypeIdx() == 1%>"/>
-		</jsp:include>
+
+		<s:include value="preferencesDetail2.jspf">
+			<s:param name="timePref" value="false"/>
+			<s:param name="examSeating" value="#form.seatingTypeIdx"/>
+		</s:include>
 		
 		<TR>
 			<TD colspan="2">
-				<div id='UniTimeGWT:ExamEnrollments' style="display: none;"><bean:write name="<%=frmName%>" property="examId"/></div>
+				<div id='UniTimeGWT:ExamEnrollments' style="display: none;"><s:property value="form.examId"/></div>
 			</TD>
 		</TR>		
 	
@@ -285,52 +235,37 @@
 
 		<TR align="right">
 			<TD valign="middle" colspan='2'>
-				<sec:authorize access="hasPermission(#examId, 'Exam', 'ExaminationEdit')">
-					<html:submit property="op" 
-						styleClass="btn" accesskey="E" titleKey="title.editExam" >
-						<bean:message key="button.editExam" />
-					</html:submit>
+				<s:set var="msg" value="#attr.MSG"/>
+				<sec:authorize access="hasPermission(#form.examId, 'Exam', 'ExaminationEdit')">
+					<s:submit accesskey='%{#msg.accessExamEdit()}' name='op' value='%{#msg.actionExamEdit()}' title='%{#msg.titleExamEdit()}'/>
 				</sec:authorize>
-				<sec:authorize access="hasPermission(#examId, 'Exam', 'ExaminationClone')">
-					<html:submit property="op" 
-						styleClass="btn" accesskey="C" titleKey="title.cloneExam" >
-						<bean:message key="button.cloneExam" />
-					</html:submit> 
+				<sec:authorize access="hasPermission(#form.examId, 'Exam', 'ExaminationClone')">
+					<s:submit accesskey='%{#msg.accessExamClone()}' name='op' value='%{#msg.actionExamClone()}' title='%{#msg.titleExamClone()}'/>
 				</sec:authorize>
-				<sec:authorize access="hasPermission(#examId, 'Exam', 'DistributionPreferenceExam')">
-					<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addDistPref" >
-						<bean:message key="button.addDistPref" />
-					</html:submit>
+				<sec:authorize access="hasPermission(#form.examId, 'Exam', 'DistributionPreferenceExam')">
+					<s:submit accesskey='%{#msg.accessExamAddDistributionPref()}' name='op' value='%{#msg.actionExamAddDistributionPref()}' title='%{#msg.titleExamAddDistributionPref()}'/>
 				</sec:authorize>
-				<sec:authorize access="hasPermission(#examId, 'Exam', 'ExaminationAssignment')">
-					<input type="button" value="Assign" title="Open Examination Assignment Dialog (Alt+X)" class="btn" accesskey="X"
-							onClick="showGwtDialog('Examination Assignment', 'examInfo.do?examId=<%=String.valueOf(examId)%>','900','90%');"
+				<sec:authorize access="hasPermission(#form.examId, 'Exam', 'ExaminationAssignment')">
+					<input type="button" value="${MSG.actionExamAssign()}" title="${MSG.titleExamAssign()}" class="btn" accesskey="${MSG.accessExamAssign()}"
+							onClick="showGwtDialog('${MSG.dialogExamAssign()}', 'examInfo.do?examId=${examId}','900','90%');"
 					/>
 				</sec:authorize>
-				<sec:authorize access="hasPermission(#examId, 'Exam', 'ExaminationDelete')">
-					<html:submit property="op" styleClass="btn" accesskey="D" titleKey="title.deleteExam" onclick="return confirmDelete();">
-						<bean:message key="button.deleteExam" />
-					</html:submit>
+				<sec:authorize access="hasPermission(#form.examId, 'Exam', 'ExaminationDelete')">
+					<s:submit accesskey='%{#msg.accessExamDelete()}' name='op' value='%{#msg.actionExamDelete()}' title='%{#msg.titleExamDelete()}' onclick="return confirmDelete();"/>
 				</sec:authorize>
-				<logic:greaterEqual name="<%=frmName%>" property="previousId" value="0">
-					<html:submit property="op" 
-							styleClass="btn" accesskey="P" titleKey="title.previous">
-						<bean:message key="button.previousExam" />
-					</html:submit> 
-				</logic:greaterEqual>
-				<logic:greaterEqual name="<%=frmName%>" property="nextId" value="0">
-					<html:submit property="op" 
-						styleClass="btn" accesskey="N" titleKey="title.next">
-						<bean:message key="button.nextExam" />
-					</html:submit> 
-				</logic:greaterEqual>
-				<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B" type="PreferenceGroup">
-					<bean:write name="<%=frmName%>" property="examId"/>
+				<s:if test="form.previousId > 0">
+					<s:submit accesskey='%{#msg.accessExamPrevious()}' name='op' value='%{#msg.actionExamPrevious()}' title='%{#msg.titleExamPrevious()}'/>
+				</s:if>
+				<s:if test="form.nextId > 0">
+					<s:submit accesskey='%{#msg.accessExamNext()}' name='op' value='%{#msg.actionExamNext()}' title='%{#msg.titleExamNext()}'/>
+				</s:if>
+				<tt:back styleClass="btn" name="${MSG.actionExamBack()}" title="${MSG.titleExamBack()}" accesskey="${MSG.accessExamBack()}" type="PreferenceGroup">
+					<s:property value="form.examId"/>
 				</tt:back>
 			</TD>
 		</TR>
 		
-	
-	</TABLE>
-</html:form>
+ 	</TABLE>
+
+</s:form></loc:bundle>
 

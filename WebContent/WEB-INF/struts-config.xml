@@ -1135,19 +1135,6 @@
 
     <action
       attribute="examEditForm"
-      input="/user/examDetail.jsp"
-      name="examEditForm"
-      path="/examDetail"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false">
-      <forward name="showExamDetail" path="examDetailTile" />
-      <forward name="addDistributionPrefs" path="/examDistributionPrefs.do" />
-      <forward name="showList" path="/examList.action" redirect="true" />
-    </action>
-
-    <action
-      attribute="examEditForm"
       input="/user/examEdit.jsp"
       name="examEditForm"
       path="/examEdit"
@@ -1156,7 +1143,7 @@
       validate="false">
       <forward name="showAdd" path="examAddTile" />
       <forward name="showEdit" path="examEditTile" />
-      <forward name="showDetail" path="/examDetail.do" />
+      <forward name="showDetail" path="/examDetail.action" />
       <forward name="showList" path="/examList.action" redirect="true" />
     </action>
 

@@ -3150,6 +3150,7 @@ div.gwt-MenuBarPopup {
 	font-weight: 400;
 	font-style: normal;
 	color: #333333;
+	border-spacing: 0px;
 }
 
 .unitime-RoomSharingWidget .table {

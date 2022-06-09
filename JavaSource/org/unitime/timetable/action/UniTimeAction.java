@@ -27,8 +27,12 @@ import org.apache.struts2.interceptor.ServletResponseAware;
 import org.unitime.timetable.form.UniTimeForm;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.context.HttpSessionContext;
+import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.SolverProxy;
+import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.solver.service.ExaminationSolverService;
 import org.unitime.timetable.solver.service.SolverServerService;
+import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.spring.SpringApplicationContextHolder;
 
 import com.opensymphony.xwork2.ActionSupport;
@@ -60,11 +64,22 @@ public abstract class UniTimeAction<T extends UniTimeForm> extends ActionSupport
 		this.response = response;
 	}
 	
+	public HttpServletRequest getRequest() { return request; }
+	public HttpServletResponse getResponse() { return response; }
+	
 	protected SolverServerService getSolverServerService() {
 		return (SolverServerService)SpringApplicationContextHolder.getBean("solverServerService");
 	}
 	
 	protected ExaminationSolverService getExaminationSolverService() {
 		return (ExaminationSolverService)SpringApplicationContextHolder.getBean("examinationSolverService");
+	}
+	
+	protected AssignmentService<ClassAssignmentProxy> getClassAssignmentService() {
+		return (AssignmentService<ClassAssignmentProxy>)SpringApplicationContextHolder.getBean("classAssignmentService");
+	}
+	
+	protected SolverService<SolverProxy> getCourseTimetablingSolverService() {
+		return (SolverService<SolverProxy>)SpringApplicationContextHolder.getBean("courseTimetablingSolverService");
 	}
 }

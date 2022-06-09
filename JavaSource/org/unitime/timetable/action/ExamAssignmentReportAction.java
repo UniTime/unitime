@@ -550,7 +550,7 @@ public class ExamAssignmentReportAction extends Action {
                     String btbStr = (btb<=0 && dbtb<=0?"0":html?"<font color='"+PreferenceLevel.prolog2color("1")+"'>"+btb+(dbtb>0?" (d:"+dbtb+")":"")+"</font>":btb+(dbtb>0?" (d:"+dbtb+")":""));
 
                     table.addLine(
-                            "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                            "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"",
                             new String[] {
                                 (html?"<a name='"+exam.getExamId()+"'>":"")+section.getName()+(html?"</a>":""),
                                 String.valueOf(section.getNrStudents()),
@@ -597,7 +597,7 @@ public class ExamAssignmentReportAction extends Action {
                 String btbStr = (btb<=0 && dbtb<=0?"0":html?"<font color='"+PreferenceLevel.prolog2color("1")+"'>"+btb+(dbtb>0?" (d:"+dbtb+")":"")+"</font>":btb+(dbtb>0?" (d:"+dbtb+")":""));
                 
                 table.addLine(
-                        "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                        "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"",
                         new String[] {
                             (html?"<a name='"+exam.getExamId()+"'>":"")+exam.getExamName()+(html?"</a>":""),
                             String.valueOf(exam.getNrStudents()),
@@ -676,7 +676,7 @@ public class ExamAssignmentReportAction extends Action {
                     for (ExamRoomInfo room : exam.getRooms()) {
                         if (!match(form,room.getName())) continue;
                         table.addLine(
-                                "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"",
                                 new String[] {
                                     room.getName(),
                                     String.valueOf(room.getCapacity()),
@@ -728,7 +728,7 @@ public class ExamAssignmentReportAction extends Action {
                 for (ExamRoomInfo room : exam.getRooms()) {
                     if (!match(form,room.getName())) continue;
                     table.addLine(
-                            "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                            "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"",
                             new String[] {
                                 room.getName(),
                                 String.valueOf(room.getCapacity()),
@@ -1059,7 +1059,7 @@ public class ExamAssignmentReportAction extends Action {
                     	cmp.add(new MultiComparable(0, section.getName(), exam));
                     }
                     table.addLine(
-                            "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                            "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"",
                             line.toArray(new String[line.size()]),
                             cmp.toArray(new Comparable[cmp.size()]),
                             (firstSection?exam.getExamId().toString():null));
@@ -1098,7 +1098,7 @@ public class ExamAssignmentReportAction extends Action {
                 	cmp.add(new MultiComparable(0, exam));
                 }
                 table.addLine(
-                        "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                        "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"",
                         line.toArray(new String[line.size()]),
                         cmp.toArray(new Comparable[cmp.size()]),
                         exam.getExamId().toString());
@@ -1326,7 +1326,7 @@ public class ExamAssignmentReportAction extends Action {
                                 time += conflict.getOtherEventTime(); 
                             }
                             table.addLine(
-                                    "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                    "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"",
                                     new String[] {
                                         id,
                                         name,
@@ -1354,7 +1354,7 @@ public class ExamAssignmentReportAction extends Action {
                         } else {
                             if (conflict.getOtherExam()!=null) {
                                 table.addLine(
-                                        "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                        "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"",
                                         new String[] {
                                             id,
                                             name,
@@ -1381,7 +1381,7 @@ public class ExamAssignmentReportAction extends Action {
                                         exam.getExamId().toString());                                
                             } else if (conflict.getOtherEventId()!=null) {
                                 table.addLine(
-                                        "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                        "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"",
                                         new String[] {
                                             id,
                                             name,
@@ -1460,7 +1460,7 @@ public class ExamAssignmentReportAction extends Action {
                                 firstSection = false;
                             }
                             table.addLine(
-                                    "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                    "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"",
                                     new String[] {
                                         id,
                                         name,
@@ -1487,7 +1487,7 @@ public class ExamAssignmentReportAction extends Action {
                                     exam.getExamId().toString());
                         } else {
                             table.addLine(
-                                    "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                    "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"",
                                     new String[] {
                                         id,
                                         name,
@@ -1569,7 +1569,7 @@ public class ExamAssignmentReportAction extends Action {
                                 }
                             }
                             table.addLine(
-                                    "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                    "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"",
                                     new String[] {
                                         id,
                                         name,
@@ -1606,7 +1606,7 @@ public class ExamAssignmentReportAction extends Action {
                                 room += nl+other.getRoomsName(html, ", ");
                             }
                             table.addLine(
-                                    "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                    "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"",
                                     new String[] {
                                         id,
                                         name,
@@ -1675,7 +1675,7 @@ public class ExamAssignmentReportAction extends Action {
                                 } else nrStudents = conflict.getNrStudents();
                                 if (nrStudents==0) continue;
                                 table.addLine(
-                                        "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                        "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"",
                                         new String[] {
                                             section1.getName(),
                                             String.valueOf(section1.getNrStudents()),
@@ -1708,7 +1708,7 @@ public class ExamAssignmentReportAction extends Action {
                                 if (conflict.getStudents().contains(studentId)) nrStudents++;
                             if (nrStudents==0) continue;
                             table.addLine(
-                                    "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                    "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"",
                                     new String[] {
                                         section1.getName(),
                                         String.valueOf(section1.getNrStudents()),
@@ -1738,7 +1738,7 @@ public class ExamAssignmentReportAction extends Action {
                 } else {
                     if (other!=null) {
                         table.addLine(
-                                "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"",
                                 new String[] {
                                     exam.getExamName(),
                                     String.valueOf(exam.getNrStudents()),
@@ -1765,7 +1765,7 @@ public class ExamAssignmentReportAction extends Action {
                                 exam.getExamId().toString());
                     } else if (conflict.getOtherEventId()!=null) {
                         table.addLine(
-                                "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"",
                                 new String[] {
                                     exam.getExamName(),
                                     String.valueOf(exam.getNrStudents()),
@@ -1834,7 +1834,7 @@ public class ExamAssignmentReportAction extends Action {
                                  nrStudents = conflict.getNrStudents();
                              if (nrStudents==0) continue;
                              table.addLine(
-                                     "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                     "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"",
                                      new String[] {
                                          section1.getName(),
                                          String.valueOf(section1.getNrStudents()),
@@ -1865,7 +1865,7 @@ public class ExamAssignmentReportAction extends Action {
                      }
                  } else {
                      table.addLine(
-                             "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                             "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"",
                              new String[] {
                                  exam.getExamName(),
                                  String.valueOf(exam.getNrStudents()),
@@ -1975,7 +1975,7 @@ public class ExamAssignmentReportAction extends Action {
                     line[idx] = df.format(100.0*conflict.getNrStudents()/minStudents);
                     cmp[idx++] = new MultiComparable(-100.0*conflict.getNrStudents()/minStudents, new MultiComparable(examsThisConf));
                     table.addLine(
-                            "onClick=\"document.location='examDetail.do?examId="+examsThisConf.firstElement().getExamId()+"';\"",
+                            "onClick=\"document.location='examDetail.action?examId="+examsThisConf.firstElement().getExamId()+"';\"",
                             line, cmp, examsThisConf.firstElement().getExamId().toString());
                 }
             }
@@ -1992,7 +1992,7 @@ public class ExamAssignmentReportAction extends Action {
             line[idx] = new DecimalFormat("0.0").format(100.0*students.size()/minStudents);
             cmp[idx++] = new MultiComparable(-100.0*students.size()/minStudents, new MultiComparable(exams));
             
-            table.addLine("onClick=\"document.location='examDetail.do?examId="+exams.firstElement().getExamId()+"';\"", (String[])line.clone(), (Comparable[])cmp.clone(), exams.firstElement().getExamId().toString());
+            table.addLine("onClick=\"document.location='examDetail.action?examId="+exams.firstElement().getExamId()+"';\"", (String[])line.clone(), (Comparable[])cmp.clone(), exams.firstElement().getExamId().toString());
             return;
         }
         if (pos<exams.size()) {
@@ -2098,7 +2098,7 @@ public class ExamAssignmentReportAction extends Action {
                             if (s==null) continue;
                             if (!match(form, s.getExternalUniqueId()) && !match(form, s.getName(nameFormat))) continue;
                             table.addLine(
-                                    "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                    "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"",
                                     new String[] {
                                         s.getExternalUniqueId(),
                                         s.getName(nameFormat),
@@ -2122,7 +2122,7 @@ public class ExamAssignmentReportAction extends Action {
                         for (ExamInstructorInfo instructor : section.getExam().getInstructors()) {
                             if (!match(form, instructor.getExternalUniqueId()) && !match(form, instructor.getName())) continue;
                             table.addLine(
-                                    "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                    "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"",
                                     new String[] {
                                         instructor.getExternalUniqueId(),
                                         instructor.getName(),
@@ -2153,7 +2153,7 @@ public class ExamAssignmentReportAction extends Action {
                         if (s==null) continue;
                         if (!match(form, s.getExternalUniqueId()) && !match(form, s.getName(nameFormat))) continue;
                         table.addLine(
-                                "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"",
                                 new String[] {
                                     s.getExternalUniqueId(),
                                     s.getName(nameFormat),
@@ -2177,7 +2177,7 @@ public class ExamAssignmentReportAction extends Action {
                     for (ExamInstructorInfo instructor : exam.getInstructors()) {
                         if (!match(form, instructor.getExternalUniqueId()) && !match(form, instructor.getName())) continue;
                         table.addLine(
-                                "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"",
                                 new String[] {
                                     instructor.getExternalUniqueId(),
                                     instructor.getName(),

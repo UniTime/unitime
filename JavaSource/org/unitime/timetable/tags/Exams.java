@@ -260,7 +260,7 @@ public class Exams extends BodyTagSupport {
                         }
                         
                         table.addLine(
-                                (view ? "onClick=\"document.location='examDetail.do?examId="+exam.getUniqueId()+"';\"":null),
+                                (view ? "onClick=\"document.location='examDetail.action?examId="+exam.getUniqueId()+"';\"":null),
                                 new String[] {
                                     objects,
                                     exam.getExamType().getLabel(),

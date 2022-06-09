@@ -807,7 +807,7 @@ public class PersonalizedExamReportAction extends Action {
                     }
                 }
                 table.addLine(
-                        (sessionContext.hasPermission(exam, Right.ExaminationDetail) ? "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"" : ""),
+                        (sessionContext.hasPermission(exam, Right.ExaminationDetail) ? "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"" : ""),
                         new String[] {
                             (html?"<font color='"+PreferenceLevel.prolog2color("2")+"'>":"")+(html?"&gt;":"")+"2 A Day"+(html?"</font>":""),
                             classes,
@@ -1065,7 +1065,7 @@ public class PersonalizedExamReportAction extends Action {
                     }
                 }
                 table.addLine(
-                		(sessionContext.hasPermission(exam, Right.ExaminationDetail) ? "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"" : ""),
+                		(sessionContext.hasPermission(exam, Right.ExaminationDetail) ? "onClick=\"document.location='examDetail.action?examId="+exam.getExamId()+"';\"" : ""),
                         new String[] {
                             (html?"<font color='"+PreferenceLevel.prolog2color("2")+"'>":"")+(html?"&gt;":"")+"2 A Day"+(html?"</font>":""),
                             classes,

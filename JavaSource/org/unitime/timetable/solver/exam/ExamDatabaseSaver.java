@@ -102,7 +102,7 @@ public class ExamDatabaseSaver extends ProblemSaver<Exam, ExamPlacement, ExamMod
     }
     
     private String getExamLabel(org.unitime.timetable.model.Exam exam) {
-        return "<A href='examDetail.do?examId="+exam.getUniqueId()+"'>"+exam.getLabel()+"</A>";
+        return "<A href='examDetail.action?examId="+exam.getUniqueId()+"'>"+exam.getLabel()+"</A>";
     }
 
     protected void saveSolution(org.hibernate.Session hibSession) {

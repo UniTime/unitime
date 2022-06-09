@@ -35,6 +35,7 @@ import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -49,7 +50,7 @@ import org.unitime.timetable.util.DynamicListObjectFactory;
  * 
  * @author Heston Fernandes, Tomas Muller, Zuzana Mullerova
  */
-public class PreferencesForm extends ActionForm {
+public class PreferencesForm extends ActionForm implements UniTimeForm {
 
 	private static final long serialVersionUID = -3578647598790726006L;
 	
@@ -1032,4 +1033,144 @@ public class PreferencesForm extends ActionForm {
 
     public String getAvailability() { return availability; }
     public void setAvailability(String availability) { this.availability = availability; }
+
+	@Override
+	public void validate(UniTimeAction action) {
+        List lst = getRoomGroups();
+        if (!checkPrefs(lst)) {
+        	action.addFieldError("roomGroups", MSG.errorInvalidRoomGroup());
+        }
+
+        if (!checkPrefLevels(getRoomGroupLevels(), lst)) {
+        	action.addFieldError("roomGroups", MSG.errorInvalidRoomGroupLevel());
+        }
+        
+        lst = getBldgPrefs();
+        if (!checkPrefs(lst)) {
+            action.addFieldError("bldgPrefs", MSG.errorInvalidBuildingPreference());
+        }
+
+        if (!checkPrefLevels(getBldgPrefLevels(), lst)) {
+            action.addFieldError("bldgPrefs", MSG.errorInvalidBuildingPreferenceLevel());
+        }
+            
+        lst = getRoomPrefs();
+        if(!checkPrefs(lst)) {
+            action.addFieldError("roomPrefs", MSG.errorInvalidRoomPreference());
+        }
+
+        if (!checkPrefLevels(getRoomPrefLevels(), lst)) {
+            action.addFieldError("roomPrefs", MSG.errorInvalidRoomPreferenceLevel());
+        }
+        
+        lst = getRoomFeaturePrefs();
+        if (!checkPrefs(lst)) {
+            action.addFieldError("roomFeaturePrefs", MSG.errorInvalidRoomFeaturePreference());
+        }
+
+        if (!checkPrefLevels(getRoomFeaturePrefLevels(), lst)) {
+            action.addFieldError("roomFeaturePrefs", MSG.errorInvalidRoomFeaturePreferenceLevel());
+        }
+        
+        lst = getDistPrefs();
+        if (!checkPrefs(lst)) {
+            action.addFieldError("distPrefs", MSG.errorInvalidDistributionPreference());
+        }
+
+        if (!checkPrefLevels(getDistPrefLevels(), lst)) {
+            action.addFieldError("distPrefs",  MSG.errorInvalidDistributionPreferenceLevel());
+        }
+        
+        lst = getCoursePrefs();
+        if (!checkPrefs(lst)) {
+            action.addFieldError("coursePrefs", MSG.errorInvalidCoursePreference());
+        }
+
+        if (!checkPrefLevels(getCoursePrefLevels(), lst)) {
+            action.addFieldError("coursePrefs", MSG.errorInvalidCoursePreferenceLevel());
+        }
+        
+        lst = getInstructorPrefs();
+        if (!checkPrefs(lst)) {
+            action.addFieldError("instructorPrefs", MSG.errorInvalidInstructorPreference());
+        }
+
+        if (!checkPrefLevels(getInstructorPrefLevels(), lst)) {
+            action.addFieldError("instructorPrefs", MSG.errorInvalidInstructorPreferenceLevel());
+        }
+        
+        lst = getAttributePrefs();
+        if (!checkPrefs(lst)) {
+            action.addFieldError("attributePrefs", MSG.errorInvalidAttributePreference());
+        }
+
+        if (!checkPrefLevels(getAttributePrefLevels(), lst)) {
+            action.addFieldError("attributePrefs",  MSG.errorInvalidAttributePreferenceLevel());
+        }
+
+
+        for (int i=0;i<getTimePatterns().size();i++) {
+        	if (action.getRequest().getParameter("p"+i+"_hour")!=null) {
+        		boolean daySelected = false;
+        		for (int j=0;j<Constants.DAY_CODES.length;j++)
+        			if (action.getRequest().getParameter("p"+i+"_d"+j)!=null)
+        				daySelected = true;
+        		if (!daySelected) {
+        			action.addFieldError("timePrefs", "No day is selected in time preferences.");
+        			break;
+        		}
+        		if ("".equals(action.getRequest().getParameter("p"+i+"_hour"))) {
+        			action.addFieldError("timePrefs", "No time is selected in time preferences.");
+        			break;
+        		}
+        		if ("".equals(action.getRequest().getParameter("p"+i+"_min"))) {
+        			action.addFieldError("timePrefs", "No time is selected in time preferences.");
+        			break;
+        		}
+        		if ("".equals(action.getRequest().getParameter("p"+i+"_morn"))) {
+        			action.addFieldError("timePrefs", "No time is selected in time preferences.");
+        			break;
+        		}
+        	}
+        }
+	}
+
+	@Override
+	public void reset() {
+		op= "";
+        timePattern = null;
+        timePatterns = DynamicList.getInstance(new ArrayList(), factoryPattern);
+        availableTimePatterns = DynamicList.getInstance(new ArrayList(), factoryPattern);
+        roomPrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
+        roomPrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
+        bldgPrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
+        bldgPrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
+        roomFeaturePrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
+        roomFeaturePrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
+        roomGroups = DynamicList.getInstance(new ArrayList(), factoryPref);
+        roomGroupLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
+        distPrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
+        distPrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
+        datePatternPrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
+        datePatternPrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
+        coursePrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
+        coursePrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
+        attributePrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
+        attributePrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
+        instructorPrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
+        instructorPrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
+        nextId = previousId = null;
+        allowHardPrefs = true;
+        hasNotAvailable = false;
+        addBlankPrefRows();
+        availability = null;
+	}
+	
+	public boolean hasRequiredDatePatternPref() {
+		PreferenceLevel req = PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired);
+		for (Object prefId: datePatternPrefLevels) {
+			if (req.getUniqueId().toString().equals(prefId)) return true;
+		}
+		return false;
+	}
 }
