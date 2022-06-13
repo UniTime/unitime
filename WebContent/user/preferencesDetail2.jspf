@@ -112,7 +112,7 @@
 					<s:if test="form.getRoomPrefLevels(#roomPrefStat.index) == #prLevel.uniqueId">
 						<s:iterator value="#request.roomsList" var="r">
 							<s:if test="#roomPref == #r.uniqueId">
-								<div style='color:${prLevel.prefcolor()}; font-weight: bold;' onmouseover="showGwtRoomHint(this, '${r.getUniqueId()}', '${preference.getPrefName()}');" onmouseout="hideGwtRoomHint();"><s:property value="#r.label"/></div>
+								<div style='color:${prLevel.prefcolor()}; font-weight: bold;' onmouseover="showGwtRoomHint(this, '${r.getUniqueId()}', '${prLevel.getPrefName()}');" onmouseout="hideGwtRoomHint();"><s:property value="#r.label"/></div>
 							</s:if>
 						</s:iterator>
 					</s:if>

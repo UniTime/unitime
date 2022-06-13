@@ -25,6 +25,7 @@ import org.unitime.timetable.action.UniTimeAction;
  * @author Tomas Muller
  */
 public class BlankForm implements UniTimeForm {
+	private static final long serialVersionUID = -3774859862084469864L;
 
 	@Override
 	public void validate(UniTimeAction action) {}

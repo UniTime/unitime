@@ -70,7 +70,8 @@ public class UniTimeBack {
 		for (String back: backs.split("\\&")) {
 			String[] b = back.split("\\|");
 			iBacks.add(b);
-			History.newItem(b[1], false);
+			if (History.getToken() == null || History.getToken().isEmpty())
+				History.newItem(b[1], false);
 		}
 		if (iBacks.isEmpty()) return;
 		int back = 2;
@@ -82,7 +83,8 @@ public class UniTimeBack {
 		if (currentUrl.indexOf('#') >= 0) currentUrl = currentUrl.substring(0, currentUrl.lastIndexOf('#'));
 		if (!lastUrl.equals(currentUrl) || iBacks.size() < 2) {
 			back = 1;
-			History.newItem("back", false);
+			if (History.getToken() == null || History.getToken().isEmpty())
+				History.newItem("back", false);
 		}
 		iBackUrl = iBacks.get(iBacks.size() - back)[0];
 	}

@@ -24,24 +24,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessages;
-import org.apache.struts.action.ActionRedirect;
-import org.apache.struts.util.MessageResources;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.unitime.commons.Debug;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesDefinitions;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ExamEditForm;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -72,7 +67,7 @@ import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
@@ -82,328 +77,329 @@ import org.unitime.timetable.webutil.Navigation;
 /**
  * @author Tomas Muller
  */
-@Service("/examEdit")
-public class ExamEditAction extends PreferencesAction {
+@Action(value = "examEdit", results = {
+		@Result(name = "showAdd", type = "tiles", location = "examAdd.tiles"),
+		@Result(name = "showEdit", type = "tiles", location = "examEdit.tiles"),
+		@Result(name = "showDetail", type = "redirect", location = "/examDetail.action",
+				params = { "examId", "${form.examId}", "op", "${op}"}),
+		@Result(name = "showList", type = "redirect", location = "/examList.action")
+	})
+@TilesDefinitions(value = {
+		@TilesDefinition(name = "examEdit.tiles", extend = "baseLayout", putAttributes =  {
+				@TilesPutAttribute(name = "title", value = "Edit Examination"),
+				@TilesPutAttribute(name = "body", value = "/user/examEdit.jsp"),
+				@TilesPutAttribute(name = "showNavigation", value = "true")
+			}),
+		@TilesDefinition(name = "examAdd.tiles", extend = "baseLayout", putAttributes =  {
+				@TilesPutAttribute(name = "title", value = "Add Examination"),
+				@TilesPutAttribute(name = "body", value = "/user/examEdit.jsp"),
+				@TilesPutAttribute(name = "showNavigation", value = "true")
+			})
+})
+public class ExamEditAction extends PreferencesAction2<ExamEditForm> {
+	private static final long serialVersionUID = -6628177736452722156L;
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+	protected static ExaminationMessages EXMSG = Localization.create(ExaminationMessages.class);
+	protected String examId = null;
+	protected String op2 = null;
+	protected String reloadCause = null;
+	protected String deleteType = null;
+	protected Boolean clone = null;
+	protected Long deleteId = null;
+	protected Long firstId = null;
+	protected String firstType = null;
 	
-	@Autowired SessionContext sessionContext;
-    
-    public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        ExamEditForm frm = (ExamEditForm) form;
-        try {
-            
-            // Set common lookup tables
-            super.execute(mapping, form, request, response);
-            
-            MessageResources rsc = getResources(request);
-            ActionMessages errors = new ActionMessages();
-            
-            // Read parameters
-            String examId = request.getParameter("examId");
-            String op = frm.getOp();            
-            String reloadCause = request.getParameter("reloadCause");
-            String deleteType = request.getParameter("deleteType");
-            
-            // Read subpart id from form
-            if(op.equals(rsc.getMessage("button.reload"))
-                    || op.equals(rsc.getMessage("button.addObject"))
-                    || op.equals(rsc.getMessage("button.addPeriod"))
-                    || op.equals(rsc.getMessage("button.addRoomPref"))
-                    || op.equals(rsc.getMessage("button.addBldgPref"))
-                    || op.equals(rsc.getMessage("button.addRoomFeaturePref"))
-                    || op.equals(rsc.getMessage("button.addDistPref")) 
-                    || op.equals(rsc.getMessage("button.addRoomGroupPref"))
-                    || op.equals(rsc.getMessage("button.addInstructor"))
-                    || op.equals(rsc.getMessage("button.updateExam")) 
-                    || op.equals(rsc.getMessage("button.cancel")) 
-                    || op.equals(rsc.getMessage("button.clearExamPrefs"))                 
-                    || op.equals(rsc.getMessage("button.delete"))
-                    || op.equals(rsc.getMessage("button.saveExam"))
-                    || op.equals(rsc.getMessage("button.addExam"))
-                    || op.equals(rsc.getMessage("button.returnToDetail"))
-                    || op.equals(rsc.getMessage("button.nextExam"))
-                    || op.equals(rsc.getMessage("button.previousExam"))) {
-                examId = frm.getExamId();
+	public String getExamId() { return examId; }
+	public void setExamId(String examId) { this.examId = examId; }
+	public String getOp2() { return op2; }
+	public void setOp2(String op2) { this.op2 = op2; }
+	public String getReloadCause() { return reloadCause; }
+	public void setReloadCause(String reloadCause) { this.reloadCause = reloadCause; }
+	public String getDeleteType() { return deleteType; }
+	public void setDeleteType(String deleteType) { this.deleteType = deleteType; }
+	public Boolean isClone() { return clone; }
+	public void setClone(Boolean clone) { this.clone = clone; }
+	public Long getDeleteId() { return deleteId; }
+	public void setDeleteId(Long deleteId) { this.deleteId = deleteId; }
+	public Long getFirstId() { return firstId; }
+	public void setFirstId(Long firstId) { this.firstId = firstId; }
+	public String getFirstType() { return firstType; }
+	public void setFirstType(String firstType) { this.firstType = firstType; }
+	
+
+	public String execute() throws Exception {
+		if (form == null) {
+			form = new ExamEditForm();
+			form.reset();
+        	if (request.getSession().getAttribute("Exam.Type")!=null)
+            	form.setExamType((Long)request.getSession().getAttribute("Exam.Type"));
+            if (form.getExamType() == null) {
+            	List<ExamType> types = ExamType.findAllUsedApplicable(HttpSessionContext.getSessionContext(request.getSession().getServletContext()).getUser(), DepartmentStatusType.Status.ExamEdit, DepartmentStatusType.Status.ExamTimetable);
+            	if (!types.isEmpty()) form.setExamType(types.get(0).getUniqueId());
             }
-            
-            // Determine if initial load
-            if(op==null || op.trim().length()==0 
-                    || ( op.equals(rsc.getMessage("button.reload")) 
-                         && (reloadCause==null || reloadCause.trim().length()==0) )) {
-            	if (deleteType!=null && deleteType.length()>0)
-            		op = "delete";
-            	else
-            		op = "init";
+		}
+		
+		super.execute();
+        
+        // Read parameters
+		if (op == null) op = form.getOp();
+        
+		if (examId == null && form.getExamId() != null)
+			examId = form.getExamId();
+        
+        // Determine if initial load
+        if (op == null || op.trim().isEmpty() || ("Reload".equals(op) && (reloadCause == null || reloadCause.trim().isEmpty()))) {
+        	if (deleteType != null && !deleteType.isEmpty())
+        		op = "delete";
+        	else
+        		op = "init";
+        }
+        
+        // Check op exists
+        if (op==null || op.trim().isEmpty()) 
+        	throw new Exception(EXMSG.errorNoExamId());
+        
+        Exam exam = (examId==null || examId.trim().isEmpty() ? null: new ExamDAO().get(Long.valueOf(examId)));
+
+        if (exam != null) {
+        	sessionContext.checkPermission(examId, "Exam", Right.ExaminationEdit);
+        	form.setExamId(exam.getUniqueId().toString());
+        } else if (exam == null) {
+        	sessionContext.checkPermission(Right.ExaminationAdd);
+        	form.setExamId(null);
+        }
+
+        boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
+
+        // Cancel - Go back to Instructors Detail Screen
+        if ("Back".equals(op) || EXMSG.actionBatckToDetail().equals(op)) {
+            if (BackTracker.hasBack(request, 1)) {
+                BackTracker.doBack(request, response);
+                return null;
             }
+            if (examId != null && !examId.trim().isEmpty()) {
+                return "showDetail";
+            } else {
+            	return "showList";
+            }
+        }
+        
+        // Clear all preferences
+        if (exam != null && ("Clear Preferences".equals(op) || EXMSG.actionClearExamPreferences().equals(op))) { 
+        	sessionContext.checkPermission(exam, Right.ExaminationEditClearPreferences);
+            Set s = exam.getPreferences();
+            s.clear();
+            exam.setPreferences(s);            
+            new ExamDAO().update(exam);
+            op = "init";                
             
-            // Check op exists
-            if(op==null || op.trim()=="") 
-                throw new Exception ("Null Operation not supported.");
+            ChangeLog.addChange(
+                    null, 
+                    sessionContext,
+                    exam, 
+                    ChangeLog.Source.EXAM_EDIT, 
+                    ChangeLog.Operation.CLEAR_PREF,
+                    exam.firstSubjectArea(),
+                    exam.firstDepartment());
             
-            Exam exam = (examId==null || examId.trim().length()==0 ? null: new ExamDAO().get(Long.valueOf(examId)));
-
-	        if (exam != null)
-	        	sessionContext.checkPermission(examId, "Exam", Right.ExaminationEdit);
-	        if (exam == null)
-	        	sessionContext.checkPermission(Right.ExaminationAdd);
-
-	        boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
-
-            // Cancel - Go back to Instructors Detail Screen
-            if(op.equals(rsc.getMessage("button.returnToDetail"))) {
-                if (BackTracker.hasBack(request, 1)) {
+            return "showDetail";
+        }
+        
+        // Reset form for initial load
+        if ("init".equals(op)) { 
+            doLoad(exam);
+            if (Boolean.TRUE.equals(clone)) {
+                form.setExamId(null);
+                form.setClone(true);
+            }
+        }
+        
+        ExamType type = ExamTypeDAO.getInstance().get(form.getExamType());
+        if (ApplicationProperty.ExaminationSizeUseLimitInsteadOfEnrollment.isTrue(type.getReference(), type.getType() != ExamType.sExamTypeFinal))
+            form.setSizeNote("A number of enrolled students or a total limit of selected classes/courses (whichever is bigger) is used when blank");
+        else
+            form.setSizeNote("A number of enrolled students is used when blank");
+        
+        form.setLabel(form.getClone() || exam==null?"New Examination":exam.getLabel());
+        
+        if ("Add Instructor".equals(op) || EXMSG.actionAddInstructor().equals(op)) {
+            for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
+                form.getInstructors().add(Preference.BLANK_PREF_VALUE);
+            }
+        }
+        
+        if ("Add Object".equals(op) || EXMSG.actionAddObject().equals(op)) {
+            for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
+                form.addExamOwner(null);
+            }
+            request.setAttribute("hash", "objects");
+        }
+        
+        if ("instructor".equals(deleteType) && deleteId != null) {
+            form.getInstructors().remove(deleteId.intValue());
+        } else if ("examType".equals(deleteType) && deleteId != null) {
+            form.setExamType(deleteId);
+        } else if ("objects".equals(deleteType) && deleteId != null) {
+            form.deleteExamOwner(deleteId.intValue());
+        }
+        
+        if ("Update".equals(op) || EXMSG.actionExamUpdate().equals(op) || 
+        	"Save".equals(op) || EXMSG.actionExamSave().equals(op) ||
+        	"Previous".equals(op) || EXMSG.actionExamPrevious().equals(op) || 
+        	"Next".equals(op) || EXMSG.actionExamNext().equals(op)) {
+        	form.validate(this);
+        	if (!hasFieldErrors()) {
+                doUpdate(exam);
+                
+                if ("Next".equals(op) || EXMSG.actionExamNext().equals(op)) {
+                    response.sendRedirect(response.encodeURL("examEdit.action?examId="+form.getNextId()));
+                    return null;
+                }
+                
+                if ("Previous".equals(op) || EXMSG.actionExamPrevious().equals(op)) {
+                    response.sendRedirect(response.encodeURL("examEdit.action?examId="+form.getPreviousId()));
+                    return null;
+                }
+                
+                if (("Save".equals(op) || EXMSG.actionExamSave().equals(op)) && BackTracker.hasBack(request, 2) && !form.getClone()) {
+                    request.setAttribute("backType", "PreferenceGroup");
+                    request.setAttribute("backId", form.getExamId());
                     BackTracker.doBack(request, response);
                     return null;
                 }
-                if (examId!=null && examId.trim()!="") {
-                    ActionRedirect redirect = new ActionRedirect(mapping.findForward("showDetail"));
-                    redirect.addParameter("examId", examId);
-                    return redirect;
-                } else {
-                    return mapping.findForward("showList");
-                }
-            }
-            
-            // Clear all preferences
-            if(exam!=null && op.equals(rsc.getMessage("button.clearExamPrefs"))) { 
-            	sessionContext.checkPermission(exam, Right.ExaminationEditClearPreferences);
-                Set s = exam.getPreferences();
-                s.clear();
-                exam.setPreferences(s);            
-                new ExamDAO().update(exam);
-                op = "init";                
                 
-                ChangeLog.addChange(
-                        null, 
-                        sessionContext,
-                        exam, 
-                        ChangeLog.Source.EXAM_EDIT, 
-                        ChangeLog.Operation.CLEAR_PREF,
-                        exam.firstSubjectArea(),
-                        exam.firstDepartment());
-                
-                ActionRedirect redirect = new ActionRedirect(mapping.findForward("showDetail"));
-                redirect.addParameter("examId", examId);
-                return redirect;
+                return "showDetail";
             }
-            
-            // Reset form for initial load
-            if(op.equals("init")) { 
-                frm.reset(mapping, request);
-                // Load form attributes that are constant
-                doLoad(request, frm, exam);
-                if ("true".equals(request.getParameter("clone"))) {
-                    frm.setExamId(null);
-                    frm.setClone(true);
-                }
-            }
-            
-            ExamType type = ExamTypeDAO.getInstance().get(frm.getExamType());
-            if (ApplicationProperty.ExaminationSizeUseLimitInsteadOfEnrollment.isTrue(type.getReference(), type.getType() != ExamType.sExamTypeFinal))
-                frm.setSizeNote("A number of enrolled students or a total limit of selected classes/courses (whichever is bigger) is used when blank");
-            else
-                frm.setSizeNote("A number of enrolled students is used when blank");
-
-            
-            frm.setLabel(frm.getClone() || exam==null?"New Examination":exam.getLabel());
-            
-            if (op.equals(rsc.getMessage("button.addInstructor"))) {
-                for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
-                    frm.getInstructors().add(Preference.BLANK_PREF_VALUE);
-                }
-            }
-            
-            if (op.equals(rsc.getMessage("button.addObject"))) {
-                for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
-                    frm.addExamOwner(null);
-                }
-                request.setAttribute("hash", "objects");
-            }
-            
-            long deleteId = -1;
-            try {
-                deleteId = Long.parseLong(request.getParameter("deleteId"));
-            } catch(Exception e) { deleteId = -1; }
-           
-            if ("instructor".equals(deleteType)  && deleteId>=0) {
-                frm.getInstructors().remove((int)deleteId);
-            } else if ("examType".equals(deleteType)  && deleteId>=0) {
-                frm.setExamType(deleteId);
-            } else if ("objects".equals(deleteType)  && deleteId>=0) {
-                frm.deleteExamOwner((int)deleteId);
-            }
-            
-            if(op.equals(rsc.getMessage("button.updateExam")) ||  op.equals(rsc.getMessage("button.saveExam"))
-                     || op.equals(rsc.getMessage("button.nextExam")) || op.equals(rsc.getMessage("button.previousExam"))
-                    ) {  
-                // Validate input prefs
-                errors = frm.validate(mapping, request);
-                
-                // No errors - save
-                if(errors.size()==0) {
-                    doUpdate(request, frm, exam);
-                    
-                    if (op.equals(rsc.getMessage("button.nextExam"))) {
-                        response.sendRedirect(response.encodeURL("examEdit.do?examId="+frm.getNextId()));
-                        return null;
-                    }
-                    
-                    if (op.equals(rsc.getMessage("button.previousExam"))) {
-                        response.sendRedirect(response.encodeURL("examEdit.do?examId="+frm.getPreviousId()));
-                        return null;
-                    }
-                    
-                    //response.sendRedirect(response.encodeURL("examDetail.action?examId="+examId));
-                    if (op.equals(rsc.getMessage("button.saveExam")) && BackTracker.hasBack(request, 2) && !frm.getClone()) {
-                        request.setAttribute("backType", "PreferenceGroup");
-                        request.setAttribute("backId", frm.getExamId());
-                        BackTracker.doBack(request, response);
-                        return null;
-                    }
-                    
-                    ActionRedirect redirect = new ActionRedirect(mapping.findForward("showDetail"));
-                    redirect.addParameter("examId", frm.getExamId());
-                    return redirect;
-                }
-                else {
-                    saveErrors(request, errors);
-                }
-            }
-            
-            // Initialize Preferences for initial load 
-            frm.setAvailableTimePatterns(null);
-            if(op.equals("init")) {
-                initPrefs(frm, exam, null, true);
-            }
-            generateExamPeriodGrid(request, frm, (frm.getClone()?null:exam), op, timeVertical, true);
-            
-            // Process Preferences Action
-            processPrefAction(request, frm, errors);
-            
-            setupInstructors(request, frm, exam);
-            
-            LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamTimetable, DepartmentStatusType.Status.ExamEdit);
-            
-            if (exam!=null) {
-                LookupTables.setupRooms(request, exam);      // Room Prefs
-                LookupTables.setupBldgs(request, exam);      // Building Prefs
-                LookupTables.setupRoomFeatures(request, exam); // Preference Levels
-                LookupTables.setupRoomGroups(request, exam);   // Room Groups
-            } else {
-                Exam dummy = new Exam(); 
-                dummy.setSession(SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()));
-                dummy.setExamType(ExamTypeDAO.getInstance().get(frm.getExamType()));
-                LookupTables.setupRooms(request, dummy);      // Room Prefs
-                LookupTables.setupBldgs(request, dummy);      // Building Prefs
-                LookupTables.setupRoomFeatures(request, dummy); // Preference Levels
-                LookupTables.setupRoomGroups(request, dummy);   // Room Groups
-            }
-            
-            frm.setAllowHardPrefs(sessionContext.hasPermission(exam, Right.CanUseHardPeriodPrefs));
-            
-            frm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser(), false));
-        
-            if (!frm.getClone() && exam!=null) {
-                BackTracker.markForBack(
-                    request,
-                    "examDetail.action?examId="+frm.getExamId(),
-                    "Exam ("+ (frm.getName()==null || frm.getName().length()==0?frm.getLabel().trim():frm.getName().trim()) +")",
-                    true, false);
-            }
-
-            return (frm.getClone() || exam==null?mapping.findForward("showAdd"):mapping.findForward("showEdit"));
-            
-        } catch (Exception e) {
-            Debug.error(e);
-            throw e;
         }
-    }
         
-    protected void doLoad(HttpServletRequest request, ExamEditForm frm, Exam exam) {
+        // Initialize Preferences for initial load 
+        form.setAvailableTimePatterns(null);
+        if("init".equals(op)) {
+            initPrefs(exam, null, true);
+        }
+        generateExamPeriodGrid((form.getClone() ? null : exam), op, timeVertical, true);
+        
+        // Process Preferences Action
+        processPrefAction();
+        
+        setupInstructors(exam);
+        
+        LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamTimetable, DepartmentStatusType.Status.ExamEdit);
+        
         if (exam!=null) {
-            frm.setExamId(exam.getUniqueId().toString());
-            frm.setExamType(exam.getExamType().getUniqueId());
+            LookupTables.setupRooms(request, exam);      // Room Prefs
+            LookupTables.setupBldgs(request, exam);      // Building Prefs
+            LookupTables.setupRoomFeatures(request, exam); // Preference Levels
+            LookupTables.setupRoomGroups(request, exam);   // Room Groups
+        } else {
+            Exam dummy = new Exam(); 
+            dummy.setSession(SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()));
+            dummy.setExamType(ExamTypeDAO.getInstance().get(form.getExamType()));
+            LookupTables.setupRooms(request, dummy);      // Room Prefs
+            LookupTables.setupBldgs(request, dummy);      // Building Prefs
+            LookupTables.setupRoomFeatures(request, dummy); // Preference Levels
+            LookupTables.setupRoomGroups(request, dummy);   // Room Groups
+        }
+        
+        form.setAllowHardPrefs(sessionContext.hasPermission(exam, Right.CanUseHardPeriodPrefs));
+        
+        form.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser(), false));
+    
+        if (!form.getClone() && exam!=null) {
+            BackTracker.markForBack(
+                request,
+                "examDetail.action?examId="+form.getExamId(),
+                EXMSG.backExam(form.getName()==null || form.getName().length()==0?form.getLabel().trim():form.getName().trim()),
+                true, false);
+        }
+
+        return (form.getClone() || exam==null ? "showAdd" : "showEdit");
+	}
+        
+    protected void doLoad(Exam exam) {
+        if (exam!=null) {
+            form.setExamId(exam.getUniqueId().toString());
+            form.setExamType(exam.getExamType().getUniqueId());
             
-            frm.setName(exam.generateName().equals(exam.getName())?null:exam.getName());
-            frm.setNote(exam.getNote());
-            frm.setLength(exam.getLength());
-            frm.setSize(exam.getExamSize()==null?null:exam.getExamSize().toString());
-            frm.setPrintOffset(exam.getPrintOffset()==null || exam.getPrintOffset()==0?null:exam.getPrintOffset().toString());
-            frm.setSeatingType(Exam.sSeatingTypes[exam.getSeatingType()]);
-            frm.setMaxNbrRooms(exam.getMaxNbrRooms());
-            frm.setAccommodation(StudentAccomodation.toHtml(StudentAccomodation.getAccommodations(exam)));
+            form.setName(exam.generateName().equals(exam.getName())?null:exam.getName());
+            form.setNote(exam.getNote());
+            form.setLength(exam.getLength());
+            form.setSize(exam.getExamSize()==null?null:exam.getExamSize().toString());
+            form.setPrintOffset(exam.getPrintOffset()==null || exam.getPrintOffset()==0?null:exam.getPrintOffset().toString());
+            form.setSeatingType(Exam.sSeatingTypes[exam.getSeatingType()]);
+            form.setMaxNbrRooms(exam.getMaxNbrRooms());
+            form.setAccommodation(StudentAccomodation.toHtml(StudentAccomodation.getAccommodations(exam)));
             
             TreeSet instructors = new TreeSet(exam.getInstructors());
 
             for (Iterator i = instructors.iterator(); i.hasNext(); ) {
                 DepartmentalInstructor instr = (DepartmentalInstructor)i.next();
-                frm.getInstructors().add(instr.getUniqueId().toString());
+                form.getInstructors().add(instr.getUniqueId().toString());
             }
             
             Long nextId = Navigation.getNext(sessionContext, Navigation.sInstructionalOfferingLevel, exam.getUniqueId());
             Long prevId = Navigation.getPrevious(sessionContext, Navigation.sInstructionalOfferingLevel, exam.getUniqueId());
-            frm.setPreviousId(prevId==null?null:prevId.toString());
-            frm.setNextId(nextId==null?null:nextId.toString());
+            form.setPreviousId(prevId==null?null:prevId.toString());
+            form.setNextId(nextId==null?null:nextId.toString());
             
             for (Iterator i=new TreeSet(exam.getOwners()).iterator();i.hasNext();)
-                frm.addExamOwner((ExamOwner)i.next());
+                form.addExamOwner((ExamOwner)i.next());
         } else {
             try {
-                TreeSet periods = ExamPeriod.findAll(sessionContext.getUser().getCurrentAcademicSessionId(), frm.getExamType());
+                TreeSet periods = ExamPeriod.findAll(sessionContext.getUser().getCurrentAcademicSessionId(), form.getExamType());
                 if (!periods.isEmpty())
-                    frm.setLength(Constants.SLOT_LENGTH_MIN*((ExamPeriod)periods.first()).getLength());
+                    form.setLength(Constants.SLOT_LENGTH_MIN*((ExamPeriod)periods.first()).getLength());
                 SolverParameterDef maxRoomsParam = SolverParameterDef.findByNameType("Exams.MaxRooms", SolverParameterGroup.SolverType.EXAM);
                 if (maxRoomsParam!=null && maxRoomsParam.getDefault()!=null) 
-                    frm.setMaxNbrRooms(Integer.valueOf(maxRoomsParam.getDefault()));
+                    form.setMaxNbrRooms(Integer.valueOf(maxRoomsParam.getDefault()));
             } catch (Exception e) {}
         }
         
-        if (request.getParameter("firstType")!=null && request.getParameter("firstId")!=null) {
-            String firstType = request.getParameter("firstType");
-            Long firstId = Long.valueOf(request.getParameter("firstId"));
+        if (firstId != null && firstType != null) {
             if ("Class_".equals(firstType)) {
                 Class_ clazz = new Class_DAO().get(firstId);
-                frm.getSubjectArea().add(clazz.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea().getUniqueId());
-                frm.getCourseNbr().add(clazz.getSchedulingSubpart().getControllingCourseOffering().getUniqueId());
-                frm.getItype().add(clazz.getSchedulingSubpart().getUniqueId());
-                frm.getClassNumber().add(clazz.getUniqueId());
+                form.getSubjectArea().add(clazz.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea().getUniqueId());
+                form.getCourseNbr().add(clazz.getSchedulingSubpart().getControllingCourseOffering().getUniqueId());
+                form.getItype().add(clazz.getSchedulingSubpart().getUniqueId());
+                form.getClassNumber().add(clazz.getUniqueId());
             } else if ("SchedulingSubpart".equals(firstType)) {
                 SchedulingSubpart subpart = new SchedulingSubpartDAO().get(firstId);
                 InstrOfferingConfig config = subpart.getInstrOfferingConfig();
-                frm.getSubjectArea().add(config.getControllingCourseOffering().getSubjectArea().getUniqueId());
-                frm.getCourseNbr().add(config.getControllingCourseOffering().getUniqueId());
-                frm.getItype().add(-config.getUniqueId());
-                frm.getClassNumber().add(Long.valueOf(-1));
+                form.getSubjectArea().add(config.getControllingCourseOffering().getSubjectArea().getUniqueId());
+                form.getCourseNbr().add(config.getControllingCourseOffering().getUniqueId());
+                form.getItype().add(-config.getUniqueId());
+                form.getClassNumber().add(Long.valueOf(-1));
             } else if ("InstrOfferingConfig".equals(firstType)) {
                 InstrOfferingConfig config = new InstrOfferingConfigDAO().get(firstId);
-                frm.getSubjectArea().add(config.getControllingCourseOffering().getSubjectArea().getUniqueId());
-                frm.getCourseNbr().add(config.getControllingCourseOffering().getUniqueId());
-                frm.getItype().add(-config.getUniqueId());
-                frm.getClassNumber().add(Long.valueOf(-1));
+                form.getSubjectArea().add(config.getControllingCourseOffering().getSubjectArea().getUniqueId());
+                form.getCourseNbr().add(config.getControllingCourseOffering().getUniqueId());
+                form.getItype().add(-config.getUniqueId());
+                form.getClassNumber().add(Long.valueOf(-1));
             } else if ("InstructionalOffering".equals(firstType)) {
                 InstructionalOffering offering = new InstructionalOfferingDAO().get(firstId);
-                frm.getSubjectArea().add(offering.getControllingCourseOffering().getSubjectArea().getUniqueId());
-                frm.getCourseNbr().add(offering.getControllingCourseOffering().getUniqueId());
-                frm.getItype().add(Long.MIN_VALUE+1);
-                frm.getClassNumber().add(Long.valueOf(-1));
+                form.getSubjectArea().add(offering.getControllingCourseOffering().getSubjectArea().getUniqueId());
+                form.getCourseNbr().add(offering.getControllingCourseOffering().getUniqueId());
+                form.getItype().add(Long.MIN_VALUE+1);
+                form.getClassNumber().add(Long.valueOf(-1));
             } else if ("CourseOffering".equals(firstType)) {
                 CourseOffering course = new CourseOfferingDAO().get(firstId);
-                frm.getSubjectArea().add(course.getSubjectArea().getUniqueId());
-                frm.getCourseNbr().add(course.getUniqueId());
-                frm.getItype().add(Long.MIN_VALUE);
-                frm.getClassNumber().add(Long.valueOf(-1));
+                form.getSubjectArea().add(course.getSubjectArea().getUniqueId());
+                form.getCourseNbr().add(course.getUniqueId());
+                form.getItype().add(Long.MIN_VALUE);
+                form.getClassNumber().add(Long.valueOf(-1));
             }
         }
         
         for (int i=0;i<Constants.PREF_ROWS_ADDED;i++) {
-            frm.addExamOwner(null);
-            frm.getInstructors().add(Constants.BLANK_OPTION_VALUE);
+            form.addExamOwner(null);
+            form.getInstructors().add(Constants.BLANK_OPTION_VALUE);
         }
     }
 
-    protected void setupInstructors(HttpServletRequest request, ExamEditForm frm, Exam exam) throws Exception {
+    protected void setupInstructors(Exam exam) throws Exception {
 
-        List instructors = frm.getInstructors();
-        if(instructors.size()==0) return;
+        List instructors = form.getInstructors();
+        if (instructors == null || instructors.size()==0) return;
         
         HashSet deptIds = new HashSet();
         
@@ -417,8 +413,8 @@ public class ExamEditAction extends PreferencesAction {
                 deptIds.add(own.getCourse().getDepartment().getUniqueId());
             }
         } else {
-            for (int i=0;i<frm.getSubjectAreaList().size();i++) {
-                ExamOwner own = frm.getExamOwner(i);
+            for (int i=0;i<form.getSubjectAreaList().size();i++) {
+                ExamOwner own = form.getExamOwner(i);
                 if (own!=null) deptIds.add(own.getCourse().getDepartment().getUniqueId());
             }
             if (deptIds.isEmpty()) {
@@ -433,21 +429,15 @@ public class ExamEditAction extends PreferencesAction {
             deptsIdsArray[idx++]=(Long)i.next();
 
         LookupTables.setupInstructors(request, sessionContext, deptsIdsArray);
-        Vector deptInstrList = (Vector) request.getAttribute(DepartmentalInstructor.INSTR_LIST_ATTR_NAME);
-
-        // For each instructor set the instructor list
-        for (int i=0; i<instructors.size(); i++) {
-            request.setAttribute(DepartmentalInstructor.INSTR_LIST_ATTR_NAME + i, deptInstrList);
-        }
     }
     
-    protected void doUpdate(HttpServletRequest request, ExamEditForm frm, Exam exam) throws Exception {
+    protected void doUpdate(Exam exam) throws Exception {
         boolean add = false;
         if (exam==null) {
             add = true;
             exam = new Exam();
             exam.setSession(SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()));
-            exam.setExamType(ExamTypeDAO.getInstance().get(frm.getExamType()));
+            exam.setExamType(ExamTypeDAO.getInstance().get(form.getExamType()));
         }
         
         Set s = exam.getPreferences();
@@ -462,25 +452,25 @@ public class ExamEditAction extends PreferencesAction {
                 i.remove();
         }
 
-        super.doUpdate(request, frm, exam, s, false,
+        super.doUpdate(exam, s, false,
         		Preference.Type.PERIOD, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING);
         
-        exam.setNote(frm.getNote());
-        exam.setSeatingType(frm.getSeatingTypeIdx());
+        exam.setNote(form.getNote());
+        exam.setSeatingType(form.getSeatingTypeIdx());
         Integer oldLength = exam.getLength();
-        exam.setLength(Integer.valueOf(frm.getLength()));
-        if (frm.getSize()==null || frm.getSize().length()==0) {
+        exam.setLength(Integer.valueOf(form.getLength()));
+        if (form.getSize()==null || form.getSize().length()==0) {
             exam.setExamSize(null);
         } else {
-            exam.setExamSize(Integer.valueOf(frm.getSize()));
+            exam.setExamSize(Integer.valueOf(form.getSize()));
         }
         int oldPrintOffset = (exam.getPrintOffset()==null?0:exam.getPrintOffset());
-        if (frm.getPrintOffset()==null || frm.getPrintOffset().length()==0) {
+        if (form.getPrintOffset()==null || form.getPrintOffset().length()==0) {
             exam.setPrintOffset(null);
         } else {
-            exam.setPrintOffset(Integer.valueOf(frm.getPrintOffset()));
+            exam.setPrintOffset(Integer.valueOf(form.getPrintOffset()));
         }
-        exam.setMaxNbrRooms(Integer.valueOf(frm.getMaxNbrRooms()));
+        exam.setMaxNbrRooms(Integer.valueOf(form.getMaxNbrRooms()));
         
         if (exam.getInstructors()==null) exam.setInstructors(new HashSet());
         for (Iterator i=exam.getInstructors().iterator();i.hasNext();) {
@@ -488,7 +478,7 @@ public class ExamEditAction extends PreferencesAction {
             instructor.getExams().remove(exam);
             i.remove();
         }
-        for (Iterator i=frm.getInstructors().iterator();i.hasNext();) {
+        for (Iterator i=form.getInstructors().iterator();i.hasNext();) {
             String instructorId = (String)i.next();
             if (!Constants.BLANK_OPTION_VALUE.equals(instructorId) && !Preference.BLANK_PREF_VALUE.equals(instructorId)) {
                 DepartmentalInstructor instructor = new DepartmentalInstructorDAO().get(Long.valueOf(instructorId));
@@ -499,12 +489,12 @@ public class ExamEditAction extends PreferencesAction {
            }
         }
         
-        frm.setExamOwners(exam);
+        form.setExamOwners(exam);
 
-        if (frm.getName()==null || frm.getName().trim().length()==0) {
+        if (form.getName()==null || form.getName().trim().length()==0) {
             exam.setName(exam.generateName());            
         } else {
-            exam.setName(frm.getName());
+            exam.setName(form.getName());
         }
         ExamEvent event = exam.getEvent();
         if (event!=null) {
@@ -531,6 +521,6 @@ public class ExamEditAction extends PreferencesAction {
                 exam.firstSubjectArea(), 
                 exam.firstDepartment());
 
-        if (add) frm.setExamId(exam.getUniqueId().toString());
+        if (add) form.setExamId(exam.getUniqueId().toString());
     }
 }

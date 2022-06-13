@@ -78,7 +78,7 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
 @Service("/examList")
 @Action(value="examList", results = {
 		@Result(name = "list", type = "tiles", location = "examList.tiles"),
-		@Result(name = "addExam", type = "redirect", location = "/examEdit.do")
+		@Result(name = "addExam", type = "redirect", location = "/examEdit.action")
 	})
 @TilesDefinition(name = "examList.tiles", extend = "baseLayout", putAttributes =  {
 		@TilesPutAttribute(name = "title", value = "Examinations"),

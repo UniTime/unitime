@@ -33,24 +33,23 @@ import java.util.ListIterator;
  * @author Heston Fernandes
  */
 
-public class DynamicList implements List {
+public class DynamicList<T> implements List<T> {
 
     /**
      * The factory creating new instances of the class 
      * which are included in the list
      */
-    private DynamicListObjectFactory objectFactory;
+    private DynamicListObjectFactory<T> objectFactory;
 
     /** list holding the values */
-    private List list;
+    private List<T> list;
 
     /**
      * function to be used to get a new instance from the decorator
      * @param list List
      * @param objectFactory object factory to create elements in the list
      */
-    public static List getInstance(List list,
-            DynamicListObjectFactory objectFactory) {
+    public static <T> List<T> getInstance(List<T> list, DynamicListObjectFactory<T> objectFactory) {
         
         return new DynamicList(list, objectFactory);
     }
@@ -60,8 +59,8 @@ public class DynamicList implements List {
      * @param list List
      * @param objectFactory object factory to create elements in the list
      */
-    private DynamicList(List list,
-            DynamicListObjectFactory objectFactory) {
+    private DynamicList(List<T> list,
+            DynamicListObjectFactory<T> objectFactory) {
 
         if (objectFactory == null) {
             throw new IllegalArgumentException("Factory must not be null");
@@ -79,12 +78,12 @@ public class DynamicList implements List {
      * and initializing them 
      * @param index Index
      */
-    public Object get(int index) {
+    public T get(int index) {
         int size = list.size();
 
         // Within bounds, get the object
         if (index < size) {
-            Object object = list.get(index);
+            T object = list.get(index);
 
             // item is a place holder, create new one, set and return
             if (object == null) {                
@@ -104,7 +103,7 @@ public class DynamicList implements List {
                 list.add(null);
             }
             // Create the last object, set and return
-            Object object = objectFactory.create();
+            T object = objectFactory.create();
             list.add(object);
             return object;
         }
@@ -116,7 +115,7 @@ public class DynamicList implements List {
      * @param index Index
      * @object element Object to set at index
      */
-    public Object set(int index, Object element) {
+    public T set(int index, T element) {
         int size = list.size();
 
         // Grow the list
@@ -133,19 +132,19 @@ public class DynamicList implements List {
      * From here on - just delegate methods to the list
      */
     
-    public void add(int index, Object element) {
+    public void add(int index, T element) {
         list.add(index, element);
     }
 
-    public boolean add(Object o) {
+    public boolean add(T o) {
         return list.add(o);
     }
 
-    public boolean addAll(int index, Collection c) {
+    public boolean addAll(int index, Collection<? extends T> c) {
         return list.addAll(index, c);
     }
 
-    public boolean addAll(Collection c) {
+    public boolean addAll(Collection<? extends T> c) {
         return list.addAll(c);
     }
 
@@ -157,7 +156,7 @@ public class DynamicList implements List {
         return list.contains(o);
     }
 
-    public boolean containsAll(Collection c) {
+    public boolean containsAll(Collection<?> c) {
         return list.containsAll(c);
     }
 
@@ -177,7 +176,7 @@ public class DynamicList implements List {
         return list.isEmpty();
     }
 
-    public Iterator iterator() {
+    public Iterator<T> iterator() {
         return list.iterator();
     }
 
@@ -185,15 +184,15 @@ public class DynamicList implements List {
         return list.lastIndexOf(o);
     }
 
-    public ListIterator listIterator() {
+    public ListIterator<T> listIterator() {
         return list.listIterator();
     }
 
-    public ListIterator listIterator(int index) {
+    public ListIterator<T> listIterator(int index) {
         return list.listIterator(index);
     }
 
-    public Object remove(int index) {
+    public T remove(int index) {
         return list.remove(index);
     }
 
@@ -213,7 +212,7 @@ public class DynamicList implements List {
         return list.size();
     }
 
-    public List subList(int fromIndex, int toIndex) {
+    public List<T> subList(int fromIndex, int toIndex) {
         return list.subList(fromIndex, toIndex);
     }
 
@@ -221,7 +220,7 @@ public class DynamicList implements List {
         return list.toArray();
     }
 
-    public Object[] toArray(Object[] a) {
+    public <X> X[] toArray(X[] a) {
         return list.toArray(a);
     }
 

@@ -26,13 +26,12 @@ import java.util.List;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.springframework.stereotype.Service;
+import org.apache.struts2.convention.annotation.Action;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
+import org.unitime.timetable.action.UniTimeAction;
+import org.unitime.timetable.form.BlankForm;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -51,9 +50,12 @@ import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
  * @author Tomas Muller, Stephanie Schluttenhofer
  *
  */
-@Service("/examEditAjax")
-public class ExamEditAjax extends Action {
-    public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
+@Action(value = "examEditAjax")
+public class ExamEditAjax extends UniTimeAction<BlankForm> {
+	private static final long serialVersionUID = -4965013857791832650L;
+	protected static ExaminationMessages EXMSG = Localization.create(ExaminationMessages.class);
+
+	public String execute() throws Exception {
         
         response.addHeader("Content-Type", "text/xml; charset=UTF-8");
         request.setCharacterEncoding("UTF-8");
@@ -89,7 +91,7 @@ public class ExamEditAjax extends Action {
     
     protected void coumputeCourseNumbers(String subjectAreaId, PrintWriter out) throws Exception {
         if (subjectAreaId==null || subjectAreaId.length()==0 || subjectAreaId.equals(Preference.BLANK_PREF_VALUE)) {
-            print(out, "-1", "N/A");
+            print(out, "-1", EXMSG.examOwnerNotApplicable());
             return;
         }
         List courseNumbers = new CourseOfferingDAO().
@@ -102,7 +104,7 @@ public class ExamEditAjax extends Action {
             setCacheable(true).
             setLong("subjectAreaId", Long.parseLong(subjectAreaId)).
             list();
-        if (courseNumbers.isEmpty()) print(out, "-1", "N/A");
+        if (courseNumbers.isEmpty()) print(out, "-1", EXMSG.examOwnerNotApplicable());
         if (courseNumbers.size()>1) print(out, "-1", "-");
         for (Iterator i=courseNumbers.iterator();i.hasNext();) {
             Object[] o = (Object[])i.next();
@@ -112,16 +114,16 @@ public class ExamEditAjax extends Action {
     
     protected void coumputeSubparts(String courseOfferingId, PrintWriter out) throws Exception {
         if (courseOfferingId==null || courseOfferingId.length()==0 || courseOfferingId.equals(Preference.BLANK_PREF_VALUE)) {
-            print(out, "0", "N/A");
+            print(out, "0", EXMSG.examOwnerNotApplicable());
             return;
         }
         CourseOffering course = new CourseOfferingDAO().get(Long.parseLong(courseOfferingId));
         if (course==null) {
-            print(out, "0", "N/A");
+            print(out, "0", EXMSG.examOwnerNotApplicable());
             return;
         }
-        if (course.isIsControl()) print(out,String.valueOf(Long.MIN_VALUE+1),"Offering");
-        print(out, String.valueOf(Long.MIN_VALUE), "Course");
+        if (course.isIsControl()) print(out,String.valueOf(Long.MIN_VALUE+1), EXMSG.examTypeOffering());
+        print(out, String.valueOf(Long.MIN_VALUE), EXMSG.examTypeCourse());
         if (!course.isIsControl()) return;
         TreeSet configs = new TreeSet(new InstrOfferingConfigComparator(null));
         configs.addAll(new InstrOfferingConfigDAO().
@@ -144,14 +146,14 @@ public class ExamEditAjax extends Action {
             setLong("courseOfferingId", course.getUniqueId()).
             list());
         if (!configs.isEmpty()) {
-            print(out, String.valueOf(Long.MIN_VALUE+2),"-- Configurations --");
+            print(out, String.valueOf(Long.MIN_VALUE+2),EXMSG.sctOwnerTypeConfigurations());
             for (Iterator i=configs.iterator();i.hasNext();) {
                 InstrOfferingConfig c = (InstrOfferingConfig)i.next();
                 print(out,String.valueOf(-c.getUniqueId()), c.getName() + (c.getInstructionalMethod() == null ? "" : " (" + c.getInstructionalMethod().getLabel() + ")"));
             }
         }
         if (!configs.isEmpty() && !subparts.isEmpty())
-            print(out,String.valueOf(Long.MIN_VALUE+2),"-- Subparts --");
+            print(out,String.valueOf(Long.MIN_VALUE+2),EXMSG.sctOwnerTypeSubparts());
         for (Iterator i=subparts.iterator();i.hasNext();) {
             SchedulingSubpart s = (SchedulingSubpart)i.next();
             String id = s.getUniqueId().toString();
@@ -169,12 +171,12 @@ public class ExamEditAjax extends Action {
     
     protected void coumputeClasses(String schedulingSubpartId, String courseId, PrintWriter out) throws Exception {
         if (schedulingSubpartId==null || schedulingSubpartId.length()==0 || schedulingSubpartId.equals(Preference.BLANK_PREF_VALUE)) {
-            print(out, "-1", "N/A");
+            print(out, "-1", EXMSG.examOwnerNotApplicable());
             return;
         }
         SchedulingSubpart subpart = (Long.parseLong(schedulingSubpartId)>0?new SchedulingSubpartDAO().get(Long.valueOf(schedulingSubpartId)):null);
         if (subpart==null) {
-            print(out, "-1", "N/A");
+            print(out, "-1", EXMSG.examOwnerNotApplicable());
             return;
         }
         CourseOffering co = null;

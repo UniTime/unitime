@@ -126,7 +126,7 @@ public class Exams extends BodyTagSupport {
                 title = "<table width='100%'><tr><td width='100%'>" + 
                     "<DIV class=\"WelcomeRowHeadNoLine\">"+MSG.sectionTitleExaminations()+"</DIV>"+
                     "</td><td style='padding-bottom: 2px'>"+
-                    "<input type=\"button\" onclick=\"document.location='examEdit.do?firstType="+getType()+"&firstId="+objectId+"';\" " +
+                    "<input type=\"button\" onclick=\"document.location='examEdit.action?firstType="+getType()+"&firstId="+objectId+"';\" " +
                     		"class=\"btn\" accesskey='"+ MSG.accessAddExamination() +"' title='" + 
                     			MSG.titleAddExamination(MSG.accessAddExamination())+"' value='" + MSG.actionAddExamination()+"'>"+
                     "</td></tr></table>";

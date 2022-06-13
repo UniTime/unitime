@@ -218,7 +218,7 @@
 
 		<s:include value="preferencesDetail2.jspf">
 			<s:param name="timePref" value="false"/>
-			<s:param name="examSeating" value="#form.seatingTypeIdx"/>
+			<s:param name="examSeating" value="form.isExamSeating()"/>
 		</s:include>
 		
 		<TR>

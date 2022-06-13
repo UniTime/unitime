@@ -25,11 +25,11 @@ package org.unitime.timetable.util;
  * 
  * @author Heston Fernandes
  */
-public interface DynamicListObjectFactory {
+public interface DynamicListObjectFactory<T> {
     
         /**
          * creates a new instance of a class
          * @return Object
          */
-        public Object create();
+        public T create();
 }

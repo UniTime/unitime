@@ -60,27 +60,27 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
 	// --------------------------------------------------------- Instance Variables
     
 	protected String op;
-    protected List timePatterns;
-    protected List roomGroups;
-    protected List roomGroupLevels;
-    protected List roomPrefs;
-    protected List roomPrefLevels;
-    protected List bldgPrefs;
-    protected List bldgPrefLevels;
-    protected List roomFeaturePrefs;
-    protected List roomFeaturePrefLevels;
+    protected List<String> timePatterns;
+    protected List<String> roomGroups;
+    protected List<String> roomGroupLevels;
+    protected List<String> roomPrefs;
+    protected List<String> roomPrefLevels;
+    protected List<String> bldgPrefs;
+    protected List<String> bldgPrefLevels;
+    protected List<String> roomFeaturePrefs;
+    protected List<String> roomFeaturePrefLevels;
     protected String timePattern;
-    protected List availableTimePatterns;
-    protected List distPrefs;
-    protected List distPrefLevels;
-    protected List datePatternPrefs;
-    protected List datePatternPrefLevels;
-    protected List coursePrefs;
-    protected List coursePrefLevels;
-    protected List instructorPrefs;
-    protected List instructorPrefLevels;
-    protected List attributePrefs;
-    protected List attributePrefLevels;
+    protected List<TimePattern> availableTimePatterns;
+    protected List<String> distPrefs;
+    protected List<String> distPrefLevels;
+    protected List<String> datePatternPrefs;
+    protected List<String> datePatternPrefLevels;
+    protected List<String> coursePrefs;
+    protected List<String> coursePrefLevels;
+    protected List<String> instructorPrefs;
+    protected List<String> instructorPrefLevels;
+    protected List<String> attributePrefs;
+    protected List<String> attributePrefLevels;
     protected String availability;
     
     private String nextId;
@@ -93,25 +93,28 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
     // --------------------------------------------------------- Classes
 
     /** Factory to create dynamic list element for Preference */
-    protected DynamicListObjectFactory factoryPref = new DynamicListObjectFactory() {
-        public Object create() {
+    protected DynamicListObjectFactory<String> factoryPref = new DynamicListObjectFactory<String>() {
+        public String create() {
             return new String(Preference.BLANK_PREF_VALUE);
         }
     };
 
     /** Factory to create dynamic list element for Preference Level */
-    protected DynamicListObjectFactory factoryPrefLevel = new DynamicListObjectFactory() {
-        public Object create() {
+    protected DynamicListObjectFactory<String> factoryPrefLevel = new DynamicListObjectFactory<String>() {
+        public String create() {
             return new String(PreferenceLevel.PREF_LEVEL_NEUTRAL);
         }
     };
 
     /** Factory to create dynamic list element for Time Pattern */
-    protected DynamicListObjectFactory factoryPattern = new DynamicListObjectFactory() {
-        public Object create() {
+    protected DynamicListObjectFactory<String> factoryPattern = new DynamicListObjectFactory<String>() {
+        public String create() {
             return new String("-1");
         }
     };
+    
+    public PreferencesForm() {
+    }
 
 
     // --------------------------------------------------------- Methods
@@ -128,7 +131,7 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
 
         ActionErrors errors = new ActionErrors();
 
-        List lst = getRoomGroups();
+        List<String> lst = getRoomGroups();
         if(!checkPrefs(lst)) {
             errors.add("roomGroups", 
                     new ActionMessage(
@@ -305,26 +308,26 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
     public void reset(ActionMapping mapping, HttpServletRequest request) {
         op= "";
         timePattern = null;
-        timePatterns = DynamicList.getInstance(new ArrayList(), factoryPattern);
-        availableTimePatterns = DynamicList.getInstance(new ArrayList(), factoryPattern);
-        roomPrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
-        roomPrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
-        bldgPrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
-        bldgPrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
-        roomFeaturePrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
-        roomFeaturePrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
-        roomGroups = DynamicList.getInstance(new ArrayList(), factoryPref);
-        roomGroupLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
-        distPrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
-        distPrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
-        datePatternPrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
-        datePatternPrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
-        coursePrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
-        coursePrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
-        attributePrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
-        attributePrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
-        instructorPrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
-        instructorPrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
+        timePatterns = DynamicList.getInstance(new ArrayList<String>(), factoryPattern);
+        availableTimePatterns = null;
+        roomPrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
+        roomPrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
+        bldgPrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
+        bldgPrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
+        roomFeaturePrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
+        roomFeaturePrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
+        roomGroups = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
+        roomGroupLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
+        distPrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
+        distPrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
+        datePatternPrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
+        datePatternPrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
+        coursePrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
+        coursePrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
+        attributePrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
+        attributePrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
+        instructorPrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
+        instructorPrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
         nextId = previousId = null;
         allowHardPrefs = true;
         hasNotAvailable = false;
@@ -334,7 +337,7 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
 
     /**
      * Checks that there are no duplicates and that all prior prefs have a value
-     * @param lst List of values
+     * @param lst List<String> of values
      * @return true if checks ok, false otherwise
      */
     public boolean checkPrefs(List... lst) {
@@ -362,10 +365,10 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
     
     /**
      * Checks that pref levels are selected
-     * @param lst List of pref levels
+     * @param lst List<String> of pref levels
      * @return true if checks ok, false otherwise
      */
-    public boolean checkPrefLevels(List lst, List prefList) {
+    public boolean checkPrefLevels(List<String> lst, List<String> prefList) {
         
         for(int i=0; i<lst.size(); i++) {
             String id = ((String) prefList.get(i));
@@ -400,18 +403,18 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
     /**
      * @return Returns the timePattern.
      */
-    public List getTimePatterns() {
+    public List<String> getTimePatterns() {
         return (timePatterns==null?new Vector():timePatterns);
     }
 
     /**
      * @param timePattern The timePattern to set.
      */
-    public void setTimePatterns(List timePatterns) {
+    public void setTimePatterns(List<String> timePatterns) {
         this.timePatterns = timePatterns;
     }
     
-    public List getAvailableTimePatterns() {
+    public List<TimePattern> getAvailableTimePatterns() {
         return availableTimePatterns;
     }
     
@@ -419,7 +422,7 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
     	return availableTimePatterns!=null;
     }
 
-    public List getAvailableNotSelectedTimePatterns() {
+    public List<TimePattern> getAvailableNotSelectedTimePatterns() {
     	if (timePatterns==null || timePatterns.isEmpty()) return getAvailableTimePatterns();
     	Vector ret = new Vector();
     	for (Iterator i=availableTimePatterns.iterator();i.hasNext();) {
@@ -430,7 +433,7 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
         return ret;
     }
 
-    public void setAvailableTimePatterns(List availableTimePatterns) {
+    public void setAvailableTimePatterns(List<TimePattern> availableTimePatterns) {
         this.availableTimePatterns = availableTimePatterns;
     }
 
@@ -442,23 +445,68 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
     	this.timePattern = timePattern;
     }
     
-    public List getRoomGroups() {
+    public List<String> getRoomGroups() {
 		return roomGroups;
 	}
 
-	public void setRoomGroups(List roomGroups) {
+	public void setRoomGroups(List<String> roomGroups) {
 		this.roomGroups = roomGroups;
 	}
     /**
      * @param roomGroups The roomGroups to set.
      */
-    public void setRoomGroups(int key, Object value) {
+    public void setRoomGroups(int key, String value) {
         Debug.debug("setting room group: " + key);
         this.roomGroups.set(key, value);
     }
 	
-	public List getRoomGroupLevels() {
+	public List<String> getRoomGroupLevels() {
 		return roomGroupLevels;
+	}
+	
+	public boolean isRoomGroupDisabled(int idx) {
+		String levelId = getRoomGroupLevels(idx);
+		return !getAllowHardPrefs() && !Preference.BLANK_PREF_VALUE.equals(levelId) && PreferenceLevel.getPreferenceLevel(Integer.parseInt(levelId)).isHard();
+	}
+	
+	public boolean isRoomDisabled(int idx) {
+		String levelId = getRoomPrefLevels(idx);
+		return !getAllowHardPrefs() && !Preference.BLANK_PREF_VALUE.equals(levelId) && PreferenceLevel.getPreferenceLevel(Integer.parseInt(levelId)).isHard();
+	}
+	
+	public boolean isRoomFeatureDisabled(int idx) {
+		String levelId = getRoomFeaturePrefLevels(idx);
+		return !getAllowHardPrefs() && !Preference.BLANK_PREF_VALUE.equals(levelId) && PreferenceLevel.getPreferenceLevel(Integer.parseInt(levelId)).isHard();
+	}
+	
+	public boolean isBuildingDisabled(int idx) {
+		String levelId = getBldgPrefLevels(idx);
+		return !getAllowHardPrefs() && !Preference.BLANK_PREF_VALUE.equals(levelId) && PreferenceLevel.getPreferenceLevel(Integer.parseInt(levelId)).isHard();
+	}
+	
+	public boolean isDatePatternDisabled(int idx) {
+		String levelId = getDatePatternPrefLevels(idx);
+		return !getAllowHardPrefs() && !Preference.BLANK_PREF_VALUE.equals(levelId) && PreferenceLevel.getPreferenceLevel(Integer.parseInt(levelId)).isHard();
+	}
+	
+	public boolean isDistPrefDisabled(int idx) {
+		String levelId = getDistPrefLevels(idx);
+		return !getAllowHardPrefs() && !Preference.BLANK_PREF_VALUE.equals(levelId) && PreferenceLevel.getPreferenceLevel(Integer.parseInt(levelId)).isHard();
+	}
+	
+	public boolean isAttributePrefDisabled(int idx) {
+		String levelId = getAttributePrefLevels(idx);
+		return !getAllowHardPrefs() && !Preference.BLANK_PREF_VALUE.equals(levelId) && PreferenceLevel.getPreferenceLevel(Integer.parseInt(levelId)).isHard();
+	}
+	
+	public boolean isCoursePrefDisabled(int idx) {
+		String levelId = getCoursePrefLevels(idx);
+		return !getAllowHardPrefs() && !Preference.BLANK_PREF_VALUE.equals(levelId) && PreferenceLevel.getPreferenceLevel(Integer.parseInt(levelId)).isHard();
+	}
+	
+	public boolean isInstructorPrefDisabled(int idx) {
+		String levelId = getInstructorPrefLevels(idx);
+		return !getAllowHardPrefs() && !Preference.BLANK_PREF_VALUE.equals(levelId) && PreferenceLevel.getPreferenceLevel(Integer.parseInt(levelId)).isHard();
 	}
 	
     /**
@@ -471,7 +519,7 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
     /**
      * @param roomGroup levels The roomGroup Levels to set.
      */
-    public void setRoomGroupLevels(int key, Object value) {
+    public void setRoomGroupLevels(int key, String value) {
     	this.roomGroupLevels.set(key, value);
     }
 	
@@ -482,14 +530,14 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
         return roomGroups.get(key).toString();
     }
 
-	public void setRoomGroupLevels(List roomGroupLevels) {
+	public void setRoomGroupLevels(List<String> roomGroupLevels) {
 		this.roomGroupLevels = roomGroupLevels;
 	}
 
 	/**
      * @return Returns the bldgPrefs.
      */
-    public List getBldgPrefs() {
+    public List<String> getBldgPrefs() {
         return bldgPrefs;
     }
     /**
@@ -501,20 +549,20 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
     /**
      * @param bldgPrefs The bldgPrefs to set.
      */
-    public void setBldgPrefs(int key, Object value) {
+    public void setBldgPrefs(int key, String value) {
         this.bldgPrefs.set(key, value);
     }
     /**
      * @param bldgPrefs The bldgPrefs to set.
      */
-    public void setBldgPrefs(List bldgPrefs) {
+    public void setBldgPrefs(List<String> bldgPrefs) {
         this.bldgPrefs = bldgPrefs;
     }
     
 	/**
      * @return Returns the distPrefs.
      */
-    public List getDistPrefs() {
+    public List<String> getDistPrefs() {
         return distPrefs;
     }
     /**
@@ -526,20 +574,20 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
     /**
      * @param distPrefs The distPrefs to set.
      */
-    public void setDistPrefs(int key, Object value) {
+    public void setDistPrefs(int key, String value) {
         this.distPrefs.set(key, value);
     }
     /**
      * @param distPrefs The distPrefs to set.
      */
-    public void setDistPrefs(List distPrefs) {
+    public void setDistPrefs(List<String> distPrefs) {
         this.distPrefs = distPrefs;
     }
 
 	/**
      * @return Returns the coursePrefs.
      */
-    public List getCoursePrefs() {
+    public List<String> getCoursePrefs() {
         return coursePrefs;
     }
     /**
@@ -551,20 +599,20 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
     /**
      * @param coursePrefs The coursePrefs to set.
      */
-    public void setCoursePrefs(int key, Object value) {
+    public void setCoursePrefs(int key, String value) {
         this.coursePrefs.set(key, value);
     }
     /**
      * @param coursePrefs The coursePrefs to set.
      */
-    public void setCoursePrefs(List coursePrefs) {
+    public void setCoursePrefs(List<String> coursePrefs) {
         this.coursePrefs = coursePrefs;
     }
     
 	/**
      * @return Returns the instructorPrefs.
      */
-    public List getInstructorPrefs() {
+    public List<String> getInstructorPrefs() {
         return instructorPrefs;
     }
     /**
@@ -576,20 +624,20 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
     /**
      * @param instructorPrefs The instructorPrefs to set.
      */
-    public void setInstructorPrefs(int key, Object value) {
+    public void setInstructorPrefs(int key, String value) {
         this.instructorPrefs.set(key, value);
     }
     /**
      * @param instructorPrefs The instructorPrefs to set.
      */
-    public void setInstructorPrefs(List instructorPrefs) {
+    public void setInstructorPrefs(List<String> instructorPrefs) {
         this.instructorPrefs = instructorPrefs;
     }
     
 	/**
      * @return Returns the attributePrefs.
      */
-    public List getAttributePrefs() {
+    public List<String> getAttributePrefs() {
         return attributePrefs;
     }
     /**
@@ -601,20 +649,20 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
     /**
      * @param attributePrefs The attributePrefs to set.
      */
-    public void setAttributePrefs(int key, Object value) {
+    public void setAttributePrefs(int key, String value) {
         this.attributePrefs.set(key, value);
     }
     /**
      * @param attributePrefs The attributePrefs to set.
      */
-    public void setAttributePrefs(List attributePrefs) {
+    public void setAttributePrefs(List<String> attributePrefs) {
         this.attributePrefs = attributePrefs;
     }
 
     /**
      * @return Returns the roomPrefs.
      */
-    public List getRoomPrefs() {
+    public List<String> getRoomPrefs() {
         return roomPrefs;
     }
     /**
@@ -627,21 +675,21 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
     /**
      * @param roomPrefs The roomPrefs to set.
      */
-    public void setRoomPrefs(int key, Object value) {
+    public void setRoomPrefs(int key, String value) {
         Debug.debug("setting room pref: " + key);
         this.roomPrefs.set(key, value);
     }
     /**
      * @param roomPrefs The roomPrefs to set.
      */
-    public void setRoomPrefs(List roomPrefs) {
+    public void setRoomPrefs(List<String> roomPrefs) {
         this.roomPrefs = roomPrefs;
     }
     
     /**
      * @return Returns the roomFeaturePrefs.
      */
-    public List getRoomFeaturePrefs() {
+    public List<String> getRoomFeaturePrefs() {
         return roomFeaturePrefs;
     }
     /**
@@ -653,20 +701,20 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
     /**
      * @param roomFeaturePrefs The roomFeaturePrefs to set.
      */
-    public void setRoomFeaturePrefs(int key, Object value) {
+    public void setRoomFeaturePrefs(int key, String value) {
         this.roomFeaturePrefs.set(key, value);
     }
     /**
      * @param roomFeaturePrefs The roomFeaturePrefs to set.
      */
-    public void setRoomFeaturePrefs(List roomFeaturePrefs) {
+    public void setRoomFeaturePrefs(List<String> roomFeaturePrefs) {
         this.roomFeaturePrefs = roomFeaturePrefs;
     }
     
     /**
      * @return Returns the roomPrefLevels.
      */
-    public List getRoomPrefLevels() {
+    public List<String> getRoomPrefLevels() {
         return roomPrefLevels;
     }
     /**
@@ -678,20 +726,20 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
     /**
      * @param roomPrefs The roomPrefLevels to set.
      */
-    public void setRoomPrefLevels(int key, Object value) {
+    public void setRoomPrefLevels(int key, String value) {
         this.roomPrefLevels.set(key, value);
     }
     /**
      * @param roomPrefs The roomPrefLevels to set.
      */
-    public void setRoomPrefLevels(List roomPrefLevels) {
+    public void setRoomPrefLevels(List<String> roomPrefLevels) {
         this.roomPrefLevels = roomPrefLevels;
     }
     
     /**
      * @return Returns the bldgPrefLevels.
      */
-    public List getBldgPrefLevels() {
+    public List<String> getBldgPrefLevels() {
         return bldgPrefLevels;
     }
     /**
@@ -703,20 +751,20 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
     /**
      * @param bldgPrefs The bldgPrefLevels to set.
      */
-    public void setBldgPrefLevels(int key, Object value) {
+    public void setBldgPrefLevels(int key, String value) {
         this.bldgPrefLevels.set(key, value);
     }
     /**
      * @param bldgPrefs The bldgPrefLevels to set.
      */
-    public void setBldgPrefLevels(List bldgPrefLevels) {
+    public void setBldgPrefLevels(List<String> bldgPrefLevels) {
         this.bldgPrefLevels = bldgPrefLevels;
     }
     
     /**
      * @return Returns the distPrefLevels.
      */
-    public List getDistPrefLevels() {
+    public List<String> getDistPrefLevels() {
         return distPrefLevels;
     }
     /**
@@ -728,20 +776,20 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
     /**
      * @param distPrefs The distPrefLevels to set.
      */
-    public void setDistPrefLevels(int key, Object value) {
+    public void setDistPrefLevels(int key, String value) {
         this.distPrefLevels.set(key, value);
     }
     /**
      * @param distPrefs The distPrefLevels to set.
      */
-    public void setDistPrefLevels(List distPrefLevels) {
+    public void setDistPrefLevels(List<String> distPrefLevels) {
         this.distPrefLevels = distPrefLevels;
     }
     
     /**
      * @return Returns the coursePrefLevels.
      */
-    public List getCoursePrefLevels() {
+    public List<String> getCoursePrefLevels() {
         return coursePrefLevels;
     }
     /**
@@ -753,20 +801,20 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
     /**
      * @param coursePrefs The coursePrefLevels to set.
      */
-    public void setCoursePrefLevels(int key, Object value) {
+    public void setCoursePrefLevels(int key, String value) {
         this.coursePrefLevels.set(key, value);
     }
     /**
      * @param coursePrefs The coursePrefLevels to set.
      */
-    public void setCoursePrefLevels(List coursePrefLevels) {
+    public void setCoursePrefLevels(List<String> coursePrefLevels) {
         this.coursePrefLevels = coursePrefLevels;
     }
     
     /**
      * @return Returns the instructorPrefLevels.
      */
-    public List getInstructorPrefLevels() {
+    public List<String> getInstructorPrefLevels() {
         return instructorPrefLevels;
     }
     /**
@@ -778,20 +826,20 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
     /**
      * @param instructorPrefs The instructorPrefLevels to set.
      */
-    public void setInstructorPrefLevels(int key, Object value) {
+    public void setInstructorPrefLevels(int key, String value) {
         this.instructorPrefLevels.set(key, value);
     }
     /**
      * @param instructorPrefs The instructorPrefLevels to set.
      */
-    public void setInstructorPrefLevels(List instructorPrefLevels) {
+    public void setInstructorPrefLevels(List<String> instructorPrefLevels) {
         this.instructorPrefLevels = instructorPrefLevels;
     }
 
     /**
      * @return Returns the attributePrefLevels.
      */
-    public List getAttributePrefLevels() {
+    public List<String> getAttributePrefLevels() {
         return attributePrefLevels;
     }
     /**
@@ -803,20 +851,20 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
     /**
      * @param attributePrefs The attributePrefLevels to set.
      */
-    public void setAttributePrefLevels(int key, Object value) {
+    public void setAttributePrefLevels(int key, String value) {
         this.attributePrefLevels.set(key, value);
     }
     /**
      * @param attributePrefs The attributePrefLevels to set.
      */
-    public void setAttributePrefLevels(List attributePrefLevels) {
+    public void setAttributePrefLevels(List<String> attributePrefLevels) {
         this.attributePrefLevels = attributePrefLevels;
     }
     
     /**
      * @return Returns the roomFeaturePrefLevels.
      */
-    public List getRoomFeaturePrefLevels() {
+    public List<String> getRoomFeaturePrefLevels() {
         return roomFeaturePrefLevels;
     }
     /**
@@ -828,18 +876,18 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
     /**
      * @param roomFeaturePrefs The roomFeaturePrefLevels to set.
      */
-    public void setRoomFeaturePrefLevels(int key, Object value) {
+    public void setRoomFeaturePrefLevels(int key, String value) {
         this.roomFeaturePrefLevels.set(key, value);
     }
     /**
      * @param roomFeaturePrefs The roomFeaturePrefLevels to set.
      */
-    public void setRoomFeaturePrefLevels(List roomFeaturePrefLevels) {
+    public void setRoomFeaturePrefLevels(List<String> roomFeaturePrefLevels) {
         this.roomFeaturePrefLevels = roomFeaturePrefLevels;
     }
 
     
-	public List getDatePatternPrefs() {
+	public List<String> getDatePatternPrefs() {
 		return datePatternPrefs;
 	}
 	
@@ -847,14 +895,14 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
 		return datePatternPrefs.get(key).toString();
 	}
 
-	public void setDatePatternPrefs(int key, Object value) {
+	public void setDatePatternPrefs(int key, String value) {
 		this.datePatternPrefs.set(key, value);
 	}
-	public void setDatePatternPrefs(List datePatternPrefs) {
+	public void setDatePatternPrefs(List<String> datePatternPrefs) {
 		this.datePatternPrefs = datePatternPrefs;
 	}
 
-	public List getDatePatternPrefLevels() {
+	public List<String> getDatePatternPrefLevels() {
 		return datePatternPrefLevels;
 	}
 	
@@ -862,11 +910,11 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
 		return datePatternPrefLevels.get(key).toString();
 	}
 
-	public void setDatePatternPrefLevels(List datePatternPrefLevels) {
+	public void setDatePatternPrefLevels(List<String> datePatternPrefLevels) {
 		this.datePatternPrefLevels = datePatternPrefLevels;
 	}
 	
-	public void setDatePatternPrefLevels(int key, Object value) {
+	public void setDatePatternPrefLevels(int key, String value) {
 		this.datePatternPrefLevels.set(key, value);
 	}
 
@@ -960,13 +1008,13 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
         this.datePatternPrefLevels.add(level);
     }
     
-	public void sortDatePatternPrefs(List prefs, List prefLevels,
+	public void sortDatePatternPrefs(List<String> prefs, List<String> prefLevels,
 			List<DatePattern> patterns) {
 		if (prefs.size() == patterns.size()) {
 			Collections.sort(patterns); //, new DatePattenNameComparator()
-			List newPrefs = DynamicList.getInstance(new ArrayList(),
+			List<String> newPrefs = DynamicList.getInstance(new ArrayList<String>(),
 					factoryPref);
-			List newPrefLevels = DynamicList.getInstance(new ArrayList(),
+			List<String> newPrefLevels = DynamicList.getInstance(new ArrayList<String>(),
 					factoryPrefLevel);
 			newPrefs.addAll(prefs);
 			for (int i = 0; i < newPrefs.size(); i++) {
@@ -1036,7 +1084,7 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
 
 	@Override
 	public void validate(UniTimeAction action) {
-        List lst = getRoomGroups();
+        List<String> lst = getRoomGroups();
         if (!checkPrefs(lst)) {
         	action.addFieldError("roomGroups", MSG.errorInvalidRoomGroup());
         }
@@ -1139,26 +1187,26 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
 	public void reset() {
 		op= "";
         timePattern = null;
-        timePatterns = DynamicList.getInstance(new ArrayList(), factoryPattern);
-        availableTimePatterns = DynamicList.getInstance(new ArrayList(), factoryPattern);
-        roomPrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
-        roomPrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
-        bldgPrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
-        bldgPrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
-        roomFeaturePrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
-        roomFeaturePrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
-        roomGroups = DynamicList.getInstance(new ArrayList(), factoryPref);
-        roomGroupLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
-        distPrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
-        distPrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
-        datePatternPrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
-        datePatternPrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
-        coursePrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
-        coursePrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
-        attributePrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
-        attributePrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
-        instructorPrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
-        instructorPrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
+        timePatterns = DynamicList.getInstance(new ArrayList<String>(), factoryPattern);
+        availableTimePatterns = new ArrayList<TimePattern>();
+        roomPrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
+        roomPrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
+        bldgPrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
+        bldgPrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
+        roomFeaturePrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
+        roomFeaturePrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
+        roomGroups = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
+        roomGroupLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
+        distPrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
+        distPrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
+        datePatternPrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
+        datePatternPrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
+        coursePrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
+        coursePrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
+        attributePrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
+        attributePrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
+        instructorPrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
+        instructorPrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
         nextId = previousId = null;
         allowHardPrefs = true;
         hasNotAvailable = false;

@@ -27,23 +27,19 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
-import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
@@ -52,7 +48,6 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
-import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 import org.unitime.timetable.util.IdValue;
@@ -62,6 +57,7 @@ import org.unitime.timetable.util.IdValue;
  */
 public class ExamEditForm extends PreferencesForm {
 	private static final long serialVersionUID = -5083087578026654516L;
+	protected static ExaminationMessages EXMSG = Localization.create(ExaminationMessages.class);
 	private String examId;
     private String label;
     private String name;
@@ -74,13 +70,13 @@ public class ExamEditForm extends PreferencesForm {
     private String seatingType;
     private String printOffset;
     
-    private List instructors;
+    private List<String> instructors;
     
-    private List subjectArea;
-    private List courseNbr;
-    private List itype;
-    private List classNumber;
-    private Collection subjectAreas;
+    private List<Long> subjectArea;
+    private List<Long> courseNbr;
+    private List<Long> itype;
+    private List<Long> classNumber;
+    private Collection<SubjectArea> subjectAreas;
     
     private Long examType;
     
@@ -115,94 +111,51 @@ public class ExamEditForm extends PreferencesForm {
             if (Exam.sSeatingTypes[i].equals(seatingType)) return i;
         return Exam.sSeatingTypeExam;
     }
+    public boolean isExamSeating() {
+    	return getSeatingTypeIdx() == 1;
+    }
     public String[] getObjectTypes() { return ExamOwner.sOwnerTypes; }
 
-    protected DynamicListObjectFactory factory = new DynamicListObjectFactory() {
-        public Object create() {
-            return new String(Preference.BLANK_PREF_VALUE);
-        }
-    };
-
-    protected DynamicListObjectFactory idfactory = new DynamicListObjectFactory() {
-        public Object create() {
-            return Long.valueOf(-1);
-        }
-    };
-
-    public void reset(ActionMapping mapping, HttpServletRequest request) {
-        examId = null;
-        name = null;
-        note = null;
-        maxNbrRooms = 1;
-        length = null;
-        size = null;
-        sizeNote = null;
-        printOffset = null;
-        avgPeriod = null;
-        seatingType = Exam.sSeatingTypes[Exam.sSeatingTypeExam];
-        instructors = DynamicList.getInstance(new ArrayList(), factory);
-        subjectArea = DynamicList.getInstance(new ArrayList(), idfactory);
-        courseNbr = DynamicList.getInstance(new ArrayList(), idfactory);
-        itype = DynamicList.getInstance(new ArrayList(), idfactory);
-        classNumber = DynamicList.getInstance(new ArrayList(), idfactory);
-        examType = null;
-        if (request.getSession().getAttribute("Exam.Type")!=null)
-        	examType = (Long)request.getSession().getAttribute("Exam.Type");
-        if (examType == null) {
-        	List<ExamType> types = ExamType.findAllUsedApplicable(HttpSessionContext.getSessionContext(request.getSession().getServletContext()).getUser(), DepartmentStatusType.Status.ExamEdit, DepartmentStatusType.Status.ExamTimetable);
-        	if (!types.isEmpty()) examType = types.get(0).getUniqueId();
-        }
-        clone = false;
-        accommodation = null;
-        super.reset(mapping, request);
-    }
-
-    public List getInstructors() { return instructors; }
-    public String getInstructors(int key) { return instructors.get(key).toString(); }
-    public void setInstructors(int key, Object value) { this.instructors.set(key, value); }
-    public void setInstructors(List instructors) { this.instructors = instructors; }
+    protected DynamicListObjectFactory<String> factory;
+    protected DynamicListObjectFactory<Long> idfactory;
     
-    public List getSubjectAreaList() { return subjectArea; }
-    public List getSubjectArea() { return subjectArea; }
-    public Long getSubjectArea(int key) {
-    	try {
-    		return (Long)subjectArea.get(key);
-    	} catch (ClassCastException e) {
-    		return Long.valueOf(subjectArea.get(key).toString());
-    	}
+    public ExamEditForm() {
+    	super();
+    	factory = new DynamicListObjectFactory<String>() {
+            public String create() {
+                return new String(Preference.BLANK_PREF_VALUE);
+            }
+        };
+        idfactory = new DynamicListObjectFactory<Long>() {
+            public Long create() {
+                return Long.valueOf(-1);
+            }
+        };
+    	reset();
     }
-    public void setSubjectArea(int key, Long value) { this.subjectArea.set(key, value); }
-    public void setSubjectArea(List subjectArea) { this.subjectArea = subjectArea; }
-    public List getCourseNbr() { return courseNbr; }
-    public Long getCourseNbr(int key) {
-    	try {
-    		return (Long)courseNbr.get(key);
-    	} catch (ClassCastException e) {
-    		return Long.valueOf(courseNbr.get(key).toString());
-    	}
-    }
-    public void setCourseNbr(int key, Long value) { this.courseNbr.set(key, value); }
-    public void setCourseNbr(List courseNbr) { this.courseNbr = courseNbr; }
-    public List getItype() { return itype; }
-    public Long getItype(int key) {
-    	try {
-    		return (Long)itype.get(key);
-    	} catch (ClassCastException e) {
-    		return Long.valueOf(itype.get(key).toString());
-    	}
-    }
-    public void setItype(int key, Long value) { this.itype.set(key, value); }
-    public void setItype(List itype) { this.itype = itype; }
-    public List getClassNumber() { return classNumber; }
-    public Long getClassNumber(int key) {
-    	try {
-    		return (Long)classNumber.get(key);
-    	} catch (ClassCastException e) {
-    		return Long.valueOf(classNumber.get(key).toString());
-    	}
-    }
-    public void setClassNumber(int key, Long value) { this.classNumber.set(key, value); }
-    public void setClassNumber(List classNumber) { this.classNumber = classNumber; }
+
+    public List<String> getInstructors() { return instructors; }
+    public String getInstructors(int idx) { return instructors.get(idx); }
+    public void setInstructors(int idx, String value) { instructors.set(idx, value); }
+    public void setInstructors(List<String> instructors) { this.instructors = instructors; }
+    
+    public List<Long> getSubjectArea() { return subjectArea; }
+    public List<Long> getSubjectAreaList() { return getSubjectArea(); }
+    public Long getSubjectArea(int idx) { return subjectArea.get(idx); }
+    public void setSubjectArea(int idx, Long id) { subjectArea.set(idx, id); }
+    public void setSubjectArea(List<Long> subjectArea) { this.subjectArea = subjectArea; }
+    public List<Long> getCourseNbr() { return courseNbr; }
+    public Long getCourseNbr(int idx) { return courseNbr.get(idx); }
+    public void setCourseNbr(int idx, Long id) { courseNbr.set(idx, id); }
+    public void setCourseNbr(List<Long> courseNbr) { this.courseNbr = courseNbr; }
+    public List<Long> getItype() { return itype; }
+    public Long getItype(int idx) { return itype.get(idx); }
+    public void setItype(int idx, Long id) { itype.set(idx, id); }
+    public void setItype(List<Long> itype) { this.itype = itype; }
+    public List<Long> getClassNumber() { return classNumber; }
+    public Long getClassNumber(int idx) { return classNumber.get(idx); }
+    public void setClassNumber(int idx, Long id) { classNumber.set(idx, id); }
+    public void setClassNumber(List<Long> classNumber) { this.classNumber = classNumber; }
     
     public void deleteExamOwner(int idx) {
         getSubjectArea().remove(idx);
@@ -411,57 +364,6 @@ public class ExamEditForm extends PreferencesForm {
         return ret;
     }
     
-    public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-        
-        ActionErrors errors = new ActionErrors();
-        
-        if(maxNbrRooms!=null && maxNbrRooms.intValue()<0)
-            errors.add("maxNbrRooms", new ActionMessage("errors.integerGtEq", "Maximal Number of Rooms", "0") );
-        
-        if (length==null || length.intValue()<0)
-            errors.add("length", new ActionMessage("errors.integerGtEq", "Length", "0") );
-        
-        if (size!=null && size.length()>0) {
-            try {
-                Integer.parseInt(size);
-            } catch (NumberFormatException e) {
-                errors.add("size", new ActionMessage("errors.numeric", "Size") );
-            }
-        }
-        
-        if (printOffset!=null && printOffset.length()>0) {
-            try {
-                Integer.parseInt(printOffset);
-            } catch (NumberFormatException e) {
-                errors.add("printOffset", new ActionMessage("errors.numeric", "Print Offset") );
-            }
-        }
-
-        // Notes has 1000 character limit
-        if(note!=null && note.length()>999)
-            errors.add("note", new ActionMessage("errors.maxlength", "Note", "999") );
-        
-        // At least one instructor is selected
-        if (instructors.size()>0) {
-            
-            // Check no duplicates or blank instructors
-            super.checkPrefs(instructors);
-        }        
-        
-        boolean hasOwner = false;
-        for (int idx=0;idx<getSubjectAreaList().size();idx++) {
-            ExamOwner owner = getExamOwner(idx);
-            if (owner!=null) { hasOwner = true; break; }
-        }
-        if (!hasOwner) {
-            errors.add("owners", new ActionMessage("errors.generic", "At least one class/course has to be specified.") );
-        }
-        
-        // Check Other Preferences
-        errors.add(super.validate(mapping, request));
-        
-        return errors;
-    }
     
     public void addBlankPrefRows() {
         super.addBlankPrefRows();
@@ -512,16 +414,16 @@ public class ExamEditForm extends PreferencesForm {
 		super.validate(action);
         
         if (maxNbrRooms!=null && maxNbrRooms.intValue()<0)
-        	action.addFieldError("maxNbrRooms", "Maximal Number of Rooms cannot be negative.");
+        	action.addFieldError("form.maxNbrRooms", EXMSG.errorNegativeMaxNbrRooms());
         
         if (length==null || length.intValue() < 0)
-        	action.addFieldError("length", "Length must be above zero.");
+        	action.addFieldError("form.length", EXMSG.errorZeroExamLength());
         
         if (size!=null && size.length()>0) {
             try {
                 Integer.parseInt(size);
             } catch (NumberFormatException e) {
-            	action.addFieldError("size", "Size must be a number.");
+            	action.addFieldError("form.size", EXMSG.errorExamSizeNotNumber());
             }
         }
         
@@ -529,7 +431,7 @@ public class ExamEditForm extends PreferencesForm {
             try {
                 Integer.parseInt(printOffset);
             } catch (NumberFormatException e) {
-            	action.addFieldError("printOffset", "Print Offset must be a number");
+            	action.addFieldError("form.printOffset", EXMSG.errorExamPrintOffsetNotNumber());
             }
         }
 
@@ -538,18 +440,20 @@ public class ExamEditForm extends PreferencesForm {
         	action.addFieldError("note", "Note is too long.");
         
         // At least one instructor is selected
-        if (instructors.size()>0) {
+        if (instructors != null && instructors.size()>0) {
             // Check no duplicates or blank instructors
-            super.checkPrefs(instructors);
+            if (!checkPrefs(instructors))
+            	action.addFieldError("form.instructors", EXMSG.errorDuplicateExamInstructors());
         }
         
         boolean hasOwner = false;
-        for (int idx=0;idx<getSubjectAreaList().size();idx++) {
-            ExamOwner owner = getExamOwner(idx);
-            if (owner!=null) { hasOwner = true; break; }
-        }
+        if (getSubjectAreaList() != null)
+        	for (int idx=0;idx<getSubjectAreaList().size();idx++) {
+                ExamOwner owner = getExamOwner(idx);
+                if (owner!=null) { hasOwner = true; break; }
+            }
         if (!hasOwner) {
-        	action.addFieldError("owners", "At least one class/course has to be specified.");
+        	action.addFieldError("form.owners", EXMSG.errorNoExamOwners());
         }
     }
 }

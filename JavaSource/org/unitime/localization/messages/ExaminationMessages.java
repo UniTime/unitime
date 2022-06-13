@@ -72,6 +72,21 @@ public interface ExaminationMessages extends Messages {
 	@DefaultMessage("Assigned|Room")
 	String colExamAssignedRoom();
 	
+	@DefaultMessage("Subject")
+	String colExamOwnerSubject();
+	
+	@DefaultMessage("Course<br>Number")
+	String colExamOwnerCourseNumber();
+	
+	@DefaultMessage("Config<br>Subpart")
+	String colExamOwnerConfigSubpart();
+	
+	@DefaultMessage("Class<br>Number")
+	String colExamOwnerClassNumber();
+	
+	@DefaultMessage("N/A")
+	String examOwnerNotApplicable();
+	
 	@DefaultMessage("Object")
 	String colExamOwnerObject();
 	
@@ -104,9 +119,33 @@ public interface ExaminationMessages extends Messages {
 	
 	@DefaultMessage("Course")
 	String examTypeCourse();
+	
+	@DefaultMessage("-- Configurations --")
+	String sctOwnerTypeConfigurations();
+	
+	@DefaultMessage("-- Subparts --")
+	String sctOwnerTypeSubparts();
 
 	@DefaultMessage("No examination matching the above criteria was found.")
 	String errorNoMatchingExam();
+	
+	@DefaultMessage("Maximal Number of Rooms cannot be negative.")
+	String errorNegativeMaxNbrRooms();
+	
+	@DefaultMessage("Length must be above zero.")
+	String errorZeroExamLength();
+	
+	@DefaultMessage("Size must be a number.")
+	String errorExamSizeNotNumber();
+	
+	@DefaultMessage("Print Offset must be a number")
+	String errorExamPrintOffsetNotNumber();
+	
+	@DefaultMessage("One instructor is listed two or more times.")
+	String errorDuplicateExamInstructors();
+	
+	@DefaultMessage("At least one class/course has to be specified.")
+	String errorNoExamOwners();
 	
 	@DefaultMessage("Add Examination")
 	String buttonAddExamination();
@@ -192,11 +231,80 @@ public interface ExaminationMessages extends Messages {
 	@DefaultMessage("D")
 	String accessExamDelete();
 	
+	@DefaultMessage("Update")
+	String actionExamUpdate();
+	
+	@DefaultMessage("Update Examination (Alt + U)")
+	String titleExamUpdate();
+	
+	@DefaultMessage("U")
+	String accessExamUpdate();
+	
+	@DefaultMessage("Save")
+	String actionExamSave();
+	
+	@DefaultMessage("Save Examination (Alt + S)")
+	String titleExamSave();
+	
+	@DefaultMessage("S")
+	String accessExamSave();
+	
+	@DefaultMessage("Back")
+	String actionBatckToDetail();
+	
+	@DefaultMessage("Do not make any change. Return to Detail Screen (ALT+B)")
+	String titleBatckToDetail();
+	
+	@DefaultMessage("B")
+	String accessBatckToDetail();
+	
 	@DefaultMessage("Course numbers can be specified using wildcard (*). E.g. 2*")
 	String titleCourseNumberSuggestBox();
 	
 	@DefaultMessage("{0} Exams ({1})")
 	String backExams(String type, String subjectOrCourse);
+	
+	@DefaultMessage("Exam ({0})")
+	String backExam(String name);
+	
+	@DefaultMessage("Clear Exam Preferences")
+	String actionClearExamPreferences();
+	
+	@DefaultMessage("C")
+	String accessClearExamPreferences();
+	
+	@DefaultMessage("Delete all Examination Preferences (Alt+C)")
+	String titleClearExamPreferences();
+	
+	@DefaultMessage("Add Instructor")
+	String actionAddInstructor();
+	
+	@DefaultMessage("I")
+	String accessAddInstructor();
+	
+	@DefaultMessage("Add Instructor (Alt+I)")
+	String titleAddInstructor();
+	
+	@DefaultMessage("Add Object")
+	String actionAddObject();
+	
+	@DefaultMessage("O")
+	String accessAddObject();
+	
+	@DefaultMessage("Add Class/Config/Course/Offering (Alt+O)")
+	String titleAddObject();
+	
+	@DefaultMessage("Delete")
+	String actionDeleteInstructor();
+	
+	@DefaultMessage("Delete Instructor")
+	String titleDeleteInstructor();
+	
+	@DefaultMessage("Delete")
+	String actionDeleteObject();
+	
+	@DefaultMessage("Delete Class/Config/Course/Offering")
+	String titleDeleteObject();
 	
 	@DefaultMessage("Type:")
 	String propExamType();
@@ -278,4 +386,7 @@ public interface ExaminationMessages extends Messages {
 	
 	@DefaultMessage("Examination Assignment")
 	String dialogExamAssign();
+	
+	@DefaultMessage("(in minutes, only used for reports)")
+	String noteExamPrintOffset();
 }

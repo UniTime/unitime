@@ -141,8 +141,8 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
 
     protected void processPrefAction() {
         
-        String op = form.getOp();
-        if(op==null) return;
+    	if (op == null) op = form.getOp();
+        if (op == null) return;
         
         // Add Room Group row
         if(op.equals(MSG.actionAddRoomGroupPreference())) 

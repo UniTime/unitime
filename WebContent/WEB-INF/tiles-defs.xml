@@ -532,16 +532,6 @@
 		<put name="title" type="string" value="Setup Examination Periods"/>
   	</definition>
 
-  	<definition name="examEditTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Edit Examination"/>
-		<put name="body" value="/user/examEdit.jsp" />
-		<put name="showNavigation" value="true" />
-  	</definition>
-
-  	<definition name="examAddTile" extends="examEditTile">
-		<put name="title" type="string" value="Add Examination"/>
-  	</definition>
-
 	<definition	name="examDistributionPrefsTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Examination Distribution Preferences"/>
 		<put name="body" value="/user/examDistributionPrefs.jsp" />

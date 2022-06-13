@@ -23,14 +23,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.hibernate.Transaction;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
@@ -68,7 +66,6 @@ import org.unitime.timetable.webutil.Navigation;
 /**
  * @author Tomas Muller
  */
-@Service("/examDetail")
 @Action(value = "examDetail", results = {
 		@Result(name = "showExamDetail", type = "tiles", location = "examDetail.tiles"),
 		@Result(name = "addDistributionPrefs", type = "redirect", location = "/examDistributionPrefs.do",
@@ -149,13 +146,13 @@ public class ExamDetailAction extends PreferencesAction2<ExamEditForm> {
         //Edit Information - Redirect to info edit screen
         if (("Edit".equals(op) || EXMSG.accessExamEdit().equals(op)) && examId!=null && examId.trim()!="") {
         	sessionContext.checkPermission(exam, Right.ExaminationEdit);
-        	response.sendRedirect( response.encodeURL("examEdit.do?examId="+examId) );
+        	response.sendRedirect( response.encodeURL("examEdit.action?examId="+examId) );
             return null;
         }
 
         if (("Clone".equals(op) || EXMSG.accessExamClone().equals(op)) && examId!=null && examId.trim()!="") {
         	sessionContext.checkPermission(exam, Right.ExaminationClone);
-            response.sendRedirect( response.encodeURL("examEdit.do?examId="+examId+"&clone=true") );
+            response.sendRedirect( response.encodeURL("examEdit.action?examId="+examId+"&clone=true") );
             return null;
         }
         
@@ -399,11 +396,5 @@ public class ExamDetailAction extends PreferencesAction2<ExamEditForm> {
             deptsIdsArray[idx++]=(Long)i.next();
 
         LookupTables.setupInstructors(request, sessionContext, deptsIdsArray);
-        Vector deptInstrList = (Vector) request.getAttribute(DepartmentalInstructor.INSTR_LIST_ATTR_NAME);
-
-        // For each instructor set the instructor list
-        for (int i=0; i<instructors.size(); i++) {
-            request.setAttribute(DepartmentalInstructor.INSTR_LIST_ATTR_NAME + i, deptInstrList);
-        }
     }
 }

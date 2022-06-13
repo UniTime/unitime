@@ -1,0 +1,458 @@
+<%--
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+--%>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+
+<!-- Time Preferences -->
+<c:set var="timePref" value="${param.timePref}" scope="page"/>
+<s:if test="#attr.timePref == null || #attr.timePref != 'false'">
+		<TR><TD colspan='2'>&nbsp;</TD></TR>
+		<TR>
+			<TD valign="middle" colspan='2'>
+				<A id="TimePref"></A>
+				<tt:section-header title="${MSG.sectionTitleTimePreferences()}">
+					<s:if test="form.canChooseTimePattern">
+						<s:select name="form.timePattern"
+							list="form.availableNotSelectedTimePatterns" listKey="uniqueId" listValue="name"
+							headerKey="-" headerValue="-"
+						/>
+						<s:submit
+							name='op' value='%{#msg.actionAddTimePreference()}'
+							accesskey='%{#msg.accessAddTimePreference()}' title='%{#msg.titleAddTimePreference(#msg.titleAddTimePreference())}'/>
+					</s:if>
+				</tt:section-header>
+			</TD>
+		</TR>
+		<% int idx = 0; %>
+		<s:iterator value="form.timePatterns" var="timePattern" status="timePatternStat">
+			<s:set var="idx" value="#timePatternStat.index"/>
+			<INPUT type="hidden" name='timePatterns[${idx}]' value="#timePattern"/>
+			<table style="width:100%;">
+				<tr>
+					<td align='left'><%=request.getAttribute("timePatternGrid_" + idx)%></td>
+					<td align='right' valign='bottom'>
+						<s:if test="form.canChooseTimePattern">
+							<s:submit
+								name='op' value='%{#msg.actionRemoveTimePattern()}'
+								title='%{#msg.titleRemoveTimePattern)}'
+								onclick="javascript: doDel('timePattern', %{#stat.index});"/>
+						</s:if>
+					</td>
+				</tr>
+			</table>
+			<% idx++; %>
+		</s:iterator>
+</s:if>
+<!-- Instructor Availability -->
+<c:set var="timeAvail" value="${param.timeAvail}" scope="page"/>
+<s:if test="#attr.timeAvail == 'true'">
+	<tr><td colspan='2'>&nbsp;</td></tr>
+	<tr>
+		<td valign="middle" colspan='2'>
+			<a id='TimePref'></a>
+			<tt:section-title><loc:message name="sectionTitleTimePreferences"/></tt:section-title>
+		</td>
+	</tr>
+	<tr>
+		<td colspan='2'>
+			<div id='UniTimeGWT:InstructorAvailability' style="display: none;"><s:property value="form.availability" escapeHtml="false"/></div>
+		</td>
+	</tr>
+</s:if>
+<!-- Date Pattern Preference  -->
+<c:set var="datePatternPref" value="${param.datePatternPref}" scope="page"/>
+<s:if test="#attr.datePatternPref != 'false' && #request.datePatternChildrenList != null && !#request.datePatternChildrenList.isEmpty()">
+	<TR><TD colspan='2'>&nbsp;</TD></TR>
+   	<TR>
+		<TD valign="middle" colspan='2'>
+			<A id='DatePatternPref'></A>
+			<tt:section-title><loc:message name="sectionTitleDatePatternPreferences"/></tt:section-title>
+		</TD>
+	</TR>
+	<s:iterator value="form.datePatternPrefs" var="datePatternPref" status="datePatternPrefStat">
+		<TR>
+			<TD colspan="2">
+				<s:select style="width:350px;"
+					name="form.datePatternPrefs[%{#stat.index}]"
+					list="#request.datePatternChildrenList" listKey="uniqueId" listValue="name"
+					headerKey="-" headerValue="-"
+					disabled="form.isDatePatternDisabled(#stat.index)"
+					/>
+				&nbsp;&nbsp;
+				<s:select style="width:350px;"
+					name="form.datePatternPrefLevels[%{#stat.index}]"
+					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="background-color: %{#pr.prefcolor()};"
+					headerKey="-" headerValue="-"
+					disabled="form.isDatePatternDisabled(#stat.index)"
+					/>
+			</TD>
+		</TR>
+	</s:iterator>
+</s:if>
+<!--  Period Preferences -->
+<s:if test="#request.ExamPeriodGrid != null">
+	<TR><TD colspan='2'>&nbsp;</TD></TR>
+	<TR>
+		<TD valign="middle" colspan='2'>
+			<A id='PeriodPref'></A>
+			<tt:section-title><loc:message name="sectionTitleExaminationPeriodPreferences"/></tt:section-title>
+		</TD>
+	</TR>
+	<TR>
+		<TD colspan='2'>
+			<s:property value="#request.ExamPeriodGrid" escapeHtml="false"/>
+		</TD>
+	</TR>
+</s:if>
+<!-- Room Group -->
+<c:set var="roomGroupPref" value="${param.roomGroupPref}" scope="page"/>
+<s:if test="#attr.roomGroupPref != 'false' && form.roomGroups != null && !form.roomGroups.isEmpty()">
+	<TR><TD colspan='2'>&nbsp;</TD></TR>
+	<TR>
+		<TD valign="middle" colspan='2'>
+			<A id='RoomGroupPref'></A>
+			<tt:section-header title="<%=MSG.sectionTitleRoomGroupPreferences()%>">
+				<s:submit accesskey='%{#msg.accessAddRoomGroupPreference()}' name='op'
+					value='%{#msg.actionAddRoomGroupPreference()}' title='%{#msg.titleAddRoomGroupPreference(#msg.accessAddRoomGroupPreference())}'/>
+			</tt:section-header>
+		</TD>
+	</TR>
+	<s:iterator value="form.roomGroups" var="roomGroup" status="stat">
+		<TR>
+			<TD colspan="2">
+				<s:select style="width:350px;"
+					name="form.roomGroups[%{#stat.index}]"
+					list="#request.roomGroupsList" listKey="uniqueId" listValue="nameWithTitle"
+					headerKey="-" headerValue="-"
+					disabled="form.isRoomGroupDisabled(#stat.index)"
+					/>
+				&nbsp;&nbsp;
+				<s:select style="width:350px;"
+					name="form.roomGroupLevels[%{#stat.index}]"
+					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="background-color: %{#pr.prefcolor()};"
+					headerKey="-" headerValue="-"
+					disabled="form.isRoomGroupDisabled(#stat.index)"
+					/>
+				&nbsp;
+				<s:submit name='op' value='%{#msg.actionRemoveRoomGroupPreference()}'
+					title='%{#msg.titleRemoveRoomGroupPreference()}'
+					onclick="javascript: doDel('rgPref', %{#stat.index});"/>
+			</TD>
+		</TR>
+	</s:iterator>
+</s:if>
+<!-- Room Preferences -->
+<c:set var="roomPref" value="${param.roomPref}" scope="page"/>
+<c:set var="examSeating" value="${param.examSeating}" scope="page"/>
+<s:if test="#attr.roomPref != 'false' && form.roomPrefs != null && !form.roomPrefs.isEmpty()">
+	<TR><TD colspan='2'>&nbsp;</TD></TR>
+	<TR>
+		<TD valign="middle" colspan='2'>
+			<A id='RoomPref'></A>
+			<tt:section-header title="<%=MSG.sectionTitleRoomPreferences()%>">
+				<s:submit accesskey='%{#msg.accessAddRoomPreference()}' name='op'
+					value='%{#msg.actionAddRoomPreference()}' title='%{#msg.titleAddRoomPreference(#msg.accessAddRoomPreference())}'/>
+			</tt:section-header>
+		</TD>
+	</TR>
+	<s:iterator value="form.roomPrefs" var="roomPref" status="stat">
+		<TR>
+			<TD colspan="2">
+				<s:if test="#attr.examSeating">
+					<s:select style="width:350px;"
+						name="form.roomPrefs[%{#stat.index}]"
+						list="#request.roomsList" listKey="uniqueId" listValue="labelWithExamCapacity"
+						headerKey="-" headerValue="-"
+						disabled="form.isRoomDisabled(#stat.index)"
+						/>
+				</s:if>
+				<s:else>
+					<s:select style="width:350px;"
+						name="form.roomPrefs[%{#stat.index}]"
+						list="#request.roomsList" listKey="uniqueId" listValue="labelWithCapacity"
+						headerKey="-" headerValue="-"
+						disabled="form.isRoomDisabled(#stat.index)"
+						/>
+				</s:else>
+				&nbsp;&nbsp;
+				<s:select style="width:350px;"
+					name="form.roomPrefLevels[%{#stat.index}]"
+					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="background-color: %{#pr.prefcolor()};"
+					headerKey="-" headerValue="-"
+					disabled="form.isRoomDisabled(#stat.index)"
+					/>
+				&nbsp;
+				<s:submit name='op' value='%{#msg.actionRemoveRoomPreference()}'
+					title='%{#msg.titleRemoveRoomPreference()}'
+					onclick="javascript: doDel('roomPref', %{#stat.index});"/>
+			</TD>
+		</TR>
+	</s:iterator>
+</s:if>
+<!-- Building Preferences -->
+<c:set var="bldgPref" value="${param.bldgPref}" scope="page"/>
+<s:if test="#attr.bldgPref != 'false' && form.bldgPrefs != null && !form.bldgPrefs.isEmpty()">
+	<TR><TD colspan='2'>&nbsp;</TD></TR>
+	<TR>
+		<TD valign="middle" colspan='2'>
+			<A id='BldgPref'></A>
+			<tt:section-header title="<%=MSG.sectionTitleBuildingPreferences()%>">
+				<s:submit accesskey='%{#msg.accessAddBuildingPreference()}' name='op'
+					value='%{#msg.actionAddBuildingPreference()}' title='%{#msg.titleAddBuildingPreference(#msg.accessAddBuildingPreference())}'/>
+			</tt:section-header>
+		</TD>
+	</TR>
+	<s:iterator value="form.bldgPrefs" var="bldgPref" status="stat">
+		<TR>
+			<TD colspan="2">
+				<s:select style="width:350px;"
+					name="form.bldgPrefs[%{#stat.index}]"
+					list="#request.bldgsList" listKey="uniqueId" listValue="abbrName"
+					headerKey="-" headerValue="-"
+					disabled="form.isBuildingDisabled(#stat.index)"
+					/>
+				&nbsp;&nbsp;
+				<s:select style="width:350px;"
+					name="form.bldgPrefLevels[%{#stat.index}]"
+					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="background-color: %{#pr.prefcolor()};"
+					headerKey="-" headerValue="-"
+					disabled="form.isBuidingDisabled(#stat.index)"
+					/>
+				&nbsp;
+				<s:submit name='op' value='%{#msg.actionRemoveBuildingPreference()}'
+					title='%{#msg.titleRemoveBuildingPreference()}'
+					onclick="javascript: doDel('bldgPref', %{#stat.index});"/>
+			</TD>
+		</TR>
+	</s:iterator>
+</s:if>
+<!-- Room Feature Preferences -->
+<c:set var="roomFeaturePref" value="${param.roomFeaturePref}" scope="page"/>
+<s:if test="#attr.roomFeaturePref != 'false' && form.roomFeaturePrefs != null && !form.roomFeaturePrefs.isEmpty()">
+	<TR><TD colspan='2'>&nbsp;</TD></TR>
+	<TR>
+		<TD valign="middle" colspan='2'>
+			<A id='RoomFeatPref'></A>
+			<tt:section-header title="<%=MSG.sectionTitleRoomFeaturePreferences()%>">
+				<s:submit accesskey='%{#msg.accessAddRoomFeaturePreference()}' name='op'
+					value='%{#msg.actionAddRoomFeaturePreference()}' title='%{#msg.titleAddRoomFeaturePreference(#msg.accessAddRoomFeaturePreference())}'/>
+			</tt:section-header>
+		</TD>
+	</TR>
+	<s:iterator value="form.roomFeaturePrefs" var="roomFeaturePref" status="stat">
+		<TR>
+			<TD colspan="2">
+				<s:select style="width:350px;"
+					name="form.roomFeaturePrefs[%{#stat.index}]"
+					list="#request.roomFeaturesList" listKey="uniqueId" listValue="labelWithType"
+					headerKey="-" headerValue="-"
+					disabled="form.isRoomFeatureDisabled(#stat.index)"
+					/>
+				&nbsp;&nbsp;
+				<s:select style="width:350px;"
+					name="form.roomFeaturePrefLevels[%{#stat.index}]"
+					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="background-color: %{#pr.prefcolor()};"
+					headerKey="-" headerValue="-"
+					disabled="form.isRoomFeatureDisabled(#stat.index)"
+					/>
+				&nbsp;
+				<s:submit name='op' value='%{#msg.actionRemoveRoomFeaturePreference()}'
+					title='%{#msg.titleRemoveRoomFeaturePreference()}'
+					onclick="javascript: doDel('roomFeaturePref', %{#stat.index});"/>
+			</TD>
+		</TR>
+	</s:iterator>
+</s:if>
+<!-- Distribution Preferences -->
+<c:set var="distPref" value="${param.distPref}" scope="page"/>
+<s:if test="#attr.distPref != 'false' && form.distPrefs != null && !form.distPrefs.isEmpty()">
+	<TR><TD colspan='2'>&nbsp;</TD></TR>
+	<TR>
+		<TD valign="middle" colspan='2'>
+			<A id='DistPref'></A>
+			<tt:section-header title="<%=MSG.sectionTitleDistributionPreferences()%>">
+				<s:submit accesskey='%{#msg.accessAddDistributionPreference()}' name='op'
+					value='%{#msg.actionAddDistributionPreference()}' title='%{#msg.titleAddDistributionPreference(#msg.accessAddDistributionPreference())}'/>
+			</tt:section-header>
+		</TD>
+	</TR>
+	<s:iterator value="form.distPrefs" var="distPref" status="stat">
+		<TR>
+			<TD colspan="2">
+				<s:select style="width:350px;"
+					name="form.distPrefs[%{#stat.index}]"
+					list="#request.distributionTypeList" listKey="uniqueId" listValue="label"
+					headerKey="-" headerValue="-"
+					disabled="form.isDistPrefDisabled(#stat.index)"
+					/>
+				&nbsp;&nbsp;
+				<s:select style="width:350px;"
+					name="form.distPrefLevels[%{#stat.index}]"
+					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="background-color: %{#pr.prefcolor()};"
+					headerKey="-" headerValue="-"
+					disabled="form.isDistPrefDisabled(#stat.index)"
+					/>
+				&nbsp;
+				<s:submit name='op' value='%{#msg.actionRemoveDistributionPreference()}'
+					title='%{#msg.titleRemoveDistributionPreference()}'
+					onclick="javascript: doDel('distPref', %{#stat.index});"/>
+			</TD>
+		</TR>
+	</s:iterator>
+</s:if>
+<!-- Instructor Attribute Preferences -->
+<c:set var="attributePref" value="${param.attributePref}" scope="page"/>
+<s:if test="#attr.attributePref == 'true' && form.attributePrefs != null && !form.attributePrefs.isEmpty()">
+	<TR><TD colspan='2'>&nbsp;</TD></TR>
+	<TR>
+		<TD valign="middle" colspan='2'>
+			<A id='AttributePref'></A>
+			<tt:section-header title="<%=MSG.sectionTitleAttributePreferences()%>">
+				<s:submit accesskey='%{#msg.accessAddAttributePreference()}' name='op'
+					value='%{#msg.actionAddAttributePreference()}' title='%{#msg.titleAddAttributePreference(#msg.accessAddAttributePreference())}'/>
+			</tt:section-header>
+		</TD>
+	</TR>
+	<s:iterator value="form.attributePrefs" var="attributePref" status="stat">
+		<TR>
+			<TD colspan="2">
+				<s:select style="width:350px;"
+					name="form.attributePrefs[%{#stat.index}]"
+					list="#request.attributesList" listKey="uniqueId" listValue="nameWithType"
+					headerKey="-" headerValue="-"
+					disabled="form.isAttributePrefDisabled(#stat.index)"
+					/>
+				&nbsp;&nbsp;
+				<s:select style="width:350px;"
+					name="form.distPrefLevels[%{#stat.index}]"
+					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="background-color: %{#pr.prefcolor()};"
+					headerKey="-" headerValue="-"
+					disabled="form.isAttributePrefDisabled(#stat.index)"
+					/>
+				&nbsp;
+				<s:submit name='op' value='%{#msg.actionRemoveAttributePreference()}'
+					title='%{#msg.titleRemoveAttributePreference()}'
+					onclick="javascript: doDel('attributePref', %{#stat.index});"/>
+			</TD>
+		</TR>
+	</s:iterator>
+</s:if>
+<!-- Course Preferences -->
+<c:set var="coursePref" value="${param.coursePref}" scope="page"/>
+<s:if test="#attr.coursePref == 'true' && form.coursePrefs != null && !form.coursePrefs.isEmpty()">
+	<TR><TD colspan='2'>&nbsp;</TD></TR>
+	<TR>
+		<TD valign="middle" colspan='2'>
+			<A id='CoursePref'></A>
+			<tt:section-header title="<%=MSG.sectionTitleCoursePreferences()%>">
+				<s:submit accesskey='%{#msg.accessAddCoursePreference()}' name='op'
+					value='%{#msg.actionAddCoursePreference()}' title='%{#msg.titleAddCoursePreference(#msg.accessAddCoursePreference())}'/>
+			</tt:section-header>
+		</TD>
+	</TR>
+	<s:iterator value="form.coursePrefs" var="coursePref" status="stat">
+		<TR>
+			<TD colspan="2">
+				<s:select style="width:350px;"
+					name="form.coursePrefs[%{#stat.index}]"
+					list="#request.crsOfferingList" listKey="uniqueId" listValue="courseNameWithTitle"
+					headerKey="-" headerValue="-"
+					disabled="form.isCoursePrefDisabled(#stat.index)"
+					/>
+				&nbsp;&nbsp;
+				<s:select style="width:350px;"
+					name="form.distPrefLevels[%{#stat.index}]"
+					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="background-color: %{#pr.prefcolor()};"
+					headerKey="-" headerValue="-"
+					disabled="form.isCoursePrefDisabled(#stat.index)"
+					/>
+				&nbsp;
+				<s:submit name='op' value='%{#msg.actionRemoveCoursePreference()}'
+					title='%{#msg.titleRemoveCoursePreference()}'
+					onclick="javascript: doDel('coursePref', %{#stat.index});"/>
+			</TD>
+		</TR>
+	</s:iterator>
+</s:if>
+<!-- Instructor Preferences -->
+<c:set var="instructorPref" value="${param.instructorPref}" scope="page"/>
+<s:if test="#attr.instructorPref == 'true' && form.instructorPrefs != null && !form.instructorPrefs.isEmpty()">
+	<TR><TD colspan='2'>&nbsp;</TD></TR>
+	<TR>
+		<TD valign="middle" colspan='2'>
+			<A id='InstructorPref'></A>
+			<tt:section-header title="<%=MSG.sectionTitleInstructorPreferences()%>">
+				<s:submit accesskey='%{#msg.accessAddInstructorPreference()}' name='op'
+					value='%{#msg.actionAddInstructorPreference()}' title='%{#msg.titleAddInstructorPreference(#msg.accessAddInstructorPreference())}'/>
+			</tt:section-header>
+		</TD>
+	</TR>
+	<s:iterator value="form.instructorPrefs" var="instructorPref" status="stat">
+		<TR>
+			<TD colspan="2">
+				<s:select style="width:350px;"
+					name="form.instructorPrefs[%{#stat.index}]"
+					list="#request.instructorsList" listKey="value" listValue="label"
+					headerKey="-" headerValue="-"
+					disabled="form.isInstructorPrefDisabled(#stat.index)"
+					/>
+				&nbsp;&nbsp;
+				<s:select style="width:350px;"
+					name="form.distPrefLevels[%{#stat.index}]"
+					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="background-color: %{#pr.prefcolor()};"
+					headerKey="-" headerValue="-"
+					disabled="form.isInstructorPrefDisabled(#stat.index)"
+					/>
+				&nbsp;
+				<s:submit name='op' value='%{#msg.actionRemoveInstructorPreference()}'
+					title='%{#msg.titleRemoveInstructorPreference()}'
+					onclick="javascript: doDel('instructorPref', %{#stat.index});"/>
+			</TD>
+		</TR>
+	</s:iterator>
+</s:if>
+<!--  Date Availability -->
+<c:set var="dateAvail" value="${param.dateAvail}" scope="page"/>
+<s:if test="#attr.dateAvail != 'false' && #request.unavailableDaysPattern != null">
+	<tr><td colspan='2'>&nbsp;</td></tr>
+	<tr><td colspan='2'>
+		<tt:section-header title="<%=MSG.sectionTitleUnavailableDates()%>"/>
+	</td></tr>
+	<tr><td colspan='2'>
+		<s:property value="#request.unavailableDaysPattern" escapeHtml="false"/>
+	</td></tr>
+</s:if>
+
+<s:hidden name="deleteType" id="deleteType" value=""/>
+<s:hidden name="deleteId" id="deleteId" value=""/>
+<s:hidden name="reloadCause" id="reloadCause" value=""/>
+<SCRIPT type="text/javascript">
+	function doDel(type, id) {
+		var delType = document.${param.frmName}.deleteType;
+		delType.value = type;
+		var delId = document.${param.frmName}.deleteId;
+		delId.value = id;
+	}
+</SCRIPT>
+</loc:bundle>
