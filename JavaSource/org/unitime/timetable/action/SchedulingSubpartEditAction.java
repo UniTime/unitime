@@ -408,6 +408,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
 
         frm.setManagingDeptName(ss.getManagingDept()==null?null:ss.getManagingDept().getManagingDeptLabel());
         frm.setControllingDept(ss.getControllingDept().getUniqueId());
+    	frm.setDatePatternEditable(ApplicationProperty.WaitListCanChangeDatePattern.isTrue() || ss.getInstrOfferingConfig().getEnrollment() == 0 || !ss.getInstrOfferingConfig().getInstructionalOffering().effectiveWaitList());
     }
     /**
      * Loads the non-editable scheduling subpart info into the form

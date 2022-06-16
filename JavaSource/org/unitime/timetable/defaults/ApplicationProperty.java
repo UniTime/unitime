@@ -3043,6 +3043,12 @@ public enum ApplicationProperty {
 	WaitListCanChangeInstructionalMethod("unitime.offering.waitList.canChangeInstructionalMethod"),
 	
 	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Edit Subpart / Class: allow date pattern to be changed on a wait-listed course when there are students enrolled")
+	@Since(4.7)
+	WaitListCanChangeDatePattern("unitime.offering.waitList.canChangeDatePattern"),
+	
+	@Type(Boolean.class)
 	@DefaultValue("false")
 	@Description("Edit Course Offering: external managers can edit course offerings.")
 	PermissionCourseOfferingAllowsExternalEdit("unitime.permissions.courseOfferingAllowExternalEdits"),

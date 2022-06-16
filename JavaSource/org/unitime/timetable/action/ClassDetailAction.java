@@ -497,6 +497,7 @@ public class ClassDetailAction extends PreferencesAction {
 		    frm.setEnrollment(c.getEnrollment());
 		    frm.setSnapshotLimit(c.getSnapshotLimit());
 	        frm.setDatePattern(c.getDatePattern()==null?Long.valueOf(-1):c.getDatePattern().getUniqueId());
+	        frm.setDatePatternEditable(ApplicationProperty.WaitListCanChangeDatePattern.isTrue() || c.getEnrollment() == 0 || !c.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().effectiveWaitList());
 	        frm.setLms(c.getLms() == null? "" : c.getLms().getLabel());
 	        if (ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue()) {
 	        	frm.setFundingDept(c.getEffectiveFundingDept().getLabel());

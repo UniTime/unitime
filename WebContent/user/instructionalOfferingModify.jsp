@@ -351,6 +351,7 @@ function resetAllDisplayFlags(value, baseName) {
 				<html:hidden property='<%="mustHaveChildClasses["+ctr+"]"%>'/>
 				<html:hidden property='<%="parentClassIds["+ctr+"]"%>'/>
 				<html:hidden property='<%="readOnlyClasses["+ctr+"]"%>'/>
+				<html:hidden property='<%="readOnlyDatePatterns["+ctr+"]"%>'/>
 				<html:hidden property='<%="enrollments["+ctr+"]"%>'/>
 				<html:hidden property='<%="classCanMoveUp["+ctr+"]"%>'/>
 				<html:hidden property='<%="classCanMoveDown["+ctr+"]"%>'/>
@@ -521,11 +522,11 @@ function resetAllDisplayFlags(value, baseName) {
 					<html:hidden property='<%="departments["+ctr+"]"%>'/>
 			</logic:equal></TD>
 			<TD align="left" valign="top" nowrap>
-				<logic:equal name="<%=fN%>" property='<%="readOnlyClasses["+ctr+"]"%>' value="false">
+				<logic:equal name="<%=fN%>" property='<%="readOnlyDatePatterns["+ctr+"]"%>' value="false">
 					<html:select style="width:100px;" property='<%="datePatterns["+ctr+"]"%>' tabindex="<%=java.lang.Integer.toString(12000 + ctr.intValue())%>">
 						<html:options collection="<%=DatePattern.DATE_PATTERN_LIST_ATTR%>" property="id" labelProperty="value"/>
 				</html:select></logic:equal>
-				<logic:equal name="<%=fN%>" property='<%="readOnlyClasses["+ctr+"]"%>' value="true">
+				<logic:equal name="<%=fN%>" property='<%="readOnlyDatePatterns["+ctr+"]"%>' value="true">
 					<logic:equal name="<%=fN%>" property='<%="datePatterns["+ctr+"]"%>' value=""><loc:message name="dropDefaultDatePattern"/></logic:equal>
 					<logic:iterate scope="request" name="<%=DatePattern.DATE_PATTERN_LIST_ATTR%>" id="dp">
 						<logic:notEqual name="<%=fN%>" property='<%="datePatterns["+ctr+"]"%>' value="">

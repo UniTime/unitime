@@ -70,6 +70,7 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
     private boolean itypeBasic;
     private Boolean studentAllowOverlap;
     private Long controllingDept;
+    private Boolean datePatternEditable;
     
     // --------------------------------------------------------- Methods
 
@@ -90,6 +91,7 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
         itypeBasic = false;
         instructionalType = null; instructionalTypeLabel = null;
         controllingDept = null;
+        datePatternEditable = false;
         super.reset(mapping, request);
     }
 
@@ -309,4 +311,8 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
 	
     public Long getControllingDept() { return controllingDept; }
     public void setControllingDept(Long deptId) { controllingDept = deptId; }
+    
+    public Boolean getDatePatternEditable() { return datePatternEditable; }
+    public Boolean isDatePatternEditable() { return datePatternEditable; }
+    public void setDatePatternEditable(Boolean datePatternEditable) { this.datePatternEditable = datePatternEditable; }
 }
