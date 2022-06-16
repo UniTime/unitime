@@ -83,6 +83,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private Boolean displayEnabledForStudentScheduling;
 	private Long instructionalMethod;
 	private String instructionalMethodDefault;
+	private boolean instructionalMethodEditable;
 	private Boolean editSnapshotLimits;
 	private Boolean displayLms;
 	
@@ -497,6 +498,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	displayAllClassesInstructors = "";
     	instructionalMethod = null;
     	instructionalMethodDefault = null;
+    	instructionalMethodEditable = false;
     	displayLms = Boolean.valueOf(false);
     	resetLists();
     }
@@ -1757,5 +1759,17 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     		if (type.isVisible() || type.getUniqueId().equals(instructionalMethod))
     			ret.add(new IdValue(type.getUniqueId(), type.getLabel()));
     	return ret;
+    }
+    public boolean isInstructionalMethodEditable() { return instructionalMethodEditable; }
+    public void setInstructionalMethodEditable(boolean instructionalMethodEditable) { this.instructionalMethodEditable = instructionalMethodEditable; }
+    public String getInstructionalMethodLabel() {
+    	if (instructionalMethod != null) {
+    		for (InstructionalMethod type: InstructionalMethod.findAll())
+        		if (type.getUniqueId().equals(instructionalMethod))
+        			return type.getLabel();
+    		
+    	}
+		if (instructionalMethodDefault == null) return MSG.selectNoInstructionalMethod();
+		else return MSG.defaultInstructionalMethod(instructionalMethodDefault);
     }
 }

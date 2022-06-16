@@ -3036,6 +3036,11 @@ public enum ApplicationProperty {
 	@Description("Wait-Listing: log wait-list changes into the WaitList table.")
 	WaitListLogging("unitime.enrollment.waitList.logging"),
 	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Instructional Offering Configuration: allow instructional method to be changed on a wait-listed course when there are students enrolled")
+	@Since(4.7)
+	WaitListCanChangeInstructionalMethod("unitime.offering.waitList.canChangeInstructionalMethod"),
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")

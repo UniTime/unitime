@@ -297,6 +297,7 @@ public class InstructionalOfferingModifyAction extends Action {
         frm.setEditSnapshotLimits(ApplicationProperty.ClassSetupEditSnapshotLimits.isTrue() && io.getSnapshotLimitDate() != null && sessionContext.hasPermission(Right.MultipleClassSetupSnapshotLimits));
         frm.setInstructionalMethod(ioc.getInstructionalMethod() == null ? -1l : ioc.getInstructionalMethod().getUniqueId());
         frm.setInstructionalMethodDefault(io.getSession().getDefaultInstructionalMethod() == null ? null : io.getSession().getDefaultInstructionalMethod().getLabel());
+        frm.setInstructionalMethodEditable(ApplicationProperty.WaitListCanChangeInstructionalMethod.isTrue() || !ioc.getInstructionalOffering().effectiveWaitList() || ioc.getEnrollment() == 0);
 		frm.setDisplayLms(Boolean.valueOf(isLmsInfoDefined()));
 
         String name = io.getCourseNameWithTitle();

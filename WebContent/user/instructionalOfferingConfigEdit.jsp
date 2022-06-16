@@ -194,10 +194,12 @@
 			</TD>
 		</TR>
 		
+		<html:hidden property="instructionalMethodEditable"/>
 		<logic:notEmpty name="instructionalOfferingConfigEditForm" property="instructionalMethods">
 			<TR>
 				<TD><loc:message name="propertyInstructionalMethod"/></TD>
 				<TD colspan="2">
+					<logic:equal name="instructionalOfferingConfigEditForm" property="instructionalMethodEditable" value="true">
 					<html:select property="instructionalMethod">
 						<logic:empty name="instructionalOfferingConfigEditForm" property="instructionalMethodDefault">
 							<html:option value="-1"><loc:message name="selectNoInstructionalMethod"/></html:option>
@@ -207,6 +209,23 @@
 						</logic:notEmpty>
 						<html:optionsCollection property="instructionalMethods" value="id" label="value" />
 					</html:select>
+					</logic:equal>
+					<logic:notEqual name="instructionalOfferingConfigEditForm" property="instructionalMethodEditable" value="true">
+						<html:hidden property="instructionalMethod"/>
+						<logic:equal name="instructionalOfferingConfigEditForm" property="instructionalMethod" value="-1">
+							<logic:empty name="instructionalOfferingConfigEditForm" property="instructionalMethodDefault">
+								<loc:message name="selectNoInstructionalMethod"/>
+							</logic:empty>
+							<logic:notEmpty name="instructionalOfferingConfigEditForm" property="instructionalMethodDefault">
+								<loc:message name="defaultInstructionalMethod"><bean:write name="instructionalOfferingConfigEditForm" property="instructionalMethodDefault"/></loc:message>
+							</logic:notEmpty>
+						</logic:equal>
+						<logic:iterate name="instructionalOfferingConfigEditForm" property="instructionalMethods" id="im" type="org.unitime.timetable.util.IdValue">
+							<logic:equal name="instructionalOfferingConfigEditForm" property="instructionalMethod" value="<%=im.getId().toString()%>">
+								<bean:write name="im" property="value"/>
+							</logic:equal>
+						</logic:iterate>
+					</logic:notEqual>
 				</TD>
 			</TR>
 		</logic:notEmpty>		

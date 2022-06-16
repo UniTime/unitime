@@ -166,20 +166,18 @@ function resetAllDisplayFlags(value, baseName) {
 	<TD colspan="2" align="left" class="errorCell"><B><U><loc:message name="errorsMultipleClassSetup"/></U></B><BR>
 	<BLOCKQUOTE><UL><html:messages id="error"><LI>${error}</LI></html:messages></UL></BLOCKQUOTE></TD>
 </TR></logic:messagesPresent>
+<html:hidden property="instructionalMethodEditable"/>
 <logic:notEmpty name="instructionalOfferingModifyForm" property="instructionalMethods">
 	<TR><TD><loc:message name="propertyInstructionalMethod"/></TD>
-		<TD><html:select property="instructionalMethod">
-			<logic:empty name="instructionalOfferingModifyForm" property="instructionalMethodDefault">
-				<html:option value="-1"><loc:message name="selectNoInstructionalMethod"/></html:option>
-			</logic:empty>
-			<logic:notEmpty name="instructionalOfferingModifyForm" property="instructionalMethodDefault">
-				<html:option value="-1"><loc:message name="defaultInstructionalMethod">
-					<bean:write name="instructionalOfferingModifyForm" property="instructionalMethodDefault"/>
-				</loc:message></html:option>
-			</logic:notEmpty>
+	<TD><logic:equal name="instructionalOfferingModifyForm" property="instructionalMethodEditable" value="true">
+		<html:select property="instructionalMethod">
+			<logic:empty name="instructionalOfferingModifyForm" property="instructionalMethodDefault"><html:option value="-1"><loc:message name="selectNoInstructionalMethod"/></html:option></logic:empty>
+			<logic:notEmpty name="instructionalOfferingModifyForm" property="instructionalMethodDefault"><html:option value="-1"><loc:message name="defaultInstructionalMethod"><bean:write name="instructionalOfferingModifyForm" property="instructionalMethodDefault"/></loc:message></html:option></logic:notEmpty>
 			<html:optionsCollection property="instructionalMethods" value="id" label="value"/>
-		</html:select></TD>
-</TR></logic:notEmpty>
+		</html:select></logic:equal>
+		<logic:notEqual name="instructionalOfferingModifyForm" property="instructionalMethodEditable" value="true"><html:hidden property="instructionalMethod"/><bean:write name="instructionalOfferingModifyForm" property="instructionalMethodLabel"/></logic:notEqual>
+	</TD></TR>
+</logic:notEmpty>
 <html:hidden property="instrOffrConfigUnlimitedReadOnly"/>
 <logic:equal name="<%=fN%>" property="instrOffrConfigUnlimitedReadOnly" value="true">
 	<logic:equal name="<%=fN%>" property="instrOffrConfigUnlimited" value="true">
