@@ -98,6 +98,12 @@
 				<line>When prohibited or (strongly) discouraged: Any pair of classes classes cannot be taught on the same days during the same time in the same room.</line>
 			</description>
 		</item>
+		<item>
+			<name>Spread Constraint</name>
+			<description>
+				<line>Fixed an ArrayIndexOutOfBoundsException thrown when there are 7 working days (i.e., all days of the week are working days).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>
