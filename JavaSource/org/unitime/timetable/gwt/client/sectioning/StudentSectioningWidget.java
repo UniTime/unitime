@@ -656,6 +656,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if ("OVERLAP".equals(m.getCode())) continue;
 						if ("CREDIT".equals(m.getCode())) continue;
 						if ("WL-OVERLAP".equals(m.getCode())) continue;
+						if ("WL-INACTIVE".equals(m.getCode())) continue;
 						if ("WL-CREDIT".equals(m.getCode())) continue;
 						if (message == null)
 							message = MESSAGES.courseMessage(m.getMessage());
@@ -669,6 +670,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if ("OVERLAP".equals(m.getCode())) continue;
 						if ("CREDIT".equals(m.getCode())) continue;
 						if ("WL-OVERLAP".equals(m.getCode())) continue;
+						if ("WL-INACTIVE".equals(m.getCode())) continue;
 						if ("WL-CREDIT".equals(m.getCode())) continue;
 						if (m.hasCourse() && rc.getCourseId().equals(m.getCourseId())) {
 							if (message == null)
@@ -3192,7 +3194,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	}
 	
 	protected Command confirmEnrollment(final Command callback) {
-		return confirmEnrollmentDrop(confirmWaitListDrop(confirmEnrollmentHonors(confirmEnrollmentVariableCredits(callback))));
+		return confirmEnrollmentDrop(confirmWaitListDrop(confirmEnrollmentHonors(confirmEnrollmentVariableCredits(confirmSectionSwapNoPref(callback)))));
 	}
 
 	protected Command confirmEnrollmentDrop(final Command callback) {
@@ -4095,5 +4097,42 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			};
 		}
 		return iWaitListedRequestPreferences;
+	}
+	
+	public List<String> getSectionSwapsNoPrefs() {
+		if (iLastAssignment != null) {
+			List<String> ret = new ArrayList<String>();
+			courses: for (ClassAssignmentInterface.CourseAssignment course: iLastAssignment.getCourseAssignments()) {
+				if (!course.isAssigned() || !course.isCanWaitList() || course.isFreeTime() || course.isTeachingAssignment()) continue;
+				CourseRequestLine line = iCourseRequests.getWaitListedLine(course.getCourseId());
+				Request r = (line == null ? null : line.getValue());
+				if (r != null && r.isWaitList() && course.getCourseId().equals(r.getWaitListSwapWithCourseOfferingId())) {
+					for (RequestedCourse rc: r.getRequestedCourse()) {
+						if (!course.getCourseId().equals(rc.getCourseId())) continue courses; // has higher priority course
+						if (rc.getRequiredPreferences().isEmpty()) {
+							ret.add(course.getCourseName());
+						}
+						break;
+					}
+				}
+			}
+			return ret;
+		}
+		return null;
+	}
+	
+	protected Command confirmSectionSwapNoPref(final Command callback) {
+		if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST)) {
+			final List<String> changes = getSectionSwapsNoPrefs();
+			if (changes != null && !changes.isEmpty()) {
+				return new Command() {
+					@Override
+					public void execute() {
+						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.confirmSectionSwapNoPrefs(ToolBox.toString(changes)), callback);
+					}
+				};
+			}
+		}
+		return callback;
 	}
 }

@@ -711,7 +711,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Not assigned.")
 	String courseNotAssigned();
 	
-	@DefaultMessage("To be wait-listed.")
+	@DefaultMessage("To be wait-listed - click this line to configure additional wait-list preferences.")
 	String courseToBeWaitListed();
 
 	@DefaultMessage("Not Enrolled")
@@ -2284,10 +2284,10 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Registration errors were detected, but no override has been requested.")
 	String overrideNotRequested();
 	
-	@DefaultMessage("Enrolled in a course higher in the list of alternatives.")
+	@DefaultMessage("Enrolled in a course higher in the list of alternatives. Wait-list not active.")
 	String waitListLowPriority();
 	
-	@DefaultMessage("Current enrollment meets the requirements.")
+	@DefaultMessage("Current enrollment meets the requirements. Wait-list not active.")
 	String waitListRequirementsMet();
 	
 	@DefaultMessage("The following issues have been detected:\n{0}")
@@ -3437,4 +3437,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> important</sup></span>")
 	@DoNotTranslate
 	String advisedNotAssignedImportant(int important);
+	
+	@DefaultMessage("You are trying to wait-list for a different section of {0} without indicating which section(s) you need. The wait-list for {0} will not be active. Do you want to proceed?")
+    String confirmSectionSwapNoPrefs(String course);
 }

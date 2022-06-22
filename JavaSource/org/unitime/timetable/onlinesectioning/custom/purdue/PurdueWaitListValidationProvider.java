@@ -819,6 +819,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 							if ("NO_ALT".equals(m.getCode())) continue;
 							if ("DROP_CRIT".equals(m.getCode())) continue;
 							if ("WL-OVERLAP".equals(m.getCode())) continue;
+							if ("WL-INACTIVE".equals(m.getCode())) continue;
 							if ("NOT-ONLINE".equals(m.getCode())) continue;
 							if ("NOT-RESIDENTIAL".equals(m.getCode())) continue;
 							if (!m.hasCourse()) continue;

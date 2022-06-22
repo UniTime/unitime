@@ -185,7 +185,7 @@ public class WaitListedRequestPreferences extends UniTimeDialogBox implements Ha
 		iCourseDetailsTabBar.addSelectionHandler(new SelectionHandler<Integer>() {
 			@Override
 			public void onSelection(SelectionEvent<Integer> event) {
-				Cookies.setCookie("UniTime:CourseFinderCourses", String.valueOf(event.getSelectedItem()));
+				Cookies.setCookie("UniTime:WLPrefsTab", String.valueOf(event.getSelectedItem()));
 				iCourseDetailsPanel.setWidget(iDetails[event.getSelectedItem()]);
 			}
 		});
@@ -236,7 +236,7 @@ public class WaitListedRequestPreferences extends UniTimeDialogBox implements Ha
 				sSectioningService.listClasses(iContext, source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 			}
 		});
-		setCourseDetails(details, classes);
+		setCourseDetails(classes, details);
 		
 		sinkEvents(Event.ONKEYUP);
 	}
@@ -306,7 +306,7 @@ public class WaitListedRequestPreferences extends UniTimeDialogBox implements Ha
 	
 	private void selectLastTab() {
 		try {
-			int tab = Integer.valueOf(Cookies.getCookie("UniTime:CourseFinderCourses"));
+			int tab = Integer.valueOf(Cookies.getCookie("UniTime:WLPrefsTab"));
 			if (tab >= 0 || tab < iCourseDetailsTabBar.getTabCount() && tab != iCourseDetailsTabBar.getSelectedTab())
 				iCourseDetailsTabBar.selectTab(tab, true);
 			else

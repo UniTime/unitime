@@ -925,6 +925,13 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	public void setConfirmations(Collection<CourseMessage> confirmations) {
 		iConfirmations = (confirmations == null ? null : new ArrayList<CourseMessage>(confirmations));
 	}
+	public void addConfirmations(Collection<CourseMessage> confirmations) {
+		if (iConfirmations == null || iConfirmations.isEmpty()) {
+			iConfirmations = (confirmations == null ? null : new ArrayList<CourseMessage>(confirmations));
+		} else if (confirmations != null) {
+			iConfirmations.addAll(confirmations);
+		}
+	}
 	public List<CourseMessage> getConfirmations(String courseName) {
 		List<CourseMessage> ret = new ArrayList<CourseMessage>();
 		if (hasConfirmations())
@@ -1887,7 +1894,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	}
 	public void setWaitListChecks(CheckCoursesResponse waitListChecks) {
 		iWaitListChecks = waitListChecks;
-		setConfirmations(waitListChecks == null ? null : waitListChecks.getMessages());
+		addConfirmations(waitListChecks == null ? null : waitListChecks.getMessages());
 		setErrorMessage(waitListChecks == null ? null : waitListChecks.getErrorMessage());
 		setCreditNote(waitListChecks == null ? null : waitListChecks.getCreditNote());
 		setCreditWarning(waitListChecks == null ? null : waitListChecks.getCreditWarning());

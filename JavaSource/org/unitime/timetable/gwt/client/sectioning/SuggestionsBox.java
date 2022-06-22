@@ -903,6 +903,9 @@ public class SuggestionsBox extends UniTimeDialogBox {
 						LoadingWidget.getInstance().hide();
 						iCustomCallback.onFailure(new SectioningException(message != null ? message : MESSAGES.suggestionsNoChoices(iSource)));
 					}
+				} else if (!hasAnyChange && MESSAGES.suggestionsNoChoicesCourseIsFull(iSource).equals(message) && iCourse.isCanWaitList()) {
+					LoadingWidget.getInstance().hide();
+					iCustomCallback.onFailure(new SectioningException(message));
 				} else {
 					final Command command = new Command() {
 						@Override
