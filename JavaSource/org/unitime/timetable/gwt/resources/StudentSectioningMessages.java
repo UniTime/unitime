@@ -3440,4 +3440,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("You are trying to wait-list for a different section of {0} without indicating which section(s) you need. The wait-list for {0} will not be active. Do you want to proceed?")
     String confirmSectionSwapNoPrefs(String course);
+	
+	@DefaultMessage("Max Credit")
+	String tabRequestNoteMaxCredit();
 }

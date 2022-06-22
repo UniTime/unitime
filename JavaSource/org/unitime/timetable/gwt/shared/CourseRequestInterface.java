@@ -1478,6 +1478,14 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			return ret;
 		}
 		
+		public List<CourseMessage> getMessages(int confirm) {
+			List<CourseMessage> ret = new ArrayList<CourseMessage>();
+			if (hasMessages())
+				for (CourseMessage m: getMessages())
+					if (m.hasCourse() && confirm == m.getConfirm()) ret.add(m);
+			return ret;
+		}
+		
 		public String getMessage(String courseName, String delim, String... exclude) {
 			if (!hasMessages()) return null;
 			String ret = null;

@@ -425,6 +425,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			String itemized = null;
 			for (CourseMessage m: messages.getMessages(box.getText())) {
 				if (m.getStatus() == RequestedCourseStatus.OVERRIDE_APPROVED && !m.isError()) continue;
+				if ("REQUEST_NOTE".equals(m.getCode())) continue;
 				if (message == null) {
 					message = m.getMessage();
 					itemized = MESSAGES.courseMessage(m.getMessage());

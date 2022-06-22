@@ -4359,6 +4359,21 @@ unitime-RoomSharingWidget .legend .blank {
 	margin-left: 15px;
 }
 
+.unitime-ConfirmationPanel .message-panel .request-note:focus {
+	outline: none !important;
+    border-color: #719ECE;
+    box-shadow: 0 0 5px 2px #719ECE;
+}
+
+.unitime-ConfirmationPanel .message-panel .notes-tab {
+	margin-left: 15px;
+	margin-bottom: -2px;
+}
+
+.unitime-ConfirmationPanel .message-panel .request-notes {
+	margin-left: 15px;
+}
+
 .unitime-ConfirmationPanel .question-panel {
 	display: block;
 	text-align: center;
@@ -6736,6 +6751,26 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-ChangeGradeModesDialog .variable-credit-list {
 	min-width: 50px;
+}
+
+.unitime-ChangeGradeModesDialog .course-notes {
+	padding-bottom: 5px;
+}
+
+.unitime-ChangeGradeModesDialog .course-notes .request-note {
+	margin-left: 15px;
+	margin-top: -2px;
+}
+
+.unitime-ChangeGradeModesDialog .course-notes .request-note:focus {
+	outline: none !important;
+    border-color: #719ECE;
+    box-shadow: 0 0 5px 2px #719ECE;
+}
+
+.unitime-ChangeGradeModesDialog .course-notes .notes-tab {
+	margin-left: 15px;
+	margin-bottom: 2px;
 }
 
 .unitime-SolutionInfoDialog {

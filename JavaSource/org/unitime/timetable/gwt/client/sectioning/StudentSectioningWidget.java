@@ -22,9 +22,11 @@ package org.unitime.timetable.gwt.client.sectioning;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -700,7 +702,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							final String requestorNote = note.getMessage();
 							UpdateSpecialRegistrationRequest request = new UpdateSpecialRegistrationRequest(
 									iContext,
-									rc.getRequestId(),
+									rc.getRequestId(), rc.getCourseId(),
 									requestorNote, iMode == Mode.REQUESTS);
 							iSectioningService.updateSpecialRequest(request, new AsyncCallback<UpdateSpecialRegistrationResponse>() {
 								@Override
@@ -756,7 +758,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							final String requestorNote = note.getMessage();
 							UpdateSpecialRegistrationRequest req = new UpdateSpecialRegistrationRequest(
 									iContext,
-									request.getRequestId(),
+									request.getRequestId(), null,
 									requestorNote, iMode == Mode.REQUESTS);
 							iSectioningService.updateSpecialRequest(req, new AsyncCallback<UpdateSpecialRegistrationResponse>() {
 								@Override
@@ -786,7 +788,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			}
 
 			@Override
-			public boolean changeRequestorNote(final RetrieveSpecialRegistrationResponse reg) {
+			public boolean changeRequestorNote(final RetrieveSpecialRegistrationResponse reg, final String course, final Long courseId) {
 				if (reg == null || reg.getRequestId() == null || reg.getStatus() != SpecialRegistrationStatus.Pending) return false;
 				CheckCoursesResponse confirm = new CheckCoursesResponse();
 				confirm.setConfirmation(0, MESSAGES.dialogChangeSpecRegRequestNote(),
@@ -795,10 +797,14 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				if (reg.hasErrors()) {
 					confirm.addConfirmation(MESSAGES.requestedApprovals(), 0, 1);
 					for (ErrorMessage e: reg.getErrors())
-						confirm.addMessage(null, e.getCourse(), e.getCode(), e.getMessage(), 0, 2);
+						if ((course == null || course.isEmpty()) && "MAXI".equals(e.getCode()))
+							confirm.addMessage(null, e.getCourse(), e.getCode(), e.getMessage(), 0, 2);
+						else if (course != null && course.equals(e.getCourse()))
+							confirm.addMessage(null, e.getCourse(), e.getCode(), e.getMessage(), 0, 2);
 				}
 				confirm.addConfirmation(MESSAGES.messageRequestOverridesNote(), 0, 3);
-				final CourseRequestInterface.CourseMessage note = confirm.addConfirmation(reg.getNote() == null ? "" : reg.getNote(), 0, 4); note.setCode("REQUEST_NOTE");
+				String previousNote = (course == null || course.isEmpty() ? reg.getNote("MAXI") : reg.getNote(course));
+				final CourseRequestInterface.CourseMessage note = confirm.addConfirmation(previousNote == null ? "" : previousNote, 0, 4); note.setCode("REQUEST_NOTE");
 				if (reg.hasSuggestions())
 					for (String suggestion: reg.getSuggestions())
 						note.addSuggestion(suggestion);
@@ -809,7 +815,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							final String requestorNote = note.getMessage();
 							UpdateSpecialRegistrationRequest request = new UpdateSpecialRegistrationRequest(
 									iContext,
-									reg.getRequestId(),
+									reg.getRequestId(), courseId,
 									requestorNote, iMode == Mode.REQUESTS);
 							iSectioningService.updateSpecialRequest(request, new AsyncCallback<UpdateSpecialRegistrationResponse>() {
 								@Override
@@ -817,7 +823,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									if (result.isFailure() && result.hasMessage()) {
 										iStatus.error(MESSAGES.updateSpecialRegistrationFail(result.getMessage()));
 									} else {
-										reg.setNote(requestorNote);
+										reg.setNote(course == null || course.isEmpty() ? "MAXI" : course, requestorNote);
 										iSpecialRegistrationsPanel.populate(iSpecialRegistrationsPanel.getRegistrations(), iSavedAssignment);
 										updateHistory();
 									}
@@ -934,14 +940,12 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					iSpecRegCx.update(iEligibilityCheck);
 					iSpecRegCx.setRequestId(null);
 					iSpecRegCx.setStatus(null);
-					iSpecRegCx.setNote(null);
 					iSpecialRegAssignment = iSavedAssignment;
 					fillIn(iSavedAssignment);
 					addHistory();
 				} else {
 					iSpecRegCx.setRequestId(specReg.getRequestId());
 					iSpecRegCx.setStatus(specReg.getStatus());
-					iSpecRegCx.setNote(specReg.getNote());
 					iSpecialRegAssignment = null;
 					if ((specReg.hasChanges() && !specReg.isGradeModeChange() && !specReg.isCreditChange()) ||
 						(specReg.hasChanges() && specReg.isVariableTitleCourseChange())) {
@@ -3449,10 +3453,31 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				MESSAGES.titleRequestOverrides(), MESSAGES.titleCancelRequest());
 		confirm.addConfirmation(MESSAGES.messageRegistrationErrorsDetected(), 0, -1);
 		confirm.addConfirmation(MESSAGES.messageRequestOverridesNote(), 0, 2);
-		final CourseRequestInterface.CourseMessage note = confirm.addConfirmation(iSpecRegCx.getNote() == null ? "" : iSpecRegCx.getNote(), 0, 3); note.setCode("REQUEST_NOTE");
-		if (eligibilityResponse.hasSuggestions())
-			for (String suggestion: eligibilityResponse.getSuggestions())
-				note.addSuggestion(suggestion);
+		final Map<String, CourseRequestInterface.CourseMessage> notes = new HashMap<String, CourseRequestInterface.CourseMessage>();
+		boolean hasCredit = false;
+		for (ErrorMessage e: errors) {
+			if ("IGNORE".equals(e.getCode())) continue;
+			if ("MAXI".equals(e.getCode()) || "CREDIT".equals(e.getCode())) {
+				hasCredit = true; continue;
+			}
+			if (e.getCourse() == null || e.getCourse().isEmpty()) continue;
+			if (!notes.containsKey(e.getCourse())) {
+				final CourseRequestInterface.CourseMessage note = confirm.addConfirmation("", 0, 3); note.setCode("REQUEST_NOTE");
+				note.setCourse(e.getCourse());
+				if (eligibilityResponse.hasSuggestions())
+					for (String suggestion: eligibilityResponse.getSuggestions())
+						note.addSuggestion(suggestion);
+				notes.put(e.getCourse(), note);
+			}
+		}
+		if (hasCredit) {
+			final CourseRequestInterface.CourseMessage note = confirm.addConfirmation("", 0, 3); note.setCode("REQUEST_NOTE");
+			note.setCourse(MESSAGES.tabRequestNoteMaxCredit());
+			if (eligibilityResponse.hasSuggestions())
+				for (String suggestion: eligibilityResponse.getSuggestions())
+					note.addSuggestion(suggestion);
+			notes.put("MAXI", note);
+		}
 		confirm.addConfirmation(MESSAGES.messageRequestOverridesOptions(), 0, 4);
 		confirm.addConfirmation(MESSAGES.messageRequestOverridesDisclaimer(), 0, 7);
 		if (iSpecRegCx.hasDisclaimer())
@@ -3479,9 +3504,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				if (result) {
 					clearMessage();
 					LoadingWidget.getInstance().show(MESSAGES.waitSpecialRegistration());
+					Map<String, String> requestNotes = new HashMap<String, String>();
+					for (Map.Entry<String, CourseRequestInterface.CourseMessage> e: notes.entrySet()) {
+						requestNotes.put(e.getKey(), e.getValue().getMessage());
+					}
 					iSectioningService.submitSpecialRequest(
 							new SubmitSpecialRegistrationRequest(iContext, iSpecRegCx.getRequestId(), iCourseRequests.getRequest(),
-									iLastEnrollment != null ? iLastEnrollment : iLastResult, errors, note.getMessage(), eligibilityResponse.getCredit()),
+									iLastEnrollment != null ? iLastEnrollment : iLastResult, errors, requestNotes, eligibilityResponse.getCredit()),
 							new AsyncCallback<SubmitSpecialRegistrationResponse>() {
 								@Override
 								public void onFailure(Throwable caught) {
@@ -3499,7 +3528,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									}
 									iSpecRegCx.setStatus(response.getStatus());
 									iSpecRegCx.setRequestId(response.getRequestId());
-									iSpecRegCx.setNote(note.getMessage());
 									if (response.hasRequests()) {
 										List<RetrieveSpecialRegistrationResponse> requests = new ArrayList<RetrieveSpecialRegistrationResponse>(response.getRequests());
 										for (RetrieveSpecialRegistrationResponse r: iSpecialRegistrationsPanel.getRegistrations()) {
@@ -3674,7 +3702,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			for (RequestedCourse rc: request.getRequestedCourse()) {
 				if (rc.isCourse()) {
 					ImageResource icon = null; String iconText = null;
-					String msg = check.getMessage(rc.getCourseName(), "\n", "CREDIT");
+					String msg = check.getMessage(rc.getCourseName(), "\n", "CREDIT", "REQUEST_NOTE");
 					if (check.isError(rc.getCourseName()) && (rc.getStatus() == null || rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED)) {
 						icon = RESOURCES.requestError(); iconText = (msg);
 					} else if (rc.getStatus() != null) {
@@ -3738,7 +3766,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					WebTable.Cell credit = new WebTable.Cell(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : "");
 					credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 					String note = null;
-					if (check != null) note = check.getMessage(rc.getCourseName(), "\n", "CREDIT");
+					if (check != null) note = check.getMessage(rc.getCourseName(), "\n", "CREDIT", "REQUEST_NOTE");
 					if (rc.hasRequestorNote()) note = (note == null ? "" : note + "\n") + rc.getRequestorNote();
 					if (rc.hasStatusNote()) note = (note == null ? "" : note + "\n") + rc.getStatusNote();
 					P messages = new P("text-pre-wrap"); messages.setText(note);
@@ -3788,7 +3816,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			for (RequestedCourse rc: request.getRequestedCourse()) {
 				if (rc.isCourse()) {
 					ImageResource icon = null; String iconText = null;
-					String msg = check.getMessage(rc.getCourseName(), "\n", "CREDIT");
+					String msg = check.getMessage(rc.getCourseName(), "\n", "CREDIT", "REQUEST_NOTE");
 					if (check.isError(rc.getCourseName()) && (rc.getStatus() == null || rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED)) {
 						icon = RESOURCES.requestError(); iconText = (msg);
 					} else if (rc.getStatus() != null) {
@@ -3852,7 +3880,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					WebTable.Cell credit = new WebTable.Cell(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : "");
 					credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 					String note = null;
-					if (check != null) note = check.getMessage(rc.getCourseName(), "\n", "CREDIT");
+					if (check != null) note = check.getMessage(rc.getCourseName(), "\n", "CREDIT", "REQUEST_NOTE");
 					if (rc.hasRequestorNote()) note = (note == null ? "" : note + "\n") + rc.getRequestorNote();
 					if (rc.hasStatusNote()) note = (note == null ? "" : note + "\n") + rc.getStatusNote();
 					P messages = new P("text-pre-wrap"); messages.setText(note);
