@@ -281,6 +281,8 @@ public class WaitListsPanel extends P {
 								for (CourseMessage m: iRequests.getConfirmations()) {
 									if ("NO_ALT".equals(m.getCode())) continue;
 									if ("CREDIT".equals(m.getCode())) continue;
+									if ("WL-CREDIT".equals(m.getCode())) continue;
+									if ("REQUEST_NOTE".equals(m.getCode())) continue;
 									if (m.hasCourse() && rc.getCourseId().equals(m.getCourseId())) {
 										if (note == null) {
 											note = (m.isError() ? "<span class='error'>" : "<span class='"+style+"'>") + m.getMessage() + "</span>";

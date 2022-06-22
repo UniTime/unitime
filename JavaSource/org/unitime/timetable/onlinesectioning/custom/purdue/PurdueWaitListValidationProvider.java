@@ -680,10 +680,25 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 			int idx = 1;
 			if (note != null && !note.isEmpty()) {
 				response.addConfirmation(note, CONF_BANNER, idx++);
-				CourseMessage cm = response.addConfirmation("", CONF_BANNER, idx++);
-				cm.setCode("REQUEST_NOTE");
-				for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.waitlist.requestorNoteSuggestions", "").split("[\r\n]+"))
-					if (!suggestion.isEmpty()) cm.addSuggestion(suggestion);
+				Set<String> courses = new HashSet<String>();
+				boolean hasCredit = false;
+				for (CourseMessage x: response.getMessages(CONF_BANNER)) {
+					if ("WL-CREDIT".equals(x.getCode()) || "MAXI".equals(x.getCode())) { hasCredit = true; continue; }
+					if (x.hasCourse() && courses.add(x.getCourse())) {
+						CourseMessage cm = response.addConfirmation("", CONF_BANNER, idx++);
+						cm.setCourse(x.getCourse()); cm.setCourseId(x.getCourseId());
+						cm.setCode("REQUEST_NOTE");
+						for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.prereg.requestorNoteSuggestions", "").split("[\r\n]+"))
+							if (!suggestion.isEmpty()) cm.addSuggestion(suggestion); 
+					}
+				}
+				if (hasCredit) {
+					CourseMessage cm = response.addConfirmation("", CONF_BANNER, idx++);
+					cm.setCourse(MESSAGES.tabRequestNoteMaxCredit());
+					cm.setCode("REQUEST_NOTE");
+					for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.prereg.requestorNoteSuggestions", "").split("[\r\n]+"))
+						if (!suggestion.isEmpty()) cm.addSuggestion(suggestion);
+				}
 			}
 			response.addConfirmation(
 					ApplicationProperties.getProperty("purdue.specreg.messages.waitlist.requestOverrides",
@@ -800,8 +815,8 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 
 		if (request.hasConfirmations()) {
 			for (CourseMessage m: request.getConfirmations()) {
-				if ("REQUEST_NOTE".equals(m.getCode()) && m.getMessage() != null && !m.getMessage().isEmpty()) {
-					req.requestorNotes = m.getMessage();
+				if ("REQUEST_NOTE".equals(m.getCode()) && m.getMessage() != null && !m.getMessage().isEmpty() && !m.hasCourseId()) {
+					req.maxCreditRequestorNotes = m.getMessage();
 				}
 			}
 			for (CourseRequestInterface.Request c: request.getCourses())
@@ -822,6 +837,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 							if ("WL-INACTIVE".equals(m.getCode())) continue;
 							if ("NOT-ONLINE".equals(m.getCode())) continue;
 							if ("NOT-RESIDENTIAL".equals(m.getCode())) continue;
+							if ("REQUEST_NOTE".equals(m.getCode())) continue;
 							if (!m.hasCourse()) continue;
 							if (!m.isError() && (course.getCourseId().equals(m.getCourseId()) || course.getCourseName().equals(m.getCourse()))) {
 								ChangeError e = new ChangeError();
@@ -836,6 +852,11 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 							ch.errors = errors;
 							ch.operation = ChangeOperation.ADD;
 							req.changes.add(ch);
+							for (CourseMessage m: request.getConfirmations()) {
+								if ("REQUEST_NOTE".equals(m.getCode()) && m.getMessage() != null && !m.getMessage().isEmpty() && course.getCourseName().equals(m.getCourse())) {
+									ch.requestorNotes = m.getMessage();
+								}
+							}
 							overrides.remove(subject + " " + courseNbr);
 						}
 					}
@@ -925,7 +946,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 												rc.setStatus(status(r, false));
 												rc.setStatusNote(SpecialRegistrationHelper.note(r, false));
 												rc.setRequestId(r.regRequestId);
-												rc.setRequestorNote(r.requestorNotes);
+												rc.setRequestorNote(SpecialRegistrationHelper.requestorNotes(r, subject, courseNbr));
 												break;
 											}
 										}
@@ -972,7 +993,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 										.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(req.maxCredit))
 										);
 								request.setCreditNote(SpecialRegistrationHelper.note(r, true));
-								request.setRequestorNote(r.requestorNotes);
+								request.setRequestorNote(SpecialRegistrationHelper.maxCreditRequestorNotes(r));
 								request.setRequestId(r.regRequestId);
 								break;
 							}
@@ -1129,7 +1150,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 										if ("MAXI".equals(er.code) && er.message != null)
 											warning = (warning == null ? "" : warning + "\n") + er.message;
 					request.setCreditWarning(warning);
-					request.setRequestorNote(maxCreditReq.requestorNotes);
+					request.setRequestorNote(SpecialRegistrationHelper.maxCreditRequestorNotes(maxCreditReq));
 					request.setRequestId(maxCreditReq.regRequestId);
 					for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.waitlist.requestorNoteSuggestions", "").split("[\r\n]+"))
 						if (!suggestion.isEmpty()) request.addRequestorNoteSuggestion(suggestion);
@@ -1148,7 +1169,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 											request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), er.code, "Approved " + er.message, status(ch.status), ORD_BANNER);
 										if (rc.getRequestId() == null) {
 											rc.setStatusNote(SpecialRegistrationHelper.note(r, false));
-											rc.setRequestorNote(r.requestorNotes);
+											rc.setRequestorNote(SpecialRegistrationHelper.requestorNotes(r, ch.subject, ch.courseNbr));
 											if (rc.getStatus() != RequestedCourseStatus.ENROLLED)
 												rc.setStatus(RequestedCourseStatus.OVERRIDE_APPROVED);
 										}
@@ -1174,7 +1195,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 									}
 								}
 					rc.setStatusNote(SpecialRegistrationHelper.note(r, false));
-					rc.setRequestorNote(r.requestorNotes);
+					rc.setRequestorNote(SpecialRegistrationHelper.requestorNotes(r, rc.getCourseName()));
 					rc.setRequestId(r.regRequestId);
 					for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.waitlist.requestorNoteSuggestions", "").split("[\r\n]+"))
 						if (!suggestion.isEmpty()) rc.addRequestorNoteSuggestion(suggestion);

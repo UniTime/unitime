@@ -73,6 +73,32 @@ public class SpecialRegistrationHelper {
 		return note;
 	}
 	
+	@SuppressWarnings("deprecation")
+	public static String requestorNotes(SpecialRegistration r, String subject, String courseNbr) {
+		if (r.changes != null && subject != null && courseNbr != null)
+			for (Change ch: r.changes)
+				if (subject.equals(ch.subject) && courseNbr.equals(ch.courseNbr) && ch.requestorNotes != null && !ch.requestorNotes.isEmpty())
+					return ch.requestorNotes;
+		return r.requestorNotes;
+	}
+	
+	@SuppressWarnings("deprecation")
+	public static String requestorNotes(SpecialRegistration r, String course) {
+		if (r.changes != null && course != null)
+			for (Change ch: r.changes) {
+				if (course.equals(ch.subject + " " + ch.courseNbr))
+					return ch.requestorNotes;
+			}
+		return r.requestorNotes;
+	}
+	
+	@SuppressWarnings("deprecation")
+	public static String maxCreditRequestorNotes(SpecialRegistration r) {
+		if (r.maxCreditRequestorNotes != null)
+			return r.maxCreditRequestorNotes;
+		return r.requestorNotes;
+	}
+	
 	public static RestrictionsCheckRequest createValidationRequest(CheckRestrictionsRequest req, ValidationMode mode, boolean includeRegistration) {
 		RestrictionsCheckRequest ret = new RestrictionsCheckRequest();
 		ret.sisId = req.studentId;

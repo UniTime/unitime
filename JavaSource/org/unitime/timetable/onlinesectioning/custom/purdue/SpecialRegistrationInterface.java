@@ -107,7 +107,10 @@ public class SpecialRegistrationInterface {
 		/** Max credit needed (only filled in when max override needs to be increased!) */
 		public Float maxCredit;
 		/** Student message provided with the request */
+		@Deprecated
 		public String requestorNotes;
+		/** Student message probided with the max credit increase request */
+		public String maxCreditRequestorNotes;
 		/** Request completion status (only read, never sent) */
 		public CompletionStatus completionStatus;
 		/** Validation request */
@@ -175,6 +178,8 @@ public class SpecialRegistrationInterface {
 		public String apiYear;
 		/** UniTime's academic session term (only used when operation = CHGVARTL) */ 
 		public String apiTerm;
+		/** Student message provided with the request */
+		public String requestorNotes;
 		
 		public void setCourse(String subject, String courseNbr, ExternalTermProvider ext, AcademicSessionInfo session) {
 			this.subject = subject;

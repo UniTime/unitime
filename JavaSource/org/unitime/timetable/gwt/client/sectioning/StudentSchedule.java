@@ -1188,8 +1188,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				}
 				if (reg.hasChanges()) {
 					Long lastCourseId = null;
-					String[] dateAndNote = (reg.getSubmitDate() == null ? reg.getNote() == null ? "" : reg.getNote() : sModifiedDateFormat.format(reg.getSubmitDate()) + (reg.getNote() == null || reg.getNote().isEmpty() ? "" : "\n" + reg.getNote())).split("\n");
-
+					
 					List<ClassAssignment> rows = new ArrayList<ClassAssignment>();
 					for (ClassAssignment ca: reg.getChanges()) {
 						if (ca.getParentSection() != null && ca.getParentSection().equals(ca.getSection())) continue;
@@ -1204,20 +1203,13 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						} else {
 							row.add(new P("icons"));
 						}
-						if (r < dateAndNote.length) {
-							Label label = null;
-							if (r + 1 == rows.size()) {
-								String text = dateAndNote[r];
-								for (int i = r + 1; i < dateAndNote.length; i++)
-									text += "\n" + dateAndNote[i];
-								label = new Label(text); label.addStyleName("date-and-note");
-							} else {
-								label = new Label(dateAndNote[r]); label.addStyleName("date-and-note");
-							}
-							row.add(label);
-						} else {
-							row.add(new Label());
+						Label label = new Label();
+						label.addStyleName("date-and-note");
+						if (lastCourseId == null || !lastCourseId.equals(ca.getCourseId())) {
+							String note = reg.getNote(rows.get(r).getCourseName());
+							label.setText(r > 0 || reg.getSubmitDate() == null ? note == null ? "" : note : sModifiedDateFormat.format(reg.getSubmitDate()) + (note == null || note.isEmpty() ? "" : "\n" + note));
 						}
+						row.add(label);
 						if (lastCourseId == null || !lastCourseId.equals(ca.getCourseId())) {
 							row.add(new Label(ca.getSubject(), false));
 							row.add(new Label(ca.getCourseNbr(), false));
@@ -1284,10 +1276,27 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						}
 						lastCourseId = ca.getCourseId();
 					}
+					String noCourseErrors = "";
+					if (reg.hasErrors())
+						for (ErrorMessage e: reg.getErrors())
+							if (e.getCourse() == null || e.getCourse().isEmpty())
+								noCourseErrors += (noCourseErrors.isEmpty() ? "" : "\n") + e.getMessage();
+					if (!noCourseErrors.isEmpty()) {
+						List<Widget> row = new ArrayList<Widget>();
+						row.add(new P("icons"));
+						row.add(new DateAndNoteCell(null, reg.getNote("MAXI")));
+						row.add(new DescriptionCell(null));
+						HTML errorsLabel = new HTML(noCourseErrors); errorsLabel.addStyleName("registration-errors");
+						row.add(errorsLabel);
+						row.add(new Label());
+						int idx = iSpecialRegistrations.addRow(reg, row);
+						for (int c = 2; c < iSpecialRegistrations.getCellCount(idx) - 1; c++)
+							iSpecialRegistrations.getCellFormatter().addStyleName(idx, c, "top-border-dashed");
+					}
 				} else if (reg.hasErrors()) {
 					List<Widget> row = new ArrayList<Widget>();
 					row.add(p);
-					row.add(new DateAndNoteCell(reg.getSubmitDate(), reg.getNote()));
+					row.add(new DateAndNoteCell(reg.getSubmitDate(), reg.getNote("MAXI")));
 					row.add(new DescriptionCell(reg.getDescription()));
 					String errors = "";
 					for (ErrorMessage e: reg.getErrors())

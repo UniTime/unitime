@@ -1036,10 +1036,25 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			int idx = 1;
 			if (note != null && !note.isEmpty()) {
 				response.addConfirmation(note, CONF_BANNER, idx++);
-				CourseMessage cm = response.addConfirmation("", CONF_BANNER, idx++);
-				cm.setCode("REQUEST_NOTE");
-				for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.prereg.requestorNoteSuggestions", "").split("[\r\n]+"))
-					if (!suggestion.isEmpty()) cm.addSuggestion(suggestion); 
+				Set<String> courses = new HashSet<String>();
+				boolean hasCredit = false;
+				for (CourseMessage x: response.getMessages(CONF_BANNER)) {
+					if ("CREDIT".equals(x.getCode()) || "MAXI".equals(x.getCode())) { hasCredit = true; continue; }
+					if (x.hasCourse() && courses.add(x.getCourse())) {
+						CourseMessage cm = response.addConfirmation("", CONF_BANNER, idx++);
+						cm.setCourse(x.getCourse()); cm.setCourseId(x.getCourseId());
+						cm.setCode("REQUEST_NOTE");
+						for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.prereg.requestorNoteSuggestions", "").split("[\r\n]+"))
+							if (!suggestion.isEmpty()) cm.addSuggestion(suggestion); 
+					}
+				}
+				if (hasCredit) {
+					CourseMessage cm = response.addConfirmation("", CONF_BANNER, idx++);
+					cm.setCourse(MESSAGES.tabRequestNoteMaxCredit());
+					cm.setCode("REQUEST_NOTE");
+					for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.prereg.requestorNoteSuggestions", "").split("[\r\n]+"))
+						if (!suggestion.isEmpty()) cm.addSuggestion(suggestion);
+				}
 			}
 			response.addConfirmation(
 					ApplicationProperties.getProperty("purdue.specreg.messages.requestOverrides",
@@ -1257,8 +1272,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 
 		if (request.hasConfirmations()) {
 			for (CourseMessage m: request.getConfirmations()) {
-				if ("REQUEST_NOTE".equals(m.getCode()) && m.getMessage() != null && !m.getMessage().isEmpty()) {
-					req.requestorNotes = m.getMessage();
+				if ("REQUEST_NOTE".equals(m.getCode()) && m.getMessage() != null && !m.getMessage().isEmpty() && !m.hasCourseId()) {
+					req.maxCreditRequestorNotes = m.getMessage();
 				}
 			}
 			for (CourseRequestInterface.Request c: request.getCourses())
@@ -1278,6 +1293,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							if ("OVERLAP".equals(m.getCode())) continue;
 							if ("NOT-ONLINE".equals(m.getCode())) continue;
 							if ("NOT-RESIDENTIAL".equals(m.getCode())) continue;
+							if ("REQUEST_NOTE".equals(m.getCode())) continue;
 							if (!m.hasCourse()) continue;
 							if (!m.isError() && (course.getCourseId().equals(m.getCourseId()) || course.getCourseName().equals(m.getCourse()))) {
 								ChangeError e = new ChangeError();
@@ -1293,6 +1309,11 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							ch.operation = ChangeOperation.ADD;
 							req.changes.add(ch);
 							overrides.remove(subject + " " + courseNbr);
+							for (CourseMessage m: request.getConfirmations()) {
+								if ("REQUEST_NOTE".equals(m.getCode()) && m.getMessage() != null && !m.getMessage().isEmpty() && course.getCourseName().equals(m.getCourse())) {
+									ch.requestorNotes = m.getMessage();
+								}
+							}
 						}
 					}
 				}
@@ -1446,7 +1467,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 												rc.setStatus(status(r, false));
 												rc.setStatusNote(SpecialRegistrationHelper.note(r, false));
 												rc.setRequestId(r.regRequestId);
-												rc.setRequestorNote(r.requestorNotes);
+												rc.setRequestorNote(SpecialRegistrationHelper.requestorNotes(r, subject, courseNbr));
 												break;
 											}
 										}
@@ -1475,6 +1496,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 											rc.setOverrideExternalId(r.regRequestId);
 											rc.setStatus(status(r, false));
 											rc.setStatusNote(SpecialRegistrationHelper.note(r, false));
+											rc.setRequestId(r.regRequestId);
+											rc.setRequestorNote(SpecialRegistrationHelper.requestorNotes(r, subject, courseNbr));
 											break;
 										}
 									}
@@ -1492,7 +1515,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 										.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(req.maxCredit))
 										);
 								request.setCreditNote(SpecialRegistrationHelper.note(r, true));
-								request.setRequestorNote(r.requestorNotes);
+								request.setRequestorNote(SpecialRegistrationHelper.maxCreditRequestorNotes(r));
 								request.setRequestId(r.regRequestId);
 								break;
 							}
@@ -2045,7 +2068,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						if (r.maxCredit != null)
 							request.setMaxCreditOverride(r.maxCredit);
 						creditNote = SpecialRegistrationHelper.note(r, true);
-						request.setRequestorNote(r.requestorNotes);
+						request.setRequestorNote(SpecialRegistrationHelper.maxCreditRequestorNotes(r));
 						request.setRequestId(r.regRequestId);
 						for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.prereg.requestorNoteSuggestions", "").split("[\r\n]+"))
 							if (!suggestion.isEmpty()) request.addRequestorNoteSuggestion(suggestion);
@@ -2071,7 +2094,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 									}
 								}
 					rc.setStatusNote(SpecialRegistrationHelper.note(r, false));
-					rc.setRequestorNote(r.requestorNotes);
+					rc.setRequestorNote(SpecialRegistrationHelper.requestorNotes(r, rc.getCourseName()));
 					rc.setRequestId(r.regRequestId);
 					for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.prereg.requestorNoteSuggestions", "").split("[\r\n]+"))
 						if (!suggestion.isEmpty()) rc.addRequestorNoteSuggestion(suggestion);
