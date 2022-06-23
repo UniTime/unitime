@@ -153,6 +153,7 @@ public class AssignClassInstructorsPage extends Composite {
 		ClickHandler removeInstrs = new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
+				if (!Window.confirm(MESSAGES.confirmRemoveClassInstructors())) return;
 				String valid = validate();
 				if (valid != null) {
 					iHeader.setErrorMessage(valid);

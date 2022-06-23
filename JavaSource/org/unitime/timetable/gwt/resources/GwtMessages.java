@@ -3053,6 +3053,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("The contact information for {0} will be updated.")
 	String confirmMainContactChange(String name);
+	
+	@DefaultMessage("Please confirm you wish to remove all instructors from this course configuration.")
+	String confirmRemoveClassInstructors();	
 
 	@DefaultMessage("One email per line please.")
 	String hintAdditionalEmails();
