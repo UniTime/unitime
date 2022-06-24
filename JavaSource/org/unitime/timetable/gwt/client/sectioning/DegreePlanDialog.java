@@ -77,6 +77,7 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 	private Map<Character, Integer> iTabAccessKeys = new HashMap<Character, Integer>();
 	private TakesValue<CourseRequestInterface> iRequests;
 	private WaitListMode iWaitListMode = null;
+	private Integer iCriticalCheck = null;
 	
 	public DegreePlanDialog(StudentSectioningPage.Mode mode, TakesValue<CourseRequestInterface> requests, AssignmentProvider assignments, CourseFinderCourseDetails... details) {
 		super(true, false);
@@ -154,6 +155,7 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 	}
 	
 	public void setWaitListMode(WaitListMode wl) { iWaitListMode = wl; }
+	public void setCriticalCheck(Integer criticalCheck) { iCriticalCheck = criticalCheck; }
 	
 	public void open(DegreePlanInterface plan, boolean hasBack) {
 		iDegreePlanTable.setValue(plan);
@@ -181,7 +183,7 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 	
 	protected void doApply() {
 		hide();
-		iRequests.setValue(iDegreePlanTable.createRequests(iWaitListMode));
+		iRequests.setValue(iDegreePlanTable.createRequests(iWaitListMode, iCriticalCheck));
 	}
 	
     @Override

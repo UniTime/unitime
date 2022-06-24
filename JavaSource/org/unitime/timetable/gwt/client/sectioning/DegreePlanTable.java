@@ -733,7 +733,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		return false;
 	}
 	
-	public CourseRequestInterface createRequests(WaitListMode wl) {
+	public CourseRequestInterface createRequests(WaitListMode wl, Integer criticalLevel) {
 		CourseRequestInterface requests = iRequests.getValue();
 		// 1. delete all requests that are not assigned
 		for (Iterator<CourseRequestInterface.Request> i = requests.getCourses().iterator(); i.hasNext(); ) {
@@ -790,6 +790,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 				CourseRequestInterface.Request r = new CourseRequestInterface.Request();
 				r.addRequestedCourse(rc);
 				if (wl == WaitListMode.NoSubs && iPlan.isCourseCritical(rc)) r.setNoSub(true);
+				if (criticalLevel != null && iPlan.isCourseCritical(rc)) r.setCritical(criticalLevel);
 				if (p != null) {
 					r = p.getRequest();
 					if (r.isReadOnly()) continue;
