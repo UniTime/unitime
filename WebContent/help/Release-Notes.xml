@@ -104,6 +104,14 @@
 				<line>Fixed an ArrayIndexOutOfBoundsException thrown when there are 7 working days (i.e., all days of the week are working days).</line>
 			</description>
 		</item>
+		<item>
+			<name>Timetable Grid: Export XLS</name>
+			<description>
+				<line>Avoid exporting empty resources (resources with no matching classes/meetings).
+					<line>This is to fix NullPointerException in per-date mode, e.g., if there is an instructor with no classes.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>
