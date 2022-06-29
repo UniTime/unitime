@@ -42,6 +42,7 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.dao.Class_DAO;
@@ -57,6 +58,7 @@ import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.onlinesectioning.custom.WaitListComparatorProvider;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
@@ -441,10 +443,36 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 						}
 						if (r.getRequest().isWaitlist())
 							server.waitlist(r.getRequest(), false);
-					} else if (!r.getRequest().isAlternative()) { // wait-list
-						if (cd != null && !cd.isWaitlist()) {
+					} else { // wait-list
+						if (cd != null && !cd.isWaitlist()) { // course demand is not wait-listed > enable wait-listing for the course
+							// ensure that the dropped course is the first choice 
+							CourseRequest cr = (r.getCourseId() == null ? null : cd.getCourseRequest(r.getCourseId().getCourseId()));
+							if (cr != null && cr.getOrder() > 0) {
+								for (CourseRequest x: cd.getCourseRequests()) {
+									if (x.getOrder() < cr.getOrder()) {
+										x.setOrder(x.getOrder() + 1);
+										helper.getHibSession().update(x);
+									}
+								}
+								cr.setOrder(0);
+								helper.getHibSession().update(cr);
+							}
+							// ensure that the course request is not a substitute 
+							if (cd.isAlternative()) {
+								int priority = cd.getPriority();
+								for (CourseDemand x: cd.getStudent().getCourseDemands()) {
+									if (x.isAlternative() && x.getPriority() < cd.getPriority()) {
+										if (priority > x.getPriority()) priority = x.getPriority();
+										x.setPriority(1 + x.getPriority());
+										helper.getHibSession().update(x);
+									}
+								}
+								cd.setPriority(priority);
+								cd.setAlternative(false);
+							}
 							cd.setWaitlist(true);
 							cd.setWaitlistedTimeStamp(ts);
+							cd.setWaitListSwapWithCourseOffering(null);
 							helper.getHibSession().saveOrUpdate(cd);
 							student.addWaitList(
 									CourseOfferingDAO.getInstance().get(r.getCourseId().getCourseId(), helper.getHibSession()),
@@ -453,7 +481,34 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 						if (!r.getRequest().isWaitlist()) {
 							r.getRequest().setWaitListedTimeStamp(ts);
 							r.getRequest().setWaitListSwapWithCourseOffering(null);
-							server.waitlist(r.getRequest(), true);
+							boolean otherRequestsChanged = false;
+							XStudent xs = r.getStudent();
+							// ensure that the dropped course is the first choice
+							XCourseId course = r.getCourseId();
+							int idx = (course == null ? -1 : r.getRequest().getCourseIds().indexOf(course));
+							if (idx > 0) {
+								r.getRequest().getCourseIds().remove(idx);
+								r.getRequest().getCourseIds().add(0, course);
+								otherRequestsChanged = true;
+							}
+							// ensure that the course request is not a substitute
+							if (r.getRequest().isAlternative()) {
+								int priority = r.getRequest().getPriority();
+								for (XRequest x: xs.getRequests()) {
+									if (x.isAlternative() && x.getPriority() < cd.getPriority()) {
+										if (priority > x.getPriority()) priority = x.getPriority();
+										x.setPriority(1 + x.getPriority());
+									}
+								}
+								r.getRequest().setPriority(priority);
+								r.getRequest().setAlternative(false);
+								otherRequestsChanged = true;
+							}
+							if (otherRequestsChanged) {
+								r.getRequest().setWaitlist(true);
+								server.update(xs, true);
+							} else
+								r.setRequest(server.waitlist(r.getRequest(), true));
 						}
 					}
 					

@@ -46,6 +46,7 @@ import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGrad
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -613,8 +614,33 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					}
 					if (r.getRequest().isWaitlist())
 						r.setRequest(server.waitlist(r.getRequest(), false));
-				} else if (!r.getRequest().isAlternative()) { // wait-list
+				} else { // wait-list
 					if (cd != null && !cd.isWaitlist()) {
+						// ensure that the dropped course is the first choice 
+						CourseRequest cr = (r.getCourseId() == null ? null : cd.getCourseRequest(r.getCourseId().getCourseId()));
+						if (cr != null && cr.getOrder() > 0) {
+							for (CourseRequest x: cd.getCourseRequests()) {
+								if (x.getOrder() < cr.getOrder()) {
+									x.setOrder(x.getOrder() + 1);
+									helper.getHibSession().update(x);
+								}
+							}
+							cr.setOrder(0);
+							helper.getHibSession().update(cr);
+						}
+						// ensure that the course request is not a substitute 
+						if (cd.isAlternative()) {
+							int priority = cd.getPriority();
+							for (CourseDemand x: cd.getStudent().getCourseDemands()) {
+								if (x.isAlternative() && x.getPriority() < cd.getPriority()) {
+									if (priority > x.getPriority()) priority = x.getPriority();
+									x.setPriority(1 + x.getPriority());
+									helper.getHibSession().update(x);
+								}
+							}
+							cd.setPriority(priority);
+							cd.setAlternative(false);
+						}
 						cd.setWaitlistedTimeStamp(ts);
 						cd.setWaitlist(true);
 						cd.setWaitListSwapWithCourseOffering(null);
@@ -626,7 +652,34 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					if (!r.getRequest().isWaitlist()) {
 						r.getRequest().setWaitListedTimeStamp(ts);
 						r.getRequest().setWaitListSwapWithCourseOffering(null);
-						r.setRequest(server.waitlist(r.getRequest(), true));
+						boolean otherRequestsChanged = false;
+						XStudent xs = r.getStudent();
+						// ensure that the dropped course is the first choice
+						XCourseId course = r.getCourseId();
+						int idx = (course == null ? -1 : r.getRequest().getCourseIds().indexOf(course));
+						if (idx > 0) {
+							r.getRequest().getCourseIds().remove(idx);
+							r.getRequest().getCourseIds().add(0, course);
+							otherRequestsChanged = true;
+						}
+						// ensure that the course request is not a substitute
+						if (r.getRequest().isAlternative()) {
+							int priority = r.getRequest().getPriority();
+							for (XRequest x: xs.getRequests()) {
+								if (x.isAlternative() && x.getPriority() < cd.getPriority()) {
+									if (priority > x.getPriority()) priority = x.getPriority();
+									x.setPriority(1 + x.getPriority());
+								}
+							}
+							r.getRequest().setPriority(priority);
+							r.getRequest().setAlternative(false);
+							otherRequestsChanged = true;
+						}
+						if (otherRequestsChanged) {
+							r.getRequest().setWaitlist(true);
+							server.update(xs, true);
+						} else
+							r.setRequest(server.waitlist(r.getRequest(), true));
 					}
 				}
 				

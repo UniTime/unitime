@@ -238,4 +238,11 @@ public class CourseDemand extends BaseCourseDemand implements Comparable {
     		return false;
     	}
     }
+    
+    public CourseRequest getCourseRequest(Long courseOfferingId) {
+    	if (courseOfferingId == null || getCourseRequests() == null || getCourseRequests().isEmpty()) return null;
+    	for (CourseRequest cr: getCourseRequests())
+    		if (cr.getCourseOffering().getUniqueId().equals(courseOfferingId)) return cr;
+    	return null;
+    }
 }
