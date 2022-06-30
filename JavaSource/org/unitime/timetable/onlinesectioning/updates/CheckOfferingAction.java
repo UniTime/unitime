@@ -571,7 +571,8 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 			}
 		}
 		if (!offering.isAllowOverlap(student, request.getEnrollment().getConfigId(), request.getEnrollment(), sections))
-			for (XRequest r: student.getRequests())
+			for (XRequest r: student.getRequests()) {
+				if (request.getPriority() <= r.getPriority()) continue; // only check time conflicts with courses of higher priority
 				if (r instanceof XCourseRequest && !r.getRequestId().equals(request.getRequestId()) && ((XCourseRequest)r).getEnrollment() != null) {
 					XEnrollment e = ((XCourseRequest)r).getEnrollment();
 					XOffering other = server.getOffering(e.getOfferingId());
@@ -584,6 +585,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 								}
 					}
 				}
+			}
 		if (!server.getConfig().getPropertyBoolean("Enrollment.CanKeepCancelledClass", false))
 			for (XSection section: sections)
 				if (section.isCancelled())
