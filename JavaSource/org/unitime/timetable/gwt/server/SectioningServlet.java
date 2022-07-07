@@ -992,7 +992,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				selectedAssignment = new ClassAssignmentInterface.ClassAssignment();
 				selectedAssignment.setCourseId(course.getCourseId());
 			}
-			Collection<ClassAssignmentInterface> ret = server.execute(server.createAction(ComputeSuggestionsAction.class).forRequest(request).withAssignment(currentAssignment).withSelection(selectedAssignment).withFilter(filter), currentUser(request));
+			Collection<ClassAssignmentInterface> ret = server.execute(server.createAction(ComputeSuggestionsAction.class)
+					.forRequest(request).withAssignment(currentAssignment).withSelection(selectedAssignment).withFilter(filter)
+					.withCanRequire(request.getStudentId() == null || getSessionContext().hasPermissionAnyAuthority(request.getStudentId(), "Student", Right.StudentSchedulingCanRequirePreferences)),
+					currentUser(request));
 			if (ret != null) {
 				boolean canEnroll = server.getAcademicSession().isSectioningEnabled() && request.getStudentId() != null;
 				for (ClassAssignmentInterface ca: ret)

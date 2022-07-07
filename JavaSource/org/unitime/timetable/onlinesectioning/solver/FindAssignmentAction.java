@@ -128,6 +128,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	private CourseRequestInterface iRequest;
 	private Collection<ClassAssignmentInterface.ClassAssignment> iAssignment;
 	private Collection<ClassAssignmentInterface.ClassAssignment> iSpecialRegistration;
+	private boolean iCanRequirePreferences = true;
 	
 	public FindAssignmentAction forRequest(CourseRequestInterface request) {
 		iRequest = request;
@@ -155,6 +156,13 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	public Collection<ClassAssignmentInterface.ClassAssignment> getSpecialRegistration() {
 		return iSpecialRegistration;
 	}
+	
+	public FindAssignmentAction withCanRequire(boolean canRequire) {
+		iCanRequirePreferences = canRequire;
+		return this;
+	}
+	
+	public boolean isCanRequirePreferences() { return iCanRequirePreferences; }
 
 	@Override
 	public List<ClassAssignmentInterface> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
@@ -230,10 +238,10 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			Set<XDistribution> distributions = new HashSet<XDistribution>();
 			if (getAssignment() != null) getRequest().moveActiveSubstitutionsUp();
 			for (CourseRequestInterface.Request c: getRequest().getCourses())
-				addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, getAssignment() != null, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter);
+				addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, getAssignment() != null, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter, isCanRequirePreferences());
 			if (student.getRequests().isEmpty() && !CONSTANTS.allowEmptySchedule()) throw new SectioningException(MSG.exceptionNoCourse());
 			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
-				addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, getAssignment() != null, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter);
+				addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, getAssignment() != null, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter, isCanRequirePreferences());
 			if (helper.isAlternativeCourseEnabled()) {
 				for (Request r: student.getRequests()) {
 					if (r.isAlternative() || !(r instanceof CourseRequest)) continue;
@@ -824,10 +832,14 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	}
 	
 	public static void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, Student student, XStudent originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Set<XDistribution> distributions, boolean hasAssignment, boolean onlineOnlyFilter) {
-		addRequest(server, model, assignment, student, originalStudent, request, alternative, updateFromCache, classTable, distributions, hasAssignment, false, false, null, onlineOnlyFilter);
+		addRequest(server, model, assignment, student, originalStudent, request, alternative, updateFromCache, classTable, distributions, hasAssignment, false, false, null, onlineOnlyFilter, true);
 	}
 	
-	public static void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, Student student, XStudent originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Set<XDistribution> distributions, boolean hasAssignment, boolean excludeInactive, boolean checkDeadline, Integer currentDateIndex, boolean onlineOnlyFilter) {
+	public static void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, Student student, XStudent originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Set<XDistribution> distributions, boolean hasAssignment, boolean onlineOnlyFilter, boolean allowRequiredPrefs) {
+		addRequest(server, model, assignment, student, originalStudent, request, alternative, updateFromCache, classTable, distributions, hasAssignment, false, false, null, onlineOnlyFilter, allowRequiredPrefs);
+	}
+	
+	public static void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, Student student, XStudent originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Set<XDistribution> distributions, boolean hasAssignment, boolean excludeInactive, boolean checkDeadline, Integer currentDateIndex, boolean onlineOnlyFilter, boolean allowRequiredPrefs) {
 		if (request.hasRequestedCourse()) {
 			Vector<Course> cr = new Vector<Course>();
 			Set<Choice> selChoices = new HashSet<Choice>();
@@ -856,7 +868,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							for (Config config: course.getOffering().getConfigs()) {
 								if (config.getInstructionalMethodId() != null && rc.isSelectedIntructionalMethod(config.getInstructionalMethodId())) {
 									selChoices.add(new Choice(config));
-									if (rc.isSelectedIntructionalMethod(config.getInstructionalMethodId(), true)) reqChoices.add(new Choice(config));
+									if (allowRequiredPrefs && rc.isSelectedIntructionalMethod(config.getInstructionalMethodId(), true)) reqChoices.add(new Choice(config));
 								}
 							}
 						}
@@ -866,7 +878,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 									for (Section section: subpart.getSections())
 										if (rc.isSelectedClass(section.getId())) {
 											selChoices.add(new Choice(section));
-											if (rc.isSelectedClass(section.getId(), true)) {
+											if (allowRequiredPrefs && rc.isSelectedClass(section.getId(), true)) {
 												Section s = section;
 												while (s != null) {
 													reqChoices.add(new Choice(s)); s = s.getParent();
