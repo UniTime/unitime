@@ -4042,6 +4042,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						break authorities;
 					}
 				}
+			} else if (user != null && user instanceof AnonymousUserContext) {
+				iRole = Roles.ROLE_ANONYMOUS;
+				iAllowNoRole = true;
 			}
 		}
 
@@ -4059,7 +4062,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			if (Roles.ROLE_STUDENT.equals(authority.getRole())) return true;
 			
 			// allow no role (when no matching student role was found)
-			if (iAllowNoRole && Roles.ROLE_NONE.equals(authority.getRole())) return true;
+			if (iAllowNoRole && (Roles.ROLE_NONE.equals(authority.getRole()) || Roles.ROLE_ANONYMOUS.equals(authority.getRole()))) return true;
 			
 			return false;
 		}

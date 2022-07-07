@@ -2726,7 +2726,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				LoadingWidget.getInstance().hide();
 				clear(changeViewIfNeeded);
 				if (MESSAGES.exceptionNoStudent().equals(caught.getMessage()) && iEligibilityCheck != null &&
-					(iEligibilityCheck.hasFlag(EligibilityFlag.IS_ADMIN, EligibilityFlag.IS_ADVISOR) || iEligibilityCheck.hasMessage())) {
+					(iEligibilityCheck.hasFlag(EligibilityFlag.IS_ADMIN, EligibilityFlag.IS_ADVISOR, EligibilityFlag.IS_GUEST) || iEligibilityCheck.hasMessage())) {
 					// do not show "No student." error for advisors and admins, or when the eligibility check already returned some other message
 				} else {
 					iStatus.error(caught.getMessage(), caught);

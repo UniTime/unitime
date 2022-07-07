@@ -343,7 +343,7 @@ public class MenuBackend implements GwtRpcImplementation<MenuRpcRequest, GwtRpcR
 					return (sessionId == null ? false : sessionContext.hasPermissionAnyAuthority(right, new SimpleQualifier("Session", sessionId)));
 				} else if ("role".equals(authority)) {
 					UserAuthority ua = (sessionContext.isAuthenticated() ? sessionContext.getUser().getCurrentAuthority() : null);
-					String role = (ua != null ? ua.getRole() : null);
+					String role = (ua != null ? ua.getRole() : Roles.ROLE_ANONYMOUS);
 					return (role == null ? false : sessionContext.hasPermissionAnyAuthority(right, new SimpleQualifier("Role", role)));
 				} else if ("any".equals(authority)) {
 					return sessionContext.hasPermissionAnyAuthority(right);
