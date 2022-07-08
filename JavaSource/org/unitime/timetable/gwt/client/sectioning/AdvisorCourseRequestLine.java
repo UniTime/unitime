@@ -227,6 +227,7 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 	public void insert(FlexTable table, int row) {
 		table.setWidget(row, 0, iP);
 		table.getFlexCellFormatter().setColSpan(row, 0, 2);
+		table.getFlexCellFormatter().getElement(row, 0).getStyle().setProperty("max-width", 400, Unit.PX);
 		table.setWidget(row, 1, iCredit);
 		table.getFlexCellFormatter().getElement(row, 1).getStyle().setWidth(45, Unit.PX);
 		table.setWidget(row, 2, iNotes);
@@ -236,6 +237,8 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 			table.setWidget(row, 3, iCritical);
 			table.setWidget(row, 4, iWaitList);
 			table.setWidget(row, 5, iButtons);
+			table.getFlexCellFormatter().getElement(row, 3).getStyle().setProperty("max-width", 25, Unit.PX);
+			table.getFlexCellFormatter().getElement(row, 4).getStyle().setProperty("max-width", 25, Unit.PX);
 			table.getFlexCellFormatter().getElement(row, 5).getStyle().setWidth(75, Unit.PX);
 		} else {
 			table.setWidget(row, 3, iButtons);
