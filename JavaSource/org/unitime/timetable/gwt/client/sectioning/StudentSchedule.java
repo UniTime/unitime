@@ -1305,7 +1305,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 	
 	public void fillInWaitLists() {
 		iWaitLists.clearTable(1);
-		if (iAssignment != null && iAssignment.hasRequest()) {
+		if (iAssignment != null && iAssignment.hasRequest() && iAssignment.getRequest().getWaitListMode() == WaitListMode.WaitList) {
 			NumberFormat df = NumberFormat.getFormat("0.#");
 			boolean hasSwap = false;
 			boolean hasPosition = false;
@@ -1446,7 +1446,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 					}
 				}
 			}
-			if (iAssignment.getRequest().hasMaxCreditOverride()) {
+			if (iAssignment.getRequest().hasMaxCreditOverride() && iAssignment.getRequest().getRequestId() != null) {
 				P p = new P("icons");
 				String style = "pending";
 				if (iAssignment.getRequest().getMaxCreditOverrideStatus() != null) {

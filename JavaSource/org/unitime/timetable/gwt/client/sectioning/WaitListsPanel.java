@@ -305,7 +305,7 @@ public class WaitListsPanel extends P {
 					}
 				}
 			}
-			if (iRequests.hasMaxCreditOverride()) {
+			if (iRequests.hasMaxCreditOverride() && iRequests.getRequestId() != null) {
 				P p = new P("icons");
 				String style = "pending";
 				if (iRequests.getMaxCreditOverrideStatus() != null) {
