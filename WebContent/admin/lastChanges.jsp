@@ -17,72 +17,68 @@
  * limitations under the License.
  * 
  --%>
-<%@ page language="java" autoFlush="true"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/> 
+<s:form action="lastChanges">
+ 
 <script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
-<tiles:importAttribute />
-<html:form action="/lastChanges">
-	<script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-	<TR>
-		<TD>Department:</TD>
-		<TD>
-			<html:select property="departmentId">
-				<html:option value="-1">All Departments</html:option>
-				<html:options collection="departments" labelProperty="label" property="uniqueId" />
-			</html:select>
-		</TD>
-	</TR>
-	<TR>
-		<TD>Subject Area:</TD>
-		<TD>
-			<html:select property="subjAreaId">
-				<html:option value="-1">All Subjects</html:option>
-				<html:options collection="subjAreas" labelProperty="subjectAreaAbbreviation" property="uniqueId" />
-			</html:select>
-		</TD>
-	</TR>
-	<TR>
-		<TD>Manager:</TD>
-		<TD>
-			<html:select property="managerId">
-				<html:option value="-1">All Managers</html:option>
-				<html:options collection="managers" labelProperty="name" property="uniqueId" />
-			</html:select>
-		</TD>
-	</TR>
-	<TR>
-		<TD>Number of Changes:</TD>
-		<TD>
-			<html:text property="n" maxlength="5" size="8" />
-		</TD>
-	</TR>
-	<TR>
-		<TD colspan='2' align='right'>
-			<html:submit onclick="displayLoading();" property="op" value="Apply"/>
-			<html:submit property="op" value="Export PDF"/>
-			<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh"/>
-		</TD>
-	</TR>
+ 	<script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
+	<table class="unitime-MainTable">
+		<tr>	
+		<th nowrap="nowrap" align="right"><loc:message name="filterDepartment"/></th>
+		<td>
+			<s:select name="form.departmentId" list="%{#request.departments}" listKey="uniqueId" listValue="label"/>
+		</td>
+		</tr>
+		<tr>	
+		<th nowrap="nowrap" align="right"><loc:message name="filterSubjectArea"/></th>
+		<td>
+			<s:select name="form.subjAreaId" list="%{#request.subjAreas}" listKey="uniqueId" listValue="subjectAreaAbbreviation"/>
+		</td>
+		</tr>
+
+		<tr>	
+		<th nowrap="nowrap" align="right"><loc:message name="filterManager"/></th>
+		<td>
+			<s:select name="form.managerId" list="%{#request.managers}" listKey="uniqueId" listValue="name"/>
+		</td>
+		</tr>
+
+		<tr>	
+		<th nowrap="nowrap" align="right"><loc:message name="filterNumberOfChanges"/></th>
+		<td>
+			<s:textfield name="form.n" size="8" maxlength="5" type="number" min="1" title="%{#msg.filterNumberOfChanges()}"/>
+		</td>
+		</tr>
+
+		<tr>
+			<td colspan="2" align="right" style="padding-left: 20px;" width="100%;">
+				<s:submit name='form.op' value="%{#msg.buttonApply()}"/>
+				<s:submit name='form.op' value="%{#msg.buttonRefresh()}"/>
+				<s:submit name='form.op' value="%{#msg.buttonExportPDF()}"/>
+			</td>
+		</tr>
 	</TABLE>
 	<script language="JavaScript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
-		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-			<TR>
-				<TD colspan='2' align='right'>
-					<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh"/>
-					<html:submit property="op" value="Export PDF"/>
-				</TD>
-			</TR>
+	<table class="unitime-MainTable">
+		<tr>
+			<td align="right" style="padding-left: 20px;" width="100%;">
+				<s:submit name='form.op' value="%{#msg.buttonRefresh()}"/>
+				<s:submit name='form.op' value="%{#msg.buttonExportPDF()}"/>
+			</td>
+		</tr>
 		</TABLE>
 	<script language="JavaScript">blEndCollapsed('dispFilter');</script>
 
 	<BR><BR>
 
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-		<%=request.getAttribute("table")%>
-	</TABLE>
-</html:form>
+	<s:if test="#request.table != null">
+		<table class="unitime-MainTable" style="padding-top: 20px;">
+			<s:property value="%{#request.table}" escapeHtml="false"/>
+		</table>
+	</s:if>
+	
+ </s:form></loc:bundle>

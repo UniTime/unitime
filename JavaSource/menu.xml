@@ -816,7 +816,7 @@
 					<hasPermission name="SessionRollForward"/>
 				</condition>
 			</item>
-			<item name="Change Log" page="lastChanges.do">
+			<item name="Change Log" page="lastChanges.action">
 				<condition>
 					<hasPermission name="LastChanges"/>
 				</condition>

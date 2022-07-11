@@ -70,7 +70,6 @@
       <form-bean name="chameleonForm" type="org.unitime.timetable.form.ChameleonForm" />
       <form-bean name="inquiryForm" type="org.unitime.timetable.form.InquiryForm" />
       <form-bean name="exactTimeEditForm" type="org.unitime.timetable.form.ExactTimeEditForm" />
-      <form-bean name="lastChangesForm" type="org.unitime.timetable.form.LastChangesForm" />
       <form-bean name="rollForwardSessionForm" type="org.unitime.timetable.form.RollForwardSessionForm" />
       <form-bean name="deptStatusTypeEditForm" type="org.unitime.timetable.form.DeptStatusTypeEditForm" />
       <form-bean name="userEditForm" type="org.unitime.timetable.form.UserEditForm" />
@@ -1048,19 +1047,6 @@
        <forward 
        		name="display" 
        		path="exactTimeEditTile" />
-    </action>
-
-    <action
-       path="/lastChanges"
-       type="org.springframework.web.struts.DelegatingActionProxy"
-       attribute="lastChangesForm"
-       input="lastChangesTile"
-       name="lastChangesForm"
-       scope="request"
-       validate="false" >
-       <forward 
-       		name="display" 
-       		path="lastChangesTile" />
     </action>
 
     <action

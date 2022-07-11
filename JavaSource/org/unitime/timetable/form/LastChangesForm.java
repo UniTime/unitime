@@ -21,26 +21,19 @@ package org.unitime.timetable.form;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
+import org.unitime.timetable.action.UniTimeAction;
 
 /** 
  * @author Tomas Muller
  */
-public class LastChangesForm extends ActionForm {
+public class LastChangesForm implements UniTimeForm {
 	private static final long serialVersionUID = 3633681949556250656L;
 	private String iOp;
     private int iN;
     private Long iDepartmentId, iSubjAreaId, iManagerId;
 
-	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-		ActionErrors errors = new ActionErrors();
-        
-		return errors;
-	}
-
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
+    @Override
+	public void reset() {
 		iOp = null; 
         iN = 100;
         iDepartmentId = Long.valueOf(-1);
@@ -48,6 +41,11 @@ public class LastChangesForm extends ActionForm {
         iManagerId = Long.valueOf(-1);
 	}
 	
+	@Override
+	public void validate(UniTimeAction action) {
+		
+	}
+
 	public String getOp() { return iOp; }
 	public void setOp(String op) { iOp = op; }
     public int getN() { return iN; }
@@ -82,5 +80,6 @@ public class LastChangesForm extends ActionForm {
         else
             request.getSession().setAttribute("LastChanges.ManagerId", getManagerId());
     }
+
 }
 

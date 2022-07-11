@@ -23,6 +23,8 @@ import org.unitime.timetable.action.ClassAssignmentsReportSearchAction;
 import org.unitime.timetable.action.ClassSearchAction;
 import org.unitime.timetable.action.InstructionalOfferingSearchAction;
 
+import com.google.gwt.i18n.client.Messages.DefaultMessage;
+
 /**
  * @author Tomas Muller, Zuzana Mullerova
  */
@@ -57,6 +59,15 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("minutes")
 	String filterTimeMinutes();
+	
+	@DefaultMessage("Department:")
+	String filterDepartment();
+	
+	@DefaultMessage("Subject Area:")
+	String filterSubjectArea();
+	
+	@DefaultMessage("Number of Changes:")
+	String filterNumberOfChanges();
 	
 	@DefaultMessage("Parent Class:")
 	String propertyParentClass();
@@ -768,6 +779,21 @@ public interface CourseMessages extends Messages {
 
 	@DefaultMessage("Funding Dept")
 	String columnFundingDept();
+
+	@DefaultMessage("Date")
+	String columnDate();
+
+	@DefaultMessage("Subject")
+	String columnSubject();
+
+	@DefaultMessage("Page")
+	String columnPage();
+
+	@DefaultMessage("Object")
+	String columnObject();
+
+	@DefaultMessage("Operation")
+	String columnOperation();
 
 	@DefaultMessage("Funding Dept:")
 	String propertyFundingDept();
@@ -3066,6 +3092,15 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Not Wait-Listed Courses")
 	String itemWaitListNotWaitListed();
 	
+	@DefaultMessage("All Subjects")
+	String itemAllSubjects();
+
+	@DefaultMessage("All Departments")
+	String itemAllDepartments();
+
+	@DefaultMessage("All Managers")
+	String itemAllManagers();
+
 	@DefaultMessage("{0} is required.")
 	String errorRequiredField(String fieldName);
 	
@@ -3230,4 +3265,14 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Data exchange in progress")
 	String sectionDataExchangeQueue();
+	
+	@DefaultMessage("Export PDF")
+	String buttonExportPDF();
+	
+	@DefaultMessage("Apply")
+	String buttonApply();
+	
+	@DefaultMessage("Refresh")
+	String buttonRefresh();
+	
 }

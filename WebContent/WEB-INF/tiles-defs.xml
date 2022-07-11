@@ -480,10 +480,6 @@
 		<put name="body" value="/admin/exactTimeEdit.jsp" />
   	</definition>
 
-   	<definition	name="lastChangesTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Last Changes"/>
-		<put name="body" value="/admin/lastChanges.jsp" />
-  	</definition>
    	<definition	name="rollForwardSessionTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Roll Forward Session"/>
 		<put name="body" value="/admin/rollForwardSession.jsp" />
