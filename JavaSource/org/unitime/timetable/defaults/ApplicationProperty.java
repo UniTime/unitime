@@ -3077,6 +3077,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Departments: switch the user interface back to the old (Struts-based) subject areas pages")
 	LegacySubjectAreas("unitime.legacy.admin.subjectAreas"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Manage Solvers: compute solver memory usage")
+	ManageSolversComputeMemoryUses("unitime.solvers.memory"),
 
 	;
 
