@@ -3006,6 +3006,10 @@ public enum ApplicationProperty {
 	@Description("Edit Course Offering: external managers can edit course offerings.")
 	PermissionCourseOfferingAllowsExternalEdit("unitime.permissions.courseOfferingAllowExternalEdits"),
 
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Manage Solvers: compute solver memory usage")
+	ManageSolversComputeMemoryUses("unitime.solvers.memory"),
 	;
 
 	String iKey;
