@@ -764,11 +764,20 @@ public class ManageSolversAction extends Action {
            try {
                WebTable.setOrder(sessionContext,"manageSolvers.ord[ONLINE]",request.getParameter("ordo"),1);
                
-               WebTable webTable = new WebTable( 14,
-                       "Manage Online Scheduling Servers", "manageSolvers.do?ordo=%%",
-                       new String[] {"Created", "Session", "Host", "Mode", "Mem", "Assign", "Total", "CompSched", "DistConf", "TimeConf", "FreeConf", "AvgDisb", "Disb[>=10%]", "Operation(s)"},
-                       new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
-                       null );
+               boolean mem = ApplicationProperty.ManageSolversComputeMemoryUses.isTrue();
+               
+               WebTable webTable = (mem ?
+            		   new WebTable( 14,
+            				   "Manage Online Scheduling Servers", "manageSolvers.do?ordo=%%",
+            				   new String[] {"Created", "Session", "Host", "Mode", "Mem", "Assign", "Total", "CompSched", "DistConf", "TimeConf", "FreeConf", "AvgDisb", "Disb[>=10%]", "Operation(s)"},
+            				   new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
+            				   null ) :
+                       new WebTable( 13,
+                    		   "Manage Online Scheduling Servers", "manageSolvers.do?ordo=%%",
+                    		   new String[] {"Created", "Session", "Host", "Mode", "Assign", "Total", "CompSched", "DistConf", "TimeConf", "FreeConf", "AvgDisb", "Disb[>=10%]", "Operation(s)"},
+                               new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
+                               null )
+               			);
                webTable.setRowStyle("white-space:nowrap");
                
                int nrLines = 0;
@@ -817,7 +826,8 @@ public class ManageSolversAction extends Action {
                         			" event.cancelBubble=true;\">";
                        }
                        
-                       webTable.addLine(null, new String[] {
+                       if (mem) {
+                           webTable.addLine(null, new String[] {
                                    (loaded.getTime() <= 0 ? "N/A" : sDF.format(loaded)),
                                    sessionLabel,
                                    solver.getHost() + (solver.isMaster() ? " (master)" : ""),
@@ -847,7 +857,37 @@ public class ManageSolversAction extends Action {
                                    (disb==null?"":disb),
                                    (disb10==null?"":disb10),
                                    null});
-                           nrLines++;
+                       } else {
+                           webTable.addLine(null, new String[] {
+                                   (loaded.getTime() <= 0 ? "N/A" : sDF.format(loaded)),
+                                   sessionLabel,
+                                   solver.getHost() + (solver.isMaster() ? " (master)" : ""),
+                                   mode,
+                                   (assigned==null?"N/A":assigned),
+                                   (totVal==null?"N/A":totVal),
+                                   (compSch==null?"N/A":compSch), 
+                                   (distConf==null?"N/A":distConf),
+                                   (time==null?"N/A":time),
+                                   (free==null?"N/A":free),
+                                   (disb==null?"N/A":disb),
+                                   (disb10==null?"N/A":disb10),
+                                   op},
+                               new Comparable[] {
+                                   loaded,
+                                   sessionLabel,
+                                   solver.getHost(),
+                                   mode, 
+                                   (assigned==null?"":assigned),
+                                   (totVal==null?"":totVal),
+                                   (compSch==null?"":compSch), 
+                                   (distConf==null?"":distConf),
+                                   (time==null?"":time),
+                                   (free==null?"":free),
+                                   (disb==null?"":disb),
+                                   (disb10==null?"":disb10),
+                                   null});                    	   
+                       }
+                       nrLines++;
                    }
                }
                if (nrLines==0)
