@@ -29,6 +29,7 @@ import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
  * @author Tomas Muller
  * @deprecated
  */
+@Deprecated
 public interface SectionUrlProvider {
 
 	public URL getSectionUrl(AcademicSessionInfo session, Long courseId, Section section);

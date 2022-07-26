@@ -30,6 +30,7 @@ import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
  * @author Tomas Muller
  * @deprecated
  */
+@Deprecated
 public interface SectionLimitProvider {
 
 	public int[] getSectionLimit(AcademicSessionInfo session, Long courseId, Section section);

@@ -48,6 +48,7 @@ import org.unitime.timetable.onlinesectioning.custom.SectionUrlProvider;
  * @author Tomas Muller
  * @deprecated
  */
+@Deprecated
 public class PurdueSectionLimitProvider implements SectionLimitProvider, SectionUrlProvider {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private static Log sLog = LogFactory.getLog(PurdueSectionLimitProvider.class);
