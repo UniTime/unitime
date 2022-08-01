@@ -379,6 +379,11 @@
 		<filter-name>Locale Filter</filter-name>
 		<url-pattern>*.rpc</url-pattern>
 	</filter-mapping>
+	
+	<filter-mapping>
+		<filter-name>Locale Filter</filter-name>
+		<url-pattern>*.action</url-pattern>
+	</filter-mapping>
 
 	<filter-mapping>
 		<filter-name>Locale Filter</filter-name>
