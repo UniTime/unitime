@@ -23,106 +23,152 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.action.ActionMessages;
-import org.apache.struts.util.LabelValueBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesDefinitions;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
+import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.SessionAttribute;
-import org.unitime.timetable.form.InstructorSearchForm;
+import org.unitime.timetable.form.BlankForm;
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.ExportUtils;
+import org.unitime.timetable.util.IdValue;
+import org.unitime.timetable.webutil.BackTracker;
+import org.unitime.timetable.webutil.InstructorListBuilder;
+import org.unitime.timetable.webutil.PdfWebTable;
 
 
 /** 
- * MyEclipse Struts
- * Creation date: 10-14-2005
- * 
- * XDoclet definition:
- * @struts:action path="/instructorSearch" name="instructorSearchForm" input="/user/instructorSearch.jsp" scope="request" validate="true"
- * @struts:action-forward name="showInstructorSearch" path="instructorSearchTile"
- *
  * @author Tomas Muller, Zuzana Mullerova
  */
-@Service("/instructorSearch")
-public class InstructorSearchAction extends Action {
-
+@Action(value="instructorSearch", results = {
+	@Result(name = "showSearch", type = "tiles", location = "instructorSearch.tiles"),
+	@Result(name = "showList", type = "tiles", location = "instructorSearch.tiles"),
+	@Result(name = "manageInstructorList", type = "redirect", location = "/instructorListUpdate.do"),
+	@Result(name = "addNewInstructor", type = "redirect", location = "/instructorAdd.do")
+})
+@TilesDefinitions(value = {
+	@TilesDefinition(name = "instructorSearch.tiles", extend =  "baseLayout", putAttributes =  {
+			@TilesPutAttribute(name = "title", value = "Instructors"),
+			@TilesPutAttribute(name = "body", value = "/user/instructorSearch.jsp")
+	}),
+})
+public class InstructorSearchAction extends UniTimeAction<BlankForm> {
+	private static final long serialVersionUID = -7920936708671752660L;
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	private String iDeptId;
 	
-	@Autowired SessionContext sessionContext;
+	public String getDeptId() { return iDeptId; }
+	public void setDeptId(String deptId) { iDeptId = deptId; }
 	
-	// --------------------------------------------------------- Instance Variables
-
-	// --------------------------------------------------------- Methods
-
-	/** 
-	 * Method execute
-	 * @param mapping
-	 * @param form
-	 * @param request
-	 * @param response
-	 * @return ActionForward
-	 */
-	public ActionForward execute(ActionMapping mapping, ActionForm form,
-			HttpServletRequest request, HttpServletResponse response)
-			throws Exception {
-
+	public String execute() {
+		if (MSG.actionManageInstructorList().equals(getOp())) {
+			return "manageInstructorList";
+		}
+		if (MSG.actionAddNewInstructor().equals(getOp())) {
+			return "addNewInstructor";
+		}
+		
 		sessionContext.checkPermission(Right.Instructors);
 
-		InstructorSearchForm instructorSearchForm = (InstructorSearchForm) form;
-
-		Set<Department> departments = setupManagerDepartments(request);
-
-		// Dept code is saved to the session - go to instructor list
-		String deptId = (String)sessionContext.getAttribute(SessionAttribute.DepartmentId);
+		setupManagerDepartments();
 		
-		if ((deptId == null || deptId.isEmpty()) && departments.size() == 1)
-			deptId = departments.iterator().next().getUniqueId().toString();
-		
-		if (deptId == null || deptId.isEmpty() || !sessionContext.hasPermission(deptId, "Department", Right.Instructors)) {
-			return mapping.findForward("showInstructorSearch");
-		} else {
-			instructorSearchForm.setDeptUniqueId(deptId);
-			List instructors = DepartmentalInstructor.findInstructorsForDepartment(Long.valueOf(deptId));
-			if (instructors == null || instructors.isEmpty()) {
-				ActionMessages errors = new ActionMessages();
-				errors.add("searchResult", new ActionMessage("errors.generic", MSG.errorNoInstructorsFoundForDepartment()));
-				saveErrors(request, errors);
-			}
-			return mapping.findForward("instructorList");
+		if (getDeptId() == null || getDeptId().isEmpty())
+			setDeptId((String)sessionContext.getAttribute(SessionAttribute.DepartmentId));
+
+		if (MSG.actionSearchInstructors().equals(getOp()) && (getDeptId() == null || getDeptId().isEmpty())) {
+			addActionError(MSG.errorRequiredDepartment());
 		}
+		
+		if (getDeptId() == null || getDeptId().isEmpty() || !sessionContext.hasPermission(getDeptId(), "Department", Right.Instructors)) {
+			return "showSearch";
+		}
+		
+		sessionContext.setAttribute(SessionAttribute.DepartmentId, getDeptId());
+		
+		WebTable.setOrder(sessionContext,"instructorList.ord",request.getParameter("order"),2);
+		InstructorListBuilder ilb = new InstructorListBuilder();
+		String backId = ("PreferenceGroup".equals(request.getParameter("backType"))?request.getParameter("backId"):null);
+		String tblData = ilb.htmlTableForInstructor(sessionContext, getDeptId(), WebTable.getOrder(sessionContext,"instructorList.ord"), backId);
+		if (tblData == null || tblData.trim().isEmpty()) {
+			addActionError(MSG.errorNoInstructorsFoundInSearch());
+			return "showSearch";
+		} else {
+			request.setAttribute("instructorList", tblData);
+			if (MSG.actionExportPdf().equals(op)) {
+				PdfWebTable table = ilb.pdfTableForInstructor(sessionContext, getDeptId(), true);
+				if (table != null) {
+					try {
+						ExportUtils.exportPDF(table, WebTable.getOrder(sessionContext,"instructorList.ord"), response, "instructors");
+						return null;
+					} catch (Exception e) {
+						addActionError(MSG.exportFailed(e.getMessage()));
+					}
+				}
+			} else if (MSG.actionExportCsv().equals(op)) {
+				PdfWebTable table = ilb.pdfTableForInstructor(sessionContext, getDeptId(), false);
+				if (table != null) {
+					try {
+						ExportUtils.exportCSV(table, WebTable.getOrder(sessionContext,"instructorList.ord"), response, "instructors");
+						return null;
+					} catch (Exception e) {
+						addActionError(MSG.exportFailed(e.getMessage()));
+					}
+				}
+			}
+		}
+		
+		if (getDeptId() != null && !getDeptId().isEmpty()) {
+			Department d = DepartmentDAO.getInstance().get(Long.valueOf(getDeptId()));
+			if (d!=null) {
+				BackTracker.markForBack(
+						request,
+						"instructorSearch.action?deptId="+d.getUniqueId(),
+						MSG.backInstructors(d.getDeptCode()+" - "+d.getName()),
+						true, true
+						);
+			}
+		} else if (sessionContext.getAttribute(SessionAttribute.DepartmentId) != null) {
+			Department d = (new DepartmentDAO()).get(Long.valueOf(sessionContext.getAttribute(SessionAttribute.DepartmentId).toString()));
+			if (d!=null) {
+				BackTracker.markForBack(
+						request,
+						"instructorSearch.action?deptId="+d.getUniqueId(),
+						MSG.backInstructors(d.getDeptCode()+" - "+d.getName()),
+						true, true
+						);
+			}
+		} else {
+			BackTracker.markForBack(
+					request,
+					"instructorSearch.action",
+					MSG.backInstructors2(),
+					true, true
+					);
+		}		
+		return "showList";
 	}
 
 	
-    /**
-     * @return
-     */
-    private Set<Department> setupManagerDepartments(HttpServletRequest request) throws Exception{
+    private Set<Department> setupManagerDepartments() {
     	Set<Department> departments = Department.getUserDepartments(sessionContext.getUser());
 
 		if (departments.isEmpty())
-			throw new Exception(MSG.exceptionNoDepartmentToManage());
+			addActionError(MSG.exceptionNoDepartmentToManage());
 		
-		List<LabelValueBean> labelValueDepts = new ArrayList<LabelValueBean>();
+		List<IdValue> labelValueDepts = new ArrayList<IdValue>();
 		for (Department d: departments)
-			labelValueDepts.add(new LabelValueBean(d.getDeptCode() + "-" + d.getName(), d.getUniqueId().toString()));
+			labelValueDepts.add(new IdValue(d.getUniqueId(), d.getDeptCode() + " - " + d.getName()));
 		
 		if (labelValueDepts.size() == 1)
-			request.setAttribute("deptId", labelValueDepts.get(0).getValue());
+			setDeptId(labelValueDepts.get(0).getId().toString());
 		
 		request.setAttribute(Department.DEPT_ATTR_NAME,labelValueDepts);
-		
 		return departments;
     }
 

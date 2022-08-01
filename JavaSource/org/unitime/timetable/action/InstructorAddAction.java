@@ -82,7 +82,7 @@ public class InstructorAddAction extends InstructorAction {
 		
         // Cancel adding an instructor - Go back to Instructors screen
         if(op.equals(MSG.actionBackToInstructors())) {
-        	response.sendRedirect( response.encodeURL("instructorList.do"));
+        	response.sendRedirect( response.encodeURL("instructorSearch.action"));
         	return null;
         }
         
@@ -101,7 +101,7 @@ public class InstructorAddAction extends InstructorAction {
             errors = frm.validate(mapping, request);
             if(errors.size()==0 && isDeptInstructorUnique(frm, request)) {
 	        	doUpdate(frm, request);
-	        	response.sendRedirect( response.encodeURL("instructorList.do"));
+	        	response.sendRedirect( response.encodeURL("instructorSearch.action"));
 	        	return null;
             } else {
                 if (errors.size()==0) {

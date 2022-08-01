@@ -136,16 +136,6 @@
 		<put name="body" value="/admin/departmentList.jsp" />
   	</definition>
 
- 	<definition	name="instructorSearchTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Instructors"/>
-		<put name="body" value="/user/instructorSearch.jsp" />
-  	</definition>
-
-	<definition	name="instructorListTile" extends="instructorSearchTile">
-		<put name="body2" value="/user/instructorList.jsp" />
-		<put name="action2" value="instructorChange"/>
-  	</definition>
-  	
   	<definition	name="instructorDetailTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Instructor Detail"/>
 		<put name="body" value="/user/instructorDetail.jsp" />

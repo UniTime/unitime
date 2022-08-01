@@ -60,7 +60,7 @@ public class InstructorListBuilder {
     
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
-    public String htmlTableForInstructor(SessionContext context, String deptId, int order, String backId) throws Exception {
+    public String htmlTableForInstructor(SessionContext context, String deptId, int order, String backId) {
         
 		boolean timeVertical = RequiredTimeTable.getTimeGridVertical(context.getUser());
 		boolean gridAsText = RequiredTimeTable.getTimeGridAsText(context.getUser());
@@ -157,7 +157,7 @@ public class InstructorListBuilder {
 			}
 			
 			// Create new table
-			WebTable webTable = new WebTable(headers.length, "", "instructorList.do?order=%%&deptId=" + deptId, headers, aligns, asc);
+			WebTable webTable = new WebTable(headers.length, "", "instructorList.action?order=%%&deptId=" + deptId, headers, aligns, asc);
 			webTable.setRowStyle("white-space:nowrap;");
 			webTable.enableHR("#9CB0CE");
 
@@ -369,7 +369,7 @@ public class InstructorListBuilder {
 		}        
     }
     
-    public PdfWebTable pdfTableForInstructor(SessionContext context, String deptId, boolean canHaveImages) throws Exception {
+    public PdfWebTable pdfTableForInstructor(SessionContext context, String deptId, boolean canHaveImages) {
 		boolean timeVertical = RequiredTimeTable.getTimeGridVertical(context.getUser());
 		boolean gridAsText = RequiredTimeTable.getTimeGridAsText(context.getUser());
 		String timeGridSize = RequiredTimeTable.getTimeGridSize(context.getUser());

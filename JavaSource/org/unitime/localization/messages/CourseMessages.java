@@ -23,8 +23,6 @@ import org.unitime.timetable.action.ClassAssignmentsReportSearchAction;
 import org.unitime.timetable.action.ClassSearchAction;
 import org.unitime.timetable.action.InstructionalOfferingSearchAction;
 
-import com.google.gwt.i18n.client.Messages.DefaultMessage;
-
 /**
  * @author Tomas Muller, Zuzana Mullerova
  */
@@ -3275,4 +3273,6 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Refresh")
 	String buttonRefresh();
 	
+	@DefaultMessage("Export failed: {0}")
+	String exportFailed(String error);
 }

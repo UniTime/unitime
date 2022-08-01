@@ -57,7 +57,7 @@
 				</item>
 			</menu>
 			<separator/>
-			<item name="Instructors" page="instructorSearch.do">
+			<item name="Instructors" page="instructorSearch.action">
 				<condition>
 					<hasPermission name="Instructors"/>
 				</condition>
@@ -378,7 +378,7 @@
 			<condition>
 				<hasPermission name="Examinations"/>
 			</condition>
-			<item name="Instructors" page="instructorSearch.do">
+			<item name="Instructors" page="instructorSearch.action">
 				<condition>
 					<hasPermission name="Instructors"/>
 				</condition>

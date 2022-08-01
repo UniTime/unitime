@@ -102,14 +102,14 @@ public class InstructorListUpdateAction extends Action {
 		
         // Cancel - Go back to Instructors Detail Screen
         if(op != null && op.equals(rsc.getMessage("button.backToInstructorList"))) {
-        	response.sendRedirect( response.encodeURL("instructorList.do"));
+        	response.sendRedirect( response.encodeURL("instructorSearch.action"));
         	return null;
         }
         
         // Update - Update the instructor and go back to Instructor List Screen
         if(op != null && op.equals(rsc.getMessage("button.update")) ) {
 	        update(frm, request);
-	        response.sendRedirect( response.encodeURL("instructorList.do"));
+	        response.sendRedirect( response.encodeURL("instructorSearch.action"));
 	        return null;
         }
 		

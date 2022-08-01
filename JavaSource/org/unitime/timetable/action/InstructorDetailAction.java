@@ -195,7 +195,7 @@ public class InstructorDetailAction extends PreferencesAction {
 	        // Cancel - Go back to Instructors List Screen
 	        if(op.equals(MSG.actionBackToInstructors()) 
 	                && instructorId!=null && instructorId.trim()!="") {
-	        	response.sendRedirect( response.encodeURL("instructorList.do"));
+	        	response.sendRedirect( response.encodeURL("instructorSearch.action"));
 	        	return null;
 	        }
 	        

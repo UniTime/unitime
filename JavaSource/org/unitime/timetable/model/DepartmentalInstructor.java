@@ -280,7 +280,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		return getAllForInstructor(di, di.getDepartment().getSessionId());
 	}
 	
-	public static List<DepartmentalInstructor> findInstructorsForDepartment(Long departmentId) throws Exception {
+	public static List<DepartmentalInstructor> findInstructorsForDepartment(Long departmentId) {
 		return (List<DepartmentalInstructor>) DepartmentalInstructorDAO.getInstance().getSession().createQuery(
 				"from DepartmentalInstructor where department.uniqueId = :departmentId order by lastName, firstName, middleName")
 				.setLong("departmentId", departmentId)
@@ -288,7 +288,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 				.list();
 	}
 	
-	public static List<DepartmentalInstructor> findInstructorsForSession(Long sessionId) throws Exception {
+	public static List<DepartmentalInstructor> findInstructorsForSession(Long sessionId) {
 		return (List<DepartmentalInstructor>) DepartmentalInstructorDAO.getInstance().getSession().createQuery(
 				"from DepartmentalInstructor where department.session.uniqueId = :sessionId order by lastName, firstName, middleName")
 				.setLong("sessionId", sessionId)

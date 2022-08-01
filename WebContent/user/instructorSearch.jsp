@@ -17,106 +17,83 @@
  * limitations under the License.
  * 
 --%>
-<%@ page language="java" autoFlush="true" errorPage="../error.jsp"%>
-<%@ page import="org.unitime.timetable.util.Constants" %>
-<%@ page import="org.unitime.timetable.model.Department" %>
-<%@ page import="org.unitime.timetable.form.InstructorSearchForm" %>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="tiles" uri="http://tiles.apache.org/tags-tiles" %>
 
-<%
-	// Get Form 
-	String frmName = "instructorSearchForm";	
-	InstructorSearchForm frm = (InstructorSearchForm) request.getAttribute(frmName);	
-%>
-	
-<tiles:importAttribute />
-<loc:bundle name="CourseMessages">
-<TABLE border="0" cellspacing="0" cellpadding="3" style="width:100%;">
-	<TR><TD>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+<loc:bundle name="ConstantsMessages" id="CONST"><s:set var="const" value="#attr.CONST"/>
+<s:form action="instructorSearch">
+<table class="unitime-MainTable">
+	<tr><td>
 		<tt:section-header>
 			<tt:section-title>
-				<html:form action="instructorList">
-				<TABLE border="0" cellspacing="0" cellpadding="0" align="right"><TR><TD>
-				<B><loc:message name="propertyDepartment"/></B>
-				</TD><TD style="padding-left: 3px;">
-				<html:select property="deptUniqueId"
-					onchange="displayLoading(); submit()">
-					<loc:bundle name="ConstantsMessages" id="CONST">
-					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><loc:message name="select" id="CONST"/></html:option>
-					</loc:bundle>
-					<html:options collection="<%=Department.DEPT_ATTR_NAME%>" 
-						property="value" labelProperty="label"/>
-				</html:select>
-				</TD><TD style="padding-left: 3px;">
-				<html:submit property='op' onclick="displayLoading();" 
-						accesskey="<%=MSG.accessSearchInstructors() %>" 
-						styleClass="btn" 
-						title="<%=MSG.titleSearchInstructors(MSG.accessSearchInstructors()) %>">
-					<loc:message name="actionSearchInstructors" />
-				</html:submit>
-				</TD></TR></TABLE>
-				</html:form>
+				<div style="padding-right: 3px; display: block; margin-bottom: 3px; vertical-align: bottom; line-height: 25px;">
+				<b><loc:message name="propertyDepartment"/></b>
+				<s:select name="deptId" list="%{#request.deptsList}" listKey="id" listValue="value"
+					headerKey="" headerValue="%{#const.select()}"
+				/>
+				<s:submit name='op' value="%{#msg.actionSearchInstructors()}"
+					title="%{#msg.titleSearchInstructors(#msg.accessSearchInstructors())}"
+					accesskey="%{#msg.accessSearchInstructors()}"/>
+				</div>
 			</tt:section-title>
-			<logic:notEmpty name="<%=frmName%>" property="deptUniqueId">
-			<TABLE border="0" cellspacing="0" cellpadding="0" align="right"><TR>
-				<sec:authorize access="hasPermission(#deptUniqueId, 'Department', 'InstructorsExportPdf')">
-					<TD>
-					<html:form action="instructorList" styleClass="FormWithNoPadding">			
-						<html:submit property="op" styleClass="btn" 
-							accesskey="<%=MSG.accessExportPdf() %>" 
-							title="<%=MSG.titleExportPdf(MSG.accessExportPdf()) %>">
-							<loc:message name="actionExportPdf" />
-						</html:submit>
-					</html:form>
-					</TD>
-					<TD style="padding-left: 3px;">
-					<html:form action="instructorList" styleClass="FormWithNoPadding">			
-						<html:submit property="op" styleClass="btn" 
-							accesskey="<%=MSG.accessExportCsv() %>" 
-							title="<%=MSG.titleExportCsv(MSG.accessExportCsv()) %>">
-							<loc:message name="actionExportCsv" />
-						</html:submit>
-					</html:form>
-					</TD>
+			<s:if test="#request.instructorList != null">
+				<sec:authorize access="hasPermission(#deptId, 'Department', 'InstructorsExportPdf')">
+					<s:submit name='op' value="%{#msg.actionExportPdf()}"
+						title="%{#msg.titleExportPdf(#msg.accessExportPdf())}"
+						accesskey="%{#msg.accessExportPdf()}"/>
+					<s:submit name='op' value="%{#msg.actionExportCsv()}"
+						title="%{#msg.titleExportCsv(#msg.accessExportCsv())}"
+						accesskey="%{#msg.accessExportCsv()}"/>
 				</sec:authorize>
-				<sec:authorize access="hasPermission(#deptUniqueId, 'Department', 'ManageInstructors')">
-					<TD style="padding-left: 3px;">
-					<html:form action="instructorListUpdate" styleClass="FormWithNoPadding">
-						<html:submit onclick="displayLoading();" styleClass="btn"
-							accesskey="<%=MSG.accessManageInstructorList() %>" 
-							title="<%=MSG.titleManageInstructorList(MSG.accessManageInstructorList()) %>">
-							<loc:message name="actionManageInstructorList" />
-						</html:submit>
-					</html:form>
-					</TD>
+			</s:if>
+			<s:if test="deptId != null">
+				<sec:authorize access="hasPermission(#deptId, 'Department', 'ManageInstructors')">
+					<s:submit name='op' value="%{#msg.actionManageInstructorList()}"
+						title="%{#msg.titleManageInstructorList(#msg.accessManageInstructorList())}"
+						accesskey="%{#msg.accessManageInstructorList()}"/>
 				</sec:authorize>
-				<sec:authorize access="hasPermission(#deptUniqueId, 'Department', 'InstructorAdd')">
-					<TD style="padding-left: 3px;">
-					<html:form action="instructorAdd" styleClass="FormWithNoPadding">
-						<html:submit onclick="displayLoading();" styleClass="btn"
-							accesskey="<%=MSG.accessAddNewInstructor() %>" 
-							title="<%=MSG.titleAddNewInstructor(MSG.accessAddNewInstructor()) %>">
-							<loc:message name="actionAddNewInstructor" />
-						</html:submit>
-					</html:form>
-					</TD>
+				<sec:authorize access="hasPermission(#deptId, 'Department', 'InstructorAdd')">
+					<s:submit name='op' value="%{#msg.actionAddNewInstructor()}"
+						title="%{#msg.titleAddNewInstructor(#msg.accessAddNewInstructor())}"
+						accesskey="%{#msg.accessAddNewInstructor()}"/>
 				</sec:authorize>
-			</TR></TABLE>
-			</logic:notEmpty>
+			</s:if>
 		</tt:section-header>
-		</TD></TR>
-		<TR><TD colspan="2" align="center"><html:errors/></TD></TR>
-	</TABLE>
+		</td></tr>
+		<tr><td colspan="2" align="center"><s:actionerror/></td></tr>
+	</table>
+	<s:if test="#request.instructorList != null">
+		<table class="unitime-MainTable" style="padding-top: 20px;">
+			<s:property value="%{#request.instructorList}" escapeHtml="false"/>
+		</table>
+		<table class="unitime-MainTable">
+			<tr><td align="right" class="top-border-solid" style="padding-top: 3px;">
+				<sec:authorize access="hasPermission(#deptId, 'Department', 'InstructorsExportPdf')">
+					<s:submit name='op' value="%{#msg.actionExportPdf()}"
+						title="%{#msg.titleExportPdf(#msg.accessExportPdf())}"
+						accesskey="%{#msg.accessExportPdf()}"/>
+					<s:submit name='op' value="%{#msg.actionExportCsv()}"
+						title="%{#msg.titleExportCsv(#msg.accessExportCsv())}"
+						accesskey="%{#msg.accessExportCsv()}"/>
+				</sec:authorize>
+				<sec:authorize access="hasPermission(#deptId, 'Department', 'ManageInstructors')">
+					<s:submit name='op' value="%{#msg.actionManageInstructorList()}"
+						title="%{#msg.titleManageInstructorList(#msg.accessManageInstructorList())}"
+						accesskey="%{#msg.accessManageInstructorList()}"/>
+				</sec:authorize>
+				<sec:authorize access="hasPermission(#deptId, 'Department', 'InstructorAdd')">
+					<s:submit name='op' value="%{#msg.actionAddNewInstructor()}"
+						title="%{#msg.titleAddNewInstructor(#msg.accessAddNewInstructor())}"
+						accesskey="%{#msg.accessAddNewInstructor()}"/>
+				</sec:authorize>
+			</td></tr>
+		</table>
+	</s:if>
+</s:form>
 </loc:bundle>
-
-<logic:notEmpty name="body2">
-	<script language="javascript">displayLoading();</script>
-	<tiles:insert attribute="body2" />
-	<script language="javascript">hideLoading();</script>
-</logic:notEmpty>
+</loc:bundle>

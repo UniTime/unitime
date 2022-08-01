@@ -36,7 +36,6 @@
 	  <form-bean name="instructionalOfferingListForm" type="org.unitime.timetable.form.InstructionalOfferingListForm" />
 	  <form-bean name="instructionalOfferingConfigEditForm" type="org.unitime.timetable.form.InstructionalOfferingConfigEditForm" />
 	  <form-bean name="schedulingSubpartEditForm" type="org.unitime.timetable.form.SchedulingSubpartEditForm" />
-	  <form-bean name="instructorSearchForm" type="org.unitime.timetable.form.InstructorSearchForm" />
 	  <form-bean name="instructorEditForm" type="org.unitime.timetable.form.InstructorEditForm" />
 	  <form-bean name="mgrSettingsForm" type="org.unitime.timetable.form.ManagerSettingsForm" />
 	  <form-bean name="settingsForm" type="org.unitime.timetable.form.SettingsForm" />
@@ -405,31 +404,6 @@
         	name="displaySubpartDetail" 
         	path="/schedulingSubpartDetail.do" 
         	/>
-      </action>
-      
-      <action
-         attribute="instructorSearchForm"
-         input="/user/instructorSearch.jsp"
-         name="instructorSearchForm"
-         path="/instructorSearch"
-         scope="request"
-         validate="false"
-         type="org.springframework.web.struts.DelegatingActionProxy">
-         <forward name="showInstructorSearch" path="instructorSearchTile" />
-         <forward name="showInstructorList" path="instructorListTile" />
-         <forward name="instructorList" path="/instructorList.do" />
-      </action>
-      <action
-         attribute="instructorSearchForm"
-         input="instructorListTile"
-         name="instructorSearchForm"
-         parameter="op"
-         path="/instructorList"
-         scope="request"
-         validate="false"
-         type="org.springframework.web.struts.DelegatingActionProxy">
-         <forward name="showInstructorList" path="instructorListTile" />
-         <forward name="showInstructorSearch" path="/instructorSearch.do" />
       </action>
       
       <action
@@ -831,19 +805,6 @@
     </action>
 
     <action
-      attribute="instructorSearchForm"
-      input="instructorListTile"
-      name="instructorSearchForm"
-      parameter="doit"
-      path="/instructorChange"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false">
-      <forward name="showInstructorList" path="instructorListTile" />
-      <forward name="showInstructorSearch" path="instructorSearchTile" />
-    </action>
-
-    <action
       attribute="datePatternEditForm"
       input="datePatternsTile"
       name="datePatternEditForm"
@@ -907,7 +868,7 @@
       validate="false" >
       <forward name="showEdit" path="instructorInfoEditTile" />
       <forward name="showDetail" path="/instructorDetail.do" />
-      <forward name="showList" path="/instructorSearch.do" />
+      <forward name="showList" path="/instructorSearch.action" />
     </action>
     <action
       attribute="instructorEditForm"
