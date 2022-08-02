@@ -840,28 +840,6 @@
     </action>
     <action
       attribute="instructorEditForm"
-      input="/user/instructorAdd.jsp"
-      name="instructorEditForm"
-      path="/instructorAdd"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false" >
-      <forward name="showAdd" path="instructorAddTile" />
-    </action>
-    <action
-      attribute="instructorEditForm"
-      input="/user/instructorInfoEdit.jsp"
-      name="instructorEditForm"
-      path="/instructorInfoEdit"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false" >
-      <forward name="showEdit" path="instructorInfoEditTile" />
-      <forward name="showDetail" path="/instructorDetail.action" />
-      <forward name="showList" path="/instructorSearch.action" />
-    </action>
-    <action
-      attribute="instructorEditForm"
       input="/user/instructorPrefsEdit.jsp"
       name="instructorEditForm"
       path="/instructorPrefEdit"

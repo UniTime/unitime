@@ -50,7 +50,7 @@ import org.unitime.timetable.webutil.PdfWebTable;
 	@Result(name = "showSearch", type = "tiles", location = "instructorSearch.tiles"),
 	@Result(name = "showList", type = "tiles", location = "instructorSearch.tiles"),
 	@Result(name = "manageInstructorList", type = "redirect", location = "/instructorListUpdate.do"),
-	@Result(name = "addNewInstructor", type = "redirect", location = "/instructorAdd.do")
+	@Result(name = "addNewInstructor", type = "redirect", location = "/instructorAdd.action")
 })
 @TilesDefinitions(value = {
 	@TilesDefinition(name = "instructorSearch.tiles", extend =  "baseLayout", putAttributes =  {

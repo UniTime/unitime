@@ -136,18 +136,6 @@
 		<put name="body" value="/admin/departmentList.jsp" />
   	</definition>
 
-  	<definition	name="instructorInfoEditTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Edit Instructor"/>
-		<put name="body" value="/user/instructorInfoEdit.jsp" />
-		<put name="showNavigation" value="true" />
-		<put name="checkRole" value="false" />
-  	</definition>  
-  	
-  	<definition	name="instructorAddTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Add Instructor"/>
-		<put name="body" value="/user/instructorAdd.jsp" />
-  	</definition> 
-  	
   	<definition	name="instructorPrefsEditTile" extends="pageLayoutDef">
 	  	<put name="onLoadFunction" type="string" value="onLoad='jumpToAnchor()'" />
 		<put name="title" type="string" value="Instructor Preferences"/>

@@ -22,22 +22,14 @@ package org.unitime.timetable.action;
 import java.util.HashSet;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
 import org.hibernate.Query;
 import org.hibernate.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.InstructorEditForm;
 import org.unitime.timetable.interfaces.ExternalUidLookup;
 import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
@@ -50,8 +42,8 @@ import org.unitime.timetable.model.Staff;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.StaffDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.NameFormat;
 
 
 /**
@@ -59,73 +51,54 @@ import org.unitime.timetable.util.Constants;
  *
  * @author Tomas Muller, Zuzana Mullerova, Heston Fernandes, Stephanie Schluttenhofer
  */
-public class InstructorAction extends Action {
+public class InstructorAction extends UniTimeAction<InstructorEditForm> {
+	private static final long serialVersionUID = -3849156971109264456L;
 
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
-	@Autowired SessionContext sessionContext;
-	
-	/** 
-	 * Method execute
-	 * @param mapping
-	 * @param form
-	 * @param request
-	 * @param response
-	 * @return ActionForward
-	 */
-	public ActionForward execute(
-		ActionMapping mapping,
-		ActionForm form,
-		HttpServletRequest request,
-		HttpServletResponse response) throws Exception {
-	
-		InstructorEditForm frm = (InstructorEditForm) form;
+	public String execute() throws Exception {
+		if (form == null)
+			form = new InstructorEditForm();
+
+		form.setPosType(request);
+
+		form.setNameFormat(NameFormat.fromReference(sessionContext.getUser().getProperty(UserProperty.NameFormat)));
 		
-		frm.setLookupEnabled(ApplicationProperty.InstructorExternalIdLookup.isTrue() && ApplicationProperty.InstructorExternalIdLookupClass.value() != null);
+		form.setLookupEnabled(ApplicationProperty.InstructorExternalIdLookup.isTrue() && ApplicationProperty.InstructorExternalIdLookupClass.value() != null);
+		
+		if (op == null) op = form.getOp();
+		else form.setOp(op);
 
 		return null;
 	}
 	
-	/**
-	 * Fills form with selected staff record info
-     * @param frm
-     * @param request
-     */
-    protected void fillStaffInfo(
-            InstructorEditForm frm, 
-            HttpServletRequest request) throws Exception {
-        
-        Staff staff = new StaffDAO().get(Long.valueOf(frm.getSearchSelect()));
-        frm.setPuId(staff.getExternalUniqueId());
-        frm.setFname(staff.getFirstName()!=null ? staff.getFirstName().trim() : "");
-        frm.setMname(staff.getMiddleName()!=null ? staff.getMiddleName().trim() : "");
-        frm.setLname(staff.getLastName()!=null ? staff.getLastName().trim() : "");
-        frm.setTitle(staff.getAcademicTitle() != null ? staff.getAcademicTitle().trim() : "");
-        frm.setEmail(staff.getEmail());
-        if (staff.getPositionType() != null &&  (frm.getPosType() == null || frm.getPosType().trim().length() == 0))
-        	frm.setPosType(staff.getPositionType().getUniqueId().toString());
+    protected void fillStaffInfo() throws Exception {
+        Staff staff = new StaffDAO().get(Long.valueOf(form.getSearchSelect()));
+        form.setPuId(staff.getExternalUniqueId());
+        form.setFname(staff.getFirstName()!=null ? staff.getFirstName().trim() : "");
+        form.setMname(staff.getMiddleName()!=null ? staff.getMiddleName().trim() : "");
+        form.setLname(staff.getLastName()!=null ? staff.getLastName().trim() : "");
+        form.setTitle(staff.getAcademicTitle() != null ? staff.getAcademicTitle().trim() : "");
+        form.setEmail(staff.getEmail());
+        if (staff.getPositionType() != null &&  (form.getPosType() == null || form.getPosType().trim().length() == 0))
+        	form.setPosType(staff.getPositionType().getUniqueId().toString());
     }
 
     /**
      * Fills form with selected i2a2 info
-     * @param frm
-     * @param request
      */
-    protected void fillI2A2Info(
-            InstructorEditForm frm, 
-            HttpServletRequest request) throws Exception {
-        
-	    String login = frm.getCareerAcct();
-	    if (login!=null && login.trim().length()>0 && frm.getLookupEnabled()) {
-	    	UserInfo results = lookupInstructor(frm);
+    protected void fillI2A2Info() throws Exception {
+	    String login = form.getCareerAcct();
+	    if (login!=null && login.trim().length()>0 && form.getLookupEnabled()) {
+	    	UserInfo results = lookupInstructor();
 	    	if (results != null) {
-				frm.setPuId(results.getExternalId());
-				frm.setCareerAcct(results.getUserName());
-				frm.setFname(results.getFirstName());
-				frm.setMname(results.getMiddleName());
-				frm.setLname(results.getLastName());
-	    		frm.setEmail(results.getEmail());
-	    		frm.setTitle(results.getAcademicTitle());
+				form.setPuId(results.getExternalId());
+				form.setCareerAcct(results.getUserName());
+				form.setFname(results.getFirstName());
+				form.setMname(results.getMiddleName());
+				form.setLname(results.getLastName());
+	    		form.setEmail(results.getEmail());
+	    		form.setTitle(results.getAcademicTitle());
 	    	}
 	    }	    
     }
@@ -133,59 +106,50 @@ public class InstructorAction extends Action {
     /**
 	 * Searches STAFF for matches on name / career account
 	 * Searches I2A2 for matching career account
-	 * @param frm
-	 * @param request
-	 * @throws Exception
 	 */
-    protected void findMatchingInstructor(
-	        InstructorEditForm frm, 
-	        HttpServletRequest request) throws Exception {
+    protected void findMatchingInstructor() throws Exception {
 	    
-	    frm.setMatchFound(Boolean.valueOf(false));
-	    String fname = frm.getFname();
-	    String lname = frm.getLname();
-	    String login = frm.getCareerAcct();
+	    form.setMatchFound(Boolean.valueOf(false));
+	    String fname = form.getFname();
+	    String lname = form.getLname();
+	    String login = form.getCareerAcct();
 
 	    // Check I2A2
-	    if (login!=null && login.trim().length()>0 && frm.getLookupEnabled()) {
-	    	UserInfo results = lookupInstructor(frm);
+	    if (login!=null && login.trim().length()>0 && form.getLookupEnabled()) {
+	    	UserInfo results = lookupInstructor();
 	    	if (results!=null) {
-				frm.setI2a2Match(results);
-	    		frm.setMatchFound(Boolean.TRUE);
+				form.setI2a2Match(results);
+	    		form.setMatchFound(Boolean.TRUE);
 	    	}
 	    }
 	    
 	    // Check Staff
 	    List staffList = Staff.findMatchingName(fname, lname);
-	    frm.setStaffMatch(staffList);
+	    form.setStaffMatch(staffList);
 
 	    if (staffList!=null && staffList.size()>0)
-            frm.setMatchFound(Boolean.valueOf(true));
+            form.setMatchFound(Boolean.valueOf(true));
 	}
 
     /**
      * Lookup instructor details 
-     * @param frm
      */
-    private UserInfo lookupInstructor(InstructorEditForm frm) throws Exception {
-        String id = frm.getCareerAcct();
-        if (id!=null && id.trim().length()>0 && frm.getLookupEnabled().booleanValue()) {
+    private UserInfo lookupInstructor() throws Exception {
+        String id = form.getCareerAcct();
+        if (id!=null && id.trim().length()>0 && form.getLookupEnabled().booleanValue()) {
         	String className = ApplicationProperty.InstructorExternalIdLookupClass.value(); 
         	ExternalUidLookup lookup = (ExternalUidLookup) (Class.forName(className).getDeclaredConstructor().newInstance());
        		return lookup.doLookup(id);
         }
-        return null;
+        
+	    return null;
     }
 
     
 	/**
 	 * Inserts / Updates Instructor Info
-	 * @param frm
-	 * @param request
 	 */
-	protected void doUpdate(
-	        InstructorEditForm frm, 
-	        HttpServletRequest request) throws Exception {
+	protected void doUpdate() throws Exception {
 	    
 		DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
 		org.hibernate.Session hibSession = idao.getSession();
@@ -195,7 +159,7 @@ public class InstructorAction extends Action {
 			tx = hibSession.beginTransaction();
 			
 			DepartmentalInstructor inst = null;
-			String instrId = frm.getInstructorId();
+			String instrId = form.getInstructorId();
 			
 			if (instrId!=null && instrId.trim().length()>0) {
 			    inst = new DepartmentalInstructorDAO().get(Long.valueOf(instrId));
@@ -205,48 +169,48 @@ public class InstructorAction extends Action {
 			    inst.setAttributes(new HashSet<InstructorAttribute>());
 			}
 
-			if (frm.getFname() != null && frm.getFname().trim().length()>0) {
-				inst.setFirstName(frm.getFname().trim());
+			if (form.getFname() != null && form.getFname().trim().length()>0) {
+				inst.setFirstName(form.getFname().trim());
 			} else {
 				inst.setFirstName(null);
 			}
 			
-			if (frm.getMname() != null && frm.getMname().trim().length()>0) {
-				inst.setMiddleName(frm.getMname().trim());
+			if (form.getMname() != null && form.getMname().trim().length()>0) {
+				inst.setMiddleName(form.getMname().trim());
 			} else {
 				inst.setMiddleName(null);
 			}
 			
-			inst.setLastName(frm.getLname().trim());
+			inst.setLastName(form.getLname().trim());
 			
-			if (frm.getTitle() != null && frm.getTitle().trim().length()>0) {
-				inst.setAcademicTitle(frm.getTitle().trim());
+			if (form.getTitle() != null && form.getTitle().trim().length()>0) {
+				inst.setAcademicTitle(form.getTitle().trim());
 			} else {
 				inst.setAcademicTitle(null);
 			}
 			
-			if (frm.getPuId() != null && frm.getPuId().trim().length()>0 && !frm.getPuId().equalsIgnoreCase("null")) {
-				inst.setExternalUniqueId(frm.getPuId().trim());
+			if (form.getPuId() != null && form.getPuId().trim().length()>0 && !form.getPuId().equalsIgnoreCase("null")) {
+				inst.setExternalUniqueId(form.getPuId().trim());
 			}
 
-			if (frm.getCareerAcct() != null && frm.getCareerAcct().trim().length()>0) {
-				inst.setCareerAcct(frm.getCareerAcct().trim());
+			if (form.getCareerAcct() != null && form.getCareerAcct().trim().length()>0) {
+				inst.setCareerAcct(form.getCareerAcct().trim());
 			}
 			
-			inst.setEmail(frm.getEmail());
+			inst.setEmail(form.getEmail());
 						
-			if (frm.getPosType() != null && frm.getPosType().trim().length()>0) {
-				PositionType pt = PositionType.findById(Long.valueOf(frm.getPosType().trim()));
+			if (form.getPosType() != null && form.getPosType().trim().length()>0) {
+				PositionType pt = PositionType.findById(Long.valueOf(form.getPosType().trim()));
 				if (pt != null) {
 					inst.setPositionType(pt);
 				}
 			}
 			
-			if (frm.getNote() != null && !frm.getNote().isEmpty()) {
-				if (frm.getNote().length() > 2048)
-					inst.setNote(frm.getNote().substring(0, 2048));
+			if (form.getNote() != null && !form.getNote().isEmpty()) {
+				if (form.getNote().length() > 2048)
+					inst.setNote(form.getNote().substring(0, 2048));
 				else
-					inst.setNote(frm.getNote());
+					inst.setNote(form.getNote());
 			} else 
 				inst.setNote(null);
 			
@@ -261,7 +225,7 @@ public class InstructorAction extends Action {
 			else
 			    throw new Exception("Department Id could not be retrieved from session");
             
-            inst.setIgnoreToFar(Boolean.valueOf(frm.getIgnoreDist()));
+            inst.setIgnoreToFar(Boolean.valueOf(form.getIgnoreDist()));
             
 			hibSession.saveOrUpdate(inst);
 
@@ -291,34 +255,27 @@ public class InstructorAction extends Action {
     /**
      * Checks that combination of Instructor/Dept 
      * does not already exist
-     * @param frm
-     * @return
      */
-    protected boolean isDeptInstructorUnique(
-            InstructorEditForm frm, 
-	        HttpServletRequest request ) {
+    protected boolean isDeptInstructorUnique() {
         
         String query = "from DepartmentalInstructor " +
         				"where externalUniqueId=:puid and department.uniqueId=:deptId";
-        if (frm.getInstructorId()!=null && frm.getInstructorId().trim().length()>0) {
+        if (form.getInstructorId()!=null && form.getInstructorId().trim().length()>0) {
             query += " and uniqueId!=:uniqueId";
         }
         
         DepartmentalInstructorDAO ddao = new DepartmentalInstructorDAO();
         org.hibernate.Session hibSession = ddao.getSession();
         
-		HttpSession httpSession = request.getSession();
-		String deptId = (String) httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME);
+		String deptId = (String) request.getSession().getAttribute(Constants.DEPT_ID_ATTR_NAME);
        
         Query q = hibSession.createQuery(query);
-        q.setString("puid", frm.getPuId().trim());
+        q.setString("puid", form.getPuId().trim());
         q.setLong("deptId", Long.parseLong(deptId));
-        if (frm.getInstructorId()!=null && frm.getInstructorId().trim().length()>0) {
-            q.setLong("uniqueId", Long.parseLong(frm.getInstructorId().trim()));
+        if (form.getInstructorId()!=null && form.getInstructorId().trim().length()>0) {
+            q.setLong("uniqueId", Long.parseLong(form.getInstructorId().trim()));
         }
         
         return (q.list().size()==0);
     }
-
-	
 }

@@ -22,23 +22,15 @@ package org.unitime.timetable.action;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.action.ActionMessages;
-import org.apache.struts.action.ActionRedirect;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.hibernate.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
-import org.unitime.timetable.form.InstructorEditForm;
 import org.unitime.timetable.interfaces.ExternalClassEditAction;
 import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
 import org.unitime.timetable.model.Assignment;
@@ -49,157 +41,131 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.BackTracker;
 
 
 /** 
- * MyEclipse Struts
- * Creation date: 07-20-2006
- * 
- * XDoclet definition:
- * @struts.action path="/instructorInfoEdit" name="instructorEditForm" input="/user/instructorInfoEdit.jsp" scope="request"
- *
  * @author Tomas Muller, Stephanie Schluttenhofer, Zuzana Mullerova
  */
-@Service("/instructorInfoEdit")
+@Action(value = "instructorInfoEdit", results = {
+		@Result(name = "showEdit", type = "tiles", location = "instructorInfoEdit.tiles"),
+		@Result(name = "showDetail", type = "redirect", location = "/instructorDetail.action",
+			params = { "instructorId", "${form.instructorId}" }
+		),
+		@Result(name = "showList", type = "redirect", location = "/instructorSearch.action")
+	})
+@TilesDefinition(name = "instructorInfoEdit.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Edit Instructor"),
+		@TilesPutAttribute(name = "body", value = "/user/instructorInfoEdit.jsp"),
+		@TilesPutAttribute(name = "showNavigation", value = "true"),
+		@TilesPutAttribute(name = "checkRole", value = "false")
+	})
+
 public class InstructorInfoEditAction extends InstructorAction {
+	private static final long serialVersionUID = -4279427823049903910L;
 
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
-	@Autowired SessionContext sessionContext;
-	
-	// --------------------------------------------------------- Instance Variables
-
-	// --------------------------------------------------------- Methods
-
-	/** 
-	 * Method execute
-	 * @param mapping
-	 * @param form
-	 * @param request
-	 * @param response
-	 * @return ActionForward
-	 */
-	public ActionForward execute(
-		ActionMapping mapping,
-		ActionForm form,
-		HttpServletRequest request,
-		HttpServletResponse response) throws Exception {
+	public String execute() throws Exception {
+		super.execute();
 		
-		super.execute(mapping, form, request, response);
-		
-		InstructorEditForm frm = (InstructorEditForm) form;
-				
-		ActionMessages errors = new ActionMessages();
-        
         //Read parameters
         String instructorId = request.getParameter("instructorId");
-        String op = frm.getOp();
+        if (instructorId == null) instructorId = form.getInstructorId();
         
         //Check instructor exists
-        if(instructorId==null || instructorId.trim()=="") 
+        if(instructorId==null || instructorId.isEmpty()) 
             throw new Exception (MSG.exceptionInstructorInfoNotSupplied());
         
 		sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorEdit);
         
-        frm.setInstructorId(instructorId);
+        form.setInstructorId(instructorId);
         
         // Cancel - Go back to Instructors Detail Screen
-        if(op.equals(MSG.actionBackToDetail()) 
-                && instructorId!=null && instructorId.trim()!="") {
+        if (MSG.actionBackToDetail().equals(op) 
+                && instructorId!=null && !instructorId.isEmpty()) {
         	response.sendRedirect( response.encodeURL("instructorDetail.action?instructorId="+instructorId));
         	return null;
         }
         
         // Check ID
-        if(op.equals(MSG.actionLookupInstructor())) {
-            errors = frm.validate(mapping, request);
-            if(errors.size()==0) {
-                findMatchingInstructor(frm, request);
-                if (frm.getMatchFound()==null || !frm.getMatchFound().booleanValue()) {
-                    errors.add("lookup", 
-                            	new ActionMessage("errors.generic", MSG.errorNoMatchingRecordsFound()));
+        if (MSG.actionLookupInstructor().equals(op)) {
+            form.validate(this);
+            if (!hasFieldErrors()) {
+                findMatchingInstructor();
+                if (form.getMatchFound()==null || !form.getMatchFound().booleanValue()) {
+                	addFieldError("lookup", MSG.errorNoMatchingRecordsFound());
                 }
             }
-            
-        	saveErrors(request, errors);
-           	return mapping.findForward("showEdit");
+           	return "showEdit";
         }
         
         //update - Update the instructor and go back to Instructor Detail Screen
-        if((op.equals(MSG.actionUpdateInstructor()) 
-        		|| op.equals(MSG.actionNextInstructor()) 
-        		|| op.equals(MSG.actionPreviousInstructor()))
-                && instructorId!=null && instructorId.trim()!="") {
-            errors = frm.validate(mapping, request);
-            if(errors.size()==0 && isDeptInstructorUnique(frm, request)) {
-	        	doUpdate(frm, request);
+        if ((MSG.actionUpdateInstructor().equals(op) 
+        		|| MSG.actionNextInstructor().equals(op) 
+        		|| MSG.actionPreviousInstructor().equals(op))
+                && instructorId!=null && !instructorId.isEmpty()) {
+        	form.validate(this);
+            if(!hasFieldErrors() && isDeptInstructorUnique()) {
+	        	doUpdate();
 	            
-	        	if (op.equals(MSG.actionNextInstructor())) {
-	            	response.sendRedirect(response.encodeURL("instructorInfoEdit.do?instructorId="+frm.getNextId()));
+	        	if (MSG.actionNextInstructor().equals(op)) {
+	            	response.sendRedirect(response.encodeURL("instructorInfoEdit.action?instructorId="+form.getNextId()));
 	            	return null;
 	        	}
 	            
-	            if (op.equals(MSG.actionPreviousInstructor())) {
-	            	response.sendRedirect(response.encodeURL("instructorInfoEdit.do?instructorId="+frm.getPreviousId()));
+	            if (MSG.actionPreviousInstructor().equals(op)) {
+	            	response.sendRedirect(response.encodeURL("instructorInfoEdit.action?instructorId="+form.getPreviousId()));
 	            	return null;
 	            }
-
-	            ActionRedirect redirect = new ActionRedirect(mapping.findForward("showDetail"));
-	            redirect.addParameter("instructorId", frm.getInstructorId());
-	            return redirect;
+	            return "showDetail";
             } else {
-                if (errors.size()==0) {
-                    errors.add( "uniqueId", 
-                        	new ActionMessage("errors.generic", MSG.errorInstructorIdAlreadyExistsInList()));
+            	if (!hasFieldErrors()) {
+                    addFieldError("uniqueId", MSG.errorInstructorIdAlreadyExistsInList());
             	}
-            	saveErrors(request, errors);            	
             }
         }
 
         // Delete Instructor
-        if(op.equals(MSG.actionDeleteInstructor())) {
-        	doDelete(request, frm);
-        	return mapping.findForward("showList");
+        if (MSG.actionDeleteInstructor().equals(op)) {
+        	doDelete();
+        	return "showList";
         }
 
         // search select
-        if(op.equals(MSG.actionSelectInstructor()) ) {
-            String select = frm.getSearchSelect();            
+        if (MSG.actionSelectInstructor().equals(op)) {
+            String select = form.getSearchSelect();            
             if (select!=null && select.trim().length()>0) {
 	            if (select.equalsIgnoreCase("i2a2")) {
-	                fillI2A2Info(frm, request);
+	                fillI2A2Info();
 	            }
 	            else {
-	                fillStaffInfo(frm, request);
+	                fillStaffInfo();
 	            }
             }
-        	return mapping.findForward("showEdit");
+        	return "showEdit";
         }
         
         //Load form 
-        doLoad(request, frm);
+        doLoad();
                 
         BackTracker.markForBack(
         		request,
-        		"instructorDetail.action?instructorId="+frm.getInstructorId(),
-        		MSG.backInstructor(frm.getName()==null?"null":frm.getName().trim()),
+        		"instructorDetail.action?instructorId="+form.getInstructorId(),
+        		MSG.backInstructor(form.getName()==null?"null":form.getName().trim()),
         		true, false);
 
-        return mapping.findForward("showEdit");
+        return "showEdit";
 	}
 
 	/**
 	 * Deletes instructor
-	 * @param request
-	 * @param frm
 	 */
-	private void doDelete(HttpServletRequest request, InstructorEditForm frm) throws Exception {
+	private void doDelete() throws Exception {
 
-	    String instructorId = frm.getInstructorId();
+	    String instructorId = form.getInstructorId();
 	    DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
 	    
 		sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorDelete);
@@ -278,71 +244,71 @@ public class InstructorInfoEditAction extends InstructorAction {
 	/**
 	 * Loads the non-editable instructor info into the form
 	 * @param request
-	 * @param frm
+	 * @param form
 	 */
-	private void doLoad(HttpServletRequest request, InstructorEditForm frm) {
+	private void doLoad() {
 
-	    String instructorId = frm.getInstructorId();
+	    String instructorId = form.getInstructorId();
 	    DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
         DepartmentalInstructor inst = idao.get(Long.valueOf(instructorId));      
 	    
         // populate form
-		frm.setInstructorId(instructorId);
+		form.setInstructorId(instructorId);
 		
-		frm.setName(Constants.toInitialCase(inst.getFirstName(), "-".toCharArray())+ " " 
+		form.setName(Constants.toInitialCase(inst.getFirstName(), "-".toCharArray())+ " " 
     			+ ((inst.getMiddleName() == null) ?"": Constants.toInitialCase(inst.getMiddleName(), "-".toCharArray()) )+ " " 
     			+ Constants.toInitialCase(inst.getLastName(), "-".toCharArray()));
 
 		if (inst.getFirstName() != null) {
-			frm.setFname(inst.getFirstName().trim());
+			form.setFname(inst.getFirstName().trim());
 		}
 		
 		if (inst.getMiddleName() != null) {
-			frm.setMname(inst.getMiddleName().trim());
+			form.setMname(inst.getMiddleName().trim());
 		}
 		
-		frm.setLname(inst.getLastName().trim());
-		frm.setTitle(inst.getAcademicTitle());
+		form.setLname(inst.getLastName().trim());
+		form.setTitle(inst.getAcademicTitle());
 		
 	    String puid = inst.getExternalUniqueId();
 		if (puid != null) {
-			frm.setPuId(puid);
+			form.setPuId(puid);
 		}
 		
-		frm.setEmail(inst.getEmail());
+		form.setEmail(inst.getEmail());
 		
-		frm.setDeptName(inst.getDepartment().getName().trim());
+		form.setDeptName(inst.getDepartment().getName().trim());
 		
 		if (inst.getPositionType() != null) {
-			frm.setPosType(inst.getPositionType().getUniqueId().toString());
+			form.setPosType(inst.getPositionType().getUniqueId().toString());
 		}
 		
 		if (inst.getCareerAcct() != null && inst.getCareerAcct().length()>0) {
-			frm.setCareerAcct(inst.getCareerAcct().trim());
+			form.setCareerAcct(inst.getCareerAcct().trim());
 		}
 		else {
 			if (puid != null && !puid.isEmpty() && DepartmentalInstructor.canLookupInstructor()) {
 				try {
 					UserInfo user = DepartmentalInstructor.lookupInstructor(puid);
 					if (user != null && user.getUserName() != null)
-						frm.setCareerAcct(user.getUserName());
+						form.setCareerAcct(user.getUserName());
 					else
-						frm.setCareerAcct("");
+						form.setCareerAcct("");
 				} catch (Exception e) {}
 			}
 		}
 		
 		if (inst.getNote() != null) {
-			frm.setNote(inst.getNote().trim());
+			form.setNote(inst.getNote().trim());
 		}
         
-        frm.setIgnoreDist(inst.isIgnoreToFar()==null?false:inst.isIgnoreToFar().booleanValue());
+        form.setIgnoreDist(inst.isIgnoreToFar()==null?false:inst.isIgnoreToFar().booleanValue());
                 
         try {
 			DepartmentalInstructor previous = inst.getPreviousDepartmentalInstructor(sessionContext, Right.InstructorEdit);
-			frm.setPreviousId(previous==null?null:previous.getUniqueId().toString());
+			form.setPreviousId(previous==null?null:previous.getUniqueId().toString());
 			DepartmentalInstructor next = inst.getNextDepartmentalInstructor(sessionContext, Right.InstructorEdit);
-			frm.setNextId(next==null?null:next.getUniqueId().toString());
+			form.setNextId(next==null?null:next.getUniqueId().toString());
 		} catch (Exception e) {
 			Debug.error(e);
 		}

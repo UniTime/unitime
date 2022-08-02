@@ -30,7 +30,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
-import org.apache.struts.util.LabelValueBean;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.action.UniTimeAction;
@@ -38,6 +37,7 @@ import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
 import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.util.IdValue;
+import org.unitime.timetable.util.NameFormat;
 
 
 /** 
@@ -100,6 +100,7 @@ public class InstructorEditForm extends PreferencesForm  {
 	private String teachingPreference;
 	private Map<Long, Boolean> attributes;
 	private List<IdValue> departments;
+	private NameFormat nameFormat;
     
 	// --------------------------------------------------------- Methods
     
@@ -253,11 +254,10 @@ public class InstructorEditForm extends PreferencesForm  {
 		ArrayList list = new ArrayList();
 		
 		for (PositionType pt: PositionType.getPositionTypeList()) {
-			list.add(new LabelValueBean(pt.getLabel().trim(), pt.getUniqueId().toString()));
+			list.add(new IdValue(pt.getUniqueId(), pt.getLabel()));
 		}
 		
 		request.setAttribute(PositionType.POSTYPE_ATTR_NAME, list);
-		
 	}
 
 	/** 
@@ -302,15 +302,13 @@ public class InstructorEditForm extends PreferencesForm  {
 	public void validate(UniTimeAction action) {
 		super.validate(action);
 		
-        if (op.equals(MSG.actionLookupInstructor())) {
+        if (MSG.actionLookupInstructor().equals(op)) {
     		if ( (fname==null || fname.trim().length()==0) 
     		        && (lname==null || lname.trim().length()==0) 
     		        && (careerAcct==null || careerAcct.trim().length()==0) ) {
 				action.addFieldError("fname", MSG.errorSupplyInfoForInstructorLookup());
     		}
-        }
-        
-        if (!screenName.equalsIgnoreCase("instructorPref") ) {
+        } else if (!"instructorPref".equals(screenName)) {
 			if (lname == null || lname.trim().equals("")) {
 				action.addFieldError("Last Name", MSG.errorRequiredLastName());
 			}
@@ -441,5 +439,8 @@ public class InstructorEditForm extends PreferencesForm  {
 	
 	public List<IdValue> getDepartments() { return departments; }
 	public void setDepartments(List<IdValue> departments) { this.departments = departments; }
+	
+	public void setNameFormat(NameFormat format) { nameFormat = format; }
+	public NameFormat getNameFormat() { return nameFormat; }
 }
 

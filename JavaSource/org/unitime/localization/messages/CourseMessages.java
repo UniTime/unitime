@@ -3284,4 +3284,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("ENABLED")
 	String enabled();
+	
+	@DefaultMessage("N/A")
+	String cellNoPositionType();
 }

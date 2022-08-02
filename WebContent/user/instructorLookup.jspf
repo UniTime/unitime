@@ -17,174 +17,127 @@
  * limitations under the License.
  * 
 --%>
-<%@page import="org.unitime.timetable.util.NameFormat"%>
-<%@page import="org.unitime.timetable.defaults.UserProperty"%>
-<%@ page import="org.unitime.timetable.model.Session" %>
-<%@ page import="org.unitime.timetable.model.Staff" %>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
-
-<loc:bundle name="CourseMessages">
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
 <tt:session-context/>
-<bean:parameter id="frmName" name="frmName"/>
-<logic:notEmpty name="<%=frmName%>" property="matchFound">
-			<logic:equal name="<%=frmName%>" property="matchFound" value="true">
-
-				<TR>
-					<TD valign="middle" colspan='2' align='right'>
-						<tt:section-header>		
-							<tt:section-title>	
-								<loc:message name="sectionTitleSearchResults"/>	
-							</tt:section-title>
-							<html:submit property="op" 
-									styleClass="btn" 
-									accesskey="<%=MSG.accessSelectInstructor() %>" 
-									title="<%=MSG.titleSelectInstructor(MSG.accessSelectInstructor()) %>" >
-								<loc:message name="actionSelectInstructor" />
-							</html:submit> 
-							<html:submit property="op" 
-									styleClass="btn" 
-									accesskey="<%=MSG.accessCancel() %>" 
-									title="<%=MSG.titleCancel(MSG.accessCancel()) %>" >
-								<loc:message name="actionCancel" />
-							</html:submit> 
-						</tt:section-header>		
-					</TD>
-				</TR>
-				
-				<logic:notEmpty name="<%=frmName%>" property="i2a2Match">
-				<bean:define id="i2a2" name="<%=frmName%>" property="i2a2Match" />
-				<TR>
-					<TD valign="middle" colspan='2'>
-					&nbsp;
-					</TD>
-				</TR>
-				<TR>
-					<TD valign="middle" colspan='2' class='WelcomeRowHead'>
-					<loc:message name="sectionTitleExternalLookupMatch"/>
-					</TD>
-				</TR>				
-				<TR>
-					<TD valign="middle" colspan='2'>
-						<table align='left' border='0'>
-							<tr>
-								<td></td>
-								<td><i><loc:message name="columnExternalId"/></i></td>
-								<td><i><loc:message name="columnInstructorName"/></i></td>
-								<td><i><loc:message name="columnLogin"/></i></td>
-							</tr>
-							<tr>
-								<td>
-									<html:radio property="searchSelect" value="i2a2"/>
-								</td>
-								<td>
-									<bean:write name="i2a2" property="externalId" /> &nbsp;
-								</td>
-								<td>
-									<bean:write name="i2a2" property="name" /> &nbsp;
-								</td>
-								<td>
-									<bean:write name="i2a2" property="userName" />  
-								</td>
-							</tr>
-						</table>
-					</TD>
-				</TR>
-				</logic:notEmpty>
-				
-				<logic:notEmpty name="<%=frmName%>" property="staffMatch">
-				<TR>
-					<TD valign="middle" colspan='2'>
-					&nbsp;
-					</TD>
-				</TR>
-				<TR>
-					<TD valign="middle" colspan='2' class='WelcomeRowHead'>
-					<loc:message name="sectionTitleStaffFileMatches"/>
-					</TD>
-				</TR>
-				
-				<% 
-					Long sessionId = sessionContext.getUser().getCurrentAcademicSessionId();
-					NameFormat nameFormat = NameFormat.fromReference(sessionContext.getUser().getProperty(UserProperty.NameFormat));
-				 %>
-
-				<TR>
-					<TD valign="middle" colspan='2' class='BottomBorderGray'>
-						<table align='left' border='0'>
-							<tr>
-								<td></td>
-								<td><i><loc:message name="columnExternalId"/></i></td>
-								<td><i><loc:message name="columnInstructorName"/></i></td>
-								<td><i><loc:message name="columnDepartment"/></i></td>
-								<td><i><loc:message name="columnInstructorPosition"/></i></td>
-							</tr>
-							<logic:iterate id="staff" name="<%=frmName%>" property="staffMatch">
-								<bean:define id="staffUid" name="staff" property="uniqueId" />
-								<tr>
-									<td>
-										<html:radio property="searchSelect" value="${staffUid}"/>
-									</td>
-									<td>
-										<bean:write name="staff" property="externalUniqueId" /> &nbsp;
-									</td>
-									<td>
-										<%=nameFormat.format((Staff)staff)%> &nbsp;
-									</td>
-									<td>
-										<%=((Staff)staff).getDeptName(sessionId)%> &nbsp;
-									</td>
-									<td>
-										<logic:notEmpty name="staff" property="positionType">
-											<bean:define id="positionType" name="staff" property="positionType" />
-											<bean:write name="positionType" property="label" />
-										</logic:notEmpty>
-										<logic:empty name="staff" property="positionType">
-											N/A
-										</logic:empty>
-									</td>
-								</tr>
-							</logic:iterate>
-						</table>
-					</TD>
-				</TR>
-				</logic:notEmpty>
-				
-				<TR>
-					<TD valign="middle" colspan='2' class='WelcomeRowHead'>
-					&nbsp;
-					</TD>
-				</TR>
-				
-				<TR>
-					<TD valign="middle" colspan='2' align='right'>
-						<html:hidden name="<%=frmName%>" property="careerAcct" />
-						<html:hidden name="<%=frmName%>" property="fname" />
-						<html:hidden name="<%=frmName%>" property="mname" />
-						<html:hidden name="<%=frmName%>" property="lname" />
-						<html:hidden name="<%=frmName%>" property="posType" />
-						<html:hidden name="<%=frmName%>" property="note" />
-						<html:hidden name="<%=frmName%>" property="deptName" />
-						<html:hidden name="<%=frmName%>" property="puId" />
-						
-						<html:submit property="op" 
-								styleClass="btn" 
-								accesskey="<%=MSG.accessSelectInstructor() %>" 
-								title="<%=MSG.titleSelectInstructor(MSG.accessSelectInstructor()) %>" >
-							<loc:message name="actionSelectInstructor" />
-						</html:submit> 
-						<html:submit property="op" 
-								styleClass="btn" 
-								accesskey="<%=MSG.accessCancel() %>" 
-								title="<%=MSG.titleCancel(MSG.accessCancel()) %>" >
-							<loc:message name="actionCancel" />
-						</html:submit> 
-					</TD>
-				</TR>
-				
-			</logic:equal>
-		</logic:notEmpty>
+<TR>
+	<TD valign="middle" colspan='2' align='right'>
+		<tt:section-header>
+			<tt:section-title>
+				<loc:message name="sectionTitleSearchResults"/>	
+			</tt:section-title>
+			<s:submit accesskey='%{#msg.accessSelectInstructor()}' name='op' value='%{#msg.actionSelectInstructor()}'
+				title='%{#msg.titleSelectInstructor(#msg.accessSelectInstructor())}'/>
+			<s:submit accesskey='%{#msg.accessCancel()}' name='op' value='%{#msg.actionCancel()}'
+				title='%{#msg.titleCancel(#msg.accessCancel())}'/>
+		</tt:section-header>
+	</TD>
+</TR>
+<s:if test="form.i2a2Match != null">
+	<TR>
+		<TD valign="middle" colspan='2'>&nbsp;</TD>
+	</TR>
+	<TR>
+		<TD valign="middle" colspan='2' class='WelcomeRowHead'>
+			<loc:message name="sectionTitleExternalLookupMatch"/>
+		</TD>
+	</TR>				
+	<TR>
+		<TD valign="middle" colspan='2'>
+			<table style="width: 100%;">
+				<tr>
+					<td></td>
+					<td><i><loc:message name="columnExternalId"/></i></td>
+					<td><i><loc:message name="columnInstructorName"/></i></td>
+					<td><i><loc:message name="columnLogin"/></i></td>
+				</tr>
+				<tr>
+					<td>
+						<s:radio name="form.searchSelect" list="#{'i2a2':''}"/>
+					</td>
+					<td>
+						<s:property value="form.i2a2Match.externalId"/>
+					</td>
+					<td>
+						<s:property value="form.i2a2Match.name"/>
+					</td>
+					<td>
+						<s:property value="form.i2a2Match.userName"/>
+					</td>
+				</tr>
+			</table>
+		</TD>
+	</TR>
+</s:if>
+<s:if test="form.staffMatch != null && !form.staffMatch.isEmpty()">
+	<TR>
+		<TD valign="middle" colspan='2'>&nbsp;</TD>
+	</TR>
+	<TR>
+		<TD valign="middle" colspan='2' class='WelcomeRowHead'>
+			<loc:message name="sectionTitleStaffFileMatches"/>
+		</TD>
+	</TR>
+	<c:set var="sessionId" value="${sessionContext.getUser().getCurrentAcademicSessionId()}" scope="page"/>
+	<TR>
+		<TD valign="middle" colspan='2' class='BottomBorderGray'>
+			<table style="width: 100%;">
+				<tr>
+					<td></td>
+					<td><i><loc:message name="columnExternalId"/></i></td>
+					<td><i><loc:message name="columnInstructorName"/></i></td>
+					<td><i><loc:message name="columnDepartment"/></i></td>
+					<td><i><loc:message name="columnInstructorPosition"/></i></td>
+				</tr>
+				<s:iterator value="form.staffMatch" var="staff">
+					<tr>
+						<td>
+							<s:radio name="form.searchSelect" list="#{#staff.uniqueId:''}"/>
+						</td>
+						<td>
+							<s:property value="#staff.externalUniqueId"/>
+						</td>
+						<td>
+							<s:property value="form.nameFormat.format(#staff)"/>
+						</td>
+						<td>
+							<s:property value="#staff.getDeptName(#attr.sessionId)" escapeHtml="false"/>
+						</td>
+						<td>
+							<s:if test="#staff.positionType != null">
+								<s:property value="#staff.positionType.label"/>
+							</s:if>
+							<s:else>
+								<loc:message name="cellNoPositionType"/>
+							</s:else>
+						</td>
+					</tr>
+				</s:iterator>
+			</table>
+		</TD>
+	</TR>
+</s:if>
+<TR>
+	<TD valign="middle" colspan='2' class='WelcomeRowHead'>&nbsp;</TD>
+</TR>
+<TR>
+	<TD valign="middle" colspan='2' align='right'>
+		<s:hidden name="form.careerAcct"/>
+		<s:hidden name="form.fname"/>
+		<s:hidden name="form.mname"/>
+		<s:hidden name="form.lname"/>
+		<s:hidden name="form.posType"/>
+		<s:hidden name="form.note"/>
+		<s:hidden name="form.deptName"/>
+		<s:hidden name="form.puId"/>
+		<s:submit accesskey='%{#msg.accessSelectInstructor()}' name='op' value='%{#msg.actionSelectInstructor()}'
+			title='%{#msg.titleSelectInstructor(#msg.accessSelectInstructor())}'/>
+		<s:submit accesskey='%{#msg.accessCancel()}' name='op' value='%{#msg.actionCancel()}'
+			title='%{#msg.titleCancel(#msg.accessCancel())}'/>
+	</TD>
+</TR>
 </loc:bundle>

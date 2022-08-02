@@ -341,6 +341,7 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
      * @return true if checks ok, false otherwise
      */
     public boolean checkPrefs(List... lst) {
+    	if (lst == null || lst.length == 0 || lst[0] == null) return true;
         
         HashMap map = new HashMap();
         for(int i=0; i<lst[0].size(); i++) {
@@ -369,6 +370,7 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
      * @return true if checks ok, false otherwise
      */
     public boolean checkPrefLevels(List<String> lst, List<String> prefList) {
+    	if (lst == null) return true;
         
         for(int i=0; i<lst.size(); i++) {
             String id = ((String) prefList.get(i));

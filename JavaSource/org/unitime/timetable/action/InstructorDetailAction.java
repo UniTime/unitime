@@ -173,7 +173,7 @@ public class InstructorDetailAction extends PreferencesAction2<InstructorEditFor
         // Edit Information - Redirect to info edit screen
         if (MSG.actionEditInstructor().equals(op)) {
         	sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorEdit);
-        	response.sendRedirect( response.encodeURL("instructorInfoEdit.do?instructorId="+instructorId) );
+        	response.sendRedirect( response.encodeURL("instructorInfoEdit.action?instructorId="+instructorId) );
         	return null;
         }
 	        
