@@ -361,7 +361,7 @@ public class InstructorListBuilder {
 				if (back) line[0] = "<A name=\"back\"></A>" + line[0];
 				
 				// Add to web table
-				webTable.addLine("onClick=\"document.location='instructorDetail.do?instructorId=" + di.getUniqueId() + "&deptId=" + deptId + "';\"", line, cmp);
+				webTable.addLine("onClick=\"document.location='instructorDetail.action?instructorId=" + di.getUniqueId() + "&deptId=" + deptId + "';\"", line, cmp);
 			}
 			
 			String tblData = webTable.printTable(order);

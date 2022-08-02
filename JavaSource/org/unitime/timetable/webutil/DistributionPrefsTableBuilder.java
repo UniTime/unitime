@@ -325,7 +325,7 @@ public class DistributionPrefsTableBuilder {
             
             if (pg instanceof DepartmentalInstructor) {
             	if (context.hasPermission(pg, Right.InstructorDetail))
-            		onClick = "onClick=\"document.location='instructorDetail.do"
+            		onClick = "onClick=\"document.location='instructorDetail.action"
             				+ "?instructorId=" + dp.getOwner().getUniqueId().toString() 
             				+ "&op=Show%20Instructor%20Preferences'\"";
             } else {

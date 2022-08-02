@@ -663,13 +663,13 @@
 	</logic:equal>
 	
 	<logic:equal value="true" parameter="dateAvail">
-		<logic:notEmpty scope="request" name="UnavailableDays.pattern">
+		<logic:notEmpty scope="request" name="unavailableDaysPattern">
 			<tr><td colspan='2'>&nbsp;</td></tr>
 			<tr><td colspan='2'>
 				<tt:section-header title="<%=MSG.sectionTitleUnavailableDates()%>"/>
 			</td></tr>
 			<tr><td colspan='2'>
-				<bean:write name="UnavailableDays.pattern" scope="request" filter="false"/>
+				<bean:write name="unavailableDaysPattern" scope="request" filter="false"/>
 			</td></tr>
 		</logic:notEmpty>
 	</logic:equal>

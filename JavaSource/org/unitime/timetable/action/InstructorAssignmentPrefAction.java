@@ -201,7 +201,7 @@ public class InstructorAssignmentPrefAction extends PreferencesAction {
 		
             BackTracker.markForBack(
             		request,
-            		"instructorDetail.do?instructorId="+frm.getInstructorId(),
+            		"instructorDetail.action?instructorId="+frm.getInstructorId(),
             		MSG.backInstructor(frm.getName()==null?"null":frm.getName().trim()),
             		true, false);
 
@@ -225,7 +225,7 @@ public class InstructorAssignmentPrefAction extends PreferencesAction {
 		frm.setInstructorId(instructorId);
 		
 		if ("Enabled".equalsIgnoreCase(ApplicationProperty.InstructorUnavailbeDays.value()) || "Assignments".equalsIgnoreCase(ApplicationProperty.InstructorUnavailbeDays.value()))
-			request.setAttribute("UnavailableDays.pattern", inst.getUnavailablePatternHtml(true));
+			request.setAttribute("unavailableDaysPattern", inst.getUnavailablePatternHtml(true));
 
 		frm.setName(
 				inst.getName(UserProperty.NameFormat.get(sessionContext.getUser())) + 

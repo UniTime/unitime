@@ -110,7 +110,7 @@ public class InstructorInfoEditAction extends InstructorAction {
         // Cancel - Go back to Instructors Detail Screen
         if(op.equals(MSG.actionBackToDetail()) 
                 && instructorId!=null && instructorId.trim()!="") {
-        	response.sendRedirect( response.encodeURL("instructorDetail.do?instructorId="+instructorId));
+        	response.sendRedirect( response.encodeURL("instructorDetail.action?instructorId="+instructorId));
         	return null;
         }
         
@@ -185,7 +185,7 @@ public class InstructorInfoEditAction extends InstructorAction {
                 
         BackTracker.markForBack(
         		request,
-        		"instructorDetail.do?instructorId="+frm.getInstructorId(),
+        		"instructorDetail.action?instructorId="+frm.getInstructorId(),
         		MSG.backInstructor(frm.getName()==null?"null":frm.getName().trim()),
         		true, false);
 

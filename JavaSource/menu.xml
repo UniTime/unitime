@@ -67,7 +67,7 @@
 					<hasPermission name="InstructorAttributes"/>
 				</condition>
 			</item>
-			<item name="Instructor Detail" page="instructorDetail.do">
+			<item name="Instructor Detail" page="instructorDetail.action">
 				<condition>
 					<hasPermission name="InstructorDetail"/>
 					<not>

@@ -467,7 +467,7 @@ public class InstructionalOfferingDetailAction extends Action {
         String instructorNameFormat = sessionContext.getUser().getProperty(UserProperty.NameFormat);
         for (OfferingCoordinator coordinator: new TreeSet<OfferingCoordinator>(io.getOfferingCoordinators())) {
         	if (!coordinators.isEmpty()) coordinators += "<br>";
-        	coordinators += "<a href='instructorDetail.do?instructorId=" + coordinator.getInstructor().getUniqueId() + "' class='noFancyLinks'>" +
+        	coordinators += "<a href='instructorDetail.action?instructorId=" + coordinator.getInstructor().getUniqueId() + "' class='noFancyLinks'>" +
         			coordinator.getInstructor().getName(instructorNameFormat) +
         			(coordinator.getResponsibility() == null ? 
         					(coordinator.getPercentShare() != 0 ? " (" + coordinator.getPercentShare() + "%)" : "") :

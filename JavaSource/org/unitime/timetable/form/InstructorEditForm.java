@@ -33,6 +33,7 @@ import org.apache.struts.action.ActionMessage;
 import org.apache.struts.util.LabelValueBean;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
 import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -231,11 +232,24 @@ public class InstructorEditForm extends PreferencesForm  {
         attributes = null;
 	}
 	
+	@Override
+	public void reset() {
+		super.reset();
+		instructorId = "";
+		screenName = "instructor";
+        prevId = nextId = null;
+        ignoreDist = false;
+        email = null;
+        teachingPreference = PreferenceLevel.sProhibited;
+        maxLoad = null;
+        attributes = null;
+	}
+	
 	/**
 	 * 
 	 * @param request
 	 */
-	private void setPosType(HttpServletRequest request) {
+	public void setPosType(HttpServletRequest request) {
 		ArrayList list = new ArrayList();
 		
 		for (PositionType pt: PositionType.getPositionTypeList()) {
@@ -282,6 +296,25 @@ public class InstructorEditForm extends PreferencesForm  {
 		} else {
 			return errors;
 		}
+	}
+	
+	@Override
+	public void validate(UniTimeAction action) {
+		super.validate(action);
+		
+        if (op.equals(MSG.actionLookupInstructor())) {
+    		if ( (fname==null || fname.trim().length()==0) 
+    		        && (lname==null || lname.trim().length()==0) 
+    		        && (careerAcct==null || careerAcct.trim().length()==0) ) {
+				action.addFieldError("fname", MSG.errorSupplyInfoForInstructorLookup());
+    		}
+        }
+        
+        if (!screenName.equalsIgnoreCase("instructorPref") ) {
+			if (lname == null || lname.trim().equals("")) {
+				action.addFieldError("Last Name", MSG.errorRequiredLastName());
+			}
+        }
 	}
 
 	/** 

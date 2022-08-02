@@ -310,7 +310,7 @@
 					<logic:iterate scope="request" name="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME%>" id="in">
 						<logic:equal name="in" property="value" value="<%=(String)instructorPref%>">
 							<div style='color:<%=preference.prefcolor()%>' title='<%=preference.getPrefName()%>: <%=((ComboBoxLookup)in).getLabel()%>'
-								onclick="document.location='instructorDetail.do?instructorId=<%=(String)instructorPref%>';"
+								onclick="document.location='instructorDetail.action?instructorId=<%=(String)instructorPref%>';"
 								onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"><B><bean:write name="in" property="label"/></B></div>
 						</logic:equal>
 					</logic:iterate>
@@ -329,9 +329,9 @@
 		</TR>
 	</logic:notEmpty>
 	
-	<logic:notEmpty scope="request" name="UnavailableDays.pattern">
+	<logic:notEmpty scope="request" name="unavailableDaysPattern">
 		<tr><td valign="top" style="padding-top:20px;"><loc:message name="propertyUnavailableDates"></loc:message></td><td>
-			<bean:write name="UnavailableDays.pattern" scope="request" filter="false"/>
+			<bean:write name="unavailableDaysPattern" scope="request" filter="false"/>
 		</td></tr>
 	</logic:notEmpty>
 	

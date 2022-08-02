@@ -367,7 +367,7 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
 	}
 	
     protected String toHtml(TeachingAssignment assignment) {
-    	return "<a href='instructorDetail.do?instructorId=" + assignment.getInstructor().getInstructorId() + "'>" + assignment.getInstructor().getName() + "</a>";
+    	return "<a href='instructorDetail.action?instructorId=" + assignment.getInstructor().getInstructorId() + "'>" + assignment.getInstructor().getName() + "</a>";
     }
     
     protected String toHtml(TeachingRequest request) {

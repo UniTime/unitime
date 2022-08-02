@@ -329,7 +329,7 @@
 						<logic:iterate name="<%=frmName%>" property="instructors" id="instructor" indexId="ctr">
 							<tr onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';" 
 								onmouseout="this.style.backgroundColor='transparent';"
-								onClick="document.location='instructorDetail.do?instructorId=<%=instructor%>';"
+								onClick="document.location='instructorDetail.action?instructorId=<%=instructor%>';"
 							>
 								<td>
 								<logic:iterate scope="request" name="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME%>" id="instr">

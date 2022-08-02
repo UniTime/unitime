@@ -193,7 +193,7 @@ public abstract class SuggestionsPageContext {
 					r.addClickHandler(new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent e) {
-							ToolBox.open("instructorDetail.do?instructorId=" + instructor.getId());
+							ToolBox.open("instructorDetail.action?instructorId=" + instructor.getId());
 						}
 					});
 				add(r);

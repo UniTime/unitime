@@ -30,15 +30,10 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessages;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
@@ -68,13 +63,8 @@ import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.ClassInstructorComparator;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.EventDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.solver.ClassAssignmentProxy;
-import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
-import org.unitime.timetable.solver.service.AssignmentService;
-import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DefaultRoomAvailabilityService;
 import org.unitime.timetable.util.Formats;
@@ -87,355 +77,323 @@ import org.unitime.timetable.webutil.Navigation;
 
 
 /** 
- * MyEclipse Struts
- * Creation date: 07-18-2006
- * 
- * XDoclet definition:
- * @struts.action path="/instructorDetail" name="instructorEditForm" input="/user/instructorDetail.jsp" scope="request"
- *
  * @author Tomas Muller, Zuzana Mullerova, Stephanie Schluttenhofer
  */
-@Service("/instructorDetail")
-public class InstructorDetailAction extends PreferencesAction {
-	
+@Action(value = "instructorDetail", results = {
+		@Result(name = "showInstructorDetail", type = "tiles", location = "instructorDetail.tiles"),
+		@Result(name = "backToInstructors", type = "redirect", location = "/instructorSearch.action")
+	})
+@TilesDefinition(name = "instructorDetail.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Instructor Detail"),
+		@TilesPutAttribute(name = "body", value = "/user/instructorDetail.jsp"),
+		@TilesPutAttribute(name = "showNavigation", value = "true"),
+		@TilesPutAttribute(name = "showSolverWarnings", value = "assignment"),
+		@TilesPutAttribute(name = "checkRole", value = "false")
+	})
+public class InstructorDetailAction extends PreferencesAction2<InstructorEditForm> {
+	private static final long serialVersionUID = -7822668104506918852L;
+
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
-	public static GwtConstants CONST = Localization.create(GwtConstants.class);
+	protected final static GwtConstants CONST = Localization.create(GwtConstants.class);
 	
-	@Autowired SessionContext sessionContext;
+	protected String instructorId = null;
+	protected String op2 = null;
+
+	public String getInstructorId() { return instructorId; }
+	public void setInstructorId(String instructorId) { this.instructorId = instructorId; }
+	public String getOp2() { return op2; }
+	public void setOp2(String op2) { this.op2 = op2; }	
 	
-	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
-	
-	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
+	public String execute() throws Exception{
+		if (form == null) form = new InstructorEditForm();
+		form.setPosType(request);
+		
+		super.execute();
+		
+		//Read parameters
+        if (instructorId == null && request.getAttribute("instructorId") != null)
+        	instructorId = (String)request.getAttribute("instructorId");
+        if (instructorId == null) instructorId = form.getInstructorId();
 
-	// --------------------------------------------------------- Instance Variables
+        if (op == null) op = form.getOp();
+        if (op2 != null && !op2.isEmpty()) op = op2;
+        
+        if (instructorId == null) {
+	    	List<DepartmentalInstructor> instructors = DepartmentalInstructor.getUserInstructors(sessionContext.getUser());
+	    	if (instructors != null) {
+	    		String deptId = (String)request.getSession().getAttribute(Constants.DEPT_ID_ATTR_NAME);
+	    		if (deptId != null)
+	    			for (DepartmentalInstructor i: instructors)
+		    			if (i.getDepartment().getUniqueId().toString().equals(deptId) && sessionContext.hasPermission(i, Right.InstructorDetail)) {
+		    				instructorId = i.getUniqueId().toString();
+		    				break;
+		    			}
+	    		if (instructorId == null)
+		    		for (DepartmentalInstructor i: instructors)
+		    			if (sessionContext.hasPermission(i, Right.InstructorDetail)) {
+		    				instructorId = i.getUniqueId().toString();
+		    				break;
+		    			}
+	    	}
+	    }
+        
+        sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorDetail);
+        
+        // Read instructor id from form
+        if (MSG.actionEditInstructor().equals(op)
+                || MSG.actionEditInstructorPreferences().equals(op)
+                || MSG.actionEditInstructorAssignmentPreferences().equals(op)
+                || MSG.actionBackToInstructors().equals(op)
+//                || MSG.actionDisplayInstructorPreferences().equals(op)
+                || MSG.actionNextInstructor().equals(op)
+                || MSG.actionPreviousInstructor().equals(op)
+                ) {
+        	instructorId = form.getInstructorId();
+        } else {
+        	form.reset();
+        }
+        
+        Debug.debug("op: " + op);
+        Debug.debug("instructor: " + instructorId);
 
-	// --------------------------------------------------------- Methods
-
-	/** 
-	 * Method execute
-	 * @param mapping
-	 * @param form
-	 * @param request
-	 * @param response
-	 * @return ActionForward
-	 */
-	public ActionForward execute(
-		ActionMapping mapping,
-		ActionForm form,
-		HttpServletRequest request,
-		HttpServletResponse response) throws Exception {
-		try {
-			
-	        // Set common lookup tables
-	        super.execute(mapping, form, request, response);
-
-			InstructorEditForm frm = (InstructorEditForm) form;
-//	        MessageResources rsc = getResources(request);
-	        ActionMessages errors = new ActionMessages();
+        // Check instructor exists
+        if (instructorId==null || instructorId.trim().isEmpty())
+        	throw new Exception(MSG.errorNoInstructorId());
 	        
-	        //Read parameters
-	        String instructorId = (request.getParameter("instructorId")==null) 
-							        ? (request.getAttribute("instructorId")==null)
-							                ? null
-							                : request.getAttribute("instructorId").toString()
-									: request.getParameter("instructorId");
+        // Cancel - Go back to Instructors List Screen
+        if (MSG.actionBackToInstructors().equals(op)) {
+        	return "backToInstructors";
+        }
+        
+        // If subpart id is not null - load subpart info
+	    DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
+	    DepartmentalInstructor inst = idao.get(Long.valueOf(instructorId));
+        LookupTables.setupInstructorDistribTypes(request, sessionContext, inst);
+        
+        // Edit Information - Redirect to info edit screen
+        if (MSG.actionEditInstructor().equals(op)) {
+        	sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorEdit);
+        	response.sendRedirect( response.encodeURL("instructorInfoEdit.do?instructorId="+instructorId) );
+        	return null;
+        }
+	        
+        // Edit Preference - Redirect to prefs edit screen
+        if (MSG.actionEditInstructorPreferences().equals(op)) {
+        	sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorPreferences);
+        	response.sendRedirect( response.encodeURL("instructorPrefEdit.do?instructorId="+instructorId) );
+        	return null;
+        }
+        
+        if(MSG.actionEditInstructorAssignmentPreferences().equals(op)) {
+        	sessionContext.checkPermission(inst.getDepartment(), Right.InstructorAssignmentPreferences);
+        	response.sendRedirect( response.encodeURL("instructorAssignmentPref.do?instructorId="+instructorId) );
+        	return null;
+        }
+        
+        if (MSG.actionNextInstructor().equals(op)) {
+        	response.sendRedirect(response.encodeURL("instructorDetail.action?instructorId="+form.getNextId()));
+            return null;
+        }
+        
+        if (MSG.actionPreviousInstructor().equals(op)) {
+        	response.sendRedirect(response.encodeURL("instructorDetail.action?instructorId="+form.getPreviousId()));
+        	return null;
+        }
+        
+        doLoad(inst);
+        
+        BackTracker.markForBack(
+        		request,
+        		"instructorDetail.action?instructorId=" + instructorId,
+        		MSG.backInstructor(form.getName()==null?"null":form.getName().trim()),
+        		true, sessionContext.hasPermission(Right.HasRole) ? false : true);
+	        
 
-		    if (instructorId == null) {
-		    	List<DepartmentalInstructor> instructors = DepartmentalInstructor.getUserInstructors(sessionContext.getUser());
-		    	if (instructors != null) {
-		    		String deptId = (String)request.getSession().getAttribute(Constants.DEPT_ID_ATTR_NAME);
-		    		if (deptId != null)
-		    			for (DepartmentalInstructor i: instructors)
-			    			if (i.getDepartment().getUniqueId().toString().equals(deptId) && sessionContext.hasPermission(i, Right.InstructorDetail)) {
-			    				instructorId = i.getUniqueId().toString();
-			    				break;
-			    			}
-		    		if (instructorId == null)
-			    		for (DepartmentalInstructor i: instructors)
-			    			if (sessionContext.hasPermission(i, Right.InstructorDetail)) {
-			    				instructorId = i.getUniqueId().toString();
-			    				break;
-			    			}
-		    	}
-		    }
+        //load class assignments
+        Set allClasses = new HashSet();
+        for (Iterator i=DepartmentalInstructor.getAllForInstructor(inst, inst.getDepartment().getSession().getUniqueId()).iterator();i.hasNext();) {
+            DepartmentalInstructor di = (DepartmentalInstructor)i.next();
+            allClasses.addAll(di.getClasses());
+        }
+		if (!allClasses.isEmpty()) {
+			boolean hasTimetable = sessionContext.hasPermission(Right.ClassAssignments);
 
-		    sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorDetail);
-	        
-		    String op = frm.getOp();
-	        // boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
-	        
-	        if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0)
-	        	op = request.getParameter("op2");
-
-	        //Check op exists
-	        if(op==null) 
-	            throw new Exception ("Null Operation not supported.");
-	        
-	        // Read instructor id from form
-	        if(op.equals(MSG.actionEditInstructor())
-	                || op.equals(MSG.actionEditInstructorPreferences())
-	                || op.equals(MSG.actionEditInstructorAssignmentPreferences())
-	                || op.equals(MSG.actionBackToInstructors())
-	                || op.equals(MSG.actionDisplayInstructorPreferences())
-	                || op.equals(MSG.actionNextInstructor())
-	                || op.equals(MSG.actionPreviousInstructor())
-	                ) {
-	        	instructorId = frm.getInstructorId();
-	        }else {
-	        	frm.reset(mapping, request);
-	        }
-	        
-	        Debug.debug("op: " + op);
-	        Debug.debug("instructor: " + instructorId);
-	        
-	        //Check instructor exists
-	        if(instructorId==null || instructorId.trim()=="") 
-	            throw new Exception ("Instructor Info not supplied.");
-	        
-	        // Cancel - Go back to Instructors List Screen
-	        if(op.equals(MSG.actionBackToInstructors()) 
-	                && instructorId!=null && instructorId.trim()!="") {
-	        	response.sendRedirect( response.encodeURL("instructorSearch.action"));
-	        	return null;
-	        }
-	        
-	        // If subpart id is not null - load subpart info
-	        DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
-	        DepartmentalInstructor inst = idao.get(Long.valueOf(instructorId));
-	        LookupTables.setupInstructorDistribTypes(request, sessionContext, inst);
-	        
-	        //Edit Information - Redirect to info edit screen
-	        if(op.equals(MSG.actionEditInstructor()) 
-	                && instructorId!=null && instructorId.trim()!="") {
-	        	
-			    sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorEdit);
-
-	        	response.sendRedirect( response.encodeURL("instructorInfoEdit.do?instructorId="+instructorId) );
-	        	return null;
-	        }
-	        
-	        // Edit Preference - Redirect to prefs edit screen
-	        if(op.equals(MSG.actionEditInstructorPreferences()) 
-	                && instructorId!=null && instructorId.trim()!="") {
-	        	
-			    sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorPreferences);
-
-	        	response.sendRedirect( response.encodeURL("instructorPrefEdit.do?instructorId="+instructorId) );
-	        	return null;
-	        }
-	        	        
-	        if(op.equals(MSG.actionEditInstructorAssignmentPreferences()) && instructorId!=null && !instructorId.trim().isEmpty()) {
-	        	
-			    sessionContext.checkPermission(inst.getDepartment(), Right.InstructorAssignmentPreferences);
-
-	        	response.sendRedirect( response.encodeURL("instructorAssignmentPref.do?instructorId="+instructorId) );
-	        	return null;
-	        }
-
-	        if (op.equals(MSG.actionNextInstructor())) {
-            	response.sendRedirect(response.encodeURL("instructorDetail.do?instructorId="+frm.getNextId()));
-            	return null;
-            }
-            
-            if (op.equals(MSG.actionPreviousInstructor())) {
-            	response.sendRedirect(response.encodeURL("instructorDetail.do?instructorId="+frm.getPreviousId()));
-            	return null;
-            }
-	        
-	        // Load form attributes that are constant
-	        doLoad(request, frm, inst, instructorId);
-	        
-	        BackTracker.markForBack(
-	        		request,
-	        		"instructorDetail.do?instructorId=" + instructorId,
-	        		MSG.backInstructor(frm.getName()==null?"null":frm.getName().trim()),
-	        		true, sessionContext.hasPermission(Right.HasRole) ? false : true);
-
-	        //load class assignments
-            Set allClasses = new HashSet();
-            for (Iterator i=DepartmentalInstructor.getAllForInstructor(inst, inst.getDepartment().getSession().getUniqueId()).iterator();i.hasNext();) {
-                DepartmentalInstructor di = (DepartmentalInstructor)i.next();
-                allClasses.addAll(di.getClasses());
-            }
-			if (!allClasses.isEmpty()) {
-				boolean hasTimetable = sessionContext.hasPermission(Right.ClassAssignments);
-
-				WebTable classTable =
-			    	(hasTimetable? 
-			    			new WebTable( 10,
-			    					null,
-			    					new String[] {MSG.columnClass(), MSG.columnInstructorCheckConflicts(), MSG.columnInstructorShare(), MSG.columnTeachingResponsibility(),
-			    							MSG.columnLimit(), MSG.columnEnrollment(), MSG.columnManager(), MSG.columnAssignedTime(), 
-			    							MSG.columnAssignedDatePattern(), MSG.columnAssignedRoom()},
-			    					new String[] {"left", "left","left", "left", "left", "left", "left", "left", "left", "left"},
-			    					null )
-			    	:
-		    			new WebTable( 6,
+			WebTable classTable =
+		    	(hasTimetable? 
+		    			new WebTable( 10,
 		    					null,
 		    					new String[] {MSG.columnClass(), MSG.columnInstructorCheckConflicts(), MSG.columnInstructorShare(), MSG.columnTeachingResponsibility(),
-		    							MSG.columnLimit(), MSG.columnManager()},
-		    					new String[] {"left", "left","left", "left", "left", "left"},
+		    							MSG.columnLimit(), MSG.columnEnrollment(), MSG.columnManager(), MSG.columnAssignedTime(), 
+		    							MSG.columnAssignedDatePattern(), MSG.columnAssignedRoom()},
+		    					new String[] {"left", "left","left", "left", "left", "left", "left", "left", "left", "left"},
 		    					null )
-			    	);
-			    
-			    String backType = request.getParameter("backType");
-			    String backId = request.getParameter("backId");
-						
-				TreeSet classes = new TreeSet(new ClassInstructorComparator(new ClassComparator(ClassComparator.COMPARE_BY_LABEL)));
-				classes.addAll(allClasses);
-				
-				Vector classIds = new Vector(classes.size());
-				
-				//Get class assignment information
-				for (Iterator iterInst = classes.iterator(); iterInst.hasNext();) {
-					ClassInstructor ci = (ClassInstructor) iterInst.next();
-					Class_ c = ci.getClassInstructing();
-					classIds.add(c.getUniqueId());
+		    	:
+	    			new WebTable( 6,
+	    					null,
+	    					new String[] {MSG.columnClass(), MSG.columnInstructorCheckConflicts(), MSG.columnInstructorShare(), MSG.columnTeachingResponsibility(),
+	    							MSG.columnLimit(), MSG.columnManager()},
+	    					new String[] {"left", "left","left", "left", "left", "left"},
+	    					null )
+		    	);
+		    
+		    String backType = request.getParameter("backType");
+		    String backId = request.getParameter("backId");
 					
-					String limitString = "";
-			    	if (!c.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment().booleanValue()) {
-			    		if (c.getExpectedCapacity() != null) {
-			    			limitString = c.getExpectedCapacity().toString();
-			    			if (c.getMaxExpectedCapacity() != null && !c.getMaxExpectedCapacity().equals(c.getExpectedCapacity())){
-			    				limitString = limitString + "-" + c.getMaxExpectedCapacity().toString();
-			    			}
-			    		} else {
-			    			limitString = "0";
-			    			if (c.getMaxExpectedCapacity() != null && c.getMaxExpectedCapacity().intValue() != 0){
-			    				limitString = limitString + "-" + c.getMaxExpectedCapacity().toString();
-			    			}
-			    		}
-			    	}
-			    	
-			    	String enrollmentString = "";
-			    	if (c.getEnrollment() != null) {
-			    		enrollmentString = c.getEnrollment().toString();
-			    	} else {
-			    		enrollmentString = "0";
-			    	}
-			    	
-			    	String managingDept = null;
-			    	if (c.getManagingDept()!=null) {
-			    		Department d = c.getManagingDept();
-			    		managingDept = d.getManagingDeptAbbv();
-			    	}
-			    	
-			    	String assignedTime = "";
-			    	String assignedDate = "";
-			    	String assignedRoom = "";
-			    	ClassAssignmentDetails ca = ClassAssignmentDetails.createClassAssignmentDetails(sessionContext, courseTimetablingSolverService.getSolver(), c.getUniqueId(),false);
-			    	if (ca == null) {
-			    		try {
-			    			Assignment a = classAssignmentService.getAssignment().getAssignment(c);
-			    			if (a.getUniqueId() != null)
-			    				ca = ClassAssignmentDetails.createClassAssignmentDetailsFromAssignment(sessionContext, a.getUniqueId(), false);
-			    		} catch (Exception e) {}
-			    	}
-			    	if (ca != null) {
-			    		if (ca.getAssignedTime() != null) {
-				    		assignedTime = ca.getAssignedTime().toHtml(false, false, true, true);
-				    		assignedDate = ca.getAssignedTime().getDatePatternHtml();
-			    		}
-						if (ca.getAssignedRoom() != null) {
-							for (int i=0;i<ca.getAssignedRoom().length;i++) {
-								if (i>0) assignedRoom += ", ";
-								assignedRoom += ca.getAssignedRoom()[i].toHtml(false,false,true);
-							}
-						}
-			    	}
-			    	String icon = null, bgColor = null, title = null;
-			    	if (!c.isCancelled() && ci.isLead()) {
-			        	Set<Assignment> conflicts = null;
-			        	try { conflicts = classAssignmentService.getAssignment().getConflicts(c.getUniqueId()); } catch (Exception e) {}
-			        	if (conflicts != null && !conflicts.isEmpty()) {
-			        		bgColor = "#fff0f0";
-			    			String s = "";
-			    			for (Assignment x: conflicts) {
-			    				if (!s.isEmpty()) s += ", ";
-			    				s += (x.getClassName() + " " + x.getPlacement().getName(CONST.useAmPm())).trim();
-			    			}
-			    			title = MSG.classIsConflicting(c.getClassLabel(), s);
-							icon = "<IMG alt='" + MSG.classIsConflicting(c.getClassLabel(), s) + "' title='" + MSG.classIsConflicting(c.getClassLabel(), s) + "' src='images/warning.png' style='margin-left: 1px; margin-right: 3px; vertical-align: top;'>";
-			        	} else {
-			        		Set<TimeBlock> ec = null;
-			        		try { ec = classAssignmentService.getAssignment().getConflictingTimeBlocks(c.getUniqueId()); } catch (Exception e) {}
-			        		if (ec != null && !ec.isEmpty()) {
-			        			String s = "";
-			        			String lastName = null, lastType = null;
-			        			for (TimeBlock t: ec) {
-			        				if (lastName == null || !lastName.equals(t.getEventName()) || !lastType.equals(t.getEventType())) {
-			        					lastName = t.getEventName(); lastType = t.getEventType();
-			        					if (!s.isEmpty()) s += ", ";
-			            				s += lastName + " (" + lastType + ")";
-			        				}
-			        			}
-			        			bgColor = "#fff0f0";
-			        			title = MSG.classIsConflicting(c.getClassLabel(), s);
-			            		icon = "<IMG alt='" + MSG.classIsConflicting(c.getClassLabel(), s) + "' title='" + MSG.classIsConflicting(c.getClassLabel(), s) + "' src='images/warning.png' style='margin-left: 1px; margin-right: 3px; vertical-align: top;'>";
-			        		}
-			        	}			    		
-			    	}
-		        	
-		    		String onClick = null;
-		    		if (sessionContext.hasPermission(c, Right.ClassDetail)) {
-		    			onClick = "onClick=\"document.location='classDetail.do?cid="+c.getUniqueId()+"';\"";
+			TreeSet classes = new TreeSet(new ClassInstructorComparator(new ClassComparator(ClassComparator.COMPARE_BY_LABEL)));
+			classes.addAll(allClasses);
+			
+			Vector classIds = new Vector(classes.size());
+			
+			//Get class assignment information
+			for (Iterator iterInst = classes.iterator(); iterInst.hasNext();) {
+				ClassInstructor ci = (ClassInstructor) iterInst.next();
+				Class_ c = ci.getClassInstructing();
+				classIds.add(c.getUniqueId());
+				
+				String limitString = "";
+		    	if (!c.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment().booleanValue()) {
+		    		if (c.getExpectedCapacity() != null) {
+		    			limitString = c.getExpectedCapacity().toString();
+		    			if (c.getMaxExpectedCapacity() != null && !c.getMaxExpectedCapacity().equals(c.getExpectedCapacity())){
+		    				limitString = limitString + "-" + c.getMaxExpectedCapacity().toString();
+		    			}
+		    		} else {
+		    			limitString = "0";
+		    			if (c.getMaxExpectedCapacity() != null && c.getMaxExpectedCapacity().intValue() != 0){
+		    				limitString = limitString + "-" + c.getMaxExpectedCapacity().toString();
+		    			}
 		    		}
-		    		
-		    		boolean back = "PreferenceGroup".equals(backType) && c.getUniqueId().toString().equals(backId);
-		    		String responsibility = (ci.getResponsibility() == null ? "" : ci.getResponsibility().getLabel());
-			    	
-		    		WebTableLine line = null;
-					if (hasTimetable) {
-						line = classTable.addLine(
-								onClick,
-								new String[] {
-									(back?"<A name=\"back\"></A>":"")+
-									(icon == null ? "" : icon) + c.getClassLabel(),
-									(ci.isLead().booleanValue()?"<IMG border='0' alt='true' align='absmiddle' src='images/accept.png'>":""),
-									ci.getPercentShare()+"%",
-									responsibility,
-									limitString,
-									enrollmentString,
-									managingDept,
-									assignedTime,
-									assignedDate,
-									assignedRoom
-								},
-								null,null);
-					} else {
-						line = classTable.addLine(
-								onClick,
-								new String[] {
-									(back?"<A name=\"back\"></A>":"")+
-									c.getClassLabel(),
-									(ci.isLead().booleanValue()?"<IMG border='0' alt='true' align='absmiddle' src='images/accept.png'>":""),
-									ci.getPercentShare()+"%",
-									responsibility,
-									limitString,
-									managingDept
-								},
-								null,null);
+		    	}
+		    	
+		    	String enrollmentString = "";
+		    	if (c.getEnrollment() != null) {
+		    		enrollmentString = c.getEnrollment().toString();
+		    	} else {
+		    		enrollmentString = "0";
+		    	}
+		    	
+		    	String managingDept = null;
+		    	if (c.getManagingDept()!=null) {
+		    		Department d = c.getManagingDept();
+		    		managingDept = d.getManagingDeptAbbv();
+		    	}
+		    	
+		    	String assignedTime = "";
+		    	String assignedDate = "";
+		    	String assignedRoom = "";
+		    	ClassAssignmentDetails ca = ClassAssignmentDetails.createClassAssignmentDetails(sessionContext, getCourseTimetablingSolverService().getSolver(), c.getUniqueId(),false);
+		    	if (ca == null) {
+		    		try {
+		    			Assignment a = getClassAssignmentService().getAssignment().getAssignment(c);
+		    			if (a.getUniqueId() != null)
+		    				ca = ClassAssignmentDetails.createClassAssignmentDetailsFromAssignment(sessionContext, a.getUniqueId(), false);
+		    		} catch (Exception e) {}
+		    	}
+		    	if (ca != null) {
+		    		if (ca.getAssignedTime() != null) {
+			    		assignedTime = ca.getAssignedTime().toHtml(false, false, true, true);
+			    		assignedDate = ca.getAssignedTime().getDatePatternHtml();
+		    		}
+					if (ca.getAssignedRoom() != null) {
+						for (int i=0;i<ca.getAssignedRoom().length;i++) {
+							if (i>0) assignedRoom += ", ";
+							assignedRoom += ca.getAssignedRoom()[i].toHtml(false,false,true);
+						}
 					}
-					
-					if (bgColor != null) line.setBgColor(bgColor);
-					if (title != null) line.setTitle(title);
-					
-					if (c.isCancelled()) {
-						line.setStyle("color: gray; font-style: italic;");
-						line.setTitle(MSG.classNoteCancelled(c.getClassLabel()));
-					}
+		    	}
+		    	String icon = null, bgColor = null, title = null;
+		    	if (!c.isCancelled() && ci.isLead()) {
+		        	Set<Assignment> conflicts = null;
+		        	try { conflicts = getClassAssignmentService().getAssignment().getConflicts(c.getUniqueId()); } catch (Exception e) {}
+		        	if (conflicts != null && !conflicts.isEmpty()) {
+		        		bgColor = "#fff0f0";
+		    			String s = "";
+		    			for (Assignment x: conflicts) {
+		    				if (!s.isEmpty()) s += ", ";
+		    				s += (x.getClassName() + " " + x.getPlacement().getName(CONST.useAmPm())).trim();
+		    			}
+		    			title = MSG.classIsConflicting(c.getClassLabel(), s);
+						icon = "<IMG alt='" + MSG.classIsConflicting(c.getClassLabel(), s) + "' title='" + MSG.classIsConflicting(c.getClassLabel(), s) + "' src='images/warning.png' style='margin-left: 1px; margin-right: 3px; vertical-align: top;'>";
+		        	} else {
+		        		Set<TimeBlock> ec = null;
+		        		try { ec = getClassAssignmentService().getAssignment().getConflictingTimeBlocks(c.getUniqueId()); } catch (Exception e) {}
+		        		if (ec != null && !ec.isEmpty()) {
+		        			String s = "";
+		        			String lastName = null, lastType = null;
+		        			for (TimeBlock t: ec) {
+		        				if (lastName == null || !lastName.equals(t.getEventName()) || !lastType.equals(t.getEventType())) {
+		        					lastName = t.getEventName(); lastType = t.getEventType();
+		        					if (!s.isEmpty()) s += ", ";
+		            				s += lastName + " (" + lastType + ")";
+		        				}
+		        			}
+		        			bgColor = "#fff0f0";
+		        			title = MSG.classIsConflicting(c.getClassLabel(), s);
+		            		icon = "<IMG alt='" + MSG.classIsConflicting(c.getClassLabel(), s) + "' title='" + MSG.classIsConflicting(c.getClassLabel(), s) + "' src='images/warning.png' style='margin-left: 1px; margin-right: 3px; vertical-align: top;'>";
+		        		}
+		        	}			    		
+		    	}
+	        	
+	    		String onClick = null;
+	    		if (sessionContext.hasPermission(c, Right.ClassDetail)) {
+	    			onClick = "onClick=\"document.location='classDetail.do?cid="+c.getUniqueId()+"';\"";
+	    		}
+	    		
+	    		boolean back = "PreferenceGroup".equals(backType) && c.getUniqueId().toString().equals(backId);
+	    		String responsibility = (ci.getResponsibility() == null ? "" : ci.getResponsibility().getLabel());
+		    	
+	    		WebTableLine line = null;
+				if (hasTimetable) {
+					line = classTable.addLine(
+							onClick,
+							new String[] {
+								(back?"<A name=\"back\"></A>":"")+
+								(icon == null ? "" : icon) + c.getClassLabel(),
+								(ci.isLead().booleanValue()?"<IMG border='0' alt='true' align='absmiddle' src='images/accept.png'>":""),
+								ci.getPercentShare()+"%",
+								responsibility,
+								limitString,
+								enrollmentString,
+								managingDept,
+								assignedTime,
+								assignedDate,
+								assignedRoom
+							},
+							null,null);
+				} else {
+					line = classTable.addLine(
+							onClick,
+							new String[] {
+								(back?"<A name=\"back\"></A>":"")+
+								c.getClassLabel(),
+								(ci.isLead().booleanValue()?"<IMG border='0' alt='true' align='absmiddle' src='images/accept.png'>":""),
+								ci.getPercentShare()+"%",
+								responsibility,
+								limitString,
+								managingDept
+							},
+							null,null);
 				}
 				
-				Navigation.set(sessionContext, Navigation.sClassLevel, classIds);
-
-				String tblData = classTable.printTable();
-				request.setAttribute("classTable", tblData);
+				if (bgColor != null) line.setBgColor(bgColor);
+				if (title != null) line.setTitle(title);
+				
+				if (c.isCancelled()) {
+					line.setStyle("color: gray; font-style: italic;");
+					line.setTitle(MSG.classNoteCancelled(c.getClassLabel()));
+				}
 			}
 			
-			if (ApplicationProperty.RoomAvailabilityIncludeInstructors.isTrue() && inst.getExternalUniqueId() != null && !inst.getExternalUniqueId().isEmpty() &&
+			Navigation.set(sessionContext, Navigation.sClassLevel, classIds);
+
+			String tblData = classTable.printTable();
+			request.setAttribute("classTable", tblData);
+		}
+			
+		if (ApplicationProperty.RoomAvailabilityIncludeInstructors.isTrue() && inst.getExternalUniqueId() != null && !inst.getExternalUniqueId().isEmpty() &&
 				RoomAvailability.getInstance() != null && RoomAvailability.getInstance() instanceof DefaultRoomAvailabilityService) {
 				WebTable.setOrder(sessionContext, "instructorUnavailability.ord", request.getParameter("iuord"), 1);
-				WebTable eventTable = new WebTable(5, "Instructor Unavailability", "instructorDetail.do?instructorId=" + frm.getInstructorId() + "&iuord=%%", new String[] {"Event", "Type", "Date", "Time", "Room"}, new String[] {"left", "left", "left", "left", "left"}, null);
+				WebTable eventTable = new WebTable(5, "Instructor Unavailability", "instructorDetail.action?instructorId=" + instructorId + "&iuord=%%", new String[] {"Event", "Type", "Date", "Time", "Room"}, new String[] {"left", "left", "left", "left", "left"}, null);
 				
 				Formats.Format<Date> dfShort = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
 				Formats.Format<Date> dfLong = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_LONG);
@@ -490,34 +448,37 @@ public class InstructorDetailAction extends PreferencesAction {
 					"<FONT color=696969>Distribution Preferences Not Applicable</FONT>");
 					*/
 
-			frm.setDisplayPrefs(CommonValues.Yes.eq(sessionContext.getUser().getProperty(UserProperty.DispInstructorPrefs)));
+			form.setDisplayPrefs(CommonValues.Yes.eq(sessionContext.getUser().getProperty(UserProperty.DispInstructorPrefs)));
 			
-			if (op.equals(MSG.actionDisplayInstructorPreferences()) || "true".equals(request.getParameter("showPrefs"))) { 
-				frm.setDisplayPrefs(true);
+			if (MSG.actionDisplayInstructorPreferences().equals(op) || "true".equals(request.getParameter("showPrefs"))) { 
+				form.setDisplayPrefs(true);
 				sessionContext.getUser().setProperty(UserProperty.DispInstructorPrefs, CommonValues.Yes.value());
 			}
 			
-			if (op.equals(MSG.actionHideInstructorPreferences()) || "false".equals(request.getParameter("showPrefs"))) {
-				frm.setDisplayPrefs(false);
+			if (MSG.actionHideInstructorPreferences().equals(op) || "false".equals(request.getParameter("showPrefs"))) {
+				form.setDisplayPrefs(false);
 				sessionContext.getUser().setProperty(UserProperty.DispInstructorPrefs, CommonValues.No.value());
 			}
 
-			if (frm.isDisplayPrefs()) {
+	        LookupTables.setupInstructorAttributeTypes(request, inst);
+	        LookupTables.setupInstructorAttributes(request, inst);
+
+			if (form.isDisplayPrefs()) {
 		        // Initialize Preferences for initial load 
 		        Set timePatterns = new HashSet();
-		        frm.setAvailableTimePatterns(null);
-		        initPrefs(frm, inst, null, false);
+		        form.setAvailableTimePatterns(null);
+		        initPrefs(inst, null, false);
 		        timePatterns.add(new TimePattern(Long.valueOf(-1)));
 		    	//timePatterns.addAll(TimePattern.findApplicable(request,30,false));
 		        
 				// Process Preferences Action
-				processPrefAction(request, frm, errors);
+				processPrefAction();
 				
 				// Generate Time Pattern Grids
-				//super.generateTimePatternGrids(request, frm, inst, timePatterns, "init", timeVertical, false, null);
+				//super.generateTimePatternGrids(request, form, inst, timePatterns, "init", timeVertical, false, null);
 				for (Preference pref: inst.getPreferences()) {
 					if (pref instanceof TimePref) {
-						frm.setAvailability(((TimePref)pref).getPreference());
+						form.setAvailability(((TimePref)pref).getPreference());
 						break;
 					}
 				}
@@ -529,20 +490,18 @@ public class InstructorDetailAction extends PreferencesAction {
 		        LookupTables.setupCourses(request, inst); // Courses
 			}
 			
-	        frm.setMaxLoad(inst.getMaxLoad() == null ? null : Formats.getNumberFormat("0.##").format(inst.getMaxLoad()));
-	        frm.setTeachingPreference(inst.getTeachingPreference() == null ? PreferenceLevel.sProhibited : inst.getTeachingPreference().getPrefProlog());
+	        form.setMaxLoad(inst.getMaxLoad() == null ? null : Formats.getNumberFormat("0.##").format(inst.getMaxLoad()));
+	        form.setTeachingPreference(inst.getTeachingPreference() == null ? PreferenceLevel.sProhibited : inst.getTeachingPreference().getPrefProlog());
 	        if (inst.getMaxLoad() == null && (inst.getTeachingPreference() == null || inst.getTeachingPreference().getPrefProlog().equals(PreferenceLevel.sProhibited)))
-	        	frm.setTeachingPreference(null);
-	        frm.clearAttributes();
+	        	form.setTeachingPreference(null);
+	        form.clearAttributes();
 	        for (InstructorAttribute attribute: inst.getAttributes())
-	        	frm.setAttribute(attribute.getUniqueId(), true);
-	        LookupTables.setupInstructorAttributeTypes(request, inst);
-	        LookupTables.setupInstructorAttributes(request, inst);
+	        	form.setAttribute(attribute.getUniqueId(), true);
 			
 			DepartmentalInstructor previous = inst.getPreviousDepartmentalInstructor(sessionContext, Right.InstructorDetail);
-			frm.setPreviousId(previous==null?null:previous.getUniqueId().toString());
+			form.setPreviousId(previous==null?null:previous.getUniqueId().toString());
 			DepartmentalInstructor next = inst.getNextDepartmentalInstructor(sessionContext, Right.InstructorDetail);
-			frm.setNextId(next==null?null:next.getUniqueId().toString());
+			form.setNextId(next==null?null:next.getUniqueId().toString());
 			
 			if (inst.getExternalUniqueId() != null && !inst.getExternalUniqueId().isEmpty()) {
 				List<IdValue> departments = new ArrayList<IdValue>();
@@ -555,59 +514,47 @@ public class InstructorDetailAction extends PreferencesAction {
 					}
 				}
 				if (departments.size() > 1)
-					frm.setDepartments(departments);
+					form.setDepartments(departments);
 			}
 			
-	        return mapping.findForward("showInstructorDetail");
-		
-		} catch (Exception e) {
-			Debug.error(e);
-			throw e;
-		}
+	        return "showInstructorDetail";
 	}
 
-	/**
-	 * Loads the non-editable instructor info into the form
-	 * @param request
-	 * @param frm
-	 * @param inst
-	 * @param instructorId
-	 */
-	private void doLoad(HttpServletRequest request, InstructorEditForm frm, DepartmentalInstructor inst, String instructorId) {
+	private void doLoad(DepartmentalInstructor inst) {
         // populate form
-		frm.setInstructorId(instructorId);
+		form.setInstructorId(instructorId);
 		
 		if (inst.hasUnavailabilities())
-			request.setAttribute("UnavailableDays.pattern", inst.getUnavailablePatternHtml(false));
+			request.setAttribute("unavailableDaysPattern", inst.getUnavailablePatternHtml(false));
 		
 		NameFormat nameFormat = NameFormat.fromReference(sessionContext.getUser().getProperty(UserProperty.NameFormat));
-		frm.setName(nameFormat.format(inst));
+		form.setName(nameFormat.format(inst));
 		
-		frm.setEmail(inst.getEmail());
-		frm.setDeptCode(inst.getDepartment().getDeptCode());
-		frm.setDeptName(inst.getDepartment().getLabel());
+		form.setEmail(inst.getEmail());
+		form.setDeptCode(inst.getDepartment().getDeptCode());
+		form.setDeptName(inst.getDepartment().getLabel());
 		
 		String puid = inst.getExternalUniqueId();
 		if (puid != null) {
-			frm.setPuId(puid);
+			form.setPuId(puid);
 		}
 				
 		if (inst.getPositionType() != null) {
-			frm.setPosType(inst.getPositionType().getLabel().trim());
+			form.setPosType(inst.getPositionType().getLabel().trim());
 		}
 		
 		if (inst.getCareerAcct() != null) {
-			frm.setCareerAcct(inst.getCareerAcct().trim());
+			form.setCareerAcct(inst.getCareerAcct().trim());
 		} else if (DepartmentalInstructor.canLookupInstructor()) {
 			try {
 				UserInfo user = DepartmentalInstructor.lookupInstructor(puid);
 				if (user != null && user.getUserName() != null)
-					frm.setCareerAcct(user.getUserName());
+					form.setCareerAcct(user.getUserName());
 			} catch (Exception e) {}
 		}
 		
 		if (inst.getNote() != null) {
-			frm.setNote(inst.getNote().trim());
+			form.setNote(inst.getNote().trim());
 		}
 				
 		request.getSession().setAttribute(Constants.DEPT_ID_ATTR_NAME, inst.getDepartment().getUniqueId().toString());
@@ -627,10 +574,8 @@ public class InstructorDetailAction extends PreferencesAction {
 			}
 		}
         
-        frm.setIgnoreDist(inst.isIgnoreToFar()==null?false:inst.isIgnoreToFar().booleanValue());
+        form.setIgnoreDist(inst.isIgnoreToFar()==null?false:inst.isIgnoreToFar().booleanValue());
 	}
-	
-	
 
 }
 

@@ -213,9 +213,9 @@
 						<s:iterator value="#request.crsOfferingList" var="co">
 							<s:if test="#coursePref == #co.uniqueId">
 								<div style='color:${prLevel.prefcolor()}; font-weight: bold;' title='${prLevel.getPrefName()}: ${co.courseNameWithTitle}'
-									onclick="document.location='instructionalOfferingDetail.do?co=${coursePref}';"
+									onclick="document.location='instructionalOfferingDetail.do?co=${co.uniqueId}';"
 									onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"><s:property value="#co.courseName"/></div>
-							</s:if>a
+							</s:if>
 						</s:iterator>
 					</s:if>
 				</s:iterator>
@@ -235,7 +235,7 @@
 						<s:iterator value="#request.instructorsList" var="in">
 							<s:if test="#instructorPref == #in.id">
 								<div style='color:${prLevel.prefcolor()}; font-weight: bold;' title='${prLevel.getPrefName()}: ${in.label}'
-									onclick="document.location='instructorDetail.do?instructorId=${instructorPref}';"
+									onclick="document.location='instructorDetail.action?instructorId=${in.id}';"
 									onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"><s:property value="#in.label"/></div>
 							</s:if>
 						</s:iterator>

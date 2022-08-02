@@ -3275,4 +3275,13 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Export failed: {0}")
 	String exportFailed(String error);
+	
+	@DefaultMessage("Instructor id not provided.")
+	String errorNoInstructorId();
+	
+	@DefaultMessage("There are the following errors:")
+	String formValidationErrors();
+	
+	@DefaultMessage("ENABLED")
+	String enabled();
 }
