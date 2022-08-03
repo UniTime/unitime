@@ -22,28 +22,12 @@ package org.unitime.timetable.form;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.unitime.commons.Debug;
-import org.unitime.timetable.model.Department;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Staff;
-import org.unitime.timetable.model.dao.DepartmentDAO;
-import org.unitime.timetable.util.Constants;
 
 
-/** 
- * MyEclipse Struts
- * Creation date: 07-18-2006
- * 
- * XDoclet definition:
- * @struts.form name="updateInstructorListForm"
- */
-public class InstructorListUpdateForm extends ActionForm {
+public class InstructorListUpdateForm implements UniTimeForm {
 
 	// --------------------------------------------------------- Instance Variables
 	private String deptCode;
@@ -68,47 +52,11 @@ public class InstructorListUpdateForm extends ActionForm {
 	 */
 	private static final long serialVersionUID = 6131705766470532900L;
 
-	/** 
-	 * Method validate
-	 * @param mapping
-	 * @param request
-	 * @return ActionErrors
-	 */
-	public ActionErrors validate(
-		ActionMapping mapping,
-		HttpServletRequest request) {
+	@Override
+	public void validate(UniTimeAction action) {}
 
-		return null;
-	}
-
-	/** 
-	 * Method reset
-	 * @param mapping
-	 * @param request
-	 */
-	public void reset(ActionMapping mapping, HttpServletRequest request){
-		setDeptName(request);
-	}
-
-	/**
-	 * 
-	 * @param request
-	 */
-	private void setDeptName(HttpServletRequest request){
-		HttpSession httpSession = request.getSession();
-		
-		if (httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME) != null) {
-			String deptId = (String) httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME);
-			try {
-				Department d = new DepartmentDAO().get(Long.valueOf(deptId));
-				if (d != null) {
-					setDeptName(d.getName().trim());
-				}
-			} catch (Exception e) {
-			    Debug.error(e);
-			}			
-		}		
-	}
+	@Override
+	public void reset(){}
 
 	public String getDeptCode() {
 		return deptCode;
@@ -228,6 +176,5 @@ public class InstructorListUpdateForm extends ActionForm {
 	
 	public String getNameFormat() { return nameFormat; }
 	public void setNameFormat(String nameFormat) { this.nameFormat = nameFormat; }
-
 }
 

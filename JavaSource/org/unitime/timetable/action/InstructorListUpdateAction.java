@@ -24,21 +24,17 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.util.MessageResources;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.hibernate.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
@@ -55,93 +51,72 @@ import org.unitime.timetable.model.comparators.DepartmentalInstructorComparator;
 import org.unitime.timetable.model.comparators.StaffComparator;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 
 
 /** 
- * MyEclipse Struts
- * Creation date: 07-18-2006
- * 
- * XDoclet definition:
- * @struts.action path="/updateInstructorList" name="updateInstructorListForm" input="/user/updateInstructorList.jsp" scope="request"
- *
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
-@Service("/instructorListUpdate")
-public class InstructorListUpdateAction extends Action {
-	
-	@Autowired SessionContext sessionContext;
+@Action(value = "instructorListUpdate", results = {
+		@Result(name = "showUpdateInstructorList", type = "tiles", location = "instructorListUpdate.tiles"),
+		@Result(name = "showList", type = "redirect", location = "/instructorSearch.action")
+	})
+@TilesDefinition(name = "instructorListUpdate.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Manage Instructor List"),
+		@TilesPutAttribute(name = "body", value = "/user/instructorListUpdate.jsp")
+	})
+public class InstructorListUpdateAction extends UniTimeAction<InstructorListUpdateForm> {
+	private static final long serialVersionUID = 241708052808479802L;
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
-	// --------------------------------------------------------- Instance Variables
-
-	// --------------------------------------------------------- Methods
-
-	/** 
-	 * Method execute
-	 * @param mapping
-	 * @param form
-	 * @param request
-	 * @param response
-	 * @return ActionForward
-	 */
-	public ActionForward execute(
-		ActionMapping mapping,
-		ActionForm form,
-		HttpServletRequest request,
-		HttpServletResponse response) throws Exception {
-		
+	public String execute() throws Exception {
 		//Check permissions
 		sessionContext.checkPermission(Right.ManageInstructors);
 		
-		InstructorListUpdateForm frm = (InstructorListUpdateForm) form;
-		MessageResources rsc = getResources(request);
-		String op = frm.getOp();
+		if (form == null) form = new InstructorListUpdateForm();
+		fillInDepartmentName();
+		
+		if (op == null) op = form.getOp();
 		
         // Cancel - Go back to Instructors Detail Screen
-        if(op != null && op.equals(rsc.getMessage("button.backToInstructorList"))) {
-        	response.sendRedirect( response.encodeURL("instructorSearch.action"));
-        	return null;
+        if (MSG.actionBackToInstructors().equals(op)) {
+        	return "showList";
         }
         
         // Update - Update the instructor and go back to Instructor List Screen
-        if(op != null && op.equals(rsc.getMessage("button.update")) ) {
-	        update(frm, request);
-	        response.sendRedirect( response.encodeURL("instructorSearch.action"));
-	        return null;
+        if (MSG.actionUpdateInstructorsList().equals(op)) {
+	        update();
+	        return "showList";
         }
 		
         // Refresh - set filters
-        if(op != null && op.equals(rsc.getMessage("button.applyFilter")) ) {
+        if (MSG.actionApplyInstructorFilter().equals(op)) {
             request.setAttribute("filterApplied", "1");
         }
         
         Collection assigned = getAssigned();
 		if (assigned != null) {
-			frm.setAssignedInstr(assigned);
+			form.setAssignedInstr(assigned);
 		} 
 		
-		Collection available = getAvailable(frm, request);
+		Collection available = getAvailable();
 		if (available != null) {
-			frm.setAvailableInstr(available);
+			form.setAvailableInstr(available);
 		}
 		
 		// Get Position Types
 		LookupTables.setupPositionTypes(request);
-		setupFilters(frm, request);
+		setupFilters();
 		
-		frm.setInstructors();		
-		frm.setNameFormat(sessionContext.getUser().getProperty(UserProperty.NameFormat));
+		form.setInstructors();		
+		form.setNameFormat(sessionContext.getUser().getProperty(UserProperty.NameFormat));
 		
-		return mapping.findForward("showUpdateInstructorList");
+		return "showUpdateInstructorList";
 	}
 
-	/**
-     * @param request
-     */
-    private void setupFilters(InstructorListUpdateForm frm, HttpServletRequest request) {
+    private void setupFilters() {
         String[] defaultPosTypes = {"ADMIN_STAFF", "CLERICAL_STAFF", "SERVICE_STAFF", "FELLOWSHIP", "UNDRGRD_TEACH_ASST", "EMERITUS OTHER"};
         boolean filterSet = "1".equals(sessionContext.getUser().getProperty("instrListFilter", "0"));
         String filterApplied = (String) request.getAttribute("filterApplied");
@@ -150,11 +125,11 @@ public class InstructorListUpdateAction extends Action {
             filterApplied = null;
         
         if (!filterSet) {
-            frm.setDisplayListType("both");
-            frm.setDisplayPosType(defaultPosTypes);
+            form.setDisplayListType("both");
+            form.setDisplayPosType(defaultPosTypes);
         } 
         else if (filterApplied == null) {            
-            frm.setDisplayListType(sessionContext.getUser().getProperty("displayListType"));
+            form.setDisplayListType(sessionContext.getUser().getProperty("displayListType"));
             String displayPosType = sessionContext.getUser().getProperty("displayPosType");
             if (displayPosType!=null) {
                 String[] arr = null;
@@ -169,44 +144,38 @@ public class InstructorListUpdateAction extends Action {
                         arr[ct++] = (String) strTok.nextToken();
                     }
                 }    
-                frm.setDisplayPosType(arr);
+                form.setDisplayPosType(arr);
             }
         }
         
-        if (frm.getDisplayListType()==null || frm.getDisplayListType().length()==0)
-            frm.setDisplayListType("both");
+        if (form.getDisplayListType()==null || form.getDisplayListType().length()==0)
+            form.setDisplayListType("both");
         
-        if (frm.getDisplayPosType()==null) {
+        if (form.getDisplayPosType()==null) {
             if (filterApplied!=null)
-                frm.setDisplayPosType(new String[] {"X"});
+                form.setDisplayPosType(new String[] {"X"});
             else
-                frm.setDisplayPosType(defaultPosTypes);
+                form.setDisplayPosType(defaultPosTypes);
         }
         
         sessionContext.getUser().setProperty("instrListFilter", "1");
-        sessionContext.getUser().setProperty("displayListType", frm.getDisplayListType());
-        sessionContext.getUser().setProperty("displayPosType", Constants.arrayToStr(frm.getDisplayPosType(), "", " "));
+        sessionContext.getUser().setProperty("displayListType", form.getDisplayListType());
+        sessionContext.getUser().setProperty("displayPosType", Constants.arrayToStr(form.getDisplayPosType(), "", " "));
     }
 
-    /**
-	 * 
-	 * @param frm
-	 * @param request
-	 */
-	private void update(InstructorListUpdateForm frm, HttpServletRequest request) throws Exception {
-		String[] selectedAssigned = frm.getAssignedSelected();
-		String[] selectedNotAssigned = frm.getAvailableSelected();
+	private void update() throws Exception {
+		String[] selectedAssigned = form.getAssignedSelected();
+		String[] selectedNotAssigned = form.getAvailableSelected();
 		Collection assigned = getAssigned();
-		Collection available = getAvailable(frm, request);
+		Collection available = getAvailable();
 		
-		StringBuffer s1 = new StringBuffer();
-		StringBuffer s2 = new StringBuffer();
-		if (selectedAssigned.length != 0) {
-			s1.append(Constants.arrayToStr(selectedAssigned,"",","));
-		}
-		if (selectedNotAssigned.length != 0) {
-			s2.append(Constants.arrayToStr(selectedNotAssigned,"",","));
-		}
+		
+		Set<String> s1 = new HashSet<String>();
+		Set<String> s2 = new HashSet<String>();
+		if (selectedAssigned.length != 0)
+			for (String id: selectedAssigned) s1.add(id);
+		if (selectedNotAssigned.length != 0)
+			for (String id: selectedNotAssigned) s2.add(id); 
 		
 		DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
 		org.hibernate.Session hibSession = idao.getSession();
@@ -216,14 +185,14 @@ public class InstructorListUpdateAction extends Action {
 			tx = hibSession.beginTransaction();
 
 			//remove instructor from assigned
-			if ( frm.getDisplayListType()!=null 
-							&& ( frm.getDisplayListType().equals("assigned") 
-									|| frm.getDisplayListType().equals("both")
+			if ( form.getDisplayListType()!=null 
+							&& ( form.getDisplayListType().equals("assigned") 
+									|| form.getDisplayListType().equals("both")
 								) ) { 
 			
 				for (Iterator iter = assigned.iterator(); iter.hasNext(); ) {
 					DepartmentalInstructor inst = (DepartmentalInstructor) iter.next();
-					if (s1.indexOf(inst.getUniqueId().toString()) == -1) {
+					if (!s1.contains(inst.getUniqueId().toString())) {
 						if (!inst.getExams().isEmpty() || !inst.getClasses().isEmpty()) continue;
 						
                         ChangeLog.addChange(
@@ -254,21 +223,20 @@ public class InstructorListUpdateAction extends Action {
 				}
 			}
 			
-			if ( frm.getDisplayListType()!=null 
-					&& ( frm.getDisplayListType().equals("available") 
-							|| frm.getDisplayListType().equals("both")
+			if ( form.getDisplayListType()!=null 
+					&& ( form.getDisplayListType().equals("available") 
+							|| form.getDisplayListType().equals("both")
 						) ) { 
 	
 				//move instructor from staff to department
 				for (Iterator iter = available.iterator(); iter.hasNext(); ) {
 					Staff staff = (Staff) iter.next();
-					if (s2.indexOf(staff.getUniqueId().toString()) != -1) {
+					if (s2.contains(staff.getUniqueId().toString())) {
 						DepartmentalInstructor inst = new DepartmentalInstructor();
 						inst.setLastName(staff.getLastName());
 						inst.setEmail(staff.getEmail());
 						
-						HttpSession httpSession = request.getSession();
-						String deptId = (String) httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME);
+						String deptId = (String) request.getSession().getAttribute(Constants.DEPT_ID_ATTR_NAME);
 						Department d = new DepartmentDAO().get(Long.valueOf(deptId));
 						inst.setDepartment(d);
 						d.getInstructors().add(inst);
@@ -323,17 +291,9 @@ public class InstructorListUpdateAction extends Action {
         }
 	}
 
-	/**
-	 * 
-	 * @param frm
-	 * @param request
-	 * @return
-	 * @throws Exception
-	 */
-	private Collection getAvailable(InstructorListUpdateForm frm, HttpServletRequest request) throws Exception {
-		HttpSession httpSession = request.getSession();
-		if (httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME) != null) {
-			String deptId = (String) httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME);
+	private Collection getAvailable() throws Exception {
+		if (request.getSession().getAttribute(Constants.DEPT_ID_ATTR_NAME) != null) {
+			String deptId = (String) request.getSession().getAttribute(Constants.DEPT_ID_ATTR_NAME);
 			Department d = new DepartmentDAO().get(Long.valueOf(deptId));
 			List available = Staff.getStaffByDept(d.getDeptCode().trim(), sessionContext.getUser().getCurrentAcademicSessionId());			
 			Collections.sort(available, new StaffComparator(StaffComparator.COMPARE_BY_POSITION));
@@ -343,13 +303,6 @@ public class InstructorListUpdateAction extends Action {
 		}
 	}
 
-	/**
-	 * 
-	 * @param frm
-	 * @param request
-	 * @return
-	 * @throws Exception
-	 */
 	private Collection getAssigned() throws Exception {
 		String deptId = (String)sessionContext.getAttribute(SessionAttribute.DepartmentId);
 		if (deptId != null) {
@@ -360,6 +313,19 @@ public class InstructorListUpdateAction extends Action {
 			return null;
 		}
 	}
-
+	
+	private void fillInDepartmentName(){
+		String deptId = (String)request.getSession().getAttribute(Constants.DEPT_ID_ATTR_NAME);
+		if (deptId != null) {
+			try {
+				Department d = new DepartmentDAO().get(Long.valueOf(deptId));
+				if (d != null) {
+					form.setDeptName(d.getName().trim());
+				}
+			} catch (Exception e) {
+			    Debug.error(e);
+			}			
+		}
+	}
 }
 

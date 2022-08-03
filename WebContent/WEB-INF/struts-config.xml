@@ -60,7 +60,6 @@
       <form-bean name="editRoomDeptForm" type="org.unitime.timetable.form.EditRoomDeptForm" />
       <form-bean name="solverGroupEditForm" type="org.unitime.timetable.form.SolverGroupEditForm" />
       <form-bean name="editRoomForm" type="org.unitime.timetable.form.EditRoomForm" />
-      <form-bean name="instructorListUpdateForm" type="org.unitime.timetable.form.InstructorListUpdateForm" />
       <form-bean name="courseOfferingEditForm" type="org.unitime.timetable.form.CourseOfferingEditForm" />
       <form-bean name="applicationConfigForm" type="org.unitime.timetable.form.ApplicationConfigForm" />
       <form-bean name="departmentEditForm" type="org.unitime.timetable.form.DepartmentEditForm" />
@@ -826,17 +825,6 @@
 		path="/activeSessions"
 		forward="activeSessionsTile"
 		scope="request" />
-
-    <action
-      attribute="instructorListUpdateForm"
-      input="/user/instructorListUpdate.jsp"
-      name="instructorListUpdateForm"
-      path="/instructorListUpdate"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false" >
-      <forward name="showUpdateInstructorList" path="instructorListUpdateTile" />
-    </action>
     
     <action
        path="/courseOfferingEdit"

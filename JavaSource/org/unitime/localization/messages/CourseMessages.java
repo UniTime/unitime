@@ -3287,4 +3287,55 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("N/A")
 	String cellNoPositionType();
+	
+	@DefaultMessage("Update")
+	String actionUpdateInstructorsList();
+	
+	@DefaultMessage("M")
+	String accessUpdateInstructorsList();
+	
+	@DefaultMessage("Update instructors list (Alt+{0})")
+	String titleUpdateInstructorsList(String access);
+	
+	@DefaultMessage("Apply Filter")
+	String actionApplyInstructorFilter();
+	
+	@DefaultMessage("A")
+	String accessApplyInstructorFilter();
+	
+	@DefaultMessage("Apply Filter (Alt+{0})")
+	String titleApplyInstructorFilter();
+	
+	@DefaultMessage("Display:")
+	String propertyFilterDisplay();
+	
+	@DefaultMessage("Department Assigned Instructors Only")
+	String filterDisplayDepartmentAssignedInstructorsOnly();
+	
+	@DefaultMessage("Available Instructors Only")
+	String filterDisplayAvailableInstructorsOnly();
+	
+	@DefaultMessage("Both")
+	String filterDisplayBothDepartmentAssignedAndAvailableInstructors();
+	
+	@DefaultMessage("Ignore Positions:")
+	String propertyFilterIgorePositions();
+	
+	@DefaultMessage("* applies only to Instructors not in department list")
+	String descriptionIgnorePosition();
+	
+	@DefaultMessage("Department Instructors")
+	String sectionDepartmentInstructors();
+	
+	@DefaultMessage("Instructors not in the Department List")
+	String sectionAvailableInstructors();
+	
+	@DefaultMessage("There are no instructors assigned to this department")
+	String messageNoDepartmentalInstructors();
+	
+	@DefaultMessage("There are no additional instructors that can be assigned to this department")
+	String messageNoAvailableInstructors();
+	
+	@DefaultMessage("Position Type Not Set")
+	String positionNotSet();
 }

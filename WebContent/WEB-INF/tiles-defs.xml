@@ -136,11 +136,6 @@
 		<put name="body" value="/admin/departmentList.jsp" />
   	</definition>
 
-	<definition	name="instructorListUpdateTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Manage Instructor List"/>
-		<put name="body" value="/user/instructorListUpdate.jsp" />
-  	</definition>
-
   	<definition	name="instructionalOfferingSearchTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Instructional Offerings"/>
 		<put name="body" value="/user/instructionalOfferingSearch.jsp" />

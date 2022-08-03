@@ -204,7 +204,7 @@ public class Constants extends org.cpsolver.coursett.Constants {
     public static String arrayToStr(Object[] array, String encloseBy, String separator) 
     	throws IllegalArgumentException {
         
-        if(array==null || array.length==0)
+        if(array==null)
             throw new IllegalArgumentException("Supply a valid array");
         
         if(encloseBy==null)

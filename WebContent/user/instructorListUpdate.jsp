@@ -17,33 +17,18 @@
  * limitations under the License.
  * 
 --%>
-<%@page import="org.unitime.timetable.util.NameFormat"%>
-<%@ page language="java" autoFlush="true" errorPage="../error.jsp"%>
-<%@ page import="org.unitime.timetable.form.InstructorListUpdateForm" %>
-<%@ page import="org.unitime.timetable.model.DepartmentalInstructor" %>
-<%@ page import="org.unitime.timetable.model.PositionType" %>
-<%@ page import="org.unitime.timetable.model.Staff" %>
-<%@ page import="java.text.NumberFormat" %>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic"%>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<script type="text/javascript" src="scripts/block.js"></script>
 
-<%
-	// Get Form 
-	String frmName = "instructorListUpdateForm";	
-	InstructorListUpdateForm frm = (InstructorListUpdateForm) request.getAttribute(frmName);	
-	NumberFormat percentFormatter = NumberFormat.getPercentInstance();	
-	NameFormat nameFormat = NameFormat.fromReference(frm.getNameFormat());
-%>	
-<script type="text/javascript" language="javascript">
-<!--
+<script type="text/javascript">
 	function doSelectAll(elem, styleId, checked) {
 		var i = 0;
 		
 		for (;;) {
-			var idName = styleId + '_' + i;
+			var idName = styleId + '-' + i + '-1';
 			var idVal = document.getElementById(idName);
 			if (idVal!=null && idVal.value!=null) {
 				if (!idVal.disabled)
@@ -55,321 +40,225 @@
 			++i;
 		}
 	}
-//-->
 </script>
 
-<html:form action="instructorListUpdate">
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+<s:form action="instructorListUpdate">
 
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+	<table class="unitime-MainTable">
 		<TR>
 			<TD valign="middle" colspan='2'>
-				<tt:section-header>				
+				<tt:section-header>
 					<tt:section-title>
-						<bean:write name='<%=frmName%>' property='deptName'/>
+						<s:property value="#form.deptName"/>
 					</tt:section-title>
-					<html:submit property="op" 
-						styleClass="btn" accesskey="M" titleKey="title.updateInstructor" >
-						<bean:message key="button.update" />
-					</html:submit> 
-					<html:submit property="op" 
-						styleClass="btn" accesskey="B" titleKey="title.returnToDetail">
-						<bean:message key="button.returnToDetail" />
-					</html:submit>
+					<s:submit accesskey='%{#msg.accessUpdateInstructorsList()}' name='op' value='%{#msg.actionUpdateInstructorsList()}'
+						title='%{#msg.titleUpdateInstructorsList(#msg.accessUpdateInstructorsList())}'/>
+					<s:submit accesskey='%{#msg.accessBackToInstructors()}' name='op' value='%{#msg.actionBackToInstructors()}'
+						title='%{#msg.titleBackToInstructors(#msg.accessBackToInstructors())}'/>
 				</tt:section-header>
 			</TD>
 		</TR>
 		
 		<TR>
 			<TD colspan='2'>
-				<script language="JavaScript" type="text/javascript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
-				<TABLE border="0" cellspacing="0" cellpadding="3">
+				<script type="text/javascript">blToggleHeader('<loc:message name="filter"/>','dispFilter');blStart('dispFilter');</script>
+				<table style="width: 100%;">
 					<TR>
 						<TD valign="top">
-							<B>Display:</B> &nbsp;
+							<B><loc:message name="propertyFilterDisplay"/></B>
 						</TD>
 						<TD>
-							 &nbsp;<html:radio property="displayListType" value="assigned" /> Department Assigned Instructors Only&nbsp; <BR>
-							 &nbsp;<html:radio property="displayListType" value="available" /> Available Instructors Only&nbsp; <BR> 
-							 &nbsp;<html:radio property="displayListType" value="both" /> Both &nbsp; <BR>
+							<s:radio name="form.displayListType" list="#{'assigned':''}"/><loc:message name="filterDisplayDepartmentAssignedInstructorsOnly"/><br>
+							<s:radio name="form.displayListType" list="#{'available':''}"/><loc:message name="filterDisplayAvailableInstructorsOnly"/><br>
+							<s:radio name="form.displayListType" list="#{'both':''}"/><loc:message name="filterDisplayBothDepartmentAssignedAndAvailableInstructors"/><br>
 						</TD>
 					</TR>
 					<TR>
-						<TD valign="top">
-							<B>Ignore Positions:</B> * &nbsp;
+						<TD valign="top" style="white-space: nowrap;">
+							<B><loc:message name="propertyFilterIgorePositions"/></B> *
 						</TD>
 						<TD>
-							<TABLE border="0" align="left" cellspacing="1" cellpadding="2">
-							<% int ctr22 = 0; %>
-							 <logic:iterate indexId="ctr" id="filterPosType" name="<%=PositionType.POSTYPE_ATTR_NAME%>" type="org.unitime.timetable.model.PositionType" >
-							 	<% 	ctr22 = ctr.intValue();
-							 		if ((ctr22+1)%3==1) out.println("<TR>"); %>
-							 	<TD>
-							 		&nbsp;<html:multibox property="displayPosType"><%=((PositionType) filterPosType).getReference()%></html:multibox> <%=((PositionType) filterPosType).getLabel()%>&nbsp;
-							 	</TD>
-							 	<% if ((ctr22+1)%3==0) out.println("</TR>"); %>
-							 </logic:iterate>
-							 <% if ((ctr22+1)%3!=0) out.println("</TR>"); %>
-							 </TABLE>
+							<table>
+								<s:iterator value="#request.posTypeList" var="type">
+									<span style="width:25%; display:inline-block;">
+										<s:checkboxlist name="form.displayPosType" list="#{#type.reference:''}"/>
+										<s:property value="#type.label"/>
+									</span>
+								</s:iterator>
+							 </table>
 						</TD>
 					</TR>
 					<TR>
-						<TD colspan='2' class="WelcomeRowHead">
-							&nbsp;<font class="normal">* applies only to Instructors not in department list</font>							
-						</TD>
+						<TD colspan='2'><i><loc:message name="descriptionIgnorePosition"/></i></TD>
 					</TR>
 					<TR>
 						<TD colspan='2' align="right">
-							<html:submit property="op" 
-								styleClass="btn" accesskey="A" titleKey="title.applyFilter" >
-								<bean:message key="button.applyFilter" />
-							</html:submit> 
+							<s:submit accesskey='%{#msg.accessApplyInstructorFilter()}' name='op' value='%{#msg.actionApplyInstructorFilter()}'
+								title='%{#msg.titleApplyInstructorFilter(#msg.accessApplyInstructorFilter())}'/>
 						</TD>
 					</TR>
-
 					<TR>
 						<TD colspan='2'>&nbsp;</TD>
 					</TR>
-				</TABLE>
-				<script language="JavaScript" type="text/javascript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
-				<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-					<TR>
-						<TD colspan='2' align='right'>
-							<br>
-						</TD>
-					</TR>
-				</TABLE>
-				<script language="JavaScript" type="text/javascript">blEnd('dispFilter');</script>
+				</table>
+				<script type="text/javascript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
+					<table style="width: 100%;">
+						<TR>
+							<TD colspan='2' align='right'>
+								<br>
+							</TD>
+						</TR>
+					</table>
+				<script type="text/javascript">blEnd('dispFilter');</script>
 			</TD>
 		</TR>
+		
+		<s:if test=""></s:if>
 
 <!-- Department Instructors -->
-		<% if (frm.getDisplayListType()==null 
-				|| ( frm.getDisplayListType()!=null 
-						&& ( frm.getDisplayListType().equals("both") 
-								|| frm.getDisplayListType().equals("assigned")
-							)
-					) ) { %>
-
-		
+	<s:if test="form.displayListType == null || form.displayListType == 'both' || form.displayListType == 'assigned'">
 		<TR>
 			<TD colspan='2'>
-				<tt:section-title><A name="DeptInstr">Department Instructors</A></tt:section-title>
+				<tt:section-title><A id="DeptInstr"><loc:message name="sectionDepartmentInstructors"/></A></tt:section-title>
 			</TD>
 		</TR>
-		
-		<logic:empty name="<%=frmName%>" property="assignedInstr">
+		<s:if test="form.assignedInstr == null || form.assignedInstr.isEmpty()">
 			<TR>
-				<TD colspan='2'>
-				There are no instructors assigned to this department
-				</TD>
+				<TD colspan='2'><loc:message name="messageNoDepartmentalInstructors"/></TD>
 			</TR>
-		</logic:empty>
-				
-		<logic:notEmpty name="<%=frmName%>" property="assignedInstr">
+		</s:if>
+		<s:else>
 			<TR>
 				<TD colspan='2'>
-					<TABLE cellpadding="2" cellspacing="3" border="0">
-				
-						<logic:notEmpty name="<%=frmName%>" property="assignedInstr">
+					<table>
 						<TR align="center">
 							<TD> &nbsp;</TD>
-							<TD align="left"><I>External Id</I></TD>
-							<TD align="left"><I>Name</I></TD>
+							<TD align="left"><I><loc:message name="columnExternalId"/></I></TD>
+							<TD align="left"><I><loc:message name="columnInstructorName"/></I></TD>
 						</TR>
-							
-						<% 
-							String prevPosType = "";
-							String currPosType = "";
-							String posId = "";
-							String posId2 = "";
-							int ctr2 = 0;
-						%>
-
-						<logic:iterate name="<%=frmName%>" property="assignedInstr" id="instr" indexId="ctr">
-						<%	
-							DepartmentalInstructor inst = (DepartmentalInstructor) instr;
-							PositionType posType = inst.getPositionType();
-							boolean canDelete = inst.getClasses().isEmpty() && inst.getExams().isEmpty();
-							
-							if (posType == null) {
-								currPosType = "Position Type Not Set";
-								posId = "assigned_notSet";
-							}
-							else {
-								currPosType = posType.getLabel().trim();
-								posId = "assigned_" + posType.getUniqueId().toString();
-							}
-								
-							
-							
-							if (!prevPosType.equalsIgnoreCase(currPosType)) {
-								prevPosType = currPosType;
-								ctr2 = 0;
-						%>
-						<TR>
-							<TD colspan="4" align="left">
-								&nbsp;<br>
-								<B><U><%=currPosType%></U></B>								
-							</TD>
-							<TD colspan="2" align="right">
-								&nbsp;<br>
-								<IMG src="images/check_all.gif" alt="Select all <%=currPosType%>" title="Select All <%=currPosType%>" align="middle" onclick="doSelectAll(this, '<%=posId%>', true);" onmouseover="this.style.cursor='hand';this.style.cursor='pointer';">
-								<IMG src="images/clear_all.gif" alt="Clear all <%=currPosType%>" title="Clear All <%=currPosType%>" align="middle" onclick="doSelectAll(this, '<%=posId%>', false);" onmouseover="this.style.cursor='hand';this.style.cursor='pointer';">
-							</TD>
-						</TR>							
-						<%  } 
-						
-							posId2 = posId + "_" + (ctr2++);
-						%>
-						
-						<TR align="center">
-							<TD class="BottomBorderGray">
-								<html:multibox property="assignedSelected" styleId="<%=posId2%>" disabled="<%=!canDelete%>">
-									<%=inst.getUniqueId()%>
-								</html:multibox>
-							</TD>
-							<TD align="left" class="BottomBorderGray">
-								<% if (inst.getExternalUniqueId() != null) {
-										out.println(inst.getExternalUniqueId());
-									}		
-								%>&nbsp;
-							</TD>
-							<TD align="left" class="BottomBorderGray">
-								<%= nameFormat.format(inst)%>
-							</TD>
-						</TR>
-						</logic:iterate>
-								
-						</logic:notEmpty>
-					</TABLE>
+						<s:set var="prevPosType" value=""/>
+						<s:set var="idx" value="0"/>
+						<s:iterator value="form.assignedInstr" var="instr" status="stat">
+							<s:set var="posType" value="%{#instr.positionType}"/>
+							<s:set var="canDelete" value="%{#instr.classes.isEmpty() && #instr.exams.isEmpty()}"/>
+							<s:if test="#posType == null">
+								<s:set var="posId" value="-1"/>
+								<s:set var="currPosType" value="%{#msg.positionNotSet}"/>
+							</s:if>
+							<s:else>
+								<s:set var="posId" value="%{#posType.uniqueId}"/>
+								<s:set var="currPosType" value="%{#posType.label}"/>
+							</s:else>
+							<s:if test="#currPosType != #prevPosType">
+								<s:set var="prevPosType" value="%{#currPosType}"/>
+								<s:set var="idx" value="0"/>
+								<TR>
+									<TD colspan="4" align="left">
+										<s:if test="#stat.index > 0">&nbsp;<br></s:if>
+										<span style="font-weight: bold; text-decoration: underline;"><s:property value="#currPosType"/></span></TD>
+									<TD colspan="2" align="right">
+										<s:if test="#stat.index > 0">&nbsp;<br></s:if>
+										<IMG src="images/check_all.gif" alt="Select all ${currPosType}" title="Select All ${currPosType}" align="middle" onclick="doSelectAll(this, 'na-${posId}', true);" onmouseover="this.style.cursor='hand';this.style.cursor='pointer';">
+										<IMG src="images/clear_all.gif" alt="Clear all ${currPosType}" title="Clear All ${currPosType}" align="middle" onclick="doSelectAll(this, 'na-${posId}', false);" onmouseover="this.style.cursor='hand';this.style.cursor='pointer';">
+									</TD>
+								</TR>
+							</s:if>
+							<TR align="center">
+								<TD class="BottomBorderGray">
+									<s:checkboxlist name="form.assignedSelected" list="#{#instr.uniqueId:''}" id="na-%{#posId}-%{#idx}" disabled="%{!#canDelete}"/>
+								</TD>
+								<TD align="left" class="BottomBorderGray">
+									<s:if test="#instr.externalUniqueId != null">
+										<s:property value="#instr.externalUniqueId"/>
+									</s:if>
+								</TD>
+								<TD align="left" class="BottomBorderGray">
+									<s:property value="#instr.getName(form.nameFormat)"/>
+								</TD>
+							</TR>
+							<s:set var="idx" value="%{#idx + 1}"/>
+						</s:iterator>
+					</table>
 				</TD>
 			</TR>
 			<TR>
 				<TD colspan='2'>&nbsp;</TD>
 			</TR>
-		</logic:notEmpty>
-		<% } %>
+		</s:else>
+	</s:if>
 
 <!-- Instructors not in the Department List -->
-		<% if (frm.getDisplayListType()==null 
-				|| ( frm.getDisplayListType()!=null 
-						&& ( frm.getDisplayListType().equals("both") 
-								|| frm.getDisplayListType().equals("available")
-							)
-					) ) { %>
-
+	<s:if test="form.displayListType == null || form.displayListType == 'both' || form.displayListType == 'available'">
 		<TR>
 			<TD colspan='2'>
-				<tt:section-title><A name="NonDeptInstr">Instructors not in the Department List</A></tt:section-title>
+				<tt:section-title><A id="NonDeptInstr"><loc:message name="sectionAvailableInstructors"/></A></tt:section-title>
 			</TD>
 		</TR>
-
-		<logic:empty name="<%=frmName%>" property="availableInstr">
+		<s:if test="form.availableInstr == null || form.availableInstr.isEmpty()">
 			<TR>
-				<TD colspan='2'>
-				There are no additional instructors that can be assigned to this department
-				</TD>
+				<TD colspan='2'><loc:message name="messageNoAvailableInstructors"/></TD>
 			</TR>
-		</logic:empty>
-				
-		<logic:notEmpty name="<%=frmName%>" property="availableInstr">
+		</s:if>
+		<s:else>
 			<TR>
 				<TD colspan='2'>
-					<TABLE cellpadding="2" cellspacing="3" border="0">
-				
-						<logic:notEmpty name="<%=frmName%>" property="availableInstr">
+					<table>
 						<TR align="center">
 							<TD> &nbsp;</TD>
-							<TD align="left"><I>External Id</I></TD>
-							<TD align="left"><I>Name</I></TD>
+							<TD align="left"><I><loc:message name="columnExternalId"/></I></TD>
+							<TD align="left"><I><loc:message name="columnInstructorName"/></I></TD>
 						</TR>
-							
-						<% 
-							String prevPosType2 = "";
-							String currPosType2 = "";
-							String prevPosRef2 = "";
-							String currPosRef2 = "";
-							String posIdA = "";
-							String posIdA2 = "";
-							int ctrA2 = 0;
-						%>
-
-						<logic:iterate name="<%=frmName%>" property="availableInstr" id="staff" indexId="ctr">
-						<%	
-							Staff s = (Staff) staff;
-							PositionType posType2 = null;
-							if (s.getPositionType()!=null) 
-								posType2 = s.getPositionType();
-							
-							if (posType2 == null) {
-								currPosType2 = "Position Type Not Set";
-								currPosRef2 = "NOT_SET";
-								posIdA = "available_notSet";
-							}
-							else {
-								currPosType2 = posType2.getLabel().trim();
-								currPosRef2 = posType2.getReference().trim();
-								posIdA = "available_" + posType2.getUniqueId().toString();
-							}
-							
-							String[] hpt = frm.getDisplayPosType();
-							boolean found = false;
-							for (int ctrP=0; ctrP<hpt.length; ctrP++) {
-								if (currPosRef2.equalsIgnoreCase(hpt[ctrP])) {
-									found = true;
-									break;
-								}
-							}
-							if (!found) {
-								
-								if (!prevPosType2.equalsIgnoreCase(currPosType2)) {
-									prevPosType2 = currPosType2;
-									prevPosRef2 = currPosRef2;
-									ctrA2=0;
-						%>
-						<TR>
-							<TD colspan="4" align="left">
-								&nbsp;<br>
-								<B><U><%=currPosType2%></U></B>								
-							</TD>
-							<TD colspan="2" align="right">
-								&nbsp;<br>
-								<IMG src="images/check_all.gif" alt="Select all <%=currPosType2%>" title="Select All <%=currPosType2%>" align="middle" onclick="doSelectAll(this, '<%=posIdA%>', true);" onmouseover="this.style.cursor='hand';this.style.cursor='pointer';">
-								<IMG src="images/clear_all.gif" alt="Clear all <%=currPosType2%>" title="Clear All <%=currPosType2%>" align="middle" onclick="doSelectAll(this, '<%=posIdA%>', false);" onmouseover="this.style.cursor='hand';this.style.cursor='pointer';">
-							</TD>
-						</TR>							
-						<%  	} 
-						
-								posIdA2 = posIdA + "_" + (ctrA2++);
-						%>
-						
-						<TR align="center">
-							<TD class="BottomBorderGray">
-								<html:multibox property="availableSelected" styleId="<%=posIdA2%>">
-									<%=s.getUniqueId()%>
-								</html:multibox>	
-							</TD>
-							<TD align="left" class="BottomBorderGray">
-								<% if (s.getExternalUniqueId() != null) {
-										out.println(s.getExternalUniqueId());
-									}		
-								%>&nbsp;
-							</TD>
-							<TD align="left" class="BottomBorderGray">
-								<%= nameFormat.format(s) %>
-							</TD>							
-						</TR>
-						<% } %>
-						</logic:iterate>
-						
-						</logic:notEmpty>
-					
-					</TABLE>
+						<s:set var="prevPosType" value=""/>
+						<s:set var="idx" value="0"/>
+						<s:iterator value="form.availableInstr" var="instr" status="stat">
+							<s:set var="posType" value="%{#instr.positionType}"/>
+							<s:if test="#posType == null">
+								<s:set var="posId" value="-1"/>
+								<s:set var="currPosType" value="%{#msg.positionNotSet}"/>
+							</s:if>
+							<s:else>
+								<s:set var="posId" value="%{#posType.uniqueId}"/>
+								<s:set var="currPosType" value="%{#posType.label}"/>
+							</s:else>
+							<s:if test="#currPosType != #prevPosType">
+								<s:set var="prevPosType" value="%{#currPosType}"/>
+								<s:set var="idx" value="0"/>
+								<TR>
+									<TD colspan="4" align="left">
+										<s:if test="#stat.index > 0">&nbsp;<br></s:if>
+										<span style="font-weight: bold; text-decoration: underline;"><s:property value="#currPosType"/></span>
+									</TD>
+									<TD colspan="2" align="right">
+										<s:if test="#stat.index > 0">&nbsp;<br></s:if>
+										<IMG src="images/check_all.gif" alt="Select all ${currPosType}" title="Select All ${currPosType}" align="middle" onclick="doSelectAll(this, 'na-${posId}', true);" onmouseover="this.style.cursor='hand';this.style.cursor='pointer';">
+										<IMG src="images/clear_all.gif" alt="Clear all ${currPosType}" title="Clear All ${currPosType}" align="middle" onclick="doSelectAll(this, 'na-${posId}', false);" onmouseover="this.style.cursor='hand';this.style.cursor='pointer';">
+									</TD>
+								</TR>
+							</s:if>
+							<TR align="center">
+								<TD class="BottomBorderGray">
+									<s:checkboxlist name="form.availableSelected" list="#{#instr.uniqueId:''}" id="na-%{#posId}-%{#idx}"/>
+								</TD>
+								<TD align="left" class="BottomBorderGray">
+									<s:if test="#instr.externalUniqueId != null">
+										<s:property value="#instr.externalUniqueId"/>
+									</s:if>
+								</TD>
+								<TD align="left" class="BottomBorderGray">
+									<s:property value="#instr.getName(form.nameFormat)"/>
+								</TD>
+							</TR>
+							<s:set var="idx" value="%{#idx + 1}"/>
+						</s:iterator>
+					</table>
 				</TD>
 			</TR>
-		</logic:notEmpty>
-		<% } %>
-
+			<TR>
+				<TD colspan='2'>&nbsp;</TD>
+			</TR>
+		</s:else>
+	</s:if>
 	
 		<TR>
 			<TD valign="middle" colspan='2' class='WelcomeRowHead'>
@@ -379,16 +268,13 @@
 		
 		<TR>
 			<TD valign="middle" colspan='2' align="right">
-				<html:submit property="op" 
-					styleClass="btn" accesskey="M" titleKey="title.updateInstructor" >
-					<bean:message key="button.update" />
-				</html:submit> 
-				<html:submit property="op" 
-					styleClass="btn" accesskey="B" titleKey="title.returnToDetail">
-					<bean:message key="button.returnToDetail" />
-				</html:submit>
+					<s:submit accesskey='%{#msg.accessUpdateInstructorsList()}' name='op' value='%{#msg.actionUpdateInstructorsList()}'
+						title='%{#msg.titleUpdateInstructorsList(#msg.accessUpdateInstructorsList())}'/>
+					<s:submit accesskey='%{#msg.accessBackToInstructors()}' name='op' value='%{#msg.actionBackToInstructors()}'
+						title='%{#msg.titleBackToInstructors(#msg.accessBackToInstructors())}'/>
 			</TD>
 		</TR>
 		
 	</TABLE>
-</html:form>
+</s:form>
+</loc:bundle>
