@@ -43,6 +43,7 @@ import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.StaffDAO;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.NameFormat;
 
 
@@ -60,7 +61,7 @@ public class InstructorAction extends UniTimeAction<InstructorEditForm> {
 		if (form == null)
 			form = new InstructorEditForm();
 
-		form.setPosType(request);
+		LookupTables.setupPositionTypes(request);
 
 		form.setNameFormat(NameFormat.fromReference(sessionContext.getUser().getProperty(UserProperty.NameFormat)));
 		
@@ -191,10 +192,14 @@ public class InstructorAction extends UniTimeAction<InstructorEditForm> {
 			
 			if (form.getPuId() != null && form.getPuId().trim().length()>0 && !form.getPuId().equalsIgnoreCase("null")) {
 				inst.setExternalUniqueId(form.getPuId().trim());
+			} else {
+				inst.setExternalUniqueId(null);
 			}
 
 			if (form.getCareerAcct() != null && form.getCareerAcct().trim().length()>0) {
 				inst.setCareerAcct(form.getCareerAcct().trim());
+			} else {
+				inst.setCareerAcct(null);
 			}
 			
 			inst.setEmail(form.getEmail());

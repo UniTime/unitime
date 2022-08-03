@@ -120,5 +120,4 @@ public class PositionType extends BasePositionType implements Comparable{
     public static synchronized List<PositionType> getPositionTypeList() {
         return PositionTypeDAO.getInstance().findAll(Order.asc("sortOrder"));
     }
-
 }

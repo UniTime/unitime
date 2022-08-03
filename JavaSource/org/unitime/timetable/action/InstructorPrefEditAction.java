@@ -23,17 +23,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessages;
-import org.apache.struts.action.ActionRedirect;
-import org.apache.struts.util.MessageResources;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
@@ -51,315 +44,264 @@ import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 
 
 /** 
- * MyEclipse Struts
- * Creation date: 07-24-2006
- * 
- * XDoclet definition:
- * @struts.action path="/instructorPrefEdit" name="instructorEditForm" input="/user/instructorPrefsEdit.jsp" scope="request"
- * @struts.action-forward name="showEdit" path="instructorPrefsEditTile"
- *
  * @author Tomas Muller, Zuzana Mullerova
  */
-@Service("/instructorPrefEdit")
-public class InstructorPrefEditAction extends PreferencesAction {
-
+@Action(value = "instructorPrefEdit", results = {
+		@Result(name = "showEdit", type = "tiles", location = "instructorPrefEdit.tiles"),
+		@Result(name = "showDetail", type = "redirect", location = "/instructorDetail.action",
+				params = { "instructorId", "${form.instructorId}"}),
+		@Result(name = "showList", type = "redirect", location = "/instructorSearch.action")
+	})
+@TilesDefinition(name = "instructorPrefEdit.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Instructor Preferences"),
+		@TilesPutAttribute(name = "body", value = "/user/instructorPrefsEdit.jsp"),
+		@TilesPutAttribute(name = "showNavigation", value = "true"),
+		@TilesPutAttribute(name = "checkRole", value = "false")
+	})
+public class InstructorPrefEditAction extends PreferencesAction2<InstructorEditForm> {
+	private static final long serialVersionUID = 5756382132156450413L;
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
-	
-	@Autowired SessionContext sessionContext;
+	protected String instructorId = null;
+	protected String op2 = null;
+	protected String reloadCause = null;
 
-	
-	// --------------------------------------------------------- Instance Variables
+	public String getInstructorId() { return instructorId; }
+	public void setInstructorId(String instructorId) { this.instructorId = instructorId; }
+	public String getOp2() { return op2; }
+	public void setOp2(String op2) { this.op2 = op2; }
+	public String getReloadCause() { return reloadCause; }
+	public void setReloadCause(String reloadCause) { this.reloadCause = reloadCause; }
 
-	// --------------------------------------------------------- Methods
+	public String execute() throws Exception {
+		if (form == null) form = new InstructorEditForm();
 
-	/** 
-	 * Method execute
-	 * @param mapping
-	 * @param form
-	 * @param request
-	 * @param response
-	 * @return ActionForward
-	 */
-	public ActionForward execute(
-		ActionMapping mapping,
-		ActionForm form,
-		HttpServletRequest request,
-		HttpServletResponse response) throws Exception {
-		
-    	try {
+		super.execute();
 
-            // Set common lookup tables
-            super.execute(mapping, form, request, response);
-            
-    		InstructorEditForm frm = (InstructorEditForm) form;       
-            MessageResources rsc = getResources(request);
-    		ActionMessages errors = new ActionMessages();
-            
-            // Read parameters
-            String instructorId = request.getParameter("instructorId");
-            String op = frm.getOp();            
-            String reloadCause = request.getParameter("reloadCause");
-            
-            // Read subpart id from form
-            if(op.equals(rsc.getMessage("button.reload"))
-            		|| op.equals(MSG.actionAddTimePreference())
-                    || op.equals(MSG.actionAddRoomPreference())
-                    || op.equals(MSG.actionAddBuildingPreference())
-                    || op.equals(MSG.actionAddRoomFeaturePreference())
-                    || op.equals(MSG.actionAddDistributionPreference()) 
-                    || op.equals(MSG.actionAddRoomGroupPreference())
-                    || op.equals(MSG.actionAddCoursePreference())
-                    || op.equals(MSG.actionAddAttributePreference())
-                    || op.equals(MSG.actionUpdatePreferences()) 
-                  //  || op.equals(rsc.getMessage("button.cancel")) -- not used???
-                    || op.equals(MSG.actionClearInstructorPreferences())                 
-                  //  || op.equals(rsc.getMessage("button.delete")) -- not used???
-                    || op.equals(MSG.actionBackToDetail())
-                    || op.equals(MSG.actionNextInstructor())
-                    || op.equals(MSG.actionPreviousInstructor())) {
-            	instructorId = frm.getInstructorId();
+		//Read parameters
+        if (instructorId == null && request.getAttribute("instructorId") != null)
+        	instructorId = (String)request.getAttribute("instructorId");
+        if (instructorId == null) instructorId = form.getInstructorId();
+
+        if (op == null) op = form.getOp();
+        if (op2 != null && !op2.isEmpty()) op = op2;
+        
+        // Determine if initial load
+        if (op == null || op.trim().isEmpty() || ("Reload".equals(op) && (reloadCause == null || reloadCause.trim().isEmpty()))) {
+        	op = "init";
+        }
+        
+        // Check op exists
+        if (op==null || op.trim().isEmpty()) 
+            throw new Exception (MSG.exceptionNullOperationNotSupported());
+        
+        //Check instructor exists
+        if (instructorId==null || instructorId.trim().isEmpty()) 
+            throw new Exception (MSG.exceptionInstructorInfoNotSupplied());
+        
+        sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorPreferences);
+        
+        boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
+        
+        // Set screen name
+        form.setScreenName("instructorPref");
+        
+        // If subpart id is not null - load subpart info
+        DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
+        DepartmentalInstructor inst = idao.get(Long.valueOf(instructorId));
+        LookupTables.setupInstructorDistribTypes(request, sessionContext, inst);
+        
+        // Cancel - Go back to Instructors Detail Screen
+        if (MSG.actionBackToDetail().equals(op)) {
+        	if (BackTracker.hasBack(request, 1)) {
+                BackTracker.doBack(request, response);
+                return null;
             }
-            
-            // Determine if initial load
-            if(op==null || op.trim().length()==0 
-                    || ( op.equals(rsc.getMessage("button.reload")) 						
-                    	 && (reloadCause==null || reloadCause.trim().length()==0) )) {     
-                op = "init";
+        	if (instructorId != null && !instructorId.trim().isEmpty()) {
+                return "showDetail";
+            } else {
+            	return "showList";
             }
+        }
+        
+        // Clear all preferences
+        if (MSG.actionClearInstructorPreferences().equals(op)) {
+        	doClear(inst.getPreferences(), Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING, Preference.Type.DISTRIBUTION);
+            idao.update(inst);
+            op = "init";            	
             
-            // Check op exists
-            if(op==null || op.trim()=="") 
-                throw new Exception (MSG.exceptionNullOperationNotSupported());
+            ChangeLog.addChange(
+                    null, 
+                    sessionContext,
+                    inst, 
+                    ChangeLog.Source.INSTRUCTOR_PREF_EDIT, 
+                    ChangeLog.Operation.CLEAR_PREF, 
+                    null, 
+                    inst.getDepartment());
             
-            //Check instructor exists
-            if(instructorId==null || instructorId.trim()=="") 
-                throw new Exception (MSG.exceptionInstructorInfoNotSupplied());
+            return "showDetail";
+        }
+        
+        // Reset form for initial load
+        if ("init".equals(op)) { 
+            form.reset();
+        }
+        
+        // Load form attributes that are constant
+        doLoad(inst, instructorId);
+        
+        // Update Preferences for InstructorDept
+        if(MSG.actionUpdatePreferences().equals(op) 
+        		|| MSG.actionNextInstructor().equals(op) 
+        		|| MSG.actionPreviousInstructor().equals(op)) {	
+
+        	// Validate input prefs
+            form.validate(this);
             
-            sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorPreferences);
-            
-            boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
-            
-            // Set screen name
-            frm.setScreenName("instructorPref");
-            
-            // If subpart id is not null - load subpart info
-            DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
-            DepartmentalInstructor inst = idao.get(Long.valueOf(instructorId));
-            LookupTables.setupInstructorDistribTypes(request, sessionContext, inst);
-            
-            // Cancel - Go back to Instructors Detail Screen
-            if(op.equals(MSG.actionBackToDetail()) 
-                    && instructorId!=null && instructorId.trim()!="") {
-	            ActionRedirect redirect = new ActionRedirect(mapping.findForward("showDetail"));
-	            redirect.addParameter("instructorId", frm.getInstructorId());
-	            return redirect;
-            }
-            
-            // Clear all preferences
-            if(op.equals(MSG.actionClearInstructorPreferences())) {
-            	doClear(inst.getPreferences(), Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING, Preference.Type.DISTRIBUTION);
-                idao.update(inst);
-                op = "init";            	
+            // No errors - Add to instructorDept and update
+            if (!hasFieldErrors()) {
+                Set s = inst.getPreferences();
+         
+                // Clear all old prefs (excluding course preferences)
+                for (Iterator i = s.iterator(); i.hasNext(); ) {
+                	Preference p = (Preference)i.next();
+                	if (p instanceof InstructorCoursePref) continue;
+                	i.remove();
+                }                
+                
+        		super.doUpdate(inst, s, timeVertical,
+        				Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING, Preference.Type.DISTRIBUTION);
+        		
+        		if ("Enabled".equalsIgnoreCase(ApplicationProperty.InstructorUnavailbeDays.value()) || "Preferences".equalsIgnoreCase(ApplicationProperty.InstructorUnavailbeDays.value()))
+        			inst.setUnavailablePatternAndOffset(request);
                 
                 ChangeLog.addChange(
                         null, 
                         sessionContext,
                         inst, 
                         ChangeLog.Source.INSTRUCTOR_PREF_EDIT, 
-                        ChangeLog.Operation.CLEAR_PREF, 
+                        ChangeLog.Operation.UPDATE, 
                         null, 
                         inst.getDepartment());
-                
-	            ActionRedirect redirect = new ActionRedirect(mapping.findForward("showDetail"));
-	            redirect.addParameter("instructorId", instructorId);
-	            return redirect;
-            }
-            
-            // Reset form for initial load
-            if(op.equals("init")) { 
-                frm.reset(mapping, request);
-            }
-            
-            // Load form attributes that are constant
-            doLoad(request, frm, inst, instructorId);
-            
-            // Update Preferences for InstructorDept
-            if(op.equals(MSG.actionUpdatePreferences()) 
-            		|| op.equals(MSG.actionNextInstructor()) 
-            		|| op.equals(MSG.actionPreviousInstructor())) {	
 
-            	// Validate input prefs
-                errors = frm.validate(mapping, request);
+        		idao.saveOrUpdate(inst);
                 
-                // No errors - Add to instructorDept and update
-                if(errors.size()==0) {
-                    Set s = inst.getPreferences();
-             
-                    // Clear all old prefs (excluding course preferences)
-                    for (Iterator i = s.iterator(); i.hasNext(); ) {
-                    	Preference p = (Preference)i.next();
-                    	if (p instanceof InstructorCoursePref) continue;
-                    	i.remove();
-                    }                
-                    
-            		super.doUpdate(request, frm, inst, s, timeVertical,
-            				Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING, Preference.Type.DISTRIBUTION);
-            		
-            		if ("Enabled".equalsIgnoreCase(ApplicationProperty.InstructorUnavailbeDays.value()) || "Preferences".equalsIgnoreCase(ApplicationProperty.InstructorUnavailbeDays.value()))
-            			inst.setUnavailablePatternAndOffset(request);
-                    
-                    ChangeLog.addChange(
-                            null, 
-                            sessionContext,
-                            inst, 
-                            ChangeLog.Source.INSTRUCTOR_PREF_EDIT, 
-                            ChangeLog.Operation.UPDATE, 
-                            null, 
-                            inst.getDepartment());
+	        	if (MSG.actionNextInstructor().equals(op)) {
+	            	response.sendRedirect(response.encodeURL("instructorPrefEdit.action?instructorId="+form.getNextId()));
+	            	return null;
+	        	}
+	            
+	            if (MSG.actionPreviousInstructor().equals(op)) {
+	            	response.sendRedirect(response.encodeURL("instructorPrefEdit.action?instructorId="+form.getPreviousId()));
+	            	return null;
+	            }
 
-            		idao.saveOrUpdate(inst);
-                    
-    	        	if (op.equals(MSG.actionNextInstructor())) {
-    	            	response.sendRedirect(response.encodeURL("instructorPrefEdit.do?instructorId="+frm.getNextId()));
-    	            	return null;
-    	        	}
-    	            
-    	            if (op.equals(MSG.actionPreviousInstructor())) {
-    	            	response.sendRedirect(response.encodeURL("instructorPrefEdit.do?instructorId="+frm.getPreviousId()));
-    	            	return null;
-    	            }
-                    
-    	            ActionRedirect redirect = new ActionRedirect(mapping.findForward("showDetail"));
-    	            redirect.addParameter("instructorId", frm.getInstructorId());
-    	            redirect.addParameter("showPrefs", "true");
-    	            return redirect;
-                }
-                else {
-                    saveErrors(request, errors);
-                }
+	            return "showDetail";
             }
-            
-	        // Initialize Preferences for initial load 
-            Set timePatterns = new HashSet();
-            frm.setAvailableTimePatterns(null);
-            if(op.equals("init")) {
-            	initPrefs(frm, inst, null, true);
-            	timePatterns.add(new TimePattern(Long.valueOf(-1)));
-        		//timePatterns.addAll(TimePattern.findApplicable(request,30,false));
-            }
-            
-            //load class assignments
-    		if (!inst.getClasses().isEmpty()) {
-    		    WebTable classTable = new WebTable( 3,
-    			   	null,
-    		    	new String[] {"class", "Type" , "Limit"},
-    			    new String[] {"left", "left","left"},
-    			    null );
-    					
-    		    //Get class assignment information
-    			for (Iterator iterInst = inst.getClasses().iterator(); iterInst.hasNext();) {
-    				ClassInstructor ci = (ClassInstructor) iterInst.next();
-    				Class_ c = ci.getClassInstructing();
-    				classTable.addLine(
-    					null,
-    					new String[] {
-    						c.getClassLabel(),
-    						c.getItypeDesc(),
-    						c.getExpectedCapacity().toString(),
-    					},
-    					null,null);
-    			}
-    			String tblData = classTable.printTable();
-    			request.setAttribute("classTable", tblData);
-    		}
-    		
-    		//// Set display distribution to Not Applicable
-    		/*
-    		request.setAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR, 
-    				"<FONT color=696969>Distribution Preferences Not Applicable</FONT>");
-    				*/
-            
-    		// Process Preferences Action
-    		processPrefAction(request, frm, errors);
-    		
-    		// Generate Time Pattern Grids
-    		// super.generateTimePatternGrids(request, frm, inst, timePatterns, op, timeVertical, true, null);
-    		for (Preference pref: inst.getPreferences()) {
-				if (pref instanceof TimePref) {
-					frm.setAvailability(((TimePref)pref).getPreference());
-					break;
-				}
+        }
+        
+        // Initialize Preferences for initial load 
+        Set timePatterns = new HashSet();
+        form.setAvailableTimePatterns(null);
+        if ("init".equals(op)) {
+        	initPrefs(inst, null, true);
+        	timePatterns.add(new TimePattern(Long.valueOf(-1)));
+        }
+        
+        //load class assignments
+		if (!inst.getClasses().isEmpty()) {
+		    WebTable classTable = new WebTable( 3,
+			   	null,
+		    	new String[] {"class", "Type" , "Limit"},
+			    new String[] {"left", "left","left"},
+			    null );
+					
+		    //Get class assignment information
+			for (Iterator iterInst = inst.getClasses().iterator(); iterInst.hasNext();) {
+				ClassInstructor ci = (ClassInstructor) iterInst.next();
+				Class_ c = ci.getClassInstructing();
+				classTable.addLine(
+					null,
+					new String[] {
+						c.getClassLabel(),
+						c.getItypeDesc(),
+						c.getExpectedCapacity().toString(),
+					},
+					null,null);
 			}
-
-            LookupTables.setupRooms(request, inst);		 // Room Prefs
-            LookupTables.setupBldgs(request, inst);		 // Building Prefs
-            LookupTables.setupRoomFeatures(request, inst); // Preference Levels
-            LookupTables.setupRoomGroups(request, inst);   // Room Groups
+			String tblData = classTable.printTable();
+			request.setAttribute("classTable", tblData);
+		}
 		
-            BackTracker.markForBack(
-            		request,
-            		"instructorDetail.action?instructorId="+frm.getInstructorId(),
-            		MSG.backInstructor(frm.getName()==null?"null":frm.getName().trim()),
-            		true, false);
+		// Process Preferences Action
+		processPrefAction();
+		
+		// Generate Time Pattern Grids
+		for (Preference pref: inst.getPreferences()) {
+			if (pref instanceof TimePref) {
+				form.setAvailability(((TimePref)pref).getPreference());
+				break;
+			}
+		}
 
-            return mapping.findForward("showEdit");
-            
-    	} catch (Exception e) {
-    		Debug.error(e);
-    		throw e;
-    	}
+        LookupTables.setupRooms(request, inst);		 // Room Prefs
+        LookupTables.setupBldgs(request, inst);		 // Building Prefs
+        LookupTables.setupRoomFeatures(request, inst); // Preference Levels
+        LookupTables.setupRoomGroups(request, inst);   // Room Groups
+	
+        BackTracker.markForBack(
+        		request,
+        		"instructorDetail.action?instructorId="+form.getInstructorId(),
+        		MSG.backInstructor(form.getName()==null?"null":form.getName().trim()),
+        		true, false);
+
+        return "showEdit";
 	}
 	
 	/**
 	 * Loads the non-editable instructor info into the form
-	 * @param request
-	 * @param frm
-	 * @param inst
-	 * @param instructorId
 	 */
-	private void doLoad(HttpServletRequest request, InstructorEditForm frm, DepartmentalInstructor inst, String instructorId) {
+	private void doLoad(DepartmentalInstructor inst, String instructorId) {
         // populate form
-		frm.setInstructorId(instructorId);
+		form.setInstructorId(instructorId);
 		
 		if ("Enabled".equalsIgnoreCase(ApplicationProperty.InstructorUnavailbeDays.value()) || "Preferences".equalsIgnoreCase(ApplicationProperty.InstructorUnavailbeDays.value()))
 			request.setAttribute("unavailableDaysPattern", inst.getUnavailablePatternHtml(true));
 
-		frm.setName(
+		form.setName(
 				inst.getName(UserProperty.NameFormat.get(sessionContext.getUser())) + 
     			(inst.getPositionType() == null ? "" : " (" + inst.getPositionType().getLabel() + ")"));
 		
 		if (inst.getExternalUniqueId() != null) {
-			frm.setPuId(inst.getExternalUniqueId());
+			form.setPuId(inst.getExternalUniqueId());
 		}
 				
-		frm.setDeptName(inst.getDepartment().getName().trim());
+		form.setDeptName(inst.getDepartment().getName().trim());
 		
 		if (inst.getPositionType() != null) {
-			frm.setPosType(inst.getPositionType().getUniqueId().toString());
+			form.setPosType(inst.getPositionType().getUniqueId().toString());
 		}
 		
 		if (inst.getCareerAcct() != null) {
-			frm.setCareerAcct(inst.getCareerAcct().trim());
+			form.setCareerAcct(inst.getCareerAcct().trim());
 		}
 		
-		frm.setEmail(inst.getEmail());
+		form.setEmail(inst.getEmail());
 		
 		if (inst.getNote() != null) {
-			frm.setNote(inst.getNote().trim());
+			form.setNote(inst.getNote().trim());
 		}
 		
 		try {
 			DepartmentalInstructor previous = inst.getPreviousDepartmentalInstructor(sessionContext, Right.InstructorPreferences);
-			frm.setPreviousId(previous==null?null:previous.getUniqueId().toString());
+			form.setPreviousId(previous==null?null:previous.getUniqueId().toString());
 			DepartmentalInstructor next = inst.getNextDepartmentalInstructor(sessionContext, Right.InstructorPreferences);
-			frm.setNextId(next==null?null:next.getUniqueId().toString());
+			form.setNextId(next==null?null:next.getUniqueId().toString());
 		} catch (Exception e) {
 			Debug.error(e);
 		}

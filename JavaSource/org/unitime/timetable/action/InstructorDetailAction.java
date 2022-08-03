@@ -106,7 +106,6 @@ public class InstructorDetailAction extends PreferencesAction2<InstructorEditFor
 	
 	public String execute() throws Exception{
 		if (form == null) form = new InstructorEditForm();
-		form.setPosType(request);
 		
 		super.execute();
 		
@@ -180,13 +179,13 @@ public class InstructorDetailAction extends PreferencesAction2<InstructorEditFor
         // Edit Preference - Redirect to prefs edit screen
         if (MSG.actionEditInstructorPreferences().equals(op)) {
         	sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorPreferences);
-        	response.sendRedirect( response.encodeURL("instructorPrefEdit.do?instructorId="+instructorId) );
+        	response.sendRedirect( response.encodeURL("instructorPrefEdit.action?instructorId="+instructorId) );
         	return null;
         }
         
         if(MSG.actionEditInstructorAssignmentPreferences().equals(op)) {
         	sessionContext.checkPermission(inst.getDepartment(), Right.InstructorAssignmentPreferences);
-        	response.sendRedirect( response.encodeURL("instructorAssignmentPref.do?instructorId="+instructorId) );
+        	response.sendRedirect( response.encodeURL("instructorAssignmentPref.action?instructorId="+instructorId) );
         	return null;
         }
         

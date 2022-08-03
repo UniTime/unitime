@@ -128,12 +128,17 @@
 			<s:property value="form.deptName"/>
 		</TD>
 	</TR>
-	<TR>
-		<TD><loc:message name="propertyInstructorPosition"/></TD>
-		<TD>
-			<s:select name="form.posType" list="#request.posTypeList" listKey="id" listValue="value" headerKey="" headerValue="%{#const.select()}"></s:select>
-		</TD>
-	</TR>
+	<s:if test="#request.posTypeList != null">
+		<TR>
+			<TD><loc:message name="propertyInstructorPosition"/></TD>
+			<TD>
+				<s:select name="form.posType" list="#request.posTypeList" listKey="uniqueId" listValue="label" headerKey="" headerValue="%{#const.select()}"></s:select>
+			</TD>
+		</TR>
+	</s:if>
+	<s:else>
+		<s:hidden name="form.posType"/>
+	</s:else>
 	<TR>
 		<TD valign="top"><loc:message name="propertyNotes"/></TD>
 		<TD>

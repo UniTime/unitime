@@ -17,158 +17,99 @@
  * limitations under the License.
  * 
 --%>
-<%@ page import="org.unitime.timetable.action.InstructorAssignmentPrefAction"%>
-<%@ page language="java" autoFlush="true" errorPage="../error.jsp"%>
-<%@ page import="org.unitime.timetable.form.InstructorEditForm" %>
-<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
-<%
-	// Get Form 
-	String frmName = "instructorEditForm";	
-	InstructorEditForm frm = (InstructorEditForm) request.getAttribute(frmName);	
-%>	
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 
-<loc:bundle name="CourseMessages">
-<tt:session-context/>
-<SCRIPT language="javascript">
-	<!--
-		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
-	// -->
-</SCRIPT>
-
-<html:form action="instructorAssignmentPref">
-	<html:hidden property="instructorId"/>
-	<html:hidden property="name"/>
-	<html:hidden property="nextId"/>
-	<html:hidden property="previousId"/>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+<s:form action="instructorAssignmentPref">
+	<s:hidden name="form.instructorId"/>
+	<s:hidden name="form.name"/>
+	<s:hidden name="form.nextId"/>
+	<s:hidden name="form.previousId"/>
 	
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+	<table class="unitime-MainTable">
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title>
-						<bean:write name='<%=frmName%>' property='name'/>
+						<s:property value="#form.name"/>
 					</tt:section-title>
-
-					<html:submit property="op" 
-							styleClass="btn" 
-							accesskey="<%=MSG.accessUpdatePreferences() %>" 
-							title="<%=MSG.titleUpdatePreferences(MSG.accessUpdatePreferences()) %>" >
-						<loc:message name="actionUpdatePreferences" />
-					</html:submit> 
-					
-					<logic:notEmpty name="<%=frmName%>" property="previousId">
-						&nbsp;
-						<html:submit property="op" 
-								styleClass="btn" 
-								accesskey='<%=MSG.accessPreviousInstructor() %>' 
-								title='<%=MSG.titlePreviousInstructorWithUpdate(MSG.accessPreviousInstructor())%>'>
-							<loc:message name="actionPreviousInstructor" />
-						</html:submit> 
-					</logic:notEmpty>
-					<logic:notEmpty name="<%=frmName%>" property="nextId">
-						&nbsp;
-						<html:submit property="op" 
-								styleClass="btn" 
-								accesskey='<%=MSG.accessNextInstructor() %>' 
-								title='<%=MSG.titleNextInstructorWithUpdate(MSG.accessNextInstructor()) %>'>
-							<loc:message name="actionNextInstructor" />						
-						</html:submit> 
-					</logic:notEmpty>
-					&nbsp;
-					<html:submit property="op" 
-							styleClass="btn" 
-							accesskey="<%=MSG.accessBackToDetail()%>" 
-							title="<%=MSG.titleBackToDetail(MSG.accessBackToDetail()) %>">
-						<loc:message name="actionBackToDetail"/>
-					</html:submit>
+					<s:submit accesskey='%{#msg.accessUpdatePreferences()}' name='op' value='%{#msg.actionUpdatePreferences()}'
+						title='%{#msg.titleUpdatePreferences(#msg.accessUpdatePreferences())}'/>
+					<s:if test="form.previousId != null">
+						<s:submit accesskey='%{#msg.accessPreviousInstructor()}' name='op' value='%{#msg.actionPreviousInstructor()}'
+							title='%{#msg.titlePreviousInstructorWithUpdate(#msg.accessPreviousInstructor())}'/>
+					</s:if>
+					<s:if test="form.nextId != null">
+						<s:submit accesskey='%{#msg.accessNextInstructor()}' name='op' value='%{#msg.actionNextInstructor()}'
+							title='%{#msg.titleNextInstructorWithUpdate(#msg.accessNextInstructor())}'/>
+					</s:if>
+					<s:submit accesskey='%{#msg.accessBackToDetail()}' name='op' value='%{#msg.actionBackToDetail()}'
+						title='%{#msg.titleBackToDetail(#msg.accessBackToDetail())}'/>
 				</tt:section-header>
 			</TD>
 		</TR>
 
-		<logic:messagesPresent>
-		<TR>
-			<TD colspan="2" align="left" class="errorCell">
-					<B><U>ERRORS</U></B><BR>
-				<BLOCKQUOTE>
-				<UL>
-				    <html:messages id="error">
-				      <LI>
-						${error}
-				      </LI>
-				    </html:messages>
-			    </UL>
-			    </BLOCKQUOTE>
-			</TD>
-		</TR>
-		</logic:messagesPresent>
+		<s:if test="!fieldErrors.isEmpty()">
+			<TR>
+				<TD colspan="2" align="left" class="errorTable">
+					<div class='errorHeader'><loc:message name="formValidationErrors"/></div><s:fielderror/>
+				</TD>
+			</TR>
+		</s:if>
 
 		<TR>
 			<TD><loc:message name="propertyTeachingPreference"/></TD>
 			<TD>
-				<html:select property="teachingPreference" size="1">
-					<logic:iterate scope="request" name="<%=org.unitime.timetable.model.PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="pr" type="org.unitime.timetable.model.PreferenceLevel" >
-						<logic:notEqual name="pr" property="prefProlog" value="R">
-							<html:option
-								style='<%="background-color:" + pr.prefcolor() + ";"%>'
-								value="<%=pr.getPrefProlog()%>" >
-								<bean:write name="pr" property="prefName"/>
-							</html:option>
-						</logic:notEqual>
-					</logic:iterate>
-				</html:select>
+				<s:select name="form.teachingPreference" list="#request.prefLevelsList" listKey="prefProlog" listValue="prefName"/>
 				<i><loc:message name="descriptionTeachingPreference"/></i>
 			</TD>
 		</TR>
 		<TR>
 			<TD><loc:message name="propertyMaxLoad"/></TD>
 			<TD>
-				<html:text property="maxLoad" size="10" style="text-align: right;"/> <loc:message name="teachingLoadUnits"/>
+				<s:textfield name="form.maxLoad" size="10" style="text-align: right;"/> <loc:message name="teachingLoadUnits"/>
 			</TD>
 		</TR>
 		
-		<logic:notEmpty scope="request" name="<%=org.unitime.timetable.model.InstructorAttributeType.ATTRIBUTE_TYPES_LIST_ATTR_NAME%>">
-		<TR><TD colspan='2'>&nbsp;</TD></TR>
-		<TR>
-			<TD valign="middle" colspan='2' class='WelcomeRowHead'>
-				<loc:message name="sectionAttributes"/>
-			</TD>
-		</TR>
-		<logic:iterate scope="request" name="<%=org.unitime.timetable.model.InstructorAttributeType.ATTRIBUTE_TYPES_LIST_ATTR_NAME%>" id="type" type="org.unitime.timetable.model.InstructorAttributeType" >
-			<TR><TD style="vertical-align: top;"><bean:write name="type" property="label"/>:</TD><TD>
-			<div class='unitime-InstructorAttributes'>
-			<logic:iterate scope="request" name="<%=org.unitime.timetable.model.InstructorAttribute.ATTRIBUTES_LIST_ATTR_NAME%>" id="attribute" type="org.unitime.timetable.model.InstructorAttribute" >
-				<logic:equal name="attribute" property="type.uniqueId" value="<%=type.getUniqueId().toString()%>">
-					<span class="attribute">
-					<html:checkbox property='<%="attribute(" + attribute.getUniqueId() + ")"%>'><bean:write name="attribute" property="name"/></html:checkbox>
-					</span>
-				</logic:equal>
-			</logic:iterate>
-			</TD></TR>
-			</div>
-		</logic:iterate>
-		</logic:notEmpty>
+		<s:if test="#request.attributeTypesList != null && !#request.attributeTypesList.isEmpty()">
+			<TR><TD colspan='2'>&nbsp;</TD></TR>
+			<TR>
+				<TD valign="middle" colspan='2' class='WelcomeRowHead'>
+					<loc:message name="sectionAttributes"/>
+				</TD>
+			</TR>
+			<s:iterator value="#request.attributeTypesList" var="type">
+				<TR><TD style="vertical-align: top;"><s:property value="#type.label"/>:</TD><TD>
+				<div class='unitime-InstructorAttributes'>
+					<s:iterator value="#request.attributesList" var="attribute">
+						<s:if test="#attribute.type == #type">
+							<span class='attribute'>
+								<s:checkbox name="form.attribute[%{#attribute.uniqueId}]"/><s:property value="#attribute.name"/>
+							</span>
+						</s:if>
+					</s:iterator>
+				</div>
+				</TD></TR>
+			</s:iterator>
+		</s:if>
 		
 <!-- Preferences -->
-		<jsp:include page="preferencesEdit.jspf">
-			<jsp:param name="frmName" value="<%=frmName%>"/>
-			<jsp:param name="periodPref" value="false"/>
-			<jsp:param name="datePatternPref" value="false"/>
-			<jsp:param name="timePref" value="false"/>
-			<jsp:param name="dateAvail" value="true"/>
-			<jsp:param name="timeAvail" value="true"/>
-			<jsp:param name="roomPref" value="false"/>
-			<jsp:param name="roomGroupPref" value="false"/>
-			<jsp:param name="roomFeaturePref" value="false"/>
-			<jsp:param name="bldgPref" value="false"/>
-			<jsp:param name="coursePref" value="true"/>
-		</jsp:include>
+		<s:include value="preferencesEdit2.jspf">
+			<s:param name="frmName" value="'instructorAssignmentPref'"/>
+			<s:param name="periodPref" value="false"/>
+			<s:param name="datePatternPref" value="false"/>
+			<s:param name="timePref" value="false"/>
+			<s:param name="dateAvail" value="true"/>
+			<s:param name="timeAvail" value="true"/>
+			<s:param name="roomPref" value="false"/>
+			<s:param name="roomGroupPref" value="false"/>
+			<s:param name="roomFeaturePref" value="false"/>
+			<s:param name="bldgPref" value="false"/>
+			<s:param name="coursePref" value="true"/>
+		</s:include>
 		
 <!-- buttons -->
 		<TR>
@@ -178,51 +119,26 @@
 		</TR>
 		<TR>
 			<TD colspan="2" align="right">
-						<html:submit property="op" 
-							styleClass="btn" 
-							accesskey="<%=MSG.accessUpdatePreferences() %>" 
-							title="<%=MSG.titleUpdatePreferences(MSG.accessUpdatePreferences()) %>" >
-						<loc:message name="actionUpdatePreferences" />
-					</html:submit> 
-					
-					<logic:notEmpty name="<%=frmName%>" property="previousId">
-						&nbsp;
-						<html:submit property="op" 
-								styleClass="btn" 
-								accesskey='<%=MSG.accessPreviousInstructor() %>' 
-								title='<%=MSG.titlePreviousInstructorWithUpdate(MSG.accessPreviousInstructor())%>'>
-							<loc:message name="actionPreviousInstructor" />
-						</html:submit> 
-					</logic:notEmpty>
-					<logic:notEmpty name="<%=frmName%>" property="nextId">
-						&nbsp;
-						<html:submit property="op" 
-								styleClass="btn" 
-								accesskey='<%=MSG.accessNextInstructor() %>' 
-								title='<%=MSG.titleNextInstructorWithUpdate(MSG.accessNextInstructor()) %>'>
-							<loc:message name="actionNextInstructor" />						
-						</html:submit> 
-					</logic:notEmpty>
-					&nbsp;
-					<html:submit property="op" 
-							styleClass="btn" 
-							accesskey="<%=MSG.accessBackToDetail()%>" 
-							title="<%=MSG.titleBackToDetail(MSG.accessBackToDetail()) %>">
-						<loc:message name="actionBackToDetail"/>
-					</html:submit>
+					<s:submit accesskey='%{#msg.accessUpdatePreferences()}' name='op' value='%{#msg.actionUpdatePreferences()}'
+						title='%{#msg.titleUpdatePreferences(#msg.accessUpdatePreferences())}'/>
+					<s:if test="form.previousId != null">
+						<s:submit accesskey='%{#msg.accessPreviousInstructor()}' name='op' value='%{#msg.actionPreviousInstructor()}'
+							title='%{#msg.titlePreviousInstructorWithUpdate(#msg.accessPreviousInstructor())}'/>
+					</s:if>
+					<s:if test="form.nextId != null">
+						<s:submit accesskey='%{#msg.accessNextInstructor()}' name='op' value='%{#msg.actionNextInstructor()}'
+							title='%{#msg.titleNextInstructorWithUpdate(#msg.accessNextInstructor())}'/>
+					</s:if>
+					<s:submit accesskey='%{#msg.accessBackToDetail()}' name='op' value='%{#msg.actionBackToDetail()}'
+						title='%{#msg.titleBackToDetail(#msg.accessBackToDetail())}'/>
 			</TD>
 		</TR>
+	</table>
 
-	</TABLE>
-</html:form>
-
-<SCRIPT type="text/javascript" language="javascript">
-	function jumpToAnchor() {
-    <% if (request.getAttribute(InstructorAssignmentPrefAction.HASH_ATTR) != null) { %>
-  		location.hash = "<%=request.getAttribute(InstructorAssignmentPrefAction.HASH_ATTR)%>";
-	<% } %>
-		self.focus();
-  	}
-	
-</SCRIPT>
+	<s:if test="#request.hash != null">
+		<SCRIPT type="text/javascript">
+			location.hash = '<%=request.getAttribute("hash")%>';
+		</SCRIPT>
+	</s:if>	
+</s:form>
 </loc:bundle>	

@@ -76,7 +76,7 @@
 	</tr>
 	<tr>
 		<td colspan='2'>
-			<div id='UniTimeGWT:InstructorAvailability' style="display: none;"><s:property value="form.availability" escapeHtml="false"/></div>
+			<div id='UniTimeGWT:InstructorAvailability'><s:hidden name="form.availability"/></div>
 		</td>
 	</tr>
 </s:if>
@@ -382,7 +382,7 @@
 					/>
 				&nbsp;&nbsp;
 				<s:select style="width:350px;"
-					name="form.distPrefLevels[%{#stat.index}]"
+					name="form.coursePrefLevels[%{#stat.index}]"
 					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="background-color: %{#pr.prefcolor()};"
 					headerKey="-" headerValue="-"
 					disabled="form.isCoursePrefDisabled(#stat.index)"
@@ -419,7 +419,7 @@
 					/>
 				&nbsp;&nbsp;
 				<s:select style="width:350px;"
-					name="form.distPrefLevels[%{#stat.index}]"
+					name="form.instrPrefLevels[%{#stat.index}]"
 					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="background-color: %{#pr.prefcolor()};"
 					headerKey="-" headerValue="-"
 					disabled="form.isInstructorPrefDisabled(#stat.index)"

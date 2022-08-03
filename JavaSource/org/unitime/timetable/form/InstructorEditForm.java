@@ -19,22 +19,15 @@
 */
 package org.unitime.timetable.form;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
-import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.util.IdValue;
 import org.unitime.timetable.util.NameFormat;
@@ -209,30 +202,15 @@ public class InstructorEditForm extends PreferencesForm  {
     	attributes.put(Long.valueOf(attributeId), value);
     }
     
+    public Map<Long, Boolean> getAttribute() {
+    	if (attributes == null) attributes = new HashMap<Long, Boolean>();
+    	return attributes;
+    }
+    
     public void clearAttributes() {
     	attributes = null;
     }
     
-	/** 
-	 * Method reset
-	 * @param mapping
-	 * @param request
-	 */
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		instructorId = "";
-		screenName = "instructor";
-		super.reset(mapping, request);
-		
-        //Set request attributes
-        setPosType(request);
-        prevId = nextId = null;
-        ignoreDist = false;
-        email = null;
-        teachingPreference = PreferenceLevel.sProhibited;
-        maxLoad = null;
-        attributes = null;
-	}
-	
 	@Override
 	public void reset() {
 		super.reset();
@@ -245,59 +223,7 @@ public class InstructorEditForm extends PreferencesForm  {
         maxLoad = null;
         attributes = null;
 	}
-	
-	/**
-	 * 
-	 * @param request
-	 */
-	public void setPosType(HttpServletRequest request) {
-		ArrayList list = new ArrayList();
-		
-		for (PositionType pt: PositionType.getPositionTypeList()) {
-			list.add(new IdValue(pt.getUniqueId(), pt.getLabel()));
-		}
-		
-		request.setAttribute(PositionType.POSTYPE_ATTR_NAME, list);
-	}
 
-	/** 
-	 * Method validate
-	 * @param mapping
-	 * @param request
-	 * @return ActionErrors
-	 */
-	public ActionErrors validate(
-		ActionMapping mapping,
-		HttpServletRequest request) {
-		
-        ActionErrors errors = new ActionErrors();
-
-        if (op.equals(MSG.actionLookupInstructor())) {
-    		if ( (fname==null || fname.trim().length()==0) 
-    		        && (lname==null || lname.trim().length()==0) 
-    		        && (careerAcct==null || careerAcct.trim().length()==0) ) {
-				errors.add("fname", 
-	                    new ActionMessage("errors.generic", MSG.errorSupplyInfoForInstructorLookup()) );
-    		}
-    		
-    		return errors;
-        }
-        
-        if (!screenName.equalsIgnoreCase("instructorPref") ) {
-					
-			if (lname == null || lname.trim().equals("")) {
-				errors.add("Last Name", 
-	                    new ActionMessage("errors.generic", MSG.errorRequiredLastName()) );
-			}
-        }
-        
-		if (errors.size() == 0) {
-			return super.validate(mapping, request); 
-		} else {
-			return errors;
-		}
-	}
-	
 	@Override
 	public void validate(UniTimeAction action) {
 		super.validate(action);
@@ -310,7 +236,7 @@ public class InstructorEditForm extends PreferencesForm  {
     		}
         } else if (!"instructorPref".equals(screenName)) {
 			if (lname == null || lname.trim().equals("")) {
-				action.addFieldError("Last Name", MSG.errorRequiredLastName());
+				action.addFieldError("lname", MSG.errorRequiredLastName());
 			}
         }
 	}

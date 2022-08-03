@@ -36,7 +36,6 @@
 	  <form-bean name="instructionalOfferingListForm" type="org.unitime.timetable.form.InstructionalOfferingListForm" />
 	  <form-bean name="instructionalOfferingConfigEditForm" type="org.unitime.timetable.form.InstructionalOfferingConfigEditForm" />
 	  <form-bean name="schedulingSubpartEditForm" type="org.unitime.timetable.form.SchedulingSubpartEditForm" />
-	  <form-bean name="instructorEditForm" type="org.unitime.timetable.form.InstructorEditForm" />
 	  <form-bean name="mgrSettingsForm" type="org.unitime.timetable.form.ManagerSettingsForm" />
 	  <form-bean name="settingsForm" type="org.unitime.timetable.form.SettingsForm" />
 	  <form-bean name="solverParamGroupsForm" type="org.unitime.timetable.form.SolverParamGroupsForm" />
@@ -838,28 +837,6 @@
       validate="false" >
       <forward name="showUpdateInstructorList" path="instructorListUpdateTile" />
     </action>
-    <action
-      attribute="instructorEditForm"
-      input="/user/instructorPrefsEdit.jsp"
-      name="instructorEditForm"
-      path="/instructorPrefEdit"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false">
-      <forward name="showEdit" path="instructorPrefsEditTile" />
-      <forward name="showDetail" path="/instructorDetail.action" />
-    </action>
-    <action
-      attribute="instructorEditForm"
-      input="/user//instructorAssignmentPref.jsp"
-      name="instructorEditForm"
-      path="/instructorAssignmentPref"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false">
-      <forward name="showEdit" path="instructorAssignmentPrefTile" />
-      <forward name="showDetail" path="/instructorDetail.action" />
-    </action>    
     
     <action
        path="/courseOfferingEdit"
