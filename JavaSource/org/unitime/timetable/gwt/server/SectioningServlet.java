@@ -3050,7 +3050,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				check.setFlag(EligibilityFlag.QUICK_ADD_DROP, ApplicationProperty.OnlineSchedulingQuickAddDrop.isTrue());
 				check.setFlag(EligibilityFlag.ALTERNATIVES_DROP, ApplicationProperty.OnlineSchedulingAlternativesDrop.isTrue());
 				check.setFlag(EligibilityFlag.GWT_CONFIRMATIONS, ApplicationProperty.OnlineSchedulingGWTConfirmations.isTrue());
-				check.setFlag(EligibilityFlag.DEGREE_PLANS, CustomDegreePlansHolder.hasProvider());
+				check.setFlag(EligibilityFlag.DEGREE_PLANS, ApplicationProperty.DegreePlanForStudents.isTrue() && CustomDegreePlansHolder.hasProvider());
 				check.setFlag(EligibilityFlag.NO_REQUEST_ARROWS, ApplicationProperty.OnlineSchedulingNoRequestArrows.isTrue());
 				check.setFlag(EligibilityFlag.CAN_REQUIRE, true);
 				check.setFlag(EligibilityFlag.SHOW_SCHEDULING_PREFS, false);
@@ -3074,7 +3074,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			check.setFlag(EligibilityFlag.QUICK_ADD_DROP, ApplicationProperty.OnlineSchedulingQuickAddDrop.isTrue());
 			check.setFlag(EligibilityFlag.ALTERNATIVES_DROP, ApplicationProperty.OnlineSchedulingAlternativesDrop.isTrue());
 			check.setFlag(EligibilityFlag.GWT_CONFIRMATIONS, ApplicationProperty.OnlineSchedulingGWTConfirmations.isTrue());
-			check.setFlag(EligibilityFlag.DEGREE_PLANS, CustomDegreePlansHolder.hasProvider());
+			check.setFlag(EligibilityFlag.DEGREE_PLANS, ApplicationProperty.DegreePlanForStudents.isTrue() && CustomDegreePlansHolder.hasProvider());
 			check.setFlag(EligibilityFlag.NO_REQUEST_ARROWS, ApplicationProperty.OnlineSchedulingNoRequestArrows.isTrue());
 			check.setFlag(EligibilityFlag.SHOW_SCHEDULING_PREFS, ApplicationProperty.OnlineSchedulingStudentPreferencesEnabled.isTrue() && cx.getStudentId() != null);
 			check.setSessionId(cx.getSessionId());
@@ -3597,7 +3597,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 		
 		ret.setCanUpdate(false);
-		ret.setDegreePlan(CustomDegreePlansHolder.hasProvider() && getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdvisor));
+		ret.setDegreePlan(ApplicationProperty.DegreePlanForAdvisors.isTrue() && CustomDegreePlansHolder.hasProvider() && getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdvisor));
 		if (Customization.StudentEmailProvider.hasProvider()) {
 			StudentEmailProvider email = Customization.StudentEmailProvider.getProvider();
 			ret.setEmailOptionalToggleCaption(email.getToggleCaptionIfOptional());

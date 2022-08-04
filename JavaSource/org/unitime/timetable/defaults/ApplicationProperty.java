@@ -3082,6 +3082,16 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Manage Solvers: compute solver memory usage")
 	ManageSolversComputeMemoryUses("unitime.solvers.memory"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Scheduling Assistant: show Degree Plan button on the Scheduling Assistant or Course Requests pages (when custom DegreePlansProvider is configured)")
+	DegreePlanForStudents("unitime.degreePlan.students"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Course Recommendations: show Degree Plan button on the Advisor Course Recommendations page (when custom DegreePlansProvider is configured)")
+	DegreePlanForAdvisors("unitime.degreePlan.advisors"),
 
 	;
 
