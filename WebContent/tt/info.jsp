@@ -54,7 +54,7 @@
 	<table border='0' width='100%'>
 		<tr><td colspan='2'>
 			<tt:section-header>
-				<tt:section-title>Class <a href='classDetail.do?cid=<%=classId%>' target='_blank' class='l8' title="<%=MSG.titleOpenClassDetail(className)%>"><bean:write name="clazz" property="className"/></a></tt:section-title>
+				<tt:section-title>Class <a href='classDetail.action?cid=<%=classId%>' target='_blank' class='l8' title="<%=MSG.titleOpenClassDetail(className)%>"><bean:write name="clazz" property="className"/></a></tt:section-title>
 			</tt:section-header>
 		</td></tr>
 		<tr><td><loc:message name="filterManager"/></td><td><bean:write name="clazz" property="manager"/></td></tr>

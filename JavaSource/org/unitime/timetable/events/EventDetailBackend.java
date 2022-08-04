@@ -227,7 +227,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     			note = (note == null || note.isEmpty() ? "" : note + "\n") + clazz.getSchedulePrintNote();
 			related.setNote(note);
 			if (context != null && context.hasPermission(clazz, Right.ClassDetail))
-				related.setDetailPage("classDetail.do?cid=" + clazz.getUniqueId());
+				related.setDetailPage("classDetail.action?cid=" + clazz.getUniqueId());
 
     		CourseOffering courseOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
     		related.addCourseId(courseOffering.getUniqueId());
@@ -427,7 +427,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    			}
 		    		}
 					if (context != null && context.hasPermission(clazz, Right.ClassDetail))
-						related.setDetailPage("classDetail.do?cid=" + clazz.getUniqueId());
+						related.setDetailPage("classDetail.action?cid=" + clazz.getUniqueId());
 					if (clazz.getDisplayInstructor()) {
 		    			for (ClassInstructor i: clazz.getClassInstructors()) {
 		    				if (i.getResponsibility() != null && i.getResponsibility().hasOption(TeachingResponsibility.Option.noevents)) continue;
@@ -543,7 +543,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    			}
 		    		}
 					if (context != null && context.hasPermission(clazz, Right.ClassDetail))
-						related.setDetailPage("classDetail.do?cid=" + clazz.getUniqueId());
+						related.setDetailPage("classDetail.action?cid=" + clazz.getUniqueId());
 					if (clazz.getDisplayInstructor()) {
 		    			for (ClassInstructor i: clazz.getClassInstructors()) {
 		    				if (i.getResponsibility() != null && i.getResponsibility().hasOption(TeachingResponsibility.Option.noevents)) continue;
@@ -1084,7 +1084,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 			note = (note == null || note.isEmpty() ? "" : note + "\n") + clazz.getSchedulePrintNote();
 		related.setNote(note);
 		if (context != null && context.hasPermission(clazz, Right.ClassDetail))
-			related.setDetailPage("classDetail.do?cid=" + clazz.getUniqueId());
+			related.setDetailPage("classDetail.action?cid=" + clazz.getUniqueId());
 
 		CourseOffering courseOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
 		related.addCourseId(courseOffering.getUniqueId());

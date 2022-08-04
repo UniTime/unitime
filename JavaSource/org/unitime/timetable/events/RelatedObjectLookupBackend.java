@@ -286,7 +286,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 					relatedClass.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 					relatedClass.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId(), clazz.getSchedulingSubpart().getUniqueId(), clazz.getUniqueId()});
 					if (context.hasPermission(clazz, Right.ClassDetail))
-						relatedClass.setDetailPage("classDetail.do?cid=" + clazz.getUniqueId());
+						relatedClass.setDetailPage("classDetail.action?cid=" + clazz.getUniqueId());
 					response.add(new RelatedObjectLookupRpcResponse(
 							RelatedObjectLookupRpcRequest.Level.CLASS,
 							clazz.getUniqueId(),
@@ -473,7 +473,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 				relatedClass.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 				relatedClass.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId(), subpart.getUniqueId(), clazz.getUniqueId()});
 				if (context.hasPermission(clazz, Right.ClassDetail))
-					relatedClass.setDetailPage("classDetail.do?cid=" + clazz.getUniqueId());
+					relatedClass.setDetailPage("classDetail.action?cid=" + clazz.getUniqueId());
 				response.add(new RelatedObjectLookupRpcResponse(
 						RelatedObjectLookupRpcRequest.Level.CLASS,
 						clazz.getUniqueId(),

@@ -237,7 +237,7 @@ public class ExamDetailAction extends PreferencesAction2<ExamEditForm> {
                     case ExamOwner.sOwnerTypeClass :
                         Class_ clazz = (Class_)owner.getOwnerObject();
                         if (sessionContext.hasPermission(clazz, Right.ClassDetail))
-                            onclick = "onClick=\"document.location='classDetail.do?cid="+clazz.getUniqueId()+"';\"";
+                            onclick = "onClick=\"document.location='classDetail.action?cid="+clazz.getUniqueId()+"';\"";
                         name = owner.getLabel();//clazz.getClassLabel();
                         type = EXMSG.examTypeClass();
                         manager = clazz.getManagingDept().getShortLabel();

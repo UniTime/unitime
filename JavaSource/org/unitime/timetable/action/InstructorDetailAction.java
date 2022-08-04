@@ -335,7 +335,7 @@ public class InstructorDetailAction extends PreferencesAction2<InstructorEditFor
 	        	
 	    		String onClick = null;
 	    		if (sessionContext.hasPermission(c, Right.ClassDetail)) {
-	    			onClick = "onClick=\"document.location='classDetail.do?cid="+c.getUniqueId()+"';\"";
+	    			onClick = "onClick=\"document.location='classDetail.action?cid="+c.getUniqueId()+"';\"";
 	    		}
 	    		
 	    		boolean back = "PreferenceGroup".equals(backType) && c.getUniqueId().toString().equals(backId);

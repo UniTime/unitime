@@ -400,7 +400,7 @@
         	path="/distributionPrefs.do" />
         <forward 
         	name="displaySubpartDetail" 
-        	path="/schedulingSubpartDetail.do" 
+        	path="/schedulingSubpartDetail.action" 
         	/>
       </action>
       
@@ -551,11 +551,8 @@
         	name="addDistributionPrefs" 
         	path="/distributionPrefs.do" />
         <forward 
-        	name="changeClassOwner" 
-        	path="/classOwnerChange.do" />
-        <forward 
         	name="displayClassDetail" 
-        	path="/classDetail.do" />
+        	path="/classDetail.action" />
      </action>
      
      <action
@@ -778,28 +775,6 @@
       <forward name="instructionalOfferingSearch" path="/instructionalOfferingSearch.do" />
       <forward name="displaySchedulingSubpart" path="schedulingSubpartDetailTile" />
       <forward name="addDistributionPrefs" path="/distributionPrefs.do" />
-    </action>
-
-    <action
-      attribute="ClassEditForm"
-      input="classDetailTile"
-      name="classEditForm"
-      path="/classDetail"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false">
-      <forward 
-       	name="displayClass" 
-       	path="classDetailTile" />
-       <forward 
-       	name="instructionalOfferingSearch" 
-       	path="/instructionalOfferingSearch.do" />
-       <forward 
-       	name="addDistributionPrefs" 
-       	path="/distributionPrefs.do" />
-       <forward 
-       	name="changeClassOwner" 
-       	path="/classOwnerChange.do" />
     </action>
 
     <action

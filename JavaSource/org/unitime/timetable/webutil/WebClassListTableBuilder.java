@@ -20,6 +20,7 @@
 package org.unitime.timetable.webutil;
 
 import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.TreeSet;
@@ -197,7 +198,7 @@ public class WebClassListTableBuilder extends
         }
     }
 	
-    public void htmlTableForClasses(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, CourseOffering co, TreeSet classes, Long subjectAreaId, SessionContext context, JspWriter outputStream){
+    public void htmlTableForClasses(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, CourseOffering co, TreeSet classes, Long subjectAreaId, SessionContext context, Writer outputStream){
     	ArrayList<String> columnList = new ArrayList<String>();
     	columnList.add(LABEL);
     	if (StudentClassEnrollment.sessionHasEnrollments(context.getUser().getCurrentAcademicSessionId())) {
@@ -259,7 +260,7 @@ public class WebClassListTableBuilder extends
     		ClassAssignmentProxy classAssignment, 
     		ExamAssignmentProxy examAssignment,
     		Long schedulingSubpartId,
-    		JspWriter outputStream,
+    		Writer outputStream,
     		String backType,
     		String backId){
     	

@@ -309,11 +309,11 @@ public class SectioningReports extends Composite {
 			public void onMouseClick(UniTimeTable.TableEvent<RowData> event) {
 				if (event.getRow() > 0 && event.getData() != null) {
 					if ("__Class".equals(iHead.getCell(0)))
-						ToolBox.open(GWT.getHostPageBaseURL() + "classDetail.do?cid=" + event.getData().getCell(0));
+						ToolBox.open(GWT.getHostPageBaseURL() + "classDetail.action?cid=" + event.getData().getCell(0));
 					else if ("__Offering".equals(iHead.getCell(0)))
 						ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.do?op=view&io=" + event.getData().getCell(0));
 					else if ("__Subpart".equals(iHead.getCell(0)))
-						ToolBox.open(GWT.getHostPageBaseURL() + "schedulingSubpartDetail.do?ssuid=" + event.getData().getCell(0));
+						ToolBox.open(GWT.getHostPageBaseURL() + "schedulingSubpartDetail.action?ssuid=" + event.getData().getCell(0));
 					else if ("__Room".equals(iHead.getCell(0)))
 						ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=rooms&back=1&id=" + event.getData().getCell(0));
 					else if ("__Instructor".equals(iHead.getCell(0)))

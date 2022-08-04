@@ -174,13 +174,6 @@
 		<put name="showNavigation" value="true" />
   	</definition>
   	
-  	<definition	name="schedulingSubpartDetailTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Scheduling Subpart Detail"/>
-		<put name="body" value="/user/schedulingSubpartDetail.jsp" />
-		<put name="showNavigation" value="true" />
-		<put name="showSolverWarnings" value="assignment" />
-  	</definition>
-  	
 	<definition	name="managerSettingsTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Manager Settings"/>
 		<put name="body" value="/user/managerSettings.jsp" />

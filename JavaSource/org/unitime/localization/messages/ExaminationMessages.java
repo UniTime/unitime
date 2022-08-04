@@ -389,4 +389,10 @@ public interface ExaminationMessages extends Messages {
 	
 	@DefaultMessage("(in minutes, only used for reports)")
 	String noteExamPrintOffset();
+	
+	@DefaultMessage("The examination will be deleted. Continue?")
+	String confirmExamDelete();
+	
+	@DefaultMessage("There are the following errors:")
+	String formValidationErrors();
 }

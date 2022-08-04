@@ -417,11 +417,11 @@ public class HibernateQueryTestAction extends Action {
     	String link = null;
     	if (alias != null && alias.length > 0 && alias[0].startsWith("__") && o != null && (o instanceof Object[])) {
     		if ("__Class".equals(alias[0]))
-    			link = "classDetail.do?cid=" + ((Object[])o)[0];
+    			link = "classDetail.action?cid=" + ((Object[])o)[0];
 			else if ("__Offering".equals(alias[0]))
 				link = "instructionalOfferingDetail.do?op=view&io=" + ((Object[])o)[0];
 			else if ("__Subpart".equals(alias[0]))
-				link = "schedulingSubpartDetail.do?ssuid=" + ((Object[])o)[0];
+				link = "schedulingSubpartDetail.action?ssuid=" + ((Object[])o)[0];
 			else if ("__Room".equals(alias[0]))
 				link = "gwt.jsp?page=rooms&back=1&id=" + ((Object[])o)[0];
 			else if ("__Instructor".equals(alias[0]))

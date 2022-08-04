@@ -94,6 +94,23 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
         datePatternEditable = false;
         super.reset(mapping, request);
     }
+    
+    @Override
+    public void reset() {        
+        schedulingSubpartId = "";
+        datePattern = null;
+        unlimitedEnroll = null;
+        parentSubpartId = null; parentSubpartLabel = null; managingDeptName = null; sameItypeAsParent = null;
+        creditFormat = null; creditType = null; creditUnitType = null; units = null; maxUnits = null; fractionalIncrementsAllowed = Boolean.valueOf(false); creditText = "";
+        autoSpreadInTime = Boolean.FALSE;
+        studentAllowOverlap = Boolean.FALSE;
+        subpartCreditEditAllowed = ApplicationProperty.SubpartCreditEditable.isTrue();
+        itypeBasic = false;
+        instructionalType = null; instructionalTypeLabel = null;
+        controllingDept = null;
+        datePatternEditable = false;
+        super.reset();
+    }
 
     /**
      * @return Returns the schedulingSubpartId.

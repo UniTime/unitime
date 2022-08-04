@@ -141,7 +141,7 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
 	}
 	
     protected String toHtml(Class_ clazz) {
-    	return "<A href='classDetail.do?cid="+clazz.getUniqueId()+"'>"+clazz.getClassLabel(iShowClassSuffix, iShowConfigName)+"</A>";
+    	return "<A href='classDetail.action?cid="+clazz.getUniqueId()+"'>"+clazz.getClassLabel(iShowClassSuffix, iShowConfigName)+"</A>";
     }
     
     protected String toHtml(DepartmentalInstructor instructor) {
@@ -153,7 +153,7 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
     }
     
     protected String toHtml(TeachingRequest request) {
-    	return "<a href='classDetail.do?cid=" + request.getSections().get(0).getSectionId() + "'>" + request.getCourse().getCourseName() + " " + request.getSections() + "</a>";
+    	return "<a href='classDetail.action?cid=" + request.getSections().get(0).getSectionId() + "'>" + request.getCourse().getCourseName() + " " + request.getSections() + "</a>";
     }	
 	
 	protected void saveSolution(org.hibernate.Session hibSession) {

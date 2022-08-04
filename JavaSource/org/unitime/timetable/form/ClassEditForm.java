@@ -32,6 +32,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Location;
@@ -244,6 +245,59 @@ public class ClassEditForm extends PreferencesForm {
         
         return errors;        
     }
+    
+    @Override
+    public void validate(UniTimeAction action) {
+    	int iRoomCapacity = -1;
+        if (nbrRooms!=null && nbrRooms.intValue()<0)
+            action.addFieldError("nbrRooms", MSG.errorNumberOfRoomsNegative());
+
+        if (roomRatio==null || roomRatio.floatValue()<0.0f)
+        	action.addFieldError("nbrRooms", MSG.errorRoomRatioNegative());
+
+        if (expectedCapacity==null || expectedCapacity.intValue()<0)
+        	action.addFieldError("expectedCapacity", MSG.errorMinimumExpectedCapacityNegative());
+
+        if (maxExpectedCapacity==null || maxExpectedCapacity.intValue()<0)
+        	action.addFieldError("maxExpectedCapacity", MSG.errorMaximumExpectedCapacityNegative());
+        else
+        	if (maxExpectedCapacity.intValue()<expectedCapacity.intValue())
+        		action.addFieldError("maxExpectedCapacity", MSG.errorMaximumExpectedCapacityLessThanMinimum());
+
+        if (managingDept==null || managingDept.longValue()<=0)
+        	action.addFieldError("managingDept", MSG.errorRequiredClassOwner());
+
+        // Schedule print note has 2000 character limit
+        if (schedulePrintNote!=null && schedulePrintNote.length()>1999)
+        	action.addFieldError("notes", MSG.errorSchedulePrintNoteLongerThan1999());
+
+        // Notes has 1000 character limit
+        if (notes!=null && notes.length()>999)
+        	action.addFieldError("notes", MSG.errorNotesLongerThan999());
+
+        // Check no duplicates or blank instructors
+        if (instructors.size()>0 && !super.checkPrefs(instructors, instrResponsibility))
+        	action.addFieldError("instructors", MSG.errorInvalidInstructors());
+
+        // Check that any room with a preference required has capacity >= room capacity for the class
+        if (iRoomCapacity>0) {
+        	List rp = this.getRoomPrefs();
+        	List rpl = this.getRoomPrefLevels();
+        	for (int i=0; i<rpl.size(); i++) {
+                String pl = rpl.get(i).toString();
+                if (pl.trim().equalsIgnoreCase("1")) {
+                    String roomId = rp.get(i).toString();                    
+                    Location room = new LocationDAO().get(Long.valueOf(roomId));
+                    int rCap = room.getCapacity().intValue();
+                    if (rCap<iRoomCapacity)
+        	            action.addFieldError("roomPref", MSG.errorRequiredRoomTooSmall(room.getLabel(), rCap, iRoomCapacity));
+                }
+            }
+        }
+
+        // Check Other Preferences
+        super.validate(action);
+    }
 
     /** 
      * Method reset
@@ -292,6 +346,50 @@ public class ClassEditForm extends PreferencesForm {
         datePatternEditable = false;
 
         super.reset(mapping, request);
+    }
+    
+    @Override
+    public void reset() {
+    	nbrRooms = null;
+        expectedCapacity = null;
+        classId = null;
+        section = null;
+        managingDept = null;
+        controllingDept = null;
+        subpart = null;
+        className = "";
+        courseName = "";
+        courseTitle = "";
+        parentClassName = "-";
+        itypeDesc = "";
+        datePattern = null;
+        instrLead = DynamicList.getInstance(new ArrayList(), factoryInstructors);
+        managingDeptLabel = "-";
+        notes="";
+        displayInstructor = null;
+        schedulePrintNote = null;
+        classSuffix = null;
+        enabledForStudentScheduling = null;
+        maxExpectedCapacity = null;
+        roomRatio = null;
+        unlimitedEnroll = null;
+        isCrosslisted = null;
+        isCancelled = null;
+
+        instructors = DynamicList.getInstance(new ArrayList(), factoryInstructors);
+        instrPctShare= DynamicList.getInstance(new ArrayList(), factoryInstructors);
+        assignments = null;
+        enrollment = null;
+        snapshotLimit = null;
+        accommodation = null;
+        instrResponsibility = DynamicList.getInstance(new ArrayList(), factoryInstructors);
+        TeachingResponsibility tr = TeachingResponsibility.getDefaultInstructorTeachingResponsibility();
+        defaultTeachingResponsibilityId = (tr == null ? "" : tr.getUniqueId().toString());
+        lms = null;
+        fundingDept = null;
+        datePatternEditable = false;
+
+        super.reset();
     }
 
     /**

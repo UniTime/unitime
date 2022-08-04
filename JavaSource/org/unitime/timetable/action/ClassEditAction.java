@@ -190,14 +190,6 @@ public class ClassEditAction extends PreferencesAction {
 
         sessionContext.checkPermission(classId, "Class_", Right.ClassEdit);
 
-        // Change Owner - Go back to Change Owner Screen
-        if(op.equals(rsc.getMessage("button.changeOwner"))
-                && classId!=null && classId.trim().length()!=0) {
-
-            request.setAttribute("classId", classId);
-            return mapping.findForward("changeClassOwner");
-        }
-
         // Cancel - Go back to Class Detail Screen
         if(op.equals(MSG.actionBackToDetail()) && classId!=null && classId.trim().length()!=0 ) {
             ActionRedirect redirect = new ActionRedirect(mapping.findForward("displayClassDetail"));
@@ -412,7 +404,7 @@ public class ClassEditAction extends PreferencesAction {
 
         BackTracker.markForBack(
         		request,
-        		"classDetail.do?cid="+frm.getClassId(),
+        		"classDetail.action?cid="+frm.getClassId(),
         		MSG.backClass(frm.getClassName()),
         		true, false);
 

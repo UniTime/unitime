@@ -369,11 +369,11 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private String getClassLabel(Class_ clazz) {
-    	return "<A href='classDetail.do?cid="+clazz.getUniqueId()+"'>"+clazz.getClassLabel(iShowClassSuffix, iShowConfigName)+"</A>";
+    	return "<A href='classDetail.action?cid="+clazz.getUniqueId()+"'>"+clazz.getClassLabel(iShowClassSuffix, iShowConfigName)+"</A>";
     }
     
     private String getClassLabel(Lecture lecture) {
-    	return "<A href='classDetail.do?cid="+lecture.getClassId()+"'>"+lecture.getName()+"</A>";
+    	return "<A href='classDetail.action?cid="+lecture.getClassId()+"'>"+lecture.getName()+"</A>";
     }
     
     private String getOfferingLabel(InstructionalOffering offering) {
@@ -384,7 +384,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     private String getSubpartLabel(SchedulingSubpart subpart) {
     	String suffix = subpart.getSchedulingSubpartSuffix();
-    	return "<A href='schedulingSubpartDetail.do?ssuid="+subpart.getUniqueId()+"'>"+subpart.getCourseName()+" "+subpart.getItypeDesc().trim()+(suffix==null || suffix.length()==0?"":" ("+suffix+")")+"</A>";
+    	return "<A href='schedulingSubpartDetail.action?ssuid="+subpart.getUniqueId()+"'>"+subpart.getCourseName()+" "+subpart.getItypeDesc().trim()+(suffix==null || suffix.length()==0?"":" ("+suffix+")")+"</A>";
     }
     
     private Hashtable iRoomPreferences = null;

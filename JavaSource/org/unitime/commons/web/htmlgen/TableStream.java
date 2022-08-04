@@ -20,36 +20,36 @@
 package org.unitime.commons.web.htmlgen;
 
 import java.io.IOException;
+import java.io.Writer;
 
-import javax.servlet.jsp.JspWriter;
 /**
  * 
  * @author Stephanie Schluttenhofer
  *
  */
 public class TableStream extends ScrollTable {
-	JspWriter outStream;
+	Writer outStream;
 	
 	public TableStream() {
 		super();
 	}
 	
-	public TableStream(JspWriter out){
+	public TableStream(Writer out){
 		super();
 		outStream = out;
 	}
 
-	public JspWriter getOutStream() {
+	public Writer getOutStream() {
 		return outStream;
 	}
 
-	public void setOutStream(JspWriter outStream) {
+	public void setOutStream(Writer outStream) {
 		this.outStream = outStream;
 	}
 	
 	public void addContent(Object obj){
 		try {
-			getOutStream().print(htmlForObject(obj));
+			getOutStream().write(htmlForObject(obj));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -57,7 +57,7 @@ public class TableStream extends ScrollTable {
 	
 	public void tableDefComplete(){
 		try {
-			getOutStream().print(startTagHtml());
+			getOutStream().write(startTagHtml());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -65,7 +65,7 @@ public class TableStream extends ScrollTable {
 	
 	public void tableComplete(){
 		try {
-			getOutStream().print(endTagHtml());
+			getOutStream().write(endTagHtml());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

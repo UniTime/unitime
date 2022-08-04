@@ -145,48 +145,48 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
         if (op == null) return;
         
         // Add Room Group row
-        if(op.equals(MSG.actionAddRoomGroupPreference())) 
+        if(MSG.actionAddRoomGroupPreference().equals(op)) 
             addRoomGroup();
         
         // Add Room Preference row
-        if(op.equals(MSG.actionAddRoomPreference())) 
+        if(MSG.actionAddRoomPreference().equals(op)) 
             addRoomPref();
         
         // Add Building Preference row
-        if(op.equals(MSG.actionAddBuildingPreference())) 
+        if(MSG.actionAddBuildingPreference().equals(op)) 
             addBldgPref();
         
         // Add Distribution Preference row
-        if(op.equals(MSG.actionAddDistributionPreference())) 
+        if(MSG.actionAddDistributionPreference().equals(op)) 
             addDistPref();
 
         // Add Room Feature Preference row
-        if(op.equals(MSG.actionAddRoomFeaturePreference())) 
+        if(MSG.actionAddRoomFeaturePreference().equals(op)) 
             addRoomFeatPref();
         
-        if(op.equals(MSG.actionAddTimePreference())) 
+        if(MSG.actionAddTimePreference().equals(op)) 
             addTimePattern();
         
-        if(op.equals(MSG.actionAddCoursePreference())) 
+        if(MSG.actionAddCoursePreference().equals(op)) 
             addCoursePref();
 
-        if(op.equals(MSG.actionAddInstructorPreference())) 
+        if(MSG.actionAddInstructorPreference().equals(op)) 
             addInstructorPref();
 
-        if(op.equals(MSG.actionAddAttributePreference())) 
+        if(MSG.actionAddAttributePreference().equals(op)) 
             addAttributePref();
 
         // Delete single preference
-        if(op.equals(MSG.actionRemoveBuildingPreference())
-        		|| op.equals(MSG.actionRemoveDistributionPreference())
-        		|| op.equals(MSG.actionRemoveRoomFeaturePreference())
-        		|| op.equals(MSG.actionRemoveRoomGroupPreference())
-        		|| op.equals(MSG.actionRemoveRoomPreference())
-        		|| op.equals(MSG.actionRemoveTimePattern())
-        		|| op.equals(MSG.actionRemoveInstructor())
-        		|| op.equals(MSG.actionRemoveCoursePreference())
-        		|| op.equals(MSG.actionRemoveAttributePreference())
-        		|| op.equals(MSG.actionRemoveInstructorPreference())
+        if(MSG.actionRemoveBuildingPreference().equals(op)
+        		|| MSG.actionRemoveDistributionPreference().equals(op)
+        		|| MSG.actionRemoveRoomFeaturePreference().equals(op)
+        		|| MSG.actionRemoveRoomGroupPreference().equals(op)
+        		|| MSG.actionRemoveRoomPreference().equals(op)
+        		|| MSG.actionRemoveTimePattern().equals(op)
+        		|| MSG.actionRemoveInstructor().equals(op)
+        		|| MSG.actionRemoveCoursePreference().equals(op)
+        		|| MSG.actionRemoveAttributePreference().equals(op)
+        		|| MSG.actionRemoveInstructorPreference().equals(op)
         		)
             doDelete();
     }
@@ -1036,7 +1036,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
             	MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam == null ? SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()) : exam.getSession(), type, assignment);
             	if (exam!=null) epx.load(exam);
             	form.setHasNotAvailable(true);
-            	if (!op.equals("init")) epx.load(request);
+            	if (!"init".equals(op)) epx.load(request);
             	request.setAttribute("ExamPeriodGrid", epx.print(editable, (editable?0:exam.getLength())));
             } else {
                 PeriodPreferenceModel px = new PeriodPreferenceModel(exam == null ? SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()) : exam.getSession(), assignment, type.getUniqueId());
@@ -1045,7 +1045,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                 form.setHasNotAvailable(px.hasNotAvailable());
                 RequiredTimeTable rtt = new RequiredTimeTable(px);
                 rtt.setName("PeriodPref");
-                if(!op.equals("init")) rtt.update(request);
+                if (!"init".equals(op)) rtt.update(request);
                 request.setAttribute("ExamPeriodGrid", rtt.print(editable, timeVertical, editable, false));
             }
     	} else {
@@ -1074,7 +1074,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
 		Vector timePrefs = null;
 		List tps = null;
 
-		if(op.equals("init")) {
+		if ("init".equals(op)) {
 		    Set tp = pg.effectivePreferences(TimePref.class, leadInstructors, !editable);
 		    
 		    if(tp.size()>0) {
@@ -1114,7 +1114,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
 				if (ca!=null) {
 					String assignmentTable = getAssignmentTable(sessionContext, getCourseTimetablingSolverService().getSolver(), ca,false, null, true);
 					if (assignmentTable!=null)
-						request.setAttribute("Suggestions.assignmentInfo", assignmentTable);
+						request.setAttribute("assignmentInfo", assignmentTable);
 				} else {
 					ClassAssignmentProxy cap = getClassAssignmentService().getAssignment();
 					if (cap != null) {
@@ -1124,7 +1124,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
 							if (ca!=null) {
 								String assignmentTable = getAssignmentTable(sessionContext, getCourseTimetablingSolverService().getSolver(), ca,false, null, true);
 								if (assignmentTable!=null)
-									request.setAttribute("Suggestions.assignmentInfo", assignmentTable);
+									request.setAttribute("assignmentInfo", assignmentTable);
 							}
 						}
 					}
@@ -1168,7 +1168,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
 				if(reloadCause!=null && reloadCause.equals("timePattern")) 
 					request.setAttribute(HASH_ATTR, HASH_TIME_PREF);
             
-				if ((reloadCause==null || !reloadCause.equals("timePattern")) && !op.equals("init")) {
+				if ((reloadCause==null || !reloadCause.equals("timePattern")) && !"init".equals(op)) {
 					if (deletedTimePatternIdx>=0 && idx>=deletedTimePatternIdx) {
 						rtt.setName("p"+(idx+1));
 						rtt.update(request);
@@ -1178,7 +1178,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
 				}
 
 				// Load existing time preferences
-				if (timePrefs!=null && timePrefs.size()>0 && op.equals("init")) {
+				if (timePrefs!=null && timePrefs.size()>0 && "init".equals(op)) {
 					//rtt.getModel().setDefaults(user);
 					rtt.getModel().setPreferences(((TimePref)timePrefs.elementAt(idx)).getPreference());
 				}

@@ -20,6 +20,7 @@
 package org.unitime.timetable.webutil;
 
 import java.io.IOException;
+import java.io.Writer;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,8 +31,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
-
-import javax.servlet.jsp.JspWriter;
 
 import org.springframework.web.util.HtmlUtils;
 import org.unitime.commons.Debug;
@@ -1551,7 +1550,7 @@ public class WebInstructionalOfferingTableBuilder {
             row.setOnMouseOver(this.getRowMouseOver(isHeaderRow, isEditable));
         
         if (isEditable && isOffered) {
-        	row.setOnClick("document.location='schedulingSubpartDetail.do?ssuid="+ss.getUniqueId().toString()+ "'");
+        	row.setOnClick("document.location='schedulingSubpartDetail.action?ssuid="+ss.getUniqueId().toString()+ "'");
         }
 
         if(isOffered)
@@ -1589,7 +1588,7 @@ public class WebInstructionalOfferingTableBuilder {
         row.setOnMouseOut(this.getRowMouseOut(isHeaderRow));
        
         if (isEditable) {
-            	row.setOnClick("document.location='classDetail.do?cid=" + aClass.getUniqueId().toString() + "&sec=" + aClass.getSectionNumberString() + "'");
+            	row.setOnClick("document.location='classDetail.action?cid=" + aClass.getUniqueId().toString() + "&sec=" + aClass.getSectionNumberString() + "'");
         }
         if (aClass.isCancelled()) {
         	row.setStyle("color: gray; font-style: italic;");
@@ -2090,7 +2089,7 @@ public class WebInstructionalOfferingTableBuilder {
         }
     }
     
-    protected TableStream initTable(JspWriter outputStream, Long sessionId, String durationColName){
+    protected TableStream initTable(Writer outputStream, Long sessionId, String durationColName){
     	TableStream table = new TableStream(outputStream);
         table.setWidth("100%");
         table.setBorder(0);
@@ -2101,7 +2100,7 @@ public class WebInstructionalOfferingTableBuilder {
         return(table);
     }
     
-    protected TableStream initTable(JspWriter outputStream, Long sessionId){
+    protected TableStream initTable(Writer outputStream, Long sessionId){
     	ClassDurationType dtype = ClassDurationType.findDefaultType(sessionId, null);
     	return initTable(outputStream, sessionId, dtype == null ? MSG.columnMinPerWk() : dtype.getLabel());
     }
@@ -2111,7 +2110,7 @@ public class WebInstructionalOfferingTableBuilder {
     		ClassAssignmentProxy classAssignment, 
     		ExamAssignmentProxy examAssignment,
             Long instructionalOfferingId, 
-            JspWriter outputStream,
+            Writer outputStream,
             Comparator classComparator){
     	
     	if (instructionalOfferingId != null) {
@@ -2142,7 +2141,7 @@ public class WebInstructionalOfferingTableBuilder {
             String[] subjectAreaIds, 
             boolean displayHeader,
             boolean allCoursesAreGiven,
-            JspWriter outputStream,
+            Writer outputStream,
             String backType,
             String backId){
     	
@@ -2172,7 +2171,7 @@ public class WebInstructionalOfferingTableBuilder {
             TreeSet insructionalOfferings, 
             Long subjectAreaId, 
             boolean displayHeader, boolean allCoursesAreGiven,
-            JspWriter outputStream,
+            Writer outputStream,
             Comparator classComparator,
             List<Long> navigationOfferingIds){
     	
@@ -2253,13 +2252,13 @@ public class WebInstructionalOfferingTableBuilder {
     		if(displayHeader) {
     		    try {
     		    	if (allCoursesAreGiven)
-    		    		outputStream.print("<DIV align=\"right\"><A class=\"l7\" href=\"#notOffered" + subjectAreaId + "\">" + MSG.labelNotOfferedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</A></DIV>");
+    		    		outputStream.write("<DIV align=\"right\"><A class=\"l7\" href=\"#notOffered" + subjectAreaId + "\">" + MSG.labelNotOfferedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</A></DIV>");
     		    	if (isFilterWaitlist())
-    		    		outputStream.print("<DIV class=\"WelcomeRowHead\"><A name=\"offered" + subjectAreaId + "\"></A>" + MSG.labelOfferedWaitListedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</DIV>");
+    		    		outputStream.write("<DIV class=\"WelcomeRowHead\"><A name=\"offered" + subjectAreaId + "\"></A>" + MSG.labelOfferedWaitListedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</DIV>");
     		    	else if (isFilterNonWaitlist())
-    		    		outputStream.print("<DIV class=\"WelcomeRowHead\"><A name=\"offered" + subjectAreaId + "\"></A>" + MSG.labelOfferedNotWaitListedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</DIV>");
+    		    		outputStream.write("<DIV class=\"WelcomeRowHead\"><A name=\"offered" + subjectAreaId + "\"></A>" + MSG.labelOfferedNotWaitListedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</DIV>");
     		    	else
-    		    		outputStream.print("<DIV class=\"WelcomeRowHead\"><A name=\"offered" + subjectAreaId + "\"></A>" + MSG.labelOfferedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</DIV>");
+    		    		outputStream.write("<DIV class=\"WelcomeRowHead\"><A name=\"offered" + subjectAreaId + "\"></A>" + MSG.labelOfferedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</DIV>");
     			} catch (IOException e) {
     				e.printStackTrace();
     			}
@@ -2279,7 +2278,7 @@ public class WebInstructionalOfferingTableBuilder {
             } else {
                 if(displayHeader)
     				try {
-    					outputStream.print("<font class=\"error\">" + MSG.errorNoCoursesOffered(subjectArea.getSubjectAreaAbbreviation()) + "</font>");
+    					outputStream.write("<font class=\"error\">" + MSG.errorNoCoursesOffered(subjectArea.getSubjectAreaAbbreviation()) + "</font>");
     				} catch (IOException e) {
     					e.printStackTrace();
     				}
@@ -2289,10 +2288,10 @@ public class WebInstructionalOfferingTableBuilder {
         if (hasNotOfferedCourses || allCoursesAreGiven) {
             if(displayHeader) {
     	        try {
-    				outputStream.print("<br>");
+    				outputStream.write("<br>");
     				if (allCoursesAreGiven)
-    					outputStream.print("<DIV align=\"right\"><A class=\"l7\" href=\"#offered" + subjectAreaId + "\">" + MSG.labelOfferedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</A></DIV>");
-    		        outputStream.print("<DIV class=\"WelcomeRowHead\"><A name=\"notOffered" + subjectAreaId + "\"></A>" + MSG.labelNotOfferedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</DIV>");
+    					outputStream.write("<DIV align=\"right\"><A class=\"l7\" href=\"#offered" + subjectAreaId + "\">" + MSG.labelOfferedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</A></DIV>");
+    		        outputStream.write("<DIV class=\"WelcomeRowHead\"><A name=\"notOffered" + subjectAreaId + "\"></A>" + MSG.labelNotOfferedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</DIV>");
     			} catch (IOException e) {
     				e.printStackTrace();
     			}
@@ -2311,7 +2310,7 @@ public class WebInstructionalOfferingTableBuilder {
             } else {
                 if(displayHeader)
     				try {
-    					outputStream.print("<font class=\"normal\">&nbsp;" + MSG.errorAllCoursesOffered(subjectArea.getSubjectAreaAbbreviation()) + "</font>");
+    					outputStream.write("<font class=\"normal\">&nbsp;" + MSG.errorAllCoursesOffered(subjectArea.getSubjectAreaAbbreviation()) + "</font>");
     				} catch (IOException e) {
     					e.printStackTrace();
     				}

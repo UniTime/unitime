@@ -317,7 +317,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         frm.setAllowHardPrefs(sessionContext.hasPermission(ss, Right.CanUseHardRoomPrefs));
 
         BackTracker.markForBack(request,
-        		"schedulingSubpartDetail.do?ssuid="+frm.getSchedulingSubpartId(),
+        		"schedulingSubpartDetail.action?ssuid="+frm.getSchedulingSubpartId(),
         		MSG.backSubpart(ss.getSchedulingSubpartLabel()),
         		true, false);
 

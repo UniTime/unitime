@@ -202,7 +202,25 @@ public class DistributionPrefsAction extends Action {
             Debug.debug("Adding new Class via redirect ...");
 	        frm.setDistType(Preference.BLANK_PREF_VALUE);
 	        frm.setGrouping(Preference.BLANK_PREF_VALUE);
-	        if (request.getAttribute("subjectAreaId")!=null) {
+	        if (request.getParameter("classId") != null) {
+	        	Class_ clazz = Class_DAO.getInstance().get(Long.valueOf(request.getParameter("classId")));
+	        	if (clazz != null) {
+	        		frm.addToSubjectArea(clazz.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea().getUniqueId().toString());
+		        	frm.addToItype(clazz.getSchedulingSubpart().getUniqueId().toString());
+		        	frm.addToCourseNbr(clazz.getSchedulingSubpart().getControllingCourseOffering().getUniqueId().toString());
+		        	frm.addToClassNumber(clazz.getUniqueId().toString());
+			        request.setAttribute("addedClass", ""+(frm.getSubjectArea().size()-1));
+	        	}
+	        } else if (request.getParameter("subpartId") != null) {
+	        	SchedulingSubpart subpart = SchedulingSubpartDAO.getInstance().get(Long.valueOf(request.getParameter("subpartId")));
+	        	if (subpart != null) {
+	        		frm.addToSubjectArea(subpart.getControllingCourseOffering().getSubjectArea().getUniqueId().toString());
+		        	frm.addToItype(subpart.getUniqueId().toString());
+		        	frm.addToCourseNbr(subpart.getControllingCourseOffering().getUniqueId().toString());
+		        	frm.addToClassNumber("-1");
+			        request.setAttribute("addedClass", ""+(frm.getSubjectArea().size()-1));
+	        	}
+	        } else if (request.getAttribute("subjectAreaId")!=null) {
 	        	frm.addToSubjectArea(request.getAttribute("subjectAreaId").toString());
 	        	frm.addToItype(request.getAttribute("schedSubpartId").toString());
 	        	frm.addToCourseNbr(request.getAttribute("courseOffrId").toString());

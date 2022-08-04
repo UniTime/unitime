@@ -59,7 +59,7 @@
 		<s:if test="!fieldErrors.isEmpty()">
 		<TR>
 			<TD colspan="2" align="left" class="errorTable">
-				<div class='errorHeader'>There are the following errors:</div><s:fielderror/>
+				<div class='errorHeader'><loc:message name="formValidationErrors"/></div><s:fielderror/>
 			</TD>
 		</TR>
 		</s:if>

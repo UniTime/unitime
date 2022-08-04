@@ -21,8 +21,8 @@
 <%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
-<tt:confirm name="confirmDelete">The examination will be deleted. Continue?</tt:confirm>
 <loc:bundle name="ExaminationMessages"><s:set var="msg" value="#attr.MSG"/> 
+<tt:confirm name="confirmDelete"><loc:message name="confirmExamDelete"/></tt:confirm>
 <s:form action="examDetail">
 	<s:hidden name="form.examId"/>
 	<s:hidden name="form.nextId"/>
@@ -68,7 +68,7 @@
 		<s:if test="!fieldErrors.isEmpty()">
 		<TR>
 			<TD colspan="2" align="left" class="errorTable">
-				<div class='errorHeader'>There are the following errors:</div><s:fielderror/>
+				<div class='errorHeader'><loc:message name="formValidationErrors"/></div><s:fielderror/>
 			</TD>
 		</TR>
 		</s:if>
