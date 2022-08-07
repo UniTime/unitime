@@ -3,6 +3,9 @@
 
 name: Java CI with Maven
 
+on:
+  workflow_dispatch:
+
 jobs:
   build:
 
