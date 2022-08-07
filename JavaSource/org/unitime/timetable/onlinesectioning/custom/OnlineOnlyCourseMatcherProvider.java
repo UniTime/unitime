@@ -49,8 +49,11 @@ public class OnlineOnlyCourseMatcherProvider implements CourseMatcherProvider {
 		String filter = ApplicationProperty.OnlineSchedulingParameter.value("Filter.OnlineOnlyStudentFilter", null);
 		if (filter == null || filter.isEmpty()) return null;
 		if (server != null && !(server instanceof DatabaseServer)) {
-			if (context.hasPermissionAnySession(server.getAcademicSession(), Right.StudentSchedulingAdvisor)) {
+			if (context.hasPermissionAnySession(server.getAcademicSession(), Right.StudentSchedulingAdmin)) {
 				if ("true".equalsIgnoreCase(ApplicationProperty.OnlineSchedulingParameter.value("Filter.OnlineOnlyAdminOverride", "false")))  return null;
+			}
+			if (context.hasPermissionAnySession(server.getAcademicSession(), Right.StudentSchedulingAdvisor)) {
+				if ("true".equalsIgnoreCase(ApplicationProperty.OnlineSchedulingParameter.value("Filter.OnlineOnlyAdvisorOverride", "false")))  return null;
 			}
 			XStudent student = server.getStudent(studentId);
 			if (student == null) return null;
@@ -67,8 +70,11 @@ public class OnlineOnlyCourseMatcherProvider implements CourseMatcherProvider {
 		} else {
 			Student student = StudentDAO.getInstance().get(studentId);
 			if (student == null) return null;
-			if (context.hasPermissionAnySession(student.getSession(), Right.StudentSchedulingAdvisor)) {
+			if (context.hasPermissionAnySession(student.getSession(), Right.StudentSchedulingAdmin)) {
 				if ("true".equalsIgnoreCase(ApplicationProperty.OnlineSchedulingParameter.value("Filter.OnlineOnlyAdminOverride", "false")))  return null;
+			}
+			if (context.hasPermissionAnySession(student.getSession(), Right.StudentSchedulingAdvisor)) {
+				if ("true".equalsIgnoreCase(ApplicationProperty.OnlineSchedulingParameter.value("Filter.OnlineOnlyAdvisorOverride", "false")))  return null;
 			}
 			if (new Query(filter).match(new DbStudentMatcher(student)))
 				return new OnlineOnlyCourseMatcher(

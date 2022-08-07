@@ -163,13 +163,13 @@ public enum ApplicationProperty {
 	LoginMethod("tmtbl.login_method"),
 
 	/**
-	 * Custom login page header, see http://help.unitime.org/Customizations for more details. 
+	 * Custom login page header, see https://help.unitime.org/customizations for more details. 
 	 */
 	@Description("Login: custom page header")
 	LoginPageHeader("tmtbl.header.external"),
 
 	/**
-	 * Custom login page footer, see http://help.unitime.org/Customizations for more details. 
+	 * Custom login page footer, see https://help.unitime.org/customizations for more details. 
 	 */
 	@Description("Login: custom page footer")
 	LoginPageFooter("tmtbl.footer.external"),
@@ -203,7 +203,7 @@ public enum ApplicationProperty {
 	 * <li>Stack On Side ... Tree on the left side of the page content, but the first level of the tree is a StackPanel (only one top level item can be opened at a time)
 	 * </ul>
 	 * If manager setting for this property is created, each user (timetable manager) can change his/her menu style.
-	 * See http://help.unitime.org/Customizations for more details.
+	 * See https://help.unitime.org/customizations for more details.
 	 */
 	@DefaultValue("Dynamic On Top")
 	@Values({"Dynamic On Top", "Static On Top", "Tree On Side", "Static Tree On Side", "Dynamic Tree On Side", "Stack On Side", "Static Stack On Side", "Dynamic Stack On Side"})
@@ -280,7 +280,7 @@ public enum ApplicationProperty {
 	AuthenticationModules("tmtbl.authenticate.modules"),
 
 	/**
-	 * LDAP Authentication. See http://help.unitime.org/LDAP for more details.
+	 * LDAP Authentication. See https://help.unitime.org/LDAP for more details.
 	 */
 	@Description("LDAP Authentication: ldap url")
 	@DefaultValue("ldap://null")
@@ -346,7 +346,7 @@ public enum ApplicationProperty {
 	@Description("All Pages: enable page help")
 	PageHelpEnabled("tmtbl.wiki.help"),
 
-	@DefaultValue("https://help46.unitime.org/")
+	@DefaultValue("https://help47.unitime.org/")
 	@Description("All Pages: page help url")
 	PageHelpUrl("tmtbl.wiki.url"),
 
@@ -695,7 +695,7 @@ public enum ApplicationProperty {
 
 	/**
 	 * Room availability. By default, use the included event management system.
-	 * See http://help.unitime.org/Custom_Room_Availability for more details.
+	 * See https://help.unitime.org/custom-room-availability for more details.
 	 */
 	@Type(Class.class)
 	@Implements(RoomAvailabilityInterface.class)
@@ -787,7 +787,7 @@ public enum ApplicationProperty {
 
 	/**
 	 * Use {@link SpringLdapExternalUidLookup} when LDAP authentication is enabled.
-	 * See http://help.unitime.org/LDAP for more details.
+	 * See https://help.unitime.org/LDAP for more details.
 	 */
 	@Type(Class.class)
 	@Implements(ExternalUidLookup.class)
@@ -801,7 +801,7 @@ public enum ApplicationProperty {
 
 	/**
 	 * Use {@link SpringLdapExternalUidLookup} when LDAP authentication is enabled.
-	 * See http://help.unitime.org/LDAP for more details.
+	 * See https://help.unitime.org/LDAP for more details.
 	 */
 	@Type(Class.class)
 	@Implements(ExternalUidLookup.class)
@@ -888,9 +888,15 @@ public enum ApplicationProperty {
 	@Description("ExternalVariableTitleDataLookup interface called when a view exists to the external system that provides additional information about variable title courses.")
 	ExternalVariableTitleDataLookup("unitime.external.variable_title_data_lookup.class"),
 	
+	@Type(String.class)
+	@DefaultValue("select crs_dpt.dept_code from %SCHEMA%.department crs_dpt where crs_dpt.uniqueid = sa.department_uniqueid")
+	@Description("Query to determine the department code for a course based on data from an external database. Use 'sess' to reference the UniTime Academic Session data,  'sa' to reference the UniTime Subject Area data and 'co' to reference the UniTime CourseOffering data")
+	ExternalCourseDepartmentCodeLookupSQL("unitime.external.course.department_code_lookup_sql"),
+
+	
 	/**
 	 * Use {@link SpringLdapExternalUidTranslation} when LDAP authentication is enabled.
-	 * See http://help.unitime.org/LDAP for more details.
+	 * See https://help.unitime.org/LDAP for more details.
 	 */
 	@Type(Class.class)
 	@Implements(ExternalUidTranslation.class)
@@ -1066,7 +1072,7 @@ public enum ApplicationProperty {
 	ExaminationNameExpandCrossListedOfferingsToCourses("tmtbl.exam.name.expandCrosslistedOfferingToCourses"),
 
 	/**
-	 * See http://help.unitime.org/Exam_Naming_Convention for more details.
+	 * See https://help.unitime.org/exam-naming-convention for more details.
 	 */
 	@Type(Integer.class)
 	@DefaultValue("100")
@@ -1200,6 +1206,7 @@ public enum ApplicationProperty {
 	
 	@Type(Class.class)
 	@Implements(CriticalCoursesProvider.class)
+	@DefaultValue("org.unitime.timetable.onlinesectioning.custom.DefaultCriticalCourses")
 	@Description("Customization: student critical courses provider (interface CriticalCoursesProvider, used by Course Requests and/or batch scheduling solver to identify critical courses)")
 	CustomizationCriticalCourses("unitime.custom.CriticalCoursesProvider"),
 	
@@ -2108,7 +2115,7 @@ public enum ApplicationProperty {
 	@Deprecated
 	ExamsLoginMessage("tmtbl.exams.login.message"),
 
-	@DefaultValue("http://help.unitime.org/Frequently_Asked_Questions")
+	@DefaultValue("https://help.unitime.org/frequently-asked-questions")
 	@Description("Help: FAQ page")
 	HelpFAQ("tmtbl.help.faq"),
 
@@ -2155,11 +2162,11 @@ public enum ApplicationProperty {
 	@Description("Help: release notes")
 	HelpReleaseNotes("tmtbl.help.release_notes"),
 
-	@DefaultValue("http://help.unitime.org/Timetabling")
+	@DefaultValue("https://help.unitime.org/timetabling")
 	@Description("Help: online help landing page")
 	HelpMain("tmtbl.help.root"),
 
-	@DefaultValue("http://help.unitime.org/Tips_and_Tricks")
+	@DefaultValue("https://help.unitime.org/tips-and-tricks")
 	@Description("Help: tips and tricks")
 	HelpTricks("tmtbl.help.tricks"),
 
@@ -2522,6 +2529,29 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("true")
+	@Description("Online Student Scheduling: enable student scheduling preferences")
+	@Since(4.6)
+	OnlineSchedulingStudentPreferencesEnabled("unitime.enrollment.studentPrefs.enabled"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Online Student Scheduling Preferences: allow selection of start and end dates (typically only enabled for Summer term)")
+	@Since(4.6)
+	OnlineSchedulingStudentPreferencesDatesAllowed("unitime.enrollment.studentPrefs.datesAllowed"),
+	
+	@Type(Boolean.class)
+	@Description("Online Student Scheduling Preferences: custom note to be shown on the dialog (may contain HTML elements)")
+	@Since(4.6)
+	OnlineSchedulingStudentPreferencesNote("unitime.enrollment.studentPrefs.customNote"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Online Student Scheduling Preferences: allow require online (typically only enabled for Summer term)")
+	@Since(4.6)
+	OnlineSchedulingStudentPreferencesReqOnlineAllowed("unitime.enrollment.studentPrefs.reqOnlineAllowed"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
 	@Description("Student Solver Dashboard: allow Rearrange Schedule button)")
 	@Since(4.4)
 	SolverDashboardAllowScheduleReset("unitime.solverDashboard.allowScheduleReset"),
@@ -2781,6 +2811,11 @@ public enum ApplicationProperty {
 	ListCourseOfferingsSelectionLimit("unitime.enrollment.listOfferings.limit"),
 	
 	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Course Finder: when subject area starts with the student's campus code, move courses that match student's primary campus to the top of the list")
+	ListCourseOfferingsMatchingCampusFirst("unitime.enrollment.listOfferings.campusFirst"),
+	
+	@Type(Boolean.class)
 	@DefaultValue("true")
 	@Description("Student Status: include effective period message in the status")
 	StudentStatusEffectivePeriodMessage("unitime.enrollment.studentStatus.timeWindowMessage"),
@@ -2850,6 +2885,18 @@ public enum ApplicationProperty {
 	@Description("Student Course Requests: popup message when the page shows pre-populated course requests based on the advisor recommendations")
 	@Since(4.5)
 	PopupMessageCourseRequestsPrepopulatedWithAdvisorRecommendations("unitime.acrf.showingRecommendationsPopup"),
+	
+	@Type(String.class)
+	@Description("Advisor Course Recommendations: show critical course check with the given course request preference level:\n"
+			+ "- Critical ... critical course check does show and have the Critical value\n"
+			+ "- Vital ... critical course check does show and have the Vital value\n"
+			+ "- Important ... critical course check does show and have the Important value\n"
+			+ "- None ... critical course check does not show / cannot be set by advisors"
+			)
+	@Since(4.7)
+	@DefaultValue("None")
+	@Values({"None, Critical, Vital, Important"})
+	AdvisorCourseRequestsAllowCritical("unitime.acrf.setCriticalCourses"),
 	
 	@DefaultValue("Preferences")
 	@Values({"Disabled", "Preferences", "Assignments", "Enabled"})
@@ -2983,6 +3030,68 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Online Student Scheduling: automatically reload the online student scheduling server(s) when two clusters are merged together.")
 	OnlineSchedulingReloadAfterMerge("unitime.sectioning.reloadAfterMerge"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Wait-Listing: log wait-list changes into the WaitList table.")
+	WaitListLogging("unitime.enrollment.waitList.logging"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Instructional Offering Configuration: allow instructional method to be changed on a wait-listed course when there are students enrolled")
+	@Since(4.7)
+	WaitListCanChangeInstructionalMethod("unitime.offering.waitList.canChangeInstructionalMethod"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Edit Subpart / Class: allow date pattern to be changed on a wait-listed course when there are students enrolled")
+	@Since(4.7)
+	WaitListCanChangeDatePattern("unitime.offering.waitList.canChangeDatePattern"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Edit Course Offering: external managers can edit course offerings.")
+	PermissionCourseOfferingAllowsExternalEdit("unitime.permissions.courseOfferingAllowExternalEdits"),
+
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Enable Funding Department Functionality.")
+	CoursesFundingDepartmentsEnabled("unitime.courses.funding_departments_enabled"),
+
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Course Assign Instructors: switch the user interface back to the old (Struts-based) assign instructor page")
+	LegacyCourseAssignInstructors("unitime.legacy.course.assign_instructors"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Edit Course Offering: switch the user interface back to the old (Struts-based) edit course offering page")
+	LegacyCourseEdit("unitime.legacy.course_edit"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Departments: switch the user interface back to the old (Struts-based) departments pages")
+	LegacyDepartments("unitime.legacy.admin.departments"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Departments: switch the user interface back to the old (Struts-based) subject areas pages")
+	LegacySubjectAreas("unitime.legacy.admin.subjectAreas"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Manage Solvers: compute solver memory usage")
+	ManageSolversComputeMemoryUses("unitime.solvers.memory"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Scheduling Assistant: show Degree Plan button on the Scheduling Assistant or Course Requests pages (when custom DegreePlansProvider is configured)")
+	DegreePlanForStudents("unitime.degreePlan.students"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Course Recommendations: show Degree Plan button on the Advisor Course Recommendations page (when custom DegreePlansProvider is configured)")
+	DegreePlanForAdvisors("unitime.degreePlan.advisors"),
 
 	;
 

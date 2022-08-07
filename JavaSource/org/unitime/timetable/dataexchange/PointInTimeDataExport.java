@@ -37,6 +37,7 @@ import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.ArrangeCreditUnitConfig;
 import org.unitime.timetable.model.Building;
+import org.unitime.timetable.model.Campus;
 import org.unitime.timetable.model.ClassDurationType;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.ClassInstructor;
@@ -105,6 +106,7 @@ public class PointInTimeDataExport extends BaseExport {
     private HashMap<Long, Element> concentrationElements = new HashMap<Long, Element>();
     private HashMap<Long, Element> degreeElements = new HashMap<Long, Element>();
     private HashMap<Long, Element> programElements = new HashMap<Long, Element>();
+    private HashMap<Long, Element> campusElements = new HashMap<Long, Element>();
     private HashMap<Long, Element> minorElements = new HashMap<Long, Element>();
     private HashMap<Long, Element> courseTypeElements = new HashMap<Long, Element>();
     private HashMap<Long, Element> classDurationTypeElements = new HashMap<Long, Element>();
@@ -133,6 +135,7 @@ public class PointInTimeDataExport extends BaseExport {
     private Element minorsElement = null;
     private Element degreesElement = null;
     private Element programsElement = null;
+    private Element campusesElement = null;
     
 	public static String sRootElementName = "pointInTimeData";
 	public static String sNameAttribute = "name";
@@ -205,6 +208,8 @@ public class PointInTimeDataExport extends BaseExport {
 	public static String sDegreesElementName = "degrees";
 	public static String sProgramElementName = "program";
 	public static String sProgramsElementName = "programs";
+	public static String sCampusElementName = "campus";
+	public static String sCampusesElementName = "campuses";
 	public static String sMinorsElementName = "minors";
 	public static String sMinorElementName = "minor";
 	public static String sLocationsElementName = "locations";
@@ -264,6 +269,7 @@ public class PointInTimeDataExport extends BaseExport {
 	public static String sStudentSchedulingAttribute = "studentScheduling";
 	public static String sNumberOfRoomsAttribute = "numberOfRooms";
 	public static String sManagingDepartmentUniqueIdAttribute = "managingDepartmentUniqueId";
+	public static String sFundingDepartmentUniqueIdAttribute = "fundingDepartmentUniqueId";
 	public static String sClassSuffixAttribute = "classSuffix";
 	public static String sSectionNumberAttribute = "sectionNumber";
 	public static String sClassInstructorElementName = "classInstructor";
@@ -294,6 +300,7 @@ public class PointInTimeDataExport extends BaseExport {
 	public static String sAcademicAreaMajorClassificationWeightAttribute = "weight";
 	public static String sDegreeUniqueIdAttribute = "degreeUniqueId";
 	public static String sProgramUniqueIdAttribute = "programUniqueId";
+	public static String sCampusUniqueIdAttribute = "campusUniqueId";
 	
 	public static String sAcadAreaMinorClassificationElementName = "acadAreaMinorClassification";
 	public static String sMinorUniqueIdAttribute = "minorUniqueId";
@@ -623,6 +630,7 @@ public class PointInTimeDataExport extends BaseExport {
             offeringsElement = root.addElement(sOfferingsElementName);
             degreesElement = root.addElement(sDegreesElementName);
             programsElement = root.addElement(sProgramsElementName);
+            campusesElement = root.addElement(sCampusesElementName);
 
             
             info("Exporting "+offerings.size()+" offerings ...");
@@ -958,6 +966,7 @@ public class PointInTimeDataExport extends BaseExport {
         	exportDepartment(clazz.getManagingDept());
         }
         classElement.addAttribute(sManagingDepartmentUniqueIdAttribute, clazz.getManagingDept().getUniqueId().toString());
+        classElement.addAttribute(sFundingDepartmentUniqueIdAttribute, clazz.getEffectiveFundingDept().getUniqueId().toString());
         if (clazz.getUniqueIdRolledForwardFrom() != null)
         	classElement.addAttribute(sUniqueIdRolledForwardFromAttribute, clazz.getUniqueIdRolledForwardFrom().toString());
 
@@ -1002,6 +1011,9 @@ public class PointInTimeDataExport extends BaseExport {
     	if (acm.getProgram() != null && !programElements.containsKey(acm.getProgram().getUniqueId())) {
     		exportProgram(acm.getProgram());
     	}
+    	if (acm.getCampus() != null && !campusElements.containsKey(acm.getCampus().getUniqueId())) {
+    		exportCampus(acm.getCampus());
+    	}
     	acadAreaMajorClassificationElement.addAttribute(sAcademicAreaUniqueIdAttribute, acm.getAcademicArea().getUniqueId().toString());
     	acadAreaMajorClassificationElement.addAttribute(sAcademicClassificationUniqueIdAttribute, acm.getAcademicClassification().getUniqueId().toString());
     	acadAreaMajorClassificationElement.addAttribute(sMajorUniqueIdAttribute, acm.getMajor().getUniqueId().toString());
@@ -1011,6 +1023,8 @@ public class PointInTimeDataExport extends BaseExport {
     		acadAreaMajorClassificationElement.addAttribute(sDegreeUniqueIdAttribute, acm.getDegree().getUniqueId().toString());
     	if (acm.getProgram() != null)
     		acadAreaMajorClassificationElement.addAttribute(sProgramUniqueIdAttribute, acm.getProgram().getUniqueId().toString());
+    	if (acm.getCampus() != null)
+    		acadAreaMajorClassificationElement.addAttribute(sCampusUniqueIdAttribute, acm.getCampus().getUniqueId().toString());
     	if (acm.getWeight() != null && acm.getWeight() != 1.0)
     		acadAreaMajorClassificationElement.addAttribute(sAcademicAreaMajorClassificationWeightAttribute, acm.getWeight().toString());
 	}
@@ -1066,6 +1080,15 @@ public class PointInTimeDataExport extends BaseExport {
     	programElement.addAttribute(sNameAttribute, program.getLabel());
     	programElement.addAttribute(sExternalIdAttribute, (program.getExternalUniqueId() == null? program.getUniqueId().toString() : program.getExternalUniqueId()));
     	programElements.put(program.getUniqueId(), programElement);
+	}
+	
+	private void exportCampus(Campus campus) {
+    	Element campusElement = campusesElement.addElement(sCampusElementName);
+    	campusElement.addAttribute(sUniqueIdAttribute, campus.getUniqueId().toString());
+    	campusElement.addAttribute(sCodeAttribute, campus.getReference());
+    	campusElement.addAttribute(sNameAttribute, campus.getLabel());
+    	campusElement.addAttribute(sExternalIdAttribute, (campus.getExternalUniqueId() == null? campus.getUniqueId().toString() : campus.getExternalUniqueId()));
+    	campusElements.put(campus.getUniqueId(), campusElement);
 	}
 
 	private void exportMinor(PosMinor minor) {

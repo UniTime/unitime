@@ -46,6 +46,7 @@ import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
@@ -55,8 +56,8 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.StudentSectioningStatus;
-import org.unitime.timetable.model.StudentSectioningStatus.Option;
 import org.unitime.timetable.model.WaitList;
+import org.unitime.timetable.model.StudentSectioningStatus.Option;
 import org.unitime.timetable.model.dao.SessionDAO;
 
 
@@ -161,10 +162,6 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             sce.getClazz().getStudentEnrollments().remove(sce);
             hibSession.delete(sce); i.remove();
         }
-        for (Iterator<WaitList> i = s.getWaitlists().iterator(); i.hasNext(); ) {
-            WaitList wl = i.next();
-            hibSession.delete(wl); i.remove();
-        }
         
         if (iUpdateCourseRequests && BatchEnrollStudent.sRequestsChangedStatus.equals(student.getStatus())) {
         	StudentSectioningStatus status = s.getEffectiveStatus();
@@ -181,8 +178,10 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         		if (cd != null) {
         			cd.setPriority(request.getPriority());
         			if (status == null || status.hasOption(Option.waitlist)) {
-        				if (request instanceof CourseRequest && ((CourseRequest)request).isWaitlist() && !Boolean.TRUE.equals(cd.getWaitlist()))
+        				if (request instanceof CourseRequest && ((CourseRequest)request).isWaitlist() && !Boolean.TRUE.equals(cd.getWaitlist())) {
         					cd.setWaitlistedTimeStamp(ts);
+        					cd.setWaitListSwapWithCourseOffering(null);
+        				}
         				cd.setWaitlist(request instanceof CourseRequest && ((CourseRequest)request).isWaitlist());
         				cd.setNoSub(false);
         			} else if (status.hasOption(Option.nosubs)) {
@@ -221,8 +220,10 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         			} else {
         				CourseRequest cr = (CourseRequest)request;
         				if (status == null || status.hasOption(Option.waitlist)) {
-        					if (cr.isWaitlist() && !Boolean.TRUE.equals(cd.getWaitlist()))
+        					if (cr.isWaitlist() && !Boolean.TRUE.equals(cd.getWaitlist())) {
         						cd.setWaitlistedTimeStamp(ts);
+        						cd.setWaitListSwapWithCourseOffering(null);
+        					}
         					cd.setWaitlist(cr.isWaitlist());
         					cd.setNoSub(false);
         				} else if (status.hasOption(Option.nosubs)) {
@@ -270,55 +271,44 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         for (Iterator e=student.getRequests().iterator();e.hasNext();) {
             Request request = (Request)e.next();
             Enrollment enrollment = (Enrollment)getAssignment().getValue(request);
-            if (request instanceof CourseRequest) {
-                CourseRequest courseRequest = (CourseRequest)request;
-                if (enrollment==null) {
-                    if (courseRequest.isWaitlist() && student.canAssign(getAssignment(), courseRequest)) {
-                        CourseOffering co = iCourses.get(courseRequest.getCourses().get(0).getId());
-                        if (co == null) {
-                        	iProgress.warn("Course offering " + courseRequest.getCourses().get(0).getId() + " not found.");
-                        	continue;
-                        }
-                        WaitList wl = new WaitList();
-                        wl.setStudent(s);
-                        wl.setCourseOffering(co);
-                        wl.setTimestamp(iTimeStamp);
-                        wl.setType(Integer.valueOf(0));
-                        s.getWaitlists().add(wl);
-                        hibSession.save(wl);
+            if (enrollment != null && request instanceof CourseRequest) {
+                org.unitime.timetable.model.CourseRequest cr = iRequests.get(request.getId()+":"+enrollment.getOffering().getId());
+                for (Iterator j=enrollment.getAssignments().iterator();j.hasNext();) {
+                    Section section = (Section)j.next();
+                    Class_ clazz = iClasses.get(section.getId());
+                    if (clazz == null) {
+                    	iProgress.warn("Class " + section.getId() + " not found.");
+                    	continue;
                     }
-                } else {
-                    org.unitime.timetable.model.CourseRequest cr = iRequests.get(request.getId()+":"+enrollment.getOffering().getId());
-                    for (Iterator j=enrollment.getAssignments().iterator();j.hasNext();) {
-                        Section section = (Section)j.next();
-                        Class_ clazz = iClasses.get(section.getId());
-                        if (clazz == null) {
-                        	iProgress.warn("Class " + section.getId() + " not found.");
-                        	continue;
-                        }
-                        StudentClassEnrollment sce = new StudentClassEnrollment();
-                        sce.setChangedBy(StudentClassEnrollment.SystemChange.BATCH.toString());
-                        sce.setStudent(s);
-                        sce.setClazz(clazz);
-                        if (cr == null) {
-                        	CourseOffering co = iCourses.get(enrollment.getCourse().getId());
-                        	if (co == null)
-                        		co = clazz.getSchedulingSubpart().getControllingCourseOffering();
-                        	sce.setCourseOffering(co);
-                        } else {
-                            sce.setCourseRequest(cr);
-                            sce.setCourseOffering(cr.getCourseOffering());
-                        }
-                        sce.setTimestamp(iTimeStamp);
-                        s.getClassEnrollments().add(sce);
-                        hibSession.save(sce);
+                    StudentClassEnrollment sce = new StudentClassEnrollment();
+                    sce.setChangedBy(StudentClassEnrollment.SystemChange.BATCH.toString());
+                    sce.setStudent(s);
+                    sce.setClazz(clazz);
+                    if (cr == null) {
+                    	CourseOffering co = iCourses.get(enrollment.getCourse().getId());
+                    	if (co == null)
+                    		co = clazz.getSchedulingSubpart().getControllingCourseOffering();
+                    	sce.setCourseOffering(co);
+                    } else {
+                        sce.setCourseRequest(cr);
+                        sce.setCourseOffering(cr.getCourseOffering());
                     }
-                    if (cr != null)
-                    	hibSession.saveOrUpdate(cr);
+                    sce.setTimestamp(iTimeStamp);
+                    s.getClassEnrollments().add(sce);
+                    hibSession.save(sce);
                 }
+                if (cr != null)
+                	hibSession.saveOrUpdate(cr);
             }
         }
         hibSession.saveOrUpdate(s);
+        
+        if (s.getWaitListMode() == WaitListMode.WaitList)
+            s.resetWaitLists(
+        			WaitList.WaitListType.BATCH_SOLVER,
+        			iOwnerId,
+        			iTimeStamp,
+        			hibSession);
     }    
     
     public void save(Session session, org.hibernate.Session hibSession) {

@@ -620,7 +620,28 @@ public class CoursePermissions {
 		public boolean check(UserContext user, CourseOffering source) {
 			if (permissionOfferingLockNeeded.check(user, source.getInstructionalOffering())) return false;
 
-			return permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerEdit);
+			if (permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerEdit))
+				return true;
+			
+			if (ApplicationProperty.PermissionCourseOfferingAllowsExternalEdit.isTrue() && source.isIsControl()) {
+				// Manager can edit all classes -> controlling course is editable
+				Set<Department> externals = new HashSet<Department>();
+				for (InstrOfferingConfig config: source.getInstructionalOffering().getInstrOfferingConfigs())
+					for (SchedulingSubpart subpart: config.getSchedulingSubparts()) {
+							for (Class_ clazz: subpart.getClasses()) {
+								if (clazz.getManagingDept() != null && clazz.getManagingDept().isExternalManager()) {
+									if (externals.add(clazz.getManagingDept()) &&
+										!permissionDepartment.check(user, clazz.getManagingDept(), DepartmentStatusType.Status.ManagerEdit))
+										return false;
+								} else {
+									return false;
+								}
+							}
+						}
+				return true;
+			}
+			
+			return false;
 		}
 
 		@Override
@@ -634,7 +655,25 @@ public class CoursePermissions {
 
 		@Override
 		public boolean check(UserContext user, CourseOffering source) {
-			return permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerLimitedEdit);
+			if (permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerLimitedEdit))
+				return true;
+			
+			if (ApplicationProperty.PermissionCourseOfferingAllowsExternalEdit.isTrue()) {
+				// Manager can edit external department
+				Set<Department> externals = new HashSet<Department>();
+				for (InstrOfferingConfig config: source.getInstructionalOffering().getInstrOfferingConfigs())
+					for (SchedulingSubpart subpart: config.getSchedulingSubparts()) {
+							for (Class_ clazz: subpart.getClasses()) {
+								if (clazz.getManagingDept() != null && clazz.getManagingDept().isExternalManager()) {
+									if (externals.add(clazz.getManagingDept()) &&
+										permissionDepartment.check(user, clazz.getManagingDept(), DepartmentStatusType.Status.ManagerLimitedEdit))
+										return true;
+								}
+							}
+						}
+			}
+			
+			return false;
 		}
 
 		@Override
@@ -648,7 +687,24 @@ public class CoursePermissions {
 
 		@Override
 		public boolean check(UserContext user, CourseOffering source) {
-			return source.isIsControl() && permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerLimitedEdit);
+			if (source.isIsControl() && permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerLimitedEdit))
+				return true;
+			
+			if (ApplicationProperty.PermissionCourseOfferingAllowsExternalEdit.isTrue()) {
+				// Manager can edit external department
+				Set<Department> externals = new HashSet<Department>();
+				for (InstrOfferingConfig config: source.getInstructionalOffering().getInstrOfferingConfigs())
+					for (SchedulingSubpart subpart: config.getSchedulingSubparts()) {
+							for (Class_ clazz: subpart.getClasses()) {
+								if (clazz.getManagingDept() != null && clazz.getManagingDept().isExternalManager()) {
+									if (externals.add(clazz.getManagingDept()) &&
+										permissionDepartment.check(user, clazz.getManagingDept(), DepartmentStatusType.Status.ManagerLimitedEdit))
+										return true;
+								}
+							}
+						}
+			}
+			return false;
 		}
 
 		@Override

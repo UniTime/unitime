@@ -23,6 +23,7 @@
 <!ATTLIST subjectArea department CDATA #REQUIRED >
 <!ATTLIST subjectArea externalId CDATA #IMPLIED >
 <!ATTLIST subjectArea title CDATA #REQUIRED >
+<!ATTLIST subjectArea fundingDepartment CDATA #IMPLIED >
 <!-- deprecated in UniTime 3.4 -->
 <!ATTLIST subjectArea longTitle CDATA #IMPLIED >
 <!-- deprecated in UniTime 3.4 -->

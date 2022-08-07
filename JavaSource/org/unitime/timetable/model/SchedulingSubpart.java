@@ -467,7 +467,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	Set subpartPrefs = getPreferences(type, this);
     	
     	if (canInheritParentPreferences()) {
-    		Set parentPrefs = getParentSubpart().effectivePreferences(type);
+    		Set parentPrefs = getParentSubpart().effectivePreferences(type, this);
     		Department mngDept = getManagingDept();
 
     		if (parentPrefs != null && !parentPrefs.isEmpty() && !mngDept.equals(getParentSubpart().getManagingDept())) {

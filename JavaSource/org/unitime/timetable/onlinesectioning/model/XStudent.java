@@ -43,11 +43,17 @@ import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.FreeTimeRequest;
 import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Student.BackToBackPreference;
+import org.cpsolver.studentsct.model.Student.ModalityPreference;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
+import org.joda.time.Days;
+import org.joda.time.LocalDate;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
+import org.unitime.timetable.gwt.shared.StudentSchedulingPreferencesInterface.ClassModality;
+import org.unitime.timetable.gwt.shared.StudentSchedulingPreferencesInterface.ScheduleGaps;
 import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.CourseDemand;
@@ -92,6 +98,9 @@ public class XStudent extends XStudentId implements Externalizable {
     private String iPin;
     private boolean iPinReleased = false;
     private Map<Long, Long> iFailedWaitLists = new HashMap<Long, Long>();
+    private Integer iClassStartDate, iClassEndDate;
+    private ModalityPreference iModalityPreference = ModalityPreference.NO_PREFERENCE;
+    private BackToBackPreference iBackToBackPreference = BackToBackPreference.NO_PREFERENCE;
 
     public XStudent() {
     	super();
@@ -106,7 +115,7 @@ public class XStudent extends XStudentId implements Externalizable {
     	super(studentId, externalId, name);
     }
 
-    public XStudent(Student student, OnlineSectioningHelper helper, BitSet freeTimePattern) {
+    public XStudent(Student student, OnlineSectioningHelper helper, BitSet freeTimePattern, Date firstDay) {
     	super(student, helper);
     	iStatus = student.getSectioningStatus() == null ? null : student.getSectioningStatus().getReference();
     	iEmail = student.getEmail();
@@ -187,6 +196,20 @@ public class XStudent extends XStudentId implements Externalizable {
         
         iPin = student.getPin();
         iPinReleased = (student.isPinReleased() != null && student.isPinReleased().booleanValue());
+        updatePreferences(student, firstDay);
+    }
+    
+    public void updatePreferences(Student student, Date firstDay) {
+        if (student.getClassStartDate() != null)
+        	iClassStartDate = Days.daysBetween(new LocalDate(firstDay), new LocalDate(student.getClassStartDate())).getDays();
+        else
+        	iClassStartDate = null;
+        if (student.getClassEndDate() != null)
+        	iClassEndDate = Days.daysBetween(new LocalDate(firstDay), new LocalDate(student.getClassEndDate())).getDays();
+        else
+        	iClassEndDate = null;
+        iModalityPreference = student.getModalityPreference();
+        iBackToBackPreference = student.getBackToBackPreference();    	
     }
     
     public void setAdvisorRequests(Student student, OnlineSectioningHelper helper, BitSet freeTimePattern) {
@@ -232,6 +255,10 @@ public class XStudent extends XStudentId implements Externalizable {
     	iMaxCredit = student.iMaxCredit;
     	iMaxCreditOverride = student.iMaxCreditOverride;
     	iLastNote = student.iLastNote;
+    	iClassStartDate = student.iClassStartDate;
+    	iClassEndDate = student.iClassEndDate;
+    	iBackToBackPreference = student.iBackToBackPreference;
+    	iModalityPreference = student.iModalityPreference;
     }
     
     public XStudent(XStudent student, Collection<CourseDemand> demands, OnlineSectioningHelper helper, BitSet freeTimePattern) {
@@ -256,6 +283,11 @@ public class XStudent extends XStudentId implements Externalizable {
     	iMaxCredit = student.iMaxCredit;
     	iMaxCreditOverride = student.iMaxCreditOverride;
     	iLastNote = student.iLastNote;
+    	iClassStartDate = student.iClassStartDate;
+    	iClassEndDate = student.iClassEndDate;
+    	iBackToBackPreference = student.iBackToBackPreference;
+    	iModalityPreference = student.iModalityPreference;
+    	
 
     	if (demands != null)
         	for (CourseDemand cd: demands) {
@@ -320,6 +352,10 @@ public class XStudent extends XStudentId implements Externalizable {
     			iRequests.add(new XCourseRequest((CourseRequest)request, assignment == null ? null : assignment.getValue(request)));
     		}
     	}
+    	iClassStartDate = student.getClassFirstDate();
+    	iClassEndDate = student.getClassLastDate();
+    	iBackToBackPreference = student.getBackToBackPreference();
+    	iModalityPreference = student.getModalityPreference();
     }
     
     public String getPin() { return iPin; }
@@ -388,6 +424,36 @@ public class XStudent extends XStudentId implements Externalizable {
     }
     public boolean isAllowDisabled() { return iAllowDisabled; }
     public void setAllowDisabled(boolean allowDisabled) { iAllowDisabled = allowDisabled; }
+    
+    public Integer getClassStartDate() { return iClassStartDate; }
+    public Integer getClassEndDate() { return iClassEndDate; }
+    public ModalityPreference getModalityPreference() { return iModalityPreference; }
+    public BackToBackPreference getBackToBackPreference() { return iBackToBackPreference; }
+    public ClassModality getPreferredClassModality() {
+    	if (iModalityPreference == null) return ClassModality.NoPreference;
+    	switch (iModalityPreference) {
+    	case ONILNE_DISCOURAGED: return ClassModality.DiscouragedOnline;
+    	case ONLINE_PREFERRED: return ClassModality.PreferredOnline;
+    	case ONLINE_REQUIRED: return ClassModality.RequiredOnline;
+    	default: return ClassModality.NoPreference;
+    	}
+    }
+    public ScheduleGaps getPreferredScheduleGaps() {
+    	if (iBackToBackPreference == null) return ScheduleGaps.NoPreference;
+    	switch (iBackToBackPreference) {
+    	case BTB_DISCOURAGED: return ScheduleGaps.DiscourageBackToBack;
+    	case BTB_PREFERRED: return ScheduleGaps.PreferBackToBack;
+    	default: return ScheduleGaps.NoPreference;
+    	}
+    }
+    public Date getClassStartDate(Date datePatternFirstDate) {
+    	if (iClassStartDate == null) return null;
+    	return new LocalDate(datePatternFirstDate).plusDays(iClassStartDate).toDate();
+    }
+    public Date getClassEndDate(Date datePatternFirstDate) {
+    	if (iClassEndDate == null) return null;
+    	return new LocalDate(datePatternFirstDate).plusDays(iClassEndDate).toDate();
+    }
 
     /**
      * List of academic area, classification, and major codes ({@link XAreaClassificationMajor}) for the given student
@@ -538,6 +604,17 @@ public class XStudent extends XStudentId implements Externalizable {
     			);
     }
     
+    public boolean isEnrolled(XCourseId courseId) {
+    	if (courseId == null) return false;
+    	for (XRequest r: iRequests) {
+    		if (r instanceof XCourseRequest) {
+    			XCourseRequest cr = (XCourseRequest)r;
+    			if (courseId.equals(cr.getEnrollment())) return true;
+    		}
+    	}
+    	return false;
+    }
+    
     
     
     @Override
@@ -598,6 +675,10 @@ public class XStudent extends XStudentId implements Externalizable {
 		}
 		iPin = (String)in.readObject();
 		iPinReleased = in.readBoolean();
+		iClassStartDate = (Integer)in.readObject();
+		iClassEndDate = (Integer)in.readObject();
+		iBackToBackPreference = BackToBackPreference.values()[in.readInt()];
+		iModalityPreference = ModalityPreference.values()[in.readInt()];
 	}
 
 	@Override
@@ -660,6 +741,11 @@ public class XStudent extends XStudentId implements Externalizable {
 		
 		out.writeObject(iPin);
 		out.writeBoolean(iPinReleased);
+		
+		out.writeObject(iClassStartDate);
+		out.writeObject(iClassEndDate);
+		out.writeInt(iBackToBackPreference.ordinal());
+		out.writeInt(iModalityPreference.ordinal());
 	}
 	
 	public static class XStudentSerializer implements Externalizer<XStudent> {

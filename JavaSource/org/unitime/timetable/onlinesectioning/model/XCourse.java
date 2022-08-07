@@ -42,8 +42,6 @@ import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 @SerializeWith(XCourse.XCourseSerializer.class)
 public class XCourse extends XCourseId {
 	private static final long serialVersionUID = 1L;
-    private String iSubjectArea = null;
-    private String iCourseNumber = null;
     private String iDepartment = null;
     private String iConsentLabel = null, iConsentAbbv = null;
     private String iNote = null;
@@ -71,8 +69,6 @@ public class XCourse extends XCourseId {
 
     public XCourse(CourseOffering course) {
     	super(course);
-		iSubjectArea = course.getSubjectAreaAbbv().trim();
-		iCourseNumber = course.getCourseNbr().trim();
 		iNote = course.getScheduleBookNote();
 		iDepartment = (course.getSubjectArea().getDepartment().getDeptCode() == null ? course.getSubjectArea().getDepartment().getAbbreviation() : course.getSubjectArea().getDepartment().getDeptCode());
         boolean unlimited = false;
@@ -106,24 +102,12 @@ public class XCourse extends XCourseId {
     
     public XCourse(Course course) {
     	super(course);
-		iSubjectArea = course.getSubjectArea();
-		iCourseNumber = course.getCourseNumber();
 		iNote = course.getNote();
         iLimit = course.getLimit();
         iProjected = course.getProjected();
         if (course.getCredit() != null)
         	iCredit = new XCredit(course.getCredit());
         iControl = course.getName().equals(course.getOffering().getName());
-    }
-
-    /** Subject area */
-    public String getSubjectArea() {
-        return iSubjectArea;
-    }
-
-    /** Course number */
-    public String getCourseNumber() {
-        return iCourseNumber;
     }
 
     /** Course offering limit */
@@ -178,8 +162,6 @@ public class XCourse extends XCourseId {
 	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 		super.readExternal(in);
-		iSubjectArea = (String)in.readObject();
-		iCourseNumber = (String)in.readObject();
 		iDepartment = (String)in.readObject();
 		iConsentLabel = (String)in.readObject();
 		iConsentAbbv = (String)in.readObject();
@@ -202,8 +184,6 @@ public class XCourse extends XCourseId {
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		super.writeExternal(out);
-		out.writeObject(iSubjectArea);
-		out.writeObject(iCourseNumber);
 		out.writeObject(iDepartment);
 		out.writeObject(iConsentLabel);
 		out.writeObject(iConsentAbbv);

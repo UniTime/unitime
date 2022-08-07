@@ -417,6 +417,8 @@ public class InMemoryServer extends AbstractLockingServer {
 
 					// assign
 					cr.setWaitlist(waitlist);
+					cr.setWaitListedTimeStamp(request.getWaitListedTimeStamp());
+					cr.setWaitListSwapWithCourseOffering(request.getWaitListSwapWithCourseOffering());
 					
 					// put new requests
 					for (XCourseId course: cr.getCourseIds()) {

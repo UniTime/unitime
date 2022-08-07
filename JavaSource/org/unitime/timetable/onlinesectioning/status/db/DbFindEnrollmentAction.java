@@ -150,7 +150,9 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 				st.addConcentration(acm.getConcentration() == null ? null : acm.getConcentration().getCode(), acm.getConcentration() == null ? null : acm.getConcentration().getName());
 				st.addDegree(acm.getDegree() == null ? null : acm.getDegree().getReference(), acm.getDegree() == null ? null : acm.getDegree().getLabel());
 				st.addProgram(acm.getProgram() == null ? null : acm.getProgram().getReference(), acm.getProgram() == null ? null : acm.getProgram().getLabel());
+				st.addCampus(acm.getCampus() == null ? null : acm.getCampus().getReference(), acm.getCampus() == null ? null : acm.getCampus().getLabel());
 			}
+			st.setDefaultCampus(server.getAcademicSession().getCampus());
 			for (StudentAreaClassificationMinor acm: new TreeSet<StudentAreaClassificationMinor>(student.getAreaClasfMinors())) {
 				st.addMinor(acm.getMinor().getCode(), acm.getMinor().getName());
 			}
@@ -202,6 +204,8 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 						e.addEnrollmentMessage(MSG.overrideCancelledWaitList(course.getCourseName())); break;
 					case NOT_CHECKED:
 						e.addEnrollmentMessage(MSG.overrideNotRequested()); break;
+					case NOT_NEEDED:
+						e.addEnrollmentMessage(MSG.overrideNotNeeded(course.getCourseName())); break;
 					}
 				}
 				if (student.getOverrideStatus() != null && student.getMaxCreditOverrideIntent() == CourseRequestOverrideIntent.WAITLIST) {
@@ -241,8 +245,10 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 			}
 			if (request.getCourseDemand().getTimestamp() != null)
 				e.setRequestedDate(request.getCourseDemand().getTimestamp());
-			if (request.getCourseDemand().getWaitlistedTimeStamp() != null && crm.enrollment().isEmpty())
+			if (request.getCourseDemand().getWaitlistedTimeStamp() != null && e.isWaitList())
 				e.setWaitListedDate(request.getCourseDemand().getWaitlistedTimeStamp());
+			if (student.isEnrolled(request.getCourseDemand().getWaitListSwapWithCourseOffering()))
+				e.setWaitListedReplacement(request.getCourseDemand().getWaitListSwapWithCourseOffering().getCourseName());
 			e.setCritical(request.getCourseDemand().getEffectiveCritical().ordinal());
 			if (!crm.enrollment().isEmpty()) {
 				if (crm.reservation() != null) {

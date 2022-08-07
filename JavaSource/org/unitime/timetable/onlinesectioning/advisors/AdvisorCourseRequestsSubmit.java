@@ -50,7 +50,10 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.ServerCallback;
 import org.unitime.timetable.onlinesectioning.custom.CustomCriticalCoursesHolder;
+import org.unitime.timetable.onlinesectioning.custom.CustomCriticalCoursesHolder.CheckCriticalCourses;
+import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.AdvisorCriticalCourses;
 import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.CriticalCourses;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
@@ -97,6 +100,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 				for (OnlineSectioningLog.Request r: OnlineSectioningHelper.toProto(getDetails().getRequest()))
 					action.addRecommendation(r);
 
+			boolean reCheckStudent = false;
 			if (getDetails().isCanUpdate()) {
 				Date ts = new Date();
 				Lock lock = server.lockStudent(getDetails().getStudentId(), null, name());
@@ -112,6 +116,9 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 								critical = CustomCriticalCoursesHolder.getProvider().getCriticalCourses(server, helper, new XStudentId(dbStudent, helper));
 						} catch (Exception e) {
 							helper.warn("Failed to lookup critical courses: " + e.getMessage(), e);
+						}
+						if (critical != null && critical instanceof AdvisorCriticalCourses) {
+							reCheckStudent = true;
 						}
 					
 						List<AdvisorCourseRequest> acrs = new ArrayList<AdvisorCourseRequest>();
@@ -215,7 +222,14 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 										} else {
 											acr.setCredit(null); acr.setNotes(null); acr.setWaitlist(null); acr.setNoSub(null);
 										}
-										acr.setCritical(acr.isCritical(critical));
+										if (iDetails.hasCriticalCheck()) {
+											if (alt == 0)
+												acr.setCritical(request.getCritical());
+											else
+												acr.setCritical(null);
+										} else {
+											acr.setCritical(acr.isCritical(critical));
+										}
 										acr.updatePreferences(rc, helper.getHibSession());
 										helper.getHibSession().saveOrUpdate(acr);
 										alt++;
@@ -292,7 +306,14 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 											helper.getHibSession().delete(acr.getFreeTime());
 											acr.setFreeTime(null);
 										}
-										acr.setCritical(acr.isCritical(critical));
+										if (iDetails.hasCriticalCheck()) {
+											if (alt == 0)
+												acr.setCritical(request.getCritical());
+											else
+												acr.setCritical(null);
+										} else {
+											acr.setCritical(acr.isCritical(critical));
+										}
 										acr.setWaitlist(null);
 										acr.setNoSub(null);
 										acr.updatePreferences(rc, helper.getHibSession());
@@ -434,6 +455,14 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 					lock.release();
 				}
 			}
+			
+			if (reCheckStudent)
+				server.execute(server.createAction(CheckCriticalCourses.class).forStudents(getDetails().getStudentId()), helper.getUser(), new ServerCallback<Boolean>() {
+					@Override
+					public void onFailure(Throwable exception) {}
+					@Override
+					public void onSuccess(Boolean result) {}
+				});
 
 			generatePdfConfirmation(ret, server, helper);
 			return ret;

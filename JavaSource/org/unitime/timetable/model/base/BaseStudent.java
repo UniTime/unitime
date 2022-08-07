@@ -63,6 +63,8 @@ public abstract class BaseStudent implements Serializable {
 	private Integer iOverrideIntent;
 	private String iPin;
 	private Boolean iPinReleased;
+	private Date iClassStartDate;
+	private Date iClassEndDate;
 	private Date iScheduleEmailedDate;
 
 	private Session iSession;
@@ -96,6 +98,8 @@ public abstract class BaseStudent implements Serializable {
 	public static String PROP_REQ_INTENT = "overrideIntent";
 	public static String PROP_PIN = "pin";
 	public static String PROP_PIN_RELEASED = "pinReleased";
+	public static String PROP_CLASS_START = "classStartDate";
+	public static String PROP_CLASS_END = "classEndDate";
 	public static String PROP_SCHEDULE_EMAILED = "scheduleEmailedDate";
 
 	public BaseStudent() {
@@ -160,6 +164,12 @@ public abstract class BaseStudent implements Serializable {
 	public Boolean isPinReleased() { return iPinReleased; }
 	public Boolean getPinReleased() { return iPinReleased; }
 	public void setPinReleased(Boolean pinReleased) { iPinReleased = pinReleased; }
+
+	public Date getClassStartDate() { return iClassStartDate; }
+	public void setClassStartDate(Date classStartDate) { iClassStartDate = classStartDate; }
+
+	public Date getClassEndDate() { return iClassEndDate; }
+	public void setClassEndDate(Date classEndDate) { iClassEndDate = classEndDate; }
 
 	public Date getScheduleEmailedDate() { return iScheduleEmailedDate; }
 	public void setScheduleEmailedDate(Date scheduleEmailedDate) { iScheduleEmailedDate = scheduleEmailedDate; }
@@ -264,6 +274,8 @@ public abstract class BaseStudent implements Serializable {
 
 	public String toDebugString() {
 		return "Student[" +
+			"\n	ClassEndDate: " + getClassEndDate() +
+			"\n	ClassStartDate: " + getClassStartDate() +
 			"\n	Email: " + getEmail() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +
 			"\n	FirstName: " + getFirstName() +

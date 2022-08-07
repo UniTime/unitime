@@ -31,6 +31,7 @@ import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.commons.web.htmlgen.TableStream;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.ClassDurationType;
@@ -86,7 +87,7 @@ public class WebInstrOfferingConfigTableBuilder extends
 		        btnTable.append("<td>");
 		        btnTable.append("	<form method='post' action='instructionalOfferingConfigEdit.do' class='FormWithNoPadding'>");
 		        btnTable.append("		<input type='hidden' name='configId' value='" + ioc.getUniqueId().toString() + "'>");
-		        btnTable.append("		<input type='submit' name='op' value='" + MSG.actionEditConfiguration() + "' title='" + MSG.titleEditConfiguration() + "' class='btn'>");
+		        btnTable.append("		<input type='submit' name='op' value='" + MSG.actionEditConfiguration() + "' title='" + MSG.titleEditConfiguration() + "' class='gwt-Button'>");
 		        btnTable.append("	</form>");
 		        btnTable.append("</td>");
 	        }
@@ -95,17 +96,25 @@ public class WebInstrOfferingConfigTableBuilder extends
 		        btnTable.append("<td>");
 		        btnTable.append("	<form method='post' action='instructionalOfferingModify.do' class='FormWithNoPadding'>");
 		        btnTable.append("		<input type='hidden' name='uid' value='" + ioc.getUniqueId().toString() + "'>");
-		        btnTable.append("		<input type='submit' name='op' value='" + MSG.actionClassSetup() +"' title='" + MSG.titleClassSetup() + "' class='btn'> ");
+		        btnTable.append("		<input type='submit' name='op' value='" + MSG.actionClassSetup() +"' title='" + MSG.titleClassSetup() + "' class='gwt-Button'> ");
 		        btnTable.append("	</form>");
 		        btnTable.append("</td>");
 	        }
 
-	        if (context.hasPermission(ioc, Right.AssignInstructors)) {
+	        if (ApplicationProperty.LegacyCourseAssignInstructors.isTrue() && context.hasPermission(ioc, Right.AssignInstructors)) {
 	        	btnTable.append("<td>");
 		        btnTable.append("	<form method='post' action='classInstructorAssignment.do' class='FormWithNoPadding'>");
 		        btnTable.append("		<input type='hidden' name='uid' value='" + ioc.getUniqueId().toString() + "'>");
-		        btnTable.append("		<input type='submit' name='op' value='" + MSG.actionAssignInstructors() + "' title='" + MSG.titleAssignInstructors() + "' class='btn'> ");
+		        btnTable.append("		<input type='submit' name='op' value='" + MSG.actionAssignInstructors() + "' title='" + MSG.titleAssignInstructors() + "' class='gwt-Button'> ");
 		        btnTable.append("	</form>");
+		        btnTable.append("</td>");
+	        }
+
+	        if (ApplicationProperty.LegacyCourseAssignInstructors.isFalse() && context.hasPermission(ioc, Right.AssignInstructors)) {
+	        	btnTable.append("<td>");
+				btnTable.append("<span id='" + ioc.getUniqueId().toString() + "' name='UniTimeGWT:AssignInstructorsButton' style=\"display: none;\">");
+				btnTable.append(ioc.getUniqueId().toString());
+				btnTable.append("</span>");
 		        btnTable.append("</td>");
 	        }
 
@@ -211,6 +220,12 @@ public class WebInstrOfferingConfigTableBuilder extends
 	    	columnList.add(MSG.columnTimetable());
 	    	if(LearningManagementSystemInfo.isLmsInfoDefinedForSession(ioc.getSessionId())) {
 	    		columnList.add(MSG.columnLms());
+	    	}
+	    	if (ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue()) {
+	    		ss: for (SchedulingSubpart ss: ioc.getSchedulingSubparts()) {
+		        	for (Class_ c: ss.getClasses())
+		        		if (c.getFundingDept() != null) { columnList.add(MSG.columnFundingDepartment()); break ss; }
+		        }
 	    	}
             setVisibleColumns(columnList);
 	        boolean hasInstructorAssignments = false;

@@ -360,24 +360,31 @@ public class ManageSolversAction extends Action {
 		public T getValue(CommonSolverInterface solver, SolverType type, DataProperties properties, Map<String,String> info);
 		public String getText(T value);
 		public Comparable getComparable(T value);
+		public boolean isVisible();
 	}
 	
 	public static abstract class DateSolverProperty implements SolverProperty<Date> {
 		@Override
 		public String getText(Date value) { return value == null ? "N/A" : sDF.format(value); }
 		public Comparable getComparable(Date value) { return value == null ? new Date() : value; }
+		@Override
+		public boolean isVisible() { return true; }
 	}
 	
 	public static abstract class StringSolverProperty implements SolverProperty<String> {
 		@Override
 		public String getText(String value) { return value == null ? "N/A" : value; }
 		public Comparable getComparable(String value) { return value == null ? "" : value; }
+		@Override
+		public boolean isVisible() { return true; }
 	}
 	
 	public static abstract class IntegerSolverProperty implements SolverProperty<Integer> {
 		@Override
 		public String getText(Integer value) { return value == null ? "N/A" : String.valueOf(value); }
 		public Comparable getComparable(Integer value) { return value == null ? 0 : value; }
+		@Override
+		public boolean isVisible() { return true; }
 	}
 	
 	public static class InfoSolverProperty extends StringSolverProperty {
@@ -445,6 +452,8 @@ public class ManageSolversAction extends Action {
 			}
 			@Override
 			public Comparable getComparable(String value) { return null; }
+			@Override
+			public boolean isVisible() { return ApplicationProperty.ManageSolversComputeMemoryUses.isTrue(); }
 		}),
 		NR_CORES("Cores",  new IntegerSolverProperty() {
 			@Override
@@ -549,10 +558,11 @@ public class ManageSolversAction extends Action {
 		public static List<SolverProperties> applicable(SolverType type) {
 			List<SolverProperties> ret = new ArrayList<SolverProperties>();
 			for (SolverProperties p: values()) {
-				if (p.getType() == null || p.getType() == type) ret.add(p);
+				if ((p.getType() == null || p.getType() == type) && p.isVisible()) ret.add(p);
 			}
 			return ret;
 		}
+		public boolean isVisible() { return iProperty.isVisible(); }
 	}
 	
 	protected static String getTableName(SolverType type) {
@@ -754,11 +764,20 @@ public class ManageSolversAction extends Action {
            try {
                WebTable.setOrder(sessionContext,"manageSolvers.ord[ONLINE]",request.getParameter("ordo"),1);
                
-               WebTable webTable = new WebTable( 14,
-                       "Manage Online Scheduling Servers", "manageSolvers.do?ordo=%%",
-                       new String[] {"Created", "Session", "Host", "Mode", "Mem", "Assign", "Total", "CompSched", "DistConf", "TimeConf", "FreeConf", "AvgDisb", "Disb[>=10%]", "Operation(s)"},
-                       new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
-                       null );
+               boolean mem = ApplicationProperty.ManageSolversComputeMemoryUses.isTrue();
+               
+               WebTable webTable = (mem ?
+            		   new WebTable( 14,
+            				   "Manage Online Scheduling Servers", "manageSolvers.do?ordo=%%",
+            				   new String[] {"Created", "Session", "Host", "Mode", "Mem", "Assign", "Total", "CompSched", "DistConf", "TimeConf", "FreeConf", "AvgDisb", "Disb[>=10%]", "Operation(s)"},
+            				   new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
+            				   null ) :
+                       new WebTable( 13,
+                    		   "Manage Online Scheduling Servers", "manageSolvers.do?ordo=%%",
+                    		   new String[] {"Created", "Session", "Host", "Mode", "Assign", "Total", "CompSched", "DistConf", "TimeConf", "FreeConf", "AvgDisb", "Disb[>=10%]", "Operation(s)"},
+                               new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
+                               null )
+               			);
                webTable.setRowStyle("white-space:nowrap");
                
                int nrLines = 0;
@@ -807,7 +826,8 @@ public class ManageSolversAction extends Action {
                         			" event.cancelBubble=true;\">";
                        }
                        
-                       webTable.addLine(null, new String[] {
+                       if (mem) {
+                           webTable.addLine(null, new String[] {
                                    (loaded.getTime() <= 0 ? "N/A" : sDF.format(loaded)),
                                    sessionLabel,
                                    solver.getHost() + (solver.isMaster() ? " (master)" : ""),
@@ -837,7 +857,37 @@ public class ManageSolversAction extends Action {
                                    (disb==null?"":disb),
                                    (disb10==null?"":disb10),
                                    null});
-                           nrLines++;
+                       } else {
+                           webTable.addLine(null, new String[] {
+                                   (loaded.getTime() <= 0 ? "N/A" : sDF.format(loaded)),
+                                   sessionLabel,
+                                   solver.getHost() + (solver.isMaster() ? " (master)" : ""),
+                                   mode,
+                                   (assigned==null?"N/A":assigned),
+                                   (totVal==null?"N/A":totVal),
+                                   (compSch==null?"N/A":compSch), 
+                                   (distConf==null?"N/A":distConf),
+                                   (time==null?"N/A":time),
+                                   (free==null?"N/A":free),
+                                   (disb==null?"N/A":disb),
+                                   (disb10==null?"N/A":disb10),
+                                   op},
+                               new Comparable[] {
+                                   loaded,
+                                   sessionLabel,
+                                   solver.getHost(),
+                                   mode, 
+                                   (assigned==null?"":assigned),
+                                   (totVal==null?"":totVal),
+                                   (compSch==null?"":compSch), 
+                                   (distConf==null?"":distConf),
+                                   (time==null?"":time),
+                                   (free==null?"":free),
+                                   (disb==null?"":disb),
+                                   (disb10==null?"":disb10),
+                                   null});                    	   
+                       }
+                       nrLines++;
                    }
                }
                if (nrLines==0)

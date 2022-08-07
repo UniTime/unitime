@@ -610,7 +610,7 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
             		.build();
             appender.start();
             config.addAppender(appender);
-            config.getRootLogger().addAppender(appender, Level.INFO, null);
+            ctx.getRootLogger().addAppender(config.getAppender("unitime"));
             config.getRootLogger().removeAppender("stdout");
     		ctx.updateLoggers();
         }

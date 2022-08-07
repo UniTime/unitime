@@ -56,6 +56,7 @@ import org.cpsolver.studentsct.model.Student.StudentPriority;
 import org.cpsolver.studentsct.model.Subpart;
 import org.cpsolver.studentsct.model.Unavailability;
 import org.cpsolver.studentsct.report.StudentSectioningReport;
+import org.unitime.timetable.onlinesectioning.custom.CustomCourseLookup;
 
 /**
  * @author Tomas Muller
@@ -320,13 +321,15 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         REQUESTED_COURSES(
         		new String[] {
         				"Requested Courses", "- pre-enrolled",
-        				"Courses per Student", "Assigned Courses", "- 1st choice", "- 2nd choice", "- 3rd choice", "- 4th+ choice"},
+        				"Courses per Student", "Assigned Courses", "- 1st choice", "- 2nd choice", "- 3rd choice", "- 4th+ choice", "- substitute"},
         		new String[] {
         				"Total number of requested courses by all students (not counting substitutes or alternatives)",
         				"Percentage of requested courses that were already enrolled (solver was not allowed to change)",
         				"The average number of course requested per student",
         				"Percentage of all course requests satisfied",
-        				"Out of the above, the percentage of cases where the 1st choice course was given"
+        				"Out of the above, the percentage of cases where the 1st choice course was given",
+        				"2nd choice (1st alternative) course was given", "3rd choice course was given", "4th or later choice was given",
+        				"a substitute course was given instead",
         		},
         		new Statistic() {
             @Override
@@ -334,6 +337,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                 int requests = 0, students = 0, assigned = 0;
                 int fixed = 0, initial = 0;
                 int[] assignedChoice = new int[] {0, 0, 0, 0};
+                int assignedSubst = 0;
                 int assignedChoiceTotal = 0;
                 for (Student student: model.getStudents()) {
                     if (!group.matches(student)) continue;
@@ -345,8 +349,11 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                         Enrollment e = r.getAssignment(assignment);
                         if (r.getInitialAssignment() != null && r.getInitialAssignment().equals(e)) initial ++;
                         if (e != null) {
-                            assigned ++;
-                            assignedChoice[Math.min(e.getTruePriority(), assignedChoice.length - 1)] ++;
+                        	assigned ++;
+                        	if (r.isAlternative())
+                        		assignedSubst ++;
+                        	else
+                        		assignedChoice[Math.min(e.getTruePriority(), assignedChoice.length - 1)] ++;
                             assignedChoiceTotal ++;
                         }
                     }
@@ -356,6 +363,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                 if (requests == 0)
                 	return new String[] {
                             sIntFormat.format(requests),
+                            "",
                             "",
                             "",
                             "",
@@ -373,6 +381,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                         sPercentFormat.format(100.0 * assignedChoice[1] / assignedChoiceTotal) + "%",
                         sPercentFormat.format(100.0 * assignedChoice[2] / assignedChoiceTotal) + "%",
                         sPercentFormat.format(100.0 * assignedChoice[3] / assignedChoiceTotal) + "%",
+                        sPercentFormat.format(100.0 * assignedSubst / assignedChoiceTotal) + "%",
                         };
             }
         }),
@@ -436,7 +445,9 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                     "AMST 10100", "CLCS 23100", "CLCS 23700", "CLCS 33900",
                     "COM 11400", "COM 20400", "COM 21700", "EDCI 20500",
                     "EDPS 31500", "ENGL 10600", "ENGL 10800", "HONR 19903",
-                    "PHIL 26000", "SCLA 10100", "SCLA 10200", "SPAN 33000"
+                    "PHIL 26000", "SCLA 10100", "SCLA 10200", "SPAN 33000",
+                    "EDCI 49600", "EDCI 49800",  "EDPS 49800", "ENGL 30400",
+                    "ENGL 38000", "HDFS 45000",
             };
             private boolean isComCourse(Course course) {
                 for (String c: sComCourses) {
@@ -446,6 +457,8 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
             }
             @Override
             public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+            	
+            	
                 int assigned = 0, notAssigned = 0;
                 for (Student student: model.getStudents()) {
                     if (!group.matches(student)) continue;
@@ -477,6 +490,29 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                         if (!(r instanceof CourseRequest)) continue; // ignore free times
                         CourseRequest cr = (CourseRequest)r;
                         if (!cr.isAlternative() && cr.getRequestPriority() == RequestPriority.Critical) {
+                            total ++;
+                            if (cr.isAssigned(assignment)) assigned ++;
+                        }
+                    }
+                }
+                if (total == 0) return new String[] { "N/A", ""};
+                return new String[] { sIntFormat.format(total), sPercentFormat.format(100.0 * assigned / total) + "%" };
+            }
+        }),
+        VITAL(new String[] {"Vital courses", "Assigned vital courses"},
+        		new String[] {
+        				"Number of course requests marked as vital (~ course/group/placeholder vital in degree plan)"
+        		},
+        		new Statistic() {
+            @Override
+            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+                int assigned = 0, total = 0;
+                for (Student student: model.getStudents()) {
+                    if (!group.matches(student)) continue;
+                    for (Request r : student.getRequests()) {
+                        if (!(r instanceof CourseRequest)) continue; // ignore free times
+                        CourseRequest cr = (CourseRequest)r;
+                        if (!cr.isAlternative() && cr.getRequestPriority() == RequestPriority.Vital) {
                             total ++;
                             if (cr.isAssigned(assignment)) assigned ++;
                         }

@@ -325,10 +325,6 @@ public class SpecialRegistrationsPanel extends P {
 			if (reg.hasChanges()) {
 				if (!iShowAllChanges.getValue() && reg.isFullyApplied(saved)) continue;
 				Long lastCourseId = null;
-				String[] dateAndNote = (reg.getSubmitDate() == null ? reg.getNote() == null ? "" : reg.getNote() : sModifiedDateFormat.format(reg.getSubmitDate()) + (reg.getNote() == null || reg.getNote().isEmpty() ? "" : "\n" + reg.getNote())).split("\n");
-				if (iSpecReg.isAllowChangeRequestNote() && reg.getStatus() == SpecialRegistrationStatus.Pending && reg.hasErrors() && (reg.getNote() == null || reg.getNote().isEmpty())) {
-					dateAndNote = ((reg.getSubmitDate() == null ? "" : sModifiedDateFormat.format(reg.getSubmitDate()) + "\n") + MESSAGES.noRequestNoteClickToChange()).split("\n");
-				}
 				List<ClassAssignment> rows = new ArrayList<ClassAssignment>();
 				for (ClassAssignment ca: reg.getChanges()) {
 					if (!iShowAllChanges.getValue() && (reg.isApplied(ca.getCourseId(), saved) || (!reg.hasErrors(ca.getCourseId()) && !reg.isDrop(ca.getCourseId())))) {
@@ -354,30 +350,28 @@ public class SpecialRegistrationsPanel extends P {
 					} else {
 						row.add(new P("icons"));
 					}
-					if (r < dateAndNote.length) {
-						Label label = null;
-						if (r + 1 == rows.size()) {
-							String text = dateAndNote[r];
-							for (int i = r + 1; i < dateAndNote.length; i++)
-								text += "\n" + dateAndNote[i];
-							label = new Label(text); label.addStyleName("date-and-note");
-						} else {
-							label = new Label(dateAndNote[r]); label.addStyleName("date-and-note");
-						}
-						if (iSpecReg.isAllowChangeRequestNote() && reg.getStatus() == SpecialRegistrationStatus.Pending && reg.hasErrors()) {
+					Label label = new Label();
+					label.addStyleName("date-and-note");
+					if (lastCourseId == null || !lastCourseId.equals(ca.getCourseId())) {
+						String course = rows.get(r).getCourseName();
+						String note = reg.getNote(course);
+						if (iSpecReg.isAllowChangeRequestNote() && reg.getStatus() == SpecialRegistrationStatus.Pending && reg.hasErrors(course) && (note == null || note.isEmpty()))
+							note = MESSAGES.noRequestNoteClickToChange();
+						label.setText(r > 0 || reg.getSubmitDate() == null ? note == null ? "" : note : sModifiedDateFormat.format(reg.getSubmitDate()) + (note == null || note.isEmpty() ? "" : "\n" + note));
+						if (iSpecReg.isAllowChangeRequestNote() && reg.getStatus() == SpecialRegistrationStatus.Pending && reg.hasErrors(course)) {
 							label.getElement().getStyle().setCursor(Cursor.POINTER);
+							final String courseName = rows.get(r).getCourseName();
+							final Long courseId = rows.get(r).getCourseId();
 							label.addClickHandler(new ClickHandler() {
 								@Override
 								public void onClick(ClickEvent event) {
-									iSpecReg.getChangeRequestorNoteInterface().changeRequestorNote(reg);
+									iSpecReg.getChangeRequestorNoteInterface().changeRequestorNote(reg, courseName, courseId);
 									event.stopPropagation();
 								}
 							});
 						}
-						row.add(label);
-					} else {
-						row.add(new Label());
 					}
+					row.add(label);
 					if (lastCourseId == null || !lastCourseId.equals(ca.getCourseId())) {
 						row.add(new Label(ca.getSubject(), false));
 						row.add(new Label(ca.getCourseNbr(), false));
@@ -453,10 +447,60 @@ public class SpecialRegistrationsPanel extends P {
 					}
 					lastCourseId = ca.getCourseId();
 				}
+				String noCourseErrors = "";
+				if (reg.hasErrors())
+					for (ErrorMessage e: reg.getErrors())
+						if (e.getCourse() == null || e.getCourse().isEmpty())
+							noCourseErrors += (noCourseErrors.isEmpty() ? "" : "\n") + e.getMessage();
+				if (!noCourseErrors.isEmpty()) {
+					List<Widget> row = new ArrayList<Widget>();
+					row.add(new P("icons"));
+					String note = reg.getNote("MAXI");
+					DateAndNoteCell dateAndNote = new DateAndNoteCell(null, note);
+					if (iSpecReg.isAllowChangeRequestNote() && reg.getStatus() == SpecialRegistrationStatus.Pending && reg.hasErrorCode("MAXI")) {
+						if (note == null || note.isEmpty())
+							dateAndNote = new DateAndNoteCell(null, MESSAGES.noRequestNoteClickToChange());						
+						dateAndNote.getElement().getStyle().setCursor(Cursor.POINTER);
+						dateAndNote.addClickHandler(new ClickHandler() {
+							@Override
+							public void onClick(ClickEvent event) {
+								iSpecReg.getChangeRequestorNoteInterface().changeRequestorNote(reg, null, null);
+								event.stopPropagation();
+							}
+						});
+					}
+					row.add(dateAndNote);
+					row.add(new DescriptionCell(null));
+					HTML errorsLabel = new HTML(noCourseErrors); errorsLabel.addStyleName("registration-errors");
+					row.add(errorsLabel);
+					row.add(new Label());
+					row.add(new Label());
+					int idx = iTable.addRow(reg, row);
+					if (reg.getStatus() == SpecialRegistrationStatus.Approved)
+						iTable.setBackGroundColor(idx, "#D7FFD7");
+					if (reg.getRequestId().equals(iSpecReg.getRequestId()))
+						iTable.setSelected(idx, true);
+					for (int c = 2; c < iTable.getCellCount(idx) - 1; c++)
+						iTable.getCellFormatter().addStyleName(idx, c, "top-border-dashed");
+				}
 			} else if (reg.hasErrors()) {
 				List<Widget> row = new ArrayList<Widget>();
 				row.add(p);
-				row.add(new DateAndNoteCell(reg.getSubmitDate(), reg.getNote()));
+				String note = reg.getNote("MAXI");
+				DateAndNoteCell dateAndNote = new DateAndNoteCell(reg.getSubmitDate(), note);
+				if (iSpecReg.isAllowChangeRequestNote() && reg.getStatus() == SpecialRegistrationStatus.Pending && reg.hasErrorCode("MAXI")) {
+					if (note == null || note.isEmpty())
+						dateAndNote = new DateAndNoteCell(reg.getSubmitDate(), MESSAGES.noRequestNoteClickToChange());						
+					dateAndNote.getElement().getStyle().setCursor(Cursor.POINTER);
+					dateAndNote.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							iSpecReg.getChangeRequestorNoteInterface().changeRequestorNote(reg, null, null);
+							event.stopPropagation();
+						}
+					});
+				}
+				row.add(dateAndNote);
 				row.add(new DescriptionCell(reg.getDescription()));
 				String errors = "";
 				for (ErrorMessage e: reg.getErrors())
@@ -469,6 +513,8 @@ public class SpecialRegistrationsPanel extends P {
 				else
 					row.add(new Label());
 				int idx = iTable.addRow(reg, row);
+				if (reg.getStatus() == SpecialRegistrationStatus.Approved)
+					iTable.setBackGroundColor(idx, "#D7FFD7");
 				if (reg.getRequestId().equals(iSpecReg.getRequestId()))
 					iTable.setSelected(idx, true);
 				if (idx > 1)

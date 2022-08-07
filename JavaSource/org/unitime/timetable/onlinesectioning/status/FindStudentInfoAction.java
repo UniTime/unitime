@@ -32,8 +32,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.cpsolver.ifs.util.DistanceMetric;
+import org.cpsolver.studentsct.model.Student.BackToBackPreference;
+import org.cpsolver.studentsct.model.Student.ModalityPreference;
+import org.joda.time.LocalDate;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
+import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
@@ -41,8 +46,10 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.AdvisedInfoInte
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.StudentInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.AdvisorCourseRequest;
+import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.CourseDemand.Critical;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
@@ -72,6 +79,7 @@ import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseRequestMatcher;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
 import org.unitime.timetable.solver.studentsct.StudentSolver;
+import org.unitime.timetable.util.Formats;
 
 /**
  * @author Tomas Muller
@@ -79,6 +87,7 @@ import org.unitime.timetable.solver.studentsct.StudentSolver;
 public class FindStudentInfoAction implements OnlineSectioningAction<List<StudentInfo>> {
 	private static final long serialVersionUID = 1L;
 	protected static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
+	protected static StudentSectioningConstants CONST = Localization.create(StudentSectioningConstants.class);
 	protected Query iQuery;
 	protected Integer iLimit = null;
 	protected Set<Long> iCoursesIcoordinate, iCoursesIcanApprove, iMyStudents;
@@ -149,8 +158,8 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 	public List<StudentInfo> execute(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 		Map<Long, StudentInfo> students = new HashMap<Long, StudentInfo>();
 		
-		int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0, gNoSub = 0;
-		int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0, gtNoSub = 0;
+		int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0, gNoSub = 0, gSwap = 0;
+		int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0, gtNoSub = 0, gtSwap = 0;
 		int gConNeed = 0, gtConNeed = 0, gOvrNeed = 0, gtOvrNeed = 0;
 		int gDist = 0, gtDist = 0, gNrDC = 0, gtNrDC = 0, gShr = 0, gtShr = 0; 
 		int gFre = 0, gtFre = 0, gPIM = 0, gtPIM = 0, gPSec = 0, gtPSec = 0;
@@ -238,7 +247,9 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 							st.addConcentration(acm.getConcentration(), acm.getConcentrationLabel());
 							st.addDegree(acm.getDegree(), acm.getDegreeLabel());
 							st.addProgram(acm.getProgram(), acm.getProgramLabel());
+							st.addCampus(acm.getCampus(), acm.getCampusLabel());
 						}
+						st.setDefaultCampus(server.getAcademicSession().getCampus());
 						for (XAreaClassificationMajor acm: student.getMinors()) {
 							st.addMinor(acm.getMajor(), acm.getMajorLabel());
 						}
@@ -252,7 +263,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 							if (a.getName() != null) st.addAdvisor(a.getName());
 						}
 
-						int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0, tUnasg = 0, tOvrNeed = 0, ovrNeed = 0, tNoSub = 0;
+						int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0, tUnasg = 0, tOvrNeed = 0, ovrNeed = 0, tNoSub = 0, tSwap =0;
 						float tCred = 0f;
 						int nrDisCnf = 0, maxDist = 0, share = 0; 
 						int ftShare = 0;
@@ -323,6 +334,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 											tConNeed ++; gtConNeed ++;
 										}
 									}
+									if (cr.isWaitlist(wl) && cr.getEnrollment().equals(cr.getWaitListSwapWithCourseOffering())) { tSwap ++; gtSwap ++; }
 									XOffering o = server.getOffering(cr.getEnrollment().getOfferingId());
 									XConfig g = (o == null ? null : o.getConfig(cr.getEnrollment().getConfigId()));
 									if (g != null) {
@@ -389,6 +401,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						s.setTotalReservation(tRes);
 						s.setTotalWaitlist(tWait);
 						s.setTotalNoSub(tNoSub);
+						s.setTotalSwap(tSwap);
 						s.setTotalUnassigned(tUnasg);
 						s.setTotalConsentNeeded(tConNeed);
 						s.setTotalOverrideNeeded(tOvrNeed);
@@ -396,6 +409,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						s.setReservation(0);
 						s.setNoSub(0);
 						s.setWaitlist(0);
+						s.setSwap(0);
 						s.setUnassigned(0);
 						s.setConsentNeeded(0);
 						s.setOverrideNeeded(ovrNeed);
@@ -419,6 +433,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						s.setTotalPrefSectionConflict(0);
 						s.setMyStudent(isMyStudent(student));
 		    			s.setAdvisedInfo(getAdvisedInfo(student, server, helper));
+		    			s.setPreference(getStudentSchedulingPreference(student, server, helper));
 					}
 					if (m.enrollment() != null) {
 						if (assigned.add(m.request().getRequestId())) {
@@ -426,6 +441,9 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 							if (m.enrollment().getReservation() != null) { s.setReservation(s.getReservation() + 1); gRes ++; }
 							if (course.getConsentLabel() != null && m.enrollment().getApproval() == null) {
 								s.setConsentNeeded(s.getConsentNeeded() + 1); gConNeed ++;
+							}
+							if (m.request().isWaitlist(wl) && m.request().getEnrollment().equals(m.request().getWaitListSwapWithCourseOffering())) {
+								s.setSwap(s.getSwap() + 1); gSwap ++;
 							}
 							if (m.enrollment().getTimeStamp() != null) {
 								if (s.getEnrolledDate() == null)
@@ -619,7 +637,9 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						st.addConcentration(acm.getConcentration(), acm.getConcentrationLabel());
 						st.addDegree(acm.getDegree(), acm.getDegreeLabel());
 						st.addProgram(acm.getProgram(), acm.getProgramLabel());
+						st.addCampus(acm.getCampus(), acm.getCampusLabel());
 					}
+					st.setDefaultCampus(server.getAcademicSession().getCampus());
 					for (XAreaClassificationMajor acm: student.getMinors()) {
 						st.addMinor(acm.getMajor(), acm.getMajorLabel());
 					}
@@ -637,6 +657,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 					s.setNote(student.hasLastNote() ? student.getLastNote().getNote() : null);
 					s.setMyStudent(isMyStudent(student));
 					s.setAdvisedInfo(getAdvisedInfo(student, server, helper));
+					s.setPreference(getStudentSchedulingPreference(student, server, helper));
 					ret.add(s);
 				}
 			} else {
@@ -669,7 +690,9 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						st.addConcentration(acm.getConcentration(), acm.getConcentrationLabel());
 						st.addDegree(acm.getDegree(), acm.getDegreeLabel());
 						st.addProgram(acm.getProgram(), acm.getProgramLabel());
+						st.addCampus(acm.getCampus(), acm.getCampusLabel());
 					}
+					st.setDefaultCampus(server.getAcademicSession().getCampus());
 					for (XAreaClassificationMajor acm: student.getMinors()) {
 						st.addMinor(acm.getMajor(), acm.getMajorLabel());
 					}
@@ -687,6 +710,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 					s.setNote(student.hasLastNote() ? student.getLastNote().getNote() : null);
 					s.setMyStudent(isMyStudent(student));
 					s.setAdvisedInfo(getAdvisedInfo(student, server, helper));
+					s.setPreference(getStudentSchedulingPreference(student, server, helper));
 					ret.add(s);
 				}
 			}
@@ -717,12 +741,14 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		t.setReservation(gRes);
 		t.setWaitlist(gWait);
 		t.setNoSub(gNoSub);
+		t.setSwap(gSwap);
 		t.setUnassigned(gUnasg);
 		
 		t.setTotalEnrollment(gtEnrl);
 		t.setTotalReservation(gtRes);
 		t.setTotalWaitlist(gtWait);
 		t.setTotalNoSub(gtNoSub);
+		t.setTotalSwap(gtSwap);
 		t.setTotalUnassigned(gtUnasg);
 		
 		t.setConsentNeeded(gConNeed);
@@ -788,6 +814,53 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		}
 	}
 	
+	public static String getStudentSchedulingPreference(XStudent student, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		String pref = null;
+		if (student.getModalityPreference() != null && student.getModalityPreference() != ModalityPreference.NO_PREFERENCE) {
+			switch(student.getModalityPreference()) {
+			case ONILNE_DISCOURAGED:
+				pref = (pref == null ? "" : pref + "\n") + MSG.itemSchedulingModalityPreferFaceToFace();
+				break;
+			case ONLINE_PREFERRED:
+				pref = (pref == null ? "" : pref + "\n") + MSG.itemSchedulingModalityPreferOnline();
+				break;
+			case ONLINE_REQUIRED:
+				pref = (pref == null ? "" : pref + "\n") + MSG.itemSchedulingModalityRequireOnline();
+				break;
+			}
+		}
+		if (student.getBackToBackPreference() != null && student.getBackToBackPreference() != BackToBackPreference.NO_PREFERENCE) {
+			switch(student.getBackToBackPreference()) {
+			case BTB_DISCOURAGED:
+				pref = (pref == null ? "" : pref + "\n") + MSG.itemSchedulingBackToBackDiscourage();
+				break;
+			case BTB_PREFERRED:
+				pref = (pref == null ? "" : pref + "\n") + MSG.itemSchedulingBackToBackPrefer();
+				break;
+			}
+		}
+		if (student.getClassStartDate() != null || student.getClassEndDate() != null) {
+			if (student.getClassStartDate() == null) {
+				pref = (pref == null ? "" : pref + "\n") + 
+						MSG.schedulingPrefClassesTo(Formats.getDateFormat(CONST.patternDateFormat()).format(
+						new LocalDate(server.getAcademicSession().getDatePatternFirstDate()).plusDays(student.getClassEndDate()).toDate()
+						));
+			} else if (student.getClassEndDate() == null) {
+				pref = (pref == null ? "" : pref + "\n") + 
+						MSG.schedulingPrefClassesFrom(Formats.getDateFormat(CONST.patternDateFormat()).format(
+						new LocalDate(server.getAcademicSession().getDatePatternFirstDate()).plusDays(student.getClassStartDate()).toDate()
+						));
+			} else {
+				pref = (pref == null ? "" : pref + "\n") + 
+						MSG.schedulingPrefClassesBetween(
+						Formats.getDateFormat(CONST.patternDateFormat()).format(new LocalDate(server.getAcademicSession().getDatePatternFirstDate()).plusDays(student.getClassStartDate()).toDate()),
+						Formats.getDateFormat(CONST.patternDateFormat()).format(new LocalDate(server.getAcademicSession().getDatePatternFirstDate()).plusDays(student.getClassEndDate()).toDate())
+						);
+			}
+		}
+		return pref;
+	}
+	
 	public static AdvisedInfoInterface getAdvisedInfo(XStudent student, OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		if (!student.hasAdvisorRequests()) return null;
 		AdvisedInfoInterface info = new AdvisedInfoInterface();
@@ -795,6 +868,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		XCourseId advFirstChoice = null;
 		XCourseId firstEnrolled = null;
 		XCourseRequest firstChoice = null;
+		CourseDemand.Critical advCritical = CourseDemand.Critical.fromText(ApplicationProperty.AdvisorCourseRequestsAllowCritical.valueOfSession(server.getAcademicSession().getUniqueId()));
 		boolean firstChoiceCritical = false;
 		float minCred = 0f, maxCred = 0f, cm = 0f, cx = 0f;
 		int nrCourses = 0, nrCriticalCourses = 0, nrCoursesFound = 0, nrCriticalCoursesFound = 0, nrSubstMisMatch = 0, nrCoursesAssigned = 0;
@@ -810,9 +884,13 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 					if (firstChoiceCritical && nrCoursesFound == 0) {
 						missingCrit ++; missingPrim ++;
 						if (nrCourses > 1)
-							info.addMessage(MSG.advMessageMissingCriticalCourseWithAlts(advFirstChoice.getCourseName()));
+							info.addMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageMissingImportantCourseWithAlts(advFirstChoice.getCourseName()) :
+								advCritical == Critical.VITAL ? MSG.advMessageMissingVitalCourseWithAlts(advFirstChoice.getCourseName()) :
+								MSG.advMessageMissingCriticalCourseWithAlts(advFirstChoice.getCourseName()));
 						else
-							info.addMessage(MSG.advMessageMissingCriticalCourse(advFirstChoice.getCourseName()));
+							info.addMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageMissingImportantCourse(advFirstChoice.getCourseName()) :
+								advCritical == Critical.VITAL ? MSG.advMessageMissingVitalCourse(advFirstChoice.getCourseName()) :
+								MSG.advMessageMissingCriticalCourse(advFirstChoice.getCourseName()));
 					} else if (!last.isSubstitute() && nrCoursesFound - nrSubstMisMatch == 0) {
 						missingPrim ++;
 						if (nrCourses > 1)
@@ -825,7 +903,9 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						else
 							info.addMessage(MSG.advMessageMissingSubstituteCourse(advFirstChoice.getCourseName()));
 					} else if (firstChoice == null && firstChoiceCritical) {
-						info.addMessage(MSG.advMessageMissingCriticalCourseHasAlts(advFirstChoice.getCourseName()));
+						info.addMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageMissingImportantCourseHasAlts(advFirstChoice.getCourseName()):
+							advCritical == Critical.VITAL ? MSG.advMessageMissingVitalCourseHasAlts(advFirstChoice.getCourseName()) :
+							MSG.advMessageMissingCriticalCourseHasAlts(advFirstChoice.getCourseName()));
 					} else if (firstChoice == null) {
 						info.addMessage(MSG.advMessageMissingCourseHasAlts(advFirstChoice.getCourseName()));
 					} else if (nrCoursesFound < nrCourses) {
@@ -837,9 +917,13 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						if (firstChoiceCritical) {
 							notAssignedCrit ++;
 							if (nrCourses > 1)
-								info.addNotAssignedMessage(MSG.advMessageNotEnrolledCriticalCourseWithAlts(advFirstChoice.getCourseName()));
+								info.addNotAssignedMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageNotEnrolledImportantCourseWithAlts(advFirstChoice.getCourseName()) :
+									advCritical == Critical.VITAL ? MSG.advMessageNotEnrolledVitalCourseWithAlts(advFirstChoice.getCourseName()) :
+									MSG.advMessageNotEnrolledCriticalCourseWithAlts(advFirstChoice.getCourseName()));
 							else
-								info.addNotAssignedMessage(MSG.advMessageNotEnrolledCriticalCourse(advFirstChoice.getCourseName()));
+								info.addNotAssignedMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageNotEnrolledImportantCourse(advFirstChoice.getCourseName()) :
+									advCritical == Critical.VITAL ? MSG.advMessageNotEnrolledVitalCourse(advFirstChoice.getCourseName()) :
+									MSG.advMessageNotEnrolledCriticalCourse(advFirstChoice.getCourseName()));
 						} else {
 							if (nrCourses > 1)
 								info.addNotAssignedMessage(MSG.advMessageNotEnrolledCourseWithAlts(advFirstChoice.getCourseName()));
@@ -942,9 +1026,13 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 			if (firstChoiceCritical && nrCoursesFound == 0) {
 				missingCrit ++; missingPrim ++;
 				if (nrCourses > 1)
-					info.addMessage(MSG.advMessageMissingCriticalCourseWithAlts(advFirstChoice.getCourseName()));
+					info.addMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageMissingImportantCourseWithAlts(advFirstChoice.getCourseName()) :
+						advCritical == Critical.VITAL ? MSG.advMessageMissingVitalCourseWithAlts(advFirstChoice.getCourseName()) :
+						MSG.advMessageMissingCriticalCourseWithAlts(advFirstChoice.getCourseName()));
 				else
-					info.addMessage(MSG.advMessageMissingCriticalCourse(advFirstChoice.getCourseName()));
+					info.addMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageMissingImportantCourse(advFirstChoice.getCourseName()) :
+						advCritical == Critical.VITAL ? MSG.advMessageMissingVitalCourse(advFirstChoice.getCourseName()) :
+						MSG.advMessageMissingCriticalCourse(advFirstChoice.getCourseName()));
 			} else if (!last.isSubstitute() && nrCoursesFound - nrSubstMisMatch == 0) {
 				missingPrim ++;
 				if (nrCourses > 1)
@@ -957,7 +1045,9 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 				else
 					info.addMessage(MSG.advMessageMissingSubstituteCourse(advFirstChoice.getCourseName()));
 			} else if (firstChoice == null && firstChoiceCritical) {
-				info.addMessage(MSG.advMessageMissingCriticalCourseHasAlts(advFirstChoice.getCourseName()));
+				info.addMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageMissingImportantCourseHasAlts(advFirstChoice.getCourseName()) :
+					advCritical == Critical.VITAL ? MSG.advMessageMissingVitalCourseHasAlts(advFirstChoice.getCourseName()) :
+					MSG.advMessageMissingCriticalCourseHasAlts(advFirstChoice.getCourseName()));
 			} else if (firstChoice == null) {
 				info.addMessage(MSG.advMessageMissingCourseHasAlts(advFirstChoice.getCourseName()));
 			} else if (nrCoursesFound < nrCourses) {
@@ -969,9 +1059,13 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 				if (firstChoiceCritical) {
 					notAssignedCrit ++;
 					if (nrCourses > 1)
-						info.addNotAssignedMessage(MSG.advMessageNotEnrolledCriticalCourseWithAlts(advFirstChoice.getCourseName()));
+						info.addNotAssignedMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageNotEnrolledImportantCourseWithAlts(advFirstChoice.getCourseName()) :
+							advCritical == Critical.VITAL ? MSG.advMessageNotEnrolledVitalCourseWithAlts(advFirstChoice.getCourseName()) :
+							MSG.advMessageNotEnrolledCriticalCourseWithAlts(advFirstChoice.getCourseName()));
 					else
-						info.addNotAssignedMessage(MSG.advMessageNotEnrolledCriticalCourse(advFirstChoice.getCourseName()));
+						info.addNotAssignedMessage(advCritical == Critical.IMPORTANT ? MSG.advMessageNotEnrolledImportantCourse(advFirstChoice.getCourseName()) :
+							advCritical == Critical.VITAL ? MSG.advMessageNotEnrolledVitalCourse(advFirstChoice.getCourseName()) :
+							MSG.advMessageNotEnrolledCriticalCourse(advFirstChoice.getCourseName()));
 				} else {
 					if (nrCourses > 1)
 						info.addNotAssignedMessage(MSG.advMessageNotEnrolledCourseWithAlts(advFirstChoice.getCourseName()));
@@ -1025,6 +1119,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		info.setMissingPrimary(missingPrim);
 		info.setNotAssignedCritical(notAssignedCrit);
 		info.setNotAssignedPrimary(notAssignedPrim);
+		info.setAdvisorCritical(advCritical.ordinal());
 		
 		return info;
 	}

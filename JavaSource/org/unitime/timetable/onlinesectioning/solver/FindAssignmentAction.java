@@ -84,6 +84,7 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestPriority;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -106,7 +107,6 @@ import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
 import org.unitime.timetable.onlinesectioning.model.XDistribution;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
-import org.unitime.timetable.onlinesectioning.model.XOverride;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XReservation;
 import org.unitime.timetable.onlinesectioning.model.XReservationType;
@@ -128,6 +128,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	private CourseRequestInterface iRequest;
 	private Collection<ClassAssignmentInterface.ClassAssignment> iAssignment;
 	private Collection<ClassAssignmentInterface.ClassAssignment> iSpecialRegistration;
+	private boolean iCanRequirePreferences = true;
 	
 	public FindAssignmentAction forRequest(CourseRequestInterface request) {
 		iRequest = request;
@@ -155,6 +156,13 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	public Collection<ClassAssignmentInterface.ClassAssignment> getSpecialRegistration() {
 		return iSpecialRegistration;
 	}
+	
+	public FindAssignmentAction withCanRequire(boolean canRequire) {
+		iCanRequirePreferences = canRequire;
+		return this;
+	}
+	
+	public boolean isCanRequirePreferences() { return iCanRequirePreferences; }
 
 	@Override
 	public List<ClassAssignmentInterface> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
@@ -164,6 +172,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			overExpected = new MinimizeConflicts(server.getConfig(), overExpected);
 		}
 		OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig(), overExpected);
+		model.setDayOfWeekOffset(server.getAcademicSession().getDayOfWeekOffset());
 		boolean linkedClassesMustBeUsed = server.getConfig().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
 		Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 		
@@ -177,13 +186,18 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		Student student = new Student(getRequest().getStudentId() == null ? -1l : getRequest().getStudentId());
 
 		Set<IdPair> enrolled = null;
-		Lock readLock = server.readLock();
 		ClassAssignmentInterface unavailabilities = null;
-		boolean checkDeadlines = server.getConfig().getPropertyBoolean("FindAssignment.CheckDeadlines", false) && !getRequest().areDeadlineConflictsAllowed();
-		Integer currentDateIndex = null;
-		if (server.getConfig().getPropertyBoolean("FindAssignment.AvoidPastSections", true))
-			currentDateIndex = Days.daysBetween(new LocalDate(server.getAcademicSession().getDatePatternFirstDate()), new LocalDate()).getDays() + server.getConfig().getPropertyInt("FindAssignment.AvoidPastOffset", 0);
+		Lock readLock = server.readLock();
 		try {
+			boolean checkDeadlines = server.getConfig().getPropertyBoolean("FindAssignment.CheckDeadlines", false) && !getRequest().areDeadlineConflictsAllowed();
+			Integer currentDateIndex = null;
+			if (server.getConfig().getPropertyBoolean("FindAssignment.AvoidPastSections", true))
+				currentDateIndex = Days.daysBetween(new LocalDate(server.getAcademicSession().getDatePatternFirstDate()), new LocalDate()).getDays() + server.getConfig().getPropertyInt("FindAssignment.AvoidPastOffset", 0);
+			boolean onlineOnlyFilter = true;
+			if (helper.hasAdminPermission() && server.getConfig().getPropertyBoolean("Load.OnlineOnlyAdminOverride", false))
+				onlineOnlyFilter = false;
+			else if (helper.hasAvisorPermission() && server.getConfig().getPropertyBoolean("Load.OnlineOnlyAdvisorOverride", false))
+				onlineOnlyFilter = false;
 			XStudent original = (getRequest().getStudentId() == null ? null : server.getStudent(getRequest().getStudentId()));
 			if (original != null) {
 				unavailabilities = new ClassAssignmentInterface();
@@ -195,6 +209,10 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				student.setAllowDisabled(original.isAllowDisabled());
 				if (server instanceof StudentSolver)
 					student.setMaxCredit(original.getMaxCredit());
+				student.setClassFirstDate(original.getClassStartDate());
+				student.setClassLastDate(original.getClassEndDate());
+				student.setBackToBackPreference(original.getBackToBackPreference());
+				student.setModalityPreference(original.getModalityPreference());
 				action.getStudentBuilder().setUniqueId(original.getStudentId()).setExternalId(original.getExternalId()).setName(original.getName());
 				enrolled = new HashSet<IdPair>();
 				for (XRequest r: original.getRequests()) {
@@ -220,10 +238,10 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			Set<XDistribution> distributions = new HashSet<XDistribution>();
 			if (getAssignment() != null) getRequest().moveActiveSubstitutionsUp();
 			for (CourseRequestInterface.Request c: getRequest().getCourses())
-				addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, getAssignment() != null, getAssignment() != null, checkDeadlines, currentDateIndex);
+				addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, getAssignment() != null, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter, isCanRequirePreferences());
 			if (student.getRequests().isEmpty() && !CONSTANTS.allowEmptySchedule()) throw new SectioningException(MSG.exceptionNoCourse());
 			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
-				addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, getAssignment() != null, getAssignment() != null, checkDeadlines, currentDateIndex);
+				addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, getAssignment() != null, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter, isCanRequirePreferences());
 			if (helper.isAlternativeCourseEnabled()) {
 				for (Request r: student.getRequests()) {
 					if (r.isAlternative() || !(r instanceof CourseRequest)) continue;
@@ -242,7 +260,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								if (ci != null) {
 									XOffering x = server.getOffering(ci.getOfferingId());
 									if (x != null) {
-										cr.getCourses().add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getCourseId(), student.getId(), original, classTable, server, model, getAssignment() != null, checkDeadlines, currentDateIndex));
+										cr.getCourses().add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getCourseId(), student.getId(), original, classTable, server, model, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter));
 										distributions.addAll(x.getDistributions());
 									}
 								}
@@ -587,7 +605,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static Course clone(XOffering offering, XEnrollments enrollments, Long courseId, long studentId, XStudent originalStudent, Map<Long, Section> sections, OnlineSectioningServer server, StudentSectioningModel model, boolean hasAssignment, boolean checkDeadlines, Integer currentDateIndex) {
+	public static Course clone(XOffering offering, XEnrollments enrollments, Long courseId, long studentId, XStudent originalStudent, Map<Long, Section> sections, OnlineSectioningServer server, StudentSectioningModel model, boolean hasAssignment, boolean checkDeadlines, Integer currentDateIndex, boolean onlineOnlyFilter) {
 		Offering clonedOffering = new Offering(offering.getOfferingId(), offering.getName());
 		clonedOffering.setModel(model);
 		XExpectations expectations = server.getExpectations(offering.getOfferingId());
@@ -652,7 +670,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
                     List<RoomLocation> rooms = new ArrayList<RoomLocation>();
                     for (XRoom r: section.getRooms())
                     	rooms.add(new RoomLocation(r.getUniqueId(), r.getName(), null, 0, 0, r.getX(), r.getY(), r.getIgnoreTooFar(), null));
-                    Placement placement = section.getTime() == null || section.getTime().getDays() == 0 ? null : new Placement(
+                    Placement placement = section.getTime() == null ? null : new Placement(
                     		new Lecture(section.getSectionId(), null, section.getSubpartId(), section.getName(), new ArrayList<TimeLocation>(), new ArrayList<RoomLocation>(), section.getNrRooms(), null, section.getLimit(), section.getLimit(), 1.0),
                     		new TimeLocation(section.getTime().getDays(), section.getTime().getSlot(), section.getTime().getLength(), 0, 0.0,
                     				section.getTime().getDatePatternId(), section.getTime().getDatePatternName(), section.getTime().getWeeks(),
@@ -666,7 +684,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					clonedSection.setSpaceExpected(expectations.getExpectedSpace(section.getSectionId()));
 					clonedSection.setEnrollment(enrl);
 					clonedSection.setCancelled(section.isCancelled());
-					clonedSection.setEnabled(student || section.isEnabledForScheduling());
+					clonedSection.setEnabled(section.isEnabledForScheduling());
+					clonedSection.setAlwaysEnabled(student);
 					clonedSection.setOnline(section.isOnline());
 					clonedSection.setPast(section.isPast());
 					if (deadline != null && !deadline.checkDeadline(section.getTime(), courseEnrolled ? OnlineSectioningServer.Deadline.CHANGE : OnlineSectioningServer.Deadline.NEW))
@@ -736,7 +755,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				}
 			}
 		}
-		if (!(server instanceof StudentSolver) && originalStudent != null) {
+		if (!(server instanceof StudentSolver) && originalStudent != null && onlineOnlyFilter) {
 			String filter = server.getConfig().getProperty("Load.OnlineOnlyStudentFilter", null);
 			if (filter != null && !filter.isEmpty()) {
 				if (new Query(filter).match(new StudentMatcher(originalStudent, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
@@ -812,11 +831,15 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		return clonedCourse;
 	}
 	
-	public static void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, Student student, XStudent originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Set<XDistribution> distributions, boolean hasAssignment) {
-		addRequest(server, model, assignment, student, originalStudent, request, alternative, updateFromCache, classTable, distributions, hasAssignment, false, false, null);
+	public static void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, Student student, XStudent originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Set<XDistribution> distributions, boolean hasAssignment, boolean onlineOnlyFilter) {
+		addRequest(server, model, assignment, student, originalStudent, request, alternative, updateFromCache, classTable, distributions, hasAssignment, false, false, null, onlineOnlyFilter, true);
 	}
 	
-	public static void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, Student student, XStudent originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Set<XDistribution> distributions, boolean hasAssignment, boolean excludeInactive, boolean checkDeadline, Integer currentDateIndex) {
+	public static void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, Student student, XStudent originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Set<XDistribution> distributions, boolean hasAssignment, boolean onlineOnlyFilter, boolean allowRequiredPrefs) {
+		addRequest(server, model, assignment, student, originalStudent, request, alternative, updateFromCache, classTable, distributions, hasAssignment, false, false, null, onlineOnlyFilter, allowRequiredPrefs);
+	}
+	
+	public static void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, Student student, XStudent originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Set<XDistribution> distributions, boolean hasAssignment, boolean excludeInactive, boolean checkDeadline, Integer currentDateIndex, boolean onlineOnlyFilter, boolean allowRequiredPrefs) {
 		if (request.hasRequestedCourse()) {
 			Vector<Course> cr = new Vector<Course>();
 			Set<Choice> selChoices = new HashSet<Choice>();
@@ -839,13 +862,13 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					XOffering offering = null;
 					if (courseInfo != null) offering = server.getOffering(courseInfo.getOfferingId());
 					if (offering != null) {
-						Course course = clone(offering, server.getEnrollments(offering.getOfferingId()), courseInfo.getCourseId(), student.getId(), originalStudent, classTable, server, model, hasAssignment, checkDeadline, currentDateIndex);
+						Course course = clone(offering, server.getEnrollments(offering.getOfferingId()), courseInfo.getCourseId(), student.getId(), originalStudent, classTable, server, model, hasAssignment, checkDeadline, currentDateIndex, onlineOnlyFilter);
 						cr.add(course);
 						if (rc.hasSelectedIntructionalMethods()) {
 							for (Config config: course.getOffering().getConfigs()) {
 								if (config.getInstructionalMethodId() != null && rc.isSelectedIntructionalMethod(config.getInstructionalMethodId())) {
 									selChoices.add(new Choice(config));
-									if (rc.isSelectedIntructionalMethod(config.getInstructionalMethodId(), true)) reqChoices.add(new Choice(config));
+									if (allowRequiredPrefs && rc.isSelectedIntructionalMethod(config.getInstructionalMethodId(), true)) reqChoices.add(new Choice(config));
 								}
 							}
 						}
@@ -855,7 +878,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 									for (Section section: subpart.getSections())
 										if (rc.isSelectedClass(section.getId())) {
 											selChoices.add(new Choice(section));
-											if (rc.isSelectedClass(section.getId(), true)) {
+											if (allowRequiredPrefs && rc.isSelectedClass(section.getId(), true)) {
 												Section s = section;
 												while (s != null) {
 													reqChoices.add(new Choice(s)); s = s.getParent();
@@ -959,6 +982,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							Hashtable<CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<CourseRequest, TreeSet<Section>>();
 							Collection<Enrollment> enrls = r.getEnrollmentsSkipSameTime(assignment);
 							Enrollment noConfEnrl = null;
+							RequestPriority rp = (iRequest == null ? null : iRequest.getRequestPriority(new RequestedCourse(course.getId(), course.getName())));
+							Long swapCourseId = (rp == null ? null : rp.getRequest().getWaitListSwapWithCourseOfferingId());
 							int nbrEnrl = 0;
 							for (Iterator<Enrollment> e = enrls.iterator(); e.hasNext();) {
 								Enrollment enrl = e.next();
@@ -969,6 +994,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 									if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
 									if (x == enrollment) continue;
 									if (x.getRequest() instanceof FreeTimeRequest && x.getRequest().getPriority() > r.getPriority()) continue;
+									if (swapCourseId != null && x.getCourse() != null && swapCourseId.equals(x.getCourse().getId())) continue;
+
 							        for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
 							        	SctAssignment a = i.next();
 										if (a.isOverlapping(enrl.getAssignments())) {
@@ -1131,19 +1158,9 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							}
 						}
 					}
-					if (r.isWaitlist() && r.getStudent().getId() >= 0 && !(server instanceof StudentSolver)) {
-						XStudent original = server.getStudent(r.getStudent().getId());
-						for (XRequest or: original.getRequests()) {
-							if (or instanceof XCourseRequest) {
-								XCourseRequest ocr = (XCourseRequest)or;
-								if (ocr.isWaitlist() && !ocr.getCourseIds().isEmpty() && ocr.getCourseIds().get(0).getCourseId().equals(course.getId())) {
-									XOverride ov = ocr.getOverride(ocr.getCourseIds().get(0));
-									if (ov == null || !ov.isNoChecked())
-										ca.setWaitListedDate(ocr.getWaitListedTimeStamp());
-									break;
-								}
-							}
-						}
+					if (r.isWaitlist()) {
+						RequestPriority rp = (iRequest == null ? null : iRequest.getRequestPriority(new RequestedCourse(course.getId(), course.getName())));
+						ca.setWaitListedDate(rp == null ? null : rp.getRequest().getWaitListedTimeStamp());
 					}
 					ret.add(ca);
 				} else {
@@ -1324,6 +1341,16 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								if (b.hasInfo()) a.setInfo(b.getInfo());
 							}
 				}
+				if (r.isWaitlist()) {
+					RequestPriority rp = (iRequest == null ? null : iRequest.getRequestPriority(new RequestedCourse(course.getId(), course.getName())));
+					ca.setWaitListedDate(rp == null ? null : rp.getRequest().getWaitListedTimeStamp());
+					/*
+					if (rp != null && rp.getRequest().getWaitListSwapWithCourseOfferingId() != null && rp.getRequest().getWaitListSwapWithCourseOfferingId().equals(enrollment.getCourse().getId())) {
+						if (isRequired(enrollment, rp.getRequest()))
+							ca.setEnrollmentMessage(MSG.waitListRequirementsMet());
+					}
+					*/
+				}
 				ret.add(ca);
 			} else {
 				FreeTimeRequest r = (FreeTimeRequest)enrollment.getRequest();
@@ -1426,4 +1453,53 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			return iId1.equals(((IdPair)o).iId1) && iId2.equals(((IdPair)o).iId2);
 		}
 	}
+	
+	public boolean isRequired(Enrollment enrollment, CourseRequestInterface.Request request) {
+		RequestedCourse rc = request.getRequestedCourse(enrollment.getCourse().getId());
+    	if (rc == null || (!rc.hasSelectedClasses() && !rc.hasSelectedIntructionalMethods())) return true;
+        // check all sections
+        for (Section section: enrollment.getSections()) {
+            boolean hasConfig = false, hasMatchingConfig = false;
+            boolean hasSubpart = false, hasMatchingSection = false;
+            boolean hasSectionReq = false;
+            
+            if (rc.hasSelectedIntructionalMethods()) {
+            	for (CourseRequestInterface.Preference choice: rc.getSelectedIntructionalMethods()) {
+                	// only check required choices
+            		if (!choice.isRequired()) continue;
+                    // has config -> check config
+            		hasConfig = true;
+            		if (choice.getId().equals(section.getSubpart().getConfig().getInstructionalMethodId()))
+            			hasMatchingConfig = true;
+            	}
+            }
+            
+            if (rc.hasSelectedClasses()) {
+            	for (CourseRequestInterface.Preference choice: rc.getSelectedClasses()) {
+                	// only check required choices
+            		if (!choice.isRequired()) continue;
+            		Section reqSection = section.getSubpart().getConfig().getOffering().getSection(choice.getId());
+                    hasSectionReq = true;
+                    // has section of the matching subpart -> check section
+                    if (reqSection.getSubpart().equals(section.getSubpart())) {
+                        hasSubpart = true;
+                        if (reqSection.equals(section)) hasMatchingSection = true;
+                    } else if (!hasMatchingConfig) {
+                        for (Subpart subpart: section.getSubpart().getConfig().getSubparts()) {
+                            if (reqSection.getSubpart().equals(subpart)) {
+                                hasMatchingConfig = true;
+                                break;
+                            }
+                        }
+                    }
+            	}
+            }
+            
+            if (hasConfig && !hasMatchingConfig) return false;
+            if (hasSubpart && !hasMatchingSection) return false;
+            // no match, but there are section requirements for a different config -> not satisfied 
+            if (!hasMatchingConfig && !hasMatchingSection && hasSectionReq) return false;
+        }
+        return true;
+    }
 }

@@ -20,12 +20,15 @@
 package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaSuggestArea;
+import org.unitime.timetable.gwt.client.aria.AriaTabBar;
 import org.unitime.timetable.gwt.client.aria.AriaTextArea;
 import org.unitime.timetable.gwt.client.aria.HasAriaLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
@@ -63,6 +66,9 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -98,12 +104,16 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 	private ArrayList<ClassAssignmentInterface.ClassAssignment> iEnrollment;
 	private List<RetrieveSpecialRegistrationResponse> iApprovals;
 	private P iApproval = null;
+	private AriaTabBar iCoursesTab = null;
+	private Map<Integer, String> iTab2Course = new HashMap<Integer, String>();
+	private Map<String, String> iCourse2Note = new HashMap<String, String>();
 	private AriaTextArea iNote = null;
 	private AriaSuggestArea iNoteWithSuggestions;
 	private List<CheckBox> iDisclaimers = new ArrayList<CheckBox>();
 	private Float iCurrentCredit, iMaxCredit;
 	private List<String> iSuggestions = new ArrayList<String>();
 	private StudentSectioningContext iContext;
+	private P iCourseNotes = null;
 	
 	public ChangeGradeModesDialog(StudentSectioningContext context, ScheduleStatus status) {
 		super(true, true);
@@ -157,11 +167,50 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 		iForm.addRow(iApproval);
 
 		iForm.addBottomRow(iButtons);
+		
+		iCoursesTab = new AriaTabBar(); iCoursesTab.addStyleName("notes-tab");
+		iCoursesTab.addSelectionHandler(new SelectionHandler<Integer>() {
+			@Override
+			public void onSelection(SelectionEvent<Integer> event) {
+				String message = iCourse2Note.get(iTab2Course.get(event.getSelectedItem()));
+				boolean show = iNoteWithSuggestions.isSuggestionListShowing();
+				if (show) iNoteWithSuggestions.hideSuggestionList();
+				iNote.setText(message == null ? "" : message);
+				if (show) iNoteWithSuggestions.showSuggestions(iNote.getText());
+			}
+		});
+		
 		iNote = new AriaTextArea();
-		iNote.setStyleName("unitime-TextArea"); iNote.addStyleName("request-note");
+		iNote.setStyleName("unitime-TextArea"); iNote.addStyleName("request-notes");
 		iNote.setVisibleLines(5);
 		iNote.setCharacterWidth(80);
+		iNote.addValueChangeHandler(new ValueChangeHandler<String>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<String> event) {
+				iCourse2Note.put(iTab2Course.get(iCoursesTab.getSelectedTab()), event.getValue());
+			}
+		});
+		iNote.addKeyDownHandler(new KeyDownHandler() {
+			@Override
+			public void onKeyDown(KeyDownEvent event) {
+				if (iNoteWithSuggestions.isSuggestionListShowing()) return;
+				if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_TAB && event.getNativeEvent().getShiftKey()) {
+					if (iCoursesTab.getSelectedTab() > 0) {
+						iCourse2Note.put(iTab2Course.get(iCoursesTab.getSelectedTab()), iNote.getText());
+						iCoursesTab.selectTab(iCoursesTab.getSelectedTab() - 1, true);
+						event.preventDefault();
+					}
+				} else if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_TAB) {
+					if (iCoursesTab.getSelectedTab() + 1 < iCoursesTab.getTabCount()) {
+						iCourse2Note.put(iTab2Course.get(iCoursesTab.getSelectedTab()), iNote.getText());
+						iCoursesTab.selectTab(iCoursesTab.getSelectedTab() + 1, true);
+						event.preventDefault();
+					}
+				}
+			}
+		});
 		iNoteWithSuggestions = new AriaSuggestArea(iNote, iSuggestions);
+		iNoteWithSuggestions.addStyleName("request-note");
 		iNoteWithSuggestions.addSelectionHandler(new SelectionHandler<SuggestOracle.Suggestion>() {
 			@Override
 			public void onSelection(SelectionEvent<Suggestion> event) {
@@ -171,6 +220,9 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 				}
 			}
 		});
+		iCourseNotes = new P("course-notes");
+		iCourseNotes.add(iCoursesTab);
+		iCourseNotes.add(iNoteWithSuggestions);
 		
 		setWidget(iForm);
 		
@@ -213,6 +265,22 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 		iApproval.clear();
 		iEnrollment = enrollment;
 		iApprovals = approvals;
+		iCourse2Note.clear();
+		if (iApprovals != null) {
+			for (RetrieveSpecialRegistrationResponse approval: iApprovals) {
+				if (approval.getStatus() == SpecialRegistrationStatus.Pending && approval.hasChanges()) {
+					for (ClassAssignmentInterface.ClassAssignment clazz: approval.getChanges()) {
+						if (clazz.getGradeMode() != null || clazz.getCreditHour() != null) {
+							String note = approval.getNote(clazz.getCourseName());
+							if (note != null) iCourse2Note.put(clazz.getCourseName(), note);
+						}
+					}
+				} else if (approval.getStatus() == SpecialRegistrationStatus.Pending && approval.hasErrors()) {
+					String note = approval.getNote("MAXI");
+					if (note != null) iCourse2Note.put("MAXI", note);
+				}
+			}
+		}
 		iSectioningService.retrieveGradeModes(new RetrieveAvailableGradeModesRequest(iContext), new AsyncCallback<RetrieveAvailableGradeModesResponse>() {
 
 			@Override
@@ -285,7 +353,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 					if (clazz.isAssigned()) {
 						row = new WebTable.Row(
 								new WebTable.Cell(firstClazz ? clazz.getSubject() : "").aria(clazz.getSubject()),
-								new WebTable.Cell(firstClazz ? CONSTANTS.showCourseTitle() ? clazz.getCourseNameWithTitle() : clazz.getCourseName() : "").aria(CONSTANTS.showCourseTitle() ? clazz.getCourseNameWithTitle() : clazz.getCourseName()),
+								new WebTable.Cell(firstClazz ? clazz.getCourseNbr(CONSTANTS.showCourseTitle()) : "").aria(clazz.getCourseNbr(CONSTANTS.showCourseTitle())),
 								new WebTable.Cell(clazz.getSubpart()),
 								new WebTable.Cell(clazz.getSection()),
 								new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())).aria(clazz.getDaysString(CONSTANTS.longDays(), " ")),
@@ -301,7 +369,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 					} else {
 						row = new WebTable.Row(
 								new WebTable.Cell(firstClazz ? clazz.getSubject() : "").aria(clazz.getSubject()),
-								new WebTable.Cell(firstClazz ? CONSTANTS.showCourseTitle() ? clazz.getCourseNameWithTitle() : clazz.getCourseName() : "").aria(CONSTANTS.showCourseTitle() ? clazz.getCourseNameWithTitle() : clazz.getCourseName()),
+								new WebTable.Cell(firstClazz ? clazz.getCourseNbr(CONSTANTS.showCourseTitle()) : "").aria(clazz.getCourseNbr(CONSTANTS.showCourseTitle())),
 								new WebTable.Cell(clazz.getSubpart()),
 								new WebTable.Cell(clazz.getSection()),
 								new WebTable.Cell(MESSAGES.arrangeHours(), 3, null),
@@ -346,8 +414,12 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 		iApproval.clear();
 		P ctab = new P("course-table");
 		boolean changes = false, approvals = false;
+		String lastCourse = (iCoursesTab.getTabCount() == 0 ? null : iTab2Course.get(iCoursesTab.getSelectedTab()));
+		while (iCoursesTab.getTabCount() > 0) iCoursesTab.removeTab(0);
+		iTab2Course.clear();
 		iDisclaimers.clear();
 		Set<String> disclaimers = new TreeSet<String>();
+		List<String> courses = new ArrayList<String>();
 		for (GradeModeChange cell: iChanges) {
 			SpecialRegistrationGradeMode change = cell.getChange();
 			if (change == null) continue;
@@ -365,6 +437,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 				if (ch.hasApprovals()) {
 					m.setText(MESSAGES.gradeModeApprovalNeeded(ch.getLabel(), ToolBox.toString(ch.getApprovals())));
 					approvals = true;
+					if (!courses.contains(ca.getCourseName())) courses.add(ca.getCourseName());
 				} else {
 					m.setText(MESSAGES.gradeModeNoApprovalNeeded(ch.getLabel()));
 				}
@@ -395,6 +468,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 			if (change.hasApprovals()) {
 				m.setText(MESSAGES.varCreditApprovalNeeded(change.getCredit(), ToolBox.toString(change.getApprovals())));
 				credApprovals = true;
+				if (!courses.contains(ca.getCourseName())) courses.add(ca.getCourseName());
 			} else {
 				m.setText(MESSAGES.varCreditNoApprovalNeeded(change.getCredit()));
 			}
@@ -418,7 +492,31 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 		}
 		if (approvals || credApprovals || (credChanges && iMaxCredit != null && cred > iMaxCredit)) {
 			P m = new P("message"); m.setHTML(MESSAGES.gradeModeChangesNote()); iApproval.add(m);
-			iApproval.add(iNoteWithSuggestions);
+			iNote.setText("");
+			for (String course: courses) {
+				iTab2Course.put(iCoursesTab.getTabCount(), course);
+				iCoursesTab.addTab(course);
+				if (course.equals(lastCourse)) {
+					iCoursesTab.selectTab(iCoursesTab.getTabCount() - 1);
+					String message = iCourse2Note.get(course);
+					iNote.setText(message == null ? "" : message);
+				}
+			}
+			if (credChanges && iMaxCredit != null && cred > iMaxCredit) {
+				iTab2Course.put(iCoursesTab.getTabCount(), "MAXI");
+				iCoursesTab.addTab(MESSAGES.tabRequestNoteMaxCredit());
+				if ("MAXI".equals(lastCourse)) {
+					iCoursesTab.selectTab(iCoursesTab.getTabCount() - 1);
+					String message = iCourse2Note.get("MAXI");
+					iNote.setText(message == null ? "" : message);
+				}
+			}
+			if (iCoursesTab.getTabCount() > 0 && iCoursesTab.getSelectedTab() < 0) {
+				iCoursesTab.selectTab(0);
+				String message = iCourse2Note.get(iTab2Course.get(0));
+				iNote.setText(message == null ? "" : message);
+			}
+			iApproval.add(iCourseNotes);
 		}
 		if (!disclaimers.isEmpty()) {
 			P m = new P("message"); m.setHTML(MESSAGES.gradeModeDisclaimers()); iApproval.add(m);
@@ -457,7 +555,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 		ChangeGradeModesRequest request = new ChangeGradeModesRequest(iContext);
 		request.setCurrentCredit(iCurrentCredit);
 		request.setMaxCredit(iMaxCredit);
-		request.setNote(iNote.getValue());
+		request.setNote(iCourse2Note.get("MAXI"));
 		for (GradeModeChange cell: iChanges) {
 			SpecialRegistrationGradeMode change = cell.getChange();
 			if (change == null) continue;
@@ -468,6 +566,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 			ch.setSubject(cell.getClassAssignments().get(0).getSubject());
 			ch.setCourse(cell.getClassAssignments().get(0).getCourseNbr());
 			ch.setCredit(cell.getClassAssignments().get(0).getCredit());
+			ch.setNote(iCourse2Note.get(cell.getClassAssignments().get(0).getCourseName()));
 			for (ClassAssignmentInterface.ClassAssignment ca: cell.getClassAssignments()) {
 				SpecialRegistrationGradeMode x = cell.getChange(ca.getExternalId());
 				if (x == null) continue;
@@ -487,6 +586,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 			ch.setSubject(cell.getClassAssignment().getSubject());
 			ch.setCourse(cell.getClassAssignment().getCourseNbr());
 			ch.setCrn(cell.getClassAssignment().getExternalId());
+			ch.setNote(iCourse2Note.get(cell.getClassAssignment().getCourseName()));
 			if (change.hasApprovals())
 				for (String app: change.getApprovals()) ch.addApproval(app);
 			request.addChange(ch);

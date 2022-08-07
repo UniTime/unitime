@@ -342,7 +342,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 					switch (result.getMaxCreditOverrideStatus()) {
 					case CREDIT_HIGH:
 						iCreditStatusIcon.setResource(RESOURCES.requestNeeded());
-						warning += "\n" + MESSAGES.creditStatusTooHigh();
+						warning += "\n" + MESSAGES.creditStatusDeniedShort();
 						break;
 					case OVERRIDE_REJECTED:
 						iCreditStatusIcon.setResource(RESOURCES.requestError());
@@ -425,6 +425,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			String itemized = null;
 			for (CourseMessage m: messages.getMessages(box.getText())) {
 				if (m.getStatus() == RequestedCourseStatus.OVERRIDE_APPROVED && !m.isError()) continue;
+				if ("REQUEST_NOTE".equals(m.getCode())) continue;
 				if (message == null) {
 					message = m.getMessage();
 					itemized = MESSAGES.courseMessage(m.getMessage());
@@ -475,6 +476,9 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 					break;
 				case OVERRIDE_APPROVED:
 					box.setStatus(RESOURCES.requestSaved(), (itemized == null ? "" : MESSAGES.requestWarnings(itemized) + "\n\n") + MESSAGES.overrideApproved(box.getText()) + note);
+					break;
+				case OVERRIDE_NOT_NEEDED:
+					box.setStatus(RESOURCES.requestNotNeeded(), (itemized == null ? "" : MESSAGES.requestWarnings(itemized) + "\n\n") + MESSAGES.overrideNotNeeded(box.getText()) + note);
 					break;
 				default:
 					if (messages.isError(box.getText()))
@@ -662,6 +666,26 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 					RequestedCourse rc = box.getValue();
 					if (rc != null && course.equals(rc.getCourseId()))
 						return line.getWaitList();
+				}
+		}
+		return null;
+	}
+	
+	public CourseRequestLine getWaitListedLine(Long course) {
+		if ((iWaitListMode == WaitListMode.WaitList || iWaitListMode == WaitListMode.NoSubs) && course != null) {
+			// skip inactive first
+			for (CourseRequestLine line: iCourses)
+				for (CourseSelectionBox box: line.getCourses()) {
+					RequestedCourse rc = box.getValue();
+					if (rc != null && course.equals(rc.getCourseId()) && !rc.isInactive())
+						return line;
+				}
+			// all courses next
+			for (CourseRequestLine line: iCourses)
+				for (CourseSelectionBox box: line.getCourses()) {
+					RequestedCourse rc = box.getValue();
+					if (rc != null && course.equals(rc.getCourseId()))
+						return line;
 				}
 		}
 		return null;

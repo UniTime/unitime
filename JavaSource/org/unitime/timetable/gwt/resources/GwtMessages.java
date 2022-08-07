@@ -33,10 +33,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Version {0} built on {1}")
 	String pageVersion(String version, String buildDate);
 	
-	@DefaultMessage("&copy; 2008 - 2021 The Apereo Foundation,<br>distributed under the Apache License, Version 2.")
+	@DefaultMessage("&copy; 2008 - 2022 The Apereo Foundation,<br>distributed under the Apache License, Version 2.")
 	String pageCopyright();
 	
-	@DefaultMessage("UniTime {0}, \u00A9 2008 - 2021 The Apereo Foundation, distributed under the Apache License.")
+	@DefaultMessage("UniTime {0}, \u00A9 2008 - 2022 The Apereo Foundation, distributed under the Apache License.")
 	String pdfCopyright(String version);
 	
 	@DefaultMessage("Oooops, the loading is taking too much time... Something probably went wrong. You may need to reload this page.")
@@ -969,6 +969,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Share")
 	String colPercentShare();
 	
+	@DefaultMessage("% Share")
+	String colPercentShareInstructor();
+	
+	@DefaultMessage("Responsibility")
+	String colTeachingResponsibility();
+	
 	@DefaultMessage("Lead")
 	String colInstructorLead();
 	
@@ -1043,10 +1049,13 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Distribution Conflicts")
 	String colDistributionConflicts();
+
+	@DefaultMessage("Distribution")
+	String colDistribution();
 	
 	@DefaultMessage("Time")
 	String colTimeStamp();
-	
+
 	@DefaultMessage("Configuration")
 	String colSolverConfiguration();
 	
@@ -1692,6 +1701,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<u>S</u>earch")
 	String buttonSearch();
 	
+	@DefaultMessage("Add Coordinator")
+	String buttonAddCoordinator();
+	
 	@DefaultMessage("<u>C</u>lear")
 	String buttonClear();
 	
@@ -1796,6 +1808,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Add&nbsp;<u>R</u>eservation")
 	String buttonAddReservation();
+	
+	@DefaultMessage("Edit Course Offering New")
+	String buttonEditCourseOffering();
 	
 	@DefaultMessage("Show")
 	String buttonShow();
@@ -2798,6 +2813,24 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Name is required.")
 	String errorNameIsEmpty();
+
+	@DefaultMessage("<b>{0}</b> can not be greater than <b>{1}</b> characters.")
+	String errorMaxlength(String name, String length);
+
+	@DefaultMessage("<b>{0}</b>")
+	String errorGeneric(String msg);
+
+	@DefaultMessage("<b>{0}</b> is required")
+	String errorRequired(String name);
+	
+	@DefaultMessage("Title is required.")
+	String errorTitleIsEmpty();
+	
+	@DefaultMessage("Course Number is required.")
+	String errorCourseNumberIsEmpty();
+	
+	@DefaultMessage("Course Number cannot be matched to regular expression: {0} . Reason: {1}")
+	String errorCourseNumberCannotBeMatched(String regularExpression, String reason);
 	
 	@DefaultMessage("Abbreviation is required.")
 	String errorAbbreviationIsEmpty();
@@ -2805,6 +2838,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Abbreviation must be unique.")
 	String errorAbbreviationMustBeUnique();
 
+	@DefaultMessage("Dept Code is required.")
+	String errorDeptCodeIsEmpty();
+	
+	@DefaultMessage("Dept Code must be unique.")
+	String errorDeptCodeMustBeUnique();
+	
 	@DefaultMessage("Attribute type must be selected.")
 	String errorNoAttributeTypeSelected();
 	
@@ -3014,6 +3053,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("The contact information for {0} will be updated.")
 	String confirmMainContactChange(String name);
+	
+	@DefaultMessage("Please confirm you wish to remove all instructors from this course configuration.")
+	String confirmRemoveClassInstructors();	
 
 	@DefaultMessage("One email per line please.")
 	String hintAdditionalEmails();
@@ -3305,6 +3347,14 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pagePrograms();
 	
+	@DefaultMessage("Campus")
+	@DoNotTranslate
+	String pageCampus();
+
+	@DefaultMessage("Campuses")
+	@DoNotTranslate
+	String pageCampuses();
+	
 	@DefaultMessage("Offering Consent Type")
 	@DoNotTranslate
 	String pageOfferingConsentType();
@@ -3436,6 +3486,14 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Edit Reservation")
 	@DoNotTranslate
 	String pageEditReservation();
+	
+	@DefaultMessage("Edit Course Offering")
+	@DoNotTranslate
+	String pageEditCourseOffering();
+	
+	@DefaultMessage("Add Course Offering")
+	@DoNotTranslate
+	String pageAddCourseOffering();
 	
 	@DefaultMessage("Curriculum Projection Rules")
 	@DoNotTranslate
@@ -4123,6 +4181,15 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Select...")
 	String itemSelect();
 	
+	@DefaultMessage("None Required")
+	String consentNone();
+	
+	@DefaultMessage("Consent of Department")
+	String consentDepartment();
+	
+	@DefaultMessage("Consent of Instructor")
+	String consentInstructor();
+	
 	@DefaultMessage("This academic session only")
 	String itemThisSessionOnly();
 
@@ -4197,8 +4264,11 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String codeAvailable();
 	
-	@DefaultMessage("<u>A</u>dd Department...")
+	@DefaultMessage("<u>A</u>dd Department")
 	String buttonAddDepartment();
+
+	@DefaultMessage("<u>A</u>dd Department...")
+	String buttonRoomSharingAddDepartment();
 	
 	@DefaultMessage("<u>R</u>emove All")
 	String buttonRemoveAll();
@@ -4284,6 +4354,84 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Reserved Space:")
 	String propReservedSpace();
 	
+	@DefaultMessage("Course Number:")
+	String propCourseNumber();
+	
+	@DefaultMessage("By Reservation Only:")
+	String propByReservationOnly();
+	
+	@DefaultMessage("New Enrollment Deadline:")
+	String propNewEnrollmentDeadline();
+	
+	@DefaultMessage("Class Changes Deadline:")
+	String propClassChangesDeadline();
+	
+	@DefaultMessage("Course Drop Deadline:")
+	String propCourseDropDeadline();
+	
+	@DefaultMessage("Schedule of Classes Note:")
+	String propScheduleNote();
+	
+	@DefaultMessage("Requests/Notes:")
+	String propRequestsNotes();
+	
+	@DefaultMessage("Consent:")
+	String propConsent();
+	
+	@DefaultMessage("Credit:")
+	String propCredit();
+	
+	@DefaultMessage("Credit Type:")
+	String propCreditType();
+	
+	@DefaultMessage("Credit Unit Type:")
+	String propCreditUnitType();
+	
+	@DefaultMessage("Units:")
+	String propUnits();
+	
+	@DefaultMessage("Max Units:")
+	String propMaxUnits();
+	
+	@DefaultMessage("Fractional Increments Allowed:")
+	String propFractional();
+	
+	@DefaultMessage("Take Course Demands from Offering:")
+	String propCourseDemands();
+	
+	@DefaultMessage("Default Alternative Course Offering:")
+	String propAlternativeCourseOffering();
+	
+	@DefaultMessage("Coordinators:")
+	String propCoordinators();
+	
+	@DefaultMessage("Funding Department:")
+	String propFundingDepartment();
+	
+	@DefaultMessage("Wait-Listing:")
+	String propWaitListing();
+
+	@DefaultMessage("Course Catalog:")
+	String propertyCourseCatalog();
+	
+	@DefaultMessage("Subject:")
+	String propSubject();
+	
+	@DefaultMessage("Subject is required.")
+	String errorSubjectRequired();
+	
+	@DefaultMessage("Course Number is required.")
+	String errorCourseNumberRequired();
+	
+	@DefaultMessage("The course cannot be created. A course with the same course number already exists.")
+	String errorCourseCannotBeCreated();
+	
+	@DefaultMessage("The course cannot be renamed. A course with the same course number already exists.")
+	String errorCourseCannotBeRenamed();
+	
+	@DefaultMessage("Duplicate coordinator for a course.")
+	String errorDuplicateCoordinator();
+	
 	@DefaultMessage("Expiration Date:")
 	String propExpirationDate();
 	
@@ -4334,6 +4482,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Controlling Department:")
 	String propControllingDepartment();
+
+	@DefaultMessage("Status for classes managed by: {0}")
+	String propStatusManagedBy(String managedBy);
 	
 	@DefaultMessage("Coordinates:")
 	String propCoordinates();
@@ -5286,6 +5437,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Position Types")
 	String optionPositionTypes();
 
+	@DefaultMessage("Department Status")
+	String optionDepartmentStatus();
+	
 	@DefaultMessage("Department Status Type")
 	String optionDepartmentStatusType();
 
@@ -5776,6 +5930,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("program")
 	String tagProgram();
 	
+	@DefaultMessage("campus")
+	String tagCampus();
+	
 	@DefaultMessage("minor")
 	String tagMinor();
 	
@@ -5904,6 +6061,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("All")
 	String departmentsAllLabel();
 
+	@DefaultMessage("All")
+	String colAll();
+	
 	@DefaultMessage("All Departments")
 	String departmentsAllTitle();
 	
@@ -6531,6 +6691,36 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Override Properties:")
 	String propOverrideProperties();
 	
+	@DefaultMessage("Number of weeks during which students are allowed to enroll to this course, defaults to {0} when left blank.")
+	String hintNewEnrollmentDeadline(String wkEnrollmentDefault);
+	
+	@DefaultMessage("Number of weeks during which students are allowed to change existing enrollments, defaults to {0} when left blank.")
+	String hintClassChangesDeadline(String wkChangeDefault);
+	
+	@DefaultMessage("Number of weeks during which students are allowed to drop from this course, defaults to {0} when left blank.")
+	String hintCourseDropDeadline(String wkDropDefault);
+	
+	@DefaultMessage("Weeks start on the day of session start date, number of weeks is relative to class start ({0}).")
+	String descriptionEnrollmentDeadlines(String weekStartDayOfWeek);
+	
+	@DefaultMessage("If checked, only students meeting reservations will be allowed to enroll into the offering.")
+	String checkByReservationOnly();
+	
+	@DefaultMessage("Only students meeting reservations are allowed to enroll into this offering.")
+	String descriptionByReservationOnly2();
+	
+	@DefaultMessage("Students are allowed to enroll in this course up to {0} week of classes.")
+	String textLastWeekEnrollment(String wkEnrollment);
+	
+	@DefaultMessage("Students are allowed to change existing enrollments up to {0} week of classes.")
+	String textLastWeekChange(String wkChange);
+	
+	@DefaultMessage("Students are allowed to drop from this course up to {0} week of classes.")
+	String textLastWeekDrop(String wkDrop);
+	
+	@DefaultMessage("Prohibited Overrides:")
+	String propertyDisabledOverrides();
+	
 	@DefaultMessage("Allow Time Conflict")
 	String checkCanOverlap();
 	
@@ -6560,6 +6750,15 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Restriction: Reservation is only enforced on the selected level")
 	String reservationInclusiveFalse();
+
+	@DefaultMessage("Departments")
+	String sectDepartments();
+
+	@DefaultMessage("Add Department")
+	String sectAddDepartment();
+
+	@DefaultMessage("Update Data")
+	String buttonDepartmentsUpdateData();
 	
 	@DefaultMessage("Buildings")
 	String sectBuildings();
@@ -6584,6 +6783,21 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("building")
 	String objectBuilding();
+
+	@DefaultMessage("department")
+	String objectDepartment();
+
+	@DefaultMessage("Edit Department")
+	String sectEditDepartment();
+	
+	@DefaultMessage("The department will be deleted. Continue?")
+	String confirmDepartmentDelete();
+
+	@DefaultMessage("Update data has failed: {0}")
+	String failedDepartmentUpdateData(String reason);
+	
+	@DefaultMessage("course offering")
+	String objectCourseOffering();
 	
 	@DefaultMessage("Update data has failed: {0}")
 	String failedBuildingUpdateData(String reason);
@@ -6602,4 +6816,347 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Email failed: {0}")
 	String failureSendingEmail(String message);
+	
+	@DefaultMessage("Campus")
+	String utilSqlAcademicInitiative();
+
+	@DefaultMessage("Term")
+	String utilSqlAcademicTerm();
+
+	@DefaultMessage("Year")
+	String utilSqlAcademicYear();
+	
+	@DefaultMessage("Building")
+	String utilSqlBuilding();
+	
+	@DefaultMessage("Room")
+	String utilSqlRoom();
+	
+	@DefaultMessage("Room_Type")
+	String utilSqlRoomType();
+	
+	@DefaultMessage("Capacity")
+	String utilSqlRoomSize();
+	
+	@DefaultMessage("Campus_region")
+	String utilSqlCampusRegion();
+	
+	@DefaultMessage("Part_of_LLR_or_LALR_Pool")
+	String utilSqlLlrLalrPool();
+	
+	@DefaultMessage("Classroom_Subtype")
+	String utilSqlClassroomSubtype();
+
+	@DefaultMessage("Event_Type")
+	String utilSqlEventType();
+
+	@DefaultMessage("Event_Type_Description")
+	String utilSqlEventTypeDescription();
+
+	@DefaultMessage("Utilization_Type")
+	String utilSqlUtilizationType();
+
+	@DefaultMessage("Department")
+	String utilSqlDepartment();
+
+	@DefaultMessage("Subject")
+	String utilSqlSubject();
+
+	@DefaultMessage("Size_Group")
+	String utilSqlRangeOfSizes();
+
+	@DefaultMessage("Day_Time")
+	String utilSqlDayTime();
+
+	@DefaultMessage("_Standard_Weekday_Hours")
+	String utilSqlTotalStandardWeekdayHoursSuffix();
+
+	@DefaultMessage("_Standard_Hours")
+	String utilSqlTotalStandardHoursSuffix();
+
+	@DefaultMessage("_All_Hours")
+	String utilSqlTotalAllHoursSuffix();
+
+	@DefaultMessage("Occupied_Stations")
+	String utilSqlStationsUsed();
+
+	@DefaultMessage("Requested_Stations")
+	String utilSqlStationsRequested();
+
+	@DefaultMessage("Room_Usage")
+	String utilSqlUsage();
+
+	@DefaultMessage("Station_Usage")
+	String utilSqlUsageSeatHours();
+
+	@DefaultMessage("Station_Occupancy_Rate")
+	String utilSqlStationOccupancyRate();
+	
+	@DefaultMessage("Requested_Station_Occupancy_Rate")
+	String utilSqlRequestedStationOccupancyRate();
+
+	@DefaultMessage("Class")
+	String utilSqlEventTypeClass();
+
+	@DefaultMessage("Final Exam")
+	String utilSqlEventTypeFinalExam();
+
+	@DefaultMessage("Midterm Exam")
+	String utilSqlEventTypeMidtermExam();
+
+	@DefaultMessage("Course Related")
+	String utilSqlEventTypeCourseRelated();
+
+	@DefaultMessage("Special Event")
+	String utilSqlEventTypeSpecialEvent();
+
+	@DefaultMessage("Room Not Available")
+	String utilSqlEventTypeRoomNotAvailable();
+
+	@DefaultMessage("Traditional Utilization")
+	String utilSqlUtilizationTypeTraditional();
+
+	@DefaultMessage("Final Exams Week")
+	String utilSqlUtilizationTypeFinalExamsWeek();
+
+	@DefaultMessage("Special Event")
+	String utilSqlUtilizationTypeSpecialEvent();
+
+	@DefaultMessage("Subject Area")
+	@DoNotTranslate
+	String pageSubjectArea();
+
+	@DefaultMessage("Subject Areas")
+	@DoNotTranslate
+	String pageSubjectAreas();
+
+	@DefaultMessage("Funding Department")
+	String fieldFundingDepartment();
+	
+	@DefaultMessage("Managers")
+	String fieldManagers();
+	
+	@DefaultMessage("Last Change")
+	String fieldLastChange();
+	
+	@DefaultMessage("No external funding department")
+	String noFundingDepartment();
+	
+	@DefaultMessage("{0} by {1}")
+	String lastChange(String date, String manager);
+
+	@DefaultMessage("Departments")
+	@DoNotTranslate
+	String pageDepartments();
+
+	@DefaultMessage("Add Department")
+	@DoNotTranslate
+	String pageAddDepartment();
+	
+	@DefaultMessage("Edit Department")
+	@DoNotTranslate
+	String pageEditDepartment();
+	
+	@DefaultMessage("Code")
+	String colCode();
+	
+	
+	@DefaultMessage("Code:")
+	String propDeptCode();
+	
+	@DefaultMessage("Status Type")
+	String propStatusType();
+	
+	@DefaultMessage("Number")
+	String colNumber();
+	
+	@DefaultMessage("Abbreviation")
+	String colAbbv();
+
+	@DefaultMessage("Department Status:")
+	String propDepartmentStatus();
+	
+	@DefaultMessage("External <br>Manager")
+	String colExternalManager();
+
+	@DefaultMessage("External Manager:")
+	String propExternalManager();
+
+	@DefaultMessage("External Manager Abbreviation:")
+	String propExternalManagerAbbreviation();
+	
+	@DefaultMessage("External Manager Abbreviation should only be used when the department is marked as External Manager")
+	String errorExternalManagerAbbreviationUse();
+	
+	@DefaultMessage("External Manager Name:")
+	String propExternalManagerName();
+
+	@DefaultMessage("External Manager Name should only be used when the department is marked as External Manager")
+	String errorExternalManagerNameUse();
+
+	@DefaultMessage("Show all departments (including departments with no manager and no subject area)")
+	String checkShowAllDepartments();
+	
+	@DefaultMessage("Dist Pref  <br> Priority")
+	String colDistPrefPriority();
+
+	@DefaultMessage("Distribution Preference Priority:")
+	String propPrefPriority();
+	
+	@DefaultMessage("Allow <br> Required")
+	String colAllowRequired();
+
+	@DefaultMessage("Allow <br> Required Time:")
+	String propAllowReqTime();
+	
+	@DefaultMessage("Instructor <br> Preferences")
+	String colInstructorPref();
+
+	@DefaultMessage("Instructor <br> Preferences")
+	String propInstructorPref();
+
+	@DefaultMessage("Inherit Instructor <br> Preferences:")
+	String propInheritInstructorPref();
+	
+	@DefaultMessage("Allow  Required Room:")
+	String propAllowReqRoom();
+
+	@DefaultMessage("Allow  Required Distribution:")
+	String propAllowReqDist();
+	
+	@DefaultMessage("Allow Student Scheduling:")
+	String propAllowStudentScheduling();
+
+	@DefaultMessage("External Funding Department:")
+	String propExternalFundingDept();
+
+	@DefaultMessage("External <br> Funding Department")
+	String colExternalFundingDept();
+	
+	@DefaultMessage("Event Management:")
+	String propAllowEvents();
+	
+	@DefaultMessage("Events")
+	String colEvents();
+	
+	@DefaultMessage("Add Status")
+	String buttonDependentAddStatus();
+	
+	@DefaultMessage("Delete All")
+	String buttonDependentDeleteAll();
+	
+	@DefaultMessage("Department/Session Default")
+	String propDefaultDependentStatus();
+
+	@DefaultMessage("Session Default")
+	String propDepartmentStatusDefault();
+	
+	@DefaultMessage("-")
+	String propDefaultDependentDepartment();
+	
+	@DefaultMessage("Student<br>Scheduling")
+	String colStudentScheduling();
+	
+	@DefaultMessage("Student<br>Scheduling")
+	String propStudentScheduling();
+	
+	@DefaultMessage("Department List - {0}")
+	String propDepartmentlist(String name);	
+	
+	@DefaultMessage("Assign Instructors")
+	@DoNotTranslate
+	String pageAssignInstructors();
+
+	@DefaultMessage("CheckConflicts")
+	String colCheckConflicts();
+
+	@DefaultMessage("Display")
+	String colDisplayInstructors();
+
+	@DefaultMessage("Course Supervisor / Student System Access:")
+	String labelCourseCoordinators();
+
+	@DefaultMessage("Class")
+	String fieldClassName();
+	
+	@DefaultMessage("% Share")
+	String fieldPercentShare();
+	
+	@DefaultMessage("Check<br>Conflicts")
+	String fieldCheckConflicts();
+	
+	@DefaultMessage("Responsibility")
+	String fieldResponsibility();
+	
+	@DefaultMessage("Display<br>(All: {0})")
+	String fieldDisplay(String buttonCharacter);
+
+	@DefaultMessage("Class Unique Id")
+	String fieldClassUid();
+	
+	@DefaultMessage("Instructional Offering Config Unique Id")
+	String fieldConfigUid();
+
+	@DefaultMessage("Error")
+	String fieldError();
+
+	@DefaultMessage("Add Additional Instructor Row")
+	String fieldAdd();
+	
+	@DefaultMessage("Insert a new row below this row.")
+	String fieldInsertRowBelow();
+
+	@DefaultMessage("Delete Instructor Row")
+	String fieldDelete();
+	
+	@DefaultMessage("First Record For Class UniqueId")
+	String fieldFirstRecordForClassUid();	
+
+	@DefaultMessage("<u>U</u>nassign All")
+	String buttonUnassignAll();
+	
+	@DefaultMessage("Assign Instructors")
+	String buttonAssignInstructors();
+	
+	@DefaultMessage("Instructional offering configuration id not provided.")
+	String errorConfigurationIdNotProvided();
+
+	@DefaultMessage("Instructional offering configuration with matching unique id not found.")
+	String errorConfigurationIdNotFound();
+
+	@DefaultMessage("User does not have permission to remove all instructors.")
+	String errorDeleteAllInstructorsPermission();
+
+	@DefaultMessage("Missing data for class: {0}")
+	String errorInstructorInputDataNotFoundForClass(String className);
+	
+	@DefaultMessage("Duplicate instructor {0} with same responsibility {1} for class. {2}")
+	String errorDuplicateInstructorData(String instrName, String responsibility, String course);
+	
+	@DefaultMessage("Initial setup of Instructional Offering Config has not been completed.")
+	String exceptionInitialIOSetupIncomplete();
+	
+	@DefaultMessage("Failed to Send Update to External System:  {0} = {1}")
+	String exceptionExternalSystemUpdateFailure(String exceptionType, String failedClassName);
+	
+	@DefaultMessage("Default (Enabled)")
+	String waitListDefaultEnabled();
+	
+	@DefaultMessage("Default (Disabled)")
+	String waitListDefaultDisabled();
+	
+	@DefaultMessage("Enabled")
+	String waitListEnabled();
+	
+	@DefaultMessage("Disabled")
+	String waitListDisabled();
+	
+	@DefaultMessage("Wait-listing is enabled for this offering.")
+	String descWaitListEnabled();
+	
+	@DefaultMessage("Wait-listing is not enabled for this offering.")
+	String descWaitListDisabled();
+	
+	@DefaultMessage("Course Offering")
+	String sectCourseOffering();
 }

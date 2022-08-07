@@ -21,6 +21,7 @@ package org.unitime.timetable.server.script;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Date;
@@ -52,7 +53,10 @@ import org.unitime.timetable.model.dao.ScriptDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.evaluation.PermissionCheck;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.spring.SpringApplicationContextHolder;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.queue.QueueItem;
 
@@ -63,6 +67,7 @@ public class ScriptExecution extends QueueItem {
 	private static final long serialVersionUID = 1L;
 	private ExecuteScriptRpcRequest iRequest;
 	private transient FileItem iFile = null;
+	private transient UserContext iUserContext = null; 
 	
 	public ScriptExecution(ExecuteScriptRpcRequest request, SessionContext context) {
 		super(context.getUser());
@@ -75,6 +80,8 @@ public class ScriptExecution extends QueueItem {
 		for (ScriptParameter parameter: script.getParameters())
 			if ("file".equals(parameter.getType()))
 				iFile = (FileItem)context.getAttribute(SessionAttribute.LastUploadedFile);
+
+		iUserContext = context.getUser();
 	}
 	
 	public ExecuteScriptRpcRequest getRequest() { return iRequest; }
@@ -90,6 +97,26 @@ public class ScriptExecution extends QueueItem {
 	public void warn(String message) { super.warn(message); }
 	public void error(String message) { super.error(message); }
 	public void error(String message, Throwable t) { super.error(message, t); setError(t); }
+	
+	protected PermissionCheck getPermissionCheck() {
+		return (PermissionCheck)SpringApplicationContextHolder.getBean("unitimePermissionCheck");
+	}
+	
+	public boolean hasPermission(Object targetObject, String right) {
+		return getPermissionCheck().hasPermission(iUserContext, targetObject, Right.valueOf(right));
+	}
+	
+	public boolean hasPermission(Serializable targerId, String targetType, String right) {
+		return getPermissionCheck().hasPermission(iUserContext, targerId, targetType, Right.valueOf(right));
+	}
+	
+	public void checkPermission(Object targetObject, String right) {
+		getPermissionCheck().checkPermission(iUserContext, targetObject, Right.valueOf(right));
+	}
+	
+	public void checkPermission(Serializable targerId, String targetType, String right) {
+		getPermissionCheck().checkPermission(iUserContext, targerId, targetType, Right.valueOf(right));
+	}
 	
 	public File createOutput(String prefix, String ext) {
 		return super.createOutput(prefix, ext);
@@ -151,6 +178,8 @@ public class ScriptExecution extends QueueItem {
 			engine.put("hibSession", hibSession);
 			engine.put("session", SessionDAO.getInstance().get(getSessionId()));
 			engine.put("log", this);
+			if (iUserContext != null)
+				engine.put("userContext", iUserContext);
 			
 			incProgress();
 			

@@ -37,6 +37,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.CourseDemand;
@@ -45,6 +46,7 @@ import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.FreeTime;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideIntent;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
@@ -275,6 +277,11 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 				cd.setPriority(priority);
 				if (r.isWaitList() && !Boolean.TRUE.equals(cd.getWaitlist()))
 					cd.setWaitlistedTimeStamp(ts);
+				if (r.isWaitList()) {
+					cd.setWaitListSwapWithCourseOffering(r.getWaitListSwapWithCourseOfferingId() == null ? null : CourseOfferingDAO.getInstance().get(r.getWaitListSwapWithCourseOfferingId(), helper.getHibSession()));
+				} else {
+					cd.setWaitListSwapWithCourseOffering(null);
+				}
 				cd.setWaitlist(r.isWaitList());
 				cd.setNoSub(r.isNoSub());
 				cd.setCritical(isCritical(false, courses, critical));
@@ -302,7 +309,8 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 						RequestedCourseStatus.OVERRIDE_APPROVED == rc.getStatus() ? CourseRequestOverrideStatus.APPROVED :
 						RequestedCourseStatus.OVERRIDE_PENDING == rc.getStatus() ? CourseRequestOverrideStatus.PENDING :
 						RequestedCourseStatus.OVERRIDE_CANCELLED == rc.getStatus() ? CourseRequestOverrideStatus.CANCELLED :
-						RequestedCourseStatus.OVERRIDE_REJECTED == rc.getStatus() ? CourseRequestOverrideStatus.REJECTED : null);
+						RequestedCourseStatus.OVERRIDE_REJECTED == rc.getStatus() ? CourseRequestOverrideStatus.REJECTED :
+						RequestedCourseStatus.OVERRIDE_NOT_NEEDED == rc.getStatus() ? CourseRequestOverrideStatus.NOT_NEEDED : null);
 					cr.setCourseRequestOverrideIntent(rc == null ? null : CourseRequestOverrideIntent.REGISTER);
 					if (rc.getStatus() == null || rc.getStatus() == RequestedCourseStatus.NEW_REQUEST)
 						rc.setStatus(RequestedCourseStatus.SAVED);
@@ -397,6 +405,11 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 				cd.setPriority(priority);
 				if (r.isWaitList() && !Boolean.TRUE.equals(cd.getWaitlist()))
 					cd.setWaitlistedTimeStamp(ts);
+				if (r.isWaitList()) {
+					cd.setWaitListSwapWithCourseOffering(r.getWaitListSwapWithCourseOfferingId() == null ? null : CourseOfferingDAO.getInstance().get(r.getWaitListSwapWithCourseOfferingId(), helper.getHibSession()));
+				} else {
+					cd.setWaitListSwapWithCourseOffering(null);
+				}
 				cd.setWaitlist(r.isWaitList());
 				cd.setNoSub(r.isNoSub());
 				cd.setCritical(isCritical(true, courses, critical));
@@ -424,7 +437,8 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 						RequestedCourseStatus.OVERRIDE_APPROVED == rc.getStatus() ? CourseRequestOverrideStatus.APPROVED :
 						RequestedCourseStatus.OVERRIDE_PENDING == rc.getStatus() ? CourseRequestOverrideStatus.PENDING :
 						RequestedCourseStatus.OVERRIDE_CANCELLED == rc.getStatus() ? CourseRequestOverrideStatus.CANCELLED :
-						RequestedCourseStatus.OVERRIDE_REJECTED == rc.getStatus() ? CourseRequestOverrideStatus.REJECTED : null);
+						RequestedCourseStatus.OVERRIDE_REJECTED == rc.getStatus() ? CourseRequestOverrideStatus.REJECTED :
+						RequestedCourseStatus.OVERRIDE_NOT_NEEDED == rc.getStatus() ? CourseRequestOverrideStatus.NOT_NEEDED : null);
 					cr.setCourseRequestOverrideIntent(rc == null ? null : CourseRequestOverrideIntent.REGISTER);
 					if (rc.getStatus() == null || rc.getStatus() == RequestedCourseStatus.NEW_REQUEST)
 						rc.setStatus(RequestedCourseStatus.SAVED);
@@ -497,11 +511,18 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 			RequestedCourseStatus.OVERRIDE_CANCELLED == request.getMaxCreditOverrideStatus() ? CourseRequestOverrideStatus.CANCELLED :
 			RequestedCourseStatus.OVERRIDE_REJECTED == request.getMaxCreditOverrideStatus() ? CourseRequestOverrideStatus.REJECTED : null);
 		student.setOverrideMaxCredit(request.getMaxCreditOverride());
-		student.setOverrideIntent(null);
+		student.setMaxCreditOverrideIntent(request.getMaxCreditOverrideExternalId() == null ? null : CourseRequestOverrideIntent.REGISTER);
 		
 		helper.getHibSession().saveOrUpdate(student);
 		helper.getHibSession().flush();
 		
+		if (request.getWaitListMode() == WaitListMode.WaitList) {
+			student.resetWaitLists(
+					WaitList.WaitListType.COURSE_REQUESTS,
+					StudentClassEnrollment.SystemChange.IMPORT.toString(),
+					ts,
+					helper.getHibSession());
+		}
 		return course2request;
 	}
 	

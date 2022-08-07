@@ -44,6 +44,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
 import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
@@ -251,6 +252,24 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		}
 		response.add("program", programs);
 		
+		if (!(server instanceof StudentSolver)) {
+			List<Entity> campuses = new ArrayList<Entity>();
+			boolean hasDefaultCampus = false;
+			for (Object[] o: (List<Object[]>)query.select("aac.campus.uniqueId, aac.campus.reference, aac.campus.label, count(distinct s)")
+					.order("aac.campus.reference, aac.campus.label").group("aac.campus.uniqueId, aac.campus.reference, aac.campus.label")
+					.exclude("campus").exclude("course").exclude("lookup").exclude("prefer").exclude("require").exclude("im").exclude("credit").query(helper.getHibSession()).list()) {
+				Entity c = new Entity(
+						(Long)o[0],
+						(String)o[1],
+						(String)o[2]);
+				c.setCount(((Number)o[3]).intValue());
+				if (server.getAcademicSession().getCampus().equals(o[1])) hasDefaultCampus = true;
+				campuses.add(c);
+			}
+			if (campuses.size() == 1 && hasDefaultCampus) campuses.clear();
+			response.add("campus", campuses);
+		}
+		
 		List<Entity> groups = new ArrayList<Entity>();
 		for (Object[] o: (List<Object[]>)query.select("g.uniqueId, g.groupAbbreviation, g.groupName, count(distinct s)")
 				.from("inner join s.groups g").where("g.type is null")
@@ -324,35 +343,65 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		}
 		if (states.size() > 1)
 			response.add("status", states);
+
+		Map<Integer, Integer> crit2count = new HashMap<Integer, Integer>();
+		for (Object[] o: (List<Object[]>)courseQuery.select("cd.critical, count(distinct cd)").where("cd.critical is not null and cd.criticalOverride is null").order("cd.critical").group("cd.critical").exclude("assignment").query(helper.getHibSession()).list()) {
+			crit2count.put((Integer)o[0],((Number)o[1]).intValue());
+		}
+		for (Object[] o: (List<Object[]>)courseQuery.select("cd.criticalOverride, count(distinct cd)").where("cd.criticalOverride is not null").order("cd.criticalOverride").group("cd.criticalOverride").exclude("assignment").query(helper.getHibSession()).list()) {
+			Integer pref = crit2count.get((Integer)o[0]);
+			crit2count.put((Integer)o[0],((Number)o[1]).intValue() + (pref == null ? 0 : pref.intValue()));
+		}
 		
 		List<Entity> assignment = new ArrayList<Entity>();
 		assignment.add(new Entity(0l, "Assigned", CONSTANTS.assignmentType()[0], "translated-value", CONSTANTS.assignmentType()[0]));
 		assignment.add(new Entity(1l, "Reserved", CONSTANTS.assignmentType()[1], "translated-value", CONSTANTS.assignmentType()[1]));
 		assignment.add(new Entity(2l, "Not Assigned", CONSTANTS.assignmentType()[2], "translated-value", CONSTANTS.assignmentType()[2]));
-		if (CONSTANTS.assignmentType().length > 4)
-			assignment.add(new Entity(4l, "Critical", CONSTANTS.assignmentType()[4], "translated-value", CONSTANTS.assignmentType()[4]));
-		else
-			assignment.add(new Entity(4l, "Critical", "Critical"));
-		if (CONSTANTS.assignmentType().length > 5)
-			assignment.add(new Entity(5l, "Assigned Critical", CONSTANTS.assignmentType()[5], "translated-value", CONSTANTS.assignmentType()[5]));
-		else
-			assignment.add(new Entity(5l, "Assigned Critical", "Assigned Critical"));
-		if (CONSTANTS.assignmentType().length > 6)
-			assignment.add(new Entity(6l, "Not Assigned Critical", CONSTANTS.assignmentType()[6], "translated-value", CONSTANTS.assignmentType()[6]));
-		else
-			assignment.add(new Entity(6l, "Not Assigned Critical", "Not Assigned Critical"));
-		if (CONSTANTS.assignmentType().length > 7)
-			assignment.add(new Entity(7l, "Important", CONSTANTS.assignmentType()[7], "translated-value", CONSTANTS.assignmentType()[7]));
-		else
-			assignment.add(new Entity(7l, "Important", "Important"));
-		if (CONSTANTS.assignmentType().length > 8)
-			assignment.add(new Entity(8l, "Assigned Important", CONSTANTS.assignmentType()[8], "translated-value", CONSTANTS.assignmentType()[8]));
-		else
-			assignment.add(new Entity(8l, "Assigned Important", "Assigned Important"));
-		if (CONSTANTS.assignmentType().length > 9)
-			assignment.add(new Entity(9l, "Not Assigned Important", CONSTANTS.assignmentType()[9], "translated-value", CONSTANTS.assignmentType()[9]));
-		else
-			assignment.add(new Entity(9l, "Not Assigned Important", "Not Assigned Important"));
+		if (crit2count.containsKey(CourseDemand.Critical.CRITICAL.ordinal())) {
+			if (CONSTANTS.assignmentType().length > 4)
+				assignment.add(new Entity(4l, "Critical", CONSTANTS.assignmentType()[4], "translated-value", CONSTANTS.assignmentType()[4]));
+			else
+				assignment.add(new Entity(4l, "Critical", "Critical"));
+			assignment.get(assignment.size() - 1).setCount(crit2count.get(CourseDemand.Critical.CRITICAL.ordinal()));
+			if (CONSTANTS.assignmentType().length > 5)
+				assignment.add(new Entity(5l, "Assigned Critical", CONSTANTS.assignmentType()[5], "translated-value", CONSTANTS.assignmentType()[5]));
+			else
+				assignment.add(new Entity(5l, "Assigned Critical", "Assigned Critical"));
+			if (CONSTANTS.assignmentType().length > 6)
+				assignment.add(new Entity(6l, "Not Assigned Critical", CONSTANTS.assignmentType()[6], "translated-value", CONSTANTS.assignmentType()[6]));
+			else
+				assignment.add(new Entity(6l, "Not Assigned Critical", "Not Assigned Critical"));
+		}
+		if (crit2count.containsKey(CourseDemand.Critical.VITAL.ordinal())) {
+			if (CONSTANTS.assignmentType().length > 13)
+				assignment.add(new Entity(13l, "Vital", CONSTANTS.assignmentType()[13], "translated-value", CONSTANTS.assignmentType()[13]));
+			else
+				assignment.add(new Entity(13l, "Vital", "Vital"));
+			assignment.get(assignment.size() - 1).setCount(crit2count.get(CourseDemand.Critical.VITAL.ordinal()));
+			if (CONSTANTS.assignmentType().length > 14)
+				assignment.add(new Entity(14l, "Assigned Vital", CONSTANTS.assignmentType()[14], "translated-value", CONSTANTS.assignmentType()[14]));
+			else
+				assignment.add(new Entity(14l, "Assigned Vital", "Assigned Vital"));
+			if (CONSTANTS.assignmentType().length > 15)
+				assignment.add(new Entity(15l, "Not Assigned Vital", CONSTANTS.assignmentType()[15], "translated-value", CONSTANTS.assignmentType()[15]));
+			else
+				assignment.add(new Entity(15l, "Not Assigned Vital", "Not Assigned Vital"));
+		}
+		if (crit2count.containsKey(CourseDemand.Critical.IMPORTANT.ordinal())) {
+			if (CONSTANTS.assignmentType().length > 7)
+				assignment.add(new Entity(7l, "Important", CONSTANTS.assignmentType()[7], "translated-value", CONSTANTS.assignmentType()[7]));
+			else
+				assignment.add(new Entity(7l, "Important", "Important"));
+			assignment.get(assignment.size() - 1).setCount(crit2count.get(CourseDemand.Critical.IMPORTANT.ordinal()));
+			if (CONSTANTS.assignmentType().length > 8)
+				assignment.add(new Entity(8l, "Assigned Important", CONSTANTS.assignmentType()[8], "translated-value", CONSTANTS.assignmentType()[8]));
+			else
+				assignment.add(new Entity(8l, "Assigned Important", "Assigned Important"));
+			if (CONSTANTS.assignmentType().length > 9)
+				assignment.add(new Entity(9l, "Not Assigned Important", CONSTANTS.assignmentType()[9], "translated-value", CONSTANTS.assignmentType()[9]));
+			else
+				assignment.add(new Entity(9l, "Not Assigned Important", "Not Assigned Important"));
+		}
 		if (CONSTANTS.assignmentType().length > 10)
 			assignment.add(new Entity(10l, "No-Substitutes", CONSTANTS.assignmentType()[10], "translated-value", CONSTANTS.assignmentType()[10]));
 		else
@@ -801,6 +850,32 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				query.addWhere("program", "aac.program.reference in (" + prog + ")");
 			}
 		}
+		
+		if (request.hasOptions("campus")) {
+			boolean like = false;
+			for (String d: request.getOptions("campus")) {
+				if (d.indexOf('%') >= 0) { like = true; break; }
+			}
+			if (like) {
+				String q = "";
+				int id = 0;
+				for (String d: request.getOptions("campus")) {
+					q += (q.isEmpty() ? "" : " or ") + "aac.campus.reference like :Xcp" + id;
+					query.addParameter("campus", "Xcp" + id, d);
+					id++;
+				}
+				query.addWhere("campus", q);
+			} else {
+				String prog = "";
+				int id = 0;
+				for (String d: request.getOptions("campus")) {
+					prog += (prog.isEmpty() ? "" : ",") + ":Xcp" + id;
+					query.addParameter("campus", "Xcp" + id, d);
+					id++;
+				}
+				query.addWhere("campus", "aac.campus.reference in (" + prog + ")");
+			}
+		}
 
 		if (request.hasOptions("major")) {
 			String major = "";
@@ -1099,7 +1174,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		if (request.hasOption("assignment") && "Wait-Listed".equalsIgnoreCase(request.getOption("assignment"))) {
 			query.addFrom("assignment", "CourseRequest wcr");
 			if (ApplicationProperty.OfferingWaitListDefault.isTrue()) {
-				query.addWhere("assignment", "wcr.courseDemand.waitlist = true and wcr.courseDemand.student = s and not wcr.courseOffering.instructionalOffering.waitlist = false");
+				query.addWhere("assignment", "wcr.courseDemand.waitlist = true and wcr.courseDemand.student = s and (wcr.courseOffering.instructionalOffering.waitlist is null or wcr.courseOffering.instructionalOffering.waitlist = true)");
 			} else {
 				query.addWhere("assignment", "wcr.courseDemand.waitlist = true and wcr.courseDemand.student = s and wcr.courseOffering.instructionalOffering.waitlist = true");
 			}
@@ -1312,7 +1387,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 	public List<XStudent> getStudens(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		List<XStudent> students = new ArrayList<XStudent>();
 		for (Student student: (List<Student>)getQuery(iRequest, server, helper).select("distinct s").query(helper.getHibSession()).list()) {
-			students.add(new XStudent(student, helper, server.getAcademicSession().getFreeTimePattern()));
+			students.add(new XStudent(student, helper, server.getAcademicSession().getFreeTimePattern(), server.getAcademicSession().getDatePatternFirstDate()));
 		}
 		return students;
 	}
@@ -1371,7 +1446,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		if (request.hasOption("assignment") && "Wait-Listed".equalsIgnoreCase(request.getOption("assignment"))) {
 			query.addFrom("assignment", null);
 			if (ApplicationProperty.OfferingWaitListDefault.isTrue()) {
-				query.addWhere("assignment", "not co.instructionalOffering.waitlist = false and cd.waitlist = true");
+				query.addWhere("assignment", "(co.instructionalOffering.waitlist is null or co.instructionalOffering.waitlist = true) and cd.waitlist = true");
 			} else {
 				query.addWhere("assignment", "co.instructionalOffering.waitlist = true and cd.waitlist = true");
 			}
@@ -1414,7 +1489,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 	public List<XCourseId> getCourseIds(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		List<XCourseId> ids = new ArrayList<XCourseId>(); 
 		for (Object[] line: (List<Object[]>)getCourseQuery(iRequest, server, helper).select("distinct co.instructionalOffering.uniqueId, co.uniqueId, co.subjectAreaAbbv, co.courseNbr").query(helper.getHibSession()).list()) {
-			ids.add(new XCourseId(((Number)line[0]).longValue(), ((Number)line[1]).longValue(), line[2] + " " + line[3]));
+			ids.add(new XCourseId(((Number)line[0]).longValue(), ((Number)line[1]).longValue(), (String)line[2], (String)line[3]));
 		}
 		return ids;
 	}
@@ -1479,7 +1554,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 	public static boolean hasNoMatchCourses(FilterRpcRequest request, OnlineSectioningHelper helper) {
 		if (request.hasOptions("prefer") || request.hasOptions("require"))
 			return false;
-		if (request.hasOptions("area") || request.hasOptions("classification") || request.hasOptions("degree") || request.hasOptions("program") || request.hasOptions("major") || request.hasOptions("concentration") || request.hasOptions("minor"))
+		if (request.hasOptions("area") || request.hasOptions("classification") || request.hasOptions("degree") || request.hasOptions("program") || request.hasOptions("campus") || request.hasOptions("major") || request.hasOptions("concentration") || request.hasOptions("minor"))
 			return false;
 		if (request.hasOptions("group") || request.hasOptions("accommodation"))
 			return false;

@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.unitime.timetable.model.CourseDemand;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.FreeTime;
 import org.unitime.timetable.model.Student;
@@ -49,6 +50,7 @@ public abstract class BaseCourseDemand implements Serializable {
 	private String iChangedBy;
 
 	private Student iStudent;
+	private CourseOffering iWaitListSwapWithCourseOffering;
 	private FreeTime iFreeTime;
 	private Set<CourseRequest> iCourseRequests;
 	private Set<StudentEnrollmentMessage> iEnrollmentMessages;
@@ -111,6 +113,9 @@ public abstract class BaseCourseDemand implements Serializable {
 	public Student getStudent() { return iStudent; }
 	public void setStudent(Student student) { iStudent = student; }
 
+	public CourseOffering getWaitListSwapWithCourseOffering() { return iWaitListSwapWithCourseOffering; }
+	public void setWaitListSwapWithCourseOffering(CourseOffering waitListSwapWithCourseOffering) { iWaitListSwapWithCourseOffering = waitListSwapWithCourseOffering; }
+
 	public FreeTime getFreeTime() { return iFreeTime; }
 	public void setFreeTime(FreeTime freeTime) { iFreeTime = freeTime; }
 
@@ -155,6 +160,7 @@ public abstract class BaseCourseDemand implements Serializable {
 			"\n	Student: " + getStudent() +
 			"\n	Timestamp: " + getTimestamp() +
 			"\n	UniqueId: " + getUniqueId() +
+			"\n	WaitListSwapWithCourseOffering: " + getWaitListSwapWithCourseOffering() +
 			"\n	Waitlist: " + getWaitlist() +
 			"\n	WaitlistedTimeStamp: " + getWaitlistedTimeStamp() +
 			"]";

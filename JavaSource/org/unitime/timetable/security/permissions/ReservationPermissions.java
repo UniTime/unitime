@@ -70,7 +70,8 @@ public class ReservationPermissions {
 		public boolean check(UserContext user, InstructionalOffering source) {
 			return !permissionOfferingLockNeededOnlyWhenWaitListing.check(user, source) &&
 					!source.isNotOffered() &&
-					permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerLimitedEdit, DepartmentStatusType.Status.ManagerLimitedEdit);
+					permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerLimitedEdit,
+							source.getManagingDept(), DepartmentStatusType.Status.ManagerLimitedEdit);
 		}
 
 		@Override

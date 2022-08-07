@@ -101,7 +101,7 @@ public class CourseFinderCurricula extends CourseCurriculaTable implements Cours
 	}
 
 	@Override
-	public void onSetValue(RequestedCourse course) {}
+	public void onSetValue(RequestedCourse... course) {}
 
 	@Override
 	public void onGetValue(RequestedCourse course) {}

@@ -154,6 +154,8 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 	    	sessionContext.getUser().setProperty("ClassList.note",classListForm.getNote() ? "1" : "0");
 	    	if (classListForm.getExams() != null)
 	    		sessionContext.getUser().setProperty("ClassList.exams",classListForm.getExams() ? "1" : "0");
+	    	
+	    	sessionContext.getUser().setProperty("ClassList.fundingDepartment",classListForm.getFundingDepartment() ? "1" : "0");	    	
 	    	sessionContext.getUser().setProperty("ClassList.sortBy", classListForm.getSortBy());
 	    	sessionContext.getUser().setProperty("ClassList.filterAssignedRoom", classListForm.getFilterAssignedRoom());		    	
 	    	sessionContext.getUser().setProperty("ClassList.filterInstructor", classListForm.getFilterInstructor());		    	
@@ -170,7 +172,10 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
     	    	
     	if (!sessionContext.hasPermission(Right.Examinations))
     		classListForm.setExams(null);
-    	
+  
+		if (!ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue()) 
+			classListForm.setFundingDepartment(false);
+
     	classListForm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
     	classListForm.setClasses(getClasses(classListForm, WebSolver.getClassAssignmentProxy(request.getSession())));
     	
@@ -265,6 +270,7 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 		form.setSchedulePrintNote("1".equals(sessionContext.getUser().getProperty("ClassList.schedulePrintNote", "1")));
 		form.setNote("1".equals(sessionContext.getUser().getProperty("ClassList.note", "0")));
 	    form.setExams("1".equals(sessionContext.getUser().getProperty("ClassList.exams", "0")));
+	    
 	    if (StudentClassEnrollment.sessionHasEnrollments(sessionContext.getUser().getCurrentAcademicSessionId())) {
 	    	form.setDemandIsVisible(true);
 			form.setDemand("1".equals(sessionContext.getUser().getProperty("ClassList.demand", "1")));
@@ -274,6 +280,7 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 	    }
 		form.setFilterNeedInstructor("1".equals(sessionContext.getUser().getProperty("ClassList.filterNeedInstructor", "0")));
 		form.setIncludeCancelledClasses("1".equals(sessionContext.getUser().getProperty("ClassList.includeCancelledClasses", "1")));
+		form.setFundingDepartment("1".equals(sessionContext.getUser().getProperty("ClassList.fundingDepartment", "0")));
 	}
 	
     public static Set getClasses(ClassListFormInterface form, ClassAssignmentProxy classAssignmentProxy) {
@@ -283,6 +290,7 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 		boolean doFilterManager = form.getFilterManager()!=null && form.getFilterManager().length()>0;
 		Long filterManager = (doFilterManager?Long.valueOf(form.getFilterManager()):null);
 
+		boolean fetchFundingDepartment = form.getFundingDepartment();
         boolean fetchStructure = true;
         boolean fetchCredits = false;//form.getCredit().booleanValue();
         boolean fetchInstructors = false;//form.getInstructor().booleanValue();
@@ -315,7 +323,17 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 				query.append("left join fetch c.assignments as ca ");
 				query.append("left join fetch ca.rooms as car ");
 			}
-			
+
+			/*
+	        if (ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue()) {
+	        	query.append(" and (c.fundingDeptId is not null or c.managingDept in co.subjectArea.department)");
+	        }
+	        */
+
+			/*if (fetchFundingDepartment) {
+				query.append("left join fetch c.fundingDept as fd ");
+
+			}*/
 			if (fetchPreferences) {
 				query.append("left join fetch c.preferences as cp ");
 				query.append("left join fetch ss.preferences as ssp ");
@@ -356,7 +374,7 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 	        		query.append(" and c.managingDept = "+filterManager);
 	        	}
 	        }
-	        
+			
 	        if (!form.getShowCrossListedClasses()) {
 	        	query.append(" and co.isControl = true ");
 	        }

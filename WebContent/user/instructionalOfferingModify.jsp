@@ -166,20 +166,18 @@ function resetAllDisplayFlags(value, baseName) {
 	<TD colspan="2" align="left" class="errorCell"><B><U><loc:message name="errorsMultipleClassSetup"/></U></B><BR>
 	<BLOCKQUOTE><UL><html:messages id="error"><LI>${error}</LI></html:messages></UL></BLOCKQUOTE></TD>
 </TR></logic:messagesPresent>
+<html:hidden property="instructionalMethodEditable"/>
 <logic:notEmpty name="instructionalOfferingModifyForm" property="instructionalMethods">
 	<TR><TD><loc:message name="propertyInstructionalMethod"/></TD>
-		<TD><html:select property="instructionalMethod">
-			<logic:empty name="instructionalOfferingModifyForm" property="instructionalMethodDefault">
-				<html:option value="-1"><loc:message name="selectNoInstructionalMethod"/></html:option>
-			</logic:empty>
-			<logic:notEmpty name="instructionalOfferingModifyForm" property="instructionalMethodDefault">
-				<html:option value="-1"><loc:message name="defaultInstructionalMethod">
-					<bean:write name="instructionalOfferingModifyForm" property="instructionalMethodDefault"/>
-				</loc:message></html:option>
-			</logic:notEmpty>
+	<TD><logic:equal name="instructionalOfferingModifyForm" property="instructionalMethodEditable" value="true">
+		<html:select property="instructionalMethod">
+			<logic:empty name="instructionalOfferingModifyForm" property="instructionalMethodDefault"><html:option value="-1"><loc:message name="selectNoInstructionalMethod"/></html:option></logic:empty>
+			<logic:notEmpty name="instructionalOfferingModifyForm" property="instructionalMethodDefault"><html:option value="-1"><loc:message name="defaultInstructionalMethod"><bean:write name="instructionalOfferingModifyForm" property="instructionalMethodDefault"/></loc:message></html:option></logic:notEmpty>
 			<html:optionsCollection property="instructionalMethods" value="id" label="value"/>
-		</html:select></TD>
-</TR></logic:notEmpty>
+		</html:select></logic:equal>
+		<logic:notEqual name="instructionalOfferingModifyForm" property="instructionalMethodEditable" value="true"><html:hidden property="instructionalMethod"/><bean:write name="instructionalOfferingModifyForm" property="instructionalMethodLabel"/></logic:notEqual>
+	</TD></TR>
+</logic:notEmpty>
 <html:hidden property="instrOffrConfigUnlimitedReadOnly"/>
 <logic:equal name="<%=fN%>" property="instrOffrConfigUnlimitedReadOnly" value="true">
 	<logic:equal name="<%=fN%>" property="instrOffrConfigUnlimited" value="true">
@@ -353,6 +351,7 @@ function resetAllDisplayFlags(value, baseName) {
 				<html:hidden property='<%="mustHaveChildClasses["+ctr+"]"%>'/>
 				<html:hidden property='<%="parentClassIds["+ctr+"]"%>'/>
 				<html:hidden property='<%="readOnlyClasses["+ctr+"]"%>'/>
+				<html:hidden property='<%="readOnlyDatePatterns["+ctr+"]"%>'/>
 				<html:hidden property='<%="enrollments["+ctr+"]"%>'/>
 				<html:hidden property='<%="classCanMoveUp["+ctr+"]"%>'/>
 				<html:hidden property='<%="classCanMoveDown["+ctr+"]"%>'/>
@@ -523,11 +522,11 @@ function resetAllDisplayFlags(value, baseName) {
 					<html:hidden property='<%="departments["+ctr+"]"%>'/>
 			</logic:equal></TD>
 			<TD align="left" valign="top" nowrap>
-				<logic:equal name="<%=fN%>" property='<%="readOnlyClasses["+ctr+"]"%>' value="false">
+				<logic:equal name="<%=fN%>" property='<%="readOnlyDatePatterns["+ctr+"]"%>' value="false">
 					<html:select style="width:100px;" property='<%="datePatterns["+ctr+"]"%>' tabindex="<%=java.lang.Integer.toString(12000 + ctr.intValue())%>">
 						<html:options collection="<%=DatePattern.DATE_PATTERN_LIST_ATTR%>" property="id" labelProperty="value"/>
 				</html:select></logic:equal>
-				<logic:equal name="<%=fN%>" property='<%="readOnlyClasses["+ctr+"]"%>' value="true">
+				<logic:equal name="<%=fN%>" property='<%="readOnlyDatePatterns["+ctr+"]"%>' value="true">
 					<logic:equal name="<%=fN%>" property='<%="datePatterns["+ctr+"]"%>' value=""><loc:message name="dropDefaultDatePattern"/></logic:equal>
 					<logic:iterate scope="request" name="<%=DatePattern.DATE_PATTERN_LIST_ATTR%>" id="dp">
 						<logic:notEqual name="<%=fN%>" property='<%="datePatterns["+ctr+"]"%>' value="">

@@ -483,6 +483,7 @@ public class ClassEditAction extends PreferencesAction {
         if(op.equals("init")) {
 	        frm.setExpectedCapacity(c.getExpectedCapacity());
 	        frm.setDatePattern(c.getDatePattern()==null?Long.valueOf(-1):c.getDatePattern().getUniqueId());
+	        frm.setDatePatternEditable(ApplicationProperty.WaitListCanChangeDatePattern.isTrue() || c.getEnrollment() == 0 || !c.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().effectiveWaitList());
 	        frm.setNbrRooms(c.getNbrRooms());
 	        frm.setNotes(c.getNotes());
 	        frm.setManagingDept(c.getManagingDept().getUniqueId());
@@ -491,6 +492,11 @@ public class ClassEditAction extends PreferencesAction {
 		    frm.setMaxExpectedCapacity(c.getMaxExpectedCapacity());
 		    frm.setRoomRatio(c.getRoomRatio());
 		    frm.setLms(c.getLms() == null ? "" : c.getLms().getLabel());
+	        if (ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue()) {
+	        	frm.setFundingDept(c.getEffectiveFundingDept().getLabel());
+	        } else {
+	        	frm.setFundingDept("");
+	        }
 		    frm.setEnabledForStudentScheduling(c.isEnabledForStudentScheduling());
 		    frm.setDisplayInstructor(c.isDisplayInstructor());
 

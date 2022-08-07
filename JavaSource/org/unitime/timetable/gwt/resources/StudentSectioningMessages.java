@@ -205,6 +205,12 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Position")
 	String colWaitListPosition();
 	
+	@DefaultMessage("WL/Override")
+	String colWaitListAndAllowedOverrides();
+	
+	@DefaultMessage("Preference")
+	String colSchedulingPreference();
+	
 	/* Academic Session Selector messages
 	 */
 	@DefaultMessage("No academic session is selected.")
@@ -704,12 +710,21 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Not assigned.")
 	String courseNotAssigned();
+	
+	@DefaultMessage("To be wait-listed - click this line to configure additional wait-list preferences.")
+	String courseToBeWaitListed();
 
 	@DefaultMessage("Not Enrolled")
 	String courseNotEnrolled();
 
 	@DefaultMessage("Wait-Listed")
 	String courseWaitListed();
+	
+	@DefaultMessage("Wait-Listing")
+	String courseAllowsForWaitListing();
+	
+	@DefaultMessage("Course {0} allows to be wait-listed.")
+	String courseAllowsForWaitListingTitle(String course);
 	
 	@DefaultMessage("No Substitutions")
 	String courseNoSubs();
@@ -1780,6 +1795,9 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("<u>D</u>rop {0}")
 	String buttonQuickDrop(String course);
+	
+	@DefaultMessage("<u>W</u>ait-List {0}")
+	String buttonWaitList(String course);
 
 	@DefaultMessage("Do you want to drop {0} from your schedule?")
 	String confirmQuickDrop(String course);
@@ -2218,6 +2236,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course request is important.")
 	String descriptionRequestImportant();
 	
+	@DefaultMessage("Course request is vital.")
+	String descriptionRequestVital();
+	
 	@DefaultMessage("Course request is not critical.")
 	String descriptionRequestNotCritical();
 	
@@ -2245,6 +2266,12 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Not Requested")
 	String reqStatusNeeded();
 	
+	@DefaultMessage("Overrride Not Needed")
+	String reqStatusNotNeeded();
+
+	@DefaultMessage("Wait-Listed")
+	String reqStatusWaitListed();
+	
 	@DefaultMessage("You are already enrolled in {0}.\nThis course request cannot be modified or deleted.")
 	String enrolled(String course);
 	
@@ -2256,6 +2283,12 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Registration errors were detected, but no override has been requested.")
 	String overrideNotRequested();
+	
+	@DefaultMessage("Enrolled in a course higher in the list of alternatives. Wait-list not active.")
+	String waitListLowPriority();
+	
+	@DefaultMessage("Current enrollment meets the requirements. Wait-list not active.")
+	String waitListRequirementsMet();
 	
 	@DefaultMessage("The following issues have been detected:\n{0}")
 	String requestWarnings(String errors);
@@ -2281,8 +2314,14 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Requested override for {0} has been approved.")
 	String overrideApproved(String course);
 	
+	@DefaultMessage("Requested override for {0} is not needed.")
+	String overrideNotNeeded(String course);
+	
 	@DefaultMessage("An override for the following registration issues has been requested:\n{0}")
 	String requestedWarnings(String errors);
+	
+	@DefaultMessage("Wait-list for {0} is not active.")
+	String waitListInactive(String course);
 	
 	@DefaultMessage("The following approvals have been requested:")
 	String requestedApprovals();
@@ -2416,6 +2455,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("The request to increase the maximum credit hours has been denied.\nYou may not be able to get a full schedule.")
 	String creditStatusDenied();
 	
+	@DefaultMessage("The request to increase the maximum credit hours has been denied.")
+	String creditStatusDeniedShort();
+	
 	@DefaultMessage("You may not be able to get a full schedule.")
 	String creditStatusTooHigh();
 	
@@ -2527,12 +2569,12 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("It is possible to request approvals for all of the above registration errors.\n"+
 			"If you have already discussed these courses with your advisor and were advised to request registration in them, please select <b>Request Approvals</b>. "+
-			"If you aren’t sure, click <b>Close Dialog</b> and consult with your advisor before registering for these courses.")
+			"If you aren\u2019t sure, click <b>Close Dialog</b> and consult with your advisor before registering for these courses.")
 	String messageCanRequestOverridesAll();
 	
 	@DefaultMessage("It is possible to request approvals for some of the above registration errors.\n"+
 			"If you have already discussed these courses with your advisor and were advised to request registration in them, please select <b>Request Approvals</b>. "+
-			"If you aren’t sure, click <b>Close Dialog</b> and consult with your advisor before registering for these courses.")
+			"If you aren\u2019t sure, click <b>Close Dialog</b> and consult with your advisor before registering for these courses.")
 	String messageCanRequestOverridesSome();
 	
 	@DefaultMessage("Show all changes")
@@ -2715,6 +2757,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Important")
 	String opSetImportant();
+	
+	@DefaultMessage("Vital")
+	String opSetVital();
 
 	@DefaultMessage("Not Critical")
 	String opSetNotCritical();
@@ -2767,7 +2812,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("There are unsaved changes on this page. Do you really want to discard these changes?")
 	String queryLeaveAdvisorsCourseRequestsNotSave();
 	
-	@DefaultMessage("Student’s Name:")
+	@DefaultMessage("Student\u2019s Name:")
 	String propStudentName();
 	
 	@DefaultMessage("Email:")
@@ -2824,10 +2869,10 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Exporting...")
 	String advisorCourseRequestsExporting();
 	
-	@DefaultMessage("Advisor’s Signature:     _____________________________________________")
+	@DefaultMessage("Advisor\u2019s Signature:     _____________________________________________")
 	String pdfAdvisorSignature();
 	
-	@DefaultMessage("Student’s Signature:     _____________________________________________")
+	@DefaultMessage("Student\u2019s Signature:     _____________________________________________")
 	String pdfStudentSignature();
 	
 	@DefaultMessage("Date:      _______________")
@@ -2838,6 +2883,18 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("")
 	String pdfCourseNotWaitListed();
+	
+	@DefaultMessage("X")
+	String pdfCourseCritical();
+	
+	@DefaultMessage("X")
+	String pdfCourseVital();
+	
+	@DefaultMessage("X")
+	String pdfCourseImportant();
+
+	@DefaultMessage("")
+	String pdfCourseNotCritical();
 	
 	@DefaultMessage("A<u>d</u>visor Recommendations")
 	String buttonAdvisorCourseRequests();
@@ -3159,4 +3216,231 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("{0} of {1}")
 	String waitListPosition(Integer position, Integer total);
+	
+	@DefaultMessage("Wait-List Preferences")
+	String dialogWaitListedRequestPreferences();
+	
+	@DefaultMessage("Update Preferences")
+	String buttonSubmitWaitListedRequestPreferences();
+	
+	@DefaultMessage("Close Dialog")
+	String buttonCloseWaitListedRequestPreferences();
+	
+	@DefaultMessage("Update wait-list preferences for {0}")
+	String iconWaitListedRequestPreferences(String course);
+	
+	@DefaultMessage("Wait-Listed:")
+	String propWaitListSwapWithWaitListed();
+	
+	@DefaultMessage("New wait-list")
+	String checkWaitListSwapWithNewWaitList();
+	
+	@DefaultMessage("Swap with course:")
+	String propWaitListSwapWithCourseOffering();
+	
+	@DefaultMessage("When a course is selected, it will be automatically swapped with the wait-listed course. This means that it will be only dropped when you can get the wait-listed course instead.")
+	String descWaitListSwapWithCourseOffering();
+	
+	@DefaultMessage("No swap course selected.")
+	String itemWaitListSwapWithNoCourseOffering();
+	
+	@DefaultMessage("Replaces {0}.")
+	String conflictWaitListSwapWithNoCourseOffering(String course);
+	
+	@DefaultMessage("Requires {0}.")
+	String conflictRequiredPreferences(String prefs);
+	
+	@DefaultMessage("Replaces")
+	String colWaitListSwapWithCourseOffering();
+
+	@DefaultMessage("<u>P</u>references")
+	String buttonStudentSchedulingPreferences();
+	
+	@DefaultMessage("Show student scheduling prefernences for the selected academic session.")
+	String hintStudentSchedulingPreferences();
+	
+	@DefaultMessage("Student Scheduling Preferences")
+	String dialogStudentSchedulingPreferences();
+	
+	@DefaultMessage("Class Dates:")
+	String propSchedulingPrefDates();
+	
+	@DefaultMessage("From: ")
+	String propSchedulingPrefDatesFrom();
+	
+	@DefaultMessage("- To: ")
+	String propSchedulingPrefDatesTo();
+	
+	@DefaultMessage("The above dates are optional, and it is also possible to put in just the start or the end date. When provided, UniTime is not allowed to select a class that falls outside of the above dates.")
+	String propSchedulingPrefDatesDescription();
+	
+	@DefaultMessage("Class Modality:")
+	String propSchedulingPrefModality();
+	
+	@DefaultMessage("Prefer Face-to-Face")
+	String itemSchedulingModalityPreferFaceToFace();
+	
+	@DefaultMessage("When possible, UniTime tries to avoid arranged hours and online classes.")
+	String descSchedulingModalityPreferFaceToFace();
+	
+	@DefaultMessage("Prefer Online")
+	String itemSchedulingModalityPreferOnline();
+	
+	@DefaultMessage("When possible, UniTime tries to avoid face-to-face classes.")
+	String descSchedulingModalityPreferOnline();
+	
+	@DefaultMessage("Require Online")
+	String itemSchedulingModalityRequireOnline();
+	
+	@DefaultMessage("UniTime is not allowed to select a class that is not online.")
+	String descSchedulingModalityRequireOnline();
+	
+	@DefaultMessage("No Preference")
+	String itemSchedulingModalityNoPreference();
+	
+	@DefaultMessage("")
+	String descSchedulingModalityNoPreference();
+	
+	@DefaultMessage("Schedule Gaps:")
+	String propSchedulingPrefBackToBack();
+	
+	@DefaultMessage("No Preference")
+	String itemSchedulingBackToBackNoPreference();
+	
+	@DefaultMessage("")
+	String descSchedulingBackToBackNoPreference();
+	
+	@DefaultMessage("Prefer Back-to-Backs")
+	String itemSchedulingBackToBackPrefer();
+	
+	@DefaultMessage("When possible, UniTime tries to avoid gaps in the schedule (dense schedule).")
+	String descSchedulingBackToBackPrefer();
+
+	@DefaultMessage("Avoid Back-to-Backs")
+	String itemSchedulingBackToBackDiscourage();
+	
+	@DefaultMessage("When possible, UniTime tries to avoid back-to-back classes (sparse schedule).")
+	String descSchedulingBackToBackDiscourage();
+
+	@DefaultMessage("<u>S</u>ave")
+	String buttonSchedulingPrefApply();
+	
+	@DefaultMessage("<u>C</u>lose")
+	String buttonSchedulingPrefClose();
+	
+	@DefaultMessage("Failed to update preferences: {0}")
+	String failedToUpdatePreferences(String reason);
+	
+	@DefaultMessage("Failed to load preferences: {0}")
+	String failedToLoadPreferences(String reason);
+	
+	@DefaultMessage("Student scheduling preferences have been updated.")
+	String infoSchedulingPreferencesUpdated();
+	
+	@DefaultMessage("From {0}")
+	String schedulingPrefClassesFrom(String date);
+	
+	@DefaultMessage("To {0}")
+	String schedulingPrefClassesTo(String date);
+	
+	@DefaultMessage("Between {0} and {1}")
+	String schedulingPrefClassesBetween(String fromDate, String toDate);
+
+	@DefaultMessage("Together with other registration changes, the vital course {0} will be dropped. This may prohibit progress towards degree. Please consult with your academic advisor. Do you want to proceed?")
+	String confirmEnrollmentVitalCourseDrop(String course);
+	
+	@DefaultMessage("Together with other registration changes, the important course {0} will be dropped. This may prohibit progress towards degree. Please consult with your academic advisor. Do you want to proceed?")
+	String confirmEnrollmentImportantCourseDrop(String course);
+
+	@DefaultMessage("Missing vital course {0}.")
+	String advMessageMissingVitalCourse(String course);
+	
+	@DefaultMessage("Missing vital course {0} and its alternatives.")
+	String advMessageMissingVitalCourseWithAlts(String course);
+	
+	@DefaultMessage("Missing vital course {0}, but has alternative(s).")
+	String advMessageMissingVitalCourseHasAlts(String course);
+	
+	@DefaultMessage("Not-enrolled vital course {0} or its alternatives.")
+	String advMessageNotEnrolledVitalCourseWithAlts(String course);
+	
+	@DefaultMessage("Not-enrolled vital course {0}.")
+	String advMessageNotEnrolledVitalCourse(String course);
+
+	@DefaultMessage("Missing {0} vital course(s) and {1} other primary course(s).")
+	String hintAdvisedMissingVitalOther(int vital, int other);
+	
+	@DefaultMessage("Missing {0} vital course(s).")
+	String hintAdvisedMissingVital(int vital);
+
+	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> vt</sup></span> + {1}")
+	@DoNotTranslate
+	String advisedMissingVitalOther(int vital, int other);
+	
+	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> vital</sup></span>")
+	@DoNotTranslate
+	String advisedMissingVital(int vital);
+	
+	@DefaultMessage("Not enrolled {0} vital course(s) and {1} other primary course(s).")
+	String hintAdvisedNotAssignedVitalOther(int vital, int other);
+	
+	@DefaultMessage("Not enrolled {0} vital course(s).")
+	String hintAdvisedNotAssignedVital(int vital);
+	
+	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> vt</sup></span> + {1}")
+	@DoNotTranslate
+	String advisedNotAssignedVitalOther(int vital, int other);
+	
+	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> vital</sup></span>")
+	@DoNotTranslate
+	String advisedNotAssignedVital(int vital);
+	
+	@DefaultMessage("Missing important course {0}.")
+	String advMessageMissingImportantCourse(String course);
+	
+	@DefaultMessage("Missing important course {0} and its alternatives.")
+	String advMessageMissingImportantCourseWithAlts(String course);
+	
+	@DefaultMessage("Missing important course {0}, but has alternative(s).")
+	String advMessageMissingImportantCourseHasAlts(String course);
+	
+	@DefaultMessage("Not-enrolled important course {0} or its alternatives.")
+	String advMessageNotEnrolledImportantCourseWithAlts(String course);
+	
+	@DefaultMessage("Not-enrolled important course {0}.")
+	String advMessageNotEnrolledImportantCourse(String course);
+
+	@DefaultMessage("Missing {0} important course(s) and {1} other primary course(s).")
+	String hintAdvisedMissingImportantOther(int important, int other);
+	
+	@DefaultMessage("Missing {0} important course(s).")
+	String hintAdvisedMissingImportant(int important);
+
+	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> im</sup></span> + {1}")
+	@DoNotTranslate
+	String advisedMissingImportantOther(int important, int other);
+	
+	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> important</sup></span>")
+	@DoNotTranslate
+	String advisedMissingImportant(int important);
+	
+	@DefaultMessage("Not enrolled {0} important course(s) and {1} other primary course(s).")
+	String hintAdvisedNotAssignedImportantOther(int important, int other);
+	
+	@DefaultMessage("Not enrolled {0} important course(s).")
+	String hintAdvisedNotAssignedImportant(int important);
+	
+	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> im</sup></span> + {1}")
+	@DoNotTranslate
+	String advisedNotAssignedImportantOther(int important, int other);
+	
+	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> important</sup></span>")
+	@DoNotTranslate
+	String advisedNotAssignedImportant(int important);
+	
+	@DefaultMessage("You are trying to wait-list for a different section of {0} without indicating which section(s) you need. The wait-list for {0} will not be active. Do you want to proceed?")
+    String confirmSectionSwapNoPrefs(String course);
+	
+	@DefaultMessage("Max Credit")
+	String tabRequestNoteMaxCredit();
 }

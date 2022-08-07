@@ -22,6 +22,8 @@
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.webutil.WebInstructionalOfferingTableBuilder" %>
+<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
+<%@page import="org.unitime.timetable.defaults.ApplicationProperty"%>
 <%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
 <%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
 <%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
@@ -109,6 +111,15 @@
 							<loc:message name="columnManager"/>
 						</TD>
 					</TR>
+					<% if (ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue()) { %>
+						<TR>
+							<TD></TD>
+							<TD colspan="2">
+								<html:checkbox property="fundingDepartment" />
+								<loc:message name="columnFundingDepartment"/>
+							</TD>
+						</TR>
+					<% } %>
 					<TR>
 						<TD></TD>
 						<TD colspan="2">

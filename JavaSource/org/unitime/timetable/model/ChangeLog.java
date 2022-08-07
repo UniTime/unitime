@@ -172,7 +172,14 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
                 return;
         	}
             String userId = context.getUser().getTrueExternalUserId();
-        	Session session = (context.getUser().getCurrentAuthority() == null ? null : SessionDAO.getInstance().get((Long)context.getUser().getCurrentAuthority().getAcademicSession().getQualifierId()));
+        	Session session = null;
+        	if (dept != null) {
+        		session = dept.getSession();
+        	} else if (subjArea != null) {
+            	session = subjArea.getSession();
+        	} else {
+        		session = (context.getUser().getCurrentAuthority() == null ? null : SessionDAO.getInstance().get((Long)context.getUser().getCurrentAuthority().getAcademicSession().getQualifierId()));
+        	}
             if (session == null) {
                 Debug.warning("Unable to add change log -- no academic session.");
                 return;

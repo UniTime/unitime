@@ -174,6 +174,10 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      * @return - a String of HTML to display the Preference
      */
     
+    public Set getDatePatternPreferences(){
+    	return getPreferences(DatePatternPref.class);
+    }
+    
     private String htmlForPrefs(Assignment assignment, Set prefList, boolean timeVertical, boolean gridAsText, String timeGridSize, String nameFormat) {
     	return htmlForPrefs(assignment, prefList, timeVertical, gridAsText, timeGridSize, nameFormat, ApplicationProperty.PreferencesHighlighClassPreferences.isTrue());
     }

@@ -53,7 +53,7 @@ public interface CourseFinder extends HasValue<RequestedCourse>, HasSelectionHan
 	public interface CourseFinderCourseDetails<T, E> extends TakesValue<T>, IsWidget, HasEnabled {
 		public void setDataProvider(DataProvider<T, E> provider);
 		public String getName();
-		public void onSetValue(RequestedCourse course);
+		public void onSetValue(RequestedCourse... course);
 		public void onGetValue(RequestedCourse course);
 	}
 	

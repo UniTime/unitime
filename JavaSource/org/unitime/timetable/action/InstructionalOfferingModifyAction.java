@@ -297,6 +297,7 @@ public class InstructionalOfferingModifyAction extends Action {
         frm.setEditSnapshotLimits(ApplicationProperty.ClassSetupEditSnapshotLimits.isTrue() && io.getSnapshotLimitDate() != null && sessionContext.hasPermission(Right.MultipleClassSetupSnapshotLimits));
         frm.setInstructionalMethod(ioc.getInstructionalMethod() == null ? -1l : ioc.getInstructionalMethod().getUniqueId());
         frm.setInstructionalMethodDefault(io.getSession().getDefaultInstructionalMethod() == null ? null : io.getSession().getDefaultInstructionalMethod().getLabel());
+        frm.setInstructionalMethodEditable(ApplicationProperty.WaitListCanChangeInstructionalMethod.isTrue() || !ioc.getInstructionalOffering().effectiveWaitList() || ioc.getEnrollment() == 0);
 		frm.setDisplayLms(Boolean.valueOf(isLmsInfoDefined()));
 
         String name = io.getCourseNameWithTitle();
@@ -352,7 +353,10 @@ public class InstructionalOfferingModifyAction extends Action {
 	    		if (readOnlyClass) frm.setInstrOffrConfigUnlimitedReadOnly(true);
 				frm.addToClasses(cls, readOnlyClass && !cls.isCancelled(), indent, proxy, UserProperty.NameFormat.get(sessionContext.getUser()),
 						sessionContext.hasPermission(cls, Right.ClassDelete),
-						sessionContext.hasPermission(cls, Right.ClassCancel));
+						sessionContext.hasPermission(cls, Right.ClassCancel),
+						(readOnlyClass && !cls.isCancelled()) || (
+								ApplicationProperty.WaitListCanChangeDatePattern.isFalse() && cls.getEnrollment() != null && cls.getEnrollment() > 0 && cls.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().effectiveWaitList() 
+						));
 	    		loadClasses(frm, cls.getChildClasses(), Boolean.valueOf(true), indent + "&nbsp;&nbsp;&nbsp;&nbsp;", proxy);
 	    	}
     	}

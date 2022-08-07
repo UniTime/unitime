@@ -109,6 +109,7 @@ import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.model.XTime;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest.XPreference;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 import org.unitime.timetable.util.Constants;
@@ -147,6 +148,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	private XOffering iFailedOffering;
 	private XCourseId iFailedCourseId;
 	private XEnrollment iFailedEnrollment;
+	private XEnrollment iDropEnrollment;
 	private SectioningException iFailure;
 	private XStudent iStudent;
 	private CourseUrlProvider iCourseUrlProvider = null;
@@ -188,6 +190,12 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		return this;
 	}
 	
+	public StudentEmail dropEnrollment(XEnrollment dropEnrollment) {
+		iDropEnrollment = dropEnrollment;
+		return this;
+	}
+
+	
 	public StudentEmail overridePermissions(boolean courseRequests, boolean classSchedule, boolean advisorRequests) {
 		iPermisionCheck = false;
 		iIncludeCourseRequests = courseRequests;
@@ -227,6 +235,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	public XOffering getFailedOffering() { return iFailedOffering; }
 	public XCourse getFailedCourse() { return (iFailedOffering == null || iFailedCourseId == null ? null : iFailedOffering.getCourse(iFailedCourseId)); }
 	
+	public XEnrollment getDropEnrollment() { return iDropEnrollment; }
+	
 	public XStudent getStudent() { return iStudent; }
 	public void setStudent(XStudent student) { iStudent = student; }
 
@@ -249,6 +259,12 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
 				for (XSection section: getOldOffering().getSections(getOldEnrollment()))
 					enrollment.addSection(OnlineSectioningHelper.toProto(section, getOldEnrollment()));
+				if (getDropEnrollment() != null && !getDropEnrollment().getCourseId().equals(getOldCourse() == null ? null : getOldCourse().getCourseId())) {
+					XOffering dropOffering = server.getOffering(getDropEnrollment().getOfferingId());
+					if (dropOffering != null)
+						for (XSection section: dropOffering.getSections(getDropEnrollment()))
+							enrollment.addSection(OnlineSectioningHelper.toProto(section, getDropEnrollment()));
+				}
 				action.addEnrollment(enrollment);
 			} else if (getOldStudent() != null) {
 				OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
@@ -260,6 +276,14 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 							enrollment.addSection(OnlineSectioningHelper.toProto(section, e));
 				}
 				action.addEnrollment(enrollment);
+			} else if (getDropEnrollment() != null) {
+				OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
+				enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
+				XOffering dropOffering = server.getOffering(getDropEnrollment().getOfferingId());
+				if (dropOffering != null)
+					for (XSection section: dropOffering.getSections(getDropEnrollment()))
+						enrollment.addSection(OnlineSectioningHelper.toProto(section, getDropEnrollment()));
+				action.addEnrollment(enrollment);
 			}
 			
 			if (getFailedEnrollment() != null) {
@@ -269,7 +293,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					enrollment.addSection(OnlineSectioningHelper.toProto(section, getFailedEnrollment()));
 				action.addEnrollment(enrollment);
 			}
-			
+						
 			final XStudent student = server.getStudent(getStudentId());
 			if (student == null) return false;
 			setStudent(student);
@@ -325,6 +349,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						server.update(student, false);
 					}
 				}
+				
+				if (iSourceAction != null)
+					helper.logOption("source-action", iSourceAction);
 				
 				if (emailEnabled) {
 					final String html = generateMessage(dbStudent, server, helper);
@@ -535,24 +562,26 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 							student.markFailedWaitList(iFailedCourseId);
 							if (failureMessage != null) {
 								XCourseRequest cr = student.getRequestForCourse(iFailedCourseId.getCourseId());
-								cr.setEnrollmentMessage(failureMessage);
-								CourseDemand cd = CourseDemandDAO.getInstance().get(cr.getRequestId());
-								if (cd != null) {
-									if (cd.getEnrollmentMessages() != null)
-										for (Iterator<StudentEnrollmentMessage> i = cd.getEnrollmentMessages().iterator(); i.hasNext(); ) {
-											StudentEnrollmentMessage message = i.next();
-											helper.getHibSession().delete(message);
-											i.remove();
-										}
-									StudentEnrollmentMessage m = new StudentEnrollmentMessage();
-									m.setCourseDemand(cd);
-									m.setLevel(0);
-									m.setType(0);
-									m.setTimestamp(ts);
-									m.setMessage(failureMessage);
-									m.setOrder(0);
-									cd.getEnrollmentMessages().add(m);
-									helper.getHibSession().save(m);
+								if (cr != null) {
+									cr.setEnrollmentMessage(failureMessage);
+									CourseDemand cd = CourseDemandDAO.getInstance().get(cr.getRequestId());
+									if (cd != null) {
+										if (cd.getEnrollmentMessages() != null)
+											for (Iterator<StudentEnrollmentMessage> i = cd.getEnrollmentMessages().iterator(); i.hasNext(); ) {
+												StudentEnrollmentMessage message = i.next();
+												helper.getHibSession().delete(message);
+												i.remove();
+											}
+										StudentEnrollmentMessage m = new StudentEnrollmentMessage();
+										m.setCourseDemand(cd);
+										m.setLevel(0);
+										m.setType(0);
+										m.setTimestamp(ts);
+										m.setMessage(failureMessage);
+										m.setOrder(0);
+										cd.getEnrollmentMessages().add(m);
+										helper.getHibSession().save(m);
+									}
 								}
 							}
 						}
@@ -812,6 +841,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			XCourseRequest newRequest = null;
 			XOffering newOffering = null;
 			XCourse course = (getFailedEnrollment() != null ? getFailedOffering().getCourse(getFailedEnrollment().getCourseId()) : getFailedCourse());
+			if (course == null)
+				course = (getFailedCourse() == null ? getFailedOffering().getControllingCourse() : getFailedCourse());
 			for (XRequest r: getStudent().getRequests()) {
 				if (r instanceof XCourseRequest && (
 						(getFailedCourse() == null && ((XCourseRequest)r).getCourseIdByOfferingId(getFailedOffering().getOfferingId()) != null) ||
@@ -828,6 +859,22 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			setSubject(MSG.emailEnrollmentFailed(course.getSubjectArea(), course.getCourseNumber(), iFailure == null ? null : iFailure.getMessage()));
 			if (newRequest != null && newRequest.isWaitlist())
 				setSubject(MSG.emailEnrollmentFailedWaitListed(course.getSubjectArea(), course.getCourseNumber()));
+			
+			if (getDropEnrollment() != null && !getDropEnrollment().getCourseId().equals(getFailedCourse().getCourseId())) {
+				XOffering dropOffering = server.getOffering(getDropEnrollment().getOfferingId());
+				if (dropOffering != null) {
+					XCourse dropCourse = dropOffering.getCourse(getDropEnrollment().getCourseId());
+					XCourseRequest dropRequest = getStudent().getRequestForCourse(dropCourse.getCourseId());
+					for (XSection old: dropOffering.getSections(getDropEnrollment())) {
+						XSubpart subpart = dropOffering.getSubpart(old.getSubpartId());
+						XSection parent = (old.getParentId() == null ? null : dropOffering.getSection(old.getParentId()));
+						String requires = null;
+						if (parent != null)
+							requires = parent.getName(dropCourse.getCourseId());
+						listOfChanges.add(new TableSectionDeletedLine(dropRequest, dropCourse, subpart, old, requires, getCourseUrl(session, dropCourse)));
+					}
+				}
+			}
 			
 			if (getFailedEnrollment() != null && (newRequest == null || newRequest.getEnrollment() == null)) {
 				for (XSection section: getFailedOffering().getSections(getFailedEnrollment())) {
@@ -910,19 +957,39 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			XCourseRequest newRequest = null;
 			XOffering newOffering = null;
 			XCourse course = (getOldEnrollment() != null ? getOldOffering().getCourse(getOldEnrollment().getCourseId()) : getOldCourse());
+			XCourse oldCourse = course;
 			for (XRequest r: getStudent().getRequests()) {
 				if (r instanceof XCourseRequest && (
 						(getOldCourse() == null && ((XCourseRequest)r).getCourseIdByOfferingId(getOldOffering().getOfferingId()) != null) ||
 						(getOldCourse() != null && ((XCourseRequest)r).hasCourse(getOldCourse().getCourseId()))
 						)) {
 					newRequest = (XCourseRequest)r;
-					newOffering = server.getOffering(getOldOffering().getOfferingId());
-					if (newRequest.getEnrollment() != null)
+					if (newRequest.getEnrollment() != null) {
+						newOffering = server.getOffering(newRequest.getEnrollment().getOfferingId());
 						course = newOffering.getCourse(newRequest.getEnrollment().getCourseId());
+					} else {
+						newOffering = server.getOffering(getOldOffering().getOfferingId());
+					}
 					break;
 				}
 			}
 			input.put("changedCourse", course);
+			
+			if (getDropEnrollment() != null && !course.equals(getDropEnrollment())) {
+				XOffering dropOffering = server.getOffering(getDropEnrollment().getOfferingId());
+				if (dropOffering != null) {
+					XCourse dropCourse = dropOffering.getCourse(getDropEnrollment().getCourseId());
+					XCourseRequest dropRequest = getStudent().getRequestForCourse(dropCourse.getCourseId());
+					for (XSection old: dropOffering.getSections(getDropEnrollment())) {
+						XSubpart subpart = dropOffering.getSubpart(old.getSubpartId());
+						XSection parent = (old.getParentId() == null ? null : dropOffering.getSection(old.getParentId()));
+						String requires = null;
+						if (parent != null)
+							requires = parent.getName(dropCourse.getCourseId());
+						listOfChanges.add(new TableSectionDeletedLine(dropRequest, dropCourse, subpart, old, requires, getCourseUrl(session, dropCourse)));
+					}
+				}
+			}
 
 			if (getOldEnrollment() == null && newRequest != null && newRequest.getEnrollment() != null) {
 				setSubject(MSG.emailEnrollmentNew(course.getSubjectArea(), course.getCourseNumber()));
@@ -941,7 +1008,11 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				}
 				input.put("changes", listOfChanges);
 			} else if (getOldEnrollment() != null && newRequest != null && newRequest.getEnrollment() != null) {
-				setSubject(MSG.emailEnrollmentChanged(course.getSubjectArea(), course.getCourseNumber()));
+				if (oldCourse.equals(course)) {
+					setSubject(MSG.emailEnrollmentChanged(course.getSubjectArea(), course.getCourseNumber()));
+				} else { 
+					setSubject(MSG.emailEnrollmentNew(course.getSubjectArea(), course.getCourseNumber()));
+				}
 
 				String consent = consent(server, newRequest.getEnrollment());
 				sections: for (XSection section: newOffering.getSections(newRequest.getEnrollment())) {
@@ -987,8 +1058,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					XSection parent = (old.getParentId() == null ? null : getOldOffering().getSection(old.getParentId()));
 					String requires = null;
 					if (parent != null)
-						requires = parent.getName(course.getCourseId());
-					listOfChanges.add(new TableSectionDeletedLine(newRequest, course, subpart, old, requires, getCourseUrl(session, course)));
+						requires = parent.getName(oldCourse.getCourseId());
+					listOfChanges.add(new TableSectionDeletedLine(newRequest, oldCourse, subpart, old, requires, getCourseUrl(session, course)));
 				}
 
 				input.put("changes", listOfChanges);
@@ -1002,6 +1073,17 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 							newRequest.isWaitlist() ? MSG.emailCourseWaitListed() : MSG.emailCourseNotEnrolled()));
 				} else if (newRequest == null && course.getConsentLabel() != null) {
 					input.put("changeMessage", MSG.emailConsentRejected(course.getConsentLabel().toLowerCase()));
+				}
+				if (getOldOffering() != null && getOldEnrollment() != null) {
+					for (XSection old: getOldOffering().getSections(getOldEnrollment())) {
+						XSubpart subpart = getOldOffering().getSubpart(old.getSubpartId());
+						XSection parent = (old.getParentId() == null ? null : getOldOffering().getSection(old.getParentId()));
+						String requires = null;
+						if (parent != null)
+							requires = parent.getName(course.getCourseId());
+						listOfChanges.add(new TableSectionDeletedLine(newRequest, course, subpart, old, requires, getCourseUrl(session, course)));
+					}
+					input.put("changes", listOfChanges);
 				}
 			}
 		} else if (getOldStudent() != null && !getOldStudent().getRequests().isEmpty()) {
@@ -1233,6 +1315,14 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 							icon = "action_check.png";
 							iconText = ((msg == null ? "" : MSG.requestWarnings(msg) + "\n\n") + MSG.overrideApproved(rc.getCourseName()));
 							break;
+						case OVERRIDE_NOT_NEEDED:
+							icon = "action_check_gray.png";
+							iconText = ((msg == null ? "" : MSG.requestWarnings(msg) + "\n\n") + MSG.overrideNotNeeded(rc.getCourseName()));
+							break;
+						case WAITLIST_INACTIVE:
+							icon = "action_check_gray.png";
+							iconText = ((msg == null ? "" : MSG.requestWarnings(msg) + "\n\n") + MSG.waitListInactive(rc.getCourseName()));
+							break;
 						default:
 							if (check.isError(rc.getCourseName()))
 								icon = "stop.png";
@@ -1260,9 +1350,15 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						case OVERRIDE_CANCELLED: status = MSG.reqStatusCancelled(); break;
 						case OVERRIDE_PENDING: status = MSG.reqStatusPending(); break;
 						case OVERRIDE_REJECTED: status = MSG.reqStatusRejected(); break;
+						case OVERRIDE_NOT_NEEDED: status = MSG.reqStatusNotNeeded(); break;
 						}
 					}
-					if (status.isEmpty()) status = MSG.reqStatusRegistered();
+					if (status.isEmpty()) {
+						if (request.isWaitList())
+							status = MSG.reqStatusWaitListed();
+						else
+							status = MSG.reqStatusRegistered();
+					}
 					if (prefs != null) courseRequests.hasPref = true;
 					String credit = (rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : "");
 					String note = null;
@@ -1352,6 +1448,14 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 							icon = "action_check.png";
 							iconText = ((msg == null ? "" : MSG.requestWarnings(msg) + "\n\n") + MSG.overrideApproved(rc.getCourseName()));
 							break;
+						case OVERRIDE_NOT_NEEDED:
+							icon = "action_check_gray.png";
+							iconText = ((msg == null ? "" : MSG.requestWarnings(msg) + "\n\n") + MSG.overrideNotNeeded(rc.getCourseName()));
+							break;
+						case WAITLIST_INACTIVE:
+							icon = "action_check_gray.png";
+							iconText = ((msg == null ? "" : MSG.requestWarnings(msg) + "\n\n") + MSG.waitListInactive(rc.getCourseName()));
+							break;
 						default:
 							if (check.isError(rc.getCourseName()))
 								icon = "stop.png";
@@ -1379,6 +1483,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						case OVERRIDE_CANCELLED: status = MSG.reqStatusCancelled(); break;
 						case OVERRIDE_PENDING: status = MSG.reqStatusPending(); break;
 						case OVERRIDE_REJECTED: status = MSG.reqStatusRejected(); break;
+						case OVERRIDE_NOT_NEEDED: status = MSG.reqStatusNotNeeded(); break;
 						}
 					}
 					if (status.isEmpty()) status = MSG.reqStatusRegistered();
@@ -1693,7 +1798,13 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					if (!getStudent().canAssign(cr, wlMode)) continue;
 					if (!cr.isWaitlist(wlMode)) continue;
 					XCourse course = server.getCourse(cr.getCourseIds().get(0).getCourseId());
-					listOfClasses.add(new TableCourseLine(cr, course, getCourseUrl(session, course), wlMode == WaitListMode.WaitList));
+					XCourse swapCourse = null;
+					if (cr.getWaitListSwapWithCourseOffering() != null && wlMode == WaitListMode.WaitList && cr.isWaitlist(wlMode)) {
+						XCourseRequest swap = getStudent().getRequestForCourse(cr.getWaitListSwapWithCourseOffering().getCourseId());
+						if (swap != null && swap.getEnrollment() != null && swap.getEnrollment().getCourseId().equals(cr.getWaitListSwapWithCourseOffering().getCourseId()))
+							swapCourse = server.getCourse(swap.getEnrollment().getCourseId());
+					}
+					listOfClasses.add(new TableCourseLine(cr, course, getCourseUrl(session, course), wlMode == WaitListMode.WaitList, swapCourse));
 				} else {
 					XOffering offering = server.getOffering(enrollment.getOfferingId());
 					XCourse course = offering.getCourse(enrollment.getCourseId());
@@ -1708,6 +1819,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 							requires = consent; consent = null;
 						}
 						listOfClasses.add(new TableSectionLine(cr, course, subpart, section, requires, getCourseUrl(session, course)));
+					}
+					if (cr.isWaitlist(wlMode) && getStudent().canAssign(cr, wlMode) && enrollment.equals(cr.getWaitListSwapWithCourseOffering()) && !cr.isRequired(enrollment, offering)) {
+						listOfClasses.add(new TableCourseLine(cr, course, getCourseUrl(session, course), true, null));
 					}
 				}
 			}
@@ -2135,6 +2249,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		public void setTable(Table table);
 		public boolean isLast();
 		public boolean isFirst();
+		public boolean isWaitList();
 	}
 	
 	public static class TableCourseLine implements TableLine {
@@ -2143,16 +2258,18 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		protected Table iTable;
 		protected String iUrl;
 		protected boolean iWaitListEnabled;
+		protected XCourse iSwapCourse;
 		
-		public TableCourseLine(XCourseRequest request, XCourse course, URL url, boolean waitlistEnabled) {
+		public TableCourseLine(XCourseRequest request, XCourse course, URL url, boolean waitlistEnabled, XCourse swapCourse) {
 			iRequest = request;
 			iCourse = course;
 			iUrl = (url == null ? null : url.toString());
 			iWaitListEnabled = waitlistEnabled;
+			iSwapCourse = swapCourse;
 		}
 		
 		public TableCourseLine(XCourseRequest request, XCourse course, URL url) {
-			this(request, course, url, false);
+			this(request, course, url, false, null);
 		}
 
 		public XRequest getRequest() { return iRequest; }
@@ -2181,11 +2298,26 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		
 		@Override
 		public String getCredit() { return null; }
+		
+		@Override
+		public boolean isWaitList() { return iRequest.isWaitlist() && iWaitListEnabled && iRequest.getWaitListedTimeStamp() != null; }
 
 		@Override
 		public String getNote() {
 			if (iRequest.isWaitlist() && iWaitListEnabled && iRequest.getWaitListedTimeStamp() != null) {
 				String note = MSG.conflictWaitListed(sTimeStampFormat.format(iRequest.getWaitListedTimeStamp()));
+				if (iSwapCourse != null)
+					note += " " + MSG.conflictWaitListSwapWithNoCourseOffering(iSwapCourse.getCourseName());
+				List<XPreference> pref = iRequest.getPreferences(iCourse);
+				if (pref != null) {
+					Set<String> prefs = new TreeSet<String>();
+					for (XPreference p: pref) {
+						if (p.isRequired())
+							prefs.add(p.getLabel());
+					}
+					if (!prefs.isEmpty())
+						note += " " + MSG.conflictRequiredPreferences(StudentEmail.toString(prefs));
+				}
 				Integer status = iRequest.getOverrideStatus(getCourse());
 				if (status == null) {
 				} else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.APPROVED.ordinal()) {
@@ -2198,6 +2330,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					note += " " + MSG.overrideNotRequested();
 				} else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.PENDING.ordinal()) {
 					note += " " + MSG.overridePending(iCourse.getCourseName());
+				} else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.NOT_NEEDED.ordinal()) {
+					note += " " + MSG.overrideNotNeeded(iCourse.getCourseName());
 				}
 				return note;
 			}
@@ -2341,6 +2475,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 
 		@Override
 		public String getDate() { return getTime().getDatePatternName(); }
+		
+		@Override
+		public boolean isWaitList() { return false; }
 	}
 	
 	public static class TableLineFreeTime implements TableLine {
@@ -2420,6 +2557,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		
 		@Override
 		public String getUrl() { return null; }
+		
+		@Override
+		public boolean isWaitList() { return false; }
 	}
 	
 	public static class TableSectionDeletedLine extends TableSectionLine {

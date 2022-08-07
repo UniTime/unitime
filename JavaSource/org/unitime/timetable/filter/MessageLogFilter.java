@@ -20,6 +20,8 @@
 package org.unitime.timetable.filter;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -37,9 +39,16 @@ import org.unitime.timetable.security.UserContext;
  * @author Tomas Muller
  */
 public class MessageLogFilter implements Filter {
+	private String iHost = null;
 	
 	@Override
 	public void init(FilterConfig config) throws ServletException {
+		try {
+			iHost = InetAddress.getLocalHost().getHostName();
+			if (iHost.indexOf('.') > 0)
+				iHost = iHost.substring(0, iHost.indexOf('.'));
+		} catch (UnknownHostException e) { 
+		}
 	}
 
 	@Override
@@ -53,41 +62,33 @@ public class MessageLogFilter implements Filter {
 		return null;
 	}
 	
-	private int ndcPush() {
-		int count = 0;
+	private void populateThreadContext() {
 		try {
 			UserContext user = getUser();
 			if (user != null) {
-				ThreadContext.push("uid:"+ user.getTrueExternalUserId()); count++;
+				ThreadContext.push("uid:"+ user.getTrueExternalUserId());
 				if (user.getCurrentAuthority() != null) {
-					ThreadContext.push("role:"+ user.getCurrentAuthority().getRole()); count++;
+					ThreadContext.push("role:"+ user.getCurrentAuthority().getRole());
 					Long sessionId = user.getCurrentAcademicSessionId();
 					if (sessionId != null) {
-						ThreadContext.push("sid:"+ sessionId); count++;
+						ThreadContext.push("sid:"+ sessionId);
 					}
 				}
 			}
+			if (iHost != null)
+				ThreadContext.push("host:"+ iHost);
 		} catch (Exception e) {}
-		return count;
 	}
 	
-	private void ndcPop(int count) {
-		for (int i = 0; i < count; i++)
-			ThreadContext.pop();
-	}
-
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ServletException, IOException {
-		int count = ndcPush();
-
 		try {
+			populateThreadContext();
 			
 			chain.doFilter(request,response);
-			
 		} finally {
-			ndcPop(count);
+			ThreadContext.removeStack();
 		}
-		
 	}
 
 }

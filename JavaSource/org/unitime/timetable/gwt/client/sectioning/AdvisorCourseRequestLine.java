@@ -102,9 +102,11 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 	private ImageButton iDelete;
 	private UniTimeTextBox iCredit;
 	private CheckBox iWaitList;
+	private CheckBox iCritical;
 	private WaitListMode iWaitListMode = WaitListMode.None;
 	private TextArea iNotes;
 	private Timer iTimer;
+	private Integer iCriticalCheck = null;
 	
 	public AdvisorCourseRequestLine(StudentSectioningContext context, int priority, boolean alternate, Validator<CourseSelection> validator, SpecialRegistrationContext specreg) {
 		iP = new P("unitime-AdvisorCourseRequestLine");
@@ -187,9 +189,22 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 		});
 		
 		if (!alternate) {
+			iCritical = new CheckBox(); iCritical.addStyleName("critical");
+			iCritical.setEnabled(false);
+			box.addCourseSelectionHandler(new CourseSelectionHandler() {
+				@Override
+				public void onCourseSelection(CourseSelectionEvent event) {
+					iCritical.setEnabled(event.getValue() != null && event.getValue().hasCourseId());
+					if (event.getValue() == null || !event.getValue().hasCourseId())
+						iCritical.setValue(false);
+				}
+			});
+		}
+		
+		if (!alternate) {
 			iWaitList = new CheckBox(); iWaitList.addStyleName("waitlist");
 			iWaitList.setEnabled(false);
-			iNotes.addStyleName("notes-with-waitlist");
+			iNotes.addStyleName("notes-with-critical-and-waitlist");
 			box.addCourseSelectionHandler(new CourseSelectionHandler() {
 				@Override
 				public void onCourseSelection(CourseSelectionEvent event) {
@@ -212,15 +227,19 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 	public void insert(FlexTable table, int row) {
 		table.setWidget(row, 0, iP);
 		table.getFlexCellFormatter().setColSpan(row, 0, 2);
+		table.getFlexCellFormatter().getElement(row, 0).getStyle().setProperty("max-width", 400, Unit.PX);
 		table.setWidget(row, 1, iCredit);
 		table.getFlexCellFormatter().getElement(row, 1).getStyle().setWidth(45, Unit.PX);
 		table.setWidget(row, 2, iNotes);
-		table.getFlexCellFormatter().setColSpan(row, 2, 2);
+		table.getFlexCellFormatter().setColSpan(row, 2, 3);
 		if (iWaitList != null) {
 			table.getFlexCellFormatter().setColSpan(row, 2, 1);
-			table.setWidget(row, 3, iWaitList);
-			table.setWidget(row, 4, iButtons);
-			table.getFlexCellFormatter().getElement(row, 4).getStyle().setWidth(75, Unit.PX);
+			table.setWidget(row, 3, iCritical);
+			table.setWidget(row, 4, iWaitList);
+			table.setWidget(row, 5, iButtons);
+			table.getFlexCellFormatter().getElement(row, 3).getStyle().setProperty("max-width", 25, Unit.PX);
+			table.getFlexCellFormatter().getElement(row, 4).getStyle().setProperty("max-width", 25, Unit.PX);
+			table.getFlexCellFormatter().getElement(row, 5).getStyle().setWidth(75, Unit.PX);
 		} else {
 			table.setWidget(row, 3, iButtons);
 			table.getFlexCellFormatter().getElement(row, 3).getStyle().setWidth(75, Unit.PX);
@@ -231,12 +250,54 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 		iWaitListMode = wlMode;
 		if (iWaitList != null) {
 			iWaitList.setVisible(iWaitListMode == WaitListMode.WaitList || iWaitListMode == WaitListMode.NoSubs);
-			if (iWaitList.isVisible()) {
+			if (iWaitList.isVisible() && iCritical.isVisible()) {
+				iNotes.addStyleName("notes-with-critical-and-waitlist");
+				iNotes.removeStyleName("notes-no-waitlist");
+				iNotes.removeStyleName("notes-with-critical");
+				iNotes.removeStyleName("notes-with-waitlist");
+			} else if (iWaitList.isVisible()) {
 				iNotes.addStyleName("notes-with-waitlist");
 				iNotes.removeStyleName("notes-no-waitlist");
+				iNotes.removeStyleName("notes-with-critical");
+				iNotes.removeStyleName("notes-with-critical-and-waitlist");
+			} else if (iCritical.isVisible()) {
+				iNotes.addStyleName("notes-with-critical");
+				iNotes.removeStyleName("notes-no-waitlist");
+				iNotes.removeStyleName("notes-with-waitlist");
+				iNotes.removeStyleName("notes-with-critical-and-waitlist");
 			} else {
 				iNotes.addStyleName("notes-no-waitlist");
 				iNotes.removeStyleName("notes-with-waitlist");
+				iNotes.removeStyleName("notes-with-critical");
+				iNotes.removeStyleName("notes-with-critical-and-waitlist");
+			}
+		}
+	}
+	
+	public void setCriticalCheck(Integer criticalCheck) {
+		iCriticalCheck = criticalCheck;
+		if (iCritical != null) {
+			iCritical.setVisible(criticalCheck != null && criticalCheck.intValue() > 0);
+			if (iWaitList.isVisible() && iCritical.isVisible()) {
+				iNotes.addStyleName("notes-with-critical-and-waitlist");
+				iNotes.removeStyleName("notes-no-waitlist");
+				iNotes.removeStyleName("notes-with-critical");
+				iNotes.removeStyleName("notes-with-waitlist");
+			} else if (iWaitList.isVisible()) {
+				iNotes.addStyleName("notes-with-waitlist");
+				iNotes.removeStyleName("notes-no-waitlist");
+				iNotes.removeStyleName("notes-with-critical");
+				iNotes.removeStyleName("notes-with-critical-and-waitlist");
+			} else if (iCritical.isVisible()) {
+				iNotes.addStyleName("notes-with-critical");
+				iNotes.removeStyleName("notes-no-waitlist");
+				iNotes.removeStyleName("notes-with-waitlist");
+				iNotes.removeStyleName("notes-with-critical-and-waitlist");
+			} else {
+				iNotes.addStyleName("notes-no-waitlist");
+				iNotes.removeStyleName("notes-with-waitlist");
+				iNotes.removeStyleName("notes-with-critical");
+				iNotes.removeStyleName("notes-with-critical-and-waitlist");
 			}
 		}
 	}
@@ -437,6 +498,7 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 			iCourses.get(0).setValue(null);
 			iCredit.setValue("");
 			iNotes.setValue("");
+			if (iCritical != null) { iCritical.setValue(false); iCritical.setEnabled(false); }
 			if (iWaitList != null) { iWaitList.setValue(false); iWaitList.setEnabled(false); }
 			for (int i = iCourses.size() - 1; i > 0; i--) {
 				deleteAlternative(i);
@@ -509,6 +571,9 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 			ret.setWaitList(null);
 			ret.setNoSub(null);
 		}
+		if (iCritical != null && iCritical.isVisible() && iCritical.getValue()) {
+			ret.setCritical(iCriticalCheck);
+		}
 		return (ret.isEmpty() && !ret.hasAdvisorCredit() && !ret.hasAdvisorNote() ? null : ret);
 	}
 
@@ -545,6 +610,7 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 				deleteAlternative(i);
 			iCredit.setValue("");
 			iNotes.setValue("");
+			if (iCritical != null) { iCritical.setValue(false); iCritical.setEnabled(false); }
 			if (iWaitList != null) { iWaitList.setValue(false); iWaitList.setEnabled(false); }
 		} else {
 			int index = 0;
@@ -576,6 +642,10 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 					iWaitList.setValue(false);
 					iWaitList.setEnabled(false);
 				}
+			}
+			if (iCritical != null) {
+				iCritical.setValue(value.getCritical() != null && value.getCritical() > 0 && value.hasCourseId());
+				iCritical.setEnabled(value.hasCourseId());
 			}
 		}
 		if (iDelete != null) {
@@ -978,6 +1048,9 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 					break;
 				case OVERRIDE_APPROVED:
 					setStatus(RESOURCES.requestSaved(), MESSAGES.overrideApproved(rc.getCourseName()));
+					break;
+				case OVERRIDE_NOT_NEEDED:
+					setStatus(RESOURCES.requestNotNeeded(), MESSAGES.overrideNotNeeded(rc.getCourseName()));
 					break;
 				case NEW_REQUEST:
 					clearStatus();

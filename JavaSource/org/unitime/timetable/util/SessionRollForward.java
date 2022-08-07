@@ -46,6 +46,7 @@ import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
+import org.unitime.timetable.model.Campus;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -58,6 +59,7 @@ import org.unitime.timetable.model.CurriculumOverrideReservation;
 import org.unitime.timetable.model.CurriculumProjectionRule;
 import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.DatePatternPref;
 import org.unitime.timetable.model.Degree;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
@@ -99,6 +101,7 @@ import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.Program;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
@@ -132,6 +135,7 @@ import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao.AcademicAreaDAO;
 import org.unitime.timetable.model.dao.AcademicClassificationDAO;
 import org.unitime.timetable.model.dao.BuildingDAO;
+import org.unitime.timetable.model.dao.CampusDAO;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseCatalogDAO;
 import org.unitime.timetable.model.dao.CurriculumDAO;
@@ -157,6 +161,7 @@ import org.unitime.timetable.model.dao.OfferingCoordinatorDAO;
 import org.unitime.timetable.model.dao.PeriodicTaskDAO;
 import org.unitime.timetable.model.dao.PosMajorDAO;
 import org.unitime.timetable.model.dao.PosMinorDAO;
+import org.unitime.timetable.model.dao.ProgramDAO;
 import org.unitime.timetable.model.dao.ReservationDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.RoomDeptDAO;
@@ -999,6 +1004,10 @@ public class SessionRollForward {
 							if (!toSubject.equals(fromSubject)){
 								toSubjectArea.setSubjectAreaAbbreviation(toSubject);
 							}
+							if (fromSubjectArea.getFundingDept() != null){
+								Department toFundingDept = fromSubjectArea.getFundingDept().findSameDepartmentInSession(toSession);
+								toSubjectArea.setFundingDept(toFundingDept);
+							}
 							toSubjectArea.setSession(toSession);
 							toSession.addTosubjectAreas(toSubjectArea);
 							if (fromSubjectArea.getDepartment() != null) {
@@ -1012,6 +1021,7 @@ public class SessionRollForward {
 									sDao.getSession().evict(fromSubjectArea);
 								}
 							}
+							
 						}
 					}
 				}
@@ -1086,6 +1096,10 @@ public class SessionRollForward {
 					fromSubjectArea = (SubjectArea) it.next();
 					if (fromSubjectArea != null){
 						toSubjectArea = (SubjectArea)fromSubjectArea.clone();
+						if (fromSubjectArea.getFundingDept() != null){
+							Department toFundingDept = fromSubjectArea.getFundingDept().findSameDepartmentInSession(toSession);
+							toSubjectArea.setFundingDept(toFundingDept);
+						}
 						toSubjectArea.setDepartment(null);
 						toSubjectArea.setSession(toSession);
 						toSession.addTosubjectAreas(toSubjectArea);
@@ -1641,6 +1655,87 @@ public class SessionRollForward {
 					}
 				}
 			}
+		}
+	}
+	
+	protected void rollForwardDatePatternPrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession, org.hibernate.Session hibSession){
+		if (fromPrefGroup.getDatePatternPreferences() != null 
+				&& !fromPrefGroup.getDatePatternPreferences().isEmpty() 
+				&& (!(fromPrefGroup instanceof Class_) || isClassRollForward())
+				&& (!(fromPrefGroup instanceof SchedulingSubpart) || isSubpartTimeRollForward())){
+			DatePatternPref fromDatePatternPref = null;
+			DatePatternPref toDatePatternPref = null;
+			for (Iterator it = fromPrefGroup.getDatePatternPreferences().iterator(); it.hasNext();){
+				fromDatePatternPref = (DatePatternPref) it.next();
+				DatePattern toDatePattern = DatePattern.findByName(toSession, fromDatePatternPref.getDatePattern().getName());
+				if (toDatePattern == null){
+					iLog.warn("To Date Pattern not found:  " + fromDatePatternPref.getDatePattern().getName() + " for " + fromPrefGroup.htmlLabel());
+					continue;
+				}
+				toDatePatternPref = (DatePatternPref)fromDatePatternPref.clone();
+				toDatePatternPref.setDatePattern(toDatePattern);
+				toDatePatternPref.setOwner(toPrefGroup);
+				toPrefGroup.addTopreferences(toDatePatternPref);
+			}
+		}
+		if (fromPrefGroup instanceof SchedulingSubpart && isClassPrefsPushUp() && (toPrefGroup.getDatePatternPreferences() == null || toPrefGroup.getDatePatternPreferences().isEmpty())) {
+			SchedulingSubpart ss = (SchedulingSubpart) fromPrefGroup;
+			if (ss.getClasses() != null && !ss.getClasses().isEmpty()){
+				HashMap<String, DatePatternPref> prefMap = new HashMap<String, DatePatternPref>();
+				HashMap<String, Integer> prefCount = new HashMap<String, Integer>();
+				String key;
+				int clsCnt = 0;
+				DatePattern firstDp = null; int dpCount = 0; 
+				for (Iterator cIt = ss.getClasses().iterator(); cIt.hasNext();){
+					Class_ c = (Class_)cIt.next();
+					if (CancelledClassAction.SKIP == getCancelledClassAction() && c.isCancelled()) continue;
+					clsCnt ++;
+					DatePattern dp = c.effectiveDatePattern();
+					if (dp != null) {
+						if (firstDp == null) { firstDp = dp; dpCount ++; }
+						else if (firstDp.equals(dp)) dpCount ++;
+					}
+					if (c.getDatePatternPreferences() != null && !c.getDatePatternPreferences().isEmpty()){
+						for (Iterator rfpIt = c.getDatePatternPreferences().iterator(); rfpIt.hasNext();){
+							DatePatternPref dfp = (DatePatternPref) rfpIt.next();
+							key = dfp.getPrefLevel().getPrefName() + dfp.getDatePattern().getUniqueId().toString();
+							prefMap.put(key, dfp);
+							int cnt = 0;
+							if (prefCount.containsKey(key)){
+								cnt = prefCount.get(key).intValue();
+							}
+							cnt++;
+							prefCount.put(key, Integer.valueOf(cnt));
+						}
+					}
+				}
+				if (firstDp != null && dpCount == clsCnt && !firstDp.equals(ss.effectiveDatePattern())) {
+					DatePattern toDatePattern = DatePattern.findByName(toSession, firstDp.getName());
+					if (toDatePattern == null){
+						iLog.warn("To Date Pattern not found:  " + firstDp.getName() + " for " + fromPrefGroup.htmlLabel());
+					} else {
+						((SchedulingSubpart)toPrefGroup).setDatePattern(toDatePattern);
+						for (Class_ c: ((SchedulingSubpart)toPrefGroup).getClasses()) {
+							c.setDatePattern(null);
+							hibSession.update(c);
+						}
+					}
+				}
+				for (String pref : prefCount.keySet()){
+					if (prefCount.get(pref).intValue() == clsCnt){
+						DatePatternPref fromDatePatternPref = prefMap.get(pref);
+						DatePattern toDatePattern = DatePattern.findByName(toSession, fromDatePatternPref.getDatePattern().getName());
+						if (toDatePattern == null){
+							iLog.warn("To Date Pattern not found:  " + fromDatePatternPref.getDatePattern().getName() + " for " + fromPrefGroup.htmlLabel());
+							continue;
+						}
+						DatePatternPref toDatePatternPref = (DatePatternPref)fromDatePatternPref.clone();
+						toDatePatternPref.setDatePattern(toDatePattern);
+						toDatePatternPref.setOwner(toPrefGroup);
+						toPrefGroup.addTopreferences(toDatePatternPref);
+					}
+				}
+			}				
 		}
 	}
 
@@ -2670,6 +2765,34 @@ public class SessionRollForward {
             		hibSession.save(newConc);
             	}
             }
+        }
+        
+        // roll forward programs, if needed
+        Hashtable<String, Program> programs = new Hashtable<String, Program>();
+        for (Program program: ProgramDAO.getInstance().findBySession(hibSession, toSession.getUniqueId())) {
+        	programs.put(program.getReference(), program);
+        }
+        if (programs.isEmpty()) {
+        	for (Program program: ProgramDAO.getInstance().findBySession(hibSession, fromSession.getUniqueId())) {
+        		Program newProgram = (Program)program.clone();
+        		newProgram.setSession(toSession);
+        		hibSession.save(newProgram);
+        		programs.put(newProgram.getReference(), newProgram);
+        	}
+        }
+        
+     // roll forward campuses, if needed
+        Hashtable<String, Campus> campuses = new Hashtable<String, Campus>();
+        for (Campus campus: CampusDAO.getInstance().findBySession(hibSession, toSession.getUniqueId())) {
+        	campuses.put(campus.getReference(), campus);
+        }
+        if (campuses.isEmpty()) {
+        	for (Campus campus: CampusDAO.getInstance().findBySession(hibSession, fromSession.getUniqueId())) {
+        		Campus newCampus = (Campus)campus.clone();
+        		newCampus.setSession(toSession);
+        		hibSession.save(newCampus);
+        		campuses.put(newCampus.getReference(), newCampus);
+        	}
         }
         
         // roll forward minors, if needed

@@ -289,6 +289,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 	
 	private Class_ rollForwardClass(Class_ fromClass,SchedulingSubpart toSubpart, Session toSession, org.hibernate.Session hibSession) throws Exception{
 		Class_ toClass = new Class_();
+
 		toClass.setEnabledForStudentScheduling(fromClass.isEnabledForStudentScheduling());
 		toClass.setDisplayInstructor(fromClass.isDisplayInstructor());
 		toClass.setExpectedCapacity(fromClass.getExpectedCapacity());
@@ -299,6 +300,12 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		toClass.setSchedulePrintNote(fromClass.getSchedulePrintNote());
 		toClass.setSchedulingSubpart(toSubpart);
 		toClass.setUniqueIdRolledForwardFrom(fromClass.getUniqueId());
+		if (fromClass.getFundingDept() != null) {
+			Department toFundingDept = fromClass.getFundingDept().findSameDepartmentInSession(toSession);
+			if (toFundingDept != null) {
+				toClass.setFundingDept(toFundingDept);
+			}
+		}
 		if (fromClass.getLmsInfo() != null) {
 			LearningManagementSystemInfo lms = LearningManagementSystemInfo.findBySessionIdAndReference(toSession.getUniqueId(), fromClass.getLmsInfo().getReference());
 			toClass.setLms(lms);
@@ -329,6 +336,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			rollForwardRoomPrefs(fromClass, toClass, toSession);
 			rollForwardRoomGroupPrefs(fromClass, toClass, toSession);
 			rollForwardRoomFeaturePrefs(fromClass, toClass, toSession);
+			rollForwardDatePatternPrefs(fromClass, toClass, toSession, hibSession);
 		}
 		if (isRollForwardDistributions())
 			rollForwardDistributionPrefs(fromClass, toClass, toSession, hibSession);
@@ -405,6 +413,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		rollForwardRoomPrefs(fromSubpart, toSubpart, toSession);
 		rollForwardRoomGroupPrefs(fromSubpart, toSubpart, toSession);
 		rollForwardRoomFeaturePrefs(fromSubpart, toSubpart, toSession);
+		rollForwardDatePatternPrefs(fromSubpart, toSubpart, toSession, hibSession);
 		if (isRollForwardDistributions()) rollForwardDistributionPrefs(fromSubpart, toSubpart, toSession, hibSession);
 		if (fromSubpart.getChildSubparts() != null && fromSubpart.getChildSubparts().size() > 0){
 			List<SchedulingSubpart> childSubparts = new ArrayList<SchedulingSubpart>(fromSubpart.getChildSubparts());
@@ -479,6 +488,12 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			toCourseOffering.setReservation(fromCourseOffering.getReservation());
 			toCourseOffering.setConsentType(fromCourseOffering.getConsentType());
 			toCourseOffering.setCourseType(fromCourseOffering.getCourseType());
+			if (fromCourseOffering.getFundingDept() != null) {
+				Department toFundingDept = fromCourseOffering.getFundingDept().findSameDepartmentInSession(toSession);
+				if (toFundingDept != null) {
+					toCourseOffering.setFundingDept(toFundingDept);
+				}
+			}
 			toInstructionalOffering.addTocourseOfferings(toCourseOffering);
 			if (isWaitListsAndProhibitedOverrides() && fromCourseOffering.getDisabledOverrides() != null) {
 				toCourseOffering.setDisabledOverrides(new HashSet<OverrideType>(fromCourseOffering.getDisabledOverrides()));

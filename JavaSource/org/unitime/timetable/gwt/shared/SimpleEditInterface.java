@@ -42,6 +42,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 		HIDDEN,
 		READ_ONLY,
 		UNIQUE,
+		UNIQUE_IF_SET,
 		NOT_EMPTY,
 		PARENT_NOT_EMPTY,
 		FLOAT,
@@ -50,6 +51,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 		DEFAULT_CHECKED,
 		LAZY,
 		NO_CYCLE,
+		NO_DETAIL,
 		;
 		
 		public int toInt() { return 1 << ordinal(); }
@@ -396,6 +398,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 		public boolean isEditable() { return !Flag.READ_ONLY.has(iFlags); }
 		public boolean isVisible() { return !Flag.HIDDEN.has(iFlags); }
 		public boolean isUnique() { return Flag.UNIQUE.has(iFlags); }
+		public boolean isUniqueIfSet() { return Flag.UNIQUE_IF_SET.has(iFlags); }
 		public boolean isNotEmpty() { return Flag.NOT_EMPTY.has(iFlags); }
 		public boolean isParentNotEmpty() { return Flag.PARENT_NOT_EMPTY.has(iFlags); }
 		public boolean isAllowFloatingPoint() { return Flag.FLOAT.has(iFlags); }
@@ -404,6 +407,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 		public boolean isCheckedByDefault() { return Flag.DEFAULT_CHECKED.has(iFlags); }
 		public boolean isLazy() { return Flag.LAZY.has(iFlags); }
 		public boolean isNoCycle() { return Flag.NO_CYCLE.has(iFlags); }
+		public boolean isNoDetail() { return Flag.NO_DETAIL.has(iFlags); }
 		
 		public int hashCode() {
 			return getName().hashCode();

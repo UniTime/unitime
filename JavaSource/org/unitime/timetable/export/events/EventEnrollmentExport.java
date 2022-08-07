@@ -165,7 +165,7 @@ public class EventEnrollmentExport implements Exporter {
 		
 		boolean hasPriority = false, hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasAlternative = false, hasReservation = false,
 				hasRequestedDate = false, hasEnrolledDate = false, hasConflict = false, hasMessage = false, hasAdvisor = false, hasMinor = false, hasConc = false,
-				hasDeg = false, hasProg = false, hasWaitlistedDate = false, hasWaitListedPosition = false, hasCritical = false;
+				hasDeg = false, hasProg = false, hasCamp = false, hasWaitlistedDate = false, hasWaitListedPosition = false, hasWaitListReplacement = false, hasCritical = false;
 		Set<String> groupTypes = new TreeSet<String>();
 		for (ClassAssignmentInterface.Enrollment e: enrollments) {
 			if (e.getPriority() > 0) hasPriority = true;
@@ -185,8 +185,10 @@ public class EventEnrollmentExport implements Exporter {
 			if (e.getStudent().hasConcentration()) hasConc = true;
 			if (e.getStudent().hasDegree()) hasDeg = true;
 			if (e.getStudent().hasProgram()) hasProg = true;
+			if (e.getStudent().hasCampus()) hasCamp = true;
 			if (e.hasWaitListedDate()) hasWaitlistedDate = true;
 			if (e.hasWaitListedPosition()) hasWaitListedPosition = true;
+			if (e.hasWaitListedReplacement()) hasWaitListReplacement = true;
 			if (e.isCritical() || e.isImportant()) hasCritical = true;
 		}
 		
@@ -195,6 +197,9 @@ public class EventEnrollmentExport implements Exporter {
 		
 		if (hasAlternative)
 			header.add(MESSAGES.colAlternative());
+		
+		if (hasCamp)
+			header.add(MESSAGES.colCampus());
 		
 		if (hasArea) {
 			header.add(MESSAGES.colArea());
@@ -250,6 +255,8 @@ public class EventEnrollmentExport implements Exporter {
 		
 		if (hasWaitlistedDate)
 			header.add(MESSAGES.colWaitListedTimeStamp());
+		if (hasWaitListReplacement)
+			header.add(MESSAGES.colWaitListSwapWithCourseOffering());
 		if (hasWaitListedPosition)
 			header.add(MESSAGES.colWaitListPosition());
 		
@@ -284,6 +291,8 @@ public class EventEnrollmentExport implements Exporter {
 				line.add(enrollment.getPriority() <= 0 ? "" : MESSAGES.priority(enrollment.getPriority()));
 			if (hasAlternative)
 				line.add(enrollment.getAlternative());
+			if (hasCamp)
+				line.add(enrollment.getStudent().getCampus("\n"));
 			if (hasArea) {
 				line.add(enrollment.getStudent().getArea("\n"));
 				line.add(enrollment.getStudent().getClassification("\n"));
@@ -315,13 +324,15 @@ public class EventEnrollmentExport implements Exporter {
 				}
 			}
 			if (hasCritical)
-				line.add(enrollment.isCritical() ? MESSAGES.opSetCritical() : enrollment.isImportant() ? MESSAGES.opSetImportant() : MESSAGES.opSetNotCritical());
+				line.add(enrollment.isCritical() ? MESSAGES.opSetCritical() : enrollment.isImportant() ? MESSAGES.opSetImportant() : enrollment.isVital() ? MESSAGES.opSetVital() : MESSAGES.opSetNotCritical());
 			if (hasRequestedDate)
 				line.add(enrollment.getRequestedDate() == null ? "" : sDF.format(enrollment.getRequestedDate()));
 			if (hasEnrolledDate)
 				line.add(enrollment.getEnrolledDate() == null ? "" : sDF.format(enrollment.getEnrolledDate()));
 			if (hasWaitlistedDate)
 				line.add(enrollment.hasWaitListedDate() ? sTSF.format(enrollment.getWaitListedDate()) : "");
+			if (hasWaitListReplacement)
+				line.add(enrollment.hasWaitListedReplacement() ? enrollment.getWaitListReplacement() : "");
 			if (hasWaitListedPosition)
 				line.add(enrollment.hasWaitListedPosition() ? enrollment.getWaitListedPosition() : "");
 			if (hasAdvisor)

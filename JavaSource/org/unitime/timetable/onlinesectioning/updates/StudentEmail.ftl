@@ -217,9 +217,10 @@
 			</tr>
 		</#if>
 	<#else>
-		<#assign style="white-space: nowrap; color: red; border-top: 1px dashed #9CB0CE;">
-		<#assign stylebr="color: red; border-top: 1px dashed #9CB0CE;">
-		<#assign stylelink="color: inherit; text-decoration: none;">
+		<#if !line.waitList>
+			<#assign style="white-space: nowrap; color: red; border-top: 1px dashed #9CB0CE;">
+			<#assign stylebr="color: red; border-top: 1px dashed #9CB0CE;">
+		</#if>
 	 	<tr style='vertical-align: top'>
 	 		<#if line.url??>
 				<td style="${style}"><a href="${line.url}" style="${stylelink}">${line.subject}</a></td>
@@ -306,8 +307,8 @@
  		</#if>
  		<#if requests.hasWait && wlMode == 'WaitList'><td style="${style}">
  			<#if line.waitlist>
- 				<img src='http://www.unitime.org/icons/action_check.png' width='16' height='16' title='${msg.descriptionRequestWaitListed()}' alt='${msg.courseWaitListed()}'>
- 				<#if line.waitListDate??>${line.waitListDate}</#if>
+ 				<#if line.waitListDate??>${line.waitListDate}
+ 				<#else><img src='http://www.unitime.org/icons/action_check.png' width='16' height='16' title='${msg.descriptionRequestWaitListed()}' alt='${msg.courseWaitListed()}'></#if>
  			</#if>
  		</td></#if>
  		<#if requests.hasWait && wlMode == 'NoSubs'><td style="${style}">

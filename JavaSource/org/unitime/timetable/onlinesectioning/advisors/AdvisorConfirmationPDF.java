@@ -33,6 +33,8 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisingStudentDetails;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
+import org.unitime.timetable.model.CourseDemand;
+import org.unitime.timetable.model.CourseDemand.Critical;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
@@ -68,6 +70,7 @@ public class AdvisorConfirmationPDF {
 		PdfWriter writer = PdfWriter.getInstance(document, out);
 		writer.setPageEvent(new PdfEventHandler());
 		document.open();
+		Critical critical = Critical.fromText(ApplicationProperty.AdvisorCourseRequestsAllowCritical.valueOfSession(iDetails.getSessionId()));
 		
 		Image image = null; 
 		URL imageUrl = AdvisorCourseRequestsSubmit.class.getClassLoader().getResource(ApplicationProperty.AdvisorCourseRequestsPDFLogo.value());
@@ -164,11 +167,16 @@ public class AdvisorConfirmationPDF {
 					if (r.isNoSub()) { hasWaitList = true; break; }
 				}
 			}
-			document.add(courseTable(true, hasWaitList ? getDetails().getWaitListMode() : WaitListMode.None));
+			boolean hasCritical = false;
+			for (Request r: getDetails().getRequest().getCourses()) {
+				if (r.hasCritical() && r.getCritical() > 0)
+					hasCritical = true;
+			}
+			document.add(courseTable(true, hasWaitList ? getDetails().getWaitListMode() : WaitListMode.None, hasCritical ? critical : Critical.NORMAL));
 		}
 		
 		if (getDetails().getRequest().getAlternatives() != null && !getDetails().getRequest().getAlternatives().isEmpty())
-			document.add(courseTable(false, WaitListMode.None));
+			document.add(courseTable(false, WaitListMode.None, Critical.NORMAL));
 		
 		if (getDetails().getRequest().hasCreditNote()) {
 			Paragraph p = new Paragraph(getDetails().getRequest().getCreditNote(), PdfFont.getSmallFont());
@@ -206,17 +214,33 @@ public class AdvisorConfirmationPDF {
 		out.flush(); out.close();
 	}
 	
-	private PdfPTable courseTable(boolean primary, WaitListMode waitListMode) {
+	private PdfPTable courseTable(boolean primary, WaitListMode waitListMode, CourseDemand.Critical critical) {
 		Font font = PdfFont.getSmallFont();
 		float wP = font.getBaseFont().getWidth(primary ? MSG.courseRequestsPriority(100) : MSG.courseRequestsAlternate(100)) * 0.001f * font.getSize();
 		float wA = 20f + font.getBaseFont().getWidth(MSG.courseRequestsAlternative(100)) * 0.001f * font.getSize() - wP;
 		float wC = 5f + font.getBaseFont().getWidth("999 - 999") * 0.001f * font.getSize();
-		float wW = (waitListMode == WaitListMode.None ? 0f : 5f + Math.max(font.getBaseFont().getWidth(MSG.colWaitList())  * 0.001f * font.getSize(), font.getBaseFont().getWidth(MSG.colNoSubs())  * 0.001f * font.getSize()));
+		String criticalHead = null;
+		switch (critical) {
+		case CRITICAL: criticalHead = MSG.opSetCritical(); break;
+		case IMPORTANT: criticalHead = MSG.opSetImportant(); break;
+		case VITAL: criticalHead = MSG.opSetVital(); break;
+		}
+		String waitListHead = null;
+		switch (waitListMode) {
+		case NoSubs: waitListHead = MSG.colNoSubs(); break;
+		case WaitList: waitListHead = MSG.colWaitList(); break;
+		}
+
+		float wV = (criticalHead == null ? 0f : 5f + font.getBaseFont().getWidth(criticalHead) * 0.001f * font.getSize());
+		float wW = (waitListHead == null ? 0f : 5f + font.getBaseFont().getWidth(waitListHead) * 0.001f * font.getSize());
 		float pw = PageSize.LETTER.getWidth() - 72f;
-		float wX = (pw - wP - wA - wC - wW);
-		PdfPTable cr = (waitListMode == WaitListMode.None ?
-				new PdfPTable(new float[] {wP, wA, wX * 0.4f, wC, wX * 0.6f}):
-				new PdfPTable(new float[] {wP, wA, wX * 0.4f, wC, wX * 0.6f, wW}));
+		float wX = (pw - wP - wA - wC - wV - wW);
+		PdfPTable cr = (
+				waitListHead != null && criticalHead != null ? new PdfPTable(new float[] {wP, wA, wX * 0.4f, wC, wX * 0.6f, wV, wW}) :
+				waitListHead != null && criticalHead == null ? new PdfPTable(new float[] {wP, wA, wX * 0.4f, wC, wX * 0.6f, wW}) :
+				waitListHead == null && criticalHead != null ? new PdfPTable(new float[] {wP, wA, wX * 0.4f, wC, wX * 0.6f, wV}) :
+				new PdfPTable(new float[] {wP, wA, wX * 0.4f, wC, wX * 0.6f})
+				);
 		cr.setHeaderRows(1);
 		cr.setWidthPercentage(100f);
 		cr.setKeepTogether(true);
@@ -239,6 +263,12 @@ public class AdvisorConfirmationPDF {
 			c.setVerticalAlignment(Element.ALIGN_BOTTOM);
 			c.setBorder(PdfPCell.BOTTOM); c.setBorderWidth(0.1f);
 			cr.addCell(c);
+			if (criticalHead != null) {
+				c = italic(criticalHead);
+				c.setVerticalAlignment(Element.ALIGN_BOTTOM);
+				c.setBorder(PdfPCell.BOTTOM); c.setBorderWidth(0.1f);
+				cr.addCell(c);
+			}
 			if (waitListMode != WaitListMode.None) {
 				c = italic(waitListMode == WaitListMode.WaitList ? MSG.colWaitList() : MSG.colNoSubs());
 				c.setVerticalAlignment(Element.ALIGN_BOTTOM);
@@ -255,7 +285,7 @@ public class AdvisorConfirmationPDF {
 			x.setFont(PdfFont.getSmallFont(false, true));
 			ch.add(x);
 			ch.setAlignment(Element.ALIGN_LEFT);
-			ch.setSpacingBefore(10f); ch.setSpacingAfter(2f); c.addElement(ch); c.setColspan(waitListMode == WaitListMode.None ? 5 : 6);
+			ch.setSpacingBefore(10f); ch.setSpacingAfter(2f); c.addElement(ch); c.setColspan(5 + (criticalHead == null ? 0 : 1) + (waitListHead == null ? 0 : 1));
 			c.setBorder(PdfPCell.BOTTOM); c.setBorderWidth(0.1f);
 			cr.addCell(c);
 		}
@@ -281,6 +311,17 @@ public class AdvisorConfirmationPDF {
 				note.setBorder(PdfPCell.BOTTOM); note.setBorderWidth(0.1f);
 				cr.addCell(note);
 				
+				if (criticalHead != null) {
+					PdfPCell vit = cell(
+							r.isCritical() ? MSG.pdfCourseCritical() :
+							r.isVital() ? MSG.pdfCourseVital() :
+							r.isImportant() ? MSG.pdfCourseImportant() :
+							MSG.pdfCourseNotCritical());
+					((Paragraph)vit.getCompositeElements().get(0)).setAlignment(Element.ALIGN_CENTER);
+					vit.setBorder(PdfPCell.BOTTOM | PdfPCell.LEFT); vit.setBorderWidth(0.1f);
+					cr.addCell(vit);
+				}
+
 				if (waitListMode == WaitListMode.WaitList) {
 					PdfPCell wl = cell(r.isWaitList() ? MSG.pdfCourseWaitListed() : MSG.pdfCourseNotWaitListed());
 					((Paragraph)wl.getCompositeElements().get(0)).setAlignment(Element.ALIGN_CENTER);
@@ -319,6 +360,18 @@ public class AdvisorConfirmationPDF {
 						note.setBorder(PdfPCell.BOTTOM); note.setBorderWidth(0.1f);
 						note.setRowspan(r.getRequestedCourse().size());
 						cr.addCell(note);
+						
+						if (criticalHead != null) {
+							PdfPCell vit = cell(
+									r.isCritical() ? MSG.pdfCourseCritical() :
+									r.isVital() ? MSG.pdfCourseVital() :
+									r.isImportant() ? MSG.pdfCourseImportant() :
+									MSG.pdfCourseNotCritical());
+							((Paragraph)vit.getCompositeElements().get(0)).setAlignment(Element.ALIGN_CENTER);
+							vit.setBorder(PdfPCell.BOTTOM | PdfPCell.LEFT); vit.setBorderWidth(0.1f);
+							vit.setRowspan(r.getRequestedCourse().size());
+							cr.addCell(vit);
+						}
 						
 						if (waitListMode == WaitListMode.WaitList) {
 							PdfPCell wl = cell(r.isWaitList() ? MSG.pdfCourseWaitListed() : MSG.pdfCourseNotWaitListed());
@@ -386,7 +439,7 @@ public class AdvisorConfirmationPDF {
 			cr.addCell(credit);
 			credit = number(credTx);
 			cr.addCell(credit);
-			credit = cell(""); credit.setColspan(2);
+			credit = cell(""); credit.setColspan(1 + (criticalHead == null ? 0 : 1) + (waitListHead == null ? 0 : 1));
 			cr.addCell(credit);
 		}
 		return cr;

@@ -51,4 +51,19 @@ public abstract class BaseWaitListDAO extends _RootDAO<WaitList,Long> {
 	public List<WaitList> findByCourseOffering(org.hibernate.Session hibSession, Long courseOfferingId) {
 		return hibSession.createQuery("from WaitList x where x.courseOffering.uniqueId = :courseOfferingId").setLong("courseOfferingId", courseOfferingId).list();
 	}
+
+	@SuppressWarnings("unchecked")
+	public List<WaitList> findByEnrolledCourse(org.hibernate.Session hibSession, Long enrolledCourseId) {
+		return hibSession.createQuery("from WaitList x where x.enrolledCourse.uniqueId = :enrolledCourseId").setLong("enrolledCourseId", enrolledCourseId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<WaitList> findByCourseDemand(org.hibernate.Session hibSession, Long courseDemandId) {
+		return hibSession.createQuery("from WaitList x where x.courseDemand.uniqueId = :courseDemandId").setLong("courseDemandId", courseDemandId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<WaitList> findBySwapCourseOffering(org.hibernate.Session hibSession, Long swapCourseOfferingId) {
+		return hibSession.createQuery("from WaitList x where x.swapCourseOffering.uniqueId = :swapCourseOfferingId").setLong("swapCourseOfferingId", swapCourseOfferingId).list();
+	}
 }

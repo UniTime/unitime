@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.TreeSet;
+
 import org.unitime.timetable.model.base.BaseWaitList;
 
 
@@ -26,8 +28,22 @@ import org.unitime.timetable.model.base.BaseWaitList;
 /**
  * @author Tomas Muller
  */
-public class WaitList extends BaseWaitList {
+public class WaitList extends BaseWaitList implements Comparable<WaitList> {
 	private static final long serialVersionUID = 1L;
+	
+	public static enum WaitListType {
+		SCHEDULING_ASSISTANT,
+		COURSE_REQUESTS,
+		XML_IMPORT,
+		BATCH_SOLVER,
+		WAIT_LIST_PORCESSING,
+		MASS_CANCEL,
+		EXTERNAL_UPDATE,
+		RELOAD,
+		OTHER,
+		;
+		
+	}
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
 	public WaitList () {
@@ -43,5 +59,66 @@ public class WaitList extends BaseWaitList {
 	
 /*[CONSTRUCTOR MARKER END]*/
 
+	
+	public WaitListType getWaitListType() {
+		if (getType() == null) return WaitListType.OTHER;
+		return WaitListType.values()[getType()];
+	}
+	public void setWaitListType(WaitListType status) {
+		if (status == null)
+			setType(null);
+		else
+			setType(status.ordinal());
+	}
+
+	@Override
+	public int compareTo(WaitList wl) {
+		int cmp = getTimestamp().compareTo(wl.getTimestamp());
+		if (cmp != 0) return cmp;
+		return getUniqueId().compareTo(wl.getUniqueId());
+	}
+	
+	public boolean hasMatchingCourse(CourseDemand cd) {
+		if (cd == null) return false;
+		for (CourseRequest cr: cd.getCourseRequests())
+			if (cr.getCourseOffering().equals(getCourseOffering())) return true;
+		return false;
+	}
+	
+	public static String computeEnrollment(Student student, CourseOffering enrolledCourse) {
+		if (student == null || enrolledCourse == null) return "";
+		String enrl = null;
+		for (StudentClassEnrollment e: student.getClassEnrollments())
+			if (enrolledCourse.equals(e.getCourseOffering()))
+				enrl = (enrl == null ? "" : enrl + "\n") + e.getClazz().getClassLabel(enrolledCourse, true);
+		if (enrl != null && enrl.length() > 255)
+			enrl = enrl.substring(0, 252) + "...";
+		return enrl;
+	}
+	
+	public static String computeRequest(CourseDemand cd) {
+		if (cd == null) return null;
+		String req = null;
+		for (CourseRequest cr: new TreeSet<CourseRequest>(cd.getCourseRequests())) {
+			String rp = null;
+			if (cr.getPreferences() != null)
+				for (StudentSectioningPref p: cr.getPreferences())
+					if (p.isRequired()) {
+						if (p instanceof StudentClassPref)
+							rp = (rp == null ? "" : rp + ", ") + ((StudentClassPref)p).getClazz().getClassPrefLabel(cr.getCourseOffering());
+						else if (p instanceof StudentInstrMthPref)
+							rp = (rp == null ? "" : rp + ", ") + ((StudentInstrMthPref)p).getInstructionalMethod().getLabel();
+					}
+			req = (req == null ? "" : req + "\n") + cr.getCourseOffering().getCourseName() + (rp == null ? "" : " [" + rp + "]");
+		}
+		if (req != null && req.length() > 255)
+			req = req.substring(0, 252) + "...";
+		return req;
+	}
+	
+	public void fillInNotes() {
+		setEnrollment(computeEnrollment(getStudent(), getEnrolledCourse()));
+		setRequest(computeRequest(getCourseDemand()));
+	}
 
 }

@@ -42,6 +42,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignmen
 import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreeCourseInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreeGroupInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreePlaceHolderInterface;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
@@ -75,6 +76,8 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 	private UniTimeHeaderPanel iFooter;
 	private Map<Character, Integer> iTabAccessKeys = new HashMap<Character, Integer>();
 	private TakesValue<CourseRequestInterface> iRequests;
+	private WaitListMode iWaitListMode = null;
+	private Integer iCriticalCheck = null;
 	
 	public DegreePlanDialog(StudentSectioningPage.Mode mode, TakesValue<CourseRequestInterface> requests, AssignmentProvider assignments, CourseFinderCourseDetails... details) {
 		super(true, false);
@@ -151,6 +154,9 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 		setWidget(iForm);
 	}
 	
+	public void setWaitListMode(WaitListMode wl) { iWaitListMode = wl; }
+	public void setCriticalCheck(Integer criticalCheck) { iCriticalCheck = criticalCheck; }
+	
 	public void open(DegreePlanInterface plan, boolean hasBack) {
 		iDegreePlanTable.setValue(plan);
 		setText(MESSAGES.dialogDegreePlan(plan.getName()));
@@ -177,7 +183,7 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 	
 	protected void doApply() {
 		hide();
-		iRequests.setValue(iDegreePlanTable.createRequests());
+		iRequests.setValue(iDegreePlanTable.createRequests(iWaitListMode, iCriticalCheck));
 	}
 	
     @Override

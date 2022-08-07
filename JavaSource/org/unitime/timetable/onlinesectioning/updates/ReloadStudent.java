@@ -26,6 +26,7 @@ import java.util.List;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -107,7 +108,7 @@ public class ReloadStudent extends ReloadAllData {
 					org.unitime.timetable.model.Student student = StudentDAO.getInstance().get(studentId, helper.getHibSession());
 					XStudent newStudent = null;
 					if (student != null) {
-						newStudent = loadStudent(student, null, server, helper);
+						newStudent = loadStudent(student, null, server, helper, WaitList.WaitListType.RELOAD);
 						if (newStudent != null) {
 							server.update(newStudent, true);
 							OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();

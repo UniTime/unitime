@@ -165,7 +165,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	private UniTimeDialogBox iLastNotesDialog = null;
 	
 	public AdvisorCourseRequestsPage() {
-		super(6);
+		super(7);
 		UniTimePageHeader.getInstance().getLeft().setVisible(false);
 		UniTimePageHeader.getInstance().getLeft().setPreventDefault(true);
 		addStyleName("unitime-AdvisorCourseRequests");
@@ -209,7 +209,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		iStudentEmail = new Label(); iStudentEmail.addStyleName("student-email");
 		
 		addDoubleRow(MESSAGES.propStudentName(), iStudentName, 1,
-				MESSAGES.propStudentExternalId(), iStudentExternalId, 3);
+				MESSAGES.propStudentExternalId(), iStudentExternalId, 4);
 		
 		iSession = new AdvisorAcademicSessionSelector();
 		
@@ -217,7 +217,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		
 		iTerm = new Label(); iTerm.addStyleName("term");
 		addDoubleRow(MESSAGES.propStudentEmail(), iStudentEmail, 1,
-				MESSAGES.propAcademicSession(), iTerm, 3);
+				MESSAGES.propAcademicSession(), iTerm, 4);
 		
 		iSession.addAcademicSessionChangeHandler(new AcademicSessionChangeHandler() {
 			@Override
@@ -252,14 +252,29 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 						iStudentEmail.setText(result.getStudentEmail() == null ? "" : result.getStudentEmail());
 						iStudentExternalId.setText(result.getStudentExternalId());
 						iAdvisorRequests.setMode(result.getWaitListMode());
+						String wlHeader = null;
 						switch (result.getWaitListMode()) {
-						case None: iWaitListHeader.setHTML("&nbsp;"); break;
 						case NoSubs:
-							iWaitListHeader.setHTML(MESSAGES.headNoSubs());
+							wlHeader = MESSAGES.headNoSubs();
 							break;
 						case WaitList:
-							iWaitListHeader.setHTML(MESSAGES.headWaitList());
+							wlHeader = MESSAGES.headWaitList();
 							break;
+						}
+						if (result.isCriticalCheckCritical()) {
+							wlHeader = (wlHeader == null ? MESSAGES.opSetCritical() : MESSAGES.opSetCritical() + "&nbsp;&nbsp;" + wlHeader);
+						} else if (result.isCriticalCheckImportant()) {
+							wlHeader = (wlHeader == null ? MESSAGES.opSetImportant() : MESSAGES.opSetImportant() + "&nbsp;&nbsp;" + wlHeader);
+						} else if (result.isCriticalCheckVital()) {
+							wlHeader = (wlHeader == null ? MESSAGES.opSetVital() : MESSAGES.opSetVital() + "&nbsp;&nbsp;" + wlHeader);
+						}
+						iWaitListHeader.setHTML(wlHeader == null ? "&nbsp;" : wlHeader);
+						if (result.hasCriticalCheck() && result.getWaitListMode() != WaitListMode.None) {
+							iWaitListHeader.removeStyleName("waitlist-header");
+							iWaitListHeader.addStyleName("waitlist-header-with-critical");
+						} else {
+							iWaitListHeader.removeStyleName("waitlist-header-with-critical");
+							iWaitListHeader.addStyleName("waitlist-header");
 						}
 						fillInStudentRequests();
 						if (result != null && result.getStudentRequest() != null && result.getRequest().hasErrorMessage())
@@ -349,7 +364,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		iStatus = new ListBox();
 		iStatus.addStyleName("status");
 		iStatusLine = addDoubleRow(MESSAGES.propAdvisorEmail(), iAdvisorEmail, 1,
-				MESSAGES.propStudentStatus(), iStatus, 3);
+				MESSAGES.propStudentStatus(), iStatus, 4);
 		
 		iPinReleased = new CheckBox(MESSAGES.propStudentPin()); iPinReleased.addStyleName("unitime-PinToggle");
 		iPin = new Label(); iPin.addStyleName("unitime-Pin");
@@ -361,7 +376,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				pinReleaseChanged();
 			}
 		});
-		iPinLine = addDoubleRow(new Label(), new Label(), 1, iPinReleased, iPin, 3);
+		iPinLine = addDoubleRow(new Label(), new Label(), 1, iPinReleased, iPin, 4);
 		getRowFormatter().setVisible(iPinLine, true);
 		iPinReleased.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 			@Override
@@ -388,7 +403,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				new WebTable.Cell(MESSAGES.colCritical(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colWaitList(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colRequestTimeStamp(), 1, "50px")));
-		addRow(iRequests);
+		ScrollPanel sp = new ScrollPanel(iRequests); sp.addStyleName("student-course-requests");
+		addRow(sp);
 		
 		UniTimeHeaderPanel advisorReqs = new UniTimeHeaderPanel(MESSAGES.advisorCourseRequests());
 		iAdisorRequestsHeaderLine = addHeaderRow(advisorReqs);
@@ -702,6 +718,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 									}
 								};
 							}
+							iDegreePlanDialog.setWaitListMode(iDetails == null ? null : iDetails.getWaitListMode());
+							iDegreePlanDialog.setCriticalCheck(iDetails == null ? null : iDetails.getCriticalCheck());
 							if (result.size() == 1)
 								iDegreePlanDialog.open(result.get(0), false);
 							else
@@ -830,6 +848,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		for (AdvisorCourseRequestLine line: iCourses) {
 			line.setValue(null);
 			line.setWaitListMode(iDetails == null ? WaitListMode.None : iDetails.getWaitListMode());
+			line.setCriticalCheck(iDetails == null ? null : iDetails.getCriticalCheck());
 		}
 		for (AdvisorCourseRequestLine line: iAlternatives)
 			line.setValue(null);
@@ -849,6 +868,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		int i = iCourses.size();
 		final AdvisorCourseRequestLine line = new AdvisorCourseRequestLine(iContext, i, false, null, iSpecRegCx);
 		line.setWaitListMode(iDetails == null ? WaitListMode.None : iDetails.getWaitListMode());
+		line.setCriticalCheck(iDetails == null ? null : iDetails.getCriticalCheck());
 		iCourses.add(line);
 		AdvisorCourseRequestLine prev = iCourses.get(i - 1);
 		prev.getCourses().get(0).setHint("");
@@ -1220,7 +1240,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	
 	protected void fillInStudentRequests() {
 		ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
-		boolean hasPref = false, hasWarn = false, hasWait = false, hasCrit = false;
+		boolean hasPref = false, hasWarn = false, hasWait = false;
+		boolean hasCrit = false, hasImp = false, hasVital = false;
 		NumberFormat df = NumberFormat.getFormat("0.#");
 		if (iDetails != null && iDetails.hasStudentRequest()) {
 			switch (iDetails.getStudentRequest().getWaitListMode()) {
@@ -1238,7 +1259,9 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				if (!request.hasRequestedCourse()) continue;
 				boolean first = true;
 				if (request.isWaitlistOrNoSub(iDetails.getStudentRequest().getWaitListMode())) hasWait = true;
-				if (request.isCritical() || request.isImportant()) hasCrit = true;
+				if (request.isCritical()) hasCrit = true;
+				if (request.isImportant()) hasImp = true;
+				if (request.isVital()) hasVital = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					if (rc.isCourse()) {
 						ImageResource icon = null; String iconText = null;
@@ -1268,6 +1291,9 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 							case OVERRIDE_APPROVED:
 								icon = RESOURCES.requestSaved(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideApproved(rc.getCourseName()));
 								break;
+							case OVERRIDE_NOT_NEEDED:
+								icon = RESOURCES.requestNotNeeded(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideNotNeeded(rc.getCourseName()));
+								break;
 							default:
 								if (check.isError(rc.getCourseName()))
 									icon = RESOURCES.requestError(); iconText = (msg);
@@ -1295,6 +1321,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 							case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); break;
 							case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); break;
 							case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); break;
+							case OVERRIDE_NOT_NEEDED: status = MESSAGES.reqStatusNotNeeded(); break;
 							}
 						}
 						if (status.isEmpty()) status = MESSAGES.reqStatusRegistered();
@@ -1314,7 +1341,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 								new WebTable.NoteCell(note, noteTitle),
 								(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
 								(first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
-									first && request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") : new WebTable.Cell("")),
+									first && request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") :
+									first && request.isVital() ? new WebTable.IconCell(RESOURCES.requestsVital(), MESSAGES.descriptionRequestVital(), "") : new WebTable.Cell("")),
 								(iDetails.getStudentRequest().getWaitListMode() == WaitListMode.WaitList
 									 ? (first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), (request.hasWaitListedTimeStamp() ? sDF.format(request.getWaitListedTimeStamp()) : "")) : new WebTable.Cell(""))
 									 : (first && request.isNoSub() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestNoSubs(), "") : new WebTable.Cell(""))),
@@ -1356,7 +1384,9 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				if (!request.hasRequestedCourse()) continue;
 				boolean first = true;
 				if (request.isWaitList()) hasWait = true;
-				if (request.isCritical() || request.isImportant()) hasCrit = true;
+				if (request.isCritical()) hasCrit = true;
+				if (request.isImportant()) hasImp = true;
+				if (request.isVital()) hasVital = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					if (rc.isCourse()) {
 						ImageResource icon = null; String iconText = null;
@@ -1386,6 +1416,9 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 							case OVERRIDE_APPROVED:
 								icon = RESOURCES.requestSaved(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideApproved(rc.getCourseName()));
 								break;
+							case OVERRIDE_NOT_NEEDED:
+								icon = RESOURCES.requestNotNeeded(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideNotNeeded(rc.getCourseName()));
+								break;
 							default:
 								if (check.isError(rc.getCourseName()))
 									icon = RESOURCES.requestError(); iconText = (msg);
@@ -1414,6 +1447,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 							case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); break;
 							case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); break;
 							case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); break;
+							case OVERRIDE_NOT_NEEDED: status = MESSAGES.reqStatusNotNeeded(); break;
 							}
 						}
 						if (status.isEmpty()) status = MESSAGES.reqStatusRegistered();
@@ -1432,7 +1466,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 								new WebTable.NoteCell(note, noteTitle),
 								(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
 								(first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
-									first && request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") : new WebTable.Cell("")),
+									first && request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") :
+									first && request.isVital() ? new WebTable.IconCell(RESOURCES.requestsVital(), MESSAGES.descriptionRequestVital(), "") : new WebTable.Cell("")),
 								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), (request.hasWaitListedTimeStamp() ? sDF.format(request.getWaitListedTimeStamp()) : "")) : new WebTable.Cell("")),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
 								);
@@ -1557,7 +1592,15 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		iRequests.setData(rowArray);
 		iRequests.setColumnVisible(4, hasPref);
 		iRequests.setColumnVisible(5, hasWarn);
-		iRequests.setColumnVisible(7, hasCrit);
+		iRequests.setColumnVisible(7, hasCrit || hasImp || hasVital);
+		if (hasCrit && !hasImp && !hasVital)
+			iRequests.getTable().setHTML(0, 7, MESSAGES.opSetCritical());
+		else if (!hasCrit && hasImp && !hasVital)
+			iRequests.getTable().setHTML(0, 7, MESSAGES.opSetImportant());
+		else if (!hasCrit && !hasImp && hasVital)
+			iRequests.getTable().setHTML(0, 7, MESSAGES.opSetVital());
+		else
+			iRequests.getTable().setHTML(0, 7, MESSAGES.colCritical());
 		iRequests.setColumnVisible(8, hasWait && (iDetails == null || iDetails.getWaitListMode() != WaitListMode.None));
 		
 		getRowFormatter().setVisible(iStudentRequestHeaderLine, iDetails != null && iDetails.hasStudentRequest());

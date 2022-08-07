@@ -21,15 +21,21 @@ package org.unitime.timetable.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import org.cpsolver.studentsct.model.Student.BackToBackPreference;
+import org.cpsolver.studentsct.model.Student.ModalityPreference;
 import org.hibernate.Query;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
+import org.unitime.timetable.gwt.shared.StudentSchedulingPreferencesInterface.ClassModality;
+import org.unitime.timetable.gwt.shared.StudentSchedulingPreferencesInterface.ScheduleGaps;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideIntent;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.StudentSectioningStatus.Option;
@@ -396,5 +402,182 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     			major = m;
     	}
     	return major;
+    }
+    
+    public CourseRequest getCourseRequest(CourseOffering co) {
+    	for (CourseDemand cd: getCourseDemands())
+    		for (CourseRequest cr: cd.getCourseRequests())
+    			if (cr.getCourseOffering().equals(co)) return cr;
+    	return null;
+    }
+    
+    public boolean isEnrolled(CourseOffering co) {
+    	if (co == null) return false;
+    	for (StudentClassEnrollment e: getClassEnrollments())
+    		if (e.getCourseOffering().equals(co)) return true;
+    	return false;
+    }
+    
+    public WaitList addWaitList(CourseOffering co, WaitList.WaitListType type, boolean waitListed, String changedBy, Date timeStamp, org.hibernate.Session hibSession) {
+    	if (ApplicationProperty.WaitListLogging.isFalse()) return null;
+    	if (co == null) return null;
+    	WaitList last = null;
+    	CourseRequest cr = getCourseRequest(co);
+    	if (cr != null && getWaitlists() != null && !getWaitlists().isEmpty()) {
+    		for (WaitList wl: getWaitlists()) {
+    			if ((last == null || last.compareTo(wl) < 0) && wl.hasMatchingCourse(cr.getCourseDemand()))
+    				last = wl;
+    		}
+    	}
+    	boolean lastWaitListed = (last == null ? false : last.isWaitListed());
+    	CourseOffering lastEnrolled = (last == null ? null : last.getEnrolledCourse());
+    	CourseOffering enrolled = (cr == null ? null : cr.getCourseDemand().getEnrolledCourse());
+    	if (enrolled != null && cr != null && enrolled.equals(cr.getCourseDemand().getWaitListSwapWithCourseOffering()) && !cr.isRequired()) 
+    		enrolled = null; // if section swap and the enrollment does not meet requirements -> not enrolled
+    	CourseOffering lastSwap = (last == null ? null : last.getSwapCourseOffering());
+    	CourseOffering swap = (cr == null ? null : cr.getCourseDemand().getWaitListSwapWithCourseOffering());
+    	if (lastWaitListed != waitListed || !(lastEnrolled == null ? enrolled == null : lastEnrolled.equals(enrolled)) || !(lastSwap == null ? swap == null : lastSwap.equals(swap))) {
+    		WaitList wl = new WaitList();
+    		wl.setChangedBy(changedBy);
+    		wl.setCourseOffering(cr == null ? co : cr.getCourseDemand().getFirstChoiceCourseOffering());
+    		wl.setEnrolledCourse(enrolled);
+    		wl.setTimestamp(timeStamp);
+    		wl.setWaitListType(type);
+    		wl.setWaitListed(waitListed);
+    		wl.setWaitListedTimeStamp(cr == null ? null : cr.getCourseDemand().getWaitlistedTimeStamp());
+    		wl.setStudent(this);
+    		wl.setCourseDemand(cr == null ? null : cr.getCourseDemand());
+    		wl.setSwapCourseOffering(cr == null ? null : cr.getCourseDemand().getWaitListSwapWithCourseOffering());
+    		wl.fillInNotes();
+    		addTowaitlists(wl);
+    		if (hibSession != null) hibSession.save(wl);
+    		return wl;
+    	} else {
+    		return null;
+    	}
+    }
+    
+    public void resetWaitLists(WaitList.WaitListType type, String changedBy, Date timeStamp, org.hibernate.Session hibSession) {
+    	if (ApplicationProperty.WaitListLogging.isFalse()) return;
+    	if (timeStamp == null) timeStamp = new Date();
+    	Map<CourseOffering, WaitList> waitlists = new HashMap<CourseOffering, WaitList>();
+		if (getWaitlists() != null)
+			for (WaitList wl: getWaitlists()) {
+				WaitList other = waitlists.get(wl.getCourseOffering());
+				if (other == null || other.compareTo(wl) < 0)
+					waitlists.put(wl.getCourseOffering(), wl);
+			}
+		for (StudentClassEnrollment e: getClassEnrollments()) {
+			WaitList wl = waitlists.remove(e.getCourseOffering());
+			if (wl != null && wl.isWaitListed()) {
+				// wait-list enrolled
+				if (e.getCourseOffering().equals(wl.getSwapCourseOffering())) { // is section swap
+					CourseRequest cr = getCourseRequest(e.getCourseOffering());
+					if (cr != null && !cr.isRequired()) {
+						// requirements not met -> put back (it is considered not enrolled)
+						waitlists.put(e.getCourseOffering(), wl);
+						continue;
+					}
+				}
+				wl = new WaitList();
+				wl.setChangedBy(changedBy);
+				wl.setTimestamp(timeStamp);
+				CourseRequest cr = getCourseRequest(e.getCourseOffering());
+				wl.setCourseOffering(cr != null ? cr.getCourseDemand().getFirstChoiceCourseOffering() : e.getCourseOffering());
+				wl.setCourseDemand(cr == null ? null : cr.getCourseDemand());
+				wl.setEnrolledCourse(e.getCourseOffering());
+				wl.setWaitListType(type);
+				wl.setWaitListed(false);
+				wl.setStudent(this);
+				wl.setWaitListedTimeStamp(cr == null ? null : cr.getCourseDemand().getWaitlistedTimeStamp());
+				wl.setSwapCourseOffering(cr == null ? null : cr.getCourseDemand().getWaitListSwapWithCourseOffering());
+				wl.fillInNotes();
+				addTowaitlists(wl);
+				if (hibSession != null) hibSession.save(wl);
+			}
+		}
+		for (CourseDemand cd: getCourseDemands()) {
+			if (cd.isWaitlist() && !cd.isEnrolled(true)) {
+				CourseOffering co = cd.getFirstChoiceCourseOffering();
+				if (co != null) {
+					WaitList old = waitlists.remove(co);
+					if (old == null || !old.isWaitListed() || !WaitList.computeRequest(cd).equals(old.getRequest()) || 
+							!(old.getSwapCourseOffering() == null ? cd.getWaitListSwapWithCourseOffering() == null : old.getSwapCourseOffering().equals(cd.getWaitListSwapWithCourseOffering()))) {
+						// new wait-lists
+						WaitList wl = new WaitList();
+						wl.setChangedBy(changedBy);
+						wl.setTimestamp(timeStamp);
+						wl.setCourseOffering(co);
+						wl.setCourseDemand(cd);
+						wl.setWaitListType(type);
+						wl.setWaitListed(true);
+						wl.setStudent(this);
+						wl.setWaitListedTimeStamp(cd.getWaitlistedTimeStamp());
+						wl.setSwapCourseOffering(cd.getWaitListSwapWithCourseOffering());
+						wl.fillInNotes();
+						addTowaitlists(wl);
+						if (hibSession != null) hibSession.save(wl);
+					}
+				}
+			}
+		}
+		for (Map.Entry<CourseOffering, WaitList> e: waitlists.entrySet()) {
+			CourseOffering co = e.getKey();
+			WaitList old = e.getValue();
+			if (old.isWaitListed()) {
+				// removed wait-list
+				WaitList wl = new WaitList();
+				wl.setChangedBy(changedBy);
+				wl.setTimestamp(timeStamp);
+				wl.setCourseOffering(co);
+				CourseRequest cr = getCourseRequest(co);
+				wl.setCourseDemand(cr == null ? null : cr.getCourseDemand());
+				wl.setWaitListType(type);
+				wl.setWaitListed(false);
+				wl.setStudent(this);
+				wl.setWaitListedTimeStamp(old.getWaitListedTimeStamp());
+				wl.setSwapCourseOffering(old.getSwapCourseOffering());
+				wl.fillInNotes();
+				addTowaitlists(wl);
+				if (hibSession != null) hibSession.save(wl);
+			}
+		}
+    }
+    
+    public ClassModality getPreferredClassModality() {
+    	if (getSchedulePreference() == null) return ClassModality.NoPreference;
+    	return ClassModality.values()[getSchedulePreference()];
+    }
+    public void setPreferredClassModality(ClassModality modality) {
+    	if (modality == null)
+    		setSchedulePreference(null);
+    	else
+    		setSchedulePreference(modality.ordinal());
+    }
+    public ModalityPreference getModalityPreference() {
+    	switch(getPreferredClassModality()) {
+    	case DiscouragedOnline: return ModalityPreference.ONILNE_DISCOURAGED;
+    	case PreferredOnline: return ModalityPreference.ONLINE_PREFERRED;
+    	case RequiredOnline: return ModalityPreference.ONLINE_REQUIRED;
+    	default: return ModalityPreference.NO_PREFERENCE;
+    	}
+    }
+    
+    public ScheduleGaps getPreferredScheduleGaps() {
+    	if (getFreeTimeCategory() == null) return ScheduleGaps.NoPreference;
+    	return ScheduleGaps.values()[getFreeTimeCategory()];
+    }
+    public void setPreferredScheduleGaps(ScheduleGaps gaps) {
+    	if (gaps == null)
+    		setFreeTimeCategory(null);
+    	else
+    		setFreeTimeCategory(gaps.ordinal());
+    }
+    public BackToBackPreference getBackToBackPreference() {
+    	switch (getPreferredScheduleGaps()) {
+    	case DiscourageBackToBack: return BackToBackPreference.BTB_DISCOURAGED;
+    	case PreferBackToBack: return BackToBackPreference.BTB_PREFERRED;
+    	default: return BackToBackPreference.NO_PREFERENCE;
+    	}
     }
 }

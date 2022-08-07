@@ -14249,5 +14249,247 @@
 			select distinct r.role_id, 'ProgramEdit'
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'MajorEdit'
 		</sql>
-	</update>	
+	</update>
+	<update version="246" date="18-Jan-2022" comment="Wait-List Logging">
+		<sql>delete from %SCHEMA%.waitlist</sql>
+		<mysql>alter table %SCHEMA%.waitlist add changed_by varchar(40) null</mysql>
+		<plsql>alter table %SCHEMA%.waitlist add changed_by varchar2(40 char)</plsql>
+		<pgsql>alter table %SCHEMA%.waitlist add changed_by varchar(40)</pgsql>
+	    <plsql>alter table %SCHEMA%.waitlist add waitlisted number(1) default 0</plsql>
+	    <plsql>alter table %SCHEMA%.waitlist add constraint nn_waitlist_wl check (waitlisted is not null)</plsql>
+	    <mysql>alter table %SCHEMA%.waitlist add waitlisted int(1) not null default 0</mysql>
+	    <pgsql>alter table %SCHEMA%.waitlist add waitlisted boolean not null default false</pgsql>
+		<plsql>alter table %SCHEMA%.waitlist add enrolled_course_id number(20,0)</plsql>
+	    <mysql>alter table %SCHEMA%.waitlist add enrolled_course_id decimal(20,0)</mysql>
+	    <pgsql>alter table %SCHEMA%.waitlist add enrolled_course_id bigint</pgsql>
+	    <sql>
+			alter table %SCHEMA%.waitlist add constraint fk_waitlist_enrolled_course foreign key (enrolled_course_id)
+			references %SCHEMA%.course_offering (uniqueid) on delete set null
+		</sql>
+		<plsql>alter table %SCHEMA%.waitlist add demand_id number(20,0)</plsql>
+	    <mysql>alter table %SCHEMA%.waitlist add demand_id decimal(20,0)</mysql>
+	    <pgsql>alter table %SCHEMA%.waitlist add demand_id bigint</pgsql>
+	    <sql>
+			alter table %SCHEMA%.waitlist add constraint fk_waitlist_course_demand foreign key (demand_id)
+			references %SCHEMA%.course_demand (uniqueid) on delete set null
+		</sql>
+		<mysql>alter table %SCHEMA%.waitlist add request varchar(255) null</mysql>
+		<plsql>alter table %SCHEMA%.waitlist add request varchar2(255 char)</plsql>
+		<pgsql>alter table %SCHEMA%.waitlist add request varchar(255)</pgsql>
+		<mysql>alter table %SCHEMA%.waitlist add enrollment varchar(255) null</mysql>
+		<plsql>alter table %SCHEMA%.waitlist add enrollment varchar2(255 char)</plsql>
+		<pgsql>alter table %SCHEMA%.waitlist add enrollment varchar(255)</pgsql>
+		<plsql>alter table %SCHEMA%.waitlist add waitlist_ts timestamp</plsql>
+	    <mysql>alter table %SCHEMA%.waitlist add waitlist_ts datetime</mysql>
+	    <pgsql>alter table %SCHEMA%.waitlist add waitlist_ts timestamp with time zone</pgsql>
+	</update>
+	<update version="247" date="21-Jan-2022" comment="Student Campus">
+		<plsql>
+			create table %SCHEMA%.campus (
+				uniqueid number(20,0) constraint nn_campus_id not null,
+				session_id number(20,0) constraint nn_campus_session_id not null,
+				reference varchar2(20 char) constraint nn_campus_reference not null,
+				label varchar2(60 char) constraint nn_campus_label not null,
+				external_uid varchar2(40 char)
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.campus add constraint pk_campus primary key (uniqueid)</plsql>
+		<plsql>create unique index %SCHEMA%.uk_campus on %SCHEMA%.campus(session_id, reference)</plsql>
+		<mysql>
+			create table %SCHEMA%.campus (
+				uniqueid decimal(20,0) primary key not null,
+				session_id decimal(20,0) not null,
+				reference varchar(20) not null,
+				label varchar(60) not null,
+				external_uid varchar(40)
+			) engine = INNODB
+		</mysql>
+		<mysql>create unique index uk_campus on %SCHEMA%.campus(session_id, reference)</mysql>
+		<pgsql>
+			create table %SCHEMA%.campus (
+				uniqueid bigint not null,
+			    session_id bigint not null,
+			    reference varchar(20) not null,
+			    label varchar(60) not null,
+				external_uid varchar(40)
+			)
+		</pgsql>
+		<pgsql>alter table %SCHEMA%.campus add constraint pk_campus primary key (uniqueid)</pgsql>
+		<pgsql>create unique index uk_campus on %SCHEMA%.campus using btree (session_id, reference)</pgsql>
+		<sql>
+			alter table %SCHEMA%.campus add constraint fk_campus_session foreign key (session_id)
+			references %SCHEMA%.sessions (uniqueid) on delete cascade
+		</sql>
+		<plsql>alter table %SCHEMA%.student_area_clasf_major add campus_id number(20,0)</plsql>
+	    <mysql>alter table %SCHEMA%.student_area_clasf_major add campus_id decimal(20,0)</mysql>
+	    <pgsql>alter table %SCHEMA%.student_area_clasf_major add campus_id bigint</pgsql>
+	    <sql>
+			alter table %SCHEMA%.student_area_clasf_major add constraint fk_student_acmaj_campus foreign key (campus_id)
+			references %SCHEMA%.campus (uniqueid) on delete set null
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'Campuses'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'Majors'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'CampusEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'MajorEdit'
+		</sql>
+	</update>
+	<update version="248" date="16-Feb-2021" comment="Add Funding Department">
+	    <plsql>alter table %SCHEMA%.department add external_funding_dept number(1)</plsql>
+	    <mysql>alter table %SCHEMA%.department add external_funding_dept int(1)</mysql>
+	    <pgsql>alter table %SCHEMA%.department add external_funding_dept boolean</pgsql>
+
+		<plsql>
+			alter table %SCHEMA%.subject_area add funding_dept_id number(20,0)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.subject_area add constraint fk_sa_fund_dept foreign key (funding_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</plsql>
+
+		<mysql>
+			alter table %SCHEMA%.subject_area add funding_dept_id decimal(20,0)
+		</mysql>
+		<mysql>
+			alter table %SCHEMA%.subject_area add constraint fk_sa_fund_dept foreign key (funding_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</mysql>
+		<pgsql>
+			alter table %SCHEMA%.subject_area add funding_dept_id bigint
+		</pgsql>
+		<pgsql>
+			create index fk_sa_fund_dept ON %SCHEMA%.subject_area USING btree (funding_dept_id)
+		</pgsql>
+		<pgsql>
+			alter table only %SCHEMA%.subject_area add constraint fk_co_fund_dept foreign key (funding_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</pgsql>
+
+		<plsql>
+			alter table %SCHEMA%.course_offering add funding_dept_id number(20,0)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.course_offering add constraint fk_co_fund_dept foreign key (funding_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</plsql>
+
+		<mysql>
+			alter table %SCHEMA%.course_offering add funding_dept_id decimal(20,0)
+		</mysql>
+		<mysql>
+			alter table %SCHEMA%.course_offering add constraint fk_co_fund_dept foreign key (funding_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</mysql>
+		
+		<pgsql>
+			alter table %SCHEMA%.course_offering add funding_dept_id bigint
+		</pgsql>
+		<pgsql>
+			create index fk_co_fund_dept ON %SCHEMA%.course_offering USING btree (funding_dept_id)
+		</pgsql>
+		<pgsql>
+			alter table only %SCHEMA%.course_offering add constraint fk_co_fund_dept foreign key (funding_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</pgsql>
+
+		<plsql>
+			alter table %SCHEMA%.class_ add funding_dept_id number(20,0)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.class_ add constraint fk_class_fund_dept foreign key (funding_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</plsql>
+
+		<mysql>
+			alter table %SCHEMA%.class_ add funding_dept_id decimal(20,0)
+		</mysql>
+		<mysql>
+			alter table %SCHEMA%.class_ add constraint fk_class_fund_dept foreign key (funding_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</mysql>
+		
+		<pgsql>
+			alter table %SCHEMA%.class_ add funding_dept_id bigint
+		</pgsql>
+		<pgsql>
+			create index fk_class_fund_dept ON %SCHEMA%.class_ USING btree (funding_dept_id)
+		</pgsql>
+		<pgsql>
+			alter table only %SCHEMA%.class_ add constraint fk_class_fund_dept foreign key (funding_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</pgsql>
+
+		<plsql>
+			alter table %SCHEMA%.pit_class add funding_dept_id number(20,0)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.pit_class add constraint fk_pit_class_fund_dept foreign key (funding_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</plsql>
+
+		<mysql>
+			alter table %SCHEMA%.pit_class add funding_dept_id decimal(20,0)
+		</mysql>
+		<mysql>
+			alter table %SCHEMA%.pit_class add constraint fk_pit_class_fund_dept foreign key (funding_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</mysql>
+		
+		<pgsql>
+			alter table %SCHEMA%.pit_class add funding_dept_id bigint
+		</pgsql>
+		<pgsql>
+			create index fk_pit_class_fund_dept ON %SCHEMA%.pit_class USING btree (funding_dept_id)
+		</pgsql>
+		<pgsql>
+			alter table only %SCHEMA%.pit_class add constraint fk_pit_class_fund_dept foreign key (funding_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</pgsql>
+	</update>
+	<update version="249" date="3-Feb-2022" comment="Waitlist course swap">
+		<plsql>alter table %SCHEMA%.course_demand add wl_course_swap_id number(20,0)</plsql>
+	    <mysql>alter table %SCHEMA%.course_demand add wl_course_swap_id decimal(20,0)</mysql>
+	    <pgsql>alter table %SCHEMA%.course_demand add wl_course_swap_id bigint</pgsql>
+	    <sql>
+			alter table %SCHEMA%.course_demand add constraint fk_course_demand_course_swap foreign key (wl_course_swap_id)
+			references %SCHEMA%.course_offering (uniqueid) on delete set null
+		</sql>
+	</update>
+	<update version="250" date="16-Mar-2022" comment="Student Scheduling Preferences">
+		<plsql>alter table %SCHEMA%.student add class_start date</plsql>
+		<plsql>alter table %SCHEMA%.student add class_end date</plsql>
+		<mysql>alter table %SCHEMA%.student add class_start date null</mysql>
+		<mysql>alter table %SCHEMA%.student add class_end date null</mysql>
+		<pgsql>alter table %SCHEMA%.student add class_start date</pgsql>
+		<pgsql>alter table %SCHEMA%.student add class_end date</pgsql>
+	</update>
+	<update version="251" date="26-Apr-2022" comment="Waitlist log course swap">
+		<plsql>alter table %SCHEMA%.waitlist add swap_course_id number(20,0)</plsql>
+	    <mysql>alter table %SCHEMA%.waitlist add swap_course_id decimal(20,0)</mysql>
+	    <pgsql>alter table %SCHEMA%.waitlist add swap_course_id bigint</pgsql>
+	    <sql>
+			alter table %SCHEMA%.waitlist add constraint fk_waitlist_swap_course foreign key (swap_course_id)
+			references %SCHEMA%.course_offering (uniqueid) on delete set null
+		</sql>
+	</update>
+	<update version="252" date="26-May-2022" comment="Waitlist indexes">
+		<plsql onFail="next">create index %SCHEMA%.idx_course_demand_course_swap on %SCHEMA%.course_demand(wl_course_swap_id)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_sect_pref_im on %SCHEMA%.sect_pref(instr_mthd_id)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_sect_pref_class on %SCHEMA%.sect_pref(class_id)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_sect_pref_request on %SCHEMA%.sect_pref(request_id)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_waitlist_course_demand on %SCHEMA%.waitlist(demand_id)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_waitlist_enrolled_course on %SCHEMA%.waitlist(enrolled_course_id)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_waitlist_swap_course on %SCHEMA%.waitlist(swap_course_id)</plsql>
+		<pgsql onFail="next">create index idx_course_demand_course_swap ON %SCHEMA%.course_demand USING btree (wl_course_swap_id)</pgsql>
+		<pgsql onFail="next">create index idx_sect_pref_im ON %SCHEMA%.sect_pref USING btree (instr_mthd_id)</pgsql>
+		<pgsql onFail="next">create index idx_sect_pref_class ON %SCHEMA%.sect_pref USING btree (class_id)</pgsql>
+		<pgsql onFail="next">create index idx_sect_pref_request ON %SCHEMA%.sect_pref USING btree (request_id)</pgsql>
+		<pgsql onFail="next">create index idx_waitlist_course_demand ON %SCHEMA%.waitlist USING btree (demand_id)</pgsql>
+		<pgsql onFail="next">create index idx_waitlist_enrolled_course ON %SCHEMA%.waitlist USING btree (enrolled_course_id)</pgsql>
+		<pgsql onFail="next">create index idx_waitlist_swap_course ON %SCHEMA%.waitlist USING btree (swap_course_id)</pgsql>
+	</update>
 </dbupdate>

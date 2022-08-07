@@ -33,5 +33,6 @@ public interface ExternalTermProvider {
 	public String getExternalSubject(AcademicSessionInfo session, String subjectArea, String courseNumber);
 	
 	public String getExternalCourseNumber(AcademicSessionInfo session, String subjectArea, String courseNumber);
-
+	
+	public String getExternalCourseCampus(AcademicSessionInfo session, String subjectArea, String courseNumber);
 }

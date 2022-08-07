@@ -496,7 +496,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     }
     
     public Placement toPlacement() {
-    	if (getTime() == null || getTime().getDays() == 0) return null;
+    	if (getTime() == null) return null;
         List<RoomLocation> rooms = new ArrayList<RoomLocation>();
         for (XRoom r: getRooms())
         	rooms.add(new RoomLocation(r.getUniqueId(), r.getName(), null, 0, 0, r.getX(), r.getY(), r.getIgnoreTooFar(), null));

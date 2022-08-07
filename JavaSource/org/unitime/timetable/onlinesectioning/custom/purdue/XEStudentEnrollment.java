@@ -143,16 +143,32 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		return ApplicationProperties.getProperty("banner.xe.site");
 	}
 	
-	protected String getBannerUser(boolean admin) {
-		if (admin) {
+	protected String getBannerUser(boolean manager) {
+		if (manager) {
 			String user = ApplicationProperties.getProperty("banner.xe.admin.user");
 			if (user != null) return user;
 		}
 		return ApplicationProperties.getProperty("banner.xe.user");
 	}
 	
-	protected String getBannerPassword(boolean admin) {
-		if (admin) {
+	protected String getBannerPassword(boolean manager) {
+		if (manager) {
+			String pwd = ApplicationProperties.getProperty("banner.xe.admin.password");
+			if (pwd != null) return pwd;
+		}
+		return ApplicationProperties.getProperty("banner.xe.password");
+	}
+	
+	protected String getBannerUser(OnlineSectioningHelper helper) {
+		if (helper.isAdmin()) {
+			String user = ApplicationProperties.getProperty("banner.xe.admin.user");
+			if (user != null) return user;
+		}
+		return ApplicationProperties.getProperty("banner.xe.user");
+	}
+	
+	protected String getBannerPassword(OnlineSectioningHelper helper) {
+		if (helper.isAdmin()) {
 			String pwd = ApplicationProperties.getProperty("banner.xe.admin.password");
 			if (pwd != null) return pwd;
 		}
@@ -164,7 +180,17 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 	}
 	
 	protected boolean isBannerAdmin() {
-		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.xe.admin", "false"));
+		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.xe.admin", "false"));	
+	}
+	
+	protected boolean isBannerAdmin(OnlineSectioningHelper helper) {
+		if (helper.isAdmin() && isBannerAdmin()) {
+			if (helper.hasAdminPermission())
+				return true;
+			else if (helper.hasAvisorPermission())
+				return "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.xe.advisorIsAdmin", "false"));
+		}
+		return false;
 	}
 	
 	protected boolean isBannerWaitlist() {
@@ -263,15 +289,14 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			AcademicSessionInfo session = server.getAcademicSession();
 			String term = getBannerTerm(session);
 			String campus = getBannerCampus(session);
-			boolean manager = helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER;
-			boolean admin = manager & isBannerAdmin();
+			boolean admin = isBannerAdmin(helper);
 			if (helper.isDebugEnabled())
 				helper.debug("Checking eligility for " + student.getName() + " (term: " + term + ", id:" + getBannerId(student) + (admin ? ", admin" : pin != null ? ", pin:" + pin : "") + ")");
 			
 			// First, check student registration status
 			resource = new ClientResource(getBannerSite());
 			resource.setNext(iClient);
-			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(manager), getBannerPassword(manager));
+			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(helper), getBannerPassword(helper));
 			Gson gson = getGson(helper);
 			XEInterface.RegisterResponse original = null;
 
@@ -354,7 +379,17 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				}
 				check.setMessage(reason);
 			} else if (student.getStudentId() == null) {
-				check.setMessage("UniTime enrollment data are not synchronized with Banner enrollment data, please try again later.");
+				boolean keepMessage = check.hasMessage() && (
+						((Number)helper.getHibSession().createQuery(
+								"select count(s) from Student s where s.externalUniqueId = :id and " +
+								"s.session.academicYear = :year and s.session.academicTerm = :term and s.session.academicInitiative != :campus"
+								).setString("id", student.getExternalId())
+								.setString("term", server.getAcademicSession().getTerm())
+								.setString("year", server.getAcademicSession().getYear())
+								.setString("campus", server.getAcademicSession().getCampus())
+								.uniqueResult()).intValue() > 0);
+				if (!keepMessage)
+					check.setMessage("UniTime enrollment data are not synchronized with Banner enrollment data, please try again later.");
 				check.setFlag(EligibilityFlag.CAN_ENROLL, false);
 				if (isCanRequestUpdates()) {
 					List<XStudent> students = new ArrayList<XStudent>(1); students.add(student);
@@ -448,8 +483,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			AcademicSessionInfo session = server.getAcademicSession();
 			String term = getBannerTerm(session);
 			String campus = getBannerCampus(session);
-			boolean manager = helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER;
-			boolean admin = manager & isBannerAdmin();
+			boolean admin = isBannerAdmin(helper);
 			if (helper.isDebugEnabled())
 				helper.debug("Enrolling " + student.getName() + " to " + enrollments + " (term: " + term + ", id:" + getBannerId(student) + (admin ? ", admin" : pin != null ? ", pin:" + pin : "") + ")");
 			
@@ -476,7 +510,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			// First, check student registration status
 			resource = new ClientResource(getBannerSite());
 			resource.setNext(iClient);
-			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(manager), getBannerPassword(manager));
+			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(helper), getBannerPassword(helper));
 			Gson gson = getGson(helper);
 			XEInterface.RegisterResponse original = null;
 			
@@ -1132,7 +1166,6 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			XStudent student = sectioningRequest.getStudent();
 			XCourseId course = sectioningRequest.getRequest().getCourseIdByOfferingId(sectioningRequest.getOffering().getOfferingId());
 			
-			// Remove sections that are to be kept (they are included in both enrollments)
 			Set<String> idsToAdd = new TreeSet<String>(), idsToDrop = new TreeSet<String>();
 			if (sectioningRequest.getLastEnrollment() != null)
 				for (XSection section: sectioningRequest.getOldOffering().getSections(sectioningRequest.getLastEnrollment()))
@@ -1141,9 +1174,19 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				for (XSection section: sectioningRequest.getOffering().getSections(enrollment))
 					idsToAdd.add(section.getExternalId(course.getCourseId()));
 			}
+			
+			XEnrollment dropEnrollment = sectioningRequest.getDropEnrollment();
+			if (dropEnrollment != null) {
+				XOffering dropOffering = server.getOffering(dropEnrollment.getOfferingId());
+				if (dropOffering != null)
+					for (XSection section: dropOffering.getSections(dropEnrollment))
+						idsToDrop.add(section.getExternalId(dropEnrollment.getCourseId()));		
+			}
+
+			// Remove sections that are to be kept (they are included in both enrollments)
 			for (Iterator<String> i = idsToDrop.iterator(); i.hasNext(); )
 				if (idsToAdd.remove(i.next())) i.remove();
-			
+
 			// Return the new enrollment when there is no change detected
 			if (idsToAdd.isEmpty() && idsToDrop.isEmpty())
 				return enrollment;
@@ -1155,7 +1198,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			// First, check student registration status
 			resource = new ClientResource(getBannerSite());
 			resource.setNext(iClient);
-			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(true), getBannerPassword(true));
+			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(helper), getBannerPassword(helper));
 
 			resource.addQueryParameter("term", term);
 			resource.addQueryParameter("bannerId", getBannerId(student));

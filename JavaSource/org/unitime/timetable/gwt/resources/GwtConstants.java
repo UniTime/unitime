@@ -24,11 +24,11 @@ package org.unitime.timetable.gwt.resources;
  */
 public interface GwtConstants extends Constants {
 	
-	@DefaultStringValue("4.6")
+	@DefaultStringValue("4.7")
 	@DoNotTranslate
 	String version();
 
-	@DefaultStringValue("&copy; 2008 - 2021 The Apereo Foundation")
+	@DefaultStringValue("&copy; 2008 - 2022 The Apereo Foundation")
 	@DoNotTranslate
 	String copyright();
 	

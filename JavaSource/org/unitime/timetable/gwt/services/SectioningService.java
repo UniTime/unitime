@@ -35,6 +35,7 @@ import org.unitime.timetable.gwt.shared.ReservationException;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.StudentSchedulingPreferencesInterface;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionInfo;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse;
@@ -138,4 +139,8 @@ public interface SectioningService extends RemoteService {
 	Collection<VariableTitleCourseInfo> listVariableTitleCourses(StudentSectioningContext cx, String query, int limit) throws SectioningException, PageAccessException;
 	VariableTitleCourseInfo getVariableTitleCourse(StudentSectioningContext cx, String course) throws SectioningException, PageAccessException;
 	VariableTitleCourseResponse requestVariableTitleCourse(VariableTitleCourseRequest request) throws SectioningException, PageAccessException;
+	Collection<ClassAssignmentInterface.CourseAssignment> getCoursesFromRequest(StudentSectioningContext cx, CourseRequestInterface.Request query) throws SectioningException, PageAccessException;
+	
+	StudentSchedulingPreferencesInterface getStudentSchedulingPreferences(StudentSectioningContext cx) throws SectioningException, PageAccessException;
+	Boolean setStudentSchedulingPreferences(StudentSectioningContext cx, StudentSchedulingPreferencesInterface preferences) throws SectioningException, PageAccessException;
 }

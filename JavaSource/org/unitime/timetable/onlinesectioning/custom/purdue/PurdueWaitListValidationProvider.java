@@ -1,5 +1,5 @@
 /*
- * Licensed to The Apereo Foundation under one or more contributor license
+urse * Licensed to The Apereo Foundation under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
  * additional information regarding copyright ownership.
  *
@@ -70,6 +70,7 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityChe
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.CourseDemandDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -106,9 +107,11 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XOverride;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
@@ -384,27 +387,49 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 			if (line.isWaitList() && line.hasRequestedCourse()) {
 				
 				// skip enrolled courses
-				boolean enrolled = false;
+				XEnrollment enrolled = null;
 				for (RequestedCourse rc: line.getRequestedCourse()) {
 					if (rc.hasCourseId()) {
 						XCourseRequest cr = original.getRequestForCourse(rc.getCourseId());
-						if (cr != null && cr.getEnrollment() != null)  { enrolled = true; break; }
+						if (cr != null && cr.getEnrollment() != null)  { enrolled = cr.getEnrollment(); break; }
 					}
 				}
-				if (enrolled) continue;
+				// when enrolled, only continue when swap for enrolled course is enabled (section wait-list)
+				if (enrolled != null && !enrolled.getCourseId().equals(line.getWaitListSwapWithCourseOfferingId()))
+					continue;
+
+				XCourse dropCourse = null;
+				Set<String> dropCrns = null;
+				if (line.hasWaitListSwapWithCourseOfferingId()) {
+					dropCourse = server.getCourse(line.getWaitListSwapWithCourseOfferingId());
+					XCourseRequest cr = original.getRequestForCourse(line.getWaitListSwapWithCourseOfferingId());
+					if (cr != null && cr.getEnrollment() != null && cr.getEnrollment().getCourseId().equals(line.getWaitListSwapWithCourseOfferingId())) {
+						dropCrns = new TreeSet<String>();
+						XOffering dropOffering = server.getOffering(dropCourse.getOfferingId());
+						for (XSection section: dropOffering.getSections(cr.getEnrollment())) {
+							dropCrns.add(section.getExternalId(line.getWaitListSwapWithCourseOfferingId())); 
+						}
+					}
+				}
 				
 				for (RequestedCourse rc: line.getRequestedCourse()) {
 					if (rc.hasCourseId()) {
 						XCourse xcourse = server.getCourse(rc.getCourseId());
 						if (xcourse == null) continue;
 						
+						// when enrolled, skip courses of lower choice than the enrollment
+						if (enrolled != null && line.getIndex(rc.getCourseId()) > line.getIndex(enrolled.getCourseId())) continue;
+						
 						// skip offerings that cannot be wait-listed
 						XOffering offering = server.getOffering(xcourse.getOfferingId());
 						if (offering == null || !offering.isWaitList()) continue;
 						
+						// when enrolled, skip the enrolled course if the enrollment matches the requirements
+						if (enrolled != null && enrolled.getCourseId().equals(rc.getCourseId()) && enrolled.isRequired(rc, offering)) continue;
+						
 						// get possible enrollments into the course
 						Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
-						CourseRequest courseRequest = SectioningRequest.convert(assignment, new XCourseRequest(original, xcourse), server, WaitListMode.WaitList);
+						CourseRequest courseRequest = SectioningRequest.convert(assignment, new XCourseRequest(original, xcourse, rc), dropCourse, server, WaitListMode.WaitList);
 						Collection<Enrollment> enrls = courseRequest.getEnrollmentsSkipSameTime(assignment);
 						
 						// get a test enrollment (preferably a non-conflicting one)
@@ -444,11 +469,25 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						req.mode = getSpecialRegistrationApiMode();
 						
 						Set<String> crns = new HashSet<String>();
+						Set<String> keep = new HashSet<String>();
 						for (Section section: testEnrollment.getSections()) {
 							String crn = getCRN(section, testEnrollment.getCourse());
-							SpecialRegistrationHelper.addWaitListCrn(req, crn);
-							crns.add(crn);
+							if (dropCrns != null && dropCrns.contains(crn)) {
+								keep.add(crn);
+							} else {
+								SpecialRegistrationHelper.addWaitListCrn(req, crn);
+								crns.add(crn);
+							}
 						}
+						if (dropCrns != null)
+							for (String crn: dropCrns) {
+								if (!keep.contains(crn)) {
+									SpecialRegistrationHelper.dropWaitListCrn(req, crn);
+									crns.add(crn);
+								}
+							}
+						// no CRNs to check -> continue
+						if (crns.isEmpty()) continue;
 						
 						// call validation
 						CheckRestrictionsResponse resp = null;
@@ -641,15 +680,30 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 			int idx = 1;
 			if (note != null && !note.isEmpty()) {
 				response.addConfirmation(note, CONF_BANNER, idx++);
-				CourseMessage cm = response.addConfirmation("", CONF_BANNER, idx++);
-				cm.setCode("REQUEST_NOTE");
-				for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.waitlist.requestorNoteSuggestions", "").split("[\r\n]+"))
-					if (!suggestion.isEmpty()) cm.addSuggestion(suggestion);
+				Set<String> courses = new HashSet<String>();
+				boolean hasCredit = false;
+				for (CourseMessage x: response.getMessages(CONF_BANNER)) {
+					if ("WL-CREDIT".equals(x.getCode()) || "MAXI".equals(x.getCode())) { hasCredit = true; continue; }
+					if (x.hasCourse() && courses.add(x.getCourse())) {
+						CourseMessage cm = response.addConfirmation("", CONF_BANNER, idx++);
+						cm.setCourse(x.getCourse()); cm.setCourseId(x.getCourseId());
+						cm.setCode("REQUEST_NOTE");
+						for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.prereg.requestorNoteSuggestions", "").split("[\r\n]+"))
+							if (!suggestion.isEmpty()) cm.addSuggestion(suggestion); 
+					}
+				}
+				if (hasCredit) {
+					CourseMessage cm = response.addConfirmation("", CONF_BANNER, idx++);
+					cm.setCourse(MESSAGES.tabRequestNoteMaxCredit());
+					cm.setCode("REQUEST_NOTE");
+					for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.prereg.requestorNoteSuggestions", "").split("[\r\n]+"))
+						if (!suggestion.isEmpty()) cm.addSuggestion(suggestion);
+				}
 			}
 			response.addConfirmation(
 					ApplicationProperties.getProperty("purdue.specreg.messages.waitlist.requestOverrides",
 							"\nIf you have already discussed these courses with your advisor and were advised to request " +
-							"registration in them please select Request Overrides. If you aren’t sure, click Cancel Submit and " +
+							"registration in them please select Request Overrides. If you aren\u2019t sure, click Cancel Submit and " +
 							"consult with your advisor before wait-listing these courses."),
 					CONF_BANNER, idx++);
 		}
@@ -761,8 +815,8 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 
 		if (request.hasConfirmations()) {
 			for (CourseMessage m: request.getConfirmations()) {
-				if ("REQUEST_NOTE".equals(m.getCode()) && m.getMessage() != null && !m.getMessage().isEmpty()) {
-					req.requestorNotes = m.getMessage();
+				if ("REQUEST_NOTE".equals(m.getCode()) && m.getMessage() != null && !m.getMessage().isEmpty() && !m.hasCourseId()) {
+					req.maxCreditRequestorNotes = m.getMessage();
 				}
 			}
 			for (CourseRequestInterface.Request c: request.getCourses())
@@ -780,8 +834,10 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 							if ("NO_ALT".equals(m.getCode())) continue;
 							if ("DROP_CRIT".equals(m.getCode())) continue;
 							if ("WL-OVERLAP".equals(m.getCode())) continue;
+							if ("WL-INACTIVE".equals(m.getCode())) continue;
 							if ("NOT-ONLINE".equals(m.getCode())) continue;
 							if ("NOT-RESIDENTIAL".equals(m.getCode())) continue;
+							if ("REQUEST_NOTE".equals(m.getCode())) continue;
 							if (!m.hasCourse()) continue;
 							if (!m.isError() && (course.getCourseId().equals(m.getCourseId()) || course.getCourseName().equals(m.getCourse()))) {
 								ChangeError e = new ChangeError();
@@ -791,12 +847,16 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						}
 						if (!errors.isEmpty()) {
 							Change ch = new Change();
-							ch.subject = subject;
-							ch.courseNbr = courseNbr;
+							ch.setCourse(subject, courseNbr, iExternalTermProvider, server.getAcademicSession());
 							ch.crn = "";
 							ch.errors = errors;
 							ch.operation = ChangeOperation.ADD;
 							req.changes.add(ch);
+							for (CourseMessage m: request.getConfirmations()) {
+								if ("REQUEST_NOTE".equals(m.getCode()) && m.getMessage() != null && !m.getMessage().isEmpty() && course.getCourseName().equals(m.getCourse())) {
+									ch.requestorNotes = m.getMessage();
+								}
+							}
 							overrides.remove(subject + " " + courseNbr);
 						}
 					}
@@ -815,15 +875,13 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 					if (course == null) continue;
 					if (cc == null) {
 						cc = new CourseCredit();
-						cc.subject = course.getSubjectArea();
-						cc.courseNbr = course.getCourseNumber();
+						cc.setCourse(course.getSubjectArea(), course.getCourseNumber(), iExternalTermProvider, server.getAcademicSession());
 						cc.title = course.getTitle();
 						cc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
 					} else {
 						if (cc.alternatives == null) cc.alternatives = new ArrayList<CourseCredit>();
 						CourseCredit acc = new CourseCredit();
-						acc.subject = course.getSubjectArea();
-						acc.courseNbr = course.getCourseNumber();
+						acc.setCourse(course.getSubjectArea(), course.getCourseNumber(), iExternalTermProvider, server.getAcademicSession());
 						acc.title = course.getTitle();
 						acc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
 						cc.alternatives.add(acc);
@@ -834,22 +892,8 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 				if (credit != null && (wlCredit == null || wlCredit < credit)) wlCredit = credit;
 			}
 		}
-		if (neededCredit != null) {
-			if (maxCredit < neededCredit) {
-				req.maxCredit = neededCredit;
-			}
-		} else if (wlCredit != null && wlCredit.floatValue() > 0f) {
-			float total = wlCredit;
-			for (XRequest r: original.getRequests()) {
-				if (r instanceof XCourseRequest) {
-					XCourseRequest cr = (XCourseRequest)r;
-					if (cr.getEnrollment() != null)
-						total += cr.getEnrollment().getCredit(server);
-				}
-			}
-			if (maxCredit < total) {
-				req.maxCredit = total;
-			}
+		if (neededCredit != null && maxCredit < neededCredit) {
+			req.maxCredit = neededCredit;
 		}
 		
 		if (!req.changes.isEmpty() || !overrides.isEmpty() || req.maxCredit != null || oldCredit != null) {
@@ -881,7 +925,8 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 					for (CourseRequestInterface.Request c: request.getCourses())
 						if (c.hasRequestedCourse()) {
 							for (CourseRequestInterface.RequestedCourse rc: c.getRequestedCourse()) {
-								if (rc.getStatus() != null && rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED) {
+								if (rc.getStatus() != null && rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED && rc.getStatus() != RequestedCourseStatus.WAITLIST_INACTIVE
+										&& rc.getStatus() != RequestedCourseStatus.ENROLLED) {
 									rc.setStatus(null);
 									rc.setOverrideExternalId(null);
 									rc.setOverrideTimeStamp(null);
@@ -901,7 +946,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 												rc.setStatus(status(r, false));
 												rc.setStatusNote(SpecialRegistrationHelper.note(r, false));
 												rc.setRequestId(r.regRequestId);
-												rc.setRequestorNote(r.requestorNotes);
+												rc.setRequestorNote(SpecialRegistrationHelper.requestorNotes(r, subject, courseNbr));
 												break;
 											}
 										}
@@ -911,7 +956,8 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 					for (CourseRequestInterface.Request c: request.getAlternatives())
 						if (c.hasRequestedCourse()) {
 							for (CourseRequestInterface.RequestedCourse rc: c.getRequestedCourse()) {
-								if (rc.getStatus() != null && rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED) {
+								if (rc.getStatus() != null && rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED && rc.getStatus() != RequestedCourseStatus.WAITLIST_INACTIVE
+										&& rc.getStatus() != RequestedCourseStatus.ENROLLED) {
 									rc.setStatus(null);
 									rc.setOverrideExternalId(null);
 									rc.setOverrideTimeStamp(null);
@@ -947,7 +993,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 										.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(req.maxCredit))
 										);
 								request.setCreditNote(SpecialRegistrationHelper.note(r, true));
-								request.setRequestorNote(r.requestorNotes);
+								request.setRequestorNote(SpecialRegistrationHelper.maxCreditRequestorNotes(r));
 								request.setRequestId(r.regRequestId);
 								break;
 							}
@@ -979,7 +1025,8 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 			for (CourseRequestInterface.Request c: request.getCourses())
 				if (c.hasRequestedCourse()) {
 					for (CourseRequestInterface.RequestedCourse rc: c.getRequestedCourse()) {
-						if (rc.getStatus() != null && rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED) {
+						if (rc.getStatus() != null && rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED && rc.getStatus() != RequestedCourseStatus.WAITLIST_INACTIVE
+								&& rc.getStatus() != RequestedCourseStatus.ENROLLED) {
 							rc.setStatus(null);
 							rc.setOverrideExternalId(null);
 							rc.setOverrideTimeStamp(null);
@@ -989,7 +1036,8 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 			for (CourseRequestInterface.Request c: request.getAlternatives())
 				if (c.hasRequestedCourse()) {
 					for (CourseRequestInterface.RequestedCourse rc: c.getRequestedCourse()) {
-						if (rc.getStatus() != null && rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED) {
+						if (rc.getStatus() != null && rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED && rc.getStatus() != RequestedCourseStatus.WAITLIST_INACTIVE
+								&& rc.getStatus() != RequestedCourseStatus.ENROLLED) {
 							rc.setStatus(null);
 							rc.setOverrideExternalId(null);
 							rc.setOverrideTimeStamp(null);
@@ -1102,7 +1150,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 										if ("MAXI".equals(er.code) && er.message != null)
 											warning = (warning == null ? "" : warning + "\n") + er.message;
 					request.setCreditWarning(warning);
-					request.setRequestorNote(maxCreditReq.requestorNotes);
+					request.setRequestorNote(SpecialRegistrationHelper.maxCreditRequestorNotes(maxCreditReq));
 					request.setRequestId(maxCreditReq.regRequestId);
 					for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.waitlist.requestorNoteSuggestions", "").split("[\r\n]+"))
 						if (!suggestion.isEmpty()) request.addRequestorNoteSuggestion(suggestion);
@@ -1121,7 +1169,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 											request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), er.code, "Approved " + er.message, status(ch.status), ORD_BANNER);
 										if (rc.getRequestId() == null) {
 											rc.setStatusNote(SpecialRegistrationHelper.note(r, false));
-											rc.setRequestorNote(r.requestorNotes);
+											rc.setRequestorNote(SpecialRegistrationHelper.requestorNotes(r, ch.subject, ch.courseNbr));
 											if (rc.getStatus() != RequestedCourseStatus.ENROLLED)
 												rc.setStatus(RequestedCourseStatus.OVERRIDE_APPROVED);
 										}
@@ -1147,7 +1195,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 									}
 								}
 					rc.setStatusNote(SpecialRegistrationHelper.note(r, false));
-					rc.setRequestorNote(r.requestorNotes);
+					rc.setRequestorNote(SpecialRegistrationHelper.requestorNotes(r, rc.getCourseName()));
 					rc.setRequestId(r.regRequestId);
 					for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.waitlist.requestorNoteSuggestions", "").split("[\r\n]+"))
 						if (!suggestion.isEmpty()) rc.addRequestorNoteSuggestion(suggestion);
@@ -1241,12 +1289,14 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 		if (student.getOverrideExternalId() != null) return true;
 		if (student.getMaxCredit() == null) return true;
 		for (CourseDemand cd: student.getCourseDemands()) {
-			if (Boolean.TRUE.equals(cd.isWaitlist()) && Boolean.FALSE.equals(cd.isAlternative()) && !cd.isEnrolled())
-				for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests()) {
-					if (cr.getOverrideExternalId() != null)
-						return true;
-				}
+			for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests()) {
+				if (cr.getOverrideExternalId() != null && ((cr.getCourseRequestOverrideIntent() == CourseRequestOverrideIntent.WAITLIST) ||
+						(Boolean.TRUE.equals(cd.isWaitlist()) && Boolean.FALSE.equals(cd.isAlternative()) && !cd.isEnrolledExceptForWaitListSwap())))
+					return true;
+			}
 		}
+		if (student.getOverrideExternalId() != null && student.getMaxCreditOverrideIntent() == CourseRequestOverrideIntent.WAITLIST)
+			return true;
 		return false;
 	}
 
@@ -1286,9 +1336,10 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 			
 			boolean changed = false;
 			for (CourseDemand cd: student.getCourseDemands()) {
-				if (Boolean.TRUE.equals(cd.isWaitlist()) && Boolean.FALSE.equals(cd.isAlternative()) && !cd.isEnrolled())
 					for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests()) {
-						if (cr.getOverrideExternalId() != null && !"TBD".equals(cr.getOverrideExternalId())) {
+						if (cr.getOverrideExternalId() != null && !"TBD".equals(cr.getOverrideExternalId()) &&
+								((cr.getCourseRequestOverrideIntent() == CourseRequestOverrideIntent.WAITLIST) ||
+								(Boolean.TRUE.equals(cd.isWaitlist()) && Boolean.FALSE.equals(cd.isAlternative()) && !cd.isEnrolledExceptForWaitListSwap()))) {
 							SpecialRegistration req = null;
 							for (SpecialRegistration r: status.data.requests) {
 								if (cr.getOverrideExternalId().equals(r.regRequestId)) { req = r; break; }
@@ -1383,13 +1434,15 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 	
 	protected boolean hasNotApprovedCourseRequestOverride(org.unitime.timetable.model.Student student) {
 		for (CourseDemand cd: student.getCourseDemands()) {
-			if (Boolean.TRUE.equals(cd.isWaitlist()) && Boolean.FALSE.equals(cd.isAlternative()) && !cd.isEnrolled()) {
-				for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests()) {
-					if (cr.getOverrideExternalId() != null && cr.getCourseRequestOverrideStatus() != CourseRequestOverrideStatus.APPROVED)
-						return true;
-				}
+			for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests()) {
+				if (cr.getOverrideExternalId() != null && cr.getCourseRequestOverrideStatus() != CourseRequestOverrideStatus.APPROVED &&
+						((cr.getCourseRequestOverrideIntent() == CourseRequestOverrideIntent.WAITLIST) ||
+						(Boolean.TRUE.equals(cd.isWaitlist()) && Boolean.FALSE.equals(cd.isAlternative()) && !cd.isEnrolledExceptForWaitListSwap())))
+					return true;
 			}
 		}
+		if (student.getOverrideExternalId() != null && student.getMaxCreditOverrideIntent() == CourseRequestOverrideIntent.WAITLIST && student.getMaxCreditOverrideStatus() != CourseRequestOverrideStatus.APPROVED)
+			return true;
 		return false;
 	}
 
@@ -1426,17 +1479,50 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 		Float maxCredit = null;
 		Float maxCreditNeeded = null;
 		for (CourseDemand cd: student.getCourseDemands()) {
-			if (Boolean.TRUE.equals(cd.isWaitlist()) && Boolean.FALSE.equals(cd.isAlternative()) && !cd.isEnrolled())
+			XCourseId dropCourse = null;
+			Set<String> dropCrns = null;
+			if (cd.getWaitListSwapWithCourseOffering() != null) {
+				dropCourse = new XCourseId(cd.getWaitListSwapWithCourseOffering());
+				dropCrns = new TreeSet<String>();
+				for (StudentClassEnrollment enrl: student.getClassEnrollments()) {
+					if (cd.getWaitListSwapWithCourseOffering().equals(enrl.getCourseOffering())) {
+						dropCrns.add(enrl.getClazz().getExternalId(cd.getWaitListSwapWithCourseOffering()));
+					}
+				}
+			}
+			
+			if (Boolean.TRUE.equals(cd.isWaitlist()) && Boolean.FALSE.equals(cd.isAlternative()) && !cd.isEnrolledExceptForWaitListSwap()) {
+				XCourseId enrolledCourse = null;
+				Integer enrolledOrder = null;
+				if (dropCourse != null && !dropCrns.isEmpty()) {
+					for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests())
+						if (cr.getCourseOffering().getUniqueId().equals(dropCourse.getCourseId())) {
+							enrolledCourse = dropCourse;
+	    					enrolledOrder = cr.getOrder();
+						}
+				}
+					
 				for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests()) {
 					// skip courses that cannot be wait-listed
 					if (!cr.getCourseOffering().getInstructionalOffering().effectiveWaitList()) continue;
 					
 					// skip cases where the wait-list request was cancelled
 					if ("TBD".equals(cr.getOverrideExternalId())) continue;
+
+					// when enrolled (section swap), check if active
+					if (enrolledCourse != null) {
+						if (cr.getOrder() > enrolledOrder) continue;
+						if (cr.getOrder() == enrolledOrder) {
+							XCourseRequest rq = original.getRequestForCourse(enrolledCourse.getCourseId());
+							XOffering offering = server.getOffering(enrolledCourse.getOfferingId());
+							// when enrolled, skip the enrolled course if the enrollment matches the requirements
+							if (rq != null && rq.getEnrollment() != null && offering != null && rq.isRequired(rq.getEnrollment(), offering)) continue;
+						}
+					}
 					
 					// get possible enrollments into the course
 					Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
-					CourseRequest courseRequest = SectioningRequest.convert(assignment, new XCourseRequest(student, cr.getCourseOffering(), 0, helper, null), server, WaitListMode.WaitList);
+					CourseRequest courseRequest = SectioningRequest.convert(assignment, new XCourseRequest(cr, helper, null), dropCourse, server, WaitListMode.WaitList);
 					Collection<Enrollment> enrls = courseRequest.getEnrollmentsSkipSameTime(assignment);
 					
 					// get a test enrollment (preferably a non-conflicting one)
@@ -1476,11 +1562,25 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 					req.mode = getSpecialRegistrationApiMode();
 					
 					Set<String> crns = new HashSet<String>();
+					Set<String> keep = new HashSet<String>();
 					for (Section section: testEnrollment.getSections()) {
 						String crn = getCRN(section, testEnrollment.getCourse());
-						SpecialRegistrationHelper.addWaitListCrn(req, crn);
-						crns.add(crn);
+						if (dropCrns != null && dropCrns.contains(crn)) {
+							keep.add(crn);
+						} else {
+							SpecialRegistrationHelper.addWaitListCrn(req, crn);
+							crns.add(crn);
+						}
 					}
+					if (dropCrns != null)
+						for (String crn: dropCrns) {
+							if (!keep.contains(crn)) {
+								SpecialRegistrationHelper.dropWaitListCrn(req, crn);
+								crns.add(crn);
+							}
+						}
+					// no CRNs to check -> continue
+					if (crns.isEmpty()) continue;
 					
 					// call validation
 					CheckRestrictionsResponse validation = null;
@@ -1537,8 +1637,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 							}
 							if (change == null) {
 								change = new Change();
-								change.subject = cr.getCourseOffering().getSubjectAreaAbbv();
-								change.courseNbr = cr.getCourseOffering().getCourseNbr();
+								change.setCourse(cr.getCourseOffering().getSubjectAreaAbbv(), cr.getCourseOffering().getCourseNbr(), iExternalTermProvider, server.getAcademicSession());
 								change.crn = "";
 								change.errors = new ArrayList<ChangeError>();
 								change.operation = ChangeOperation.ADD;
@@ -1565,6 +1664,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 							maxCreditNeeded = validation.outJson.maxHoursCalc;
 					}
 				}
+			}
 		}
 		
 		if (maxCredit == null) maxCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"));
@@ -1582,15 +1682,13 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 					if (course == null) continue;
 					if (cc == null) {
 						cc = new CourseCredit();
-						cc.subject = course.getSubjectArea();
-						cc.courseNbr = course.getCourseNumber();
+						cc.setCourse(course.getSubjectArea(), course.getCourseNumber(), iExternalTermProvider, server.getAcademicSession());
 						cc.title = course.getTitle();
 						cc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
 					} else {
 						if (cc.alternatives == null) cc.alternatives = new ArrayList<CourseCredit>();
 						CourseCredit acc = new CourseCredit();
-						acc.subject = course.getSubjectArea();
-						acc.courseNbr = course.getCourseNumber();
+						acc.setCourse(course.getSubjectArea(), course.getCourseNumber(), iExternalTermProvider, server.getAcademicSession());
 						acc.title = course.getTitle();
 						acc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
 						cc.alternatives.add(acc);
@@ -1640,8 +1738,9 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 		}
 		
 		for (CourseDemand cd: student.getCourseDemands()) {
-			if (Boolean.TRUE.equals(cd.isWaitlist()) && Boolean.FALSE.equals(cd.isAlternative()) && !cd.isEnrolled())
-				cr: for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests()) {
+			cr: for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests()) {
+				if ((cr.getOverrideExternalId() != null && cr.getCourseRequestOverrideIntent() == CourseRequestOverrideIntent.WAITLIST) ||
+					(Boolean.TRUE.equals(cd.isWaitlist()) && Boolean.FALSE.equals(cd.isAlternative()) && !cd.isEnrolledExceptForWaitListSwap())) {
 					if (response != null && response.data != null) {
 						for (SpecialRegistration r: response.data)
 							if (r.changes != null)
@@ -1674,7 +1773,8 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 									}
 								}
 					}
-					if (!"TBD".equals(cr.getOverrideExternalId()) && (cr.getOverrideExternalId() != null || cr.getOverrideStatus() != null)) {
+					if ((cr.getOverrideExternalId() != null || cr.getOverrideStatus() != null) && 
+						(!"TBD".equals(cr.getOverrideExternalId()) || !Boolean.TRUE.equals(cd.isWaitlist()) || Boolean.TRUE.equals(cd.isAlternative()))) {
 						cr.setOverrideExternalId(null);
 						cr.setOverrideStatus(null);
 						cr.setOverrideTimeStamp(null);
@@ -1684,6 +1784,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 					}
 				}
 			}
+		}
 		
 		boolean studentChanged = false;
 		if (submitRequest.maxCredit != null) {
@@ -1828,42 +1929,42 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 					
 					boolean changed = false;
 					for (CourseDemand cd: student.getCourseDemands()) {
-						if (Boolean.TRUE.equals(cd.isWaitlist()) && Boolean.FALSE.equals(cd.isAlternative()) && !cd.isEnrolled())
-							for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests()) {
-								if (cr.getOverrideExternalId() != null) {
-									SpecialRegistration req = null;
-									for (SpecialRegistration r: status.requests) {
-										if (cr.getOverrideExternalId().equals(r.regRequestId)) { req = r; break; }
+						for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests()) {
+							if (cr.getOverrideExternalId() != null && (cr.getCourseRequestOverrideIntent() == CourseRequestOverrideIntent.WAITLIST) ||
+									(Boolean.TRUE.equals(cd.isWaitlist()) && Boolean.FALSE.equals(cd.isAlternative()) && !cd.isEnrolledExceptForWaitListSwap())) {
+								SpecialRegistration req = null;
+								for (SpecialRegistration r: status.requests) {
+									if (cr.getOverrideExternalId().equals(r.regRequestId)) { req = r; break; }
+								}
+								if (req == null) {
+									if (cr.getCourseRequestOverrideStatus() != CourseRequestOverrideStatus.CANCELLED) {
+										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.CANCELLED);
+										helper.getHibSession().update(cr);
+										changed = true;
 									}
-									if (req == null) {
-										if (cr.getCourseRequestOverrideStatus() != CourseRequestOverrideStatus.CANCELLED) {
-											cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.CANCELLED);
-											helper.getHibSession().update(cr);
-											changed = true;
-										}
-									} else {
-										Integer oldStatus = cr.getOverrideStatus();
-										switch (status(req, false)) {
-										case OVERRIDE_REJECTED: 
-											cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.REJECTED);
-											break;
-										case OVERRIDE_APPROVED:
-											cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.APPROVED);
-											break;
-										case OVERRIDE_CANCELLED:
-											cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.CANCELLED);
-											break;
-										case OVERRIDE_PENDING:
-											cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.PENDING);
-											break;
-										}
-										if (oldStatus == null || !oldStatus.equals(cr.getOverrideStatus())) {
-											helper.getHibSession().update(cr);
-											changed = true;
-										}
+								} else {
+									Integer oldStatus = cr.getOverrideStatus();
+									switch (status(req, false)) {
+									case OVERRIDE_REJECTED: 
+										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.REJECTED);
+										break;
+									case OVERRIDE_APPROVED:
+										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.APPROVED);
+										break;
+									case OVERRIDE_CANCELLED:
+										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.CANCELLED);
+										break;
+									case OVERRIDE_PENDING:
+										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.PENDING);
+										break;
+									}
+									if (oldStatus == null || !oldStatus.equals(cr.getOverrideStatus())) {
+										helper.getHibSession().update(cr);
+										changed = true;
 									}
 								}
 							}
+						}
 					}
 					
 					boolean studentChanged = false;
@@ -1923,7 +2024,6 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 
 	@Override
 	public boolean updateStudent(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, Builder action) throws SectioningException {
-		// No pending overrides -> nothing to do
 		if (student == null) return false;
 		
 		ClientResource resource = null;
@@ -1960,59 +2060,44 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 			for (XRequest r: student.getRequests()) {
 				if (r instanceof XCourseRequest) {
 					XCourseRequest cr = (XCourseRequest)r;
-					if (cr.isWaitlist() && !cr.isAlternative() && cr.getEnrollment() == null && cr.hasOverrides()) {
-						for (Map.Entry<XCourseId, XOverride> e: cr.getOverrides().entrySet()) {
-							XCourseId course = e.getKey();
-							XOverride override = e.getValue();
-							if ("TBD".equals(override.getExternalId())) continue;
-							SpecialRegistration req = null;
-							for (SpecialRegistration q: status.data.requests) {
-								if (override.getExternalId().equals(q.regRequestId)) { req = q; break; }
+					if (!cr.hasOverrides()) continue;
+					for (Map.Entry<XCourseId, XOverride> e: cr.getOverrides().entrySet()) {
+						XCourseId course = e.getKey();
+						XOverride override = e.getValue();
+						if ("TBD".equals(override.getExternalId())) continue;
+						SpecialRegistration req = null;
+						for (SpecialRegistration q: status.data.requests) {
+							if (override.getExternalId().equals(q.regRequestId)) { req = q; break; }
+						}
+						if (req != null) {
+							Integer oldStatus = override.getStatus();
+							Integer newStatus = null;
+							switch (status(req, false)) {
+							case OVERRIDE_REJECTED: 
+								newStatus = CourseRequestOverrideStatus.REJECTED.ordinal();
+								break;
+							case OVERRIDE_APPROVED:
+								newStatus = CourseRequestOverrideStatus.APPROVED.ordinal();
+								break;
+							case OVERRIDE_CANCELLED:
+								newStatus = CourseRequestOverrideStatus.CANCELLED.ordinal();
+								break;
+							case OVERRIDE_PENDING:
+								newStatus = CourseRequestOverrideStatus.PENDING.ordinal();
+								break;
 							}
-							if (req == null) {
-								if (override.getStatus() != CourseRequestOverrideStatus.CANCELLED.ordinal()) {
-									override.setStatus(CourseRequestOverrideStatus.CANCELLED.ordinal());
-									CourseDemand dbCourseDemand = CourseDemandDAO.getInstance().get(cr.getRequestId(), helper.getHibSession());
-									if (dbCourseDemand != null) {
-										for (org.unitime.timetable.model.CourseRequest dbCourseRequest: dbCourseDemand.getCourseRequests()) {
-											if (dbCourseRequest.getCourseOffering().getUniqueId().equals(course.getCourseId())) {
-												dbCourseRequest.setOverrideStatus(CourseRequestOverrideStatus.CANCELLED.ordinal());
-												helper.getHibSession().update(dbCourseRequest);
-											}
+							if (newStatus != null && !newStatus.equals(oldStatus)) {
+								override.setStatus(newStatus);
+								CourseDemand dbCourseDemand = CourseDemandDAO.getInstance().get(cr.getRequestId(), helper.getHibSession());
+								if (dbCourseDemand != null) {
+									for (org.unitime.timetable.model.CourseRequest dbCourseRequest: dbCourseDemand.getCourseRequests()) {
+										if (dbCourseRequest.getCourseOffering().getUniqueId().equals(course.getCourseId())) {
+											dbCourseRequest.setOverrideStatus(newStatus);
+											helper.getHibSession().update(dbCourseRequest);
 										}
 									}
-									studentChanged = true;
 								}
-							} else {
-								Integer oldStatus = override.getStatus();
-								Integer newStatus = null;
-								switch (status(req, false)) {
-								case OVERRIDE_REJECTED: 
-									newStatus = CourseRequestOverrideStatus.REJECTED.ordinal();
-									break;
-								case OVERRIDE_APPROVED:
-									newStatus = CourseRequestOverrideStatus.APPROVED.ordinal();
-									break;
-								case OVERRIDE_CANCELLED:
-									newStatus = CourseRequestOverrideStatus.CANCELLED.ordinal();
-									break;
-								case OVERRIDE_PENDING:
-									newStatus = CourseRequestOverrideStatus.PENDING.ordinal();
-									break;
-								}
-								if (newStatus != null && !newStatus.equals(oldStatus)) {
-									override.setStatus(newStatus);
-									CourseDemand dbCourseDemand = CourseDemandDAO.getInstance().get(cr.getRequestId(), helper.getHibSession());
-									if (dbCourseDemand != null) {
-										for (org.unitime.timetable.model.CourseRequest dbCourseRequest: dbCourseDemand.getCourseRequests()) {
-											if (dbCourseRequest.getCourseOffering().getUniqueId().equals(course.getCourseId())) {
-												dbCourseRequest.setOverrideStatus(newStatus);
-												helper.getHibSession().update(dbCourseRequest);
-											}
-										}
-									}
-									studentChanged = true;
-								}
+								studentChanged = true;
 							}
 						}
 					}

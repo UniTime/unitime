@@ -76,6 +76,13 @@ public abstract class XRequest implements Serializable, Comparable<XRequest>, Ex
      * instead of a non-alternative course requests, if it is left unassigned)
      */
     public boolean isAlternative() { return iAlternative; }
+    
+    public void setAlternative(boolean alt) {
+    	iAlternative = alt;
+    }
+    public void setPriority(int priority) {
+    	iPriority = priority;
+    }
 
     /** Student to which this request belongs */
     public Long getStudentId() { return iStudentId; }

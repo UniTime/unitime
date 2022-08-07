@@ -270,7 +270,7 @@ public class DegreeWorksPlanScraper extends OnlineSectioningTestFwk {
 		
 		for (final Student s: students) {
 			if (iFilter != null && !iFilter.contains(s.getExternalUniqueId())) continue;
-			final XStudent student = new XStudent(s, helper, getServer().getAcademicSession().getFreeTimePattern());
+			final XStudent student = new XStudent(s, helper, getServer().getAcademicSession().getFreeTimePattern(), getServer().getAcademicSession().getDatePatternFirstDate());
 			
 			if (student != null)
 				operations.add(new Operation() {

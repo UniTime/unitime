@@ -55,6 +55,7 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Event;
@@ -407,9 +408,10 @@ public class InstructionalOfferingDetailAction extends Action {
         frm.setWkEnroll(io.getLastWeekToEnroll() == null ? "" : io.getLastWeekToEnroll().toString());
         frm.setWkChange(io.getLastWeekToChange() == null ? "" : io.getLastWeekToChange().toString());
         frm.setWkDrop(io.getLastWeekToDrop() == null ? "" : io.getLastWeekToDrop().toString());
-        if (io.effectiveWaitList() != ApplicationProperty.OfferingWaitListDefault.isTrue()) frm.setWaitList(io.effectiveWaitList() ? "true" : "false");
+        if (io.effectiveWaitList() || ApplicationProperty.OfferingWaitListDefault.isTrue()) frm.setWaitList(io.effectiveWaitList() ? "true" : "false");
         frm.setWeekStartDayOfWeek(Localization.getDateFormat("EEEE").format(io.getSession().getSessionBeginDateTime()));
         frm.setHasConflict(hasConflicts(request, io));
+
         if (io.effectiveWaitList()) {
 			OverrideType prohibitedOverride = OverrideType.findByReference(ApplicationProperty.OfferingWaitListProhibitedOverride.value());
 			if (prohibitedOverride != null) {
@@ -423,6 +425,14 @@ public class InstructionalOfferingDetailAction extends Action {
 					request.setAttribute("waitlistProblem", message);
 			}
 		}
+
+        Department fundingDepartment = io.getEffectiveFundingDept();
+        if (fundingDepartment != null) {
+        	frm.setFundingDepartment(fundingDepartment.toString());
+        } else {
+        	frm.setFundingDepartment(null);
+        }
+
 
         if (ApplicationProperty.OfferingShowClassNotes.isTrue()) {
         	StringBuffer notes = new StringBuffer();

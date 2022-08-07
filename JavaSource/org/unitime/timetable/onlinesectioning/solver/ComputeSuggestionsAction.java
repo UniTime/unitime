@@ -132,6 +132,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 			overExpected = new MinimizeConflicts(server.getConfig(), overExpected);
 		}
 		OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig(), overExpected);
+		model.setDayOfWeekOffset(server.getAcademicSession().getDayOfWeekOffset());
 		Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 		boolean linkedClassesMustBeUsed = server.getConfig().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
 
@@ -145,13 +146,19 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		Student student = new Student(getRequest().getStudentId() == null ? -1l : getRequest().getStudentId());
 		Set<IdPair> enrolled = null;
 
-		Lock readLock = server.readLock();
 		ClassAssignmentInterface unavailabilities = null;
-		boolean checkDeadlines = server.getConfig().getPropertyBoolean("FindAssignment.CheckDeadlines", false) && !getRequest().areDeadlineConflictsAllowed();
-		Integer currentDateIndex = null;
-		if (server.getConfig().getPropertyBoolean("FindAssignment.AvoidPastSections", true))
-			currentDateIndex = Days.daysBetween(new LocalDate(server.getAcademicSession().getDatePatternFirstDate()), new LocalDate()).getDays() + server.getConfig().getPropertyInt("FindAssignment.AvoidPastOffset", 0);
+		Lock readLock = server.readLock();
 		try {
+			boolean checkDeadlines = server.getConfig().getPropertyBoolean("FindAssignment.CheckDeadlines", false) && !getRequest().areDeadlineConflictsAllowed();
+			Integer currentDateIndex = null;
+			if (server.getConfig().getPropertyBoolean("FindAssignment.AvoidPastSections", true))
+				currentDateIndex = Days.daysBetween(new LocalDate(server.getAcademicSession().getDatePatternFirstDate()), new LocalDate()).getDays() + server.getConfig().getPropertyInt("FindAssignment.AvoidPastOffset", 0);
+			boolean onlineOnlyFilter = true;
+			if (helper.hasAdminPermission() && server.getConfig().getPropertyBoolean("Load.OnlineOnlyAdminOverride", false))
+				onlineOnlyFilter = false;
+			else if (helper.hasAvisorPermission() && server.getConfig().getPropertyBoolean("Load.OnlineOnlyAdvisorOverride", false))
+				onlineOnlyFilter = false;
+
 			XStudent original = (getRequest().getStudentId() == null ? null : server.getStudent(getRequest().getStudentId()));
 			if (original != null) {
 				unavailabilities = new ClassAssignmentInterface();
@@ -163,6 +170,10 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 				student.setAllowDisabled(original.isAllowDisabled());
 				if (server instanceof StudentSolver)
 					student.setMaxCredit(original.getMaxCredit());
+				student.setClassFirstDate(original.getClassStartDate());
+				student.setClassLastDate(original.getClassEndDate());
+				student.setBackToBackPreference(original.getBackToBackPreference());
+				student.setModalityPreference(original.getModalityPreference());
 				action.getStudentBuilder().setUniqueId(original.getStudentId()).setExternalId(original.getExternalId()).setName(original.getName());
 				enrolled = new HashSet<IdPair>();
 				for (XRequest r: original.getRequests()) {
@@ -188,10 +199,10 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 			Set<XDistribution> distributions = new HashSet<XDistribution>();
 			if (getAssignment() != null) getRequest().moveActiveSubstitutionsUp();
 			for (CourseRequestInterface.Request c: getRequest().getCourses())
-				addRequest(server, model, assignment, student, original, c, false, true, classTable, distributions, getAssignment() != null, getAssignment() != null, checkDeadlines, currentDateIndex);
+				addRequest(server, model, assignment, student, original, c, false, true, classTable, distributions, getAssignment() != null, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter, isCanRequirePreferences());
 			if (student.getRequests().isEmpty()) throw new SectioningException(MSG.exceptionNoCourse());
 			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
-				addRequest(server, model, assignment, student, original, c, true, true, classTable, distributions, getAssignment() != null, getAssignment() != null, checkDeadlines, currentDateIndex);
+				addRequest(server, model, assignment, student, original, c, true, true, classTable, distributions, getAssignment() != null, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter, isCanRequirePreferences());
 			if (helper.isAlternativeCourseEnabled()) {
 				for (Request r: student.getRequests()) {
 					if (r.isAlternative() || !(r instanceof CourseRequest)) continue;
@@ -210,7 +221,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 								if (ci != null) {
 									XOffering x = server.getOffering(ci.getOfferingId());
 									if (x != null) {
-										cr.getCourses().add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getCourseId(), student.getId(), original, classTable, server, model, getAssignment() != null, checkDeadlines, currentDateIndex));
+										cr.getCourses().add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getCourseId(), student.getId(), original, classTable, server, model, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter));
 										distributions.addAll(x.getDistributions());
 									}
 								}

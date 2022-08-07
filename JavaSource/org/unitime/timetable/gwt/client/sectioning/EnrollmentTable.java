@@ -929,7 +929,7 @@ public class EnrollmentTable extends Composite {
 		}
 		
 		boolean hasPriority = false, hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasAlternative = false, hasReservation = false, hasRequestedDate = false, hasEnrolledDate = false, hasConflict = false, hasMessage = false;
-		boolean hasAdvisor = false, hasMinor = false, hasConc = false, hasDeg = false, hasProg = false, hasWaitlistedDate = false, hasWaitListedPosition = false, hasCritical = false;
+		boolean hasAdvisor = false, hasMinor = false, hasConc = false, hasDeg = false, hasProg = false, hasCamp = false, hasWaitlistedDate = false, hasWaitListedPosition = false, hasWaitListReplacement = false, hasCritical = false;
 		Set<String> groupTypes = new HashSet<String>();
 		for (ClassAssignmentInterface.Enrollment e: enrollments) {
 			if (filter(f, e)) continue;
@@ -950,8 +950,10 @@ public class EnrollmentTable extends Composite {
 			if (e.getStudent().hasConcentration()) hasConc = true;
 			if (e.getStudent().hasDegree()) hasDeg = true;
 			if (e.getStudent().hasProgram()) hasProg = true;
+			if (e.getStudent().hasCampus()) hasCamp = true;
 			if (e.hasWaitListedDate()) hasWaitlistedDate = true;
 			if (e.hasWaitListedPosition()) hasWaitListedPosition = true;
+			if (e.hasWaitListedReplacement()) hasWaitListReplacement = true;
 			if (e.isCritical() || e.isImportant()) hasCritical = true;
 		}
 
@@ -967,6 +969,13 @@ public class EnrollmentTable extends Composite {
 			hAlternative = new UniTimeTableHeader(MESSAGES.colAlternative());
 			header.add(hAlternative);
 			addSortOperation(hAlternative, EnrollmentComparator.SortBy.ALTERNATIVE, MESSAGES.colAlternative());
+		}
+		
+		UniTimeTableHeader hCampus = null;
+		if (hasCamp) {
+			hCampus = new UniTimeTableHeader(MESSAGES.colCampus());
+			header.add(hCampus);
+			addSortOperation(hCampus, EnrollmentComparator.SortBy.CAMPUS, MESSAGES.colCampus());
 		}
 		
 		UniTimeTableHeader hArea = null, hClasf = null;
@@ -1055,7 +1064,7 @@ public class EnrollmentTable extends Composite {
 		for (final String subpart: subparts) {
 			UniTimeTableHeader hSubpart = new UniTimeTableHeader(subpart);
 			hSubparts.put(subpart, hSubpart);
-			final int col = 1 + (canSelect ? 1 : 0) + (hasExtId ? 1 : 0) + (crosslist ? 1 : 0) + (hasPriority ? 1 : 0) + (hasAlternative ? 1 : 0) + (hasArea ? 2 : 0) + (hasDeg ? 1 : 0) +  (hasProg ? 1 : 0) + (hasMajor ? 1 : 0) + (hasConc ? 1 : 0) + (hasMinor ? 1 : 0) + (hasGroup ? 1 : 0) + (hasAcmd ? 1 : 0) + (hasReservation ? 1 : 0) + groupTypes.size();
+			final int col = 1 + (canSelect ? 1 : 0) + (hasExtId ? 1 : 0) + (crosslist ? 1 : 0) + (hasPriority ? 1 : 0) + (hasAlternative ? 1 : 0) + (hasArea ? 2 : 0) + (hasDeg ? 1 : 0) +  (hasProg ? 1 : 0) + (hasCamp ? 1 : 0) + (hasMajor ? 1 : 0) + (hasConc ? 1 : 0) + (hasMinor ? 1 : 0) + (hasGroup ? 1 : 0) + (hasAcmd ? 1 : 0) + (hasReservation ? 1 : 0) + groupTypes.size();
 			hSubpart.addOperation(new Operation() {
 				@Override
 				public void execute() {
@@ -1142,6 +1151,13 @@ public class EnrollmentTable extends Composite {
 			addSortOperation(hWaitlistTS, EnrollmentComparator.SortBy.WAITLIST_TS, MESSAGES.colWaitListedTimeStamp());
 		}
 		
+		UniTimeTableHeader hWaitlistREP = null; 
+		if (hasWaitListReplacement) {
+			hWaitlistREP = new UniTimeTableHeader(MESSAGES.colWaitListSwapWithCourseOffering());
+			header.add(hWaitlistREP);
+			addSortOperation(hWaitlistREP, EnrollmentComparator.SortBy.WAITLIST_REPLACE, MESSAGES.colWaitListSwapWithCourseOffering());
+		}
+
 		UniTimeTableHeader hWaitlistPOS = null; 
 		if (hasWaitListedPosition) {
 			hWaitlistPOS = new UniTimeTableHeader(MESSAGES.colWaitListPosition());
@@ -1398,6 +1414,8 @@ public class EnrollmentTable extends Composite {
 				line.add(new Label(enrollment.getPriority() <= 0 ? "" : MESSAGES.priority(enrollment.getPriority())));
 			if (hasAlternative)
 				line.add(new Label(enrollment.getAlternative(), false));
+			if (hasCamp)
+				line.add(new ACM(enrollment.getStudent().getCampuses()));
 			if (hasArea) {
 				line.add(new ACM(enrollment.getStudent().getAreas()));
 				line.add(new ACM(enrollment.getStudent().getClassifications()));
@@ -1433,6 +1451,8 @@ public class EnrollmentTable extends Composite {
 					i = new Image(RESOURCES.requestsCritical()); i.setTitle(MESSAGES.descriptionRequestCritical()); i.setAltText(MESSAGES.descriptionRequestCritical());
 				} else if (enrollment.isImportant()) {
 					i = new Image(RESOURCES.requestsImportant()); i.setTitle(MESSAGES.descriptionRequestImportant()); i.setAltText(MESSAGES.descriptionRequestImportant());
+				} else if (enrollment.isVital()) {
+					i = new Image(RESOURCES.requestsVital()); i.setTitle(MESSAGES.descriptionRequestVital()); i.setAltText(MESSAGES.descriptionRequestVital());
 				} else {
 					i = new Image(RESOURCES.requestsNotCritical()); i.setTitle(MESSAGES.descriptionRequestNotCritical()); i.setAltText(MESSAGES.descriptionRequestNotCritical());
 				}
@@ -1444,6 +1464,8 @@ public class EnrollmentTable extends Composite {
 				line.add(new HTML(enrollment.getEnrolledDate() == null ? "&nbsp;" : sDF.format(enrollment.getEnrolledDate()), false));
 			if (hasWaitlistedDate)
 				line.add(new HTML(enrollment.hasWaitListedDate() ? sTSF.format(enrollment.getWaitListedDate()) : "&nbsp;", false));
+			if (hasWaitListReplacement)
+				line.add(new HTML(enrollment.hasWaitListedReplacement() ? enrollment.getWaitListReplacement() : "&nbsp;", false));
 			if (hasWaitListedPosition)
 				line.add(new HTML(enrollment.hasWaitListedPosition() ? enrollment.getWaitListedPosition() : "&nbsp;", false));
 			if (hasMessage)
@@ -1630,8 +1652,10 @@ public class EnrollmentTable extends Composite {
 			case ADVISOR: h = hAdvisor; break;
 			case DEGREE: h = hDegree; break;
 			case PROGRAM: h = hProgram; break;
+			case CAMPUS: h = hCampus; break;
 			case WAITLIST_TS: h = hWaitlistTS; break;
 			case WAITLIST_POS: h = hWaitlistPOS; break;
+			case WAITLIST_REPLACE: h = hWaitlistREP; break;
 			case CRITICAL: h = hCritical; break;
 			}
 			if (h != null)
@@ -1927,8 +1951,10 @@ public class EnrollmentTable extends Composite {
 			CONCENTRATION,
 			DEGREE,
 			PROGRAM,
+			CAMPUS,
 			WAITLIST_TS,
 			WAITLIST_POS,
+			WAITLIST_REPLACE,
 			CRITICAL,
 			;
 		}
@@ -2018,6 +2044,10 @@ public class EnrollmentTable extends Composite {
 					cmp = e1.getStudent().getProgram("|").compareTo(e2.getStudent().getProgram("|"));
 					if (cmp != 0) return cmp;
 					return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
+				case CAMPUS:
+					cmp = e1.getStudent().getCampus("|").compareTo(e2.getStudent().getCampus("|"));
+					if (cmp != 0) return cmp;
+					return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
 				case GROUP:
 					cmp = e1.getStudent().getGroup(iGroupType, "|").compareTo(e2.getStudent().getGroup(iGroupType, "|"));
 					if (cmp != 0) return cmp;
@@ -2080,6 +2110,10 @@ public class EnrollmentTable extends Composite {
 					if (!e1.hasWaitListedPosition() || !e2.hasWaitListedPosition())
 						return (e1.hasWaitListedPosition() ? -1 : e2.hasWaitListedPosition() ? 1 : 0);
 					return NaturalOrderComparator.compare(e1.getWaitListedPosition(), e2.getWaitListedPosition());
+				case WAITLIST_REPLACE:
+					if (!e1.hasWaitListedReplacement() || !e2.hasWaitListedReplacement())
+						return (e1.hasWaitListedReplacement() ? -1 : e2.hasWaitListedReplacement() ? 1 : 0);
+					return e1.getWaitListReplacement().compareTo(e2.getWaitListReplacement());
 				case CRITICAL:
 					if (e1.isCritical()) return (e2.isCritical() ? 0 : -1);
 					if (e1.isImportant()) return (e2.isCritical() ? 1 : e2.isImportant() ? 0 : -1);

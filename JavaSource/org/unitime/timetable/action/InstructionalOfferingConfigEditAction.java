@@ -415,6 +415,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
         		frm.setDurationTypeEditable(false);
         }
         frm.setInstructionalMethod(ioc.getInstructionalMethod() == null ? -1l : ioc.getInstructionalMethod().getUniqueId());
+        frm.setInstructionalMethodEditable(ApplicationProperty.WaitListCanChangeInstructionalMethod.isTrue() || !ioc.getInstructionalOffering().effectiveWaitList() || ioc.getEnrollment() == 0);
     }
 
     /**
@@ -454,6 +455,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
         frm.setDurationTypeEditable(true);
         frm.setInstructionalMethod(null);
         frm.setInstructionalMethodDefault(io.getSession().getDefaultInstructionalMethod() == null ? null : io.getSession().getDefaultInstructionalMethod().getLabel());
+        frm.setInstructionalMethodEditable(true);
 
 	    Set configs = io.getInstrOfferingConfigs();
 	    frm.setConfigCount(Integer.valueOf(configs.size()));

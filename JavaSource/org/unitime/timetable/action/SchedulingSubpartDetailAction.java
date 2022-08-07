@@ -33,6 +33,7 @@ import org.apache.struts.action.ActionMessages;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.DistributionPrefsForm;
@@ -289,6 +290,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        frm.setAutoSpreadInTime(ss.isAutoSpreadInTime());
 	        frm.setStudentAllowOverlap(ss.isStudentAllowOverlap());
 	        frm.setDatePattern(ss.getDatePattern()==null?Long.valueOf(-1):ss.getDatePattern().getUniqueId());
+	        frm.setDatePatternEditable(ApplicationProperty.WaitListCanChangeDatePattern.isTrue() || ioc.getEnrollment() == 0 || !io.effectiveWaitList());
 	        if (frm.getCreditText() == null || frm.getCreditText().length() == 0){
 		        if (ss.getCredit() != null){
 		        	CourseCreditUnitConfig credit = ss.getCredit();

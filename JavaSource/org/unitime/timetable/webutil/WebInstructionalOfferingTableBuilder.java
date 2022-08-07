@@ -138,7 +138,8 @@ public class WebInstructionalOfferingTableBuilder {
     										MSG.columnSchedulePrintNote(),
     										MSG.columnNote(),
     										MSG.columnExam(),
-    										MSG.columnLms()};
+    										MSG.columnLms(),
+    										MSG.columnFundingDepartment()};
     
     @Deprecated
     protected String[] TIMETABLE_COLUMN_ORDER = {
@@ -154,6 +155,7 @@ public class WebInstructionalOfferingTableBuilder {
     private boolean showLimit;
     private boolean showSnapshotLimit;
     private boolean showRoomRatio;
+    private boolean showFundingDepartment;
     private boolean showManager;
     private boolean showDatePattern;
     private boolean showTimePattern;
@@ -168,7 +170,7 @@ public class WebInstructionalOfferingTableBuilder {
     private boolean showConsent;
     private boolean showExam;
     private boolean showExamName=true;
-    private boolean showExamTimetable;
+    private boolean showExamTimetable;  
     private boolean showInstructorAssignment;
     private boolean showLms;
     private String filterWaitlist;
@@ -288,7 +290,7 @@ public class WebInstructionalOfferingTableBuilder {
     public void setShowConsent(boolean showConsent) {
         this.showConsent = showConsent;
     }
-    
+        
     public boolean isShowTitle() {
         return showTitle;
     }
@@ -302,7 +304,7 @@ public class WebInstructionalOfferingTableBuilder {
     public void setShowExam(boolean showExam) {
         this.showExam = showExam;
     }
-    
+
     public boolean isShowExamName() {
         return showExamName;
     }
@@ -314,6 +316,17 @@ public class WebInstructionalOfferingTableBuilder {
     }
     public void setShowExamTimetable(boolean showExamTimetable) {
         this.showExamTimetable = showExamTimetable;
+    }
+    
+    public boolean isShowFundingDepartment() {
+    	if (ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue()) {
+    		return showFundingDepartment;
+    	} else {
+    		return false;
+    	}
+    }
+    public void setShowFundingDepartment(boolean showFundingDepartment) {
+        this.showFundingDepartment = showFundingDepartment;
     }
     
     public boolean isShowInstructorAssignment() { return showInstructorAssignment; }
@@ -464,6 +477,10 @@ public class WebInstructionalOfferingTableBuilder {
     		cell = this.headerCell(MSG.columnManager(), 2, 1);
     		row.addContent(cell);
     	}
+    	if (isShowFundingDepartment()){
+    		cell = this.headerCell(MSG.columnFundingDepartment(), 2, 1);
+    		row.addContent(cell);
+    	}
     	if (isShowDatePattern()){
     		cell = this.headerCell(MSG.columnDatePattern(), 2, 1);
     		row.addContent(cell);
@@ -518,7 +535,7 @@ public class WebInstructionalOfferingTableBuilder {
     	}
     	if (isShowInstructor()){
     		cell = this.headerCell(MSG.columnInstructor(), 2, 1);
-    		row.addContent(cell);    		
+    		row.addContent(cell);
     	}
     	if (getDisplayTimetable() && isShowTimetable()){
 	    	cell = headerCell("--------" + MSG.columnTimetable() + "--------", 1, 3);
@@ -538,6 +555,7 @@ public class WebInstructionalOfferingTableBuilder {
     		cell.setStyleClass("WebTableHeaderSecondRow");
     		row2.addContent(cell);
     	}
+
     	if (isShowTitle()){
     		cell = this.headerCell(MSG.columnTitle(), 2, 1);
     		row.addContent(cell);    		
@@ -1203,6 +1221,18 @@ public class WebInstructionalOfferingTableBuilder {
         return(cell);
     }
 
+    protected TableCell buildFundingDepartment(PreferenceGroup prefGroup, boolean isEditable){
+    	TableCell cell = null;
+    	Department fundingDepartment = null;
+    	if (prefGroup instanceof Class_) {
+    		fundingDepartment = ((Class_)prefGroup).getEffectiveFundingDept();
+    	} /*else if (prefGroup instanceof SchedulingSubpart) {
+    		fundingDepartment = ((SchedulingSubpart)prefGroup).getFundingDepartment();
+    	} */
+    	cell = initNormalCell(fundingDepartment==null?"&nbsp;":fundingDepartment.getManagingDeptAbbv(), isEditable);
+        return(cell);
+    }
+    
     protected TableCell buildMinPerWeek(PreferenceGroup prefGroup, boolean isEditable){
     	TableCell cell = null;
     	if (prefGroup instanceof Class_) {
@@ -1401,7 +1431,6 @@ public class WebInstructionalOfferingTableBuilder {
         return(cell);
     }
 
-    
     //MSG.columnNote(): if changing column order column order must be changed in
     //		buildTableHeader, addInstrOffrRowsToTable, buildClassOrSubpartRow, and buildConfigRow
     protected void buildClassOrSubpartRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TableRow row, CourseOffering co, PreferenceGroup prefGroup, int indentSpaces, boolean isEditable, String prevLabel, String icon, SessionContext context){
@@ -1431,6 +1460,9 @@ public class WebInstructionalOfferingTableBuilder {
     	if (isShowManager()){
     		row.addContent(this.buildManager(prefGroup, isEditable));
      	} 
+     	if (isShowFundingDepartment()){
+    		row.addContent(this.buildFundingDepartment(prefGroup, isEditable));
+       	} 
     	if (isShowDatePattern()){
     		row.addContent(this.buildDatePatternCell(classAssignment,prefGroup, isEditable));
      	} 
@@ -1710,6 +1742,9 @@ public class WebInstructionalOfferingTableBuilder {
         	if (isShowManager()){
                 row.addContent(initNormalCell("", isEditable));
         	} 
+        	if (isShowFundingDepartment()){
+                row.addContent(initNormalCell("", isEditable));
+        	} 
         	if (isShowDatePattern()){
                 row.addContent(initNormalCell("", isEditable));
 	       	} 
@@ -1773,9 +1808,9 @@ public class WebInstructionalOfferingTableBuilder {
                     row.addContent(this.buildExamRoom(examAssignment, exams, isEditable));
                 }
             }
-	    		if (isShowLms()) {
-	                row.addContent(initNormalCell("", isEditable));			
-	    		}
+    		if (isShowLms()) {
+                row.addContent(initNormalCell("", isEditable));			
+    		}
 	    
 	        table.addContent(row);
 	        hasConfig = true;
@@ -1891,6 +1926,9 @@ public class WebInstructionalOfferingTableBuilder {
     	if (isShowManager()){
     		emptyCells ++;
     	}
+    	if (isShowFundingDepartment()){
+    		emptyCells ++;
+    	} 
     	if (isShowDatePattern()){
     		emptyCells ++;
        	}
@@ -2294,6 +2332,7 @@ public class WebInstructionalOfferingTableBuilder {
 		setShowLimit(form.getLimit().booleanValue());
 		setShowSnapshotLimit(form.getSnapshotLimit().booleanValue());
 		setShowRoomRatio(form.getRoomLimit().booleanValue());
+		setShowFundingDepartment(form.getFundingDepartment().booleanValue());
 		setShowManager(form.getManager().booleanValue());
 		setShowDatePattern(form.getDatePattern().booleanValue());
 		setShowTimePattern(form.getTimePattern().booleanValue());
@@ -2314,6 +2353,7 @@ public class WebInstructionalOfferingTableBuilder {
 		} else {
 		    setShowExam(false);
 		}
+		
 		if (form.getInstructorAssignment() != null) {
 			setShowInstructorAssignment(form.getInstructorAssignment());
 		} else {
@@ -2341,6 +2381,7 @@ public class WebInstructionalOfferingTableBuilder {
 		setShowLimit(columns.contains(MSG.columnLimit()));
 		setShowSnapshotLimit(columns.contains(MSG.columnSnapshotLimit()));
 		setShowRoomRatio(columns.contains(MSG.columnRoomRatio()));
+		setShowFundingDepartment(columns.contains(MSG.columnFundingDepartment()));
 		setShowManager(columns.contains(MSG.columnManager()));
 		setShowDatePattern(columns.contains(MSG.columnDatePattern()));
 		setShowTimePattern(columns.contains(MSG.columnTimePattern()));
@@ -2496,6 +2537,4 @@ public class WebInstructionalOfferingTableBuilder {
 	public void setShowSubpartCredit(boolean showSubpartCredit) {
 		this.showSubpartCredit = showSubpartCredit;
 	}
-	
-
 }

@@ -538,6 +538,17 @@
 				</TD>
 			</TR>
 		</logic:notEmpty>
+		<tt:propertyEquals name="unitime.courses.funding_departments_enabled" value="true">
+			<logic:notEmpty name="instructionalOfferingDetailForm" property="fundingDepartment">
+				<TR>
+					<TD valign="top"><loc:message name="propertyFundingDepartment"/></TD>
+					<TD>
+						<bean:write name="instructionalOfferingDetailForm" property="fundingDepartment" />
+					</TD>
+				</TR>
+				<TR>
+			</logic:notEmpty>
+		</tt:propertyEquals>
 		
 		<sec:authorize access="hasPermission(null, 'Session', 'CurriculumView')">
 		<TR>

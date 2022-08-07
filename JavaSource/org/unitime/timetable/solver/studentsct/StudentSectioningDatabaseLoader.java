@@ -147,7 +147,6 @@ import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TravelTime;
-import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -242,6 +241,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private float iMinDefaultCredit = -1f;
     private Date iClassesFixedDate = null;
     private int iClassesFixedDateIndex = 0;
+    private Date iFirstDay = null;
     private int iDayOfWeekOffset = 0;
     private Query iOnlineOnlyStudentQuery = null;
     private String iOnlineOnlyCourseNameRegExp;
@@ -457,16 +457,16 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             if (session==null) throw new Exception("Session "+iInitiative+" "+iTerm+iYear+" not found!");
         	ApplicationProperties.setSessionId(session.getUniqueId());
         	
+        	iFirstDay = DateUtils.getDate(1, session.getPatternStartMonth(), session.getSessionStartYear());
+    		iDayOfWeekOffset = Constants.getDayOfWeek(iFirstDay);
+    		getModel().setDayOfWeekOffset(iDayOfWeekOffset);
+    				
         	if (iClassesFixedDate != null) {
-        		Date firstDay = DateUtils.getDate(1, session.getPatternStartMonth(), session.getSessionStartYear());
-        		iClassesFixedDateIndex = Days.daysBetween(new LocalDate(firstDay), new LocalDate(iClassesFixedDate)).getDays();
-        		iDayOfWeekOffset = Constants.getDayOfWeek(firstDay);
+        		iClassesFixedDateIndex = Days.daysBetween(new LocalDate(iFirstDay), new LocalDate(iClassesFixedDate)).getDays();
         		iProgress.info("Classes Fixed Date: " + iClassesFixedDate + " (date pattern index: " + iClassesFixedDateIndex + ")");
         	}
         	if (iClassesPastDate != null) {
-        		Date firstDay = DateUtils.getDate(1, session.getPatternStartMonth(), session.getSessionStartYear());
-        		iClassesPastDateIndex = Days.daysBetween(new LocalDate(firstDay), new LocalDate(iClassesPastDate)).getDays();
-        		iDayOfWeekOffset = Constants.getDayOfWeek(firstDay);
+        		iClassesPastDateIndex = Days.daysBetween(new LocalDate(iFirstDay), new LocalDate(iClassesPastDate)).getDays();
         		iProgress.info("Classes Past Date: " + iClassesPastDate + " (date pattern index: " + iClassesPastDateIndex + ")");
         	}
 
@@ -1268,7 +1268,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     protected void checkOverrideStatuses(org.hibernate.Session hibSession, List<org.unitime.timetable.model.Student> students) {
     	List<org.unitime.timetable.model.Student> filteredStudents = new ArrayList<org.unitime.timetable.model.Student>();
 		for (org.unitime.timetable.model.Student s: students) {
-			if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty() && s.getWaitlists().isEmpty()) continue;
+			if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty()) continue;
     		if (iCheckForNoBatchStatus && s.hasSectioningStatusOption(StudentSectioningStatus.Option.nobatch)) continue;
             if (iStudentQuery != null && !iStudentQuery.match(new DbStudentMatcher(s))) continue;
             filteredStudents.add(s);
@@ -1284,7 +1284,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     		setPhase("Validate overrides...", students.size());
     		for (org.unitime.timetable.model.Student s: students) {
         		incProgress();
-        		if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty() && s.getWaitlists().isEmpty()) continue;
+        		if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty()) continue;
         		if (iCheckForNoBatchStatus && s.hasSectioningStatusOption(StudentSectioningStatus.Option.nobatch)) continue;
                 if (iStudentQuery != null && !iStudentQuery.match(new DbStudentMatcher(s))) continue;
         		validateOverrides(hibSession, s);
@@ -1292,7 +1292,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 		} else {
 			List<org.unitime.timetable.model.Student> filteredStudents = new ArrayList<org.unitime.timetable.model.Student>();
 			for (org.unitime.timetable.model.Student s: students) {
-				if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty() && s.getWaitlists().isEmpty()) continue;
+				if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty()) continue;
         		if (iCheckForNoBatchStatus && s.hasSectioningStatusOption(StudentSectioningStatus.Option.nobatch)) continue;
                 if (iStudentQuery != null && !iStudentQuery.match(new DbStudentMatcher(s))) continue;
                 filteredStudents.add(s);
@@ -1423,6 +1423,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             	}
         	}
         }
+        if (s.getClassStartDate() != null)
+        	student.setClassFirstDate(Days.daysBetween(new LocalDate(iFirstDay), new LocalDate(s.getClassStartDate())).getDays());
+        if (s.getClassEndDate() != null)
+        	student.setClassLastDate(Days.daysBetween(new LocalDate(iFirstDay), new LocalDate(s.getClassEndDate())).getDays());
+        student.setBackToBackPreference(s.getBackToBackPreference());
+        student.setModalityPreference(s.getModalityPreference());
         if (iLoadStudentInfo) loadStudentInfo(student,s);
         if (iShortDistanceAccomodationReference != null)
         	for (StudentAccomodation ac: s.getAccomodations())
@@ -1674,7 +1680,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             }
         }
 
-        if (!s.getClassEnrollments().isEmpty() || !s.getWaitlists().isEmpty()) {
+        if (!s.getClassEnrollments().isEmpty()) {
         	TreeSet<Course> courses = new TreeSet<Course>(new Comparator<Course>() {
         		public int compare(Course c1, Course c2) {
         			return (c1.getSubjectArea() + " " + c1.getCourseNumber()).compareTo(c2.getSubjectArea() + " " + c2.getCourseNumber());
@@ -1689,15 +1695,6 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     continue;
                 }
                 if (enrl.getTimestamp() != null) timeStamp.put(enrl.getCourseOffering().getUniqueId(), enrl.getTimestamp().getTime());
-                courses.add(course);
-        	}
-        	for (WaitList w: s.getWaitlists()) {
-        		Course course = courseTable.get(w.getCourseOffering().getUniqueId());
-                if (course==null) {
-                    iProgress.warn("Student " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ") requests course " + w.getCourseOffering().getCourseName()+" that is not loaded.");
-                    continue;
-                }
-                if (w.getTimestamp() != null) timeStamp.put(w.getCourseOffering().getUniqueId(), w.getTimestamp().getTime());
                 courses.add(course);
         	}
         	int priority = 0;
@@ -1847,7 +1844,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     						hasLimit = true;
     					}
 	           		}
-	           		if (!section.isEnabled()) hasDisabled = true;
+	           		if (!section.isEnabled(student)) hasDisabled = true;
 	           	}
 	           	if (enrl.getConfig().getLimit() >= 0 && enrl.getConfig().getLimit() < 1 + enrl.getConfig().getEnrollments(getAssignment()).size()) {
            			if (iTweakLimits) {
@@ -2598,7 +2595,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             setPhase("Loading student requests...", students.size());
             for (Iterator i=students.iterator();i.hasNext();) {
                 org.unitime.timetable.model.Student s = (org.unitime.timetable.model.Student)i.next(); incProgress();
-                if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty() && s.getWaitlists().isEmpty()) continue;
+                if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty()) continue;
                 Student student = loadStudent(hibSession, s, courseTable, classTable);
                 if (student == null) continue;
                 if (iUseAdvisorWaitLists)
@@ -3067,7 +3064,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     		setPhase("Checking critical courses...", students.size());
     		for (org.unitime.timetable.model.Student s: students) {
         		incProgress();
-        		if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty() && s.getWaitlists().isEmpty()) continue;
+        		if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty()) continue;
         		if (iCheckForNoBatchStatus && s.hasSectioningStatusOption(StudentSectioningStatus.Option.nobatch)) continue;
                 if (iStudentQuery != null && !iStudentQuery.match(new DbStudentMatcher(s))) continue;
                 checkCriticalCourses(hibSession, s);
@@ -3075,7 +3072,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 		} else {
 			List<org.unitime.timetable.model.Student> filteredStudents = new ArrayList<org.unitime.timetable.model.Student>();
 			for (org.unitime.timetable.model.Student s: students) {
-				if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty() && s.getWaitlists().isEmpty()) continue;
+				if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty()) continue;
         		if (iCheckForNoBatchStatus && s.hasSectioningStatusOption(StudentSectioningStatus.Option.nobatch)) continue;
                 if (iStudentQuery != null && !iStudentQuery.match(new DbStudentMatcher(s))) continue;
                 filteredStudents.add(s);
@@ -3177,7 +3174,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 				.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
 		long c0 = OnlineSectioningHelper.getCpuTime();
 		try {
-			CriticalCourses critical = iCriticalCoursesProvider.getCriticalCourses(iValidator, helper, new XStudent(s, helper, iFreeTimePattern));
+			CriticalCourses critical = iCriticalCoursesProvider.getCriticalCourses(iValidator, helper, new XStudent(s, helper, iFreeTimePattern, iDatePatternFirstDate));
 			boolean changed = false;
 			for (CourseDemand cd: s.getCourseDemands()) {
 				int crit = isCritical(cd, critical);

@@ -124,6 +124,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 			DistanceMetric dm = server.getDistanceMetric();
 			model.setDistanceConflict(new DistanceConflict(dm, model.getProperties()));
 			model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
+			model.setDayOfWeekOffset(server.getAcademicSession().getDayOfWeekOffset());
 			boolean linkedClassesMustBeUsed = server.getConfig().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
 	        Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 
@@ -318,6 +319,10 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 					clonnedStudent.setName(student.getName());
 					clonnedStudent.setNeedShortDistances(student.hasAccomodation(dm.getShortDistanceAccommodationReference()));
 					clonnedStudent.setAllowDisabled(student.isAllowDisabled());
+					clonnedStudent.setClassFirstDate(student.getClassStartDate());
+					clonnedStudent.setClassLastDate(student.getClassEndDate());
+					clonnedStudent.setBackToBackPreference(student.getBackToBackPreference());
+					clonnedStudent.setModalityPreference(student.getModalityPreference());
 					for (XStudent.XGroup g: student.getGroups()) {
 						clonnedStudent.getGroups().add(new StudentGroup(g.getType(), g.getAbbreviation(), g.getTitle()));
 						List<GroupReservation> list = groups.get(g);
@@ -365,6 +370,8 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 										clonnedRequest.setRequestPriority(RequestPriority.Critical);
 									else if (cr.getCritical() == CourseDemand.Critical.IMPORTANT.ordinal())
 										clonnedRequest.setRequestPriority(RequestPriority.Important);
+									else if (cr.getCritical() == CourseDemand.Critical.VITAL.ordinal())
+										clonnedRequest.setRequestPriority(RequestPriority.Vital);
 								}
 								cr.fillChoicesIn(clonnedRequest);
 								XEnrollment enrollment = cr.getEnrollment();

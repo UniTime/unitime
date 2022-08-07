@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.util;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -40,9 +42,16 @@ import org.unitime.timetable.model.dao._RootDAO;
  * @author Tomas Muller
  */
 public class MessageLogAppender extends AbstractAppender {
+	private String iHost = null;
 	
 	public MessageLogAppender() {
 		super("message-log", null, null, true, Property.EMPTY_ARRAY);
+		try {
+			iHost = InetAddress.getLocalHost().getHostName();
+			if (iHost.indexOf('.') > 0)
+				iHost = iHost.substring(0, iHost.indexOf('.'));
+		} catch (UnknownHostException e) { 
+		}
 	}
 
 	private Saver iSaver = null;
@@ -86,7 +95,10 @@ public class MessageLogAppender extends AbstractAppender {
 		
 		m.setTimeStamp(new Date(event.getTimeMillis()));
 		
-		m.setNdc(event.getContextStack().toString());
+		if (event.getContextStack() != null && !event.getContextStack().isEmpty())
+			m.setNdc(event.getContextStack().toString());
+		else if (iHost != null)
+			m.setNdc("[host:" + iHost + "]");
 		String thread = event.getThreadName();
 		m.setThread(thread == null ? null : thread.length() > 100 ? thread.substring(0, 100) : thread);
 		

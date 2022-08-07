@@ -98,7 +98,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 			
 			org.hibernate.Query q = helper.getHibSession().createQuery(
 					"select l, s.uniqueId from OnlineSectioningLog l, Student s " +
-					(getQuery().hasAttribute("area", "clasf", "classification", "major", "concentration") ? "left outer join s.areaClasfMajors m " : "") +
+					(getQuery().hasAttribute("area", "clasf", "classification", "major", "concentration", "campus", "program") ? "left outer join s.areaClasfMajors m " : "") +
 					(getQuery().hasAttribute("minor") ? "left outer join s.areaClasfMinors n " : "") + 
 					(getQuery().hasAttribute("group") ? "left outer join s.groups g " : "") + 
 					(getQuery().hasAttribute("accommodation") ? "left outer join s.accomodations a " : "") +
@@ -136,7 +136,9 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					st.addConcentration(acm.getConcentration(), acm.getConcentrationLabel());
 					st.addDegree(acm.getDegree(), acm.getDegreeLabel());
 					st.addProgram(acm.getProgram(), acm.getProgramLabel());
+					st.addCampus(acm.getCampus(), acm.getCampusLabel());
 				}
+				st.setDefaultCampus(server.getAcademicSession().getCampus());
 				for (XAreaClassificationMajor acm: student.getMinors()) {
 					st.addMinor(acm.getMajor(), acm.getMajorLabel());
 				}
@@ -373,7 +375,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 			html += "<tr><td class='unitime-MainTableHeader' colspan='2'>"+ (e.hasType() ? Constants.toInitialCase(e.getType().name()) + " ": "") + MSG.enrollmentsTable() + "</td></tr>";
 			html += "<tr><td colspan='2'><table cellspacing='0' cellpadding='2'>" +
 					"<td class='unitime-TableHeader'>" + MSG.colCourse() + "</td>" +
-					"<td class='unitime-TableHeader'>" + MSG.colSubject() + "</td>" +
+					"<td class='unitime-TableHeader'>" + MSG.colSubpart() + "</td>" +
 					"<td class='unitime-TableHeader'>" + MSG.colClass() + "</td>" +
 					"<td class='unitime-TableHeader'>" + MSG.colDays() + "</td>" +
 					"<td class='unitime-TableHeader'>" + MSG.colStart() + "</td>" +
@@ -592,6 +594,10 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 				return "lower(m.major.code) = '" + body.toLowerCase() + "'";
 			} else if ("concentration".equalsIgnoreCase(attr)) {
 				return "lower(m.concentration.code) = '" + body.toLowerCase() + "'";
+			} else if ("program".equalsIgnoreCase(attr)) {
+				return "lower(m.program.reference) = '" + body.toLowerCase() + "'";
+			} else if ("campus".equalsIgnoreCase(attr)) {
+				return "lower(m.campus.reference) = '" + body.toLowerCase() + "'";
 			} else if ("minor".equalsIgnoreCase(attr)) {
 				return "lower(n.minor.code) = '" + body.toLowerCase() + "'";
 			} else if ("group".equalsIgnoreCase(attr)) {

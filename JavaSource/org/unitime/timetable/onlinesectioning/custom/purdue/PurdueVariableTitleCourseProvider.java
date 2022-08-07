@@ -33,6 +33,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeMode;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseInfo;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
@@ -61,16 +62,20 @@ public class PurdueVariableTitleCourseProvider implements VariableTitleCoursePro
 		}
 	}
 	
-	protected String getVariableTitleCourseSQL() {
-		return ApplicationProperties.getProperty("purdue.vt.variableTitleCourseSQL",
-				"select c.subj_code, c.crse_numb, c.crse_title, c.credit_hr_ind, c.credit_hr_low, c.credit_hr_high, c.gmod_code, c.gmod_desc, c.gmod_default_ind " +
-				"from timetable.szgv_reg_vartl_course c, timetable.subject_area sa where " +
-				"concat(concat(c.subj_code, ' '), c.crse_numb) like :query and c.attr_code = 'VART' and " +
-				"c.course_effective_term <= :term and :term < c.course_end_term and " +
-				"c.attr_effective_term <= :term and :term < c.attr_end_term and " +
-				"c.gmod_effective_term <= :term and :term < c.gmod_end_term and " +
-				"c.subj_code = sa.subject_area_abbreviation and sa.session_id = :sessionId " +
-				"order by c.subj_code, c.crse_numb, c.gmod_code");
+	protected String getVariableTitleCourseSQL(AcademicSessionInfo session) {
+		return ApplicationProperties.getProperty("purdue.vt.variableTitleCourseSQL." + session.getCampus(),
+				ApplicationProperties.getProperty("purdue.vt.variableTitleCourseSQL",
+						"select c.subj_code, c.crse_numb, c.crse_title, c.credit_hr_ind, c.credit_hr_low, c.credit_hr_high, c.gmod_code, c.gmod_desc, c.gmod_default_ind " +
+						"from timetable.szgv_reg_vartl_course c, timetable.subject_area sa where " +
+						"(concat(concat(c.subj_code, ' '), c.crse_numb) like :query or concat(concat(c.subj_code, ' '), concat(c.crse_numb, concat(' - ', c.crse_title))) like :query) and "+
+						"c.attr_code = 'VART' and " +
+						"c.course_effective_term <= :term and :term < c.course_end_term and " +
+						"c.attr_effective_term <= :term and :term < c.attr_end_term and " +
+						"c.gmod_effective_term <= :term and :term < c.gmod_end_term and " +
+						"c.subj_code = sa.subject_area_abbreviation and sa.session_id = :sessionId and " +
+						":studentId is not null " +
+						"order by c.subj_code, c.crse_numb, c.gmod_code")
+				);
 	}
 	
 	protected String getInstructorNameFormat() {
@@ -82,13 +87,12 @@ public class PurdueVariableTitleCourseProvider implements VariableTitleCoursePro
 	}
 
 	@Override
-	public Collection<VariableTitleCourseInfo> getVariableTitleCourses(String query, int limit, OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		org.hibernate.Query q = helper.getHibSession().createSQLQuery(getVariableTitleCourseSQL());
-		if (query != null && query.indexOf(" - ") >= 0)
-			query = query.substring(0, query.indexOf(" - "));
+	public Collection<VariableTitleCourseInfo> getVariableTitleCourses(String query, int limit, Long studentId, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		org.hibernate.Query q = helper.getHibSession().createSQLQuery(getVariableTitleCourseSQL(server.getAcademicSession()));
 		q.setText("query", query == null ? "%" : query.toUpperCase() + "%");
 		q.setText("term", iExternalTermProvider.getExternalTerm(server.getAcademicSession()));
 		q.setLong("sessionId", server.getAcademicSession().getUniqueId());
+		q.setLong("studentId", studentId);
 		if (limit > 0)
 			q.setMaxResults(5 * limit);
 		
@@ -143,13 +147,12 @@ public class PurdueVariableTitleCourseProvider implements VariableTitleCoursePro
 	}
 	
 	@Override
-	public VariableTitleCourseInfo getVariableTitleCourse(String query, OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		org.hibernate.Query q = helper.getHibSession().createSQLQuery(getVariableTitleCourseSQL());
-		if (query != null && query.indexOf(" - ") >= 0)
-			query = query.substring(0, query.indexOf(" - "));
+	public VariableTitleCourseInfo getVariableTitleCourse(String query, Long studentId, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		org.hibernate.Query q = helper.getHibSession().createSQLQuery(getVariableTitleCourseSQL(server.getAcademicSession()));
 		q.setText("query", query.toUpperCase());
 		q.setText("term", iExternalTermProvider.getExternalTerm(server.getAcademicSession()));
 		q.setLong("sessionId", server.getAcademicSession().getUniqueId());
+		q.setLong("studentId", studentId);
 		
 		NameFormat nameFormat = NameFormat.fromReference(getInstructorNameFormat());
 

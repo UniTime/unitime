@@ -747,6 +747,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				Boolean controlling  = getRequiredBooleanAttribute(courseElement, "controlling", elementName);
 				String courseNbr = getRequiredStringAttribute(courseElement, "courseNbr", elementName);
 				String scheduleBookNote = getOptionalStringAttribute(courseElement, "scheduleBookNote");
+				String fundingDepartmentCode = getOptionalStringAttribute(courseElement, "fundingDepartment");
 				String subjAbbv = getRequiredStringAttribute(courseElement, "subject", elementName);
 				SubjectArea subjectArea = subjectAreas.get(subjAbbv);
 				String title = getOptionalStringAttribute(courseElement, "title");
@@ -762,6 +763,19 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				if (scheduleBookNote != null && scheduleBookNote.trim().length() > 0){
 					newCourseOffering.setScheduleBookNote(scheduleBookNote.trim());
 				}
+				if (fundingDepartmentCode != null) {
+					Department fundingDepartment = findByDeptCode(fundingDepartmentCode, session.getSessionId());
+					if (fundingDepartment == null) {
+						throw new Exception("No department found for " + fundingDepartmentCode);
+					}
+					if (newCourseOffering.getSubjectArea().getFundingDept() == null || (newCourseOffering.getSubjectArea().getFundingDept().getUniqueId().equals(fundingDepartment.getUniqueId()))) {
+						newCourseOffering.setFundingDept(fundingDepartment);
+					} else {
+						newCourseOffering.setFundingDept(null);
+					}
+				} else {
+					newCourseOffering.setFundingDept(null);
+				}		
 				if (title != null && title.trim().length() > 0){
 					newCourseOffering.setTitle(title.trim());
 				}
@@ -1398,6 +1412,19 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 							addNote("\tchanged schedule book note: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
 							changed = true;
 						}
+						if (oco.getFundingDept() == null && nco.getFundingDept() != null){
+							oco.setFundingDept(nco.getFundingDept());
+							addNote("\tadded funding department: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
+							changed = true;
+						} else if (oco.getFundingDept() != null && nco.getFundingDept() == null){
+							oco.setFundingDept(null);
+							addNote("\tremoved funding department: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
+							changed = true;
+						} else if (oco.getFundingDept() != null && nco.getFundingDept() != null && !oco.getFundingDept().equals(nco.getFundingDept())){
+							oco.setFundingDept(nco.getFundingDept());
+							addNote("\tchanged funding department: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
+							changed = true;
+						}
 						if (oco.getTitle() == null && nco.getTitle() != null && nco.getTitle().length() > 0){
 							oco.setTitle(nco.getTitle());
 							addNote("\tadded title: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
@@ -1692,6 +1719,14 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				String suffix = getRequiredStringAttribute(classElement, "suffix", elementName);
 				String type = getRequiredStringAttribute(classElement, "type", elementName);
 				String scheduleNote = getOptionalStringAttribute(classElement, "scheduleNote");
+				String fundingDepartmentCode = getOptionalStringAttribute(classElement, "fundingDepartment");
+				Department newFundingDepartment = null;
+				if (fundingDepartmentCode != null) {
+					newFundingDepartment = findByDeptCode(fundingDepartmentCode, session.getSessionId());
+					if (newFundingDepartment == null) {
+						throw new Exception("No department found for " + fundingDepartmentCode);
+					}
+				}
 				Boolean enabledForStudentScheduling = getOptionalBooleanAttribute(classElement, "studentScheduling", getOptionalBooleanAttribute(classElement, "displayInScheduleBook", true));
 				boolean cancelled = getOptionalBooleanAttribute(classElement, "cancelled", false);
 				Integer itypeId = findItypeForString(type).getItype();
@@ -1748,11 +1783,20 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' itype changed");
 						changed = true;
 					}
+					
 					if ((clazz.getSchedulePrintNote() != null && !clazz.getSchedulePrintNote().equals(scheduleNote))
 							 || (clazz.getSchedulePrintNote() == null && scheduleNote != null)){
 						clazz.setSchedulePrintNote(scheduleNote);
 						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' schedule note changed");
 						changed = true;
+					}
+					if ((clazz.getFundingDept() != null && !clazz.getFundingDept().equals(newFundingDepartment))
+							 || (clazz.getFundingDept() == null && newFundingDepartment != null)){
+						if (!clazz.getEffectiveFundingDept().equals(newFundingDepartment)) {
+							clazz.setFundingDept(newFundingDepartment);
+							addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' funding department changed");
+							changed = true;
+						}
 					}
 					if ((clazz.getExpectedCapacity() != null && !clazz.getExpectedCapacity().equals(limit))
 							 || (clazz.getExpectedCapacity() == null && limit != null)){
@@ -3236,5 +3280,14 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		if (slot < 0)
 			throw new Exception("Invalid time '"+timeString+"', did not meet format: " + timeFormat);
 		return slot;
+	}
+	
+	private Department findByDeptCode(String deptCode, Long sessionId) {
+		return (Department) getHibSession().
+			createQuery("select distinct a from Department as a where a.deptCode=:deptCode and a.session.uniqueId=:sessionId").
+			setLong("sessionId", sessionId.longValue()).
+			setString("deptCode", deptCode).
+			setCacheable(true).
+			uniqueResult();
 	}
 }

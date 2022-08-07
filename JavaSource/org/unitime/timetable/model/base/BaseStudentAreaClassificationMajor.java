@@ -23,6 +23,7 @@ import java.io.Serializable;
 
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
+import org.unitime.timetable.model.Campus;
 import org.unitime.timetable.model.Degree;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMajorConcentration;
@@ -47,6 +48,7 @@ public abstract class BaseStudentAreaClassificationMajor implements Serializable
 	private PosMajorConcentration iConcentration;
 	private Degree iDegree;
 	private Program iProgram;
+	private Campus iCampus;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_WEIGHT = "weight";
@@ -89,6 +91,9 @@ public abstract class BaseStudentAreaClassificationMajor implements Serializable
 	public Program getProgram() { return iProgram; }
 	public void setProgram(Program program) { iProgram = program; }
 
+	public Campus getCampus() { return iCampus; }
+	public void setCampus(Campus campus) { iCampus = campus; }
+
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof StudentAreaClassificationMajor)) return false;
 		if (getUniqueId() == null || ((StudentAreaClassificationMajor)o).getUniqueId() == null) return false;
@@ -108,6 +113,7 @@ public abstract class BaseStudentAreaClassificationMajor implements Serializable
 		return "StudentAreaClassificationMajor[" +
 			"\n	AcademicArea: " + getAcademicArea() +
 			"\n	AcademicClassification: " + getAcademicClassification() +
+			"\n	Campus: " + getCampus() +
 			"\n	Concentration: " + getConcentration() +
 			"\n	Degree: " + getDegree() +
 			"\n	Major: " + getMajor() +

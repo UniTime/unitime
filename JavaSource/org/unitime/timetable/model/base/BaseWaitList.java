@@ -22,6 +22,7 @@ package org.unitime.timetable.model.base;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.WaitList;
@@ -36,13 +37,26 @@ public abstract class BaseWaitList implements Serializable {
 	private Long iUniqueId;
 	private Integer iType;
 	private Date iTimestamp;
+	private Boolean iWaitListed;
+	private String iChangedBy;
+	private String iRequest;
+	private String iEnrollment;
+	private Date iWaitListedTimeStamp;
 
 	private Student iStudent;
 	private CourseOffering iCourseOffering;
+	private CourseOffering iEnrolledCourse;
+	private CourseDemand iCourseDemand;
+	private CourseOffering iSwapCourseOffering;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_TYPE = "type";
 	public static String PROP_TIMESTAMP = "timestamp";
+	public static String PROP_WAITLISTED = "waitListed";
+	public static String PROP_CHANGED_BY = "changedBy";
+	public static String PROP_REQUEST = "request";
+	public static String PROP_ENROLLMENT = "enrollment";
+	public static String PROP_WAITLIST_TS = "waitListedTimeStamp";
 
 	public BaseWaitList() {
 		initialize();
@@ -64,11 +78,36 @@ public abstract class BaseWaitList implements Serializable {
 	public Date getTimestamp() { return iTimestamp; }
 	public void setTimestamp(Date timestamp) { iTimestamp = timestamp; }
 
+	public Boolean isWaitListed() { return iWaitListed; }
+	public Boolean getWaitListed() { return iWaitListed; }
+	public void setWaitListed(Boolean waitListed) { iWaitListed = waitListed; }
+
+	public String getChangedBy() { return iChangedBy; }
+	public void setChangedBy(String changedBy) { iChangedBy = changedBy; }
+
+	public String getRequest() { return iRequest; }
+	public void setRequest(String request) { iRequest = request; }
+
+	public String getEnrollment() { return iEnrollment; }
+	public void setEnrollment(String enrollment) { iEnrollment = enrollment; }
+
+	public Date getWaitListedTimeStamp() { return iWaitListedTimeStamp; }
+	public void setWaitListedTimeStamp(Date waitListedTimeStamp) { iWaitListedTimeStamp = waitListedTimeStamp; }
+
 	public Student getStudent() { return iStudent; }
 	public void setStudent(Student student) { iStudent = student; }
 
 	public CourseOffering getCourseOffering() { return iCourseOffering; }
 	public void setCourseOffering(CourseOffering courseOffering) { iCourseOffering = courseOffering; }
+
+	public CourseOffering getEnrolledCourse() { return iEnrolledCourse; }
+	public void setEnrolledCourse(CourseOffering enrolledCourse) { iEnrolledCourse = enrolledCourse; }
+
+	public CourseDemand getCourseDemand() { return iCourseDemand; }
+	public void setCourseDemand(CourseDemand courseDemand) { iCourseDemand = courseDemand; }
+
+	public CourseOffering getSwapCourseOffering() { return iSwapCourseOffering; }
+	public void setSwapCourseOffering(CourseOffering swapCourseOffering) { iSwapCourseOffering = swapCourseOffering; }
 
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof WaitList)) return false;
@@ -87,11 +126,19 @@ public abstract class BaseWaitList implements Serializable {
 
 	public String toDebugString() {
 		return "WaitList[" +
+			"\n	ChangedBy: " + getChangedBy() +
+			"\n	CourseDemand: " + getCourseDemand() +
 			"\n	CourseOffering: " + getCourseOffering() +
+			"\n	EnrolledCourse: " + getEnrolledCourse() +
+			"\n	Enrollment: " + getEnrollment() +
+			"\n	Request: " + getRequest() +
 			"\n	Student: " + getStudent() +
+			"\n	SwapCourseOffering: " + getSwapCourseOffering() +
 			"\n	Timestamp: " + getTimestamp() +
 			"\n	Type: " + getType() +
 			"\n	UniqueId: " + getUniqueId() +
+			"\n	WaitListed: " + getWaitListed() +
+			"\n	WaitListedTimeStamp: " + getWaitListedTimeStamp() +
 			"]";
 	}
 }

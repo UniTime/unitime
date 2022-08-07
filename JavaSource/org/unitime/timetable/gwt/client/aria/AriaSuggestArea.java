@@ -78,6 +78,7 @@ public class AriaSuggestArea extends Composite implements HasText, HasValue<Stri
 	private SuggestOracle.Callback iOracleCallback;
 	
 	private String iCurrentText = null;
+	private boolean iTabPreventDefault = false;
 	
 	public AriaSuggestArea(SuggestOracle oracle) {
 		this(new AriaTextArea(), oracle);
@@ -159,12 +160,20 @@ public class AriaSuggestArea extends Composite implements HasText, HasValue<Stri
 		});
 	}
 	
+	public void setSuggestions(List<String> suggestions) {
+		iOracle = new SimpleOracle(suggestions);
+	}
+	
 	private String status(Suggestion suggestion) {
 		return suggestion instanceof HasStatus ? ((HasStatus)suggestion).getStatusString() : suggestion.getDisplayString();
 	}
 	
 	public void setStatus(String text) {
 		AriaStatus.getInstance().setText(text);
+	}
+	
+	public void setTabPreventDefault(boolean tabPreventDefault) {
+		iTabPreventDefault = tabPreventDefault;
 	}
 	
 	private void addEventsToTextBox() {
@@ -195,6 +204,10 @@ public class AriaSuggestArea extends Composite implements HasText, HasValue<Stri
 	          case KeyCodes.KEY_TAB:
 	        	  if (isSuggestionListShowing()) {
 	        		  iSuggestionMenu.executeSelected();
+	        		  if (iTabPreventDefault) {
+	        			  event.preventDefault();
+	        			  return;
+	        		  }
 	        	  }
 	        	  break;
 	          case KeyCodes.KEY_ESCAPE:
@@ -481,6 +494,10 @@ public class AriaSuggestArea extends Composite implements HasText, HasValue<Stri
 
 		@Override
 		public void requestSuggestions(final Request request, final Callback callback) {
+			if (iSuggestions == null || iSuggestions.isEmpty()) {
+				callback.onSuggestionsReady(request, new Response(null));
+				return;
+			}
 			List<SimpleSuggestion> suggestions = new ArrayList<SimpleSuggestion>();
 			for (String suggestion: iSuggestions) {
 				if (suggestion.equalsIgnoreCase(request.getQuery())) continue;

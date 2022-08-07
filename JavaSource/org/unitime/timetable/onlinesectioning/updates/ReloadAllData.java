@@ -37,6 +37,7 @@ import org.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpart;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpartCache;
@@ -46,6 +47,7 @@ import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -162,7 +164,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 	                    "where s.session.uniqueId=:sessionId").
 	                    setLong("sessionId",server.getAcademicSession().getUniqueId()).list();
 	            for (org.unitime.timetable.model.Student student: students) {
-	            	XStudent s = loadStudent(student, requestMap, server, helper);
+	            	XStudent s = loadStudent(student, requestMap, server, helper, WaitList.WaitListType.RELOAD);
 	            	if (s != null)
 	            		server.update(s, true);
 	            }
@@ -204,7 +206,11 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
     }
     
     public static XStudent loadStudent(org.unitime.timetable.model.Student s, Map<Long, List<XCourseRequest>> requestMap, OnlineSectioningServer server, OnlineSectioningHelper helper) {
-    	XStudent student = new XStudent(s, helper, server.getAcademicSession().getFreeTimePattern());
+    	return loadStudent(s, requestMap, server, helper, null); 
+    }
+    
+    public static XStudent loadStudent(org.unitime.timetable.model.Student s, Map<Long, List<XCourseRequest>> requestMap, OnlineSectioningServer server, OnlineSectioningHelper helper, WaitList.WaitListType resetWaitListType) {
+    	XStudent student = new XStudent(s, helper, server.getAcademicSession().getFreeTimePattern(), server.getAcademicSession().getDatePatternFirstDate());
     	
     	for (Iterator<XRequest> i = student.getRequests().iterator(); i.hasNext(); ) {
     		XRequest request = i.next();
@@ -274,15 +280,31 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
     		}
     	}
     	
+    	if (resetWaitListType != null && s.getWaitListMode() == WaitListMode.WaitList)
+    		s.resetWaitLists(resetWaitListType, helper.getUser().getExternalId(), null, helper.getHibSession());
+    	
         return student;
     }
     
     public static XStudent loadStudentNoCheck(org.unitime.timetable.model.Student s, OnlineSectioningServer server, OnlineSectioningHelper helper) {
-    	XStudent student = new XStudent(s, helper, server.getAcademicSession().getFreeTimePattern());
+    	XStudent student = new XStudent(s, helper, server.getAcademicSession().getFreeTimePattern(), server.getAcademicSession().getDatePatternFirstDate());
     	
-    	for (XRequest request: student.getRequests()) {
+    	for (Iterator<XRequest> i = student.getRequests().iterator(); i.hasNext(); ) {
+    		XRequest request = i.next();
     		if (request instanceof XCourseRequest) {
     			XCourseRequest courseRequest = (XCourseRequest)request;
+    			for (Iterator<XCourseId> j = courseRequest.getCourseIds().iterator(); j.hasNext(); ) {
+    				XCourseId course = j.next();
+    				XOffering offering = server.getOffering(course.getOfferingId());
+                    if (offering == null) {
+                    	helper.warn("Student " + helper.getStudentNameFormat().format(s) + " (" + s.getExternalUniqueId() + ") requests course " + course.getCourseName() + " that is not loaded.");
+                    	j.remove();
+                    }
+    			}
+    			if (courseRequest.getCourseIds().isEmpty()) {
+    				i.remove();
+    				continue;
+    			}
     			XEnrollment enrollment = courseRequest.getEnrollment();
     			if (enrollment != null) {
     				XOffering offering = server.getOffering(enrollment.getOfferingId());

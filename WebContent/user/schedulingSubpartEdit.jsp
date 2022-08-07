@@ -173,10 +173,22 @@
 			<TD><loc:message name="propertyDatePattern"/></TD>
 			<TD>
 				<html:hidden property="op2" value="" styleId="op2"/>
-				<html:select style="width:200px;" property="datePattern" onchange='<%= "datePatternChanged();"%>'>
-					<html:options collection="<%=org.unitime.timetable.model.DatePattern.DATE_PATTERN_LIST_ATTR%>" property="id" labelProperty="value" />
-				</html:select>
-				<img style="cursor: pointer;" src="images/calendar.png" border="0" onclick="showGwtDialog('Preview of '+SchedulingSubpartEditForm.datePattern.options[SchedulingSubpartEditForm.datePattern.selectedIndex].text, 'user/dispDatePattern.jsp?id='+SchedulingSubpartEditForm.datePattern.value+'&subpart='+SchedulingSubpartEditForm.schedulingSubpartId.value,'840','520');">
+				<html:hidden property="datePatternEditable"/>
+				<logic:equal name="<%=frmName%>" property="datePatternEditable" value="true">
+					<html:select style="width:200px;" property="datePattern" onchange='<%= "datePatternChanged();"%>'>
+						<html:options collection="<%=org.unitime.timetable.model.DatePattern.DATE_PATTERN_LIST_ATTR%>" property="id" labelProperty="value" />
+					</html:select>
+					<img style="cursor: pointer;" src="images/calendar.png" border="0" onclick="showGwtDialog('Preview of '+SchedulingSubpartEditForm.datePattern.options[SchedulingSubpartEditForm.datePattern.selectedIndex].text, 'user/dispDatePattern.jsp?id='+SchedulingSubpartEditForm.datePattern.value+'&subpart='+SchedulingSubpartEditForm.schedulingSubpartId.value,'840','520');">
+				</logic:equal>
+				<logic:notEqual name="<%=frmName%>" property="datePatternEditable" value="true">
+					<html:hidden property="datePattern"/>
+					<logic:iterate scope="request" name="<%=org.unitime.timetable.model.DatePattern.DATE_PATTERN_LIST_ATTR%>" id="dp" type="org.unitime.timetable.util.IdValue">
+					<logic:equal name="<%=frmName%>" property="datePattern" value="<%=dp.getId().toString()%>">
+						<bean:write name="dp" property="value" />
+						<img style="cursor: pointer;" src="images/calendar.png" border="0" onclick="showGwtDialog('Preview of <%=dp.getValue()%>', 'user/dispDatePattern.jsp?id=<%=dp.getId()%>&subpart='+SchedulingSubpartEditForm.schedulingSubpartId.value,'840','520');">
+					</logic:equal>
+					</logic:iterate>
+				</logic:notEqual>
 			</TD>
 		</TR>
 		<TR>

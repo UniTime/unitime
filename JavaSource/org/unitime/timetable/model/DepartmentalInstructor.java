@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Calendar;
@@ -864,6 +865,11 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
             cmp = getEndTime().compareTo(block.getEndTime());
             if (cmp!=0) return cmp;
             return getEventName().compareTo(block.getEventName());
+        }
+		@Override
+		public String toString() {
+            SimpleDateFormat df = new SimpleDateFormat("MM/dd/yy");
+            return getEventName()+" ("+getEventType()+") "+df.format(getStartTime());
         }
 	}
 }

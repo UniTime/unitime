@@ -19,9 +19,13 @@
 */
 package org.unitime.timetable.gwt.client.sectioning;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaSuggestArea;
+import org.unitime.timetable.gwt.client.aria.AriaTabBar;
 import org.unitime.timetable.gwt.client.aria.AriaTextArea;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
@@ -37,6 +41,9 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -63,8 +70,11 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 	private String iMessage;
 	private boolean iValue = false;
 	private AriaTextArea iNote = null;
+	private AriaSuggestArea iNoteSuggestions = null;
 	private Image iImage;
 	private CheckBox iCheckBox = null;
+	private AriaTabBar iCoursesTab = null;
+	private Map<Integer, CourseMessage> iCourse2message = null;
 
 	public CourseRequestsConfirmationDialog(CheckCoursesResponse response, int confirm, AsyncCallback<Boolean> callback) {
 		super(true, true);
@@ -92,7 +102,73 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 		String last = null;
 		for (final CourseMessage cm: response.getMessages()) {
 			if (confirm != cm.getConfirm()) continue;
-			if (cm.hasCourse()) {
+			if (cm.hasCourse() && "REQUEST_NOTE".equals(cm.getCode())) {
+				if (iCourse2message == null) {
+					iCourse2message = new HashMap<Integer, CourseMessage>();
+					iCoursesTab = new AriaTabBar(); iCoursesTab.addStyleName("notes-tab");
+					iNote = new AriaTextArea();
+					iNote.setStyleName("unitime-TextArea"); iNote.addStyleName("request-notes");
+					iNote.setVisibleLines(5);
+					iNote.setCharacterWidth(80);
+					iNote.addValueChangeHandler(new ValueChangeHandler<String>() {
+						@Override
+						public void onValueChange(ValueChangeEvent<String> event) {
+							CourseMessage message = iCourse2message.get(iCoursesTab.getSelectedTab());
+							message.setMessage(event.getValue());
+						}
+					});
+					iNote.addKeyDownHandler(new KeyDownHandler() {
+						@Override
+						public void onKeyDown(KeyDownEvent event) {
+							if (iNoteSuggestions.isSuggestionListShowing()) return;
+							if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_TAB && event.getNativeEvent().getShiftKey()) {
+								if (iCoursesTab.getSelectedTab() > 0) {
+									iCourse2message.get(iCoursesTab.getSelectedTab()).setMessage(iNote.getText());
+									iCoursesTab.selectTab(iCoursesTab.getSelectedTab() - 1, true);
+									event.preventDefault();
+								}
+							} else if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_TAB) {
+								if (iCoursesTab.getSelectedTab() + 1 < iCoursesTab.getTabCount()) {
+									iCourse2message.get(iCoursesTab.getSelectedTab()).setMessage(iNote.getText());
+									iCoursesTab.selectTab(iCoursesTab.getSelectedTab() + 1, true);
+									event.preventDefault();
+								}
+							}
+						}
+					});
+					iNoteSuggestions = new AriaSuggestArea(iNote, cm.getSuggestions());
+					iNoteSuggestions.addStyleName("request-note");
+					iNoteSuggestions.setTabPreventDefault(true);
+					iNoteSuggestions.addSelectionHandler(new SelectionHandler<Suggestion>() {
+						@Override
+						public void onSelection(SelectionEvent<Suggestion> event) {
+							CourseMessage message = iCourse2message.get(iCoursesTab.getSelectedTab());
+							message.setMessage(event.getSelectedItem().getReplacementString());
+							String text = iNote.getText();
+							if (text.indexOf('<') >= 0 && text.indexOf('>') > text.indexOf('<')) {
+								iNote.setSelectionRange(text.indexOf('<'), text.indexOf('>') - text.indexOf('<') + 1);
+							}
+						}
+					});
+					iCoursesTab.addSelectionHandler(new SelectionHandler<Integer>() {
+						@Override
+						public void onSelection(SelectionEvent<Integer> event) {
+							CourseMessage message = iCourse2message.get(event.getSelectedItem());
+							boolean show = iNoteSuggestions.isSuggestionListShowing();
+							if (show) iNoteSuggestions.hideSuggestionList();
+							iNoteSuggestions.setSuggestions(message.getSuggestions());
+							iNote.setText(message.getMessage() == null ? "" : message.getMessage());
+							if (show) iNoteSuggestions.showSuggestions(iNote.getText());
+						}
+					});
+					if (cm.getMessage() != null) iNote.setText(cm.getMessage());
+					mp.add(iCoursesTab);
+					mp.add(iNoteSuggestions);
+				}
+				iCourse2message.put(iCourse2message.size(), cm);
+				iCoursesTab.addTab(cm.getCourse());
+				if (iCourse2message.size() == 1) iCoursesTab.selectTab(0);
+			} else if (cm.hasCourse()) {
 				if (ctab == null) { ctab = new P("course-table"); last = null; }
 				P cn = new P("course-name");
 				if (last == null || !last.equals(cm.getCourse())) cn.setText(cm.getCourse());
@@ -115,8 +191,9 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 					}
 				});
 				if (cm.hasSuggestions()) {
-					AriaSuggestArea suggest = new AriaSuggestArea(iNote, cm.getSuggestions());
-					suggest.addSelectionHandler(new SelectionHandler<Suggestion>() {
+					iNoteSuggestions = new AriaSuggestArea(iNote, cm.getSuggestions());
+					iNoteSuggestions.addStyleName("request-note");
+					iNoteSuggestions.addSelectionHandler(new SelectionHandler<Suggestion>() {
 						@Override
 						public void onSelection(SelectionEvent<Suggestion> event) {
 							cm.setMessage(event.getSelectedItem().getReplacementString());
@@ -126,7 +203,7 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 							}
 						}
 					});
-					mp.add(suggest);
+					mp.add(iNoteSuggestions);
 				} else {
 					mp.add(iNote);
 				}

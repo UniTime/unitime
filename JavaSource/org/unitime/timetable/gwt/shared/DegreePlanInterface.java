@@ -110,6 +110,11 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 		return false;
 	}
 	
+	public boolean isCourseCritical(RequestedCourse course) {
+		if (iGroup != null) return iGroup.isCourseCritical(course);
+		return false;
+	}
+	
 	public String getPlaceHolder(DegreeCourseInterface course) {
 		if (iGroup != null) return iGroup.getPlaceHolder(course);
 		return null;
@@ -555,6 +560,24 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 			if (iGroups != null)
 				for (DegreeGroupInterface g: iGroups) {
 					if ((!isChoice() || g.isSelected()) && g.hasCourse(rc)) return g.isCourseSelected(rc);
+				}
+			return false;
+		}
+		
+		protected boolean isCourseCritical(RequestedCourse rc) {
+			if (iCourses != null)
+				for (DegreeCourseInterface course: iCourses) {
+					if (course.hasCourses() && course.getCourseId() != null) {
+						for (CourseAssignment ca: course.getCourses())
+							if (course.getCourseId().equals(ca.getCourseId()) && rc.equals(ca))
+								return isCritical() || course.isCritical();
+					} else {
+						if (rc.equals(course)) return isCritical() || course.isCritical();
+					}
+				}
+			if (iGroups != null)
+				for (DegreeGroupInterface g: iGroups) {
+					if (g.hasCourse(rc)) return g.isCourseCritical(rc);
 				}
 			return false;
 		}

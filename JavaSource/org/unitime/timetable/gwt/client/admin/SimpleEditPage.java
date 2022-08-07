@@ -80,6 +80,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.TextAlign;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.dom.client.Style.WhiteSpace;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -588,7 +589,10 @@ public class SimpleEditPage extends Composite {
 				String name = field.getName();
 				if (hasDetails() && name.contains("|"))
 					name = isParent(record) ? name.split("\\|")[0] : name.split("\\|")[1];
-				detail.addRow(name + ":", cell);
+				int row = detail.addRow(name + ":", cell);
+				if (field.isNoDetail() && !field.isEditable()) {
+					detail.getRowFormatter().setVisible(row, false);
+				}
 			}
 			idx ++;
 		}
@@ -1057,7 +1061,7 @@ public class SimpleEditPage extends Composite {
 		}
 		
 		for (int i = 0; i < iVisible.length; i++) 
-			iTable.setColumnVisible(i, iVisible[i]);
+			iTable.setColumnVisible(i, iVisible[i] && (!iEditable || !iData.getFields()[i].isNoDetail()));
 		
 		iHeader.clearMessage();
 	}
@@ -1508,6 +1512,7 @@ public class SimpleEditPage extends Composite {
 					break;
 				case textarea:
 					HTML html = new HTML(getValue());
+					html.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE_WRAP);
 					initWidget(html);
 					break;
 				default:
@@ -1648,7 +1653,7 @@ public class SimpleEditPage extends Composite {
 		}
 		String hidden = "";
 		for (int i = 0; i < iData.getFields().length; i++) {
-			if (!iTable.isColumnVisible(i)) {
+			if (!iTable.isColumnVisible(i) && iData.getFields()[i].isEditable()) {
 				if (!hidden.isEmpty()) hidden += "|";
 				hidden += iData.getFields()[i].getName();
 			}
@@ -1696,6 +1701,22 @@ public class SimpleEditPage extends Composite {
 							valid = MESSAGES.errorMustBeSet(field.getName());
 						}
 					} else {
+						MyCell old = values.put(value, widget);
+						if (old != null) {
+							widget.setError(MESSAGES.errorMustBeUnique(field.getName()));
+							old.setError(MESSAGES.errorMustBeUnique(field.getName()));
+							if (valid == null && detailRecord == null) {
+								valid = MESSAGES.errorMustBeUnique(field.getName());
+							}
+						}
+					}
+				} 
+				if (field.isUniqueIfSet()) {
+					Map<String, MyCell> values = uniqueMap.get(col);
+					if (values == null) {
+						values = new HashMap<String, MyCell>(); uniqueMap.put(col, values);
+					}
+					if (!(value == null || value.isEmpty())) {
 						MyCell old = values.put(value, widget);
 						if (old != null) {
 							widget.setError(MESSAGES.errorMustBeUnique(field.getName()));
@@ -1781,6 +1802,22 @@ public class SimpleEditPage extends Composite {
 							valid = MESSAGES.errorMustBeSet(field.getName());
 						}
 					} else {
+						MyCell old = values.put(value, widget);
+						if (old != null) {
+							widget.setError(MESSAGES.errorMustBeUnique(field.getName()));
+							old.setError(MESSAGES.errorMustBeUnique(field.getName()));
+							if (valid == null) {
+								valid = MESSAGES.errorMustBeUnique(field.getName());
+							}
+						}
+					}
+				} 
+				if (field.isUniqueIfSet()) {
+					Map<String, MyCell> values = uniqueMap.get(col);
+					if (values == null) {
+						values = new HashMap<String, MyCell>(); uniqueMap.put(col, values);
+					}
+					if (!(value == null || value.isEmpty())) {
 						MyCell old = values.put(value, widget);
 						if (old != null) {
 							widget.setError(MESSAGES.errorMustBeUnique(field.getName()));

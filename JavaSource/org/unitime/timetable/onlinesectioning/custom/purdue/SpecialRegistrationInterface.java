@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.joda.time.DateTime;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
+import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 
 /**
  * @author Tomas Muller
@@ -105,7 +107,10 @@ public class SpecialRegistrationInterface {
 		/** Max credit needed (only filled in when max override needs to be increased!) */
 		public Float maxCredit;
 		/** Student message provided with the request */
+		@Deprecated
 		public String requestorNotes;
+		/** Student message probided with the max credit increase request */
+		public String maxCreditRequestorNotes;
 		/** Request completion status (only read, never sent) */
 		public CompletionStatus completionStatus;
 		/** Validation request */
@@ -129,6 +134,12 @@ public class SpecialRegistrationInterface {
 		public String subject;
 		/** Course number (can be null in case of the MAXI error) */
 		public String courseNbr;
+		/** Banner's campus (can be null in case of the MAXI error) */
+		public String bannerCourseCampus;
+		/** Banner's subject area (can be null in case of the MAXI error) */
+		public String bannerSubject;
+		/** Banner's course number (can be null in case of the MAXI error) */
+		public String bannerCourseNbr;
 		/** Comma separated list of crns (only used during registration) */
 		public String crn;
 		/** Change operation */
@@ -167,6 +178,30 @@ public class SpecialRegistrationInterface {
 		public String apiYear;
 		/** UniTime's academic session term (only used when operation = CHGVARTL) */ 
 		public String apiTerm;
+		/** Student message provided with the request */
+		public String requestorNotes;
+		
+		public void setCourse(String subject, String courseNbr, ExternalTermProvider ext, AcademicSessionInfo session) {
+			this.subject = subject;
+			this.courseNbr = courseNbr;
+			if (ext != null && session != null) {
+				this.bannerSubject = ext.getExternalSubject(session, subject, courseNbr);
+				this.bannerCourseNbr = ext.getExternalCourseNumber(session, subject, courseNbr);
+				this.bannerCourseCampus = ext.getExternalCourseCampus(session, subject, courseNbr);
+			} else {
+				if (subject.indexOf(" - ") >= 0) {
+					this.bannerSubject = subject.substring(subject.indexOf(" - ") + 3);
+					this.bannerCourseCampus = subject.substring(0, subject.indexOf(" - "));
+				} else {
+					this.bannerSubject = subject;
+					this.bannerCourseCampus = session.getCampus();
+				}
+				if (courseNbr.length() > 5)
+					this.bannerCourseNbr = courseNbr.substring(0, 5);
+				else
+					this.bannerCourseNbr = courseNbr;
+			}
+		}
 	}
 	
 
@@ -227,12 +262,40 @@ public class SpecialRegistrationInterface {
 		public String subject;
 		/** Course number */
 		public String courseNbr;
+		/** Banner's campus (can be null in case of the MAXI error) */
+		public String bannerCourseCampus;
+		/** Banner's subject area (can be null in case of the MAXI error) */
+		public String bannerSubject;
+		/** Banner's course number (can be null in case of the MAXI error) */
+		public String bannerCourseNbr;
 		/** Course title */
 		public String title;
 		/** Lower bound on the credit */
 		public Float creditHrs;
 		/** Alternatives, if provided */
 		public List<CourseCredit> alternatives;
+		
+		public void setCourse(String subject, String courseNbr, ExternalTermProvider ext, AcademicSessionInfo session) {
+			this.subject = subject;
+			this.courseNbr = courseNbr;
+			if (ext != null && session != null) {
+				this.bannerSubject = ext.getExternalSubject(session, subject, courseNbr);
+				this.bannerCourseNbr = ext.getExternalCourseNumber(session, subject, courseNbr);
+				this.bannerCourseCampus = ext.getExternalCourseCampus(session, subject, courseNbr);
+			} else {
+				if (subject.indexOf(" - ") >= 0) {
+					this.bannerSubject = subject.substring(subject.indexOf(" - ") + 3);
+					this.bannerCourseCampus = subject.substring(0, subject.indexOf(" - "));
+				} else {
+					this.bannerSubject = subject;
+					this.bannerCourseCampus = session.getCampus();
+				}
+				if (courseNbr.length() > 5)
+					this.bannerCourseNbr = courseNbr.substring(0, 5);
+				else
+					this.bannerCourseNbr = courseNbr;
+			}
+		}
 	}
 	
 	/** Class representing a special registration that has been cancelled */
@@ -441,6 +504,8 @@ public class SpecialRegistrationInterface {
 		public String errorMessage;
 		/** Special Registration API mode (REG or PREREG) */
 		public ApiMode mode;
+		/** Denied note */
+		public String notes;
 	}
 	
 	/** Max credit override that have been denied for the student */

@@ -4148,6 +4148,34 @@ unitime-RoomSharingWidget .legend .blank {
 	color: red;
 }
 
+.unitime-Dept .department-Status {
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.unitime-Dept .department-accept {
+  display: block;
+  height: 13px;  
+  background: transparent url(../images/accept.png) center center no-repeat;
+  
+}
+
+.unitime-Dept .department-StatusItalics {
+	font-style: italic;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.unitime-Departments td {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-Departments tr:last-child td {
+	border-bottom: none;
+}
+
 .unitime-Widget {
 	display: inline-block;
 }
@@ -4169,6 +4197,7 @@ unitime-RoomSharingWidget .legend .blank {
 	text-align: right;
 	margin-top: -2px;
 	white-space: nowrap;
+	padding-right: 2px;
 }
 
 .unitime-Widget .error-hint {
@@ -4296,7 +4325,7 @@ unitime-RoomSharingWidget .legend .blank {
 	font-weight: bold;
 	font-size: small;
 	padding: 3px;
-	max-width: 550px;
+	max-width: 565px;
 }
 
 .unitime-ConfirmationPanel .message-panel .message {
@@ -4327,6 +4356,21 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-ConfirmationPanel .message-panel .request-note {
 	margin-top: 2px;
+	margin-left: 15px;
+}
+
+.unitime-ConfirmationPanel .message-panel .request-note:focus {
+	outline: none !important;
+    border-color: #719ECE;
+    box-shadow: 0 0 5px 2px #719ECE;
+}
+
+.unitime-ConfirmationPanel .message-panel .notes-tab {
+	margin-left: 15px;
+	margin-bottom: -2px;
+}
+
+.unitime-ConfirmationPanel .message-panel .request-notes {
 	margin-left: 15px;
 }
 
@@ -4973,6 +5017,21 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-CourseFinderDialog .instructional-method {
 	display: inline-block;
 	padding: 2px 10px 2px 2px;
+}
+
+.unitime-CourseFinderDialog .course-table .courses-wl .gwt-Label {
+	display: inline-block;
+	padding-right: 3px;
+	white-space: nowrap;
+}
+
+.unitime-CourseFinderDialog .course-table .courses-wl .gwt-Label:after {
+	content: ',';
+}
+
+.unitime-CourseFinderDialog .course-table .courses-wl .gwt-Label:last-child:after {
+	padding-right: 0px;
+	content: '';
 }
 
 .unitime-CourseSelectionBox {
@@ -6694,6 +6753,26 @@ unitime-RoomSharingWidget .legend .blank {
 	min-width: 50px;
 }
 
+.unitime-ChangeGradeModesDialog .course-notes {
+	padding-bottom: 5px;
+}
+
+.unitime-ChangeGradeModesDialog .course-notes .request-note {
+	margin-left: 15px;
+	margin-top: -2px;
+}
+
+.unitime-ChangeGradeModesDialog .course-notes .request-note:focus {
+	outline: none !important;
+    border-color: #719ECE;
+    box-shadow: 0 0 5px 2px #719ECE;
+}
+
+.unitime-ChangeGradeModesDialog .course-notes .notes-tab {
+	margin-left: 15px;
+	margin-bottom: 2px;
+}
+
 .unitime-SolutionInfoDialog {
 	overflow: auto;
 	overflow-x: hidden;
@@ -6728,6 +6807,11 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-AdvisorCourseRequests .waitlist {
+	display: block;
+	padding-top: 4px;
+}
+
+.unitime-AdvisorCourseRequests .critical {
 	display: block;
 	padding-top: 4px;
 }
@@ -6767,12 +6851,14 @@ unitime-RoomSharingWidget .legend .blank {
 	display: inline-block;
 	padding: 2px;
 	vertical-align: top;
+	width: calc(100% - 75px);
 }
 
 .unitime-AdvisorCourseRequestLine .alt-line .course {
 	display: inline-block;
 	padding: 2px;
 	vertical-align: top;
+	width: calc(100% - 125px);
 }
 
 .unitime-AdvisorCourseRequestLine .line .gwt-SuggestBox {
@@ -6788,11 +6874,11 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-AdvisorCourseRequestLine .line .course .unitime-FilterBox {
-	width: 320px;
+	width: 100%;
 }
 
 .unitime-AdvisorCourseRequestLine .alt-line .course .unitime-FilterBox {
-	width: 270px;
+	width: 100%;
 }
 
 .unitime-AdvisorCourseRequestButtons {
@@ -6838,12 +6924,26 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-AdvisorCourseRequests .notes-no-waitlist {
-	width: 265px;
+	min-width: 265px;
+	width: 100%;
 	margin-top: 2px;
 }
 
 .unitime-AdvisorCourseRequests .notes-with-waitlist {
-	width: 240px;
+	min-width: 240px;
+	width: 100%;
+	margin-top: 2px;
+}
+
+.unitime-AdvisorCourseRequests .notes-with-critical {
+	min-width: 240px;
+	width: 100%;
+	margin-top: 2px;
+}
+
+.unitime-AdvisorCourseRequests .notes-with-critical-and-waitlist {
+	min-width: 215px;
+	width: 100%;
 	margin-top: 2px;
 }
 
@@ -6857,6 +6957,15 @@ unitime-RoomSharingWidget .legend .blank {
 	font-weight: normal;
 	display: block;
 	width: 90px;
+	line-height: 25px;
+}
+
+.unitime-AdvisorCourseRequests .waitlist-header-with-critical {
+	font-size: small;
+	font-style: italic;
+	font-weight: normal;
+	display: block;
+	width: 120px;
 	line-height: 25px;
 }
 
@@ -6897,7 +7006,10 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-AdvisorCourseRequests .unitime-WebTable {
 	width: 100%;
-	max-width: 800px;
+}
+
+.unitime-AdvisorCourseRequests .student-course-requests {
+	max-width: 1200px;
 }
 
 .unitime-AdvisorCourseRequestsTable .unitime-Note {
@@ -7098,5 +7210,117 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-CheckBoxColumn {
-	width: 10px;	
+	width: 10px;
+}
+
+.unitime-CourseOfferingEdit .deadline .number {
+	float: left;
+}
+
+.unitime-CourseOfferingEdit .deadline .note {
+	float: left;
+	margin: 3px 0px 0px 5px;
+	font-style: italic;
+}
+
+.unitime-CourseOfferingEdit .note {
+	float: left;
+	margin: 0px 0px 0px 0px;
+	font-style: italic;
+}
+
+.unitime-CourseOfferingEdit .courseOfferingEditPadding {
+	padding: 0px;
+}
+
+.unitime-HQLTable {
+	white-space: pre-wrap;
+}
+
+.unitime-HQLTable td {
+	vertical-align: top;
+}
+
+.unitime-WaitListedRequestPreferences {
+	width: 800px;
+}
+
+.unitime-WaitListedRequestPreferences .course-table {
+	margin-bottom: 3px;
+}
+
+.unitime-WaitListedRequestPreferences .course-details-tabs {
+	width: 100%;
+}
+
+.unitime-WaitListedRequestPreferences .course-details {
+	border: 1px solid #9CB0CE;
+	height: 30vh;
+}
+
+.unitime-WaitListedRequestPreferences .instructional-methods {
+	vertical-align: middle;	
+	text-align: right;
+	padding-right: 5px;
+}
+
+.unitime-WaitListedRequestPreferences .instructional-methods .preference-label {
+	display: inline-block;
+	padding: 2px 2px 4px 2px;
+	vertical-align: bottom;
+}
+
+.unitime-WaitListedRequestPreferences .instructional-method {
+	display: inline-block;
+	padding: 2px 10px 2px 2px;
+}
+
+.unitime-WaitListedRequestPreferences .course-table .courses-wl .gwt-Label {
+	display: inline-block;
+	padding-right: 3px;
+	white-space: nowrap;
+}
+
+.unitime-WaitListedRequestPreferences .course-table .courses-wl .gwt-Label:after {
+	content: ',';
+}
+
+.unitime-WaitListedRequestPreferences .course-table .courses-wl .gwt-Label:last-child:after {
+	padding-right: 0px;
+	content: '';
+}
+
+.unitime-WaitListedRequestPreferences .new-wait-list {
+	font-style: italic;
+
+}
+
+.unitime-StudentSchedulingPreferencesDialog {
+	max-width: 500px;
+}
+
+.unitime-StudentSchedulingPreferencesDialog .dates .from {
+	display: inline-block;
+	vertical-align: top;
+	padding-right: 2px;
+}
+
+.unitime-StudentSchedulingPreferencesDialog .dates .to {
+	display: inline-block;
+	vertical-align: top;
+	padding-left: 10px;
+	padding-right: 2px;
+}
+
+.unitime-StudentSchedulingPreferencesDialog .description {
+	text-align: justify;
+	font-style: italic;
+	padding-right: 5px;
+	padding-bottom: 2px;
+}
+
+.unitime-StudentSchedulingPreferencesDialog .custom-note {
+	text-align: justify;
+	padding-left: 5px;
+	padding-right: 5px;
 }

@@ -37,12 +37,14 @@ import org.cpsolver.coursett.model.TimeLocation;
 import org.dom4j.Element;
 import org.unitime.timetable.dataexchange.StudentEnrollmentImport.Pair;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.AdvisorClassPref;
 import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.AdvisorInstrMthPref;
 import org.unitime.timetable.model.AdvisorSectioningPref;
+import org.unitime.timetable.model.Campus;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
@@ -69,6 +71,7 @@ import org.unitime.timetable.model.StudentInstrMthPref;
 import org.unitime.timetable.model.StudentSectioningPref;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.dao.InstructionalMethodDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
@@ -186,6 +189,12 @@ public class StudentSectioningImport extends BaseImport {
             for (Program prog: (List<Program>)getHibSession().createQuery(
             		"from Program where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
             	code2program.put(prog.getReference(), prog);
+            }
+            
+            Map<String, Campus> code2campus = new Hashtable<String, Campus>();
+            for (Campus camp: (List<Campus>)getHibSession().createQuery(
+            		"from Campus where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            	code2campus.put(camp.getReference(), camp);
             }
             
             Map<String, PosMinor> code2minor = new Hashtable<String, PosMinor>();
@@ -406,12 +415,14 @@ public class StudentSectioningImport extends BaseImport {
         	    			String concentration = g.attributeValue("concentration");
         	    			String degree = g.attributeValue("degree");
         	    			String program = g.attributeValue("program");
+        	    			String camp = g.attributeValue("campus");
         	    			Double weight = Double.valueOf(g.attributeValue("weight", "1.0"));
         	    			StudentAreaClassificationMajor acm = sMajors.remove(area + ":" + clasf + ":" + code + (concentration == null ? "" : ":" + concentration));
         	    			if (acm != null) {
         	    				acm.setConcentration(concentration == null ? null : code2concentration.get(area + ":" + code + ":" + concentration));
     	        				acm.setDegree(degree == null ? null : code2degree.get(degree));
     	        				acm.setProgram(program == null ? null : code2program.get(program));
+    	        				acm.setCampus(camp == null ? null : code2campus.get(camp));
     	        				acm.setWeight(weight);
     	        				if (student.getUniqueId() != null)
                         			updatedStudents.add(student.getUniqueId());
@@ -429,6 +440,7 @@ public class StudentSectioningImport extends BaseImport {
     	        				acm.setConcentration(concentration == null ? null : code2concentration.get(area + ":" + code + ":" + concentration));
     	        				acm.setDegree(degree == null ? null : code2degree.get(degree));
     	        				acm.setProgram(program == null ? null : code2program.get(program));
+    	        				acm.setCampus(camp == null ? null : code2campus.get(camp));
     	        				acm.setWeight(weight);
     	        				student.getAreaClasfMajors().add(acm);
     	        				if (student.getUniqueId() != null)
@@ -1038,6 +1050,14 @@ public class StudentSectioningImport extends BaseImport {
             		}
 
             		updatedStudents.add(student.getUniqueId());
+            		
+            		if (student.getWaitListMode() == WaitListMode.WaitList) {
+                		student.resetWaitLists(
+                				WaitList.WaitListType.XML_IMPORT,
+                				StudentClassEnrollment.SystemChange.IMPORT.toString(),
+                				ts,
+                				getHibSession());
+            		}
             	}
             	
             	Element recommendationsEl = studentElement.element("updateAdvisorRecommendations");

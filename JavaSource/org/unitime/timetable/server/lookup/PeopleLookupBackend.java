@@ -161,10 +161,10 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 				for (String source: sources) {
 					if ("ldap".equals(source) && (context == null || context.hasPermission(Right.CanLookupLdap))) findPeopleFromLdap(cx);
 					if ("students".equals(source) && (context == null || context.hasPermission(Right.CanLookupStudents))) findPeopleFromStudents(cx);
-					if ("staff".equals(source) && (context == null || context.hasPermission(Right.CanLookupStaff))) findPeopleFromInstructors(cx);
-					if ("managers".equals(source) && (context == null || context.hasPermission(Right.CanLookupManagers))) findPeopleFromStaff(cx);
-					if ("events".equals(source) && (context == null || context.hasPermission(Right.CanLookupEventContacts))) findPeopleFromTimetableManagers(cx);
-					if ("instructors".equals(source) && (context == null || context.hasPermission(Right.CanLookupInstructors))) findPeopleFromEventContact(cx);
+					if ("staff".equals(source) && (context == null || context.hasPermission(Right.CanLookupStaff))) findPeopleFromStaff(cx);
+					if ("managers".equals(source) && (context == null || context.hasPermission(Right.CanLookupManagers))) findPeopleFromTimetableManagers(cx);
+					if ("events".equals(source) && (context == null || context.hasPermission(Right.CanLookupEventContacts))) findPeopleFromEventContact(cx);
+					if ("instructors".equals(source) && (context == null || context.hasPermission(Right.CanLookupInstructors))) findPeopleFromInstructors(cx);
 					if ("advisors".equals(source) && (context == null || context.hasPermission(Right.CanLookupAdvisors))) findPeopleFromAdvisors(cx);
 				}
 			}
@@ -192,6 +192,11 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 					@Override
 					public String getAcademicTitle() {
 						return person.getAcademicTitle();
+					}
+					
+					@Override
+					public String getExternalUniqueId() {
+						return person.getId();
 					}
 				}));
 				if (!showEmail) person.setEmail(null);
