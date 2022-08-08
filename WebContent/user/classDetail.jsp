@@ -234,16 +234,14 @@
 		<s:if test="form.schedulePrintNote != null && !form.schedulePrintNote.isEmpty()">
 			<TR>
 				<TD valign="top"><loc:message name="propertyStudentScheduleNote"/></TD>
-				<TD style="white-space: pre-wrap;"><s:property value="form.schedulePrintNote" escapeHtml="false"/>
+				<TD style="white-space: pre-wrap;"><s:property value="form.schedulePrintNote" escapeHtml="false"/></TD>
 			</TR>
 		</s:if>
 
 		<s:if test="form.notes != null && !form.notes.isEmpty()">
 			<TR>
 				<TD valign="top"><loc:message name="propertyRequestsNotes"/></TD>
-				<TD>
-					<TD style="white-space: pre-wrap;"><s:property value="form.notes" escapeHtml="false"/>
-				</TD>
+				<TD style="white-space: pre-wrap;"><s:property value="form.notes" escapeHtml="false"/></TD>
 			</TR>
 		</s:if>
 				

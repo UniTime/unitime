@@ -26,12 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
@@ -50,7 +44,7 @@ import org.unitime.timetable.util.DynamicListObjectFactory;
  * 
  * @author Heston Fernandes, Tomas Muller, Zuzana Mullerova
  */
-public class PreferencesForm extends ActionForm implements UniTimeForm {
+public class PreferencesForm implements UniTimeForm {
 
 	private static final long serialVersionUID = -3578647598790726006L;
 	
@@ -113,228 +107,6 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
         }
     };
     
-    public PreferencesForm() {
-    }
-
-
-    // --------------------------------------------------------- Methods
-
-    /** 
-     * Method validate
-     * @param mapping
-     * @param request
-     * @return ActionErrors
-     */
-    public ActionErrors validate(
-        ActionMapping mapping,
-        HttpServletRequest request) {
-
-        ActionErrors errors = new ActionErrors();
-
-        List<String> lst = getRoomGroups();
-        if(!checkPrefs(lst)) {
-            errors.add("roomGroups", 
-                    new ActionMessage(
-                            "errors.generic",
-                            MSG.errorInvalidRoomGroup()) );
-        }
-
-        if(!checkPrefLevels(getRoomGroupLevels(), lst))
-        {
-            errors.add("roomGroups", 
-                    new ActionMessage(
-                            "errors.generic", 
-                            MSG.errorInvalidRoomGroupLevel()) );
-        } 
-        
-        lst = getBldgPrefs();
-        if(!checkPrefs(lst)) {
-            errors.add("bldgPrefs", 
-                    new ActionMessage(
-                            "errors.generic", 
-                            MSG.errorInvalidBuildingPreference()) );
-        }
-
-        if(!checkPrefLevels(getBldgPrefLevels(), lst))
-        {
-            errors.add("bldgPrefs", 
-                    new ActionMessage(
-                            "errors.generic", 
-                            MSG.errorInvalidBuildingPreferenceLevel()) );
-        }            
-            
-        lst = getRoomPrefs();
-        if(!checkPrefs(lst)) {
-            errors.add("roomPrefs", 
-                    new ActionMessage(
-                            "errors.generic", 
-                            MSG.errorInvalidRoomPreference()) );
-        }
-
-        if(!checkPrefLevels(getRoomPrefLevels(), lst))
-        {
-            errors.add("roomPrefs", 
-                    new ActionMessage(
-                            "errors.generic", 
-                            MSG.errorInvalidRoomPreferenceLevel()) );
-        }            
-            
-        lst = getRoomFeaturePrefs();
-        if(!checkPrefs(lst)) {
-            errors.add("roomFeaturePrefs", 
-                    new ActionMessage(
-                            "errors.generic", 
-                            MSG.errorInvalidRoomFeaturePreference()) );
-        }
-
-        if(!checkPrefLevels(getRoomFeaturePrefLevels(), lst))
-        {
-            errors.add("roomFeaturePrefs", 
-                    new ActionMessage(
-                            "errors.generic",
-                            MSG.errorInvalidRoomFeaturePreferenceLevel()) );
-        }
-        
-        lst = getDistPrefs();
-        if(!checkPrefs(lst)) {
-            errors.add("distPrefs", 
-                    new ActionMessage(
-                            "errors.generic", 
-                            MSG.errorInvalidDistributionPreference()) );
-        }
-
-        if(!checkPrefLevels(getDistPrefLevels(), lst))
-        {
-            errors.add("distPrefs", 
-                    new ActionMessage(
-                            "errors.generic",
-                            MSG.errorInvalidDistributionPreferenceLevel()) );
-        }
-        
-        lst = getCoursePrefs();
-        if(!checkPrefs(lst)) {
-            errors.add("coursePrefs", 
-                    new ActionMessage(
-                            "errors.generic", 
-                            MSG.errorInvalidCoursePreference()) );
-        }
-
-        if(!checkPrefLevels(getCoursePrefLevels(), lst))
-        {
-            errors.add("coursePrefs", 
-                    new ActionMessage(
-                            "errors.generic",
-                            MSG.errorInvalidCoursePreferenceLevel()) );
-        }
-        
-        lst = getInstructorPrefs();
-        if(!checkPrefs(lst)) {
-            errors.add("instructorPrefs", 
-                    new ActionMessage(
-                            "errors.generic", 
-                            MSG.errorInvalidInstructorPreference()) );
-        }
-
-        if(!checkPrefLevels(getInstructorPrefLevels(), lst))
-        {
-            errors.add("instructorPrefs", 
-                    new ActionMessage(
-                            "errors.generic",
-                            MSG.errorInvalidInstructorPreferenceLevel()) );
-        }
-        
-        lst = getAttributePrefs();
-        if(!checkPrefs(lst)) {
-            errors.add("attributePrefs", 
-                    new ActionMessage(
-                            "errors.generic", 
-                            MSG.errorInvalidAttributePreference()) );
-        }
-
-        if(!checkPrefLevels(getAttributePrefLevels(), lst))
-        {
-            errors.add("attributePrefs", 
-                    new ActionMessage(
-                            "errors.generic",
-                            MSG.errorInvalidAttributePreferenceLevel()) );
-        }
-
-
-        for (int i=0;i<getTimePatterns().size();i++) {
-        	if (request.getParameter("p"+i+"_hour")!=null) {
-        		boolean daySelected = false;
-        		for (int j=0;j<Constants.DAY_CODES.length;j++)
-        			if (request.getParameter("p"+i+"_d"+j)!=null)
-        				daySelected = true;
-        		if (!daySelected) {
-        			errors.add("timePrefs", 
-        					new ActionMessage(
-        							"errors.generic", 
-                        			"No day is selected in time preferences.") );
-        			break;
-        		}
-        		if ("".equals(request.getParameter("p"+i+"_hour"))) {
-        			errors.add("timePrefs", 
-        					new ActionMessage(
-        							"errors.generic", 
-                        			"No time is selected in time preferences.") );
-        			break;
-        		}
-        		if ("".equals(request.getParameter("p"+i+"_min"))) {
-        			errors.add("timePrefs", 
-        					new ActionMessage(
-        							"errors.generic", 
-        							"No time is selected in time preferences.") );
-        			break;
-        		}
-        		if ("".equals(request.getParameter("p"+i+"_morn"))) {
-        			errors.add("timePrefs", 
-        					new ActionMessage(
-        							"errors.generic", 
-        							"No time is selected in time preferences.") );
-        			break;
-        		}
-        	}
-        }
-            
-        return errors;        
-    }
-
-    /** 
-     * Method reset
-     * @param mapping
-     * @param request
-     */
-    public void reset(ActionMapping mapping, HttpServletRequest request) {
-        op= "";
-        timePattern = null;
-        timePatterns = DynamicList.getInstance(new ArrayList<String>(), factoryPattern);
-        availableTimePatterns = null;
-        roomPrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
-        roomPrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
-        bldgPrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
-        bldgPrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
-        roomFeaturePrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
-        roomFeaturePrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
-        roomGroups = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
-        roomGroupLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
-        distPrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
-        distPrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
-        datePatternPrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
-        datePatternPrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
-        coursePrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
-        coursePrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
-        attributePrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
-        attributePrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
-        instructorPrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
-        instructorPrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
-        nextId = previousId = null;
-        allowHardPrefs = true;
-        hasNotAvailable = false;
-        addBlankPrefRows();
-        availability = null;
-    }
-
     /**
      * Checks that there are no duplicates and that all prior prefs have a value
      * @param lst List<String> of values
@@ -406,7 +178,7 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
      * @return Returns the timePattern.
      */
     public List<String> getTimePatterns() {
-        return (timePatterns==null?new Vector():timePatterns);
+    	return timePatterns;
     }
 
     /**
@@ -1010,8 +782,8 @@ public class PreferencesForm extends ActionForm implements UniTimeForm {
         this.datePatternPrefLevels.add(level);
     }
     
-	public void sortDatePatternPrefs(List<String> prefs, List<String> prefLevels,
-			List<DatePattern> patterns) {
+	public void sortDatePatternPrefs(List<String> prefs, List<String> prefLevels, List<DatePattern> patterns) {
+		if (prefs == null) return;
 		if (prefs.size() == patterns.size()) {
 			Collections.sort(patterns); //, new DatePattenNameComparator()
 			List<String> newPrefs = DynamicList.getInstance(new ArrayList<String>(),

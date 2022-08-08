@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -149,7 +148,7 @@ public class ClassDetailAction extends PreferencesAction2<ClassEditForm> {
 
         // Edit Preference - Redirect to prefs edit screen
         if (MSG.actionEditClass().equals(op)) {
-        	response.sendRedirect( response.encodeURL("classEdit.do?cid=" + c.getUniqueId().toString() + "&sec=" + c.getSectionNumberString() ));
+        	response.sendRedirect( response.encodeURL("classEdit.action?cid=" + c.getUniqueId().toString() + "&sec=" + c.getSectionNumberString() ));
         	return null;
         }
         
@@ -462,7 +461,7 @@ public class ClassDetailAction extends PreferencesAction2<ClassEditForm> {
 	    if (c.getNotes()==null)
 	    	form.setNotes("");
 	    else
-	    	form.setNotes(c.getNotes().replaceAll("\n","<BR>"));
+	    	form.setNotes(c.getNotes());
 	    form.setManagingDept(c.getManagingDept().getUniqueId());
 	    form.setControllingDept(c.getControllingDept().getUniqueId());
 	    form.setManagingDeptLabel(c.getManagingDept().getManagingDeptLabel());
@@ -536,12 +535,6 @@ public class ClassDetailAction extends PreferencesAction2<ClassEditForm> {
         // Get dept instructor list
         LookupTables.setupInstructors(request, sessionContext, c.getDepartmentForSubjectArea().getUniqueId());
         LookupTables.setupInstructorTeachingResponsibilities(request);	        
-        Vector deptInstrList = (Vector) request.getAttribute(DepartmentalInstructor.INSTR_LIST_ATTR_NAME);
-
-        // For each instructor set the instructor list
-        for (int i=0; i<instructors.size(); i++) {
-	        request.setAttribute(DepartmentalInstructor.INSTR_LIST_ATTR_NAME + i, deptInstrList);
-        }
     }
         	    
     private void setupDatePatterns(HttpServletRequest request, ClassEditForm form, Class_ c) throws Exception {	    	  

@@ -94,6 +94,11 @@ public class InstructorEditForm extends PreferencesForm  {
 	private Map<Long, Boolean> attributes;
 	private List<IdValue> departments;
 	private NameFormat nameFormat;
+	
+	public InstructorEditForm() {
+		super();
+		reset();
+	}
     
 	// --------------------------------------------------------- Methods
     

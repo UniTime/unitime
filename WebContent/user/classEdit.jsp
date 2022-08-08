@@ -17,544 +17,358 @@
  * limitations under the License.
  * 
 --%>
-<%@ page import="org.unitime.timetable.util.Constants" %>
-<%@ page import="org.unitime.timetable.form.ClassEditForm" %>
-<%@ page import="org.unitime.timetable.model.DepartmentalInstructor" %>
-<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
-<%@ page import="org.unitime.timetable.action.ClassEditAction" %>
-<%@ page import="org.unitime.timetable.defaults.SessionAttribute"%>
-<%@ page import="java.util.Enumeration" %>
-<%@ page import="java.util.Vector" %>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
-
-<loc:bundle name="CourseMessages">
+<%@ page import="java.util.Enumeration"%>
+<%@ page import="java.util.Vector"%>
+<%@ page import="org.unitime.timetable.model.DepartmentalInstructor"%>
+<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions"%>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+<s:form action="classEdit">
 <tt:session-context/>
-<SCRIPT language="javascript">
-	<!--
-		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
-		
-		function confirmRoomSizeChange() {
-			if (jsConfirm!=null && !jsConfirm)
-				return true;
-
-			return ( confirm('<%=MSG.confirmRoomSizeDifferentFromCapacity()%>'));
-		}
-		
-		function instructorChanged(idx, source) {
-			var hadPreferences = false;
-			var instrHasPrefObj = document.getElementById('instrHasPref'+idx);
-			if (instrHasPrefObj!=null && instrHasPrefObj.value=='true')
-				hadPreferences = true;
-			var instructorId = '-';
-			var instructorsObj = document.getElementById('instructors'+idx);
-			if (instructorsObj!=null && instructorsObj.selectedIndex>=0)
-				instructorId = instructorsObj.options[instructorsObj.selectedIndex].value;
-			var hasPreferences = false;
-			<%
-				Vector instIdWithPrefs = (Vector)request.getAttribute(DepartmentalInstructor.INSTR_HAS_PREF_ATTR_NAME);
-				if (instIdWithPrefs!=null)
-					for (Enumeration e=instIdWithPrefs.elements();e.hasMoreElements();) {
-						Long instrId = (Long)e.nextElement();
-						out.println("if (instructorId=='"+instrId+"') hasPreferences=true;");
-					}
-			%>
-			var instrLeadObj = document.getElementById('instrLead'+idx);
-			var op2Obj = document.getElementById('op2');
-			var isLead = false;
-			if (instrLeadObj!=null)
-				isLead = instrLeadObj.checked;
-			if (instructorId=='-' && instrLeadObj!=null) {
-				instrLeadObj.checked=false; isLead=false;
-				if (source.id=='instrLead'+idx) {
-					alert('<%=MSG.alertSelectAnInstructor()%>');
-					if (instructorsObj!=null) instructorsObj.focus();
-				}
+<script type="text/javascript">
+	function instructorChanged(idx, source) {
+		var hadPreferences = false;
+		var instrHasPrefObj = document.getElementById('instrHasPref'+idx);
+		if (instrHasPrefObj!=null && instrHasPrefObj.value=='true')
+			hadPreferences = true;
+		var instructorId = '-';
+		var instructorsObj = document.getElementById('instructors'+idx);
+		if (instructorsObj!=null && instructorsObj.selectedIndex>=0)
+			instructorId = instructorsObj.options[instructorsObj.selectedIndex].value;
+		var hasPreferences = false;
+		<%
+		Vector instIdWithPrefs = (Vector)request.getAttribute(DepartmentalInstructor.INSTR_HAS_PREF_ATTR_NAME);
+		if (instIdWithPrefs!=null)
+			for (Enumeration e=instIdWithPrefs.elements();e.hasMoreElements();) {
+				Long instrId = (Long)e.nextElement();
+				out.println("if (instructorId=='"+instrId+"') hasPreferences=true;");
 			}
-			if (isLead && hasPreferences) {
-				if (op2Obj!=null && <%=JavascriptFunctions.getInheritInstructorPreferencesCondition(sessionContext)%>) {
-					op2Obj.value='updatePref';
-					document.forms[0].submit();
-				}
-			} else if (hadPreferences) {
-				if (op2Obj!=null && <%=JavascriptFunctions.getCancelInheritInstructorPreferencesCondition(sessionContext)%>) {
-					op2Obj.value='updatePref';
-					document.forms[0].submit();
-				}
+		%>
+		var instrLeadObj = document.getElementById('instrLead'+idx);
+		var op2Obj = document.getElementById('op2');
+		var isLead = false;
+		if (instrLeadObj!=null)
+			isLead = instrLeadObj.checked;
+		if (instructorId=='-' && instrLeadObj!=null) {
+			instrLeadObj.checked=false; isLead=false;
+			if (source.id=='instrLead'+idx) {
+				alert('${MSG.alertSelectAnInstructor()}');
+				if (instructorsObj!=null) instructorsObj.focus();
 			}
 		}
-		
-		function datePatternChanged(){			
-			var op2Obj = document.getElementById('op2');
-			if (op2Obj!=null) {
-				op2Obj.value='updateDatePattern';
+		if (isLead && hasPreferences) {
+			if (op2Obj!=null && <%=JavascriptFunctions.getInheritInstructorPreferencesCondition(sessionContext)%>) {
+				op2Obj.value='updatePref';
 				document.forms[0].submit();
-			}			
+			}
+		} else if (hadPreferences) {
+			if (op2Obj!=null && <%=JavascriptFunctions.getCancelInheritInstructorPreferencesCondition(sessionContext)%>) {
+				op2Obj.value='updatePref';
+				document.forms[0].submit();
+			}
 		}
-	// -->
-</SCRIPT>
-
-<%
-	// Get Form 
-	String frmName = "ClassEditForm";
-	ClassEditForm frm = (ClassEditForm) request.getAttribute(frmName);
-
-	String crsNbr = (String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);
-%>		
-<tiles:importAttribute />
-<html:form action="/classEdit" focus="expectedCapacity">
-	<html:hidden property="classId"/>
-	<html:hidden property="defaultTeachingResponsibilityId"/>	
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+	}
+	function datePatternChanged(){			
+		var op2Obj = document.getElementById('op2');
+		if (op2Obj!=null) {
+			op2Obj.value='updateDatePattern';
+			document.forms[0].submit();
+		}			
+	}
+</script>
+	<s:hidden name="form.classId"/>
+	<s:hidden name="form.defaultTeachingResponsibilityId"/>	
+	<table class="unitime-MainTable">
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title>
-						<bean:write name='<%=frmName%>' property='className'/>
+						<s:property value="form.className"/>
 					</tt:section-title>
-					<html:submit property="op" 
-						styleClass="btn" 
-						accesskey='<%=MSG.accessUpdatePreferences()%>' 
-						title='<%=MSG.titleUpdatePreferences(MSG.accessUpdatePreferences()) %>' >
-						<loc:message name="actionUpdatePreferences"/>
-					</html:submit>
-					<sec:authorize access="hasPermission(#ClassEditForm.classId, 'Class_', 'ClassEditClearPreferences')"> 
-						&nbsp;
-						<html:submit property="op" 
-							styleClass="btn" 
-							accesskey='<%=MSG.accessClearClassPreferences() %>' 
-							title='<%=MSG.titleClearClassPreferences(MSG.accessClearClassPreferences()) %>'>
-							<loc:message name="actionClearClassPreferences" />
-						</html:submit>
-					</sec:authorize> 
-					<logic:notEmpty name="<%=frmName%>" property="previousId">
-						&nbsp;
-						<html:submit property="op" 
-							styleClass="btn" 
-							accesskey='<%=MSG.accessPreviousClass() %>' 
-							title='<%=MSG.titlePreviousClassWithUpdate(MSG.accessPreviousClass())%>'>
-							<loc:message name="actionPreviousClass" />
-						</html:submit> 
-					</logic:notEmpty>
-					<logic:notEmpty name="<%=frmName%>" property="nextId">
-						&nbsp;
-						<html:submit property="op" 
-							styleClass="btn" 
-							accesskey='<%=MSG.accessNextClass() %>' 
-							title='<%=MSG.titleNextClassWithUpdate(MSG.accessNextClass()) %>'>
-							<loc:message name="actionNextClass" />
-						</html:submit> 
-					</logic:notEmpty>
-					&nbsp;
-					<html:submit property="op" 
-						styleClass="btn" 
-						accesskey='<%=MSG.accessBackToDetail()%>' 
-						title='<%=MSG.titleBackToDetail(MSG.accessBackToDetail()) %>'>
-						<loc:message name="actionBackToDetail" />
-					</html:submit>
+					<s:submit accesskey='%{#msg.accessUpdatePreferences()}' name='op' value='%{#msg.actionUpdatePreferences()}'
+						title='%{#msg.titleUpdatePreferences(#msg.accessUpdatePreferences())}'/>
+					<sec:authorize access="hasPermission(#form.classId, 'Class_', 'ClassEditClearPreferences')">
+						<s:submit accesskey='%{#msg.accessClearClassPreferences()}' name='op' value='%{#msg.actionClearClassPreferences()}'
+							title='%{#msg.titleClearClassPreferences(#msg.accessClearClassPreferences())}'/>
+					</sec:authorize>
+					<s:if test="form.previousId != null">
+						<s:submit accesskey='%{#msg.accessPreviousClass()}' name='op' value='%{#msg.actionPreviousClass()}'
+							title='%{#msg.titlePreviousClassWithUpdate(#msg.accessPreviousClass())}'/>
+					</s:if>
+					<s:if test="form.nextId != null">
+						<s:submit accesskey='%{#msg.accessNextClass()}' name='op' value='%{#msg.actionNextClass()}'
+							title='%{#msg.titleNextClassWithUpdate(#msg.accessNextClass())}'/>
+					</s:if>
+					<s:submit accesskey='%{#msg.accessBackToDetail()}' name='op' value='%{#msg.actionBackToDetail()}'
+							title='%{#msg.titleBackToDetail(#msg.accessBackToDetail())}'/>
 				</tt:section-header>
 			</TD>
 		</TR>
 
-
-		<logic:messagesPresent>
-		<TR>
-			<TD colspan="2" align="left" class="errorCell">
-					<B><U><loc:message name="errorsClassEdit"/></U></B><BR>
-				<BLOCKQUOTE>
-				<UL>
-				    <html:messages id="error">
-				      <LI>
-						${error}
-				      </LI>
-				    </html:messages>
-			    </UL>
-			    </BLOCKQUOTE>
-			</TD>
-		</TR>
-		</logic:messagesPresent>
+		<s:if test="!fieldErrors.isEmpty()">
+			<TR><TD colspan="2" align="left" class="errorTable">
+				<div class='errorHeader'><loc:message name="formValidationErrors"/></div><s:fielderror/>
+			</TD></TR>
+		</s:if>
 
 		<TR>
 			<TD><loc:message name="filterManager"/></TD>
-			<TD>
-				<bean:write name="<%=frmName%>" property="managingDeptLabel" />
-			</TD>
+			<TD><s:property value="form.managingDeptLabel"/></TD>
 		</TR>
 
-		<logic:notEqual name="<%=frmName%>" property="parentClassName" value="-">
+		<s:if test="form.parentClassName != '-'">
 			<TR>
 				<TD><loc:message name="propertyParentClass"/></TD>
-				<TD>
-					<bean:write name="<%=frmName%>" property="parentClassName" />
-				</TD>
+				<TD><s:property value="form.parentClassName"/></TD>
 			</TR>
-		</logic:notEqual>
-
-		<%--
-		<TR>
-			<TD>Class Division-Secion:</TD>
-			<TD>
-				<html:text property="classSuffix" maxlength="6" size="6" />
-			<TD>
-		</TR>
-		--%>
-		<html:hidden property="classSuffix"/>
-		<logic:notEmpty name="<%=frmName%>" property="classSuffix">
+		</s:if>
+		
+		<s:hidden name="form.classSuffix"/>
+		<s:if test="form.classSuffix != null && !form.classSuffix.isEmpty()">
 			<TR>
 				<TD><loc:message name="propertyExternalId"/></TD>
-				<TD>
-					<bean:write name="<%=frmName%>" property="classSuffix" />
-				</TD>
+				<TD><s:property value="form.classSuffix"/></TD>
 			</TR>
-		</logic:notEmpty>
-
-		<%--
-		<TR>
-			<TD>Minimum Class Limit:</TD>
-			<TD>
-				<html:text styleId="expectedCapacity" property="expectedCapacity" maxlength="4" size="4" onchange="getMinRoomLimit();"/>
-			<TD>
-		</TR>
-
-		<TR>
-			<TD>Maximum Class Limit:</TD>
-			<TD>
-				<html:text property="maxExpectedCapacity" maxlength="4" size="4" />
-			<TD>
-		</TR>
-
-		<TR>
-			<TD>Number of Rooms:</TD>
-			<TD>
-				<html:text styleId="nbrRooms" property="nbrRooms" maxlength="4" size="4" />
-			<TD>
-		</TR>
-
-		<TR>
-			<TD>Room Ratio:</TD>
-			<TD>
-				<script language="javascript" type="text/javascript">
-					function isNumeric(sText) {
-					   	var validChars = "0123456789.";
-					   	var c;
-					
-					   	for (i = 0; i < sText.length; i++) { 
-					      c = sText.charAt(i); 
-					      if (validChars.indexOf(c) == -1) 
-					      	return false;
-				      	}
-					   	return true;				   
-				   	}
-				   	
-					function getMinRoomLimit() {
-						var rr = document.getElementById('roomRatio').value;
-						var nr = document.getElementById('nbrRooms').value;
-						var mec = document.getElementById('expectedCapacity').value;
-						var mrl = document.getElementById('minRoomLimit');
-						
-						if (nr!=null && isNumeric(nr) && nr>0 &&
-							mec!=null && isNumeric(mec) && mec>=0 &&
-							rr!=null && isNumeric(rr) && rr>0 ) {
-							if (mec==0)
-								mrl.value = Math.ceil(rr);
-							else
-								mrl.value = Math.ceil(mec*rr);
-						} else {
-							mrl.value = '0';
-						}
-					}
-					
-				</script>
-				<html:text styleId="roomRatio" property="roomRatio" maxlength="4" size="4" onchange="getMinRoomLimit();" />
-				&nbsp;&nbsp;&nbsp;&nbsp; Minimum Room Capacity: <html:text readonly="true" tabindex="500" styleId="minRoomLimit" property="minRoomLimit" maxlength="4" size="4" disabled="true"/>
-			<TD>
-		</TR>
-		--%>
+		</s:if>
 		
-		<html:hidden property="nbrRooms"/>
-		<html:hidden property="enrollment"/>
-		<html:hidden property="snapshotLimit"/>
-		<html:hidden property="expectedCapacity"/>
-		<html:hidden property="maxExpectedCapacity"/>
-		<html:hidden property="roomRatio"/>
-		<html:hidden property="lms"/>
-		<html:hidden property="fundingDept"/>
+		<s:hidden name="form.nbrRooms"/>
+		<s:hidden name="form.enrollment"/>
+		<s:hidden name="form.snapshotLimit"/>
+		<s:hidden name="form.expectedCapacity"/>
+		<s:hidden name="form.maxExpectedCapacity"/>
+		<s:hidden name="form.roomRatio"/>
+		<s:hidden name="form.lms"/>
+		<s:hidden name="form.fundingDept"/>
 		<TR>
 			<TD><loc:message name="propertyEnrollment"/></TD>
-			<TD>
-				<bean:write name="<%=frmName%>" property="enrollment" />
-			</TD>
+			<TD><s:property value="form.enrollment"/></TD>
 		</TR>		
-		<logic:notEqual name="<%=frmName%>" property="nbrRooms" value="0">
-			<% if (frm.getExpectedCapacity().intValue()==frm.getMaxExpectedCapacity().intValue()) { %>
-				<TR>
-					<TD><loc:message name="propertyClassLimit"/></TD>
-					<TD>
-						<bean:write name="<%=frmName%>" property="expectedCapacity" />
-					</TD>
-				</TR>
-			<% } else { %>
-				<TR>
-					<TD><loc:message name="propertyMinimumClassLimit"/></TD>
-					<TD>
-						<bean:write name="<%=frmName%>" property="expectedCapacity" />
-					</TD>
-				</TR>
-				<TR>
-					<TD><loc:message name="propertyMaximumClassLimit"/></TD>
-					<TD>
-						<bean:write name="<%=frmName%>" property="maxExpectedCapacity" />
-					</TD>
-				</TR>
-			<% } %>
-		</logic:notEqual>
-		<logic:notEqual name="<%=frmName%>" property="nbrRooms" value="0">
-			<logic:notEmpty name="<%=frmName%>" property="snapshotLimit">
-				<TR>
-					<TD><loc:message name="propertySnapshotLimit"/></TD>
-					<TD>
-						<bean:write name="<%=frmName%>" property="snapshotLimit" />
-					</TD>
-				</TR>
-			</logic:notEmpty>
-		</logic:notEqual>
+		<s:if test="form.nbrRooms > 0 && form.expectedCapacity == form.maxExpectedCapacity">
+			<TR>
+				<TD><loc:message name="propertyClassLimit"/></TD>
+				<TD><s:property value="form.expectedCapacity"/></TD>
+			</TR>
+		</s:if>
+		<s:if test="form.nbrRooms > 0 && form.expectedCapacity != form.maxExpectedCapacity">
+			<TR>
+				<TD><loc:message name="propertyMinimumClassLimit"/></TD>
+				<TD><s:property value="form.expectedCapacity"/></TD>
+			</TR>
+			<TR>
+				<TD><loc:message name="propertyMaximumClassLimit"/></TD>
+				<TD><s:property value="form.maxExpectedCapacity"/></TD>
+			</TR>
+		</s:if>
+		<s:if test="form.nbrRooms != 0 && form.snapshotLimit != null">
+			<TR>
+				<TD><loc:message name="propertySnapshotLimit"/></TD>
+				<TD><s:property value="form.snapshotLimit"/></TD>
+			</TR>
+		</s:if>
 
 		<TR>
 			<TD><loc:message name="propertyNumberOfRooms"/></TD>
-			<TD>
-				<bean:write name="<%=frmName%>" property="nbrRooms" />
-			</TD>
+			<TD><s:property value="form.nbrRooms"/></TD>
 		</TR>
 		
-		<logic:notEqual name="<%=frmName%>" property="nbrRooms" value="0">
+		<s:if test="form.nbrRooms != 0"> 
 			<TR>
 				<TD><loc:message name="propertyRoomRatio"/></TD>
 				<TD>
-					<bean:write name="<%=frmName%>" property="roomRatio" />
-					&nbsp;&nbsp;&nbsp;&nbsp; ( <loc:message name="propertyMinimumRoomCapacity"/> <bean:write name="<%=frmName%>" property="minRoomLimit" /> )
+					<s:property value="form.roomRatio"/>
+					&nbsp;&nbsp;&nbsp;&nbsp; ( <loc:message name="propertyMinimumRoomCapacity"/> <s:property value="form.minRoomLimit"/> )
 				</TD>
 			</TR>
-		</logic:notEqual>
+		</s:if>
 		
-		<logic:notEmpty name="<%=frmName%>" property="lms">
+		<s:if test="form.lms != null && !form.lms.isEmpty()">
 			<TR>
 				<TD valign="top"><loc:message name="propertyLms"/></TD>
 				<TD>
-					<bean:write name="<%=frmName%>" property="lms" filter="false"/>
+					<s:property value="form.lms" escapeHtml="false"/>
 				</TD>
 			</TR>
-		</logic:notEmpty>
+		</s:if>
 		
-		<logic:notEmpty name="<%=frmName%>" property="fundingDept">
+		<s:if test="form.fundingDept != null">
 			<TR>
 				<TD valign="top"><loc:message name="propertyFundingDept"/></TD>
 				<TD>
-					<bean:write name="<%=frmName%>" property="fundingDept" filter="false"/>
+					<s:property value="form.fundingDept" escapeHtml="false"/>
 				</TD>
 			</TR>
-		</logic:notEmpty>
+		</s:if>
 		
 
 		<TR>
 			<TD><loc:message name="propertyDatePattern"/></TD>
 			<TD>
-				<html:hidden property="datePatternEditable"/>
-				<logic:equal name="<%=frmName%>" property="datePatternEditable" value="true">
-					<html:select style="width:200px;" property="datePattern" onchange='<%= "datePatternChanged();"%>'>
-						<html:options collection="<%=org.unitime.timetable.model.DatePattern.DATE_PATTERN_LIST_ATTR%>" property="id" labelProperty="value" />
-					</html:select>
-					<img style="cursor: pointer;" src="images/calendar.png" border="0" onclick="showGwtDialog('Preview of '+ClassEditForm.datePattern.options[ClassEditForm.datePattern.selectedIndex].text, 'user/dispDatePattern.jsp?id='+ClassEditForm.datePattern.value+'&class='+ClassEditForm.classId.value,'840','520');">
-				</logic:equal>
-				<logic:notEqual name="<%=frmName%>" property="datePatternEditable" value="true">
-					<html:hidden property="datePattern"/>
-					<logic:iterate scope="request" name="<%=org.unitime.timetable.model.DatePattern.DATE_PATTERN_LIST_ATTR%>" id="dp" type="org.unitime.timetable.util.IdValue">
-					<logic:equal name="<%=frmName%>" property="datePattern" value="<%=dp.getId().toString()%>">
-						<bean:write name="dp" property="value" />
-						<img style="cursor: pointer;" src="images/calendar.png" border="0" onclick="showGwtDialog('Preview of <%=dp.getValue()%>', 'user/dispDatePattern.jsp?id=<%=dp.getId()%>&class='+ClassEditForm.classId.value,'840','520');">
-					</logic:equal>
-					</logic:iterate>
-				</logic:notEqual>
+				<s:hidden name="form.datePatternEditable"/>
+				<s:if test="form.datePatternEditable == true">
+					<s:select name="form.datePattern" list="#request.datePatternList" listKey="id" listValue="value"
+						style="min-width:200px;" onchange="datePatternChanged();"/>
+					<img style="cursor: pointer;" src="images/calendar.png" border="0" onclick="showGwtDialog('Preview of '+classEdit_form_datePattern.options[classEdit_form_datePattern.selectedIndex].text, 'user/dispDatePattern.jsp?id='+classEdit_form_datePattern.value+'&class='+classEdit_form_classId.value,'840','520');">
+				</s:if>
+				<s:else>
+					<s:hidden name="form.datePattern"/>
+					<s:iterator value="#request.datePatternList" var="dp">
+						<s:if test="#dp.id == form.datePattern">
+							<s:property value="#dp.value"/>
+							<img style="cursor: pointer;" src="images/calendar.png" border="0" onclick="showGwtDialog('Preview of ${dp.value}', 'user/dispDatePattern.jsp?id=${dp.id}&class=${form.classId}','840','520');">
+						</s:if>
+					</s:iterator>
+				</s:else>
 			</TD>
 		</TR>
 
 		<TR>
 			<TD><loc:message name="propertyDisplayInstructors"/></TD>
-			<TD>
-				<html:checkbox property="displayInstructor" />
-			</TD>
+			<TD><s:checkbox name="form.displayInstructor"/></TD>
 		</TR>
 
 		<TR>
 			<TD><loc:message name="propertyEnabledForStudentScheduling"/></TD>
-			<TD>
-				<html:checkbox property="enabledForStudentScheduling" />
-			</TD>
+			<TD><s:checkbox name="form.enabledForStudentScheduling"/></TD>
 		</TR>
 
 		<TR>
 			<TD valign="top"><loc:message name="propertyStudentScheduleNote"/></TD>
-			<TD>
-				<html:textarea property="schedulePrintNote" cols="70" rows="4"  />
-			</TD>
+			<TD><s:textarea name="form.schedulePrintNote" cols="70" rows="4"/></TD>
 		</TR>
 		
-		<logic:notEmpty name="<%=frmName%>" property="accommodation">
+		
+		<s:if test="form.accommodation != null">
 			<TR>
 				<TD valign="top"><loc:message name="propertyAccommodations"/></TD>
-				<TD>
-					<bean:write name="<%=frmName%>" property="accommodation" filter="false"/>
+				<TD><s:property value="form.accommodation" escapeHtml="false"/></TD>
+			</TR>
+		</s:if>
+
+		<s:if test="#request.assignmentInfo != null">
+			<TR>
+				<TD colspan="2" align="left" style="padding-top: 20px;">
+					<tt:section-title><loc:message name="sectionTitleTimetable"/></tt:section-title>
 				</TD>
 			</TR>
-		</logic:notEmpty>
+			<s:property value="#request.assignmentInfo" escapeHtml="false"/>
+		</s:if>
 
-<%
-	if (request.getAttribute("Suggestions.assignmentInfo")!=null) {
-%>
-		<TR>
-			<TD colspan="2" align="left">
-				&nbsp;<BR>
-				<DIV class="WelcomeRowHead"><loc:message name="sectionTitleTimetable"/></DIV>
-			</TD>
-		</TR>
-		<%=request.getAttribute("Suggestions.assignmentInfo")%>
-<%
-	}
-%>
 <!-- Requests / Notes -->
 		<TR>
-			<TD colspan="2" align="left">
-				&nbsp;<BR>
+			<TD colspan="2" align="left" style="padding-top:20px;">
 				<tt:section-title><loc:message name="sectionTitleNotesToScheduleManager"/></tt:section-title>
 			</TD>
 		</TR>
 
 		<TR>
 			<TD colspan="2" align="left">
-			<html:textarea property="notes" rows="3" cols="80"></html:textarea>
+				<s:textarea name="form.notes" rows="3" cols="80"/>
 			</TD>
 		</TR>
 
 <!-- Instructors -->
-		<TR><TD colspan='2'>&nbsp;</TD></TR>
 		<TR>
-			<TD valign="middle" colspan='2'>
-			<A name='Instructors'></A>
-				<tt:section-header title="<%=MSG.sectionTitleInstructors() %>">
-					<html:submit property="op" 
-						styleId="addInstructor" 
-						styleClass="btn" 
-						accesskey="<%=MSG.accessAddInstructor() %>" 
-						title="<%=MSG.titleAddInstructor(MSG.accessAddInstructor()) %>">
-						<loc:message name="actionAddInstructor" />
-					</html:submit> 			
+			<TD valign="middle" colspan='2' style="padding-top:20px;">
+			<A id='Instructors'></A>
+				<tt:section-header title="${MSG.sectionTitleInstructors()}">
+					<s:submit accesskey='%{#msg.accessAddInstructor()}' name='op' value='%{#msg.actionAddInstructor()}'
+							title='%{#msg.titleAddInstructor(#msg.accessAddInstructor())}'/>
 				</tt:section-header>
 			</TD>
 		</TR>
 		<TR>
 			<TD colspan="2" align="left">
 				<INPUT type="hidden" id="instrListTypeAction" name="instrListTypeAction" value="">				
-				<TABLE align="left" cellspacing="0" cellpadding="2" border="0">
+				<TABLE>
 					<TR>
-						<TD><I><loc:message name="columnInstructorName"/> </I></TD>
+						<TD><I><loc:message name="columnInstructorName"/></I></TD>
 						<TD>&nbsp;<I><loc:message name="columnInstructorShare"/> </I>&nbsp;</TD>
 						<TD>&nbsp;<I><loc:message name="columnInstructorCheckConflicts"/> </I>&nbsp;</TD>
-						<logic:notEmpty name="responsibilities" scope="request">
+						<s:if test="#request.responsibilities != null">
 							<TD>&nbsp;<I><loc:message name="columnTeachingResponsibility"/> </I>&nbsp;</TD>
-						</logic:notEmpty>
+						</s:if>
 						<TD>&nbsp;</TD>
 					</TR>
 					
-					<html:hidden property="op2" value="" styleId="op2"/>
-					<logic:iterate name="<%=frmName%>" property="instructors" id="instructor" indexId="ctr">
+					<s:hidden name="op2" value="" id="op2"/>
+					<s:iterator value="form.instructors" var="instructor" status="stat">
 						<TR>
-							<TD align="left" nowrap>	
-								<html:select style="width:250px;" 
-									styleId='<%= "instructors" + ctr %>' 
-									property='<%= "instructors[" + ctr + "]" %>'
-									onchange='<%= "instructorChanged("+ctr+", this);"%>'>														
-									<html:option value="-">-</html:option>
-									<html:options collection="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME + ctr%>" property="value" labelProperty="label" />
-								</html:select>
+							<TD align="left" nowrap>
+								<s:select name="form.instructors[%{#stat.index}]"
+									list="#request.instructorsList" listKey="value" listValue="label"
+									headerKey="-" headerValue="-"
+									style="width:250px;" id="instructors%{#stat.index}" onchange="instructorChanged(%{#stat.index}, this);"
+									/>
 							</TD>
-							<html:hidden property='<%="instrHasPref["+ctr+"]" %>' styleId='<%="instrHasPref"+ctr%>'/>
+							<s:hidden name="form.instrHasPref[%{#stat.index}]" id="instrHasPref%{#stat.index}" value="%{form.getInstrHasPref(#stat.index)}"/>
 							<TD nowrap align="center">
-								<html:text property='<%= "instrPctShare[" + ctr + "]" %>' size="3" maxlength="3" />
+								<s:textfield name="form.instrPctShare[%{#stat.index}]" size="3" maxlength="3"/>
 							</TD>
 							<TD nowrap align="center">
-								<html:checkbox property='<%="instrLead[" + ctr + "]"%>' 
-									styleId='<%= "instrLead" + ctr %>' 
-									onclick='<%= "instructorChanged("+ctr+", this);"%>'
-								/>
+								<s:checkbox name="form.instrLead[%{#stat.index}]" id="instrLead%{#stat.index}"
+									onclick="instructorChanged(%{#stat.index}, this);"/>
 							</TD>
-							<logic:notEmpty name="responsibilities" scope="request">
+							<s:if test="#request.responsibilities != null">
 								<TD>
-									<html:select
-										property='<%= "instrResponsibility[" + ctr + "]" %>'>
-										<logic:equal name="<%=frmName%>" property='<%= "instrResponsibility[" + ctr + "]" %>' value="">
-											<html:option value="">-</html:option>
-										</logic:equal>
-										<logic:notEqual name="<%=frmName%>" property='<%= "instrResponsibility[" + ctr + "]" %>' value="">
-											<logic:empty name="<%=frmName%>" property='defaultTeachingResponsibilityId'>
-												<html:option value="">-</html:option>
-											</logic:empty>
-										</logic:notEqual>
-										<html:options collection="responsibilities" property="uniqueId" labelProperty="label" />
-									</html:select>
+									<s:if test="form.defaultTeachingResponsibilityId == null || form.instrResponsibility[#stat.index] == ''">
+										<s:select name="form.instrResponsibility[%{#stat.index}]"
+											list="#request.responsibilities" listKey="uniqueId" listValue="label"
+											headerKey="-" headerValue="-"/>
+									</s:if>
+									<s:else>
+										<s:select name="form.instrResponsibility[%{#stat.index}]"
+											list="#request.responsibilities" listKey="uniqueId" listValue="label"
+										/>
+									</s:else>
 								</TD>
-							</logic:notEmpty>
-							<logic:empty name="responsibilities" scope="request">
-								<html:hidden property='<%= "instrResponsibility[" + ctr + "]" %>'/>
-							</logic:empty>
+							</s:if>
+							<s:else>
+								<s:hidden name="form.instrResponsibility[%{#stat.index}]"/>
+							</s:else>
 							<TD nowrap>
-								<html:submit property="op" 
-									styleClass="btn"
-									title="<%=MSG.titleRemoveInstructor() %>"
-									onclick="<%= \"javascript: doDel('instructor', '\" + ctr + \"');\"%>">
-									<loc:message name="actionRemoveInstructor" />
-								</html:submit> 			
+								<s:submit name='op' value='%{#msg.actionRemoveInstructor()}'
+									title='%{#msg.titleRemoveInstructor()}'
+									onclick="javascript: doDel('instructor', %{#stat.index});"/>
 							</TD>
 						</TR>
-				   	</logic:iterate>
-					
+				   	</s:iterator>
 				</TABLE>
 			</TD>
 		</TR>
 
 <!-- Preferences -->
-		<logic:equal value="0" name="<%=frmName%>" property="nbrRooms">
-			<jsp:include page="preferencesEdit.jspf">
-				<jsp:param name="frmName" value="<%=frmName%>"/>
-				<jsp:param name="distPref" value="false"/>
-				<jsp:param name="periodPref" value="false"/>
-				<jsp:param name="bldgPref" value="false"/>
-				<jsp:param name="roomFeaturePref" value="false"/>
-				<jsp:param name="roomGroupPref" value="false"/>
-			</jsp:include>
-		</logic:equal>
-		<logic:notEqual value="0" name="<%=frmName%>" property="nbrRooms">
-			<logic:equal value="true" name="<%=frmName%>" property="unlimitedEnroll">
-				<jsp:include page="preferencesEdit.jspf">
-					<jsp:param name="frmName" value="<%=frmName%>"/>
-					<jsp:param name="distPref" value="false"/>
-					<jsp:param name="periodPref" value="false"/>
-					<jsp:param name="bldgPref" value="false"/>
-					<jsp:param name="roomFeaturePref" value="false"/>
-					<jsp:param name="roomGroupPref" value="false"/>
-				</jsp:include>
-			</logic:equal>
-			<logic:notEqual value="true" name="<%=frmName%>" property="unlimitedEnroll">
-				<jsp:include page="preferencesEdit.jspf">
-					<jsp:param name="frmName" value="<%=frmName%>"/>
-					<jsp:param name="distPref" value="false"/>
-					<jsp:param name="periodPref" value="false"/>
-				</jsp:include>
-			</logic:notEqual>
-		</logic:notEqual>
+		<s:if test="form.nbrRooms == 0">
+			<s:include value="preferencesEdit2.jspf">
+				<s:param name="frmName" value="'classEdit'"/>
+				<s:param name="distPref" value="false"/>
+				<s:param name="periodPref" value="false"/>
+				<s:param name="bldgPref" value="false"/>
+				<s:param name="roomFeaturePref" value="false"/>
+				<s:param name="roomGroupPref" value="false"/>
+			</s:include>
+		</s:if>
+		<s:if test="form.nbrRooms != 0">
+			<s:if test="form.unlimitedEnroll == true">
+				<s:include value="preferencesEdit2.jspf">
+					<s:param name="frmName" value="'classEdit'"/>
+					<s:param name="distPref" value="false"/>
+					<s:param name="periodPref" value="false"/>
+					<s:param name="bldgPref" value="false"/>
+					<s:param name="roomFeaturePref" value="false"/>
+					<s:param name="roomGroupPref" value="false"/>
+				</s:include>
+			</s:if>
+			<s:if test="form.unlimitedEnroll != true">
+				<s:include value="preferencesEdit2.jspf">
+					<s:param name="frmName" value="'classEdit'"/>
+					<s:param name="distPref" value="false"/>
+					<s:param name="periodPref" value="false"/>
+				</s:include>
+			</s:if>
+		</s:if>
 		
 <!-- buttons -->
 		<TR>
@@ -564,60 +378,30 @@
 		</TR>
 		<TR>
 			<TD colspan="2" align="right">
-					<html:submit property="op" 
-						styleClass="btn" 
-						accesskey='<%=MSG.accessUpdatePreferences()%>' 
-						title='<%=MSG.titleUpdatePreferences(MSG.accessUpdatePreferences()) %>' >
-						<loc:message name="actionUpdatePreferences"/>
-					</html:submit>
-					<sec:authorize access="hasPermission(#ClassEditForm.classId, 'Class_', 'ClassEditClearPreferences')"> 
-						&nbsp;
-						<html:submit property="op" 
-							styleClass="btn" 
-							accesskey='<%=MSG.accessClearClassPreferences() %>' 
-							title='<%=MSG.titleClearClassPreferences(MSG.accessClearClassPreferences()) %>'>
-							<loc:message name="actionClearClassPreferences" />
-						</html:submit>
-					</sec:authorize> 
-					<logic:notEmpty name="<%=frmName%>" property="previousId">
-						&nbsp;
-						<html:submit property="op" 
-							styleClass="btn" 
-							accesskey='<%=MSG.accessPreviousClass() %>' 
-							title='<%=MSG.titlePreviousClassWithUpdate(MSG.accessPreviousClass())%>'>
-							<loc:message name="actionPreviousClass" />
-						</html:submit> 
-					</logic:notEmpty>
-					<logic:notEmpty name="<%=frmName%>" property="nextId">
-						&nbsp;
-						<html:submit property="op" 
-							styleClass="btn" 
-							accesskey='<%=MSG.accessNextClass() %>' 
-							title='<%=MSG.titleNextClassWithUpdate(MSG.accessNextClass()) %>'>
-							<loc:message name="actionNextClass" />
-						</html:submit> 
-					</logic:notEmpty>
-					&nbsp;
-					<html:submit property="op" 
-						styleClass="btn" 
-						accesskey='<%=MSG.accessBackToDetail()%>' 
-						title='<%=MSG.titleBackToDetail(MSG.accessBackToDetail()) %>'>
-						<loc:message name="actionBackToDetail" />
-					</html:submit>
+					<s:submit accesskey='%{#msg.accessUpdatePreferences()}' name='op' value='%{#msg.actionUpdatePreferences()}'
+						title='%{#msg.titleUpdatePreferences(#msg.accessUpdatePreferences())}'/>
+					<sec:authorize access="hasPermission(#form.classId, 'Class_', 'ClassEditClearPreferences')">
+						<s:submit accesskey='%{#msg.accessClearClassPreferences()}' name='op' value='%{#msg.actionClearClassPreferences()}'
+							title='%{#msg.titleClearClassPreferences(#msg.accessClearClassPreferences())}'/>
+					</sec:authorize>
+					<s:if test="form.previousId != null">
+						<s:submit accesskey='%{#msg.accessPreviousClass()}' name='op' value='%{#msg.actionPreviousClass()}'
+							title='%{#msg.titlePreviousClassWithUpdate(#msg.accessPreviousClass())}'/>
+					</s:if>
+					<s:if test="form.nextId != null">
+						<s:submit accesskey='%{#msg.accessNextClass()}' name='op' value='%{#msg.actionNextClass()}'
+							title='%{#msg.titleNextClassWithUpdate(#msg.accessNextClass())}'/>
+					</s:if>
+					<s:submit accesskey='%{#msg.accessBackToDetail()}' name='op' value='%{#msg.actionBackToDetail()}'
+							title='%{#msg.titleBackToDetail(#msg.accessBackToDetail())}'/>
 				</TD>
 		</TR>
 		
-		
-		
 	</TABLE>
-</html:form>
-
-<SCRIPT type="text/javascript" language="javascript">
-	function jumpToAnchor() {
-    <% if (request.getAttribute(ClassEditAction.HASH_ATTR) != null) { %>
-  		location.hash = "<%=request.getAttribute(ClassEditAction.HASH_ATTR)%>";
-	<% } %>
-	    self.focus();
-  	}
-</SCRIPT>
+	<s:if test="#request.hash != null">
+		<SCRIPT type="text/javascript">
+			location.hash = '<%=request.getAttribute("hash")%>';
+		</SCRIPT>
+	</s:if>
+</s:form>
 </loc:bundle>

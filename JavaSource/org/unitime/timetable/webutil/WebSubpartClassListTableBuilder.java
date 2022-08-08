@@ -41,7 +41,7 @@ public class WebSubpartClassListTableBuilder extends WebClassListTableBuilder {
 	private String addDeleteAnchor(Class_ aClass){
 		StringBuffer sb = new StringBuffer();
 		sb.append("<A onclick=\" if(confirm('Are you sure you want to delete this class section? Continue?')) {"); 
-		sb.append("document.location.href='schedulingSubpartEdit.do?op=DeleteClass&ssuid=");
+		sb.append("document.location.href='schedulingSubpartEdit.action?op=DeleteClass&ssuid=");
 	    sb.append(aClass.getSchedulingSubpart().getUniqueId().toString());
         sb.append("&classId=");
         sb.append(aClass.getUniqueId());
@@ -73,7 +73,7 @@ public class WebSubpartClassListTableBuilder extends WebClassListTableBuilder {
 	            cell.addContent(this.addDeleteAnchor(aClass));	
 	        }
 	        if (isEditable){
-	        	cell.addContent("<A onclick=\"document.location='classEdit.do?cid=" + aClass.getUniqueId().toString() + "&sec=" + aClass.getSectionNumberString() + "'\" >");
+	        	cell.addContent("<A onclick=\"document.location='classEdit.action?cid=" + aClass.getUniqueId().toString() + "&sec=" + aClass.getSectionNumberString() + "'\" >");
 	        }
 	    	cell.addContent("<b>");
 	        cell.addContent(aClass.getClassLabel(co));

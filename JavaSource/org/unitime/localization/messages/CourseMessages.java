@@ -2486,10 +2486,10 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Select an instructor")
 	String alertSelectAnInstructor();
 
-	@DefaultMessage("More Options &gt;&gt;&gt;")
+	@DefaultMessage("More Options >>>")
 	String selectMoreOptions();
 	
-	@DefaultMessage("&lt;&lt;&lt; Less Options")
+	@DefaultMessage("<<< Less Options")
 	String selectLessOptions();
 	
 	@DefaultMessage("If checked, spread in time constraint will be automatically posted between classes of this subpart.")

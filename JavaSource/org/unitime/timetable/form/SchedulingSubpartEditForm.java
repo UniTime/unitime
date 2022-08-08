@@ -19,19 +19,10 @@
 */
 package org.unitime.timetable.form;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionMapping;
 import org.unitime.timetable.defaults.ApplicationProperty;
 
 
 /** 
- * MyEclipse Struts
- * Creation date: 07-26-2005
- * 
- * XDoclet definition:
- * @struts:form name="schedulingSubpartEditForm"
- *
  * @author Tomas Muller
  */
 public class SchedulingSubpartEditForm extends PreferencesForm {
@@ -72,27 +63,9 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
     private Long controllingDept;
     private Boolean datePatternEditable;
     
-    // --------------------------------------------------------- Methods
-
-    /** 
-     * Method reset
-     * @param mapping
-     * @param request
-     */
-    public void reset(ActionMapping mapping, HttpServletRequest request) {        
-        schedulingSubpartId = "";
-        datePattern = null;
-        unlimitedEnroll = null;
-        parentSubpartId = null; parentSubpartLabel = null; managingDeptName = null; sameItypeAsParent = null;
-        creditFormat = null; creditType = null; creditUnitType = null; units = null; maxUnits = null; fractionalIncrementsAllowed = Boolean.valueOf(false); creditText = "";
-        autoSpreadInTime = Boolean.FALSE;
-        studentAllowOverlap = Boolean.FALSE;
-        subpartCreditEditAllowed = ApplicationProperty.SubpartCreditEditable.isTrue();
-        itypeBasic = false;
-        instructionalType = null; instructionalTypeLabel = null;
-        controllingDept = null;
-        datePatternEditable = false;
-        super.reset(mapping, request);
+    public SchedulingSubpartEditForm() {
+    	super();
+    	reset();
     }
     
     @Override

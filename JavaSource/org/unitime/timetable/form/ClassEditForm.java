@@ -25,11 +25,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.action.UniTimeAction;
@@ -82,12 +77,12 @@ public class ClassEditForm extends PreferencesForm {
     private String className;
     private String parentClassName;
     private String itypeDesc;
-    private List instrLead;
+    private List<String> instrLead;
     private String managingDeptLabel;
     private String notes;
-    private List instructors;
-    private List instrPctShare;
-    private List assignments;
+    private List<String> instructors;
+    private List<String> instrPctShare;
+    private List<String> assignments;
     private Long datePattern;
     private String subjectAreaId;
     private String instrOfferingId;
@@ -106,7 +101,7 @@ public class ClassEditForm extends PreferencesForm {
     private Boolean isCrosslisted;
     private String accommodation;
     private Boolean isCancelled;
-    private List instrResponsibility;
+    private List<String> instrResponsibility;
     private String defaultTeachingResponsibilityId;
     private String lms;
     private String fundingDept;
@@ -115,137 +110,18 @@ public class ClassEditForm extends PreferencesForm {
     // --------------------------------------------------------- Classes
 
     /** Factory to create dynamic list element for Instructors */
-    protected DynamicListObjectFactory factoryInstructors = new DynamicListObjectFactory() {
-        public Object create() {
-            return new String(Preference.BLANK_PREF_VALUE);
-        }
-    };
-
-    // --------------------------------------------------------- Methods
-
-    /** 
-     * Validate input data
-     * @param mapping
-     * @param request
-     * @return ActionErrors
-     */
-    public ActionErrors validate(
-        ActionMapping mapping,
-        HttpServletRequest request) {
-    	
-        int iRoomCapacity = -1;
-        ActionErrors errors = new ActionErrors();
-        
-        if(nbrRooms!=null && nbrRooms.intValue()<0)
-            errors.add("nbrRooms", 
-                    new ActionMessage("errors.generic", MSG.errorNumberOfRoomsNegative()) );
-        
-        if (roomRatio==null || roomRatio.floatValue()<0.0f)
-            errors.add("nbrRooms", 
-                    new ActionMessage("errors.generic", MSG.errorRoomRatioNegative()) );
-        
-        if(expectedCapacity==null || expectedCapacity.intValue()<0) 
-            errors.add("expectedCapacity", 
-                    new ActionMessage("errors.generic", MSG.errorMinimumExpectedCapacityNegative()) );
-        
-        if(maxExpectedCapacity==null || maxExpectedCapacity.intValue()<0) 
-            errors.add("maxExpectedCapacity", 
-                    new ActionMessage("errors.generic", MSG.errorMaximumExpectedCapacityNegative()) );
-        else 
-            if(maxExpectedCapacity.intValue()<expectedCapacity.intValue()) 
-                errors.add("maxExpectedCapacity", 
-                        new ActionMessage("errors.generic", MSG.errorMaximumExpectedCapacityLessThanMinimum()) );
-            
-        if( managingDept==null || managingDept.longValue()<=0) 
-            errors.add("managingDept", 
-                    new ActionMessage("errors.generic", MSG.errorRequiredClassOwner()) );
-        
-        // Schedule print note has 2000 character limit
-        if(schedulePrintNote!=null && schedulePrintNote.length()>1999) 
-            errors.add("notes", 
-                    new ActionMessage("errors.generic", MSG.errorSchedulePrintNoteLongerThan1999()) );
-        
-        
-        // Notes has 1000 character limit
-        if(notes!=null && notes.length()>999) 
-            errors.add("notes", 
-                    new ActionMessage("errors.generic", MSG.errorNotesLongerThan999()) );
-        
-        // At least one instructor is selected
-        if (instructors.size()>0) {
-            
-	        // Check no duplicates or blank instructors
-            if(!super.checkPrefs(instructors, instrResponsibility))
-                errors.add("instructors", 
-                        new ActionMessage(
-                                "errors.generic", 
-                                MSG.errorInvalidInstructors()) );
-
-            /* -- 1 lead instructor not required
-            // Check Lead Instructor is set
-	        if(instrLead==null 
-	                || instrLead.trim().length()==0
-	                || !(new LongValidator().isValid(instrLead)) ) 
-	            errors.add("instrLead", 
-	                    new ActionMessage("errors.required", "Lead Instructor") );
-	        */
-            
-	        /* -- 100% percent share not required
-	        // Check sum of all percent share = 100%
-	        try {
-	            int total = 0;
-		        for (Iterator iter=instrPctShare.iterator(); iter.hasNext(); ) {	            
-		            String pctShare = iter.next().toString();
-		            if(Integer.parseInt(pctShare)<=0) {
-			            errors.add("instrPctShare", 
-			                    new ActionMessage(
-			                            "errors.integerGt", "Percent Share", "0") );
-			        }
-		            total += Integer.parseInt(pctShare);
-		        }
-		        if(total!=100) {
-		            errors.add("instrPctShare", 
-		                    new ActionMessage(
-		                            "errors.generic",
-		                            "Sum of all instructor percent shares must equal 100%") );
-		        }
-	        }
-	        catch (Exception ex) {
-	            errors.add("instrPctShare", 
-                    new ActionMessage(
-                            "errors.generic",
-                            "Invalid instructor percent shares specified.") );
-	        }	   
-	        */     
-        }        
-        
-        // Check that any room with a preference required has capacity >= room capacity for the class
-        if (iRoomCapacity>0) {
-            List rp = this.getRoomPrefs();
-            List rpl = this.getRoomPrefLevels();
-            
-            for (int i=0; i<rpl.size(); i++) {
-                String pl = rpl.get(i).toString();
-                if (pl.trim().equalsIgnoreCase("1")) {
-                    String roomId = rp.get(i).toString();                    
-                    Location room = new LocationDAO().get(Long.valueOf(roomId));
-                    int rCap = room.getCapacity().intValue();
-                    if(rCap<iRoomCapacity) {
-        	            errors.add("roomPref", 
-    	                    new ActionMessage(
-    	                            "errors.generic",
-    	                            MSG.errorRequiredRoomTooSmall(room.getLabel(), rCap, iRoomCapacity)) );
-                    }
-                }
-            }
-        }
-        
-        // Check Other Preferences
-        errors.add(super.validate(mapping, request));
-        
-        return errors;        
-    }
+    protected DynamicListObjectFactory factoryInstructors;
     
+    public ClassEditForm() {
+    	super();
+    	factoryInstructors = new DynamicListObjectFactory() {
+            public Object create() {
+                return new String(Preference.BLANK_PREF_VALUE);
+            };
+    	};
+        reset();
+    }
+
     @Override
     public void validate(UniTimeAction action) {
     	int iRoomCapacity = -1;
@@ -281,12 +157,12 @@ public class ClassEditForm extends PreferencesForm {
 
         // Check that any room with a preference required has capacity >= room capacity for the class
         if (iRoomCapacity>0) {
-        	List rp = this.getRoomPrefs();
-        	List rpl = this.getRoomPrefLevels();
+        	List<String> rp = this.getRoomPrefs();
+        	List<String> rpl = this.getRoomPrefLevels();
         	for (int i=0; i<rpl.size(); i++) {
-                String pl = rpl.get(i).toString();
+                String pl = rpl.get(i);
                 if (pl.trim().equalsIgnoreCase("1")) {
-                    String roomId = rp.get(i).toString();                    
+                    String roomId = rp.get(i);                    
                     Location room = new LocationDAO().get(Long.valueOf(roomId));
                     int rCap = room.getCapacity().intValue();
                     if (rCap<iRoomCapacity)
@@ -297,55 +173,6 @@ public class ClassEditForm extends PreferencesForm {
 
         // Check Other Preferences
         super.validate(action);
-    }
-
-    /** 
-     * Method reset
-     * @param mapping
-     * @param request
-     */
-    public void reset(ActionMapping mapping, HttpServletRequest request) {
-        
-        nbrRooms = null;
-        expectedCapacity = null;
-        classId = null;
-        section = null;
-        managingDept = null;
-        controllingDept = null;
-        subpart = null;
-        className = "";
-        courseName = "";
-        courseTitle = "";
-        parentClassName = "-";
-        itypeDesc = "";
-        datePattern = null;
-        instrLead = DynamicList.getInstance(new ArrayList(), factoryInstructors);
-        managingDeptLabel = "-";
-        notes="";
-        displayInstructor = null;
-        schedulePrintNote = null;
-        classSuffix = null;
-        enabledForStudentScheduling = null;
-        maxExpectedCapacity = null;
-        roomRatio = null;
-        unlimitedEnroll = null;
-        isCrosslisted = null;
-        isCancelled = null;
-
-        instructors = DynamicList.getInstance(new ArrayList(), factoryInstructors);
-        instrPctShare= DynamicList.getInstance(new ArrayList(), factoryInstructors);
-        assignments = null;
-        enrollment = null;
-        snapshotLimit = null;
-        accommodation = null;
-        instrResponsibility = DynamicList.getInstance(new ArrayList(), factoryInstructors);
-        TeachingResponsibility tr = TeachingResponsibility.getDefaultInstructorTeachingResponsibility();
-        defaultTeachingResponsibilityId = (tr == null ? "" : tr.getUniqueId().toString());
-        lms = null;
-        fundingDept = null;
-        datePatternEditable = false;
-
-        super.reset(mapping, request);
     }
     
     @Override
@@ -431,26 +258,26 @@ public class ClassEditForm extends PreferencesForm {
     /**
      * @return Returns the assignments.
      */
-    public List getAssignments() {
+    public List<String> getAssignments() {
         return assignments;
     }
     /**
      * @return Returns the assignments.
      */
     public String getAssignments(int key) {
-        return assignments.get(key).toString();
+        return assignments.get(key);
     }
     /**
      * @param key The key to set.
      * @param value The value to set.
      */
-    public void setAssignments(int key, Object value) {
+    public void setAssignments(int key, String value) {
         this.assignments.set(key, value);
     }
     /**
      * @param assignments The assignments to set.
      */
-    public void setAssignments(List assignments) {
+    public void setAssignments(List<String> assignments) {
         this.assignments = assignments;
     }
 
@@ -477,39 +304,39 @@ public class ClassEditForm extends PreferencesForm {
     /**
      * @return Returns the instructors.
      */
-    public List getInstructors() {
+    public List<String> getInstructors() {
         return instructors;
     }
     /**
      * @return Returns the instructors.
      */
     public String getInstructors(int key) {
-        return instructors.get(key).toString();
+        return instructors.get(key);
     }
     /**
      * @param key The key to set.
      * @param value The value to set.
      */
-    public void setInstructors(int key, Object value) {
+    public void setInstructors(int key, String value) {
         this.instructors.set(key, value);
     }
     /**
      * @param instructors The instructors to set.
      */
-    public void setInstructors(List instructors) {
+    public void setInstructors(List<String> instructors) {
         this.instructors = instructors;
     }
     
     /**
      * @return Returns the instrLead.
      */
-    public List getInstrLead() {
+    public List<String> getInstrLead() {
         return instrLead;
     }
     /**
      * @param instrLead The instrLead to set.
      */
-    public void setInstrLead(List instrLead) {
+    public void setInstrLead(List<String> instrLead) {
         this.instrLead = instrLead;
     }
     
@@ -518,10 +345,10 @@ public class ClassEditForm extends PreferencesForm {
     }
     
     public String getInstrLead(int key) {
-        return instrLead.get(key).toString();
+        return instrLead.get(key);
     }
 
-    public void setInstrLead(int key, Object value) {
+    public void setInstrLead(int key, String value) {
         this.instrLead.set(key, value);
     }
 
@@ -537,7 +364,7 @@ public class ClassEditForm extends PreferencesForm {
     /**
      * @return Returns the instrPctShare.
      */
-    public List getInstrPctShare() {
+    public List<String> getInstrPctShare() {
         return instrPctShare;
     }
     /**
@@ -550,13 +377,13 @@ public class ClassEditForm extends PreferencesForm {
      * @param key The key to set.
      * @param value The value to set.
      */
-    public void setInstrPctShare(int key, Object value) {
+    public void setInstrPctShare(int key, String value) {
         this.instrPctShare.set(key, value);
     }
     /**
      * @param instrPctShare The instrPctShare to set.
      */
-    public void setInstrPctShare(List instrPctShare) {
+    public void setInstrPctShare(List<String> instrPctShare) {
         this.instrPctShare = instrPctShare;
     }
     
@@ -852,10 +679,10 @@ public class ClassEditForm extends PreferencesForm {
     public Long getControllingDept() { return controllingDept; }
     public void setControllingDept(Long deptId) { controllingDept = deptId; }
     
-    public List getInstrResponsibility() { return instrResponsibility; }
-    public String getInstrResponsibility(int key) { return instrResponsibility.get(key).toString(); }
-    public void setInstrResponsibility(int key, Object value) { this.instrResponsibility.set(key, value); }
-    public void setInstrResponsibility(List instrResponsibility) { this.instrResponsibility = instrResponsibility; }
+    public List<String> getInstrResponsibility() { return instrResponsibility; }
+    public String getInstrResponsibility(int key) { return instrResponsibility.get(key); }
+    public void setInstrResponsibility(int key, String value) { this.instrResponsibility.set(key, value); }
+    public void setInstrResponsibility(List<String> instrResponsibility) { this.instrResponsibility = instrResponsibility; }
 	public String getDefaultTeachingResponsibilityId() { return defaultTeachingResponsibilityId; }
 	public void setDefaultTeachingResponsibilityId(String defaultTeachingResponsibilityId) { this.defaultTeachingResponsibilityId = defaultTeachingResponsibilityId; }
 

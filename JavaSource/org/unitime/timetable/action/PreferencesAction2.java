@@ -1162,13 +1162,8 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
 
 				rtt.setName("p"+idx);
 				
-			// 	Reload all preferences selected
-				String reloadCause = request.getParameter("reloadCause");
-
-				if(reloadCause!=null && reloadCause.equals("timePattern")) 
-					request.setAttribute(HASH_ATTR, HASH_TIME_PREF);
-            
-				if ((reloadCause==null || !reloadCause.equals("timePattern")) && !"init".equals(op)) {
+				//	Reload all preferences selected
+				if (!"init".equals(op)) {
 					if (deletedTimePatternIdx>=0 && idx>=deletedTimePatternIdx) {
 						rtt.setName("p"+(idx+1));
 						rtt.update(request);

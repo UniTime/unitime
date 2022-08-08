@@ -167,13 +167,6 @@
 		<put name="showNavigation" value="true" />
   	</definition>
 
-  	<definition	name="schedulingSubpartEditTile" extends="pageLayoutDef">
-		<put name="onLoadFunction" type="string" value="onLoad='jumpToAnchor()'" />
-		<put name="title" type="string" value="Edit Scheduling Subpart"/>
-		<put name="body" value="/user/schedulingSubpartEdit.jsp" />
-		<put name="showNavigation" value="true" />
-  	</definition>
-  	
 	<definition	name="managerSettingsTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Manager Settings"/>
 		<put name="body" value="/user/managerSettings.jsp" />
@@ -258,13 +251,6 @@
 		<put name="showSolverWarnings" value="assignment" />
   	</definition>
 
-  	<definition	name="classEditTile" extends="pageLayoutDef">
-		<put name="onLoadFunction" type="string" value="onLoad='jumpToAnchor()'"/>
-		<put name="title" type="string" value="Edit Class"/>
-		<put name="body" value="/user/classEdit.jsp" />
-		<put name="showNavigation" value="true" />
-  	</definition>
-  	
   	<definition	name="classSearchTile" extends="pageLayoutDef">
 	  	<put name="onLoadFunction" type="string" value="onLoad='jumpToAnchor()'" />
 		<put name="title" type="string" value="Classes"/>

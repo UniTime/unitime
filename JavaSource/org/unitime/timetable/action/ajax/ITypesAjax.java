@@ -24,14 +24,11 @@ import java.io.PrintWriter;
 import java.util.Iterator;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.springframework.stereotype.Service;
+import org.apache.struts2.convention.annotation.Action;
 import org.unitime.commons.Debug;
+import org.unitime.timetable.action.UniTimeAction;
+import org.unitime.timetable.form.BlankForm;
 import org.unitime.timetable.model.ItypeDesc;
 
 /**
@@ -39,10 +36,11 @@ import org.unitime.timetable.model.ItypeDesc;
  * @author Tomas Muller
  *
  */
-@Service("/itypesAjax")
-public class ITypesAjax extends Action {
+@Action(value = "itypesAjax")
+public class ITypesAjax extends UniTimeAction<BlankForm> {
+    private static final long serialVersionUID = -9199694181125878650L;
 
-    public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
+	public String execute() throws Exception {
         
         response.addHeader("Content-Type", "text/xml; charset=UTF-8");
         request.setCharacterEncoding("UTF-8");

@@ -68,13 +68,17 @@
 		<TD>
 			<s:iterator value="form.datePatternPrefs" var="datePatternPref" status="datePatternPrefStat">
 				<s:iterator value="#request.prefLevelsList" var="prLevel">
-					<s:if test="form.getDatePatternPrefLevels(#datePatternPrefStat.index) == #prLevel.uniqueId && #prLevel.prefProlog != 'P' && (!form.hasRequiredDatePatternPref() || #prLevel.prefProlog == 'R')">
+					<s:if test="form.getDatePatternPrefLevels(#datePatternPrefStat.index) == #prLevel.uniqueId ">
+					<s:if test="!#prLevel.prefProlog.equalsIgnoreCase('P')">
+					<s:if test="!form.hasRequiredDatePatternPref() || #prLevel.prefProlog.equalsIgnoreCase('R')">
 						<s:iterator value="#request.datePatternList" var="dp">
 							<s:if test="#datePatternPref == #dp.id">
 								<div style='color:${prLevel.prefcolorNeutralBlack()}; font-weight: bold; cursor:pointer;' title='${prLevel.getPrefName()}: ${dp.value}'
 									onclick="showGwtDialog('Preview of ${dp.value}', 'user/dispDatePattern.jsp?id=${dp.id}','840','520');"><s:property value="#dp.value"/></div>
 							</s:if>
 						</s:iterator>
+					</s:if>
+					</s:if>
 					</s:if>
 				</s:iterator>
 			</s:iterator>

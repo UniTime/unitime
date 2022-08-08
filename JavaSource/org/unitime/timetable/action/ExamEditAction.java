@@ -102,7 +102,6 @@ public class ExamEditAction extends PreferencesAction2<ExamEditForm> {
 	protected static ExaminationMessages EXMSG = Localization.create(ExaminationMessages.class);
 	protected String examId = null;
 	protected String op2 = null;
-	protected String reloadCause = null;
 	protected String deleteType = null;
 	protected Boolean clone = null;
 	protected Long deleteId = null;
@@ -113,8 +112,6 @@ public class ExamEditAction extends PreferencesAction2<ExamEditForm> {
 	public void setExamId(String examId) { this.examId = examId; }
 	public String getOp2() { return op2; }
 	public void setOp2(String op2) { this.op2 = op2; }
-	public String getReloadCause() { return reloadCause; }
-	public void setReloadCause(String reloadCause) { this.reloadCause = reloadCause; }
 	public String getDeleteType() { return deleteType; }
 	public void setDeleteType(String deleteType) { this.deleteType = deleteType; }
 	public Boolean isClone() { return clone; }
@@ -148,7 +145,7 @@ public class ExamEditAction extends PreferencesAction2<ExamEditForm> {
 			examId = form.getExamId();
         
         // Determine if initial load
-        if (op == null || op.trim().isEmpty() || ("Reload".equals(op) && (reloadCause == null || reloadCause.trim().isEmpty()))) {
+        if (op == null || op.trim().isEmpty()) {
         	if (deleteType != null && !deleteType.isEmpty())
         		op = "delete";
         	else

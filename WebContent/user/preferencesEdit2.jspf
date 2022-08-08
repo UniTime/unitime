@@ -46,21 +46,23 @@
 		</TR>
 		<% int idx = 0; %>
 		<s:iterator value="form.timePatterns" var="timePattern" status="timePatternStat">
-			<s:set var="idx" value="#timePatternStat.index"/>
-			<INPUT type="hidden" name='timePatterns[${idx}]' value="#timePattern"/>
+			<TR><TD colspan='2'>
+			<s:hidden name="form.timePatterns[%{#timePatternStat.index}]"/>
 			<table style="width:100%;">
 				<tr>
-					<td align='left'><%=request.getAttribute("timePatternGrid_" + idx)%></td>
+					<td align='left'>
+					<%=request.getAttribute("timePatternGrid_" + idx)%></td>
 					<td align='right' valign='bottom'>
 						<s:if test="form.canChooseTimePattern">
 							<s:submit
 								name='op' value='%{#msg.actionRemoveTimePattern()}'
 								title='%{#msg.titleRemoveTimePattern)}'
-								onclick="javascript: doDel('timePattern', %{#stat.index});"/>
+								onclick="javascript: doDel('timePattern', %{#timePatternStat.index});"/>
 						</s:if>
 					</td>
 				</tr>
 			</table>
+			</TD></TR>
 			<% idx++; %>
 		</s:iterator>
 </s:if>
@@ -90,15 +92,15 @@
 			<tt:section-title><loc:message name="sectionTitleDatePatternPreferences"/></tt:section-title>
 		</TD>
 	</TR>
-	<s:iterator value="form.datePatternPrefs" var="datePatternPref" status="datePatternPrefStat">
+	<s:iterator value="form.datePatternPrefs" var="datePatternPref" status="stat">
 		<TR>
 			<TD colspan="2">
-				<s:select style="width:350px;"
-					name="form.datePatternPrefs[%{#stat.index}]"
-					list="#request.datePatternChildrenList" listKey="uniqueId" listValue="name"
-					headerKey="-" headerValue="-"
-					disabled="form.isDatePatternDisabled(#stat.index)"
-					/>
+				<s:hidden name="form.datePatternPrefs[%{#stat.index}]"/>
+				<s:iterator value="#request.datePatternChildrenList" var="dp">
+					<s:if test="#dp.uniqueId == form.datePatternPrefs[#stat.index]">
+						<s:property value="#dp.name"/>
+					</s:if>
+				</s:iterator>
 				&nbsp;&nbsp;
 				<s:select style="width:350px;"
 					name="form.datePatternPrefLevels[%{#stat.index}]"
@@ -446,12 +448,11 @@
 
 <s:hidden name="deleteType" id="deleteType" value=""/>
 <s:hidden name="deleteId" id="deleteId" value=""/>
-<s:hidden name="reloadCause" id="reloadCause" value=""/>
 <SCRIPT type="text/javascript">
 	function doDel(type, id) {
-		var delType = document.${param.frmName}.deleteType;
+		var delType = document.getElementById('deleteType');
 		delType.value = type;
-		var delId = document.${param.frmName}.deleteId;
+		var delId = document.getElementById('deleteId');
 		delId.value = id;
 	}
 </SCRIPT>

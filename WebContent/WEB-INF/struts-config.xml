@@ -35,7 +35,6 @@
 	  <form-bean name="mgrForm" type="org.unitime.timetable.form.TimetableManagerForm" />
 	  <form-bean name="instructionalOfferingListForm" type="org.unitime.timetable.form.InstructionalOfferingListForm" />
 	  <form-bean name="instructionalOfferingConfigEditForm" type="org.unitime.timetable.form.InstructionalOfferingConfigEditForm" />
-	  <form-bean name="schedulingSubpartEditForm" type="org.unitime.timetable.form.SchedulingSubpartEditForm" />
 	  <form-bean name="mgrSettingsForm" type="org.unitime.timetable.form.ManagerSettingsForm" />
 	  <form-bean name="settingsForm" type="org.unitime.timetable.form.SettingsForm" />
 	  <form-bean name="solverParamGroupsForm" type="org.unitime.timetable.form.SolverParamGroupsForm" />
@@ -44,10 +43,8 @@
 	  <form-bean name="solverInfoDefForm" type="org.unitime.timetable.form.SolverInfoDefForm" />
 	  <form-bean name="manageSolversForm" type="org.unitime.timetable.form.ManageSolversForm" />
 	  <form-bean name="classListForm" type="org.unitime.timetable.form.ClassListForm" />
-	  <form-bean name="classEditForm" type="org.unitime.timetable.form.ClassEditForm" />
       <form-bean name="distributionPrefsForm" type="org.unitime.timetable.form.DistributionPrefsForm" />
       <form-bean name="hibernateQueryTestForm" type="org.unitime.timetable.form.HibernateQueryTestForm" />
-      <form-bean name="classOwnerChangeForm" type="org.unitime.timetable.form.ClassOwnerChangeForm" />
 	  <form-bean name="classAssignmentsReportForm" type="org.unitime.timetable.form.ClassAssignmentsReportForm" />
 	  <form-bean name="timePatternEditForm" type="org.unitime.timetable.form.TimePatternEditForm" />
       <form-bean name="instructionalOfferingDetailForm" type="org.unitime.timetable.form.InstructionalOfferingDetailForm" />
@@ -382,29 +379,6 @@
       </action>
       
       <action
-         path="/schedulingSubpartEdit"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         attribute="SchedulingSubpartEditForm"
-         input="schedulingSubpartEditTile"
-         name="schedulingSubpartEditForm"
-         scope="request"
-         validate="false"> 
-        <forward 
-        	name="editSchedulingSubpart" 
-        	path="schedulingSubpartEditTile" />
-        <forward 
-        	name="instructionalOfferingSearch" 
-        	path="/instructionalOfferingSearch.do" />
-        <forward 
-        	name="addDistributionPrefs" 
-        	path="/distributionPrefs.do" />
-        <forward 
-        	name="displaySubpartDetail" 
-        	path="/schedulingSubpartDetail.action" 
-        	/>
-      </action>
-      
-      <action
          path="/managerSettings"
          type="org.springframework.web.struts.DelegatingActionProxy"
          attribute="mgrSettingsForm"
@@ -531,29 +505,6 @@
     <action 
     	path="/hibernateStats" 
     	forward="hibrenateStatsTile" />
-  
-    <action
-         path="/classEdit"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         attribute="ClassEditForm"
-         input="classEditTile"
-         name="classEditForm"
-         scope="request"
-         validate="false"> 
-        
-        <forward 
-        	name="editClass" 
-        	path="classEditTile" />
-        <forward 
-        	name="instructionalOfferingSearch" 
-        	path="/instructionalOfferingSearch.do" />
-        <forward 
-        	name="addDistributionPrefs" 
-        	path="/distributionPrefs.do" />
-        <forward 
-        	name="displayClassDetail" 
-        	path="/classDetail.action" />
-     </action>
      
      <action
          path="/classSearch"
@@ -570,9 +521,6 @@
         <forward 
         	name="showClassSearch" 
         	path="classSearchTile" />
-        <forward 
-        	name="editClass" 
-        	path="classEditTile" />
       </action>
       
       <action
@@ -664,9 +612,6 @@
         <forward 
         	name="showClassAssignmentsReportSearch" 
         	path="classAssignmentsReportSearchTile" />
-        <forward 
-        	name="editClass" 
-        	path="classEditTile" />
       </action>
       
       <action
@@ -764,19 +709,6 @@
 	        path="instructionalOfferingDetailTile" />
 	    </action>
 	    
-    <action
-      attribute="SchedulingSubpartEditForm"
-      input="schedulingSubpartDetailTile"
-      name="schedulingSubpartEditForm"
-      path="/schedulingSubpartDetail"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false">
-      <forward name="instructionalOfferingSearch" path="/instructionalOfferingSearch.do" />
-      <forward name="displaySchedulingSubpart" path="schedulingSubpartDetailTile" />
-      <forward name="addDistributionPrefs" path="/distributionPrefs.do" />
-    </action>
-
     <action
       attribute="datePatternEditForm"
       input="datePatternsTile"

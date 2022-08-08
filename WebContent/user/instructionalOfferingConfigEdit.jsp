@@ -424,7 +424,7 @@
 	
 		// Request
 		var vars = "basic="+basic;
-		req.open( "POST", "itypesAjax.do", true );
+		req.open( "POST", "ajax/itypesAjax.action", true );
 		req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		// req.setRequestHeader("Content-Length", vars.length);
 		//setTimeout("try { req.send('" + vars + "') } catch(e) {}", 1000);

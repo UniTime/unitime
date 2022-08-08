@@ -123,7 +123,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction2<Scheduling
 
         // Edit Preference - Redirect to prefs edit screen
         if (MSG.actionEditSubpart().equals(op)) {
-        	response.sendRedirect( response.encodeURL("schedulingSubpartEdit.do?ssuid="+ss.getUniqueId().toString()) );
+        	response.sendRedirect( response.encodeURL("schedulingSubpartEdit.action?ssuid="+ss.getUniqueId().toString()) );
         	return null;
         }
 

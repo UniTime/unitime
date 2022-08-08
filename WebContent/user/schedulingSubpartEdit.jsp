@@ -17,38 +17,13 @@
  * limitations under the License.
  * 
 --%>
-<%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
-<%@ page import="org.unitime.timetable.util.Constants" %>
-<%@ page import="org.unitime.timetable.action.SchedulingSubpartEditAction" %>
-<%@ page import="org.unitime.timetable.form.SchedulingSubpartEditForm" %>
-<%@ page import="org.unitime.timetable.model.ItypeDesc"%>
-<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
-<%@ page import="org.unitime.timetable.model.CourseCreditType" %>
-<%@ page import="org.unitime.timetable.model.CourseCreditUnitType" %>
-<%@ page import="org.unitime.timetable.model.FixedCreditUnitConfig" %>
-<%@ page import="org.unitime.timetable.model.ArrangeCreditUnitConfig" %>
-<%@ page import="org.unitime.timetable.model.VariableFixedCreditUnitConfig" %>
-<%@ page import="org.unitime.timetable.model.VariableRangeCreditUnitConfig" %>
-<%@ page import="org.unitime.timetable.defaults.SessionAttribute"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
-<tt:session-context/>
-<%
-	// Get Form 
-	String frmName = "SchedulingSubpartEditForm";
-	SchedulingSubpartEditForm frm = (SchedulingSubpartEditForm) request.getAttribute(frmName);
-	String crsNbr = (String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);
-%>
-<loc:bundle name="CourseMessages">
-<SCRIPT language="javascript">
-	<!--
-		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
-	
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+<loc:bundle name="ConstantsMessages" id="CONST"><s:set var="const" value="#attr.CONST"/>
+<SCRIPT type="text/javascript">
 	function datePatternChanged(){			
 		var op2Obj = document.getElementById('op2');
 		if (op2Obj!=null) {
@@ -56,162 +31,144 @@
 			document.forms[0].submit();
 		}			
 	}
-	// -->
+	function creditFormatChanged(creditFormat) {
+		if (creditFormat.value == 'fixedUnit') {
+			document.getElementById('schedulingSubpartEdit_form_creditType').disabled = false;
+			document.getElementById('schedulingSubpartEdit_form_creditUnitType').disabled = false;
+			document.getElementById('schedulingSubpartEdit_form_units').disabled = false;
+			document.getElementById('schedulingSubpartEdit_form_maxUnits').disabled = true;
+			document.getElementById('schedulingSubpartEdit_form_fractionalIncrementsAllowed').disabled = true
+		} else if (creditFormat.value == 'arrangeHours') {
+			document.getElementById('schedulingSubpartEdit_form_creditType').disabled = false;
+			document.getElementById('schedulingSubpartEdit_form_creditUnitType').disabled = false;
+			document.getElementById('schedulingSubpartEdit_form_units').disabled = true;
+			document.getElementById('schedulingSubpartEdit_form_maxUnits').disabled = true;
+			document.getElementById('schedulingSubpartEdit_form_fractionalIncrementsAllowed').disabled = true
+		} else if (creditFormat.value == 'variableMinMax') {
+			document.getElementById('schedulingSubpartEdit_form_creditType').disabled = false;
+			document.getElementById('schedulingSubpartEdit_form_creditUnitType').disabled = false;
+			document.getElementById('schedulingSubpartEdit_form_units').disabled = false;
+			document.getElementById('schedulingSubpartEdit_form_maxUnits').disabled = false;
+			document.getElementById('schedulingSubpartEdit_form_fractionalIncrementsAllowed').disabled = true
+		} else if (creditFormat.value == 'variableRange') {
+			document.getElementById('schedulingSubpartEdit_form_creditType').disabled = false;
+			document.getElementById('schedulingSubpartEdit_form_creditUnitType').disabled = false;
+			document.getElementById('schedulingSubpartEdit_form_units').disabled = false;
+			document.getElementById('schedulingSubpartEdit_form_maxUnits').disabled = false;
+			document.getElementById('schedulingSubpartEdit_form_fractionalIncrementsAllowed').disabled = false
+		} else {
+			document.getElementById('schedulingSubpartEdit_form_creditType').disabled = true;
+			document.getElementById('schedulingSubpartEdit_form_creditUnitType').disabled = true;
+			document.getElementById('schedulingSubpartEdit_form_units').disabled = true;
+			document.getElementById('schedulingSubpartEdit_form_maxUnits').disabled = true;
+			document.getElementById('schedulingSubpartEdit_form_fractionalIncrementsAllowed').disabled = true
+		}
+	}
 </SCRIPT>
-		
-<tiles:importAttribute />
-<html:form action="/schedulingSubpartEdit" focus="timePattern" >
-	<html:hidden property="schedulingSubpartId"/>
-	<html:hidden property="creditText"/>
-	<html:hidden property="subpartCreditEditAllowed"/>
+<s:form action="schedulingSubpartEdit">
+	<s:hidden name="form.schedulingSubpartId"/>
+	<s:hidden name="form.creditText"/>
+	<s:hidden name="form.subpartCreditEditAllowed"/>
 
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+	<table class="unitime-MainTable">
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title>
-						<bean:write name="<%=frmName%>" property="subjectArea" />&nbsp;
-						<bean:write name="<%=frmName%>" property="courseNbr" /> : 
-						<bean:write name="<%=frmName%>" property="parentSubpart" />
-						<B><bean:write name="<%=frmName%>" property="instructionalTypeLabel" /></B>
+						<s:property value="form.subjectArea"/>&nbsp;
+						<s:property value="form.courseNbr"/> :
+						<s:property value="form.parentSubpart"/>
+						<B><s:property value="form.instructionalTypeLabel"/></B>
 					</tt:section-title>
-					<html:submit property="op" 
-						styleClass="btn" 
-						accesskey='<%=MSG.accessUpdatePreferences()%>' 
-						title='<%=MSG.titleUpdatePreferences(MSG.accessUpdatePreferences()) %>' >
-						<loc:message name="actionUpdatePreferences"/>
-					</html:submit>
-					<sec:authorize access="hasPermission(#SchedulingSubpartEditForm.schedulingSubpartId, 'SchedulingSubpart', 'SchedulingSubpartEditClearPreferences')"> 
-					&nbsp;
-					<html:submit property="op" 
-						styleClass="btn" 
-						accesskey='<%=MSG.accessClearSubpartPreferences() %>' 
-						title='<%=MSG.titleClearSubpartPreferences(MSG.accessClearSubpartPreferences()) %>'>
-						<loc:message name="actionClearSubpartPreferences" />
-					</html:submit> 
+					<s:submit accesskey='%{#msg.accessUpdatePreferences()}' name='op' value='%{#msg.actionUpdatePreferences()}'
+						title='%{#msg.titleUpdatePreferences(#msg.accessUpdatePreferences())}'/>
+					<sec:authorize access="hasPermission(#form.schedulingSubpartId, 'SchedulingSubpart', 'SchedulingSubpartEditClearPreferences')"> 
+						<s:submit accesskey='%{#msg.accessClearSubpartPreferences()}' name='op' value='%{#msg.actionClearSubpartPreferences()}'
+							title='%{#msg.titleClearSubpartPreferences(#msg.accessClearSubpartPreferences())}'/>
 					</sec:authorize>
-					<logic:notEmpty name="<%=frmName%>" property="previousId">
-						&nbsp;
-						<html:submit property="op" 
-							styleClass="btn" 
-							accesskey="<%=MSG.accessPreviousSubpart() %>" 
-							title="<%=MSG.titlePreviousSubpartWithUpdate(MSG.accessPreviousSubpart()) %>">
-							<loc:message name="actionPreviousSubpart" />
-						</html:submit> 
-					</logic:notEmpty>
-					<logic:notEmpty name="<%=frmName%>" property="nextId">
-						&nbsp;
-						<html:submit property="op" 
-							styleClass="btn" 
-							accesskey="<%=MSG.accessNextSubpart() %>" 
-							title="<%=MSG.titleNextSubpartWithUpdate(MSG.accessNextSubpart()) %>">
-							<loc:message name="actionNextSubpart" />
-						</html:submit>
-					</logic:notEmpty>
-					&nbsp;
-					<html:submit property="op" 
-						styleClass="btn" 
-						accesskey="<%=MSG.accessBackToDetail()%>" 
-						title="<%=MSG.titleBackToDetail(MSG.accessBackToDetail()) %>">
-						<loc:message name="actionBackToDetail"/>
-					</html:submit>
+					<s:if test="form.previousId != null">
+						<s:submit accesskey='%{#msg.accessPreviousSubpart()}' name='op' value='%{#msg.actionPreviousSubpart()}'
+							title='%{#msg.titlePreviousSubpartWithUpdate(#msg.accessPreviousSubpart())}'/>
+					</s:if>
+					<s:if test="form.nextId != null">
+						<s:submit accesskey='%{#msg.accessNextSubpart()}' name='op' value='%{#msg.actionNextSubpart()}'
+							title='%{#msg.titleNextSubpartWithUpdate(#msg.accessNextSubpart())}'/>
+					</s:if>
+					<s:submit accesskey='%{#msg.accessBackToDetail()}' name='op' value='%{#msg.actionBackToDetail()}'
+							title='%{#msg.titleBackToDetail(#msg.accessBackToDetail())}'/>
 				</tt:section-header>
 			</TD>
 		</TR>
 		
+		<s:if test="!fieldErrors.isEmpty()">
+			<TR><TD colspan="2" align="left" class="errorTable">
+				<div class='errorHeader'><loc:message name="formValidationErrors"/></div><s:fielderror/>
+			</TD></TR>
+		</s:if>
 
-		<logic:messagesPresent>
-		<TR>
-			<TD colspan="2" align="left" class="errorCell">
-					<B><U><loc:message name="errorsSubpartEdit"/></U></B><BR>
-				<BLOCKQUOTE>
-				<UL>
-				    <html:messages id="error">
-				      <LI>
-						${error}
-				      </LI>
-				    </html:messages>
-			    </UL>
-			    </BLOCKQUOTE>
-			</TD>
-		</TR>
-		</logic:messagesPresent>
-
-		<logic:notEmpty name="<%=frmName%>" property="managingDeptName">
+		<s:if test="form.managingDeptName != null">
 			<TR>
 				<TD><loc:message name="filterManager"/></TD>
-				<TD>
-					<bean:write name="<%=frmName%>" property="managingDeptName" />
-				</TD>
+				<TD><s:property value="form.managingDeptName"/></TD>
 			</TR>
-		</logic:notEmpty>
-		<logic:notEmpty name="<%=frmName%>" property="parentSubpartId">
+		</s:if>
+		<s:if test="form.parentSubpartLabel != null">
 			<TR>
 				<TD><loc:message name="propertyParentSchedulingSubpart"/></TD>
-				<TD>
-					<bean:write name="<%=frmName%>" property="parentSubpartLabel" />
-				</TD>
+				<TD><s:property value="form.parentSubpartLabel"/></TD>
 			</TR>
-		</logic:notEmpty>
+		</s:if>
 		<TR>
 			<TD><loc:message name="filterInstructionalType"/></TD>
-			<TD>				 
-				<html:select style="width:200px;" property="instructionalType" onchange="javascript: itypeChanged(this);">
-					<html:options collection="<%=ItypeDesc.ITYPE_ATTR_NAME%>" property="itype" labelProperty="desc" />
-					<logic:equal name="<%=frmName%>" property="itypeBasic" value="true">
-						<html:option value="more" style="background-color:rgb(223,231,242);">
-							<loc:message name="selectMoreOptions"/></html:option>
-					</logic:equal>
-					<logic:equal name="<%=frmName%>" property="itypeBasic" value="false">
-						<html:option value="less" style="background-color:rgb(223,231,242);">
-							<loc:message name="selectLessOptions"/></html:option>
-					</logic:equal>
-				</html:select>
+			<TD>
+				<s:select name="form.instructionalType"
+					list="#request.itypes" listKey="value" listValue="label"
+					onchange="itypeChanged(this);" style="min-width:200px;"
+					/>				 
 			</TD>
 		</TR>
 		<TR>
 			<TD><loc:message name="propertyDatePattern"/></TD>
 			<TD>
-				<html:hidden property="op2" value="" styleId="op2"/>
-				<html:hidden property="datePatternEditable"/>
-				<logic:equal name="<%=frmName%>" property="datePatternEditable" value="true">
-					<html:select style="width:200px;" property="datePattern" onchange='<%= "datePatternChanged();"%>'>
-						<html:options collection="<%=org.unitime.timetable.model.DatePattern.DATE_PATTERN_LIST_ATTR%>" property="id" labelProperty="value" />
-					</html:select>
-					<img style="cursor: pointer;" src="images/calendar.png" border="0" onclick="showGwtDialog('Preview of '+SchedulingSubpartEditForm.datePattern.options[SchedulingSubpartEditForm.datePattern.selectedIndex].text, 'user/dispDatePattern.jsp?id='+SchedulingSubpartEditForm.datePattern.value+'&subpart='+SchedulingSubpartEditForm.schedulingSubpartId.value,'840','520');">
-				</logic:equal>
-				<logic:notEqual name="<%=frmName%>" property="datePatternEditable" value="true">
-					<html:hidden property="datePattern"/>
-					<logic:iterate scope="request" name="<%=org.unitime.timetable.model.DatePattern.DATE_PATTERN_LIST_ATTR%>" id="dp" type="org.unitime.timetable.util.IdValue">
-					<logic:equal name="<%=frmName%>" property="datePattern" value="<%=dp.getId().toString()%>">
-						<bean:write name="dp" property="value" />
-						<img style="cursor: pointer;" src="images/calendar.png" border="0" onclick="showGwtDialog('Preview of <%=dp.getValue()%>', 'user/dispDatePattern.jsp?id=<%=dp.getId()%>&subpart='+SchedulingSubpartEditForm.schedulingSubpartId.value,'840','520');">
-					</logic:equal>
-					</logic:iterate>
-				</logic:notEqual>
+				<s:hidden name="op2" value="" id="op2"/>
+				<s:hidden name="form.datePatternEditable"/>
+				<s:if test="form.datePatternEditable == true">
+					<s:select name="form.datePattern" list="#request.datePatternList" listKey="id" listValue="value"
+						style="min-width:200px;" onchange="datePatternChanged();"/>
+					<img style="cursor: pointer;" src="images/calendar.png" border="0" onclick="showGwtDialog('Preview of '+schedulingSubpartEdit_form_datePattern.options[schedulingSubpartEdit_form_datePattern.selectedIndex].text, 'user/dispDatePattern.jsp?id='+schedulingSubpartEdit_form_datePattern.value+'&subpart='+schedulingSubpartEdit_form_schedulingSubpartId.value,'840','520');">
+				</s:if>
+				<s:else>
+					<s:hidden name="form.datePattern"/>
+					<s:iterator value="#request.datePatternList" var="dp">
+						<s:if test="#dp.id == form.datePattern">
+							<s:property value="#dp.value"/>
+							<img style="cursor: pointer;" src="images/calendar.png" border="0" onclick="showGwtDialog('Preview of ${dp.value}', 'user/dispDatePattern.jsp?id=${dp.id}&subpart=${form.schedulingSubpartId}','840','520');">
+						</s:if>
+					</s:iterator>
+				</s:else>
 			</TD>
 		</TR>
 		<TR>
 			<TD><loc:message name="propertyAutomaticSpreadInTime"/></TD>
 			<TD>
-				<html:checkbox property="autoSpreadInTime"/> <i><loc:message name="descriptionAutomaticSpreadInTime"/></i>
+				<s:checkbox name="form.autoSpreadInTime"/> <i><loc:message name="descriptionAutomaticSpreadInTime"/></i>
 			</TD>
 		</TR>
 		<TR>
 			<TD><loc:message name="propertyStudentOverlaps"/></TD>
 			<TD>
-				<html:checkbox property="studentAllowOverlap"/> <i><loc:message name="descriptionStudentOverlaps"/></i>
+				<s:checkbox name="form.studentAllowOverlap"/> <i><loc:message name="descriptionStudentOverlaps"/></i>
 			</TD>
 		</TR>
-		<logic:equal name="<%=frmName%>" property="sameItypeAsParent" value="false">
-		<logic:equal name="<%=frmName%>" property="subpartCreditEditAllowed" value="true">
+		<s:if test="form.sameItypeAsParent == false">
+		<s:if test="form.subpartCreditEditAllowed == true">
 		<TR>
 			<TD><loc:message name="propertySubpartCredit"/></TD>
 			<TD>
-				<html:select style="width:200px;" property="creditFormat" onchange="<%= \"if (this.value == '\" + FixedCreditUnitConfig.CREDIT_FORMAT + \"') { document.forms[0].creditType.disabled = false; document.forms[0].creditUnitType.disabled = false; document.forms[0].units.disabled = false; document.forms[0].maxUnits.disabled = true; document.forms[0].fractionalIncrementsAllowed.disabled = true } else if (this.value == '\" + ArrangeCreditUnitConfig.CREDIT_FORMAT + \"'){document.forms[0].creditType.disabled = false; document.forms[0].creditUnitType.disabled = false; document.forms[0].units.disabled = true; document.forms[0].maxUnits.disabled = true; document.forms[0].fractionalIncrementsAllowed.disabled = true} else if (this.value == '\" + VariableFixedCreditUnitConfig.CREDIT_FORMAT + \"') {document.forms[0].creditType.disabled = false; document.forms[0].creditUnitType.disabled = false; document.forms[0].units.disabled = false; document.forms[0].maxUnits.disabled = false; document.forms[0].fractionalIncrementsAllowed.disabled = true} else if (this.value == '\" + VariableRangeCreditUnitConfig.CREDIT_FORMAT + \"') {document.forms[0].creditType.disabled = false; document.forms[0].creditUnitType.disabled = false; document.forms[0].units.disabled = false; document.forms[0].maxUnits.disabled = false; document.forms[0].fractionalIncrementsAllowed.disabled = false} else {document.forms[0].creditType.disabled = true; document.forms[0].creditUnitType.disabled = true; document.forms[0].units.disabled = true; document.forms[0].maxUnits.disabled = true; document.forms[0].fractionalIncrementsAllowed.disabled = true}\"%>">
-					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
-					<html:options collection="<%=org.unitime.timetable.model.CourseCreditFormat.COURSE_CREDIT_FORMAT_ATTR_NAME%>" property="reference" labelProperty="label"/>
-				</html:select>
+				<s:select name="form.creditFormat"
+					list="#request.courseCreditFormatList" listKey="reference" listValue="label"
+					style="width:200px;" onchange="creditFormatChanged(this);"
+					headerKey="" headerValue="%{#const.select()}"/>
 			</TD>
 		</TR>
 		<TR>
@@ -221,74 +178,77 @@
 				<tr>
 				<td nowrap><loc:message name="propertyCreditType"/></td>
 				<td>
-				<html:select style="width:200px;" property="creditType" disabled="<%=(frm.getCreditFormat() != null && frm.getCreditFormat().length() > 0)?false:true%>">
-					<html:options collection="<%=CourseCreditType.COURSE_CREDIT_TYPE_ATTR_NAME%>" property="uniqueId" labelProperty="label"/>
-				</html:select>
+					<s:select name="form.creditType"
+						list="#request.courseCreditTypeList" listKey="uniqueId" listValue="label"
+						style="width:200px;" disabled="%{form.creditFormat == null || form.creditFormat.isEmpty()}"/>
 				</td>
 				</tr>
 				<tr>
 				<td nowrap><loc:message name="propertyCreditUnitType"/></td>
 				<td>
-				<html:select style="width:200px;" property="creditUnitType" disabled="<%=(frm.getCreditFormat() != null && frm.getCreditFormat().length() > 0)?false:true%>">
-					<html:options collection="<%=CourseCreditUnitType.COURSE_CREDIT_UNIT_TYPE_ATTR_NAME%>" property="uniqueId" labelProperty="label" />
-				</html:select>
+				<s:select name="form.creditUnitType"
+					list="#request.courseCreditUnitTypeList" listKey="uniqueId" listValue="label" 
+					style="width:200px;" disabled="%{form.creditFormat == null || form.creditFormat.isEmpty()}"/>
 				</td>
 				</tr>
 				<tr>
 				<td nowrap><loc:message name="propertyUnits"/></td>
 				<td>
-				<html:text property="units" maxlength="4" size="4" disabled="<%=(frm.getCreditFormat() != null && frm.getCreditFormat().length() > 0 && !frm.getCreditFormat().equals(ArrangeCreditUnitConfig.CREDIT_FORMAT))?false:true%>"/>
+				<s:textfield name="form.units" maxlength="4" size="4"
+					disabled="%{form.creditFormat == null || form.creditFormat.isEmpty() || form.creditFormat == 'arrangeHours'}"/>
 				</td>
 				</tr>
 				<tr>
 				<td nowrap><loc:message name="propertyMaxUnits"/></td>
 				<td>
-				<html:text property="maxUnits" maxlength="4" size="4" disabled="<%=(frm.getCreditFormat() != null && (frm.getCreditFormat().equals(VariableFixedCreditUnitConfig.CREDIT_FORMAT) || frm.getCreditFormat().equals(VariableRangeCreditUnitConfig.CREDIT_FORMAT)))?false:true%>"/>
+				<s:textfield name="form.maxUnits" maxlength="4" size="4"
+					disabled="%{form.creditFormat != 'variableRange'}"/>
 				</td>
 				</tr>
 				<tr>
 				<td nowrap><loc:message name="propertyFractionalIncrementsAllowed"/></td>
 				<td>
-				<html:checkbox property="fractionalIncrementsAllowed" disabled="<%=(frm.getCreditFormat() != null && frm.getCreditFormat().equals(VariableRangeCreditUnitConfig.CREDIT_FORMAT))?false:true%>"/>
+				<s:checkbox name="form.fractionalIncrementsAllowed"
+					disabled="%{form.creditFormat != 'variableRange'}"/>
 				</td>
 				</tr>
 				</table>
 			</TD>
 		</TR>
-		</logic:equal>
-		<logic:equal name="<%=frmName%>" property="subpartCreditEditAllowed" value="false">
-			<logic:notEmpty name="<%=frmName%>" property="creditText">
+		</s:if>
+		<s:if test="form.subpartCreditEditAllowed == false">
+			<s:if test="form.creditText != null && !form.creditText.isEmpty()">
 				<TR>
 					<TD><loc:message name="propertyCredit"/></TD>
-					<TD><bean:write name="<%=frmName%>" property="creditText" /></TD>
+					<TD><s:property value="form.creditText"/></TD>
 				</TR>
-			</logic:notEmpty>
-			<html:hidden property="creditFormat"/>
-			<html:hidden property="creditType"/>
-			<html:hidden property="creditUnitType"/>
-			<html:hidden property="units"/>
-			<html:hidden property="maxUnits"/>				
-			<html:hidden property="fractionalIncrementsAllowed"/>				
-		</logic:equal>
-		</logic:equal>
+			</s:if>
+			<s:hidden name="form.creditFormat"/>
+			<s:hidden name="form.creditType"/>
+			<s:hidden name="form.creditUnitType"/>
+			<s:hidden name="form.units"/>
+			<s:hidden name="form.maxUnits"/>				
+			<s:hidden name="form.fractionalIncrementsAllowed"/>				
+		</s:if>
+		</s:if>
 <!-- Preferences -->
-		<logic:equal value="true" name="<%=frmName%>" property="unlimitedEnroll">
-			<jsp:include page="preferencesEdit.jspf">
-				<jsp:param name="frmName" value="<%=frmName%>"/>
-				<jsp:param name="distPref" value="false"/>
-				<jsp:param name="periodPref" value="false"/>
-				<jsp:param name="bldgPref" value="false"/>
-				<jsp:param name="roomFeaturePref" value="false"/>
-				<jsp:param name="roomGroupPref" value="false"/>
-			</jsp:include>
-		</logic:equal>
-		<logic:notEqual value="true" name="<%=frmName%>" property="unlimitedEnroll">
-			<jsp:include page="preferencesEdit.jspf">
-				<jsp:param name="frmName" value="<%=frmName%>"/>
-				<jsp:param name="distPref" value="false"/>
-				<jsp:param name="periodPref" value="false"/>
-			</jsp:include>
-		</logic:notEqual>
+		<s:if test="form.unlimitedEnroll == true">
+			<s:include value="preferencesEdit2.jspf">
+				<s:param name="frmName" value="'schedulingSubpartEdit'"/>
+				<s:param name="distPref" value="false"/>
+				<s:param name="periodPref" value="false"/>
+				<s:param name="bldgPref" value="false"/>
+				<s:param name="roomFeaturePref" value="false"/>
+				<s:param name="roomGroupPref" value="false"/>
+			</s:include>
+		</s:if>
+		<s:if test="form.unlimitedEnroll != true">
+			<s:include value="preferencesEdit2.jspf">
+				<s:param name="frmName" value="'schedulingSubpartEdit'"/>
+				<s:param name="distPref" value="false"/>
+				<s:param name="periodPref" value="false"/>
+			</s:include>
+		</s:if>
 
 <!-- buttons -->
 		<TR>
@@ -298,62 +258,34 @@
 		</TR>
 		<TR>
 			<TD colspan="2" align="right">
-					<html:submit property="op" 
-						styleClass="btn" 
-						accesskey='<%=MSG.accessUpdatePreferences()%>' 
-						title='<%=MSG.titleUpdatePreferences(MSG.accessUpdatePreferences()) %>' >
-						<loc:message name="actionUpdatePreferences"/>
-					</html:submit>
-					<sec:authorize access="hasPermission(#SchedulingSubpartEditForm.schedulingSubpartId, 'SchedulingSubpart', 'SchedulingSubpartEditClearPreferences')"> 
-					&nbsp;
-					<html:submit property="op" 
-						styleClass="btn" 
-						accesskey='<%=MSG.accessClearSubpartPreferences() %>' 
-						title='<%=MSG.titleClearSubpartPreferences(MSG.accessClearSubpartPreferences()) %>'>
-						<loc:message name="actionClearSubpartPreferences" />
-					</html:submit> 
+					<s:submit accesskey='%{#msg.accessUpdatePreferences()}' name='op' value='%{#msg.actionUpdatePreferences()}'
+						title='%{#msg.titleUpdatePreferences(#msg.accessUpdatePreferences())}'/>
+					<sec:authorize access="hasPermission(#form.schedulingSubpartId, 'SchedulingSubpart', 'SchedulingSubpartEditClearPreferences')"> 
+						<s:submit accesskey='%{#msg.accessClearSubpartPreferences()}' name='op' value='%{#msg.actionClearSubpartPreferences()}'
+							title='%{#msg.titleClearSubpartPreferences(#msg.accessClearSubpartPreferences())}'/>
 					</sec:authorize>
-					<logic:notEmpty name="<%=frmName%>" property="previousId">
-						&nbsp;
-						<html:submit property="op" 
-							styleClass="btn" 
-							accesskey="<%=MSG.accessPreviousSubpart() %>" 
-							title="<%=MSG.titlePreviousSubpartWithUpdate(MSG.accessPreviousSubpart()) %>">
-							<loc:message name="actionPreviousSubpart" />
-						</html:submit> 
-					</logic:notEmpty>
-					<logic:notEmpty name="<%=frmName%>" property="nextId">
-						&nbsp;
-						<html:submit property="op" 
-							styleClass="btn" 
-							accesskey="<%=MSG.accessNextSubpart() %>" 
-							title="<%=MSG.titleNextSubpartWithUpdate(MSG.accessNextSubpart()) %>">
-							<loc:message name="actionNextSubpart" />
-						</html:submit>
-					</logic:notEmpty>
-					&nbsp;
-					<html:submit property="op" 
-						styleClass="btn" 
-						accesskey="<%=MSG.accessBackToDetail()%>" 
-						title="<%=MSG.titleBackToDetail(MSG.accessBackToDetail()) %>">
-						<loc:message name="actionBackToDetail"/>
-					</html:submit>
+					<s:if test="form.previousId != null">
+						<s:submit accesskey='%{#msg.accessPreviousSubpart()}' name='op' value='%{#msg.actionPreviousSubpart()}'
+							title='%{#msg.titlePreviousSubpartWithUpdate(#msg.accessPreviousSubpart())}'/>
+					</s:if>
+					<s:if test="form.nextId != null">
+						<s:submit accesskey='%{#msg.accessNextSubpart()}' name='op' value='%{#msg.actionNextSubpart()}'
+							title='%{#msg.titleNextSubpartWithUpdate(#msg.accessNextSubpart())}'/>
+					</s:if>
+					<s:submit accesskey='%{#msg.accessBackToDetail()}' name='op' value='%{#msg.actionBackToDetail()}'
+							title='%{#msg.titleBackToDetail(#msg.accessBackToDetail())}'/>
 			</TD>
 		</TR>
 
 	</TABLE>
-</html:form>
+	<s:if test="#request.hash != null">
+		<SCRIPT type="text/javascript">
+			location.hash = '<%=request.getAttribute("hash")%>';
+		</SCRIPT>
+	</s:if>
+</s:form>
 
-<SCRIPT type="text/javascript" language="javascript">
-	function jumpToAnchor() {
-    <% if (request.getAttribute(SchedulingSubpartEditAction.HASH_ATTR) != null) { %>
-  		location.hash = "<%=request.getAttribute(SchedulingSubpartEditAction.HASH_ATTR)%>";
-	<% } %>
-	    self.focus();
-  	}
-</SCRIPT>
-
-<SCRIPT type="text/javascript" language="javascript">
+<SCRIPT type="text/javascript">
 	function itypeChanged(itypeObj) {
 		var options = itypeObj.options;
 		var currentId = itypeObj.options[itypeObj.selectedIndex].value;
@@ -394,11 +326,10 @@
 	
 		// Request
 		var vars = "basic="+basic;
-		req.open( "POST", "itypesAjax.do", true );
+		req.open( "POST", "ajax/itypesAjax.action", true );
 		req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-		// req.setRequestHeader("Content-Length", vars.length);
-		//setTimeout("try { req.send('" + vars + "') } catch(e) {}", 1000);
 		req.send(vars);
 	}
 </SCRIPT>
+</loc:bundle>
 </loc:bundle>

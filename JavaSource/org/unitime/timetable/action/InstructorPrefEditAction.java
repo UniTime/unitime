@@ -69,14 +69,11 @@ public class InstructorPrefEditAction extends PreferencesAction2<InstructorEditF
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	protected String instructorId = null;
 	protected String op2 = null;
-	protected String reloadCause = null;
 
 	public String getInstructorId() { return instructorId; }
 	public void setInstructorId(String instructorId) { this.instructorId = instructorId; }
 	public String getOp2() { return op2; }
 	public void setOp2(String op2) { this.op2 = op2; }
-	public String getReloadCause() { return reloadCause; }
-	public void setReloadCause(String reloadCause) { this.reloadCause = reloadCause; }
 
 	public String execute() throws Exception {
 		if (form == null) form = new InstructorEditForm();
@@ -92,7 +89,7 @@ public class InstructorPrefEditAction extends PreferencesAction2<InstructorEditF
         if (op2 != null && !op2.isEmpty()) op = op2;
         
         // Determine if initial load
-        if (op == null || op.trim().isEmpty() || ("Reload".equals(op) && (reloadCause == null || reloadCause.trim().isEmpty()))) {
+        if (op == null || op.trim().isEmpty()) {
         	op = "init";
         }
         

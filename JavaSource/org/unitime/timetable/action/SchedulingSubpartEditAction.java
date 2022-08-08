@@ -19,20 +19,14 @@
 */
 package org.unitime.timetable.action;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessages;
-import org.apache.struts.action.ActionRedirect;
-import org.apache.struts.util.MessageResources;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
@@ -57,114 +51,97 @@ import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.ItypeDescDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 
 
 /**
- * MyEclipse Struts
- * Creation date: 07-26-2005
- *
- * XDoclet definition:
- * @struts:action path="/schedulingSubpartEdit" name="schedulingSubpartEditForm" input="/user/schedulingSubpartEdit.jsp" scope="request"
- *
  * @author Tomas Muller, Zuzana Mullerova, Stephanie Schluttenhofer
  */
-@Service("/schedulingSubpartEdit")
-public class SchedulingSubpartEditAction extends PreferencesAction {
+@Action(value = "schedulingSubpartEdit", results = {
+		@Result(name = "editSchedulingSubpart", type = "tiles", location = "schedulingSubpartEdit.tiles"),
+		@Result(name = "instructionalOfferingSearch", type = "redirect", location = "/instructionalOfferingSearch.do"),
+		@Result(name = "addDistributionPrefs", type = "redirect", location = "/distributionPrefs.do", 
+			params = { "subpartId", "${form.schedulingSubpartId}", "op", "${op}"}
+		),
+		@Result(name = "displaySubpartDetail", type = "redirect", location = "/schedulingSubpartDetail.action",
+			params = { "ssuid", "${form.schedulingSubpartId}"}
+		)
+	})
+@TilesDefinition(name = "schedulingSubpartEdit.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Edit Scheduling Subpart"),
+		@TilesPutAttribute(name = "body", value = "/user/schedulingSubpartEdit.jsp"),
+		@TilesPutAttribute(name = "showNavigation", value = "true")
+	})
+public class SchedulingSubpartEditAction extends PreferencesAction2<SchedulingSubpartEditForm> {
+	private static final long serialVersionUID = -271792073108532899L;
 
-	@Autowired SessionContext sessionContext;
+	protected String subpartId = null;
+	protected String op2 = null;
+
+	public String getSsuid() { return subpartId; }
+	public void setSsuid(String subpartId) { this.subpartId = subpartId; }
+	public String getOp2() { return op2; }
+	public void setOp2(String op2) { this.op2 = op2; }	
 	
-    /**
-     * Method execute
-     * @param mapping
-     * @param form
-     * @param request
-     * @param response
-     * @return ActionForward
-     */
-    public ActionForward execute(
-        ActionMapping mapping,
-        ActionForm form,
-        HttpServletRequest request,
-        HttpServletResponse response) throws Exception {
+    public String execute() throws Exception {
+    	if (form == null) {
+    		form = new SchedulingSubpartEditForm();
+    		form.reset();
+    	}
 
-    	try {
+		super.execute();
 
-        // Set common lookup tables
-        super.execute(mapping, form, request, response);
+		if (subpartId == null && request.getAttribute("ssuid") != null)
+			subpartId = (String)request.getAttribute("ssuid");
 
-        SchedulingSubpartEditForm frm = (SchedulingSubpartEditForm) form;
-        MessageResources rsc = getResources(request);
-        ActionMessages errors = new ActionMessages();
-
-        // Read parameters
-        String subpartId = request.getParameter("ssuid")==null
-        					? request.getAttribute("ssuid") !=null
-        					        ? request.getAttribute("ssuid").toString()
-        					        : null
-        					: request.getParameter("ssuid");
-
-        String reloadCause = request.getParameter("reloadCause");
-        String op = frm.getOp();
-        if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0)
-        	op = request.getParameter("op2");
+		if (op == null) op = form.getOp();
+        if (op2 != null && !op2.isEmpty()) op = op2;
 
         // Read subpart id from form
-        if(		//op.equals(rsc.getMessage("button.reload"))
-        		//	|| 
-        	op.equals(MSG.actionAddTimePreference())
-                || op.equals(MSG.actionAddRoomPreference())
-                || op.equals(MSG.actionAddBuildingPreference())
-                || op.equals(MSG.actionAddRoomFeaturePreference())
-                || op.equals(MSG.actionAddDistributionPreference())
-                || op.equals(MSG.actionAddRoomGroupPreference())
-                || op.equals(MSG.actionUpdatePreferences())
-                || op.equals(MSG.actionAddDatePatternPreference())
-                || op.equals(MSG.actionAddAttributePreference())
-                || op.equals(MSG.actionAddInstructorPreference())
-               // || op.equals(rsc.getMessage("button.cancel"))
-                || op.equals(MSG.actionClearSubpartPreferences())
-                || op.equals(MSG.actionRemoveBuildingPreference())
-        		|| op.equals(MSG.actionRemoveDistributionPreference())
-        		|| op.equals(MSG.actionRemoveRoomFeaturePreference())
-        		|| op.equals(MSG.actionRemoveRoomGroupPreference())
-        		|| op.equals(MSG.actionRemoveRoomPreference())
-        		|| op.equals(MSG.actionRemoveTimePattern())
-        		|| op.equals(MSG.actionRemoveAttributePreference())
-        		|| op.equals(MSG.actionRemoveInstructorPreference())
-                || op.equals(MSG.actionBackToDetail())
-               // || op.equals(rsc.getMessage("button.addClass_"))
-                || op.equals(MSG.actionNextSubpart())
-                || op.equals(MSG.actionPreviousSubpart())
-                 || op.equals("updateDatePattern")) {
-            subpartId = frm.getSchedulingSubpartId();
+        if (MSG.actionAddTimePreference().equals(op)
+                || MSG.actionAddRoomPreference().equals(op)
+                || MSG.actionAddBuildingPreference().equals(op)
+                || MSG.actionAddRoomFeaturePreference().equals(op)
+                || MSG.actionAddDistributionPreference().equals(op)
+                || MSG.actionAddRoomGroupPreference().equals(op)
+                || MSG.actionUpdatePreferences().equals(op)
+                || MSG.actionAddDatePatternPreference().equals(op)
+                || MSG.actionAddAttributePreference().equals(op)
+                || MSG.actionAddInstructorPreference().equals(op)
+                || MSG.actionClearSubpartPreferences().equals(op)
+                || MSG.actionRemoveBuildingPreference().equals(op)
+        		|| MSG.actionRemoveDistributionPreference().equals(op)
+        		|| MSG.actionRemoveRoomFeaturePreference().equals(op)
+        		|| MSG.actionRemoveRoomGroupPreference().equals(op)
+        		|| MSG.actionRemoveRoomPreference().equals(op)
+        		|| MSG.actionRemoveTimePattern().equals(op)
+        		|| MSG.actionRemoveAttributePreference().equals(op)
+        		|| MSG.actionRemoveInstructorPreference().equals(op)
+                || MSG.actionBackToDetail().equals(op)
+                || MSG.actionNextSubpart().equals(op)
+                || MSG.actionPreviousSubpart().equals(op)
+                || "updateDatePattern".equals(op)) {
+            subpartId = form.getSchedulingSubpartId();
         }
 
         // Determine if initial load
-        if(op==null || op.trim().length()==0
-                || ( op.equals(rsc.getMessage("button.reload"))
-                	 && (reloadCause==null || reloadCause.trim().length()==0) )) {
+        if (op==null || op.trim().isEmpty()) {
             op = "init";
         }
 
-        // Check op exists
-        if(op==null || op.trim()=="")
-            throw new Exception (MSG.errorNullOperationNotSupported());
-        
         sessionContext.checkPermission(subpartId, "SchedulingSubpart", Right.SchedulingSubpartEdit);
 
         boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
 
         Debug.debug("op: " + op);
         Debug.debug("subpart: " + subpartId);
-        Debug.debug("reload cause: " + reloadCause);
 
         // Check subpart exists
-        if(subpartId==null || subpartId.trim()=="")
+        if (subpartId==null || subpartId.trim().isEmpty())
             throw new Exception (MSG.errorSubpartInfoNotSupplied());
 
         // If subpart id is not null - load subpart info
@@ -172,16 +149,12 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         SchedulingSubpart ss = sdao.get(Long.valueOf(subpartId));
 
         // Cancel - Go back to Instructional Offering Screen
-        if(op.equals(MSG.actionBackToDetail())
-                && subpartId!=null && subpartId.trim()!="") {
-
-            ActionRedirect redirect = new ActionRedirect(mapping.findForward("displaySubpartDetail"));
-            redirect.addParameter("ssuid", subpartId);
-            return redirect;
+        if (MSG.actionBackToDetail().equals(op)) {
+            return "displaySubpartDetail";
         }
 
         // Clear all preferences
-        if(op.equals(MSG.actionClearSubpartPreferences())) {
+        if (MSG.actionClearSubpartPreferences().equals(op)) {
 
         	sessionContext.checkPermission(ss, Right.SchedulingSubpartEditClearPreferences);
 
@@ -199,109 +172,103 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
                     ss.getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getSubjectArea(),
                     ss.getManagingDept());
 
-            ActionRedirect redirect = new ActionRedirect(mapping.findForward("displaySubpartDetail"));
-            redirect.addParameter("ssuid", subpartId);
-            return redirect;
+            return "displaySubpartDetail";
         }
 
         // Reset form for initial load
-        if(op.equals("init")) {
-            frm.reset(mapping, request);
-            frm.setAutoSpreadInTime(ss.isAutoSpreadInTime());
-            frm.setStudentAllowOverlap(ss.isStudentAllowOverlap());
+        if ("init".equals(op)) {
+            form.reset();
+            form.setAutoSpreadInTime(ss.isAutoSpreadInTime());
+            form.setStudentAllowOverlap(ss.isStudentAllowOverlap());
         }
 
         // Load form attributes that are constant
-        doLoad(request, frm, ss, subpartId);
+        doLoad(ss, subpartId);
 
-        if (op.equals("init")) {
-        	frm.setDatePattern(ss.getDatePattern()==null?Long.valueOf(-1):ss.getDatePattern().getUniqueId());
+        if ("init".equals(op)) {
+        	form.setDatePattern(ss.getDatePattern()==null?Long.valueOf(-1):ss.getDatePattern().getUniqueId());
         }
 
         // Update Preferences for Subpart
-        if(op.equals(MSG.actionUpdatePreferences()) || op.equals(MSG.actionNextSubpart()) || op.equals(MSG.actionPreviousSubpart())) {
+        if (MSG.actionUpdatePreferences().equals(op) || MSG.actionNextSubpart().equals(op) || MSG.actionPreviousSubpart().equals(op)) {
             // Validate input prefs
-            errors = frm.validate(mapping, request);
+            form.validate(this);
 
             // No errors - Add to subpart and update
-            if(errors.size()==0) {
-                this.doUpdate(request, frm, ss, sdao, timeVertical);
+            if (!hasFieldErrors()) {
+                this.doUpdate(ss, sdao, timeVertical);
 
-	            if (op.equals(MSG.actionNextSubpart())) {
-	            	response.sendRedirect(response.encodeURL("schedulingSubpartEdit.do?ssuid="+frm.getNextId()));
+	            if (MSG.actionNextSubpart().equals(op)) {
+	            	response.sendRedirect(response.encodeURL("schedulingSubpartEdit.action?ssuid="+form.getNextId()));
 	            	return null;
 	            }
 
-	            if (op.equals(MSG.actionPreviousSubpart())) {
-	            	response.sendRedirect(response.encodeURL("schedulingSubpartEdit.do?ssuid="+frm.getPreviousId()));
+	            if (MSG.actionPreviousSubpart().equals(op)) {
+	            	response.sendRedirect(response.encodeURL("schedulingSubpartEdit.action?ssuid="+form.getPreviousId()));
 	            	return null;
 	            }
 
-	            ActionRedirect redirect = new ActionRedirect(mapping.findForward("displaySubpartDetail"));
-	            redirect.addParameter("ssuid", subpartId);
-	            return redirect;
-            }
-            else {
-                saveErrors(request, errors);
+	            return "displaySubpartDetail";
             }
         }
 
         // Initialize Preferences for initial load
 		Set timePatterns = null;
-		frm.setAvailableTimePatterns(TimePattern.findApplicable(
+		form.setAvailableTimePatterns(TimePattern.findApplicable(
         		sessionContext.getUser(),
         		ss.getMinutesPerWk(),
-        		 (frm.getDatePattern() < 0 ? (ss.canInheritParentPreferences() ? ss.getParentSubpart().effectiveDatePattern() : ss.getSession().getDefaultDatePatternNotNull()) : DatePatternDAO.getInstance().get(frm.getDatePattern())),
+        		 (form.getDatePattern() < 0 ? (ss.canInheritParentPreferences() ? ss.getParentSubpart().effectiveDatePattern() : ss.getSession().getDefaultDatePatternNotNull()) : DatePatternDAO.getInstance().get(form.getDatePattern())),
         		ss.getInstrOfferingConfig().getDurationModel(),
         		false,
         		ss.getManagingDept()));
-        if(op.equals("init")) {
-        	initPrefs(frm, ss, null, true);
+
+		if ("init".equals(op)) {
+        	initPrefs(ss, null, true);
         	timePatterns = ss.getTimePatterns();
         	
         	DatePattern selectedDatePattern = ss.effectiveDatePattern();
 			if (selectedDatePattern != null) {
 				for (DatePattern dp: selectedDatePattern.findChildren()) {					
-					if (!frm.getDatePatternPrefs().contains(
+					if (!form.getDatePatternPrefs().contains(
 							dp.getUniqueId().toString())) {
-						frm.addToDatePatternPrefs(dp.getUniqueId()
+						form.addToDatePatternPrefs(dp.getUniqueId()
 								.toString(), PreferenceLevel.PREF_LEVEL_NEUTRAL);
 					}
 				}
 			}
         }
         
-        if (op.equals("updateDatePattern")) {        	
-			initPrefs(frm, ss, null, true);
+        if ("updateDatePattern".equals(op)) {        	
+			initPrefs(ss, null, true);
 			timePatterns = ss.getTimePatterns();
-			frm.getDatePatternPrefs().clear();
-        	frm.getDatePatternPrefLevels().clear();
-			DatePattern selectedDatePattern = (frm.getDatePattern() < 0 ? (ss.canInheritParentPreferences() ? ss.getParentSubpart().effectiveDatePattern() : ss.getSession().getDefaultDatePatternNotNull()) : DatePatternDAO.getInstance().get(frm.getDatePattern()));
+			form.getDatePatternPrefs().clear();
+        	form.getDatePatternPrefLevels().clear();
+			DatePattern selectedDatePattern = (form.getDatePattern() < 0 ? (ss.canInheritParentPreferences() ? ss.getParentSubpart().effectiveDatePattern() : ss.getSession().getDefaultDatePatternNotNull()) : DatePatternDAO.getInstance().get(form.getDatePattern()));
 			if (selectedDatePattern != null) {
 				for (DatePattern dp: selectedDatePattern.findChildren()) {
 					boolean found = false;
 					for (DatePatternPref dpp: (Set<DatePatternPref>)ss.getPreferences(DatePatternPref.class)) {
 						if (dp.equals(dpp.getDatePattern())) {
-							frm.addToDatePatternPrefs(dp.getUniqueId().toString(), dpp.getPrefLevel().getUniqueId().toString());
+							form.addToDatePatternPrefs(dp.getUniqueId().toString(), dpp.getPrefLevel().getUniqueId().toString());
 							found = true;
 						}
 					}
 					if (!found)
-						frm.addToDatePatternPrefs(dp.getUniqueId().toString(), PreferenceLevel.PREF_LEVEL_NEUTRAL);
+						form.addToDatePatternPrefs(dp.getUniqueId().toString(), PreferenceLevel.PREF_LEVEL_NEUTRAL);
 				}
 			}
 		}
         
 		// Process Preferences Action
-		processPrefAction(request, frm, errors);
+		processPrefAction();
 
         // Generate Time Pattern Grids
-		super.generateTimePatternGrids(request, frm, ss,
+		super.generateTimePatternGrids(ss,
 				ss.getMinutesPerWk(),
         		ss.getInstrOfferingConfig().getDurationModel(),
-        		(frm.getDatePattern() < 0 ? (ss.canInheritParentPreferences() ? ss.getParentSubpart().effectiveDatePattern() : ss.getSession().getDefaultDatePatternNotNull()) : DatePatternDAO.getInstance().get(frm.getDatePattern())),
+        		(form.getDatePattern() < 0 ? (ss.canInheritParentPreferences() ? ss.getParentSubpart().effectiveDatePattern() : ss.getSession().getDefaultDatePatternNotNull()) : DatePatternDAO.getInstance().get(form.getDatePattern())),
 				timePatterns, op, timeVertical, true, null);
-		setupChildren(frm, request, ss); // Date patterns allowed in the DDL for Date pattern preferences
+		setupChildren(ss); // Date patterns allowed in the DDL for Date pattern preferences
 		LookupTables.setupDatePatterns(request, sessionContext.getUser(), MSG.dropDefaultDatePattern(), (ss.canInheritParentPreferences() ? ss.getParentSubpart().effectiveDatePattern() : ss.getSession().getDefaultDatePatternNotNull()), ss.getManagingDept(), ss.effectiveDatePattern());
 
         LookupTables.setupRooms(request, ss);		 // Room Prefs
@@ -314,143 +281,128 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         LookupTables.setupCourseCreditUnitTypes(request); //Course Credit Unit Types
         LookupTables.setupInstructors(request, sessionContext, ss.getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getSubjectArea().getDepartment().getUniqueId());
 
-        frm.setAllowHardPrefs(sessionContext.hasPermission(ss, Right.CanUseHardRoomPrefs));
+        form.setAllowHardPrefs(sessionContext.hasPermission(ss, Right.CanUseHardRoomPrefs));
 
         BackTracker.markForBack(request,
-        		"schedulingSubpartDetail.action?ssuid="+frm.getSchedulingSubpartId(),
+        		"schedulingSubpartDetail.action?ssuid="+form.getSchedulingSubpartId(),
         		MSG.backSubpart(ss.getSchedulingSubpartLabel()),
         		true, false);
 
-        return mapping.findForward("editSchedulingSubpart");
-
-    	} catch (Exception e) {
-    		Debug.error(e);
-    		throw e;
-    	}
+        return "editSchedulingSubpart";
     }
 
     /**
      * Loads the non-editable scheduling subpart info into the form
-     * @param request
-     * @param frm
-     * @param ss
-     * @param subpartId
      */
-    private void doLoad(
-            HttpServletRequest request,
-            SchedulingSubpartEditForm frm,
-            SchedulingSubpart ss,
-            String subpartId ) {
+    private void doLoad(SchedulingSubpart ss, String subpartId ) {
 
         CourseOffering co = ss.getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
 
         // populate form
         InstrOfferingConfig ioc = ss.getInstrOfferingConfig();
         InstructionalOffering io = ioc.getInstructionalOffering();
-        frm.setInstrOfferingId(io.getUniqueId().toString());
-        frm.setSchedulingSubpartId(subpartId);
-        if(frm.getInstructionalType() == null)
-        	frm.setInstructionalType(ss.getItype().getItype().toString());
+        form.setInstrOfferingId(io.getUniqueId().toString());
+        form.setSchedulingSubpartId(subpartId);
+        if(form.getInstructionalType() == null)
+        	form.setInstructionalType(ss.getItype().getItype().toString());
         String label = ss.getItype().getAbbv();
         if (io.hasMultipleConfigurations())
         	label += " [" + ioc.getName() + "]";
-        frm.setInstructionalTypeLabel(label);
-        frm.setUnlimitedEnroll(ioc.isUnlimitedEnrollment());
-        frm.setItypeBasic(ss.getItype()==null || ss.getItype().getBasic());
-        if (!frm.getItypeBasic())
-            LookupTables.setupItypes(request, false);
-        frm.setSubjectArea(co.getSubjectAreaAbbv());
-        frm.setSubjectAreaId(co.getSubjectArea().getUniqueId().toString());
-        frm.setCourseNbr(co.getCourseNbr());
-        frm.setCourseTitle(co.getTitle());
+        form.setInstructionalTypeLabel(label);
+        form.setUnlimitedEnroll(ioc.isUnlimitedEnrollment());
+        form.setItypeBasic(ss.getItype()==null || ss.getItype().getBasic());
+        List<ComboBoxLookup> itypes = new ArrayList<ComboBoxLookup>();
+        for (ItypeDesc itype: ItypeDesc.findAll(form.getItypeBasic()))
+        	itypes.add(new ComboBoxLookup(itype.getDesc(), itype.getItype().toString()));
+        if (form.getItypeBasic())
+        	itypes.add(new ComboBoxLookup(MSG.selectMoreOptions(), "more"));
+        else
+        	itypes.add(new ComboBoxLookup(MSG.selectLessOptions(), "less"));
+        request.setAttribute("itypes", itypes);
+        
+        form.setSubjectArea(co.getSubjectAreaAbbv());
+        form.setSubjectAreaId(co.getSubjectArea().getUniqueId().toString());
+        form.setCourseNbr(co.getCourseNbr());
+        form.setCourseTitle(co.getTitle());
 
     	if (ss.getParentSubpart() != null && ss.getItype().equals(ss.getParentSubpart().getItype())){
-    		frm.setSameItypeAsParent(Boolean.valueOf(true));
+    		form.setSameItypeAsParent(Boolean.valueOf(true));
     	} else {
-    		frm.setSameItypeAsParent(Boolean.valueOf(false));
+    		form.setSameItypeAsParent(Boolean.valueOf(false));
     	}
 
-        if (frm.getCreditFormat() == null){
+        if (form.getCreditFormat() == null){
 	        if (ss.getCredit() != null){
 	        	CourseCreditUnitConfig credit = ss.getCredit();
-	        	frm.setCreditText(credit.creditText());
-	        	frm.setCreditFormat(credit.getCreditFormat());
-	        	frm.setCreditType(credit.getCreditType().getUniqueId());
-	        	frm.setCreditUnitType(credit.getCreditUnitType().getUniqueId());
+	        	form.setCreditText(credit.creditText());
+	        	form.setCreditFormat(credit.getCreditFormat());
+	        	form.setCreditType(credit.getCreditType().getUniqueId());
+	        	form.setCreditUnitType(credit.getCreditUnitType().getUniqueId());
 	        	if (credit instanceof FixedCreditUnitConfig){
-	        		frm.setUnits(((FixedCreditUnitConfig) credit).getFixedUnits());
+	        		form.setUnits(((FixedCreditUnitConfig) credit).getFixedUnits());
 	        	} else if (credit instanceof VariableFixedCreditUnitConfig){
-	        		frm.setUnits(((VariableFixedCreditUnitConfig) credit).getMinUnits());
-	        		frm.setMaxUnits(((VariableFixedCreditUnitConfig) credit).getMaxUnits());
+	        		form.setUnits(((VariableFixedCreditUnitConfig) credit).getMinUnits());
+	        		form.setMaxUnits(((VariableFixedCreditUnitConfig) credit).getMaxUnits());
 	        		if (credit instanceof VariableRangeCreditUnitConfig){
-	        			frm.setFractionalIncrementsAllowed(((VariableRangeCreditUnitConfig) credit).isFractionalIncrementsAllowed());
+	        			form.setFractionalIncrementsAllowed(((VariableRangeCreditUnitConfig) credit).isFractionalIncrementsAllowed());
 	        		}
 	        	}
 	        }
         }
 
         SchedulingSubpart next = ss.getNextSchedulingSubpart(sessionContext, Right.SchedulingSubpartEdit);
-        frm.setNextId(next==null?null:next.getUniqueId().toString());
+        form.setNextId(next==null?null:next.getUniqueId().toString());
         SchedulingSubpart previous = ss.getPreviousSchedulingSubpart(sessionContext, Right.SchedulingSubpartEdit);
-        frm.setPreviousId(previous==null?null:previous.getUniqueId().toString());
+        form.setPreviousId(previous==null?null:previous.getUniqueId().toString());
 
         // Set Parent Subpart
         String parentSubpart = "";
         SchedulingSubpart parentSS = ss.getParentSubpart();
-        frm.setParentSubpartId(parentSS==null?null:parentSS.getUniqueId().toString());
-        frm.setParentSubpartLabel(parentSS==null?null:parentSS.getSchedulingSubpartLabel());
+        form.setParentSubpartId(parentSS==null?null:parentSS.getUniqueId().toString());
+        form.setParentSubpartLabel(parentSS==null?null:parentSS.getSchedulingSubpartLabel());
 
         while(parentSS!=null) {
             parentSubpart = parentSS.getItype().getAbbv() + " - " + parentSubpart;
             parentSS = parentSS.getParentSubpart();
         }
-        frm.setParentSubpart(parentSubpart);
+        form.setParentSubpart(parentSubpart);
 
-        frm.setManagingDeptName(ss.getManagingDept()==null?null:ss.getManagingDept().getManagingDeptLabel());
-        frm.setControllingDept(ss.getControllingDept().getUniqueId());
-    	frm.setDatePatternEditable(ApplicationProperty.WaitListCanChangeDatePattern.isTrue() || ss.getInstrOfferingConfig().getEnrollment() == 0 || !ss.getInstrOfferingConfig().getInstructionalOffering().effectiveWaitList());
+        form.setManagingDeptName(ss.getManagingDept()==null?null:ss.getManagingDept().getManagingDeptLabel());
+        form.setControllingDept(ss.getControllingDept().getUniqueId());
+    	form.setDatePatternEditable(ApplicationProperty.WaitListCanChangeDatePattern.isTrue() || ss.getInstrOfferingConfig().getEnrollment() == 0 || !ss.getInstrOfferingConfig().getInstructionalOffering().effectiveWaitList());
     }
+
     /**
      * Loads the non-editable scheduling subpart info into the form
-     * @param request
-     * @param frm
-     * @param ss
-     * @param subpartId
-     * @throws Exception
      */
-    private void doUpdate(
-            HttpServletRequest request,
-            SchedulingSubpartEditForm frm,
-            SchedulingSubpart ss,
-            SchedulingSubpartDAO sdao,
-            boolean timeVertical) throws Exception {
+    private void doUpdate(SchedulingSubpart ss, SchedulingSubpartDAO sdao, boolean timeVertical) throws Exception {
 
         Set s = ss.getPreferences();
 
         // Clear all old prefs
         super.doClear(s, Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING, Preference.Type.DATE);
 
-        super.doUpdate(request, frm, ss, s, timeVertical,
+        super.doUpdate(ss, s, timeVertical,
         		Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING, Preference.Type.DATE);
 
-        ss.setAutoSpreadInTime(frm.getAutoSpreadInTime());
-        ss.setStudentAllowOverlap(frm.getStudentAllowOverlap());
+        ss.setAutoSpreadInTime(form.getAutoSpreadInTime());
+        ss.setStudentAllowOverlap(form.getStudentAllowOverlap());
 
-        if (frm.getDatePattern()==null || frm.getDatePattern().intValue()<0)
+        if (form.getDatePattern()==null || form.getDatePattern().intValue()<0)
         	ss.setDatePattern(null);
         else
-        	ss.setDatePattern(new DatePatternDAO().get(frm.getDatePattern()));
+        	ss.setDatePattern(new DatePatternDAO().get(form.getDatePattern()));
         
-        if (frm.getInstructionalType() == null || frm.getInstructionalType().length() == 0){
+        if (form.getInstructionalType() == null || form.getInstructionalType().length() == 0){
         	// do nothing
         } else {
-        	ItypeDesc newItype = new ItypeDescDAO().get(Integer.valueOf(frm.getInstructionalType()));
+        	ItypeDesc newItype = new ItypeDescDAO().get(Integer.valueOf(form.getInstructionalType()));
         	if (newItype != null){
         		ss.setItype(newItype);
         	}
         }
 
-        if (frm.getCreditFormat() == null || frm.getCreditFormat().length() == 0 || frm.getCreditFormat().equals(Constants.BLANK_OPTION_VALUE)){
+        if (form.getCreditFormat() == null || form.getCreditFormat().length() == 0 || form.getCreditFormat().equals(Constants.BLANK_OPTION_VALUE)){
         	CourseCreditUnitConfig origConfig = ss.getCredit();
         	if (origConfig != null){
 				ss.setCredit(null);
@@ -459,30 +411,30 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         } else {
          	if(ss.getCredit() != null){
         		CourseCreditUnitConfig ccuc = ss.getCredit();
-        		if (ccuc.getCreditFormat().equals(frm.getCreditFormat())){
+        		if (ccuc.getCreditFormat().equals(form.getCreditFormat())){
         			boolean changed = false;
-        			if (!ccuc.getCreditType().getUniqueId().equals(frm.getCreditType())){
+        			if (!ccuc.getCreditType().getUniqueId().equals(form.getCreditType())){
         				changed = true;
         			}
-        			if (!ccuc.getCreditUnitType().getUniqueId().equals(frm.getCreditUnitType())){
+        			if (!ccuc.getCreditUnitType().getUniqueId().equals(form.getCreditUnitType())){
         				changed = true;
         			}
         			if (ccuc instanceof FixedCreditUnitConfig) {
 						FixedCreditUnitConfig fcuc = (FixedCreditUnitConfig) ccuc;
-						if (!fcuc.getFixedUnits().equals(frm.getUnits())){
+						if (!fcuc.getFixedUnits().equals(form.getUnits())){
 							changed = true;
 						}
 					} else if (ccuc instanceof VariableFixedCreditUnitConfig) {
 						VariableFixedCreditUnitConfig vfcuc = (VariableFixedCreditUnitConfig) ccuc;
-						if (!vfcuc.getMinUnits().equals(frm.getUnits())){
+						if (!vfcuc.getMinUnits().equals(form.getUnits())){
 							changed = true;
 						}
-						if (!vfcuc.getMaxUnits().equals(frm.getMaxUnits())){
+						if (!vfcuc.getMaxUnits().equals(form.getMaxUnits())){
 							changed = true;
 						}
 						if (vfcuc instanceof VariableRangeCreditUnitConfig) {
 							VariableRangeCreditUnitConfig vrcuc = (VariableRangeCreditUnitConfig) vfcuc;
-							if (!vrcuc.isFractionalIncrementsAllowed().equals(frm.getFractionalIncrementsAllowed())){
+							if (!vrcuc.isFractionalIncrementsAllowed().equals(form.getFractionalIncrementsAllowed())){
 								changed = true;
 							}
 						}
@@ -491,18 +443,18 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         				CourseCreditUnitConfig origConfig = ss.getCredit();
             			ss.setCredit(null);
             			sdao.getSession().delete(origConfig);
-            			ss.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), Boolean.valueOf(false)));
+            			ss.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(form.getCreditFormat(), form.getCreditType(), form.getCreditUnitType(), form.getUnits(), form.getMaxUnits(), form.getFractionalIncrementsAllowed(), Boolean.valueOf(false)));
             			ss.getCredit().setOwner(ss);
         			}
         		} else {
         			CourseCreditUnitConfig origConfig = ss.getCredit();
         			ss.setCredit(null);
         			sdao.getSession().delete(origConfig);
-        			ss.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), Boolean.valueOf(false)));
+        			ss.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(form.getCreditFormat(), form.getCreditType(), form.getCreditUnitType(), form.getUnits(), form.getMaxUnits(), form.getFractionalIncrementsAllowed(), Boolean.valueOf(false)));
         			ss.getCredit().setOwner(ss);
         		}
         	} else {
-    			ss.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), Boolean.valueOf(false)));
+    			ss.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(form.getCreditFormat(), form.getCreditType(), form.getCreditUnitType(), form.getUnits(), form.getMaxUnits(), form.getFractionalIncrementsAllowed(), Boolean.valueOf(false)));
     			ss.getCredit().setOwner(ss);
         	}
         }
@@ -510,10 +462,6 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         if (ss.getCredit() != null){
         	sdao.getSession().saveOrUpdate(ss.getCredit());
         }
-        /*
-        if (ss.getTeachingLoad() != null)
-        	updateInstructorCoursePreferences(sdao.getSession(), frm, ss, ss.getControllingCourseOffering());
-        	*/
         sdao.update(ss);
  
         String className = ApplicationProperty.ExternalActionSchedulingSubpartEdit.value();
@@ -533,13 +481,13 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
                 ss.getManagingDept());
     }
     
-    protected void setupChildren(SchedulingSubpartEditForm frm, HttpServletRequest request, SchedulingSubpart ss) {
-		DatePattern selectedDatePattern = (frm.getDatePattern() < 0 ? (ss.canInheritParentPreferences() ? ss.getParentSubpart().effectiveDatePattern() : ss.getSession().getDefaultDatePatternNotNull()) : DatePatternDAO.getInstance().get(frm.getDatePattern()));
+    protected void setupChildren(SchedulingSubpart ss) {
+		DatePattern selectedDatePattern = (form.getDatePattern() < 0 ? (ss.canInheritParentPreferences() ? ss.getParentSubpart().effectiveDatePattern() : ss.getSession().getDefaultDatePatternNotNull()) : DatePatternDAO.getInstance().get(form.getDatePattern()));
 		try {
 			if (selectedDatePattern != null) {
 				List<DatePattern> v = selectedDatePattern.findChildren();
 				request.setAttribute(DatePattern.DATE_PATTERN_CHILDREN_LIST_ATTR, v);	
-				frm.sortDatePatternPrefs(frm.getDatePatternPrefs(), frm.getDatePatternPrefLevels(), v);
+				form.sortDatePatternPrefs(form.getDatePatternPrefs(), form.getDatePatternPrefLevels(), v);
 			}
 		} catch (Exception e) {e.printStackTrace();}
 		

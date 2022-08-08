@@ -138,7 +138,7 @@
 			</TD>
 		</TR>
 		</s:if>
-		<s:if test="form.sameItypeAsParent == false && form.creditText != null">
+		<s:if test="form.sameItypeAsParent == false && form.creditText != null && !form.creditText.isEmpty()">
 			<TR>
 				<TD><loc:message name="propertySubpartCredit"/></TD>
 				<TD>
