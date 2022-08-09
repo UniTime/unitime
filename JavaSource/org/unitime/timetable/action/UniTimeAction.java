@@ -21,7 +21,9 @@ package org.unitime.timetable.action;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.jsp.PageContext;
 
+import org.apache.struts2.StrutsStatics;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.apache.struts2.interceptor.ServletResponseAware;
 import org.unitime.timetable.form.UniTimeForm;
@@ -35,6 +37,7 @@ import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.spring.SpringApplicationContextHolder;
 
+import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionSupport;
 
 /**
@@ -81,5 +84,9 @@ public abstract class UniTimeAction<T extends UniTimeForm> extends ActionSupport
 	
 	protected SolverService<SolverProxy> getCourseTimetablingSolverService() {
 		return (SolverService<SolverProxy>)SpringApplicationContextHolder.getBean("courseTimetablingSolverService");
+	}
+	
+	protected PageContext getPageContext() {
+		return (PageContext)ActionContext.getContext().get(StrutsStatics.PAGE_CONTEXT);
 	}
 }

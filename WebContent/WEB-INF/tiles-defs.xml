@@ -136,19 +136,6 @@
 		<put name="body" value="/admin/departmentList.jsp" />
   	</definition>
 
-  	<definition	name="instructionalOfferingSearchTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Instructional Offerings"/>
-		<put name="body" value="/user/instructionalOfferingSearch.jsp" />
-		<put name="action" value="instructionalOfferingSearch" />
-		<put name="showNavigation" value="true" />
-		<put name="showSolverWarnings" value="assignment" />
-  	</definition>
-  	
-  	<definition	name="instructionalOfferingListTile" extends="instructionalOfferingSearchTile">
-		<put name="body2" value="/user/instructionalOfferingList.jsp" />
-		<put name="action2" value="instructionalOfferingChange" />
-  	</definition>
-
   	<definition	name="crossListsModifyTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Instructional Offering Cross Lists"/>
 		<put name="body" value="/user/crossListsModify.jsp" />

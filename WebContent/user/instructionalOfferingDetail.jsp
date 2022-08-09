@@ -100,7 +100,7 @@
 							<A  title="<%=MSG.titleBackToIOList(MSG.accessBackToIOList()) %>" 
 								accesskey="<%=MSG.accessBackToIOList() %>"
 								class="l8" 
-								href="instructionalOfferingShowSearch.do?doit=Search&subjectAreaId=<bean:write name="instructionalOfferingDetailForm" property="subjectAreaId" />&courseNbr=<%=crsNbr%>#A<bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" />"
+								href="instructionalOfferingSearch.action?doit=Search&subjectAreaId=<bean:write name="instructionalOfferingDetailForm" property="subjectAreaId" />&courseNbr=<%=crsNbr%>#A<bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" />"
 							><bean:write name="instructionalOfferingDetailForm" property="instrOfferingName" /></A> 
 					</tt:section-title>						
 					<bean:define id="instrOfferingId">

@@ -33,7 +33,6 @@
 	  <form-bean name="departmentListForm" type="org.unitime.timetable.form.DepartmentListForm" />
 	  <form-bean name="roleListForm" type="org.unitime.timetable.form.RoleListForm" />
 	  <form-bean name="mgrForm" type="org.unitime.timetable.form.TimetableManagerForm" />
-	  <form-bean name="instructionalOfferingListForm" type="org.unitime.timetable.form.InstructionalOfferingListForm" />
 	  <form-bean name="instructionalOfferingConfigEditForm" type="org.unitime.timetable.form.InstructionalOfferingConfigEditForm" />
 	  <form-bean name="mgrSettingsForm" type="org.unitime.timetable.form.ManagerSettingsForm" />
 	  <form-bean name="settingsForm" type="org.unitime.timetable.form.SettingsForm" />
@@ -266,61 +265,6 @@
             path="/error.jsp"
             redirect="true" />
       </action>
- 
-      <action
-         path="/instructionalOfferingSearch"
-         attribute="instructionalOfferingListForm"
-         input="instructionalOfferingSearchTile"
-         name="instructionalOfferingListForm"
-         parameter="doit"
-         scope="request"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         validate="false">
-        <forward 
-        	name="showInstructionalOfferingList" 
-        	path="instructionalOfferingListTile" />
-        <forward 
-        	name="showInstructionalOfferingSearch" 
-        	path="instructionalOfferingSearchTile" />
-        <forward 
-        	name="showInstructionalOfferingDetail" 
-        	path="/instructionalOfferingDetail.do" />
-        <forward 
-        	name="showCourseOfferingEdit" 
-        	path="/courseOfferingEdit.do" />
-        <forward 
-        	name="editInstructionalOffering" 
-        	path="instructionalOfferingEditTile" />
-      </action>
-      
-      <action
-         path="/instructionalOfferingShowSearch"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         attribute="instructionalOfferingListForm"
-         input="instructionalOfferingSearchTile"
-         name="instructionalOfferingListForm"
-         scope="request"
-         validate="false">
-        <forward 
-        	name="showInstructionalOfferingList" 
-        	path="instructionalOfferingListTile" />
-        <forward 
-        	name="showInstructionalOfferingSearch" 
-        	path="instructionalOfferingSearchTile" />
-      </action>
-
-     <action
-         path="/instructionalOfferingList"
-         attribute="instructionalOfferingListForm"
-         input="instructionalOfferingListTile"
-         name="instructionalOfferingListForm"
-         scope="request"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         validate="false">
-         <forward 
-         	name="showInstructionalOfferingList" 
-         	path="instructionalOfferingListTile" />
-      </action>
 
       <action
          path="/instructionalOfferingConfigEdit"
@@ -340,7 +284,7 @@
             redirect="true" />
         <forward 
         	name="instructionalOfferingSearch" 
-        	path="/instructionalOfferingSearch.do" />
+        	path="/instructionalOfferingSearch.action" />
         <forward 
         	name="instructionalOfferingDetail" 
         	path="/instructionalOfferingDetail.do" />
@@ -700,7 +644,7 @@
 	        path="/instructionalOfferingConfigEdit.do" />
 	      <forward
 	        name="showInstructionalOfferings" 
-	        path="/instructionalOfferingShowSearch.do" />
+	        path="/instructionalOfferingSearch.action" />
 	      <forward
 	        name="modifyCrossLists" 
 	        path="/crossListsModify.do" />

@@ -24,41 +24,26 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
 
 
 /**
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
-public class InstructionalOfferingListForm extends ActionForm implements InstructionalOfferingListFormInterface {
-	public Boolean getLms() {
-		return lms;
-	}
-
-	public void setLms(Boolean lms) {
-		this.lms = lms;
-	}
+public class InstructionalOfferingListForm implements UniTimeForm, InstructionalOfferingListFormInterface {
+	private static final long serialVersionUID = -6985831814265952068L;
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
-	/**
-	 * Comment for <code>serialVersionUID</code>
-	 */
-	private static final long serialVersionUID = -6985831814265952068L;
 
 	private Map<Long, TreeSet<InstructionalOffering>> instructionalOfferings;
 
-	private Collection subjectAreas;
+	private Collection<SubjectArea> subjectAreas;
 
 	private String[] subjectAreaIds;
 
@@ -219,38 +204,35 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	// --------------------------------------------------------- Methods
 	/**
 	 * Method reset
-	 * 
-	 * @param mapping
-	 * @param request
 	 */
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
-
+	@Override
+	public void reset() {
 		courseNbr = "";
 		instructionalOfferings = null;
 		subjectAreas = new ArrayList();
-		divSec = new Boolean(false);
-		demand = new Boolean(false);
-		projectedDemand = new Boolean(false);
-		minPerWk = new Boolean(false);
-		limit = new Boolean(false);
-		snapshotLimit = new Boolean(false);
-		roomLimit = new Boolean(false);
-		manager = new Boolean(false);
-		datePattern = new Boolean(false);
-		timePattern = new Boolean(false);
-		preferences = new Boolean(false);
-		instructor = new Boolean(false);
-		timetable = new Boolean(false);
-		credit = new Boolean(false);
-		subpartCredit = new Boolean(false);
-		schedulePrintNote = new Boolean(false);
-		note = new Boolean(false);
-		title = new Boolean(false);
-		consent = new Boolean(false);
-		exams = new Boolean(false);
-		fundingDepartment = new Boolean(false);
-		instructorAssignment = new Boolean(false);
-		lms = new Boolean(false);
+		divSec = false;
+		demand = false;
+		projectedDemand = false;
+		minPerWk = false;
+		limit = false;
+		snapshotLimit = false;
+		roomLimit = false;
+		manager = false;
+		datePattern = false;
+		timePattern = false;
+		preferences = false;
+		instructor = false;
+		timetable = false;
+		credit = false;
+		subpartCredit = false;
+		schedulePrintNote = false;
+		note = false;
+		title = false;
+		consent = false;
+		exams = false;
+		fundingDepartment = false;
+		instructorAssignment = false;
+		lms = false;
 		waitlist = null;
 		sortBy = ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME);
 	}
@@ -277,7 +259,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	/**
 	 * @return Returns the subjectAreas.
 	 */
-	public Collection getSubjectAreas() {
+	public Collection<SubjectArea> getSubjectAreas() {
 		return subjectAreas;
 	}
 
@@ -285,7 +267,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	 * @param subjectAreas
 	 *            The subjectAreas to set.
 	 */
-	public void setSubjectAreas(Collection subjectAreas) {
+	public void setSubjectAreas(Collection<SubjectArea> subjectAreas) {
 		this.subjectAreas = subjectAreas;
 	}
 
@@ -304,19 +286,9 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 		this.showNotOffered = showNotOffered;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.apache.struts.action.ActionForm#validate(org.apache.struts.action.ActionMapping,
-	 *      javax.servlet.http.HttpServletRequest)
-	 */
-	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-		ActionErrors errors = new ActionErrors();
-
+	public void validate(UniTimeAction action) {
 		if (subjectAreaIds == null || subjectAreaIds.length == 0)
-			errors.add("subjectAreaIds", new ActionMessage("errors.required", MSG.labelSubjectArea()));
-
-		return errors;
+			action.addFieldError("subjectAreaIds", MSG.errorSubjectRequired());
 	}
 	
 	public Boolean getDatePattern() {
@@ -497,43 +469,6 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
     	this.waitlist = waitlist;
     }
 
-    protected void finalize() throws Throwable {
-        Debug.debug("!!! Finalizing InstructionalOfferingListForm ... ");
-        instructionalOfferings=null;
-        subjectAreas=null;
-        subjectAreaIds = new String[0];
-        courseNbr=null;
-        showNotOffered=null;
-        buttonAction=null;
-        subjectAreaAbbv=null;
-        isControl=null;
-        ctrlInstrOfferingId=null;
-        divSec=null;
-        demand=null;
-        projectedDemand=null;
-        minPerWk=null;
-        limit=null;
-        snapshotLimit=null;
-        roomLimit=null;
-        manager=null;
-        datePattern=null;
-        timePattern=null;
-        preferences=null;
-        instructor=null;
-        timetable=null;
-        credit=null;
-        subpartCredit=null;
-        schedulePrintNote=null;
-        note=null;
-        title=null;
-        consent=null;
-        fundingDepartment=null;
-        instructorAssignment = null;
-        lms = null;
-        waitlist = null;
-        super.finalize();
-    }
-
 	public String getSortBy() { return sortBy; }
 	public void setSortBy(String sortBy) { this.sortBy = sortBy; }
 	public String[] getSortByOptions() { return ClassCourseComparator.getNames(); }
@@ -574,5 +509,17 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 
 	public Boolean getFundingDepartment() {
 		return fundingDepartment;
+	}
+
+	public Boolean getLms() {
+		return lms;
+	}
+
+	public void setLms(Boolean lms) {
+		this.lms = lms;
+	}
+	
+	public int getSubjectAreaListSize() {
+		return Math.min(7, getSubjectAreas().size());
 	}
 }

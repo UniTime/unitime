@@ -35,7 +35,7 @@
 			</or>
 		</condition>
 		<menu name="Input Data" title="Course Timetabling Input Data">
-			<item name="Instructional Offerings" page="instructionalOfferingShowSearch.do">
+			<item name="Instructional Offerings" page="instructionalOfferingSearch.action">
 				<condition>
 					<hasPermission name="InstructionalOfferings"/>
 				</condition>

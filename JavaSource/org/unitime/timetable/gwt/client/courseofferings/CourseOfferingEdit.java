@@ -836,7 +836,7 @@ public class CourseOfferingEdit extends Composite {
 			instructionalOfferingId = new Long(iCourseOffering.getInstrOfferingId());
 			ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.do?op=view&io=" + instructionalOfferingId);
 		} else {
-			ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingShowSearch.do");
+			ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingSearch.action");
 		}
 	}
 	

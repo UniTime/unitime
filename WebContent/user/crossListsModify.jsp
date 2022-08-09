@@ -121,7 +121,7 @@
 					<A  title="<%=MSG.titleBackToIOList(MSG.accessBackToIOList()) %>"
 						accesskey="I"
 						class="l8"
-						href="instructionalOfferingShowSearch.do?doit=Search&subjectAreaId=<bean:write name="crossListsModifyForm" property="subjectAreaId" />&courseNbr=<%=crsNbr%>#A<bean:write name="crossListsModifyForm" property="instrOfferingId" />"
+						href="instructionalOfferingSearch.action?doit=Search&subjectAreaId=<bean:write name="crossListsModifyForm" property="subjectAreaId" />&courseNbr=<%=crsNbr%>#A<bean:write name="crossListsModifyForm" property="instrOfferingId" />"
 					><bean:write name="crossListsModifyForm" property="instrOfferingName" /></A>
 				</DIV>
 			</TD>

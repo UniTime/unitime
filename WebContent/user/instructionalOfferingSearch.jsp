@@ -17,48 +17,77 @@
  * limitations under the License.
  * 
 --%>
-<%@page import="org.unitime.timetable.form.InstructionalOfferingListForm"%>
-<%@ page import="org.unitime.timetable.model.LearningManagementSystemInfo" %>
-<%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
-<%@ page import="org.unitime.timetable.util.Constants" %>
-<%@ page import="org.unitime.timetable.webutil.WebInstructionalOfferingTableBuilder" %>
-<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
-<%@page import="org.unitime.timetable.defaults.ApplicationProperty"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="tiles" uri="http://tiles.apache.org/tags-tiles" %>
 <tt:session-context/>
-<script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
-<%
-	String frmName = "instructionalOfferingListForm";	
-	InstructionalOfferingListForm frm = (InstructionalOfferingListForm) request.getAttribute(frmName);
-%>	
-<tiles:importAttribute />
-<html:form action="/instructionalOfferingSearch">
-<loc:bundle name="CourseMessages">
-	<html:hidden property="doit" value="Search"/>
-	<TABLE border="0" cellspacing="0" cellpadding="3" width="100%">
+<script type="text/javascript" src="scripts/block.js"></script>
+<script type="text/javascript">
+	function enrollmentInformationChecked(checkbox) {
+		if (checkbox.checked){
+			document.getElementById('instructionalOfferingSearch_form_demand').checked = true;
+			document.getElementById('instructionalOfferingSearch_form_projectedDemand').checked = true;
+			document.getElementById('instructionalOfferingSearch_form_limit').checked = true;
+			document.getElementById('instructionalOfferingSearch_form_snapshotLimit').checked = true;
+			document.getElementById('instructionalOfferingSearch_form_roomLimit').checked = true;
+		} else {
+			document.getElementById('instructionalOfferingSearch_form_demand').checked = false;
+			document.getElementById('instructionalOfferingSearch_form_projectedDemand').checked = false;
+			document.getElementById('instructionalOfferingSearch_form_limit').checked = false;
+			document.getElementById('instructionalOfferingSearch_form_snapshotLimit').checked = false;
+			document.getElementById('instructionalOfferingSearch_form_roomLimit').checked = false;
+		};
+	}
+	function dateTimeInformationChecked(checkbox) {
+		if (checkbox.checked){
+			document.getElementById('instructionalOfferingSearch_form_datePattern').checked = true;
+			document.getElementById('instructionalOfferingSearch_form_minPerWk').checked = true;
+			document.getElementById('instructionalOfferingSearch_form_timePattern').checked = true;
+		} else {
+			document.getElementById('instructionalOfferingSearch_form_datePattern').checked = false;
+			document.getElementById('instructionalOfferingSearch_form_minPerWk').checked = false;
+			document.getElementById('instructionalOfferingSearch_form_timePattern').checked = false;
+		};
+	}
+	function catalogInformationChecked(checkbox) {
+		if (checkbox.checked){
+			document.getElementById('instructionalOfferingSearch_form_title').checked = true;
+			document.getElementById('instructionalOfferingSearch_form_credit').checked = true;
+			document.getElementById('instructionalOfferingSearch_form_subpartCredit').checked = true;
+			document.getElementById('instructionalOfferingSearch_form_consent').checked = true;
+			document.getElementById('instructionalOfferingSearch_form_schedulePrintNote').checked = true;
+		} else {
+			document.getElementById('instructionalOfferingSearch_form_title').checked = false;
+			document.getElementById('instructionalOfferingSearch_form_credit').checked = false;
+			document.getElementById('instructionalOfferingSearch_form_subpartCredit').checked = false;
+			document.getElementById('instructionalOfferingSearch_form_consent').checked = false;
+			document.getElementById('instructionalOfferingSearch_form_schedulePrintNote').checked = false;
+		};
+	}
+</script>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+<s:form action="instructionalOfferingSearch">
+	<table class="unitime-MainTable">
 		<TR>
 			<TD colspan="6">
-				<script language="JavaScript" type="text/javascript">blToggleHeader('<loc:message name="filter"/>','dispFilter');blStart('dispFilter');</script>
-				<TABLE border="0" cellspacing="0" cellpadding="3">
+				<script type="text/javascript">blToggleHeader('<loc:message name="filter"/>','dispFilter');blStart('dispFilter');</script>
+				<TABLE>
 					<TR>
 						<TD style="min-width: 120px;">
 							<B><loc:message name="filterOptionalColumns" /></B>
 						</TD>
 						<TD colspan="2">
-							<html:checkbox property="divSec" />
+							<s:checkbox name="form.divSec" />
 							<loc:message name="columnExternalId"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD colspan="2">
-							<html:checkbox property="enrollmentInformation" value="1" onclick="if (document.forms[0].enrollmentInformation.checked){document.forms[0].demand.checked = true;document.forms[0].projectedDemand.checked = true;document.forms[0].limit.checked = true;document.forms[0].snapshotLimit.checked = true;document.forms[0].roomLimit.checked = true;} else {document.forms[0].demand.checked = false;document.forms[0].projectedDemand.checked = false;document.forms[0].limit.checked = false;document.forms[0].snapshotLimit.checked = false;document.forms[0].roomLimit.checked = false;};"/>
+							<s:checkbox name="form.enrollmentInformation" value="1" onclick="enrollmentInformationChecked(this);"/>
 							<loc:message name="columnEnrollmentInformation"/>
 						</TD>
 					</TR>
@@ -66,7 +95,7 @@
 						<TD></TD>
 						<TD width="10%"></TD>						
 						<TD>
-							<html:checkbox property="demand"  />
+							<s:checkbox name="form.demand"  />
 							<loc:message name="columnDemand"/>
 						</TD>
 					</TR>
@@ -74,7 +103,7 @@
 						<TD></TD>
 						<TD></TD>						
 						<TD>
-							<html:checkbox property="projectedDemand" />
+							<s:checkbox name="form.projectedDemand" />
 							<loc:message name="columnProjectedDemand"/>
 						</TD>
 					</TR>
@@ -82,48 +111,48 @@
 						<TD></TD>
 						<TD></TD>						
 						<TD>
-							<html:checkbox property="limit" />
+							<s:checkbox name="form.limit" />
 							<loc:message name="columnLimit"/>
 						</TD>
 					</TR>
-					<logic:notEmpty name="instructionalOfferingListForm" property="snapshotLimit">
+					<s:if test="form.snapshotLimit != null">
 						<TR>
 							<TD></TD>
 							<TD></TD>
 							<TD colspan="2">
-								<html:checkbox property="snapshotLimit" />
+								<s:checkbox name="form.snapshotLimit" />
 								<loc:message name="columnSnapshotLimit"/>
 							</TD>
 						</TR>
-					</logic:notEmpty>
+					</s:if>
 					<TR>
 						<TD></TD>						
 						<TD></TD>
 						<TD>
-							<html:checkbox property="roomLimit" />
+							<s:checkbox name="form.roomLimit" />
 							<loc:message name="columnRoomRatio"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD colspan="2">
-							<html:checkbox property="manager" />
+							<s:checkbox name="form.manager" />
 							<loc:message name="columnManager"/>
 						</TD>
 					</TR>
-					<% if (ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue()) { %>
+					<tt:propertyEquals name="unitime.courses.funding_departments_enabled" value="true">
 						<TR>
 							<TD></TD>
 							<TD colspan="2">
-								<html:checkbox property="fundingDepartment" />
+								<s:checkbox name="form.fundingDepartment" />
 								<loc:message name="columnFundingDepartment"/>
 							</TD>
 						</TR>
-					<% } %>
+					</tt:propertyEquals>
 					<TR>
 						<TD></TD>
 						<TD colspan="2">
-							<html:checkbox property="dateTimeInformation" value="1" onclick="if (document.forms[0].dateTimeInformation.checked){document.forms[0].datePattern.checked = true;document.forms[0].minPerWk.checked = true;document.forms[0].timePattern.checked = true;} else {document.forms[0].datePattern.checked = false;document.forms[0].minPerWk.checked = false;document.forms[0].timePattern.checked = false;};"/>
+							<s:checkbox name="form.dateTimeInformation" value="1" onclick="dateTimeInformationChecked(this);"/>
 							<loc:message name="columnDateTimeInformation"/>
 						</TD>
 					</TR>
@@ -131,7 +160,7 @@
 						<TD></TD>
 						<TD></TD>
 						<TD>
-							<html:checkbox property="datePattern" />
+							<s:checkbox name="form.datePattern" />
 							<loc:message name="columnDatePattern"/>
 						</TD>
 					</TR>
@@ -139,7 +168,7 @@
 						<TD></TD>
 						<TD></TD>
 						<TD>
-							<html:checkbox property="minPerWk" />
+							<s:checkbox name="form.minPerWk" />
 							<loc:message name="columnMinPerWk"/>
 						</TD>
 					</TR>
@@ -147,44 +176,44 @@
 						<TD></TD>
 						<TD></TD>
 						<TD>
-							<html:checkbox property="timePattern" />
+							<s:checkbox name="form.timePattern" />
 							<loc:message name="columnTimePattern"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD colspan="2">
-							<html:checkbox property="preferences" />
+							<s:checkbox name="form.preferences" />
 							<loc:message name="columnPreferences"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD colspan="2">
-							<html:checkbox property="instructorAssignment" />
+							<s:checkbox name="form.instructorAssignment" />
 							<loc:message name="includeInstructorScheduling"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD colspan="2">
-							<html:checkbox property="instructor" />
+							<s:checkbox name="form.instructor" />
 							<loc:message name="columnInstructor"/>
 						</TD>
 					</TR>
-					<logic:notEmpty name="instructionalOfferingListForm" property="timetable">
+					<s:if test="form.timetable != null">
 						<TR>
 							<TD></TD>
 							<TD colspan="2">
-								<html:checkbox property="timetable" />
+								<s:checkbox name="form.timetable" />
 								<loc:message name="columnTimetable"/>
 							</TD>
 						</TR>
-					</logic:notEmpty>
+					</s:if>
 					<TR>
 						<TD></TD>
 						<TD colspan="2">
-							<html:checkbox property="catalogInformation" value="1" onclick="if (document.forms[0].catalogInformation.checked){document.forms[0].title.checked = true;document.forms[0].credit.checked = true;document.forms[0].subpartCredit.checked = true;document.forms[0].consent.checked = true;document.forms[0].schedulePrintNote.checked = true;} else {document.forms[0].title.checked = false;document.forms[0].credit.checked = false;document.forms[0].subpartCredit.checked = false;document.forms[0].consent.checked = false;document.forms[0].schedulePrintNote.checked = false;};"/>
+							<s:checkbox name="form.catalogInformation" value="1" onclick="catalogInformationChecked(this);"/>
 							<loc:message name="columnCatalogInformation"/>
 						</TD>
 					</TR>
@@ -192,7 +221,7 @@
 						<TD></TD>
 						<TD></TD>
 						<TD>
-							<html:checkbox property="title" />
+							<s:checkbox name="form.title" />
 							<loc:message name="columnTitle"/>
 						</TD>
 					</TR>
@@ -200,7 +229,7 @@
 						<TD></TD>
 						<TD></TD>
 						<TD>
-							<html:checkbox property="credit" />
+							<s:checkbox name="form.credit" />
 							<loc:message name="columnOfferingCredit"/>
 						</TD>
 					</TR>
@@ -208,7 +237,7 @@
 						<TD></TD>
 						<TD></TD>
 						<TD>
-							<html:checkbox property="subpartCredit" />
+							<s:checkbox name="form.subpartCredit" />
 							<loc:message name="columnSubpartCredit"/>
 						</TD>
 					</TR>
@@ -216,7 +245,7 @@
 						<TD></TD>
 						<TD></TD>
 						<TD>
-							<html:checkbox property="consent" />
+							<s:checkbox name="form.consent" />
 							<loc:message name="columnConsent"/>
 						</TD>
 					</TR>
@@ -224,25 +253,24 @@
 						<TD></TD>
 						<TD></TD>
 						<TD>
-							<html:checkbox property="schedulePrintNote" />
+							<s:checkbox name="form.schedulePrintNote" />
 							<loc:message name="columnSchedulePrintNote"/>
 						</TD>
 					</TR>
+					<s:if test="form.lms != null">
 					<TR>
 						<TD></TD>
 						<TD></TD>
 						<TD>
-							<% boolean showLms =  LearningManagementSystemInfo.isLmsInfoDefinedForSession(sessionContext.getUser().getCurrentAcademicSessionId()); %>
-							<% if (showLms) { %>
-								<html:checkbox property="lms" />
-								<loc:message name="columnLms"/>
-							<% } %>
+							<s:checkbox name="form.lms" />
+							<loc:message name="columnLms"/>
 						</TD>
 					</TR>
+					</s:if>
 					<TR>
 						<TD></TD>
 						<TD colspan="2">
-							<html:checkbox property="note" />
+							<s:checkbox name="form.note" />
 							<loc:message name="columnNote"/>
 						</TD>
 					</TR>
@@ -250,7 +278,7 @@
 						<TR>
 							<TD></TD>
 							<TD colspan="2">
-								<html:checkbox property="exams" />
+								<s:checkbox name="form.exams" />
 								<loc:message name="columnExams"/>
 							</TD>
 						</TR>
@@ -260,97 +288,74 @@
 							<B><loc:message name="filterSortBy"/></B>
 						</TD>
 						<TD colspan="2">
-							<html:select property="sortBy" style="min-width: 200px;">
-								<html:options property="sortByOptions"/>
-							</html:select>
+							<s:select name="form.sortBy" list="form.sortByOptions" style="min-width: 200px;"/>
 						</TD>
 					</TR>
 				</TABLE>
-				<script language="JavaScript" type="text/javascript">blEnd('dispFilter');blStartCollapsed('dispFilter');blEnd('dispFilter');</script>
+				<script type="text/javascript">blEnd('dispFilter');blStartCollapsed('dispFilter');blEnd('dispFilter');</script>
 			</TD>
 		</TR>
-		<logic:notEmpty name="instructionalOfferingListForm" property="waitlist">
+		<s:if test="form.waitlist != null">
 			<TR><TD colspan='6' style='padding-top: 0px;'>
 			<span style='min-width: 120px; display: inline-block; padding: 3px;'><B><loc:message name="filterWaitlist"/></B></span>
-			<html:select property="waitlist" style="min-width: 200px;" styleId="waitlistFilter">
-				<html:option value="A"><loc:message name="itemWaitListAllCourses"/></html:option>
-				<html:option value="W"><loc:message name="itemWaitListWaitListed"/></html:option>
-				<html:option value="N"><loc:message name="itemWaitListNotWaitListed"/></html:option>
-			</html:select>
+			<s:select name="form.waitlist" list="#{'A':#msg.itemWaitListAllCourses(), 'W':#msg.itemWaitListWaitListed(), 'N':#msg.itemWaitListNotWaitListed()}" style="min-width: 200px;" id="waitlistFilter"/>
 			</TD></TR>
-		</logic:notEmpty>
+		</s:if>
 		<TR>
-			<TH valign="top" nowrap style='padding-top: 10px;'><loc:message name="filterSubject"/></TH>
+			<TH valign="top" nowrap style='padding-top: 12px;'><loc:message name="filterSubject"/></TH>
 			<TD valign="top" nowrap style='padding-top: 10px;'>
-				<% if (frm.getSubjectAreas().size()==1) { %>
-					<html:select property="subjectAreaIds" styleId="subjectAreaIds">
-						<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
-					</html:select>
-				<% } else { %>
-					<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" property="subjectAreaIds" multiple="true" styleId="subjectAreaIds">
-						<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
-					</html:select>
-				<% } %>
+				<s:if test="form.subjectAreas.size == 1">
+					<s:select name="form.subjectAreaIds" id="subjectAreaIds"
+						list="form.subjectAreas" listKey="uniqueId" listValue="subjectAreaAbbreviation"/>
+				</s:if>
+				<s:else>
+					<s:select name="form.subjectAreaIds" size="%{form.getSubjectAreaListSize()}" id="subjectAreaIds" multiple="true"
+						list="form.subjectAreas" listKey="uniqueId" listValue="subjectAreaAbbreviation"/>
+				</s:else>
 			</TD>
-			<TH valign="top" nowrap style='padding-top: 10px;'><loc:message name="filterCourseNumber"/></TH>
+			<TH valign="top" nowrap style='padding-top: 12px;'><loc:message name="filterCourseNumber"/></TH>
 			<TD valign="top" nowrap style='padding-top: 10px;'>
-				<tt:course-number property="courseNbr" configuration="subjectId=\${subjectAreaIds};notOffered=include;waitlist=\${waitlistFilter}" size="15"
-					title="Course numbers can be specified using wildcard (*). E.g. 2*"/>
+				<span id='UniTimeGWT:CourseNumberSuggestBox' configuration="subjectId=\${subjectAreaIds};notOffered=include;waitlist=\${waitlistFilter}">
+					<s:textfield name="form.courseNbr" title="%{#msg.tooltipCourseNumber()}" size="15"/>
+				</span>
 			</TD>
-			<TD valign="top" nowrap style='padding-top: 10px;'>
-				&nbsp;&nbsp;&nbsp;
-				<html:submit
-					accesskey="<%=MSG.accessSearchInstructionalOfferings()%>" styleClass="btn" title='<%=MSG.titleSearchInstructionalOfferings(MSG.accessSearchInstructionalOfferings())%>'
-					onclick="doit.value=this.value;displayLoading();">
-					<loc:message name="actionSearchInstructionalOfferings"/>
-				</html:submit> 
-				
+			<TD valign="top" nowrap style='padding-top: 10px; padding-left: 10px;'>
+				<s:submit name='doit' value="%{#msg.actionSearchInstructionalOfferings()}"
+						title="%{#msg.titleSearchInstructionalOfferings(#msg.accessSearchInstructionalOfferings())}"
+						accesskey="%{#msg.accessSearchInstructionalOfferings()}"/>
 				<sec:authorize access="hasPermission(null, 'Department', 'InstructionalOfferingsExportPDF')">
-				<html:submit
-					accesskey="<%=MSG.accessExportPdf()%>" styleClass="btn" title='<%=MSG.titleExportPdf(MSG.accessExportPdf())%>'
-					onclick="doit.value=this.value;">
-					<loc:message name="actionExportPdf"/>
-				</html:submit> 
-				<html:submit
-					accesskey="<%=MSG.accessExportCsv()%>" styleClass="btn" title='<%=MSG.titleExportCsv(MSG.accessExportCsv())%>'
-					onclick="doit.value=this.value;">
-					<loc:message name="actionExportCsv"/>
-				</html:submit> 
+					<s:submit name='doit' value="%{#msg.actionExportPdf()}"
+							title="%{#msg.titleExportPdf(#msg.accessExportPdf())}"
+							accesskey="%{#msg.accessExportPdf()}"/>
+					<s:submit name='doit' value="%{#msg.actionExportCsv()}"
+							title="%{#msg.titleExportCsv(#msg.accessExportCsv())}"
+							accesskey="%{#msg.accessExportCsv()}"/>
 				</sec:authorize>
-
 				<sec:authorize access="hasPermission(null, 'Department', 'InstructionalOfferingsWorksheetPDF')">
-				<tt:propertyEquals name="tmtbl.pdf.worksheet" value="true">
-					<html:submit
-						accesskey="<%=MSG.accessWorksheetPdf()%>" styleClass="btn" title='<%=MSG.titleWorksheetPdf(MSG.accessWorksheetPdf())%>'
-						onclick="doit.value=this.value;">
-						<loc:message name="actionWorksheetPdf"/>
-					</html:submit>
-				</tt:propertyEquals>
+					<tt:propertyEquals name="tmtbl.pdf.worksheet" value="true">
+						<s:submit name='doit' value="%{#msg.actionWorksheetPdf()}"
+								title="%{#msg.titleWorksheetPdf(#msg.accessWorksheetPdf())}"
+								accesskey="%{#msg.accessWorksheetPdf()}"/>
+					</tt:propertyEquals>
 				</sec:authorize>
 
 				<sec:authorize access="hasPermission(null, 'SubjectArea', 'AddCourseOffering')">
-				<html:submit
-					accesskey="<%=MSG.accessAddNewInstructionalOffering()%>" styleClass="btn" title='<%=MSG.titleAddNewInstructionalOffering(MSG.accessAddNewInstructionalOffering())%>'
-					onclick="doit.value=this.value;">
-					<loc:message name="actionAddNewInstructionalOffering"/>
-				</html:submit>
+					<s:submit name='doit' value="%{#msg.actionAddNewInstructionalOffering()}"
+							title="%{#msg.titleAddNewInstructionalOffering(#msg.accessAddNewInstructionalOffering())}"
+							accesskey="%{#msg.accessAddNewInstructionalOffering()}"/>
 				</sec:authorize>
 				
 			</TD>
 			<TD width="100%" style='padding-top: 10px;'></TD>
 		</TR>
-		<TR>
-			<TD colspan="6" align="center">
-				<html:errors />
-			</TD>
-		</TR>
+		<s:if test="!fieldErrors.isEmpty()">
+			<TR><TD colspan="6" align="left" class="errorTable">
+				<div class='errorHeader'><loc:message name="formValidationErrors"/></div><s:fielderror/>
+			</TD></TR>
+		</s:if>
 	</TABLE>
+	<s:if test="showTable == true">
+		<s:property value="%{printTable()}" escapeHtml="false"/>
+	</s:if>
+</s:form>
 </loc:bundle>
-</html:form>
-
-
-<logic:notEmpty name="body2">
-	<script language="javascript">displayLoading();</script>
-	<tiles:insert attribute="body2" />
-	<script language="javascript">hideLoading();</script>
-</logic:notEmpty>

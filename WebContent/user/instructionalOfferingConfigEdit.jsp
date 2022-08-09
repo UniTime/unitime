@@ -115,7 +115,7 @@
 						<A  title="Back to Instructional Offering List (Alt+I)" 
 							accesskey="I"
 							class="l8" 
-							href="instructionalOfferingShowSearch.do?doit=Search&subjectAreaId=<%=subjArea%>&courseNbr=<%=crsNbr%>#A<bean:write name="instructionalOfferingConfigEditForm" property="courseOfferingId" />">
+							href="instructionalOfferingSearch.action?doit=Search&subjectAreaId=<%=subjArea%>&courseNbr=<%=crsNbr%>#A<bean:write name="instructionalOfferingConfigEditForm" property="courseOfferingId" />">
 						<B><bean:write name="instructionalOfferingConfigEditForm" property="instrOfferingName" /></B></A>
 						<html:hidden property="instrOfferingName"/>											
 						<html:hidden property="courseOfferingId"/>

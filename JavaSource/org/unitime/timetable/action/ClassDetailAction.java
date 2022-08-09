@@ -84,7 +84,7 @@ import org.unitime.timetable.webutil.DistributionPrefsTableBuilder;
  */
 @Action(value = "classDetail", results = {
 		@Result(name = "displayClass", type = "tiles", location = "classDetail.tiles"),
-		@Result(name = "instructionalOfferingSearch", type = "redirect", location = "/instructionalOfferingSearch.do"),
+		@Result(name = "instructionalOfferingSearch", type = "redirect", location = "/instructionalOfferingSearch.action"),
 		@Result(name = "addDistributionPrefs", type = "redirect", location = "/distributionPrefs.do", 
 			params = { "classId", "${form.classId}", "op", "${op}"}
 		),
