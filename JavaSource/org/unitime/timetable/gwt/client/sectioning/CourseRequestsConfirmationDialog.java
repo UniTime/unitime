@@ -29,6 +29,7 @@ import org.unitime.timetable.gwt.client.aria.AriaTabBar;
 import org.unitime.timetable.gwt.client.aria.AriaTextArea;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -65,6 +66,7 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 	protected static GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static StudentSectioningResources RESOURCES = GWT.create(StudentSectioningResources.class);
 	protected static StudentSectioningMessages SCT_MESSAGES = GWT.create(StudentSectioningMessages.class);
+	protected static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private AriaButton iYes, iNo;
 	private AsyncCallback<Boolean> iCommand;
 	private String iMessage;
@@ -74,6 +76,7 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 	private Image iImage;
 	private CheckBox iCheckBox = null;
 	private AriaTabBar iCoursesTab = null;
+	private P iCoursesTabScroll = null;
 	private Map<Integer, CourseMessage> iCourse2message = null;
 
 	public CourseRequestsConfirmationDialog(CheckCoursesResponse response, int confirm, AsyncCallback<Boolean> callback) {
@@ -106,6 +109,9 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 				if (iCourse2message == null) {
 					iCourse2message = new HashMap<Integer, CourseMessage>();
 					iCoursesTab = new AriaTabBar(); iCoursesTab.addStyleName("notes-tab");
+					iCoursesTabScroll = new P("notes-scroll"); iCoursesTabScroll.add(iCoursesTab);
+					iCoursesTabScroll.getElement().getStyle().clearPosition();
+					iCoursesTabScroll.getElement().getStyle().clearOverflow();
 					iNote = new AriaTextArea();
 					iNote.setStyleName("unitime-TextArea"); iNote.addStyleName("request-notes");
 					iNote.setVisibleLines(5);
@@ -153,16 +159,19 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 					iCoursesTab.addSelectionHandler(new SelectionHandler<Integer>() {
 						@Override
 						public void onSelection(SelectionEvent<Integer> event) {
+							iCoursesTab.getTabElement(event.getSelectedItem()).scrollIntoView();
 							CourseMessage message = iCourse2message.get(event.getSelectedItem());
 							boolean show = iNoteSuggestions.isSuggestionListShowing();
 							if (show) iNoteSuggestions.hideSuggestionList();
 							iNoteSuggestions.setSuggestions(message.getSuggestions());
 							iNote.setText(message.getMessage() == null ? "" : message.getMessage());
 							if (show) iNoteSuggestions.showSuggestions(iNote.getText());
+							iNote.setAriaLabel(ARIA.requestNoteFor(message.getCourse()));
+							AriaStatus.getInstance().setHTML(ARIA.requestNoteFor(message.getCourse()));
 						}
 					});
 					if (cm.getMessage() != null) iNote.setText(cm.getMessage());
-					mp.add(iCoursesTab);
+					mp.add(iCoursesTabScroll);
 					mp.add(iNoteSuggestions);
 				}
 				iCourse2message.put(iCourse2message.size(), cm);

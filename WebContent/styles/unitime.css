@@ -4357,6 +4357,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-ConfirmationPanel .message-panel .request-note {
 	margin-top: 2px;
 	margin-left: 15px;
+	width: calc(100% - 15px);
 }
 
 .unitime-ConfirmationPanel .message-panel .request-note:focus {
@@ -4365,9 +4366,12 @@ unitime-RoomSharingWidget .legend .blank {
     box-shadow: 0 0 5px 2px #719ECE;
 }
 
-.unitime-ConfirmationPanel .message-panel .notes-tab {
+.unitime-ConfirmationPanel .message-panel .notes-scroll {
+	overflow-x: scroll;
+	overflow-y: visible;
 	margin-left: 15px;
 	margin-bottom: -2px;
+	margin-right: 2px;
 }
 
 .unitime-ConfirmationPanel .message-panel .request-notes {
@@ -6760,6 +6764,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-ChangeGradeModesDialog .course-notes .request-note {
 	margin-left: 15px;
 	margin-top: -2px;
+	width: calc(100% - 15px);
 }
 
 .unitime-ChangeGradeModesDialog .course-notes .request-note:focus {
@@ -6768,9 +6773,12 @@ unitime-RoomSharingWidget .legend .blank {
     box-shadow: 0 0 5px 2px #719ECE;
 }
 
-.unitime-ChangeGradeModesDialog .course-notes .notes-tab {
+.unitime-ChangeGradeModesDialog .course-notes .notes-scroll {
+	overflow-x: scroll;
+	overflow-y: visible;
 	margin-left: 15px;
 	margin-bottom: 2px;
+	margin-right: 2px;
 }
 
 .unitime-SolutionInfoDialog {

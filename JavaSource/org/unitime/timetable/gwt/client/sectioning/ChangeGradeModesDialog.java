@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaSuggestArea;
 import org.unitime.timetable.gwt.client.aria.AriaTabBar;
 import org.unitime.timetable.gwt.client.aria.AriaTextArea;
@@ -105,6 +106,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 	private List<RetrieveSpecialRegistrationResponse> iApprovals;
 	private P iApproval = null;
 	private AriaTabBar iCoursesTab = null;
+	private P iCoursesTabScroll = null;
 	private Map<Integer, String> iTab2Course = new HashMap<Integer, String>();
 	private Map<String, String> iCourse2Note = new HashMap<String, String>();
 	private AriaTextArea iNote = null;
@@ -172,13 +174,20 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 		iCoursesTab.addSelectionHandler(new SelectionHandler<Integer>() {
 			@Override
 			public void onSelection(SelectionEvent<Integer> event) {
-				String message = iCourse2Note.get(iTab2Course.get(event.getSelectedItem()));
+				iCoursesTab.getTabElement(event.getSelectedItem()).scrollIntoView();
+				String course = iTab2Course.get(event.getSelectedItem());
+				String message = iCourse2Note.get(course);
 				boolean show = iNoteWithSuggestions.isSuggestionListShowing();
 				if (show) iNoteWithSuggestions.hideSuggestionList();
 				iNote.setText(message == null ? "" : message);
 				if (show) iNoteWithSuggestions.showSuggestions(iNote.getText());
+				iNote.setAriaLabel(ARIA.requestNoteFor(course));
+				AriaStatus.getInstance().setHTML(ARIA.requestNoteFor(course));
 			}
 		});
+		iCoursesTabScroll = new P("notes-scroll"); iCoursesTabScroll.add(iCoursesTab);
+		iCoursesTabScroll.getElement().getStyle().clearPosition();
+		iCoursesTabScroll.getElement().getStyle().clearOverflow();
 		
 		iNote = new AriaTextArea();
 		iNote.setStyleName("unitime-TextArea"); iNote.addStyleName("request-notes");
@@ -221,7 +230,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 			}
 		});
 		iCourseNotes = new P("course-notes");
-		iCourseNotes.add(iCoursesTab);
+		iCourseNotes.add(iCoursesTabScroll);
 		iCourseNotes.add(iNoteWithSuggestions);
 		
 		setWidget(iForm);
