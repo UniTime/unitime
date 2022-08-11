@@ -257,20 +257,6 @@
 		<put name="body" value="/admin/hibernateQueryTest.jsp" />
   	</definition>
 
-  	<definition	name="classAssignmentsReportSearchTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Class Assignments"/>
-		<put name="body" value="/user/classAssignmentsReportSearch.jsp" />
-		<put name="action" value="classAssignmentsReportSearch" />
-		<put name="showNavigation" value="true" />
-		<put name="showSolverWarnings" value="assignment" />
-		<put name="checkRole" value="false" />
-  	</definition>
-  	
-  	<definition	name="classAssignmentsReportListTile" extends="classAssignmentsReportSearchTile">
-		<put name="body2" value="/user/classAssignmentsReportList.jsp" />
-		<put name="action2" value="classAssignmentsReportChange" />
-  	</definition>
-  	
   	<definition name="timePatternsTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Time Patterns"/>
 		<put name="body" value="/admin/timePatterns.jsp" />

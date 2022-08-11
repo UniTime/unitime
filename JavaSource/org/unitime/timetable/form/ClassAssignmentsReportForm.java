@@ -22,29 +22,23 @@ package org.unitime.timetable.form;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.util.LookupTables;
 
 
 /**
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
-public class ClassAssignmentsReportForm extends ActionForm implements ClassListFormInterface {
-	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
-	/**
-	 * Comment for <code>serialVersionUID</code>
-	 */
+public class ClassAssignmentsReportForm implements UniTimeForm, ClassListFormInterface {
 	private static final long serialVersionUID = 3257854294022959921L;	
-	private Collection classes;
-	private Collection subjectAreas;
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	private Collection<Class_> classes;
+	private Collection<SubjectArea> subjectAreas;
 	private String[] subjectAreaIds; 
 	private String buttonAction;
 	private String subjectAreaAbbv;
@@ -120,19 +114,10 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 		this.subjectAreaIds = subjectAreaIds;
 	}
 
-    // --------------------------------------------------------- Methods
-	/** 
-	 * Method reset
-	 * @param mapping
-	 * @param request
-	 */
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
-	    init();
-		LookupTables.setupItypes(request,true);
-	}
-	public void init(){
-		classes = new ArrayList();
-		subjectAreas = new ArrayList();
+	@Override
+	public void reset(){
+		classes = new ArrayList<Class_>();
+		subjectAreas = new ArrayList<SubjectArea>();
 		subjectAreaIds = new String[0];
 
 		sortBy = ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME);
@@ -161,33 +146,32 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
     /**
      * @return Returns the classes.
      */
-    public Collection getClasses() {
+    public Collection<Class_> getClasses() {
         return classes;
     }
     /**
      * @param classes The classes to set.
      */
-    public void setClasses(Collection classes) {
+    public void setClasses(Collection<Class_> classes) {
         this.classes = classes;
     }
     /**
      * @return Returns the subjectAreas.
      */
-    public Collection getSubjectAreas() {
+    public Collection<SubjectArea> getSubjectAreas() {
         return subjectAreas;
     }
     /**
      * @param subjectAreas The subjectAreas to set.
      */
-    public void setSubjectAreas(Collection subjectAreas) {
+    public void setSubjectAreas(Collection<SubjectArea> subjectAreas) {
         this.subjectAreas = subjectAreas;
     }
-    /* (non-Javadoc)
-     * @see org.apache.struts.action.ActionForm#validate(org.apache.struts.action.ActionMapping, javax.servlet.http.HttpServletRequest)
-     */
-    public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-        ActionErrors errors = new ActionErrors();
-        return errors;
+
+    @Override
+    public void validate(UniTimeAction action) {
+    	if (subjectAreaIds == null || subjectAreaIds.length == 0)
+    		action.addFieldError("subjectAreaIds", MSG.errorSubjectRequired());
     }
     
 	public String getSortBy() { return sortBy; }
@@ -197,11 +181,6 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 	public void setFilterManager(String filterManager) { this.filterManager = filterManager; }
 	public String getFilterAssignedRoom() { return filterAssignedRoom; }
 	public void setFilterAssignedRoom(String filterAssignedRoom) { this.filterAssignedRoom = filterAssignedRoom; }
-	/*
-	public String getFilterInstructor() { return filterInstructor; }
-	public void setFilterInstructor(String filterInstructor) { this.filterInstructor = filterInstructor; }
-	*/
-	//NO instructor is shown on class assignment page -> display no filter
 	public String getFilterInstructor() { return ""; }
 	public String getFilterIType() { return filterIType; }
 	public void setFilterIType(String filterIType) { this.filterIType = filterIType; }
@@ -425,7 +404,7 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 	}
 	@Override
 	public Boolean getFundingDepartment() {
-		return (new Boolean(false));
+		return false;
 	}
 	@Override
 	public Boolean getInstructorAssignment() {
@@ -441,4 +420,8 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 	}
 	@Override
 	public String getWaitlist() { return null; }
+
+	public int getSubjectAreaListSize() {
+		return Math.min(7, getSubjectAreas().size());
+	}
 }

@@ -110,7 +110,7 @@
 					<hasPermission name="Reservations"/>
 				</condition>
 			</item>
-			<item name="Class Assignments" page="classAssignmentsReportShowSearch.do">
+			<item name="Class Assignments" page="classAssignmentsReportSearch.action">
 				<condition>
 					<hasPermission name="ClassAssignments"/>
 				</condition>

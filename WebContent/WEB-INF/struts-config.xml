@@ -43,7 +43,6 @@
 	  <form-bean name="manageSolversForm" type="org.unitime.timetable.form.ManageSolversForm" />
       <form-bean name="distributionPrefsForm" type="org.unitime.timetable.form.DistributionPrefsForm" />
       <form-bean name="hibernateQueryTestForm" type="org.unitime.timetable.form.HibernateQueryTestForm" />
-	  <form-bean name="classAssignmentsReportForm" type="org.unitime.timetable.form.ClassAssignmentsReportForm" />
 	  <form-bean name="timePatternEditForm" type="org.unitime.timetable.form.TimePatternEditForm" />
       <form-bean name="instructionalOfferingDetailForm" type="org.unitime.timetable.form.InstructionalOfferingDetailForm" />
       <form-bean name="crossListsModifyForm" type="org.unitime.timetable.form.CrossListsModifyForm" />
@@ -479,66 +478,6 @@
         <forward 
         	name="displayQueryForm" 
         	path="hibernateQueryTestTile" />
-      </action>
-      
-        <action
-         path="/classAssignmentsReportSearch"
-         attribute="classAssignmentsReportForm"
-         input="classAssignmentsReportSearchTile"
-         name="classAssignmentsReportForm"
-         parameter="doit"
-         scope="request"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         validate="false">
-        <forward 
-        	name="showClassAssignmentsReportList" 
-        	path="classAssignmentsReportListTile" />
-        <forward 
-        	name="showClassAssignmentsReportSearch" 
-        	path="classAssignmentsReportSearchTile" />
-      </action>
-      
-      <action
-         path="/classAssignmentsReportShowSearch"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         attribute="classAssignmentsReportForm"
-         input="classAssignmentsReportSearchTile"
-         name="classAssignmentsReportForm"
-         scope="request"
-         parameter="doit"
-         validate="false">
-        <forward 
-        	name="showClassAssignmentsReportSearch" 
-        	path="classAssignmentsReportSearchTile" />
-        <forward 
-        	name="showClassAssignmentsReportList" 
-        	path="classAssignmentsReportListTile" />
-      </action>
-
-	  <action
-         path="/classAssignmentsReportChange"
-         attribute="classAssignmentsReportForm"
-         input="classAssignmentsReportListTile"
-         name="classAssignmentsReportForm"
-         parameter="doit"
-         scope="request"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         validate="false">
-        <forward name="showClassAssignmentsReportList" path="classAssignmentsReportListTile" />
-        <forward name="showClassAssignmentsReportSearch" path="classAssignmentsReportSearchTile" />
-      </action>
-	
-     <action
-         path="/classAssignmentsReportList"
-         attribute="classAssignmentsReportForm"
-         input="classAssignmentsReportListTile"
-         name="classAssignmentsReportForm"
-         scope="request"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         validate="false">
-         <forward 
-         	name="showClassAssignmentsReportList" 
-         	path="classAssignmentsReportListTile" />
       </action>
       
       <action 

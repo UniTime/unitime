@@ -85,15 +85,12 @@ import org.unitime.timetable.webutil.pdf.PdfClassListTableBuilder;
 public class ClassSearchAction extends UniTimeAction<ClassListForm> {
 	private static final long serialVersionUID = -4834379802757297961L;
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
-	private Long io;
 	private String doit;
 	private String[] subjectAreaIds;
 	private String courseNbr;
 	private String loadFilter;
 	private boolean showTable = false;
 	
-	public Long getIo() { return io; }
-	public void setIo(Long io) { this.io = io; }
 	public String getDoit() { return doit; }
 	public void setDoit(String doit) { this.doit = doit; }
 	public String[] getSubjectAreaIds() { return subjectAreaIds; }
@@ -177,6 +174,13 @@ public class ClassSearchAction extends UniTimeAction<ClassListForm> {
 				StringBuffer ids = new StringBuffer();
 				StringBuffer names = new StringBuffer();
 				StringBuffer subjIds = new StringBuffer();
+				
+				form.validate(this);
+		    	if (hasFieldErrors()) {
+		    		setShowTable(false);
+					return "showClassSearch";
+		    	}
+		    	
 				form.setClasses(ClassSearchAction.getClasses(form, WebSolver.getClassAssignmentProxy(request.getSession())));
 				Collection classes = form.getClasses();
 				if (classes.isEmpty()) {
@@ -275,14 +279,16 @@ public class ClassSearchAction extends UniTimeAction<ClassListForm> {
 			form.setFundingDepartment(false);
 
     	form.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
-    	form.setClasses(getClasses(form, WebSolver.getClassAssignmentProxy(request.getSession())));
     	
-    	Collection classes = form.getClasses();
     	form.validate(this);
     	if (hasFieldErrors()) {
     		setShowTable(false);
 			return "showClassSearch";
-    	} else if (classes.isEmpty()) {
+    	}
+    	
+    	form.setClasses(getClasses(form, WebSolver.getClassAssignmentProxy(request.getSession())));
+    	Collection classes = form.getClasses();
+    	if (classes.isEmpty()) {
 			addFieldError("searchResult", MSG.errorNoRecords());
 			setShowTable(false);
 			return "showClassSearch";

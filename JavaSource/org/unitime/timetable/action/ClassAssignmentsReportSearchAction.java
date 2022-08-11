@@ -20,76 +20,187 @@
 package org.unitime.timetable.action;
 
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.TreeSet;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.action.ActionMessages;
-import org.hibernate.HibernateException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
+import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
-import org.unitime.localization.impl.LocalizedLookupDispatchAction;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.localization.messages.Messages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ClassAssignmentsReportForm;
-import org.unitime.timetable.form.ClassListFormInterface;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.solver.ClassAssignmentProxy;
-import org.unitime.timetable.solver.exam.ExamSolverProxy;
-import org.unitime.timetable.solver.service.AssignmentService;
-import org.unitime.timetable.solver.service.SolverService;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.ExportUtils;
+import org.unitime.timetable.util.IdValue;
+import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.CsvClassAssignmentExport;
+import org.unitime.timetable.webutil.WebClassAssignmentReportListTableBuilder;
 import org.unitime.timetable.webutil.pdf.PdfClassAssignmentReportListTableBuilder;
 
 
 /**
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
-@Service("/classAssignmentsReportSearch")
-public class ClassAssignmentsReportSearchAction extends LocalizedLookupDispatchAction {
+@Action(value="classAssignmentsReportSearch", results = {
+		@Result(name = "showClassAssignmentsReportSearch", type = "tiles", location = "classAssignmentsReportSearch.tiles")
+	})
+@TilesDefinition(name = "classAssignmentsReportSearch.tiles", extend =  "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Class Assignments"),
+		@TilesPutAttribute(name = "body", value = "/user/classAssignmentsReportSearch.jsp"),
+		@TilesPutAttribute(name = "showNavigation", value = "true"),
+		@TilesPutAttribute(name = "showSolverWarnings", value = "assignment"),
+		@TilesPutAttribute(name = "checkRole", value = "false")
+})
+public class ClassAssignmentsReportSearchAction extends UniTimeAction<ClassAssignmentsReportForm> {
+	private static final long serialVersionUID = -2339315783902007234L;
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	private String doit;
+	private String[] subjectAreaIds;
+	private String loadFilter;
+	private boolean showTable = false;
 	
-	@Autowired SessionContext sessionContext;
+	public String getDoit() { return doit; }
+	public void setDoit(String doit) { this.doit = doit; }
+	public String[] getSubjectAreaIds() { return subjectAreaIds; }
+	public void setSubjectAreaIds(String[] subjectAreaIds) { this.subjectAreaIds = subjectAreaIds; }
+	public String getLoadFilter() { return loadFilter; }
+	public void setLoadFilter(String loadFilter) { this.loadFilter = loadFilter; }
+	public boolean isShowTable() { return showTable; }
+	public void setShowTable(boolean showTable) { this.showTable = showTable; }	
 	
-	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
-	
-	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
+	public String execute() throws Exception {
+		if (form == null)
+			form = new ClassAssignmentsReportForm();
+		
+    	if (getSubjectAreaIds() != null)
+    		form.setSubjectAreaIds(getSubjectAreaIds());
+    	
+		LookupTables.setupItypes(request,true);
+		
+    	if (MSG.actionSearchClassAssignments().equals(doit) || "Search".equals(doit))
+    		return searchClasses();
+    	if (MSG.actionExportPdf().equals(doit))
+    		return exportPdf();
+    	if (MSG.actionExportCsv().equals(doit))
+    		return exportCsv();
 
-	private void initializeFilters(HttpServletRequest request, ClassAssignmentsReportForm classListForm){
-	    if ("1".equals(request.getParameter("loadFilter"))) {
-            ClassAssignmentsReportSearchAction.setupGeneralFormFilters(sessionContext.getUser(), classListForm);
+        BackTracker.markForBack(request, null, null, false, true);
+        
+        sessionContext.checkPermission(Right.ClassAssignments);
+
+	    request.setAttribute(Department.EXTERNAL_DEPT_ATTR_NAME, Department.findAllExternal(sessionContext.getUser().getCurrentAcademicSessionId()));
+	    
+	    ClassAssignmentsReportSearchAction.setupGeneralFormFilters(sessionContext.getUser(), form);
+	    
+		if (request.getParameter("sortBy") != null) {
+			form.setSortBy((String)request.getParameter("sortBy"));
+			form.setFilterAssignedRoom((String)request.getParameter("filterAssignedRoom"));
+			form.setFilterManager((String)request.getParameter("filterManager"));
+			form.setFilterIType((String)request.getParameter("filterIType"));
+			form.setFilterAssignedTimeMon(request.getParameter("filterAssignedTimeMon")==null?false:Boolean.getBoolean((String)request.getParameter("filterAssignedTimeMon")));
+			form.setFilterAssignedTimeTue(request.getParameter("filterAssignedTimeTue")==null?false:Boolean.getBoolean((String)request.getParameter("filterAssignedTimeTue")));
+			form.setFilterAssignedTimeWed(request.getParameter("filterAssignedTimeWed")==null?false:Boolean.getBoolean((String)request.getParameter("filterAssignedTimeWed")));
+			form.setFilterAssignedTimeThu(request.getParameter("filterAssignedTimeThu")==null?false:Boolean.getBoolean((String)request.getParameter("filterAssignedTimeThu")));
+			form.setFilterAssignedTimeFri(request.getParameter("filterAssignedTimeFri")==null?false:Boolean.getBoolean((String)request.getParameter("filterAssignedTimeFri")));
+			form.setFilterAssignedTimeSat(request.getParameter("filterAssignedTimeSat")==null?false:Boolean.getBoolean((String)request.getParameter("filterAssignedTimeSat")));
+			form.setFilterAssignedTimeSun(request.getParameter("filterAssignedTimeSun")==null?false:Boolean.getBoolean((String)request.getParameter("filterAssignedTimeSun")));
+			form.setFilterAssignedTimeHour((String)request.getParameter("filterAssignedTimeHour"));
+			form.setFilterAssignedTimeMin((String)request.getParameter("filterAssignedTimeMin"));
+			form.setFilterAssignedTimeAmPm((String)request.getParameter("filterAssignedTimeAmPm"));
+			form.setFilterAssignedTimeLength((String)request.getParameter("filterAssignedTimeLength"));
+			form.setSortByKeepSubparts(Boolean.getBoolean((String)request.getParameter("sortByKeepSubparts")));
+		}
+		
+		form.setSubjectAreas(SubjectArea.getAllSubjectAreas(sessionContext.getUser().getCurrentAcademicSessionId()));
+
+		Object sas = sessionContext.getAttribute(SessionAttribute.ClassAssignmentsSubjectAreas);
+		if (sas == null)
+			sas = sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea);
+		if (Constants.ALL_OPTION_VALUE.equals(sas))
+			sas = null;
+	    if(sas!=null && sas.toString().trim().length() > 0) {
+	    	String subjectAreaIds = sas.toString();
+	        try {
+	        	
+		        Debug.debug("Subject Areas: " + subjectAreaIds);
+		        
+		        
+		        form.setSubjectAreaIds(subjectAreaIds.split(","));
+		        
+		        Integer maxSubjectsToSearch = ApplicationProperty.MaxSubjectsToSearchAutomatically.intValue();
+		        if (maxSubjectsToSearch != null && maxSubjectsToSearch >= 0 && form.getSubjectAreaIds().length > maxSubjectsToSearch) {
+		        	setShowTable(false);
+		        	return "showClassAssignmentsReportSearch";
+		        }
+		        
+				form.validate(this);
+		    	if (hasFieldErrors()) {
+		    		setShowTable(false);
+					return "showClassAssignmentsReportSearch";
+		    	} 
+				form.setClasses(ClassSearchAction.getClasses(form, getClassAssignmentService().getAssignment()));
+				Collection classes = form.getClasses();
+		    	if (classes.isEmpty()) {
+		    		addFieldError("searchResult", MSG.errorNoRecords());
+		    		setShowTable(false);
+				    return "showClassAssignmentsReportSearch";
+				} else {
+					StringBuffer ids = new StringBuffer();
+					StringBuffer names = new StringBuffer();
+					for (int i=0;i<form.getSubjectAreaIds().length;i++) {
+						if (i>0) names.append(","); 
+						ids.append("&subjectAreaIds="+form.getSubjectAreaIds()[i]);
+						names.append(((new SubjectAreaDAO()).get(Long.valueOf(form.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
+					}
+					BackTracker.markForBack(
+							request, 
+							"classAssignmentsReportSearch.action?doit=Search&loadFilter=1"+ids, 
+							"Class Assignments ("+names+")", 
+							true, true);
+					setShowTable(true);
+					return "showClassAssignmentsReportSearch";
+				}
+	        } catch (NumberFormatException nfe) {
+	        	Debug.error("Subject Area Ids session attribute is corrupted. Resetting ... ");
+		        sessionContext.removeAttribute(SessionAttribute.ClassAssignmentsSubjectAreas);
+		    }
+	    }
+
+	    setShowTable(false);
+	    return "showClassAssignmentsReportSearch";
+	}
+
+	private void initializeFilters() {
+	    if ("1".equals(getLoadFilter())) {
+            ClassAssignmentsReportSearchAction.setupGeneralFormFilters(sessionContext.getUser(), form);
 	    } else {
-	    	sessionContext.getUser().setProperty("ClassAssignments.sortByKeepSubparts", classListForm.getSortByKeepSubparts() ? "1" : "0");
-	    	sessionContext.getUser().setProperty("ClassAssignments.sortBy", classListForm.getSortBy());
-	    	sessionContext.getUser().setProperty("ClassAssignments.filterAssignedRoom", classListForm.getFilterAssignedRoom());		    	
-	    	//sessionContext.getUser().setProperty("ClassAssignments.filterInstructor", classListForm.getFilterInstructor());		    	
-	    	sessionContext.getUser().setProperty("ClassAssignments.filterManager", classListForm.getFilterManager());		
-	    	sessionContext.getUser().setProperty("ClassAssignments.filterIType", classListForm.getFilterIType());
-	    	sessionContext.getUser().setProperty("ClassAssignments.filterDayCode", String.valueOf(classListForm.getFilterDayCode()));
-	    	sessionContext.getUser().setProperty("ClassAssignments.filterStartSlot", String.valueOf(classListForm.getFilterStartSlot()));
-	    	sessionContext.getUser().setProperty("ClassAssignments.filterLength", String.valueOf(classListForm.getFilterLength()));
-	    	sessionContext.getUser().setProperty("ClassAssignments.showCrossListedClasses", String.valueOf(classListForm.getShowCrossListedClasses()));
+	    	sessionContext.getUser().setProperty("ClassAssignments.sortByKeepSubparts", form.getSortByKeepSubparts() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassAssignments.sortBy", form.getSortBy());
+	    	sessionContext.getUser().setProperty("ClassAssignments.filterAssignedRoom", form.getFilterAssignedRoom());		    	
+	    	sessionContext.getUser().setProperty("ClassAssignments.filterManager", form.getFilterManager());		
+	    	sessionContext.getUser().setProperty("ClassAssignments.filterIType", form.getFilterIType());
+	    	sessionContext.getUser().setProperty("ClassAssignments.filterDayCode", String.valueOf(form.getFilterDayCode()));
+	    	sessionContext.getUser().setProperty("ClassAssignments.filterStartSlot", String.valueOf(form.getFilterStartSlot()));
+	    	sessionContext.getUser().setProperty("ClassAssignments.filterLength", String.valueOf(form.getFilterLength()));
+	    	sessionContext.getUser().setProperty("ClassAssignments.showCrossListedClasses", form.getShowCrossListedClasses() ? "1" : "0");
 	    }
 
 	}
 	
-    
-    public static void setupGeneralFormFilters(UserContext user, ClassListFormInterface form){
+    public static void setupGeneralFormFilters(UserContext user, ClassAssignmentsReportForm form){
         form.setSortBy(user.getProperty("ClassAssignments.sortBy", ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)));
         form.setFilterAssignedRoom(user.getProperty("ClassAssignments.filterAssignedRoom", ""));
         form.setFilterManager(user.getProperty("ClassAssignments.filterManager", ""));
@@ -99,100 +210,70 @@ public class ClassAssignmentsReportSearchAction extends LocalizedLookupDispatchA
         form.setFilterLength(Integer.valueOf(user.getProperty("ClassAssignments.filterLength", "-1")));
         form.setSortByKeepSubparts("1".equals(user.getProperty("ClassAssignments.sortByKeepSubparts", "1")));
         form.setShowCrossListedClasses("1".equals(user.getProperty("ClassAssignments.showCrossListedClasses", "0")));
-    
     }
-    
-	/** 
-	 * Method execute
-	 * @param mapping
-	 * @param form
-	 * @param request
-	 * @param response
-	 * @return ActionForward
-	 * @throws HibernateException
-	 */
 
-	public ActionForward searchClasses(
-			ActionMapping mapping,
-			ActionForm form,
-			HttpServletRequest request,
-			HttpServletResponse response) throws Exception {	
-		
-		return(performAction(mapping, form, request, response, "search"));
-		
+	public String searchClasses() throws Exception {
+		return performAction("search");
 	}
 
-	public ActionForward exportPdf(
-			ActionMapping mapping,
-			ActionForm form,
-			HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
-		
-		return(performAction(mapping, form, request, response, "exportPdf"));
-		
+	public String exportPdf() throws Exception {
+		return performAction("exportPdf");
+	}
+
+	public String exportCsv() throws Exception {
+		return performAction("exportCsv");
 	}
 	
-	public ActionForward exportCsv(
-			ActionMapping mapping,
-			ActionForm form,
-			HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
-		
-		return(performAction(mapping, form, request, response, "exportCsv"));
-		
-	}
-	
-	public ActionForward performAction(
-			ActionMapping mapping,
-			ActionForm form,
-			HttpServletRequest request,
-			HttpServletResponse response,
-			String action) throws Exception{
+	public String performAction(String action) throws Exception{
 		
 		sessionContext.checkPermission(Right.ClassAssignments);
         
         if (!action.equals("search") && !action.equals("exportPdf") && !action.equals("exportCsv"))
         	throw new Exception ("Unrecognized Action");
         
-        ClassAssignmentsReportForm classListForm = (ClassAssignmentsReportForm) form;
-        
         request.setAttribute(Department.EXTERNAL_DEPT_ATTR_NAME, Department.findAllExternal(sessionContext.getUser().getCurrentAcademicSessionId()));
         
-	    this.initializeFilters(request, classListForm);
+	    initializeFilters();
 	    
-	    classListForm.setSubjectAreas(SubjectArea.getAllSubjectAreas(sessionContext.getUser().getCurrentAcademicSessionId()));
-	    classListForm.setClasses(ClassSearchAction.getClasses(classListForm, classAssignmentService.getAssignment()));
+	    form.setSubjectAreas(SubjectArea.getAllSubjectAreas(sessionContext.getUser().getCurrentAcademicSessionId()));
 	    
-		Collection classes = classListForm.getClasses();
-		if (classes.isEmpty()) {
-		    ActionMessages errors = new ActionMessages();
-		    errors.add("searchResult", new ActionMessage("errors.generic", MSG.errorNoRecords()));
-		    saveErrors(request, errors);
-		    return mapping.findForward("showClassAssignmentsReportSearch");
+		form.validate(this);
+    	if (hasFieldErrors()) {
+    		setShowTable(false);
+			return "showClassAssignmentsReportSearch";
+    	} 
+
+    	form.setClasses(ClassSearchAction.getClasses(form, getClassAssignmentService().getAssignment()));
+	    Collection classes = form.getClasses();
+	    if (classes.isEmpty()) {
+    		addFieldError("searchResult", MSG.errorNoRecords());
+    		setShowTable(false);
+		    return "showClassAssignmentsReportSearch";
 		} else {
 			StringBuffer subjIds = new StringBuffer();
 			StringBuffer ids = new StringBuffer();
 			StringBuffer names = new StringBuffer();
-			for (int i=0;i<classListForm.getSubjectAreaIds().length;i++) {
+			for (int i=0;i<form.getSubjectAreaIds().length;i++) {
 				if (i>0) {
 					names.append(","); 
 					subjIds.append(",");
 					}
-				ids.append("&subjectAreaIds="+classListForm.getSubjectAreaIds()[i]);
-				subjIds.append(classListForm.getSubjectAreaIds()[i]);
-				names.append(((new SubjectAreaDAO()).get(Long.valueOf(classListForm.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
+				ids.append("&subjectAreaIds="+form.getSubjectAreaIds()[i]);
+				subjIds.append(form.getSubjectAreaIds()[i]);
+				names.append(((new SubjectAreaDAO()).get(Long.valueOf(form.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
 			}
 			sessionContext.setAttribute(SessionAttribute.ClassAssignmentsSubjectAreas, subjIds);
 			if("search".equals(action)){
 				BackTracker.markForBack(
 						request, 
-						"classAssignmentsReportSearch.do?doit=Search&loadFilter=1"+ids, 
+						"classAssignmentsReportSearch.action?doit=Search&loadFilter=1"+ids, 
 						MSG.backClassAssignments(names.toString()), 
 						true, true);
+				setShowTable(true);
 			} else if ("exportPdf".equals(action)) {
 				OutputStream out = ExportUtils.getPdfOutputStream(response, "classassign");
 				
-				new PdfClassAssignmentReportListTableBuilder().pdfTableForClasses(out, classAssignmentService.getAssignment(), examinationSolverService.getSolver(), classListForm, sessionContext);
+				new PdfClassAssignmentReportListTableBuilder().pdfTableForClasses(out, getClassAssignmentService().getAssignment(), getExaminationSolverService().getSolver(), form, sessionContext);
 				
 				out.flush(); out.close();
 				
@@ -200,19 +281,36 @@ public class ClassAssignmentsReportSearchAction extends LocalizedLookupDispatchA
 			} else if ("exportCsv".equals(action)) {
 
 				ExportUtils.exportCSV(
-						CsvClassAssignmentExport.exportCsv(sessionContext.getUser(), classListForm.getClasses(), classAssignmentService.getAssignment()),
+						CsvClassAssignmentExport.exportCsv(sessionContext.getUser(), form.getClasses(), getClassAssignmentService().getAssignment()),
 						response,
 						"classassign");
 				
 	    		return null;
 			} 
-			return mapping.findForward("showClassAssignmentsReportList");
+			return "showClassAssignmentsReportSearch";
 		}
 
 	}
-
-	@Override
-	protected Messages getMessages() {
-		return MSG;
+	
+	public List<IdValue> getManagers() {
+		List<IdValue> ret = new ArrayList<IdValue>();
+		ret.add(new IdValue(null, MSG.dropManagerAll()));
+		ret.add(new IdValue(-2l, MSG.dropDeptDepartment()));
+		for (Department d: (TreeSet<Department>)request.getAttribute(Department.EXTERNAL_DEPT_ATTR_NAME))
+			ret.add(new IdValue(d.getUniqueId(), d.getManagingDeptLabel()));
+		return ret;
+	}
+	
+	public String printTable() throws Exception {
+		new WebClassAssignmentReportListTableBuilder().htmlTableForClasses(
+				sessionContext,
+				getClassAssignmentService().getAssignment(),
+				getExaminationSolverService().getSolver(),
+				form, 
+				getPageContext().getOut(),
+				request.getParameter("backType"),
+				request.getParameter("backId")
+			);
+		return "";
 	}
 }

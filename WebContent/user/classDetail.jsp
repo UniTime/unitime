@@ -31,13 +31,13 @@
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title>
-						<A title="<%=MSG.titleInstructionalOfferingDetail(MSG.accessInstructionalOfferingDetail()) %>" 
-							accesskey="<%=MSG.accessInstructionalOfferingDetail() %>" class="l8"
+						<A title="${MSG.titleInstructionalOfferingDetail(MSG.accessInstructionalOfferingDetail())}" 
+							accesskey="${MSG.accessInstructionalOfferingDetail()}" class="l8"
 							href="instructionalOfferingDetail.do?op=view&io=${form.instrOfferingId}"><s:property value="form.courseName"/> - <s:property value="form.courseTitle"/></A>:
 						<s:if test="form.subpart == null"><s:property value="form.itypeDesc"/></s:if>
 						<s:else> 
-							<A title="<%=MSG.titleSchedulingSubpartDetail(MSG.accessSchedulingSubpartDetail()) %>" 
-								accesskey="<%=MSG.accessSchedulingSubpartDetail() %>" class="l8"
+							<A title="${MSG.titleSchedulingSubpartDetail(MSG.accessSchedulingSubpartDetail())}" 
+								accesskey="${MSG.accessSchedulingSubpartDetail()}" class="l8"
 								href="schedulingSubpartDetail.action?ssuid=${form.subpart}"><s:property value="form.itypeDesc"/></A>
 						</s:else>
 						<s:property value="form.section"/>
@@ -211,10 +211,10 @@
 			<TD><loc:message name="propertyDisplayInstructors"/></TD>
 			<TD>
 				<s:if test="form.displayInstructor == true">
-					<IMG src="images/accept.png" border="0" alt="<%=MSG.titleInstructorDisplayed() %>" title="<%=MSG.titleInstructorDisplayed() %>">
+					<IMG src="images/accept.png" border="0" alt="${MSG.titleInstructorDisplayed()}" title="${MSG.titleInstructorDisplayed()}">
 				</s:if>
 				<s:else>
-					<IMG src="images/cross.png" border="0" alt="<%=MSG.titleInstructorNotDisplayed() %>" title="<%=MSG.titleInstructorNotDisplayed() %>">
+					<IMG src="images/cross.png" border="0" alt="${MSG.titleInstructorNotDisplayed()}" title="${MSG.titleInstructorNotDisplayed()}">
 				</s:else>
 			</TD>
 		</TR>
@@ -223,10 +223,10 @@
 			<TD><loc:message name="propertyEnabledForStudentScheduling"/> </TD>
 			<TD>
 				<s:if test="form.enabledForStudentScheduling == true">
-					<IMG src="images/accept.png" border="0" alt="<%=MSG.titleEnabledForStudentScheduling() %>" title="<%=MSG.titleEnabledForStudentScheduling() %>">
+					<IMG src="images/accept.png" border="0" alt="${MSG.titleEnabledForStudentScheduling()}" title="${MSG.titleEnabledForStudentScheduling()}">
 				</s:if>
 				<s:else>
-					<IMG src="images/cross.png" border="0" alt="<%=MSG.titleNotEnabledForStudentScheduling() %>" title="<%=MSG.titleNotEnabledForStudentScheduling() %>">
+					<IMG src="images/cross.png" border="0" alt="${MSG.titleNotEnabledForStudentScheduling()}" title="${MSG.titleNotEnabledForStudentScheduling()}">
 				</s:else>
 			</TD>
 		</TR>

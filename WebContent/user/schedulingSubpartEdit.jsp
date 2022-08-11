@@ -315,9 +315,9 @@
 							options[i+1] = new Option(optVal, optId, (currentId==optId));
 						}
 						if (basic)
-							options[count+1] = new Option("<%=MSG.selectMoreOptions()%>","more",false);
+							options[count+1] = new Option("${MSG.selectMoreOptions()}","more",false);
 						else
-							options[count+1] = new Option("<%=MSG.selectLessOptions()%>","less",false);
+							options[count+1] = new Option("${MSG.selectLessOptions()}","less",false);
 						options[count+1].style.backgroundColor='rgb(223,231,242)';
 					}
 				}

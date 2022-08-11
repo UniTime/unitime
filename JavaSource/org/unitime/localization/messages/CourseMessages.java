@@ -912,7 +912,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Search")
 	@StrutsAction(
 		value = "searchClasses",
-		apply = ClassAssignmentsReportSearchAction.class
+		action = ClassAssignmentsReportSearchAction.class
 	)
 	String actionSearchClassAssignments();
 
