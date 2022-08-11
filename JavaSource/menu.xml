@@ -40,7 +40,7 @@
 					<hasPermission name="InstructionalOfferings"/>
 				</condition>
 			</item>
-			<item name="Classes" page="classShowSearch.do">
+			<item name="Classes" page="classSearch.action">
 				<condition>
 					<hasPermission name="Classes"/>
 				</condition>

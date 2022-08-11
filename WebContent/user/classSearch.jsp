@@ -17,81 +17,66 @@
  * limitations under the License.
  * 
 --%>
-<%@ page language="java" autoFlush="true"%>
-<%@ page import="org.unitime.timetable.webutil.WebInstructionalOfferingTableBuilder"%>
-<%@ page import="org.unitime.timetable.form.ClassListForm" %>
-<%@ page import="org.unitime.timetable.model.Department" %>
-<%@ page import="org.unitime.timetable.model.ItypeDesc" %>
-<%@ page import="org.unitime.timetable.model.StudentClassEnrollment"%>
-<%@ page import="org.unitime.timetable.model.LearningManagementSystemInfo" %>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean"%>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html"%>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic"%>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles"%>
-<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
-<tt:session-context/>
-<script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
-<%
-	String frmName = "classListForm";	
-	ClassListForm frm = (ClassListForm) request.getAttribute(frmName);
-%>	
-<tiles:importAttribute />
-<html:form action="/classSearch">
-<loc:bundle name="CourseMessages">
-	<html:hidden property="doit" value="Search"/>
-	<TABLE border="0" cellspacing="5" width='100%'>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="tiles" uri="http://tiles.apache.org/tags-tiles" %>
+<script type="text/javascript" src="scripts/block.js"></script>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+<s:form action="classSearch">
+	<table class="unitime-MainTable">
 		<TR>
 			<TD colspan="6">
-				<script language="JavaScript" type="text/javascript">blToggleHeader('<loc:message name="filter"/>','dispFilter');blStart('dispFilter');</script>
-				<TABLE border="0" cellspacing="0" cellpadding="3">
+				<script type="text/javascript">blToggleHeader('<loc:message name="filter"/>','dispFilter');blStart('dispFilter');</script>
+				<TABLE>
 					<TR>
 						<TD>
 							<B><loc:message name="filterOptionalColumns" /></B>
 						</TD>
 						<TD>
-							<html:checkbox property="divSec" />
+							<s:checkbox name="form.divSec" />
 							<loc:message name="columnExternalId"/>
 						</TD>
 					</TR>
-					<logic:equal name="<%=frmName%>" property="demandIsVisible" value="true">
+					<s:if test="form.demandIsVisible == true">
 						<TR>
 							<TD></TD>
 							<TD>
-								<html:checkbox property="demand" />
+								<s:checkbox name="form.demand" />
 								<loc:message name="columnDemand"/>
 							</TD>
 						</TR>
-					</logic:equal>
-					<html:hidden property="demandIsVisible"/>
+					</s:if>
+					<s:hidden name="form.demandIsVisible"/>
 					<TR>
 						<TD></TD>
 						<TD>
-							<html:checkbox property="limit" />
+							<s:checkbox name="form.limit" />
 							<loc:message name="columnLimit"/>
 						</TD>
 					</TR>
-					<logic:notEmpty name="<%=frmName%>" property="snapshotLimit">
+					<s:if test="form.snapshotLimit != null">
 						<TR>
 							<TD></TD>
 							<TD colspan="2">
-								<html:checkbox property="snapshotLimit" />
+								<s:checkbox name="form.snapshotLimit" />
 								<loc:message name="columnSnapshotLimit"/>
 							</TD>
 						</TR>
-					</logic:notEmpty>
+					</s:if>
 					<TR>
 						<TD></TD>
 						<TD>
-							<html:checkbox property="roomLimit" />
+							<s:checkbox name="form.roomLimit" />
 							<loc:message name="columnRoomRatio"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD>
-							<html:checkbox property="manager" />
+							<s:checkbox name="form.manager" />
 							<loc:message name="columnManager"/>
 						</TD>
 					</TR>
@@ -99,7 +84,7 @@
 						<TR>
 							<TD></TD>
 							<TD>
-								<html:checkbox property="fundingDepartment" />
+								<s:checkbox name="form.fundingDepartment" />
 								<loc:message name="columnFundingDepartment"/>
 							</TD>
 						</TR>
@@ -107,68 +92,67 @@
 					<TR>
 						<TD></TD>
 						<TD>
-							<html:checkbox property="datePattern" />
+							<s:checkbox name="form.datePattern" />
 							<loc:message name="columnDatePattern"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD>
-							<html:checkbox property="timePattern" />
+							<s:checkbox name="form.timePattern" />
 							<loc:message name="columnTimePattern"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD>
-							<html:checkbox property="preferences" />
+							<s:checkbox name="form.preferences" />
 							<loc:message name="columnPreferences"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD>
-							<html:checkbox property="instructorAssignment" />
+							<s:checkbox name="form.instructorAssignment" />
 							<loc:message name="includeInstructorScheduling"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD>
-							<html:checkbox property="instructor" />
+							<s:checkbox name="form.instructor" />
 							<loc:message name="columnInstructor"/>
 						</TD>
 					</TR>
-					<logic:notEmpty name="classListForm" property="timetable">
+					<s:if test="form.timetable != null">
 						<TR>
 							<TD></TD>
 							<TD>
-								<html:checkbox property="timetable" />
+								<s:checkbox name="form.timetable" />
 								<loc:message name="columnTimetable"/>
 							</TD>
 						</TR>
-					</logic:notEmpty>
+					</s:if>
 					<TR>
 						<TD></TD>
 						<TD>
-							<html:checkbox property="schedulePrintNote" />
+							<s:checkbox name="form.schedulePrintNote" />
 							<loc:message name="columnSchedulePrintNote"/>
 						</TD>
 					</TR>
-					<TR>
-						<TD></TD>
-						<TD>
-							<% boolean showLms =  LearningManagementSystemInfo.isLmsInfoDefinedForSession(sessionContext.getUser().getCurrentAcademicSessionId()); %>
-							<% if (showLms) { %>
-								<html:checkbox property="lms" />
+					<s:if test="form.lms != null">
+						<TR>
+							<TD></TD>
+							<TD>
+								<s:checkbox name="form.lms" />
 								<loc:message name="columnLms"/>
-							<% } %>
-						</TD>
-					</TR>
+							</TD>
+						</TR>
+					</s:if>
 					<TR>
 						<TD></TD>
 						<TD>
-							<html:checkbox property="note" />
+							<s:checkbox name="form.note" />
 							<loc:message name="columnNote"/>
 						</TD>
 					</TR>
@@ -176,7 +160,7 @@
 						<TR>
 							<TD></TD>
 							<TD>
-								<html:checkbox property="exams" />
+								<s:checkbox name="form.exams" />
 								<loc:message name="columnExams"/>
 							</TD>
 						</TR>
@@ -187,11 +171,7 @@
 							<B><loc:message name="filterManager" /></B>
 						</TD>
 						<TD>
-							<html:select property="filterManager">	
-								<html:option value=""><loc:message name="dropManagerAll"/></html:option>				
-								<html:option value="-2"><loc:message name="dropDeptDepartment"/></html:option>
-								<html:options collection="<%=Department.EXTERNAL_DEPT_ATTR_NAME%>" property="uniqueId" labelProperty="managingDeptLabel" />
-							</html:select>
+							<s:select name="form.filterManager" list="managers" listKey="id" listValue="value"/>
 						</TD>
 					</TR>
 					<TR>
@@ -199,10 +179,9 @@
 							<B><loc:message name="filterInstructionalType"/></B>
 						</TD>
 						<TD>
-							<html:select property="filterIType">
-								<html:option value=""><loc:message name="dropITypeAll"/></html:option>
-								<html:options collection="<%=ItypeDesc.ITYPE_ATTR_NAME%>" property="itype" labelProperty="desc" />
-							</html:select>
+							<s:select name="form.filterIType"
+								list="#request.itypesList" listKey="itype" listValue="desc"
+								headerKey="" headerValue="%{#msg.dropITypeAll()}"/>
 						</TD>
 					</TR>
 					<TR>
@@ -210,29 +189,29 @@
 							<B><loc:message name="filterInstructor"/></B>
 						</TD>
 						<TD>
-							<html:text property="filterInstructor" size="25"/>
+							<s:textfield name="form.filterInstructor" size="25"/>
 						</TD>
 					</TR>
-					<logic:notEmpty name="classListForm" property="timetable">
+					<s:if test="form.timetable != null">
 						<TR>
 							<TD>
 								<B><loc:message name="filterAssignedTime"/></B>
 							</TD>
 							<TD>
 								<loc:bundle name="ConstantsMessages" id="CONST">
-								<html:checkbox property="filterAssignedTimeMon"/>
+								<s:checkbox name="form.filterAssignedTimeMon"/>
 								<loc:message name="mon" id="CONST"/>&nbsp;
-								<html:checkbox property="filterAssignedTimeTue"/>
+								<s:checkbox name="form.filterAssignedTimeTue"/>
 								<loc:message name="tue" id="CONST"/>&nbsp;
-								<html:checkbox property="filterAssignedTimeWed"/>
+								<s:checkbox name="form.filterAssignedTimeWed"/>
 								<loc:message name="wed" id="CONST"/>&nbsp;
-								<html:checkbox property="filterAssignedTimeThu"/>
+								<s:checkbox name="form.filterAssignedTimeThu"/>
 								<loc:message name="thu" id="CONST"/>&nbsp;
-								<html:checkbox property="filterAssignedTimeFri"/>
+								<s:checkbox name="form.filterAssignedTimeFri"/>
 								<loc:message name="fri" id="CONST"/>&nbsp;
-								<html:checkbox property="filterAssignedTimeSat"/>
+								<s:checkbox name="form.filterAssignedTimeSat"/>
 								<loc:message name="sat" id="CONST"/>&nbsp;
-								<html:checkbox property="filterAssignedTimeSun"/>
+								<s:checkbox name="form.filterAssignedTimeSun"/>
 								<loc:message name="sun" id="CONST"/>&nbsp;
 								</loc:bundle>
 							</TD>
@@ -241,19 +220,13 @@
 							<TD></TD>
 							<TD>
 								<loc:message name="filterTimeFrom"/>
-								<html:select property="filterAssignedTimeHour">
-									<html:options property="filterAssignedTimeHours"/>
-								</html:select>
+								<s:select name="form.filterAssignedTimeHour" list="form.filterAssignedTimeHours"/>
 								:
-								<html:select property="filterAssignedTimeMin">
-									<html:options property="filterAssignedTimeMins"/>
-								</html:select>
-								<html:select property="filterAssignedTimeAmPm">
-									<html:options property="filterAssignedTimeAmPms"/>
-								</html:select>
+								<s:select name="form.filterAssignedTimeMin" list="form.filterAssignedTimeMins"/>
+								<s:select name="form.filterAssignedTimeAmPm" list="form.filterAssignedTimeAmPms"/>
 								&nbsp;&nbsp;
 								<loc:message name="filterTimeFor"/>
-								<html:text property="filterAssignedTimeLength" size="3" maxlength="4"/>
+								<s:textfield name="form.filterAssignedTimeLength" size="3" maxlength="4"/>
 								<loc:message name="filterTimeMinutes"/>
 							</TD>
 						</TR>
@@ -262,20 +235,18 @@
 								<B><loc:message name="filterAssignedRoom"/></B>
 							</TD>
 							<TD colspan='2'>
-								<html:text property="filterAssignedRoom" size="25"/>
+								<s:textfield name="form.filterAssignedRoom" size="25"/>
 							</TD>
 						</TR>
-					</logic:notEmpty>
+					</s:if>
 					<TR>
 						<TD>
 							<B><loc:message name="filterSortBy"/></B>
 						</TD>
 						<TD>
-							<html:select property="sortBy">
-								<html:options property="sortByOptions"/>
-							</html:select>
+							<s:select name="form.sortBy" list="form.sortByOptions" style="min-width: 200px;"/>
 							<BR>
-							<html:checkbox property="sortByKeepSubparts"/>
+							<s:checkbox name="form.sortByKeepSubparts"/>
 							<loc:message name="checkSortWithinSubparts"/>
 						</TD>
 					</TR>
@@ -284,7 +255,7 @@
 							<B><loc:message name="filterCrossList"/></B>
 						</TD>
 						<TD>
-							<html:checkbox property="showCrossListedClasses"/>
+							<s:checkbox name="form.showCrossListedClasses"/>
 							<loc:message name="showCrossListedClasses"/>
 						</TD>
 					</TR>
@@ -293,7 +264,7 @@
 							<B><loc:message name="filterCancelledClasses"/></B>
 						</TD>
 						<TD>
-							<html:checkbox property="includeCancelledClasses"/>
+							<s:checkbox name="form.includeCancelledClasses"/>
 							<loc:message name="showCancelledClasses"/>
 						</TD>
 					</TR>
@@ -302,7 +273,7 @@
 							<B><loc:message name="filterNeedInstructorAssignment"/></B>
 						</TD>
 						<TD>
-							<html:checkbox property="filterNeedInstructor"/>
+							<s:checkbox name="form.filterNeedInstructor"/>
 							<loc:message name="showNeedInstructorClasses"/>
 						</TD>
 					</TR>
@@ -312,90 +283,67 @@
 						</TD>
 					</TR>
 				</TABLE>
-
-				<script language="JavaScript" type="text/javascript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
-				<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+				<script type="text/javascript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
+				<TABLE>
 					<TR>
 						<TD colspan='2' align='right'>
 							<br>
 						</TD>
 					</TR>
 				</TABLE>
-				<script language="JavaScript" type="text/javascript">blEnd('dispFilter');</script>
+				<script type="text/javascript">blEnd('dispFilter');</script>
 			</TD>
 		</TR>
 		<TR>
 			<TD valign="top">
-				<b><A name="Search"></A><loc:message name="filterSubject"/></b>
+				<b><A id="Search"></A><loc:message name="filterSubject"/></b>
 			</TD>
 			<TD>
-				<% if (frm.getSubjectAreas().size()==1) { %>
-					<html:select property="subjectAreaIds" styleId="subjectId">
-						<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
-					</html:select>
-				<% } else { %>
-					<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" property="subjectAreaIds" multiple="true" styleId="subjectId">
-						<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
-					</html:select>
-				<% } %>
+				<s:if test="form.subjectAreas.size == 1">
+					<s:select name="form.subjectAreaIds" id="subjectAreaIds"
+						list="form.subjectAreas" listKey="uniqueId" listValue="subjectAreaAbbreviation"/>
+				</s:if>
+				<s:else>
+					<s:select name="form.subjectAreaIds" size="%{form.getSubjectAreaListSize()}" id="subjectAreaIds" multiple="true"
+						list="form.subjectAreas" listKey="uniqueId" listValue="subjectAreaAbbreviation"/>
+				</s:else>
 			</TD>
 			<TD valign="top" nowrap>
 				<B><loc:message name="filterCourseNumber"/></B>
 			</TD>
 			<TD valign="top">
-				<tt:course-number property="courseNbr" configuration="subjectId=\${subjectId};notOffered=exclude" size="15"
-					title="Course numbers can be specified using wildcard (*). E.g. 2*"/>
-				<!-- html:text property="courseNbr" size="10" maxlength="10" / -->
+				<span id='UniTimeGWT:CourseNumberSuggestBox' configuration="subjectId=\${subjectAreaIds};notOffered=exclude">
+					<s:textfield name="form.courseNbr" title="%{#msg.tooltipCourseNumber()}" size="15"/>
+				</span>
 			</TD>
-			<TD valign="top" nowrap>
-				&nbsp;&nbsp;&nbsp;
-				<html:submit onclick="doit.value=this.value;displayLoading();" 
-					accesskey="<%=MSG.accessSearchClasses()%>"
-					styleClass="btn" 
-					title="<%=MSG.titleSearchClasses(MSG.accessSearchClasses())%>">
-					<loc:message name="actionSearchClasses"/>
-				</html:submit>
+			<TD valign="top" style="padding-left: 10px;" nowrap>
+				<s:submit name='doit' value="%{#msg.actionSearchClasses()}"
+						title="%{#msg.titleSearchClasses(#msg.accessSearchClasses())}"
+						accesskey="%{#msg.accessSearchClasses()}"/>
 				<sec:authorize access="hasPermission(null, 'Department', 'ClassesExportPDF')">
-				&nbsp;&nbsp;&nbsp;
-				<html:submit
-					accesskey="<%=MSG.accessExportPdf()%>" 
-					styleClass="btn" 
-					title='<%=MSG.titleExportPdf(MSG.accessExportPdf())%>'
-					onclick="doit.value=this.value;">
-					<loc:message name="actionExportPdf"/>
-				</html:submit> 
-				&nbsp;&nbsp;&nbsp;
-				<html:submit
-					accesskey="<%=MSG.accessExportCsv()%>" 
-					styleClass="btn" 
-					title='<%=MSG.titleExportCsv(MSG.accessExportCsv())%>'
-					onclick="doit.value=this.value;">
-					<loc:message name="actionExportCsv"/>
-				</html:submit> 
+					<s:submit name='doit' value="%{#msg.actionExportPdf()}"
+							title="%{#msg.titleExportPdf(#msg.accessExportPdf())}"
+							accesskey="%{#msg.accessExportPdf()}"/>
+					<s:submit name='doit' value="%{#msg.actionExportCsv()}"
+							title="%{#msg.titleExportCsv(#msg.accessExportCsv())}"
+							accesskey="%{#msg.accessExportCsv()}"/>
 				</sec:authorize>
 			</TD>
 			<TD width='100%'></TD>
 		</TR>
-		<TR>
-			<TD colspan="6" align="center">
-				<html:errors />
-			</TD>
-		</TR>
+		<s:if test="!fieldErrors.isEmpty()">
+			<TR><TD colspan="6" align="left" class="errorTable">
+				<div class='errorHeader'><loc:message name="formValidationErrors"/></div><s:fielderror/>
+			</TD></TR>
+		</s:if>
 	</TABLE>
+	<s:if test="showTable == true">
+		<s:property value="%{printTable()}" escapeHtml="false"/>
+	</s:if>
+	<s:if test="#request.hash != null">
+		<SCRIPT type="text/javascript">
+			location.hash = '<%=request.getAttribute("hash")%>';
+		</SCRIPT>
+	</s:if>
+</s:form>
 </loc:bundle>
-</html:form>
-
-<logic:notEmpty name="body2">
-	<script language="javascript">displayLoading();</script>
-	<tiles:insert attribute="body2" />
-	<script language="javascript">hideLoading();</script>
-</logic:notEmpty>
-
-<SCRIPT type="text/javascript" language="javascript">
-	function jumpToAnchor() {
-    <% if (request.getAttribute("hash") != null) { %>
-  		location.hash = "<%=request.getAttribute("hash")%>";
-	<% } %>
-	    self.focus();
-  	}
-</SCRIPT>

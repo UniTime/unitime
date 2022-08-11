@@ -905,7 +905,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Search")
 	@StrutsAction(
 		value = "searchClasses",
-		apply = ClassSearchAction.class
+		action = ClassSearchAction.class
 	)
 	String actionSearchClasses();
 	

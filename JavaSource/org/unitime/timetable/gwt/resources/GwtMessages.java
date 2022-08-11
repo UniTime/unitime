@@ -6328,7 +6328,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("NOTE: Only classes that are loaded into the solver are displayed in the below list. This means that classes that are assigned to other " +
 			"timetabling managers (e.g., LLR or LAB) as well as classes that are not loaded into the solver (e.g., Arrange Hours classes) are excluded. " +
-			"For the full list of classes see <a href='classShowSearch.do'>Classes</a> or <a href='classAssignmentsReportShowSearch.do'>Class Assignments</a> page.")
+			"For the full list of classes see <a href='classSearch.action'>Classes</a> or <a href='classAssignmentsReportShowSearch.do'>Class Assignments</a> page.")
 	String notAssignedClassesNote();
 	
 	@DefaultMessage("{0} has been deleted.")

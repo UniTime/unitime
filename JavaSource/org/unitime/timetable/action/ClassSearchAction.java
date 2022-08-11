@@ -22,33 +22,25 @@ package org.unitime.timetable.action;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.action.ActionMessages;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.RoomLocation;
 import org.cpsolver.coursett.model.TimeLocation;
-import org.hibernate.HibernateException;
 import org.hibernate.Query;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
-import org.unitime.localization.impl.LocalizedLookupDispatchAction;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.localization.messages.Messages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ClassListForm;
@@ -58,6 +50,7 @@ import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ItypeDesc;
+import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
@@ -69,7 +62,10 @@ import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.ExportUtils;
+import org.unitime.timetable.util.IdValue;
+import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
+import org.unitime.timetable.webutil.WebClassListTableBuilder;
 import org.unitime.timetable.webutil.csv.CsvClassListTableBuilder;
 import org.unitime.timetable.webutil.pdf.PdfClassListTableBuilder;
 
@@ -77,129 +73,234 @@ import org.unitime.timetable.webutil.pdf.PdfClassListTableBuilder;
 /**
  * @author Stephanie Schluttenhofer, Tomas Muller, Zuzana Mullerova
  */
-@Service("/classSearch")
-public class ClassSearchAction extends LocalizedLookupDispatchAction {
+@Action(value="classSearch", results = {
+		@Result(name = "showClassSearch", type = "tiles", location = "classSearch.tiles")
+	})
+@TilesDefinition(name = "classSearch.tiles", extend =  "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Classes"),
+		@TilesPutAttribute(name = "body", value = "/user/classSearch.jsp"),
+		@TilesPutAttribute(name = "showNavigation", value = "true"),
+		@TilesPutAttribute(name = "showSolverWarnings", value = "assignment")
+})
+public class ClassSearchAction extends UniTimeAction<ClassListForm> {
+	private static final long serialVersionUID = -4834379802757297961L;
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	private Long io;
+	private String doit;
+	private String[] subjectAreaIds;
+	private String courseNbr;
+	private String loadFilter;
+	private boolean showTable = false;
 	
-	@Autowired SessionContext sessionContext;
-	
-	/** 
-	 * Method execute
-	 * @param mapping
-	 * @param form
-	 * @param request
-	 * @param response
-	 * @return ActionForward
-	 * @throws HibernateException
-	 */
+	public Long getIo() { return io; }
+	public void setIo(Long io) { this.io = io; }
+	public String getDoit() { return doit; }
+	public void setDoit(String doit) { this.doit = doit; }
+	public String[] getSubjectAreaIds() { return subjectAreaIds; }
+	public void setSubjectAreaIds(String[] subjectAreaIds) { this.subjectAreaIds = subjectAreaIds; }
+	public String getCourseNbr() { return courseNbr; }
+	public void setCourseNbr(String courseNbr) { this.courseNbr = courseNbr; }
+	public String getLoadFilter() { return loadFilter; }
+	public void setLoadFilter(String loadFilter) { this.loadFilter = loadFilter; }
+	public boolean isShowTable() { return showTable; }
+	public void setShowTable(boolean showTable) { this.showTable = showTable; }
 
-	public ActionForward searchClasses(
-			ActionMapping mapping,
-			ActionForm form,
-			HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
-		return performAction(mapping, form, request, response, "searchClasses");
-	}
-	
-	public ActionForward exportPdf(
-			ActionMapping mapping,
-			ActionForm form,
-			HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
+	public String execute() throws Exception {
+		if (form == null)
+			form = new ClassListForm();
 		
-		return performAction(mapping, form, request, response, "exportPdf");
-	}
-	
-	public ActionForward exportCsv(
-			ActionMapping mapping,
-			ActionForm form,
-			HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
+    	if (getSubjectAreaIds() != null)
+    		form.setSubjectAreaIds(getSubjectAreaIds());
+    	if (getCourseNbr() != null)
+    		form.setCourseNbr(getCourseNbr());
+    	
+		LookupTables.setupItypes(request,true);
 		
-		return performAction(mapping, form, request, response, "exportCsv");
-	}
-	
-	public ActionForward performAction(
-			ActionMapping mapping,
-			ActionForm form,
-			HttpServletRequest request,
-			HttpServletResponse response, String action) throws Exception {
-		
+    	if (MSG.actionSearchClasses().equals(doit) || "Search".equals(doit))
+    		return searchClasses();
+    	if (MSG.actionExportPdf().equals(doit))
+    		return exportPdf();
+    	if (MSG.actionExportCsv().equals(doit))
+    		return exportCsv();
+
+        BackTracker.markForBack(request, null, null, false, true);
+        
     	sessionContext.checkPermission(Right.Classes);
-		
-    	ClassListForm classListForm = (ClassListForm) form;
+        
+	    Object sas = sessionContext.getAttribute(SessionAttribute.ClassesSubjectAreas);
+	    Object cn = sessionContext.getAttribute(SessionAttribute.ClassesCourseNumber);
+	    String subjectAreaIds = "";
+	    String courseNbr = "";
+	    
+	    if ( (sas==null || sas.toString().trim().isEmpty()) && (cn==null || cn.toString().trim().isEmpty()) ) {
+		    // use session variables from io search  
+	        sas = sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea);
+	        cn = sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);	        
+	    }
+	    
+	    request.setAttribute(Department.EXTERNAL_DEPT_ATTR_NAME, Department.findAllExternal(sessionContext.getUser().getCurrentAcademicSessionId()));
+        
+		ClassSearchAction.setupGeneralFormFilters(sessionContext, form);
+		ClassSearchAction.setupClassListSpecificFormFilters(sessionContext, form);
+
+    	if (!sessionContext.hasPermission(Right.Examinations))
+    		form.setExams(null);
+
+    	form.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
+    	
+		if (sas == null && form.getSubjectAreas().size() == 1)
+			sas = ((SubjectArea)form.getSubjectAreas().iterator().next()).getUniqueId().toString();
+			
+        if (Constants.ALL_OPTION_VALUE.equals(sas)) sas=null;
+
+	    // Subject Areas are saved to the session - Perform automatic search
+	    if(sas!=null && sas.toString().trim().length() > 0) {
+	        subjectAreaIds = sas.toString();
+	        
+	        try {
+	            
+		        if(cn!=null && cn.toString().trim().length()>0)
+		            courseNbr = cn.toString();
+		        
+		        Debug.debug("Subject Areas: " + subjectAreaIds);
+		        Debug.debug("Course Number: " + courseNbr);
+		        
+		        form.setSubjectAreaIds(subjectAreaIds.split(","));
+		        form.setCourseNbr(courseNbr);
+		        
+		        Integer maxSubjectsToSearch = ApplicationProperty.MaxSubjectsToSearchAutomatically.intValue();
+		        if (maxSubjectsToSearch != null && maxSubjectsToSearch >= 0 && form.getSubjectAreaIds().length > maxSubjectsToSearch) {
+		        	setShowTable(false);
+		        	return "showClassSearch";
+		        }
+		        
+				StringBuffer ids = new StringBuffer();
+				StringBuffer names = new StringBuffer();
+				StringBuffer subjIds = new StringBuffer();
+				form.setClasses(ClassSearchAction.getClasses(form, WebSolver.getClassAssignmentProxy(request.getSession())));
+				Collection classes = form.getClasses();
+				if (classes.isEmpty()) {
+					addFieldError("searchResult", MSG.errorNoRecords());
+					setShowTable(false);
+					return "showClassSearch";
+				} else {
+			        for (int i=0;i<form.getSubjectAreaIds().length;i++) {
+						if (i>0) {
+							names.append(","); 
+							subjIds.append(",");
+							}
+						ids.append("&subjectAreaIds="+form.getSubjectAreaIds()[i]);
+						subjIds.append(form.getSubjectAreaIds()[i]);
+						names.append(((new SubjectAreaDAO()).get(Long.valueOf(form.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
+					}
+			        BackTracker.markForBack(
+							request, 
+							"classSearch.action?doit=Search&loadFilter=1&"+ids+"&courseNbr="+URLEncoder.encode(form.getCourseNbr(), "utf-8"),
+							MSG.backClasses(names+(form.getCourseNbr()==null || form.getCourseNbr().length()==0?"":" "+form.getCourseNbr())), 
+							true, true);
+			        setShowTable(true);
+			        return "showClassSearch";
+				}
+	        } catch (NumberFormatException nfe) {
+	            Debug.error("Subject Area Ids session attribute is corrupted. Resetting ... ");
+	            sessionContext.removeAttribute(SessionAttribute.ClassesSubjectAreas);
+	            sessionContext.removeAttribute(SessionAttribute.ClassesCourseNumber);
+	        }
+	    }
+
+		setShowTable(false);
+		return "showClassSearch";
+	}
+	
+	public String searchClasses() throws Exception {
+		return performAction("searchClasses");
+	}
+	
+	public String exportPdf() throws Exception {
+		return performAction("exportPdf");
+	}
+	
+	public String exportCsv() throws Exception {
+		return performAction("exportCsv");
+	}
+	
+	public String performAction(String action) throws Exception {
+    	sessionContext.checkPermission(Right.Classes);
     	
     	request.setAttribute(Department.EXTERNAL_DEPT_ATTR_NAME, Department.findAllExternal(sessionContext.getUser().getCurrentAcademicSessionId()));
     	
-    	if ("1".equals(request.getParameter("loadFilter"))) {
-    		setupGeneralFormFilters(sessionContext, classListForm);
-    		setupClassListSpecificFormFilters(sessionContext, classListForm);
+    	if ("1".equals(getLoadFilter())) {
+    		setupGeneralFormFilters(sessionContext, form);
+    		setupClassListSpecificFormFilters(sessionContext, form);
     	} else {
-    		sessionContext.getUser().setProperty("ClassList.divSec",classListForm.getDivSec() ? "1" : "0");
-	    	sessionContext.getUser().setProperty("ClassList.demand",classListForm.getDemand() ? "1" : "0");
-	    	sessionContext.getUser().setProperty("ClassList.demandIsVisible",classListForm.getDemandIsVisible() ? "1" : "0");
-	    	sessionContext.getUser().setProperty("ClassList.limit",classListForm.getLimit() ? "1" : "0");
-	    	sessionContext.getUser().setProperty("ClassList.snapshotLimit",classListForm.getSnapshotLimit() ? "1" : "0");
-	    	sessionContext.getUser().setProperty("ClassList.roomLimit",classListForm.getRoomLimit() ? "1" : "0");
-	    	sessionContext.getUser().setProperty("ClassList.manager",classListForm.getManager() ? "1" : "0");
-		   	sessionContext.getUser().setProperty("ClassList.datePattern",classListForm.getDatePattern() ? "1" : "0");
-	    	sessionContext.getUser().setProperty("ClassList.timePattern",classListForm.getTimePattern() ? "1" : "0");
-	    	sessionContext.getUser().setProperty("ClassList.instructor",classListForm.getInstructor() ? "1" : "0");
-	    	sessionContext.getUser().setProperty("ClassList.instructorAssignment",classListForm.getInstructorAssignment() ? "1" : "0");
-	    	sessionContext.getUser().setProperty("ClassList.lms",classListForm.getLms() ? "1" : "0");
-	    	sessionContext.getUser().setProperty("ClassList.preferences",classListForm.getPreferences() ? "1" : "0");
-	    	if (classListForm.getTimetable() != null)
-	    		sessionContext.getUser().setProperty("ClassList.timetable",classListForm.getTimetable() ? "1" : "0");
-	    	sessionContext.getUser().setProperty("ClassList.schedulePrintNote",classListForm.getSchedulePrintNote() ? "1" : "0");
-	    	sessionContext.getUser().setProperty("ClassList.note",classListForm.getNote() ? "1" : "0");
-	    	if (classListForm.getExams() != null)
-	    		sessionContext.getUser().setProperty("ClassList.exams",classListForm.getExams() ? "1" : "0");
+    		sessionContext.getUser().setProperty("ClassList.divSec",form.getDivSec() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.demand",form.getDemand() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.demandIsVisible",form.getDemandIsVisible() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.limit",form.getLimit() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.snapshotLimit",form.getSnapshotLimit() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.roomLimit",form.getRoomLimit() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.manager",form.getManager() ? "1" : "0");
+		   	sessionContext.getUser().setProperty("ClassList.datePattern",form.getDatePattern() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.timePattern",form.getTimePattern() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.instructor",form.getInstructor() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.instructorAssignment",form.getInstructorAssignment() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.lms", (form.getLms() == null ? null : form.getLms() ? "1" : "0"));
+	    	sessionContext.getUser().setProperty("ClassList.preferences",form.getPreferences() ? "1" : "0");
+	    	if (form.getTimetable() != null)
+	    		sessionContext.getUser().setProperty("ClassList.timetable",form.getTimetable() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.schedulePrintNote",form.getSchedulePrintNote() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.note",form.getNote() ? "1" : "0");
+	    	if (form.getExams() != null)
+	    		sessionContext.getUser().setProperty("ClassList.exams",form.getExams() ? "1" : "0");
 	    	
-	    	sessionContext.getUser().setProperty("ClassList.fundingDepartment",classListForm.getFundingDepartment() ? "1" : "0");	    	
-	    	sessionContext.getUser().setProperty("ClassList.sortBy", classListForm.getSortBy());
-	    	sessionContext.getUser().setProperty("ClassList.filterAssignedRoom", classListForm.getFilterAssignedRoom());		    	
-	    	sessionContext.getUser().setProperty("ClassList.filterInstructor", classListForm.getFilterInstructor());		    	
-	    	sessionContext.getUser().setProperty("ClassList.filterManager", classListForm.getFilterManager());		
-	    	sessionContext.getUser().setProperty("ClassList.filterIType", classListForm.getFilterIType());
-	    	sessionContext.getUser().setProperty("ClassList.filterDayCode", String.valueOf(classListForm.getFilterDayCode()));
-	    	sessionContext.getUser().setProperty("ClassList.filterStartSlot", String.valueOf(classListForm.getFilterStartSlot()));
-	    	sessionContext.getUser().setProperty("ClassList.filterLength", String.valueOf(classListForm.getFilterLength()));
-	    	sessionContext.getUser().setProperty("ClassList.sortByKeepSubparts", String.valueOf(classListForm.getSortByKeepSubparts()));
-	    	sessionContext.getUser().setProperty("ClassList.showCrossListedClasses", String.valueOf(classListForm.getShowCrossListedClasses()));
-	    	sessionContext.getUser().setProperty("ClassList.filterNeedInstructor",classListForm.getFilterNeedInstructor() ? "1" : "0");
-	    	sessionContext.getUser().setProperty("ClassList.includeCancelledClasses",classListForm.getIncludeCancelledClasses() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.fundingDepartment",form.getFundingDepartment() ? "1" : "0");	    	
+	    	sessionContext.getUser().setProperty("ClassList.sortBy", form.getSortBy());
+	    	sessionContext.getUser().setProperty("ClassList.filterAssignedRoom", form.getFilterAssignedRoom());		    	
+	    	sessionContext.getUser().setProperty("ClassList.filterInstructor", form.getFilterInstructor());		    	
+	    	sessionContext.getUser().setProperty("ClassList.filterManager", form.getFilterManager());		
+	    	sessionContext.getUser().setProperty("ClassList.filterIType", form.getFilterIType());
+	    	sessionContext.getUser().setProperty("ClassList.filterDayCode", String.valueOf(form.getFilterDayCode()));
+	    	sessionContext.getUser().setProperty("ClassList.filterStartSlot", String.valueOf(form.getFilterStartSlot()));
+	    	sessionContext.getUser().setProperty("ClassList.filterLength", String.valueOf(form.getFilterLength()));
+	    	sessionContext.getUser().setProperty("ClassList.sortByKeepSubparts", form.getSortByKeepSubparts() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.showCrossListedClasses", form.getShowCrossListedClasses() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.filterNeedInstructor",form.getFilterNeedInstructor() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.includeCancelledClasses",form.getIncludeCancelledClasses() ? "1" : "0");
 	    }
     	    	
     	if (!sessionContext.hasPermission(Right.Examinations))
-    		classListForm.setExams(null);
+    		form.setExams(null);
   
 		if (!ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue()) 
-			classListForm.setFundingDepartment(false);
+			form.setFundingDepartment(false);
 
-    	classListForm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
-    	classListForm.setClasses(getClasses(classListForm, WebSolver.getClassAssignmentProxy(request.getSession())));
+    	form.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
+    	form.setClasses(getClasses(form, WebSolver.getClassAssignmentProxy(request.getSession())));
     	
-    	Collection classes = classListForm.getClasses();
-		if (classes.isEmpty()) {
-		    ActionMessages errors = new ActionMessages();
-		    errors.add("searchResult", new ActionMessage("errors.generic", MSG.errorNoRecords()));
-		    saveErrors(request, errors);
-		    return mapping.findForward("showClassSearch");
+    	Collection classes = form.getClasses();
+    	form.validate(this);
+    	if (hasFieldErrors()) {
+    		setShowTable(false);
+			return "showClassSearch";
+    	} else if (classes.isEmpty()) {
+			addFieldError("searchResult", MSG.errorNoRecords());
+			setShowTable(false);
+			return "showClassSearch";
 		} else {
 			StringBuffer ids = new StringBuffer();
 			StringBuffer names = new StringBuffer();
 			StringBuffer subjIds = new StringBuffer();
-			for (int i=0;i<classListForm.getSubjectAreaIds().length;i++) {
+			for (int i=0;i<form.getSubjectAreaIds().length;i++) {
 				if (i>0) {
 					names.append(","); 
 					subjIds.append(",");
 					}
-				ids.append("&subjectAreaIds="+classListForm.getSubjectAreaIds()[i]);
-				subjIds.append(classListForm.getSubjectAreaIds()[i]);
-				names.append(((new SubjectAreaDAO()).get(Long.valueOf(classListForm.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
+				ids.append("&subjectAreaIds="+form.getSubjectAreaIds()[i]);
+				subjIds.append(form.getSubjectAreaIds()[i]);
+				names.append(((new SubjectAreaDAO()).get(Long.valueOf(form.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
 			}
 			sessionContext.setAttribute(SessionAttribute.ClassesSubjectAreas, subjIds);
-			sessionContext.setAttribute(SessionAttribute.ClassesCourseNumber, classListForm.getCourseNbr());
+			sessionContext.setAttribute(SessionAttribute.ClassesCourseNumber, form.getCourseNbr());
 			
 			if ("exportPdf".equals(action)) {
 	    		OutputStream out = ExportUtils.getPdfOutputStream(response, "classes");
@@ -207,7 +308,7 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 				new PdfClassListTableBuilder().pdfTableForClasses(out,
 						WebSolver.getClassAssignmentProxy(request.getSession()),
 			    		WebSolver.getExamSolver(request.getSession()),
-			    		classListForm, 
+			    		form, 
 			    		sessionContext);
 				
 				out.flush(); out.close();
@@ -221,7 +322,7 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 				new CsvClassListTableBuilder().csvTableForClasses(out,
 						WebSolver.getClassAssignmentProxy(request.getSession()),
 			    		WebSolver.getExamSolver(request.getSession()),
-			    		classListForm, 
+			    		form, 
 			    		sessionContext);
 				
 				out.flush(); out.close();
@@ -231,13 +332,13 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 
 			BackTracker.markForBack(
 					request, 
-					"classSearch.do?doit=Search&loadFilter=1"+ids+"&courseNbr="+URLEncoder.encode(classListForm.getCourseNbr(), "utf-8"), 
-					MSG.backClasses(names+(classListForm.getCourseNbr()==null || classListForm.getCourseNbr().length()==0?"":" "+classListForm.getCourseNbr())), 
+					"classSearch.action?doit=Search&loadFilter=1"+ids+"&courseNbr="+URLEncoder.encode(form.getCourseNbr(), "utf-8"), 
+					MSG.backClasses(names+(form.getCourseNbr()==null || form.getCourseNbr().length()==0?"":" "+form.getCourseNbr())), 
 					true, true);
-				
-			    return mapping.findForward("showClassList");
-			}
+			setShowTable(true);
+			return "showClassSearch";
 		}
+	}
 	
 	
 	public static void setupGeneralFormFilters(SessionContext sessionContext, ClassListFormInterface form){
@@ -263,7 +364,10 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 		form.setTimePattern("1".equals(sessionContext.getUser().getProperty("ClassList.timePattern", "1")));
 		form.setInstructor("1".equals(sessionContext.getUser().getProperty("ClassList.instructor", "1")));
 		form.setInstructorAssignment("1".equals(sessionContext.getUser().getProperty("ClassList.instructorAssignment", "1")));
-		form.setLms("1".equals(sessionContext.getUser().getProperty("ClassList.lms", "1")));
+		if (LearningManagementSystemInfo.isLmsInfoDefinedForSession(sessionContext.getUser().getCurrentAcademicSessionId()))
+			form.setLms("1".equals(sessionContext.getUser().getProperty("ClassList.lms", "1")));
+		else
+			form.setLms(null);
 		form.setPreferences("1".equals(sessionContext.getUser().getProperty("ClassList.preferences", "1")));
 		form.setTimetable("1".equals(sessionContext.getUser().getProperty("ClassList.timetable", "1")));	
 		form.setFilterInstructor(sessionContext.getUser().getProperty("ClassList.filterInstructor", ""));
@@ -290,7 +394,6 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 		boolean doFilterManager = form.getFilterManager()!=null && form.getFilterManager().length()>0;
 		Long filterManager = (doFilterManager?Long.valueOf(form.getFilterManager()):null);
 
-		boolean fetchFundingDepartment = form.getFundingDepartment();
         boolean fetchStructure = true;
         boolean fetchCredits = false;//form.getCredit().booleanValue();
         boolean fetchInstructors = false;//form.getInstructor().booleanValue();
@@ -324,16 +427,6 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 				query.append("left join fetch ca.rooms as car ");
 			}
 
-			/*
-	        if (ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue()) {
-	        	query.append(" and (c.fundingDeptId is not null or c.managingDept in co.subjectArea.department)");
-	        }
-	        */
-
-			/*if (fetchFundingDepartment) {
-				query.append("left join fetch c.fundingDept as fd ");
-
-			}*/
 			if (fetchPreferences) {
 				query.append("left join fetch c.preferences as cp ");
 				query.append("left join fetch ss.preferences as ssp ");
@@ -529,10 +622,27 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 	    }
 
     }
-
-	@Override
-	protected Messages getMessages() {
-		return MSG;
+    
+	
+	public List<IdValue> getManagers() {
+		List<IdValue> ret = new ArrayList<IdValue>();
+		ret.add(new IdValue(null, MSG.dropManagerAll()));
+		ret.add(new IdValue(-2l, MSG.dropDeptDepartment()));
+		for (Department d: (TreeSet<Department>)request.getAttribute(Department.EXTERNAL_DEPT_ATTR_NAME))
+			ret.add(new IdValue(d.getUniqueId(), d.getManagingDeptLabel()));
+		return ret;
 	}
-
+	
+	public String printTable() throws Exception {
+		new WebClassListTableBuilder().htmlTableForClasses(
+				sessionContext,
+				getClassAssignmentService().getAssignment(),
+				getExaminationSolverService().getSolver(),
+				form,
+				getPageContext().getOut(),
+				request.getParameter("backType"),
+				request.getParameter("backId")
+			);
+		return "";
+	}
 }

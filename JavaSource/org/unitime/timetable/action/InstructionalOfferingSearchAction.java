@@ -117,7 +117,7 @@ public class InstructionalOfferingSearchAction extends UniTimeAction<Instruction
     	if (MSG.actionExportPdf().equals(doit))
     		return exportPdf();
     	if (MSG.actionExportCsv().equals(doit))
-    		return exportPdf();
+    		return exportCsv();
     	if (MSG.actionWorksheetPdf().equals(doit))
     		return worksheetPdf();
     	if (MSG.actionAddNewInstructionalOffering().equals(doit))

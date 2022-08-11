@@ -357,5 +357,10 @@
 	<s:if test="showTable == true">
 		<s:property value="%{printTable()}" escapeHtml="false"/>
 	</s:if>
+	<s:if test="#request.hash != null">
+		<SCRIPT type="text/javascript">
+			location.hash = '<%=request.getAttribute("hash")%>';
+		</SCRIPT>
+	</s:if>
 </s:form>
 </loc:bundle>

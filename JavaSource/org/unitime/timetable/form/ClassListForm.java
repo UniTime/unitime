@@ -22,30 +22,24 @@ package org.unitime.timetable.form;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.util.LookupTables;
 
 
 /**
  * @author Stephanie Schluttenhofer, Tomas Muller, Zuzana Mullerova
  */
-public class ClassListForm extends ActionForm implements ClassListFormInterface {
+public class ClassListForm implements UniTimeForm, ClassListFormInterface {
+    private static final long serialVersionUID = -6985831814265952068L;
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
-    /**
-     * Comment for <code>serialVersionUID</code>
-     */
-    private static final long serialVersionUID = -6985831814265952068L;
-	private Collection classes;
-	private Collection subjectAreas;
+	private Collection<Class_> classes;
+	private Collection<SubjectArea> subjectAreas;
 	private String[] subjectAreaIds; 
 	private String courseNbr;
 	private String buttonAction;
@@ -155,36 +149,31 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 		this.subjectAreaIds = subjectAreaIds;
 	}
 
-	// --------------------------------------------------------- Methods
-	/** 
-	 * Method reset
-	 * @param mapping
-	 * @param request
-	 */
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
+	@Override
+	public void reset() {
 		courseNbr = "";
-		classes = new ArrayList();
-		subjectAreas = new ArrayList();
+		classes = new ArrayList<Class_>();
+		subjectAreas = new ArrayList<SubjectArea>();
 		subjectAreaIds = new String[0];
 		
-		demandIsVisible = new Boolean(false);
-		demand = new Boolean(false);
-		limit = new Boolean(false);
-		snapshotLimit = new Boolean(false);
-		roomLimit = new Boolean(false);
-		datePattern = new Boolean(false);
-		timePattern = new Boolean(false);
-		instructor = new Boolean(false);
-		preferences = new Boolean(false);
-		timetable = new Boolean(false);
-		manager = new Boolean(false);
-		fundingDepartment = new Boolean(false);
-		divSec = new Boolean(false);
-		schedulePrintNote = new Boolean(false);
-		note = new Boolean(false);
-		exams = new Boolean(false);		
-		instructorAssignment = new Boolean(false);
-		lms = new Boolean(false);
+		demandIsVisible = false;
+		demand = false;
+		limit = false;
+		snapshotLimit = false;
+		roomLimit = false;
+		datePattern = false;
+		timePattern = false;
+		instructor = false;
+		preferences = false;
+		timetable = false;
+		manager = false;
+		fundingDepartment = false;
+		divSec = false;
+		schedulePrintNote = false;
+		note = false;
+		exams = false;		
+		instructorAssignment = false;
+		lms = false;
 		includeCancelledClasses = false;
 		filterNeedInstructor = false;
 		
@@ -210,40 +199,37 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 		
 		returnAllControlClassesForSubjects = false;
 		sessionInLLREditStatus = false;
-		
-		LookupTables.setupItypes(request,true);
 	}
 
     /**
      * @return Returns the classes.
      */
-    public Collection getClasses() {
+    public Collection<Class_> getClasses() {
         return classes;
     }
     /**
      * @param classes The classes to set.
      */
-    public void setClasses(Collection classes) {
+    public void setClasses(Collection<Class_> classes) {
         this.classes = classes;
     }
     /**
      * @return Returns the subjectAreas.
      */
-    public Collection getSubjectAreas() {
+    public Collection<SubjectArea> getSubjectAreas() {
         return subjectAreas;
     }
     /**
      * @param subjectAreas The subjectAreas to set.
      */
-    public void setSubjectAreas(Collection subjectAreas) {
+    public void setSubjectAreas(Collection<SubjectArea> subjectAreas) {
         this.subjectAreas = subjectAreas;
     }
-    /* (non-Javadoc)
-     * @see org.apache.struts.action.ActionForm#validate(org.apache.struts.action.ActionMapping, javax.servlet.http.HttpServletRequest)
-     */
-    public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-        ActionErrors errors = new ActionErrors();
-        return errors;
+
+    @Override
+    public void validate(UniTimeAction action) {
+    	if (subjectAreaIds == null || subjectAreaIds.length == 0)
+    		action.addFieldError("subjectAreaIds", MSG.errorSubjectRequired());
     }
     
 	/**
@@ -601,4 +587,7 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	@Override
 	public String getWaitlist() { return null; }
 
+	public int getSubjectAreaListSize() {
+		return Math.min(7, getSubjectAreas().size());
+	}
 }

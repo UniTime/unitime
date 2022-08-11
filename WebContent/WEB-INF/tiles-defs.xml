@@ -238,20 +238,6 @@
 		<put name="showSolverWarnings" value="assignment" />
   	</definition>
 
-  	<definition	name="classSearchTile" extends="pageLayoutDef">
-	  	<put name="onLoadFunction" type="string" value="onLoad='jumpToAnchor()'" />
-		<put name="title" type="string" value="Classes"/>
-		<put name="body" value="/user/classSearch.jsp" />
-		<put name="action" value="classSearch" />
-		<put name="showNavigation" value="true" />
-		<put name="showSolverWarnings" value="assignment" />
-  	</definition>
-  	
-  	<definition	name="classListTile" extends="classSearchTile">
-		<put name="body2" value="/user/classList.jsp" />
-		<put name="action2" value="classChange" />
-  	</definition>
-
 	<definition	name="distributionPrefsTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Distribution Preferences"/>
 		<put name="body" value="/user/distributionPrefs.jsp" />

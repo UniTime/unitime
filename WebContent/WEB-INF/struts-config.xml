@@ -41,7 +41,6 @@
 	  <form-bean name="solverSettingsForm" type="org.unitime.timetable.form.SolverSettingsForm" />
 	  <form-bean name="solverInfoDefForm" type="org.unitime.timetable.form.SolverInfoDefForm" />
 	  <form-bean name="manageSolversForm" type="org.unitime.timetable.form.ManageSolversForm" />
-	  <form-bean name="classListForm" type="org.unitime.timetable.form.ClassListForm" />
       <form-bean name="distributionPrefsForm" type="org.unitime.timetable.form.DistributionPrefsForm" />
       <form-bean name="hibernateQueryTestForm" type="org.unitime.timetable.form.HibernateQueryTestForm" />
 	  <form-bean name="classAssignmentsReportForm" type="org.unitime.timetable.form.ClassAssignmentsReportForm" />
@@ -449,65 +448,6 @@
     <action 
     	path="/hibernateStats" 
     	forward="hibrenateStatsTile" />
-     
-     <action
-         path="/classSearch"
-         attribute="classListForm"
-         input="classSearchTile"
-         name="classListForm"
-         parameter="doit"
-         scope="request"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         validate="false">
-        <forward 
-        	name="showClassList" 
-        	path="classListTile" />
-        <forward 
-        	name="showClassSearch" 
-        	path="classSearchTile" />
-      </action>
-      
-      <action
-         path="/classShowSearch"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         attribute="classListForm"
-         input="classSearchTile"
-         name="classListForm"
-         scope="request"
-         validate="false">
-        <forward 
-        	name="showClassSearch" 
-        	path="classSearchTile" />
-        <forward 
-        	name="showClassList" 
-        	path="classListTile" />
-      </action>
-
-      <action
-         path="/classChange"
-         attribute="classListForm"
-         input="classListTile"
-         name="classListForm"
-         parameter="doit"
-         scope="request"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         validate="false">
-        <forward name="showClassList" path="classListTile" />
-        <forward name="showClassSearch" path="classSearchTile" />
-      </action>
-
-     <action
-         path="/classList"
-         attribute="classListForm"
-         input="classListTile"
-         name="classListForm"
-         scope="request"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         validate="false">
-         <forward 
-         	name="showClassList" 
-         	path="classListTile" />
-      </action>
      
       <action
          path="/distributionPrefs"
